@@ -1,0 +1,1 @@
+1. Application krci-portal has been successfully deployed!!
