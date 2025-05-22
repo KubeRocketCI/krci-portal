@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "lib": ["ES2023"],
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleResolution": "bundler",
+
+    "paths": {
+      "@/*": ["./apps/client/src/*"],
+      "@my-project/client/*": ["./src/*"],
+      "@my-project/shared/*": ["../../packages/shared/*"]
+    }
+  },
+  "include": ["vite.config.ts"],
+  "exclude": ["@my-project/server", "node_modules", "dist"]
+}

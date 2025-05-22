@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@my-project/client/*": ["apps/client/src/*"],
+      "@my-project/server/*": ["apps/server/src/*"],
+      "@my-project/shared/*": ["packages/shared/src/*"]
+    },
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "isolatedModules": true
+  },
+  "references": [
+    { "path": "apps/client" },
+    { "path": "apps/server" },
+    { "path": "packages/shared" }
+  ]
+}

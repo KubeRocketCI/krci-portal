@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "files": [],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./apps/client/src/*"],
+      "@my-project/client/*": ["./src/*"],
+      "@my-project/shared/*": ["../../packages/shared/*"]
+    },
+    "moduleResolution": "node"
+  },
+  "exclude": ["@my-project/server", "node_modules", "dist"]
+}

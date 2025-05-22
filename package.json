@@ -1,0 +1,40 @@
+{
+  "name": "krci",
+  "version": "1.0.0",
+  "description": "Monorepo KRCI Portal",
+  "scripts": {
+    "dev": "concurrently -k -n SERVER,CLIENT -c blue,green \"pnpm --filter=server dev\" \"pnpm --filter=client dev\"",
+    "build": "pnpm --filter=shared build && pnpm --filter=server build && pnpm --filter=client build",
+    "deploy:prepare": "pnpm deploy --filter=client --prod deploy/client && pnpm deploy --filter=server --prod deploy/server",
+    "deploy:post": "shx mkdir -p deploy/server/db && shx touch deploy/server/db/sessions.sqlite",
+    "prepare:artifacts": "pnpm build && pnpm deploy:prepare && pnpm deploy:post",
+    "lint": "pnpm --recursive run lint",
+    "test": "pnpm --recursive run test",
+    "format:check": "pnpm --recursive run format --check",
+    "validate": "pnpm lint && pnpm test && pnpm format:check"
+  },
+  "packageManager": "pnpm@10.11.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "dependencies": {
+    "@my-project/client": "workspace:^",
+    "@my-project/server": "workspace:^",
+    "@my-project/shared": "workspace:^",
+    "concurrently": "^9.1.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.26.0",
+    "@typescript-eslint/eslint-plugin": "^8.32.1",
+    "@typescript-eslint/parser": "^8.32.1",
+    "esbuild": "^0.25.4",
+    "eslint": "^9.26.0",
+    "prettier": "^3.5.3",
+    "rimraf": "^6.0.1",
+    "shx": "^0.4.0",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.32.1",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.1.3"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@my-project/shared",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "node build.config.js && tsc --project tsconfig.build.json"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.4"
+  },
+  "dependencies": {
+    "zod": "^3.24.2"
+  }
+}
