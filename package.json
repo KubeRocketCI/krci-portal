@@ -7,11 +7,12 @@
     "build": "pnpm --filter=shared build && pnpm --filter=server build && pnpm --filter=client build",
     "deploy:prepare": "pnpm deploy --filter=client --prod deploy/client && pnpm deploy --filter=server --prod deploy/server",
     "deploy:post": "shx mkdir -p deploy/server/db && shx touch deploy/server/db/sessions.sqlite",
-    "prepare:artifacts": "pnpm build && pnpm deploy:prepare && pnpm deploy:post",
     "lint": "pnpm --recursive run lint",
-    "test": "pnpm --recursive run test",
+    "test:coverage": "vitest run",
     "format:check": "pnpm --recursive run format --check",
-    "validate": "pnpm lint && pnpm test && pnpm format:check"
+    "prepare:validate": "pnpm lint && pnpm test:coverage && pnpm format:check",
+    "prepare:artifacts": "pnpm build && pnpm deploy:prepare && pnpm deploy:post",
+    "sonar": "dotenv -e .env -- sonar-scanner"
   },
   "packageManager": "pnpm@10.11.0",
   "workspaces": [
@@ -27,14 +28,18 @@
     "@eslint/js": "^9.26.0",
     "@typescript-eslint/eslint-plugin": "^8.32.1",
     "@typescript-eslint/parser": "^8.32.1",
+    "@vitest/coverage-istanbul": "^3.1.4",
+    "dotenv": "^16.5.0",
+    "dotenv-cli": "^8.0.0",
     "esbuild": "^0.25.4",
     "eslint": "^9.26.0",
     "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
     "shx": "^0.4.0",
+    "sonar-scanner": "^3.1.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.32.1",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.1.3"
+    "vitest": "^3.1.4"
   }
 }

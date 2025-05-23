@@ -1,19 +1,17 @@
-import { defineConfig } from "vitest/config";
+import { defineProject } from "vitest/config";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-export default defineConfig({
+export default defineProject({
   plugins: [tsconfigPaths({ root: "./" })],
   test: {
-    environment: "node", // For server-side tests
-    include: ["src/*/**/*.test.{ts,js}"],
-    coverage: {
-      exclude: [
-        "*/**/__mocks__/*",
-        "node_modules/*",
-        "dist/*",
-        "db/*",
-        "coverage/*",
-      ],
-    },
+    name: "server",
+    environment: "jsdom", // For client-side tests
+    include: ["src/**/*.test.{ts,tsx}"],
+    exclude: [
+      "*/**/__mocks__/*",
+      "*/**/node_modules/*",
+      "*/**/dist/*",
+      "../../packages/shared/*",
+    ],
   },
 });
