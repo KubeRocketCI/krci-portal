@@ -3,6 +3,20 @@ import { CustomSession } from "../trpc/context";
 import { DBSessionStore } from "@/clients/db-session-store";
 
 export function createMockedDBSessionStore(mockSession: CustomSession) {
+  vi.mock("better-sqlite3", () => {
+    return {
+      default: vi.fn().mockImplementation(() => ({
+        prepare: vi.fn(() => ({
+          run: vi.fn(),
+          get: vi.fn(),
+          all: vi.fn(),
+        })),
+        exec: vi.fn(),
+        close: vi.fn(),
+      })),
+    };
+  });
+
   // Create an in-memory store like your current mock
   const sessionStoreMap = new Map<
     string,
