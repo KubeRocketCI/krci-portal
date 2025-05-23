@@ -2,7 +2,7 @@ import { build } from "esbuild";
 
 await build({
   entryPoints: ["./src/index.ts"],
-  outdir: "./dist",
+  outfile: "./dist/index.js",
   bundle: true,
   target: "node22",
   format: "esm",
