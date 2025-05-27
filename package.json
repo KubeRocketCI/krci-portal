@@ -12,7 +12,7 @@
     "format:check": "pnpm --recursive run format --check",
     "prepare:validate": "pnpm lint && pnpm test:coverage && pnpm format:check",
     "prepare:artifacts": "pnpm build && pnpm deploy:prepare && pnpm deploy:post",
-    "sonar": "dotenv -e .env -- sonar-scanner"
+    "sonar:check-dev": "dotenv -e .env.development -- cross-env SONAR_TOKEN=$SONAR_TOKEN SONAR_HOST_URL=$SONAR_HOST_URL sonar-scanner -Dsonar.login=$SONAR_TOKEN -Dsonar.host.url=$SONAR_HOST_URL"
   },
   "packageManager": "pnpm@10.11.0",
   "workspaces": [
@@ -29,6 +29,7 @@
     "@typescript-eslint/eslint-plugin": "^8.32.1",
     "@typescript-eslint/parser": "^8.32.1",
     "@vitest/coverage-istanbul": "^3.1.4",
+    "cross-env": "^7.0.3",
     "dotenv": "^16.5.0",
     "dotenv-cli": "^8.0.0",
     "esbuild": "^0.25.4",
