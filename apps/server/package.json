@@ -10,8 +10,7 @@
     "dev": "cross-env NODE_ENV=development tsx watch src/index.ts",
     "dev:static": "cross-env NODE_ENV=development node dist/index.js",
     "build": "node build.config.js && tsc --project tsconfig.build.json",
-    "test": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test": "vitest"
   },
   "dependencies": {
     "better-sqlite3": "^11.9.1"
