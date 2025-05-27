@@ -23,8 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 
+#env variables
 .env*
+!.env*.example
 
+#dev artifacts
 deploy
 bin
 coverage

@@ -8,7 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
+
 *.local
 
 # Editor directories and files
@@ -24,9 +24,12 @@ dist
 
 #env variables
 .env*
+!.env*.example
 
 #db
 *.sqlite
 
+#dev artifacts
+dist
 coverage/*
 *.tsbuildinfo
