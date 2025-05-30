@@ -1,8 +1,15 @@
 import { GridSize } from "@mui/material";
 import React from "react";
-import { Control, FieldErrors } from "react-hook-form";
+import {
+  Control,
+  FieldErrors,
+  FieldPath,
+  FieldValues,
+  Path,
+  UseFormRegisterReturn,
+} from "react-hook-form";
 
-export interface MainRadioGroupOption {
+export interface TileRadioGroupOption {
   value: string;
   label: string;
   description?: string;
@@ -11,10 +18,13 @@ export interface MainRadioGroupOption {
   disabled?: boolean;
 }
 
-export interface MainRadioGroupProps {
-  name: string;
-  control: Control<never>;
-  errors: FieldErrors;
+export interface TileRadioGroupProps<
+  TFieldValues extends FieldValues = FieldValues,
+> extends Partial<UseFormRegisterReturn<Path<TFieldValues>>> {
+  name: FieldPath<TFieldValues>;
+  control: Control<TFieldValues>;
+  errors: FieldErrors<TFieldValues>;
   gridItemSize: GridSize;
-  options: MainRadioGroupOption[];
+  options: TileRadioGroupOption[];
+  helperText?: string;
 }

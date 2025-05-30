@@ -1,7 +1,7 @@
 import React from "react";
 import { SortState, TableColumn } from "../../types";
 
-export interface TableHeadProps<DataType extends unknown> {
+export interface TableHeadProps<DataType> {
   tableId: string;
   columns: TableColumn<DataType>[];
   colGroupRef: React.MutableRefObject<HTMLTableColElement | null>;

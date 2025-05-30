@@ -2,7 +2,8 @@ import { DBSessionStore } from "@/clients/db-session-store";
 import { K8sClient } from "@/clients/k8s";
 import { OIDCClient } from "@/clients/oidc";
 import { createContext, CustomSession } from "@/trpc/context";
-import { AppRouter, appRouter } from "@/trpc/routers";
+import { appRouter } from "@/trpc/routers";
+import { AppRouter } from "@/trpc/routers/types";
 import FastifyCookie from "@fastify/cookie";
 import FastifyCors from "@fastify/cors";
 import FastifySession from "@fastify/session";
@@ -124,7 +125,7 @@ export class LocalFastifyServer {
           router: appRouter,
           createContext: ({ req, res }) => {
             const realReq = REQS.get(req.raw ?? req);
-            const session = req.session as CustomSession;
+            const session = realReq?.session as CustomSession;
 
             return createContext({
               req: realReq as FastifyRequest,

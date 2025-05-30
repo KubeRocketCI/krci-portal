@@ -1,7 +1,7 @@
 import React from "react";
 import { TableColumn } from "../../../../types";
 
-export interface TableRowProps<DataType extends unknown> {
+export interface TableRowProps<DataType> {
   item: DataType;
   columns: TableColumn<DataType>[];
   isRowSelected?: boolean;

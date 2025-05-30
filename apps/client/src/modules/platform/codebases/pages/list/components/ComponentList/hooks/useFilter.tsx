@@ -1,9 +1,8 @@
-import { codebaseTypeSelectOptions } from "@/core/k8s/configs/select-options/codebaseTypeSelectOptions";
-import { CODEBASE_TYPE } from "@/core/k8s/constants/codebaseTypes";
 import { SearchControl } from "@/core/providers/Filter/components/Filter/components/SearchControl";
 import { FilterControls } from "@/core/providers/Filter/components/Filter/types";
+import { mapObjectValuesToSelectOptions } from "@/core/utils/forms/mapToSelectOptions";
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
-import { Codebase } from "@my-project/shared";
+import { Codebase, codebaseType } from "@my-project/shared";
 import React from "react";
 import { codebaseListFilterControlNames } from "../../../constants";
 import { usePageFilterContext } from "../../../hooks/usePageFilterContext";
@@ -38,10 +37,13 @@ export const useFilter = (): {
             <Select
               labelId="codebase-type"
               onChange={(e) => setFilterItem(codebaseListFilterControlNames.CODEBASE_TYPE, e.target.value)}
-              defaultValue={CODEBASE_TYPE.ALL}
+              defaultValue="all"
               fullWidth
             >
-              {codebaseTypeSelectOptions.map(({ label, value, disabled = false }, idx) => {
+              {mapObjectValuesToSelectOptions({
+                all: "all",
+                ...codebaseType,
+              }).map(({ label, value, disabled = false }, idx) => {
                 const key = `${label}::${idx}`;
 
                 return (

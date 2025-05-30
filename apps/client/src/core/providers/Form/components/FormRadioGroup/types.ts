@@ -1,21 +1,23 @@
-import React from "react";
-import { Control, FieldErrors } from "react-hook-form";
+import { Control, FieldErrors, FieldPath, FieldValues } from "react-hook-form";
+import { ReactNode } from "react";
 
 export interface FormRadioOption {
   value: string;
-  label: string;
-  icon: React.ReactElement;
-  checkedIcon: React.ReactElement;
+  label: ReactNode;
+  icon?: ReactNode;
+  checkedIcon?: ReactNode;
   disabled?: boolean;
   disabledTooltip?: string;
 }
 
-export interface FormRadioProps {
-  name: string;
-  control: Control<never>;
-  errors: FieldErrors;
+export interface FormRadioGroupProps<TFieldValues extends FieldValues = FieldValues> {
+  name: FieldPath<TFieldValues>;
+  control: Control<TFieldValues>;
+  errors: FieldErrors<TFieldValues>;
+  label: ReactNode;
+  tooltipText?: string;
   options: FormRadioOption[];
-  label: string;
-  title?: string;
   disabled?: boolean;
+  defaultValue?: string;
+  helperText?: string;
 }

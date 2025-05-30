@@ -2,16 +2,15 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "./src",
     "module": "ESNext",
     "target": "ES2022",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "paths": {
-      "@/*": ["./apps/server/src/*"],
-      "@my-project/shared/*": ["../../packages/shared/src/*"]
+      "@/*": ["apps/server/src/*"],
+      "@my-project/shared": ["dist/shared/index.js"],
+      "@my-project/shared/*": ["dist/shared/*"]
     }
   },
-  "include": ["../export.ts", "./src/**/*", "build.config.js"],
-  "exclude": ["node_modules", "dist"],
-  "references": [{ "path": "../../packages/shared" }]
+  "include": ["./src/**/*", "build.config.js"],
+  "exclude": ["node_modules", "dist"]
 }

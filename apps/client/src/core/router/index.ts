@@ -7,8 +7,14 @@ import { routeAuthLogin } from "../auth/pages/login/route";
 import NotFound from "../components/NotFound";
 import ContentLayout from "../components/PageLayout";
 import Root from "./components/root";
-import { MyRouterContext, RouterPaths } from "./types";
+import { MyRouterContext, RoutePath } from "./types";
 import { routeComponentDetails } from "../../modules/platform/codebases/pages/details/route";
+import { routeCDPipelineList } from "@/modules/platform/cdpipelines/pages/list/route";
+import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
+import { routePipelineDetails } from "@/modules/platform/pipelines/pages/details/route";
+import { routePipelineList } from "@/modules/platform/pipelines/pages/list/route";
+import { routePipelineRunList } from "@/modules/platform/pipelineruns/pages/list/route";
+import { routePipelineRunDetails } from "@/modules/platform/pipelineruns/pages/details/route";
 
 export const rootRoute = createRootRouteWithContext<MyRouterContext>()({
   component: Root,
@@ -31,7 +37,7 @@ export const rootRoute = createRootRouteWithContext<MyRouterContext>()({
       throw redirect({
         to: routeAuthLogin.fullPath,
         search: {
-          redirect: location.href as RouterPaths,
+          redirect: location.href as RoutePath,
         },
       });
     }
@@ -54,7 +60,7 @@ export const routeCluster = createRoute({
   path: "c/$clusterName",
   beforeLoad: ({ location, params, context }) => {
     const queryClient = context.queryClient;
-    const clusterName = queryClient.getQueryData(["clusterName"]);
+    const clusterName = queryClient.getQueryData(["clusterName"]) || import.meta.env.VITE_K8S_DEFAULT_CLUSTER_NAME;
 
     if (params.clusterName !== clusterName) {
       // Load only known cluster
@@ -76,7 +82,19 @@ export const routeCluster = createRoute({
 
 const routeTree = rootRoute.addChildren([
   authRoute.addChildren([routeAuthLogin, routeAuthCallback]),
-  contentLayoutRoute.addChildren([routeHome, routeCluster.addChildren([routeComponentList, routeComponentDetails])]),
+  contentLayoutRoute.addChildren([
+    routeHome,
+    routeCluster.addChildren([
+      routeComponentList,
+      routeComponentDetails,
+      routeCDPipelineList,
+      routeCDPipelineDetails,
+      routePipelineList,
+      routePipelineDetails,
+      routePipelineRunList,
+      routePipelineRunDetails,
+    ]),
+  ]),
 ]);
 
 export const router = createRouter({

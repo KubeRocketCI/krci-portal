@@ -1,6 +1,6 @@
 import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors";
 import { protectedProcedure } from "@/trpc/procedures/protected";
-import * as k8s from "@kubernetes/client-node";
+import { CoreV1Api } from "@kubernetes/client-node";
 import { TRPCError } from "@trpc/server";
 
 export const kubeRootConfigName = "kube-root-ca.crt";
@@ -29,7 +29,7 @@ export const k8sGetKubeConfig = protectedProcedure.query(async ({ ctx }) => {
     caCrtBase64 = caData.startsWith("-----") ? globalThis.btoa(caData) : caData; // already base64
   } else {
     const kubeRootConfigMap = await K8sClient.KubeConfig.makeApiClient(
-      k8s.CoreV1Api
+      CoreV1Api
     ).readNamespacedConfigMap({
       name: kubeRootConfigName,
       namespace: "kube-system",

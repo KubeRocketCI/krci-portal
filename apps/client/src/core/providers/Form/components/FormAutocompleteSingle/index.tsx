@@ -1,105 +1,100 @@
-// import { ErrorMessage } from '@hookform/error-message';
-// import { Icon } from '@iconify/react';
-// import {
-//   Autocomplete,
-//   FormControl,
-//   Stack,
-//   TextField,
-//   Tooltip,
-//   Typography,
-//   useTheme,
-// } from '@mui/material';
-// import React from 'react';
-// import { Controller } from 'react-hook-form';
-// import { ICONS } from '../../../../icons/iconify-icons-mapping';
-// import { SelectOption } from "@/core/providers/Form/types";
-// import { FormAutocompleteSingleProps } from './types';
+import { SelectOption } from "@/core/providers/Form/types";
+import { Autocomplete, FormControl, Stack, TextField, Tooltip } from "@mui/material";
+import { Info } from "lucide-react";
+import { Controller, Path, PathValue } from "react-hook-form";
+import { FormAutocompleteSingleProps } from "./types";
+import React from "react";
 
-// export const FormAutocompleteSingle = <T extends SelectOption>(
-//   props: FormAutocompleteSingleProps<T>
-// ) => {
-//   const {
-//     name,
-//     label,
-//     title,
-//     control,
-//     defaultValue,
-//     errors,
-//     placeholder,
-//     disabled = false,
-//     InputProps = {},
-//     options,
-//     TextFieldProps,
-//     AutocompleteProps,
-//     ...otherProps
-//   } = props;
+const FormAutocompleteSingleInner = React.forwardRef(
+  <TOption extends SelectOption = SelectOption, TFormValues extends Record<string, unknown> = Record<string, unknown>>(
+    {
+      name,
+      label,
+      tooltipText,
+      control,
+      defaultValue,
+      errors,
+      placeholder,
+      disabled = false,
+      options,
+      TextFieldProps = {},
+      AutocompleteProps,
+      ...props
+    }: FormAutocompleteSingleProps<TOption, TFormValues>,
+    ref: React.ForwardedRef<HTMLInputElement>
+  ) => {
+    const error = errors[name];
+    const hasError = !!error;
+    const errorMessage = error?.message as string;
+    const helperText = hasError ? errorMessage : TextFieldProps?.helperText;
 
-//   const theme = useTheme();
+    const originalInputProps = TextFieldProps.InputProps ?? {};
+    const userEndAdornment = originalInputProps.endAdornment;
 
-//   const _InputProps = React.useMemo(() => {
-//     return {
-//       ...InputProps,
-//       endAdornment: title && (
-//         <Tooltip title={title}>
-//           <Icon icon={ICONS.INFO_CIRCLE} width={15} color={theme.palette.action.active} />
-//         </Tooltip>
-//       ),
-//     };
-//   }, [InputProps, theme.palette.action.active, title]);
+    const mergedInputProps = {
+      ...originalInputProps,
+      endAdornment: (
+        <Stack direction="row" alignItems="center" spacing={0.5}>
+          {userEndAdornment}
+          {tooltipText && (
+            <Tooltip title={tooltipText}>
+              <Info size={16} />
+            </Tooltip>
+          )}
+        </Stack>
+      ),
+      helperText,
+      error: hasError,
+    };
 
-//   const hasError = !!errors[name];
+    return (
+      <Stack spacing={1}>
+        <FormControl fullWidth>
+          <Controller
+            name={name}
+            control={control}
+            defaultValue={defaultValue as PathValue<TFormValues, Path<TFormValues>>}
+            render={({ field }) => {
+              return (
+                <Autocomplete
+                  {...AutocompleteProps}
+                  options={options}
+                  disabled={disabled}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      {...TextFieldProps}
+                      inputRef={ref}
+                      InputProps={mergedInputProps}
+                      variant="standard"
+                      label={label}
+                      fullWidth
+                      style={{ marginTop: 0 }}
+                      placeholder={placeholder}
+                    />
+                  )}
+                  isOptionEqualToValue={(option, value) => option.value === value.value}
+                  getOptionLabel={(option) => option.label || ""}
+                  onChange={(_event, newValue) => {
+                    field.onChange(newValue ? newValue.value : "");
+                  }}
+                  value={options.find((option) => option.value === field.value) || null}
+                />
+              );
+            }}
+            {...props}
+          />
+        </FormControl>
+      </Stack>
+    );
+  }
+);
 
-//   return (
-//     <Stack spacing={1}>
-//       <FormControl fullWidth>
-//         <Controller
-//           name={name}
-//           control={control}
-//           defaultValue={defaultValue}
-//           render={({ field }) => {
-//             return (
-//               <Autocomplete
-//                 {...AutocompleteProps}
-//                 options={options}
-//                 disabled={disabled}
-//                 renderInput={(params) => (
-//                   <TextField
-//                     {...params}
-//                     {...TextFieldProps}
-//                     InputProps={{
-//                       ...params.InputProps,
-//                       ..._InputProps,
-//                       endAdornment: (
-//                         <Stack direction="row" alignItems="center" sx={{ pt: '2px' }}>
-//                           {params.InputProps.endAdornment}
-//                           {_InputProps.endAdornment}
-//                         </Stack>
-//                       ),
-//                     }}
-//                     variant="standard"
-//                     label={label}
-//                     fullWidth
-//                     style={{ marginTop: 0 }}
-//                     placeholder={placeholder}
-//                   />
-//                 )}
-//                 isOptionEqualToValue={(option, value) => option.value === value.value}
-//                 getOptionLabel={(option) => option.label || ''}
-//                 onChange={(event, newValue) => {
-//                   field.onChange(newValue ? newValue.value : '');
-//                 }}
-//                 value={options.find((option) => option.value === field.value) || null}
-//               />
-//             );
-//           }}
-//           {...otherProps}
-//         />
-//       </FormControl>
-//       {hasError && (
-//         <Typography component={'span'} variant={'subtitle2'} color={'error'}>
-//           <ErrorMessage errors={errors} name={name} />
-//         </Typography>
-//       )}
-//     </Stack>
-//   );
-// };
+FormAutocompleteSingleInner.displayName = "FormAutocompleteSingle";
+
+export const FormAutocompleteSingle = FormAutocompleteSingleInner as <
+  TOption extends SelectOption = SelectOption,
+  TFormValues extends Record<string, unknown> = Record<string, unknown>,
+>(
+  props: FormAutocompleteSingleProps<TOption, TFormValues> & { ref?: React.ForwardedRef<HTMLInputElement> }
+) => React.JSX.Element;

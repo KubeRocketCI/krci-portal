@@ -1,0 +1,2 @@
+export const DIALOG_NAME = 'MANAGE_CODEBASE_BRANCH';
+export const RELEASE_BRANCH_POSTFIX = 'RC';

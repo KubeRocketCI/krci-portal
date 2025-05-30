@@ -1,4 +1,4 @@
-import { ErrorMessage } from "@hookform/error-message";
+import { SelectOption } from "@/core/providers/Form/types";
 import {
   Autocomplete,
   Box,
@@ -13,100 +13,97 @@ import {
 } from "@mui/material";
 import { Check, Info, Plus } from "lucide-react";
 import React from "react";
-import { Controller } from "react-hook-form";
-import { SelectOption } from "@/core/providers/Form/types";
-import { FormAutocompleteProps } from "./types";
+import { Controller, FieldPath, PathValue } from "react-hook-form";
+import { FormAutocompleteMultiProps } from "./types";
 
-export const FormAutocomplete = <T extends SelectOption>(props: FormAutocompleteProps<T>) => {
-  const {
-    name,
-    label,
-    title,
-    control,
-    defaultValue,
-    errors,
-    placeholder,
-    disabled = false,
-    InputProps = {},
-    options,
-    TextFieldProps,
-    AutocompleteProps,
-    ...otherProps
-  } = props;
+const FormAutocompleteMultiInner = React.forwardRef(
+  <TOption extends SelectOption = SelectOption, TFieldValues extends Record<string, unknown> = Record<string, unknown>>(
+    {
+      name,
+      control,
+      errors,
+      label,
+      tooltipText,
+      options,
+      placeholder,
+      defaultValue,
+      disabled = false,
+      TextFieldProps = {},
+      AutocompleteProps,
+    }: FormAutocompleteMultiProps<TOption, TFieldValues>,
+    ref: React.ForwardedRef<HTMLInputElement>
+  ) => {
+    const theme = useTheme();
+    const error = errors[name];
+    const hasError = !!error;
+    const errorMessage = error?.message as string;
+    const helperText = hasError ? errorMessage : TextFieldProps?.helperText;
 
-  const theme = useTheme();
+    const originalInputProps = TextFieldProps.InputProps ?? {};
+    const userEndAdornment = originalInputProps.endAdornment;
 
-  const _InputProps = React.useMemo(() => {
-    return {
-      ...InputProps,
-      endAdornment: title && (
-        <Tooltip title={title}>
-          <Info />
-        </Tooltip>
+    const mergedInputProps = {
+      ...originalInputProps,
+      endAdornment: (
+        <Stack direction="row" alignItems="center" spacing={0.5}>
+          {userEndAdornment}
+          {tooltipText && (
+            <Tooltip title={tooltipText}>
+              <Info size={16} />
+            </Tooltip>
+          )}
+        </Stack>
       ),
     };
-  }, [InputProps, title]);
 
-  const hasError = !!errors[name];
-
-  return (
-    <Stack spacing={1}>
-      <FormControl fullWidth>
-        <Controller
-          name={name}
-          control={control}
-          defaultValue={defaultValue}
-          render={({ field }) => {
-            return (
+    return (
+      <Stack spacing={1}>
+        <FormControl fullWidth>
+          <Controller
+            name={name}
+            control={control}
+            defaultValue={defaultValue as PathValue<TFieldValues, FieldPath<TFieldValues>>}
+            render={({ field }) => (
               <Autocomplete
                 {...AutocompleteProps}
                 multiple
                 autoComplete
                 options={options}
                 disabled={disabled}
-                renderOption={(props, option, { selected }) => {
-                  return (
-                    <li {...props} style={{ height: "36px" }}>
-                      <Checkbox
-                        icon={<Plus />}
-                        checkedIcon={<Check />}
-                        style={{
-                          color: selected ? theme.palette.primary.main : theme.palette.text.primary,
-                        }}
-                        checked={selected}
-                      />
-                      {option.label}
-                    </li>
-                  );
-                }}
+                isOptionEqualToValue={(option, value) => option.value === value.value}
+                getOptionLabel={(option) => option.label || ""}
+                renderOption={(props, option, { selected }) => (
+                  <li {...props} style={{ height: 36 }}>
+                    <Checkbox
+                      icon={<Plus />}
+                      checkedIcon={<Check />}
+                      checked={selected}
+                      style={{
+                        color: selected ? theme.palette.primary.main : theme.palette.text.primary,
+                      }}
+                    />
+                    {option.label}
+                  </li>
+                )}
                 renderInput={(params) => (
                   <TextField
                     {...params}
                     {...TextFieldProps}
-                    InputProps={{
-                      ...params.InputProps,
-                      ..._InputProps,
-                      endAdornment: (
-                        <Stack direction="row" alignItems="center" sx={{ pt: "2px" }}>
-                          {params.InputProps.endAdornment}
-                          {_InputProps.endAdornment}
-                        </Stack>
-                      ),
-                    }}
+                    inputRef={ref}
+                    InputProps={mergedInputProps}
                     variant="standard"
                     label={label}
                     fullWidth
-                    style={{ marginTop: 0 }}
                     placeholder={placeholder}
+                    error={hasError}
+                    helperText={helperText}
                   />
                 )}
                 renderTags={(value, getTagProps) => {
-                  const numTags = value.length;
-                  const limitTags = 5;
-
+                  const limit = 5;
                   return (
                     <>
-                      {value.slice(0, limitTags).map((option, index) => (
+                      {value.slice(0, limit).map((option, index) => (
                         <Chip
                           {...getTagProps({ index })}
                           key={index}
@@ -115,29 +112,37 @@ export const FormAutocomplete = <T extends SelectOption>(props: FormAutocomplete
                           size="small"
                         />
                       ))}
-
-                      <Box sx={{ mx: 1 }}>{numTags > limitTags && ` +${numTags - limitTags}`}</Box>
+                      {value.length > limit && <Box sx={{ mx: 1 }}>+{value.length - limit}</Box>}
                     </>
                   );
                 }}
-                {...field}
-                isOptionEqualToValue={(option, value) => option.value === value.value}
-                onChange={(_e, data) => {
-                  const valueArray = data.map((item) => item.value);
-                  field.onChange(valueArray);
+                value={options.filter((option) =>
+                  Array.isArray(field.value) ? field.value.includes(option.value) : false
+                )}
+                onChange={(_e, newValue) => {
+                  field.onChange(newValue.map((opt) => opt.value));
                 }}
-                value={field.value ? options.filter((option) => field.value.includes(option.value)) : []}
               />
-            );
-          }}
-          {...otherProps}
-        />
-      </FormControl>
-      {hasError && (
-        <Typography component={"span"} variant={"subtitle2"} color={"error"}>
-          <ErrorMessage errors={errors} name={name} />
-        </Typography>
-      )}
-    </Stack>
-  );
-};
+            )}
+          />
+        </FormControl>
+        {hasError && (
+          <Typography component="span" variant="subtitle2" color="error">
+            {errorMessage}
+          </Typography>
+        )}
+      </Stack>
+    );
+  }
+);
+
+FormAutocompleteMultiInner.displayName = "FormAutocompleteMulti";
+
+export const FormAutocompleteMulti = FormAutocompleteMultiInner as <
+  TOption extends SelectOption = SelectOption,
+  TFieldValues extends Record<string, unknown> = Record<string, unknown>,
+>(
+  props: FormAutocompleteMultiProps<TOption, TFieldValues> & {
+    ref?: React.ForwardedRef<HTMLInputElement>;
+  }
+) => React.JSX.Element;

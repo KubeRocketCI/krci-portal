@@ -1,4 +1,4 @@
-import * as k8s from "@kubernetes/client-node";
+import { ApisApi } from "@kubernetes/client-node";
 import { protectedProcedure } from "@/trpc/procedures/protected";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
@@ -15,7 +15,7 @@ export const k8sGetApiVersions = protectedProcedure
       throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
     }
 
-    const apisApi = K8sClient.KubeConfig.makeApiClient(k8s.ApisApi);
+    const apisApi = K8sClient.KubeConfig.makeApiClient(ApisApi);
 
     const apiGroupList = await apisApi.getAPIVersions();
 

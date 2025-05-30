@@ -1,4 +1,16 @@
-import * as openIdClient from "openid-client";
+import {
+  Configuration,
+  TokenEndpointResponse,
+  allowInsecureRequests,
+  authorizationCodeGrant,
+  buildAuthorizationUrl,
+  calculatePKCECodeChallenge,
+  discovery,
+  fetchProtectedResource,
+  randomPKCECodeVerifier,
+  randomState,
+  refreshTokenGrant,
+} from "openid-client";
 import { TRPCError } from "@trpc/server";
 import { getTokenExpirationTime } from "@/utils/getTokenExpirationTime";
 import type { OIDCUser } from "@my-project/shared";
@@ -30,14 +42,14 @@ export class OIDCClient {
     this.config = config;
   }
 
-  async discover(): Promise<openIdClient.Configuration> {
+  async discover(): Promise<Configuration> {
     const options =
       process.env.NODE_ENV === "development"
-        ? { execute: [openIdClient.allowInsecureRequests] }
+        ? { execute: [allowInsecureRequests] }
         : {};
 
     try {
-      return await openIdClient.discovery(
+      return await discovery(
         new URL(this.config.issuerURL),
         this.config.clientID,
         this.config.clientSecret,
@@ -52,11 +64,11 @@ export class OIDCClient {
 
   generateAuthUrl(
     clientRedirectURI: URL,
-    oidcConfig: openIdClient.Configuration,
+    oidcConfig: Configuration,
     state: string,
     codeChallenge: string
   ): URL {
-    return openIdClient.buildAuthorizationUrl(oidcConfig, {
+    return buildAuthorizationUrl(oidcConfig, {
       scope: this.config.scope,
       state: state,
       code_challenge: codeChallenge,
@@ -66,13 +78,13 @@ export class OIDCClient {
   }
 
   async exchangeCodeForTokens(
-    oidcConfig: openIdClient.Configuration,
+    oidcConfig: Configuration,
     url: URL,
     codeVerifier: string,
     expectedState: string
-  ): Promise<openIdClient.TokenEndpointResponse> {
+  ): Promise<TokenEndpointResponse> {
     try {
-      return await openIdClient.authorizationCodeGrant(oidcConfig, url, {
+      return await authorizationCodeGrant(oidcConfig, url, {
         pkceCodeVerifier: codeVerifier,
         expectedState: expectedState,
       });
@@ -82,7 +94,7 @@ export class OIDCClient {
     }
   }
 
-  normalizeTokenResponse(tokenResponse: openIdClient.TokenEndpointResponse): {
+  normalizeTokenResponse(tokenResponse: TokenEndpointResponse): {
     idToken: string;
     idTokenExpiresAt: number; // ms
     accessToken: string;
@@ -98,15 +110,9 @@ export class OIDCClient {
     };
   }
 
-  async getNewTokens(
-    oidcConfig: openIdClient.Configuration,
-    refreshToken: string
-  ) {
+  async getNewTokens(oidcConfig: Configuration, refreshToken: string) {
     try {
-      const newTokens = await openIdClient.refreshTokenGrant(
-        oidcConfig,
-        refreshToken
-      );
+      const newTokens = await refreshTokenGrant(oidcConfig, refreshToken);
 
       return this.normalizeTokenResponse(newTokens);
     } catch (err) {
@@ -119,10 +125,10 @@ export class OIDCClient {
   }
 
   async fetchUserInfo(
-    oidcConfig: openIdClient.Configuration,
+    oidcConfig: Configuration,
     accessToken: string
   ): Promise<OIDCUser> {
-    const userInfoRequest = await openIdClient.fetchProtectedResource(
+    const userInfoRequest = await fetchProtectedResource(
       oidcConfig,
       accessToken,
       new URL(`${this.config.issuerURL}/protocol/openid-connect/userinfo`),
@@ -132,14 +138,14 @@ export class OIDCClient {
   }
 
   generateState(): string {
-    return openIdClient.randomState();
+    return randomState();
   }
 
   async generateCodeChallenge(codeVerifier: string): Promise<string> {
-    return await openIdClient.calculatePKCECodeChallenge(codeVerifier);
+    return await calculatePKCECodeChallenge(codeVerifier);
   }
 
   generateCodeVerifier(): string {
-    return openIdClient.randomPKCECodeVerifier();
+    return randomPKCECodeVerifier();
   }
 }

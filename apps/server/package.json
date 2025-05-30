@@ -1,15 +1,15 @@
 {
   "name": "@my-project/server",
-  "main": "./export.ts",
+  "types": "./dist/router.d.ts",
   "type": "module",
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "format": "prettier --write .",
-    "tsc": "tsc --noEmit --skipLibCheck --pretty",
+    "tsc": "tsc --project tsconfig.check.json --noEmit --skipLibCheck --pretty",
+    "build": "rimraf dist && node esbuild.config.js",
     "dev": "cross-env NODE_ENV=development tsx watch src/index.ts",
     "dev:static": "cross-env NODE_ENV=development node dist/index.js",
-    "build": "node build.config.js && tsc --project tsconfig.build.json",
     "test": "vitest"
   },
   "dependencies": {
@@ -41,6 +41,7 @@
     "nodemon": "^3.1.9",
     "openid-client": "^6.5.0",
     "prettier": "^3.5.1",
+    "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.3",
     "uuid": "^11.1.0",
