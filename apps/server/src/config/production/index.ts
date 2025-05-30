@@ -1,7 +1,8 @@
 import { DBSessionStore } from "@/clients/db-session-store";
 import { K8sClient } from "@/clients/k8s";
 import { OIDCClient } from "@/clients/oidc";
-import { AppRouter, appRouter } from "@/trpc/routers";
+import { appRouter } from "@/trpc/routers";
+import { AppRouter } from "@/trpc/routers/types";
 import FastifyCookie from "@fastify/cookie";
 import FastifySession from "@fastify/session";
 import FastifyStatic from "@fastify/static";
@@ -107,7 +108,7 @@ export class ProductionFastifyServer {
           router: appRouter,
           createContext: ({ req, res }) => {
             const realReq = REQS.get(req.raw ?? req);
-            const session = req.session as CustomSession;
+            const session = realReq?.session as CustomSession;
 
             return createContext({
               req: realReq as FastifyRequest,

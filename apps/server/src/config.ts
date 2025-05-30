@@ -1,14 +1,27 @@
 import dotenv from "dotenv";
-import { fromMonorepoRoot, fromServerRoot } from "./paths";
+import { resolve } from "path";
 
 const env = process.env.NODE_ENV || "development";
+const serverRoot = process.cwd();
+const monorepoRoot = resolve(serverRoot, "../..");
 
-if (env === "development") {
+// Always load base .env files
+dotenv.config({ path: resolve(monorepoRoot, ".env") });
+dotenv.config({ path: resolve(serverRoot, ".env") });
+
+dotenv.config({ path: resolve(monorepoRoot, ".env.development") });
+dotenv.config({
+  path: resolve(serverRoot, ".env.development"),
+  override: true,
+});
+
+if (env === "production") {
   dotenv.config({
-    path: fromMonorepoRoot(".env.development"),
+    path: resolve(monorepoRoot, ".env.production"),
+    override: true,
   });
   dotenv.config({
-    path: fromServerRoot(".env.development"),
+    path: resolve(serverRoot, ".env.production"),
     override: true,
   });
 }

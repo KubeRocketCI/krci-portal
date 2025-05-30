@@ -1,5 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { router } from ".";
+import { LinkProps } from "@tanstack/react-router";
 
 declare module "@tanstack/react-router" {
   interface Register {
@@ -13,4 +14,5 @@ export interface MyRouterContext {
 
 export type AppRouter = typeof router;
 
-export type RouterPaths = keyof typeof router.routesByPath;
+export type RoutePath = keyof typeof router.routesByPath;
+export type RouteParams = LinkProps<typeof router.routesById>;

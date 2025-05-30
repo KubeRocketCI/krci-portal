@@ -4,11 +4,12 @@
   "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
   "compilerOptions": {
     "paths": {
-      "@/*": ["./apps/client/src/*"],
-      "@my-project/client/*": ["./src/*"],
-      "@my-project/shared/*": ["../../packages/shared/*"]
+      "@/*": ["apps/client/src/*"],
+      "@my-project/client/*": ["apps/client/src/*"],
+      "@my-project/shared": ["packages/shared/src"],
+      "@my-project/shared/*": ["packages/shared/src/*"]
     },
-    "moduleResolution": "node"
+    "moduleResolution": "bundler"
   },
   "exclude": ["@my-project/server", "node_modules", "dist"]
 }

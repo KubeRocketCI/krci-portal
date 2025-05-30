@@ -4,7 +4,7 @@
   "description": "Monorepo KRCI Portal",
   "scripts": {
     "dev": "concurrently -k -n SERVER,CLIENT -c blue,green \"pnpm --filter=server dev\" \"pnpm --filter=client dev\"",
-    "build": "pnpm --filter=shared build && pnpm --filter=server build && pnpm --filter=client build",
+    "build": "pnpm --filter=server build && pnpm --filter=client build",
     "deploy:prepare": "pnpm deploy --filter=client --prod deploy/client && pnpm deploy --filter=server --prod deploy/server",
     "deploy:post": "shx mkdir -p deploy/server/db && shx touch deploy/server/db/sessions.sqlite",
     "lint": "pnpm --recursive run lint",
@@ -22,7 +22,9 @@
     "@my-project/client": "workspace:^",
     "@my-project/server": "workspace:^",
     "@my-project/shared": "workspace:^",
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "monaco-yaml": "^5.4.0",
+    "notistack": "^3.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.26.0",

@@ -1,18 +1,20 @@
 import { protectedProcedure } from "@/trpc/procedures/protected";
-import * as k8s from "@kubernetes/client-node";
+import { Watch } from "@kubernetes/client-node";
+import { k8sResourceConfigSchema, KubeObjectBase } from "@my-project/shared";
+import { TRPCError } from "@trpc/server";
 import { observable } from "@trpc/server/observable";
-import { KubeObjectBase } from "@my-project/shared";
 import { z } from "zod";
+import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors";
+import { createCustomResourceURL } from "../../utils/createCustomResourceURL";
 
 export const k8sWatchListProcedure = protectedProcedure
   .input(
     z.object({
       clusterName: z.string(),
-      group: z.string(),
-      version: z.string(),
       namespace: z.string(),
-      resourcePlural: z.string(),
+      resourceConfig: k8sResourceConfigSchema,
       resourceVersion: z.string(),
+      labels: z.record(z.string()).optional().default({}),
     })
   )
   .subscription(({ input, ctx }) => {
@@ -20,19 +22,24 @@ export const k8sWatchListProcedure = protectedProcedure
       const { K8sClient } = ctx;
 
       if (!K8sClient.KubeConfig) {
-        throw new Error("K8sClient is not initialized");
+        throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
       }
 
-      const watch = new k8s.Watch(K8sClient.KubeConfig);
+      const watch = new Watch(K8sClient.KubeConfig);
 
-      const { group, version, namespace, resourcePlural, resourceVersion } =
-        input;
+      const { namespace, resourceConfig, resourceVersion, labels } = input;
 
       let controller: Awaited<ReturnType<typeof watch.watch>>;
 
+      const watchUrl = createCustomResourceURL({
+        resourceConfig,
+        namespace,
+        labels,
+      });
+
       watch
         .watch(
-          `/apis/${group}/${version}/namespaces/${namespace}/${resourcePlural}`,
+          watchUrl,
           { resourceVersion },
           (type, obj: KubeObjectBase) => emit.next({ type, data: obj }),
           (err) => {

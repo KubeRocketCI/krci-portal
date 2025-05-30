@@ -8,7 +8,7 @@
     "format": "prettier --write .",
     "tsc": "tsc --noEmit --skipLibCheck --pretty",
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "test": "vitest",
     "preview": "vite preview"
   },
@@ -37,6 +37,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^16.4.7",
+    "humanize-duration": "^3.33.0",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "lucide-react": "^0.475.0",
@@ -51,6 +52,7 @@
   },
   "devDependencies": {
     "@tanstack/router-devtools": "^1.114.0",
+    "@types/humanize-duration": "^3.27.4",
     "@types/js-yaml": "^4.0.9",
     "@types/lodash": "^4.17.16",
     "@types/react": "^19.0.8",

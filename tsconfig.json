@@ -3,11 +3,12 @@
     "composite": true,
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
       "@my-project/client/*": ["apps/client/src/*"],
       "@my-project/server/*": ["apps/server/src/*"],
+      "@my-project/shared": ["packages/shared/src"],
       "@my-project/shared/*": ["packages/shared/src/*"]
     },
     "esModuleInterop": true,
@@ -15,7 +16,11 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
   },
   "references": [
     { "path": "apps/client" },

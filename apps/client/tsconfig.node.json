@@ -10,11 +10,11 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "moduleResolution": "bundler",
-
     "paths": {
-      "@/*": ["./apps/client/src/*"],
-      "@my-project/client/*": ["./src/*"],
-      "@my-project/shared/*": ["../../packages/shared/*"]
+      "@/*": ["apps/client/src/*"],
+      "@my-project/client/*": ["apps/client/src/*"],
+      "@my-project/shared": ["packages/shared/src"],
+      "@my-project/shared/*": ["packages/shared/src/*"]
     }
   },
   "include": ["vite.config.ts"],

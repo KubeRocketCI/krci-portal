@@ -1,5 +1,5 @@
 import { describe, it, beforeEach, afterEach, expect, vi, Mock } from "vitest";
-import * as k8s from "@kubernetes/client-node";
+import { Watch } from "@kubernetes/client-node";
 import { createCaller } from "@/trpc/routers";
 import { createMockedContext } from "@/__mocks__/context";
 
@@ -39,7 +39,7 @@ describe("k8sWatchListProcedure", () => {
       abort: abortMock,
     });
 
-    (k8s.Watch as unknown as Mock).mockImplementation(() => ({
+    (Watch as unknown as Mock).mockImplementation(() => ({
       watch: watchMock,
     }));
 

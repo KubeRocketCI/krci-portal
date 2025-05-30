@@ -5,7 +5,7 @@ import { OIDCClient } from "@/clients/oidc";
 import { DBSessionStore } from "@/clients/db-session-store";
 import { K8sClient } from "@/clients/k8s";
 import { createContext, CustomSession } from ".";
-import * as openidClient from "openid-client";
+import { Configuration } from "openid-client";
 
 // Mock dependencies
 vi.mock("@/clients/oidc");
@@ -117,7 +117,7 @@ describe("createContext", () => {
       },
     };
 
-    mockOidcClient.discover.mockResolvedValue({} as openidClient.Configuration);
+    mockOidcClient.discover.mockResolvedValue({} as Configuration);
     mockOidcClient.getNewTokens.mockResolvedValue(newTokens);
 
     const context = await createContext({
@@ -151,7 +151,7 @@ describe("createContext", () => {
       },
     };
 
-    mockOidcClient.discover.mockResolvedValue({} as openidClient.Configuration);
+    mockOidcClient.discover.mockResolvedValue({} as Configuration);
     mockOidcClient.getNewTokens.mockRejectedValue(new Error("Refresh failed"));
 
     const context = await createContext({
@@ -189,7 +189,7 @@ describe("createContext", () => {
       },
     };
 
-    mockOidcClient.discover.mockResolvedValue({} as openidClient.Configuration);
+    mockOidcClient.discover.mockResolvedValue({} as Configuration);
     mockOidcClient.getNewTokens.mockResolvedValue(newTokens);
 
     const context = await createContext({

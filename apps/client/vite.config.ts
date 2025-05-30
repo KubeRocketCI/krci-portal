@@ -12,6 +12,11 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@my-project/shared": path.resolve(__dirname, "../../packages/shared/src"),
+      "apps/server/export":
+        process.env.NODE_ENV === "production"
+          ? path.resolve(__dirname, "./src/core/types/server-export-mock")
+          : path.resolve(__dirname, "../../apps/server/export.ts"),
     },
   },
   server: {

@@ -1,4 +1,5 @@
-import { Link, LinkProps } from "@tanstack/react-router";
+import { RouteParams } from "@/core/router/types";
+import { Link } from "@tanstack/react-router";
 import {
   Bot,
   Boxes,
@@ -11,7 +12,6 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import { cn } from "../lib/utils";
-import { router } from "../router";
 import { ClusterSwitcher } from "./cluster-switcher";
 import { NavUser } from "./nav-user";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "./ui/sheet";
@@ -24,12 +24,10 @@ import {
   useSidebar,
 } from "./ui/sidebar";
 
-type NavItemRoute = LinkProps<typeof router.routesById>;
-
 export type NavItem = {
   title: string;
   icon?: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>;
-  route?: NavItemRoute;
+  route?: RouteParams;
   isActive?: boolean;
   children?: NavItem[];
 };

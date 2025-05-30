@@ -1,5 +1,5 @@
 import { createCaller } from "@/trpc/routers";
-import * as k8s from "@kubernetes/client-node";
+import { ApisApi } from "@kubernetes/client-node";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { defaultK8sApiVersion } from ".";
 import { createMockedContext } from "@/__mocks__/context";
@@ -49,7 +49,7 @@ describe("k8sGetApiVersions", () => {
     const result = await caller.k8s.apiVersions();
 
     expect(mockContext.K8sClient.KubeConfig.makeApiClient).toHaveBeenCalledWith(
-      k8s.ApisApi
+      ApisApi
     );
     expect(mockClientApisApi.getAPIVersions).toHaveBeenCalled();
     expect(result).toEqual(defaultK8sApiVersion);

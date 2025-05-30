@@ -32,7 +32,7 @@ export const SearchControl = () => {
         role: "search",
         startAdornment: (
           <InputAdornment position="start">
-            <Search />
+            <Search size={16} />
           </InputAdornment>
         ),
       }}

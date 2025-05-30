@@ -7,6 +7,4 @@ export const appRouter = t.router({
   k8s: k8sRouter,
 });
 
-export type AppRouter = typeof appRouter;
-
 export const createCaller = t.createCallerFactory(appRouter);

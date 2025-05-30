@@ -1,5 +1,5 @@
 import { OIDCClient } from "@/clients/oidc";
-import * as openIdClient from "openid-client";
+import { Configuration, TokenEndpointResponse } from "openid-client";
 import { vi } from "vitest";
 
 export function createMockedOIDCClient() {
@@ -7,16 +7,15 @@ export function createMockedOIDCClient() {
     const actual =
       await vi.importActual<typeof import("openid-client")>("openid-client");
 
-    const MOCK_CONFIG: openIdClient.Configuration =
-      {} as openIdClient.Configuration;
+    const MOCK_CONFIG: Configuration = {} as Configuration;
 
-    const MOCK_TOKENS: openIdClient.TokenEndpointResponse = {
+    const MOCK_TOKENS: TokenEndpointResponse = {
       id_token: "id-token",
       access_token: "access-token",
       refresh_token: "refresh-token",
       token_type: "Bearer",
       expires_in: 3600,
-    } as openIdClient.TokenEndpointResponse;
+    } as TokenEndpointResponse;
 
     return {
       ...actual,
