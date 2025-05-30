@@ -1,6 +1,6 @@
 import { Box, Button, Chip, Dialog, DialogContent, DialogTitle, Stack, Tooltip } from "@mui/material";
 import { Check, CircleX, X } from "lucide-react";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { useShallow } from "zustand/react/shallow";
 import { DialogProps } from "../../providers/Dialog/types";
 import { FormTextField } from "../../providers/Form/components/FormTextField";
@@ -15,6 +15,12 @@ const names = {
   ALLOWED_NAMESPACES_INPUT: "allowedNamespacesInput",
 } as const;
 
+type FormValues = {
+  [names.DEFAULT_NAMESPACE]: string;
+  [names.ALLOWED_NAMESPACES]: string[];
+  [names.ALLOWED_NAMESPACES_INPUT]: string;
+};
+
 export default function NamespacesDialog({ state }: NamespacesDialogProps) {
   const { open, closeDialog } = state;
 
@@ -27,11 +33,7 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
     }))
   );
 
-  const form = useForm<{
-    [names.DEFAULT_NAMESPACE]: string;
-    [names.ALLOWED_NAMESPACES]: string[];
-    [names.ALLOWED_NAMESPACES_INPUT]: string;
-  }>({
+  const form = useForm<FormValues>({
     mode: "onBlur",
     defaultValues: {
       defaultNamespace: clusterStore.defaultNamespace,
@@ -39,25 +41,34 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
     },
   });
 
-  console.log(form.formState.errors);
+  const allowedNamespacesValue =
+    useWatch({
+      control: form.control,
+      name: names.ALLOWED_NAMESPACES,
+    }) || [];
 
-  const allowedNamespaces = form.watch(names.ALLOWED_NAMESPACES) || [];
+  const allowedNamespacesInputValue = useWatch({
+    control: form.control,
+    name: names.ALLOWED_NAMESPACES_INPUT,
+  });
 
   const handleAdd = () => {
-    const newNamespace = form.getValues(names.ALLOWED_NAMESPACES_INPUT);
-    if (newNamespace && !allowedNamespaces.includes(newNamespace)) {
-      form.setValue(names.ALLOWED_NAMESPACES, [...allowedNamespaces, newNamespace]);
+    const currentNamespaces = form.getValues(names.ALLOWED_NAMESPACES) || [];
+    const input = form.getValues(names.ALLOWED_NAMESPACES_INPUT);
+
+    if (input && !currentNamespaces.includes(input)) {
+      form.setValue(names.ALLOWED_NAMESPACES, [...currentNamespaces, input]);
       form.setValue(names.ALLOWED_NAMESPACES_INPUT, "");
     }
   };
 
   const handleDelete = (namespace: string) => {
-    const updatedNamespaces = allowedNamespaces.filter((ns) => ns !== namespace);
+    const currentNamespaces = form.getValues(names.ALLOWED_NAMESPACES) || [];
+    const updatedNamespaces = currentNamespaces.filter((ns) => ns !== namespace);
     form.setValue(names.ALLOWED_NAMESPACES, updatedNamespaces);
   };
 
   const allowedNamespacesInputError = form.formState.errors[names.ALLOWED_NAMESPACES_INPUT]?.message;
-  const allowedNamespacesInputValue = form.watch(names.ALLOWED_NAMESPACES_INPUT);
 
   return (
     <Dialog open={open} onClose={closeDialog} maxWidth="sm" fullWidth>
@@ -75,7 +86,6 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
               })}
               placeholder={"Enter a default namespace"}
               label={"Default Namespace"}
-              // @ts-expect-error temporary fix
               control={form.control}
               errors={form.formState.errors}
               TextFieldProps={{
@@ -104,13 +114,14 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
                         message: "Invalid namespace format.",
                       },
                       validate: (value) => {
-                        if (allowedNamespaces.includes(value)) {
+                        const currentNamespaces = form.getValues(names.ALLOWED_NAMESPACES) || [];
+
+                        if (currentNamespaces.includes(value)) {
                           return "Namespace already set.";
                         }
                         return true;
                       },
                     })}
-                    // @ts-expect-error temporary fix
                     control={form.control}
                     label="Allowed namespaces"
                     placeholder="Type a namespace"
@@ -136,7 +147,7 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
               </Stack>
 
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                {allowedNamespaces.map((namespace) => (
+                {allowedNamespacesValue.map((namespace) => (
                   <Chip
                     key={namespace}
                     label={namespace}

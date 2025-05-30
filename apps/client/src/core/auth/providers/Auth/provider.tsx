@@ -23,7 +23,7 @@ const getLoginOriginURL = (redirectSearchParam?: string) =>
 
 export const AuthProvider = ({ children }: React.PropsWithChildren) => {
   const queryClient = useQueryClient();
-  queryClient.setQueryData(["clusterName"], "eks-sandbox");
+  queryClient.setQueryData(["clusterName"], import.meta.env.VITE_K8S_DEFAULT_CLUSTER_NAME);
 
   const meQuery = useQuery({
     queryKey: ["auth.me"],

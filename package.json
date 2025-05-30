@@ -22,7 +22,9 @@
     "@my-project/client": "workspace:^",
     "@my-project/server": "workspace:^",
     "@my-project/shared": "workspace:^",
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "monaco-yaml": "^5.4.0",
+    "notistack": "^3.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.26.0",

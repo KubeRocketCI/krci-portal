@@ -1,5 +1,4 @@
-import { CODEBASE_TYPE } from "@/core/k8s/constants/codebaseTypes";
-import { Codebase } from "@my-project/shared";
+import { Codebase, codebaseType } from "@my-project/shared";
 import React from "react";
 
 export const useSelection = () => {
@@ -9,7 +8,7 @@ export const useSelection = () => {
     (event: React.ChangeEvent<HTMLInputElement>, paginatedItems: Codebase[]) => {
       if (event.target.checked) {
         const newSelected = paginatedItems
-          .map(({ metadata: { name }, spec: { type } }) => (type === CODEBASE_TYPE.SYSTEM ? null : name))
+          .map(({ metadata: { name }, spec: { type } }) => (type === codebaseType.system ? null : name))
           .filter(Boolean);
         setSelected(newSelected as string[]);
         return;
@@ -21,7 +20,7 @@ export const useSelection = () => {
 
   const handleSelectRowClick = React.useCallback(
     (_event: React.MouseEvent<unknown>, row: Codebase) => {
-      const isSystemCodebase = row.spec.type === CODEBASE_TYPE.SYSTEM;
+      const isSystemCodebase = row.spec.type === codebaseType.system;
 
       if (isSystemCodebase) {
         return;

@@ -21,7 +21,13 @@
       "@my-project/shared/*": ["../../packages/shared/*"]
     }
   },
-  "include": ["src"],
+  "include": [
+    "src",
+    "../../packages/shared/src/models/k8s/groups/KRCI/Codebase/utils/createCodebaseDraft",
+    "../../packages/shared/src/models/k8s/groups/KRCI/Codebase/utils/createCodebaseDraftSecret",
+    "../../packages/shared/src/models/k8s/groups/KRCI/Codemie/utils",
+    "../../packages/shared/src/models/k8s/groups/KRCI/CodebaseBranch/utils/createVersioningString"
+, "../../packages/shared/src/models/k8s/groups/Tekton/PipelineRun/utils/getPullRequestURL", "../../packages/shared/src/models/k8s/groups/Tekton/PipelineRun/utils/createRerunPipelineRun", "../../packages/shared/src/models/k8s/groups/Tekton/PipelineRun/utils/createPipelineRunDraftFromPipeline", "../../packages/shared/src/models/k8s/groups/Tekton/PipelineRun/utils/createDeployPipelineRunDraft", "../../packages/shared/src/models/k8s/groups/Tekton/PipelineRun/utils/createCleanPipelineRunDraft", "../../packages/shared/src/models/k8s/groups/Tekton/PipelineRun/utils/createBuildPipelineRunDraft"  ],
   "exclude": ["node_modules", "dist"],
   "references": [{ "path": "../../packages/shared" }, { "path": "../../apps/server" }]
 }

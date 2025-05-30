@@ -1,50 +1,54 @@
 import { FormControl, Stack, TextField, Tooltip } from "@mui/material";
-import { InfoIcon } from "lucide-react";
+import { Info } from "lucide-react";
 import React from "react";
-import { Controller } from "react-hook-form";
+import { Controller, Path, PathValue } from "react-hook-form";
 import { FormTextFieldProps } from "./types";
 
-export const FormTextField = React.forwardRef<HTMLInputElement, FormTextFieldProps>(
-  (
+const FormTextFieldInner = React.forwardRef(
+  <TFormValues extends Record<string, unknown> = Record<string, unknown>>(
     {
       name,
       label,
-      title,
+      tooltipText,
       control,
       defaultValue = "",
       errors,
       placeholder,
       disabled = false,
-      InputProps,
       TextFieldProps = {},
       ...props
-    },
-    ref
+    }: FormTextFieldProps<TFormValues>,
+    ref: React.ForwardedRef<HTMLInputElement>
   ) => {
-    const hasError = !!errors[name];
+    const error = errors[name];
+    const hasError = !!error;
+    const errorMessage = error?.message as string;
+    const helperText = hasError ? errorMessage : TextFieldProps?.helperText;
 
-    const _InputProps = React.useMemo(() => {
-      return {
-        ...InputProps,
-        endAdornment: title && (
-          <Tooltip title={title}>
-            <InfoIcon />
-          </Tooltip>
-        ),
-      };
-    }, [InputProps, title]);
+    const originalInputProps = TextFieldProps.InputProps ?? {};
+    const userEndAdornment = originalInputProps.endAdornment;
 
-    const helperText = hasError ? (errors[name]?.message as string) : TextFieldProps.helperText;
+    const mergedInputProps = {
+      ...originalInputProps,
+      endAdornment: (
+        <Stack direction="row" alignItems="center" spacing={0.5}>
+          {userEndAdornment}
+          {tooltipText && (
+            <Tooltip title={tooltipText}>
+              <Info size={16} />
+            </Tooltip>
+          )}
+        </Stack>
+      ),
+    };
 
     return (
       <Stack spacing={1}>
         <FormControl fullWidth>
           <Controller
-            //@ts-expect-error temporary fix
             name={name}
             control={control}
-            //@ts-expect-error temporary fix
-            defaultValue={defaultValue}
+            defaultValue={defaultValue as PathValue<TFormValues, Path<TFormValues>>}
             render={({ field }) => (
               <TextField
                 {...field}
@@ -54,14 +58,23 @@ export const FormTextField = React.forwardRef<HTMLInputElement, FormTextFieldPro
                 disabled={disabled}
                 error={hasError}
                 label={label}
-                InputProps={_InputProps}
+                InputProps={mergedInputProps}
                 helperText={helperText}
+                aria-describedby={hasError ? `${name}-error` : undefined}
+                {...props}
               />
             )}
-            {...props}
           />
         </FormControl>
       </Stack>
     );
   }
 );
+
+FormTextFieldInner.displayName = "FormTextField";
+
+export const FormTextField = FormTextFieldInner as <
+  TFormValues extends Record<string, unknown> = Record<string, unknown>,
+>(
+  props: FormTextFieldProps<TFormValues> & { ref?: React.ForwardedRef<HTMLInputElement> }
+) => React.JSX.Element;

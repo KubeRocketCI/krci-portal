@@ -1,4 +1,3 @@
-import { CODEBASE_TYPE } from "@/core/k8s/constants/codebaseTypes";
 import { MatchFunctions } from "./types";
 
 export const codebaseListFilterControlNames = {
@@ -7,7 +6,7 @@ export const codebaseListFilterControlNames = {
 
 export const matchFunctions: MatchFunctions = {
   [codebaseListFilterControlNames.CODEBASE_TYPE]: (item, value) => {
-    if (value === CODEBASE_TYPE.ALL) {
+    if (value === "all") {
       return true;
     }
 

@@ -1,15 +1,16 @@
-import React from "react";
-import { SelectOption } from "@/core/providers/Form/types";
-import { FieldErrors, Control } from "react-hook-form";
+import { Control, FieldErrors, FieldPath, FieldValues, Path, UseFormRegisterReturn } from "react-hook-form";
+import { SelectOption } from "../../types";
 
-export interface FormSelectProps {
-  name: string;
-  errors: FieldErrors;
-  options: SelectOption[];
-  control: Control<never>;
+export interface FormSelectProps<TFieldValues extends FieldValues = FieldValues>
+  extends Partial<UseFormRegisterReturn<Path<TFieldValues>>> {
+  name: FieldPath<TFieldValues>;
+  control: Control<TFieldValues>;
+  errors: FieldErrors<TFieldValues>;
   label?: string;
-  title?: string | React.ReactElement;
+  tooltipText?: React.ReactNode;
   defaultValue?: string;
-  helperText?: string;
   disabled?: boolean;
+  options: SelectOption[];
+  endAdornment?: React.ReactElement;
+  helperText?: string;
 }
