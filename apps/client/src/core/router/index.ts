@@ -9,6 +9,8 @@ import ContentLayout from "../components/PageLayout";
 import Root from "./components/root";
 import { MyRouterContext, RouterPaths } from "./types";
 import { routeComponentDetails } from "../../modules/platform/codebases/pages/details/route";
+import { routeCDPipelineList } from "@/modules/platform/cdpipelines/pages/list/route";
+import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
 
 export const rootRoute = createRootRouteWithContext<MyRouterContext>()({
   component: Root,
@@ -54,7 +56,7 @@ export const routeCluster = createRoute({
   path: "c/$clusterName",
   beforeLoad: ({ location, params, context }) => {
     const queryClient = context.queryClient;
-    const clusterName = queryClient.getQueryData(["clusterName"]);
+    const clusterName = queryClient.getQueryData(["clusterName"]) || import.meta.env.VITE_K8S_DEFAULT_CLUSTER_NAME;
 
     if (params.clusterName !== clusterName) {
       // Load only known cluster
@@ -76,7 +78,10 @@ export const routeCluster = createRoute({
 
 const routeTree = rootRoute.addChildren([
   authRoute.addChildren([routeAuthLogin, routeAuthCallback]),
-  contentLayoutRoute.addChildren([routeHome, routeCluster.addChildren([routeComponentList, routeComponentDetails])]),
+  contentLayoutRoute.addChildren([
+    routeHome,
+    routeCluster.addChildren([routeComponentList, routeComponentDetails, routeCDPipelineList, routeCDPipelineDetails]),
+  ]),
 ]);
 
 export const router = createRouter({

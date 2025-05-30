@@ -1,35 +1,47 @@
 import { protectedProcedure } from "@/trpc/procedures/protected";
 import * as k8s from "@kubernetes/client-node";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors";
+import { createLabelSelectorString } from "../../utils/createLabelSelectorString";
+import { k8sOperation, k8sResourceConfigSchema } from "@my-project/shared";
+import { isCoreKubernetesResource } from "@/clients/k8s";
 
 export const k8sListProcedure = protectedProcedure
   .input(
     z.object({
       clusterName: z.string(),
-      group: z.string(),
-      version: z.string(),
       namespace: z.string(),
-      resourcePlural: z.string(),
+      resourceConfig: k8sResourceConfigSchema,
+      labels: z.record(z.string()).optional().default({}),
     })
   )
   .query(async ({ input, ctx }) => {
     const { K8sClient } = ctx;
 
     if (!K8sClient.KubeConfig) {
-      throw new Error("K8sClient is not initialized");
+      throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
+    }
+
+    const { namespace, resourceConfig, labels } = input;
+
+    if (isCoreKubernetesResource(resourceConfig)) {
+      return K8sClient.callCoreResourceOperation(resourceConfig.kind, {
+        operation: k8sOperation.list,
+        namespace,
+      });
     }
 
     const customObjectsApi = K8sClient.KubeConfig.makeApiClient(
       k8s.CustomObjectsApi
     );
 
-    const { group, version, namespace, resourcePlural } = input;
-
     const res = await customObjectsApi.listNamespacedCustomObject({
-      group,
-      version,
-      plural: resourcePlural,
+      group: resourceConfig.group,
+      version: resourceConfig.version,
+      plural: resourceConfig.pluralName,
       namespace,
+      labelSelector: createLabelSelectorString(labels),
     });
 
     return res;

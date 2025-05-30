@@ -1,8 +1,8 @@
 import { FilterContextProvider } from "@/core/providers/Filter/provider";
 import { useClusterStore } from "@/core/store";
-import { EDP_USER_GUIDE } from "@/temp-const";
 import { ComponentList } from "./components/ComponentList";
 import { matchFunctions } from "./constants";
+import { EDP_USER_GUIDE } from "@my-project/client/core/k8s/constants/docs-urls";
 
 export default function ComponentListPage() {
   const defaultNamespace = useClusterStore((state) => state.defaultNamespace);
@@ -14,7 +14,7 @@ export default function ComponentListPage() {
       saveToLocalStorage
     >
       <div className="space-y-4">
-        <h1 className="text-2xl">Components</h1>
+        <h1 className="text-4xl">Components</h1>
         <p>
           Create, view, and manage diverse codebases, encompassing applications, libraries, autotests, and Terraform
           infrastructure code.{" "}

@@ -5,8 +5,11 @@ import { protectedProcedure } from "@/trpc/procedures/protected";
 import {
   defaultPermissions,
   defaultPermissionsToCheck,
-  PermissionsResult,
+  DefaultPermissionListCheckResult,
+  k8sToRbacVerbMap,
 } from "@my-project/shared";
+import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors";
+import { TRPCError } from "@trpc/server";
 
 export const k8sGetResourcePermissions = protectedProcedure
   .input(
@@ -24,7 +27,7 @@ export const k8sGetResourcePermissions = protectedProcedure
     const { K8sClient } = ctx;
 
     if (!K8sClient.KubeConfig) {
-      throw new Error("K8sClient is not initialized");
+      throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
     }
 
     const authApi = K8sClient.KubeConfig.makeApiClient(k8s.AuthorizationV1Api);
@@ -32,13 +35,15 @@ export const k8sGetResourcePermissions = protectedProcedure
     const promises = defaultPermissionsToCheck.reduce<
       Promise<V1SelfSubjectAccessReview>[]
     >((acc, verb) => {
+      const rbacVerb = k8sToRbacVerbMap[verb];
+
       acc.push(
         authApi.createSelfSubjectAccessReview({
           body: {
             apiVersion: `authorization.k8s.io/${apiVersion}`,
             spec: {
               resourceAttributes: {
-                verb,
+                verb: rbacVerb,
                 namespace,
                 group,
                 version,
@@ -53,14 +58,17 @@ export const k8sGetResourcePermissions = protectedProcedure
 
     const responses = await Promise.all(promises);
 
-    const result = responses.reduce<PermissionsResult>((acc, res, index) => {
-      const verb = defaultPermissionsToCheck[index];
-      acc[verb] = {
-        allowed: res.status?.allowed || false,
-        reason: res.status?.reason || `You cannot ${verb} ${resourcePlural}`,
-      };
-      return acc;
-    }, defaultPermissions);
+    const result = responses.reduce<DefaultPermissionListCheckResult>(
+      (acc, res, index) => {
+        const verb = defaultPermissionsToCheck[index];
+        acc[verb] = {
+          allowed: res.status?.allowed || false,
+          reason: res.status?.reason || `You cannot ${verb} ${resourcePlural}`,
+        };
+        return acc;
+      },
+      defaultPermissions
+    );
 
     return result;
   });

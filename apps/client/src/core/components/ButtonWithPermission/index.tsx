@@ -3,20 +3,20 @@ import React from "react";
 import { ConditionalWrapper } from "../ConditionalWrapper";
 
 export const ButtonWithPermission = ({
-  disabled,
+  allowed,
   reason = "Forbidden",
   ButtonProps,
   children,
 }: {
-  disabled: boolean;
+  allowed: boolean;
   reason: string;
   ButtonProps: ButtonProps;
   children: React.ReactNode;
 }) => {
   return (
-    <ConditionalWrapper condition={disabled} wrapper={(children) => <Tooltip title={reason}>{children}</Tooltip>}>
+    <ConditionalWrapper condition={!allowed} wrapper={(children) => <Tooltip title={reason}>{children}</Tooltip>}>
       <div>
-        <Button {...ButtonProps} disabled={ButtonProps?.disabled || disabled}>
+        <Button {...ButtonProps} disabled={ButtonProps?.disabled || !allowed}>
           {children}
         </Button>
       </div>

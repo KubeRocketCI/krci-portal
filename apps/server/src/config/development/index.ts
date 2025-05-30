@@ -124,7 +124,7 @@ export class LocalFastifyServer {
           router: appRouter,
           createContext: ({ req, res }) => {
             const realReq = REQS.get(req.raw ?? req);
-            const session = req.session as CustomSession;
+            const session = realReq?.session as CustomSession;
 
             return createContext({
               req: realReq as FastifyRequest,

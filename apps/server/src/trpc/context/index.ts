@@ -61,7 +61,6 @@ export const createContext = async ({
 
   // If access_token is expired, destroy session
   if (accessTokenExpiresAt && Date.now() >= accessTokenExpiresAt) {
-    console.log("Access token expired, removing session from the database.");
     try {
       context.session.destroy();
     } catch (err) {
@@ -76,9 +75,6 @@ export const createContext = async ({
     tokenType: string
   ) => {
     if (tokenExpiresAt && Date.now() >= tokenExpiresAt - 5 * 60 * 1000) {
-      console.log(
-        `${tokenType} about to expire: expiresAt=${tokenExpiresAt}, now=${Date.now()}`
-      );
       try {
         const config = await oidcClient.discover();
         const newTokens = await oidcClient.getNewTokens(config, refreshToken);
