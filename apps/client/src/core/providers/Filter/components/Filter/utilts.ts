@@ -1,4 +1,4 @@
-export function getFilterValueByNameFromURL(key: string, location: any): string[] {
+export function getFilterValueByNameFromURL(key: string, location: Location): string[] {
   const searchParams = new URLSearchParams(location.search);
 
   const filterValue = searchParams.get(key);

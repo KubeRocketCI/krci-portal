@@ -1,98 +1,97 @@
-// import { ErrorMessage } from '@hookform/error-message';
-// import {
-//   FormControl,
-//   IconButton,
-//   InputAdornment,
-//   Stack,
-//   TextField,
-//   Tooltip,
-//   Typography,
-//   useTheme,
-// } from '@mui/material';
-// import React from 'react';
-// import { Controller } from 'react-hook-form';
-// import { FormTextFieldProps } from './types';
+import { FormControl, IconButton, Stack, TextField, Tooltip } from "@mui/material";
+import { Eye, EyeOff, Info } from "lucide-react";
+import React from "react";
+import { Controller, Path, PathValue } from "react-hook-form";
+import { FormTextFieldPasswordProps } from "./types";
 
-// export const FormTextFieldPassword = React.forwardRef(
-//   (
-//     {
-//       name,
-//       label,
-//       title,
-//       control,
-//       defaultValue = '',
-//       errors,
-//       placeholder,
-//       disabled = false,
-//       InputProps,
-//       TextFieldProps,
-//       ...props
-//     }: FormTextFieldProps,
-//     ref: React.ForwardedRef<HTMLInputElement>
-//   ) => {
-//     const theme = useTheme();
-//     const hasError = !!errors[name];
-//     const [_type, setType] = React.useState('password');
+const FormTextFieldPasswordInner = React.forwardRef(
+  <TFormValues extends Record<string, unknown> = Record<string, unknown>>(
+    {
+      name,
+      label,
+      tooltipText,
+      control,
+      defaultValue = "",
+      errors,
+      placeholder,
+      disabled = false,
+      TextFieldProps = {},
+      ...props
+    }: FormTextFieldPasswordProps<TFormValues>,
+    ref: React.ForwardedRef<HTMLInputElement>
+  ) => {
+    const error = errors[name];
+    const hasError = !!error;
+    const errorMessage = error?.message as string;
+    const helperText = hasError ? errorMessage : TextFieldProps?.helperText;
 
-//     const handleToggleType = () => {
-//       setType((prev) => (prev === 'text' ? 'password' : 'text'));
-//     };
+    const [_type, setType] = React.useState("password");
 
-//     const _InputProps = React.useMemo(
-//       () => ({
-//         ...InputProps,
-//         endAdornment: (
-//           <Stack direction="row" spacing={1}>
-//             {title && (
-//               <InputAdornment position="end">
-//                 <Tooltip title={title}>
-//                   <Icon icon={ICONS.INFO_CIRCLE} width={15} color={theme.palette.action.active} />
-//                 </Tooltip>
-//               </InputAdornment>
-//             )}
-//             <InputAdornment position="end">
-//               <IconButton size={'small'} onClick={handleToggleType}>
-//                 <Icon icon={_type === 'text' ? ICONS.EYE : ICONS.CROSSED_EYE} />
-//               </IconButton>
-//             </InputAdornment>
-//           </Stack>
-//         ),
-//         type: _type,
-//         autoComplete: 'off',
-//       }),
-//       [InputProps, _type, theme.palette.action.active, title]
-//     );
+    const handleToggleType = () => {
+      setType((prev) => (prev === "text" ? "password" : "text"));
+    };
 
-//     return (
-//       <Stack spacing={1}>
-//         <FormControl fullWidth>
-//           <Controller
-//             render={({ field }) => {
-//               return (
-//                 <TextField
-//                   error={hasError}
-//                   placeholder={placeholder}
-//                   inputRef={ref}
-//                   label={label}
-//                   disabled={disabled}
-//                   InputProps={_InputProps}
-//                   {...TextFieldProps}
-//                   {...field}
-//                 />
-//               );
-//             }}
-//             name={name}
-//             defaultValue={defaultValue}
-//             control={control}
-//             {...props}
-//           />
-//         </FormControl>
-//         {hasError && (
-//           <Typography component={'span'} variant={'subtitle2'} color={'error'}>
-//             <ErrorMessage errors={errors} name={name} />
-//           </Typography>
-//         )}
-//       </Stack>
-//     );
-//   }
-// );
+    const originalInputProps = TextFieldProps.InputProps ?? {};
+    const userEndAdornment = originalInputProps.endAdornment;
+
+    const mergedInputProps = {
+      ...originalInputProps,
+      endAdornment: (
+        <Stack direction="row" alignItems="center" spacing={0.5}>
+          {userEndAdornment}
+          {tooltipText && (
+            <>
+              <Tooltip title={tooltipText}>
+                <Info size={16} />
+              </Tooltip>
+              <Tooltip title="Toggle visibility">
+                <div>
+                  <IconButton size={"small"} onClick={handleToggleType}>
+                    {_type === "text" ? <Eye size={16} /> : <EyeOff size={16} />}
+                  </IconButton>
+                </div>
+              </Tooltip>
+            </>
+          )}
+        </Stack>
+      ),
+      type: _type,
+      autoComplete: "off",
+    };
+
+    return (
+      <Stack spacing={1}>
+        <FormControl fullWidth>
+          <Controller
+            name={name}
+            control={control}
+            defaultValue={defaultValue as PathValue<TFormValues, Path<TFormValues>>}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                {...TextFieldProps}
+                inputRef={ref}
+                placeholder={placeholder}
+                disabled={disabled}
+                error={hasError}
+                label={label}
+                InputProps={mergedInputProps}
+                helperText={helperText}
+                aria-describedby={hasError ? `${name}-error` : undefined}
+                {...props}
+              />
+            )}
+          />
+        </FormControl>
+      </Stack>
+    );
+  }
+);
+
+FormTextFieldPasswordInner.displayName = "FormTextFieldPassword";
+
+export const FormTextFieldPassword = FormTextFieldPasswordInner as <
+  TFormValues extends Record<string, unknown> = Record<string, unknown>,
+>(
+  props: FormTextFieldPasswordProps<TFormValues> & { ref?: React.ForwardedRef<HTMLInputElement> }
+) => React.JSX.Element;

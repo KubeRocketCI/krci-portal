@@ -1,11 +1,13 @@
+import { Control, FieldErrors, FieldPath, FieldValues, Path, UseFormRegisterReturn } from "react-hook-form";
 import React from "react";
-import { Control, FieldErrors } from "react-hook-form";
 
-export interface FormCheckboxProps {
-  name: string;
+export interface FormCheckboxProps<TFieldValues extends FieldValues = FieldValues>
+  extends Partial<UseFormRegisterReturn<Path<TFieldValues>>> {
+  name: FieldPath<TFieldValues>;
+  control: Control<TFieldValues>;
+  errors: FieldErrors<TFieldValues>;
   label: React.ReactElement;
-  control: Control<never>;
-  errors: FieldErrors;
+  helperText?: string;
   defaultValue?: boolean;
   disabled?: boolean;
 }

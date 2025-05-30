@@ -5,13 +5,14 @@
     "rootDir": "./src",
     "module": "ESNext",
     "target": "ES2022",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "paths": {
-      "@/*": ["./apps/server/src/*"],
-      "@my-project/shared/*": ["../../packages/shared/src/*"]
+      "@/*": ["apps/server/src/*"],
+      "@my-project/shared": ["packages/shared/src"],
+      "@my-project/shared/*": ["packages/shared/src/*"]
     }
   },
-  "include": ["../export.ts", "./src/**/*", "build.config.js"],
+  "include": ["./src/**/*", "build.config.js"],
   "exclude": ["node_modules", "dist"],
   "references": [{ "path": "../../packages/shared" }]
 }

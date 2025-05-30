@@ -1,8 +1,8 @@
 import { ValueOf } from "@/core/types/global";
 
-export const ACTION_MENU_TYPE = {
-  MENU: "menu",
-  INLINE: "inline",
+export const actionMenuType = {
+  menu: "menu",
+  inline: "inline",
 } as const;
 
-export type ActionMenuType = ValueOf<typeof ACTION_MENU_TYPE>;
+export type ActionMenuType = ValueOf<typeof actionMenuType>;

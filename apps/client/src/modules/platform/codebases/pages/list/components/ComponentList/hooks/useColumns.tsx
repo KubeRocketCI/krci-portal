@@ -3,43 +3,41 @@ import { useTableSettings } from "@/core/components/Table/components/TableSettin
 import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
-import { CodebaseInterface } from "@/core/k8s/configs/codebase-mappings/types";
+import { Button } from "@/core/components/ui/button";
 import {
-  LANGUAGE_ICON_MAPPING,
-  FRAMEWORK_ICON_MAPPING,
   BUILD_TOOL_ICON_MAPPING,
+  FRAMEWORK_ICON_MAPPING,
+  LANGUAGE_ICON_MAPPING,
 } from "@/core/k8s/configs/icon-mappings";
-import { CODEBASE_TYPE } from "@/core/k8s/constants/codebaseTypes";
 import { MAIN_COLOR } from "@/core/k8s/constants/colors";
 import { CUSTOM_RESOURCE_STATUS } from "@/core/k8s/constants/statuses";
 import { TABLE } from "@/core/k8s/constants/tables";
-import { K8sCodebase } from "@/core/k8s/crs/KRCI/Codebase";
-import { getCodebaseMappingByType } from "@/core/k8s/crs/KRCI/Codebase/utils/getCodebaseMappingByType";
+import { getCodebaseMappingByType, getCodebaseStatusIcon } from "@/core/k8s/api/groups/KRCI/Codebase";
+import { CodebaseInterface } from "@/core/k8s/api/groups/KRCI/Codebase/configs/mappings/types";
 import { RESOURCE_ICON_NAMES } from "@/core/k8s/icons/sprites/Resources/names";
 import { UseSpriteSymbol } from "@/core/k8s/icons/UseSpriteSymbol";
 import { useClusterStore } from "@/core/store";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { Chip, Grid, Typography } from "@mui/material";
 import { DefaultTheme } from "@mui/styles/defaultTheme";
-import { Codebase } from "@my-project/shared";
+import { Codebase, codebaseType } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import React from "react";
+import { routeComponentDetails } from "../../../../details/route";
 import { Actions } from "../../ComponentActions";
 import { columnNames } from "../constants";
-import { routeComponentDetails } from "../../../../details/route";
-import { Button } from "@/core/components/ui/button";
 
 const getColorByType = (type: string) => {
   switch (type) {
-    case CODEBASE_TYPE.SYSTEM:
+    case codebaseType.system:
       return MAIN_COLOR.GREY;
-    case CODEBASE_TYPE.INFRASTRUCTURE:
+    case codebaseType.infrastructure:
       return MAIN_COLOR.DARK_PURPLE;
-    case CODEBASE_TYPE.APPLICATION:
+    case codebaseType.application:
       return MAIN_COLOR.GREEN;
-    case CODEBASE_TYPE.AUTOTEST:
+    case codebaseType.autotest:
       return MAIN_COLOR.ORANGE;
-    case CODEBASE_TYPE.LIBRARY:
+    case codebaseType.library:
       return MAIN_COLOR.BLUE;
     default:
       return MAIN_COLOR.GREY;
@@ -73,7 +71,7 @@ export const useColumns = (): TableColumn<Codebase>[] => {
             const status = data?.status?.status;
             const detailedMessage = data?.status?.detailedMessage;
 
-            const { component, color, isSpinning } = K8sCodebase.getStatusIcon(data);
+            const { component, color, isSpinning } = getCodebaseStatusIcon(data);
 
             const title = (
               <>
@@ -262,7 +260,7 @@ export const useColumns = (): TableColumn<Codebase>[] => {
               <Actions
                 resource={data}
                 disabled={{
-                  boolean: data.spec.type === CODEBASE_TYPE.SYSTEM,
+                  boolean: data.spec.type === codebaseType.system,
                   reason: "System components cannot be managed",
                 }}
               />
