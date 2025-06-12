@@ -21,7 +21,13 @@
       "@my-project/shared/*": ["../../packages/shared/*"]
     }
   },
-  "include": ["src"],
+  "include": [
+    "src",
+    "../../packages/shared/src/models/k8s/groups/KRCI/Codebase/utils/createCodebaseDraft",
+    "../../packages/shared/src/models/k8s/groups/KRCI/Codebase/utils/createCodebaseDraftSecret",
+    "../../packages/shared/src/models/k8s/groups/KRCI/Codemie/utils",
+    "../../packages/shared/src/models/k8s/groups/KRCI/CodebaseBranch/utils/createVersioningString"
+  ],
   "exclude": ["node_modules", "dist"],
   "references": [{ "path": "../../packages/shared" }, { "path": "../../apps/server" }]
 }

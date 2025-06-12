@@ -1,14 +1,14 @@
 import { FormControlLabelProps } from "@mui/material";
 import React from "react";
-import { Control, FieldErrors } from "react-hook-form";
+import { Control, FieldErrors, FieldPath, FieldValues, Path, UseFormRegisterReturn } from "react-hook-form";
 
-export interface FormSwitchProps {
-  name: string;
+export interface FormSwitchProps<TFieldValues extends FieldValues = FieldValues>
+  extends Partial<UseFormRegisterReturn<Path<TFieldValues>>> {
+  name: FieldPath<TFieldValues>;
+  control: Control<TFieldValues>;
   label: React.ReactElement;
-  control: Control<never>;
-  errors: FieldErrors;
+  errors: FieldErrors<TFieldValues>;
   defaultValue?: boolean;
   disabled?: boolean;
-  align?: React.CSSProperties["justifyContent"];
   labelPlacement?: FormControlLabelProps["labelPlacement"];
 }

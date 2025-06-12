@@ -4,16 +4,14 @@ import { observable } from "@trpc/server/observable";
 import { protectedProcedure } from "@/trpc/procedures/protected";
 import { TRPCError } from "@trpc/server";
 import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors";
-import { KubeObjectBase } from "@my-project/shared";
+import { k8sResourceConfigSchema, KubeObjectBase } from "@my-project/shared";
 
 export const k8sWatchItemProcedure = protectedProcedure
   .input(
     z.object({
+      resourceConfig: k8sResourceConfigSchema,
       clusterName: z.string(),
-      group: z.string(),
-      version: z.string(),
       namespace: z.string(),
-      resourcePlural: z.string(),
       resourceVersion: z.string(),
       name: z.string(),
     })
@@ -28,22 +26,17 @@ export const k8sWatchItemProcedure = protectedProcedure
 
       const watch = new k8s.Watch(K8sClient.KubeConfig);
 
-      const {
-        group,
-        version,
-        namespace,
-        resourcePlural,
-        resourceVersion,
-        name,
-      } = input;
+      const { namespace, resourceVersion, name, resourceConfig } = input;
 
       let controller: Awaited<ReturnType<typeof watch.watch>>;
 
       watch
         .watch(
-          `/apis/${group}/${version}/namespaces/${namespace}/${resourcePlural}/${name}`,
-          { resourceVersion },
-          (type, obj) => emit.next({ type, data: obj }),
+          `/apis/${resourceConfig.group}/${resourceConfig.version}/namespaces/${namespace}/${resourceConfig.pluralName}`,
+          { resourceVersion, fieldSelector: `metadata.name=${name}` },
+          (type, obj) => {
+            emit.next({ type, data: obj });
+          },
           (err) => {
             if (err) emit.error(err);
           }

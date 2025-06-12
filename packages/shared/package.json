@@ -2,6 +2,12 @@
   "name": "@my-project/shared",
   "type": "module",
   "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "development": "./src/index.ts"
+    }
+  },
   "scripts": {
     "build": "node build.config.js && tsc --project tsconfig.build.json"
   },
@@ -9,6 +15,7 @@
     "esbuild": "^0.25.4"
   },
   "dependencies": {
+    "uuid": "^11.1.0",
     "zod": "^3.24.2"
   }
 }
