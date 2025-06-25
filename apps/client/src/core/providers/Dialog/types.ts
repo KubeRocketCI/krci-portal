@@ -1,3 +1,5 @@
+import React from "react";
+
 interface DialogEntry<Props = object> {
   Component: React.ComponentType<DialogProps<Props>>;
   props: Props;

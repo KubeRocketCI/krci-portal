@@ -6,7 +6,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "format": "prettier --write .",
-    "tsc": "tsc --noEmit --skipLibCheck --pretty",
+    "tsc": "tsc --project tsconfig.check.json --noEmit --skipLibCheck --pretty",
     "dev": "cross-env NODE_ENV=development tsx watch src/index.ts",
     "dev:static": "cross-env NODE_ENV=development node dist/index.js",
     "build": "node build.config.js && tsc --project tsconfig.build.json",

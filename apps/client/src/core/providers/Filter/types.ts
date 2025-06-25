@@ -8,26 +8,26 @@ export type ControlName<ControlNames> = DefaultControlNames | ControlNames;
 
 export type ControlValue = boolean | ControlComponent;
 
-export type FilterState<Item extends unknown, ControlNames extends string> = {
+export type FilterState<Item, ControlNames extends string> = {
   values: Record<ControlName<ControlNames>, string | string[] | boolean>;
-  matchFunctions: Record<ControlName<ControlNames>, (item: Item, value: any) => boolean>;
+  matchFunctions: Record<ControlName<ControlNames>, (item: Item, value: unknown) => boolean>;
 };
 
-export interface FilterContextProviderValue<Item extends unknown, ControlNames extends string> {
+export interface FilterContextProviderValue<Item, ControlNames extends string> {
   showFilter: boolean;
   filter: FilterState<Item, ControlNames>;
-  setFilterItem: (key: ControlNames, value: any) => void;
+  setFilterItem: (key: ControlNames, value: unknown) => void;
   setShowFilter: React.Dispatch<React.SetStateAction<boolean>>;
   resetFilter: () => void;
   filterFunction: (item: Item) => boolean;
 }
 
-export interface FilterContextProviderProps<Item extends unknown, ControlNames extends string> {
+export interface FilterContextProviderProps<Item, ControlNames extends string> {
   children: React.ReactNode;
   entityID: string;
   matchFunctions:
     | {
-        [key in ControlNames]?: (item: Item, value: any) => boolean;
+        [key in ControlNames]?: (item: Item, value: unknown) => boolean;
       }
     | null;
   saveToLocalStorage?: boolean;

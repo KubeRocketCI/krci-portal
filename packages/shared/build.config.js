@@ -8,4 +8,7 @@ await build({
   format: 'esm',
   platform: 'node',
   sourcemap: true,
+  external: ['uuid', 'zod'],
+  minify: false,
+  keepNames: true,
 })

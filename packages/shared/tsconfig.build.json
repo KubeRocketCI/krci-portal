@@ -3,9 +3,12 @@
   "compilerOptions": {
     "emitDeclarationOnly": true,
     "declaration": true,
+    "declarationMap": true,
     "declarationDir": "dist",
     "noEmit": false,
-    "outDir": "dist"
+    "outDir": "dist",
+    "moduleResolution": "bundler"
   },
-  "include": ["src"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }

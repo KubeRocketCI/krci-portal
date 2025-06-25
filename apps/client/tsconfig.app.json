@@ -14,11 +14,12 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "moduleResolution": "bundler",
-
     "paths": {
-      "@/*": ["./apps/client/src/*"],
-      "@my-project/server/*": ["../apps/server/*"],
-      "@my-project/shared/*": ["../../packages/shared/*"]
+      "@/*": ["apps/client/src/*"],
+      "@my-project/server": ["apps/server/src"],
+      "@my-project/server/*": ["apps/server/src/*"],
+      "@my-project/shared": ["packages/shared/src"],
+      "@my-project/shared/*": ["packages/shared/src/*"]
     }
   },
   "include": ["src"],
