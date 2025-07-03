@@ -139,7 +139,7 @@ export class ProductionFastifyServer {
       this.registerPlugins();
       this.fastify.listen(
         {
-          port: 3000,
+          port: Number(process.env.SERVER_PORT),
           host: "0.0.0.0",
         },
         (error, address) => {
