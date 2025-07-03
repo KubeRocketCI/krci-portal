@@ -9,9 +9,6 @@
   "scripts": {
     "build": "echo 'No build needed - using source files directly'"
   },
-  "devDependencies": {
-    "esbuild": "^0.25.4"
-  },
   "dependencies": {
     "uuid": "^11.1.0",
     "zod": "^3.24.2"
