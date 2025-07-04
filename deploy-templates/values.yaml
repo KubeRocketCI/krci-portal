@@ -2,20 +2,62 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# -- Number of replicas for the deployment
 replicaCount: 1
 
+# -- Image configuration
 image:
+  # -- Image repository
   repository: krci-portal
+  # -- Image pull policy
   pullPolicy: IfNotPresent
   # -- Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
+# -- Image pull secrets for private registries
 imagePullSecrets:
 # Define secret to pull images. Secret can be provisioned by edp-install or manually.
   - name: regcred
+
+# -- Override the name of the chart
 nameOverride: ""
+# -- Override the full name of the chart
 fullnameOverride: ""
 
+# -- Application configuration
+# These values will be converted to environment variables in the deployment
+config:
+  # -- Directory where client static files are deployed (DEPLOY_CLIENT_DIST_DIR env var)
+  deployClientDistDir: "/app/static"
+  # -- API prefix for backend routes (API_PREFIX env var)
+  apiPrefix: "/api"
+  # -- Default namespace (DEFAULT_CLUSTER_NAMESPACE env var)
+  defaultClusterNamespace: ""
+  # -- Key name for default cluster name in the secret
+  defaultClusterName: ""
+  # -- Name of the Kubernetes secret containing server secret
+  serverSecretName: ""
+  # -- Key name for secret containing server secret
+  serverSecretKey: ""
+
+  # -- OIDC configuration - variables will be taken from Kubernetes secret
+  oidc:
+    # -- Enable OIDC authentication
+    enabled: false
+    # -- Name of the Kubernetes secret containing OIDC configuration
+    clientSecretName: ""
+    # -- Key name for OIDC client secret in the secret
+    oidcClientSecretKey: ""
+    # -- Key name for OIDC client ID in the secret
+    oidcClientId: ""
+    # -- Key name for OIDC issuer URL in the secret (e.g., https://idp.example.com/realms/broker)
+    oidcIssuerUrl: ""
+    # -- Key name for OIDC code challenge method in the secret (e.g., "S256")
+    oidcCodeChallengeMethod: "S256"
+    # -- Key name for OIDC scopes in the secret (e.g., "openid profile email")
+    oidcScope: "openid profile email"
+
+# -- Service account configuration
 serviceAccount:
   # -- Specifies whether a service account should be created
   create: true
@@ -26,12 +68,16 @@ serviceAccount:
   # -- The name of the service account to use. If not set and create is true, a name is generated using the fullname template
   name: ""
 
+# -- Pod annotations
 podAnnotations: {}
+# -- Pod labels
 podLabels: {}
 
+# -- Pod security context
 podSecurityContext: {}
   # fsGroup: 2000
 
+# -- Container security context
 securityContext: {}
   # capabilities:
   #   drop:
@@ -40,28 +86,38 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
+# -- Service configuration
 service:
+  # -- Service type
   type: ClusterIP
-  port: 8080
+  port: 3000
 
+# -- Ingress configuration
 ingress:
+  # -- Enable ingress
   enabled: false
+  # -- DNS wildcard for the cluster
   dnsWildcard: ""
+  # -- Ingress class name
   className: ""
+  # -- Ingress annotations
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
+  # -- Ingress hosts configuration
   hosts:
     # If need to use specific host, define host value below. By default when set 'edpDefault' FQDN: <CODEBASE_NAME>-<CODEBASE_NAMESPACE>.<CLUSTER_DNS_WILDCARD>
     - host: edpDefault
       paths:
         - path: /
           pathType: ImplementationSpecific
+  # -- TLS configuration
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
 
+# -- Resource limits and requests
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
@@ -74,39 +130,79 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+# -- Liveness probe configuration
 livenessProbe:
   tcpSocket:
     port: http
+
+# -- Readiness probe configuration
 readinessProbe:
   tcpSocket:
     port: http
   initialDelaySeconds: 20
 
+# -- Horizontal Pod Autoscaler configuration
 autoscaling:
+  # -- Enable autoscaling
   enabled: false
+  # -- Minimum number of replicas
   minReplicas: 1
+  # -- Maximum number of replicas
   maxReplicas: 100
+  # -- Target CPU utilization percentage
   targetCPUUtilizationPercentage: 80
+  # -- Target memory utilization percentage (optional)
   # targetMemoryUtilizationPercentage: 80
 
-# Additional volumes on the output Deployment definition.
+# -- Additional volumes on the output Deployment definition.
 volumes: []
 # - name: foo
 #   secret:
 #     secretName: mysecret
 #     optional: false
 
-# Additional volumeMounts on the output Deployment definition.
+# -- Additional volumeMounts on the output Deployment definition.
 volumeMounts: []
 # - name: foo
 #   mountPath: "/etc/foo"
 #   readOnly: true
 
-# -- https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+# -- Node selector for pod assignment
+# https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
 nodeSelector: {}
 
-# -- https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+# -- Tolerations for pod assignment
+# https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
 tolerations: []
 
-# -- https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+# -- Affinity for pod assignment
+# https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
 affinity: {}
+
+externalSecrets:
+  # -- Configure External Secrets for KubeRocketCI platform. Deploy SecretStore. Default: false
+  enabled: false
+  # -- Defines provider type. One of `aws` or `generic`.
+  type: "aws"
+  secretProvider:
+    aws:
+      # -- Use AWS as a Secret Provider. Can be ParameterStore or SecretsManager
+      service: ParameterStore
+      # -- IAM Role to be used for Accessing AWS either Parameter Store or Secret Manager. Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME>
+      role:
+      # -- AWS Region where secrets are stored, e.g. eu-central-1
+      region: eu-central-1
+
+    generic:
+      # Defines Secret Store configuration. Used when externalSecrets.type is set to "generic".
+      secretStore:
+        # -- Defines SecretStore name.
+        name: "example-secret-store"
+        # -- Defines SecretStore provider configuration.
+        providerConfig: {}
+        #  gcpsm:
+        #    projectID: "alphabet-123"
+
+  manageKRCIPortalSecrets: true
+
+  manageKRCIPortalSecretsName: /krci/deploy-secrets

@@ -26,7 +26,7 @@ export class LocalFastifyServer {
   constructor() {
     LocalFastifyServer.validateRequiredEnv([
       "LOCAL_CLIENT_ORIGIN",
-      "SHARED_APP_API_PREFIX",
+      "API_PREFIX",
       "SERVER_SECRET",
       "SERVER_PORT",
       "OIDC_ISSUER_URL",
@@ -56,7 +56,7 @@ export class LocalFastifyServer {
     });
 
     this.fastify.register(FastifyWebsocket, {
-      prefix: process.env.SHARED_APP_API_PREFIX,
+      prefix: process.env.API_PREFIX,
     });
     this.fastify.register(FastifyCookie, {
       secret: process.env.SERVER_SECRET,
@@ -98,7 +98,7 @@ export class LocalFastifyServer {
 
     // Fallback for SPA routes: Serve index.html for non-API routes
     this.fastify.get("/*", (req, reply) => {
-      if (!req.url.startsWith(process.env.SHARED_APP_API_PREFIX!)) {
+      if (!req.url.startsWith(process.env.API_PREFIX!)) {
         reply.sendFile("index.html", publicPath);
       } else {
         reply.status(404).send({ error: "Not Found" });
@@ -118,7 +118,7 @@ export class LocalFastifyServer {
       });
 
       trpcScope.register(fastifyTRPCPlugin, {
-        prefix: process.env.SHARED_APP_API_PREFIX,
+        prefix: process.env.API_PREFIX,
         useWSS: true,
         keepAlive: { enabled: true, pingMs: 15000, pongWaitMs: 10000 },
         trpcOptions: {

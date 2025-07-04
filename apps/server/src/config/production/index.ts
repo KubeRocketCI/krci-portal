@@ -21,7 +21,7 @@ export class ProductionFastifyServer {
 
   constructor() {
     ProductionFastifyServer.validateRequiredEnv([
-      "SHARED_APP_API_PREFIX",
+      "API_PREFIX",
       "SERVER_SECRET",
       "SERVER_PORT",
       "OIDC_ISSUER_URL",
@@ -47,7 +47,7 @@ export class ProductionFastifyServer {
     const sessionStore = new DBSessionStore();
 
     this.fastify.register(FastifyWebsocket, {
-      prefix: process.env.SHARED_APP_API_PREFIX,
+      prefix: process.env.API_PREFIX,
     });
     this.fastify.register(FastifyCookie, {
       secret: process.env.SERVER_SECRET,
@@ -81,7 +81,7 @@ export class ProductionFastifyServer {
 
     // Fallback for SPA routes: Serve index.html for non-API routes
     this.fastify.get("/*", (req, reply) => {
-      if (!req.url.startsWith(process.env.SHARED_APP_API_PREFIX!)) {
+      if (!req.url.startsWith(process.env.API_PREFIX!)) {
         reply.sendFile("index.html", publicPath);
       } else {
         reply.status(404).send({ error: "Not Found" });
@@ -101,7 +101,7 @@ export class ProductionFastifyServer {
       });
 
       trpcScope.register(fastifyTRPCPlugin, {
-        prefix: process.env.SHARED_APP_API_PREFIX,
+        prefix: process.env.API_PREFIX,
         useWSS: true,
         keepAlive: { enabled: true, pingMs: 30000, pongWaitMs: 5000 },
         trpcOptions: {
