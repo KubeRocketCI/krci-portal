@@ -60,3 +60,18 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Create the name of the secretstore to use
+*/}}
+{{- define "krci-portal.secretStoreName" -}}
+  {{- if .Values.externalSecrets.enabled }}
+    {{- if eq .Values.externalSecrets.type "aws" }}
+      {{- printf "%s-%s" "aws" .Values.externalSecrets.secretProvider.aws.service | lower }}
+    {{- end }}
+    {{- if eq .Values.externalSecrets.type "generic" }}
+      {{- $secretStoreName := required "Secret store name is not defined" .Values.externalSecrets.secretProvider.generic.secretStore.name | lower }}
+      {{- printf "%s" $secretStoreName }}
+    {{- end }}
+  {{- end }}
+{{- end }}

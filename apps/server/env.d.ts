@@ -15,7 +15,7 @@ declare global {
       OIDC_SCOPE: string;
       OIDC_CODE_CHALLENGE_METHOD: string;
 
-      SHARED_APP_API_PREFIX: string;
+      API_PREFIX: string;
     }
   }
 }
