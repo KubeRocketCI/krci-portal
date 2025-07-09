@@ -1,5 +1,5 @@
 import { SelectOption } from "@/core/providers/Form/types";
-import { Autocomplete, FormControl, Stack, TextField, Tooltip } from "@mui/material";
+import { Autocomplete, AutocompleteRenderInputParams, FormControl, Stack, TextField, Tooltip } from "@mui/material";
 import { Info } from "lucide-react";
 import { Controller, Path, PathValue } from "react-hook-form";
 import { FormAutocompleteSingleProps } from "./types";
@@ -28,24 +28,30 @@ const FormAutocompleteSingleInner = React.forwardRef(
     const errorMessage = error?.message as string;
     const helperText = hasError ? errorMessage : TextFieldProps?.helperText;
 
-    const originalInputProps = TextFieldProps.InputProps ?? {};
-    const userEndAdornment = originalInputProps.endAdornment;
+    const createMergedInputProps = React.useCallback(
+      (inputParams: AutocompleteRenderInputParams) => {
+        const originalInputProps = TextFieldProps.InputProps ?? {};
+        const userEndAdornment = originalInputProps.endAdornment;
+        const autocompleteInputProps = inputParams.InputProps ?? {};
 
-    const mergedInputProps = {
-      ...originalInputProps,
-      endAdornment: (
-        <Stack direction="row" alignItems="center" spacing={0.5}>
-          {userEndAdornment}
-          {tooltipText && (
-            <Tooltip title={tooltipText}>
-              <Info size={16} />
-            </Tooltip>
-          )}
-        </Stack>
-      ),
-      helperText,
-      error: hasError,
-    };
+        return {
+          ...originalInputProps,
+          ...autocompleteInputProps,
+          endAdornment: (
+            <Stack direction="row" alignItems="center" spacing={0.5}>
+              {autocompleteInputProps.endAdornment}
+              {userEndAdornment}
+              {tooltipText && (
+                <Tooltip title={tooltipText}>
+                  <Info size={16} />
+                </Tooltip>
+              )}
+            </Stack>
+          ),
+        };
+      },
+      [TextFieldProps.InputProps, tooltipText]
+    );
 
     return (
       <Stack spacing={1}>
@@ -65,20 +71,45 @@ const FormAutocompleteSingleInner = React.forwardRef(
                       {...params}
                       {...TextFieldProps}
                       inputRef={ref}
-                      InputProps={mergedInputProps}
+                      InputProps={createMergedInputProps(params)}
                       variant="standard"
                       label={label}
                       fullWidth
                       style={{ marginTop: 0 }}
                       placeholder={placeholder}
+                      error={hasError || !!TextFieldProps?.error}
+                      helperText={helperText}
                     />
                   )}
-                  isOptionEqualToValue={(option, value) => option.value === value.value}
-                  getOptionLabel={(option) => option.label || ""}
+                  isOptionEqualToValue={(option, value) => {
+                    return option.value === value.value;
+                  }}
+                  getOptionLabel={(option) => {
+                    if (typeof option === "string") {
+                      return option;
+                    }
+                    if (typeof option === "object" && "label" in option) {
+                      return option.label || "";
+                    }
+
+                    return "";
+                  }}
                   onChange={(_event, newValue) => {
-                    field.onChange(newValue ? newValue.value : "");
+                    if (typeof newValue === "string") {
+                      field.onChange(newValue);
+                    } else if (newValue && typeof newValue === "object" && "value" in newValue) {
+                      field.onChange(newValue.value || "");
+                    } else {
+                      field.onChange("");
+                    }
+                  }}
+                  onInputChange={(_event, newInputValue) => {
+                    if (AutocompleteProps?.freeSolo) {
+                      field.onChange(newInputValue || "");
+                    }
                   }}
                   value={options.find((option) => option.value === field.value) || null}
+                  forcePopupIcon
                 />
               );
             }}

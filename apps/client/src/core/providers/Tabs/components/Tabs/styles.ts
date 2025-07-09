@@ -1,4 +1,4 @@
-import makeStyles from '@mui/styles/makeStyles';
+import makeStyles from "@mui/styles/makeStyles";
 
 export const useStyles = makeStyles((theme) => ({
   tabs: {
@@ -8,16 +8,16 @@ export const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.action.disabled,
   },
   tabWithHighlightDot: {
-    position: 'relative',
+    position: "relative",
 
-    '&::after': {
+    "&::after": {
       content: '""',
-      position: 'absolute',
+      position: "absolute",
       top: theme.typography.pxToRem(-4),
       right: theme.typography.pxToRem(-10),
       width: theme.typography.pxToRem(6),
       height: theme.typography.pxToRem(6),
-      borderRadius: '50%',
+      borderRadius: "50%",
       backgroundColor: theme.palette.primary.main,
     },
   },

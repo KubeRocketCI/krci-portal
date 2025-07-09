@@ -1,11 +1,11 @@
-import { Dialog } from '@mui/material';
-import React from 'react';
-import { Create } from './components/Create';
-import { Edit } from './components/Edit';
-import { DIALOG_NAME } from './constants';
-import { CurrentDialogContextProvider } from './providers/CurrentDialog/provider';
-import { ManageCodebaseBranchDialogProps } from './types';
-import { FORM_MODES } from '@/core/types/forms';
+import { Dialog } from "@mui/material";
+import React from "react";
+import { Create } from "./components/Create";
+import { Edit } from "./components/Edit";
+import { DIALOG_NAME } from "./constants";
+import { CurrentDialogContextProvider } from "./providers/CurrentDialog/provider";
+import { ManageCodebaseBranchDialogProps } from "./types";
+import { FORM_MODES } from "@/core/types/forms";
 
 export const ManageCodebaseBranchDialog: React.FC<ManageCodebaseBranchDialogProps> = (props) => {
   const {

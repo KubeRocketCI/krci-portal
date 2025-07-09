@@ -1,31 +1,33 @@
 import { KubeObjectBase } from "@my-project/shared";
 
-export const DEFAULT_CONTROLS = {
-  SEARCH: "search",
-  NAMESPACE: "namespace",
-} as const;
-
-export const searchFunction = (item: KubeObjectBase, _value: string): boolean => {
-  if (!item || !_value) {
+// Default search function for any KubeObjectBase
+export const searchFunction = (item: KubeObjectBase, value: string | string[] | boolean): boolean => {
+  if (!item || !value || typeof value !== "string") {
     return true;
   }
 
-  const value = _value.toLowerCase().trim();
+  const searchValue = value.toLowerCase().trim();
 
-  if (value.includes(":")) {
-    const cleanedValue = value.replaceAll(" ", "");
-    const [key, searchValue] = cleanedValue.split(":");
+  if (searchValue.includes(":")) {
+    const cleanedValue = searchValue.replaceAll(" ", "");
+    const [key, searchValueForKey] = cleanedValue.split(":");
 
-    return !!item?.metadata?.labels?.[key]?.toLowerCase()?.includes(searchValue);
+    return !!item?.metadata?.labels?.[key]?.toLowerCase()?.includes(searchValueForKey);
   }
 
   return (
-    Object.keys(item?.metadata?.labels || {}).some((labelKey) => labelKey.toLowerCase().includes(value)) ||
-    item?.metadata?.name?.toLowerCase().includes(value) ||
+    Object.keys(item?.metadata?.labels || {}).some((labelKey) => labelKey.toLowerCase().includes(searchValue)) ||
+    item?.metadata?.name?.toLowerCase().includes(searchValue) ||
     //@ts-expect-error temporary fix for displayName
-    item?.spec?.displayName?.toLowerCase().includes(value)
+    item?.spec?.displayName?.toLowerCase().includes(searchValue)
   );
 };
 
-export const namespaceFunction = (item: KubeObjectBase, values: string[]): boolean =>
-  values.length === 0 || values.includes(item.metadata?.namespace || "");
+// Default namespace function for any KubeObjectBase
+export const namespaceFunction = (item: KubeObjectBase, value: string | string[] | boolean): boolean => {
+  if (!value || !Array.isArray(value)) {
+    return true;
+  }
+
+  return value.length === 0 || value.includes(item.metadata?.namespace || "");
+};

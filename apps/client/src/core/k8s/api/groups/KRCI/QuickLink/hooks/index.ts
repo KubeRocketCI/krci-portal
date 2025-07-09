@@ -12,3 +12,5 @@ export const useQuickLinkWatchList = (params?: UseWatchListParamsWithoutResource
   createUseWatchListHook<QuickLink>(k8sQuickLinkConfig)(params);
 export const useQuickLinkWatchItem = (params: UseWatchItemParamsWithoutResourceConfig<QuickLink>) =>
   createUseWatchItemHook<QuickLink>(k8sQuickLinkConfig)(params);
+
+export { useCRUD as useQuickLinkCRUD } from "./useCRUD";

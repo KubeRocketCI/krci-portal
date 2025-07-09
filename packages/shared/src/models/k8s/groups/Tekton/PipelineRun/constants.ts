@@ -7,8 +7,8 @@ export const k8sPipelineRunConfig = {
   version: "v1",
   kind: "PipelineRun",
   group: "tekton.dev",
-  singularName: "pipelineRunrun",
-  pluralName: "pipelineRunruns",
+  singularName: "pipelinerun",
+  pluralName: "pipelineruns",
 } as const satisfies K8sResourceConfig<typeof pipelineRunLabels>;
 
 export const pipelineRunReason = pipelineRunReasonEnum.enum;

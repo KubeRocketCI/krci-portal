@@ -1,14 +1,14 @@
 import { SearchControl } from "@/core/providers/Filter/components/Filter/components/SearchControl";
-import { FilterControls } from "@/core/providers/Filter/components/Filter/types";
+import { FilterControls } from "@/core/providers/Filter/types";
 import { mapObjectValuesToSelectOptions } from "@/core/utils/forms/mapToSelectOptions";
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import { Codebase, codebaseType } from "@my-project/shared";
 import React from "react";
 import { codebaseListFilterControlNames } from "../../../constants";
 import { usePageFilterContext } from "../../../hooks/usePageFilterContext";
-import { ComponentListFilterAllControlNames } from "../../../types";
+import { ComponentListFilterControlNames } from "../../../types";
 
-type FilterControlsType = FilterControls<ComponentListFilterAllControlNames>;
+type FilterControlsType = FilterControls<ComponentListFilterControlNames>;
 
 export const useFilter = (): {
   controls: FilterControlsType;

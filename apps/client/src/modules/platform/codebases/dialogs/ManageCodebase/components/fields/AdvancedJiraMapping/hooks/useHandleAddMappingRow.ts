@@ -1,7 +1,7 @@
-import React from 'react';
-import { useFormContext } from 'react-hook-form';
-import { CODEBASE_FORM_NAMES } from '../../../../names';
-import { AdvancedMappingItem, AdvancedMappingRow } from '../types';
+import React from "react";
+import { useFormContext } from "react-hook-form";
+import { CODEBASE_FORM_NAMES } from "../../../../names";
+import { AdvancedMappingItem, AdvancedMappingRow } from "../types";
 
 interface UseHandleAddMappingRowProps {
   setAdvancedMappingRows: React.Dispatch<React.SetStateAction<AdvancedMappingRow[]>>;
@@ -41,18 +41,12 @@ export const useHandleAddMappingRow = ({
         {
           label: advancedMappingItemFitByName.label,
           value: advancedMappingItemFitByName.value,
-          jiraPattern: '',
+          jiraPattern: "",
         },
       ];
     });
-    setValue(CODEBASE_FORM_NAMES.advancedMappingFieldName.name, '');
-  }, [
-    advancedMapping,
-    advancedMappingFieldNameValue,
-    setAdvancedMapping,
-    setAdvancedMappingRows,
-    setValue,
-  ]);
+    setValue(CODEBASE_FORM_NAMES.advancedMappingFieldName.name, "");
+  }, [advancedMapping, advancedMappingFieldNameValue, setAdvancedMapping, setAdvancedMappingRows, setValue]);
 
   return { handleAddMappingRow };
 };

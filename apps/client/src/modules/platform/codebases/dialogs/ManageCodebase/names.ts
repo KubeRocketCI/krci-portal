@@ -227,5 +227,3 @@ export const CODEBASE_BACKWARDS_NAME_MAPPING: BackwardNameMapping = {
     },
   },
 };
-
-

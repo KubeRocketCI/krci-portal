@@ -15,6 +15,8 @@ import { routePipelineDetails } from "@/modules/platform/pipelines/pages/details
 import { routePipelineList } from "@/modules/platform/pipelines/pages/list/route";
 import { routePipelineRunList } from "@/modules/platform/pipelineruns/pages/list/route";
 import { routePipelineRunDetails } from "@/modules/platform/pipelineruns/pages/details/route";
+import { routeOverviewDetails } from "@/modules/platform/overview/pages/details/route";
+import { routeStageDetails } from "@/modules/platform/stages/pages/details/route";
 
 export const rootRoute = createRootRouteWithContext<MyRouterContext>()({
   component: Root,
@@ -85,10 +87,12 @@ const routeTree = rootRoute.addChildren([
   contentLayoutRoute.addChildren([
     routeHome,
     routeCluster.addChildren([
+      routeOverviewDetails,
       routeComponentList,
       routeComponentDetails,
       routeCDPipelineList,
       routeCDPipelineDetails,
+      routeStageDetails,
       routePipelineList,
       routePipelineDetails,
       routePipelineRunList,

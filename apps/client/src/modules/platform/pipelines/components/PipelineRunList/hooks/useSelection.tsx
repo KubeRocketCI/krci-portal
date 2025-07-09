@@ -1,14 +1,11 @@
-import React from 'react';
-import { PipelineRunKubeObjectInterface } from '../../../k8s/groups/Tekton/PipelineRun/types';
+import React from "react";
+import { PipelineRunKubeObjectInterface } from "../../../k8s/groups/Tekton/PipelineRun/types";
 
 export const useSelection = () => {
   const [selected, setSelected] = React.useState<string[]>([]);
 
   const handleSelectAllClick = React.useCallback(
-    (
-      event: React.ChangeEvent<HTMLInputElement>,
-      paginatedItems: PipelineRunKubeObjectInterface[]
-    ) => {
+    (event: React.ChangeEvent<HTMLInputElement>, paginatedItems: PipelineRunKubeObjectInterface[]) => {
       if (event.target.checked) {
         const newSelected = paginatedItems.map(({ metadata: { name } }) => name);
         setSelected(newSelected);
@@ -32,10 +29,7 @@ export const useSelection = () => {
       } else if (selectedIndex === selected.length - 1) {
         newSelected = newSelected.concat(selected.slice(0, -1));
       } else if (selectedIndex > 0) {
-        newSelected = newSelected.concat(
-          selected.slice(0, selectedIndex),
-          selected.slice(selectedIndex + 1)
-        );
+        newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
       }
 
       setSelected(newSelected);

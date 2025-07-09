@@ -1,5 +1,5 @@
 import { DialogProps } from "@/core/providers/Dialog/types";
-import { RoutePath } from "@/core/router/types";
+import { RouteParams } from "@/core/router/types";
 import { K8sResourceConfig, KubeObjectBase } from "@my-project/shared";
 import { OptionsObject } from "notistack";
 import React from "react";
@@ -24,6 +24,6 @@ export type DeleteKubeObjectDialogProps = DialogProps<{
     setErrorTemplate: React.Dispatch<React.SetStateAction<React.ReactNode>>,
     setLoadingActive: React.Dispatch<React.SetStateAction<boolean>>
   ): Promise<void>;
-  backRoute?: RoutePath;
+  backRoute?: RouteParams;
   createCustomMessages?: (item: KubeObjectBase) => CustomMessages;
 }>;

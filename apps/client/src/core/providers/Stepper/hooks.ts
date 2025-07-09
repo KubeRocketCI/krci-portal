@@ -1,6 +1,5 @@
-import React from 'react';
-import { StepperContext } from './context';
-import { StepperContextProviderValue } from './types';
+import React from "react";
+import { StepperContext } from "./context";
+import { StepperContextProviderValue } from "./types";
 
-export const useStepperContext = () =>
-  React.useContext<StepperContextProviderValue>(StepperContext);
+export const useStepperContext = () => React.useContext<StepperContextProviderValue>(StepperContext);

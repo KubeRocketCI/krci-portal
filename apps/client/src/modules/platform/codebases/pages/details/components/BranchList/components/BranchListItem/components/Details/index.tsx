@@ -2,7 +2,7 @@ import { Grid, Typography } from "@mui/material";
 
 import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
 import { TABLE } from "@/core/k8s/constants/tables";
-import { FilterContextProvider } from "@/core/providers/Filter/provider";
+import { FilterProvider } from "@/core/providers/Filter/provider";
 import { ResourceActionListContextProvider } from "@/core/providers/ResourceActionList/provider";
 import { useClusterStore } from "@/core/store";
 import { PipelineRunList } from "@/modules/platform/pipelines/components/PipelineRunList";
@@ -30,7 +30,7 @@ export const Details = ({ pipelineRuns }: DetailsProps) => {
           </Grid>
           <Grid item xs={12}>
             <ResourceActionListContextProvider>
-              <FilterContextProvider
+              <FilterProvider
                 entityID={`PIPELINE_RUN_LIST_BRANCH_DETAILS::${defaultNamespace}`}
                 matchFunctions={matchFunctions}
                 saveToLocalStorage
@@ -44,7 +44,7 @@ export const Details = ({ pipelineRuns }: DetailsProps) => {
                   tableName={TABLE.BRANCH_PIPELINE_RUN_LIST.name}
                   tableSettings={tableSettings}
                 />
-              </FilterContextProvider>
+              </FilterProvider>
             </ResourceActionListContextProvider>
           </Grid>
         </Grid>

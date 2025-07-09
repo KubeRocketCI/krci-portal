@@ -109,11 +109,9 @@ export const FormActions = ({ baseDefaultValues, setActiveTab }: FormActionsProp
   }, [handleClose, setDialog, typeFieldValue]);
 
   const {
-    createCodebase,
+    triggerCreateCodebase,
     mutations: { codebaseCreateMutation, codebaseSecretCreateMutation, codebaseSecretDeleteMutation },
-  } = useCodebaseCRUD({
-    onSuccess: onSuccess,
-  });
+  } = useCodebaseCRUD();
 
   const isPending = React.useMemo(
     () =>
@@ -125,8 +123,6 @@ export const FormActions = ({ baseDefaultValues, setActiveTab }: FormActionsProp
 
   const onSubmit = React.useCallback(
     async (values: ManageCodebaseFormValues) => {
-      console.log(values);
-
       const newCodebaseDraft = createCodebaseDraftObject({
         name: values.name,
         gitServer: values.gitServer,
@@ -154,17 +150,22 @@ export const FormActions = ({ baseDefaultValues, setActiveTab }: FormActionsProp
 
       const hasCodebaseAuth = values?.repositoryLogin && values?.repositoryPasswordOrApiToken;
 
-      await createCodebase({
-        codebase: newCodebaseDraft,
-        codebaseAuth: hasCodebaseAuth
-          ? {
-              repositoryLogin: values?.repositoryLogin,
-              repositoryPasswordOrApiToken: values?.repositoryPasswordOrApiToken,
-            }
-          : null,
+      await triggerCreateCodebase({
+        data: {
+          codebase: newCodebaseDraft,
+          codebaseAuth: hasCodebaseAuth
+            ? {
+                repositoryLogin: values?.repositoryLogin,
+                repositoryPasswordOrApiToken: values?.repositoryPasswordOrApiToken,
+              }
+            : null,
+        },
+        callbacks: {
+          onSuccess: onSuccess,
+        },
       });
     },
-    [createCodebase]
+    [triggerCreateCodebase, onSuccess]
   );
 
   const configurationFormIsDirty = Object.keys(dirtyFields).length > 2; // 2 is the number of fields that are always dirty

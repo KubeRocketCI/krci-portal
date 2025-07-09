@@ -90,17 +90,17 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
               errors={form.formState.errors}
               TextFieldProps={{
                 helperText: "The default namespace for e.g. when applying resources (when not specified directly).",
-              }}
-              InputProps={{
-                startAdornment: (
-                  <Box sx={{ mr: 0.5 }}>
-                    {form.formState.errors[names.DEFAULT_NAMESPACE] ? (
-                      <CircleX className="size-4" />
-                    ) : (
-                      <Check className="size-4" />
-                    )}
-                  </Box>
-                ),
+                InputProps: {
+                  startAdornment: (
+                    <Box sx={{ mr: 0.5 }}>
+                      {form.formState.errors[names.DEFAULT_NAMESPACE] ? (
+                        <CircleX className="size-4" />
+                      ) : (
+                        <Check className="size-4" />
+                      )}
+                    </Box>
+                  ),
+                },
               }}
             />
             <Stack spacing={2}>

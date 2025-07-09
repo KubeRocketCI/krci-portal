@@ -1,12 +1,19 @@
 import { Codebase } from "@my-project/shared";
 import { codebaseListFilterControlNames } from "./constants";
-import { ControlName } from "@/core/providers/Filter/types";
-import { ValueOf } from "@/core/types/global";
+import { FilterFunction } from "@/core/providers/Filter/types";
 
-export type ComponentListFilterControlNames = ValueOf<typeof codebaseListFilterControlNames>;
+export type ComponentListFilterControlNames =
+  | (typeof codebaseListFilterControlNames)[keyof typeof codebaseListFilterControlNames]
+  | "search";
 
-export type ComponentListFilterAllControlNames = ControlName<ComponentListFilterControlNames>;
+export type MatchFunctions = Record<ComponentListFilterControlNames, FilterFunction<Codebase>>;
 
-export type MatchFunctions = {
-  [key in ComponentListFilterAllControlNames]?: (item: Codebase, value: string | string[]) => boolean;
+// Define strict value types for each control
+export type ComponentListFilterValueMap = {
+  search: string;
+  codebaseType: string;
 };
+
+// Example usage:
+// This will make filter.values.search be typed as string, not FilterValue
+// and filter.values.codebaseType be typed as string, not FilterValue

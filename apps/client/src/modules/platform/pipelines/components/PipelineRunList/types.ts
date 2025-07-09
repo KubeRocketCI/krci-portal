@@ -1,12 +1,10 @@
 import { SavedTableSettings } from "@/core/components/Table/components/TableSettings/types";
-import { ControlName } from "@/core/providers/Filter/types";
 import { RequestError, ValueOf } from "@/core/types/global";
 import { PipelineRun, PipelineType } from "@my-project/shared";
 import { pipelineRunFilterControlNames } from "./constants";
+import { FilterTypeWithOptionAll } from "@/core/k8s/types";
 
 export type PipelineRunFilterControlNames = ValueOf<typeof pipelineRunFilterControlNames>;
-
-export type PipelineRunFilterAllControlNames = ControlName<PipelineRunFilterControlNames>;
 
 export interface TableColumnBase {
   id: string;
@@ -21,10 +19,10 @@ export interface PipelineRunListProps {
   tableSettings?: SavedTableSettings;
   blockerError?: RequestError;
   errors?: RequestError[] | null;
-  pipelineRunTypes?: PipelineType[];
+  pipelineRunTypes?: (FilterTypeWithOptionAll<PipelineType>)[];
   filterControls?: PipelineRunFilterControlNames[];
 }
 
 export type MatchFunctions = {
-  [key in PipelineRunFilterAllControlNames]?: (item: PipelineRun, value: string | string[]) => boolean;
+  [key in PipelineRunFilterControlNames]?: (item: PipelineRun, value: string | string[]) => boolean;
 };

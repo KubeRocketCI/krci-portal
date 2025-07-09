@@ -1,20 +1,7 @@
 import React from "react";
-import { FilterContextProviderValue } from "./types";
+import { FilterContextValue, FilterValue } from "./types";
 
-export const FilterContext = React.createContext<FilterContextProviderValue<unknown, string>>({
-  showFilter: false,
-  filter: {
-    values: {},
-    matchFunctions: {},
-  },
-  setFilterItem: () => {
-    //
-  },
-  setShowFilter: () => {
-    //
-  },
-  resetFilter: () => {
-    //
-  },
-  filterFunction: () => false,
-});
+// Create a context with a default value that will be overridden by the provider
+export const FilterContext = React.createContext<
+  FilterContextValue<unknown, string, Record<string, FilterValue>> | undefined
+>(undefined);

@@ -62,7 +62,7 @@ export const DeleteKubeObjectDialog: React.FC<DeleteKubeObjectDialogProps> = (_p
       reset();
 
       if (backRoute) {
-        router.navigate({ to: backRoute });
+        router.navigate(backRoute);
       }
     },
     [errorTemplate, objectName, handleClosePopup, resourceDeleteMutation, resource, resourceConfig, reset, backRoute]

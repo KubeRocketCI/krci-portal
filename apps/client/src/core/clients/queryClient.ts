@@ -8,7 +8,6 @@ export const queryClient = new QueryClient({
       retry: 1, // Retry failed requests once
       refetchOnMount: false, // Avoid refetching when remounting
       refetchOnReconnect: true, // Refetch if the app regains connection
-    
     },
     mutations: {
       retry: 0, // Retry mutations once on failure

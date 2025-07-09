@@ -16,5 +16,5 @@ export interface FormAutocompleteSingleProps<
   placeholder?: string;
   disabled?: boolean;
   TextFieldProps?: StandardTextFieldProps;
-  AutocompleteProps?: AutocompleteProps<TOption, false, false, false>;
+  AutocompleteProps?: AutocompleteProps<TOption, boolean, boolean, boolean>;
 }

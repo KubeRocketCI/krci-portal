@@ -1,3 +1,4 @@
+import { Snackbar } from "@/core/components/Snackbar";
 import { useResourceCRUDMutation } from "@/core/k8s/api/hooks/useResourceCRUDMutation";
 import {
   Codebase,
@@ -10,26 +11,29 @@ import {
 } from "@my-project/shared";
 import React from "react";
 
-export const useCRUD = ({
-  onSuccess,
-  onError,
-}: {
-  onSuccess?: (codebase: Codebase | CodebaseDraft) => void;
-  onError?: () => void;
-}) => {
-  const invokeOnSuccessCallback = React.useCallback(
-    (codebase: Codebase | CodebaseDraft) => {
-      if (!onSuccess) return;
-
-      onSuccess(codebase);
-    },
-    [onSuccess]
-  );
-  const invokeOnErrorCallback = React.useCallback(() => onError && onError(), [onError]);
-
+export const useCRUD = () => {
   const codebaseCreateMutation = useResourceCRUDMutation<CodebaseDraft, typeof k8sOperation.create>(
     "codebaseCreateMutation",
-    k8sOperation.create
+    k8sOperation.create,
+    {
+      createCustomMessages: () => ({
+        onMutate: {
+          message: "Creating Codebase",
+        },
+        onError: {
+          message: "Failed to create Codebase",
+        },
+        onSuccess: {
+          message: "Codebase has been created",
+          options: {
+            autoHideDuration: 8000,
+            content: (key, message) => (
+              <Snackbar text={String(message)} snackbarKey={key} route={{}} variant={"success"} />
+            ),
+          },
+        },
+      }),
+    }
   );
 
   const codebaseSecretDeleteMutation = useResourceCRUDMutation<KubeObjectDraft, typeof k8sOperation.delete>(
@@ -44,20 +48,44 @@ export const useCRUD = ({
 
   const codebasePatchMutation = useResourceCRUDMutation<CodebaseDraft, typeof k8sOperation.patch>(
     "codebasePatchMutation",
-    k8sOperation.patch
+    k8sOperation.patch,
+    {
+      createCustomMessages: () => ({
+        onMutate: {
+          message: "Patching Codebase",
+        },
+        onError: {
+          message: "Failed to patch Codebase",
+        },
+        onSuccess: {
+          message: "Codebase has been patched",
+          options: {
+            autoHideDuration: 8000,
+            content: (key, message) => (
+              <Snackbar text={String(message)} snackbarKey={key} route={{}} variant={"success"} />
+            ),
+          },
+        },
+      }),
+    }
   );
 
-  const createCodebase = React.useCallback(
+  const triggerCreateCodebase = React.useCallback(
     async ({
-      codebase,
-      codebaseAuth,
+      data,
+      callbacks,
     }: {
-      codebase: CodebaseDraft;
-      codebaseAuth: {
-        repositoryLogin: string;
-        repositoryPasswordOrApiToken: string;
-      } | null;
+      data: {
+        codebase: CodebaseDraft;
+        codebaseAuth: {
+          repositoryLogin: string;
+          repositoryPasswordOrApiToken: string;
+        } | null;
+      };
+      callbacks?: { onSuccess?: () => void; onError?: () => void; onSettled?: () => void };
     }) => {
+      const { codebase, codebaseAuth } = data;
+
       if (!codebaseAuth) {
         codebaseCreateMutation.mutate(
           {
@@ -65,12 +93,9 @@ export const useCRUD = ({
             resourceConfig: k8sCodebaseConfig,
           },
           {
-            onSuccess: () => {
-              invokeOnSuccessCallback(codebase);
-            },
-            onError: () => {
-              invokeOnErrorCallback();
-            },
+            onSuccess: callbacks?.onSuccess,
+            onError: callbacks?.onError,
+            onSettled: callbacks?.onSettled,
           }
         );
         return;
@@ -99,17 +124,16 @@ export const useCRUD = ({
                 resourceConfig: k8sCodebaseConfig,
               },
               {
-                onSuccess: () => {
-                  invokeOnSuccessCallback(codebase);
-                },
+                onSuccess: callbacks?.onSuccess,
                 onError: () => {
                   codebaseSecretDeleteMutation.mutate({
                     resource: codebaseSecretDraft,
                     resourceConfig: k8sSecretConfig,
                   });
 
-                  invokeOnErrorCallback();
+                  callbacks?.onError?.();
                 },
+                onSettled: callbacks?.onSettled,
               }
             );
           },
@@ -119,38 +143,39 @@ export const useCRUD = ({
               resourceConfig: k8sSecretConfig,
             });
 
-            invokeOnErrorCallback();
+            callbacks?.onError?.();
           },
         }
       );
     },
-    [
-      codebaseCreateMutation,
-      codebaseSecretCreateMutation,
-      codebaseSecretDeleteMutation,
-      invokeOnErrorCallback,
-      invokeOnSuccessCallback,
-    ]
+    [codebaseCreateMutation, codebaseSecretCreateMutation, codebaseSecretDeleteMutation]
   );
 
-  const patchCodebase = React.useCallback(
-    async ({ codebase }: { codebase: Codebase }) => {
+  const triggerPatchCodebase = React.useCallback(
+    async ({
+      data,
+      callbacks,
+    }: {
+      data: {
+        codebase: Codebase;
+      };
+      callbacks?: { onSuccess?: () => void; onError?: () => void; onSettled?: () => void };
+    }) => {
+      const { codebase } = data;
+
       codebasePatchMutation.mutate(
         {
           resource: codebase,
           resourceConfig: k8sCodebaseConfig,
         },
         {
-          onSuccess: () => {
-            invokeOnSuccessCallback(codebase);
-          },
-          onError: () => {
-            invokeOnErrorCallback();
-          },
+          onSuccess: callbacks?.onSuccess,
+          onError: callbacks?.onError,
+          onSettled: callbacks?.onSettled,
         }
       );
     },
-    [codebasePatchMutation, invokeOnErrorCallback, invokeOnSuccessCallback]
+    [codebasePatchMutation]
   );
 
   const mutations = {
@@ -160,5 +185,5 @@ export const useCRUD = ({
     codebasePatchMutation,
   };
 
-  return { createCodebase, patchCodebase, mutations };
+  return { triggerCreateCodebase, triggerPatchCodebase, mutations };
 };

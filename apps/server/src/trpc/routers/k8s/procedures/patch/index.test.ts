@@ -78,6 +78,11 @@ describe("k8sPatchProcedure", () => {
       namespace: validInput.namespace,
       body: validInput.resource,
       name: validInput.name,
+      options: {
+        headers: {
+          "Content-Type": "application/strategic-merge-patch+json",
+        },
+      },
     });
     expect(result).toEqual(mockResponse);
   });

@@ -3,53 +3,79 @@ import React from "react";
 import { LOCAL_STORAGE_SERVICE } from "../../services/local-storage";
 import { namespaceFunction, searchFunction } from "./constants";
 import { FilterContext } from "./context";
-import { DefaultControlNames, FilterContextProviderProps, FilterState } from "./types";
+import { FilterContextValue, FilterProviderProps, FilterState, FilterValue, FilterValueMap } from "./types";
 
 const LS_FILTER_KEY = "FILTER_STATE";
 
-type DefaultFilterState = FilterState<KubeObjectBase, DefaultControlNames>;
+const createDefaultFilterState = <
+  Item extends KubeObjectBase,
+  ControlNames extends string,
+  ValueMap extends FilterValueMap,
+>(
+  matchFunctions: Record<ControlNames, (item: Item, value: FilterValue) => boolean>,
+  valueMap?: ValueMap
+): FilterState<Item, ControlNames, ValueMap> => {
+  const defaultValues: Record<string, FilterValue> = {};
+  const defaultMatchFunctions: Record<string, (item: Item, value: FilterValue) => boolean> = {};
 
-const defaultInitialFilterState: DefaultFilterState = {
-  values: {
-    search: "",
-    namespace: "",
-  },
-  matchFunctions: {
-    search: searchFunction,
-    namespace: namespaceFunction,
-  },
+  if ("search" in matchFunctions) {
+    defaultValues.search = "";
+    defaultMatchFunctions.search = searchFunction;
+  }
+
+  if ("namespace" in matchFunctions) {
+    defaultValues.namespace = "";
+    defaultMatchFunctions.namespace = namespaceFunction;
+  }
+
+  Object.entries(matchFunctions).forEach(([key, fn]) => {
+    if (!defaultValues[key]) {
+      defaultValues[key] = "";
+    }
+    defaultMatchFunctions[key] = fn as (item: Item, value: FilterValue) => boolean;
+  });
+
+  const finalValues = valueMap ? { ...defaultValues, ...valueMap } : defaultValues;
+
+  return {
+    values: finalValues as {
+      [K in ControlNames]: ValueMap[K];
+    },
+    matchFunctions: defaultMatchFunctions as Record<ControlNames, (item: Item, value: FilterValue) => boolean>,
+  };
 };
 
-export const FilterContextProvider = <Item, ControlNames extends DefaultControlNames>({
+export const FilterProvider = <
+  Item extends KubeObjectBase,
+  ControlNames extends string,
+  ValueMap extends FilterValueMap = Record<ControlNames, FilterValue>,
+>({
   children,
   entityID,
   matchFunctions,
+  valueMap,
   saveToLocalStorage = false,
-}: FilterContextProviderProps<Item, ControlNames>) => {
+}: FilterProviderProps<Item, ControlNames, ValueMap>) => {
   const LS_FILTER_ENTITY_KEY = `${LS_FILTER_KEY}_${entityID}`;
   const lsFilterState = LOCAL_STORAGE_SERVICE.getItem(LS_FILTER_ENTITY_KEY);
 
-  const [filter, setFilter] = React.useState<FilterState<Item, ControlNames>>(() => {
+  const defaultState = createDefaultFilterState<Item, ControlNames, ValueMap>(matchFunctions, valueMap);
+
+  const [filter, setFilter] = React.useState<FilterState<Item, ControlNames, ValueMap>>(() => {
     if (saveToLocalStorage && lsFilterState) {
       return {
-        ...lsFilterState,
-        matchFunctions: {
-          ...defaultInitialFilterState.matchFunctions,
-          ...matchFunctions,
+        ...defaultState,
+        values: {
+          ...defaultState.values,
+          ...lsFilterState.values,
         },
       };
     }
 
-    return {
-      ...defaultInitialFilterState,
-      matchFunctions: {
-        ...defaultInitialFilterState.matchFunctions,
-        ...matchFunctions,
-      },
-    };
+    return defaultState;
   });
 
-  const [showFilter, setShowFilter] = React.useState<boolean>(lsFilterState ?? false);
+  const [showFilter, setShowFilter] = React.useState<boolean>(lsFilterState?.showFilter ?? false);
 
   const filterFunction = React.useCallback(
     (item: Item) => {
@@ -58,7 +84,9 @@ export const FilterContextProvider = <Item, ControlNames extends DefaultControlN
       for (const [key, filterFn] of Object.entries(filter.matchFunctions)) {
         const keyControlValue = filter.values[key as ControlNames];
 
-        matches = keyControlValue ? filterFn(item, keyControlValue) : true;
+        matches = keyControlValue
+          ? (filterFn as (item: Item, value: FilterValue) => boolean)(item, keyControlValue)
+          : true;
 
         if (!matches) {
           break;
@@ -71,7 +99,7 @@ export const FilterContextProvider = <Item, ControlNames extends DefaultControlN
   );
 
   const setFilterItem = React.useCallback(
-    (key: string, value: string | string[]) => {
+    <K extends ControlNames>(key: K, value: ValueMap[K]) => {
       setFilter((prev) => {
         const newFilters = {
           ...prev,
@@ -83,27 +111,38 @@ export const FilterContextProvider = <Item, ControlNames extends DefaultControlN
 
         if (saveToLocalStorage) {
           LOCAL_STORAGE_SERVICE.setItem(LS_FILTER_ENTITY_KEY, {
-            // setting only values to local storage
             values: newFilters.values,
+            showFilter,
           });
         }
 
         return newFilters;
       });
     },
-    [LS_FILTER_ENTITY_KEY, saveToLocalStorage]
+    [LS_FILTER_ENTITY_KEY, saveToLocalStorage, showFilter]
   );
 
   const resetFilter = React.useCallback(() => {
-    setFilter(defaultInitialFilterState as FilterState<Item, ControlNames>);
+    setFilter(defaultState);
 
     if (saveToLocalStorage) {
       LOCAL_STORAGE_SERVICE.removeItem(LS_FILTER_ENTITY_KEY);
     }
-  }, [LS_FILTER_ENTITY_KEY, saveToLocalStorage]);
+  }, [defaultState, LS_FILTER_ENTITY_KEY, saveToLocalStorage]);
+
+  const contextValue: FilterContextValue<Item, ControlNames, ValueMap> = {
+    showFilter,
+    filter,
+    setFilterItem,
+    setShowFilter,
+    resetFilter,
+    filterFunction,
+  };
 
   return (
-    <FilterContext.Provider value={{ showFilter, filter, setFilterItem, setShowFilter, resetFilter, filterFunction }}>
+    <FilterContext.Provider
+      value={contextValue as unknown as FilterContextValue<unknown, string, Record<string, FilterValue>>}
+    >
       {children}
     </FilterContext.Provider>
   );

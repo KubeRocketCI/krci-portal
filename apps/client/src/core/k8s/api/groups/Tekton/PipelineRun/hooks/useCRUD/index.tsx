@@ -76,7 +76,7 @@ export const useCRUD = () => {
     }
   );
 
-  const createPipelineRun = React.useCallback(
+  const triggerCreatePipelineRun = React.useCallback(
     async ({
       pipelineRun,
       callbacks,
@@ -99,7 +99,7 @@ export const useCRUD = () => {
     [pipelineRunCreateMutation]
   );
 
-  const patchPipelineRun = React.useCallback(
+  const triggerPatchPipelineRun = React.useCallback(
     async ({
       pipelineRun,
       callbacks,
@@ -122,7 +122,7 @@ export const useCRUD = () => {
     [pipelineRunPatchMutation]
   );
 
-  const deletePipelineRun = React.useCallback(
+  const triggerDeletePipelineRun = React.useCallback(
     async ({
       pipelineRun,
       callbacks,
@@ -151,5 +151,5 @@ export const useCRUD = () => {
     pipelineRunDeleteMutation,
   };
 
-  return { createPipelineRun, patchPipelineRun, deletePipelineRun, mutations };
+  return { triggerCreatePipelineRun, triggerPatchPipelineRun, triggerDeletePipelineRun, mutations };
 };

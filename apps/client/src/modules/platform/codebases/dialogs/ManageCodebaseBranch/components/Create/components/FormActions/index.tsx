@@ -29,7 +29,7 @@ export const FormActions = () => {
   const handleClose = () => closeDialog();
 
   const {
-    createCodebaseBranch,
+    triggerCreateCodebaseBranch,
     mutations: { codebaseBranchCreateMutation, codebaseBranchEditMutation },
   } = useCodebaseBranchCRUD({
     onSuccess: handleClose,
@@ -64,18 +64,18 @@ export const FormActions = () => {
           version: newDefaultBranchVersion,
         });
 
-        await createCodebaseBranch({
+        await triggerCreateCodebaseBranch({
           codebaseBranch: newCodebaseBranch,
           defaultCodebaseBranch: newDefaultCodebaseBranch,
         });
       } else {
-        await createCodebaseBranch({
+        await triggerCreateCodebaseBranch({
           codebaseBranch: newCodebaseBranch,
         });
       }
       reset();
     },
-    [codebase.metadata.name, reset, defaultBranch, createCodebaseBranch]
+    [codebase.metadata.name, reset, defaultBranch, triggerCreateCodebaseBranch]
   );
 
   const theme = useTheme();

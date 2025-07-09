@@ -1,8 +1,8 @@
 import { Button, Grid, Tooltip } from "@mui/material";
 import React from "react";
 import { useFilterContext } from "../../hooks";
-import { ControlComponent } from "../../types";
-import { FilterProps } from "./types";
+import { FilterControl } from "../../types";
+import { FilterProps } from "../../types";
 import { FORM_CONTROL_LABEL_HEIGHT } from "@/core/providers/Form/constants";
 
 export const Filter = <ControlNames extends string>({ controls, hideFilter = true }: FilterProps<ControlNames>) => {
@@ -10,7 +10,7 @@ export const Filter = <ControlNames extends string>({ controls, hideFilter = tru
 
   const controlsRenderer = React.useCallback(() => {
     return Object.entries(controls).map(([controlKey, controlValue]) => {
-      const { component, gridXs = 3 } = controlValue as ControlComponent;
+      const { component, gridXs = 3 } = controlValue as FilterControl;
 
       return (
         <Grid item xs={gridXs} key={controlKey}>
