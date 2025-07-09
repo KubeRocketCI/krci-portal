@@ -28,7 +28,7 @@ export const FormActions = () => {
   }, [reset]);
 
   const {
-    editCodebaseBranch,
+    triggerEditCodebaseBranch,
     mutations: { codebaseBranchEditMutation },
   } = useCodebaseBranchCRUD({
     onSuccess: handleClose,
@@ -49,9 +49,9 @@ export const FormActions = () => {
         },
       });
 
-      await editCodebaseBranch({ codebaseBranch: newCodebaseBranch });
+      await triggerEditCodebaseBranch({ codebaseBranch: newCodebaseBranch });
     },
-    [codebaseBranch, editCodebaseBranch]
+    [codebaseBranch, triggerEditCodebaseBranch]
   );
 
   const theme = useTheme();

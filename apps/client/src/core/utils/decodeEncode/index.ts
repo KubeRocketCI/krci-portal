@@ -1,4 +1,4 @@
-export const safeDecode = (value: string, defaultValue: string = '') => {
+export const safeDecode = (value: string, defaultValue: string = "") => {
   try {
     return value ? atob(unescape(value)) : defaultValue;
   } catch (e) {

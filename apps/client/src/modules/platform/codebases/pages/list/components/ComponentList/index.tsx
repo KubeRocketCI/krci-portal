@@ -13,8 +13,8 @@ import { ManageCodebaseDialog } from "@/modules/platform/codebases/dialogs/Manag
 import { Box, Stack, Tooltip, Typography } from "@mui/material";
 import { codebaseType, type Codebase } from "@my-project/shared";
 import { Plus, Trash } from "lucide-react";
-import React from "react";
-import { ComponentListFilterAllControlNames } from "../../types";
+import React, { Suspense } from "react";
+import { ComponentListFilterControlNames } from "../../types";
 import { useColumns } from "./hooks/useColumns";
 import { useFilter } from "./hooks/useFilter";
 import { useSelection } from "./hooks/useSelection";
@@ -75,6 +75,14 @@ export const ComponentList = () => {
   const { selected, handleSelectAllClick, handleSelectRowClick } = useSelection();
   const { controls, filterFunction } = useFilter();
 
+  // Memoize the slots to prevent unnecessary re-renders
+  const tableSlots = React.useMemo(
+    () => ({
+      header: <Filter<ComponentListFilterControlNames> controls={controls} />,
+    }),
+    [controls]
+  );
+
   return (
     <>
       <ResourcesSVGSprite />
@@ -98,69 +106,69 @@ export const ComponentList = () => {
             create component
           </ButtonWithPermission>
         </Stack>
-        <Table<Codebase>
-          id={TABLE.COMPONENT_LIST.id}
-          name={TABLE.COMPONENT_LIST.name}
-          data={codebaseListWatch.dataArray}
-          isLoading={codebaseListWatch.query.isFetching}
-          // errors={codebases.errors}
-          columns={columns}
-          selection={{
-            selected,
-            handleSelectAll: handleSelectAllClick,
-            handleSelectRow: handleSelectRowClick,
-            isRowSelected: (row) => selected.indexOf(row.metadata.name) !== -1,
-            isRowSelectable: (row) => row.spec.type !== codebaseType.system,
-            renderSelectionInfo: (selectionLength) => (
-              <Stack direction="row" alignItems="center" justifyContent="space-between">
-                <Box
-                  sx={{
-                    visibility: selectionLength ? "visible" : "hidden",
-                    pointerEvents: selectionLength ? "auto" : "none",
-                  }}
-                >
-                  <Stack direction="row" alignItems="center" spacing={2}>
-                    <Box sx={{ minWidth: (t) => t.typography.pxToRem(150) }}>
-                      <Typography variant="body1">{selectionLength} item(s) selected</Typography>
-                    </Box>
-                    <ConditionalWrapper
-                      condition={codebasePermissions.data.delete.allowed}
-                      wrapper={(children) => (
-                        <Tooltip title={"Delete selected components"}>
-                          <div>{children}</div>
-                        </Tooltip>
-                      )}
-                    >
-                      <Box sx={{ color: (t) => t.palette.secondary.dark }}>
-                        <ButtonWithPermission
-                          ButtonProps={{
-                            size: "small",
-                            disabled: !selectionLength,
-                            // onClick: () => {
-                            //   setDeleteDialogOpen(true);
-                            // },
-                            startIcon: <Trash />,
-                            variant: "outlined",
-                            color: "inherit",
-                          }}
-                          allowed={codebasePermissions.data.delete.allowed}
-                          reason={codebasePermissions.data.delete.reason}
-                        >
-                          delete
-                        </ButtonWithPermission>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Table<Codebase>
+            id={TABLE.COMPONENT_LIST.id}
+            name={TABLE.COMPONENT_LIST.name}
+            data={codebaseListWatch.dataArray}
+            isLoading={codebaseListWatch.query.isFetching}
+            // errors={codebases.errors}
+            columns={columns}
+            selection={{
+              selected,
+              handleSelectAll: handleSelectAllClick,
+              handleSelectRow: handleSelectRowClick,
+              isRowSelected: (row) => selected.indexOf(row.metadata.name) !== -1,
+              isRowSelectable: (row) => row.spec.type !== codebaseType.system,
+              renderSelectionInfo: (selectionLength) => (
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                  <Box
+                    sx={{
+                      visibility: selectionLength ? "visible" : "hidden",
+                      pointerEvents: selectionLength ? "auto" : "none",
+                    }}
+                  >
+                    <Stack direction="row" alignItems="center" spacing={2}>
+                      <Box sx={{ minWidth: (t) => t.typography.pxToRem(150) }}>
+                        <Typography variant="body1">{selectionLength} item(s) selected</Typography>
                       </Box>
-                    </ConditionalWrapper>
-                  </Stack>
-                </Box>
-              </Stack>
-            ),
-          }}
-          filterFunction={filterFunction}
-          emptyListComponent={emptyListComponent}
-          slots={{
-            header: <Filter<ComponentListFilterAllControlNames> controls={controls} />,
-          }}
-        />
+                      <ConditionalWrapper
+                        condition={codebasePermissions.data.delete.allowed}
+                        wrapper={(children) => (
+                          <Tooltip title={"Delete selected components"}>
+                            <div>{children}</div>
+                          </Tooltip>
+                        )}
+                      >
+                        <Box sx={{ color: (t) => t.palette.secondary.dark }}>
+                          <ButtonWithPermission
+                            ButtonProps={{
+                              size: "small",
+                              disabled: !selectionLength,
+                              // onClick: () => {
+                              //   setDeleteDialogOpen(true);
+                              // },
+                              startIcon: <Trash />,
+                              variant: "outlined",
+                              color: "inherit",
+                            }}
+                            allowed={codebasePermissions.data.delete.allowed}
+                            reason={codebasePermissions.data.delete.reason}
+                          >
+                            delete
+                          </ButtonWithPermission>
+                        </Box>
+                      </ConditionalWrapper>
+                    </Stack>
+                  </Box>
+                </Stack>
+              ),
+            }}
+            filterFunction={filterFunction}
+            emptyListComponent={emptyListComponent}
+            slots={tableSlots}
+          />
+        </Suspense>
       </Stack>
       {/* {deleteDialogOpen && (
         <ComponentMultiDeletion

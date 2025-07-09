@@ -27,7 +27,7 @@ export const PipelineRunActionsMenu = ({
   const status = getPipelineRunStatus(_pipelineRun);
   const pipelineRunPermissions = usePipelineRunPermissions();
 
-  const { createPipelineRun, patchPipelineRun, deletePipelineRun } = usePipelineRunCRUD();
+  const { triggerCreatePipelineRun, triggerPatchPipelineRun, triggerDeletePipelineRun } = usePipelineRunCRUD();
 
   const isInProgress = status.reason === pipelineRunReason.started || status.reason === pipelineRunReason.running;
 
@@ -92,7 +92,7 @@ export const PipelineRunActionsMenu = ({
 
           const newPipelineRun = createRerunPipelineRun(pipelineRun);
 
-          createPipelineRun({ pipelineRun: newPipelineRun as PipelineRun });
+          triggerCreatePipelineRun({ pipelineRun: newPipelineRun as PipelineRun });
         },
       }),
       createResourceAction({
@@ -136,7 +136,7 @@ export const PipelineRunActionsMenu = ({
                 const newPipelineRun = { ...pipelineRun };
                 newPipelineRun.spec.status = "Cancelled";
 
-                patchPipelineRun({ pipelineRun: newPipelineRun as PipelineRun });
+                triggerPatchPipelineRun({ pipelineRun: newPipelineRun as PipelineRun });
               },
             }),
           ]
@@ -155,7 +155,7 @@ export const PipelineRunActionsMenu = ({
             handleCloseResourceActionListMenu();
           }
 
-          deletePipelineRun({ pipelineRun: pipelineRun as PipelineRun, callbacks: { onSuccess: onDelete } });
+          triggerDeletePipelineRun({ pipelineRun: pipelineRun as PipelineRun, callbacks: { onSuccess: onDelete } });
         },
       }),
     ];
@@ -170,9 +170,9 @@ export const PipelineRunActionsMenu = ({
     isInProgress,
     variant,
     handleCloseResourceActionListMenu,
-    createPipelineRun,
-    patchPipelineRun,
-    deletePipelineRun,
+    triggerCreatePipelineRun,
+    triggerPatchPipelineRun,
+    triggerDeletePipelineRun,
     onDelete,
   ]);
 

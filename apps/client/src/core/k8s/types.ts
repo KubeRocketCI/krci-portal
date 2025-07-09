@@ -9,3 +9,5 @@ export interface K8sResourceStatusIcon {
   color: string;
   isSpinning?: boolean;
 }
+
+export type FilterTypeWithOptionAll<FilterType> = "all" | FilterType;

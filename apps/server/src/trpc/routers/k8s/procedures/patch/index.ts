@@ -27,7 +27,7 @@ export const k8sPatchItemProcedure = protectedProcedure
 
     if (isCoreKubernetesResource(resourceConfig)) {
       return K8sClient.callCoreResourceOperation(resourceConfig.kind, {
-        operation: k8sOperation.patch,
+        operation: k8sOperation.replace,
         name,
         namespace,
         body: resource,
@@ -37,7 +37,7 @@ export const k8sPatchItemProcedure = protectedProcedure
     const customObjectsApi =
       K8sClient.KubeConfig.makeApiClient(CustomObjectsApi);
 
-    const res = await customObjectsApi.patchNamespacedCustomObject({
+    const res = await customObjectsApi.replaceNamespacedCustomObject({
       group: resourceConfig.group,
       version: resourceConfig.version,
       plural: resourceConfig.pluralName,

@@ -1,7 +1,7 @@
-import React from 'react';
-import { ValueOf } from '../../../../../../../../../types/global';
-import { MAIN_TABS } from '../../../../../../constants';
-import { ManageCodebaseFormValues } from '../../../../../../types';
+import React from "react";
+import { ValueOf } from "../../../../../../../../../types/global";
+import { MAIN_TABS } from "../../../../../../constants";
+import { ManageCodebaseFormValues } from "../../../../../../types";
 
 export interface FormActionsProps {
   baseDefaultValues: Partial<ManageCodebaseFormValues>;

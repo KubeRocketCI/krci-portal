@@ -12,7 +12,7 @@ export const Section: React.FC<SectionProps> = ({ title, titleTooltip, enableCop
         {title && (
           <Stack direction="row" spacing={0} alignItems={"center"}>
             {typeof title === "string" ? (
-              <Typography color="primary.dark" fontSize={theme.typography.pxToRem(48)}>
+              <Typography color="primary.dark" fontSize={theme.typography.pxToRem(32)}>
                 {title}
               </Typography>
             ) : (

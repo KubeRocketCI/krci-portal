@@ -4,7 +4,6 @@ import { router } from "..";
 
 export default function AppRouter() {
   const queryClient = useQueryClient();
-  console.log("AppRouter");
 
   return <RouterProvider router={router} context={{ queryClient }} />;
 }

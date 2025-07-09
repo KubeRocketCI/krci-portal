@@ -1,6 +1,6 @@
-import React from 'react';
-import { CurrentDialogContextProviderValue } from './types';
-import { Codebase, CodebaseBranch } from '@my-project/shared';
+import React from "react";
+import { CurrentDialogContextProviderValue } from "./types";
+import { Codebase, CodebaseBranch } from "@my-project/shared";
 
 const dialogInitialState = {
   open: false,
@@ -19,17 +19,13 @@ export const CurrentDialogContext = React.createContext<CurrentDialogContextProv
     codebaseBranch: null as unknown as CodebaseBranch,
     defaultBranch: null as unknown as CodebaseBranch,
     pipelines: {
-      review: '',
-      build: '',
+      review: "",
+      build: "",
     },
   },
   state: dialogInitialState,
   extra: {
-    buildPipelines: null as unknown as DataProviderValue<
-      KubeObjectListInterface<PipelineKubeObjectInterface>
-    >,
-    reviewPipelines: null as unknown as DataProviderValue<
-      KubeObjectListInterface<PipelineKubeObjectInterface>
-    >,
+    buildPipelines: null as unknown as DataProviderValue<KubeObjectListInterface<PipelineKubeObjectInterface>>,
+    reviewPipelines: null as unknown as DataProviderValue<KubeObjectListInterface<PipelineKubeObjectInterface>>,
   },
 });

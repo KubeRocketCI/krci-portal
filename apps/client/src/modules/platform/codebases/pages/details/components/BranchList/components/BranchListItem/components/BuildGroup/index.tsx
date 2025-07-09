@@ -50,7 +50,7 @@ export const BuildGroup = ({
 
   const buildTriggerTemplate = buildTriggerTemplateWatch.data;
 
-  const { createPipelineRun } = usePipelineRunCRUD();
+  const { triggerCreatePipelineRun } = usePipelineRunCRUD();
 
   const buildPipelineRunData = React.useMemo(() => {
     if (!gitServerByCodebase || !codebase) {
@@ -78,10 +78,10 @@ export const BuildGroup = ({
       return;
     }
 
-    await createPipelineRun({
+    await triggerCreatePipelineRun({
       pipelineRun: buildPipelineRunData,
     });
-  }, [buildPipelineRunData, createPipelineRun]);
+  }, [buildPipelineRunData, triggerCreatePipelineRun]);
 
   const latestBuildStatus = getPipelineRunStatus(latestBuildPipelineRun);
 

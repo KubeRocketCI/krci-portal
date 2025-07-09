@@ -1,41 +1,66 @@
+import { Snackbar } from "@/core/components/Snackbar";
 import { useResourceCRUDMutation } from "@/core/k8s/api/hooks/useResourceCRUDMutation";
 import { CodebaseBranch, CodebaseBranchDraft, k8sOperation, k8sCodebaseBranchConfig } from "@my-project/shared";
 import React from "react";
 
-export const useCRUD = ({
-  onSuccess,
-  onError,
-}: {
-  onSuccess?: (codebaseBranch: CodebaseBranch | CodebaseBranchDraft) => void;
-  onError?: () => void;
-}) => {
-  const invokeOnSuccessCallback = React.useCallback(
-    (codebaseBranchData: CodebaseBranch | CodebaseBranchDraft) => {
-      if (!onSuccess) return;
-
-      onSuccess(codebaseBranchData);
-    },
-    [onSuccess]
-  );
-  const invokeOnErrorCallback = React.useCallback(() => onError && onError(), [onError]);
-
+export const useCRUD = () => {
   const codebaseBranchCreateMutation = useResourceCRUDMutation<CodebaseBranchDraft, typeof k8sOperation.create>(
     "codebaseBranchCreateMutation",
-    k8sOperation.create
+    k8sOperation.create,
+    {
+      createCustomMessages: () => ({
+        onMutate: {
+          message: "Creating CodebaseBranch",
+        },
+        onError: {
+          message: "Failed to create CodebaseBranch",
+        },
+        onSuccess: {
+          message: "CodebaseBranch has been created",
+          options: {
+            autoHideDuration: 8000,
+            content: (key, message) => (
+              <Snackbar text={String(message)} snackbarKey={key} route={{}} variant={"success"} />
+            ),
+          },
+        },
+      }),
+    }
   );
 
   const codebaseBranchEditMutation = useResourceCRUDMutation<CodebaseBranchDraft, typeof k8sOperation.patch>(
     "codebaseBranchEditMutation",
-    k8sOperation.patch
+    k8sOperation.patch,
+    {
+      createCustomMessages: () => ({
+        onMutate: {
+          message: "Patching CodebaseBranch",
+        },
+        onError: {
+          message: "Failed to patch CodebaseBranch",
+        },
+        onSuccess: {
+          message: "CodebaseBranch has been patched",
+          options: {
+            autoHideDuration: 8000,
+            content: (key, message) => (
+              <Snackbar text={String(message)} snackbarKey={key} route={{}} variant={"success"} />
+            ),
+          },
+        },
+      }),
+    }
   );
 
-  const createCodebaseBranch = React.useCallback(
+  const triggerCreateCodebaseBranch = React.useCallback(
     async ({
       codebaseBranch,
       defaultCodebaseBranch,
+      callbacks,
     }: {
       codebaseBranch: CodebaseBranchDraft;
       defaultCodebaseBranch?: CodebaseBranch;
+      callbacks?: { onSuccess?: () => void; onError?: () => void; onSettled?: () => void };
     }) => {
       codebaseBranchCreateMutation.mutate(
         {
@@ -51,35 +76,39 @@ export const useCRUD = ({
               });
             }
 
-            invokeOnSuccessCallback(codebaseBranch);
+            callbacks?.onSuccess?.();
           },
           onError: () => {
-            invokeOnErrorCallback();
+            callbacks?.onError?.();
           },
+          onSettled: callbacks?.onSettled,
         }
       );
     },
-    [codebaseBranchCreateMutation, codebaseBranchEditMutation, invokeOnErrorCallback, invokeOnSuccessCallback]
+    [codebaseBranchCreateMutation, codebaseBranchEditMutation]
   );
 
-  const editCodebaseBranch = React.useCallback(
-    async ({ codebaseBranch }: { codebaseBranch: CodebaseBranchDraft }) => {
+  const triggerEditCodebaseBranch = React.useCallback(
+    async ({
+      codebaseBranch,
+      callbacks,
+    }: {
+      codebaseBranch: CodebaseBranchDraft;
+      callbacks?: { onSuccess?: () => void; onError?: () => void; onSettled?: () => void };
+    }) => {
       codebaseBranchEditMutation.mutate(
         {
           resource: codebaseBranch,
           resourceConfig: k8sCodebaseBranchConfig,
         },
         {
-          onSuccess: () => {
-            invokeOnSuccessCallback(codebaseBranch);
-          },
-          onError: () => {
-            invokeOnErrorCallback();
-          },
+          onSuccess: callbacks?.onSuccess,
+          onError: callbacks?.onError,
+          onSettled: callbacks?.onSettled,
         }
       );
     },
-    [codebaseBranchEditMutation, invokeOnErrorCallback, invokeOnSuccessCallback]
+    [codebaseBranchEditMutation]
   );
 
   const mutations = {
@@ -87,5 +116,5 @@ export const useCRUD = ({
     codebaseBranchEditMutation,
   };
 
-  return { createCodebaseBranch, editCodebaseBranch, mutations };
+  return { triggerCreateCodebaseBranch, triggerEditCodebaseBranch, mutations };
 };

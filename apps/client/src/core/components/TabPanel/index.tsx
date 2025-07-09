@@ -1,14 +1,8 @@
-import React from 'react';
-import { useStyles } from './styles';
-import { TabPanelProps } from './types';
+import React from "react";
+import { useStyles } from "./styles";
+import { TabPanelProps } from "./types";
 
-export const TabPanel = ({
-  children,
-  value,
-  index,
-  shouldRender = true,
-  ...other
-}: TabPanelProps) => {
+export const TabPanel = ({ children, value, index, shouldRender = true, ...other }: TabPanelProps) => {
   const classes = useStyles();
 
   const isActive = value === index;

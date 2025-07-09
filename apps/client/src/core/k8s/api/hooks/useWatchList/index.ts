@@ -69,8 +69,8 @@ export const useWatchList = <I extends KubeObjectBase>({
   const queryClient = useQueryClient();
 
   const k8sWatchListQueryCacheKey = React.useMemo(
-    () => getK8sWatchListQueryCacheKey(clusterName, _namespace, resourceConfig.pluralName),
-    [_namespace, clusterName, resourceConfig.pluralName]
+    () => getK8sWatchListQueryCacheKey(clusterName, _namespace, resourceConfig.pluralName, labels),
+    [_namespace, clusterName, labels, resourceConfig.pluralName]
   );
 
   const latestResourceVersion = React.useRef<string | null>(null);
@@ -190,13 +190,15 @@ export const useWatchList = <I extends KubeObjectBase>({
 
   const safeData = query.data || (k8sListInitialData as CustomKubeObjectList<I>);
 
+  const dataArray = React.useMemo(() => mapValuesToArray(safeData.items) as I[], [safeData.items]);
+
   return {
     query: {
       ...query,
       data: safeData,
     } as DefinedUseQueryResult<CustomKubeObjectList<I>, RequestError>,
     dataMap: safeData.items,
-    dataArray: mapValuesToArray(safeData.items) as I[],
+    dataArray,
     isEmpty: safeData.items.size === 0,
   } satisfies UseWatchListResult<I>;
 };

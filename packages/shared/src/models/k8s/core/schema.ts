@@ -46,11 +46,11 @@ const kubeOwnerReferenceSchema = z.object({
 export const kubeManagedFieldsEntrySchema = z.object({
   apiVersion: z.string(),
   fieldsType: z.string(),
-  fieldsV1: z.string(),
+  fieldsV1: z.record(z.any()),
   manager: z.string(),
   operation: z.string(),
-  subresource: z.string(),
-  timestamp: z.string(),
+  subresource: z.string().optional(),
+  timestamp: z.string().optional(),
 });
 
 // Schema for metadata of resources to be created

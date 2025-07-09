@@ -1,1 +1,1 @@
-export const DIALOG_NAME = 'SUCCESS_DIALOG';
+export const DIALOG_NAME = "SUCCESS_DIALOG";

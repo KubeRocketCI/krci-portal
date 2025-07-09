@@ -28,3 +28,16 @@ export const quickLinkSchema = kubeObjectBaseSchema.extend({
 export const quickLinkDraftSchema = kubeObjectBaseDraftSchema.extend({
   spec: quickLinkSpecSchema,
 });
+
+export const createQuickLinkDraftInputSchema = z.object({
+  name: z.string(),
+  icon: z.string(),
+  url: z.string(),
+  visible: z.boolean(),
+});
+
+export const editQuickLinkInputSchema = z.object({
+  url: z.string(),
+  visible: z.boolean(),
+  icon: z.string(),
+});

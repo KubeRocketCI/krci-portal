@@ -1,9 +1,9 @@
-import React from 'react';
-import { useFormContext } from 'react-hook-form';
-import { CODEBASE_FORM_NAMES } from '../../../../names';
-import { createAdvancedMappingRowName } from '../constants';
-import { AdvancedMappingItem, AdvancedMappingRow } from '../types';
-import { getJiraIssueMetadataPayload } from '../utils';
+import React from "react";
+import { useFormContext } from "react-hook-form";
+import { CODEBASE_FORM_NAMES } from "../../../../names";
+import { createAdvancedMappingRowName } from "../constants";
+import { AdvancedMappingItem, AdvancedMappingRow } from "../types";
+import { getJiraIssueMetadataPayload } from "../utils";
 
 interface UseHandleDeleteMappingRowProps {
   setAdvancedMappingRows: React.Dispatch<React.SetStateAction<AdvancedMappingRow[]>>;

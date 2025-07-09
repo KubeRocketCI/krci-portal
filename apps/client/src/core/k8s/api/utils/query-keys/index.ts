@@ -1,3 +1,5 @@
+import { ResourceLabels } from "@my-project/shared";
+
 export const getK8sAPIQueryCacheKey = () => ["k8s:api"];
 
 export const getK8sItemPermissionsQueryCacheKey = (clusterName: string, namespace: string, resourcePlural: string) => [
@@ -7,12 +9,12 @@ export const getK8sItemPermissionsQueryCacheKey = (clusterName: string, namespac
   resourcePlural,
 ];
 
-export const getK8sWatchListQueryCacheKey = (clusterName: string, namespace: string, resourcePlural: string) => [
-  "k8s:watchList",
-  clusterName,
-  namespace,
-  resourcePlural,
-];
+export const getK8sWatchListQueryCacheKey = (
+  clusterName: string,
+  namespace: string,
+  resourcePlural: string,
+  labels?: ResourceLabels
+) => ["k8s:watchList", clusterName, namespace, resourcePlural, labels?.toString() ?? ""];
 
 export const getK8sWatchItemQueryCacheKey = (
   clusterName: string,

@@ -17,6 +17,7 @@ import { CodebaseInterface } from "@/core/k8s/api/groups/KRCI/Codebase/configs/m
 import { RESOURCE_ICON_NAMES } from "@/core/k8s/icons/sprites/Resources/names";
 import { UseSpriteSymbol } from "@/core/k8s/icons/UseSpriteSymbol";
 import { useClusterStore } from "@/core/store";
+import { useShallow } from "zustand/react/shallow";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { Chip, Grid, Typography } from "@mui/material";
 import { DefaultTheme } from "@mui/styles/defaultTheme";
@@ -56,7 +57,7 @@ const getChipSX = (type: string) => {
 
 export const useColumns = (): TableColumn<Codebase>[] => {
   const { loadSettings } = useTableSettings(TABLE.COMPONENT_LIST.id);
-  const clusterName = useClusterStore((state) => state.clusterName);
+  const clusterName = useClusterStore(useShallow((state) => state.clusterName));
 
   const tableSettings = loadSettings();
 

@@ -1,6 +1,6 @@
-import React from 'react';
-import { CODEBASE_BRANCH_FORM_NAMES } from '../../../names';
-import { useCurrentDialog } from '../../../providers/CurrentDialog/hooks';
+import React from "react";
+import { CODEBASE_BRANCH_FORM_NAMES } from "../../../names";
+import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
 
 export const useDefaultValues = () => {
   const {

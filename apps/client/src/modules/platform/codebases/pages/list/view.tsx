@@ -1,29 +1,23 @@
-import { FilterContextProvider } from "@/core/providers/Filter/provider";
-import { useClusterStore } from "@/core/store";
 import { ComponentList } from "./components/ComponentList";
-import { matchFunctions } from "./constants";
 import { EDP_USER_GUIDE } from "@/core/k8s/constants/docs-urls";
+import { PageWrapper } from "@/core/components/PageWrapper";
+import { Section } from "@/core/components/Section";
+import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 
-export default function ComponentListPage() {
-  const defaultNamespace = useClusterStore((state) => state.defaultNamespace);
-
+export default function ComponentListPageContent() {
   return (
-    <FilterContextProvider
-      entityID={`CODEBASE_LIST::${defaultNamespace}`}
-      matchFunctions={matchFunctions}
-      saveToLocalStorage
-    >
-      <div className="space-y-4">
-        <h1 className="text-4xl">Components</h1>
-        <p>
-          Create, view, and manage diverse codebases, encompassing applications, libraries, autotests, and Terraform
-          infrastructure code.{" "}
-          <a href={EDP_USER_GUIDE.APPLICATION_CREATE.url} target={"_blank"} className="text-primary hover:underline">
-            <span>Learn more.</span>
-          </a>
-        </p>
-      </div>
-      <ComponentList />
-    </FilterContextProvider>
+    <PageWrapper>
+      <Section
+        title="Components"
+        description={
+          <>
+            Create, view, and manage diverse codebases, encompassing applications, libraries, autotests, and Terraform
+            infrastructure code. <LearnMoreLink url={EDP_USER_GUIDE.APPLICATION_CREATE.url} />
+          </>
+        }
+      >
+        <ComponentList />
+      </Section>
+    </PageWrapper>
   );
 }

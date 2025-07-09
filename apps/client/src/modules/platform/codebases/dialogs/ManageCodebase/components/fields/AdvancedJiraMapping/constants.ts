@@ -1,19 +1,19 @@
-import { AdvancedMappingItem } from './types';
+import { AdvancedMappingItem } from "./types";
 
 export const advancedMappingBase: AdvancedMappingItem[] = [
   {
-    label: 'Component/s',
-    value: 'components',
+    label: "Component/s",
+    value: "components",
     isUsed: false,
   },
   {
-    label: 'FixVersion/s',
-    value: 'fixVersions',
+    label: "FixVersion/s",
+    value: "fixVersions",
     isUsed: false,
   },
   {
-    label: 'Labels',
-    value: 'labels',
+    label: "Labels",
+    value: "labels",
     isUsed: false,
   },
 ];

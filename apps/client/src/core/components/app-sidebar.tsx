@@ -23,6 +23,10 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "./ui/sidebar";
+import { routeOverviewDetails } from "@/modules/platform/overview/pages/details/route";
+import { useClusterStore } from "../store";
+import { useShallow } from "zustand/react/shallow";
+import { routeComponentList } from "@/modules/platform/codebases/pages/list/route";
 
 export type NavItem = {
   title: string;
@@ -32,220 +36,226 @@ export type NavItem = {
   children?: NavItem[];
 };
 
-const nav: NavItem[] = [
-  {
-    title: "Overview",
-    icon: PanelsTopLeft,
-    route: {
-      to: "/home",
-    },
-  },
-  {
-    title: "Pipelines",
-    icon: Bot,
-    route: {
-      to: "/home",
-    },
-    children: [
-      {
-        title: "PipelineRuns",
-        route: {
-          to: "/home",
+const createNav = (clusterName: string, namespace: string): NavItem[] =>
+  [
+    {
+      title: "Overview",
+      icon: PanelsTopLeft,
+      route: {
+        to: routeOverviewDetails.fullPath,
+        params: {
+          clusterName,
+          namespace,
         },
-      },
-      {
-        title: "Pipelines",
-        route: {
-          to: "/home",
-        },
-      },
-      {
-        title: "Tasks",
-        route: {
-          to: "/home",
-        },
-      },
-    ],
-  },
-  {
-    title: "Marketplace",
-    icon: ShoppingCart,
-    route: {
-      to: "/home",
-    },
-  },
-  {
-    title: "Components",
-    icon: Layers,
-    route: {
-      to: "/c/$clusterName/components",
-      params: {
-        clusterName: "eks-sandbox",
       },
     },
-  },
-  {
-    title: "Deployment Flows",
-    icon: Rows2,
-    route: {
-      to: "/home",
+    {
+      title: "Pipelines",
+      icon: Bot,
+      route: {
+        to: "/home",
+      },
+      children: [
+        {
+          title: "PipelineRuns",
+          route: {
+            to: "/home",
+          },
+        },
+        {
+          title: "Pipelines",
+          route: {
+            to: "/home",
+          },
+        },
+        {
+          title: "Tasks",
+          route: {
+            to: "/home",
+          },
+        },
+      ],
     },
-  },
-  {
-    title: "Configuration",
-    icon: Settings,
-    route: {
-      to: "/home",
+    {
+      title: "Marketplace",
+      icon: ShoppingCart,
+      route: {
+        to: "/home",
+      },
     },
-    isActive: true,
-    children: [
-      {
-        title: "Quick Access",
-        route: {
-          to: "/home",
+    {
+      title: "Components",
+      icon: Layers,
+      route: {
+        to: routeComponentList.fullPath,
+        params: {
+          clusterName,
+          namespace,
         },
-        children: [
-          {
-            title: "QuickLinks",
-            route: {
-              to: "/home",
-            },
-          },
-        ],
       },
-      {
-        title: "Artifacts Storage",
-        route: {
-          to: "/home",
+    },
+    {
+      title: "Deployment Flows",
+      icon: Rows2,
+      route: {
+        to: "/home",
+      },
+    },
+    {
+      title: "Configuration",
+      icon: Settings,
+      route: {
+        to: "/home",
+      },
+      isActive: true,
+      children: [
+        {
+          title: "Quick Access",
+          route: {
+            to: "/home",
+          },
+          children: [
+            {
+              title: "QuickLinks",
+              route: {
+                to: "/home",
+              },
+            },
+          ],
         },
-        children: [
-          {
-            title: "Nexus",
-            route: {
-              to: "/home",
-            },
+        {
+          title: "Artifacts Storage",
+          route: {
+            to: "/home",
           },
-          {
-            title: "Registry",
-            route: {
-              to: "/home",
+          children: [
+            {
+              title: "Nexus",
+              route: {
+                to: "/home",
+              },
             },
-          },
-        ],
-      },
-      {
-        title: "Deployment",
-        route: {
-          to: "/home",
+            {
+              title: "Registry",
+              route: {
+                to: "/home",
+              },
+            },
+          ],
         },
-        children: [
-          {
-            title: "Clusters",
-            route: {
-              to: "/home",
-            },
+        {
+          title: "Deployment",
+          route: {
+            to: "/home",
           },
-          {
-            title: "GitOps",
-            route: {
-              to: "/home",
+          children: [
+            {
+              title: "Clusters",
+              route: {
+                to: "/home",
+              },
             },
-          },
-          {
-            title: "ArgoCD",
-            route: {
-              to: "/home",
+            {
+              title: "GitOps",
+              route: {
+                to: "/home",
+              },
             },
-          },
-        ],
-      },
-      {
-        title: "Security",
-        route: {
-          to: "/home",
+            {
+              title: "ArgoCD",
+              route: {
+                to: "/home",
+              },
+            },
+          ],
         },
-        isActive: true,
-        children: [
-          {
-            title: "DefectDojo",
-            route: {
-              to: "/home",
-            },
+        {
+          title: "Security",
+          route: {
+            to: "/home",
           },
-          {
-            title: "DependencyTrack",
-            route: {
-              to: "/home",
+          isActive: true,
+          children: [
+            {
+              title: "DefectDojo",
+              route: {
+                to: "/home",
+              },
             },
-            isActive: true,
-          },
-        ],
-      },
-      {
-        title: "Code Quality",
-        route: {
-          to: "/home",
+            {
+              title: "DependencyTrack",
+              route: {
+                to: "/home",
+              },
+              isActive: true,
+            },
+          ],
         },
-        children: [
-          {
-            title: "SonarQube",
-            route: {
-              to: "/home",
-            },
+        {
+          title: "Code Quality",
+          route: {
+            to: "/home",
           },
-        ],
-      },
-      {
-        title: "VCS",
-        route: {
-          to: "/home",
+          children: [
+            {
+              title: "SonarQube",
+              route: {
+                to: "/home",
+              },
+            },
+          ],
         },
-        children: [
-          {
-            title: "Git Servers",
-            route: {
-              to: "/home",
-            },
+        {
+          title: "VCS",
+          route: {
+            to: "/home",
           },
-        ],
-      },
-      {
-        title: "Management Tool",
-        route: {
-          to: "/home",
+          children: [
+            {
+              title: "Git Servers",
+              route: {
+                to: "/home",
+              },
+            },
+          ],
         },
-        children: [
-          {
-            title: "Jira",
-            route: {
-              to: "/home",
-            },
+        {
+          title: "Management Tool",
+          route: {
+            to: "/home",
           },
-        ],
-      },
-      {
-        title: "Gen AI",
-        route: {
-          to: "/home",
+          children: [
+            {
+              title: "Jira",
+              route: {
+                to: "/home",
+              },
+            },
+          ],
         },
-        children: [
-          {
-            title: "Chat Assistant",
-            route: {
-              to: "/home",
-            },
+        {
+          title: "Gen AI",
+          route: {
+            to: "/home",
           },
-          {
-            title: "Codemie",
-            route: {
-              to: "/home",
+          children: [
+            {
+              title: "Chat Assistant",
+              route: {
+                to: "/home",
+              },
             },
-          },
-        ],
-      },
-    ],
-  },
-] as const satisfies NavItem[];
+            {
+              title: "Codemie",
+              route: {
+                to: "/home",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  ] as const satisfies NavItem[];
 
 const clusters = [
   {
@@ -258,6 +268,15 @@ const SIDEBAR_WIDTH_MOBILE = "18rem";
 
 export function AppSidebar() {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+
+  const { clusterName, defaultNamespace } = useClusterStore(
+    useShallow((state) => ({
+      clusterName: state.clusterName,
+      defaultNamespace: state.defaultNamespace,
+    }))
+  );
+
+  const nav = createNav(clusterName, defaultNamespace);
 
   if (isMobile) {
     return (

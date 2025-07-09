@@ -1,4 +1,4 @@
-import { KubeObjectAction } from '../../types/actions';
+import { KubeObjectAction } from "../../types/actions";
 
 export interface ActionsMenuListProps {
   actions: KubeObjectAction[];

@@ -15,7 +15,6 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({
   return (
     <Box
       sx={{
-        pt: theme.typography.pxToRem(40),
         pb: theme.typography.pxToRem(120),
         px: theme.typography.pxToRem(16),
       }}
