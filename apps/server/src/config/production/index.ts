@@ -66,7 +66,8 @@ export class ProductionFastifyServer {
     });
 
     const publicPath =
-      process.env.CLIENT_DIST_DIR! || fromMonorepoRoot("/apps/client/dist");
+      process.env.DEPLOY_CLIENT_DIST_DIR! ||
+      fromMonorepoRoot("/apps/client/dist");
     console.log("Serving static files from:", publicPath);
 
     this.fastify.register(FastifyStatic, {
