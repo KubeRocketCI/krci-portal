@@ -24,6 +24,7 @@ export const TextWithTooltip = ({ text, textSX, maxLineAmount = 1 }: TextWithToo
       WebkitBoxOrient: "vertical",
       display: "-webkit-box",
       wordBreak: "break-word",
+      color: "inherit",
     };
 
     return textSX ? { ...base, ...textSX } : base;

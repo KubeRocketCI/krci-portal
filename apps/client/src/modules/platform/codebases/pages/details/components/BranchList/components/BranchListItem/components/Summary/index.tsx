@@ -1,28 +1,26 @@
+import { CopyButton } from "@/core/components/CopyButton";
+import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
+import { QuickLink } from "@/core/components/QuickLink";
+import { StatusIcon } from "@/core/components/StatusIcon";
+import { TextWithTooltip } from "@/core/components/TextWithTooltip";
+import { getCodebaseBranchStatusIcon } from "@/core/k8s/api/groups/KRCI/CodebaseBranch";
+import { getPipelineRunStatusIcon } from "@/core/k8s/api/groups/Tekton/PipelineRun/utils";
+import { LinkCreationService } from "@/core/services/link-creation";
+import { useCodebaseWatch, useGitServerWatch } from "@/modules/platform/codebases/pages/details/hooks/data";
 import { Box, Chip, Grid, Stack, Tooltip, Typography, useTheme } from "@mui/material";
-import clsx from "clsx";
-import { Actions } from "../Actions";
-import { BuildGroup } from "../BuildGroup";
-import { useStyles } from "./styles";
-import { SummaryProps } from "./types";
 import {
   checkForKRCIVersioning,
   checkIsDefaultBranch,
   codebaseBranchStatus,
   getPipelineRunStatus,
 } from "@my-project/shared";
-import { CopyButton } from "@/core/components/CopyButton";
-import { TextWithTooltip } from "@/core/components/TextWithTooltip";
-import { useParams } from "@tanstack/react-router";
-import { routeComponentDetails } from "@/modules/platform/codebases/pages/details/route";
-import { useCodebaseWatchItem } from "@/core/k8s/api/groups/KRCI/Codebase";
-import { useGitServerWatchItem } from "@/core/k8s/api/groups/KRCI/GitServer";
-import { getCodebaseBranchStatusIcon } from "@/core/k8s/api/groups/KRCI/CodebaseBranch";
-import { StatusIcon } from "@/core/components/StatusIcon";
-import { getPipelineRunStatusIcon } from "@/core/k8s/api/groups/Tekton/PipelineRun/utils";
-import { QuickLink } from "@/core/components/QuickLink";
+import clsx from "clsx";
 import { ExternalLink } from "lucide-react";
-import { LinkCreationService } from "@/core/services/link-creation";
-import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
+import React from "react";
+import { Actions } from "../Actions";
+import { BuildGroup } from "../BuildGroup";
+import { useStyles } from "./styles";
+import { SummaryProps } from "./types";
 
 export const Summary = ({
   codebaseBranch,
@@ -34,24 +32,10 @@ export const Summary = ({
 }: SummaryProps) => {
   const theme = useTheme();
 
-  const params = useParams({
-    from: routeComponentDetails.id,
-  });
+  const codebaseWatchQuery = useCodebaseWatch();
+  const codebase = codebaseWatchQuery.query.data;
 
-  const codebaseWatchQuery = useCodebaseWatchItem({
-    name: params.name,
-    queryOptions: {
-      enabled: !!params.name,
-    },
-  });
-  const codebase = codebaseWatchQuery.data;
-
-  const gitServerByCodebaseWatch = useGitServerWatchItem({
-    name: codebase?.spec.gitServer,
-    queryOptions: {
-      enabled: !!codebase?.spec.gitServer,
-    },
-  });
+  const gitServerByCodebaseWatch = useGitServerWatch();
 
   const classes = useStyles();
   const status = codebaseBranch?.status?.status;
@@ -63,6 +47,24 @@ export const Summary = ({
   const isKRCIVersioning = checkForKRCIVersioning(codebase?.spec.versioning.type);
 
   const { status: lastPipelineRunStatus, reason: lastPipelineRunReason } = getPipelineRunStatus(latestBuildPipelineRun);
+
+  const gitRepoBranchLink = React.useMemo(() => {
+    const gitProvider = gitServerByCodebaseWatch.query.data?.spec.gitProvider;
+
+    if (!gitProvider || !codebase?.status?.gitWebUrl || !codebaseBranch?.spec.branchName) {
+      return undefined;
+    }
+
+    return LinkCreationService.git.createRepoBranchLink(
+      gitProvider,
+      codebase?.status?.gitWebUrl,
+      codebaseBranch?.spec.branchName
+    );
+  }, [
+    codebase?.status?.gitWebUrl,
+    codebaseBranch?.spec.branchName,
+    gitServerByCodebaseWatch.query.data?.spec.gitProvider,
+  ]);
 
   return (
     <>
@@ -177,11 +179,7 @@ export const Summary = ({
                 enabledText="Open in GIT"
                 name={{ label: "GIT" }}
                 Icon={<ExternalLink size={16} />}
-                externalLink={LinkCreationService.git.createRepoBranchLink(
-                  gitServerByCodebaseWatch.data?.spec.gitProvider,
-                  codebase?.status?.gitWebUrl,
-                  codebaseBranch?.spec.branchName
-                )}
+                externalLink={gitRepoBranchLink}
                 variant="text"
                 isTextButton
               />
@@ -198,7 +196,7 @@ export const Summary = ({
             </Grid>
 
             <Grid item>
-              <LoadingWrapper isLoading={codebaseWatchQuery.isLoading}>
+              <LoadingWrapper isLoading={codebaseWatchQuery.query.isLoading}>
                 <Actions codebaseBranch={codebaseBranch} />
               </LoadingWrapper>
             </Grid>

@@ -5,26 +5,40 @@ import { EDP_USER_GUIDE } from "@/core/k8s/constants/docs-urls";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { ManageCodebaseBranchDialog } from "@/modules/platform/codebases/dialogs/ManageCodebaseBranch";
 import { Grid, Typography } from "@mui/material";
-import { CodebaseBranch } from "@my-project/shared";
+import { checkIsDefaultBranch, CodebaseBranch } from "@my-project/shared";
 import React from "react";
-import { useDataContext } from "../../providers/Data/hooks";
+import { useCodebaseBranchListWatch, useCodebaseWatch, usePipelineNamesWatch } from "../../hooks/data";
 import { BranchListActions } from "./components/BranchListActions";
 import { BranchListItem } from "./components/BranchListItem";
+import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 
 export const BranchList = () => {
-  const { codebaseWatch, codebaseBranches, defaultBranch, reviewPipelineName, buildPipelineName } = useDataContext();
+  const codebaseWatch = useCodebaseWatch();
+  const codebase = codebaseWatch.query.data;
+
+  const codebaseBranchListWatch = useCodebaseBranchListWatch();
+
+  const sortedCodebaseBranchList = React.useMemo(() => {
+    if (!codebase) {
+      return codebaseBranchListWatch.dataArray;
+    }
+    return codebaseBranchListWatch.dataArray.sort((a) => (checkIsDefaultBranch(codebase!, a) ? -1 : 1));
+  }, [codebaseBranchListWatch.dataArray, codebase]);
+
+  const defaultBranch = sortedCodebaseBranchList[0];
 
   const { setDialog } = useDialogContext();
 
-  const codebase = codebaseWatch.data;
-
   const [expandedPanel, setExpandedPanel] = React.useState<string | null>(
-    codebaseBranches.length === 1 ? codebaseBranches[0].spec.branchName : null
+    codebaseBranchListWatch?.dataArray.length === 1 ? codebaseBranchListWatch?.dataArray[0].spec.branchName : null
   );
 
   const handleChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpandedPanel(isExpanded ? panel : null);
   };
+
+  const pipelineNamesWatch = usePipelineNamesWatch();
+  const pipelineNames = pipelineNamesWatch.data;
 
   return (
     <Section
@@ -36,43 +50,47 @@ export const BranchList = () => {
             </Typography>
           </Grid>
           <Grid item style={{ marginLeft: "auto" }}>
-            {codebase && <BranchListActions />}
+            <BranchListActions />
           </Grid>
         </Grid>
       }
     >
-      {codebaseBranches.length && codebaseWatch.isFetched ? (
+      <LoadingWrapper isLoading={!codebaseBranchListWatch.query.isFetched}>
         <>
-          {codebaseBranches.map((codebaseBranch: CodebaseBranch) => {
-            const branchId = codebaseBranch.metadata.name;
+          {codebaseBranchListWatch.dataArray.length ? (
+            <>
+              {codebaseBranchListWatch.dataArray.map((codebaseBranch: CodebaseBranch) => {
+                const branchId = codebaseBranch.metadata.name;
 
-            return (
-              <BranchListItem
-                key={branchId}
-                id={branchId}
-                codebaseBranch={codebaseBranch}
-                expandedPanel={expandedPanel}
-                handlePanelChange={handleChange}
-              />
-            );
-          })}
+                return (
+                  <BranchListItem
+                    key={branchId}
+                    id={branchId}
+                    codebaseBranch={codebaseBranch}
+                    expandedPanel={expandedPanel}
+                    handlePanelChange={handleChange}
+                  />
+                );
+              })}
+            </>
+          ) : (
+            <EmptyList
+              missingItemName={"branches"}
+              handleClick={() =>
+                setDialog(ManageCodebaseBranchDialog, {
+                  codebaseBranches: codebaseBranchListWatch.dataArray,
+                  codebase: codebase!,
+                  defaultBranch: defaultBranch!,
+                  pipelines: {
+                    review: pipelineNames?.reviewPipelineName || "",
+                    build: pipelineNames?.buildPipelineName || "",
+                  },
+                })
+              }
+            />
+          )}
         </>
-      ) : (
-        <EmptyList
-          missingItemName={"branches"}
-          handleClick={() =>
-            setDialog(ManageCodebaseBranchDialog, {
-              codebaseBranches: codebaseBranches,
-              codebase: codebase!,
-              defaultBranch,
-              pipelines: {
-                review: reviewPipelineName,
-                build: buildPipelineName,
-              },
-            })
-          }
-        />
-      )}
+      </LoadingWrapper>
     </Section>
   );
 };

@@ -7,6 +7,7 @@ import {
 } from "@/core/k8s/api/utils/hook-creators";
 import { CDPipeline, k8sCDPipelineConfig } from "@my-project/shared";
 
+export { useCRUD as useCDPipelineCRUD } from "./useCRUD";
 export * from "./useWatchCDPipelineByAutotest";
 export * from "./useWatchCDPipelineByApplication";
 export * from "./useWatchCDPipelineByCodebaseBranch";

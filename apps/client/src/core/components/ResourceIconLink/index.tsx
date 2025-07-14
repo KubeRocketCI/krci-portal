@@ -76,7 +76,7 @@ const EnabledResourceIconLink = ({
       component={MuiLink}
       href={link}
       target={"_blank"}
-      endIcon={<SquareArrowOutUpRight color={theme.palette.grey["500"]} size={iconSize} />}
+      endIcon={<SquareArrowOutUpRight size={iconSize} />}
       size={size}
       sx={{ color: theme.palette.secondary.dark, borderColor: theme.palette.secondary.dark }}
     >
@@ -89,7 +89,7 @@ const EnabledResourceIconLink = ({
           <Grid item>{tooltipTitle}</Grid>
           <span> </span>
           <Grid item>
-            <SquareArrowOutUpRight color={theme.palette.grey["500"]} size={iconSize} />
+            <SquareArrowOutUpRight size={iconSize} />
           </Grid>
         </Grid>
       }

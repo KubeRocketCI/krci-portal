@@ -90,12 +90,12 @@ const FormSelectInner = React.forwardRef(
                     }}
                   >
                     <Stack direction="row" alignItems="center" spacing={0.5}>
-                      {endAdornment}
                       {tooltipText && (
                         <Tooltip title={tooltipText}>
                           <Info size={16} />
                         </Tooltip>
                       )}
+                      {endAdornment}
                     </Stack>
                   </Box>
                 }

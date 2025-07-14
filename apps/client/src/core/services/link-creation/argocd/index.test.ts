@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { ArgoCDURLService } from "./index";
 
 describe("testing link-creation ArgoCDURLService", () => {

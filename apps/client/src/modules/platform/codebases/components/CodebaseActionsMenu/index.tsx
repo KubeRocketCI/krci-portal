@@ -14,6 +14,10 @@ import { ActionsInlineList } from "@/core/components/ActionsInlineList";
 import { ActionsMenuList } from "@/core/components/ActionsMenuList";
 import { DeleteKubeObjectDialog } from "@/core/components/DeleteKubeObject";
 import { useDeletionConflictItem } from "./hooks/useDeletionConflictItem";
+import { Link } from "@tanstack/react-router";
+import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
+import { useClusterStore } from "@/core/store";
+import { useShallow } from "zustand/react/shallow";
 
 export const CodebaseActionsMenu = ({
   backRoute,
@@ -23,6 +27,8 @@ export const CodebaseActionsMenu = ({
   handleCloseResourceActionListMenu,
 }: CodebaseActionsMenuProps) => {
   const classes = useStyles();
+
+  const clusterName = useClusterStore(useShallow((state) => state.clusterName));
 
   const codebasePermissions = useCodebasePermissions();
 
@@ -40,11 +46,22 @@ export const CodebaseActionsMenu = ({
         <Typography component={"span"}>
           {capitalizeFirstLetter(codebase.spec.type)} {codebase.metadata.name} is used in
         </Typography>
-        <div className={classes.conflictEntityName}>{/* <Link>{conflictedCDPipeline.metadata.name}</Link> */}</div>
+        <div className={classes.conflictEntityName}>
+          <Link
+            to={routeCDPipelineDetails.fullPath}
+            params={{
+              clusterName,
+              name: conflictedCDPipeline.metadata.name,
+              namespace: conflictedCDPipeline.metadata.namespace!,
+            }}
+          >
+            {conflictedCDPipeline.metadata.name}
+          </Link>
+        </div>
         <Typography component={"span"}> Deployment Flow</Typography>
       </div>
     );
-  }, [classes, codebase, conflictedCDPipeline]);
+  }, [classes.conflictEntityName, classes.message, clusterName, codebase, conflictedCDPipeline]);
 
   const onBeforeSubmit = React.useCallback(
     async (setErrorTemplate: (error: React.ReactNode) => void, setLoadingActive: (loading: boolean) => void) => {

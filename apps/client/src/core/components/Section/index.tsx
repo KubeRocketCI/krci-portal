@@ -7,7 +7,7 @@ import { Info } from "lucide-react";
 export const Section: React.FC<SectionProps> = ({ title, titleTooltip, enableCopyTitle, description, children }) => {
   const theme = useTheme();
   return (
-    <Stack spacing={4}>
+    <Stack spacing={4} flexGrow={1}>
       <Stack spacing={1}>
         {title && (
           <Stack direction="row" spacing={0} alignItems={"center"}>
@@ -29,7 +29,16 @@ export const Section: React.FC<SectionProps> = ({ title, titleTooltip, enableCop
         {description && <Typography variant={"body1"}>{description}</Typography>}
       </Stack>
 
-      <Box sx={{ mt: theme.typography.pxToRem(16) }}>{children}</Box>
+      <Box
+        sx={{
+          mt: theme.typography.pxToRem(16),
+          flexGrow: 1,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {children}
+      </Box>
     </Stack>
   );
 };

@@ -27,6 +27,7 @@ export const trpc: TRPCClient<AppRouter> = createTRPCClient<AppRouter>({
       false: httpBatchLink({
         url: "/api",
         headers: { credentials: "include" },
+        maxItems: 1,
         fetch: async (url, options) => {
           // await wait(2000);
 

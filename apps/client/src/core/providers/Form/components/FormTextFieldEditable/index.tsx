@@ -1,101 +1,94 @@
-// import { ErrorMessage } from '@hookform/error-message';
-// import { Icon } from '@iconify/react';
-// import {
-//   FormControl,
-//   IconButton,
-//   InputAdornment,
-//   Stack,
-//   TextField,
-//   Tooltip,
-//   Typography,
-//   useTheme,
-// } from '@mui/material';
-// import React from 'react';
-// import { Controller } from 'react-hook-form';
-// import { ICONS } from '../../../../icons/iconify-icons-mapping';
-// import { FormTextFieldProps } from './types';
+import { FormControl, IconButton, Stack, TextField, Tooltip } from "@mui/material";
+import { Edit, Info, X } from "lucide-react";
+import React from "react";
+import { Controller, Path, PathValue } from "react-hook-form";
+import { FormTextFieldEditableProps } from "./types";
 
-// export const FormTextFieldEditable = React.forwardRef(
-//   (
-//     {
-//       name,
-//       label,
-//       title,
-//       control,
-//       defaultValue = '',
-//       errors,
-//       placeholder,
-//       disabled = false,
-//       InputProps,
-//       TextFieldProps,
-//       ...props
-//     }: FormTextFieldProps,
-//     ref: React.ForwardedRef<HTMLInputElement>
-//   ) => {
-//     const theme = useTheme();
-//     const [_partiallyDisabled, setPartiallyDisabled] = React.useState(true);
+const FormTextFieldEditableInner = React.forwardRef(
+  <TFormValues extends Record<string, unknown> = Record<string, unknown>>(
+    {
+      name,
+      label,
+      tooltipText,
+      control,
+      defaultValue = "",
+      errors,
+      placeholder,
+      disabled = false,
+      TextFieldProps = {},
+      initiallyEditable = false,
+      ...props
+    }: FormTextFieldEditableProps<TFormValues>,
+    ref: React.ForwardedRef<HTMLInputElement>
+  ) => {
+    const [isEditable, setIsEditable] = React.useState(initiallyEditable);
 
-//     const handleTogglePartiallyDisabled = () => {
-//       setPartiallyDisabled((prev) => !prev);
-//     };
+    const error = errors[name];
+    const hasError = !!error;
+    const errorMessage = error?.message as string;
+    const helperText = hasError ? errorMessage : TextFieldProps?.helperText;
 
-//     const hasError = !!errors[name];
+    const handleToggleEditable = () => {
+      setIsEditable((prev) => !prev);
+    };
 
-//     const _InputProps = React.useMemo(
-//       () => ({
-//         ...InputProps,
-//         endAdornment: (
-//           <Stack direction="row" spacing={1}>
-//             {title && (
-//               <InputAdornment position="end">
-//                 <Tooltip title={title}>
-//                   <Icon icon={ICONS.INFO_CIRCLE} width={15} color={theme.palette.action.active} />
-//                 </Tooltip>
-//               </InputAdornment>
-//             )}
-//             {!disabled && (
-//               <InputAdornment position="end">
-//                 <IconButton size={'small'} onClick={handleTogglePartiallyDisabled}>
-//                   <Icon icon={_partiallyDisabled ? ICONS.PENCIL : ICONS.CROSS} />
-//                 </IconButton>
-//               </InputAdornment>
-//             )}
-//           </Stack>
-//         ),
-//       }),
-//       [InputProps, _partiallyDisabled, disabled, theme.palette.action.active, title]
-//     );
+    const originalInputProps = TextFieldProps.InputProps ?? {};
+    const userEndAdornment = originalInputProps.endAdornment;
 
-//     return (
-//       <Stack spacing={1}>
-//         <FormControl fullWidth>
-//           <Controller
-//             render={({ field }) => {
-//               return (
-//                 <TextField
-//                   error={hasError}
-//                   placeholder={placeholder}
-//                   inputRef={ref}
-//                   disabled={disabled || _partiallyDisabled}
-//                   InputProps={_InputProps}
-//                   label={label}
-//                   {...TextFieldProps}
-//                   {...field}
-//                 />
-//               );
-//             }}
-//             name={name}
-//             defaultValue={defaultValue}
-//             control={control}
-//             {...props}
-//           />
-//         </FormControl>
-//         {hasError && (
-//           <Typography component={'span'} variant={'subtitle2'} color={'error'}>
-//             <ErrorMessage errors={errors} name={name} />
-//           </Typography>
-//         )}
-//       </Stack>
-//     );
-//   }
-// );
+    const mergedInputProps = {
+      ...originalInputProps,
+      endAdornment: (
+        <Stack direction="row" alignItems="center" spacing={0.5}>
+          {userEndAdornment}
+          {tooltipText && (
+            <Tooltip title={tooltipText}>
+              <Info size={16} />
+            </Tooltip>
+          )}
+          {!disabled && (
+            <Tooltip title={isEditable ? "Cancel editing" : "Edit"}>
+              <IconButton size="small" onClick={handleToggleEditable}>
+                {isEditable ? <X size={16} /> : <Edit size={16} />}
+              </IconButton>
+            </Tooltip>
+          )}
+        </Stack>
+      ),
+    };
+
+    return (
+      <Stack spacing={1}>
+        <FormControl fullWidth>
+          <Controller
+            name={name}
+            control={control}
+            defaultValue={defaultValue as PathValue<TFormValues, Path<TFormValues>>}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                {...TextFieldProps}
+                inputRef={ref}
+                placeholder={placeholder}
+                disabled={disabled || !isEditable}
+                error={hasError}
+                label={label}
+                InputProps={mergedInputProps}
+                helperText={helperText}
+                aria-describedby={hasError ? `${name}-error` : undefined}
+                {...props}
+              />
+            )}
+          />
+        </FormControl>
+      </Stack>
+    );
+  }
+);
+
+FormTextFieldEditableInner.displayName = "FormTextFieldEditable";
+
+export const FormTextFieldEditable = FormTextFieldEditableInner as <
+  TFormValues extends Record<string, unknown> = Record<string, unknown>,
+>(
+  props: FormTextFieldEditableProps<TFormValues> & { ref?: React.ForwardedRef<HTMLInputElement> }
+) => React.JSX.Element;

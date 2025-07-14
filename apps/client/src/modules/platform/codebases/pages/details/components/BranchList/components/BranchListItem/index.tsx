@@ -1,4 +1,3 @@
-import { usePipelineRunWatchList } from "@/core/k8s/api/groups/Tekton/PipelineRun";
 import { Accordion, AccordionDetails, AccordionSummary, alpha, Box } from "@mui/material";
 import {
   PipelineRunDraft,
@@ -6,19 +5,15 @@ import {
   pipelineType,
   sortKubeObjectByCreationTimestamp,
 } from "@my-project/shared";
-import { ArrowDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import React from "react";
+import { useCodebaseBranchPipelineRunListWatch } from "../../../../hooks/data";
 import { Details } from "./components/Details";
 import { Summary } from "./components/Summary";
 import { BranchListItemProps } from "./types";
 
 export const BranchListItem = ({ codebaseBranch, expandedPanel, id, handlePanelChange }: BranchListItemProps) => {
-  const pipelineRunListWatch = usePipelineRunWatchList({
-    namespace: codebaseBranch.metadata.namespace,
-    labels: {
-      [pipelineRunLabels.codebaseBranch]: codebaseBranch.metadata.name,
-    },
-  });
+  const pipelineRunListWatch = useCodebaseBranchPipelineRunListWatch(codebaseBranch);
 
   const pipelineRuns = React.useMemo(() => {
     const allItems = pipelineRunListWatch.dataArray.sort(sortKubeObjectByCreationTimestamp);
@@ -73,7 +68,7 @@ export const BranchListItem = ({ codebaseBranch, expandedPanel, id, handlePanelC
       <Box sx={{ pb: (t) => t.typography.pxToRem(16) }}>
         <Accordion expanded={expandedPanel === id} onChange={handlePanelChange(id)}>
           <AccordionSummary
-            expandIcon={<ArrowDown size={16} />}
+            expandIcon={<ChevronDown size={16} />}
             sx={{
               padding: (t) => `${t.typography.pxToRem(8)} ${t.typography.pxToRem(24)}`,
               borderBottom: (t) => `1px solid ${alpha(t.palette.common.black, 0.2)}`,

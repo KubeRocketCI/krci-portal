@@ -30,6 +30,7 @@ export const k8sWatchListProcedure = protectedProcedure
       const { namespace, resourceConfig, resourceVersion, labels } = input;
 
       let controller: Awaited<ReturnType<typeof watch.watch>>;
+      let isActive = true;
 
       const watchUrl = createCustomResourceURL({
         resourceConfig,
@@ -41,19 +42,28 @@ export const k8sWatchListProcedure = protectedProcedure
         .watch(
           watchUrl,
           { resourceVersion },
-          (type, obj: KubeObjectBase) => emit.next({ type, data: obj }),
+          (type, obj: KubeObjectBase) => {
+            if (isActive) {
+              emit.next({ type, data: obj });
+            }
+          },
           (err) => {
-            if (err) emit.error(err);
+            if (err && isActive) {
+              emit.error(err);
+            }
           }
         )
         .then((c) => {
           controller = c;
         })
         .catch((err) => {
-          emit.error(err);
+          if (isActive) {
+            emit.error(err);
+          }
         });
 
       return () => {
+        isActive = false;
         controller?.abort();
       };
     });

@@ -13,13 +13,13 @@ import {
 import React from "react";
 
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
-import { useTriggerTemplateWatchItem } from "@/core/k8s/api/groups/Tekton/TriggerTemplate";
-import { CUSTOM_RESOURCE_STATUS } from "@/core/k8s/constants/statuses";
-import { BuildGroupProps } from "./types";
-import { useDataContext } from "@/modules/platform/codebases/pages/details/providers/Data/hooks";
+import { StatusIcon } from "@/core/components/StatusIcon";
 import { usePipelineRunCRUD, usePipelineRunPermissions } from "@/core/k8s/api/groups/Tekton/PipelineRun";
-import { createBuildPipelineRunDraft, getPipelineRunStatus, pipelineRunReason } from "@my-project/shared";
-import { ArrowDown, LoaderCircle, Play } from "lucide-react";
+import { CUSTOM_RESOURCE_STATUS } from "@/core/k8s/constants/statuses";
+import { useBuildTriggerTemplateWatch, useCodebaseWatch, useGitServerWatch } from "@/modules/platform/codebases/pages/details/hooks/data";
+import { createBuildPipelineRunDraft, getPipelineRunStatus, PipelineRun, pipelineRunReason } from "@my-project/shared";
+import { ChevronDown, LoaderCircle, Play } from "lucide-react";
+import { BuildGroupProps } from "./types";
 
 export const BuildGroup = ({
   codebaseBranch,
@@ -29,26 +29,22 @@ export const BuildGroup = ({
   handleClickMenu,
   handleCloseMenu,
 }: BuildGroupProps) => {
-  const { gitServerByCodebaseWatch, codebaseWatch } = useDataContext();
+  const codebaseWatch = useCodebaseWatch();
+  const codebase = codebaseWatch.query.data;
 
-  const codebase = codebaseWatch.data;
-  const gitServerByCodebase = gitServerByCodebaseWatch.data;
+  const gitServerByCodebaseWatch = useGitServerWatch();
+  const gitServerByCodebase = gitServerByCodebaseWatch.query.data;
 
   const open = Boolean(menuAnchorEl);
   const id = open ? "simple-popper" : undefined;
 
   const theme = useTheme();
 
-  const buildTriggerTemplateWatch = useTriggerTemplateWatchItem({
-    name: `${gitServerByCodebase?.spec?.gitProvider}-build-template`,
-    queryOptions: {
-      enabled: !!gitServerByCodebase?.spec?.gitProvider,
-    },
-  });
+  const buildTriggerTemplateWatch = useBuildTriggerTemplateWatch();
 
   const pipelineRunPermissions = usePipelineRunPermissions();
 
-  const buildTriggerTemplate = buildTriggerTemplateWatch.data;
+  const buildTriggerTemplate = buildTriggerTemplateWatch.query.data;
 
   const { triggerCreatePipelineRun } = usePipelineRunCRUD();
 
@@ -79,11 +75,13 @@ export const BuildGroup = ({
     }
 
     await triggerCreatePipelineRun({
-      pipelineRun: buildPipelineRunData,
+      data: {
+        pipelineRun: buildPipelineRunData,
+      },
     });
   }, [buildPipelineRunData, triggerCreatePipelineRun]);
 
-  const latestBuildStatus = getPipelineRunStatus(latestBuildPipelineRun);
+  const latestBuildStatus = getPipelineRunStatus(latestBuildPipelineRun || ({} as PipelineRun));
 
   const latestBuildIsRunning = latestBuildStatus.reason === pipelineRunReason.running;
 
@@ -113,7 +111,11 @@ export const BuildGroup = ({
       <ButtonGroup variant="outlined" sx={{ color: theme.palette.text.primary }}>
         <ButtonWithPermission
           ButtonProps={{
-            startIcon: latestBuildIsRunning ? <LoaderCircle size={20} /> : <Play size={20} />,
+            startIcon: latestBuildIsRunning ? (
+              <StatusIcon Icon={LoaderCircle} isSpinning color={theme.palette.secondary.dark} />
+            ) : (
+              <Play size={20} />
+            ),
             onClick: onBuildButtonClick,
             size: "small",
             sx: {
@@ -140,7 +142,7 @@ export const BuildGroup = ({
           allowed={!buildButtonDisabled}
           reason={buildButtonTooltip}
         >
-          <ArrowDown size={15} />
+          <ChevronDown size={16} />
         </ButtonWithPermission>
       </ButtonGroup>
       <Popper id={id} sx={{ zIndex: 1 }} open={open} anchorEl={menuAnchorEl} role={undefined} transition disablePortal>

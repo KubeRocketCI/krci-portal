@@ -1,12 +1,18 @@
-import { Codebase, GitServer } from "../../../../KRCI";
+import { Codebase, CodebaseBranch, GitServer } from "../../../../KRCI";
 
 export const createReviewPipelineRef = ({
+  defaultBranch,
   gitServer,
   codebase,
 }: {
+  defaultBranch: CodebaseBranch;
   gitServer: GitServer;
   codebase: Codebase;
 }) => {
+  if (defaultBranch) {
+    return defaultBranch.spec?.pipelines?.review || "";
+  }
+
   if (!gitServer || !codebase) {
     return "";
   }

@@ -6,6 +6,7 @@ import {
   kubeObjectMetadataSchema,
 } from "../../../core";
 import { stageLabels } from "./labels";
+import { krciCommonLabelsSchema } from "../common";
 
 export const stageStatusEnum = z.enum([
   "created",
@@ -22,14 +23,14 @@ export const stageSourceTypeEnum = z.enum(["default", "library"]);
 
 export const stageTriggerTypeEnum = z.enum(["Auto", "Manual", "Auto-stable"]);
 
-const stageQualityGateSchema = z.object({
+export const stageQualityGateSchema = z.object({
   qualityGateType: stageQualityGateTypeEnum.default("manual"),
   stepName: z.string().min(2),
   autotestName: z.string().nullable().optional(),
   branchName: z.string().nullable().optional(),
 });
 
-const stageSourceLibrarySchema = z
+export const stageSourceLibrarySchema = z
   .object({
     branch: z.string().optional(),
     name: z.string().optional(),
@@ -67,7 +68,7 @@ const stageStatusSchema = z.object({
   value: z.string(),
 });
 
-const stageLabelsSchema = z.object({
+const stageLabelsSchema = krciCommonLabelsSchema.extend({
   [stageLabels.cdPipeline]: z.string(),
 });
 
@@ -84,4 +85,18 @@ export const stageDraftSchema = kubeObjectBaseDraftSchema.extend({
     labels: stageLabelsSchema,
   }),
   spec: stageSpecSchema,
+});
+
+export const createStageDraftInputSchema = z.object({
+  cdPipeline: stageDraftSchema.shape.spec.shape.cdPipeline,
+  cleanTemplate: stageDraftSchema.shape.spec.shape.cleanTemplate,
+  clusterName: stageDraftSchema.shape.spec.shape.clusterName,
+  description: stageDraftSchema.shape.spec.shape.description,
+  name: stageDraftSchema.shape.spec.shape.name,
+  namespace: stageDraftSchema.shape.spec.shape.namespace,
+  order: stageDraftSchema.shape.spec.shape.order,
+  qualityGates: stageDraftSchema.shape.spec.shape.qualityGates,
+  source: stageDraftSchema.shape.spec.shape.source,
+  triggerTemplate: stageDraftSchema.shape.spec.shape.triggerTemplate,
+  triggerType: stageDraftSchema.shape.spec.shape.triggerType,
 });

@@ -1,7 +1,7 @@
 import { BackwardNameMapping } from "@/core/types/forms";
 import { codebaseBranchLabels } from "@my-project/shared";
 
-const NAMES = {
+export const NAMES = {
   NAME: "name",
   FROM_COMMIT: "fromCommit",
   RELEASE: "release",

@@ -6,4 +6,5 @@ export const pipelineRunLabels = {
   pipeline: "app.edp.epam.com/pipeline",
   cdPipeline: "app.edp.epam.com/cdpipeline",
   stage: "app.edp.epam.com/stage",
+  cdStage: "app.edp.epam.com/cdstage",
 } as const;

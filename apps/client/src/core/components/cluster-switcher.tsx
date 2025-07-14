@@ -11,9 +11,9 @@ import {
   DropdownMenuTrigger,
 } from "@/core/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/core/components/ui/sidebar";
-import { useDialogContext } from "../providers/Dialog/hooks";
-import NamespacesDialog from "./Namespaces";
+import { useDialogOpener } from "../providers/Dialog/hooks";
 import KubeConfigPreviewDialog from "./KubeConfigPreview";
+import NamespacesDialog from "./Namespaces";
 
 export function ClusterSwitcher({
   clusters,
@@ -27,7 +27,8 @@ export function ClusterSwitcher({
   const { isMobile } = useSidebar();
   const [activeCluster] = React.useState(clusters[0]);
 
-  const { setDialog } = useDialogContext();
+  const openNamespacesDialog = useDialogOpener(NamespacesDialog);
+  const openKubeConfigPreviewDialog = useDialogOpener(KubeConfigPreviewDialog);
 
   if (!activeCluster) {
     return null;
@@ -71,7 +72,7 @@ export function ClusterSwitcher({
             <DropdownMenuGroup>
               <DropdownMenuItem
                 onClick={() => {
-                  setTimeout(() => setDialog(NamespacesDialog, {}), 0);
+                  openNamespacesDialog({});
                 }}
               >
                 <Shield className="size-4" />
@@ -80,7 +81,7 @@ export function ClusterSwitcher({
 
               <DropdownMenuItem
                 onClick={() => {
-                  setTimeout(() => setDialog(KubeConfigPreviewDialog, {}), 0);
+                  openKubeConfigPreviewDialog({});
                 }}
               >
                 <FileUser className="size-4" />

@@ -1,12 +1,18 @@
-import { Codebase, GitServer } from "../../../../KRCI";
+import { Codebase, CodebaseBranch, GitServer } from "../../../../KRCI";
 
 export const createBuildPipelineRef = ({
+  defaultBranch,
   gitServer,
   codebase,
 }: {
+  defaultBranch: CodebaseBranch;
   gitServer: GitServer;
   codebase: Codebase;
 }) => {
+  if (defaultBranch) {
+    return defaultBranch.spec?.pipelines?.build || "";
+  }
+
   if (!gitServer || !codebase) {
     return "";
   }

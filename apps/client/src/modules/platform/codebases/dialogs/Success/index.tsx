@@ -38,18 +38,17 @@ export const SuccessDialog: React.FC<SuccessGraphDialogProps> = ({
           Close
         </Button>
         {route && (
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error
-          <Button
-            component={Link}
-            to={route?.to}
-            params={route?.params}
-            color="primary"
-            variant="contained"
+          <Link
+            to={route.to}
+            params={route.params}
+            search={route.search}
             onClick={() => closeDialog()}
+            style={{ textDecoration: "none" }}
           >
-            proceed
-          </Button>
+            <Button color="primary" variant="contained">
+              proceed
+            </Button>
+          </Link>
         )}
       </DialogActions>
     </Dialog>

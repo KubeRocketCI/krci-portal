@@ -1,5 +1,12 @@
 import z from "zod";
-import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema } from "../../../core";
+import {
+  kubeObjectBaseDraftSchema,
+  kubeObjectBaseSchema,
+  kubeObjectDraftMetadataSchema,
+  kubeObjectMetadataSchema,
+} from "../../../core";
+import { krciCommonLabelsSchema } from "..";
+import { quickLinkLabels } from "./labels";
 
 export const systemQuickLinksEnum = z.enum([
   "argocd",
@@ -21,11 +28,21 @@ const quickLinkSpecSchema = z.object({
   visible: z.boolean(),
 });
 
+const quickLinkLabelsSchema = krciCommonLabelsSchema.extend({
+  [quickLinkLabels.provider]: z.string().optional(),
+});
+
 export const quickLinkSchema = kubeObjectBaseSchema.extend({
+  metadata: kubeObjectMetadataSchema.extend({
+    labels: quickLinkLabelsSchema,
+  }),
   spec: quickLinkSpecSchema,
 });
 
 export const quickLinkDraftSchema = kubeObjectBaseDraftSchema.extend({
+  metadata: kubeObjectDraftMetadataSchema.extend({
+    labels: quickLinkLabelsSchema,
+  }),
   spec: quickLinkSpecSchema,
 });
 

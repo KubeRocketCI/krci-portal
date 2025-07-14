@@ -1,0 +1,307 @@
+import { Grid } from "@mui/material";
+import React from "react";
+import { useTypedFormContext } from "../../../../../hooks/useFormContext";
+import { STAGE_FORM_NAMES } from "../../../../../names";
+import {
+  createQualityGateAutotestFieldName,
+  createQualityGateStepNameFieldName,
+  createQualityGateTypeAutotestsBranchFieldName,
+  createQualityGateTypeFieldName,
+} from "../../utils";
+import { QualityGateRowProps } from "./types";
+import { AutotestWithBranchesOption, FormStageQualityGate } from "../../../../../types";
+import { FieldEvent, SelectOption } from "@/core/types/forms";
+import { mapArrayToSelectOptions } from "@/core/utils/forms/mapToSelectOptions";
+import { StageQualityGateType, stageQualityGateType } from "@my-project/shared";
+import { FormSelect } from "@/core/providers/Form/components/FormSelect";
+import { FormTextField } from "@/core/providers/Form/components/FormTextField";
+
+const getAvailableAutotests = (
+  autotestsWithBranchesOptions: AutotestWithBranchesOption[],
+  qualityGatesFieldValue: FormStageQualityGate[]
+) => {
+  return autotestsWithBranchesOptions.map((autotest) => {
+    const { name, branches } = autotest;
+    const alreadyChosenAutotest = qualityGatesFieldValue.find(({ autotestName }) => autotestName === name);
+
+    const qualityGatesByChosenAutotest = qualityGatesFieldValue.filter(({ autotestName }) => autotestName === name);
+
+    const allBranchesAreChosen =
+      qualityGatesByChosenAutotest.length === branches.length &&
+      qualityGatesByChosenAutotest.every((qualityGate) =>
+        qualityGate.branchName ? branches.includes(qualityGate.branchName) : false
+      );
+
+    if (alreadyChosenAutotest && branches.length <= 1) {
+      return {
+        ...autotest,
+        disabled: true,
+      };
+    }
+
+    if (allBranchesAreChosen) {
+      return {
+        ...autotest,
+        disabled: true,
+      };
+    }
+
+    return autotest;
+  });
+};
+
+const getAvailableAutotestBranches = (
+  currentQualityGateBranchesOptions: SelectOption<string>[],
+  qualityGatesFieldValue: FormStageQualityGate[],
+  currentQualityGateAutotestFieldValue: string
+) => {
+  return currentQualityGateBranchesOptions.map((branchOption) => {
+    const qualityGatesByChosenAutotest = qualityGatesFieldValue.filter(
+      ({ autotestName }) => autotestName === currentQualityGateAutotestFieldValue
+    );
+
+    const alreadyChosenAutotestBranch = qualityGatesByChosenAutotest.find(
+      (qualityGate) => qualityGate.branchName === branchOption.value
+    );
+
+    if (alreadyChosenAutotestBranch) {
+      return {
+        ...branchOption,
+        disabled: true,
+      };
+    }
+
+    return branchOption;
+  });
+};
+
+const getCurrentQualityGateBranchesOptions = (
+  autotestsWithBranchesOptions: AutotestWithBranchesOption[],
+  currentQualityGateAutotestFieldValue: string
+) => {
+  return autotestsWithBranchesOptions.length && currentQualityGateAutotestFieldValue
+    ? autotestsWithBranchesOptions
+        .filter((el) => el.name === currentQualityGateAutotestFieldValue)[0]
+        .branches.map((el) => ({
+          label: el,
+          value: el,
+        }))
+    : [];
+};
+
+const qualityGateTypeSelectOptions = mapArrayToSelectOptions(Object.values(stageQualityGateType));
+
+const getAvailableQualityGateTypeSelectOptions = (autotestsWithBranchesOptions: AutotestWithBranchesOption[]) => {
+  return qualityGateTypeSelectOptions.map((el) => {
+    if (el.value === stageQualityGateType.autotests && !autotestsWithBranchesOptions.length) {
+      return {
+        ...el,
+        disabled: true,
+      };
+    }
+
+    return el;
+  });
+};
+
+export const QualityGateRow = ({ autotestsWithBranchesOptions, currentQualityGate }: QualityGateRowProps) => {
+  const {
+    register,
+    control,
+    formState: { errors },
+    watch,
+    resetField,
+    setValue,
+  } = useTypedFormContext();
+
+  const qualityGatesFieldValue = watch(STAGE_FORM_NAMES.qualityGates.name);
+
+  const currentQualityGateTypeFieldValue = watch(createQualityGateTypeFieldName(currentQualityGate.id));
+  const currentQualityGateAutotestFieldValue = watch(createQualityGateAutotestFieldName(currentQualityGate.id));
+
+  const availableQualityGateTypeSelectOptions = getAvailableQualityGateTypeSelectOptions(autotestsWithBranchesOptions);
+
+  const currentQualityGateBranchesOptions = getCurrentQualityGateBranchesOptions(
+    autotestsWithBranchesOptions,
+    currentQualityGateAutotestFieldValue
+  );
+
+  const availableAutotests = getAvailableAutotests(autotestsWithBranchesOptions, qualityGatesFieldValue);
+
+  const availableAutotestBranches = getAvailableAutotestBranches(
+    currentQualityGateBranchesOptions,
+    qualityGatesFieldValue,
+    currentQualityGateAutotestFieldValue
+  );
+
+  const handleChangeQualityGateType = React.useCallback(
+    (event: FieldEvent<StageQualityGateType>) => {
+      const chosenQualityGateType = event.target.value;
+
+      if (chosenQualityGateType === stageQualityGateType.manual) {
+        resetField(createQualityGateAutotestFieldName(currentQualityGate.id));
+        resetField(createQualityGateTypeAutotestsBranchFieldName(currentQualityGate.id));
+      }
+
+      const newQualityGates = qualityGatesFieldValue.map((qualityGate: FormStageQualityGate) => {
+        if (qualityGate.id !== currentQualityGate.id) {
+          return qualityGate;
+        }
+
+        if (chosenQualityGateType === stageQualityGateType.manual) {
+          return {
+            ...qualityGate,
+            autotestName: null,
+            branchName: null,
+            qualityGateType: chosenQualityGateType,
+          };
+        }
+
+        return {
+          ...qualityGate,
+          qualityGateType: chosenQualityGateType,
+        };
+      });
+
+      setValue(STAGE_FORM_NAMES.qualityGates.name, newQualityGates);
+    },
+    [currentQualityGate.id, qualityGatesFieldValue, resetField, setValue]
+  );
+
+  const handleChangeQualityGateStepName = React.useCallback(
+    (event: FieldEvent<string>) => {
+      const chosenQualityGateStepName = event.target.value;
+
+      const newQualityGates = qualityGatesFieldValue.map((qualityGate: FormStageQualityGate) => {
+        if (qualityGate.id !== currentQualityGate.id) {
+          return qualityGate;
+        }
+
+        return {
+          ...qualityGate,
+          stepName: chosenQualityGateStepName,
+        };
+      });
+
+      setValue(STAGE_FORM_NAMES.qualityGates.name, newQualityGates);
+    },
+    [currentQualityGate.id, qualityGatesFieldValue, setValue]
+  );
+
+  const handleChangeQualityGateAutotestName = React.useCallback(
+    (event: FieldEvent<string>) => {
+      const chosenQualityGateAutotest = event.target.value;
+      resetField(createQualityGateTypeAutotestsBranchFieldName(currentQualityGate.id));
+
+      const newQualityGates = qualityGatesFieldValue.map((qualityGate: FormStageQualityGate) => {
+        if (qualityGate.id !== currentQualityGate.id) {
+          return qualityGate;
+        }
+
+        return {
+          ...qualityGate,
+          autotestName: chosenQualityGateAutotest,
+        };
+      });
+
+      setValue(STAGE_FORM_NAMES.qualityGates.name, newQualityGates);
+    },
+    [currentQualityGate.id, qualityGatesFieldValue, resetField, setValue]
+  );
+
+  const handleChangeQualityGateAutotestBranchName = React.useCallback(
+    (event: FieldEvent<string>) => {
+      const chosenQualityGateAutotestsBranch = event.target.value;
+
+      const newQualityGates = qualityGatesFieldValue.map((qualityGate: FormStageQualityGate) => {
+        if (qualityGate.id !== currentQualityGate.id) {
+          return qualityGate;
+        }
+
+        return {
+          ...qualityGate,
+          branchName: chosenQualityGateAutotestsBranch,
+        };
+      });
+
+      setValue(STAGE_FORM_NAMES.qualityGates.name, newQualityGates);
+    },
+    [currentQualityGate.id, qualityGatesFieldValue, setValue]
+  );
+
+  return (
+    <>
+      <Grid item xs={12}>
+        <Grid container spacing={1}>
+          <Grid item xs={3}>
+            <FormSelect
+              {...register(createQualityGateTypeFieldName(currentQualityGate.id), {
+                onChange: handleChangeQualityGateType,
+              })}
+              label={"Quality gate type"}
+              tooltipText={
+                "Quality gates can be either manual approvals or autotests. To select autotest, create the corresponding codebase beforehand."
+              }
+              control={control}
+              errors={errors}
+              defaultValue={currentQualityGate.qualityGateType}
+              options={availableQualityGateTypeSelectOptions}
+            />
+          </Grid>
+          {currentQualityGateTypeFieldValue && currentQualityGateTypeFieldValue !== stageQualityGateType.manual && (
+            <Grid item xs={3}>
+              <FormTextField
+                {...register(createQualityGateStepNameFieldName(currentQualityGate.id), {
+                  required: "Enter step name.",
+                  onChange: handleChangeQualityGateStepName,
+                })}
+                label={"Step name"}
+                tooltipText={
+                  "Name the deployment step within the stage to distinguish different phases of the deployment process."
+                }
+                placeholder={"Enter step name"}
+                control={control}
+                errors={errors}
+              />
+            </Grid>
+          )}
+
+          {!!autotestsWithBranchesOptions.length &&
+          currentQualityGateTypeFieldValue === stageQualityGateType.autotests ? (
+            <>
+              <Grid item xs={3}>
+                <FormSelect
+                  {...register(createQualityGateAutotestFieldName(currentQualityGate.id), {
+                    onChange: handleChangeQualityGateAutotestName,
+                  })}
+                  label={"Autotest"}
+                  tooltipText={"Specify an automated test to associate with this stage."}
+                  control={control}
+                  errors={errors}
+                  options={availableAutotests.map(({ name, disabled = false }) => ({
+                    label: name,
+                    value: name,
+                    disabled,
+                  }))}
+                />
+              </Grid>
+              <Grid item xs={3}>
+                <FormSelect
+                  {...register(createQualityGateTypeAutotestsBranchFieldName(currentQualityGate.id), {
+                    onChange: handleChangeQualityGateAutotestBranchName,
+                  })}
+                  label={"Autotest branch"}
+                  tooltipText={"Specify the branch for the automated tests."}
+                  control={control}
+                  errors={errors}
+                  disabled={!currentQualityGateBranchesOptions.length}
+                  options={availableAutotestBranches}
+                />
+              </Grid>
+            </>
+          ) : null}
+        </Grid>
+      </Grid>
+    </>
+  );
+};

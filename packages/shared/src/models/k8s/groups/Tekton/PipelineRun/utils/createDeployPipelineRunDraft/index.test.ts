@@ -60,7 +60,7 @@ describe("testing createDeployPipelineRunDraft", () => {
           },
         },
       },
-      CDPipeline: {
+      cdPipeline: {
         apiVersion: "v2.edp.epam.com/v1",
         kind: "CDPipeline",
         // @ts-ignore

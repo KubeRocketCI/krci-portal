@@ -5,12 +5,12 @@ import { pipelineRunLabels } from "../../labels";
 import { pipelineType } from "../../../Pipeline/constants";
 
 export const createDeployPipelineRunDraft = ({
-  CDPipeline,
+  cdPipeline,
   stage,
   pipelineRunTemplate,
   appPayload,
 }: {
-  CDPipeline: CDPipeline;
+  cdPipeline: CDPipeline;
   stage: Stage;
   pipelineRunTemplate: PipelineRun;
   appPayload: Record<
@@ -27,7 +27,7 @@ export const createDeployPipelineRunDraft = ({
   const namePostfix = `-${createRandomString(4)}`;
 
   const truncatedName = truncateName(
-    `${CDPipeline.metadata.name}-${stage.spec.name}`,
+    `${cdPipeline.metadata.name}-${stage.spec.name}`,
     namePrefix.length + namePostfix.length
   );
 
@@ -38,8 +38,9 @@ export const createDeployPipelineRunDraft = ({
   base.metadata.name = fullPipelineRunName;
 
   base.metadata.labels = base.metadata.labels || {};
-  base.metadata.labels[pipelineRunLabels.cdPipeline] = CDPipeline.metadata.name;
+  base.metadata.labels[pipelineRunLabels.cdPipeline] = cdPipeline.metadata.name;
   base.metadata.labels[pipelineRunLabels.stage] = stage.metadata.name;
+  base.metadata.labels[pipelineRunLabels.cdStage] = stage.metadata.namespace;
   base.metadata.labels[pipelineRunLabels.pipelineType] = pipelineType.deploy;
 
   for (const param of base.spec.params) {
@@ -48,7 +49,7 @@ export const createDeployPipelineRunDraft = ({
         param.value = stage.spec.name;
         break;
       case "CDPIPELINE":
-        param.value = CDPipeline.metadata.name;
+        param.value = cdPipeline.metadata.name;
         break;
       case "APPLICATIONS_PAYLOAD":
         param.value = JSON.stringify(appPayload);

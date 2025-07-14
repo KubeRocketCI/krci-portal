@@ -1,5 +1,5 @@
-import { KubeObjectAction } from "@/core/types/global";
+import { ListItemAction } from "@/core/types/global";
 
 export interface ActionsInlineListProps {
-  actions: KubeObjectAction[];
+  actions: ListItemAction[];
 }

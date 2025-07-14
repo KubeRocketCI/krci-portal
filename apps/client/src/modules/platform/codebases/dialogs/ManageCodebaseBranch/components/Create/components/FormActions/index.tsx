@@ -31,9 +31,7 @@ export const FormActions = () => {
   const {
     triggerCreateCodebaseBranch,
     mutations: { codebaseBranchCreateMutation, codebaseBranchEditMutation },
-  } = useCodebaseBranchCRUD({
-    onSuccess: handleClose,
-  });
+  } = useCodebaseBranchCRUD();
 
   const isPending = React.useMemo(
     () => codebaseBranchCreateMutation.isPending || codebaseBranchEditMutation.isPending,

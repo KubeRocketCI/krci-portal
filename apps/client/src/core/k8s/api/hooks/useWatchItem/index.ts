@@ -6,13 +6,9 @@ import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { K8S_DEFAULT_CLUSTER_NAME } from "../../../constants";
 import { getK8sWatchItemQueryCacheKey, getK8sWatchListQueryCacheKey } from "../../utils/query-keys";
-import { CustomKubeObjectList, MsgType } from "../useWatchList";
+import { CustomKubeObjectList } from "../watch-types";
 import { RequestError } from "@/core/types/global";
-
-type StreamEvent<T extends KubeObjectBase> = {
-  type: MsgType;
-  data: T;
-};
+import { watchItemRegistry } from "../../utils/watch-item-subscription-registry";
 
 // This is a type that forbids main query options, but allows to pass any other options
 type OptionalQueryOptions<I extends KubeObjectBase> = Omit<
@@ -27,7 +23,10 @@ export interface UseWatchItemParams<I extends KubeObjectBase> {
   queryOptions?: OptionalQueryOptions<I>;
 }
 
-export type UseWatchItemResult<I extends KubeObjectBase> = UseQueryResult<I | undefined, RequestError>;
+export type UseWatchItemResult<I extends KubeObjectBase> = {
+  query: UseQueryResult<I | undefined, RequestError>;
+  resourceVersion: string | undefined;
+};
 
 export const useWatchItem = <I extends KubeObjectBase>({
   resourceConfig,
@@ -40,16 +39,16 @@ export const useWatchItem = <I extends KubeObjectBase>({
   const _namespace = namespace ?? storedNamespace;
   const queryClient = useQueryClient();
 
-  const k8sWatchItemQueryCacheKey = getK8sWatchItemQueryCacheKey(
-    clusterName,
-    _namespace,
-    resourceConfig.pluralName,
-    name
+  const k8sWatchItemQueryCacheKey = React.useMemo(
+    () => getK8sWatchItemQueryCacheKey(clusterName, _namespace, resourceConfig.pluralName, name),
+    [clusterName, _namespace, resourceConfig.pluralName, name]
   );
-  const k8sWatchListQueryCacheKey = getK8sWatchListQueryCacheKey(clusterName, _namespace, resourceConfig.pluralName);
+  const k8sWatchListQueryCacheKey = React.useMemo(
+    () => getK8sWatchListQueryCacheKey(clusterName, _namespace, resourceConfig.pluralName),
+    [clusterName, _namespace, resourceConfig.pluralName]
+  );
 
   const latestResourceVersion = React.useRef<string | null>(null);
-  const subscriptionRef = React.useRef<ReturnType<typeof trpc.k8s.watchItem.subscribe> | null>(null);
 
   const query = useQuery<I, RequestError>({
     queryKey: k8sWatchItemQueryCacheKey,
@@ -61,9 +60,9 @@ export const useWatchItem = <I extends KubeObjectBase>({
         name: name!,
       });
 
-      if (!latestResourceVersion.current || latestResourceVersion.current === "0") {
-        latestResourceVersion.current = data.metadata?.resourceVersion ?? "0";
-      }
+      // Always update to the latest resource version from the API response
+      const newResourceVersion = data.metadata?.resourceVersion ?? "0";
+      latestResourceVersion.current = newResourceVersion;
 
       return data;
     },
@@ -76,55 +75,37 @@ export const useWatchItem = <I extends KubeObjectBase>({
     ...queryOptions,
   });
 
+  // Register with shared item registry
   React.useEffect(() => {
-    if (!query.isFetched || !latestResourceVersion.current || subscriptionRef.current) {
-      return;
-    }
+    if (!name) return;
 
-    subscriptionRef.current = trpc.k8s.watchItem.subscribe(
+    watchItemRegistry.register<I>(
+      k8sWatchItemQueryCacheKey,
       {
-        resourceConfig,
         clusterName,
         namespace: _namespace,
-        resourceVersion: latestResourceVersion.current,
-        name: name!,
+        resourceConfig,
+        name,
       },
-      {
-        onData: (value: { type: string; data: KubeObjectBase }) => {
-          const event = value as StreamEvent<I>;
-          if (!event.data?.metadata?.uid) return;
-
-          queryClient.setQueryData<I>(k8sWatchItemQueryCacheKey, (prevData) => {
-            if (!prevData) return prevData;
-
-            const messageKubeObject = event.data;
-
-            // Update resource version for the next reconciliation
-            if (messageKubeObject.metadata.resourceVersion) {
-              latestResourceVersion.current = messageKubeObject.metadata.resourceVersion;
-            }
-
-            return messageKubeObject;
-          });
-        },
-        onError: (error: RequestError) => console.error("WebSocket error:", error),
-      }
+      queryClient
     );
 
     return () => {
-      subscriptionRef.current?.unsubscribe();
-      subscriptionRef.current = null;
+      watchItemRegistry.unregister(k8sWatchItemQueryCacheKey);
     };
-  }, [
-    query.isFetched,
-    clusterName,
-    namespace,
-    queryClient,
-    name,
-    k8sWatchItemQueryCacheKey,
-    resourceConfig,
-    _namespace,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clusterName, _namespace, resourceConfig.pluralName, name]);
 
-  return query satisfies UseWatchItemResult<I>;
+  // Ensure subscription starts when initial query fetched and resourceVersion is available
+  React.useEffect(() => {
+    if (query.isFetched) {
+      watchItemRegistry.ensureStarted<I>(k8sWatchItemQueryCacheKey, queryClient);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query.isFetched, k8sWatchItemQueryCacheKey, queryClient]);
+
+  return {
+    query,
+    resourceVersion: latestResourceVersion.current ?? undefined,
+  } satisfies UseWatchItemResult<I>;
 };

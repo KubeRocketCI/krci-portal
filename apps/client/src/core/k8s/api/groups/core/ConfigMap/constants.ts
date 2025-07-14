@@ -1,5 +1,3 @@
-export const EDP_CONFIG_CONFIG_MAP_NAMES = ["edp-config", "krci-config"];
-
 export const CONTAINER_REGISTRY_PLATFORM = {
   KUBERNETES: "kubernetes",
   OPENSHIFT: "openshift",

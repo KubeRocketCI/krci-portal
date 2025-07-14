@@ -1,11 +1,11 @@
 import { StandardTextFieldProps, AutocompleteProps } from "@mui/material";
-import { Control, FieldErrors, FieldPath, PathValue } from "react-hook-form";
+import { Control, FieldErrors, FieldPath, FieldValues, Path, PathValue, UseFormRegisterReturn } from "react-hook-form";
 import { SelectOption } from "../../types";
 
 export interface FormAutocompleteMultiProps<
   TOption extends SelectOption = SelectOption,
-  TFieldValues extends Record<string, unknown> = Record<string, unknown>,
-> {
+  TFieldValues extends FieldValues = FieldValues,
+> extends Partial<UseFormRegisterReturn<Path<TFieldValues>>> {
   name: FieldPath<TFieldValues>;
   control: Control<TFieldValues>;
   errors: FieldErrors<TFieldValues>;

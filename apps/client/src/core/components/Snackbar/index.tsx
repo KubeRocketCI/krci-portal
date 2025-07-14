@@ -26,28 +26,28 @@ export const Snackbar = React.forwardRef<
   const { closeSnackbar } = useSnackbar();
 
   const theme = React.useMemo(() => {
-    let icon: ReactElement = <Info size={20} color="#0094FF" />;
+    let icon: ReactElement = <Info size={20} color="#fff" />;
     let color: string = "#0094FF";
 
     switch (variant) {
       case SNACKBAR_VARIANT.SUCCESS:
-        icon = <CheckCircle size={20} color="#18BE94" />;
+        icon = <CheckCircle size={20} color="#fff" />;
         color = "#18BE94";
         break;
       case SNACKBAR_VARIANT.ERROR:
-        icon = <XCircle size={20} color="#FD4C4D" />;
+        icon = <XCircle size={20} color="#fff" />;
         color = "#FD4C4D";
         break;
       case SNACKBAR_VARIANT.WARNING:
-        icon = <TriangleAlert size={20} color="#FFC754" />;
+        icon = <TriangleAlert size={20} color="#fff" />;
         color = "#FFC754";
         break;
       case SNACKBAR_VARIANT.INFO:
-        icon = <Info size={20} color="#0094FF" />;
+        icon = <Info size={20} color="#fff" />;
         color = "#0094FF";
         break;
       default:
-        icon = <Info size={20} color="#0094FF" />;
+        icon = <Info size={20} color="#fff" />;
         color = "#0094FF";
         break;
     }
@@ -81,7 +81,7 @@ export const Snackbar = React.forwardRef<
               {text}
             </Typography>
           </Stack>
-          {route && (
+          {route && route.to && (
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-expect-error
             <Button

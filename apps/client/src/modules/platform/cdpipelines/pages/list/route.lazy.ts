@@ -1,5 +1,5 @@
 import { createLazyRoute } from "@tanstack/react-router";
-import CDPipelineListPage from "./view";
+import CDPipelineListPage from "./page";
 
 const CDPipelineListRoute = createLazyRoute("/c/$clusterName/cdpipelines")({
   component: CDPipelineListPage,

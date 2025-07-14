@@ -10,7 +10,7 @@ function ContentLayout() {
       <div className="flex flex-1">
         <AppSidebar />
         <SidebarInset className="bg-background pt-(--header-height)">
-          <div className="px-6 pt-10">
+          <div className="flex flex-grow flex-col px-6 pt-10">
             <Outlet />
           </div>
         </SidebarInset>

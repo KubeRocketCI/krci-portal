@@ -3,7 +3,7 @@ import { DialogProps, DialogProviderState } from "./types";
 
 export const DialogContext = React.createContext<{
   dialogs: DialogProviderState;
-  setDialog: <Props extends object>(component: React.ComponentType<DialogProps<Props>>, props: Props) => void;
+  setDialog: <Props>(component: React.ComponentType<DialogProps<Props>>, props: Props) => void;
   closeDialog: (key: string) => void;
 }>({
   dialogs: {},

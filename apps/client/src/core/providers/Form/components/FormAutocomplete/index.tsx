@@ -1,6 +1,7 @@
 import { SelectOption } from "@/core/providers/Form/types";
 import {
   Autocomplete,
+  AutocompleteRenderInputParams,
   Box,
   Checkbox,
   Chip,
@@ -8,16 +9,15 @@ import {
   Stack,
   TextField,
   Tooltip,
-  Typography,
   useTheme,
 } from "@mui/material";
 import { Check, Info, Plus } from "lucide-react";
 import React from "react";
-import { Controller, FieldPath, PathValue } from "react-hook-form";
+import { Controller, FieldValues, FieldPath, PathValue } from "react-hook-form";
 import { FormAutocompleteMultiProps } from "./types";
 
 const FormAutocompleteMultiInner = React.forwardRef(
-  <TOption extends SelectOption = SelectOption, TFieldValues extends Record<string, unknown> = Record<string, unknown>>(
+  <TOption extends SelectOption = SelectOption, TFieldValues extends FieldValues = FieldValues>(
     {
       name,
       control,
@@ -30,6 +30,7 @@ const FormAutocompleteMultiInner = React.forwardRef(
       disabled = false,
       TextFieldProps = {},
       AutocompleteProps,
+      ...props
     }: FormAutocompleteMultiProps<TOption, TFieldValues>,
     ref: React.ForwardedRef<HTMLInputElement>
   ) => {
@@ -39,22 +40,30 @@ const FormAutocompleteMultiInner = React.forwardRef(
     const errorMessage = error?.message as string;
     const helperText = hasError ? errorMessage : TextFieldProps?.helperText;
 
-    const originalInputProps = TextFieldProps.InputProps ?? {};
-    const userEndAdornment = originalInputProps.endAdornment;
+    const createMergedInputProps = React.useCallback(
+      (inputParams: AutocompleteRenderInputParams) => {
+        const originalInputProps = TextFieldProps.InputProps ?? {};
+        const userEndAdornment = originalInputProps.endAdornment;
+        const autocompleteInputProps = inputParams.InputProps ?? {};
 
-    const mergedInputProps = {
-      ...originalInputProps,
-      endAdornment: (
-        <Stack direction="row" alignItems="center" spacing={0.5}>
-          {userEndAdornment}
-          {tooltipText && (
-            <Tooltip title={tooltipText}>
-              <Info size={16} />
-            </Tooltip>
-          )}
-        </Stack>
-      ),
-    };
+        return {
+          ...originalInputProps,
+          ...autocompleteInputProps,
+          endAdornment: (
+            <Stack direction="row" alignItems="center" spacing={0.5}>
+              {autocompleteInputProps.endAdornment}
+              {userEndAdornment}
+              {tooltipText && (
+                <Tooltip title={tooltipText}>
+                  <Info size={16} />
+                </Tooltip>
+              )}
+            </Stack>
+          ),
+        };
+      },
+      [TextFieldProps.InputProps, tooltipText]
+    );
 
     return (
       <Stack spacing={1}>
@@ -72,30 +81,34 @@ const FormAutocompleteMultiInner = React.forwardRef(
                 disabled={disabled}
                 isOptionEqualToValue={(option, value) => option.value === value.value}
                 getOptionLabel={(option) => option.label || ""}
-                renderOption={(props, option, { selected }) => (
-                  <li {...props} style={{ height: 36 }}>
-                    <Checkbox
-                      icon={<Plus />}
-                      checkedIcon={<Check />}
-                      checked={selected}
-                      style={{
-                        color: selected ? theme.palette.primary.main : theme.palette.text.primary,
-                      }}
-                    />
-                    {option.label}
-                  </li>
-                )}
+                renderOption={(props, option, { selected }) => {
+                  const { key, ...otherProps } = props as typeof props & { key: string };
+                  return (
+                    <li key={key} {...otherProps} style={{ height: 36 }}>
+                      <Checkbox
+                        icon={<Plus />}
+                        checkedIcon={<Check />}
+                        checked={selected}
+                        style={{
+                          color: selected ? theme.palette.primary.main : theme.palette.text.primary,
+                        }}
+                      />
+                      {option.label}
+                    </li>
+                  );
+                }}
                 renderInput={(params) => (
                   <TextField
                     {...params}
                     {...TextFieldProps}
                     inputRef={ref}
-                    InputProps={mergedInputProps}
+                    InputProps={createMergedInputProps(params)}
                     variant="standard"
                     label={label}
                     fullWidth
+                    style={{ marginTop: 0 }}
                     placeholder={placeholder}
-                    error={hasError}
+                    error={hasError || !!TextFieldProps?.error}
                     helperText={helperText}
                   />
                 )}
@@ -103,15 +116,10 @@ const FormAutocompleteMultiInner = React.forwardRef(
                   const limit = 5;
                   return (
                     <>
-                      {value.slice(0, limit).map((option, index) => (
-                        <Chip
-                          {...getTagProps({ index })}
-                          key={index}
-                          label={option.label}
-                          color="primary"
-                          size="small"
-                        />
-                      ))}
+                      {value.slice(0, limit).map((option, index) => {
+                        const { key, ...tagProps } = getTagProps({ index });
+                        return <Chip key={key} {...tagProps} label={option.label} color="primary" size="small" />;
+                      })}
                       {value.length > limit && <Box sx={{ mx: 1 }}>+{value.length - limit}</Box>}
                     </>
                   );
@@ -124,13 +132,9 @@ const FormAutocompleteMultiInner = React.forwardRef(
                 }}
               />
             )}
+            {...props}
           />
         </FormControl>
-        {hasError && (
-          <Typography component="span" variant="subtitle2" color="error">
-            {errorMessage}
-          </Typography>
-        )}
       </Stack>
     );
   }
@@ -140,7 +144,7 @@ FormAutocompleteMultiInner.displayName = "FormAutocompleteMulti";
 
 export const FormAutocompleteMulti = FormAutocompleteMultiInner as <
   TOption extends SelectOption = SelectOption,
-  TFieldValues extends Record<string, unknown> = Record<string, unknown>,
+  TFieldValues extends FieldValues = FieldValues,
 >(
   props: FormAutocompleteMultiProps<TOption, TFieldValues> & {
     ref?: React.ForwardedRef<HTMLInputElement>;

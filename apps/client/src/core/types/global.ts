@@ -3,7 +3,7 @@ import { TRPCClientError } from "@trpc/client";
 
 export type ValueOf<T> = T[keyof T];
 
-export interface KubeObjectAction {
+export interface ListItemAction {
   name: string;
   label: string;
   disabled?: {

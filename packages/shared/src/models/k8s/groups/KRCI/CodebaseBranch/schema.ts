@@ -5,8 +5,8 @@ import {
   kubeObjectDraftMetadataSchema,
   kubeObjectMetadataSchema,
 } from "../../../core";
-import { secretDraftSchema, secretSchema } from "../../default";
 import { codebaseBranchLabels } from "./labels";
+import { krciCommonLabelsSchema } from "../common";
 
 export const codebaseBranchStatusEnum = z.enum([
   "created",
@@ -41,7 +41,7 @@ const codebaseBranchStatusSchema = z.object({
   versionHistory: z.array(z.string()).nullable().optional(),
 });
 
-const codebaseBranchLabelsSchema = z.object({
+const codebaseBranchLabelsSchema = krciCommonLabelsSchema.extend({
   [codebaseBranchLabels.codebase]: z.string(),
 });
 

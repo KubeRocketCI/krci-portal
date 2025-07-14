@@ -12,13 +12,14 @@ import { routePipelineRunDetails } from "@/modules/platform/pipelineruns/pages/d
 import { IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import { getPipelineRunStatus, getPullRequestURL, PipelineRun } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
-import { ChartNetwork, ExternalLink } from "lucide-react";
+import { VectorSquare, ExternalLink } from "lucide-react";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { routePipelineDetails } from "../../../pages/details/route";
 import { PipelineRunResults } from "../../PipelineRunResults";
 import { Actions } from "../components/Actions";
 import { columnNames } from "../constants";
+import { Button } from "@/core/components/ui/button";
 
 export const useColumns = ({
   tableSettings,
@@ -72,16 +73,18 @@ export const useColumns = ({
             } = data;
 
             return (
-              <Link
-                to={routePipelineRunDetails.fullPath}
-                params={{
-                  clusterName,
-                  namespace: namespace || defaultNamespace,
-                  name,
-                }}
-              >
-                <TextWithTooltip text={name} />
-              </Link>
+              <Button variant="link" asChild className="p-0">
+                <Link
+                  to={routePipelineRunDetails.fullPath}
+                  params={{
+                    clusterName,
+                    namespace: namespace || defaultNamespace,
+                    name,
+                  }}
+                >
+                  <TextWithTooltip text={name} />
+                </Link>
+              </Button>
             );
           },
         },
@@ -104,16 +107,18 @@ export const useColumns = ({
             } = data;
 
             return (
-              <Link
-                to={routePipelineDetails.fullPath}
-                params={{
-                  name: pipelineRefName,
-                  namespace: namespace || defaultNamespace,
-                  clusterName,
-                }}
-              >
-                <TextWithTooltip text={pipelineRefName} />
-              </Link>
+              <Button variant="link" asChild className="p-0">
+                <Link
+                  to={routePipelineDetails.fullPath}
+                  params={{
+                    name: pipelineRefName,
+                    namespace: namespace || defaultNamespace,
+                    clusterName,
+                  }}
+                >
+                  <TextWithTooltip text={pipelineRefName} />
+                </Link>
+              </Button>
             );
           },
         },
@@ -285,7 +290,7 @@ export const useColumns = ({
                 // }
                 size="medium"
               >
-                <ChartNetwork />
+                <VectorSquare size={16} />
               </IconButton>
             );
           },

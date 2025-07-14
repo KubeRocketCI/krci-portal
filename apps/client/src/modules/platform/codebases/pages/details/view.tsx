@@ -1,25 +1,25 @@
-import { CodebaseType, codebaseType, isSystem, systemQuickLink } from "@my-project/shared";
-import { usePageTabs } from "./hooks/usePageTabs";
-import { useTabsContext } from "@/core/providers/Tabs/hooks";
-import React from "react";
 import { ErrorContent } from "@/core/components/ErrorContent";
-import { routeComponentList } from "../list/route";
+import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { ResourcesSVGSprite } from "@/core/k8s/icons/sprites/Resources";
-import { Tabs } from "@/core/providers/Tabs/components/Tabs";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { QuickLink } from "@/core/components/QuickLink";
-import { ResourceActionListContextProvider } from "@/core/providers/ResourceActionList/provider";
-import { EDP_USER_GUIDE } from "@/core/k8s/constants/docs-urls";
-import { getQuickLinkURLsFromList } from "@/core/k8s/api/groups/KRCI/QuickLink/utils/getURLsFromList";
-import { Stack } from "@mui/material";
-import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { Section } from "@/core/components/Section";
+import { K8sRelatedIconsSVGSprite } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
+import { useQuickLinkWatchList } from "@/core/k8s/api/groups/KRCI/QuickLink";
+import { quickLinkUiNames } from "@/core/k8s/api/groups/KRCI/QuickLink/constants";
+import { getQuickLinkURLsFromList } from "@/core/k8s/api/groups/KRCI/QuickLink/utils/getURLsFromList";
+import { EDP_USER_GUIDE } from "@/core/k8s/constants/docs-urls";
+import { ResourceActionListContextProvider } from "@/core/providers/ResourceActionList/provider";
+import { Tabs } from "@/core/providers/Tabs/components/Tabs";
+import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { LinkCreationService } from "@/core/services/link-creation";
-import { quickLinkLabels } from "@/core/k8s/api/groups/KRCI/QuickLink/constants";
+import { Stack } from "@mui/material";
+import { CodebaseType, codebaseType, isSystem, systemQuickLink } from "@my-project/shared";
+import React from "react";
 import { CodebaseActionsMenu } from "../../components/CodebaseActionsMenu";
-import { useDataContext } from "./providers/Data/hooks";
-import { useParams } from "@tanstack/react-router";
+import { routeComponentList } from "../list/route";
+import { useCodebaseWatch } from "./hooks/data";
+import { usePageTabs } from "./hooks/usePageTabs";
 import { routeComponentDetails } from "./route";
 
 const docLinkByCodebaseType = (type: CodebaseType | undefined) => {
@@ -39,40 +39,40 @@ const docLinkByCodebaseType = (type: CodebaseType | undefined) => {
 };
 
 export default function CodebaseDetailsPageContent() {
-  const params = useParams({
-    from: routeComponentDetails.id,
-  });
+  const params = routeComponentDetails.useParams();
 
-  const { codebaseWatch, quickLinkListWatch } = useDataContext();
+  const codebaseWatch = useCodebaseWatch();
+  const codebase = codebaseWatch.query.data;
 
-  const codebase = codebaseWatch.data;
+  const quickLinkListWatch = useQuickLinkWatchList();
+
   const quickLinkList = quickLinkListWatch.dataArray;
-  const quickLinksURLs = getQuickLinkURLsFromList(quickLinkList);
+  const quickLinksURLs = getQuickLinkURLsFromList(quickLinkList || []);
 
   const tabs = usePageTabs();
 
   const { activeTab, handleChangeTab } = useTabsContext();
 
-  const codebaseIsLoaded = codebaseWatch.isFetched && !codebaseWatch.error;
+  const codebaseIsLoaded = codebaseWatch.query.isFetched && !codebaseWatch.query.error;
 
   const renderPageContent = React.useCallback(() => {
-    if (codebaseWatch.error) {
-      return <ErrorContent error={codebaseWatch.error} />;
+    if (codebaseWatch.query.error) {
+      return <ErrorContent error={codebaseWatch.query.error} />;
     }
 
     return (
-      <LoadingWrapper isLoading={codebaseWatch.isLoading}>
-        <ResourcesSVGSprite />
+      <LoadingWrapper isLoading={codebaseWatch.query.isLoading}>
+        <K8sRelatedIconsSVGSprite />
         <Tabs tabs={tabs} activeTabIdx={activeTab} handleChangeTab={handleChangeTab} />
       </LoadingWrapper>
     );
-  }, [activeTab, codebaseWatch.error, codebaseWatch.isLoading, handleChangeTab, tabs]);
+  }, [activeTab, codebaseWatch.query.error, codebaseWatch.query.isLoading, handleChangeTab, tabs]);
 
   return (
     <PageWrapper
       breadcrumbs={[
         {
-          label: "codebases",
+          label: "Components",
           route: {
             to: routeComponentList.fullPath,
           },
@@ -97,7 +97,7 @@ export default function CodebaseDetailsPageContent() {
                 />
                 <QuickLink
                   name={{
-                    label: quickLinkLabels[systemQuickLink.sonar],
+                    label: quickLinkUiNames[systemQuickLink.sonar],
                     value: systemQuickLink.sonar,
                   }}
                   enabledText="Open the Quality Gates"

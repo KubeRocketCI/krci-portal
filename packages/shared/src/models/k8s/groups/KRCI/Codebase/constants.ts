@@ -20,6 +20,8 @@ export const k8sCodebaseConfig = {
   labels: codebaseLabels,
 } as const satisfies K8sResourceConfig<typeof codebaseLabels>;
 
+export const codebaseGitOpsSystemType = "gitops";
+
 export const codebaseType = codebaseTypeEnum.enum;
 export const codebaseCreationStrategy = codebaseCreationStrategyEnum.enum;
 export const codebaseStatus = codebaseStatusEnum.enum;

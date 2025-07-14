@@ -19,9 +19,7 @@ export const useCRUD = () => {
           message: "PipelineRun has been created",
           options: {
             autoHideDuration: 8000,
-            content: (key, message) => (
-              <Snackbar text={String(message)} snackbarKey={key} route={{}} variant={"success"} />
-            ),
+            content: (key, message) => <Snackbar text={String(message)} snackbarKey={key} variant={"success"} />,
           },
         },
       }),
@@ -43,9 +41,7 @@ export const useCRUD = () => {
           message: "PipelineRun has been patched",
           options: {
             autoHideDuration: 8000,
-            content: (key, message) => (
-              <Snackbar text={String(message)} snackbarKey={key} route={{}} variant={"success"} />
-            ),
+            content: (key, message) => <Snackbar text={String(message)} snackbarKey={key} variant={"success"} />,
           },
         },
       }),
@@ -67,9 +63,7 @@ export const useCRUD = () => {
           message: "PipelineRun has been deleted",
           options: {
             autoHideDuration: 8000,
-            content: (key, message) => (
-              <Snackbar text={String(message)} snackbarKey={key} route={{}} variant={"success"} />
-            ),
+            content: (key, message) => <Snackbar text={String(message)} snackbarKey={key} variant={"success"} />,
           },
         },
       }),
@@ -78,12 +72,16 @@ export const useCRUD = () => {
 
   const triggerCreatePipelineRun = React.useCallback(
     async ({
-      pipelineRun,
+      data,
       callbacks,
     }: {
-      pipelineRun: PipelineRunDraft;
+      data: {
+        pipelineRun: PipelineRunDraft;
+      };
       callbacks?: { onSuccess?: () => void; onError?: () => void; onSettled?: () => void };
     }) => {
+      const { pipelineRun } = data;
+
       pipelineRunCreateMutation.mutate(
         {
           resource: pipelineRun,
@@ -101,12 +99,16 @@ export const useCRUD = () => {
 
   const triggerPatchPipelineRun = React.useCallback(
     async ({
-      pipelineRun,
+      data,
       callbacks,
     }: {
-      pipelineRun: PipelineRun;
+      data: {
+        pipelineRun: PipelineRun;
+      };
       callbacks?: { onSuccess?: () => void; onError?: () => void; onSettled?: () => void };
     }) => {
+      const { pipelineRun } = data;
+
       pipelineRunPatchMutation.mutate(
         {
           resource: pipelineRun,
@@ -124,12 +126,16 @@ export const useCRUD = () => {
 
   const triggerDeletePipelineRun = React.useCallback(
     async ({
-      pipelineRun,
+      data,
       callbacks,
     }: {
-      pipelineRun: PipelineRun;
+      data: {
+        pipelineRun: PipelineRun;
+      };
       callbacks?: { onSuccess?: () => void; onError?: () => void; onSettled?: () => void };
     }) => {
+      const { pipelineRun } = data;
+
       pipelineRunDeleteMutation.mutate(
         {
           resource: pipelineRun,

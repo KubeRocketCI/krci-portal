@@ -1,3 +1,6 @@
+import { ActionsInlineList } from "@/core/components/ActionsInlineList";
+import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
+import { usePipelineRunPermissions } from "@/core/k8s/api/groups/Tekton/PipelineRun";
 import {
   ButtonGroup,
   ClickAwayListener,
@@ -11,12 +14,9 @@ import {
   Stack,
   useTheme,
 } from "@mui/material";
+import { ChevronDown } from "lucide-react";
 import React from "react";
 import { CustomActionsInlineListProps } from "./types";
-import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
-import { ArrowDown } from "lucide-react";
-import { usePipelineRunPermissions } from "@/core/k8s/api/groups/Tekton/PipelineRun";
-import { ActionsInlineList } from "@/core/components/ActionsInlineList";
 
 export const CustomActionsInlineList = ({ groupActions, inlineActions }: CustomActionsInlineListProps) => {
   const [open, setOpen] = React.useState(false);
@@ -71,7 +71,7 @@ export const CustomActionsInlineList = ({ groupActions, inlineActions }: CustomA
             allowed={pipelineRunPermissions.data.create.allowed}
             reason={pipelineRunPermissions.data.create.reason}
           >
-            <ArrowDown size={16} />
+            <ChevronDown size={16} />
           </ButtonWithPermission>
         </ButtonGroup>
         <ActionsInlineList actions={inlineActions} />
