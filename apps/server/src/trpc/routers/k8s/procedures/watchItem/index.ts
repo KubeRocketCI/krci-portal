@@ -29,13 +29,16 @@ export const k8sWatchItemProcedure = protectedProcedure
       const { namespace, resourceVersion, name, resourceConfig } = input;
 
       let controller: Awaited<ReturnType<typeof watch.watch>>;
+      let isActive = true;
 
       watch
         .watch(
           `/apis/${resourceConfig.group}/${resourceConfig.version}/namespaces/${namespace}/${resourceConfig.pluralName}`,
           { resourceVersion, fieldSelector: `metadata.name=${name}` },
           (type, obj) => {
-            emit.next({ type, data: obj });
+            if (isActive) {
+              emit.next({ type, data: obj });
+            }
           },
           (err) => {
             if (err) emit.error(err);
@@ -49,6 +52,7 @@ export const k8sWatchItemProcedure = protectedProcedure
         });
 
       return () => {
+        isActive = false;
         controller?.abort();
       };
     });

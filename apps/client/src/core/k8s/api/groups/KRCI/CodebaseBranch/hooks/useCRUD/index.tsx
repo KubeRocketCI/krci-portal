@@ -19,9 +19,7 @@ export const useCRUD = () => {
           message: "CodebaseBranch has been created",
           options: {
             autoHideDuration: 8000,
-            content: (key, message) => (
-              <Snackbar text={String(message)} snackbarKey={key} route={{}} variant={"success"} />
-            ),
+            content: (key, message) => <Snackbar text={String(message)} snackbarKey={key} variant={"success"} />,
           },
         },
       }),
@@ -43,9 +41,7 @@ export const useCRUD = () => {
           message: "CodebaseBranch has been patched",
           options: {
             autoHideDuration: 8000,
-            content: (key, message) => (
-              <Snackbar text={String(message)} snackbarKey={key} route={{}} variant={"success"} />
-            ),
+            content: (key, message) => <Snackbar text={String(message)} snackbarKey={key} variant={"success"} />,
           },
         },
       }),
@@ -54,14 +50,17 @@ export const useCRUD = () => {
 
   const triggerCreateCodebaseBranch = React.useCallback(
     async ({
-      codebaseBranch,
-      defaultCodebaseBranch,
+      data,
       callbacks,
     }: {
-      codebaseBranch: CodebaseBranchDraft;
-      defaultCodebaseBranch?: CodebaseBranch;
+      data: {
+        codebaseBranch: CodebaseBranchDraft;
+        defaultCodebaseBranch?: CodebaseBranch;
+      };
       callbacks?: { onSuccess?: () => void; onError?: () => void; onSettled?: () => void };
     }) => {
+      const { codebaseBranch, defaultCodebaseBranch } = data;
+
       codebaseBranchCreateMutation.mutate(
         {
           resource: codebaseBranch,
@@ -90,12 +89,16 @@ export const useCRUD = () => {
 
   const triggerEditCodebaseBranch = React.useCallback(
     async ({
-      codebaseBranch,
+      data,
       callbacks,
     }: {
-      codebaseBranch: CodebaseBranchDraft;
+      data: {
+        codebaseBranch: CodebaseBranchDraft;
+      };
       callbacks?: { onSuccess?: () => void; onError?: () => void; onSettled?: () => void };
     }) => {
+      const { codebaseBranch } = data;
+
       codebaseBranchEditMutation.mutate(
         {
           resource: codebaseBranch,

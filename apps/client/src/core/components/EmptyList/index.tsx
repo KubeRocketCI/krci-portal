@@ -3,6 +3,7 @@ import React from "react";
 import { EmptyListProps } from "./types";
 import { Search, TriangleAlert } from "lucide-react";
 import { DefaultTheme } from "@mui/styles/defaultTheme";
+import { Link as RouterLink } from "@tanstack/react-router";
 
 const renderIcon = (icon: React.ReactNode, isSearch: boolean, iconSize: number, theme: DefaultTheme) => {
   if (icon) {
@@ -31,11 +32,39 @@ export const EmptyList = ({
   beforeLinkText,
   description,
   handleClick,
+  route,
   isSearch = false,
   icon,
   iconSize = 96,
 }: EmptyListProps) => {
   const theme = useTheme();
+
+  const renderActionLink = () => {
+    if (!linkText) return null;
+
+    if (route) {
+      return (
+        <RouterLink to={route.to} params={route.params}>
+          <Typography component="span" variant={"body2"}>
+            {linkText}
+          </Typography>
+        </RouterLink>
+      );
+    }
+
+    if (handleClick) {
+      return (
+        <Link onClick={handleClick} component={"button"} lineHeight={1}>
+          <Typography component="span" variant={"body2"}>
+            {linkText}
+          </Typography>
+        </Link>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <Box
       sx={{
@@ -67,13 +96,7 @@ export const EmptyList = ({
                 {beforeLinkText}
               </Typography>
             )}
-            {!!linkText && !!handleClick && (
-              <Link onClick={handleClick} component={"button"} lineHeight={1}>
-                <Typography component="span" variant={"body2"}>
-                  {linkText}
-                </Typography>
-              </Link>
-            )}
+            {renderActionLink()}
           </Stack>
         </Stack>
         {!!description && (

@@ -1,6 +1,6 @@
 import { systemQuickLink } from "@my-project/shared";
 
-export const quickLinkLabels = {
+export const quickLinkUiNames = {
   [systemQuickLink.argocd]: "Argo CD",
   [systemQuickLink.monitoring]: "Monitoring",
   [systemQuickLink.logging]: "Logging",

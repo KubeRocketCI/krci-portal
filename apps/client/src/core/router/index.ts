@@ -16,7 +16,20 @@ import { routePipelineList } from "@/modules/platform/pipelines/pages/list/route
 import { routePipelineRunList } from "@/modules/platform/pipelineruns/pages/list/route";
 import { routePipelineRunDetails } from "@/modules/platform/pipelineruns/pages/details/route";
 import { routeOverviewDetails } from "@/modules/platform/overview/pages/details/route";
-import { routeStageDetails } from "@/modules/platform/stages/pages/details/route";
+import { routeArgocdConfiguration } from "@/modules/platform/configuration/pages/argocd/route";
+import { routeChatAssistantConfiguration } from "@/modules/platform/configuration/pages/chat-assistant/route";
+import { routeClustersConfiguration } from "@/modules/platform/configuration/pages/clusters/route";
+import { routeCodemieConfiguration } from "@/modules/platform/configuration/pages/codemie/route";
+import { routeDefectdojoConfiguration } from "@/modules/platform/configuration/pages/defectdojo/route";
+import { routeDependencyTrackConfiguration } from "@/modules/platform/configuration/pages/dependency-track/route";
+import { routeGitopsConfiguration } from "@/modules/platform/configuration/pages/gitops/route";
+import { routeGitserversConfiguration } from "@/modules/platform/configuration/pages/gitservers/route";
+import { routeJiraConfiguration } from "@/modules/platform/configuration/pages/jira/route";
+import { routeNexusConfiguration } from "@/modules/platform/configuration/pages/nexus/route";
+import { routeQuicklinksConfiguration } from "@/modules/platform/configuration/pages/quicklinks/route";
+import { routeRegistryConfiguration } from "@/modules/platform/configuration/pages/registry/route";
+import { routeSonarConfiguration } from "@/modules/platform/configuration/pages/sonar/route";
+import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 
 export const rootRoute = createRootRouteWithContext<MyRouterContext>()({
   component: Root,
@@ -97,6 +110,19 @@ const routeTree = rootRoute.addChildren([
       routePipelineDetails,
       routePipelineRunList,
       routePipelineRunDetails,
+      routeArgocdConfiguration,
+      routeChatAssistantConfiguration,
+      routeClustersConfiguration,
+      routeCodemieConfiguration,
+      routeDefectdojoConfiguration,
+      routeDependencyTrackConfiguration,
+      routeGitopsConfiguration,
+      routeGitserversConfiguration,
+      routeJiraConfiguration,
+      routeNexusConfiguration,
+      routeQuicklinksConfiguration,
+      routeRegistryConfiguration,
+      routeSonarConfiguration,
     ]),
   ]),
 ]);

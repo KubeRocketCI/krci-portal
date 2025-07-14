@@ -14,6 +14,7 @@ import { StagesGraph } from "./components/StagesGraph";
 import { UserWidgetRenderer } from "./components/UserWidgetsRenderer";
 import { useUserWidgets } from "./providers/UserWidgets/hooks";
 
+
 export default function OverviewDetailsPageContent() {
   const theme = useTheme();
 

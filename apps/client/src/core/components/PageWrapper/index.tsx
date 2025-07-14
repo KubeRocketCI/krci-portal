@@ -1,7 +1,8 @@
-import { Box, Breadcrumbs, Button, Grid, Typography, useTheme } from "@mui/material";
+import { Box, Breadcrumbs, Grid, Typography, useTheme } from "@mui/material";
 import React from "react";
 import { PageWrapperProps } from "./types";
 import { Link } from "@tanstack/react-router";
+import { Button } from "../ui/button";
 
 export const PageWrapper: React.FC<PageWrapperProps> = ({
   children,
@@ -17,6 +18,9 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({
       sx={{
         pb: theme.typography.pxToRem(120),
         px: theme.typography.pxToRem(16),
+        flexGrow: 1,
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {hasBreadcrumbs ? (
@@ -29,21 +33,10 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({
                     const key = `breadcrumb-${label}`;
 
                     return route ? (
-                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                      // @ts-expect-error
-                      <Button
-                        key={key}
-                        size="small"
-                        component={Link}
-                        to={route.to}
-                        params={route.params}
-                        sx={{
-                          minWidth: 0,
-                          textTransform: "none",
-                          fontSize: theme.typography.pxToRem(14),
-                        }}
-                      >
-                        {label}
+                      <Button variant="link" asChild key={key} className="p-0">
+                        <Link to={route.to} params={route.params}>
+                          {label}
+                        </Link>
                       </Button>
                     ) : (
                       <Typography

@@ -1,19 +1,21 @@
 import React from "react";
 
-interface DialogEntry<Props = object> {
-  Component: React.ComponentType<DialogProps<Props>>;
+export interface DialogState {
+  open: boolean;
+  closeDialog: () => void;
+  openDialog: () => void;
+}
+
+export interface DialogProps<Props> {
   props: Props;
+  state: DialogState;
+}
+
+interface DialogEntry {
+  renderDialog: () => React.ReactElement;
+  key: string;
 }
 
 export type DialogProviderState = {
   [key: string]: DialogEntry;
 };
-
-export interface DialogProps<Props> {
-  props: Props;
-  state: {
-    open: boolean;
-    closeDialog: () => void;
-    openDialog: () => void;
-  };
-}

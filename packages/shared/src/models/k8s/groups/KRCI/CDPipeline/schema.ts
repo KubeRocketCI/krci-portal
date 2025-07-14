@@ -40,3 +40,13 @@ export const cdPipelineSchema = kubeObjectBaseSchema.extend({
 export const cdPipelineDraftSchema = kubeObjectBaseDraftSchema.extend({
   spec: cdPipelineSpecSchema,
 });
+
+export const createCDPipelineDraftInputSchema = z.object({
+  applications: cdPipelineDraftSchema.shape.spec.shape.applications,
+  applicationsToPromote:
+    cdPipelineDraftSchema.shape.spec.shape.applicationsToPromote,
+  deploymentType: cdPipelineDraftSchema.shape.spec.shape.deploymentType,
+  description: cdPipelineDraftSchema.shape.spec.shape.description,
+  inputDockerStreams: cdPipelineDraftSchema.shape.spec.shape.inputDockerStreams,
+  name: cdPipelineDraftSchema.shape.spec.shape.name,
+});

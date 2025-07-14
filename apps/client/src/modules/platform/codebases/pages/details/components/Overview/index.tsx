@@ -1,40 +1,30 @@
-import { Chip, Grid, Stack, Typography } from "@mui/material";
-import React from "react";
-import { useParams } from "react-router-dom";
-import { BorderedSection } from "../../../../components/BorderedSection";
-import { InfoColumns } from "../../../../components/InfoColumns";
-import { LearnMoreLink } from "../../../../components/LearnMoreLink";
-import { LoadingWrapper } from "../../../../components/LoadingWrapper";
-import { STATUS_COLOR } from "../../../../constants/colors";
-import { EDP_OPERATOR_GUIDE } from "../../../../constants/urls";
-import { DependencyTrackMetrics } from "../../../../widgets/DeeptrackVulnerabilities";
-import { SonarQubeMetrics } from "../../../../widgets/SonarQubeMetrics";
-import { useDataContext } from "../../providers/Data/hooks";
-import { ComponentDetailsRouteParams } from "../../types";
+import { Stack } from "@mui/material";
 import { useInfoRows } from "./hooks/useInfoRows";
+import { InfoColumns } from "@/core/components/InfoColumns";
+import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
+import { BorderedSection } from "@/core/components/BorderedSection";
+import { useCodebaseWatch } from "../../hooks/data";
 
-const statusMap: Record<string, string> = {
-  OK: "Passed",
-  ERROR: "Failed",
-};
-const getStatusLabel = (status: string) => statusMap?.[status] || "Unknown";
+// const statusMap: Record<string, string> = {
+//   OK: "Passed",
+//   ERROR: "Failed",
+// };
+// const getStatusLabel = (status: string) => statusMap?.[status] || "Unknown";
 
 export const Overview = () => {
-  const { name } = useParams<ComponentDetailsRouteParams>();
-
-  const { sonarData, depTrackData } = useDataContext();
+  const codebaseWatch = useCodebaseWatch();
   const infoRows = useInfoRows();
 
   return (
     <Stack spacing={3}>
       <BorderedSection title="Component Details">
         <div>
-          <LoadingWrapper isLoading={infoRows === null}>
+          <LoadingWrapper isLoading={!codebaseWatch.query.isFetched}>
             <InfoColumns infoRows={infoRows!} />
           </LoadingWrapper>
         </div>
       </BorderedSection>
-      <BorderedSection
+      {/* <BorderedSection
         title={
           <Stack spacing={2} alignItems="center" direction="row">
             <Typography fontSize={20} fontWeight={600} color="primary.dark">
@@ -69,7 +59,7 @@ export const Overview = () => {
             </Grid>
           </Grid>
         </div>
-      </BorderedSection>
+      </BorderedSection> */}
     </Stack>
   );
 };

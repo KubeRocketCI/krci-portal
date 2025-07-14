@@ -27,6 +27,7 @@ import { routeOverviewDetails } from "@/modules/platform/overview/pages/details/
 import { useClusterStore } from "../store";
 import { useShallow } from "zustand/react/shallow";
 import { routeComponentList } from "@/modules/platform/codebases/pages/list/route";
+import { routeCDPipelineList } from "@/modules/platform/cdpipelines/pages/list/route";
 
 export type NavItem = {
   title: string;
@@ -98,7 +99,11 @@ const createNav = (clusterName: string, namespace: string): NavItem[] =>
       title: "Deployment Flows",
       icon: Rows2,
       route: {
-        to: "/home",
+        to: routeCDPipelineList.fullPath,
+        params: {
+          clusterName,
+          namespace,
+        },
       },
     },
     {

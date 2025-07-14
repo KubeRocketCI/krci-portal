@@ -1,9 +1,5 @@
-// import {
-//   APPLICATION_LABEL_SELECTOR_APP_NAME,
-//   APPLICATION_LABEL_SELECTOR_PIPELINE,
-//   APPLICATION_LABEL_SELECTOR_STAGE,
-// } from '../../../k8s/groups/ArgoCD/Application/labels';
-import { createURLObjectFromURLOrigin } from "../index";
+import { applicationLabels } from "@my-project/shared";
+import { createURLObjectFromURLOrigin } from "../utils";
 
 export const ArgoCDURLService = {
   createPipelineLink: (argoCDURLOrigin: string | undefined, pipelineName: string | undefined) => {
@@ -13,10 +9,7 @@ export const ArgoCDURLService = {
 
     const argoCDURLObject = createURLObjectFromURLOrigin(argoCDURLOrigin);
     const argoCDApplicationsURLObject = new URL("/applications", argoCDURLObject);
-    // argoCDApplicationsURLObject.searchParams.append(
-    //   'labels',
-    //   `${APPLICATION_LABEL_SELECTOR_PIPELINE}=${pipelineName}`
-    // );
+    argoCDApplicationsURLObject.searchParams.append("labels", `${applicationLabels.pipeline}=${pipelineName}`);
 
     return argoCDApplicationsURLObject.href;
   },
@@ -32,10 +25,10 @@ export const ArgoCDURLService = {
 
     const argoCDURLObject = createURLObjectFromURLOrigin(argoCDURLOrigin);
     const argoCDApplicationsURLObject = new URL("/applications", argoCDURLObject);
-    // argoCDApplicationsURLObject.searchParams.append(
-    //   'labels',
-    //   `${APPLICATION_LABEL_SELECTOR_PIPELINE}=${pipelineName},${APPLICATION_LABEL_SELECTOR_STAGE}=${stageName},${APPLICATION_LABEL_SELECTOR_APP_NAME}=${appName}`
-    // );
+    argoCDApplicationsURLObject.searchParams.append(
+      "labels",
+      `${applicationLabels.pipeline}=${pipelineName},${applicationLabels.stage}=${stageName},${applicationLabels.appName}=${appName}`
+    );
 
     return argoCDApplicationsURLObject.href;
   },
@@ -50,10 +43,10 @@ export const ArgoCDURLService = {
 
     const argoCDURLObject = createURLObjectFromURLOrigin(argoCDURLOrigin);
     const argoCDApplicationsURLObject = new URL("/applications", argoCDURLObject);
-    // argoCDApplicationsURLObject.searchParams.append(
-    //   'labels',
-    //   `${APPLICATION_LABEL_SELECTOR_PIPELINE}=${pipelineName},${APPLICATION_LABEL_SELECTOR_STAGE}=${stageName}`
-    // );
+    argoCDApplicationsURLObject.searchParams.append(
+      "labels",
+      `${applicationLabels.pipeline}=${pipelineName},${applicationLabels.stage}=${stageName}`
+    );
 
     return argoCDApplicationsURLObject.href;
   },

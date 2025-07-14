@@ -3,11 +3,20 @@ import React from "react";
 import { PIPELINE_GRAPH_DIALOG_NAME } from "./constants";
 import { PipelineGraphDialogProps } from "./types";
 import { X } from "lucide-react";
+import { usePipelineWatchItem } from "@/core/k8s/api/groups/Tekton/Pipeline";
+import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 
 export const PipelineGraphDialog: React.FC<PipelineGraphDialogProps> = ({
-  props: { pipeline },
+  props: { pipelineName, namespace },
   state: { closeDialog, open },
 }) => {
+  const pipelineWatch = usePipelineWatchItem({
+    name: pipelineName,
+    namespace,
+  });
+
+  const pipeline = pipelineWatch.query.data;
+
   return (
     <Dialog open={open} fullWidth onClose={() => closeDialog()} maxWidth={pipeline ? "xl" : "sm"}>
       <DialogTitle>
@@ -22,7 +31,12 @@ export const PipelineGraphDialog: React.FC<PipelineGraphDialogProps> = ({
           </Grid>
         </Grid>
       </DialogTitle>
-      <DialogContent>{/* <PipelineGraph pipeline={pipeline} /> */}</DialogContent>
+      <DialogContent>
+        <LoadingWrapper isLoading={pipelineWatch.query.isLoading}>
+          <>test</>
+          {/* <PipelineGraph pipeline={pipeline} /> */}
+        </LoadingWrapper>
+      </DialogContent>
     </Dialog>
   );
 };

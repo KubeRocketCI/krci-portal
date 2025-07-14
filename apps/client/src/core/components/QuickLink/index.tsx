@@ -1,9 +1,11 @@
 import React from "react";
-// import { useDialogContext } from "../../providers/Dialog/hooks";
+import { useDialogOpener } from "../../providers/Dialog/hooks";
 import { ResourceIconLink } from "../ResourceIconLink";
 import { QuickLinkExternalLinkProps } from "./types";
 import { Button, Grid } from "@mui/material";
 import { Link } from "@tanstack/react-router";
+import { systemQuickLink } from "@my-project/shared";
+import { ManageQuickLinkDialog } from "@/modules/platform/configuration/dialogs/ManageQuickLink";
 
 export const QuickLink = ({
   name,
@@ -17,7 +19,7 @@ export const QuickLink = ({
   size = "small",
   variant = "outlined",
 }: QuickLinkExternalLinkProps) => {
-  // const { setDialog } = useDialogContext();
+  const openManageQuickLinkDialog = useDialogOpener(ManageQuickLinkDialog);
 
   const renderDisabledTooltip = React.useCallback(() => {
     return (
@@ -37,12 +39,12 @@ export const QuickLink = ({
               Please, set up {name?.label}{" "}
               <Button
                 variant="text"
-                // onClick={() =>
-                //   setDialog(ManageQuickLinkDialog, {
-                //     quickLink,
-                //     isSystem: Object.hasOwn(SYSTEM_QUICK_LINKS, quickLink?.metadata.name),
-                //   })
-                // }
+                onClick={() =>
+                  openManageQuickLinkDialog({
+                    quickLink,
+                    isSystem: Object.hasOwn(systemQuickLink, quickLink?.metadata.name),
+                  })
+                }
               >
                 here
               </Button>
@@ -51,7 +53,7 @@ export const QuickLink = ({
         </Grid>
       </>
     );
-  }, [configurationRoute, name?.label, quickLink]);
+  }, [configurationRoute, name?.label, quickLink, openManageQuickLinkDialog]);
 
   return externalLink ? (
     <ResourceIconLink

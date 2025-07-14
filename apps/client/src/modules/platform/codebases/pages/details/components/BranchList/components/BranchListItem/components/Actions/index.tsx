@@ -1,24 +1,38 @@
 import { CodebaseBranchActionsMenu } from "@/modules/platform/codebases/components/CodebaseBranchActionsMenu";
-import { useDataContext } from "@/modules/platform/codebases/pages/details/providers/Data/hooks";
+import {
+  useCodebaseBranchListWatch,
+  useCodebaseWatch,
+  usePipelineNamesWatch,
+} from "@/modules/platform/codebases/pages/details/hooks/data";
 import { IconButton } from "@mui/material";
+import { checkIsDefaultBranch } from "@my-project/shared";
 import { EllipsisVertical } from "lucide-react";
 import React from "react";
 import { ActionsProps } from "./types";
 
 export const Actions = ({ codebaseBranch }: ActionsProps) => {
+  const codebaseWatch = useCodebaseWatch();
+  const codebase = codebaseWatch.query.data;
+
+  const codebaseBranchListWatch = useCodebaseBranchListWatch();
+
+  const pipelineNamesWatch = usePipelineNamesWatch();
+  const pipelineNames = pipelineNamesWatch.data;
+
+  const sortedCodebaseBranchList = React.useMemo(() => {
+    return codebaseBranchListWatch.dataArray.sort((a) => (checkIsDefaultBranch(codebaseWatch.query.data!, a) ? -1 : 1));
+  }, [codebaseWatch.query.data, codebaseBranchListWatch.dataArray]);
+
+  const defaultBranch = sortedCodebaseBranchList[0];
+
   const buttonRef = React.createRef<HTMLButtonElement>();
   const [anchor, setAnchor] = React.useState<(EventTarget & HTMLButtonElement) | null>(null);
 
-  const {
-    codebaseWatch,
-    codebaseBranches,
-    defaultBranch,
-    codebaseBranchListWatch,
-    reviewPipelineName,
-    buildPipelineName,
-  } = useDataContext();
-
-  const resourcesAreLoaded = codebaseWatch.isFetched && codebaseWatch.data && codebaseBranchListWatch.query.isFetched;
+  const resourcesAreLoaded =
+    codebaseWatch.query.isFetched &&
+    codebaseWatch.query.data &&
+    codebaseBranchListWatch.query.isFetched &&
+    pipelineNamesWatch.isFetched;
 
   return (
     <>
@@ -30,12 +44,12 @@ export const Actions = ({ codebaseBranch }: ActionsProps) => {
           variant="menu"
           data={{
             codebaseBranch,
-            codebase: codebaseWatch.data!,
-            codebaseBranches,
+            codebase: codebase!,
+            codebaseBranches: codebaseBranchListWatch.dataArray,
             defaultBranch,
             pipelines: {
-              review: reviewPipelineName,
-              build: buildPipelineName,
+              review: pipelineNames?.reviewPipelineName || "",
+              build: pipelineNames?.buildPipelineName || "",
             },
           }}
           anchorEl={anchor}

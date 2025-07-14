@@ -8,6 +8,7 @@ import {
 import { k8sCodebaseConfig, Codebase } from "@my-project/shared";
 
 export { useCRUD as useCodebaseCRUD } from "./useCRUD";
+export { useWatchGitOpsCodebase } from "./useWatchGitOpsCodebase";
 
 export const useCodebasePermissions = createUsePermissionsHook(k8sCodebaseConfig);
 export const useCodebaseWatchList = (params?: UseWatchListParamsWithoutResourceConfig<Codebase>) =>

@@ -1,16 +1,16 @@
+import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
+import { usePipelineWatchList } from "@/core/k8s/api/groups/Tekton/Pipeline";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
+import { FormAutocompleteSingle } from "@/core/providers/Form/components/FormAutocompleteSingle";
+import { FORM_CONTROL_LABEL_HEIGHT } from "@/core/providers/Form/constants";
+import { mapArrayToSelectOptions } from "@/core/utils/forms/mapToSelectOptions";
+import { PipelineGraphDialog } from "@/modules/platform/pipelines/dialogs/PipelineGraph";
+import { Box, IconButton, Stack } from "@mui/material";
+import { pipelineLabels, pipelineType } from "@my-project/shared";
+import { VectorSquare } from "lucide-react";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_BRANCH_FORM_NAMES } from "../../../names";
 import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
-import { FormAutocompleteSingle } from "@/core/providers/Form/components/FormAutocompleteSingle";
-import { FORM_CONTROL_LABEL_HEIGHT } from "@/core/providers/Form/constants";
-import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { Stack, IconButton, Box } from "@mui/material";
-import { ChartNetwork } from "lucide-react";
-import { usePipelineWatchList } from "@/core/k8s/api/groups/Tekton/Pipeline";
-import { pipelineType, pipelineLabels } from "@my-project/shared";
-import { mapArrayToSelectOptions } from "@/core/utils/forms/mapToSelectOptions";
-import { PipelineGraphDialog } from "@/modules/platform/pipelines/dialogs/PipelineGraph";
 
 export const BuildPipeline = () => {
   const { setDialog } = useDialogContext();
@@ -77,7 +77,7 @@ export const BuildPipeline = () => {
             }}
             size={"small"}
           >
-            <ChartNetwork size={20} />
+            <VectorSquare size={20} />
           </IconButton>
         </LoadingWrapper>
       </Box>

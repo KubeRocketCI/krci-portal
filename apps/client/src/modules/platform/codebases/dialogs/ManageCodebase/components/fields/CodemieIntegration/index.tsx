@@ -41,10 +41,10 @@ export const CodemieIntegration = () => {
     },
   });
 
-  const hasCodemieAndProject = codemieWatchQuery.data && codemieProjectWatchQuery.data;
-  const hasError = codemieWatchQuery.error || codemieProjectWatchQuery.error;
-  const codemieStatusIsOk = !!codemieWatchQuery.data?.status?.connected;
-  const codemieProjectStatusIsOk = codemieProjectWatchQuery.data?.status?.value === "created";
+  const hasCodemieAndProject = codemieWatchQuery.query.data && codemieProjectWatchQuery.query.data;
+  const hasError = codemieWatchQuery.query.error || codemieProjectWatchQuery.query.error;
+  const codemieStatusIsOk = !!codemieWatchQuery.query.data?.status?.connected;
+  const codemieProjectStatusIsOk = codemieProjectWatchQuery.query.data?.status?.value === "created";
 
   return (
     <Grid container spacing={2}>

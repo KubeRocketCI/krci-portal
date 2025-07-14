@@ -2,6 +2,7 @@ export * from "./common";
 export * from "./CDPipeline";
 export * from "./Codebase";
 export * from "./CodebaseBranch";
+export * from "./CodebaseImageStream";
 export * from "./Codemie";
 export * from "./CodemieProject";
 export * from "./GitServer";

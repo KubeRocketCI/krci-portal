@@ -5,12 +5,29 @@ import { DialogProps, DialogProviderState } from "./types";
 export const DialogContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [dialogs, setDialogs] = React.useState<DialogProviderState>({});
 
-  const setDialog = <Props extends object>(component: React.ComponentType<DialogProps<Props>>, props: Props) => {
+  const setDialog = <Props,>(component: React.ComponentType<DialogProps<Props>>, props: Props) => {
     const key = component.displayName || component.name;
+
+    const renderDialog = () => {
+      const Component = component;
+      return (
+        <Component
+          props={props}
+          state={{
+            open: true,
+            closeDialog: () => closeDialog(key),
+            openDialog: () => setDialog(Component, props),
+          }}
+        />
+      );
+    };
 
     setDialogs((prevDialogs) => ({
       ...prevDialogs,
-      [key]: { Component: component as React.ComponentType<DialogProps<object>>, props },
+      [key]: {
+        renderDialog,
+        key,
+      },
     }));
   };
 
@@ -27,16 +44,9 @@ export const DialogContextProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const mapEntries = React.useMemo(
     () =>
-      Object.entries(dialogs).map(([key, { Component, props }]) => (
+      Object.entries(dialogs).map(([key, { renderDialog }]) => (
         <Suspense key={key} fallback={"Loading..."}>
-          <Component
-            props={props}
-            state={{
-              open: true,
-              closeDialog: () => closeDialog(key),
-              openDialog: () => setDialog(Component, props),
-            }}
-          />
+          {renderDialog()}
         </Suspense>
       )),
     [dialogs]

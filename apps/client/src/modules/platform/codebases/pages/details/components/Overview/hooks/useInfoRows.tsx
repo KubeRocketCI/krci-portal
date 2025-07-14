@@ -1,38 +1,36 @@
-import { Chip, Grid, Tooltip, Typography } from "@mui/material";
-import React from "react";
-import { useParams } from "react-router-dom";
-import { InfoRow } from "../../../../../components/InfoColumns/types";
-import { LoadingWrapper } from "../../../../../components/LoadingWrapper";
-import { StatusIcon } from "../../../../../components/StatusIcon";
-import { CodebaseInterface } from "../../../../../configs/codebase-mappings/types";
+import { InfoRow } from "@/core/components/InfoColumns/types";
+import { StatusIcon } from "@/core/components/StatusIcon";
+import {
+  getCodebaseMappingByType,
+  getCodebaseStatusIcon
+} from "@/core/k8s/api/groups/KRCI/Codebase";
+import { CodebaseInterface } from "@/core/k8s/api/groups/KRCI/Codebase/configs/mappings/types";
 import {
   BUILD_TOOL_ICON_MAPPING,
   CI_TOOL_ICON_MAPPING,
   FRAMEWORK_ICON_MAPPING,
   LANGUAGE_ICON_MAPPING,
-} from "../../../../../configs/icon-mappings";
-import { CODEBASE_TYPE } from "../../../../../constants/codebaseTypes";
-import { CODEBASE_VERSIONING_TYPE } from "../../../../../constants/codebaseVersioningTypes";
-import { MAIN_COLOR } from "../../../../../constants/colors";
-import { RESOURCE_ICON_NAMES } from "../../../../../icons/sprites/Resources/names";
-import { CodebaseKubeObject } from "../../../../../k8s/groups/EDP/Codebase";
-import { capitalizeFirstLetter } from "../../../../../utils/format/capitalizeFirstLetter";
-import { getCodebaseMappingByCodebaseType } from "../../../../../utils/getCodebaseMappingByCodebaseType";
-import { Pipeline } from "../../../../../widgets/Pipeline";
-import { useDynamicDataContext } from "../../../providers/DynamicData/hooks";
-import { ComponentDetailsRouteParams } from "../../../types";
+} from "@/core/k8s/configs/icon-mappings";
+import { MAIN_COLOR } from "@/core/k8s/constants/colors";
+import { RESOURCE_ICON_NAMES } from "@/core/k8s/icons/sprites/Resources/names";
+import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
+import { Chip, Grid, Tooltip, Typography } from "@mui/material";
+import { DefaultTheme } from "@mui/styles/defaultTheme";
+import { codebaseType, codebaseVersioning } from "@my-project/shared";
+import React from "react";
+import { useCodebaseWatch } from "../../../hooks/data";
 
 const getColorByType = (type: string) => {
   switch (type) {
-    case CODEBASE_TYPE.SYSTEM:
+    case codebaseType.system:
       return MAIN_COLOR.GREY;
-    case CODEBASE_TYPE.INFRASTRUCTURE:
+    case codebaseType.infrastructure:
       return MAIN_COLOR.DARK_PURPLE;
-    case CODEBASE_TYPE.APPLICATION:
+    case codebaseType.application:
       return MAIN_COLOR.GREEN;
-    case CODEBASE_TYPE.AUTOTEST:
+    case codebaseType.autotest:
       return MAIN_COLOR.ORANGE;
-    case CODEBASE_TYPE.LIBRARY:
+    case codebaseType.library:
       return MAIN_COLOR.BLUE;
     default:
       return MAIN_COLOR.GREY;
@@ -50,16 +48,13 @@ const getChipSX = (type: string) => {
 };
 
 export const useInfoRows = () => {
-  const {
-    component: { data: component },
-    pipelines: { data: pipelines, isLoading: pipelinesIsLoading },
-  } = useDynamicDataContext();
+  const codebaseWatch = useCodebaseWatch();
 
-  const { namespace } = useParams<ComponentDetailsRouteParams>();
+  const codebase = codebaseWatch.query.data;
 
-  return React.useMemo((): InfoRow[] | null => {
-    if (!component) {
-      return null;
+  return React.useMemo((): InfoRow[] => {
+    if (!codebase) {
+      return []
     }
 
     const {
@@ -75,10 +70,10 @@ export const useInfoRows = () => {
         deploymentScript,
         gitServer,
       },
-    } = component;
-    const codebaseMapping = getCodebaseMappingByCodebaseType(type) as Record<string, CodebaseInterface>;
+    } = codebase;
+    const codebaseMapping = getCodebaseMappingByType(type) as Record<string, CodebaseInterface>;
 
-    const [icon, color, isRotating] = CodebaseKubeObject.getStatusIcon(component?.status?.status);
+    const codebaseStatusIcon = getCodebaseStatusIcon(codebase);
 
     const lang = _lang.toLowerCase();
     const framework = _framework?.toLowerCase();
@@ -94,23 +89,23 @@ export const useInfoRows = () => {
             <Grid container spacing={1} alignItems={"center"}>
               <Grid item>
                 <StatusIcon
-                  icon={icon}
-                  color={color}
-                  isRotating={isRotating}
+                  Icon={codebaseStatusIcon.component}
+                  color={codebaseStatusIcon.color}
+                  isSpinning={codebaseStatusIcon.isSpinning}
                   width={20}
                   Title={
                     <>
                       <Typography variant={"subtitle2"} style={{ fontWeight: 600 }}>
-                        {`Status: ${component?.status?.status || "unknown"}`}
+                        {`Status: ${codebase?.status?.status || "unknown"}`}
                       </Typography>
-                      {!!component?.status?.detailedMessage && (
+                      {!!codebase?.status?.detailedMessage && (
                         <Typography
                           variant={"subtitle2"}
                           sx={{
                             mt: (t) => t.typography.pxToRem(10),
                           }}
                         >
-                          {component?.status?.detailedMessage}
+                          {codebase?.status?.detailedMessage}
                         </Typography>
                       )}
                     </>
@@ -118,7 +113,7 @@ export const useInfoRows = () => {
                 />
               </Grid>
               <Grid item>
-                <Typography variant={"body2"}>{component?.status?.status || "unknown"}</Typography>
+                <Typography variant={"body2"}>{codebase?.status?.status || "unknown"}</Typography>
               </Grid>
             </Grid>
           ),
@@ -162,11 +157,11 @@ export const useInfoRows = () => {
           label: "Versioning Type",
           text: versioningType,
         },
-        ...(versioningType === CODEBASE_VERSIONING_TYPE.EDP || versioningType === CODEBASE_VERSIONING_TYPE.SEMVER
+        ...(versioningType === codebaseVersioning.edp || versioningType === codebaseVersioning.semver
           ? [
               {
                 label: "Versioning Start From",
-                text: component?.spec.versioning.startFrom || "N/A",
+                text: codebase?.spec.versioning.startFrom || "N/A",
               },
             ]
           : []),
@@ -187,24 +182,24 @@ export const useInfoRows = () => {
           text: gitServer,
         },
       ],
-      [
-        {
-          label: "Review Pipeline",
-          text: (
-            <LoadingWrapper isLoading={pipelinesIsLoading}>
-              <Pipeline pipelineName={pipelines?.review} namespace={namespace} />
-            </LoadingWrapper>
-          ),
-        },
-        {
-          label: "Build Pipeline",
-          text: (
-            <LoadingWrapper isLoading={pipelinesIsLoading}>
-              <Pipeline pipelineName={pipelines?.build} namespace={namespace} />
-            </LoadingWrapper>
-          ),
-        },
-      ],
+      // [
+      //   {
+      //     label: "Review Pipeline",
+      //     text: (
+      //       <LoadingWrapper isLoading={pipelinesIsLoading}>
+      //         <Pipeline pipelineName={pipelines?.review} namespace={namespace} />
+      //       </LoadingWrapper>
+      //     ),
+      //   },
+      //   {
+      //     label: "Build Pipeline",
+      //     text: (
+      //       <LoadingWrapper isLoading={pipelinesIsLoading}>
+      //         <Pipeline pipelineName={pipelines?.build} namespace={namespace} />
+      //       </LoadingWrapper>
+      //     ),
+      //   },
+      // ],
     ];
-  }, [component, namespace, pipelines?.build, pipelines?.review, pipelinesIsLoading]);
+  }, [codebase]);
 };

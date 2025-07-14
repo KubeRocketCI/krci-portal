@@ -1,4 +1,3 @@
-import { ResourcesSVGSprite } from "@/core/k8s/icons/sprites/Resources";
 import { Box, Grid, Stack, Typography, useTheme } from "@mui/material";
 import { codebaseCreationStrategy, codebaseType } from "@my-project/shared";
 import { useTypedFormContext } from "../../../../../../../../hooks/useFormContext";
@@ -20,6 +19,7 @@ import {
   RepositoryUrl,
   TestReportFramework,
 } from "../../../../../../../fields";
+import { K8sRelatedIconsSVGSprite } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 
 export const Info = () => {
   const theme = useTheme();
@@ -32,7 +32,7 @@ export const Info = () => {
 
   return (
     <>
-      <ResourcesSVGSprite />
+      <K8sRelatedIconsSVGSprite />
       <Grid container spacing={2}>
         <>
           {isCloneStrategy(strategyFieldValue) ? (

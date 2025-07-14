@@ -1,9 +1,9 @@
-import { CodebaseBranch, PipelineRun } from "@my-project/shared";
+import { CodebaseBranch, PipelineRun, PipelineRunDraft } from "@my-project/shared";
 
 export interface SummaryProps {
   codebaseBranch: CodebaseBranch;
   latestBuildPipelineRun: PipelineRun | undefined;
-  handleOpenEditor: (data: PipelineRun) => void;
+  handleOpenEditor: (data: PipelineRunDraft) => void;
   menuAnchorEl: HTMLElement | null;
   handleClickMenu: (event: React.MouseEvent<HTMLElement>) => void;
   handleCloseMenu: () => void;

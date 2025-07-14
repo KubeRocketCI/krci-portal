@@ -8,6 +8,7 @@ import {
 import { k8sPipelineRunConfig, PipelineRun } from "@my-project/shared";
 
 export { useCRUD as usePipelineRunCRUD } from "./useCRUD";
+export { useWatchStagePipelineRuns } from "./useWatchStagePipelineRuns";
 
 export const usePipelineRunPermissions = createUsePermissionsHook(k8sPipelineRunConfig);
 export const usePipelineRunWatchList = (params?: UseWatchListParamsWithoutResourceConfig<PipelineRun>) =>

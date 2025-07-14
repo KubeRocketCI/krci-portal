@@ -1,5 +1,5 @@
-import { KubeObjectAction } from "@/core/types/global";
-import { commonLabels, k8sOperation, K8sOperation, KubeObjectBase, ProtectedOperation } from "@my-project/shared";
+import { ListItemAction } from "@/core/types/global";
+import { krciCommonLabels, k8sOperation, K8sOperation, KubeObjectBase, ProtectedOperation } from "@my-project/shared";
 
 type ProtectedState = Record<ProtectedOperation, { status: boolean; reason: string } | false>;
 type DisabledValue = { status: boolean; reason: string };
@@ -34,7 +34,7 @@ const getDisabledProtectedState = (protectedLabel: string): ProtectedState => {
 };
 
 const getDisabledState = (item: KubeObjectBase, disabledDefaultValue: DisabledValue, actionType: K8sOperation) => {
-  const isProtected = item?.metadata?.labels?.[commonLabels.editProtection];
+  const isProtected = item?.metadata?.labels?.[krciCommonLabels.editProtection];
 
   if (!isProtected) {
     return {
@@ -67,7 +67,7 @@ export const createResourceAction = <Item extends KubeObjectBase>({
   disabled?: DisabledValue;
   Icon?: React.ReactNode;
   isTextButton?: boolean;
-}): KubeObjectAction => {
+}): ListItemAction => {
   return {
     name: type,
     label,

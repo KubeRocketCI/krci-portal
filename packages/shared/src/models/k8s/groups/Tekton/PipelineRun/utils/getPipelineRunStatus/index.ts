@@ -7,8 +7,10 @@ export const getPipelineRunStatus = (
   reason: PipelineRunReason;
   message: string;
 } => {
-  const status = pipelineRun?.status?.conditions?.[0]?.status || "Unknown";
-  const reason = pipelineRun?.status?.conditions?.[0]?.reason || "Unknown";
+  const status =
+    pipelineRun?.status?.conditions?.[0]?.status?.toLowerCase() || "Unknown";
+  const reason =
+    pipelineRun?.status?.conditions?.[0]?.reason?.toLowerCase() || "Unknown";
   const message = pipelineRun?.status?.conditions?.[0]?.message || "No message";
 
   return {

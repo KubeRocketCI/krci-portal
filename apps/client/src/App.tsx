@@ -7,6 +7,7 @@ import { lightTheme } from "./core/router/components/themes";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material";
 import { DialogContextProvider } from "./core/providers/Dialog/provider";
 import { SnackbarProvider } from "notistack";
+// import ShopIcon from "@/assets/icons/shop.svg?react";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
                 }}
               >
                 <DialogContextProvider>
+                  {/* <ShopIcon width={100} height={100} fill="yellow" /> */}
                   <AppRouter />
                 </DialogContextProvider>
               </SnackbarProvider>

@@ -16,6 +16,7 @@ const pipelineRunLabelsSchema = z
     [pipelineRunLabels.pipeline]: z.string().optional(),
     [pipelineRunLabels.cdPipeline]: z.string().optional(),
     [pipelineRunLabels.stage]: z.string().optional(),
+    [pipelineRunLabels.cdStage]: z.string().optional(),
   })
   .catchall(z.string());
 

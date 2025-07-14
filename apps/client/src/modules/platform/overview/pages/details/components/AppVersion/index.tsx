@@ -1,5 +1,5 @@
 import { Table } from "@/core/components/Table";
-import { useApplicationWatchList } from "@/core/k8s/api/groups/ArgoCD";
+import { useApplicationWatchList } from "@/core/k8s/api/groups/ArgoCD/Application";
 import { useClusterStore } from "@/core/store";
 import { routeComponentDetails } from "@/modules/platform/codebases/pages/details/route";
 import { Box, IconButton, Stack, Tooltip, Typography } from "@mui/material";

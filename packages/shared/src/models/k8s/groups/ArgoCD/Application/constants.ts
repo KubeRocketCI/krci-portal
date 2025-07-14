@@ -1,5 +1,9 @@
 import { K8sResourceConfig } from "../../../core";
 import { applicationLabels } from "./labels";
+import {
+  applicationHealthStatusSchema,
+  applicationSyncStatusSchema,
+} from "./schema";
 
 export const k8sApplicationConfig = {
   apiVersion: "argoproj.io/v1alpha1",
@@ -9,3 +13,6 @@ export const k8sApplicationConfig = {
   singularName: "application",
   pluralName: "applications",
 } as const satisfies K8sResourceConfig<typeof applicationLabels>;
+
+export const applicationHealthStatus = applicationHealthStatusSchema.enum;
+export const applicationSyncStatus = applicationSyncStatusSchema.enum;

@@ -7,7 +7,7 @@ import {
 } from "../../../core";
 import { secretDraftSchema, secretSchema } from "../../default";
 import { codebaseLabels } from "./labels";
-import { ciToolEnum } from "../common";
+import { ciToolEnum, krciCommonLabelsSchema } from "../common";
 
 export const codebaseTypeEnum = z.enum([
   "application",
@@ -91,7 +91,7 @@ const codebaseStatusSchema = z.object({
   webHookRef: z.string().optional(),
 });
 
-const codebaseLabelsSchema = z.object({
+const codebaseLabelsSchema = krciCommonLabelsSchema.extend({
   [codebaseLabels.codebaseType]: codebaseTypeEnum,
   // [codebaseLabels.gitserver]: gitProviderEnum,
   [codebaseLabels.integration]: z.string().optional(),

@@ -32,9 +32,8 @@ export const k8sListProcedure = protectedProcedure
       });
     }
 
-    const customObjectsApi = K8sClient.KubeConfig.makeApiClient(
-      CustomObjectsApi
-    );
+    const customObjectsApi =
+      K8sClient.KubeConfig.makeApiClient(CustomObjectsApi);
 
     const res = await customObjectsApi.listNamespacedCustomObject({
       group: resourceConfig.group,

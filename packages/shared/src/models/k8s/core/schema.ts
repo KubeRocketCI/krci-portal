@@ -23,6 +23,7 @@ export const rbacOperationEnum = z.enum([
 ]);
 
 export const stringDictSchema = z.record(z.string());
+export const optionalStringDictSchema = z.record(z.string().optional());
 
 export const k8sResourceConfigSchema = z.object({
   apiVersion: z.string(),
@@ -60,7 +61,7 @@ export const kubeObjectDraftMetadataSchema = z.object({
   finalizers: z.string().array().optional(),
   generateName: z.string().optional(),
   generation: z.number().optional(),
-  labels: stringDictSchema.optional(),
+  labels: optionalStringDictSchema.optional(),
   name: z.string(),
   namespace: z.string().optional(),
   ownerReferences: z.array(kubeOwnerReferenceSchema).optional(),
@@ -82,7 +83,7 @@ export const kubeObjectMetadataSchema = z.object({
   finalizers: z.string().array().optional(),
   generateName: z.string().optional(),
   generation: z.number().optional(),
-  labels: stringDictSchema.optional(),
+  labels: optionalStringDictSchema.optional(),
   managedFields: z.array(kubeManagedFieldsEntrySchema).optional(),
   name: z.string(),
   namespace: z.string().optional(),

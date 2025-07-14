@@ -2,7 +2,7 @@ import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { EmptyList } from "@/core/components/EmptyList";
 import { TABLE } from "@/core/k8s/constants/tables";
-import { ResourcesSVGSprite } from "@/core/k8s/icons/sprites/Resources";
+import { K8sRelatedIconsSVGSprite } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 // import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { Table } from "@/core/components/Table";
 import { useCodebasePermissions, useCodebaseWatchList } from "@/core/k8s/api/groups/KRCI/Codebase";
@@ -85,7 +85,7 @@ export const ComponentList = () => {
 
   return (
     <>
-      <ResourcesSVGSprite />
+      <K8sRelatedIconsSVGSprite />
       <Stack spacing={2}>
         <Stack direction="row" justifyContent="flex-end" alignItems="center">
           <ButtonWithPermission

@@ -1,5 +1,5 @@
 import { GitProvider, gitProvider } from "@my-project/shared";
-import { createURLObjectFromURLOrigin } from "../index";
+import { createURLObjectFromURLOrigin } from "../utils";
 
 export const GitURLService = {
   createGitOpsValuesYamlFileLink: (
@@ -27,14 +27,14 @@ export const GitURLService = {
       return `${gitHostURLObject.href}/src/main/${pipelineName}/${stageName}/${appName}-values.yaml`;
     }
   },
-  createRepoBranchLink: (gitServer: GitProvider, baseUrl: string | undefined, branch: string) => {
-    if (!gitServer || !baseUrl) {
+  createRepoBranchLink: (codebaseGitProvider: GitProvider, baseUrl: string | undefined, branch: string) => {
+    if (!codebaseGitProvider || !baseUrl) {
       return baseUrl;
     }
 
     const updatedUrl = new URL(baseUrl);
 
-    switch (gitServer.toLowerCase()) {
+    switch (codebaseGitProvider.toLowerCase()) {
       case gitProvider.gerrit:
         updatedUrl.searchParams.set("a", "refs/heads/" + branch);
         break;
@@ -49,7 +49,7 @@ export const GitURLService = {
         updatedUrl.search = `?at=${encodeURIComponent(branch)}`;
         break;
       default:
-        throw new Error(`Unsupported git server: ${gitServer}`);
+        throw new Error(`Unsupported git server: ${codebaseGitProvider}`);
     }
 
     return updatedUrl.toString();

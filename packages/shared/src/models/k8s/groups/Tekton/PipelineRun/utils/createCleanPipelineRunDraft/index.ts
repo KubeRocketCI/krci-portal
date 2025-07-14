@@ -5,11 +5,11 @@ import { pipelineRunLabels } from "../../labels";
 import { pipelineType } from "../../../Pipeline/constants";
 
 export const createCleanPipelineRunDraft = ({
-  CDPipeline,
+  cdPipeline,
   stage,
   pipelineRunTemplate,
 }: {
-  CDPipeline: CDPipeline;
+  cdPipeline: CDPipeline;
   stage: Stage;
   pipelineRunTemplate: PipelineRun;
 }): PipelineRun => {
@@ -19,7 +19,7 @@ export const createCleanPipelineRunDraft = ({
   const namePostfix = `-${createRandomString(4)}`;
 
   const truncatedName = truncateName(
-    `${CDPipeline.metadata.name}-${stage.spec.name}`,
+    `${cdPipeline.metadata.name}-${stage.spec.name}`,
     namePrefix.length + namePostfix.length
   );
 
@@ -30,7 +30,7 @@ export const createCleanPipelineRunDraft = ({
   base.metadata.name = fullPipelineRunName;
 
   base.metadata.labels = base.metadata.labels || {};
-  base.metadata.labels[pipelineRunLabels.cdPipeline] = CDPipeline.metadata.name;
+  base.metadata.labels[pipelineRunLabels.cdPipeline] = cdPipeline.metadata.name;
   base.metadata.labels[pipelineRunLabels.stage] = stage.metadata.name;
   base.metadata.labels[pipelineRunLabels.pipelineType] = pipelineType.clean;
 
@@ -40,7 +40,7 @@ export const createCleanPipelineRunDraft = ({
         param.value = stage.spec.name;
         break;
       case "CDPIPELINE":
-        param.value = CDPipeline.metadata.name;
+        param.value = cdPipeline.metadata.name;
         break;
       case "KUBECONFIG_SECRET_NAME":
         param.value = stage.spec.clusterName;

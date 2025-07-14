@@ -1,7 +1,10 @@
 import z from "zod";
 import { k8sOperation } from "../../../core";
+import { krciCommonLabels } from "./labels";
 
 export const ciToolEnum = z.enum(["tekton"]);
+
+export const krciConfigMapNamesEnum = z.enum(["edp-config", "krci-config"]);
 
 export const gitProviderEnum = z.enum([
   "gerrit",
@@ -16,3 +19,7 @@ export const protectedOperationsEnum = z.enum([
   k8sOperation.patch,
   k8sOperation.delete,
 ]);
+
+export const krciCommonLabelsSchema = z.object({
+  [krciCommonLabels.editProtection]: z.string().optional(),
+});

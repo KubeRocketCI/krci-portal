@@ -6,7 +6,7 @@ import { Application, applicationLabels } from "@my-project/shared";
 import { Link, useParams } from "@tanstack/react-router";
 import React from "react";
 import { routeOverviewDetails } from "../../../route";
-import { routeStageDetails } from "@/modules/platform/stages/pages/details/route";
+import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 
 export const useColumns = (): TableColumn<Application>[] => {
   const { clusterName, namespace } = useParams({ from: routeOverviewDetails.fullPath });

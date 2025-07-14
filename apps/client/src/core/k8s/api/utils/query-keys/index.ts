@@ -14,7 +14,15 @@ export const getK8sWatchListQueryCacheKey = (
   namespace: string,
   resourcePlural: string,
   labels?: ResourceLabels
-) => ["k8s:watchList", clusterName, namespace, resourcePlural, labels?.toString() ?? ""];
+) => {
+  const hasLabels = !!labels && Object.keys(labels).length > 0;
+
+  if (hasLabels) {
+    return ["k8s:watchList", clusterName, namespace, resourcePlural, Object.entries(labels).toString()];
+  }
+
+  return ["k8s:watchList", clusterName, namespace, resourcePlural];
+};
 
 export const getK8sWatchItemQueryCacheKey = (
   clusterName: string,

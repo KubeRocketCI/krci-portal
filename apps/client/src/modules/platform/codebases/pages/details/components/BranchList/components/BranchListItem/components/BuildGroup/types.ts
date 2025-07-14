@@ -2,7 +2,7 @@ import { CodebaseBranch, PipelineRun, PipelineRunDraft } from "@my-project/share
 
 export interface BuildGroupProps {
   codebaseBranch: CodebaseBranch;
-  latestBuildPipelineRun: PipelineRun;
+  latestBuildPipelineRun: PipelineRun | undefined;
   handleOpenEditor: (data: PipelineRunDraft) => void;
   menuAnchorEl: HTMLElement | null;
   handleClickMenu: (event: React.MouseEvent<HTMLElement>) => void;
