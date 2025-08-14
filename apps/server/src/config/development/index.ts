@@ -32,7 +32,7 @@ export class LocalFastifyServer {
       "OIDC_CODE_CHALLENGE_METHOD",
     ]);
 
-    this.fastify = Fastify({ logger: true });
+    this.fastify = Fastify({ logger: false });
   }
 
   static validateRequiredEnv(keys: string[]) {

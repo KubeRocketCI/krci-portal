@@ -1,16 +1,4 @@
-import {
-  Button,
-  IconButton,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Typography,
-} from "@mui/material";
+import { Button, IconButton, Stack, Typography } from "@mui/material";
 import React from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import { useVariablesConfigMapWatch } from "../../../../hooks";
@@ -87,52 +75,37 @@ export const Variables = () => {
         <form>
           <Stack spacing={4}>
             {fields.length ? (
-              <TableContainer component={Paper} variant="outlined">
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell width="45%">Key</TableCell>
-                      <TableCell width="45%">Value</TableCell>
-                      <TableCell width="10%" align="center">
-                        Actions
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {fields.map((field, index) => (
-                      <TableRow key={field.id}>
-                        <TableCell>
-                          <FormTextField
-                            {...register(`variables.${index}.key`, {
-                              required: "Enter a key",
-                            })}
-                            placeholder={"Var name"}
-                            label={""}
-                            control={control}
-                            errors={errors}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <FormTextField
-                            {...register(`variables.${index}.value`, {
-                              required: "Enter a value",
-                            })}
-                            label={""}
-                            placeholder={"Var value"}
-                            control={control}
-                            errors={errors}
-                          />
-                        </TableCell>
-                        <TableCell align="center">
-                          <IconButton onClick={() => handleDelete(index)} size="small" data-test="delete">
-                            <Trash size={16} />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <NameValueTable
+                rows={fields.map((_field, index) => ({
+                  name: (
+                    <FormTextField
+                      {...register(`variables.${index}.key`, {
+                        required: "Enter a key",
+                      })}
+                      placeholder={"Var name"}
+                      label={""}
+                      control={control}
+                      errors={errors}
+                    />
+                  ),
+                  value: (
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <FormTextField
+                        {...register(`variables.${index}.value`, {
+                          required: "Enter a value",
+                        })}
+                        label={""}
+                        placeholder={"Var value"}
+                        control={control}
+                        errors={errors}
+                      />
+                      <IconButton onClick={() => handleDelete(index)} size="small" data-test="delete">
+                        <Trash size={16} />
+                      </IconButton>
+                    </Stack>
+                  ),
+                }))}
+              />
             ) : (
               <EmptyList customText="Are you sure you want to save empty variable list?" />
             )}

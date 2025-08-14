@@ -1,39 +1,26 @@
 import { CustomSession } from "@/trpc/context";
-import { CoreV1Api } from "@kubernetes/client-node";
 import { KubeConfig } from "@kubernetes/client-node";
-import { K8sResourceConfig } from "@my-project/shared";
+import {
+  K8sResourceConfig,
+  KubeObjectBase,
+  KubeObjectListBase,
+} from "@my-project/shared";
+import fetch from "node-fetch";
+import https from "https";
 
-// List of used Core resources
-type SupportedCoreKind =
-  | "ConfigMap"
-  | "Secret"
-  | "ServiceAccount"
-  | "ResourceQuota"
-  | "Pod"
-  | "Service"
-  | "Node";
+export const isCoreKubernetesResource = (resourceConfig: K8sResourceConfig) =>
+  resourceConfig.group === "";
 
-type OperationParams =
-  | {
-      operation: "list";
-      namespace: string;
-    }
-  | {
-      operation: "read" | "delete" | "connect";
-      name: string;
-      namespace: string;
-    }
-  | { operation: "create"; namespace: string; body: object }
-  | {
-      operation: "patch" | "replace";
-      name: string;
-      namespace: string;
-      body: object;
-    };
+// Cluster-scoped core resources (no namespace in URL)
+const CLUSTER_SCOPED_CORE_RESOURCES = new Set([
+  "Node",
+  "PersistentVolume",
+  "ClusterRole",
+  "ClusterRoleBinding",
+  "Namespace",
+]);
 
-export const isCoreKubernetesResource = (resourceConfig: K8sResourceConfig) => {
-  return resourceConfig.group === "";
-};
+type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export class K8sClient {
   KubeConfig: KubeConfig | null;
@@ -46,7 +33,6 @@ export class K8sClient {
 
     this.KubeConfig = new KubeConfig();
 
-    // Load base configuration
     if (process.env.NODE_ENV === "production") {
       this.KubeConfig.loadFromCluster();
     } else {
@@ -56,7 +42,6 @@ export class K8sClient {
     const userName = session.user?.data?.email || "oidc-user";
     const userToken = session.user?.secret.idToken;
 
-    // Validate token presence
     if (!userToken) {
       throw new Error("No access token provided in session");
     }
@@ -77,6 +62,7 @@ export class K8sClient {
     if (!currentContext) {
       throw new Error("No current context found in kubeConfig");
     }
+
     this.KubeConfig.contexts = [
       {
         name: currentContext,
@@ -87,279 +73,266 @@ export class K8sClient {
     this.KubeConfig.setCurrentContext(currentContext);
   }
 
-  async callCoreResourceOperation(
-    kind: string,
-    params: OperationParams
-  ): Promise<unknown> {
+  /**
+   * Unified method to list any Kubernetes resource (core or custom)
+   */
+  async listResource(
+    resourceConfig: K8sResourceConfig,
+    namespace: string,
+    labelSelector?: string
+  ): Promise<KubeObjectListBase<KubeObjectBase>> {
     if (!this.KubeConfig) {
       throw new Error("KubeConfig is not initialized");
     }
 
-    const coreV1Api = this.KubeConfig.makeApiClient(CoreV1Api);
+    const url = this.buildResourceUrl(resourceConfig, { namespace });
+    const queryParams = new URLSearchParams();
 
-    switch (kind) {
-      case "ConfigMap":
-      case "Secret":
-      case "ServiceAccount":
-      case "Pod":
-      case "ResourceQuota":
-        return this.dispatchOperation(coreV1Api, kind, params);
-      default:
-        throw new Error(`Unsupported core kind: ${kind}`);
+    if (labelSelector) {
+      queryParams.append("labelSelector", labelSelector);
     }
+
+    const fullUrl = queryParams.toString()
+      ? `${url}?${queryParams.toString()}`
+      : url;
+
+    return this.makeRequest(
+      "GET",
+      fullUrl
+    ) as unknown as KubeObjectListBase<KubeObjectBase>;
   }
 
-  private async dispatchOperation(
-    api: CoreV1Api,
-    kind: SupportedCoreKind,
-    params: OperationParams
-  ): Promise<unknown> {
-    const { operation } = params;
-
-    switch (kind) {
-      case "ConfigMap":
-        switch (operation) {
-          case "list":
-            return api.listNamespacedConfigMap({ namespace: params.namespace });
-          case "read":
-            return api.readNamespacedConfigMap({
-              name: params.name,
-              namespace: params.namespace,
-            });
-          case "delete":
-            return api.deleteNamespacedConfigMap({
-              name: params.name,
-              namespace: params.namespace,
-            });
-          case "create":
-            return api.createNamespacedConfigMap({
-              namespace: params.namespace,
-              body: params.body,
-            });
-          case "patch":
-            return api.patchNamespacedConfigMap({
-              name: params.name,
-              namespace: params.namespace,
-              body: params.body,
-            });
-          case "replace":
-            return api.replaceNamespacedConfigMap({
-              name: params.name,
-              namespace: params.namespace,
-              body: params.body,
-            });
-        }
-        break;
-
-      case "Secret":
-        switch (operation) {
-          case "list":
-            return api.listNamespacedSecret({ namespace: params.namespace });
-          case "read":
-            return api.readNamespacedSecret({
-              name: params.name,
-              namespace: params.namespace,
-            });
-          case "delete":
-            return api.deleteNamespacedSecret({
-              name: params.name,
-              namespace: params.namespace,
-            });
-          case "create":
-            return api.createNamespacedSecret({
-              namespace: params.namespace,
-              body: params.body,
-            });
-          case "patch":
-            return api.patchNamespacedSecret({
-              name: params.name,
-              namespace: params.namespace,
-              body: params.body,
-            });
-          case "replace":
-            return api.replaceNamespacedSecret({
-              name: params.name,
-              namespace: params.namespace,
-              body: params.body,
-            });
-        }
-        break;
-
-      case "ServiceAccount":
-        switch (operation) {
-          case "list":
-            return api.listNamespacedServiceAccount({
-              namespace: params.namespace,
-            });
-          case "read":
-            return api.readNamespacedServiceAccount({
-              name: params.name,
-              namespace: params.namespace,
-            });
-          case "delete":
-            return api.deleteNamespacedServiceAccount({
-              name: params.name,
-              namespace: params.namespace,
-            });
-          case "create":
-            return api.createNamespacedServiceAccount({
-              namespace: params.namespace,
-              body: params.body,
-            });
-          case "patch":
-            return api.patchNamespacedServiceAccount({
-              name: params.name,
-              namespace: params.namespace,
-              body: params.body,
-            });
-          case "replace":
-            return api.replaceNamespacedServiceAccount({
-              name: params.name,
-              namespace: params.namespace,
-              body: params.body,
-            });
-        }
-        break;
-
-      case "ResourceQuota":
-        switch (operation) {
-          case "list":
-            return api.listNamespacedResourceQuota({
-              namespace: params.namespace,
-            });
-          case "read":
-            return api.readNamespacedResourceQuota({
-              name: params.name,
-              namespace: params.namespace,
-            });
-          case "delete":
-            return api.deleteNamespacedResourceQuota({
-              name: params.name,
-              namespace: params.namespace,
-            });
-          case "create":
-            return api.createNamespacedResourceQuota({
-              namespace: params.namespace,
-              body: params.body,
-            });
-          case "patch":
-            return api.patchNamespacedResourceQuota({
-              name: params.name,
-              namespace: params.namespace,
-              body: params.body,
-            });
-          case "replace":
-            return api.replaceNamespacedResourceQuota({
-              name: params.name,
-              namespace: params.namespace,
-              body: params.body,
-            });
-        }
-        break;
-
-      case "Pod":
-        if (operation === "connect") {
-          return api.connectGetNamespacedPodProxy({
-            name: params.name,
-            namespace: params.namespace,
-          });
-        }
-
-        switch (operation) {
-          case "list":
-            return api.listNamespacedPod({ namespace: params.namespace });
-          case "read":
-            return api.readNamespacedPod({
-              name: params.name,
-              namespace: params.namespace,
-            });
-          case "delete":
-            return api.deleteNamespacedPod({
-              name: params.name,
-              namespace: params.namespace,
-            });
-          case "create":
-            return api.createNamespacedPod({
-              namespace: params.namespace,
-              body: params.body,
-            });
-          case "patch":
-            return api.patchNamespacedPod({
-              name: params.name,
-              namespace: params.namespace,
-              body: params.body,
-            });
-          case "replace":
-            return api.replaceNamespacedPod({
-              name: params.name,
-              namespace: params.namespace,
-              body: params.body,
-            });
-        }
-        break;
-
-      case "Service":
-        if (operation === "connect") {
-          return api.connectGetNamespacedServiceProxy({
-            name: params.name,
-            namespace: params.namespace,
-          });
-        }
-
-        switch (operation) {
-          case "list":
-            return api.listNamespacedService({ namespace: params.namespace });
-          case "read":
-            return api.readNamespacedService({
-              name: params.name,
-              namespace: params.namespace,
-            });
-          case "delete":
-            return api.deleteNamespacedService({
-              name: params.name,
-              namespace: params.namespace,
-            });
-          case "create":
-            return api.createNamespacedService({
-              namespace: params.namespace,
-              body: params.body,
-            });
-          case "patch":
-            return api.patchNamespacedService({
-              name: params.name,
-              namespace: params.namespace,
-              body: params.body,
-            });
-          case "replace":
-            return api.replaceNamespacedService({
-              name: params.name,
-              namespace: params.namespace,
-              body: params.body,
-            });
-        }
-        break;
-
-      case "Node":
-        if (operation === "connect") {
-          return api.connectGetNodeProxy({ name: params.name });
-        }
-
-        switch (operation) {
-          case "list":
-            return api.listNode();
-          case "read":
-            return api.readNode({ name: params.name });
-          case "delete":
-            return api.deleteNode({ name: params.name });
-          case "patch":
-            return api.patchNode({ name: params.name, body: params.body });
-          case "replace":
-            return api.replaceNode({ name: params.name, body: params.body });
-          // No `create` for Node
-        }
-        break;
+  /**
+   * Get a specific resource by name
+   */
+  async getResource(
+    resourceConfig: K8sResourceConfig,
+    name: string,
+    namespace: string
+  ): Promise<KubeObjectBase> {
+    if (!this.KubeConfig) {
+      throw new Error("KubeConfig is not initialized");
     }
 
-    throw new Error(`Unsupported operation ${operation} for kind ${kind}`);
+    const url = this.buildResourceUrl(resourceConfig, { namespace, name });
+    return this.makeRequest("GET", url);
+  }
+
+  /**
+   * Delete a specific resource by name
+   */
+  async deleteResource(
+    resourceConfig: K8sResourceConfig,
+    name: string,
+    namespace: string
+  ): Promise<KubeObjectBase> {
+    if (!this.KubeConfig) {
+      throw new Error("KubeConfig is not initialized");
+    }
+
+    const url = this.buildResourceUrl(resourceConfig, { namespace, name });
+    return this.makeRequest("DELETE", url);
+  }
+
+  /**
+   * Create a new resource
+   */
+  async createResource(
+    resourceConfig: K8sResourceConfig,
+    namespace: string,
+    body: object
+  ): Promise<KubeObjectBase> {
+    if (!this.KubeConfig) {
+      throw new Error("KubeConfig is not initialized");
+    }
+
+    const url = this.buildResourceUrl(resourceConfig, { namespace });
+    return this.makeRequest("POST", url, body);
+  }
+
+  /**
+   * Replace (update) an existing resource
+   */
+  async replaceResource(
+    resourceConfig: K8sResourceConfig,
+    name: string,
+    namespace: string,
+    body: object
+  ): Promise<KubeObjectBase> {
+    if (!this.KubeConfig) {
+      throw new Error("KubeConfig is not initialized");
+    }
+
+    const url = this.buildResourceUrl(resourceConfig, { namespace, name });
+    return this.makeRequest("PUT", url, body);
+  }
+
+  /**
+   * Patch an existing resource
+   */
+  async patchResource(
+    resourceConfig: K8sResourceConfig,
+    name: string,
+    namespace: string,
+    body: object
+  ): Promise<KubeObjectBase> {
+    if (!this.KubeConfig) {
+      throw new Error("KubeConfig is not initialized");
+    }
+
+    const url = this.buildResourceUrl(resourceConfig, { namespace, name });
+    return this.makeRequest("PATCH", url, body);
+  }
+
+  /**
+   * Build the appropriate Kubernetes API URL for any resource
+   */
+  private buildResourceUrl(
+    resourceConfig: K8sResourceConfig,
+    options: { namespace?: string; name?: string }
+  ): string {
+    const cluster = this.KubeConfig!.getCurrentCluster();
+    if (!cluster) {
+      throw new Error("No current cluster found");
+    }
+
+    const { server } = cluster;
+    const { namespace, name } = options;
+
+    const isNamespaced =
+      !CLUSTER_SCOPED_CORE_RESOURCES.has(resourceConfig.kind) &&
+      resourceConfig.kind !== "Namespace";
+
+    let basePath: string;
+    let resourcePath: string;
+
+    // Extract version from either version field or apiVersion field
+    const version =
+      resourceConfig.version ||
+      resourceConfig.apiVersion?.split("/").pop() ||
+      "v1";
+
+    if (isCoreKubernetesResource(resourceConfig)) {
+      basePath = `/api/${version}`;
+
+      if (isNamespaced && namespace) {
+        resourcePath = `namespaces/${namespace}/${resourceConfig.pluralName}`;
+      } else {
+        resourcePath = resourceConfig.pluralName;
+      }
+    } else {
+      // Handle empty group case to avoid double slashes
+      if (resourceConfig.group) {
+        basePath = `/apis/${resourceConfig.group}/${version}`;
+      } else {
+        basePath = `/apis/${version}`;
+      }
+
+      if (isNamespaced && namespace) {
+        resourcePath = `namespaces/${namespace}/${resourceConfig.pluralName}`;
+      } else {
+        resourcePath = resourceConfig.pluralName;
+      }
+    }
+
+    // Ensure no double slashes by cleaning up the path construction
+    let url = `${server}${basePath}/${resourcePath}`
+      .replace(/\/+/g, "/")
+      .replace(":/", "://");
+
+    if (name) {
+      url += `/${name}`;
+    }
+
+    return url;
+  }
+
+  /**
+   * Make authenticated HTTP request to Kubernetes API
+   */
+  private async makeRequest(
+    method: HttpMethod,
+    url: string,
+    body?: object
+  ): Promise<KubeObjectBase | KubeObjectListBase<KubeObjectBase>> {
+    if (!this.KubeConfig) {
+      throw new Error("KubeConfig is not initialized");
+    }
+
+    const currentUser = this.KubeConfig.getCurrentUser();
+    const currentCluster = this.KubeConfig.getCurrentCluster();
+
+    const agent = new https.Agent({
+      ca: currentCluster?.caData
+        ? Buffer.from(currentCluster.caData, "base64").toString("utf8")
+        : undefined,
+      cert: currentUser?.certData
+        ? Buffer.from(currentUser.certData, "base64").toString("utf8")
+        : undefined,
+      key: currentUser?.keyData
+        ? Buffer.from(currentUser.keyData, "base64").toString("utf8")
+        : undefined,
+      keepAlive: true,
+      rejectUnauthorized: !currentCluster?.skipTLSVerify,
+    });
+
+    const requestHeaders: Record<string, string> = {
+      Accept: "application/json",
+    };
+
+    if (body && ["POST", "PUT", "PATCH"].includes(method)) {
+      requestHeaders["Content-Type"] = "application/json";
+    }
+
+    const opts = {
+      method,
+      headers: requestHeaders,
+      agent: agent,
+      body: undefined as string | undefined,
+    };
+
+    if (body && ["POST", "PUT", "PATCH"].includes(method)) {
+      opts.body = JSON.stringify(body);
+    }
+
+    this.KubeConfig.applyToHTTPSOptions(opts);
+
+    const response = await fetch(url, opts);
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => "");
+      throw new Error(
+        `Kubernetes API request failed: ${response.status} ${response.statusText}. ${errorText}`
+      );
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      return response.json() as unknown as
+        | KubeObjectBase
+        | KubeObjectListBase<KubeObjectBase>;
+    }
+
+    return response.text() as unknown as
+      | KubeObjectBase
+      | KubeObjectListBase<KubeObjectBase>;
+  }
+
+  /**
+   * Get authentication headers from kubeconfig
+   */
+  private getAuthHeaders(): Record<string, string> {
+    if (!this.KubeConfig) {
+      return {};
+    }
+
+    const user = this.KubeConfig.getCurrentUser();
+    const headers: Record<string, string> = {};
+
+    if (user?.token) {
+      headers["Authorization"] = `Bearer ${user.token}`;
+    }
+
+    return headers;
   }
 }

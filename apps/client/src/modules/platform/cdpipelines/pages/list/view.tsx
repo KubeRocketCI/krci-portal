@@ -43,9 +43,8 @@ export default function CDPipelineListPage() {
   }, [gitOpsCodebaseWatch.query.isFetched, gitOpsCodebase]);
 
   return (
-    <PageWrapper>
+    <PageWrapper breadcrumbs={[{ label: "Deployment Flows" }]}>
       <Section
-        title="Deployment Flows"
         description={
           <>
             Orchestrate and Monitor Your Deployment Flows.{" "}

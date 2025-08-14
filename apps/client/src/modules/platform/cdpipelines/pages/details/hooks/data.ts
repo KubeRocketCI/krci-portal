@@ -35,8 +35,6 @@ export const useStagesWithItsApplicationsWatch = () => {
     namespace: params.namespace,
   });
 
-  console.log(stageListWatch);
-
   const appCodebaseListWatch = useCodebaseWatchList({
     labels: {
       [codebaseLabels.codebaseType]: codebaseType.application,
@@ -54,6 +52,7 @@ export const useStagesWithItsApplicationsWatch = () => {
   return useQuery({
     queryKey: [
       "stageListWithApplications",
+      cdPipelineWatch.resourceVersion,
       stageListWatch.resourceVersion,
       appCodebaseListWatch.resourceVersion,
       applicationListWatch.resourceVersion,
@@ -64,8 +63,6 @@ export const useStagesWithItsApplicationsWatch = () => {
         cdPipeline?.spec.applications.some((cdPipelineApp) => cdPipelineApp === appCodebase.metadata.name)
       );
       const sortedStageList = stageListWatch.dataArray.toSorted((a, b) => a.spec.order - b.spec.order);
-
-      console.log(sortedStageList);
 
       return {
         stages: sortedStageList,
@@ -78,6 +75,6 @@ export const useStagesWithItsApplicationsWatch = () => {
     },
     placeholderData: keepPreviousData,
     enabled:
-      stageListWatch.query.isSuccess && appCodebaseListWatch.query.isSuccess && applicationListWatch.query.isSuccess,
+      cdPipelineWatch.isReady && stageListWatch.isReady && appCodebaseListWatch.isReady && applicationListWatch.isReady,
   });
 };

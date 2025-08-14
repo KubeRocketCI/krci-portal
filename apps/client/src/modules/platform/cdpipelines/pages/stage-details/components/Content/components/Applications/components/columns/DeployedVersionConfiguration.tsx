@@ -5,7 +5,7 @@ import { Box, Stack } from "@mui/material";
 import React from "react";
 import { useFormContext } from "react-hook-form";
 import { createImageStreamTags } from "../../utils/createImageStreamTags";
-import { StageAppCodebaseCombinedData } from "@/core/k8s/api/groups/KRCI/Stage/hooks/useWatchStageAppCodebasesCombinedData";
+import { StageAppCodebaseCombinedData } from "@/k8s/api/groups/KRCI/Stage/hooks/useWatchStageAppCodebasesCombinedData";
 
 export const DeployedVersionConfigurationColumn = ({
   stageAppCodebasesCombinedData,

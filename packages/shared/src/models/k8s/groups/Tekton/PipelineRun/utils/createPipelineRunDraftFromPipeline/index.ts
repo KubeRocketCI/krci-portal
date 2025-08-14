@@ -23,7 +23,7 @@ const getPipelineRunFromTriggerTemplate = (
 };
 
 export const createPipelineRunDraftFromPipeline = (
-  triggerTemplate: TriggerTemplate,
+  triggerTemplate: TriggerTemplate | undefined,
   pipeline: Pipeline
 ): PipelineRunDraft => {
   if (triggerTemplate) {
@@ -50,20 +50,19 @@ export const createPipelineRunDraftFromPipeline = (
       labels: {
         [pipelineRunLabels.pipelineType]:
           pipeline.metadata.labels[pipelineLabels.pipelineType],
+        [pipelineRunLabels.pipeline]: pipeline.metadata.name,
       },
     },
     spec: {
       pipelineRef: {
         name: pipeline.metadata.name,
       },
-      params: (pipeline.spec.params || []).map(
-        (param: { name: string; default: string }) => {
-          return {
-            name: param.name,
-            value: param.default || "",
-          };
-        }
-      ),
+      params: (pipeline.spec.params || []).map((param) => {
+        return {
+          name: param.name,
+          value: param.default || "",
+        };
+      }),
     },
   };
 

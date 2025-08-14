@@ -113,7 +113,7 @@ const actionsColumn = {
   },
   cell: {
     isFixed: true,
-    baseWidth: 10,
+    baseWidth: 10, // percents
   },
 };
 ```

@@ -1,4 +1,5 @@
 export * from "./common";
+export * from "./ApprovalTask";
 export * from "./CDPipeline";
 export * from "./Codebase";
 export * from "./CodebaseBranch";

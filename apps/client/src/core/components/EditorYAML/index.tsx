@@ -1,45 +1,28 @@
 import React from "react";
-import MonacoEditor from "@monaco-editor/react";
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Alert } from "@mui/material";
-import * as yaml from "js-yaml";
+import CodeEditor, { CodeEditorHandle } from "../CodeEditor";
 import { KubeResourceEditorProps } from "./types";
 
 export default function EditorYAML({ props, state }: KubeResourceEditorProps) {
-  const { content, onChange, onSave, onClose, readOnly = false, height = "500px" } = props;
+  const { content, onChange, onSave, onClose: onEditorClose, readOnly = false, height = "500px" } = props;
 
-  const [yamlContent, setYamlContent] = React.useState<string>("");
+  const editorRef = React.useRef<CodeEditorHandle>(null);
   const [error, setError] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
+  const handleSave = () => {
+    const text = editorRef.current?.getValue() ?? "";
     try {
-      setYamlContent(yaml.dump(content));
-      setError(null);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (_e) {
-      setError("Invalid input content.");
-    }
-  }, [content]);
-
-  const handleChange = (value: string | undefined) => {
-    if (value == null) return;
-    setYamlContent(value);
-    try {
-      const parsed = yaml.load(value);
-      setError(null);
-      onChange?.(value, parsed as object, undefined);
+      const parsed = editorRef.current?.getParsed() ?? null;
+      onSave?.(text, parsed);
     } catch (err) {
       setError((err as Error).message);
-      onChange?.(value, null, err as Error);
     }
+
+    state.closeDialog();
   };
 
-  const handleSave = () => {
-    try {
-      const parsed = yaml.load(yamlContent);
-      onSave?.(yamlContent, parsed as object);
-    } catch (err) {
-      setError((err as Error).message);
-    }
+  const onClose = () => {
+    onEditorClose?.();
     state.closeDialog();
   };
 
@@ -47,11 +30,16 @@ export default function EditorYAML({ props, state }: KubeResourceEditorProps) {
     <Dialog open={state.open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Kubernetes Resource Editor</DialogTitle>
       <DialogContent>
-        <MonacoEditor
+        <CodeEditor
+          ref={editorRef}
+          content={content}
           height={height}
           language="yaml"
-          value={yamlContent}
-          onChange={handleChange}
+          onChange={(text, json, err) => {
+            if (err) setError(err.message);
+            else setError(null);
+            onChange?.(text, json, err);
+          }}
           theme="vs-light"
           options={{
             readOnly,

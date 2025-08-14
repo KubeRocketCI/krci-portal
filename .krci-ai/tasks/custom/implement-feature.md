@@ -13,11 +13,18 @@ Implement Story requirements according to Architecture specifications and coding
 
 ### Reference Assets
 
-Dependencies:
+Dependencies (paths adjusted to existing repo assets):
 
-- [sdlc-framework.md](./.krci-ai/data/common/sdlc-framework.md)
-- [coding-standards.md](./.krci-ai/data/coding-standards.md)
-- [best-practices.md](./.krci-ai/data/best-practices.md)
+- [monorepo.md](./.krci-ai/data/custom/monorepo.md)
+- [tech-stack.md](./.krci-ai/data/custom/tech-stack.md)
+- [routing-navigation.md](./.krci-ai/data/custom/routing-navigation.md)
+- [common.md](./.krci-ai/data/custom/patterns/common.md)
+- [error-handling.md](./.krci-ai/data/custom/patterns/error-handling.md)
+- [testing-implementation.md](./.krci-ai/data/custom/patterns/testing-implementation.md)
+- [api-integration-patterns.md](./.krci-ai/templates/custom/api-integration-patterns.md)
+- [component-scaffold.md](./.krci-ai/templates/custom/component-scaffold.md)
+- [route-patterns.md](./.krci-ai/templates/custom/route-patterns.md)
+- [table-patterns.md](./.krci-ai/templates/custom/table-patterns.md)
 
 Validation: Verify all dependencies exist at specified paths before proceeding. HALT if any missing.
 

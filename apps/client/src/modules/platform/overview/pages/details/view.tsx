@@ -20,11 +20,10 @@ export default function OverviewDetailsPageContent() {
   const { userWidgets, setUserWidgets } = useUserWidgets();
 
   return (
-    <PageWrapper>
+    <PageWrapper breadcrumbs={[{ label: "Overview" }]}>
       <Grid container spacing={6}>
         <Grid item xs={12}>
           <Section
-            title={"Overview"}
             description={
               <>
                 Gain essential information on your codebase insights. Organize your menu for faster and more convenient

@@ -34,8 +34,8 @@ export const ValuesOverrideHeadColumn = ({ mode }: { mode: ApplicationsTableMode
 
       const boolean = event?.target.value;
 
-      for (const application of appCodebases) {
-        const selectFieldName = `${application.metadata.name}${VALUES_OVERRIDE_POSTFIX}` as const;
+      for (const appCodebase of appCodebases) {
+        const selectFieldName = `${appCodebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}` as const;
 
         setValue(selectFieldName, boolean, {
           shouldValidate: true,

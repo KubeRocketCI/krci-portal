@@ -65,6 +65,10 @@ packages/shared/
 - **Validation Schemas**: Zod schemas for data validation
 - **Constants**: API versions, operation types, shared enums
 
+## Package Manager
+
+**Always use pnpm as primary package manager.**
+
 ## Import Path Guidelines
 
 ### Critical Rule: Check tsconfig Before Imports
@@ -154,25 +158,3 @@ export const PipelineRunStatus: React.FC<Props> = ({ pipelineRun }) => {
 
 - **Shared Dependencies**: Place common dependencies in root `package.json`
 - Use TypeScript path mapping for clean imports
-
-## Package Interdependencies
-
-```mermaid
-graph TD
-    A[Client] --> C[Shared]
-    B[Server] --> C[Shared]
-    A -.-> B[tRPC calls]
-
-    C --> D[K8s Models]
-    C --> E[Auth Models]
-    C --> F[Validation Schemas]
-    C --> G[Utility Functions]
-```
-
-### Allowed Dependencies
-
-- **Client → Shared**: ✅ Import types, utilities, constants
-- **Server → Shared**: ✅ Import types, utilities, schemas
-- **Client → Server**: ✅ Only AppRouter type import (for tRPC type safety)
-- **Server → Client**: ❌ Direct imports forbidden
-- **Shared → Client/Server**: ❌ No reverse dependencies

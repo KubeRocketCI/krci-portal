@@ -3,7 +3,7 @@ export const pipelineRunLabels = {
   codebaseBranch: "app.edp.epam.com/codebasebranch",
   codebase: "app.edp.epam.com/codebase",
   pipelineType: "app.edp.epam.com/pipelinetype",
-  pipeline: "app.edp.epam.com/pipeline",
+  pipeline: "tekton.dev/pipeline",
   cdPipeline: "app.edp.epam.com/cdpipeline",
   stage: "app.edp.epam.com/stage",
   cdStage: "app.edp.epam.com/cdstage",

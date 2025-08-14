@@ -30,6 +30,8 @@ import { routeQuicklinksConfiguration } from "@/modules/platform/configuration/p
 import { routeRegistryConfiguration } from "@/modules/platform/configuration/pages/registry/route";
 import { routeSonarConfiguration } from "@/modules/platform/configuration/pages/sonar/route";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
+import { routeTaskList } from "@/modules/platform/tasks/pages/list/route";
+import { routeTaskDetails } from "@/modules/platform/tasks/pages/details/route";
 
 export const rootRoute = createRootRouteWithContext<MyRouterContext>()({
   component: Root,
@@ -79,6 +81,7 @@ export const routeCluster = createRoute({
 
     if (params.clusterName !== clusterName) {
       // Load only known cluster
+
       throw redirect({
         to: routeHome.fullPath,
       });
@@ -95,6 +98,16 @@ export const routeCluster = createRoute({
   },
 });
 
+export const routeCICD = createRoute({
+  getParentRoute: () => routeCluster,
+  path: "cicd",
+});
+
+export const routeConfiguration = createRoute({
+  getParentRoute: () => routeCluster,
+  path: "configuration",
+});
+
 const routeTree = rootRoute.addChildren([
   authRoute.addChildren([routeAuthLogin, routeAuthCallback]),
   contentLayoutRoute.addChildren([
@@ -106,23 +119,29 @@ const routeTree = rootRoute.addChildren([
       routeCDPipelineList,
       routeCDPipelineDetails,
       routeStageDetails,
-      routePipelineList,
-      routePipelineDetails,
-      routePipelineRunList,
-      routePipelineRunDetails,
-      routeArgocdConfiguration,
-      routeChatAssistantConfiguration,
-      routeClustersConfiguration,
-      routeCodemieConfiguration,
-      routeDefectdojoConfiguration,
-      routeDependencyTrackConfiguration,
-      routeGitopsConfiguration,
-      routeGitserversConfiguration,
-      routeJiraConfiguration,
-      routeNexusConfiguration,
-      routeQuicklinksConfiguration,
-      routeRegistryConfiguration,
-      routeSonarConfiguration,
+      routeCICD.addChildren([
+        routePipelineList,
+        routePipelineDetails,
+        routeTaskList,
+        routeTaskDetails,
+        routePipelineRunList,
+        routePipelineRunDetails,
+      ]),
+      routeConfiguration.addChildren([
+        routeArgocdConfiguration,
+        routeChatAssistantConfiguration,
+        routeClustersConfiguration,
+        routeCodemieConfiguration,
+        routeDefectdojoConfiguration,
+        routeDependencyTrackConfiguration,
+        routeGitopsConfiguration,
+        routeGitserversConfiguration,
+        routeJiraConfiguration,
+        routeNexusConfiguration,
+        routeQuicklinksConfiguration,
+        routeRegistryConfiguration,
+        routeSonarConfiguration,
+      ]),
     ]),
   ]),
 ]);

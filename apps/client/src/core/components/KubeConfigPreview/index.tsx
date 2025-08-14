@@ -1,39 +1,34 @@
 import { trpc } from "@/core/clients/trpc";
 import { DialogProps } from "@/core/providers/Dialog/types";
-import MonacoEditor from "@monaco-editor/react";
+import CodeEditor, { CodeEditorHandle } from "@/core/components/CodeEditor";
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import * as yaml from "js-yaml";
+
 import React from "react";
+import { useClusterStore } from "@/k8s/store";
 
 type KubeConfigPreviewDialogProps = DialogProps<object>;
 
 export default function KubeConfigPreviewDialog({ state }: KubeConfigPreviewDialogProps) {
   const { open, closeDialog } = state;
 
-  const [yamlContent, setYamlContent] = React.useState<string>("");
+  const { clusterName } = useClusterStore();
+  const editorRef = React.useRef<CodeEditorHandle>(null);
 
   const { data } = useQuery({
-    queryKey: ["k8s.kubeconfig"],
-    queryFn: () => trpc.k8s.kubeconfig.query(),
+    queryKey: ["k8s.kubeconfig", clusterName],
+    queryFn: () => trpc.k8s.kubeconfig.query({ clusterName }),
+    enabled: Boolean(clusterName),
   });
 
   React.useEffect(() => {
-    if (data) {
-      setYamlContent(yaml.dump(data));
-    }
+    // Content is passed via props; rerender updates the editor value
   }, [data]);
 
-  const handleEditorChange = (value: string | undefined) => {
-    // Handle changes in the Monaco Editor (user edits YAML)
-    if (value) {
-      setYamlContent(value);
-    }
-  };
-
   const copyToClipboard = () => {
-    if (yamlContent) {
-      navigator.clipboard.writeText(yamlContent).then(() => {
+    const text = editorRef.current?.getValue();
+    if (text) {
+      navigator.clipboard.writeText(text).then(() => {
         alert("YAML copied to clipboard!");
       });
     }
@@ -43,11 +38,13 @@ export default function KubeConfigPreviewDialog({ state }: KubeConfigPreviewDial
     <Dialog open={open} onClose={closeDialog} maxWidth="md" fullWidth>
       <DialogTitle>Kubeconfig Preview</DialogTitle>
       <DialogContent>
-        <MonacoEditor
+        <CodeEditor
+          ref={editorRef}
+          content={data || {}}
           height="400px"
           language="yaml"
-          value={yamlContent}
-          onChange={handleEditorChange}
+          readOnly
+          onChange={() => {}}
           theme="vs-light"
         />
       </DialogContent>

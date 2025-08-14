@@ -51,8 +51,8 @@ const FormTextFieldInner = React.forwardRef(
             defaultValue={defaultValue as PathValue<TFormValues, Path<TFormValues>>}
             render={({ field }) => (
               <TextField
-                {...field}
                 {...TextFieldProps}
+                {...field}
                 inputRef={ref}
                 placeholder={placeholder}
                 disabled={disabled}
@@ -61,9 +61,9 @@ const FormTextFieldInner = React.forwardRef(
                 InputProps={mergedInputProps}
                 helperText={helperText}
                 aria-describedby={hasError ? `${name}-error` : undefined}
-                {...props}
               />
             )}
+            {...props}
           />
         </FormControl>
       </Stack>

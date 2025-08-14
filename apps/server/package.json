@@ -13,7 +13,6 @@
     "test": "vitest"
   },
   "dependencies": {
-    "better-sqlite3": "^11.9.1",
     "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^11.0.0",
     "@fastify/session": "^11.1.0",
@@ -22,10 +21,13 @@
     "@kubernetes/client-node": "^1.0.0",
     "@my-project/shared": "workspace:*",
     "@trpc/server": "^11.1.2",
+    "@types/node-fetch": "^2.6.13",
+    "better-sqlite3": "^11.9.1",
     "cookie": "^1.0.2",
     "dotenv": "^16.4.7",
     "fastify": "^5.2.1",
     "jwt-decode": "^4.0.0",
+    "node-fetch": "^3.3.2",
     "openid-client": "^6.5.0",
     "uuid": "^11.1.0",
     "zod": "^3.24.2"
