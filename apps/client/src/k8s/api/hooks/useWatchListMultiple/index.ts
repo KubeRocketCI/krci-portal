@@ -5,7 +5,7 @@
 // import { getK8sWatchListQueryCacheKey } from "../../query-keys";
 // import { useShallow } from "zustand/react/shallow";
 // import { trpc } from "@/core/clients/trpc";
-// import { useClusterStore } from "@/core/store";
+// import { useClusterStore } from "@/k8s/store";
 // import { MSG_TYPE, MsgType, CustomKubeObjectList, k8sListInitialData } from "./useWatchList";
 
 // type StreamEvent<T extends KubeObjectBase> = {

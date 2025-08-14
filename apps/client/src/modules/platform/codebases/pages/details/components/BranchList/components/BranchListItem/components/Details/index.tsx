@@ -5,11 +5,11 @@ import { TABLE } from "@/k8s/constants/tables";
 import { FilterProvider } from "@/core/providers/Filter/provider";
 import { ResourceActionListContextProvider } from "@/core/providers/ResourceActionList/provider";
 import { useClusterStore } from "@/k8s/store";
-import { PipelineRunList } from "@/modules/platform/pipelines/components/PipelineRunList";
+import { PipelineRunList } from "@/modules/platform/pipelineruns/components/PipelineRunList";
 import {
   matchFunctions,
   pipelineRunFilterControlNames,
-} from "@/modules/platform/pipelines/components/PipelineRunList/constants";
+} from "@/modules/platform/pipelineruns/components/PipelineRunList/constants";
 import { pipelineType } from "@my-project/shared";
 import { useShallow } from "zustand/react/shallow";
 import { DetailsProps } from "./types";

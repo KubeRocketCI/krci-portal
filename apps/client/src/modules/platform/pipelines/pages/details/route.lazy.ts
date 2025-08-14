@@ -1,7 +1,7 @@
 import { createLazyRoute } from "@tanstack/react-router";
-import PipelineDetailsPage from "./view";
+import { PipelineDetailsPage } from "./page";
 
-const PipelineDetailsRoute = createLazyRoute("/c/$clusterName/pipelines/$namespace/$name")({
+const PipelineDetailsRoute = createLazyRoute("/c/$clusterName/cicd/pipelines/$namespace/$name")({
   component: PipelineDetailsPage,
 });
 

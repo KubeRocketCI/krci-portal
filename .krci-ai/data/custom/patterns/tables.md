@@ -72,7 +72,7 @@ Each table column follows a standardized configuration pattern with these key pr
 #### Cell Properties
 
 - **`baseWidth`**: Default column width percentage
-- **`width`**: Current column width (managed by settings)
+- **`width`**: Current column width percentage (managed by settings)
 - **`show`**: Column visibility (managed by settings)
 - **`isFixed`**: Prevents column from being hidden by users
 - **`colSpan`**: Number of columns to span

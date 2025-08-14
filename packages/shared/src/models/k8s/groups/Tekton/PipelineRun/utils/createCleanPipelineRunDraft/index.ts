@@ -32,6 +32,7 @@ export const createCleanPipelineRunDraft = ({
   base.metadata.labels = base.metadata.labels || {};
   base.metadata.labels[pipelineRunLabels.cdPipeline] = cdPipeline.metadata.name;
   base.metadata.labels[pipelineRunLabels.stage] = stage.metadata.name;
+  base.metadata.labels[pipelineRunLabels.cdStage] = stage.metadata.name;
   base.metadata.labels[pipelineRunLabels.pipelineType] = pipelineType.clean;
 
   for (const param of base.spec.params) {

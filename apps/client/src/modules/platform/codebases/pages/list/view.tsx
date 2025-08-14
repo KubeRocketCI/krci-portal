@@ -6,10 +6,8 @@ import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 
 export default function ComponentListPageContent() {
   return (
-    <PageWrapper>
-      <Section
-        title="Components"
-        description={
+    <PageWrapper breadcrumbs={[{ label: "Components" }]}>
+      <Section description={
           <>
             Create, view, and manage diverse codebases, encompassing applications, libraries, autotests, and Terraform
             infrastructure code. <LearnMoreLink url={EDP_USER_GUIDE.APPLICATION_CREATE.url} />

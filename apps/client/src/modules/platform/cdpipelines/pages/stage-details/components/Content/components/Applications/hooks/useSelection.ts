@@ -1,4 +1,4 @@
-import { StageAppCodebaseCombinedData } from "@/core/k8s/api/groups/KRCI/Stage/hooks/useWatchStageAppCodebasesCombinedData";
+import { StageAppCodebaseCombinedData } from "@/k8s/api/groups/KRCI/Stage/hooks/useWatchStageAppCodebasesCombinedData";
 import React from "react";
 
 export const useSelection = () => {

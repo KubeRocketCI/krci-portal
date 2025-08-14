@@ -1,8 +1,6 @@
 import { createLazyRoute } from "@tanstack/react-router";
-import PipelineRunListPage from "./view";
+import { PipelineRunListPage } from "./page";
 
-const PipelineRunListRoute = createLazyRoute("/c/$clusterName/pipelineruns")({
+export const Route = createLazyRoute("/c/$clusterName/cicd/pipelineruns")({
   component: PipelineRunListPage,
 });
-
-export default PipelineRunListRoute;

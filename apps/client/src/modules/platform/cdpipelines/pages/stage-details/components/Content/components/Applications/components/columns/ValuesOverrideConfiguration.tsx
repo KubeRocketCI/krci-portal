@@ -36,7 +36,7 @@ export const ValuesOverrideConfigurationColumn = ({
   } = useTypedFormContext();
   const currentResourceValue = application ? Object.hasOwn(application?.spec, "sources") : false;
 
-  const thisFieldValue = watch(`${application.metadata.name}${VALUES_OVERRIDE_POSTFIX}`);
+  const thisFieldValue = watch(`${appCodebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}`);
 
   const gitOpsGitServer = React.useMemo(() => {
     return gitServerListWatch.dataArray?.find(
@@ -50,7 +50,7 @@ export const ValuesOverrideConfigurationColumn = ({
         <div>
           <FormSwitch
             label={<></>}
-            {...register(`${application.metadata.name}${VALUES_OVERRIDE_POSTFIX}`, {
+            {...register(`${appCodebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}`, {
               onChange: () => {
                 const hasAtLeastOneFalse = Object.entries(getValues())
                   .filter(([key]) => key.includes(VALUES_OVERRIDE_POSTFIX))

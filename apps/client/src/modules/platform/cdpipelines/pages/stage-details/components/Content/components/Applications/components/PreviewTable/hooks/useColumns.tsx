@@ -2,8 +2,8 @@ import { TableColumn } from "@/core/components/Table/types";
 import { TABLE } from "@/k8s/constants/tables";
 import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
 import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
-import { inClusterName } from "@my-project/shared";
 import { StageAppCodebaseCombinedData, useStageWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
+import { inClusterName } from "@my-project/shared";
 import { columnNames } from "../../../constants";
 import { DeployedVersionPreviewColumn } from "../../columns/DeployedVersionPreview";
 import { DeployedVersionHeadColumn } from "../../columns/DeployedVersionPreviewHead";
@@ -82,9 +82,7 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
       id: columnNames.VALUES_OVERRIDE,
       label: <ValuesOverridePreviewHeadColumn />,
       data: {
-        render: ({ data: { application, appCodebase } }) => (
-          <ValuesOverridePreviewColumn application={application!} appCodebase={appCodebase} />
-        ),
+        render: ({ data: { appCodebase } }) => <ValuesOverridePreviewColumn appCodebase={appCodebase} />,
       },
       cell: {
         ...getSyncedColumnData(tableSettings, columnNames.VALUES_OVERRIDE, 15),

@@ -1,5 +1,4 @@
 import { Link, Typography } from "@mui/material";
-import React from "react";
 
 export const LearnMoreLink = ({ url }: { url: string }) => {
   return (

@@ -1,6 +1,7 @@
 import { AuthorizationV1Api } from "@kubernetes/client-node";
 import { V1SelfSubjectAccessReview } from "@kubernetes/client-node";
 import { z } from "zod";
+import { handleK8sError } from "@/trpc/routers/k8s/utils/handleK8sError";
 import { protectedProcedure } from "@/trpc/procedures/protected";
 import {
   defaultPermissions,
@@ -23,52 +24,57 @@ export const k8sGetResourcePermissions = protectedProcedure
     })
   )
   .mutation(async ({ input, ctx }) => {
-    const { apiVersion, group, version, namespace, resourcePlural } = input;
-    const { K8sClient } = ctx;
+    try {
+      const { apiVersion, group, version, namespace, resourcePlural } = input;
+      const { K8sClient } = ctx;
 
-    if (!K8sClient.KubeConfig) {
-      throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-    }
+      if (!K8sClient.KubeConfig) {
+        throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
+      }
 
-    const authApi = K8sClient.KubeConfig.makeApiClient(AuthorizationV1Api);
+      const authApi = K8sClient.KubeConfig.makeApiClient(AuthorizationV1Api);
 
-    const promises = defaultPermissionsToCheck.reduce<
-      Promise<V1SelfSubjectAccessReview>[]
-    >((acc, verb) => {
-      const rbacVerb = k8sToRbacVerbMap[verb];
+      const promises = defaultPermissionsToCheck.reduce<
+        Promise<V1SelfSubjectAccessReview>[]
+      >((acc, verb) => {
+        const rbacVerb = k8sToRbacVerbMap[verb];
 
-      acc.push(
-        authApi.createSelfSubjectAccessReview({
-          body: {
-            apiVersion: `authorization.k8s.io/${apiVersion}`,
-            spec: {
-              resourceAttributes: {
-                verb: rbacVerb,
-                namespace,
-                group,
-                version,
-                resource: resourcePlural,
+        acc.push(
+          authApi.createSelfSubjectAccessReview({
+            body: {
+              apiVersion: `authorization.k8s.io/${apiVersion}`,
+              spec: {
+                resourceAttributes: {
+                  verb: rbacVerb,
+                  namespace,
+                  group,
+                  version,
+                  resource: resourcePlural,
+                },
               },
             },
-          },
-        })
-      );
-      return acc;
-    }, []);
-
-    const responses = await Promise.all(promises);
-
-    const result = responses.reduce<DefaultPermissionListCheckResult>(
-      (acc, res, index) => {
-        const verb = defaultPermissionsToCheck[index];
-        acc[verb] = {
-          allowed: res.status?.allowed || false,
-          reason: res.status?.reason || `You cannot ${verb} ${resourcePlural}`,
-        };
+          })
+        );
         return acc;
-      },
-      defaultPermissions
-    );
+      }, []);
 
-    return result;
+      const responses = await Promise.all(promises);
+
+      const result = responses.reduce<DefaultPermissionListCheckResult>(
+        (acc, res, index) => {
+          const verb = defaultPermissionsToCheck[index];
+          acc[verb] = {
+            allowed: res.status?.allowed || false,
+            reason:
+              res.status?.reason || `You cannot ${verb} ${resourcePlural}`,
+          };
+          return acc;
+        },
+        defaultPermissions
+      );
+
+      return result;
+    } catch (error) {
+      throw handleK8sError(error);
+    }
   });

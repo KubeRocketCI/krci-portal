@@ -9,7 +9,7 @@ All Kubernetes resource definitions follow a standardized structure in the share
 ### Shared Package Structure
 
 - **Centralized Definitions**: All K8s resource configs live in `shared/src/k8s/groups/`
-- **Type Safety**: Full TypeScript coverage with Zod schema validation
+- **Type Safety**: Full TypeScript coverage with Zod schema validation. Every k8s resource must be defined in shared package. It's type should always be infered from its schema. The schema must always be full and fit to actual kubernetes resource resource definition.
 - **Consistent Patterns**: Every resource follows the same file structure
 - **No Magic Strings**: All configs declared as constants in shared package
 

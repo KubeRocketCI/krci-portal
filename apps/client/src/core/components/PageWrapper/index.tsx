@@ -17,49 +17,50 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({
     <Box
       sx={{
         pb: theme.typography.pxToRem(120),
-        px: theme.typography.pxToRem(16),
         flexGrow: 1,
         display: "flex",
         flexDirection: "column",
       }}
     >
       {hasBreadcrumbs ? (
-        <Grid container spacing={1} alignItems={"center"} justifyContent={"space-between"}>
-          <Grid item>
-            <Grid container spacing={2} alignItems={"center"}>
-              <Grid item>
-                <Breadcrumbs>
-                  {breadcrumbs?.map(({ label, route }) => {
-                    const key = `breadcrumb-${label}`;
+        <div className="my-2 flex h-12 border-b px-4">
+          <Grid container spacing={1} alignItems={"center"} justifyContent={"space-between"}>
+            <Grid item>
+              <Grid container spacing={2} alignItems={"center"}>
+                <Grid item>
+                  <Breadcrumbs>
+                    {breadcrumbs?.map(({ label, route }) => {
+                      const key = `breadcrumb-${label}`;
 
-                    return route ? (
-                      <Button variant="link" asChild key={key} className="p-0">
-                        <Link to={route.to} params={route.params}>
+                      return route ? (
+                        <Button variant="link" asChild key={key} className="p-0">
+                          <Link to={route.to} params={route.params}>
+                            {label}
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Typography
+                          key={key}
+                          color="textPrimary"
+                          sx={{
+                            marginBottom: theme.typography.pxToRem(1),
+                            fontSize: theme.typography.pxToRem(14),
+                          }}
+                        >
                           {label}
-                        </Link>
-                      </Button>
-                    ) : (
-                      <Typography
-                        key={key}
-                        color="textPrimary"
-                        sx={{
-                          marginBottom: theme.typography.pxToRem(1),
-                          fontSize: theme.typography.pxToRem(14),
-                        }}
-                      >
-                        {label}
-                      </Typography>
-                    );
-                  })}
-                </Breadcrumbs>
+                        </Typography>
+                      );
+                    })}
+                  </Breadcrumbs>
+                </Grid>
+                <Grid item>{breadcrumbsExtraContent}</Grid>
               </Grid>
-              <Grid item>{breadcrumbsExtraContent}</Grid>
             </Grid>
+            <Grid item>{headerSlot}</Grid>
           </Grid>
-          <Grid item>{headerSlot}</Grid>
-        </Grid>
+        </div>
       ) : null}
-      {children}
+      <div className="flex-grow px-6 py-4">{children}</div>
     </Box>
   );
 };

@@ -19,7 +19,7 @@ export const Overview = () => {
     <Stack spacing={3}>
       <BorderedSection title="Component Details">
         <div>
-          <LoadingWrapper isLoading={!codebaseWatch.query.isFetched}>
+          <LoadingWrapper isLoading={codebaseWatch.isInitialLoading}>
             <InfoColumns infoRows={infoRows!} />
           </LoadingWrapper>
         </div>

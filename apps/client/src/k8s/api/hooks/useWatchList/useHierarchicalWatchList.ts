@@ -1,5 +1,5 @@
 // import { trpc } from "@/core/clients/trpc";
-// import { useClusterStore } from "@/core/store";
+// import { useClusterStore } from "@/k8s/store";
 // import { K8sResourceConfig, KubeObjectBase, ResourceLabels } from "@my-project/shared";
 // import { useQueryClient } from "@tanstack/react-query";
 // import React from "react";

@@ -1,6 +1,5 @@
 import { EmptyList } from "@/core/components/EmptyList";
 import { HorizontalScrollContainer } from "@/core/components/HorizontalScrollContainer";
-import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { ManageStageDialog } from "@/modules/platform/cdpipelines/dialogs/ManageStage";
 import { Grid, useTheme } from "@mui/material";
@@ -31,17 +30,12 @@ export const StageList = () => {
     return result;
   }, [stagesWithItsApplicationsWatch, filterFunction]);
 
-  console.log(stagesWithItsApplicationsWatch, filteredStages);
-
   const openManageStageDialog = useDialogOpener(ManageStageDialog);
 
   const renderPageContent = React.useCallback(() => {
-    const isLoading =
-      cdPipelineWatch.query.isLoading ||
-      stagesWithItsApplicationsWatch.isLoading ||
-      !stagesWithItsApplicationsWatch.isSuccess;
+    const isLoading = cdPipelineWatch.query.isLoading || stagesWithItsApplicationsWatch.isLoading;
 
-    if (filteredStages?.length === 0 && !isLoading) {
+    if (!isLoading && stagesWithItsApplicationsWatch.data?.stages.length === 0) {
       return (
         <EmptyList
           missingItemName="Environments"
@@ -59,19 +53,17 @@ export const StageList = () => {
     }
 
     return (
-      <LoadingWrapper isLoading={isLoading}>
-        <HorizontalScrollContainer>
-          <Grid container spacing={6} wrap="nowrap" sx={{ pb: theme.typography.pxToRem(50) }}>
-            {filteredStages.map((stageWithApplications) => {
-              return (
-                <Grid item xs={6} flexShrink="0" key={stageWithApplications.stage.spec.name}>
-                  <Stage stageWithApplications={stageWithApplications} />
-                </Grid>
-              );
-            })}
-          </Grid>
-        </HorizontalScrollContainer>
-      </LoadingWrapper>
+      <HorizontalScrollContainer>
+        <Grid container spacing={6} wrap="nowrap" sx={{ pb: theme.typography.pxToRem(50) }}>
+          {filteredStages.map((stageWithApplications) => {
+            return (
+              <Grid item xs={6} flexShrink="0" key={stageWithApplications.stage.spec.name}>
+                <Stage stageWithApplications={stageWithApplications} />
+              </Grid>
+            );
+          })}
+        </Grid>
+      </HorizontalScrollContainer>
     );
   }, [
     cdPipelineWatch.query.data,
@@ -80,7 +72,6 @@ export const StageList = () => {
     openManageStageDialog,
     stagesWithItsApplicationsWatch.data,
     stagesWithItsApplicationsWatch.isLoading,
-    stagesWithItsApplicationsWatch.isSuccess,
     theme.typography,
   ]);
 

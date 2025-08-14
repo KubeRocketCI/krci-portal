@@ -1,7 +1,7 @@
 import { SearchControl } from "@/core/providers/Filter/components/Filter/components/SearchControl";
 import { useFilterContext } from "@/core/providers/Filter/hooks";
 import { FilterControls } from "@/core/providers/Filter/types";
-// import { useClusterStore } from "@/core/store";
+// import { useClusterStore } from "@/k8s/store";
 import { Autocomplete, FormHelperText, TextField } from "@mui/material";
 import { CDPipeline } from "@my-project/shared";
 import React from "react";
