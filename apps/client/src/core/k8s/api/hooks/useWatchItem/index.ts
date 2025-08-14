@@ -26,6 +26,8 @@ export interface UseWatchItemParams<I extends KubeObjectBase> {
 export type UseWatchItemResult<I extends KubeObjectBase> = {
   query: UseQueryResult<I | undefined, RequestError>;
   resourceVersion: string | undefined;
+  isReady: boolean;
+  isInitialLoading: boolean;
 };
 
 export const useWatchItem = <I extends KubeObjectBase>({
@@ -101,11 +103,15 @@ export const useWatchItem = <I extends KubeObjectBase>({
     if (query.isFetched) {
       watchItemRegistry.ensureStarted<I>(k8sWatchItemQueryCacheKey, queryClient);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.isFetched, k8sWatchItemQueryCacheKey, queryClient]);
+
+  const isReady = query.status === "success" || query.status === "error";
+  const isInitialLoading = !query.isFetched && query.isFetching;
 
   return {
     query,
     resourceVersion: latestResourceVersion.current ?? undefined,
+    isReady,
+    isInitialLoading,
   } satisfies UseWatchItemResult<I>;
 };

@@ -6,16 +6,25 @@ export const getPipelineRunStatus = (
   status: PipelineRunStatus;
   reason: PipelineRunReason;
   message: string;
+  lastTransitionTime: string;
+  startTime: string;
+  completionTime: string;
 } => {
-  const status =
-    pipelineRun?.status?.conditions?.[0]?.status?.toLowerCase() || "Unknown";
-  const reason =
-    pipelineRun?.status?.conditions?.[0]?.reason?.toLowerCase() || "Unknown";
-  const message = pipelineRun?.status?.conditions?.[0]?.message || "No message";
+  const firstCondition = pipelineRun?.status?.conditions?.[0];
+
+  const status = firstCondition?.status?.toLowerCase() || "Unknown";
+  const reason = firstCondition?.reason?.toLowerCase() || "Unknown";
+  const message = firstCondition?.message || "No message";
+  const lastTransitionTime = firstCondition?.lastTransitionTime || "N/A";
+  const startTime = pipelineRun?.status?.startTime || "N/A";
+  const completionTime = pipelineRun?.status?.completionTime || "N/A";
 
   return {
     status,
     reason,
     message,
-  };
+    lastTransitionTime,
+    startTime,
+    completionTime,
+    };
 };

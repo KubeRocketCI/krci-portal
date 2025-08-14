@@ -77,17 +77,11 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
         <FormProvider {...form}>
           <Stack spacing={2}>
             <FormTextField
-              {...form.register(names.DEFAULT_NAMESPACE, {
-                required: "Enter a default namespace.",
-                pattern: {
-                  value: /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/,
-                  message: "Invalid namespace format.",
-                },
-              })}
-              placeholder={"Enter a default namespace"}
-              label={"Default Namespace"}
+              name={names.DEFAULT_NAMESPACE}
               control={form.control}
               errors={form.formState.errors}
+              label={"Default Namespace"}
+              placeholder={"Enter a default namespace"}
               TextFieldProps={{
                 helperText: "The default namespace for e.g. when applying resources (when not specified directly).",
                 InputProps: {
@@ -100,6 +94,13 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
                       )}
                     </Box>
                   ),
+                },
+              }}
+              rules={{
+                required: "Enter a default namespace.",
+                pattern: {
+                  value: /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/,
+                  message: "Invalid namespace format.",
                 },
               }}
             />

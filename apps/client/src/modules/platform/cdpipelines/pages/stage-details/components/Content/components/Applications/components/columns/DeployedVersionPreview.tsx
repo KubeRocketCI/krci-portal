@@ -37,11 +37,11 @@ export const DeployedVersionPreviewColumn = ({
   const argoCDLink = React.useMemo(() => {
     return LinkCreationService.argocd.createApplicationLink(
       quickLinkURLs?.[systemQuickLink.argocd],
-      application.metadata?.labels?.[applicationLabels.pipeline],
-      application.metadata?.labels?.[applicationLabels.stage],
-      application.metadata?.labels?.[applicationLabels.appName]
+      application?.metadata?.labels?.[applicationLabels.pipeline],
+      application?.metadata?.labels?.[applicationLabels.stage],
+      application?.metadata?.labels?.[applicationLabels.appName]
     );
-  }, [application.metadata?.labels, quickLinkURLs]);
+  }, [application?.metadata?.labels, quickLinkURLs]);
 
   return application && deployedVersion !== "NaN" ? (
     <Tooltip

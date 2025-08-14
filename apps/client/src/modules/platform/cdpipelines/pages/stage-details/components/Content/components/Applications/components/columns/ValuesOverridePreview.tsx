@@ -5,21 +5,15 @@ import {
   ALL_VALUES_OVERRIDE_KEY,
   VALUES_OVERRIDE_POSTFIX,
 } from "@/modules/platform/cdpipelines/pages/stage-details/constants";
-import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import { useGitOpsCodebaseWatch, useGitServersWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
+import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import { Stack } from "@mui/material";
-import { Application, Codebase, GitProvider } from "@my-project/shared";
+import { Codebase, GitProvider } from "@my-project/shared";
 import { SquareArrowOutUpRight } from "lucide-react";
 import React from "react";
 import { useTypedFormContext } from "../../hooks/useTypedFormContext";
 
-export const ValuesOverridePreviewColumn = ({
-  application,
-  appCodebase,
-}: {
-  application: Application;
-  appCodebase: Codebase;
-}) => {
+export const ValuesOverridePreviewColumn = ({ appCodebase }: { appCodebase: Codebase }) => {
   const params = routeStageDetails.useParams();
   const gitOpsCodebaseWatch = useGitOpsCodebaseWatch();
   const gitServerListWatch = useGitServersWatch();
@@ -46,7 +40,7 @@ export const ValuesOverridePreviewColumn = ({
         <div>
           <FormSwitch
             label={<></>}
-            {...register(`${application.metadata.name}${VALUES_OVERRIDE_POSTFIX}`, {
+            {...register(`${appCodebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}`, {
               onChange: () => {
                 const hasAtLeastOneFalse = Object.entries(getValues())
                   .filter(([key]) => key.includes(VALUES_OVERRIDE_POSTFIX))

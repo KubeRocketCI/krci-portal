@@ -1,10 +1,11 @@
 import { isCoreKubernetesResource } from "@/clients/k8s";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors";
-import { protectedProcedure } from "@/trpc/procedures/protected";
 import { CustomObjectsApi } from "@kubernetes/client-node";
 import { k8sOperation, k8sResourceConfigSchema } from "@my-project/shared";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors";
+import { protectedProcedure } from "@/trpc/procedures/protected";
+import { handleK8sError } from "@/trpc/routers/k8s/utils/handleK8sError";
 
 export const k8sGetProcedure = protectedProcedure
   .input(
@@ -16,32 +17,33 @@ export const k8sGetProcedure = protectedProcedure
     })
   )
   .query(async ({ input, ctx }) => {
-    const { K8sClient } = ctx;
+    try {
+      const { K8sClient } = ctx;
 
-    if (!K8sClient.KubeConfig) {
-      throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-    }
+      if (!K8sClient.KubeConfig) {
+        throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
+      }
 
-    const { namespace, name, resourceConfig } = input;
+      const { namespace, name, resourceConfig } = input;
 
-    if (isCoreKubernetesResource(resourceConfig)) {
-      return K8sClient.callCoreResourceOperation(resourceConfig.kind, {
-        operation: k8sOperation.read,
-        name,
+      if (isCoreKubernetesResource(resourceConfig)) {
+        return K8sClient.callCoreResourceOperation(resourceConfig.kind, {
+          operation: k8sOperation.read,
+          name,
+          namespace,
+        });
+      }
+
+      const customObjectsApi =
+        K8sClient.KubeConfig.makeApiClient(CustomObjectsApi);
+      return await customObjectsApi.getNamespacedCustomObject({
+        group: resourceConfig.group,
+        version: resourceConfig.version,
+        plural: resourceConfig.pluralName,
         namespace,
+        name,
       });
+    } catch (error) {
+      throw handleK8sError(error);
     }
-
-    const customObjectsApi =
-      K8sClient.KubeConfig.makeApiClient(CustomObjectsApi);
-
-    const res = await customObjectsApi.getNamespacedCustomObject({
-      group: resourceConfig.group,
-      version: resourceConfig.version,
-      plural: resourceConfig.pluralName,
-      namespace,
-      name,
-    });
-
-    return res;
   });

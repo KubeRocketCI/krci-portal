@@ -79,6 +79,7 @@ export const routeCluster = createRoute({
 
     if (params.clusterName !== clusterName) {
       // Load only known cluster
+
       throw redirect({
         to: routeHome.fullPath,
       });

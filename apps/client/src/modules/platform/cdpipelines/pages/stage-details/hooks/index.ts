@@ -285,8 +285,6 @@ export const useWatchStageAppCodebasesCombinedData = () => {
   const codebaseImageStreamListWatch = useCodebaseImageStreamsWatch();
   const argoApplicationListWatch = useApplicationsWatch();
 
-  console.log(argoApplicationListWatch);
-
   return useQuery({
     queryKey: [
       "appCodebaseListWithImageStreamsAndArgoApps",

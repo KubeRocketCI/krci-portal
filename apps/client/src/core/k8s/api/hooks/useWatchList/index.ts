@@ -29,6 +29,8 @@ export interface UseWatchListResult<I extends KubeObjectBase> {
   dataArray: I[];
   isEmpty: boolean;
   resourceVersion: string | undefined;
+  isReady: boolean;
+  isInitialLoading: boolean;
 }
 
 export const k8sListInitialData: CustomKubeObjectList<KubeObjectBase> = {
@@ -120,11 +122,16 @@ export const useWatchList = <I extends KubeObjectBase>({
   const dataMap = React.useMemo(() => query.data?.items || new Map(), [query.data]);
   const dataArray = React.useMemo(() => mapValuesToArray(dataMap) as I[], [dataMap]);
 
+  const isReady = query.status === "success" || query.status === "error";
+  const isInitialLoading = !query.isFetched && query.isFetching;
+
   return {
     query,
     dataMap,
     dataArray,
     isEmpty: query.data?.items.size === 0,
     resourceVersion: query.data?.metadata?.resourceVersion,
+    isReady,
+    isInitialLoading,
   } satisfies UseWatchListResult<I>;
 };

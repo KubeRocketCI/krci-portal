@@ -1,4 +1,5 @@
 import { isCoreKubernetesResource } from "@/clients/k8s";
+import { handleK8sError } from "@/trpc/routers/k8s/utils/handleK8sError";
 import { protectedProcedure } from "@/trpc/procedures/protected";
 import { CustomObjectsApi } from "@kubernetes/client-node";
 import { k8sOperation, k8sResourceConfigSchema } from "@my-project/shared";
@@ -16,30 +17,34 @@ export const k8sCreateItemProcedure = protectedProcedure
     })
   )
   .mutation(async ({ input, ctx }) => {
-    const { K8sClient } = ctx;
+    try {
+      const { K8sClient } = ctx;
 
-    if (!K8sClient.KubeConfig) {
-      throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-    }
+      if (!K8sClient.KubeConfig) {
+        throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
+      }
 
-    const { namespace, resourceConfig, resource } = input;
+      const { namespace, resourceConfig, resource } = input;
 
-    if (isCoreKubernetesResource(resourceConfig)) {
-      return K8sClient.callCoreResourceOperation(resourceConfig.kind, {
-        operation: k8sOperation.create,
+      if (isCoreKubernetesResource(resourceConfig)) {
+        return K8sClient.callCoreResourceOperation(resourceConfig.kind, {
+          operation: k8sOperation.create,
+          namespace,
+          body: resource,
+        });
+      }
+
+      const customObjectsApi =
+        K8sClient.KubeConfig.makeApiClient(CustomObjectsApi);
+
+      return await customObjectsApi.createNamespacedCustomObject({
+        group: resourceConfig.group,
+        version: resourceConfig.version,
+        plural: resourceConfig.pluralName,
         namespace,
         body: resource,
       });
+    } catch (error) {
+      throw handleK8sError(error);
     }
-
-    const customObjectsApi =
-      K8sClient.KubeConfig.makeApiClient(CustomObjectsApi);
-
-    return await customObjectsApi.createNamespacedCustomObject({
-      group: resourceConfig.group,
-      version: resourceConfig.version,
-      plural: resourceConfig.pluralName,
-      namespace,
-      body: resource,
-    });
   });

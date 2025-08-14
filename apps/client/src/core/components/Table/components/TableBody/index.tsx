@@ -56,8 +56,6 @@ export const TableBody = <DataType,>({
     }
 
     if (data !== null && data?.length && !isLoading) {
-      console.log("rendering content");
-      console.log(isLoading, data);
       return (
         <>
           {errors && !!errors.length && (

@@ -28,6 +28,7 @@ import { useClusterStore } from "../store";
 import { useShallow } from "zustand/react/shallow";
 import { routeComponentList } from "@/modules/platform/codebases/pages/list/route";
 import { routeCDPipelineList } from "@/modules/platform/cdpipelines/pages/list/route";
+import { routePipelineRunList } from "@/modules/platform/pipelineruns/pages/list/route";
 
 export type NavItem = {
   title: string;
@@ -43,7 +44,7 @@ const createNav = (clusterName: string, namespace: string): NavItem[] =>
       title: "Overview",
       icon: PanelsTopLeft,
       route: {
-        to: routeOverviewDetails.fullPath,
+        to: routeOverviewDetails.to,
         params: {
           clusterName,
           namespace,
@@ -54,13 +55,21 @@ const createNav = (clusterName: string, namespace: string): NavItem[] =>
       title: "Pipelines",
       icon: Bot,
       route: {
-        to: "/home",
+        to: routePipelineRunList.to,
+        params: {
+          clusterName,
+          namespace,
+        },
       },
       children: [
         {
           title: "PipelineRuns",
           route: {
-            to: "/home",
+            to: routePipelineRunList.to,
+            params: {
+              clusterName,
+              namespace,
+            },
           },
         },
         {
@@ -88,7 +97,7 @@ const createNav = (clusterName: string, namespace: string): NavItem[] =>
       title: "Components",
       icon: Layers,
       route: {
-        to: routeComponentList.fullPath,
+        to: routeComponentList.to,
         params: {
           clusterName,
           namespace,
@@ -99,7 +108,7 @@ const createNav = (clusterName: string, namespace: string): NavItem[] =>
       title: "Deployment Flows",
       icon: Rows2,
       route: {
-        to: routeCDPipelineList.fullPath,
+        to: routeCDPipelineList.to,
         params: {
           clusterName,
           namespace,

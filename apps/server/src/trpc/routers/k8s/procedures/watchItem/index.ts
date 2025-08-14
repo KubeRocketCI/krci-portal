@@ -1,6 +1,7 @@
 import { Watch } from "@kubernetes/client-node";
 import { z } from "zod";
 import { observable } from "@trpc/server/observable";
+import { handleK8sError } from "@/trpc/routers/k8s/utils/handleK8sError";
 import { protectedProcedure } from "@/trpc/procedures/protected";
 import { TRPCError } from "@trpc/server";
 import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors";
@@ -18,42 +19,47 @@ export const k8sWatchItemProcedure = protectedProcedure
   )
   .subscription(({ input, ctx }) => {
     return observable<{ type: string; data: KubeObjectBase }>((emit) => {
-      const { K8sClient } = ctx;
+      try {
+        const { K8sClient } = ctx;
 
-      if (!K8sClient.KubeConfig) {
-        throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-      }
+        if (!K8sClient.KubeConfig) {
+          throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
+        }
 
-      const watch = new Watch(K8sClient.KubeConfig);
+        const watch = new Watch(K8sClient.KubeConfig);
 
-      const { namespace, resourceVersion, name, resourceConfig } = input;
+        const { namespace, resourceVersion, name, resourceConfig } = input;
 
-      let controller: Awaited<ReturnType<typeof watch.watch>>;
-      let isActive = true;
+        let controller: Awaited<ReturnType<typeof watch.watch>>;
+        let isActive = true;
 
-      watch
-        .watch(
-          `/apis/${resourceConfig.group}/${resourceConfig.version}/namespaces/${namespace}/${resourceConfig.pluralName}`,
-          { resourceVersion, fieldSelector: `metadata.name=${name}` },
-          (type, obj) => {
-            if (isActive) {
-              emit.next({ type, data: obj });
+        watch
+          .watch(
+            `/apis/${resourceConfig.group}/${resourceConfig.version}/namespaces/${namespace}/${resourceConfig.pluralName}`,
+            { resourceVersion, fieldSelector: `metadata.name=${name}` },
+            (type, obj) => {
+              if (isActive) {
+                emit.next({ type, data: obj });
+              }
+            },
+            (err) => {
+              if (err) emit.error(err);
             }
-          },
-          (err) => {
-            if (err) emit.error(err);
-          }
-        )
-        .then((c) => {
-          controller = c;
-        })
-        .catch((err) => {
-          emit.error(err);
-        });
+          )
+          .then((c) => {
+            controller = c;
+          })
+          .catch((err) => {
+            emit.error(err);
+          });
 
-      return () => {
-        isActive = false;
-        controller?.abort();
-      };
+        return () => {
+          isActive = false;
+          controller?.abort();
+        };
+      } catch (error) {
+        emit.error(handleK8sError(error));
+        return () => {};
+      }
     });
   });

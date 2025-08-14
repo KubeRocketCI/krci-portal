@@ -1,8 +1,8 @@
 import { K8sResourceConfig } from "../../../core";
 
 export const k8sConfigMapConfig = {
-  group: "v1",
-  version: "v1",
+  group: "",
+  version: "",
   apiVersion: "v1",
   kind: "ConfigMap",
   singularName: "configmap",

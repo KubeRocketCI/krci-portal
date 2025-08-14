@@ -1,5 +1,13 @@
 import { StandardTextFieldProps } from "@mui/material";
-import { Control, FieldErrors, FieldPath, FieldValues, Path, UseFormRegisterReturn } from "react-hook-form";
+import {
+  Control,
+  FieldErrors,
+  FieldPath,
+  FieldValues,
+  Path,
+  RegisterOptions,
+  UseFormRegisterReturn,
+} from "react-hook-form";
 
 export interface FormTextFieldProps<TFieldValues extends FieldValues = FieldValues>
   extends Partial<UseFormRegisterReturn<Path<TFieldValues>>> {
@@ -12,4 +20,5 @@ export interface FormTextFieldProps<TFieldValues extends FieldValues = FieldValu
   placeholder?: string;
   disabled?: boolean;
   TextFieldProps?: StandardTextFieldProps;
+  rules?: RegisterOptions<TFieldValues, Path<TFieldValues>>;
 }

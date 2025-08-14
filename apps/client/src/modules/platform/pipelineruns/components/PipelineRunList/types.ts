@@ -18,8 +18,8 @@ export interface PipelineRunListProps {
   isLoading: boolean;
   tableSettings?: SavedTableSettings;
   blockerError?: RequestError;
-  errors?: RequestError[] | null;
-  pipelineRunTypes?: (FilterTypeWithOptionAll<PipelineType>)[];
+  errors?: RequestError[];
+  pipelineRunTypes?: FilterTypeWithOptionAll<PipelineType>[];
   filterControls?: PipelineRunFilterControlNames[];
 }
 

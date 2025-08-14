@@ -1,86 +1,31 @@
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors";
-import { protectedProcedure } from "@/trpc/procedures/protected";
-import { CoreV1Api } from "@kubernetes/client-node";
 import { TRPCError } from "@trpc/server";
+import { protectedProcedure } from "@/trpc/procedures/protected";
+import { handleK8sError } from "@/trpc/routers/k8s/utils/handleK8sError";
+import { z } from "zod";
+import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors";
 
 export const kubeRootConfigName = "kube-root-ca.crt";
 
-export const k8sGetKubeConfig = protectedProcedure.query(async ({ ctx }) => {
-  const { K8sClient } = ctx;
+export const k8sGetKubeConfig = protectedProcedure
+  .input(
+    z.object({
+      clusterName: z.string(),
+    })
+  )
+  .query(async ({ input, ctx }) => {
+    try {
+      const { K8sClient } = ctx;
 
-  if (!K8sClient.KubeConfig) {
-    throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-  }
+      if (!K8sClient.KubeConfig) {
+        throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
+      }
 
-  // Extract current cluster and user from the kubeconfig
-  const currentCluster = K8sClient.KubeConfig.getCurrentCluster();
-  const currentUser = K8sClient.KubeConfig.getCurrentUser();
+      const { clusterName } = input;
 
-  if (!currentCluster || !currentUser) {
-    throw new Error("Invalid KubeConfig: missing cluster or user info");
-  }
+      const config = K8sClient.getKubeConfigForCluster(clusterName);
 
-  // Extract cluster details
-  const { name: clusterName, server, caData } = currentCluster;
-
-  // Determine the CA certificate data
-  let caCrtBase64: string;
-  if (caData && typeof caData === "string") {
-    caCrtBase64 = caData.startsWith("-----") ? globalThis.btoa(caData) : caData; // already base64
-  } else {
-    const kubeRootConfigMap = await K8sClient.KubeConfig.makeApiClient(
-      CoreV1Api
-    ).readNamespacedConfigMap({
-      name: kubeRootConfigName,
-      namespace: "kube-system",
-    });
-
-    const caCrt = kubeRootConfigMap.data?.["ca.crt"];
-    if (!caCrt) {
-      throw new Error("CA certificate not found in config map");
+      return config;
+    } catch (error) {
+      throw handleK8sError(error);
     }
-    caCrtBase64 = globalThis.btoa(caCrt); // base64 encode the cert
-  }
-
-  // Get token from current user or session data
-  const token = currentUser.token || ctx.session.user?.secret?.accessToken;
-  if (!token) {
-    throw new Error("No token found for user");
-  }
-
-  // Get user name from session or default to 'oidc-user'
-  const userName = ctx.session.user?.data?.email || "oidc-user";
-
-  // Return the formatted kubeconfig object
-  return {
-    apiVersion: "v1",
-    kind: "Config",
-    "current-context": clusterName,
-    clusters: [
-      {
-        name: clusterName,
-        cluster: {
-          server,
-          "certificate-authority-data": caCrtBase64,
-        },
-      },
-    ],
-    users: [
-      {
-        name: userName,
-        user: {
-          token,
-        },
-      },
-    ],
-    contexts: [
-      {
-        name: clusterName,
-        context: {
-          cluster: clusterName,
-          user: userName,
-        },
-      },
-    ],
-  };
-});
+  });

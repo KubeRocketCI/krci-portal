@@ -15,7 +15,7 @@ import { Link } from "@tanstack/react-router";
 import { VectorSquare, ExternalLink } from "lucide-react";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
-import { routePipelineDetails } from "../../../pages/details/route";
+import { routePipelineDetails } from "../../../../pipelines/pages/details/route";
 import { PipelineRunResults } from "../../PipelineRunResults";
 import { Actions } from "../components/Actions";
 import { columnNames } from "../constants";

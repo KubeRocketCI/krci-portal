@@ -16,6 +16,7 @@ import { PreviewTable } from "./components/PreviewTable";
 import { PreviewTableActions } from "./components/PreviewTableActions";
 import { applicationTableMode } from "./constants";
 import { ApplicationsFormValues, ApplicationsTableMode } from "./types";
+import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 
 const MemoizedApplicationsInner = React.memo(
   ({ mode, toggleMode }: { mode: ApplicationsTableMode; toggleMode: () => void }) => {
@@ -40,6 +41,8 @@ const MemoizedApplicationsInner = React.memo(
 
 export const Applications = () => {
   const stageAppCodebasesCombinedDataWatch = useWatchStageAppCodebasesCombinedData();
+
+  console.log("stageAppCodebasesCombinedDataWatch", stageAppCodebasesCombinedDataWatch);
 
   const baseDefaultValues = React.useMemo(
     () =>
@@ -104,7 +107,9 @@ export const Applications = () => {
           </Stack>
         }
       >
-        <MemoizedApplicationsInner mode={mode} toggleMode={toggleMode} />
+        <LoadingWrapper isLoading={stageAppCodebasesCombinedDataWatch.isLoading}>
+          <MemoizedApplicationsInner mode={mode} toggleMode={toggleMode} />
+        </LoadingWrapper>
       </TabSection>
     </FormProvider>
   );

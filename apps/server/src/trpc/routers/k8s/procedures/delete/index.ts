@@ -1,4 +1,5 @@
 import { isCoreKubernetesResource } from "@/clients/k8s";
+import { handleK8sError } from "@/trpc/routers/k8s/utils/handleK8sError";
 import { protectedProcedure } from "@/trpc/procedures/protected";
 import { CustomObjectsApi } from "@kubernetes/client-node";
 import { k8sOperation, k8sResourceConfigSchema } from "@my-project/shared";
@@ -17,30 +18,34 @@ export const k8sDeleteItemProcedure = protectedProcedure
     })
   )
   .mutation(async ({ input, ctx }) => {
-    const { K8sClient } = ctx;
+    try {
+      const { K8sClient } = ctx;
 
-    if (!K8sClient.KubeConfig) {
-      throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-    }
+      if (!K8sClient.KubeConfig) {
+        throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
+      }
 
-    const { name, namespace, resourceConfig } = input;
+      const { name, namespace, resourceConfig } = input;
 
-    if (isCoreKubernetesResource(resourceConfig)) {
-      return K8sClient.callCoreResourceOperation(resourceConfig.kind, {
-        operation: k8sOperation.delete,
+      if (isCoreKubernetesResource(resourceConfig)) {
+        return K8sClient.callCoreResourceOperation(resourceConfig.kind, {
+          operation: k8sOperation.delete,
+          namespace,
+          name,
+        });
+      }
+
+      const customObjectsApi =
+        K8sClient.KubeConfig.makeApiClient(CustomObjectsApi);
+
+      return await customObjectsApi.deleteNamespacedCustomObject({
+        group: resourceConfig.group,
+        version: resourceConfig.version,
+        plural: resourceConfig.pluralName,
         namespace,
         name,
       });
+    } catch (error) {
+      throw handleK8sError(error);
     }
-
-    const customObjectsApi =
-      K8sClient.KubeConfig.makeApiClient(CustomObjectsApi);
-
-    return await customObjectsApi.deleteNamespacedCustomObject({
-      group: resourceConfig.group,
-      version: resourceConfig.version,
-      plural: resourceConfig.pluralName,
-      namespace,
-      name,
-    });
   });
