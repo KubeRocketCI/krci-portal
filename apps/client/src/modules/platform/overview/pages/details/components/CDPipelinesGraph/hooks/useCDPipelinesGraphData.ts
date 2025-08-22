@@ -1,4 +1,4 @@
-import { useCDPipelineWatchList } from "@/core/k8s/api/groups/KRCI/CDPipeline";
+import { useCDPipelineWatchList } from "@/k8s/api/groups/KRCI/CDPipeline";
 import { cdPipelineStatus } from "@my-project/shared";
 import React from "react";
 

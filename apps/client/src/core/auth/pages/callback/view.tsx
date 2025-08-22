@@ -1,5 +1,5 @@
 import React from "react";
-import { useAuth } from "../../providers/Auth";
+import { useAuth } from "../../provider";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function AuthCallbackPage() {

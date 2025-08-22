@@ -3,13 +3,13 @@ import makeStyles from "@mui/styles/makeStyles";
 import clsx from "clsx";
 import React from "react";
 import { useStageWatch } from "../../../../../hooks/";
-import { getStageStatusIcon } from "@/core/k8s/api/groups/KRCI/Stage";
+import { getStageStatusIcon } from "@/k8s/api/groups/KRCI/Stage";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { stageTriggerType } from "@my-project/shared";
 import KubernetesIcon from "@/assets/icons/k8s/kubernetes.svg?react";
 import { CopyButton } from "@/core/components/CopyButton";
 import { Pipeline } from "@/modules/platform/pipelines/components/Pipeline";
-import { STATUS_COLOR } from "@/core/k8s/constants/colors";
+import { STATUS_COLOR } from "@/k8s/constants/colors";
 
 const useStyles = makeStyles((theme) => ({
   labelChip: {

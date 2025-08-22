@@ -1,7 +1,7 @@
 import { EmptyList } from "@/core/components/EmptyList";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { Section } from "@/core/components/Section";
-import { EDP_USER_GUIDE } from "@/core/k8s/constants/docs-urls";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { ManageCodebaseBranchDialog } from "@/modules/platform/codebases/dialogs/ManageCodebaseBranch";
 import { Grid, Typography } from "@mui/material";

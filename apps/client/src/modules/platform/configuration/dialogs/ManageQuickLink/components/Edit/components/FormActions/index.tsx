@@ -3,7 +3,7 @@ import React from "react";
 import { useTypedFormContext } from "../../../../hooks/useFormContext";
 import { useCurrentDialog } from "../../../../providers/CurrentDialog/hooks";
 import { ManageQuickLinkFormValues } from "../../../../types";
-import { useQuickLinkCRUD } from "@/core/k8s/api/groups/KRCI/QuickLink";
+import { useQuickLinkCRUD } from "@/k8s/api/groups/KRCI/QuickLink";
 import { editQuickLink } from "@my-project/shared";
 
 export const FormActions = () => {

@@ -1,6 +1,6 @@
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { usePipelineWatchItem } from "@/core/k8s/api/groups/Tekton/Pipeline";
-import { useTriggerTemplateWatchList } from "@/core/k8s/api/groups/Tekton/TriggerTemplate";
+import { usePipelineWatchItem } from "@/k8s/api/groups/Tekton/Pipeline";
+import { useTriggerTemplateWatchList } from "@/k8s/api/groups/Tekton/TriggerTemplate";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { FormSelect } from "@/core/providers/Form/components/FormSelect";
 import { PipelineGraphDialog } from "@/modules/platform/pipelines/dialogs/PipelineGraph";

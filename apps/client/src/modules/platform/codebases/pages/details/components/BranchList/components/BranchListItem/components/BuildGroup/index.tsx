@@ -14,9 +14,13 @@ import React from "react";
 
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { StatusIcon } from "@/core/components/StatusIcon";
-import { usePipelineRunCRUD, usePipelineRunPermissions } from "@/core/k8s/api/groups/Tekton/PipelineRun";
-import { CUSTOM_RESOURCE_STATUS } from "@/core/k8s/constants/statuses";
-import { useBuildTriggerTemplateWatch, useCodebaseWatch, useGitServerWatch } from "@/modules/platform/codebases/pages/details/hooks/data";
+import { usePipelineRunCRUD, usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
+import { CUSTOM_RESOURCE_STATUS } from "@/k8s/constants/statuses";
+import {
+  useBuildTriggerTemplateWatch,
+  useCodebaseWatch,
+  useGitServerWatch,
+} from "@/modules/platform/codebases/pages/details/hooks/data";
 import { createBuildPipelineRunDraft, getPipelineRunStatus, PipelineRun, pipelineRunReason } from "@my-project/shared";
 import { ChevronDown, LoaderCircle, Play } from "lucide-react";
 import { BuildGroupProps } from "./types";

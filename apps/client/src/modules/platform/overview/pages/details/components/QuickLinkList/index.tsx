@@ -3,7 +3,7 @@ import { AddNewQuickLinkCard } from "./components/AddNewQuickLinkCard";
 import { ComponentCard } from "./components/ComponentCard";
 import { ErrorContent } from "@/core/components/ErrorContent";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { useQuickLinkWatchList } from "@/core/k8s/api/groups/KRCI/QuickLink";
+import { useQuickLinkWatchList } from "@/k8s/api/groups/KRCI/QuickLink";
 
 const StyledGrid = styled(Grid)`
   ${(props) => props.theme.breakpoints.up("xl")} {

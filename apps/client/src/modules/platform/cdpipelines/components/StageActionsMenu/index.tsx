@@ -1,8 +1,8 @@
 import { ActionsInlineList } from "@/core/components/ActionsInlineList";
 import { ActionsMenuList } from "@/core/components/ActionsMenuList";
 import { DeleteKubeObjectDialog } from "@/core/components/DeleteKubeObject";
-import { useStagePermissions } from "@/core/k8s/api/groups/KRCI/Stage";
-import { actionMenuType } from "@/core/k8s/constants/actionMenuTypes";
+import { useStagePermissions } from "@/k8s/api/groups/KRCI/Stage";
+import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { ManageStageDialog } from "@/modules/platform/cdpipelines/dialogs/ManageStage";
 import { ListItemAction } from "@/core/types/global";

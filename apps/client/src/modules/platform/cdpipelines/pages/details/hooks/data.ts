@@ -1,12 +1,12 @@
 import { applicationLabels, codebaseLabels, codebaseType, stageLabels } from "@my-project/shared";
-import { useCDPipelineWatchItem } from "@/core/k8s/api/groups/KRCI/CDPipeline";
+import { useCDPipelineWatchItem } from "@/k8s/api/groups/KRCI/CDPipeline";
 import { routeCDPipelineDetails } from "../route";
-import { useStageWatchList } from "@/core/k8s/api/groups/KRCI/Stage";
-import { useApplicationWatchList } from "@/core/k8s/api/groups/ArgoCD/Application";
-import { useCodebaseWatchList } from "@/core/k8s/api/groups/KRCI/Codebase";
-import { combineStageWithApplications } from "@/core/k8s/api/groups/KRCI/Stage/utils/combineStageWithApplications";
+import { useStageWatchList } from "@/k8s/api/groups/KRCI/Stage";
+import { useApplicationWatchList } from "@/k8s/api/groups/ArgoCD/Application";
+import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
+import { combineStageWithApplications } from "@/k8s/api/groups/KRCI/Stage/utils/combineStageWithApplications";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { useQuickLinkWatchURLs } from "@/core/k8s/api/groups/KRCI/QuickLink/hooks/useQuickLinksUrlListQuery";
+import { useQuickLinkWatchURLs } from "@/k8s/api/groups/KRCI/QuickLink/hooks/useQuickLinksUrlListQuery";
 
 export const useQuickLinksUrlListWatch = () => {
   const params = routeCDPipelineDetails.useParams();

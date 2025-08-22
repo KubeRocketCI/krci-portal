@@ -4,7 +4,7 @@ import { CODEBASE_FORM_NAMES } from "../../../names";
 import { gitProvider } from "@my-project/shared";
 import { FieldEvent } from "@/core/types/forms";
 import { FormTextField } from "@/core/providers/Form/components/FormTextField";
-import { useGitServerWatchList } from "@/core/k8s/api/groups/KRCI/GitServer";
+import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 
 export const RepositoryUrl = () => {
   const {

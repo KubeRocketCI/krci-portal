@@ -2,7 +2,7 @@ import { IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { useStyles } from "./styles";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
-import { useQuickLinkPermissions } from "@/core/k8s/api/groups/KRCI/QuickLink";
+import { useQuickLinkPermissions } from "@/k8s/api/groups/KRCI/QuickLink";
 import { ManageQuickLinkDialog } from "@/modules/platform/configuration/dialogs/ManageQuickLink";
 import { Plus } from "lucide-react";
 

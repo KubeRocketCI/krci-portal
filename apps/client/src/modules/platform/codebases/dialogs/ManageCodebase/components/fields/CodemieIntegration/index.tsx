@@ -1,14 +1,14 @@
 import { FormCheckbox } from "@/core/providers/Form/components/FormCheckbox";
 import { FormControlLabelWithTooltip } from "@/core/providers/Form/components/FormControlLabelWithTooltip";
-import { useClusterStore } from "@/core/store";
+import { useClusterStore } from "@/k8s/store";
 import { FORM_MODES, FieldEvent } from "@/core/types/forms";
 import { Alert, Grid } from "@mui/material";
 import { useShallow } from "zustand/react/shallow";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_FORM_NAMES } from "../../../names";
 import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
-import { useCodemieWatchItem } from "@/core/k8s/api/groups/KRCI/Codemie";
-import { useCodemieProjectWatchItem } from "@/core/k8s/api/groups/KRCI/CodemieProject";
+import { useCodemieWatchItem } from "@/k8s/api/groups/KRCI/Codemie";
+import { useCodemieProjectWatchItem } from "@/k8s/api/groups/KRCI/CodemieProject";
 
 export const CodemieIntegration = () => {
   const {

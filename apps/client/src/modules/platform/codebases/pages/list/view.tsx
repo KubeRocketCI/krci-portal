@@ -1,5 +1,5 @@
 import { ComponentList } from "./components/ComponentList";
-import { EDP_USER_GUIDE } from "@/core/k8s/constants/docs-urls";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { Section } from "@/core/components/Section";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";

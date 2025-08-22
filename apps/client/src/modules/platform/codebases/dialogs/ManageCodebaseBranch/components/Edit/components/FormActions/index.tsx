@@ -1,4 +1,4 @@
-import { useCodebaseBranchCRUD } from "@/core/k8s/api/groups/KRCI/CodebaseBranch";
+import { useCodebaseBranchCRUD } from "@/k8s/api/groups/KRCI/CodebaseBranch";
 import { Box, Button, Stack, useTheme } from "@mui/material";
 import { editCodebaseBranchObject } from "@my-project/shared";
 import React from "react";

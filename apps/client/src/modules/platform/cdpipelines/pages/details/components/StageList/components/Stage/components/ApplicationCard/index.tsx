@@ -11,21 +11,21 @@ import {
 import React from "react";
 import { StyledChip } from "../../styles";
 import { ApplicationCardProps } from "./types";
-import { getApplicationStatusIcon, getApplicationSyncStatusIcon } from "@/core/k8s/api/groups/ArgoCD/Application";
+import { getApplicationStatusIcon, getApplicationSyncStatusIcon } from "@/k8s/api/groups/ArgoCD/Application";
 import { Application, applicationLabels, inClusterName, systemQuickLink } from "@my-project/shared";
 import { ChevronDown, FileTerminal, Terminal } from "lucide-react";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { TooltipWithLinkList } from "@/core/components/TooltipWithLinkList";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { VIEW_MODES } from "@/core/providers/ViewMode/types";
-import { LinkCreationService } from "@/core/services/link-creation";
+import { LinkCreationService } from "@/k8s/services/link-creation";
 import { routeComponentDetails } from "@/modules/platform/codebases/pages/details/route";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { Link } from "@tanstack/react-router";
-import { useClusterStore } from "@/core/store";
+import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { QuickLink } from "@/core/components/QuickLink";
-import { quickLinkUiNames } from "@/core/k8s/api/groups/KRCI/QuickLink/constants";
+import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
 import { routeArgocdConfiguration } from "@/modules/platform/configuration/pages/argocd/route";
 import { Button } from "@/core/components/ui/button";
 

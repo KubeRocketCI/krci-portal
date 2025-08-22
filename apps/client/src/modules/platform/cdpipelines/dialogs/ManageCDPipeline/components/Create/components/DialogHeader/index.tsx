@@ -1,5 +1,5 @@
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
-import { EDP_USER_GUIDE } from "@/core/k8s/constants/docs-urls";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { Stack, Typography } from "@mui/material";
 
 export const DialogHeader = () => {

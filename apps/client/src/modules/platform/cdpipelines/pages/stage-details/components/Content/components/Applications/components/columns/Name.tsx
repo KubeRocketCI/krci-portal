@@ -1,5 +1,5 @@
 import { Button } from "@/core/components/ui/button";
-import { useClusterStore } from "@/core/store";
+import { useClusterStore } from "@/k8s/store";
 import { routeComponentDetails } from "@/modules/platform/codebases/pages/details/route";
 import { Codebase } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";

@@ -2,7 +2,7 @@ import { Application, Codebase, GitProvider } from "@my-project/shared";
 import { useTypedFormContext } from "../../hooks/useTypedFormContext";
 import { ResourceIconLink } from "@/core/components/ResourceIconLink";
 import { FormSwitch } from "@/core/providers/Form/components/FormSwitch";
-import { LinkCreationService } from "@/core/services/link-creation";
+import { LinkCreationService } from "@/k8s/services/link-creation";
 import {
   VALUES_OVERRIDE_POSTFIX,
   ALL_VALUES_OVERRIDE_KEY,

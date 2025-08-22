@@ -1,4 +1,4 @@
-import { UseSpriteSymbol } from "@/core/k8s/icons/UseSpriteSymbol";
+import { UseSpriteSymbol } from "@/k8s/icons/UseSpriteSymbol";
 import { FormRadioGroup } from "@/core/providers/Form/components/FormRadioGroup";
 import { FormRadioOption } from "@/core/providers/Form/components/FormRadioGroup/types";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
@@ -6,8 +6,8 @@ import { codebaseCreationStrategy } from "@my-project/shared";
 import React from "react";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_FORM_NAMES } from "../../../names";
-import { CODEBASE_COMMON_LANGUAGES } from "@/core/k8s/api/groups/KRCI/Codebase/configs/mappings";
-import { getCodebaseMappingByType } from "@/core/k8s/api/groups/KRCI/Codebase";
+import { CODEBASE_COMMON_LANGUAGES } from "@/k8s/api/groups/KRCI/Codebase/configs/mappings";
+import { getCodebaseMappingByType } from "@/k8s/api/groups/KRCI/Codebase";
 
 export const Lang = () => {
   const {

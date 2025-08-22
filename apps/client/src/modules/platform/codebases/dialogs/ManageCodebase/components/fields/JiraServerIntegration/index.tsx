@@ -1,11 +1,11 @@
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
-import { EDP_OPERATOR_GUIDE } from "@/core/k8s/constants/docs-urls";
+import { EDP_OPERATOR_GUIDE } from "@/k8s/constants/docs-urls";
 import { FormCheckbox } from "@/core/providers/Form/components/FormCheckbox";
 import { FormControlLabelWithTooltip } from "@/core/providers/Form/components/FormControlLabelWithTooltip";
 import { Alert, Grid } from "@mui/material";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_FORM_NAMES } from "../../../names";
-import { useJiraServerWatchList } from "@/core/k8s/api/groups/KRCI/JiraServer";
+import { useJiraServerWatchList } from "@/k8s/api/groups/KRCI/JiraServer";
 
 export const JiraServerIntegration = () => {
   const {

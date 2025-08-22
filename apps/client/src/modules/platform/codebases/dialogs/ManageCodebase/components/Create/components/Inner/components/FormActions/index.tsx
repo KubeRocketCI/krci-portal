@@ -1,5 +1,5 @@
 import { TabPanel } from "@/core/components/TabPanel";
-import { useCodebaseCRUD } from "@/core/k8s/api/groups/KRCI/Codebase";
+import { useCodebaseCRUD } from "@/k8s/api/groups/KRCI/Codebase";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { useStepperContext } from "@/core/providers/Stepper/hooks";
 import { ValueOf } from "@/core/types/global";

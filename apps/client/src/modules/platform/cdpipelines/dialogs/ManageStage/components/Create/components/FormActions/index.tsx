@@ -1,5 +1,5 @@
 import { TabPanel } from "@/core/components/TabPanel";
-import { useStageCRUD } from "@/core/k8s/api/groups/KRCI/Stage";
+import { useStageCRUD } from "@/k8s/api/groups/KRCI/Stage";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { useStepperContext } from "@/core/providers/Stepper/hooks";
 import { SuccessDialog } from "@/modules/platform/codebases/dialogs/Success";

@@ -1,6 +1,6 @@
 import { ActionsInlineList } from "@/core/components/ActionsInlineList";
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
-import { usePipelineRunPermissions } from "@/core/k8s/api/groups/Tekton/PipelineRun";
+import { usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
 import {
   ButtonGroup,
   ClickAwayListener,

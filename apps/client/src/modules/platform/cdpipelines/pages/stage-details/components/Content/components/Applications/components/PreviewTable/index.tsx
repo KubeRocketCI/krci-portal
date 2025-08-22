@@ -1,8 +1,8 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { Table } from "@/core/components/Table";
-import { useApplicationPermissions } from "@/core/k8s/api/groups/ArgoCD/Application";
-import { TABLE } from "@/core/k8s/constants/tables";
+import { useApplicationPermissions } from "@/k8s/api/groups/ArgoCD/Application";
+import { TABLE } from "@/k8s/constants/tables";
 import {
   StageAppCodebaseCombinedData,
   useWatchStageAppCodebasesCombinedData,

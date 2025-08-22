@@ -2,7 +2,7 @@ import { Stack } from "@mui/material";
 import { LegendListItem } from "../LegendListItem";
 import { usePipelineRunsGraphData } from "./hooks/usePipelineRunsGraphData";
 import { PercentageCircleChart } from "@/core/components/PercentageCircleChart";
-import { CHART_STATUS_COLOR } from "@/core/k8s/constants/colors";
+import { CHART_STATUS_COLOR } from "@/k8s/constants/colors";
 
 export const PipelineRunsGraph = () => {
   const { graphData, error } = usePipelineRunsGraphData();

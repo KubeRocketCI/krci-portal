@@ -1,5 +1,5 @@
 import React from "react";
-import { LucideIconComponent } from "../../k8s/types";
+import { LucideIconComponent } from "../../../k8s/types";
 
 export interface StatusIconProps {
   Title?: string | React.ReactElement;

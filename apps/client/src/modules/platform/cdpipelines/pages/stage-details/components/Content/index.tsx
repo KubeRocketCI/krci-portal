@@ -1,6 +1,6 @@
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { Section } from "@/core/components/Section";
-import { EDP_USER_GUIDE } from "@/core/k8s/constants/docs-urls";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { Tabs } from "@/core/providers/Tabs/components/Tabs";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { routeStageDetails } from "../../route";

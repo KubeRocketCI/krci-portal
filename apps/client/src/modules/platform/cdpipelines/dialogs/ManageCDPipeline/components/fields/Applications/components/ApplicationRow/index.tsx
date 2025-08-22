@@ -5,7 +5,7 @@ import { CDPIPELINE_FORM_NAMES, NAMES } from "../../../../../names";
 import { useCurrentDialog } from "../../../../../providers/CurrentDialog/hooks";
 import { useStyles } from "./styles";
 import { ApplicationRowProps } from "./types";
-import { useCodebaseBranchWatchList } from "@/core/k8s/api/groups/KRCI/CodebaseBranch/hooks";
+import { useCodebaseBranchWatchList } from "@/k8s/api/groups/KRCI/CodebaseBranch/hooks";
 import { codebaseBranchLabels, sortKubeObjectByCreationTimestamp } from "@my-project/shared";
 import { FormTextField } from "@/core/providers/Form/components/FormTextField";
 import { FormAutocompleteSingle } from "@/core/providers/Form/components/FormAutocompleteSingle";

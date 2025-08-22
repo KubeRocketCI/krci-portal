@@ -1,4 +1,4 @@
-import { useStageWatchList } from "@/core/k8s/api/groups/KRCI/Stage";
+import { useStageWatchList } from "@/k8s/api/groups/KRCI/Stage";
 import { stageStatus } from "@my-project/shared";
 import React from "react";
 

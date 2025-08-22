@@ -1,5 +1,5 @@
 import { FilterProvider } from "@/core/providers/Filter/provider";
-import { useClusterStore } from "@/core/store";
+import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { matchFunctions } from "./constants";
 import { ComponentListFilterValueMap } from "./types";

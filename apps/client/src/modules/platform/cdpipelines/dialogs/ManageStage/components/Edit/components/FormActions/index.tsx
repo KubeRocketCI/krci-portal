@@ -1,8 +1,8 @@
-import { useStageCRUD } from '@/core/k8s/api/groups/KRCI/Stage';
-import { Box, Button, Stack, useTheme } from '@mui/material';
-import React from 'react';
-import { useTypedFormContext } from '../../../../hooks/useFormContext';
-import { useCurrentDialog } from '../../../../providers/CurrentDialog/hooks';
+import { useStageCRUD } from "@/k8s/api/groups/KRCI/Stage";
+import { Box, Button, Stack, useTheme } from "@mui/material";
+import React from "react";
+import { useTypedFormContext } from "../../../../hooks/useFormContext";
+import { useCurrentDialog } from "../../../../providers/CurrentDialog/hooks";
 
 export const FormActions = () => {
   const {
@@ -32,19 +32,16 @@ export const FormActions = () => {
 
   const isLoading = React.useMemo(() => stageEditMutation.isPending, [stageEditMutation.isPending]);
 
-  const onSubmit = React.useCallback(
-    async () => {
-      if (!stage) {
-        return;
-      }
+  const onSubmit = React.useCallback(async () => {
+    if (!stage) {
+      return;
+    }
 
-      // const usedValues = getUsedValues(values, STAGE_FORM_NAMES);
-      // const stageData = editResource(STAGE_FORM_NAMES, stage, usedValues);
+    // const usedValues = getUsedValues(values, STAGE_FORM_NAMES);
+    // const stageData = editResource(STAGE_FORM_NAMES, stage, usedValues);
 
-      // await editStage({ stageData });
-    },
-    [stage]
-  );
+    // await editStage({ stageData });
+  }, [stage]);
 
   const theme = useTheme();
 
@@ -62,8 +59,8 @@ export const FormActions = () => {
       </Stack>
       <Button
         onClick={handleSubmit(onSubmit)}
-        variant={'contained'}
-        color={'primary'}
+        variant={"contained"}
+        color={"primary"}
         size="small"
         disabled={!isDirty || isLoading}
       >

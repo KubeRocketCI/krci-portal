@@ -1,5 +1,5 @@
 import { StatusIcon } from "@/core/components/StatusIcon";
-import { getApplicationSyncStatusIcon } from "@/core/k8s/api/groups/ArgoCD/Application";
+import { getApplicationSyncStatusIcon } from "@/k8s/api/groups/ArgoCD/Application";
 import { Application, getApplicationSyncStatus } from "@my-project/shared";
 
 export const SyncColumn = ({ application }: { application: Application }) => {

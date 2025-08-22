@@ -1,6 +1,6 @@
 import { QuickLink } from "@/core/components/QuickLink";
-import { quickLinkUiNames } from "@/core/k8s/api/groups/KRCI/QuickLink/constants";
-import { LinkCreationService } from "@/core/services/link-creation";
+import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
+import { LinkCreationService } from "@/k8s/services/link-creation";
 import { StageActionsMenu } from "@/modules/platform/cdpipelines/components/StageActionsMenu";
 import { Box, Stack } from "@mui/material";
 import { quickLinkLabels, systemQuickLink } from "@my-project/shared";

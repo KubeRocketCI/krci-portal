@@ -1,4 +1,4 @@
-import { useWatchCDPipelineByAutotest, useWatchCDPipelineByApplication } from "@/core/k8s/api/groups/KRCI/CDPipeline";
+import { useWatchCDPipelineByAutotest, useWatchCDPipelineByApplication } from "@/k8s/api/groups/KRCI/CDPipeline";
 import { Codebase, codebaseType } from "@my-project/shared";
 
 export const useDeletionConflictItem = (codebase: Codebase) => {

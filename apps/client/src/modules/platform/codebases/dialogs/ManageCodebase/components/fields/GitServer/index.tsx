@@ -2,7 +2,7 @@ import { FormSelect } from "@/core/providers/Form/components/FormSelect";
 import React from "react";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_FORM_NAMES } from "../../../names";
-import { getGitServerStatusIcon, useGitServerWatchList } from "@/core/k8s/api/groups/KRCI/GitServer";
+import { getGitServerStatusIcon, useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { StatusIcon } from "@/core/components/StatusIcon";
 
 export const GitServer = () => {

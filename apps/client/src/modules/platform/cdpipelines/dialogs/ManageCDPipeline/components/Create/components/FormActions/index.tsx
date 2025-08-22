@@ -6,13 +6,13 @@ import { CDPIPELINE_FORM_NAMES, NAMES } from "../../../../names";
 import { useCurrentDialog } from "../../../../providers/CurrentDialog/hooks";
 import { ManageCDPipelineFormValues } from "../../../../types";
 import { TabPanel } from "@/core/components/TabPanel";
-import { useCDPipelineCRUD } from "@/core/k8s/api/groups/KRCI/CDPipeline";
+import { useCDPipelineCRUD } from "@/k8s/api/groups/KRCI/CDPipeline";
 import { useStepperContext } from "@/core/providers/Stepper/hooks";
 import { ValueOf } from "@/core/types/global";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { CDPipelineDraft, createCDPipelineDraftObject } from "@my-project/shared";
 import { SuccessDialog } from "@/modules/platform/codebases/dialogs/Success";
-import { useClusterStore } from "@/core/store";
+import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
 

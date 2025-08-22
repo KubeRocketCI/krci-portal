@@ -1,4 +1,4 @@
-import { actionMenuType } from "@/core/k8s/constants/actionMenuTypes";
+import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { createResourceAction } from "@/core/utils/createResourceAction";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
@@ -9,14 +9,14 @@ import React from "react";
 import { ManageCodebaseDialog } from "../../dialogs/ManageCodebase";
 import { useStyles } from "./styles";
 import { CodebaseActionsMenuProps } from "./types";
-import { useCodebasePermissions } from "@/core/k8s/api/groups/KRCI/Codebase";
+import { useCodebasePermissions } from "@/k8s/api/groups/KRCI/Codebase";
 import { ActionsInlineList } from "@/core/components/ActionsInlineList";
 import { ActionsMenuList } from "@/core/components/ActionsMenuList";
 import { DeleteKubeObjectDialog } from "@/core/components/DeleteKubeObject";
 import { useDeletionConflictItem } from "./hooks/useDeletionConflictItem";
 import { Link } from "@tanstack/react-router";
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
-import { useClusterStore } from "@/core/store";
+import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 
 export const CodebaseActionsMenu = ({

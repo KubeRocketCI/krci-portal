@@ -1,18 +1,15 @@
 import { InfoRow } from "@/core/components/InfoColumns/types";
 import { StatusIcon } from "@/core/components/StatusIcon";
-import {
-  getCodebaseMappingByType,
-  getCodebaseStatusIcon
-} from "@/core/k8s/api/groups/KRCI/Codebase";
-import { CodebaseInterface } from "@/core/k8s/api/groups/KRCI/Codebase/configs/mappings/types";
+import { getCodebaseMappingByType, getCodebaseStatusIcon } from "@/k8s/api/groups/KRCI/Codebase";
+import { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/mappings/types";
 import {
   BUILD_TOOL_ICON_MAPPING,
   CI_TOOL_ICON_MAPPING,
   FRAMEWORK_ICON_MAPPING,
   LANGUAGE_ICON_MAPPING,
-} from "@/core/k8s/configs/icon-mappings";
-import { MAIN_COLOR } from "@/core/k8s/constants/colors";
-import { RESOURCE_ICON_NAMES } from "@/core/k8s/icons/sprites/Resources/names";
+} from "@/k8s/configs/icon-mappings";
+import { MAIN_COLOR } from "@/k8s/constants/colors";
+import { RESOURCE_ICON_NAMES } from "@/k8s/icons/sprites/Resources/names";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { Chip, Grid, Tooltip, Typography } from "@mui/material";
 import { DefaultTheme } from "@mui/styles/defaultTheme";
@@ -54,7 +51,7 @@ export const useInfoRows = () => {
 
   return React.useMemo((): InfoRow[] => {
     if (!codebase) {
-      return []
+      return [];
     }
 
     const {

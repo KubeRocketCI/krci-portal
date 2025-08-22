@@ -1,6 +1,6 @@
 import { Stack, Typography, useTheme } from "@mui/material";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
-import { EDP_USER_GUIDE } from "@/core/k8s/constants/docs-urls";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 
 export const DialogHeader = () => {
   const theme = useTheme();

@@ -3,9 +3,9 @@ import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { QuickLink } from "@/core/components/QuickLink";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
-import { getCodebaseBranchStatusIcon } from "@/core/k8s/api/groups/KRCI/CodebaseBranch";
-import { getPipelineRunStatusIcon } from "@/core/k8s/api/groups/Tekton/PipelineRun/utils";
-import { LinkCreationService } from "@/core/services/link-creation";
+import { getCodebaseBranchStatusIcon } from "@/k8s/api/groups/KRCI/CodebaseBranch";
+import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
+import { LinkCreationService } from "@/k8s/services/link-creation";
 import { useCodebaseWatch, useGitServerWatch } from "@/modules/platform/codebases/pages/details/hooks/data";
 import { Box, Chip, Grid, Stack, Tooltip, Typography, useTheme } from "@mui/material";
 import {

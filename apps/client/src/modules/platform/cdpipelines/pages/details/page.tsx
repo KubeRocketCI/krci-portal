@@ -1,7 +1,7 @@
 import { FilterProvider } from "@/core/providers/Filter/provider";
 import { ViewModeContextProvider } from "@/core/providers/ViewMode/provider";
 import { VIEW_MODES } from "@/core/providers/ViewMode/types";
-import { useClusterStore } from "@/core/store";
+import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { CDPipelineDetailsFilterValueMap, matchFunctions } from "./constants";
 import CDPipelineDetailsPageContent from "./view";

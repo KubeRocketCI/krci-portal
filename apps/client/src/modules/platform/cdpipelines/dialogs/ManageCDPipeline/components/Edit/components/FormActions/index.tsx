@@ -4,7 +4,7 @@ import { useTypedFormContext } from "../../../../hooks/useFormContext";
 // import { CDPIPELINE_FORM_NAMES } from "../../../../names";
 import { useCurrentDialog } from "../../../../providers/CurrentDialog/hooks";
 // import { ManageCDPipelineFormValues } from "../../../../types";
-import { useCDPipelineCRUD } from "@/core/k8s/api/groups/KRCI/CDPipeline";
+import { useCDPipelineCRUD } from "@/k8s/api/groups/KRCI/CDPipeline";
 
 export const FormActions = () => {
   const {

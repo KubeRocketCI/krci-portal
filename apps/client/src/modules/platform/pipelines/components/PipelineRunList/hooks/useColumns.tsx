@@ -5,8 +5,8 @@ import { SavedTableSettings } from "@/core/components/Table/components/TableSett
 import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
-import { getPipelineRunStatusIcon } from "@/core/k8s/api/groups/Tekton/PipelineRun/utils";
-import { useClusterStore } from "@/core/store";
+import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
+import { useClusterStore } from "@/k8s/store";
 import { humanize } from "@/core/utils/date-humanize";
 import { routePipelineRunDetails } from "@/modules/platform/pipelineruns/pages/details/route";
 import { IconButton, Stack, Tooltip, Typography } from "@mui/material";

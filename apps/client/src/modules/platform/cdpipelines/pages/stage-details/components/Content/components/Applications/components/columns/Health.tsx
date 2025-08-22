@@ -1,5 +1,5 @@
 import { StatusIcon } from "@/core/components/StatusIcon";
-import { getApplicationStatusIcon } from "@/core/k8s/api/groups/ArgoCD/Application";
+import { getApplicationStatusIcon } from "@/k8s/api/groups/ArgoCD/Application";
 import { Application, getApplicationStatus } from "@my-project/shared";
 
 export const HealthColumn = ({ application }: { application: Application }) => {

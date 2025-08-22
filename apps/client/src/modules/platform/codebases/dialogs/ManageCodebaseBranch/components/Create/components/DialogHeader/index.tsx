@@ -1,5 +1,5 @@
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
-import { EDP_USER_GUIDE } from "@/core/k8s/constants/docs-urls";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { Button, Stack, Typography, useTheme } from "@mui/material";
 import { createCodebaseBranchDraftObject } from "@my-project/shared";
 import { Pencil } from "lucide-react";

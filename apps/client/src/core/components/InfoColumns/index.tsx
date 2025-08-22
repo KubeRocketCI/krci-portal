@@ -1,7 +1,7 @@
-import { Grid, GridSize, Typography } from '@mui/material';
-import React from 'react';
-import { InfoColumnsProps } from './types';
-import { UseSpriteSymbol } from '@/core/k8s/icons/UseSpriteSymbol';
+import { Grid, GridSize, Typography } from "@mui/material";
+import React from "react";
+import { InfoColumnsProps } from "./types";
+import { UseSpriteSymbol } from "@/k8s/icons/UseSpriteSymbol";
 
 export const InfoColumns = ({ infoRows }: InfoColumnsProps) => {
   return (
@@ -13,31 +13,17 @@ export const InfoColumns = ({ infoRows }: InfoColumnsProps) => {
               <React.Fragment key={`column::${index}`}>
                 {!!label && !!text && (
                   <Grid item xs={columnXs as GridSize}>
-                    <Typography
-                      component="div"
-                      fontWeight={500}
-                      fontSize={14}
-                      color="primary.dark"
-                      gutterBottom
-                    >
+                    <Typography component="div" fontWeight={500} fontSize={14} color="primary.dark" gutterBottom>
                       {label}
                     </Typography>
-                    <Grid container spacing={1} alignItems={'center'}>
+                    <Grid container spacing={1} alignItems={"center"}>
                       {!!icon && (
                         <Grid item>
-                          {typeof icon === 'string' ? (
-                            <UseSpriteSymbol name={icon} width={20} height={20} />
-                          ) : (
-                            icon
-                          )}
+                          {typeof icon === "string" ? <UseSpriteSymbol name={icon} width={20} height={20} /> : icon}
                         </Grid>
                       )}
                       <Grid item flexGrow={1}>
-                        <Typography
-                          fontSize={13}
-                          color="secondary.dark"
-                          sx={{ wordBreak: 'break-word' }}
-                        >
+                        <Typography fontSize={13} color="secondary.dark" sx={{ wordBreak: "break-word" }}>
                           {text}
                         </Typography>
                       </Grid>

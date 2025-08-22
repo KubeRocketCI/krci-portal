@@ -11,7 +11,6 @@ import {
   Settings,
   ShoppingCart,
 } from "lucide-react";
-import { cn } from "../lib/utils";
 import { ClusterSwitcher } from "./cluster-switcher";
 import { NavUser } from "./nav-user";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "./ui/sheet";
@@ -24,10 +23,11 @@ import {
   useSidebar,
 } from "./ui/sidebar";
 import { routeOverviewDetails } from "@/modules/platform/overview/pages/details/route";
-import { useClusterStore } from "../store";
+import { useClusterStore } from "../../k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { routeComponentList } from "@/modules/platform/codebases/pages/list/route";
 import { routeCDPipelineList } from "@/modules/platform/cdpipelines/pages/list/route";
+import { cn } from "../utils/classname";
 
 export type NavItem = {
   title: string;

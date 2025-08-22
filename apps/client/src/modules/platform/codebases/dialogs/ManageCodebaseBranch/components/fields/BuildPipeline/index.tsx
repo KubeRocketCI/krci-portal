@@ -1,5 +1,5 @@
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { usePipelineWatchList } from "@/core/k8s/api/groups/Tekton/Pipeline";
+import { usePipelineWatchList } from "@/k8s/api/groups/Tekton/Pipeline";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { FormAutocompleteSingle } from "@/core/providers/Form/components/FormAutocompleteSingle";
 import { FORM_CONTROL_LABEL_HEIGHT } from "@/core/providers/Form/constants";

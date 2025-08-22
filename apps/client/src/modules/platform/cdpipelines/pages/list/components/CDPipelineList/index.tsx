@@ -1,8 +1,8 @@
 import { useColumns } from "./hooks/useColumns";
 import { useFilter } from "./hooks/useFilter";
 import { CDPipelineListProps } from "./types";
-import { useCDPipelinePermissions, useCDPipelineWatchList } from "@/core/k8s/api/groups/KRCI/CDPipeline";
-import { TABLE } from "@/core/k8s/constants/tables";
+import { useCDPipelinePermissions, useCDPipelineWatchList } from "@/k8s/api/groups/KRCI/CDPipeline";
+import { TABLE } from "@/k8s/constants/tables";
 import { Table } from "@/core/components/Table";
 import { EmptyList } from "@/core/components/EmptyList";
 import { Filter } from "@/core/providers/Filter/components/Filter";
