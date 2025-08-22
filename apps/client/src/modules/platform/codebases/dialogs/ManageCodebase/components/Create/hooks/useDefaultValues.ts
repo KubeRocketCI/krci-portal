@@ -2,7 +2,7 @@ import { ciTool, codebaseVersioning } from "@my-project/shared";
 import React from "react";
 import { CODEBASE_FORM_NAMES } from "../../../names";
 import { ManageCodebaseFormValues } from "../../../types";
-import { useGitServerWatchList } from "@/core/k8s/api/groups/KRCI/GitServer";
+import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 
 const defaultEDPVersioningValue = "0.1.0-SNAPSHOT";
 const [defaultEDPVersioningVersion, defaultEDPVersioningVersionPostfix] = defaultEDPVersioningValue.split("-");

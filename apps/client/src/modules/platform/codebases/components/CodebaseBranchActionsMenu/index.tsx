@@ -1,8 +1,8 @@
 import { ActionsInlineList } from "@/core/components/ActionsInlineList";
 import { ActionsMenuList } from "@/core/components/ActionsMenuList";
 import { DeleteKubeObjectDialog } from "@/core/components/DeleteKubeObject";
-import { useCodebaseBranchPermissions } from "@/core/k8s/api/groups/KRCI/CodebaseBranch";
-import { actionMenuType } from "@/core/k8s/constants/actionMenuTypes";
+import { useCodebaseBranchPermissions } from "@/k8s/api/groups/KRCI/CodebaseBranch";
+import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { createResourceAction } from "@/core/utils/createResourceAction";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";

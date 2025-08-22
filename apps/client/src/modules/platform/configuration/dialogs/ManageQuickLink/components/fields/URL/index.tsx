@@ -1,4 +1,4 @@
-import { VALIDATED_PROTOCOL } from "@/core/k8s/constants/validatedProtocols";
+import { VALIDATED_PROTOCOL } from "@/k8s/constants/validatedProtocols";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { QUICK_LINK_FORM_NAMES } from "../../../names";
 import { FormTextField } from "@/core/providers/Form/components/FormTextField";

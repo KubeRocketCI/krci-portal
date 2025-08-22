@@ -1,7 +1,7 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { routeCDPipelineList } from "../list/route";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
-import { EDP_USER_GUIDE } from "@/core/k8s/constants/docs-urls";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { HeaderActions } from "./components/HeaderActions";
 import { StageList } from "./components/StageList";
 import { StageListFilter } from "./components/StageListFilter";

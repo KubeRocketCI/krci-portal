@@ -1,4 +1,4 @@
-import { useTriggerTemplateWatchList } from "@/core/k8s/api/groups/Tekton/TriggerTemplate";
+import { useTriggerTemplateWatchList } from "@/k8s/api/groups/Tekton/TriggerTemplate";
 import { inClusterName, pipelineType, stageTriggerType, triggerTemplateLabels } from "@my-project/shared";
 import React from "react";
 import { STAGE_FORM_NAMES } from "../../../names";

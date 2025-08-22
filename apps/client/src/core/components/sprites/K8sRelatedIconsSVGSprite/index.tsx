@@ -45,7 +45,7 @@ import ReactSymbol from "@/assets/icons/k8s/react-.svg?react";
 import Tekton from "@/assets/icons/k8s/tekton.svg?react";
 import Terraform from "@/assets/icons/k8s/terraform.svg?react";
 import Vue from "@/assets/icons/k8s/vue.svg?react";
-import { RESOURCE_ICON_NAMES } from "@/core/k8s/icons/sprites/Resources/names";
+import { RESOURCE_ICON_NAMES } from "@/k8s/icons/sprites/Resources/names";
 
 export const K8sRelatedIconsSVGSprite = () => {
   return (

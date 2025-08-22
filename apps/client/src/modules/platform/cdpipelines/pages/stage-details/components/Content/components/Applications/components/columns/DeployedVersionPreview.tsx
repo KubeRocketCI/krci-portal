@@ -2,9 +2,9 @@ import {
   CODEBASE_COMMON_BUILD_TOOLS,
   CODEBASE_COMMON_FRAMEWORKS,
   CODEBASE_COMMON_LANGUAGES,
-} from "@/core/k8s/api/groups/KRCI/Codebase/configs/mappings";
-import { quickLinkUiNames } from "@/core/k8s/api/groups/KRCI/QuickLink/constants";
-import { LinkCreationService } from "@/core/services/link-creation";
+} from "@/k8s/api/groups/KRCI/Codebase/configs/mappings";
+import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
+import { LinkCreationService } from "@/k8s/services/link-creation";
 import { useQuickLinksUrlListWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 import { Box, Grid, Tooltip } from "@mui/material";
 import { Application, applicationLabels, Codebase, getDeployedVersion, systemQuickLink } from "@my-project/shared";

@@ -21,9 +21,9 @@ import {
   DropdownMenuTrigger,
 } from "@/core/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/core/components/ui/sidebar";
-import { useAuth } from "../auth/providers/Auth";
+import { useAuth } from "../auth/provider";
 import { Link } from "@tanstack/react-router";
-import { EDP_USER_GUIDE } from "../k8s/constants/docs-urls";
+import { EDP_USER_GUIDE } from "../../k8s/constants/docs-urls";
 
 const HELP_MENU_LIST = [
   {

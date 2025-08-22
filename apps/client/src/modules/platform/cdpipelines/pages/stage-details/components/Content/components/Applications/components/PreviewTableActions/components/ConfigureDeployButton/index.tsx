@@ -1,6 +1,6 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
-import { usePipelineRunPermissions } from "@/core/k8s/api/groups/Tekton/PipelineRun";
+import { usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { usePageUIStore } from "@/modules/platform/cdpipelines/pages/stage-details/store";
 import { Pencil } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";

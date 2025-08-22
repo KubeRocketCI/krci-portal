@@ -1,5 +1,5 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
-import { useStagePermissions } from "@/core/k8s/api/groups/KRCI/Stage";
+import { useStagePermissions } from "@/k8s/api/groups/KRCI/Stage";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { Filter } from "@/core/providers/Filter/components/Filter";
 import { useViewModeContext } from "@/core/providers/ViewMode/hooks";

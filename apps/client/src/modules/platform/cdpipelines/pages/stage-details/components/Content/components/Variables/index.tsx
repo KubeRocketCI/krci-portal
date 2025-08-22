@@ -19,7 +19,7 @@ import { EmptyList } from "@/core/components/EmptyList";
 import { Plus, Trash } from "lucide-react";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { TabSection } from "@/core/components/TabSection";
-import { EDP_USER_GUIDE } from "@/core/k8s/constants/docs-urls";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 
 export const Variables = () => {
   // const params = routeStageDetails.useParams();

@@ -7,7 +7,7 @@ import { codebaseType } from "@my-project/shared";
 import { Pencil } from "lucide-react";
 import React from "react";
 import { DialogHeaderProps } from "./types";
-import { EDP_USER_GUIDE } from "@/core/k8s/constants/docs-urls";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 
 export const DialogHeader = ({ handleOpenEditor }: DialogHeaderProps) => {
   const theme = useTheme();

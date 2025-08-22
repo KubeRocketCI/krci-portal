@@ -1,9 +1,9 @@
-import { useCodebaseWatchItem } from "@/core/k8s/api/groups/KRCI/Codebase";
-import { useCodebaseBranchWatchList } from "@/core/k8s/api/groups/KRCI/CodebaseBranch";
-import { useGitServerWatchItem } from "@/core/k8s/api/groups/KRCI/GitServer";
-import { useQuickLinkWatchList } from "@/core/k8s/api/groups/KRCI/QuickLink";
-import { usePipelineRunWatchList } from "@/core/k8s/api/groups/Tekton/PipelineRun";
-import { useTriggerTemplateWatchItem } from "@/core/k8s/api/groups/Tekton/TriggerTemplate";
+import { useCodebaseWatchItem } from "@/k8s/api/groups/KRCI/Codebase";
+import { useCodebaseBranchWatchList } from "@/k8s/api/groups/KRCI/CodebaseBranch";
+import { useGitServerWatchItem } from "@/k8s/api/groups/KRCI/GitServer";
+import { useQuickLinkWatchList } from "@/k8s/api/groups/KRCI/QuickLink";
+import { usePipelineRunWatchList } from "@/k8s/api/groups/Tekton/PipelineRun";
+import { useTriggerTemplateWatchItem } from "@/k8s/api/groups/Tekton/TriggerTemplate";
 import {
   checkIsDefaultBranch,
   CodebaseBranch,

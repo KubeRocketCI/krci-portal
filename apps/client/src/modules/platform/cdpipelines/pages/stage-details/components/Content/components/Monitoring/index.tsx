@@ -1,5 +1,5 @@
 import { TabSection } from "@/core/components/TabSection";
-import { LinkCreationService } from "@/core/services/link-creation";
+import { LinkCreationService } from "@/k8s/services/link-creation";
 import { useQuickLinksUrlListWatch, useStageWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 import { quickLinkLabels, systemQuickLink } from "@my-project/shared";
 

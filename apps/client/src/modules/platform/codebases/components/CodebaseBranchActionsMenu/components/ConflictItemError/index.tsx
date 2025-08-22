@@ -3,7 +3,7 @@ import { useStyles } from "./styles";
 import { Link } from "@tanstack/react-router";
 import { ConflictItemErrorProps } from "./types";
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
-import { useClusterStore } from "@/core/store";
+import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 
 export const ConflictItemError = ({ conflictedCDPipeline, name }: ConflictItemErrorProps) => {

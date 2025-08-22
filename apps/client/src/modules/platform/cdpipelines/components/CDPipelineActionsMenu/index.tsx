@@ -2,13 +2,13 @@ import { ActionsInlineList } from "@/core/components/ActionsInlineList";
 import { ActionsMenuList } from "@/core/components/ActionsMenuList";
 import { DeleteKubeObjectDialog } from "@/core/components/DeleteKubeObject";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
-import { useCDPipelinePermissions } from "@/core/k8s/api/groups/KRCI/CDPipeline";
+import { useCDPipelinePermissions } from "@/k8s/api/groups/KRCI/CDPipeline";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { createResourceAction } from "@/core/utils/createResourceAction";
 import { Pencil, Trash } from "lucide-react";
 import { CDPipelineActionsMenuProps } from "./types";
 import { ManageCDPipelineDialog } from "../../dialogs/ManageCDPipeline";
-import { actionMenuType } from "@/core/k8s/constants/actionMenuTypes";
+import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import { k8sCDPipelineConfig, k8sOperation } from "@my-project/shared";
 import React from "react";
 

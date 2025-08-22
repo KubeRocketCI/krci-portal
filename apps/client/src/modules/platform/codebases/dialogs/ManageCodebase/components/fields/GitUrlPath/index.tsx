@@ -1,5 +1,5 @@
 import { validationRules } from "@/core/constants/validation";
-import { useGitServerWatchList } from "@/core/k8s/api/groups/KRCI/GitServer";
+import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { FormTextField } from "@/core/providers/Form/components/FormTextField";
 import { validateField } from "@/core/utils/forms/validation";
 import { gitProvider } from "@my-project/shared";

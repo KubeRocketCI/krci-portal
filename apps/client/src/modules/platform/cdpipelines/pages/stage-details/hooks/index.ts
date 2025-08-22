@@ -1,6 +1,6 @@
-import { useWatchGitOpsCodebase } from "@/core/k8s/api/groups/KRCI/Codebase/hooks/useWatchGitOpsCodebase";
-import { useQuickLinkWatchURLs } from "@/core/k8s/api/groups/KRCI/QuickLink/hooks/useQuickLinksUrlListQuery";
-import { useWatchStagePipelineRuns } from "@/core/k8s/api/groups/Tekton/PipelineRun";
+import { useWatchGitOpsCodebase } from "@/k8s/api/groups/KRCI/Codebase/hooks/useWatchGitOpsCodebase";
+import { useQuickLinkWatchURLs } from "@/k8s/api/groups/KRCI/QuickLink/hooks/useQuickLinksUrlListQuery";
+import { useWatchStagePipelineRuns } from "@/k8s/api/groups/Tekton/PipelineRun";
 import {
   Application,
   applicationLabels,
@@ -12,15 +12,15 @@ import {
   Stage,
   TriggerTemplate,
 } from "@my-project/shared";
-import { useCDPipelineWatchItem } from "@/core/k8s/api/groups/KRCI/CDPipeline";
-import { useStageWatchItem, useStageWatchList } from "@/core/k8s/api/groups/KRCI/Stage";
-import { useApplicationWatchList } from "@/core/k8s/api/groups/ArgoCD/Application";
+import { useCDPipelineWatchItem } from "@/k8s/api/groups/KRCI/CDPipeline";
+import { useStageWatchItem, useStageWatchList } from "@/k8s/api/groups/KRCI/Stage";
+import { useApplicationWatchList } from "@/k8s/api/groups/ArgoCD/Application";
 import { useQuery } from "@tanstack/react-query";
-import { useCodebaseWatchList } from "@/core/k8s/api/groups/KRCI/Codebase";
-import { useCodebaseImageStreamWatchList } from "@/core/k8s/api/groups/KRCI/CodebaseImageStream";
-import { useGitServerWatchList } from "@/core/k8s/api/groups/KRCI/GitServer";
-import { useConfigMapWatchItem } from "@/core/k8s/api/groups/core/ConfigMap";
-import { useTriggerTemplateWatchItem } from "@/core/k8s/api/groups/Tekton/TriggerTemplate";
+import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
+import { useCodebaseImageStreamWatchList } from "@/k8s/api/groups/KRCI/CodebaseImageStream";
+import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
+import { useConfigMapWatchItem } from "@/k8s/api/groups/core/ConfigMap";
+import { useTriggerTemplateWatchItem } from "@/k8s/api/groups/Tekton/TriggerTemplate";
 import { routeStageDetails } from "../route";
 
 export const useWatchApplicationsPods = () => true; // noop

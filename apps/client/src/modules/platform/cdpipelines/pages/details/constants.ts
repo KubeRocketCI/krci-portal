@@ -1,4 +1,4 @@
-import { StageWithApplication } from "@/core/k8s/api/groups/KRCI/Stage/utils/combineStageWithApplications";
+import { StageWithApplication } from "@/k8s/api/groups/KRCI/Stage/utils/combineStageWithApplications";
 import { FilterFunction } from "@/core/providers/Filter/types";
 import { ValueOf } from "@/core/types/global";
 import { getApplicationStatus } from "@my-project/shared";

@@ -1,4 +1,4 @@
-import { STATUS_COLOR } from "@/core/k8s/constants/colors";
+import { STATUS_COLOR } from "@/k8s/constants/colors";
 import makeStyles from "@mui/styles/makeStyles";
 
 export const useStyles = makeStyles((theme) => ({

@@ -2,7 +2,7 @@ import { FormSelect } from "@/core/providers/Form/components/FormSelect";
 import { mapArrayToSelectOptions } from "@/core/utils/forms/mapToSelectOptions";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_FORM_NAMES } from "../../../names";
-import { useJiraServerWatchList } from "@/core/k8s/api/groups/KRCI/JiraServer";
+import { useJiraServerWatchList } from "@/k8s/api/groups/KRCI/JiraServer";
 
 export const JiraServer = () => {
   const {

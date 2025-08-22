@@ -9,7 +9,7 @@ import {
   TicketNamePattern,
 } from "../../../fields";
 import { CodemieIntegration } from "../../../fields/CodemieIntegration";
-import { useJiraServerWatchList } from "@/core/k8s/api/groups/KRCI/JiraServer";
+import { useJiraServerWatchList } from "@/k8s/api/groups/KRCI/JiraServer";
 
 export const Form = () => {
   const { watch } = useTypedFormContext();

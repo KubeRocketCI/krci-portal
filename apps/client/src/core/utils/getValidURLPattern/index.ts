@@ -1,4 +1,4 @@
-import { VALIDATED_PROTOCOL } from "@/core/k8s/constants/validatedProtocols";
+import { VALIDATED_PROTOCOL } from "@/k8s/constants/validatedProtocols";
 import { ValueOf } from "@/core/types/global";
 
 export const getValidURLPattern = (protocol: ValueOf<typeof VALIDATED_PROTOCOL>): RegExp => {

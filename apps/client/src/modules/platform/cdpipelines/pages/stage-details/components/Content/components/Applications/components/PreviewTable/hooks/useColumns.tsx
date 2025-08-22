@@ -1,5 +1,5 @@
 import { TableColumn } from "@/core/components/Table/types";
-import { TABLE } from "@/core/k8s/constants/tables";
+import { TABLE } from "@/k8s/constants/tables";
 import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
 import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { inClusterName } from "@my-project/shared";

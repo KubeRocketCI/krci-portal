@@ -4,7 +4,7 @@ import { PipelineGraphDialog } from "../../dialogs/PipelineGraph";
 import { routePipelineDetails } from "../../pages/details/route";
 import { VectorSquare } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { useClusterStore } from "@/core/store";
+import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { Button } from "@/core/components/ui/button";
 

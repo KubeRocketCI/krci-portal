@@ -1,4 +1,4 @@
-import { useResourceCRUDMutation } from "@/core/k8s/api/hooks/useResourceCRUDMutation";
+import { useResourceCRUDMutation } from "@/k8s/api/hooks/useResourceCRUDMutation";
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import { k8sOperation, k8sPipelineRunConfig, PipelineRun } from "@my-project/shared";
 import React from "react";

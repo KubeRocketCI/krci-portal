@@ -1,7 +1,7 @@
 import React from "react";
 import { CurrentDialogContext } from "./context";
 import { CurrentDialogContextProviderProps } from "./types";
-import { useCodebaseWatchList } from "@/core/k8s/api/groups/KRCI/Codebase";
+import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
 import { codebaseLabels, codebaseType } from "@my-project/shared";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 

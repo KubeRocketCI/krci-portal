@@ -1,5 +1,5 @@
 import { Table } from "@/core/components/Table";
-import { TABLE } from "@/core/k8s/constants/tables";
+import { TABLE } from "@/k8s/constants/tables";
 import {
   StageAppCodebaseCombinedData,
   useWatchStageAppCodebasesCombinedData,

@@ -7,9 +7,9 @@ import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { createResourceAction } from "@/core/utils/createResourceAction";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { ManageQuickLinkDialog } from "../../dialogs/ManageQuickLink";
-import { isSystemQuickLink, useQuickLinkPermissions } from "@/core/k8s/api/groups/KRCI/QuickLink";
+import { isSystemQuickLink, useQuickLinkPermissions } from "@/k8s/api/groups/KRCI/QuickLink";
 import { k8sOperation, k8sQuickLinkConfig } from "@my-project/shared";
-import { actionMenuType } from "@/core/k8s/constants/actionMenuTypes";
+import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import { Pencil, Trash } from "lucide-react";
 
 export const QuickLinkActionsMenu = ({

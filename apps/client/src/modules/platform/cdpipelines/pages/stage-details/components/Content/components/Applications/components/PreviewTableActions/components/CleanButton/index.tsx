@@ -1,8 +1,8 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { ConfirmDialog } from "@/core/components/Confirm";
 import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
-import { usePipelineRunPermissions, usePipelineRunCRUD } from "@/core/k8s/api/groups/Tekton/PipelineRun";
-import { useRequestStatusMessages } from "@/core/k8s/api/hooks/useResourceRequestStatusMessages";
+import { usePipelineRunPermissions, usePipelineRunCRUD } from "@/k8s/api/groups/Tekton/PipelineRun";
+import { useRequestStatusMessages } from "@/k8s/api/hooks/useResourceRequestStatusMessages";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import {
   useCDPipelineWatch,

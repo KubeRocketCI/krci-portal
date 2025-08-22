@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getValidURLPattern } from "./index";
-import { VALIDATED_PROTOCOL } from "@/core/k8s/constants/validatedProtocols";
+import { VALIDATED_PROTOCOL } from "@/k8s/constants/validatedProtocols";
 
 describe("URL validation", () => {
   it("should return true for valid http url", () => {

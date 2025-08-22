@@ -3,7 +3,7 @@ import {
   CODEBASE_COMMON_BUILD_TOOLS,
   CODEBASE_COMMON_FRAMEWORKS,
   CODEBASE_COMMON_LANGUAGES,
-} from "@/core/k8s/api/groups/KRCI/Codebase/configs/mappings";
+} from "@/k8s/api/groups/KRCI/Codebase/configs/mappings";
 import { Stack, Typography } from "@mui/material";
 import { getDeployedVersion } from "@my-project/shared";
 import React from "react";

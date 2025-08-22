@@ -13,7 +13,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { DIALOG_NAME } from "./constants";
 import { DeleteKubeObjectDialogProps } from "./types";
-import { useResourceCRUDMutation } from "@/core/k8s/api/hooks/useResourceCRUDMutation";
+import { useResourceCRUDMutation } from "@/k8s/api/hooks/useResourceCRUDMutation";
 import { k8sOperation, KubeObjectBase } from "@my-project/shared";
 import { router } from "@/core/router";
 

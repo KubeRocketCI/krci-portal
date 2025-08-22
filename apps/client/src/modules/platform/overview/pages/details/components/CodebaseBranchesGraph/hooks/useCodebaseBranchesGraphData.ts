@@ -1,4 +1,4 @@
-import { useCodebaseBranchWatchList } from "@/core/k8s/api/groups/KRCI/CodebaseBranch";
+import { useCodebaseBranchWatchList } from "@/k8s/api/groups/KRCI/CodebaseBranch";
 import { codebaseBranchStatus } from "@my-project/shared";
 import React from "react";
 

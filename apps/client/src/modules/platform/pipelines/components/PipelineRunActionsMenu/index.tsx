@@ -9,9 +9,9 @@ import {
 import { CustomActionsInlineList } from "./components/CustomActionsInlineList";
 import { PipelineRunActionsMenuProps } from "./types";
 import React from "react";
-import { actionMenuType } from "@/core/k8s/constants/actionMenuTypes";
+import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import { createResourceAction } from "@/core/utils/createResourceAction";
-import { usePipelineRunCRUD, usePipelineRunPermissions } from "@/core/k8s/api/groups/Tekton/PipelineRun";
+import { usePipelineRunCRUD, usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { OctagonX, Redo2, Trash } from "lucide-react";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { ActionsMenuList } from "@/core/components/ActionsMenuList";

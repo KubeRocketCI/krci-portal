@@ -2,7 +2,7 @@ import { Box, Button, Stack, useTheme } from "@mui/material";
 import React from "react";
 import { useTypedFormContext } from "../../../../hooks/useFormContext";
 import { useCurrentDialog } from "../../../../providers/CurrentDialog/hooks";
-import { useQuickLinkCRUD } from "@/core/k8s/api/groups/KRCI/QuickLink";
+import { useQuickLinkCRUD } from "@/k8s/api/groups/KRCI/QuickLink";
 import { ManageQuickLinkFormValues } from "../../../../types";
 import { createQuickLinkDraft } from "@my-project/shared";
 

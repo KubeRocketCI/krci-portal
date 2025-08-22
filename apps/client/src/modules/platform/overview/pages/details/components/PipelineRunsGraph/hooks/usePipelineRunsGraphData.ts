@@ -1,4 +1,4 @@
-import { usePipelineRunWatchList } from "@/core/k8s/api/groups/Tekton/PipelineRun";
+import { usePipelineRunWatchList } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { getPipelineRunStatus, pipelineRunReason, pipelineRunStatus } from "@my-project/shared";
 import React from "react";
 

@@ -1,8 +1,8 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
-import { usePipelineRunCRUD, usePipelineRunPermissions } from "@/core/k8s/api/groups/Tekton/PipelineRun";
-import { useRequestStatusMessages } from "@/core/k8s/api/hooks/useResourceRequestStatusMessages";
+import { usePipelineRunCRUD, usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
+import { useRequestStatusMessages } from "@/k8s/api/hooks/useResourceRequestStatusMessages";
 import {
   IMAGE_TAG_POSTFIX,
   VALUES_OVERRIDE_POSTFIX,

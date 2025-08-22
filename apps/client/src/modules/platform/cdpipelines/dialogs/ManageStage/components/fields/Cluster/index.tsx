@@ -2,13 +2,13 @@ import React from "react";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { STAGE_FORM_NAMES } from "../../../names";
 import { ConfigMap, inClusterName, k8sConfigMapConfig, krciConfigMapNames } from "@my-project/shared";
-import { useWatchList } from "@/core/k8s/api/hooks/useWatchList";
+import { useWatchList } from "@/k8s/api/hooks/useWatchList";
 import { ValueOf } from "@/core/types/global";
 import { FormSelect } from "@/core/providers/Form/components/FormSelect";
 import { routeClustersConfiguration } from "@/modules/platform/configuration/pages/clusters/route";
 import { Link } from "@tanstack/react-router";
-import { EDP_USER_GUIDE } from "@/core/k8s/constants/docs-urls";
-import { useClusterStore } from "@/core/store";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
+import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 
 const defaultClusterOption = {

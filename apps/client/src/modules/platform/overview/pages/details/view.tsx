@@ -1,7 +1,7 @@
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { Section } from "@/core/components/Section";
-import { EDP_USER_GUIDE } from "@/core/k8s/constants/docs-urls";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { Grid, Typography, useTheme } from "@mui/material";
 import { AddNewWidgetCard } from "./components/AddNewWidget";
 import { CDPipelinesGraph } from "./components/CDPipelinesGraph";
@@ -13,7 +13,6 @@ import { QuickLinkList } from "./components/QuickLinkList";
 import { StagesGraph } from "./components/StagesGraph";
 import { UserWidgetRenderer } from "./components/UserWidgetsRenderer";
 import { useUserWidgets } from "./providers/UserWidgets/hooks";
-
 
 export default function OverviewDetailsPageContent() {
   const theme = useTheme();

@@ -5,10 +5,10 @@ import {
   CODEBASE_COMMON_LANGUAGES,
   CODEBASE_COMMON_FRAMEWORKS,
   CODEBASE_COMMON_BUILD_TOOLS,
-} from "@/core/k8s/api/groups/KRCI/Codebase/configs/mappings";
+} from "@/k8s/api/groups/KRCI/Codebase/configs/mappings";
 import { getDeployedVersion, getPipelineRunStatus, pipelineRunReason } from "@my-project/shared";
 import { mapEvery } from "@/core/utils/mapEvery";
-import { useApplicationCRUD } from "@/core/k8s/api/groups/ArgoCD/Application";
+import { useApplicationCRUD } from "@/k8s/api/groups/ArgoCD/Application";
 import { useWatchStageAppCodebasesCombinedData, usePipelineRunsWatch } from "../../../../../hooks";
 
 export interface ButtonsMap {

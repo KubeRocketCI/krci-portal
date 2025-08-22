@@ -1,5 +1,5 @@
 import { PercentageCircleChart } from "@/core/components/PercentageCircleChart";
-import { CHART_STATUS_COLOR } from "@/core/k8s/constants/colors";
+import { CHART_STATUS_COLOR } from "@/k8s/constants/colors";
 import { Stack } from "@mui/material";
 import { LegendListItem } from "../LegendListItem";
 import { useCDPipelinesGraphData } from "./hooks/useCDPipelinesGraphData";

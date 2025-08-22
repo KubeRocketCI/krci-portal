@@ -5,7 +5,7 @@ import { useShallow } from "zustand/react/shallow";
 import { DialogProps } from "../../providers/Dialog/types";
 import { FormTextField } from "../../providers/Form/components/FormTextField";
 import { FORM_CONTROL_LABEL_HEIGHT } from "../../providers/Form/constants";
-import { useClusterStore } from "../../store";
+import { useClusterStore } from "../../../k8s/store";
 
 type NamespacesDialogProps = DialogProps<object>;
 

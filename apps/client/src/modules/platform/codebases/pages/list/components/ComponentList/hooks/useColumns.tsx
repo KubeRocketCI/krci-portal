@@ -4,19 +4,15 @@ import { getSyncedColumnData } from "@/core/components/Table/components/TableSet
 import { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { Button } from "@/core/components/ui/button";
-import {
-  BUILD_TOOL_ICON_MAPPING,
-  FRAMEWORK_ICON_MAPPING,
-  LANGUAGE_ICON_MAPPING,
-} from "@/core/k8s/configs/icon-mappings";
-import { MAIN_COLOR } from "@/core/k8s/constants/colors";
-import { CUSTOM_RESOURCE_STATUS } from "@/core/k8s/constants/statuses";
-import { TABLE } from "@/core/k8s/constants/tables";
-import { getCodebaseMappingByType, getCodebaseStatusIcon } from "@/core/k8s/api/groups/KRCI/Codebase";
-import { CodebaseInterface } from "@/core/k8s/api/groups/KRCI/Codebase/configs/mappings/types";
-import { RESOURCE_ICON_NAMES } from "@/core/k8s/icons/sprites/Resources/names";
-import { UseSpriteSymbol } from "@/core/k8s/icons/UseSpriteSymbol";
-import { useClusterStore } from "@/core/store";
+import { BUILD_TOOL_ICON_MAPPING, FRAMEWORK_ICON_MAPPING, LANGUAGE_ICON_MAPPING } from "@/k8s/configs/icon-mappings";
+import { MAIN_COLOR } from "@/k8s/constants/colors";
+import { CUSTOM_RESOURCE_STATUS } from "@/k8s/constants/statuses";
+import { TABLE } from "@/k8s/constants/tables";
+import { getCodebaseMappingByType, getCodebaseStatusIcon } from "@/k8s/api/groups/KRCI/Codebase";
+import { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/mappings/types";
+import { RESOURCE_ICON_NAMES } from "@/k8s/icons/sprites/Resources/names";
+import { UseSpriteSymbol } from "@/k8s/icons/UseSpriteSymbol";
+import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { Chip, Grid, Typography } from "@mui/material";

@@ -2,7 +2,7 @@ import { SavedTableSettings } from "@/core/components/Table/components/TableSett
 import { RequestError, ValueOf } from "@/core/types/global";
 import { PipelineRun, PipelineType } from "@my-project/shared";
 import { pipelineRunFilterControlNames } from "./constants";
-import { FilterTypeWithOptionAll } from "@/core/k8s/types";
+import { FilterTypeWithOptionAll } from "@/k8s/types";
 
 export type PipelineRunFilterControlNames = ValueOf<typeof pipelineRunFilterControlNames>;
 
@@ -19,7 +19,7 @@ export interface PipelineRunListProps {
   tableSettings?: SavedTableSettings;
   blockerError?: RequestError;
   errors?: RequestError[] | null;
-  pipelineRunTypes?: (FilterTypeWithOptionAll<PipelineType>)[];
+  pipelineRunTypes?: FilterTypeWithOptionAll<PipelineType>[];
   filterControls?: PipelineRunFilterControlNames[];
 }
 

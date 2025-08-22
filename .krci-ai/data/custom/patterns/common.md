@@ -1,0 +1,4 @@
+- Most of applications pages are list -> details pages.
+    - List shows full resource list with short info and actions button
+    - Details show full resource info, actions other buttons, links etc.
+    - Details page is commonly segregated in tabs using useTabs hooks where each tab is separate component.

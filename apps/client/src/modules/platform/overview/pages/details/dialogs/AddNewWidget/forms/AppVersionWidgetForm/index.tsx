@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
 import { WidgetType } from "../../types";
 import { useCurrentDialog } from "../../providers/CurrentDialog/hooks";
-import { useCodebaseWatchList } from "@/core/k8s/api/groups/KRCI/Codebase";
+import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
 import { codebaseLabels, codebaseType } from "@my-project/shared";
 import { mapArrayToSelectOptions } from "@/core/utils/forms/mapToSelectOptions";
 import { ErrorContent } from "@/core/components/ErrorContent";

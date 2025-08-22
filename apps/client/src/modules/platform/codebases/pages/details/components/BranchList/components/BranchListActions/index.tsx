@@ -1,6 +1,6 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
-import { useCodebasePermissions } from "@/core/k8s/api/groups/KRCI/Codebase";
-import { sortCodebaseBranches } from "@/core/k8s/api/groups/KRCI/CodebaseBranch/utils/sort";
+import { useCodebasePermissions } from "@/k8s/api/groups/KRCI/Codebase";
+import { sortCodebaseBranches } from "@/k8s/api/groups/KRCI/CodebaseBranch/utils/sort";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { ManageCodebaseBranchDialog } from "@/modules/platform/codebases/dialogs/ManageCodebaseBranch";
 import { Plus } from "lucide-react";

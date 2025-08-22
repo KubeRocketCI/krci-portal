@@ -5,7 +5,7 @@ import { Box, Button, Divider, Stack } from "@mui/material";
 import withStyles from "@mui/styles/withStyles";
 import { routeAuthLogin } from "./route";
 import { Alert, AlertDescription, AlertTitle } from "@/core/components/ui/alert";
-import { useAuth } from "../../providers/Auth/hooks";
+import { useAuth } from "../../provider/hooks";
 
 const ColorButton = withStyles((theme) => ({
   root: {

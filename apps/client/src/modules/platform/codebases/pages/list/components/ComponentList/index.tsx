@@ -1,12 +1,12 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { EmptyList } from "@/core/components/EmptyList";
-import { TABLE } from "@/core/k8s/constants/tables";
+import { TABLE } from "@/k8s/constants/tables";
 import { K8sRelatedIconsSVGSprite } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 // import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { Table } from "@/core/components/Table";
-import { useCodebasePermissions, useCodebaseWatchList } from "@/core/k8s/api/groups/KRCI/Codebase";
-import { useGitServerWatchList } from "@/core/k8s/api/groups/KRCI/GitServer";
+import { useCodebasePermissions, useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
+import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { Filter } from "@/core/providers/Filter/components/Filter";
 import { ManageCodebaseDialog } from "@/modules/platform/codebases/dialogs/ManageCodebase";

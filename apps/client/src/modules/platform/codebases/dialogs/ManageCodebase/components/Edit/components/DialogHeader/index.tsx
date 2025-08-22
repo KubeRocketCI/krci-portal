@@ -3,7 +3,7 @@ import React from "react";
 import { useCurrentDialog } from "../../../../providers/CurrentDialog/hooks";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { codebaseType } from "@my-project/shared";
-import { EDP_USER_GUIDE } from "@/core/k8s/constants/docs-urls";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 
 export const DialogHeader = () => {
   const theme = useTheme();

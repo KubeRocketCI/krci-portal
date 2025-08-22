@@ -3,7 +3,7 @@ import React from "react";
 import { PIPELINE_GRAPH_DIALOG_NAME } from "./constants";
 import { PipelineGraphDialogProps } from "./types";
 import { X } from "lucide-react";
-import { usePipelineWatchItem } from "@/core/k8s/api/groups/Tekton/Pipeline";
+import { usePipelineWatchItem } from "@/k8s/api/groups/Tekton/Pipeline";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 
 export const PipelineGraphDialog: React.FC<PipelineGraphDialogProps> = ({

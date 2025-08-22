@@ -1,10 +1,10 @@
 import { Grid, Typography } from "@mui/material";
 
 import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { TABLE } from "@/core/k8s/constants/tables";
+import { TABLE } from "@/k8s/constants/tables";
 import { FilterProvider } from "@/core/providers/Filter/provider";
 import { ResourceActionListContextProvider } from "@/core/providers/ResourceActionList/provider";
-import { useClusterStore } from "@/core/store";
+import { useClusterStore } from "@/k8s/store";
 import { PipelineRunList } from "@/modules/platform/pipelines/components/PipelineRunList";
 import {
   matchFunctions,

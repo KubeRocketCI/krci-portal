@@ -2,7 +2,7 @@ import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { EmptyList } from "@/core/components/EmptyList";
 import { Table } from "@/core/components/Table";
-import { usePipelineRunPermissions } from "@/core/k8s/api/groups/Tekton/PipelineRun";
+import { usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { Filter } from "@/core/providers/Filter/components/Filter";
 import { Stack, Tooltip, Typography, Box } from "@mui/material";
 import { pipelineType, sortKubeObjectByCreationTimestamp } from "@my-project/shared";
