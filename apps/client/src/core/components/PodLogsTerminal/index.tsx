@@ -172,7 +172,11 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
     if (!terminal) return;
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const filename = `${currentPod?.metadata?.name || "pod"}-${activeContainer}-${timestamp}.log`;
+    // Sanitize filename to prevent potential XSS/injection issues
+    const sanitizeName = (name: string) => name.replace(/[^a-zA-Z0-9\-_]/g, "_");
+    const podName = sanitizeName(currentPod?.metadata?.name || "pod");
+    const containerName = sanitizeName(activeContainer);
+    const filename = `${podName}-${containerName}-${timestamp}.log`;
 
     const buffer = terminal.buffer.active;
     let allContent = "";
