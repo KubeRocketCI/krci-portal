@@ -5,7 +5,7 @@ import { QuickLinkExternalLinkProps } from "./types";
 import { Button, Grid } from "@mui/material";
 import { Link } from "@tanstack/react-router";
 import { systemQuickLink } from "@my-project/shared";
-import { ManageQuickLinkDialog } from "@/modules/platform/configuration/dialogs/ManageQuickLink";
+import { ManageQuickLinkDialog } from "@/modules/platform/configuration/modules/quicklinks/dialogs/ManageQuickLink";
 
 export const QuickLink = ({
   name,

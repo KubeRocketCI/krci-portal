@@ -3,7 +3,7 @@ import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { useStyles } from "./styles";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { useQuickLinkPermissions } from "@/k8s/api/groups/KRCI/QuickLink";
-import { ManageQuickLinkDialog } from "@/modules/platform/configuration/dialogs/ManageQuickLink";
+import { ManageQuickLinkDialog } from "@/modules/platform/configuration/modules/quicklinks/dialogs/ManageQuickLink";
 import { Plus } from "lucide-react";
 
 export const AddNewQuickLinkCard = () => {

@@ -1,5 +1,5 @@
 import { PodLogsTerminal } from "@/core/components/PodLogsTerminal";
-import { usePodWatchList } from "@/k8s/api/groups/core/Pod";
+import { usePodWatchList } from "@/k8s/api/groups/Core/Pod";
 import { routePipelineRunDetails } from "@/modules/platform/pipelineruns/pages/details/route";
 import { Pod } from "@my-project/shared";
 

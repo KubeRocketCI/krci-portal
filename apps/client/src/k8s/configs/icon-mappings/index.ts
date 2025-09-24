@@ -1,5 +1,4 @@
-import { ciTool, gitProvider } from "@my-project/shared";
-import { CONTAINER_REGISTRY_TYPE } from "../../api/groups/core/ConfigMap/constants";
+import { ciTool, containerRegistryType, gitProvider } from "@my-project/shared";
 import { RESOURCE_ICON_NAMES } from "../../icons/sprites/Resources/names";
 import {
   CODEBASE_COMMON_LANGUAGES,
@@ -83,10 +82,10 @@ export const GIT_PROVIDER_ICON_MAPPING = {
 } as const;
 
 export const REGISTRY_TYPE_ICON_MAPPING = {
-  [CONTAINER_REGISTRY_TYPE.ECR]: RESOURCE_ICON_NAMES.ECR,
-  [CONTAINER_REGISTRY_TYPE.HARBOR]: RESOURCE_ICON_NAMES.HARBOR,
-  [CONTAINER_REGISTRY_TYPE.DOCKER_HUB]: RESOURCE_ICON_NAMES.DOCKER,
-  [CONTAINER_REGISTRY_TYPE.OPENSHIFT_REGISTRY]: RESOURCE_ICON_NAMES.OPENSHIFT,
-  [CONTAINER_REGISTRY_TYPE.NEXUS]: RESOURCE_ICON_NAMES.NEXUS,
-  [CONTAINER_REGISTRY_TYPE.GHCR]: RESOURCE_ICON_NAMES.GITHUB,
+  [containerRegistryType.ecr]: RESOURCE_ICON_NAMES.ECR,
+  [containerRegistryType.harbor]: RESOURCE_ICON_NAMES.HARBOR,
+  [containerRegistryType.dockerhub]: RESOURCE_ICON_NAMES.DOCKER,
+  [containerRegistryType.openshift]: RESOURCE_ICON_NAMES.OPENSHIFT,
+  [containerRegistryType.nexus]: RESOURCE_ICON_NAMES.NEXUS,
+  [containerRegistryType.ghcr]: RESOURCE_ICON_NAMES.GITHUB,
 } as const;

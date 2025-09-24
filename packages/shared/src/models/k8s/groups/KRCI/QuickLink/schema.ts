@@ -4,7 +4,7 @@ import {
   kubeObjectBaseSchema,
   kubeObjectDraftMetadataSchema,
   kubeObjectMetadataSchema,
-} from "../../../core";
+} from "../../../common";
 import { krciCommonLabelsSchema } from "..";
 import { quickLinkLabels } from "./labels";
 
@@ -34,27 +34,14 @@ const quickLinkLabelsSchema = krciCommonLabelsSchema.extend({
 
 export const quickLinkSchema = kubeObjectBaseSchema.extend({
   metadata: kubeObjectMetadataSchema.extend({
-    labels: quickLinkLabelsSchema,
+    labels: quickLinkLabelsSchema.optional(),
   }),
   spec: quickLinkSpecSchema,
 });
 
 export const quickLinkDraftSchema = kubeObjectBaseDraftSchema.extend({
   metadata: kubeObjectDraftMetadataSchema.extend({
-    labels: quickLinkLabelsSchema,
+    labels: quickLinkLabelsSchema.optional(),
   }),
   spec: quickLinkSpecSchema,
-});
-
-export const createQuickLinkDraftInputSchema = z.object({
-  name: z.string(),
-  icon: z.string(),
-  url: z.string(),
-  visible: z.boolean(),
-});
-
-export const editQuickLinkInputSchema = z.object({
-  url: z.string(),
-  visible: z.boolean(),
-  icon: z.string(),
 });

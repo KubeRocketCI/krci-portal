@@ -10,7 +10,7 @@ import { Section } from "@/core/components/Section";
 import { useCDPipelinePermissions } from "@/k8s/api/groups/KRCI/CDPipeline";
 import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
-import { routeGitopsConfiguration } from "@/modules/platform/configuration/pages/gitops/route";
+import { routeGitopsConfiguration } from "@/modules/platform/configuration/modules/gitops/route";
 import { codebaseLabels, codebaseType } from "@my-project/shared";
 import { Plus } from "lucide-react";
 import { CDPipelineList } from "./components/CDPipelineList";

@@ -1,11 +1,4 @@
-import {
-  Bot,
-  Layers,
-  PanelsTopLeft,
-  Rows2,
-  Settings,
-  ShoppingCart,
-} from "lucide-react";
+import { Bot, Layers, PanelsTopLeft, Rows2, Settings, ShoppingCart } from "lucide-react";
 import { routeOverviewDetails } from "@/modules/platform/overview/pages/details/route";
 import { routeComponentList } from "@/modules/platform/codebases/pages/list/route";
 import { routeCDPipelineList } from "@/modules/platform/cdpipelines/pages/list/route";
@@ -13,19 +6,19 @@ import { routePipelineRunList } from "@/modules/platform/pipelineruns/pages/list
 import { routeTaskList } from "@/modules/platform/tasks/pages/list/route";
 import { routeCICD, routeConfiguration } from "@/core/router";
 import { routePipelineList } from "@/modules/platform/pipelines/pages/list/route";
-import { routeQuicklinksConfiguration } from "@/modules/platform/configuration/pages/quicklinks/route";
-import { routeNexusConfiguration } from "@/modules/platform/configuration/pages/nexus/route";
-import { routeRegistryConfiguration } from "@/modules/platform/configuration/pages/registry/route";
-import { routeClustersConfiguration } from "@/modules/platform/configuration/pages/clusters/route";
-import { routeGitopsConfiguration } from "@/modules/platform/configuration/pages/gitops/route";
-import { routeArgocdConfiguration } from "@/modules/platform/configuration/pages/argocd/route";
-import { routeDefectdojoConfiguration } from "@/modules/platform/configuration/pages/defectdojo/route";
-import { routeDependencyTrackConfiguration } from "@/modules/platform/configuration/pages/dependency-track/route";
-import { routeSonarConfiguration } from "@/modules/platform/configuration/pages/sonar/route";
-import { routeGitserversConfiguration } from "@/modules/platform/configuration/pages/gitservers/route";
-import { routeJiraConfiguration } from "@/modules/platform/configuration/pages/jira/route";
-import { routeChatAssistantConfiguration } from "@/modules/platform/configuration/pages/chat-assistant/route";
-import { routeCodemieConfiguration } from "@/modules/platform/configuration/pages/codemie/route";
+import { routeQuicklinksConfiguration } from "@/modules/platform/configuration/modules/quicklinks/route";
+import { routeNexusConfiguration } from "@/modules/platform/configuration/modules/nexus/route";
+import { routeRegistryConfiguration } from "@/modules/platform/configuration/modules/registry/route";
+import { routeClustersConfiguration } from "@/modules/platform/configuration/modules/clusters/route";
+import { routeGitopsConfiguration } from "@/modules/platform/configuration/modules/gitops/route";
+import { routeArgocdConfiguration } from "@/modules/platform/configuration/modules/argocd/route";
+import { routeDefectdojoConfiguration } from "@/modules/platform/configuration/modules/defectdojo/route";
+import { routeDependencyTrackConfiguration } from "@/modules/platform/configuration/modules/dependency-track/route";
+import { routeSonarConfiguration } from "@/modules/platform/configuration/modules/sonar/route";
+import { routeGitserversConfiguration } from "@/modules/platform/configuration/modules/gitservers/route";
+import { routeJiraConfiguration } from "@/modules/platform/configuration/modules/jira/route";
+import { routeChatAssistantConfiguration } from "@/modules/platform/configuration/modules/chat-assistant/route";
+import { routeCodemieConfiguration } from "@/modules/platform/configuration/modules/codemie/route";
 import type { NavItem } from "./types";
 
 /**

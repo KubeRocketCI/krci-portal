@@ -1,15 +1,15 @@
-import React from "react";
-import { useTypedFormContext } from "../../../hooks/useFormContext";
-import { STAGE_FORM_NAMES } from "../../../names";
-import { ConfigMap, inClusterName, k8sConfigMapConfig, krciConfigMapNames } from "@my-project/shared";
-import { useWatchList } from "@/k8s/api/hooks/useWatchList";
-import { ValueOf } from "@/core/types/global";
 import { FormSelect } from "@/core/providers/Form/components/FormSelect";
-import { routeClustersConfiguration } from "@/modules/platform/configuration/pages/clusters/route";
-import { Link } from "@tanstack/react-router";
+import { ValueOf } from "@/core/types/global";
+import { useConfigMapWatchList } from "@/k8s/api/groups/Core/ConfigMap";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { useClusterStore } from "@/k8s/store";
+import { routeClustersConfiguration } from "@/modules/platform/configuration/modules/clusters/route";
+import { inClusterName, krciConfigMapNames } from "@my-project/shared";
+import { Link } from "@tanstack/react-router";
+import React from "react";
 import { useShallow } from "zustand/react/shallow";
+import { useTypedFormContext } from "../../../hooks/useFormContext";
+import { STAGE_FORM_NAMES } from "../../../names";
 
 const defaultClusterOption = {
   label: inClusterName,
@@ -25,9 +25,7 @@ export const Cluster = () => {
     formState: { errors },
   } = useTypedFormContext();
 
-  const configMapListWatch = useWatchList<ConfigMap>({
-    resourceConfig: k8sConfigMapConfig,
-  });
+  const configMapListWatch = useConfigMapWatchList();
 
   const configMapList = configMapListWatch.dataArray;
 

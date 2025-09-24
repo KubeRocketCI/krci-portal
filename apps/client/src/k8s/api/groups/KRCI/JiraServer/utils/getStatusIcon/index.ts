@@ -1,23 +1,34 @@
 import { STATUS_COLOR } from "@/k8s/constants/colors";
 import { K8sResourceStatusIcon } from "@/k8s/types";
-import { CircleCheck, CircleX } from "lucide-react";
+import { getJiraServerStatus, JiraServer, jiraServerStatus } from "@my-project/shared";
+import { CircleCheck, CircleX, ShieldQuestion } from "lucide-react";
 
-export const getStatusIcon = (connected: boolean | undefined): K8sResourceStatusIcon => {
-  if (connected === undefined) {
+export const getJiraServerStatusIcon = (jiraServer: JiraServer | undefined): K8sResourceStatusIcon => {
+  if (jiraServer === undefined) {
+    return {
+      component: ShieldQuestion,
+      color: STATUS_COLOR.UNKNOWN,
+    };
+  }
+
+  const { status } = getJiraServerStatus(jiraServer);
+
+  if (status === jiraServerStatus.finished) {
+    return {
+      component: CircleCheck,
+      color: STATUS_COLOR.SUCCESS,
+    };
+  }
+
+  if (status === jiraServerStatus.error) {
     return {
       component: CircleX,
       color: STATUS_COLOR.ERROR,
     };
   }
 
-  if (connected) {
-    return {
-      component: CircleCheck,
-      color: STATUS_COLOR.SUCCESS,
-    };
-  }
   return {
-    component: CircleX,
-    color: STATUS_COLOR.ERROR,
+    component: ShieldQuestion,
+    color: STATUS_COLOR.UNKNOWN,
   };
 };

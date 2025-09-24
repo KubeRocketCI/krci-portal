@@ -19,7 +19,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
 import { useCodebaseImageStreamWatchList } from "@/k8s/api/groups/KRCI/CodebaseImageStream";
 import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
-import { useConfigMapWatchItem } from "@/k8s/api/groups/core/ConfigMap";
+import { useConfigMapWatchItem } from "@/k8s/api/groups/Core/ConfigMap";
 import { useTriggerTemplateWatchItem } from "@/k8s/api/groups/Tekton/TriggerTemplate";
 import { routeStageDetails } from "../route";
 

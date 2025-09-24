@@ -1,5 +1,8 @@
 import z from "zod";
-import { kubeObjectBaseSchema, kubeObjectMetadataSchema } from "../../../core";
+import {
+  kubeObjectBaseSchema,
+  kubeObjectMetadataSchema,
+} from "../../../common";
 import { taskRunLabels } from "./labels";
 import {
   paramValueSchema,

@@ -1,4 +1,4 @@
-import { K8sResourceConfig } from "../../../core";
+import { K8sResourceConfig } from "../../../common";
 
 export const k8sCustomRunConfig = {
   apiVersion: "tekton.dev/v1beta1",

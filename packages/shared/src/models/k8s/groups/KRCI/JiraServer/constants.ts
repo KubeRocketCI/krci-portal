@@ -1,4 +1,5 @@
-import { K8sResourceConfig } from "../../../core";
+import { K8sResourceConfig } from "../../../common";
+import { jiraServerStatusEnum } from "./schema";
 
 export const k8sJiraServerConfig = {
   apiVersion: "v2.edp.epam.com/v1",
@@ -8,3 +9,5 @@ export const k8sJiraServerConfig = {
   singularName: "jiraserver",
   pluralName: "jiraservers",
 } as const satisfies K8sResourceConfig;
+
+export const jiraServerStatus = jiraServerStatusEnum.enum;

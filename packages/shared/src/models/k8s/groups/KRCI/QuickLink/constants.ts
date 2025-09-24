@@ -1,4 +1,4 @@
-import { K8sResourceConfig } from "../../../core";
+import { K8sResourceConfig } from "../../../common";
 import { quickLinkTypeEnum, systemQuickLinksEnum } from "./schema";
 
 export const k8sQuickLinkConfig = {

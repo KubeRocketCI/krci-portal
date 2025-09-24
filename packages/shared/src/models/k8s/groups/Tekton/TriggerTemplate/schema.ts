@@ -4,7 +4,7 @@ import {
   kubeObjectBaseSchema,
   kubeObjectDraftMetadataSchema,
   kubeObjectMetadataSchema,
-} from "../../../core";
+} from "../../../common";
 import { pipelineTypeEnum } from "../Pipeline";
 import { triggerTemplateLabels } from "./labels";
 

@@ -1,5 +1,5 @@
 import { useResourceActionListContext } from "@/core/providers/ResourceActionList/hooks";
-import { QuickLinkActionsMenu } from "@/modules/platform/configuration/components/QuickLinkActionsMenu";
+import { QuickLinkActionsMenu } from "@/modules/platform/configuration/modules/quicklinks/components/QuickLinkActionsMenu";
 import { QuickLink } from "@my-project/shared";
 
 export const QuickLinkActions = () => {

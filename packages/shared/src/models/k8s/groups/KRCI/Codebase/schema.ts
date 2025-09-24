@@ -4,8 +4,8 @@ import {
   kubeObjectBaseDraftSchema,
   kubeObjectMetadataSchema,
   kubeObjectDraftMetadataSchema,
-} from "../../../core";
-import { secretDraftSchema, secretSchema } from "../../default";
+} from "../../../common";
+import { secretDraftSchema, secretSchema } from "../../Core";
 import { codebaseLabels } from "./labels";
 import { ciToolEnum, krciCommonLabelsSchema } from "../common";
 

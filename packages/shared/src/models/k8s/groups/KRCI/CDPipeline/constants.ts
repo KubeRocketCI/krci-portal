@@ -1,4 +1,4 @@
-import { K8sResourceConfig } from "../../../core/types";
+import { K8sResourceConfig } from "../../../common/types";
 import {
   cdPipelineDeploymentTypeEnum,
   cdPipelineResultEnum,

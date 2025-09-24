@@ -1,4 +1,4 @@
-import { K8sResourceConfig } from "../../../core/types";
+import { K8sResourceConfig } from "../../../common/types";
 
 export const k8sCodemieProjectConfig = {
   apiVersion: "edp.epam.com/v1alpha1",

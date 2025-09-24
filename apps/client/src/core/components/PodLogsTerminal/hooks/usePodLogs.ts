@@ -1,7 +1,7 @@
 import { trpc } from "@/core/clients/trpc";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { usePodWatchItem } from "@/k8s/api/groups/core/Pod";
+import { usePodWatchItem } from "@/k8s/api/groups/Core/Pod";
 
 interface UsePodLogsParams {
   clusterName: string;

@@ -1,4 +1,4 @@
-import { K8sResourceConfig } from "../../../core";
+import { K8sResourceConfig } from "../../../common";
 import { pipelineTypeEnum } from "./schema";
 import { pipelineLabels } from "./labels";
 

@@ -1,5 +1,5 @@
 import z from "zod";
-import { kubeObjectBaseSchema } from "../../../core";
+import { kubeObjectBaseSchema } from "../../../common";
 
 export const codebaseImageStreamTagSchema = z.object({
   created: z.string(),

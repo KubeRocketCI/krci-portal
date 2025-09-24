@@ -4,8 +4,8 @@ import {
   kubeObjectBaseSchema,
   kubeObjectDraftMetadataSchema,
   kubeObjectMetadataSchema,
-} from "../../../core";
-import { secretDraftSchema, secretSchema } from "../../default";
+} from "../../../common";
+import { secretDraftSchema, secretSchema } from "../../Core";
 import { codemieSecretLabels } from "./labels";
 
 export const codemieSecretRefSchema = z.object({
