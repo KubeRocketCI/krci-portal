@@ -1,3 +1,4 @@
+import { useBasicCRUD } from "@/k8s/api/hooks/useBasicCRUD";
 import {
   createUsePermissionsHook,
   createUseWatchListHook,
@@ -6,6 +7,21 @@ import {
   UseWatchListParamsWithoutResourceConfig,
 } from "@/k8s/api/utils/hook-creators";
 import { k8sJiraServerConfig, JiraServer } from "@my-project/shared";
+
+export const useJiraServerCRUD = () => {
+  const { triggerCreate, triggerEdit, triggerDelete, mutations } = useBasicCRUD(k8sJiraServerConfig);
+
+  return {
+    triggerCreateJiraServer: triggerCreate,
+    triggerEditJiraServer: triggerEdit,
+    triggerDeleteJiraServer: triggerDelete,
+    mutations: {
+      jiraServerCreateMutation: mutations.createMutation,
+      jiraServerEditMutation: mutations.editMutation,
+      jiraServerDeleteMutation: mutations.deleteMutation,
+    },
+  };
+};
 
 export const useJiraServerPermissions = createUsePermissionsHook(k8sJiraServerConfig);
 export const useJiraServerWatchList = (params?: UseWatchListParamsWithoutResourceConfig<JiraServer>) =>

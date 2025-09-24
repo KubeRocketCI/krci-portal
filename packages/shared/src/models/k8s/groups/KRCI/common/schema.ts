@@ -1,5 +1,5 @@
 import z from "zod";
-import { k8sOperation } from "../../../core";
+import { k8sOperation } from "../../../common";
 import { krciCommonLabels } from "./labels";
 
 export const ciToolEnum = z.enum(["tekton"]);

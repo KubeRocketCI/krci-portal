@@ -3,7 +3,7 @@ import {
   kubeObjectBaseDraftSchema,
   kubeObjectBaseSchema,
   kubeObjectMetadataSchema,
-} from "../../../core";
+} from "../../../common";
 
 // Common schemas
 const intOrStringSchema = z.union([z.string(), z.number().int()]);

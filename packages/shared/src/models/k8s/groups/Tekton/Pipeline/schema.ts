@@ -4,7 +4,7 @@ import {
   kubeObjectBaseSchema,
   kubeObjectDraftMetadataSchema,
   kubeObjectMetadataSchema,
-} from "../../../core";
+} from "../../../common";
 import { pipelineLabels } from "./labels";
 import {
   pipelineRefSchema,

@@ -5,7 +5,7 @@ import { StageActionsMenu } from "@/modules/platform/cdpipelines/components/Stag
 import { Box, Stack } from "@mui/material";
 import { quickLinkLabels, systemQuickLink } from "@my-project/shared";
 import { routeStageDetails } from "../../route";
-import { routeArgocdConfiguration } from "@/modules/platform/configuration/pages/argocd/route";
+import { routeArgocdConfiguration } from "@/modules/platform/configuration/modules/argocd/route";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { routeCDPipelineDetails } from "../../../details/route";
 import { useQuickLinksUrlListWatch, useStageListWatch, useCDPipelineWatch, useStageWatch } from "../../hooks";

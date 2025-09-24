@@ -26,7 +26,7 @@ import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { QuickLink } from "@/core/components/QuickLink";
 import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
-import { routeArgocdConfiguration } from "@/modules/platform/configuration/pages/argocd/route";
+import { routeArgocdConfiguration } from "@/modules/platform/configuration/modules/argocd/route";
 import { Button } from "@/core/components/ui/button";
 
 // const formatDate = (date: string): string => {

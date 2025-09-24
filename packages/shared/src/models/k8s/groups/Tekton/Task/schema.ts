@@ -2,7 +2,7 @@ import {
   kubeObjectBaseDraftSchema,
   kubeObjectBaseSchema,
   kubeObjectDraftMetadataSchema,
-} from "../../../core";
+} from "../../../common";
 
 import * as z from "zod";
 

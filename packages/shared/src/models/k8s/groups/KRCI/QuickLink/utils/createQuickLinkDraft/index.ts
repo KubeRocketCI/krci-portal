@@ -1,15 +1,19 @@
 import z, { ZodError } from "zod";
 import { k8sQuickLinkConfig } from "../../constants";
-import {
-  quickLinkDraftSchema,
-  createQuickLinkDraftInputSchema,
-} from "../../schema";
-import { QuickLinkDraft, CreateQuickLinkDraftInput } from "../../types";
+import { quickLinkDraftSchema } from "../../schema";
+import { QuickLinkDraft } from "../../types";
 
 const { kind, apiVersion } = k8sQuickLinkConfig;
 
+const createQuickLinkDraftInputSchema = z.object({
+  name: z.string(),
+  icon: z.string(),
+  url: z.string(),
+  visible: z.boolean(),
+});
+
 export const createQuickLinkDraft = (
-  input: CreateQuickLinkDraftInput
+  input: z.infer<typeof createQuickLinkDraftInputSchema>
 ): QuickLinkDraft => {
   const parsedInput = createQuickLinkDraftInputSchema.safeParse(input);
 

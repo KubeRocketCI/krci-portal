@@ -1,5 +1,8 @@
 import z from "zod";
-import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema } from "../../../core";
+import {
+  kubeObjectBaseDraftSchema,
+  kubeObjectBaseSchema,
+} from "../../../common";
 
 export const applicationHealthStatusSchema = z.enum([
   "healthy",

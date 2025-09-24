@@ -46,6 +46,7 @@
     "dagre": "^0.8.5",
     "dotenv": "^16.4.7",
     "humanize-duration": "^3.33.0",
+    "immer": "^10.1.3",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "lucide-react": "^0.534.0",
