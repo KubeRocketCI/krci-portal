@@ -1,4 +1,8 @@
-import { LANGUAGE_ICON_MAPPING, FRAMEWORK_ICON_MAPPING, BUILD_TOOL_ICON_MAPPING } from "@/k8s/configs/icon-mappings";
+import {
+  LANGUAGE_ICON_MAPPING,
+  FRAMEWORK_ICON_MAPPING,
+  BUILD_TOOL_ICON_MAPPING,
+} from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
 import { CODEBASE_COMMON_BUILD_TOOLS, CODEBASE_COMMON_FRAMEWORKS, CODEBASE_COMMON_LANGUAGES } from "../index";
 import { CodebaseInterface, CodebaseMappingKey } from "../types";
 

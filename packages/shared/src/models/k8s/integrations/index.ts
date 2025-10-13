@@ -12,3 +12,4 @@ export * from "./sso";
 export * from "./registry";
 export * from "./codemie";
 export * from "./gitserver";
+export * from "./gitfusion";

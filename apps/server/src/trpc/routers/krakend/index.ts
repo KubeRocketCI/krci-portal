@@ -1,14 +1,22 @@
 import { t } from "../..";
 import {
   getPipelineRunLogsProcedure,
-  getDepTrackProjectMetricsProcedure,
-  getDepTrackProjectProcedure,
+  getDepTrackProjectDataProcedure,
   getAllPipelineRunsLogsProcedure,
+  getSonarQubeProjectDataProcedure,
+  getRepositoryListProcedure,
+  getOrganizationListProcedure,
+  getBranchListProcedure,
+  invalidateBranchListCacheProcedure,
 } from "./procedures";
 
 export const krakendRouter = t.router({
   getPipelineRunLogs: getPipelineRunLogsProcedure,
   getAllPipelineRunsLogs: getAllPipelineRunsLogsProcedure,
-  getDepTrackProject: getDepTrackProjectProcedure,
-  getDepTrackProjectMetrics: getDepTrackProjectMetricsProcedure,
+  getDepTrackProject: getDepTrackProjectDataProcedure,
+  getSonarQubeProject: getSonarQubeProjectDataProcedure,
+  getRepositoryList: getRepositoryListProcedure,
+  getOrganizationList: getOrganizationListProcedure,
+  getBranchList: getBranchListProcedure,
+  invalidateBranchListCache: invalidateBranchListCacheProcedure,
 });

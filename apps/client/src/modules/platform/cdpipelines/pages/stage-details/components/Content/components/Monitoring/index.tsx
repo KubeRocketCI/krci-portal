@@ -12,7 +12,7 @@ export const Monitoring = () => {
 
   const quickLinks = quickLinksUrlListWatch.data?.quickLinkList;
   const monitoringQuickLink = quickLinks?.find((quickLink) => quickLink.metadata.name === systemQuickLink.monitoring);
-  const monitoringQuickLinkProvider = monitoringQuickLink?.metadata.labels[quickLinkLabels.provider];
+  const monitoringQuickLinkProvider = monitoringQuickLink?.metadata.labels?.[quickLinkLabels.provider];
 
   const stage = stageWatch.query.data;
   const namespace = stage?.spec.namespace;
