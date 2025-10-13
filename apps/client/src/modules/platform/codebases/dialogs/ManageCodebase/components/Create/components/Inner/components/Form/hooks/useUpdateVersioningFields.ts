@@ -22,7 +22,7 @@ export const useUpdateVersioningFields = () => {
     }
 
     if (versioningTypeFieldValue === codebaseVersioning.default) {
-      setValue(CODEBASE_FORM_NAMES.versioningStartFrom.name, undefined, {
+      setValue(CODEBASE_FORM_NAMES.versioningStartFrom.name, "", {
         shouldDirty: false,
       });
     }

@@ -7,9 +7,9 @@ import {
   CI_TOOL_ICON_MAPPING,
   FRAMEWORK_ICON_MAPPING,
   LANGUAGE_ICON_MAPPING,
-} from "@/k8s/configs/icon-mappings";
+} from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
 import { MAIN_COLOR } from "@/k8s/constants/colors";
-import { RESOURCE_ICON_NAMES } from "@/k8s/icons/sprites/Resources/names";
+import { RESOURCE_ICON_NAMES } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { Chip, Grid, Tooltip, Typography } from "@mui/material";
 import { DefaultTheme } from "@mui/styles/defaultTheme";

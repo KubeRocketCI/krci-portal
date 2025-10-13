@@ -57,7 +57,7 @@ export const useSecretEditForm = ({
         },
       });
     },
-    [handleClosePanel, secretPermissions.data.patch.allowed, triggerEditSecret]
+    [handleClosePanel, secret, secretPermissions.data.patch.allowed, triggerEditSecret]
   );
 
   return React.useMemo(

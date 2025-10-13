@@ -2,8 +2,7 @@
   "name": "@my-project/client",
   "type": "module",
   "scripts": {
-    "lint": "echo \"Linting client\" ",
-    "lint:_": "eslint .",
+    "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "format": "prettier --write .",
     "tsc": "tsc --noEmit --skipLibCheck --pretty",

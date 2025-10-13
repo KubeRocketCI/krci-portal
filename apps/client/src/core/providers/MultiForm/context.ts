@@ -4,7 +4,7 @@ import { MultiFormContextProviderValue } from './types';
 
 export const MultiFormContext = React.createContext<MultiFormContextProviderValue<string>>({
   forms: {},
-  sharedForm: {} as UseFormReturn<any, any, undefined>,
+  sharedForm: {} as UseFormReturn<Record<string, unknown>>,
   resetAll: () => {
     //
   },

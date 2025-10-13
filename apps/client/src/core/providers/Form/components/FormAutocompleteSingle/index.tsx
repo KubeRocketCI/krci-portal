@@ -127,5 +127,7 @@ export const FormAutocompleteSingle = FormAutocompleteSingleInner as <
   TOption extends SelectOption = SelectOption,
   TFormValues extends Record<string, unknown> = Record<string, unknown>,
 >(
-  props: FormAutocompleteSingleProps<TOption, TFormValues> & { ref?: React.ForwardedRef<HTMLInputElement> }
+  props: FormAutocompleteSingleProps<TOption, TFormValues> & {
+    ref?: React.ForwardedRef<HTMLInputElement>;
+  }
 ) => React.JSX.Element;

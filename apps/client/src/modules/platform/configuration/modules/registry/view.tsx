@@ -1,31 +1,20 @@
-import {
-  ContainerRegistryType,
-  containerRegistryTypeLabelMap,
-  krciConfigMapNames,
-  registrySecretName,
-} from "@my-project/shared";
-import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
-import { ManageRegistry } from "./components/ManageRegistry";
 import { EmptyList } from "@/core/components/EmptyList";
 import { ErrorContent } from "@/core/components/ErrorContent";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionSummary, Typography, AccordionDetails, Grid } from "@mui/material";
-import React from "react";
-import { pageDescription } from "../gitops/constants";
+import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWatchKRCIConfig";
 import { useSecretPermissions, useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
-import { useConfigMapWatchList } from "@/k8s/api/groups/Core/ConfigMap";
-import { ValueOf } from "@/core/types/global";
 import { useServiceAccountWatchItem } from "@/k8s/api/groups/Core/ServiceAccount";
+import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
+import { Accordion, AccordionDetails, AccordionSummary, Grid, Typography } from "@mui/material";
+import { ContainerRegistryType, containerRegistryTypeLabelMap, registrySecretName } from "@my-project/shared";
+import React from "react";
+import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
+import { pageDescription } from "../gitops/constants";
+import { ManageRegistry } from "./components/ManageRegistry";
 
 export default function RegistryConfigurationPage() {
-  const configMapListWatch = useConfigMapWatchList();
-
-  const configMapList = configMapListWatch.dataArray;
-
-  const krciConfigMap = configMapList.find((configMap) =>
-    Object.values(krciConfigMapNames).includes(configMap.metadata.name as ValueOf<typeof krciConfigMapNames>)
-  );
+  const krciConfigMapWatch = useWatchKRCIConfig();
+  const krciConfigMap = krciConfigMapWatch.data;
 
   const pushAccountSecretWatch = useSecretWatchItem({
     name: registrySecretName["kaniko-docker-config"],
@@ -40,13 +29,13 @@ export default function RegistryConfigurationPage() {
   });
 
   const error =
-    configMapListWatch.query.error ||
+    krciConfigMapWatch.error ||
     pullAccountSecretWatch.query.error ||
     pushAccountSecretWatch.query.error ||
     tektonServiceAccountWatch.query.error;
 
   const isLoading =
-    !configMapListWatch.isReady ||
+    krciConfigMapWatch.isLoading ||
     !pullAccountSecretWatch.isReady ||
     !pushAccountSecretWatch.isReady ||
     !tektonServiceAccountWatch.isReady;

@@ -1,7 +1,6 @@
-import { DialogProps } from '../../../../../../../../../../../../providers/Dialog/types';
+import { DialogProps } from "@/core/providers/Dialog/types";
 
-export interface CommentDialogProps
-  extends DialogProps<{
-    onFormSubmit: (comment: string) => void;
-    title: string;
-  }> {}
+export type CommentDialogProps = DialogProps<{
+  onFormSubmit: (comment: string) => void;
+  title: string;
+}>;

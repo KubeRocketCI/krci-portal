@@ -45,7 +45,23 @@ import ReactSymbol from "@/assets/icons/k8s/react-.svg?react";
 import Tekton from "@/assets/icons/k8s/tekton.svg?react";
 import Terraform from "@/assets/icons/k8s/terraform.svg?react";
 import Vue from "@/assets/icons/k8s/vue.svg?react";
-import { RESOURCE_ICON_NAMES } from "@/k8s/icons/sprites/Resources/names";
+import Pnpm from "@/assets/icons/k8s/pnpm.svg?react";
+import { RESOURCE_ICON_NAMES } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
+
+interface UseSpriteSymbolProps {
+  name: string;
+  [key: string]: string | number;
+}
+
+export const UseSpriteSymbol = ({ name, ...props }: UseSpriteSymbolProps) => {
+  return (
+    <span style={{ display: "block", lineHeight: 0 }}>
+      <svg {...props}>
+        <use xlinkHref={`#${name}`} />
+      </svg>
+    </span>
+  );
+};
 
 export const K8sRelatedIconsSVGSprite = () => {
   return (
@@ -103,6 +119,7 @@ export const K8sRelatedIconsSVGSprite = () => {
       <CMake id={RESOURCE_ICON_NAMES.C_MAKE} />
       <C id={RESOURCE_ICON_NAMES.C} />
       <CPP id={RESOURCE_ICON_NAMES.CPP} />
+      <Pnpm id={RESOURCE_ICON_NAMES.PNPM} />
     </svg>
   );
 };

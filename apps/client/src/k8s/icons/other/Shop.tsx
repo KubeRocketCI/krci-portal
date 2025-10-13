@@ -1,4 +1,5 @@
-import { SvgIconProps } from "@mui/material";
+import { SvgIconProps } from '@mui/material';
+import React from 'react';
 
 export const Shop = (props: SvgIconProps) => {
   return (

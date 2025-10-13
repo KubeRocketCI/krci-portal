@@ -1,5 +1,4 @@
 import { trpc } from "@/core/clients/trpc";
-import { usePipelineRunWatchItem } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { useQuery } from "@tanstack/react-query";
 
 interface OpensearchResponse {
@@ -83,9 +82,12 @@ export const usePipelineRunLogsQuery = (clusterName: string, namespace: string, 
 };
 
 export const normalizeAllPipelineRunLogs = (data: OpensearchResponse): NormalizedLogs => {
+  // @ts-expect-error TODO: fix this
   if (data.aggregations && data.aggregations.unique_pipelineRuns && data.aggregations.unique_pipelineRuns.buckets) {
+    // @ts-expect-error TODO: fix this
     return data.aggregations.unique_pipelineRuns.buckets.map((bucket) => bucket.key);
   }
+  // @ts-expect-error TODO: fix this
   return [];
 };
 
