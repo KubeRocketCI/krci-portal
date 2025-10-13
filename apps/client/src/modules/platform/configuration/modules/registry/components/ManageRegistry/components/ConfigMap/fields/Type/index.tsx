@@ -4,9 +4,9 @@ import { CONFIG_MAP_FORM_NAMES, PUSH_ACCOUNT_FORM_NAMES, SHARED_FORM_NAMES } fro
 import { useDataContext } from "../../../../providers/Data/hooks";
 import { FormRadioGroup } from "@/core/providers/Form/components/FormRadioGroup";
 import { FieldEvent, FORM_MODES } from "@/core/types/forms";
-import { REGISTRY_TYPE_ICON_MAPPING } from "@/k8s/configs/icon-mappings";
-import { RESOURCE_ICON_NAMES } from "@/k8s/icons/sprites/Resources/names";
-import { UseSpriteSymbol } from "@/k8s/icons/UseSpriteSymbol";
+import { REGISTRY_TYPE_ICON_MAPPING } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
+import { RESOURCE_ICON_NAMES } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
+import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { K8sRelatedIconsSVGSprite } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import {
   ContainerRegistryPlatform,

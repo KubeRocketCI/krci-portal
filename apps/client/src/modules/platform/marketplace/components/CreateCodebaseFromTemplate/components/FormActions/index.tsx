@@ -1,0 +1,124 @@
+import { useDialogOpener } from "@/core/providers/Dialog/hooks";
+import { useCodebaseCRUD } from "@/k8s/api/groups/KRCI/Codebase";
+import { SuccessDialog } from "@/modules/platform/codebases/dialogs/Success";
+import { routeComponentDetails } from "@/modules/platform/codebases/pages/details/route";
+import { Box, Button, Stack, useTheme } from "@mui/material";
+import { codebaseDeploymentScript, CodebaseDraft, createCodebaseDraftObject } from "@my-project/shared";
+import React from "react";
+import { useTypedFormContext } from "../../hooks/useFormContext";
+import { useCurrentDialog } from "../../providers/CurrentDialog/hooks";
+import { CreateCodebaseFromTemplateFormValues } from "../../types";
+import { useClusterStore } from "@/k8s/store";
+import { useShallow } from "zustand/react/shallow";
+
+export const FormActions = () => {
+  const theme = useTheme();
+  const {
+    state: { closeDialog },
+  } = useCurrentDialog();
+
+  const openSuccessDialog = useDialogOpener(SuccessDialog);
+
+  const defaultNamespace = useClusterStore(useShallow((state) => state.defaultNamespace));
+
+  const {
+    reset,
+    formState: { isDirty },
+    handleSubmit,
+  } = useTypedFormContext();
+
+  const onSuccess = React.useCallback(
+    (codebaseData: CodebaseDraft) => {
+      openSuccessDialog({
+        dialogTitle: `Create Application`,
+        title: `Your new Application is created`,
+        description: `Browse your new Application and start working with it.`,
+        route: {
+          to: routeComponentDetails.to,
+          params: {
+            namespace: codebaseData.metadata.namespace || defaultNamespace,
+            name: codebaseData.metadata.name,
+          },
+        },
+      });
+
+      closeDialog();
+      reset();
+    },
+    [closeDialog, defaultNamespace, openSuccessDialog, reset]
+  );
+
+  const {
+    triggerCreateCodebase,
+    mutations: { codebaseCreateMutation },
+  } = useCodebaseCRUD();
+
+  const onSubmit = React.useCallback(
+    async (values: CreateCodebaseFromTemplateFormValues) => {
+      const codebaseDraft = createCodebaseDraftObject({
+        name: values.name,
+        gitServer: values.gitServer,
+        gitUrlPath: values.gitUrlPath,
+        type: values.type,
+        buildTool: values.buildTool,
+        defaultBranch: values.defaultBranch,
+        deploymentScript: codebaseDeploymentScript["helm-chart"],
+        emptyProject: values.emptyProject,
+        framework: values.framework,
+        lang: values.lang,
+        private: values.private,
+        repository: {
+          url: values.repositoryUrl,
+        },
+        strategy: values.strategy,
+        versioning: {
+          type: values.versioningType,
+          startFrom: values.versioningStartFrom,
+        },
+        ciTool: values.ciTool,
+      });
+
+      await triggerCreateCodebase({
+        data: {
+          codebase: codebaseDraft,
+          codebaseAuth: null,
+        },
+        callbacks: {
+          onSuccess: () => {
+            onSuccess(codebaseDraft);
+          },
+        },
+      });
+    },
+    [triggerCreateCodebase, onSuccess]
+  );
+
+  const handleResetFields = React.useCallback(() => {
+    reset();
+  }, [reset]);
+
+  return (
+    <Stack direction="row" spacing={2} justifyContent="space-between" width="100%">
+      <Stack direction="row" spacing={1}>
+        <Box sx={{ color: theme.palette.text.primary }}>
+          <Button onClick={closeDialog} size="small" color="inherit">
+            cancel
+          </Button>
+        </Box>
+        <Button onClick={handleResetFields} size="small" disabled={!isDirty}>
+          undo changes
+        </Button>
+      </Stack>
+      <Button
+        type={"submit"}
+        onClick={handleSubmit(onSubmit)}
+        variant={"contained"}
+        color={"primary"}
+        size="small"
+        disabled={!isDirty || codebaseCreateMutation.isPending}
+      >
+        create
+      </Button>
+    </Stack>
+  );
+};

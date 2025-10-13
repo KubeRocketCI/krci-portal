@@ -5,9 +5,9 @@ import { GitProvider, gitProvider, gitUser } from "@my-project/shared";
 import { K8sRelatedIconsSVGSprite } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { FieldEvent, FORM_MODES } from "@/core/types/forms";
 import { FormRadioGroup } from "@/core/providers/Form/components/FormRadioGroup";
-import { UseSpriteSymbol } from "@/k8s/icons/UseSpriteSymbol";
-import { RESOURCE_ICON_NAMES } from "@/k8s/icons/sprites/Resources/names";
-import { GIT_PROVIDER_ICON_MAPPING } from "@/k8s/configs/icon-mappings";
+import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
+import { RESOURCE_ICON_NAMES } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
+import { GIT_PROVIDER_ICON_MAPPING } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
 import { mapArrayToSelectOptions } from "@/core/utils/forms/mapToSelectOptions";
 
 const gitProviderOptions = mapArrayToSelectOptions(Object.values(gitProvider));

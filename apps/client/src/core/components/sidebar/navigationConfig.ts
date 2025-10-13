@@ -20,6 +20,7 @@ import { routeJiraConfiguration } from "@/modules/platform/configuration/modules
 import { routeChatAssistantConfiguration } from "@/modules/platform/configuration/modules/chat-assistant/route";
 import { routeCodemieConfiguration } from "@/modules/platform/configuration/modules/codemie/route";
 import type { NavItem } from "./types";
+import { routeMarketplace } from "@/modules/platform/marketplace/route";
 
 /**
  * Creates the navigation configuration for the sidebar
@@ -78,7 +79,8 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
       title: "Marketplace",
       icon: ShoppingCart,
       route: {
-        to: "/home",
+        to: routeMarketplace.to,
+        params: clusterDefaultParams,
       },
     },
     {

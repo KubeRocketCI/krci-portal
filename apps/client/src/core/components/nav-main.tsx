@@ -10,7 +10,7 @@ import {
   SidebarMenuItem,
 } from "@/core/components/ui/sidebar";
 import { Link } from "@tanstack/react-router";
-import { NavItem } from "./app-sidebar";
+import { NavItem } from "./sidebar/types";
 
 export function NavMain({
   items,
@@ -25,7 +25,7 @@ export function NavMain({
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip={item.title} className="p-2" isActive={item.isActive}>
+            <SidebarMenuButton asChild tooltip={item.title} className="p-2">
               <Link
                 to={item.route?.to || "/"}
                 params={item.route?.params}

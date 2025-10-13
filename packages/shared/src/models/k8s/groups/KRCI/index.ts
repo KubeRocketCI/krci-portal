@@ -12,3 +12,4 @@ export * from "./GitServer";
 export * from "./JiraServer";
 export * from "./QuickLink";
 export * from "./Stage";
+export * from "./Template";

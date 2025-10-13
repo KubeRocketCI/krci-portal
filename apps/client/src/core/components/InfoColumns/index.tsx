@@ -1,7 +1,7 @@
 import { Grid, GridSize, Typography } from "@mui/material";
 import React from "react";
 import { InfoColumnsProps } from "./types";
-import { UseSpriteSymbol } from "@/k8s/icons/UseSpriteSymbol";
+import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 
 export const InfoColumns = ({ infoRows }: InfoColumnsProps) => {
   return (

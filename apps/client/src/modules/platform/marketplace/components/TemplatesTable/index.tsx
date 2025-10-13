@@ -1,0 +1,91 @@
+import { EmptyList } from "@/core/components/EmptyList";
+import { Table } from "@/core/components/Table";
+import { useDialogOpener } from "@/core/providers/Dialog/hooks";
+import { useFilterContext } from "@/core/providers/Filter/hooks";
+import { useViewModeContext } from "@/core/providers/ViewMode/hooks";
+import { VIEW_MODES } from "@/core/providers/ViewMode/types";
+import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
+import { useTemplatePermissions, useTemplateWatchList } from "@/k8s/api/groups/KRCI/Template";
+import { TABLE } from "@/k8s/constants/tables";
+import { Shop } from "@/k8s/icons/other/Shop";
+import { IconButton, Stack, Tooltip, useTheme } from "@mui/material";
+import { Template } from "@my-project/shared";
+import { Grid3x2, Rows3 } from "lucide-react";
+import React from "react";
+import { CreateCodebaseFromTemplateDialog } from "../CreateCodebaseFromTemplate";
+import { TemplateFilter } from "../Filter";
+import { TemplatesWarning } from "../TemplatesWarning";
+import { useColumns } from "./hooks/useColumns";
+
+export const TemplatesTable = () => {
+  const columns = useColumns();
+
+  const templatePermissions = useTemplatePermissions();
+  const templatesWatch = useTemplateWatchList();
+  const templates = templatesWatch.dataArray;
+
+  const openCreateCodebaseFromTemplateDialog = useDialogOpener(CreateCodebaseFromTemplateDialog);
+
+  const handleTemplateClick = React.useCallback(
+    (template: Template) => {
+      if (template) {
+        openCreateCodebaseFromTemplateDialog({
+          template,
+        });
+      }
+    },
+    [openCreateCodebaseFromTemplateDialog]
+  );
+
+  const errors = templatesWatch.query.error ? [templatesWatch.query.error] : undefined;
+
+  const gitServersWatch = useGitServerWatchList();
+  const gitServers = gitServersWatch.dataArray;
+  const hasAtLeastOneGitServer = gitServers?.length > 0;
+
+  const { filterFunction } = useFilterContext();
+
+  const { handleChangeViewMode } = useViewModeContext();
+  const theme = useTheme();
+
+  return (
+    <Table<Template>
+      id={TABLE.TEMPLATE_LIST.id}
+      name={TABLE.TEMPLATE_LIST.name}
+      errors={errors}
+      columns={columns}
+      data={templates!}
+      isLoading={templates === null && (!errors || !errors.length)}
+      handleRowClick={templatePermissions.data.create.allowed ? (_event, row) => handleTemplateClick(row) : undefined}
+      emptyListComponent={
+        hasAtLeastOneGitServer ? (
+          <TemplatesWarning />
+        ) : (
+          <EmptyList missingItemName={"templates"} icon={<Shop width={128} height={128} fill="#A2A7B7" />} />
+        )
+      }
+      slots={{
+        header: (
+          <>
+            <Stack direction="row" spacing={0} alignItems={"center"} justifyContent="space-between">
+              <TemplateFilter />
+              <Stack direction="row" alignItems="center">
+                <Tooltip title={"Block View"}>
+                  <IconButton onClick={() => handleChangeViewMode(VIEW_MODES.GRID)} size="large">
+                    <Grid3x2 color={theme.palette.action.active} />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title={"List View"}>
+                  <IconButton onClick={() => handleChangeViewMode(VIEW_MODES.TABLE)} size="large">
+                    <Rows3 color={theme.palette.primary.main} />
+                  </IconButton>
+                </Tooltip>
+              </Stack>
+            </Stack>
+          </>
+        ),
+      }}
+      filterFunction={filterFunction}
+    />
+  );
+};

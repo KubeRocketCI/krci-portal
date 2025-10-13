@@ -1,4 +1,4 @@
-import { UseSpriteSymbol } from "@/k8s/icons/UseSpriteSymbol";
+import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { FormRadioGroup } from "@/core/providers/Form/components/FormRadioGroup";
 import { FormRadioOption } from "@/core/providers/Form/components/FormRadioGroup/types";
 import { FormTextField } from "@/core/providers/Form/components/FormTextField";

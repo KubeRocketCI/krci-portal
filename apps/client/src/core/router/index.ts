@@ -1,13 +1,11 @@
-import { createRootRouteWithContext, createRoute, createRouter, redirect } from "@tanstack/react-router";
+import { createRoute, createRouter, redirect } from "@tanstack/react-router";
 import { LoadingProgressBar } from "../components/ui/LoadingProgressBar";
 import { routeHome } from "../../modules/home/pages/home/route";
 import { routeComponentList } from "../../modules/platform/codebases/pages/list/route";
 import { routeAuthCallback } from "../auth/pages/callback/route";
 import { routeAuthLogin } from "../auth/pages/login/route";
-import NotFound from "../components/NotFound";
 import ContentLayout from "../components/PageLayout";
-import Root from "./components/root";
-import { MyRouterContext, RoutePath } from "./types";
+import { rootRoute } from "./_root";
 import { routeComponentDetails } from "../../modules/platform/codebases/pages/details/route";
 import { routeCDPipelineList } from "@/modules/platform/cdpipelines/pages/list/route";
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
@@ -32,34 +30,7 @@ import { routeSonarConfiguration } from "@/modules/platform/configuration/module
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import { routeTaskList } from "@/modules/platform/tasks/pages/list/route";
 import { routeTaskDetails } from "@/modules/platform/tasks/pages/details/route";
-
-export const rootRoute = createRootRouteWithContext<MyRouterContext>()({
-  component: Root,
-  loader: () => void 0,
-  notFoundComponent: NotFound,
-  beforeLoad: ({ context, location }) => {
-    const queryClient = context.queryClient;
-
-    const isAuthPage = location.pathname === routeAuthLogin.fullPath;
-    const isAuthenticated = queryClient.getQueryData(["auth.me"]);
-    const isAuthCallbackPage = location.pathname === routeAuthCallback.fullPath;
-
-    if (isAuthPage && isAuthenticated) {
-      throw redirect({
-        to: routeHome.fullPath,
-      });
-    }
-
-    if (!isAuthenticated && !isAuthPage && !isAuthCallbackPage) {
-      throw redirect({
-        to: routeAuthLogin.fullPath,
-        search: {
-          redirect: location.href as RoutePath,
-        },
-      });
-    }
-  },
-});
+import { routeMarketplace } from "@/modules/platform/marketplace/route";
 
 export const authRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -119,6 +90,7 @@ const routeTree = rootRoute.addChildren([
       routeCDPipelineList,
       routeCDPipelineDetails,
       routeStageDetails,
+      routeMarketplace,
       routeCICD.addChildren([
         routePipelineList,
         routePipelineDetails,
