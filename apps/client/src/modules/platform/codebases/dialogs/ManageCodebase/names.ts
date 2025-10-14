@@ -38,6 +38,8 @@ export const NAMES = {
   VERSIONING_START_FROM_SNAPSHOT: "versioningStartFromSnapshot",
   ADVANCED_MAPPING_FIELD_NAME: "advancedMappingFieldName",
   ADVANCED_MAPPING_JIRA_PATTERN: "advancedMappingJiraPattern",
+  REPOSITORY_NAME: "repositoryName",
+  REPOSITORY_OWNER: "repositoryOwner",
 } as const;
 
 export const CODEBASE_FORM_NAMES = {
@@ -197,6 +199,16 @@ export const CODEBASE_FORM_NAMES = {
   },
   [NAMES.ADVANCED_MAPPING_JIRA_PATTERN]: {
     name: NAMES.ADVANCED_MAPPING_JIRA_PATTERN,
+    notUsedInFormData: true,
+  },
+  [NAMES.REPOSITORY_NAME]: {
+    name: NAMES.REPOSITORY_NAME,
+    formPart: configurationSteps.codebaseInfo,
+    notUsedInFormData: true,
+  },
+  [NAMES.REPOSITORY_OWNER]: {
+    name: NAMES.REPOSITORY_OWNER,
+    formPart: configurationSteps.codebaseInfo,
     notUsedInFormData: true,
   },
 };

@@ -594,5 +594,3 @@ const SearchPopover: React.FC<SearchPopoverProps> = ({ open, onClose, terminalRe
     </Paper>
   );
 };
-
-export * from "./types";

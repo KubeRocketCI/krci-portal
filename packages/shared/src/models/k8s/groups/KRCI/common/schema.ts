@@ -2,7 +2,7 @@ import z from "zod";
 import { k8sOperation } from "../../../common";
 import { krciCommonLabels } from "./labels";
 
-export const ciToolEnum = z.enum(["tekton"]);
+export const ciToolEnum = z.enum(["tekton", "gitlab"]);
 
 export const krciConfigMapNamesEnum = z.enum(["edp-config", "krci-config"]);
 

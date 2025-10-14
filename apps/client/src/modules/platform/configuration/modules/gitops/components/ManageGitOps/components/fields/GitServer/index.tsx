@@ -18,9 +18,7 @@ export const GitServer = () => {
     () =>
       gitServers
         ? gitServers.map((gitServer) => {
-            const connected = gitServer?.status?.connected;
-
-            const statusIcon = getGitServerStatusIcon(connected);
+            const statusIcon = getGitServerStatusIcon(gitServer);
 
             return {
               label: gitServer.metadata.name,
