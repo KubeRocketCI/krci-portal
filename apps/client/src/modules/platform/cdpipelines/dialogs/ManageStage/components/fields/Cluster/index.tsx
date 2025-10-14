@@ -1,10 +1,9 @@
 import { FormSelect } from "@/core/providers/Form/components/FormSelect";
-import { ValueOf } from "@/core/types/global";
-import { useConfigMapWatchList } from "@/k8s/api/groups/Core/ConfigMap";
+import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWatchKRCIConfig";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { useClusterStore } from "@/k8s/store";
 import { routeClustersConfiguration } from "@/modules/platform/configuration/modules/clusters/route";
-import { inClusterName, krciConfigMapNames } from "@my-project/shared";
+import { inClusterName } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -25,16 +24,11 @@ export const Cluster = () => {
     formState: { errors },
   } = useTypedFormContext();
 
-  const configMapListWatch = useConfigMapWatchList();
-
-  const configMapList = configMapListWatch.dataArray;
-
-  const krciConfigMap = configMapList.find((configMap) =>
-    Object.values(krciConfigMapNames).includes(configMap.metadata.name as ValueOf<typeof krciConfigMapNames>)
-  );
+  const krciConfigMapWatch = useWatchKRCIConfig();
+  const krciConfigMap = krciConfigMapWatch.data;
 
   const clusterOptions = React.useMemo(() => {
-    if (configMapListWatch.query.isLoading || !krciConfigMap?.data?.available_clusters) {
+    if (krciConfigMapWatch.isLoading || !krciConfigMap?.data?.available_clusters) {
       return [defaultClusterOption];
     }
 
@@ -46,7 +40,7 @@ export const Cluster = () => {
     }));
 
     return [defaultClusterOption, ...clusters];
-  }, [configMapListWatch.query.isLoading, krciConfigMap?.data?.available_clusters]);
+  }, [krciConfigMapWatch.isLoading, krciConfigMap?.data?.available_clusters]);
 
   return (
     <FormSelect

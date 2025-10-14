@@ -4,7 +4,6 @@ import { Box, FormControl, InputLabel, MenuItem, Select, Typography } from "@mui
 import { Terminal } from "@/core/components/Terminal";
 import { TerminalRef } from "@/core/components/Terminal/types";
 import { PodExecTerminalProps } from "./types";
-import { Pod } from "@my-project/shared";
 import { trpc } from "@/core/clients/trpc";
 
 export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
@@ -209,6 +208,7 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
     if (selectedContainer && terminalRef.current?.getTerminal()) {
       initializeConnection();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedContainer]);
 
   // Event handlers
@@ -281,7 +281,6 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
         options={{
           cursorBlink: true,
           cursorStyle: "underline",
-          rows: 30,
           windowOptions: {
             fullscreenWin: isWindows,
           },

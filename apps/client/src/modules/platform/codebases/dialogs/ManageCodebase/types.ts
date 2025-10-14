@@ -52,4 +52,6 @@ export type ManageCodebaseFormValues = {
   [NAMES.VERSIONING_START_FROM_SNAPSHOT]: string;
   [NAMES.ADVANCED_MAPPING_FIELD_NAME]: string;
   [NAMES.ADVANCED_MAPPING_JIRA_PATTERN]: string;
+  [NAMES.REPOSITORY_NAME]: string;
+  [NAMES.REPOSITORY_OWNER]: string;
 };

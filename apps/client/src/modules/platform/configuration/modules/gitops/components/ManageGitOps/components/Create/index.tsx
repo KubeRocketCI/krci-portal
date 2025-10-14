@@ -2,7 +2,7 @@ import { Box, Grid, Stack, useTheme } from "@mui/material";
 import { useFormContext } from "react-hook-form";
 import { CODEBASE_FORM_NAMES } from "../../names";
 import { ManageGitOpsValues } from "../../types";
-import { GitRepoPath, GitServer, Name } from "../fields";
+import { CiTool, GitRepoPath, GitServer, Name } from "../fields";
 import { FolderPlus, CloudDownload } from "lucide-react";
 import { useGitServerWatchItem } from "@/k8s/api/groups/KRCI/GitServer";
 import { gitProvider } from "@my-project/shared";
@@ -56,11 +56,14 @@ export const Create = () => {
 
       <Box sx={{ p: `${theme.typography.pxToRem(24)} ${theme.typography.pxToRem(8)}` }}>
         <Grid container spacing={2}>
-          <Grid item xs={4}>
+          <Grid item xs={6}>
             <GitServer />
           </Grid>
+          <Grid item xs={6}>
+            <CiTool />
+          </Grid>
           {gitServerProvider !== gitProvider.gerrit && !!gitServerWatch.isReady && (
-            <Grid item xs={5}>
+            <Grid item xs={9}>
               <GitRepoPath />
             </Grid>
           )}

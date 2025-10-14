@@ -1,6 +1,5 @@
 import { ValueOf } from "@/core/types/global";
 import { QuickLink, Secret, Codemie } from "@my-project/shared";
-import { FORM_MODES } from "@/core/types/forms";
 import { FORM_NAMES, CODEMIE_FORM_NAMES, CODEMIE_SECRET_FORM_NAMES, QUICK_LINK_FORM_NAMES } from "./constants";
 
 export type FormNames = ValueOf<typeof FORM_NAMES>;

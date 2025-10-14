@@ -20,3 +20,6 @@ export * from "./TestReportFramework";
 export * from "./TicketNamePattern";
 export * from "./DeploymentScript";
 export * from "./Private";
+export * from "./Repository";
+export * from "./Owner";
+export * from "./CiTool";

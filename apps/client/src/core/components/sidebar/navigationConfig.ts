@@ -17,8 +17,8 @@ import { routeDependencyTrackConfiguration } from "@/modules/platform/configurat
 import { routeSonarConfiguration } from "@/modules/platform/configuration/modules/sonar/route";
 import { routeGitserversConfiguration } from "@/modules/platform/configuration/modules/gitservers/route";
 import { routeJiraConfiguration } from "@/modules/platform/configuration/modules/jira/route";
-import { routeChatAssistantConfiguration } from "@/modules/platform/configuration/modules/chat-assistant/route";
-import { routeCodemieConfiguration } from "@/modules/platform/configuration/modules/codemie/route";
+// import { routeChatAssistantConfiguration } from "@/modules/platform/configuration/modules/chat-assistant/route";
+// import { routeCodemieConfiguration } from "@/modules/platform/configuration/modules/codemie/route";
 import type { NavItem } from "./types";
 import { routeMarketplace } from "@/modules/platform/marketplace/route";
 
@@ -220,25 +220,25 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
             },
           ],
         },
-        {
-          title: "Gen AI",
-          children: [
-            {
-              title: "Chat Assistant",
-              route: {
-                to: routeChatAssistantConfiguration.to,
-                params: clusterDefaultParams,
-              },
-            },
-            {
-              title: "Codemie",
-              route: {
-                to: routeCodemieConfiguration.to,
-                params: clusterDefaultParams,
-              },
-            },
-          ],
-        },
+        // {
+        //   title: "Gen AI",
+        //   children: [
+        //     {
+        //       title: "Chat Assistant",
+        //       route: {
+        //         to: routeChatAssistantConfiguration.to,
+        //         params: clusterDefaultParams,
+        //       },
+        //     },
+        //     {
+        //       title: "Codemie",
+        //       route: {
+        //         to: routeCodemieConfiguration.to,
+        //         params: clusterDefaultParams,
+        //       },
+        //     },
+        //   ],
+        // },
       ],
     },
   ] as const satisfies NavItem[];

@@ -16,8 +16,6 @@ export const LogsByTask = () => {
   const logsQuery = usePipelineRunLogsQueryWithPageParams();
   const logs = logsQuery.data;
 
-  const initialTaskRunName = logs?.order?.[0];
-
   const handleAccordionChange = (taskRun: string) => () => {
     router.navigate({
       to: routePipelineRunDetails.to,
