@@ -14,6 +14,7 @@ import { router } from "@/core/router";
 import { routeHome } from "@/modules/home/pages/home/route";
 import { routeAuthCallback } from "../pages/callback/route";
 import { routeAuthLogin } from "../pages/login/route";
+import { useClusterStore } from "@/k8s/store";
 
 export const authInProgressKey = "authInProgress";
 export const authLogoutInProgressKey = "authLogoutInProgress";
@@ -23,7 +24,35 @@ const getLoginOriginURL = (redirectSearchParam?: string) =>
 
 export const AuthProvider = ({ children }: React.PropsWithChildren) => {
   const queryClient = useQueryClient();
-  queryClient.setQueryData(["clusterName"], import.meta.env.VITE_K8S_DEFAULT_CLUSTER_NAME);
+  const clusterStore = useClusterStore();
+
+  // Fetch server configuration at startup
+  const configQuery = useQuery({
+    queryKey: ["server.config"],
+    queryFn: () => trpc.config.get.query(),
+    retry: 1,
+    staleTime: Infinity, // Config doesn't change during session
+  });
+
+  // Initialize cluster store with server config when available
+  useMemo(() => {
+    if (configQuery.data) {
+      const { clusterName, defaultNamespace } = configQuery.data;
+      queryClient.setQueryData(["clusterName"], clusterName);
+
+      // Only initialize if not already set
+      if (!clusterStore.clusterName) {
+        clusterStore.setClusterName(clusterName);
+
+        // Check if user has custom namespace settings in localStorage
+        const settings = localStorage.getItem("cluster_settings");
+        if (!settings || !JSON.parse(settings)[clusterName]) {
+          clusterStore.setDefaultNamespace(defaultNamespace);
+          clusterStore.setAllowedNamespaces([defaultNamespace]);
+        }
+      }
+    }
+  }, [configQuery.data, queryClient, clusterStore]);
 
   const meQuery = useQuery({
     queryKey: ["auth.me"],
@@ -116,8 +145,18 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
     ]
   );
 
-  if ((meQuery.isLoading && !meQuery.isError) || authInProgress || authLogoutInProgress) {
+  if ((meQuery.isLoading && !meQuery.isError) || authInProgress || authLogoutInProgress || configQuery.isLoading) {
     return <LoadingProgressBar />;
+  }
+
+  if (configQuery.isError) {
+    return (
+      <div style={{ padding: "20px", textAlign: "center" }}>
+        <h2>Configuration Error</h2>
+        <p>Failed to load server configuration. Please check your deployment environment variables.</p>
+        <p style={{ color: "red", fontSize: "12px" }}>{configQuery.error?.message}</p>
+      </div>
+    );
   }
 
   return <AuthContext value={value}>{children}</AuthContext>;

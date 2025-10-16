@@ -1,106 +1,198 @@
 import { RouteParams } from "@/core/router/types";
-import { Box, Button, IconButton, Stack, Typography } from "@mui/material";
+import { STATUS_COLOR } from "@/k8s/constants/colors";
+import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
 import { Link } from "@tanstack/react-router";
-import { CheckCircle, Info, TriangleAlert, X, XCircle } from "lucide-react";
-import { SnackbarContent, SnackbarKey, useSnackbar } from "notistack";
-import React, { ReactElement } from "react";
+import { ChevronDown, ChevronRight, CircleCheck, CircleX, Info, TriangleAlert, X } from "lucide-react";
+import { ExternalToast, toast } from "sonner";
+import { useState } from "react";
 
-const SNACKBAR_VARIANT = {
-  SUCCESS: "success",
-  ERROR: "error",
-  WARNING: "warning",
-  INFO: "info",
+export type ToastVariant = "success" | "error" | "warning" | "info" | "loading";
+
+export interface ToastOptions extends ExternalToast {
+  route?: RouteParams;
+  externalLink?: {
+    url: string;
+    text: string;
+  };
+  description?: string;
+}
+
+// Helper to get variant-specific icon
+const getVariantIcon = (variant: ToastVariant) => {
+  switch (variant) {
+    case "success":
+      return <CircleCheck size={20} />;
+    case "error":
+      return <CircleX size={20} />;
+    case "warning":
+      return <TriangleAlert size={20} />;
+    case "loading":
+      return <LoadingSpinner size={20} />;
+    case "info":
+    default:
+      return <Info size={20} />;
+  }
 };
 
-export const Snackbar = React.forwardRef<
-  HTMLDivElement,
-  {
-    snackbarKey: SnackbarKey;
-    text: string;
-    variant: string;
-    route?: RouteParams;
-    handleClose?: () => void;
+// Helper to get variant-specific styling
+const getVariantStyles = (variant: ToastVariant) => {
+  switch (variant) {
+    case "success":
+      return {
+        backgroundColor: STATUS_COLOR.SUCCESS,
+        borderColor: STATUS_COLOR.SUCCESS,
+        color: "#FFFFFF",
+      };
+    case "error":
+      return {
+        backgroundColor: STATUS_COLOR.ERROR,
+        borderColor: STATUS_COLOR.ERROR,
+        color: "#FFFFFF",
+      };
+    case "warning":
+      return {
+        backgroundColor: STATUS_COLOR.MISSING,
+        borderColor: STATUS_COLOR.MISSING,
+        color: "#FFFFFF",
+      };
+    case "loading":
+      return {
+        backgroundColor: STATUS_COLOR.IN_PROGRESS,
+        borderColor: STATUS_COLOR.IN_PROGRESS,
+        color: "#FFFFFF",
+      };
+    case "info":
+    default:
+      return {
+        backgroundColor: STATUS_COLOR.IN_PROGRESS,
+        borderColor: STATUS_COLOR.IN_PROGRESS,
+        color: "#FFFFFF",
+      };
   }
->((props, ref) => {
-  const { text, variant, snackbarKey, route } = props;
-  const { closeSnackbar } = useSnackbar();
+};
 
-  const theme = React.useMemo(() => {
-    let icon: ReactElement = <Info size={20} color="#fff" />;
-    let color: string = "#0094FF";
-
-    switch (variant) {
-      case SNACKBAR_VARIANT.SUCCESS:
-        icon = <CheckCircle size={20} color="#fff" />;
-        color = "#18BE94";
-        break;
-      case SNACKBAR_VARIANT.ERROR:
-        icon = <XCircle size={20} color="#fff" />;
-        color = "#FD4C4D";
-        break;
-      case SNACKBAR_VARIANT.WARNING:
-        icon = <TriangleAlert size={20} color="#fff" />;
-        color = "#FFC754";
-        break;
-      case SNACKBAR_VARIANT.INFO:
-        icon = <Info size={20} color="#fff" />;
-        color = "#0094FF";
-        break;
-      default:
-        icon = <Info size={20} color="#fff" />;
-        color = "#0094FF";
-        break;
-    }
-
-    return {
-      icon,
-      color,
-    };
-  }, [variant]);
-
-  const handleClose = () => {
-    closeSnackbar(snackbarKey);
-  };
+// Fully custom toast component (Headless approach)
+const CustomToast = ({
+  id,
+  message,
+  variant,
+  route,
+  externalLink,
+  description,
+}: {
+  id: string | number;
+  message: string;
+  variant: ToastVariant;
+  route?: RouteParams;
+  externalLink?: { url: string; text: string };
+  description?: string;
+}) => {
+  const variantStyles = getVariantStyles(variant);
+  const variantIcon = getVariantIcon(variant);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <SnackbarContent ref={ref} role={variant}>
-      <Box
-        sx={{
-          minHeight: (t) => t.typography.pxToRem(30),
-          borderRadius: (t) => t.typography.pxToRem(t.shape.borderRadius),
-          padding: (t) => `${t.typography.pxToRem(6)} ${t.typography.pxToRem(16)}`,
-          backgroundColor: theme.color,
-          minWidth: (t) => t.typography.pxToRem(400),
-          color: "white",
-        }}
-      >
-        <Stack direction="row" alignItems="center" spacing={2}>
-          <Stack direction="row" alignItems="center" spacing={2} sx={{ mr: "auto !important" }}>
-            {theme.icon}
-            <Typography variant="body2" color="white">
-              {text}
-            </Typography>
-          </Stack>
-          {route && route.to && (
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
-            <Button
-              component={Link}
-              size="small"
-              variant="outlined"
-              color="inherit"
-              onClick={handleClose}
-              to={route.to}
-              params={route.params}
-            >
-              Go to page
-            </Button>
-          )}
-          <IconButton size="small" onClick={handleClose}>
-            <X size={20} color="white" />
-          </IconButton>
-        </Stack>
-      </Box>
-    </SnackbarContent>
+    <div
+      className="flex flex-col rounded-lg border shadow-lg"
+      style={{
+        minWidth: "400px",
+        maxWidth: "600px",
+        padding: "12px 16px",
+        ...variantStyles,
+      }}
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex-shrink-0 text-white">{variantIcon}</div>
+        <div className="flex-1">
+          <p className="text-sm font-medium text-white">{message}</p>
+        </div>
+        {description && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex cursor-pointer items-center justify-center text-white transition-opacity hover:opacity-70"
+            style={{
+              width: "24px",
+              height: "24px",
+              padding: "4px",
+            }}
+            aria-label={isExpanded ? "Collapse details" : "Expand details"}
+          >
+            {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+          </button>
+        )}
+        {(route?.to || externalLink) && (
+          <div className="flex items-center gap-2">
+            {route?.to && (
+              <Link
+                to={route.to}
+                params={route.params}
+                className="text-xs font-medium text-white underline underline-offset-4 hover:no-underline"
+                onClick={() => toast.dismiss()}
+              >
+                Go to page
+              </Link>
+            )}
+            {externalLink && (
+              <a
+                href={externalLink.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-medium text-white underline underline-offset-4 hover:no-underline"
+                onClick={() => toast.dismiss()}
+              >
+                {externalLink.text}
+              </a>
+            )}
+          </div>
+        )}
+        <div style={{ marginLeft: description ? "0" : "16px" }}>
+          <button
+            onClick={() => toast.dismiss(id)}
+            className="flex cursor-pointer items-center justify-center text-white transition-opacity hover:opacity-70"
+            style={{
+              width: "24px",
+              height: "24px",
+              padding: "4px",
+            }}
+            aria-label="Close toast"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      </div>
+      {description && isExpanded && (
+        <div
+          className="mt-2 text-xs text-white opacity-90"
+          style={{
+            marginLeft: "44px", // Align with message (icon width + gap)
+            wordBreak: "break-word",
+          }}
+        >
+          {description}
+        </div>
+      )}
+    </div>
   );
-});
+};
+
+// Helper to show toast with optional links
+export const showToast = (message: string, variant: ToastVariant, options?: ToastOptions) => {
+  const { route, externalLink, description, ...sonnerOptions } = options || {};
+
+  return toast.custom(
+    (id) => (
+      <CustomToast
+        id={id}
+        message={message}
+        variant={variant}
+        route={route}
+        externalLink={externalLink}
+        description={description}
+      />
+    ),
+    {
+      ...sonnerOptions,
+      duration: variant === "loading" ? Infinity : sonnerOptions.duration,
+    }
+  );
+};

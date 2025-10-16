@@ -110,7 +110,7 @@ export const SonarMetrics = ({ componentName }: SonarQubeMetricsProps) => {
       text={
         <Typography variant={"body1"} color="secondary.dark" component={"div"}>
           No metrics available.{" "}
-          <Button variant="link" asChild>
+          <Button variant="link" asChild className="p-0!">
             <Link
               to={routeSonarConfiguration.to}
               params={{
@@ -126,7 +126,7 @@ export const SonarMetrics = ({ componentName }: SonarQubeMetricsProps) => {
     >
       {sonarDataQuery.isLoading ? (
         <CircularProgress />
-      ) : (
+      ) : sonarDataQuery.data?.baseUrl ? (
         <Stack spacing={3} alignItems={"center"} direction="row">
           <MetricsItem
             titleIcon={<Bug {...IconProps} />}
@@ -220,7 +220,7 @@ export const SonarMetrics = ({ componentName }: SonarQubeMetricsProps) => {
             rightSlot={<Value value={`${sonarDataQuery.data!.metrics?.duplicated_lines_density}%`} />}
           />
         </Stack>
-      )}
+      ) : null}
     </NoDataWidgetWrapper>
   );
 };

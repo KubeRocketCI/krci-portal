@@ -100,3 +100,9 @@ export const createStageDraftInputSchema = z.object({
   triggerTemplate: stageDraftSchema.shape.spec.shape.triggerTemplate,
   triggerType: stageDraftSchema.shape.spec.shape.triggerType,
 });
+
+export const editStageInputSchema = z.object({
+  triggerType: stageSpecSchema.shape.triggerType,
+  triggerTemplate: stageSpecSchema.shape.triggerTemplate,
+  cleanTemplate: stageSpecSchema.shape.cleanTemplate,
+});

@@ -1,18 +1,18 @@
+import { ToastOptions } from "@/core/components/Snackbar";
 import { DialogProps } from "@/core/providers/Dialog/types";
 import { RouteParams } from "@/core/router/types";
 import { K8sResourceConfig, KubeObjectBase } from "@my-project/shared";
-import { OptionsObject } from "notistack";
 import React from "react";
 
 interface Message {
   message: string;
-  options?: OptionsObject;
+  options?: ToastOptions;
 }
 
 type CustomMessages = {
-  onMutate?: Message;
-  onError?: Message;
-  onSuccess?: Message;
+  loading?: Message;
+  error?: Message;
+  success?: Message;
 };
 
 export type DeleteKubeObjectDialogProps = DialogProps<{

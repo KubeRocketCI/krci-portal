@@ -25,7 +25,6 @@ import { SummaryProps } from "./types";
 export const Summary = ({
   codebaseBranch,
   latestBuildPipelineRun,
-  handleOpenEditor,
   menuAnchorEl,
   handleClickMenu,
   handleCloseMenu,
@@ -189,7 +188,6 @@ export const Summary = ({
                 menuAnchorEl={menuAnchorEl}
                 handleClickMenu={handleClickMenu}
                 handleCloseMenu={handleCloseMenu}
-                handleOpenEditor={handleOpenEditor}
                 codebaseBranch={codebaseBranch}
                 latestBuildPipelineRun={latestBuildPipelineRun}
               />

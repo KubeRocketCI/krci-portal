@@ -17,9 +17,7 @@ export const GitServer = () => {
   const gitServersOptions = React.useMemo(
     () =>
       gitServersWatch.dataArray.map((gitServer) => {
-        const connected = gitServer?.status?.connected;
-
-        const statusIcon = getGitServerStatusIcon(connected);
+        const statusIcon = getGitServerStatusIcon(gitServer);
 
         return {
           label: gitServer.metadata.name,

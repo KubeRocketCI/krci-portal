@@ -53,3 +53,8 @@ export const createCDPipelineDraftInputSchema = z.object({
   inputDockerStreams: cdPipelineDraftSchema.shape.spec.shape.inputDockerStreams,
   name: cdPipelineDraftSchema.shape.spec.shape.name,
 });
+
+export const editCDPipelineInputSchema = z.object({
+  description: cdPipelineSpecSchema.shape.description,
+  applications: cdPipelineSpecSchema.shape.applications,
+});

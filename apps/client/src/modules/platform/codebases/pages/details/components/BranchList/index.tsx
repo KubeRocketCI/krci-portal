@@ -5,7 +5,7 @@ import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { ManageCodebaseBranchDialog } from "@/modules/platform/codebases/dialogs/ManageCodebaseBranch";
 import { Grid, Typography } from "@mui/material";
-import { checkIsDefaultBranch, CodebaseBranch } from "@my-project/shared";
+import { CodebaseBranch } from "@my-project/shared";
 import React from "react";
 import { useCodebaseBranchListWatch, useCodebaseWatch, usePipelineNamesWatch } from "../../hooks/data";
 import { BranchListActions } from "./components/BranchListActions";
@@ -17,15 +17,7 @@ export const BranchList = () => {
   const codebase = codebaseWatch.query.data;
 
   const codebaseBranchListWatch = useCodebaseBranchListWatch();
-
-  const sortedCodebaseBranchList = React.useMemo(() => {
-    if (!codebase) {
-      return codebaseBranchListWatch.dataArray;
-    }
-    return codebaseBranchListWatch.dataArray.sort((a) => (checkIsDefaultBranch(codebase!, a) ? -1 : 1));
-  }, [codebaseBranchListWatch.dataArray, codebase]);
-
-  const defaultBranch = sortedCodebaseBranchList[0];
+  const defaultBranch = codebaseBranchListWatch.dataArray[0];
 
   const { setDialog } = useDialogContext();
 
@@ -33,9 +25,12 @@ export const BranchList = () => {
     codebaseBranchListWatch?.dataArray.length === 1 ? codebaseBranchListWatch?.dataArray[0].spec.branchName : null
   );
 
-  const handleChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
-    setExpandedPanel(isExpanded ? panel : null);
-  };
+  const handleChange = React.useCallback(
+    (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
+      setExpandedPanel(isExpanded ? panel : null);
+    },
+    []
+  );
 
   const pipelineNamesWatch = usePipelineNamesWatch();
   const pipelineNames = pipelineNamesWatch.data;

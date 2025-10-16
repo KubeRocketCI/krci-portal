@@ -1,4 +1,5 @@
 import { Outlet } from "@tanstack/react-router";
+import { Toaster } from "sonner";
 import { SidebarProvider } from "../../components/ui/sidebar";
 // import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 
@@ -12,6 +13,7 @@ export default function Root() {
           <Outlet />
         </SidebarProvider>
       </div>
+      <Toaster position="top-right" offset="80px" />
       {/* <TanStackRouterDevtools /> */}
     </>
   );

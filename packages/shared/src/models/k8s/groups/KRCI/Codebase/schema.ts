@@ -131,6 +131,13 @@ export const createCodebaseDraftInputSchema = z.object({
   ciTool: codebaseDraftSchema.shape.spec.shape.ciTool,
 });
 
+export const editCodebaseInputSchema = z.object({
+  jiraServer: codebaseSpecSchema.shape.jiraServer,
+  commitMessagePattern: codebaseSpecSchema.shape.commitMessagePattern,
+  ticketNamePattern: codebaseSpecSchema.shape.ticketNamePattern,
+  jiraIssueMetadataPayload: codebaseSpecSchema.shape.jiraIssueMetadataPayload,
+});
+
 export const codebaseSecretSchema = secretSchema.extend({
   metadata: kubeObjectMetadataSchema.extend({
     name: z.string().regex(/^repository-codebase-[a-zA-Z0-9-]+-temp$/, {

@@ -6,6 +6,8 @@ import {
   GitFusionRepositoryListResponse,
   GitFusionOrganizationListResponse,
   GitFusionBranchListResponse,
+  GitLabPipelineResponse,
+  GitLabPipelineVariable,
 } from "@my-project/shared";
 
 export class KrakendClient {
@@ -41,10 +43,23 @@ export class KrakendClient {
     });
 
     if (!response.ok) {
-      const text = await response.text().catch(() => "");
-      throw new Error(
-        `Krakend request failed: ${response.status} ${response.statusText} ${text}`
-      );
+      let errorText = "";
+      try {
+        errorText = await response.text();
+      } catch {
+        errorText = "Unable to read error response";
+      }
+
+      const errorMessage = `Krakend request failed: ${response.status} ${response.statusText}`;
+      const fullError = errorText
+        ? `${errorMessage}\nResponse: ${errorText}`
+        : errorMessage;
+
+      console.error(`Krakend Error - URL: ${url}`);
+      console.error(`Status: ${response.status} ${response.statusText}`);
+      console.error(`Response Body: ${errorText}`);
+
+      throw new Error(fullError);
     }
 
     const contentType = response.headers.get("content-type") || "";
@@ -230,6 +245,38 @@ export class KrakendClient {
     const params = new URLSearchParams({
       endpoint: "branches",
     });
-    return this.fetchJson(`/gitfusion/invalidate?${params.toString()}`);
+    return this.fetchJson(`/gitfusion/invalidate?${params.toString()}`, {
+      method: "POST",
+    });
+  }
+
+  async triggerGitLabPipeline(
+    gitServer: string,
+    project: string,
+    ref: string,
+    variables?: GitLabPipelineVariable[]
+  ): Promise<GitLabPipelineResponse> {
+    const params = new URLSearchParams({
+      gitServer,
+      project,
+      ref,
+    });
+
+    if (variables && variables.length > 0) {
+      params.append("variables", JSON.stringify(variables));
+    }
+
+    const endpoint = `/gitfusion/trigger-pipeline?${params.toString()}`;
+
+    console.log("Triggering GitLab Pipeline:");
+    console.log("  Endpoint:", endpoint);
+    console.log("  Git Server:", gitServer);
+    console.log("  Project:", project);
+    console.log("  Ref:", ref);
+    console.log("  Variables:", variables);
+
+    return this.fetchJson<GitLabPipelineResponse>(endpoint, {
+      method: "POST",
+    });
   }
 }

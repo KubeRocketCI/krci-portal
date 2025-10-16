@@ -8,12 +8,13 @@ import { K8S_DEFAULT_CLUSTER_NAME } from "../../../constants";
 import { getK8sWatchItemQueryCacheKey, getK8sWatchListQueryCacheKey } from "../../utils/query-keys";
 import { CustomKubeObjectList } from "../watch-types";
 import { RequestError } from "@/core/types/global";
-import { watchItemRegistry } from "../../utils/watch-item-subscription-registry";
+import { createItemSelectFn } from "../utils/select-helpers";
+import { useRegisterItemSubscription } from "../utils/watch-registry-effects";
+import { getQueryState } from "../utils/query-state-helpers";
 
-// This is a type that forbids main query options, but allows to pass any other options
 type OptionalQueryOptions<I extends KubeObjectBase> = Omit<
   UseQueryOptions<I, RequestError>,
-  "queryKey" | "queryFn" | "initialData" | "placeholderData"
+  "queryKey" | "queryFn" | "initialData" | "placeholderData" | "select"
 >;
 
 export interface UseWatchItemParams<I extends KubeObjectBase> {
@@ -21,6 +22,11 @@ export interface UseWatchItemParams<I extends KubeObjectBase> {
   name: string | undefined;
   namespace?: string;
   queryOptions?: OptionalQueryOptions<I>;
+  /**
+   * Optional function to transform/normalize the item data.
+   * Applied on every data read (initial load AND after WebSocket updates).
+   */
+  transform?: (item: I) => I;
 }
 
 export type UseWatchItemResult<I extends KubeObjectBase> = {
@@ -35,6 +41,7 @@ export const useWatchItem = <I extends KubeObjectBase>({
   name,
   namespace,
   queryOptions,
+  transform,
 }: UseWatchItemParams<I>) => {
   const clusterName = K8S_DEFAULT_CLUSTER_NAME;
   const storedNamespace = useClusterStore(useShallow((state) => state.defaultNamespace));
@@ -55,14 +62,13 @@ export const useWatchItem = <I extends KubeObjectBase>({
   const query = useQuery<I, RequestError>({
     queryKey: k8sWatchItemQueryCacheKey,
     queryFn: async () => {
-      const data: I = await trpc.k8s.get.query({
+      const data = (await trpc.k8s.get.query({
         resourceConfig,
         clusterName,
         namespace: _namespace,
         name: name!,
-      });
+      })) as I;
 
-      // Always update to the latest resource version from the API response
       const newResourceVersion = data.metadata?.resourceVersion ?? "0";
       latestResourceVersion.current = newResourceVersion;
 
@@ -72,6 +78,7 @@ export const useWatchItem = <I extends KubeObjectBase>({
       const listData = queryClient.getQueryData<CustomKubeObjectList<I>>(k8sWatchListQueryCacheKey);
       return listData?.items.get(name!) ?? undefined;
     },
+    select: createItemSelectFn(transform),
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
@@ -79,36 +86,14 @@ export const useWatchItem = <I extends KubeObjectBase>({
     ...queryOptions,
   });
 
-  // Register with shared item registry
-  React.useEffect(() => {
-    if (!name) return;
+  useRegisterItemSubscription<I>(
+    k8sWatchItemQueryCacheKey,
+    name ? { clusterName, namespace: _namespace, resourceConfig, name } : null,
+    queryClient,
+    query.isFetched
+  );
 
-    watchItemRegistry.register<I>(
-      k8sWatchItemQueryCacheKey,
-      {
-        clusterName,
-        namespace: _namespace,
-        resourceConfig,
-        name,
-      },
-      queryClient
-    );
-
-    return () => {
-      watchItemRegistry.unregister(k8sWatchItemQueryCacheKey);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clusterName, _namespace, resourceConfig.pluralName, name]);
-
-  // Ensure subscription starts when initial query fetched and resourceVersion is available
-  React.useEffect(() => {
-    if (query.isFetched) {
-      watchItemRegistry.ensureStarted<I>(k8sWatchItemQueryCacheKey, queryClient);
-    }
-  }, [query.isFetched, k8sWatchItemQueryCacheKey, queryClient]);
-
-  const isReady = query.status === "success" || query.status === "error";
-  const isInitialLoading = !query.isFetched && query.isFetching;
+  const { isReady, isInitialLoading } = getQueryState(query);
 
   return {
     query,

@@ -8,6 +8,7 @@ import {
   stageStatusEnum,
   stageTriggerTypeEnum,
   stageQualityGateSchema,
+  editStageInputSchema,
 } from "./schema";
 
 export type Stage = z.infer<typeof stageSchema>;
@@ -20,3 +21,4 @@ export type StageSourceType = z.infer<typeof stageSourceTypeEnum>;
 export type StageTriggerType = z.infer<typeof stageTriggerTypeEnum>;
 
 export type CreateStageDraftInput = z.infer<typeof createStageDraftInputSchema>;
+export type EditStageInput = z.infer<typeof editStageInputSchema>;

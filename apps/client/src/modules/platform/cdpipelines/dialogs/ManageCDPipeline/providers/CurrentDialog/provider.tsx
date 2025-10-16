@@ -16,15 +16,18 @@ export const CurrentDialogContextProvider: React.FC<CurrentDialogContextProvider
     },
   });
 
+  // Memoize applications array to prevent infinite loop
+  const applications = React.useMemo(() => applicationListWatch.dataArray, [applicationListWatch.dataArray]);
+
   const CurrentDialogContextValue = React.useMemo(
     () => ({
       props,
       state,
       extra: {
-        applications: applicationListWatch.dataArray,
+        applications,
       },
     }),
-    [applicationListWatch.dataArray, props, state]
+    [applications, props, state]
   );
 
   return (

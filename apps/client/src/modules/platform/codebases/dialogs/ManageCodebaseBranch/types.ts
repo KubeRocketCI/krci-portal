@@ -16,6 +16,7 @@ export type ManageCodebaseBranchDialogProps = DialogProps<{
 export type ManageCodebaseBranchFormValues = {
   [NAMES.NAME]: string;
   [NAMES.FROM_COMMIT]: string;
+  [NAMES.FROM_TYPE]: string;
   [NAMES.RELEASE]: boolean;
   [NAMES.VERSION]: string;
   [NAMES.CODEBASE_NAME_LABEL]: string;
