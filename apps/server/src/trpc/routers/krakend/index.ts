@@ -8,6 +8,7 @@ import {
   getOrganizationListProcedure,
   getBranchListProcedure,
   invalidateBranchListCacheProcedure,
+  triggerGitLabPipelineProcedure,
 } from "./procedures";
 
 export const krakendRouter = t.router({
@@ -19,4 +20,5 @@ export const krakendRouter = t.router({
   getOrganizationList: getOrganizationListProcedure,
   getBranchList: getBranchListProcedure,
   invalidateBranchListCache: invalidateBranchListCacheProcedure,
+  triggerGitLabPipeline: triggerGitLabPipelineProcedure,
 });

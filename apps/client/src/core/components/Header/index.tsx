@@ -1,4 +1,5 @@
 import { SidebarTrigger } from "../ui/sidebar";
+import { ResourceQuotas } from "../ResourceQuotas";
 
 function Header() {
   return (
@@ -6,6 +7,9 @@ function Header() {
       <SidebarTrigger className="mr-2.5 text-white [&_svg:not([class*='size-'])]:size-5" />
       <div className="h-full py-1.5">
         <img src="/krci-logo-with-text.svg" alt="kuberocket-ci-logo" className="h-full w-full" />
+      </div>
+      <div className="ml-auto">
+        <ResourceQuotas />
       </div>
     </div>
   );

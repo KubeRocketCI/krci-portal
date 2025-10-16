@@ -48,7 +48,8 @@ export const routeCluster = createRoute({
   path: "c/$clusterName",
   beforeLoad: ({ location, params, context }) => {
     const queryClient = context.queryClient;
-    const clusterName = queryClient.getQueryData(["clusterName"]) || import.meta.env.VITE_K8S_DEFAULT_CLUSTER_NAME;
+    const clusterName =
+      queryClient.getQueryData<string>(["clusterName"]) || import.meta.env.VITE_K8S_DEFAULT_CLUSTER_NAME || "";
 
     if (params.clusterName !== clusterName) {
       // Load only known cluster

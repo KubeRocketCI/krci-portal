@@ -1,11 +1,9 @@
 import { trpc } from "@/core/clients/trpc";
-import { Snackbar } from "@/core/components/Snackbar";
+import { showToast, ToastOptions } from "@/core/components/Snackbar";
 import { useClusterStore } from "@/k8s/store";
 import { K8sOperation, k8sOperation, K8sResourceConfig, KubeObjectDraft } from "@my-project/shared";
-import { useMutation, UseMutationResult } from "@tanstack/react-query";
-import { OptionsObject, SnackbarKey, SnackbarMessage, VariantType } from "notistack";
+import { useMutation } from "@tanstack/react-query";
 import { useShallow } from "zustand/react/shallow";
-import { useRequestStatusMessages } from "../useResourceRequestStatusMessages";
 
 type UseResourceCRUDMutationReturnType<
   KubeObjectData,
@@ -14,13 +12,13 @@ type UseResourceCRUDMutationReturnType<
 
 interface Message {
   message: string;
-  options?: OptionsObject;
+  options?: ToastOptions;
 }
 
 type CustomMessages = {
-  onMutate?: Message;
-  onError?: Message;
-  onSuccess?: Message;
+  loading?: Message;
+  error?: Message;
+  success?: Message;
 };
 
 export interface UseResourceCRUDMutationOptions<KubeObjectData> {
@@ -38,36 +36,12 @@ export interface MutationInput<KubeObjectData extends KubeObjectDraft> {
   resourceConfig: K8sResourceConfig;
 }
 
-const getDefaultOptions = (variant: VariantType) =>
-  ({
-    autoHideDuration: 2000,
-    anchorOrigin: {
-      vertical: "bottom",
-      horizontal: "left",
-    },
-    variant,
-    content: (key: SnackbarKey, message: SnackbarMessage) => (
-      <Snackbar snackbarKey={key} text={String(message)} variant={variant} />
-    ),
-  }) as const;
-
 export const useResourceCRUDMutation = <KubeObjectData extends KubeObjectDraft, Operation extends K8sOperation>(
   mutationKey: string,
   operation: Operation,
   options?: UseResourceCRUDMutationOptions<KubeObjectData>
-): UseMutationResult<
-  UseResourceCRUDMutationReturnType<KubeObjectData, Operation>,
-  Error,
-  MutationInput<KubeObjectData>
-> => {
+) => {
   const showMessages = options?.showMessages ?? true;
-
-  const {
-    showBeforeRequestMessage,
-    showRequestErrorMessage,
-    showRequestSuccessMessage,
-    showRequestErrorDetailedMessage,
-  } = useRequestStatusMessages();
 
   const { namespace, clusterName } = useClusterStore(
     useShallow((state) => ({
@@ -111,78 +85,98 @@ export const useResourceCRUDMutation = <KubeObjectData extends KubeObjectDraft, 
 
   return useMutation({
     mutationKey: [mutationKey],
-    mutationFn,
-    onMutate: ({ resource }) => {
-      if (!showMessages) return;
+    mutationFn: async (input: MutationInput<KubeObjectData>) => {
+      const { resource } = input;
 
-      const customMessage = options?.createCustomMessages?.(resource)?.onMutate;
+      if (!showMessages) {
+        return mutationFn(input);
+      }
+
+      const customMessages = options?.createCustomMessages?.(resource);
       const defaultMsg = `${resource.kind} ${resource.metadata.name}`;
 
-      const mergedOptions: OptionsObject = {
-        ...getDefaultOptions("info"),
-        ...(customMessage?.options || {}),
-      };
+      // Get messages for toast.promise
+      const loadingMessage: string = (() => {
+        if (customMessages?.loading) return customMessages.loading.message;
+        switch (operation) {
+          case k8sOperation.create:
+            return `Applying ${defaultMsg}`;
+          case k8sOperation.patch:
+            return `Patching ${defaultMsg}`;
+          case k8sOperation.delete:
+            return `Deleting ${defaultMsg}`;
+          default:
+            return `Processing ${defaultMsg}`;
+        }
+      })();
 
+      const successMessage: string = (() => {
+        if (customMessages?.success) return customMessages.success.message;
+        switch (operation) {
+          case k8sOperation.create:
+            return `${defaultMsg} has been successfully applied`;
+          case k8sOperation.patch:
+            return `${defaultMsg} has been successfully patched`;
+          case k8sOperation.delete:
+            return `${defaultMsg} has been successfully deleted`;
+          default:
+            return `${defaultMsg} operation completed successfully`;
+        }
+      })();
+
+      const errorMessage: string = (() => {
+        if (customMessages?.error) return customMessages.error.message;
+        switch (operation) {
+          case k8sOperation.create:
+            return `Failed to apply ${defaultMsg}`;
+          case k8sOperation.patch:
+            return `Failed to patch ${defaultMsg}`;
+          case k8sOperation.delete:
+            return `Failed to delete ${defaultMsg}`;
+          default:
+            return `Operation failed for ${defaultMsg}`;
+        }
+      })();
+
+      // Manual promise handling with custom toasts for full control
+      const promise = mutationFn(input);
+
+      // Show loading toast
+      const loadingToastId = showToast(loadingMessage, "loading");
+
+      promise
+        .then(() => {
+          // Update to success toast with optional link
+          showToast(successMessage, "success", {
+            id: loadingToastId,
+            duration: customMessages?.success?.options?.duration || 5000,
+            route: customMessages?.success?.options?.route,
+            externalLink: customMessages?.success?.options?.externalLink,
+          });
+        })
+        .catch((err) => {
+          // Extract error message for description
+          const errorDescription = err?.message || String(err);
+
+          // Update to error toast with description
+          showToast(errorMessage, "error", {
+            id: loadingToastId,
+            duration: 10000, // Longer duration for errors with details
+            description: errorDescription,
+          });
+          console.error(err);
+        });
+
+      return promise;
+    },
+    onMutate: ({ resource }) => {
       options?.callbacks?.onMutate?.(resource);
-
-      showBeforeRequestMessage(operation, {
-        entityName: defaultMsg,
-        ...(customMessage && {
-          customMessage: {
-            message: customMessage.message || "",
-            options: mergedOptions,
-          },
-        }),
-      });
     },
     onSuccess: (_data, { resource }) => {
-      if (!showMessages) return;
-
-      const customMessage = options?.createCustomMessages?.(resource)?.onSuccess;
-      const defaultMsg = `${resource.kind} ${resource.metadata.name}`;
-
-      const mergedOptions: OptionsObject = {
-        ...getDefaultOptions("success"),
-        ...(customMessage?.options || {}),
-      };
-
       options?.callbacks?.onSuccess?.(resource);
-
-      showRequestSuccessMessage(operation, {
-        entityName: defaultMsg,
-        ...(customMessage && {
-          customMessage: {
-            message: customMessage.message || "",
-            options: mergedOptions,
-          },
-        }),
-      });
     },
     onError: (error, { resource }) => {
-      if (!showMessages) return;
-
-      const customMessage = options?.createCustomMessages?.(resource)?.onError;
-      const defaultMsg = `${resource.kind} ${resource.metadata.name}`;
-
-      const mergedOptions: OptionsObject = {
-        ...getDefaultOptions("error"),
-        ...(customMessage?.options || {}),
-      };
-
       options?.callbacks?.onError?.(error, resource);
-
-      showRequestErrorMessage(operation, {
-        entityName: defaultMsg,
-        ...(customMessage && {
-          customMessage: {
-            message: customMessage.message || "",
-            options: mergedOptions,
-          },
-        }),
-      });
-
-      showRequestErrorDetailedMessage(error);
-      console.error(error);
     },
   });
 };

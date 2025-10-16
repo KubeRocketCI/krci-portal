@@ -1,11 +1,11 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
-import { useCodebasePermissions } from "@/k8s/api/groups/KRCI/Codebase";
 import { sortCodebaseBranches } from "@/k8s/api/groups/KRCI/CodebaseBranch/utils/sort";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { ManageCodebaseBranchDialog } from "@/modules/platform/codebases/dialogs/ManageCodebaseBranch";
 import { Plus } from "lucide-react";
 import React from "react";
 import { useCodebaseBranchListWatch, useCodebaseWatch, usePipelineNamesWatch } from "../../../../hooks/data";
+import { useCodebaseBranchPermissions } from "@/k8s/api/groups/KRCI/CodebaseBranch";
 
 export const BranchListActions = () => {
   const codebaseWatch = useCodebaseWatch();
@@ -26,7 +26,7 @@ export const BranchListActions = () => {
 
   const { setDialog } = useDialogContext();
 
-  const permissions = useCodebasePermissions();
+  const permissions = useCodebaseBranchPermissions();
 
   return (
     <ButtonWithPermission
@@ -45,7 +45,7 @@ export const BranchListActions = () => {
             },
           });
         },
-        disabled: !pipelineNamesWatch.isFetched || !codebaseWatch.query.isFetched,
+        // disabled: !pipelineNamesWatch.isFetched || !codebaseWatch.query.isFetched,
       }}
       allowed={permissions.data.create.allowed}
       reason={permissions.data.create.reason}

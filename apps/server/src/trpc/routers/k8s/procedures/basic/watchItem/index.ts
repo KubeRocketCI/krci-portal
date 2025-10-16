@@ -6,6 +6,7 @@ import { protectedProcedure } from "@/trpc/procedures/protected";
 import { TRPCError } from "@trpc/server";
 import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors";
 import { k8sResourceConfigSchema, KubeObjectBase } from "@my-project/shared";
+import { createCustomResourceURL } from "../../../utils/createCustomResourceURL";
 
 export const k8sWatchItemProcedure = protectedProcedure
   .input(
@@ -33,9 +34,14 @@ export const k8sWatchItemProcedure = protectedProcedure
         let controller: Awaited<ReturnType<typeof watch.watch>>;
         let isActive = true;
 
+        const watchUrl = createCustomResourceURL({
+          resourceConfig,
+          namespace,
+        });
+
         watch
           .watch(
-            `/apis/${resourceConfig.group}/${resourceConfig.version}/namespaces/${namespace}/${resourceConfig.pluralName}`,
+            watchUrl,
             { resourceVersion, fieldSelector: `metadata.name=${name}` },
             (type, obj) => {
               if (isActive) {

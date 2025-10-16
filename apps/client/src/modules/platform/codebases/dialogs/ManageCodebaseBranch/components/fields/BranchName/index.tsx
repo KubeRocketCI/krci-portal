@@ -1,4 +1,4 @@
-import { Grid } from "@mui/material";
+import { Grid, IconButton } from "@mui/material";
 import React from "react";
 import { BranchNameProps } from "./types";
 import { CODEBASE_BRANCH_FORM_NAMES } from "../../../names";
@@ -6,7 +6,15 @@ import { createVersioningString, getVersionAndPostfixFromVersioningString } from
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
 import { FieldEvent } from "@/core/types/forms";
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
+import { FormAutocompleteSingle } from "@/core/providers/Form/components/FormAutocompleteSingle";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useClusterStore } from "@/k8s/store";
+import { useShallow } from "zustand/react/shallow";
+import { trpc } from "@/core/clients/trpc";
+import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWatchKRCIConfig";
+import { validateField } from "@/core/utils/forms/validation";
+import { validationRules } from "@/core/constants/validation";
+import { RotateCw } from "lucide-react";
 
 export const BranchName = ({ defaultBranchVersion }: BranchNameProps) => {
   const {
@@ -19,8 +27,72 @@ export const BranchName = ({ defaultBranchVersion }: BranchNameProps) => {
   } = useTypedFormContext();
 
   const {
-    props: { codebaseBranches },
+    props: { codebaseBranches, codebase },
   } = useCurrentDialog();
+
+  const { clusterName, defaultNamespace } = useClusterStore(
+    useShallow((state) => ({
+      clusterName: state.clusterName,
+      defaultNamespace: state.defaultNamespace,
+    }))
+  );
+
+  const krciConfigMapWatch = useWatchKRCIConfig();
+  const krciConfigMap = krciConfigMapWatch.data;
+  const apiBaseUrl = krciConfigMap?.data?.api_gateway_url;
+
+  const codebaseGitUrlPath = codebase.spec.gitUrlPath;
+  const codebaseGitServer = codebase.spec.gitServer;
+  const codebaseRepoName = codebaseGitUrlPath.split("/").at(-1) || "";
+  const codebaseOwner = codebaseGitUrlPath.split("/").filter(Boolean).slice(0, -1).join("/");
+
+  const canLoadBranches = React.useMemo(() => {
+    return !!apiBaseUrl && !!codebaseGitServer && !!codebaseOwner && !!codebaseRepoName;
+  }, [apiBaseUrl, codebaseGitServer, codebaseOwner, codebaseRepoName]);
+
+  const query = useQuery({
+    queryKey: ["branchList", codebaseGitServer, codebaseOwner, codebaseRepoName],
+    queryFn: () =>
+      trpc.krakend.getBranchList.query({
+        gitServer: codebaseGitServer,
+        owner: codebaseOwner,
+        repoName: codebaseRepoName,
+        namespace: defaultNamespace,
+        clusterName,
+      }),
+    enabled: canLoadBranches,
+  });
+
+  const invalidateBranchListCacheMutation = useMutation({
+    mutationKey: ["invalidateBranchListCacheMutation", defaultNamespace],
+    mutationFn: () =>
+      trpc.krakend.invalidateBranchListCache.mutate({
+        namespace: defaultNamespace,
+        clusterName,
+      }),
+  });
+
+  const branchesOptions = React.useMemo(() => {
+    if (query.isLoading || query.isError || !query.data) {
+      return [];
+    }
+
+    if (codebaseGitServer === "gerrit") {
+      return [
+        {
+          label: codebase.spec.defaultBranch,
+          value: codebase.spec.defaultBranch,
+        },
+      ];
+    }
+
+    return (
+      query.data.data?.map((branch: { name: string }) => ({
+        label: branch.name,
+        value: branch.name,
+      })) || []
+    );
+  }, [query.isLoading, query.isError, query.data, codebaseGitServer, codebase.spec.defaultBranch]);
 
   const existingCodebaseBranchs = codebaseBranches.map((codebaseBranch) => codebaseBranch.spec.branchName);
 
@@ -42,31 +114,74 @@ export const BranchName = ({ defaultBranchVersion }: BranchNameProps) => {
     [defaultBranchVersion, getValues, setValue]
   );
 
+  const handleRefreshBranches = React.useCallback(() => {
+    invalidateBranchListCacheMutation.mutate(undefined, {
+      onSuccess: () => {
+        query.refetch();
+      },
+    });
+  }, [invalidateBranchListCacheMutation, query]);
+
+  const helperText = React.useMemo(() => {
+    if (!apiBaseUrl) {
+      return "Branches auto-discovery cannot be performed.";
+    }
+
+    if (query.isError) {
+      return "Branches auto-discovery could not be performed.";
+    }
+
+    return " ";
+  }, [apiBaseUrl, query.isError]);
+
   return (
     <Grid item xs={12}>
-      <FormTextField
+      <FormAutocompleteSingle
+        placeholder="Branch name"
         {...register(CODEBASE_BRANCH_FORM_NAMES.branchName.name, {
-          pattern: {
-            value: /^(?![/.-])[A-Za-z0-9/._-]*(?<![/.-])$/,
-            message: `Branch name may contain: upper-case and lower-case letters, numbers, slashes (/), dashes (-), dots (.), and underscores (_).
-                      It cannot start or end with a slash (/), dot (.), or dash (-). Consecutive special characters are not allowed.
-                      Minimum 2 characters.`,
-          },
+          required: "Enter branch name",
           validate: (value) => {
             if (existingCodebaseBranchs.includes(value)) {
               return `Branch name "${value}" already exists`;
             }
+            if (validationRules.BRANCH_NAME && typeof value === "string") {
+              const validationResult = validateField(value, validationRules.BRANCH_NAME);
+              if (validationResult !== true) {
+                return validationResult;
+              }
+            }
             return true;
           },
-          required: "Enter branch name",
           onChange: handleReleaseBranchNameFieldValueChange,
         })}
-        label={"Branch Name"}
+        label="Branch Name"
         tooltipText={"Type the branch name that will be created in the Version Control System."}
-        placeholder={"Enter Branch Name"}
         control={control}
         errors={errors}
+        options={branchesOptions}
         disabled={releaseFieldValue}
+        AutocompleteProps={{
+          freeSolo: true,
+          loading: !!apiBaseUrl && query.isLoading,
+        }}
+        TextFieldProps={{
+          helperText,
+          InputProps: {
+            endAdornment: canLoadBranches ? (
+              <IconButton
+                size="small"
+                onClick={handleRefreshBranches}
+                disabled={invalidateBranchListCacheMutation.isPending || query.isLoading}
+                title="Refresh branches"
+                sx={{
+                  color: "inherit",
+                }}
+              >
+                <RotateCw size={16} />
+              </IconButton>
+            ) : null,
+          },
+        }}
       />
     </Grid>
   );

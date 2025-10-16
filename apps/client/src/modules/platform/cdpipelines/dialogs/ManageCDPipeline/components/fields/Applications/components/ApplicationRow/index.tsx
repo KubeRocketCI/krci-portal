@@ -41,7 +41,8 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
   });
 
   const sortedApplicationBranchList = React.useMemo(() => {
-    return applicationBranchListWatch.dataArray.sort(sortKubeObjectByCreationTimestamp);
+    if (!applicationBranchListWatch.dataArray) return [];
+    return [...applicationBranchListWatch.dataArray].sort(sortKubeObjectByCreationTimestamp);
   }, [applicationBranchListWatch.dataArray]);
 
   const rowAppNameField = `${CDPIPELINE_FORM_NAMES.applicationsFieldArray.name}.${index}.appName` as const;
@@ -74,56 +75,57 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
     });
   }, [appName, applicationsFieldArrayValue, inputDockerStreamsValue, removeRow, setValue]);
 
-  const setDefaultValues = React.useCallback(() => {
-    if (applicationBranchListWatch.query.isLoading || !applicationBranchListWatch.dataArray?.length) {
-      return;
-    }
+  // Track if we've initialized the default value to prevent re-setting
+  const hasInitializedRef = React.useRef(false);
 
-    const availableBranches = sortedApplicationBranchList.map((el) => ({
-      specBranchName: el.spec.branchName,
-      metadataBranchName: el.metadata.name,
-    }));
+  // Set default value once when branches are loaded
+  if (
+    !hasInitializedRef.current &&
+    !applicationBranchListWatch.query.isLoading &&
+    sortedApplicationBranchList.length > 0
+  ) {
+    const currentBranchValue = getValues(rowAppBranchField);
 
-    let newBranchFieldValue = "";
+    // Only set default if no value is set yet
+    if (!currentBranchValue) {
+      const availableBranches = sortedApplicationBranchList.map((el) => ({
+        specBranchName: el.spec.branchName,
+        metadataBranchName: el.metadata.name,
+      }));
 
-    if (!CDPipeline) {
-      return;
-    }
+      let newBranchFieldValue = "";
 
-    if (CDPipeline!.spec.applications.includes(appName)) {
-      for (const applicationBranch of CDPipeline!.spec.inputDockerStreams) {
-        const branchObject = availableBranches.find((el) => el.metadataBranchName === applicationBranch);
+      // If editing existing CDPipeline and it has this app, use the existing branch
+      if (CDPipeline && CDPipeline.spec.applications.includes(appName)) {
+        for (const applicationBranch of CDPipeline.spec.inputDockerStreams) {
+          const branchObject = availableBranches.find((el) => el.metadataBranchName === applicationBranch);
+          if (branchObject) {
+            newBranchFieldValue = branchObject.metadataBranchName;
+            break;
+          }
+        }
+      }
 
-        if (!branchObject || !availableBranches.find((el) => el.metadataBranchName === applicationBranch)) {
-          continue;
+      // Otherwise use first available branch
+      if (!newBranchFieldValue && availableBranches.length > 0) {
+        newBranchFieldValue = availableBranches[0].metadataBranchName;
+      }
+
+      if (newBranchFieldValue) {
+        setValue(rowAppBranchField, newBranchFieldValue);
+
+        const currentInputDockerStreams = getValues(CDPIPELINE_FORM_NAMES.inputDockerStreams.name);
+        if (!currentInputDockerStreams.includes(newBranchFieldValue)) {
+          setValue(CDPIPELINE_FORM_NAMES.inputDockerStreams.name, [...currentInputDockerStreams, newBranchFieldValue]);
         }
 
-        newBranchFieldValue = branchObject.metadataBranchName;
+        hasInitializedRef.current = true;
       }
     } else {
-      newBranchFieldValue = availableBranches?.[0].metadataBranchName;
+      // If there's already a value, mark as initialized
+      hasInitializedRef.current = true;
     }
-
-    setValue(rowAppBranchField, newBranchFieldValue);
-
-    setValue(CDPIPELINE_FORM_NAMES.inputDockerStreams.name, [
-      ...getValues(CDPIPELINE_FORM_NAMES.inputDockerStreams.name).filter((el: string) => el !== newBranchFieldValue),
-      newBranchFieldValue,
-    ]);
-  }, [
-    applicationBranchListWatch.query.isLoading,
-    applicationBranchListWatch.dataArray?.length,
-    sortedApplicationBranchList,
-    CDPipeline,
-    appName,
-    setValue,
-    rowAppBranchField,
-    getValues,
-  ]);
-
-  React.useEffect(() => {
-    setDefaultValues();
-  }, [setDefaultValues]);
+  }
 
   const rowAppBranchFieldValue = watch(rowAppBranchField);
 

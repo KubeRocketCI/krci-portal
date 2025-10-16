@@ -1,4 +1,3 @@
-import { Snackbar } from "@/core/components/Snackbar";
 import { useResourceCRUDMutation } from "@/k8s/api/hooks/useResourceCRUDMutation";
 import { StageDraft, k8sOperation, k8sStageConfig } from "@my-project/shared";
 import React from "react";
@@ -9,17 +8,16 @@ export const useCRUD = () => {
     k8sOperation.create,
     {
       createCustomMessages: () => ({
-        onMutate: {
+        loading: {
           message: "Creating Stage",
         },
-        onError: {
+        error: {
           message: "Failed to create Stage",
         },
-        onSuccess: {
+        success: {
           message: "Stage has been created",
           options: {
-            autoHideDuration: 8000,
-            content: (key, message) => <Snackbar text={String(message)} snackbarKey={key} variant={"success"} />,
+            duration: 8000,
           },
         },
       }),
@@ -31,17 +29,16 @@ export const useCRUD = () => {
     k8sOperation.patch,
     {
       createCustomMessages: () => ({
-        onMutate: {
+        loading: {
           message: "Patching Stage",
         },
-        onError: {
+        error: {
           message: "Failed to patch Stage",
         },
-        onSuccess: {
+        success: {
           message: "Stage has been patched",
           options: {
-            autoHideDuration: 8000,
-            content: (key, message) => <Snackbar text={String(message)} snackbarKey={key} variant={"success"} />,
+            duration: 8000,
           },
         },
       }),

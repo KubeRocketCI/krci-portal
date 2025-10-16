@@ -3,6 +3,9 @@ import { Box, Button, Stack, useTheme } from "@mui/material";
 import React from "react";
 import { useTypedFormContext } from "../../../../hooks/useFormContext";
 import { useCurrentDialog } from "../../../../providers/CurrentDialog/hooks";
+import { STAGE_FORM_NAMES } from "../../../../names";
+import { ManageStageFormValues } from "../../../../types";
+import { editStageObject } from "@my-project/shared";
 
 export const FormActions = () => {
   const {
@@ -26,22 +29,39 @@ export const FormActions = () => {
   }, [reset]);
 
   const {
-    // triggerEditStage,
+    triggerEditStage,
     mutations: { stageEditMutation },
   } = useStageCRUD();
 
-  const isLoading = React.useMemo(() => stageEditMutation.isPending, [stageEditMutation.isPending]);
+  const isPending = stageEditMutation.isPending;
 
-  const onSubmit = React.useCallback(async () => {
-    if (!stage) {
-      return;
-    }
+  const onSuccess = React.useCallback(() => {
+    handleClose();
+  }, [handleClose]);
 
-    // const usedValues = getUsedValues(values, STAGE_FORM_NAMES);
-    // const stageData = editResource(STAGE_FORM_NAMES, stage, usedValues);
+  const onSubmit = React.useCallback(
+    async (values: ManageStageFormValues) => {
+      if (!stage) {
+        return;
+      }
 
-    // await editStage({ stageData });
-  }, [stage]);
+      const updatedStage = editStageObject(stage, {
+        triggerType: values[STAGE_FORM_NAMES.triggerType.name],
+        triggerTemplate: values[STAGE_FORM_NAMES.triggerTemplate.name],
+        cleanTemplate: values[STAGE_FORM_NAMES.cleanTemplate.name],
+      });
+
+      await triggerEditStage({
+        data: {
+          stage: updatedStage,
+        },
+        callbacks: {
+          onSuccess,
+        },
+      });
+    },
+    [stage, triggerEditStage, onSuccess]
+  );
 
   const theme = useTheme();
 
@@ -62,7 +82,7 @@ export const FormActions = () => {
         variant={"contained"}
         color={"primary"}
         size="small"
-        disabled={!isDirty || isLoading}
+        disabled={!isDirty || isPending}
       >
         apply
       </Button>

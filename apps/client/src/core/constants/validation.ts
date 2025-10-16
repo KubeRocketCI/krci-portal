@@ -20,4 +20,11 @@ export const validationRules: Record<string, ValidationRule[]> = {
         "Only alphanumeric characters, dot, dash, underscore and slashes are allowed. Consecutive slashes or dots are not allowed.",
     },
   ],
+  BRANCH_NAME: [
+    {
+      pattern: /^(?![/.-])[A-Za-z0-9/._-]*(?<![/.-])$/,
+      message:
+        "Branch name may contain: upper-case and lower-case letters, numbers, slashes (/), dashes (-), dots (.), and underscores (_). It cannot start or end with a slash (/), dot (.), or dash (-). Consecutive special characters are not allowed. Minimum 2 characters.",
+    },
+  ],
 };

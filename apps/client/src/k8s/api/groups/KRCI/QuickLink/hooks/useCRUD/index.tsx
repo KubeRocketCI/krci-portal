@@ -1,4 +1,3 @@
-import { Snackbar } from "@/core/components/Snackbar";
 import { useResourceCRUDMutation } from "@/k8s/api/hooks/useResourceCRUDMutation";
 import { k8sOperation, k8sQuickLinkConfig, QuickLink, QuickLinkDraft } from "@my-project/shared";
 import React from "react";
@@ -9,17 +8,16 @@ export const useCRUD = () => {
     k8sOperation.create,
     {
       createCustomMessages: () => ({
-        onMutate: {
+        loading: {
           message: "Creating QuickLink",
         },
-        onError: {
+        error: {
           message: "Failed to create QuickLink",
         },
-        onSuccess: {
+        success: {
           message: "QuickLink has been created",
           options: {
-            autoHideDuration: 8000,
-            content: (key, message) => <Snackbar text={String(message)} snackbarKey={key} variant={"success"} />,
+            duration: 8000,
           },
         },
       }),
@@ -31,17 +29,16 @@ export const useCRUD = () => {
     k8sOperation.patch,
     {
       createCustomMessages: () => ({
-        onMutate: {
+        loading: {
           message: "Patching QuickLink",
         },
-        onError: {
+        error: {
           message: "Failed to patch QuickLink",
         },
-        onSuccess: {
+        success: {
           message: "QuickLink has been patched",
           options: {
-            autoHideDuration: 8000,
-            content: (key, message) => <Snackbar text={String(message)} snackbarKey={key} variant={"success"} />,
+            duration: 8000,
           },
         },
       }),
@@ -53,17 +50,16 @@ export const useCRUD = () => {
     k8sOperation.delete,
     {
       createCustomMessages: () => ({
-        onMutate: {
+        loading: {
           message: "Deleting QuickLink",
         },
-        onError: {
+        error: {
           message: "Failed to delete QuickLink",
         },
-        onSuccess: {
+        success: {
           message: "QuickLink has been deleted",
           options: {
-            autoHideDuration: 8000,
-            content: (key, message) => <Snackbar text={String(message)} snackbarKey={key} variant={"success"} />,
+            duration: 8000,
           },
         },
       }),

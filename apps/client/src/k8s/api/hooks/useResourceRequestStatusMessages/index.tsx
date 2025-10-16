@@ -1,120 +1,107 @@
-import { Snackbar } from "@/core/components/Snackbar";
+import { showToast, ToastOptions, ToastVariant } from "@/core/components/Snackbar";
 import { k8sOperation, K8sOperation } from "@my-project/shared";
-import { OptionsObject, SnackbarKey, SnackbarMessage, useSnackbar, VariantType } from "notistack";
 
 interface Options {
   entityName?: string;
   customMessage?: {
     message: string;
-    options?: OptionsObject;
+    options?: ToastOptions;
   };
 }
 
-const getDefaultOptions = (variant: VariantType, autoHideDuration: number = 5000) => {
-  return {
-    autoHideDuration,
-    anchorOrigin: {
-      vertical: "bottom",
-      horizontal: "left",
-    },
-    variant,
-    content: (key: SnackbarKey, message: SnackbarMessage) => (
-      <Snackbar snackbarKey={key} text={String(message)} variant={variant} />
-    ),
-  } as const;
+const getDefaultDuration = (variant: ToastVariant): number => {
+  switch (variant) {
+    case "info":
+      return 2000;
+    case "success":
+      return 5000;
+    case "error":
+      return 5000;
+    case "warning":
+      return 5000;
+    default:
+      return 5000;
+  }
 };
 
 export const useRequestStatusMessages = () => {
-  const { enqueueSnackbar } = useSnackbar();
-
   const showBeforeRequestMessage = (operation: K8sOperation, { entityName, customMessage }: Options) => {
-    const beforeRequestMessage = (() => {
+    const beforeRequestMessage: string = (() => {
       switch (operation) {
         case k8sOperation.create:
-          return `Applying ${entityName}`;
+          return `Applying ${entityName || "resource"}`;
         case k8sOperation.patch:
-          return `Patching ${entityName}`;
+          return `Patching ${entityName || "resource"}`;
         case k8sOperation.delete:
-          return `Deleting ${entityName}`;
+          return `Deleting ${entityName || "resource"}`;
+        default:
+          return `Processing ${entityName || "resource"}`;
       }
     })();
 
-    const defaultOptions = getDefaultOptions("info", 2000);
+    const variant: ToastVariant = "info";
+    const defaultDuration = getDefaultDuration(variant);
 
     if (customMessage) {
       const { message, options = {} } = customMessage;
-      const mergedOptions = {
-        ...defaultOptions,
-        ...options,
-      };
-      enqueueSnackbar(message, mergedOptions);
+      showToast(message, variant, { duration: defaultDuration, ...options });
     } else {
-      enqueueSnackbar(beforeRequestMessage, defaultOptions);
+      showToast(beforeRequestMessage, variant, { duration: defaultDuration });
     }
   };
 
   const showRequestSuccessMessage = (operation: K8sOperation, { entityName, customMessage }: Options) => {
-    const requestSuccessMessage = (() => {
+    const requestSuccessMessage: string = (() => {
       switch (operation) {
         case k8sOperation.create:
-          return `${entityName} has been successfully applied`;
+          return `${entityName || "Resource"} has been successfully applied`;
         case k8sOperation.patch:
-          return `${entityName} has been successfully patched`;
+          return `${entityName || "Resource"} has been successfully patched`;
         case k8sOperation.delete:
-          return `${entityName} has been successfully deleted`;
+          return `${entityName || "Resource"} has been successfully deleted`;
+        default:
+          return `${entityName || "Resource"} operation completed successfully`;
       }
     })();
 
-    const defaultOptions = getDefaultOptions("success");
+    const variant: ToastVariant = "success";
+    const defaultDuration = getDefaultDuration(variant);
 
     if (customMessage) {
       const { message, options = {} } = customMessage;
-      const mergedOptions = {
-        ...defaultOptions,
-        ...options,
-      };
-
-      enqueueSnackbar(message, mergedOptions);
+      showToast(message, variant, { duration: defaultDuration, ...options });
     } else {
-      enqueueSnackbar(requestSuccessMessage, defaultOptions);
+      showToast(requestSuccessMessage, variant, { duration: defaultDuration });
     }
   };
 
   const showRequestErrorMessage = (operation: K8sOperation, { entityName, customMessage }: Options) => {
-    const requestErrorMessage = (() => {
+    const requestErrorMessage: string = (() => {
       switch (operation) {
         case k8sOperation.create:
-          return `Failed to apply ${entityName}`;
+          return `Failed to apply ${entityName || "resource"}`;
         case k8sOperation.patch:
-          return `Failed to patch ${entityName}`;
+          return `Failed to patch ${entityName || "resource"}`;
         case k8sOperation.delete:
-          return `Failed to delete ${entityName}`;
+          return `Failed to delete ${entityName || "resource"}`;
+        default:
+          return `Operation failed for ${entityName || "resource"}`;
       }
     })();
 
-    const defaultOptions = getDefaultOptions("error");
+    const variant: ToastVariant = "error";
+    const defaultDuration = getDefaultDuration(variant);
 
     if (customMessage) {
       const { message, options = {} } = customMessage;
-      const mergedOptions = {
-        ...defaultOptions,
-        ...options,
-      };
-      enqueueSnackbar(message, mergedOptions);
+      showToast(message, variant, { duration: defaultDuration, ...options });
     } else {
-      enqueueSnackbar(requestErrorMessage, defaultOptions);
+      showToast(requestErrorMessage, variant, { duration: defaultDuration });
     }
   };
 
   const showRequestErrorDetailedMessage = (error: unknown) => {
-    enqueueSnackbar(error?.toString(), {
-      autoHideDuration: 5000,
-      anchorOrigin: {
-        vertical: "bottom",
-        horizontal: "left",
-      },
-      content: (key, message) => <Snackbar snackbarKey={key} text={String(message)} variant="error" />,
-    });
+    showToast(error?.toString() || "An error occurred", "error", { duration: 5000 });
   };
 
   return {

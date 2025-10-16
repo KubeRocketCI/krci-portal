@@ -1,34 +1,16 @@
-import {
-  ButtonGroup,
-  ClickAwayListener,
-  Grow,
-  ListItemIcon,
-  ListItemText,
-  MenuItem,
-  MenuList,
-  Paper,
-  Popper,
-  useTheme,
-} from "@mui/material";
 import React from "react";
-
-import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
-import { StatusIcon } from "@/core/components/StatusIcon";
-import { usePipelineRunCRUD, usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
-import { CUSTOM_RESOURCE_STATUS } from "@/k8s/constants/statuses";
-import {
-  useBuildTriggerTemplateWatch,
-  useCodebaseWatch,
-  useGitServerWatch,
-} from "@/modules/platform/codebases/pages/details/hooks/data";
-import { createBuildPipelineRunDraft, getPipelineRunStatus, PipelineRun, pipelineRunReason } from "@my-project/shared";
-import { ChevronDown, LoaderCircle, Play } from "lucide-react";
+import { useCodebaseWatch } from "@/modules/platform/codebases/pages/details/hooks/data";
+import { ciTool, GitLabPipelineVariable } from "@my-project/shared";
 import { BuildGroupProps } from "./types";
+import { TektonBuildGroup } from "./components/TektonBuildGroup";
+import { GitLabBuildGroup } from "./components/GitLabBuildGroup";
+import { useGitLabPipelineTrigger } from "@/k8s/api/integrations/gitlab/hooks/useGitLabPipelineTrigger";
+import { GitLabBuildWithParamsDialog } from "@/modules/platform/codebases/dialogs/GitLabBuildWithParams";
+import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 
 export const BuildGroup = ({
   codebaseBranch,
   latestBuildPipelineRun,
-  handleOpenEditor,
   menuAnchorEl,
   handleClickMenu,
   handleCloseMenu,
@@ -36,150 +18,80 @@ export const BuildGroup = ({
   const codebaseWatch = useCodebaseWatch();
   const codebase = codebaseWatch.query.data;
 
-  const gitServerByCodebaseWatch = useGitServerWatch();
-  const gitServerByCodebase = gitServerByCodebaseWatch.query.data;
+  const codebaseCiTool = codebase?.spec.ciTool || ciTool.tekton;
+  const isGitLabCI = codebaseCiTool === ciTool.gitlab;
 
-  const open = Boolean(menuAnchorEl);
-  const id = open ? "simple-popper" : undefined;
+  // GitLab CI handlers
+  const openGitLabParamsDialog = useDialogOpener(GitLabBuildWithParamsDialog);
 
-  const theme = useTheme();
+  const { triggerPipeline, isPending: isGitLabLoading } = useGitLabPipelineTrigger();
 
-  const buildTriggerTemplateWatch = useBuildTriggerTemplateWatch();
-
-  const pipelineRunPermissions = usePipelineRunPermissions();
-
-  const buildTriggerTemplate = buildTriggerTemplateWatch.query.data;
-
-  const { triggerCreatePipelineRun } = usePipelineRunCRUD();
-
-  const buildPipelineRunData = React.useMemo(() => {
-    if (!gitServerByCodebase || !codebase) {
+  const handleDirectGitLabBuild = React.useCallback(() => {
+    if (!codebase) {
       return;
     }
 
-    const buildPipelineRunTemplate = buildTriggerTemplate?.spec?.resourcetemplates?.[0];
+    // Strip leading slash from gitUrlPath
+    const project = codebase.spec.gitUrlPath.startsWith("/")
+      ? codebase.spec.gitUrlPath.slice(1)
+      : codebase.spec.gitUrlPath;
 
-    if (!buildPipelineRunTemplate) {
-      return;
-    }
-
-    const buildPipelineRunTemplateCopy = structuredClone(buildPipelineRunTemplate);
-
-    return createBuildPipelineRunDraft({
-      codebase,
-      codebaseBranch,
-      pipelineRunTemplate: buildPipelineRunTemplateCopy,
-      gitServer: gitServerByCodebase,
+    triggerPipeline({
+      gitServer: codebase.spec.gitServer,
+      project,
+      ref: codebaseBranch.spec.branchName,
+      variables: [],
     });
-  }, [buildTriggerTemplate?.spec?.resourcetemplates, codebase, codebaseBranch, gitServerByCodebase]);
+  }, [codebase, codebaseBranch.spec.branchName, triggerPipeline]);
 
-  const onBuildButtonClick = React.useCallback(async () => {
-    if (!buildPipelineRunData) {
+  const handleOpenGitLabParamsDialog = React.useCallback(() => {
+    if (!codebase) {
       return;
     }
 
-    await triggerCreatePipelineRun({
-      data: {
-        pipelineRun: buildPipelineRunData,
+    openGitLabParamsDialog({
+      triggerData: {
+        gitServer: codebase.spec.gitServer,
+        gitUrlPath: codebase.spec.gitUrlPath,
+        branchName: codebaseBranch.spec.branchName,
       },
+      onSubmit: (variables: GitLabPipelineVariable[]) => {
+        const project = codebase.spec.gitUrlPath.startsWith("/")
+          ? codebase.spec.gitUrlPath.slice(1)
+          : codebase.spec.gitUrlPath;
+
+        triggerPipeline({
+          gitServer: codebase.spec.gitServer,
+          project,
+          ref: codebaseBranch.spec.branchName,
+          variables,
+        });
+      },
+      isLoading: isGitLabLoading,
     });
-  }, [buildPipelineRunData, triggerCreatePipelineRun]);
+  }, [codebase, codebaseBranch.spec.branchName, isGitLabLoading, openGitLabParamsDialog, triggerPipeline]);
 
-  const latestBuildStatus = getPipelineRunStatus(latestBuildPipelineRun || ({} as PipelineRun));
-
-  const latestBuildIsRunning = latestBuildStatus.reason === pipelineRunReason.running;
-
-  const codebaseBranchStatusIsOk = codebaseBranch?.status?.status === CUSTOM_RESOURCE_STATUS.CREATED;
-
-  const buildButtonDisabled =
-    !pipelineRunPermissions.data.create.allowed || latestBuildIsRunning || !codebaseBranchStatusIsOk;
-
-  const buildButtonTooltip = (() => {
-    if (!pipelineRunPermissions.data.create.allowed) {
-      return pipelineRunPermissions.data.create.reason;
-    }
-
-    if (latestBuildIsRunning) {
-      return "Latest build PipelineRun is running";
-    }
-
-    if (!codebaseBranchStatusIsOk) {
-      return `Codebase branch status is ${codebaseBranch?.status?.status}`;
-    }
-
-    return "Trigger build PipelineRun";
-  })();
+  if (isGitLabCI) {
+    return (
+      <GitLabBuildGroup
+        codebaseBranch={codebaseBranch}
+        handleOpenGitLabParamsDialog={handleOpenGitLabParamsDialog}
+        handleDirectGitLabBuild={handleDirectGitLabBuild}
+        menuAnchorEl={menuAnchorEl}
+        handleClickMenu={handleClickMenu}
+        handleCloseMenu={handleCloseMenu}
+        isGitLabLoading={isGitLabLoading}
+      />
+    );
+  }
 
   return (
-    <>
-      <ButtonGroup variant="outlined" sx={{ color: theme.palette.text.primary }}>
-        <ButtonWithPermission
-          ButtonProps={{
-            startIcon: latestBuildIsRunning ? (
-              <StatusIcon Icon={LoaderCircle} isSpinning color={theme.palette.secondary.dark} />
-            ) : (
-              <Play size={20} />
-            ),
-            onClick: onBuildButtonClick,
-            size: "small",
-            sx: {
-              height: "100%",
-              color: theme.palette.secondary.dark,
-              borderColor: theme.palette.secondary.dark,
-            },
-          }}
-          allowed={!buildButtonDisabled}
-          reason={buildButtonTooltip}
-        >
-          {latestBuildIsRunning ? "building" : "build"}
-        </ButtonWithPermission>
-        <ButtonWithPermission
-          ButtonProps={{
-            size: "small",
-            onClick: handleClickMenu,
-            sx: {
-              height: "100%",
-              color: theme.palette.secondary.dark,
-              borderColor: theme.palette.secondary.dark,
-            },
-          }}
-          allowed={!buildButtonDisabled}
-          reason={buildButtonTooltip}
-        >
-          <ChevronDown size={16} />
-        </ButtonWithPermission>
-      </ButtonGroup>
-      <Popper id={id} sx={{ zIndex: 1 }} open={open} anchorEl={menuAnchorEl} role={undefined} transition disablePortal>
-        {({ TransitionProps, placement }) => (
-          <Grow
-            {...TransitionProps}
-            style={{
-              transformOrigin: placement === "bottom" ? "center top" : "center bottom",
-            }}
-          >
-            <Paper>
-              <ClickAwayListener onClickAway={handleCloseMenu}>
-                <MenuList autoFocusItem>
-                  <MenuItem
-                    onClick={() => {
-                      if (!buildPipelineRunData) {
-                        return;
-                      }
-
-                      handleOpenEditor(buildPipelineRunData);
-                    }}
-                  >
-                    <ListItemIcon>
-                      <Play size={25} />
-                    </ListItemIcon>
-                    <ListItemText>Build with params</ListItemText>
-                  </MenuItem>
-                </MenuList>
-              </ClickAwayListener>
-            </Paper>
-          </Grow>
-        )}
-      </Popper>
-    </>
+    <TektonBuildGroup
+      codebaseBranch={codebaseBranch}
+      latestBuildPipelineRun={latestBuildPipelineRun}
+      menuAnchorEl={menuAnchorEl}
+      handleClickMenu={handleClickMenu}
+      handleCloseMenu={handleCloseMenu}
+    />
   );
 };

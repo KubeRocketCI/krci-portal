@@ -96,17 +96,17 @@ export const FormActions = ({ baseDefaultValues, setActiveTab }: FormActionsProp
   );
 
   const onSuccess = React.useCallback(() => {
-    const capitalizedType = capitalizeFirstLetter(typeFieldValue as string);
+    // const capitalizedType = capitalizeFirstLetter(typeFieldValue as string);
 
-    setDialog(SuccessDialog, {
-      dialogTitle: `Create ${capitalizedType}`,
-      title: `Your new ${capitalizedType} is created`,
-      description: `Browse your new ${capitalizedType} and start working with it.`,
-      link: null,
-    });
+    // setDialog(SuccessDialog, {
+    //   dialogTitle: `Create ${capitalizedType}`,
+    //   title: `Your new ${capitalizedType} is created`,
+    //   description: `Browse your new ${capitalizedType} and start working with it.`,
+    //   link: null,
+    // });
 
     handleClose();
-  }, [handleClose, setDialog, typeFieldValue]);
+  }, [handleClose]);
 
   const {
     triggerCreateCodebase,

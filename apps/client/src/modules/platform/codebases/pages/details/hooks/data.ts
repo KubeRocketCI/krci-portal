@@ -5,16 +5,15 @@ import { useQuickLinkWatchList } from "@/k8s/api/groups/KRCI/QuickLink";
 import { usePipelineRunWatchList } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { useTriggerTemplateWatchItem } from "@/k8s/api/groups/Tekton/TriggerTemplate";
 import {
-  checkIsDefaultBranch,
   CodebaseBranch,
   codebaseBranchLabels,
   createBuildPipelineRef,
   createReviewPipelineRef,
   pipelineRunLabels,
 } from "@my-project/shared";
-import React from "react";
 import { routeComponentDetails } from "../route";
 import { useQuery } from "@tanstack/react-query";
+import { sortCodebaseBranchesMap } from "@/k8s/api/groups/KRCI/CodebaseBranch/utils/sort";
 
 export const useCodebaseWatch = () => {
   const params = routeComponentDetails.useParams();
@@ -31,6 +30,9 @@ export const useCodebaseWatch = () => {
 export const useCodebaseBranchListWatch = () => {
   const params = routeComponentDetails.useParams();
 
+  const codebaseWatch = useCodebaseWatch();
+  const codebase = codebaseWatch.query.data;
+
   return useCodebaseBranchWatchList({
     namespace: params.namespace,
     labels: {
@@ -38,6 +40,10 @@ export const useCodebaseBranchListWatch = () => {
     },
     queryOptions: {
       enabled: !!params.name,
+    },
+    transform: (items) => {
+      if (!codebase) return items;
+      return sortCodebaseBranchesMap(items, codebase);
     },
   });
 };
@@ -57,7 +63,10 @@ export const useGitServerWatch = () => {
   });
 };
 
-export const useCodebaseBranchPipelineRunListWatch = (codebaseBranch: CodebaseBranch) => {
+export const useCodebaseBranchPipelineRunListWatch = (
+  codebaseBranch: CodebaseBranch,
+  options?: { enabled?: boolean }
+) => {
   const params = routeComponentDetails.useParams();
 
   return usePipelineRunWatchList({
@@ -66,7 +75,7 @@ export const useCodebaseBranchPipelineRunListWatch = (codebaseBranch: CodebaseBr
       [pipelineRunLabels.codebaseBranch]: codebaseBranch.metadata.name,
     },
     queryOptions: {
-      enabled: !!codebaseBranch,
+      enabled: options?.enabled !== undefined ? options.enabled : !!codebaseBranch,
     },
   });
 };
@@ -99,15 +108,7 @@ export const usePipelineNamesWatch = () => {
   const codebase = codebaseWatch.query.data;
 
   const codebaseBranchListWatch = useCodebaseBranchListWatch();
-
-  const sortedCodebaseBranchList = React.useMemo(() => {
-    if (!codebase) {
-      return codebaseBranchListWatch.dataArray;
-    }
-    return codebaseBranchListWatch.dataArray.sort((a) => (checkIsDefaultBranch(codebase!, a) ? -1 : 1));
-  }, [codebaseBranchListWatch.dataArray, codebase]);
-
-  const defaultBranch = sortedCodebaseBranchList[0];
+  const defaultBranch = codebaseBranchListWatch.dataArray[0];
 
   const gitServerByCodebaseWatch = useGitServerWatch();
   const gitServerByCodebase = gitServerByCodebaseWatch.query.data;

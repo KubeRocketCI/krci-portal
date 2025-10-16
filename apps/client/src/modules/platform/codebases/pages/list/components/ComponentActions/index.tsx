@@ -3,9 +3,10 @@ import React from "react";
 import { EllipsisVertical } from "lucide-react";
 import { Codebase } from "@my-project/shared";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
+import { CodebaseActionsMenu } from "@/modules/platform/codebases/components/CodebaseActionsMenu";
 
 export const Actions = ({
-  // resource,
+  resource,
   disabled,
 }: {
   resource: Codebase;
@@ -15,7 +16,7 @@ export const Actions = ({
   };
 }) => {
   const buttonRef = React.createRef<HTMLButtonElement>();
-  const [, setAnchor] = React.useState<(EventTarget & HTMLButtonElement) | null>(null);
+  const [anchor, setAnchor] = React.useState<(EventTarget & HTMLButtonElement) | null>(null);
 
   return (
     <>
@@ -37,17 +38,16 @@ export const Actions = ({
           <EllipsisVertical width={20} height={20} />
         </IconButton>
       </ConditionalWrapper>
-      {/* {anchor && !disabled?.boolean ? (
+      {anchor && !disabled?.boolean ? (
         <CodebaseActionsMenu
           variant="menu"
           data={{
-            codebaseData: resource,
+            codebase: resource,
           }}
-          permissions={permissions}
           anchorEl={anchor}
           handleCloseResourceActionListMenu={() => setAnchor(null)}
         />
-      ) : null} */}
+      ) : null}
     </>
   );
 };

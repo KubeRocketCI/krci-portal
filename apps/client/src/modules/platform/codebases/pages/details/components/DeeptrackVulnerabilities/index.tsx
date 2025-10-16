@@ -75,7 +75,7 @@ export const DependencyTrackMetrics = ({ componentName }: DependencyTrackMetrics
       text={
         <Typography variant={"body1"} color="secondary.dark" component={"div"}>
           No metrics available.{" "}
-          <Button variant="link" asChild>
+          <Button variant="link" asChild className="p-0!">
             <Link
               to={routeDependencyTrackConfiguration.to}
               params={{
@@ -91,7 +91,7 @@ export const DependencyTrackMetrics = ({ componentName }: DependencyTrackMetrics
     >
       {depTrackDataQuery.isLoading ? (
         <CircularProgress />
-      ) : (
+      ) : depTrackDataQuery.data?.baseUrl ? (
         <>
           <Link
             to={LinkCreationService.depTrack.createDashboardLink(
@@ -139,7 +139,7 @@ export const DependencyTrackMetrics = ({ componentName }: DependencyTrackMetrics
             </Stack>
           </Link>
         </>
-      )}
+      ) : null}
     </NoDataWidgetWrapper>
   );
 };

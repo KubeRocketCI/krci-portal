@@ -1,4 +1,3 @@
-import { Snackbar } from "@/core/components/Snackbar";
 import { useResourceCRUDMutation } from "@/k8s/api/hooks/useResourceCRUDMutation";
 import { k8sOperation, k8sPipelineConfig, Pipeline, PipelineDraft } from "@my-project/shared";
 import React from "react";
@@ -9,17 +8,16 @@ export const useCRUD = () => {
     k8sOperation.create,
     {
       createCustomMessages: () => ({
-        onMutate: {
+        loading: {
           message: "Creating Pipeline",
         },
-        onError: {
+        error: {
           message: "Failed to create Pipeline",
         },
-        onSuccess: {
+        success: {
           message: "Pipeline has been created",
           options: {
-            autoHideDuration: 8000,
-            content: (key, message) => <Snackbar text={String(message)} snackbarKey={key} variant={"success"} />,
+            duration: 8000,
           },
         },
       }),
@@ -31,17 +29,16 @@ export const useCRUD = () => {
     k8sOperation.patch,
     {
       createCustomMessages: () => ({
-        onMutate: {
+        loading: {
           message: "Patching Pipeline",
         },
-        onError: {
+        error: {
           message: "Failed to patch Pipeline",
         },
-        onSuccess: {
+        success: {
           message: "Pipeline has been patched",
           options: {
-            autoHideDuration: 8000,
-            content: (key, message) => <Snackbar text={String(message)} snackbarKey={key} variant={"success"} />,
+            duration: 8000,
           },
         },
       }),
@@ -53,17 +50,16 @@ export const useCRUD = () => {
     k8sOperation.delete,
     {
       createCustomMessages: () => ({
-        onMutate: {
+        loading: {
           message: "Deleting Pipeline",
         },
-        onError: {
+        error: {
           message: "Failed to delete Pipeline",
         },
-        onSuccess: {
+        success: {
           message: "Pipeline has been deleted",
           options: {
-            autoHideDuration: 8000,
-            content: (key, message) => <Snackbar text={String(message)} snackbarKey={key} variant={"success"} />,
+            duration: 8000,
           },
         },
       }),

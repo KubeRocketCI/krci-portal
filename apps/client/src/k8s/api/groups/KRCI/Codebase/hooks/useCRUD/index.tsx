@@ -1,5 +1,6 @@
-import { Snackbar } from "@/core/components/Snackbar";
 import { useResourceCRUDMutation } from "@/k8s/api/hooks/useResourceCRUDMutation";
+import { useClusterStore } from "@/k8s/store";
+import { routeComponentDetails } from "@/modules/platform/codebases/pages/details/route";
 import {
   Codebase,
   CodebaseDraft,
@@ -10,26 +11,39 @@ import {
   k8sOperation,
 } from "@my-project/shared";
 import React from "react";
+import { useShallow } from "zustand/react/shallow";
 
 export const useCRUD = () => {
+  const { clusterName, defaultNamespace } = useClusterStore(
+    useShallow((state) => ({
+      clusterName: state.clusterName,
+      defaultNamespace: state.defaultNamespace,
+    }))
+  );
+
   const codebaseCreateMutation = useResourceCRUDMutation<CodebaseDraft, typeof k8sOperation.create>(
     "codebaseCreateMutation",
     k8sOperation.create,
     {
-      createCustomMessages: () => ({
-        onMutate: {
+      createCustomMessages: (codebase) => ({
+        loading: {
           message: "Creating Codebase",
         },
-        onError: {
+        error: {
           message: "Failed to create Codebase",
         },
-        onSuccess: {
+        success: {
           message: "Codebase has been created",
           options: {
-            autoHideDuration: 8000,
-            content: (key, message) => (
-              <Snackbar text={String(message)} snackbarKey={key} route={{}} variant={"success"} />
-            ),
+            duration: 8000,
+            route: {
+              to: routeComponentDetails.fullPath,
+              params: {
+                clusterName,
+                namespace: codebase.metadata.namespace || defaultNamespace,
+                name: codebase.metadata.name,
+              },
+            },
           },
         },
       }),
@@ -50,20 +64,25 @@ export const useCRUD = () => {
     "codebasePatchMutation",
     k8sOperation.patch,
     {
-      createCustomMessages: () => ({
-        onMutate: {
+      createCustomMessages: (codebase) => ({
+        loading: {
           message: "Patching Codebase",
         },
-        onError: {
+        error: {
           message: "Failed to patch Codebase",
         },
-        onSuccess: {
+        success: {
           message: "Codebase has been patched",
           options: {
-            autoHideDuration: 8000,
-            content: (key, message) => (
-              <Snackbar text={String(message)} snackbarKey={key} route={{}} variant={"success"} />
-            ),
+            duration: 8000,
+            route: {
+              to: routeComponentDetails.fullPath,
+              params: {
+                clusterName,
+                namespace: codebase.metadata.namespace || defaultNamespace,
+                name: codebase.metadata.name,
+              },
+            },
           },
         },
       }),

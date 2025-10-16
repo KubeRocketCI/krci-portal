@@ -17,7 +17,7 @@ export default function KubeConfigPreviewDialog({ state }: KubeConfigPreviewDial
 
   const { data } = useQuery({
     queryKey: ["k8s.kubeconfig", clusterName],
-    queryFn: () => trpc.k8s.kubeconfig.query({ clusterName }),
+    queryFn: () => trpc.k8s.kubeconfig.query(),
     enabled: Boolean(clusterName),
   });
 
@@ -31,6 +31,21 @@ export default function KubeConfigPreviewDialog({ state }: KubeConfigPreviewDial
       navigator.clipboard.writeText(text).then(() => {
         alert("YAML copied to clipboard!");
       });
+    }
+  };
+
+  const downloadKubeConfig = () => {
+    const text = editorRef.current?.getValue();
+    if (text) {
+      const blob = new Blob([text], { type: "text/yaml" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "kubeconfig.yaml";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     }
   };
 
@@ -51,6 +66,9 @@ export default function KubeConfigPreviewDialog({ state }: KubeConfigPreviewDial
       <DialogActions>
         <Button variant="outlined" size="small" onClick={closeDialog}>
           Close
+        </Button>
+        <Button variant="contained" size="small" onClick={downloadKubeConfig}>
+          Download
         </Button>
         <Button variant="contained" size="small" onClick={copyToClipboard}>
           Copy YAML

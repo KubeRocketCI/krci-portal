@@ -53,6 +53,8 @@ export default defineConfig({
     },
   },
   define: {
+    // Development fallbacks - these values are only used in dev mode (pnpm dev)
+    // In production, the client fetches these values from the server at runtime via /api/config.get
     "import.meta.env.VITE_K8S_DEFAULT_CLUSTER_NAME": JSON.stringify(process.env.DEFAULT_CLUSTER_NAME),
     "import.meta.env.VITE_K8S_DEFAULT_CLUSTER_NAMESPACE": JSON.stringify(process.env.DEFAULT_CLUSTER_NAMESPACE),
     "import.meta.env.VITE_APP_API_PREFIX": JSON.stringify(process.env.API_PREFIX),

@@ -1,4 +1,3 @@
-import { Snackbar } from "@/core/components/Snackbar";
 import { useResourceCRUDMutation } from "@/k8s/api/hooks/useResourceCRUDMutation";
 import { k8sOperation, KubeObjectDraft, K8sResourceConfig } from "@my-project/shared";
 import React from "react";
@@ -6,17 +5,16 @@ import React from "react";
 export const useBasicCRUD = <T extends KubeObjectDraft>(k8sResourceConfig: K8sResourceConfig) => {
   const createMutation = useResourceCRUDMutation<T, typeof k8sOperation.create>("createMutation", k8sOperation.create, {
     createCustomMessages: () => ({
-      onMutate: {
+      loading: {
         message: `Creating ${k8sResourceConfig.kind}`,
       },
-      onError: {
+      error: {
         message: `Failed to create ${k8sResourceConfig.kind}`,
       },
-      onSuccess: {
+      success: {
         message: `${k8sResourceConfig.kind} has been created`,
         options: {
-          autoHideDuration: 8000,
-          content: (key, message) => <Snackbar text={String(message)} snackbarKey={key} variant={"success"} />,
+          duration: 8000,
         },
       },
     }),
@@ -24,17 +22,16 @@ export const useBasicCRUD = <T extends KubeObjectDraft>(k8sResourceConfig: K8sRe
 
   const editMutation = useResourceCRUDMutation<T, typeof k8sOperation.patch>("EditMutation", k8sOperation.patch, {
     createCustomMessages: () => ({
-      onMutate: {
+      loading: {
         message: `Patching ${k8sResourceConfig.kind}`,
       },
-      onError: {
+      error: {
         message: `Failed to patch ${k8sResourceConfig.kind}`,
       },
-      onSuccess: {
+      success: {
         message: `${k8sResourceConfig.kind} has been patched`,
         options: {
-          autoHideDuration: 8000,
-          content: (key, message) => <Snackbar text={String(message)} snackbarKey={key} variant={"success"} />,
+          duration: 8000,
         },
       },
     }),
@@ -96,17 +93,16 @@ export const useBasicCRUD = <T extends KubeObjectDraft>(k8sResourceConfig: K8sRe
 
   const deleteMutation = useResourceCRUDMutation<T, typeof k8sOperation.delete>("deleteMutation", k8sOperation.delete, {
     createCustomMessages: () => ({
-      onMutate: {
+      loading: {
         message: `Deleting ${k8sResourceConfig.kind}`,
       },
-      onError: {
+      error: {
         message: `Failed to delete ${k8sResourceConfig.kind}`,
       },
-      onSuccess: {
+      success: {
         message: `${k8sResourceConfig.kind} has been marked for deletion`,
         options: {
-          autoHideDuration: 8000,
-          content: (key, message) => <Snackbar text={String(message)} snackbarKey={key} variant={"success"} />,
+          duration: 8000,
         },
       },
     }),

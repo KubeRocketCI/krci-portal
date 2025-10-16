@@ -317,22 +317,4 @@ export class K8sClient {
       | KubeObjectBase
       | KubeObjectListBase<KubeObjectBase>;
   }
-
-  /**
-   * Get authentication headers from kubeconfig
-   */
-  private getAuthHeaders(): Record<string, string> {
-    if (!this.KubeConfig) {
-      return {};
-    }
-
-    const user = this.KubeConfig.getCurrentUser();
-    const headers: Record<string, string> = {};
-
-    if (user?.token) {
-      headers["Authorization"] = `Bearer ${user.token}`;
-    }
-
-    return headers;
-  }
 }
