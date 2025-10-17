@@ -5,7 +5,6 @@ import { K8sResourceConfig, KubeObjectBase, ResourceLabels } from "@my-project/s
 import { useQuery, useQueryClient, UseQueryOptions, UseQueryResult } from "@tanstack/react-query";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
-import { K8S_DEFAULT_CLUSTER_NAME } from "../../../constants";
 import { getK8sWatchListQueryCacheKey } from "../../utils/query-keys";
 import { CustomKubeObjectList } from "../watch-types";
 import { createListSelectFn } from "../utils/select-helpers";
@@ -59,8 +58,12 @@ export const useWatchList = <I extends KubeObjectBase>({
   queryOptions,
   transform,
 }: UseWatchListParams<I>) => {
-  const clusterName = K8S_DEFAULT_CLUSTER_NAME;
-  const storedNamespace = useClusterStore(useShallow((state) => state.defaultNamespace));
+  const { clusterName, defaultNamespace: storedNamespace } = useClusterStore(
+    useShallow((state) => ({
+      clusterName: state.clusterName,
+      defaultNamespace: state.defaultNamespace,
+    }))
+  );
   const _namespace = namespace ?? storedNamespace;
   const queryClient = useQueryClient();
 

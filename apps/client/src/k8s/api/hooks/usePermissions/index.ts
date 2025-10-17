@@ -3,7 +3,6 @@ import { defaultPermissions, DefaultPermissionListCheckResult } from "@my-projec
 import { useShallow } from "zustand/react/shallow";
 import { trpc } from "@/core/clients/trpc";
 import { useClusterStore } from "@/k8s/store";
-import { K8S_DEFAULT_CLUSTER_NAME } from "../../../constants";
 import { getK8sItemPermissionsQueryCacheKey, getK8sAPIQueryCacheKey } from "../../utils/query-keys";
 
 export const usePermissions = ({
@@ -15,8 +14,12 @@ export const usePermissions = ({
   version: string;
   resourcePlural: string;
 }) => {
-  const clusterName = K8S_DEFAULT_CLUSTER_NAME;
-  const namespace = useClusterStore(useShallow((state) => state.defaultNamespace));
+  const { clusterName, defaultNamespace: namespace } = useClusterStore(
+    useShallow((state) => ({
+      clusterName: state.clusterName,
+      defaultNamespace: state.defaultNamespace,
+    }))
+  );
   const queryClient = useQueryClient();
   const k8sItemPermissionsCacheKey = getK8sItemPermissionsQueryCacheKey(clusterName, namespace, resourcePlural);
   const k8sAPIQueryCacheKey = getK8sAPIQueryCacheKey();
