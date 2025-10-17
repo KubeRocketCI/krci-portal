@@ -33,6 +33,8 @@ export class K8sClient {
 
     this.KubeConfig = new KubeConfig();
 
+    console.log(`[K8sClient] Initializing in ${process.env.NODE_ENV} mode`);
+
     if (process.env.NODE_ENV === "production") {
       this.KubeConfig.loadFromCluster();
     } else {
@@ -57,6 +59,17 @@ export class K8sClient {
     if (!cluster) {
       throw new Error("No cluster configuration found");
     }
+
+    // Debug logging for certificate configuration
+    console.log("[K8sClient] Cluster configuration:", {
+      name: cluster.name,
+      server: cluster.server,
+      skipTLSVerify: cluster.skipTLSVerify,
+      hasCaData: !!cluster.caData,
+      caDataLength: cluster.caData?.length || 0,
+      hasCaFile: !!cluster.caFile,
+      caFile: cluster.caFile,
+    });
 
     const currentContext = this.KubeConfig.getCurrentContext();
     if (!currentContext) {
@@ -262,6 +275,18 @@ export class K8sClient {
     const currentUser = this.KubeConfig.getCurrentUser();
     const currentCluster = this.KubeConfig.getCurrentCluster();
 
+    console.log(`[K8sClient] Making ${method} request to:`, url);
+    console.log("[K8sClient] Certificate info before agent creation:", {
+      hasCaData: !!currentCluster?.caData,
+      caDataLength: currentCluster?.caData?.length || 0,
+      hasCaFile: !!currentCluster?.caFile,
+      caFile: currentCluster?.caFile,
+      hasCertData: !!currentUser?.certData,
+      hasKeyData: !!currentUser?.keyData,
+      skipTLSVerify: currentCluster?.skipTLSVerify,
+      rejectUnauthorized: !currentCluster?.skipTLSVerify,
+    });
+
     const agent = new https.Agent({
       ca: currentCluster?.caData
         ? Buffer.from(currentCluster.caData, "base64").toString("utf8")
@@ -274,6 +299,14 @@ export class K8sClient {
         : undefined,
       keepAlive: true,
       rejectUnauthorized: !currentCluster?.skipTLSVerify,
+    });
+
+    console.log("[K8sClient] Agent created with:", {
+      hasCA: !!agent.options.ca,
+      hasCert: !!agent.options.cert,
+      hasKey: !!agent.options.key,
+      keepAlive: agent.options.keepAlive,
+      rejectUnauthorized: agent.options.rejectUnauthorized,
     });
 
     const requestHeaders: Record<string, string> = {
@@ -295,7 +328,14 @@ export class K8sClient {
       opts.body = JSON.stringify(body);
     }
 
+    console.log("[K8sClient] Before applyToHTTPSOptions");
+
     this.KubeConfig.applyToHTTPSOptions(opts);
+
+    console.log("[K8sClient] After applyToHTTPSOptions, agent updated:", {
+      hasAgent: !!opts.agent,
+      agentChanged: opts.agent !== agent,
+    });
 
     const response = await fetch(url, opts);
 
