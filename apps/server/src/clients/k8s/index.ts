@@ -7,6 +7,7 @@ import {
 } from "@my-project/shared";
 import fetch from "node-fetch";
 import https from "https";
+import fs from "fs";
 
 export const isCoreKubernetesResource = (resourceConfig: K8sResourceConfig) =>
   resourceConfig.group === "";
@@ -287,16 +288,61 @@ export class K8sClient {
       rejectUnauthorized: !currentCluster?.skipTLSVerify,
     });
 
+    // Get CA certificate: either from inline data or from file
+    let ca: string | undefined = undefined;
+    if (currentCluster?.caData) {
+      // CA is inline as base64
+      ca = Buffer.from(currentCluster.caData, "base64").toString("utf8");
+      console.log("[K8sClient] Using inline CA data");
+    } else if (currentCluster?.caFile) {
+      // CA is in a file, read it
+      try {
+        ca = fs.readFileSync(currentCluster.caFile, "utf8");
+        console.log(
+          `[K8sClient] Read CA from file: ${currentCluster.caFile} (${ca.length} bytes)`
+        );
+      } catch (error) {
+        console.error(
+          `[K8sClient] Failed to read CA file ${currentCluster.caFile}:`,
+          error
+        );
+      }
+    }
+
+    // Get client certificate: either from inline data or from file
+    let cert: string | undefined = undefined;
+    if (currentUser?.certData) {
+      cert = Buffer.from(currentUser.certData, "base64").toString("utf8");
+    } else if (currentUser?.certFile) {
+      try {
+        cert = fs.readFileSync(currentUser.certFile, "utf8");
+      } catch (error) {
+        console.error(
+          `[K8sClient] Failed to read cert file ${currentUser.certFile}:`,
+          error
+        );
+      }
+    }
+
+    // Get client key: either from inline data or from file
+    let key: string | undefined = undefined;
+    if (currentUser?.keyData) {
+      key = Buffer.from(currentUser.keyData, "base64").toString("utf8");
+    } else if (currentUser?.keyFile) {
+      try {
+        key = fs.readFileSync(currentUser.keyFile, "utf8");
+      } catch (error) {
+        console.error(
+          `[K8sClient] Failed to read key file ${currentUser.keyFile}:`,
+          error
+        );
+      }
+    }
+
     const agent = new https.Agent({
-      ca: currentCluster?.caData
-        ? Buffer.from(currentCluster.caData, "base64").toString("utf8")
-        : undefined,
-      cert: currentUser?.certData
-        ? Buffer.from(currentUser.certData, "base64").toString("utf8")
-        : undefined,
-      key: currentUser?.keyData
-        ? Buffer.from(currentUser.keyData, "base64").toString("utf8")
-        : undefined,
+      ca,
+      cert,
+      key,
       keepAlive: true,
       rejectUnauthorized: !currentCluster?.skipTLSVerify,
     });
