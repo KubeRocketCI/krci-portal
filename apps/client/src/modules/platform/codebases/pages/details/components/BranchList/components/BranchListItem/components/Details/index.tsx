@@ -1,22 +1,19 @@
 import { Grid, Typography } from "@mui/material";
 
 import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { TABLE } from "@/k8s/constants/tables";
 import { FilterProvider } from "@/core/providers/Filter/provider";
 import { ResourceActionListContextProvider } from "@/core/providers/ResourceActionList/provider";
-import { useClusterStore } from "@/k8s/store";
+import { TABLE } from "@/k8s/constants/tables";
 import { PipelineRunList } from "@/modules/platform/pipelineruns/components/PipelineRunList";
 import {
   matchFunctions,
   pipelineRunFilterControlNames,
-} from "@/modules/platform/pipelineruns/components/PipelineRunList/constants";
-import { pipelineType } from "@my-project/shared";
-import { useShallow } from "zustand/react/shallow";
+} from "@/modules/platform/pipelineruns/components/PipelineRunList/components/Filter/constants";
+import { PipelineRunListFilterValues } from "@/modules/platform/pipelineruns/components/PipelineRunList/components/Filter/types";
+import { PipelineRun, pipelineType } from "@my-project/shared";
 import { DetailsProps } from "./types";
 
 export const Details = ({ pipelineRuns }: DetailsProps) => {
-  const defaultNamespace = useClusterStore(useShallow((state) => state.defaultNamespace));
-
   const { loadSettings } = useTableSettings(TABLE.BRANCH_PIPELINE_RUN_LIST.id);
 
   const tableSettings = loadSettings();
@@ -30,15 +27,19 @@ export const Details = ({ pipelineRuns }: DetailsProps) => {
           </Grid>
           <Grid item xs={12}>
             <ResourceActionListContextProvider>
-              <FilterProvider
-                entityID={`PIPELINE_RUN_LIST_BRANCH_DETAILS::${defaultNamespace}`}
+              <FilterProvider<PipelineRun, PipelineRunListFilterValues>
                 matchFunctions={matchFunctions}
-                saveToLocalStorage
+                syncWithUrl
+                defaultValues={{
+                  [pipelineRunFilterControlNames.CODEBASES]: [],
+                  [pipelineRunFilterControlNames.STATUS]: "all",
+                  [pipelineRunFilterControlNames.PIPELINE_TYPE]: "all",
+                }}
               >
                 <PipelineRunList
                   pipelineRuns={pipelineRuns!}
                   isLoading={pipelineRuns === null}
-                  pipelineRunTypes={["all", pipelineType.review, pipelineType.build]}
+                  pipelineRunTypes={[pipelineType.review, pipelineType.build]}
                   filterControls={[pipelineRunFilterControlNames.PIPELINE_TYPE, pipelineRunFilterControlNames.STATUS]}
                   tableId={TABLE.BRANCH_PIPELINE_RUN_LIST.id}
                   tableName={TABLE.BRANCH_PIPELINE_RUN_LIST.name}

@@ -13,12 +13,12 @@ import { getApplicationStatus, quickLinkLabels, systemQuickLink } from "@my-proj
 import { Link } from "@tanstack/react-router";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
-import { usePageFilterContext } from "../../../../hooks/usePageFilterContext";
 import { routeCDPipelineDetails } from "../../../../route";
 import { ApplicationCard } from "./components/ApplicationCard";
 import { StyledCardBody, StyledCardHeader, StyledCardWrapper, StyledChip } from "./styles";
 import { EnvironmentStageProps } from "./types";
 import { useQuickLinksUrlListWatch } from "../../../../hooks/data";
+import { useStageFilter } from "../../../StageListFilter/hooks/useStageFilter";
 
 export const Stage = ({ stageWithApplications: { stage, applications } }: EnvironmentStageProps) => {
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
@@ -44,11 +44,12 @@ export const Stage = ({ stageWithApplications: { stage, applications } }: Enviro
 
   const stageStatusIcon = getStageStatusIcon(stage);
 
-  const { filter } = usePageFilterContext();
+  const { form } = useStageFilter();
 
   const filteredApplications = React.useMemo(() => {
-    const applicationValues = filter.values.application;
-    const healthValue = filter.values.health;
+    const formValues = form.state.values;
+    const applicationValues = formValues.application;
+    const healthValue = formValues.health;
 
     let _applications = [...applications];
 
@@ -65,27 +66,7 @@ export const Stage = ({ stageWithApplications: { stage, applications } }: Enviro
     }
 
     return _applications;
-  }, [applications, filter]);
-
-  // const [stagePods, setStagePods] = React.useState<PodKubeObjectInterface[] | null>(null);
-
-  // React.useEffect(() => {
-  //   if (!stage) {
-  //     return;
-  //   }
-
-  //   const cancelStream = PodKubeObject.streamList({
-  //     namespace: stage.spec.namespace,
-  //     dataHandler: (newData) => {
-  //       setStagePods(newData);
-  //     },
-  //     errorHandler: (error) => console.error(error),
-  //   });
-
-  //   return () => {
-  //     cancelStream();
-  //   };
-  // }, [stage]);
+  }, [applications, form.state.values]);
 
   const renderArgoCDQuickLink = React.useCallback(() => {
     const baseURL = quickLinksUrlListWatch.data?.quickLinkURLs?.[systemQuickLink.argocd];

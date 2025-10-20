@@ -1,24 +1,15 @@
-import { FilterProvider } from "@/core/providers/Filter/provider";
+import { FilterProvider } from "@/core/providers/Filter";
 import CDPipelineListPageContent from "./view";
-import { useClusterStore } from "@/k8s/store";
-import { useShallow } from "zustand/react/shallow";
-import { matchFunctions } from "./constants";
-import { CDPipelineListFilterValueMap } from "./types";
+import { CDPipeline } from "@my-project/shared";
+import { CDPipelineFilterValues } from "./components/CDPipelineFilter/types";
+import { cdPipelineFilterDefaultValues, matchFunctions } from "./components/CDPipelineFilter/constants";
 
 export default function CDPipelineListPage() {
-  const defaultNamespace = useClusterStore(useShallow((state) => state.defaultNamespace));
-
-  const valueMap: CDPipelineListFilterValueMap = {
-    search: "",
-    codebases: [],
-  };
-
   return (
-    <FilterProvider
-      entityID={`CDPIPELINE_LIST::${defaultNamespace}`}
+    <FilterProvider<CDPipeline, CDPipelineFilterValues>
+      defaultValues={cdPipelineFilterDefaultValues}
       matchFunctions={matchFunctions}
-      valueMap={valueMap}
-      saveToLocalStorage
+      syncWithUrl
     >
       <CDPipelineListPageContent />
     </FilterProvider>

@@ -3,21 +3,19 @@ import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { EmptyList } from "@/core/components/EmptyList";
 import { TABLE } from "@/k8s/constants/tables";
 import { K8sRelatedIconsSVGSprite } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
-// import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { Table } from "@/core/components/Table";
 import { useCodebasePermissions, useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
 import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
-import { Filter } from "@/core/providers/Filter/components/Filter";
 import { ManageCodebaseDialog } from "@/modules/platform/codebases/dialogs/ManageCodebase";
 import { Box, Stack, Tooltip, Typography } from "@mui/material";
 import { codebaseType, type Codebase } from "@my-project/shared";
 import { Plus, Trash } from "lucide-react";
 import React, { Suspense } from "react";
-import { ComponentListFilterControlNames } from "../../types";
+import { CodebaseFilter } from "../CodebaseFilter";
 import { useColumns } from "./hooks/useColumns";
-import { useFilter } from "./hooks/useFilter";
 import { useSelection } from "./hooks/useSelection";
+import { useCodebaseFilter } from "../CodebaseFilter/hooks/useFilter";
 
 export const ComponentList = () => {
   const columns = useColumns();
@@ -73,14 +71,13 @@ export const ComponentList = () => {
   ]);
 
   const { selected, handleSelectAllClick, handleSelectRowClick } = useSelection();
-  const { controls, filterFunction } = useFilter();
+  const { filterFunction } = useCodebaseFilter();
 
-  // Memoize the slots to prevent unnecessary re-renders
   const tableSlots = React.useMemo(
     () => ({
-      header: <Filter<ComponentListFilterControlNames> controls={controls} />,
+      header: <CodebaseFilter />,
     }),
-    [controls]
+    []
   );
 
   return (

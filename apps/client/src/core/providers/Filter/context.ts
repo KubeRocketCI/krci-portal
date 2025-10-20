@@ -1,7 +1,5 @@
-import React from "react";
-import { FilterContextValue, FilterValue } from "./types";
+import { createContext } from "react";
+import { FilterContextValue } from "./types";
 
-// Create a context with a default value that will be overridden by the provider
-export const FilterContext = React.createContext<
-  FilterContextValue<unknown, string, Record<string, FilterValue>> | undefined
->(undefined);
+// Use unknown for both generics to make it flexible, consumers will cast to proper types
+export const FilterContext = createContext<FilterContextValue<unknown, Record<string, unknown>> | null>(null);

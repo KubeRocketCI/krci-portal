@@ -1,24 +1,15 @@
-import { FilterProvider } from "@/core/providers/Filter/provider";
-import { useClusterStore } from "@/k8s/store";
-import { useShallow } from "zustand/react/shallow";
-import { matchFunctions } from "./constants";
-import { ComponentListFilterValueMap } from "./types";
+import { FilterProvider } from "@/core/providers/Filter";
+import { codebaseFilterDefaultValues, matchFunctions } from "./components/CodebaseFilter/constants";
 import ComponentListPageContent from "./view";
+import { Codebase } from "@my-project/shared";
+import { CodebaseListFilterValues } from "./components/CodebaseFilter/types";
 
 export default function ComponentListPage() {
-  const defaultNamespace = useClusterStore(useShallow((state) => state.defaultNamespace));
-
-  const valueMap: ComponentListFilterValueMap = {
-    search: "",
-    codebaseType: "all",
-  };
-
   return (
-    <FilterProvider
-      entityID={`CODEBASE_LIST::${defaultNamespace}`}
+    <FilterProvider<Codebase, CodebaseListFilterValues>
+      defaultValues={codebaseFilterDefaultValues}
       matchFunctions={matchFunctions}
-      valueMap={valueMap}
-      saveToLocalStorage
+      syncWithUrl
     >
       <ComponentListPageContent />
     </FilterProvider>

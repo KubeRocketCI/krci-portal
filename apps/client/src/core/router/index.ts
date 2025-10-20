@@ -31,6 +31,7 @@ import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-de
 import { routeTaskList } from "@/modules/platform/tasks/pages/list/route";
 import { routeTaskDetails } from "@/modules/platform/tasks/pages/details/route";
 import { routeMarketplace } from "@/modules/platform/marketplace/route";
+import { DefaultError } from "./components/DefaultError";
 
 export const authRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -80,6 +81,8 @@ export const routeConfiguration = createRoute({
   path: "configuration",
 });
 
+const DefaultErrorComponent = DefaultError;
+
 const routeTree = rootRoute.addChildren([
   authRoute.addChildren([routeAuthLogin, routeAuthCallback]),
   contentLayoutRoute.addChildren([
@@ -125,6 +128,7 @@ export const router = createRouter({
   defaultStaleTime: 5000,
   scrollRestoration: true,
   defaultPendingComponent: LoadingProgressBar,
+  defaultErrorComponent: DefaultErrorComponent,
   context: {
     queryClient: undefined!,
   },

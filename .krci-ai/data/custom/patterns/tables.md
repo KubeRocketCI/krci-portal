@@ -7,14 +7,15 @@ Application tables follow a consistent design pattern across all resource views,
 ## Template Reference
 
 For implementing tables, use the **Table Implementation Patterns**:
-📄 [table-patterns.md](./.krci-ai/templates/custom/table-patterns.md)
-📄 [table-column-scaffold.md](./.krci-ai/templates/custom/table-column-scaffold.md)
+📄 `./.krci-ai/templates/custom/table-patterns.md`
+📄 `./.krci-ai/templates/custom/table-column-scaffold.md`
 
 **Related Patterns:**
 
-- Filter Integration: [filter-implementation.md](./.krci-ai/data/custom/patterns/filter-implementation.md)
-- Permission Validation: [auth.md](./.krci-ai/data/custom/auth.md)
-- Error Handling: [error-handling.md](./.krci-ai/data/custom/patterns/error-handling.md)
+- **Filter Integration**: `./.krci-ai/data/custom/patterns/filter-implementation.md`
+- **Filter Templates**: `./.krci-ai/templates/custom/filter-patterns-scaffold.md`
+- **Permission Validation**: `./.krci-ai/data/custom/auth.md`
+- **Error Handling**: `./.krci-ai/data/custom/patterns/error-handling.md`
 
 ## Table Component Features
 
@@ -151,7 +152,34 @@ Tables support both simple and complex data manipulation:
 
 - **Simple Sorting**: Use `columnSortableValuePath` for property-based sorting
 - **Complex Sorting**: Implement `customSortFn` for advanced sorting logic
-- **Filtering**: Use `filterFunction` prop for data refinement
+- **Filtering**: Use `filterFunction` prop with FilterProvider pattern
+
+#### Filter Integration Example
+
+```typescript
+import { useEntityFilter } from "../EntityFilter/hooks/useFilter";
+
+export const EntityList = () => {
+  const { filterFunction } = useEntityFilter();
+
+  const tableSlots = React.useMemo(
+    () => ({
+      header: <EntityFilter />,
+    }),
+    []
+  );
+
+  return (
+    <Table
+      // ... other props
+      filterFunction={filterFunction}
+      slots={tableSlots}
+    />
+  );
+};
+```
+
+See `./.krci-ai/data/custom/patterns/filter-implementation.md` for complete filter setup guide.
 
 ## Error Handling and Loading States
 
@@ -187,7 +215,28 @@ Tables automatically sync column settings with localStorage using `getSyncedColu
 
 ### Header Slot
 
-Custom content above the table for filters, actions, or information.
+Custom content above the table, typically used for filter components:
+
+```typescript
+const tableSlots = React.useMemo(
+  () => ({
+    header: <EntityFilter />,
+  }),
+  []
+);
+
+<Table
+  // ... other props
+  slots={tableSlots}
+/>
+```
+
+**Filter Integration Best Practices:**
+
+- Wrap filter component in `React.useMemo` to prevent unnecessary re-renders
+- Use the standard filter structure from `./.krci-ai/templates/custom/filter-patterns-scaffold.md`
+- Pass `filterFunction` from `useFilterContext` hook to table
+- See `./.krci-ai/data/custom/patterns/filter-implementation.md` for complete filter setup
 
 ### Footer Slot
 

@@ -8,6 +8,7 @@ import { Plus, Trash } from "lucide-react";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { TabSection } from "@/core/components/TabSection";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
+import { NameValueTable } from "@/core/components/NameValueTable";
 
 export const Variables = () => {
   // const params = routeStageDetails.useParams();

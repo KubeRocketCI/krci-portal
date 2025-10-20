@@ -1,70 +1,40 @@
-import React from "react";
+import type { FormAsyncValidateOrFn, FormValidateOrFn, ReactFormExtendedApi } from "@tanstack/react-form";
+import { ReactNode } from "react";
 
-// Base filter control names that are available everywhere
-export type BaseFilterControls = "search" | "namespace";
+export type FilterValueMap = Record<string, unknown>;
 
-// Generic filter control names - can be extended by specific pages
-export type FilterControlNames = BaseFilterControls | string;
+export type MatchFunction<Item, Value> = (item: Item, value: Value) => boolean;
 
-// Filter value types
-export type FilterValue = string | string[] | boolean;
+export type MatchFunctions<Item, Values extends FilterValueMap> = {
+  [K in keyof Values]?: MatchFunction<Item, Values[K]>;
+};
 
-// Filter function types
-export type FilterFunction<Item> = (item: Item, value: FilterValue) => boolean;
-
-// Type mapping for specific control values
-export type FilterValueMap = Record<string, FilterValue>;
-
-// Filter state for a specific entity with strict value types
-export interface FilterState<
-  Item,
-  ControlNames extends string,
-  ValueMap extends FilterValueMap = Record<ControlNames, FilterValue>,
-> {
-  values: {
-    [K in ControlNames]: ValueMap[K];
-  };
-  matchFunctions: Record<ControlNames, FilterFunction<Item>>;
+export interface FilterProviderProps<Item, Values extends FilterValueMap> {
+  children: ReactNode;
+  defaultValues: Values;
+  matchFunctions: MatchFunctions<Item, Values>;
+  syncWithUrl?: boolean;
 }
 
-// Context provider value with strict value types
-export interface FilterContextValue<
-  Item,
-  ControlNames extends string,
-  ValueMap extends FilterValueMap = Record<ControlNames, FilterValue>,
-> {
-  showFilter: boolean;
-  filter: FilterState<Item, ControlNames, ValueMap>;
-  setFilterItem: <K extends ControlNames>(key: K, value: ValueMap[K]) => void;
-  setShowFilter: React.Dispatch<React.SetStateAction<boolean>>;
-  resetFilter: () => void;
+// Type for the form instance returned by useForm (includes Field component and all methods)
+// All validator generics can be undefined since we don't use validation in filters
+export type FilterFormApi<Values> = ReactFormExtendedApi<
+  Values,
+  FormValidateOrFn<Values> | undefined,
+  FormValidateOrFn<Values> | undefined,
+  FormAsyncValidateOrFn<Values> | undefined,
+  FormValidateOrFn<Values> | undefined,
+  FormAsyncValidateOrFn<Values> | undefined,
+  FormValidateOrFn<Values> | undefined,
+  FormAsyncValidateOrFn<Values> | undefined,
+  FormValidateOrFn<Values> | undefined,
+  FormAsyncValidateOrFn<Values> | undefined,
+  FormAsyncValidateOrFn<Values> | undefined,
+  never
+>;
+
+export interface FilterContextValue<Item, Values extends FilterValueMap> {
+  form: FilterFormApi<Values>;
   filterFunction: (item: Item) => boolean;
-}
-
-// Context provider props with strict value types
-export interface FilterProviderProps<
-  Item,
-  ControlNames extends string,
-  ValueMap extends FilterValueMap = Record<ControlNames, FilterValue>,
-> {
-  children: React.ReactNode;
-  entityID: string;
-  matchFunctions: Record<ControlNames, FilterFunction<Item>>;
-  valueMap?: ValueMap;
-  saveToLocalStorage?: boolean;
-}
-
-// Control component interface
-export interface FilterControl {
-  component: React.ReactElement;
-  gridXs?: number;
-}
-
-// Filter controls object type
-export type FilterControls<ControlNames extends string> = Record<ControlNames, FilterControl>;
-
-// Filter component props
-export interface FilterProps<ControlNames extends string> {
-  controls: FilterControls<ControlNames>;
-  hideFilter?: boolean;
+  reset: () => void;
 }
