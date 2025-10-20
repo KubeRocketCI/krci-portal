@@ -34,8 +34,6 @@ export class K8sClient {
 
     this.KubeConfig = new KubeConfig();
 
-    console.log(`[K8sClient] Initializing in ${process.env.NODE_ENV} mode`);
-
     if (process.env.NODE_ENV === "production") {
       this.KubeConfig.loadFromCluster();
     } else {
@@ -61,17 +59,6 @@ export class K8sClient {
       throw new Error("No cluster configuration found");
     }
 
-    // Debug logging for certificate configuration
-    console.log("[K8sClient] Cluster configuration:", {
-      name: cluster.name,
-      server: cluster.server,
-      skipTLSVerify: cluster.skipTLSVerify,
-      hasCaData: !!cluster.caData,
-      caDataLength: cluster.caData?.length || 0,
-      hasCaFile: !!cluster.caFile,
-      caFile: cluster.caFile,
-    });
-
     const currentContext = this.KubeConfig.getCurrentContext();
     if (!currentContext) {
       throw new Error("No current context found in kubeConfig");
@@ -85,6 +72,27 @@ export class K8sClient {
       },
     ];
     this.KubeConfig.setCurrentContext(currentContext);
+  }
+
+  /**
+   * Helper method to load certificate data from inline base64 or file
+   */
+  private loadCertificate(
+    data: string | undefined,
+    file: string | undefined
+  ): string | undefined {
+    if (data) {
+      return Buffer.from(data, "base64").toString("utf8");
+    }
+    if (file) {
+      try {
+        return fs.readFileSync(file, "utf8");
+      } catch (error) {
+        console.error(`Failed to read certificate file ${file}:`, error);
+        return undefined;
+      }
+    }
+    return undefined;
   }
 
   /**
@@ -276,68 +284,19 @@ export class K8sClient {
     const currentUser = this.KubeConfig.getCurrentUser();
     const currentCluster = this.KubeConfig.getCurrentCluster();
 
-    console.log(`[K8sClient] Making ${method} request to:`, url);
-    console.log("[K8sClient] Certificate info before agent creation:", {
-      hasCaData: !!currentCluster?.caData,
-      caDataLength: currentCluster?.caData?.length || 0,
-      hasCaFile: !!currentCluster?.caFile,
-      caFile: currentCluster?.caFile,
-      hasCertData: !!currentUser?.certData,
-      hasKeyData: !!currentUser?.keyData,
-      skipTLSVerify: currentCluster?.skipTLSVerify,
-      rejectUnauthorized: !currentCluster?.skipTLSVerify,
-    });
-
-    // Get CA certificate: either from inline data or from file
-    let ca: string | undefined = undefined;
-    if (currentCluster?.caData) {
-      // CA is inline as base64
-      ca = Buffer.from(currentCluster.caData, "base64").toString("utf8");
-      console.log("[K8sClient] Using inline CA data");
-    } else if (currentCluster?.caFile) {
-      // CA is in a file, read it
-      try {
-        ca = fs.readFileSync(currentCluster.caFile, "utf8");
-        console.log(
-          `[K8sClient] Read CA from file: ${currentCluster.caFile} (${ca.length} bytes)`
-        );
-      } catch (error) {
-        console.error(
-          `[K8sClient] Failed to read CA file ${currentCluster.caFile}:`,
-          error
-        );
-      }
-    }
-
-    // Get client certificate: either from inline data or from file
-    let cert: string | undefined = undefined;
-    if (currentUser?.certData) {
-      cert = Buffer.from(currentUser.certData, "base64").toString("utf8");
-    } else if (currentUser?.certFile) {
-      try {
-        cert = fs.readFileSync(currentUser.certFile, "utf8");
-      } catch (error) {
-        console.error(
-          `[K8sClient] Failed to read cert file ${currentUser.certFile}:`,
-          error
-        );
-      }
-    }
-
-    // Get client key: either from inline data or from file
-    let key: string | undefined = undefined;
-    if (currentUser?.keyData) {
-      key = Buffer.from(currentUser.keyData, "base64").toString("utf8");
-    } else if (currentUser?.keyFile) {
-      try {
-        key = fs.readFileSync(currentUser.keyFile, "utf8");
-      } catch (error) {
-        console.error(
-          `[K8sClient] Failed to read key file ${currentUser.keyFile}:`,
-          error
-        );
-      }
-    }
+    // Load certificates from inline data or files
+    const ca = this.loadCertificate(
+      currentCluster?.caData,
+      currentCluster?.caFile
+    );
+    const cert = this.loadCertificate(
+      currentUser?.certData,
+      currentUser?.certFile
+    );
+    const key = this.loadCertificate(
+      currentUser?.keyData,
+      currentUser?.keyFile
+    );
 
     const agent = new https.Agent({
       ca,
@@ -345,14 +304,6 @@ export class K8sClient {
       key,
       keepAlive: true,
       rejectUnauthorized: !currentCluster?.skipTLSVerify,
-    });
-
-    console.log("[K8sClient] Agent created with:", {
-      hasCA: !!agent.options.ca,
-      hasCert: !!agent.options.cert,
-      hasKey: !!agent.options.key,
-      keepAlive: agent.options.keepAlive,
-      rejectUnauthorized: agent.options.rejectUnauthorized,
     });
 
     const requestHeaders: Record<string, string> = {
@@ -366,7 +317,7 @@ export class K8sClient {
     const opts = {
       method,
       headers: requestHeaders,
-      agent: agent,
+      agent,
       body: undefined as string | undefined,
     };
 
@@ -374,14 +325,7 @@ export class K8sClient {
       opts.body = JSON.stringify(body);
     }
 
-    console.log("[K8sClient] Before applyToHTTPSOptions");
-
     this.KubeConfig.applyToHTTPSOptions(opts);
-
-    console.log("[K8sClient] After applyToHTTPSOptions, agent updated:", {
-      hasAgent: !!opts.agent,
-      agentChanged: opts.agent !== agent,
-    });
 
     const response = await fetch(url, opts);
 

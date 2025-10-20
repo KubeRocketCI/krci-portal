@@ -6,8 +6,8 @@ import { Grid, useTheme } from "@mui/material";
 import { Table } from "lucide-react";
 import React from "react";
 import { useCDPipelineWatch, useStagesWithItsApplicationsWatch } from "../../hooks/data";
-import { usePageFilterContext } from "../../hooks/usePageFilterContext";
 import { Stage } from "./components/Stage";
+import { useStageFilter } from "../StageListFilter/hooks/useStageFilter";
 
 export const StageList = () => {
   const theme = useTheme();
@@ -16,7 +16,7 @@ export const StageList = () => {
 
   const stagesWithItsApplicationsWatch = useStagesWithItsApplicationsWatch();
 
-  const { filterFunction } = usePageFilterContext();
+  const { filterFunction } = useStageFilter();
 
   const filteredStages = React.useMemo(() => {
     if (

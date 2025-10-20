@@ -1,14 +1,14 @@
-import { useColumns } from "./hooks/useColumns";
-import { useFilter } from "./hooks/useFilter";
-import { CDPipelineListProps } from "./types";
+import { EmptyList } from "@/core/components/EmptyList";
+import { Table } from "@/core/components/Table";
+import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { useCDPipelinePermissions, useCDPipelineWatchList } from "@/k8s/api/groups/KRCI/CDPipeline";
 import { TABLE } from "@/k8s/constants/tables";
-import { Table } from "@/core/components/Table";
-import { EmptyList } from "@/core/components/EmptyList";
-import { Filter } from "@/core/providers/Filter/components/Filter";
-import React from "react";
 import { ManageCDPipelineDialog } from "@/modules/platform/cdpipelines/dialogs/ManageCDPipeline";
-import { useDialogOpener } from "@/core/providers/Dialog/hooks";
+import React from "react";
+import { CDPipelineFilter } from "../CDPipelineFilter";
+import { useCDPipelineFilter } from "../CDPipelineFilter/hooks/useCDPipelineFilter";
+import { useColumns } from "./hooks/useColumns";
+import { CDPipelineListProps } from "./types";
 
 export const CDPipelineList = ({ blockerComponent }: CDPipelineListProps) => {
   const columns = useColumns();
@@ -18,9 +18,7 @@ export const CDPipelineList = ({ blockerComponent }: CDPipelineListProps) => {
   const cdPipelinePermissions = useCDPipelinePermissions();
   const cdPipelineListWatch = useCDPipelineWatchList();
 
-  const { controls, filterFunction } = useFilter({
-    cdPipelines: cdPipelineListWatch.dataArray,
-  });
+  const { filterFunction } = useCDPipelineFilter();
 
   const renderEmptyList = React.useMemo(() => {
     if (!cdPipelinePermissions.isFetched) return null;
@@ -47,6 +45,13 @@ export const CDPipelineList = ({ blockerComponent }: CDPipelineListProps) => {
     openManageCDPipelineDialog,
   ]);
 
+  const tableSlots = React.useMemo(
+    () => ({
+      header: <CDPipelineFilter />,
+    }),
+    []
+  );
+
   return (
     <Table
       id={TABLE.CDPIPELINE_LIST.id}
@@ -58,9 +63,7 @@ export const CDPipelineList = ({ blockerComponent }: CDPipelineListProps) => {
       filterFunction={filterFunction}
       blockerComponent={blockerComponent}
       emptyListComponent={renderEmptyList}
-      slots={{
-        header: <Filter controls={controls} />,
-      }}
+      slots={tableSlots}
     />
   );
 };

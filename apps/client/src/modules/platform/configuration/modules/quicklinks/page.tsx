@@ -1,15 +1,18 @@
-import { FilterProvider } from "@/core/providers/Filter/provider";
+import { FilterProvider } from "@/core/providers/Filter";
 import { ResourceActionListContextProvider } from "@/core/providers/ResourceActionList/provider";
-import { useClusterStore } from "@/k8s/store";
-import { useShallow } from "zustand/react/shallow";
 import PageView from "./view";
+import { QuickLink } from "@my-project/shared";
+import { QuickLinkListFilterValues } from "./components/QuickLinkFilter/types";
+import { quickLinkFilterDefaultValues, matchFunctions } from "./components/QuickLinkFilter/constants";
 
 export default function QuickLinkListPage() {
-  const defaultNamespace = useClusterStore(useShallow((state) => state.defaultNamespace));
-
   return (
     <ResourceActionListContextProvider>
-      <FilterProvider entityID={`QUICK_LINK_LIST::${defaultNamespace}`} matchFunctions={{}} saveToLocalStorage>
+      <FilterProvider<QuickLink, QuickLinkListFilterValues>
+        defaultValues={quickLinkFilterDefaultValues}
+        matchFunctions={matchFunctions}
+        syncWithUrl
+      >
         <PageView />
       </FilterProvider>
     </ResourceActionListContextProvider>

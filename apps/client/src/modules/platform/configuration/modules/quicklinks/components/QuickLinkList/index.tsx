@@ -4,7 +4,9 @@ import { TABLE } from "@/k8s/constants/tables";
 import { useQuickLinkWatchList } from "@/k8s/api/groups/KRCI/QuickLink";
 import { useShallow } from "zustand/react/shallow";
 import { useClusterStore } from "@/k8s/store";
-import { useFilterContext } from "@/core/providers/Filter/hooks";
+import { QuickLinkFilter } from "../QuickLinkFilter";
+import { useQuickLinkFilter } from "../QuickLinkFilter/hooks/useFilter";
+import React from "react";
 
 export const QuickLinkList = () => {
   const { namespace } = useClusterStore(
@@ -19,7 +21,14 @@ export const QuickLinkList = () => {
     namespace,
   });
 
-  const { filterFunction } = useFilterContext();
+  const { filterFunction } = useQuickLinkFilter();
+
+  const tableSlots = React.useMemo(
+    () => ({
+      header: <QuickLinkFilter />,
+    }),
+    []
+  );
 
   return (
     <>
@@ -31,6 +40,7 @@ export const QuickLinkList = () => {
         errors={[]}
         columns={columns}
         filterFunction={filterFunction}
+        slots={tableSlots}
       />
     </>
   );

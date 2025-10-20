@@ -4,12 +4,16 @@ import { EmptyList } from "@/core/components/EmptyList";
 import { usePipelineWatchList, usePipelinePermissions } from "@/k8s/api/groups/Tekton/Pipeline";
 import { TABLE } from "@/k8s/constants/tables";
 import { useColumns } from "./hooks/useColumns";
+import { PipelineFilter } from "../PipelineFilter";
+import { usePipelineFilter } from "../PipelineFilter/hooks/useFilter";
 
 export const PipelineList = () => {
   const columns = useColumns();
 
   const pipelinePermissions = usePipelinePermissions();
   const pipelineListWatch = usePipelineWatchList();
+
+  const { filterFunction } = usePipelineFilter();
 
   const renderEmptyList = React.useMemo(() => {
     if (!pipelinePermissions.isFetched) return null;
@@ -18,6 +22,13 @@ export const PipelineList = () => {
       <EmptyList missingItemName={"Pipelines"} description={"No Tekton pipelines found in the current namespace."} />
     );
   }, [pipelinePermissions.isFetched]);
+
+  const tableSlots = React.useMemo(
+    () => ({
+      header: <PipelineFilter />,
+    }),
+    []
+  );
 
   return (
     <Table
@@ -28,6 +39,8 @@ export const PipelineList = () => {
       errors={[]}
       columns={columns}
       emptyListComponent={renderEmptyList}
+      filterFunction={filterFunction}
+      slots={tableSlots}
     />
   );
 };

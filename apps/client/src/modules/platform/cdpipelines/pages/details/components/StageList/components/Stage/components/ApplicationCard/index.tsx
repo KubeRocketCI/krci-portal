@@ -28,12 +28,14 @@ import { QuickLink } from "@/core/components/QuickLink";
 import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
 import { routeArgocdConfiguration } from "@/modules/platform/configuration/modules/argocd/route";
 import { Button } from "@/core/components/ui/button";
+import moment from "moment";
+import { useQuickLinksUrlListWatch } from "@/modules/platform/cdpipelines/pages/details/hooks/data";
 
-// const formatDate = (date: string): string => {
-//   const formattedDate: string = moment(date).format("MM/DD/YYYY HH:mm:ss");
-//   const timeAgo: string = moment(date).fromNow();
-//   return `${formattedDate} (${timeAgo})`;
-// };
+const formatDate = (date: string): string => {
+  const formattedDate: string = moment(date).format("MM/DD/YYYY HH:mm:ss");
+  const timeAgo: string = moment(date).fromNow();
+  return `${formattedDate} (${timeAgo})`;
+};
 
 export const ApplicationCard = ({
   stage,
@@ -57,6 +59,12 @@ export const ApplicationCard = ({
 
   const applicationHealthStatusIcon = getApplicationStatusIcon(argoApplication);
   const applicationSyncStatusIcon = getApplicationSyncStatusIcon(argoApplication);
+
+  const quickLinksUrlListWatch = useQuickLinksUrlListWatch();
+
+  const argocdQuickLink = quickLinksUrlListWatch.data?.quickLinkList?.find(
+    (el) => el.metadata.name === systemQuickLink.argocd
+  );
 
   // const { setDialog } = useDialogOpener();
 
@@ -199,7 +207,7 @@ export const ApplicationCard = ({
                   label: quickLinkUiNames[systemQuickLink.argocd],
                   value: systemQuickLink.argocd,
                 }}
-                // icon={ICONS.ARGOCD}
+                iconBase64={argocdQuickLink?.spec.icon}
                 externalLink={_createArgoCDLink(argoApplication)}
                 configurationRoute={{
                   to: routeArgocdConfiguration.to,
@@ -228,8 +236,7 @@ export const ApplicationCard = ({
                 Created:
               </Typography>
               <StyledChip
-                // label={argoApplication ? formatDate(argoApplication?.metadata.creationTimestamp) : "Unknown"}
-                label="TEMPORARY"
+                label={argoApplication ? formatDate(argoApplication?.metadata.creationTimestamp) : "Unknown"}
               />
             </Stack>
             {argoAppExternalURLs && <TooltipWithLinkList urls={argoAppExternalURLs} size="small" />}

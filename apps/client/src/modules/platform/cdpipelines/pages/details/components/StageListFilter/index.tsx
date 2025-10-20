@@ -1,31 +1,19 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
-import { useStagePermissions } from "@/k8s/api/groups/KRCI/Stage";
+import { Autocomplete as FormAutocomplete } from "@/core/components/form/Autocomplete";
+import { Select as FormSelect, SelectOption } from "@/core/components/form/Select";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
-import { Filter } from "@/core/providers/Filter/components/Filter";
 import { useViewModeContext } from "@/core/providers/ViewMode/hooks";
 import { VIEW_MODES } from "@/core/providers/ViewMode/types";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
+import { useStagePermissions } from "@/k8s/api/groups/KRCI/Stage";
 import { ManageStageDialog } from "@/modules/platform/cdpipelines/dialogs/ManageStage";
-import { Autocomplete } from "@mui/lab";
-import {
-  FormControl,
-  Grid,
-  IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-  Stack,
-  TextField,
-  Tooltip,
-  useTheme,
-} from "@mui/material";
-import { ApplicationHealthStatus, applicationHealthStatus } from "@my-project/shared";
+import { Grid, IconButton, Stack, Tooltip, useTheme } from "@mui/material";
+import { applicationHealthStatus } from "@my-project/shared";
 import { Plus, Rows2, Rows3 } from "lucide-react";
 import React from "react";
-import { stagesFilterControlNames } from "../../constants";
 import { useCDPipelineWatch, useStagesWithItsApplicationsWatch } from "../../hooks/data";
-import { usePageFilterContext } from "../../hooks/usePageFilterContext";
+import { useStageFilter } from "./hooks/useStageFilter";
+import { stagesFilterControlNames } from "./constants";
 
 export const StageListFilter = () => {
   const theme = useTheme();
@@ -36,7 +24,7 @@ export const StageListFilter = () => {
 
   const openManageStageDialog = useDialogOpener(ManageStageDialog);
 
-  const { filter, setFilterItem } = usePageFilterContext();
+  const { form } = useStageFilter();
 
   const stageSelectOptions = React.useMemo(() => {
     if (!stagesWithItsApplicationsWatch.isSuccess || !stagesWithItsApplicationsWatch.data) return [];
@@ -56,107 +44,56 @@ export const StageListFilter = () => {
     );
   }, [stagesWithItsApplicationsWatch.isSuccess, stagesWithItsApplicationsWatch.data]);
 
-  const handleStagesChange = React.useCallback(
-    (_event: React.SyntheticEvent<Element, Event>, values: string[]) => {
-      setFilterItem(stagesFilterControlNames.STAGES, values);
-    },
-    [setFilterItem]
+  const healthOptions: SelectOption[] = React.useMemo(
+    () => [
+      { label: "All", value: "All" },
+      ...Object.values(applicationHealthStatus).map((s) => ({ label: capitalizeFirstLetter(s), value: s })),
+    ],
+    []
   );
-
-  const handleApplicationChange = React.useCallback(
-    (_event: React.SyntheticEvent<Element, Event>, values: string[]) => {
-      setFilterItem(stagesFilterControlNames.APPLICATION, values);
-    },
-    [setFilterItem]
-  );
-
-  const handleHealthChange = React.useCallback(
-    (event: SelectChangeEvent<ApplicationHealthStatus>) => {
-      const value = event.target.value;
-
-      setFilterItem(stagesFilterControlNames.HEALTH, value);
-    },
-    [setFilterItem]
-  );
-
-  const healthOptions = ["All", ...Object.values(applicationHealthStatus)].map((status) => ({
-    label: capitalizeFirstLetter(status),
-    value: status,
-  }));
 
   const { viewMode, handleChangeViewMode } = useViewModeContext();
 
   return (
     <Grid container spacing={2} alignItems={"center"} justifyContent={"flex-end"}>
       <Grid item flexGrow={1}>
-        <Filter
-          controls={{
-            [stagesFilterControlNames.APPLICATION]: {
-              gridXs: 3,
-              component: (
-                <Autocomplete
+        <Grid container spacing={2} alignItems={"center"}>
+          <Grid item xs={3}>
+            <form.Field name={stagesFilterControlNames.APPLICATION}>
+              {(field) => (
+                <FormAutocomplete
+                  field={field}
                   multiple
                   options={appCodebasesOptions}
-                  getOptionLabel={(option) => option}
-                  onChange={handleApplicationChange}
-                  value={(filter.values.application as string[]) || []}
-                  renderInput={(params) => <TextField {...params} label="Applications" />}
-                  ChipProps={{
-                    size: "small",
-                    color: "primary",
-                  }}
+                  label="Applications"
+                  placeholder="Applications"
+                  getOptionLabel={(option) => option as string}
+                  ChipProps={{ size: "small", color: "primary" }}
                 />
-              ),
-            },
-            [stagesFilterControlNames.STAGES]: {
-              gridXs: 3,
-              component: (
-                <Autocomplete
+              )}
+            </form.Field>
+          </Grid>
+          <Grid item xs={3}>
+            <form.Field name={stagesFilterControlNames.STAGES}>
+              {(field) => (
+                <FormAutocomplete
+                  field={field}
                   multiple
                   options={stageSelectOptions}
-                  getOptionLabel={(option) => option}
-                  onChange={handleStagesChange}
-                  value={(filter.values.stages as string[]) || []}
-                  renderInput={(params) => <TextField {...params} label="Stages" placeholder="Stages" />}
-                  ChipProps={{
-                    size: "small",
-                    color: "primary",
-                  }}
+                  label="Stages"
+                  placeholder="Stages"
+                  getOptionLabel={(option) => option as string}
+                  ChipProps={{ size: "small", color: "primary" }}
                 />
-              ),
-            },
-            [stagesFilterControlNames.HEALTH]: {
-              gridXs: 2,
-              component: (
-                <FormControl fullWidth>
-                  <InputLabel>Health</InputLabel>
-                  <Select
-                    fullWidth
-                    value={(filter.values.health || "") as ApplicationHealthStatus}
-                    displayEmpty
-                    onChange={handleHealthChange}
-                    sx={{
-                      color: filter.values.health ? theme.palette.text.secondary : theme.palette.text.disabled,
-                    }}
-                  >
-                    <MenuItem value="" disabled>
-                      Health
-                    </MenuItem>
-                    {healthOptions.map(({ label, value }, idx) => {
-                      const key = `${label}::${idx}`;
-
-                      return (
-                        <MenuItem value={value} key={key}>
-                          {label}
-                        </MenuItem>
-                      );
-                    })}
-                  </Select>
-                </FormControl>
-              ),
-            },
-          }}
-        />
+              )}
+            </form.Field>
+          </Grid>
+          <Grid item xs={2}>
+            <form.Field name={stagesFilterControlNames.HEALTH}>
+              {(field) => <FormSelect field={field} label="Health" options={healthOptions} placeholder="Health" />}
+            </form.Field>
+          </Grid>
+        </Grid>
       </Grid>
       <Grid item>
         <Stack direction="row" spacing={0} justifyContent={"flex-end"}>

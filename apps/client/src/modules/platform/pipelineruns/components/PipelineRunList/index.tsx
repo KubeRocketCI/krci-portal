@@ -3,17 +3,17 @@ import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { EmptyList } from "@/core/components/EmptyList";
 import { Table } from "@/core/components/Table";
 import { usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
-import { Filter } from "@/core/providers/Filter/components/Filter";
-import { Stack, Tooltip, Typography, Box } from "@mui/material";
-import { pipelineType, sortKubeObjectByCreationTimestamp } from "@my-project/shared";
+import { Box, Stack, Tooltip, Typography } from "@mui/material";
+import { pipelineType } from "@my-project/shared";
 import { Trash } from "lucide-react";
 import React from "react";
 import { DeletionDialog } from "./components/DeleteDialog";
-import { pipelineRunFilterControlNames } from "./constants";
+import { PipelineRunFilter } from "./components/Filter";
+import { usePipelineRunFilter } from "./components/Filter/hooks/usePipelineRunFilter";
 import { useColumns } from "./hooks/useColumns";
-import { useFilter } from "./hooks/useFilter";
 import { useSelection } from "./hooks/useSelection";
-import { PipelineRunFilterAllControlNames, PipelineRunListProps } from "./types";
+import { PipelineRunListProps } from "./types";
+import { pipelineRunFilterControlNames } from "./components/Filter/constants";
 
 export const PipelineRunList = ({
   tableId,
@@ -23,7 +23,6 @@ export const PipelineRunList = ({
   blockerError,
   errors,
   pipelineRunTypes = [
-    "all",
     pipelineType.review,
     pipelineType.build,
     pipelineType.deploy,
@@ -39,10 +38,6 @@ export const PipelineRunList = ({
   ],
   tableSettings,
 }: PipelineRunListProps) => {
-  const sortedPipelineRuns = React.useMemo(() => {
-    return pipelineRuns?.sort(sortKubeObjectByCreationTimestamp);
-  }, [pipelineRuns]);
-
   const { selected, setSelected, handleSelectRowClick, handleSelectAllClick } = useSelection();
   const pipelineRunPermissions = usePipelineRunPermissions();
 
@@ -60,11 +55,19 @@ export const PipelineRunList = ({
     setDeleteDialogOpen(true);
   }, []);
 
-  const { controls, filterFunction } = useFilter({
-    pipelineRuns,
-    pipelineRunTypes,
-    filterControls,
-  });
+  const { filterFunction } = usePipelineRunFilter();
+
+  const tableSlots = React.useMemo(() => {
+    return {
+      header: (
+        <PipelineRunFilter
+          pipelineRuns={pipelineRuns}
+          pipelineRunTypes={pipelineRunTypes}
+          filterControls={filterControls}
+        />
+      ),
+    };
+  }, [pipelineRuns, pipelineRunTypes, filterControls]);
 
   return (
     <>
@@ -74,7 +77,7 @@ export const PipelineRunList = ({
         blockerError={blockerError}
         errors={errors}
         columns={columns}
-        data={sortedPipelineRuns}
+        data={pipelineRuns}
         isLoading={isLoading}
         emptyListComponent={<EmptyList missingItemName={"pipeline runs"} />}
         filterFunction={filterFunction}
@@ -123,9 +126,7 @@ export const PipelineRunList = ({
             </Box>
           ),
         }}
-        slots={{
-          header: <Filter<PipelineRunFilterAllControlNames> controls={controls} />,
-        }}
+        slots={tableSlots}
       />
       {deleteDialogOpen && (
         <DeletionDialog

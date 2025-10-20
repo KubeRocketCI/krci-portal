@@ -1,27 +1,30 @@
-import { FilterProvider } from "@/core/providers/Filter/provider";
-import { useClusterStore } from "@/k8s/store";
-import { useShallow } from "zustand/react/shallow";
+import { FilterProvider } from "@/core/providers/Filter";
+
 import PipelineRunListView from "./view";
-import { matchFunctions } from "../../components/PipelineRunList/constants";
+import type { PipelineRun } from "@my-project/shared";
+import {
+  matchFunctions,
+  pipelineRunFilterControlNames,
+} from "../../components/PipelineRunList/components/Filter/constants";
+import type { PipelineRunListFilterValues } from "../../components/PipelineRunList/components/Filter/types";
 import { TabsContextProvider } from "@/core/providers/Tabs/provider";
 import { routePipelineRunList } from "./route";
 import { tabNameToIndexMap } from "./constants";
 
 export const PipelineRunListPage = () => {
-  const defaultNamespace = useClusterStore(useShallow((state) => state.defaultNamespace));
-
   const search = routePipelineRunList.useSearch();
   const tabName = search.tab;
   const initialTabIdx = tabName ? tabNameToIndexMap[tabName] : 0;
 
   return (
-    <FilterProvider
-      entityID={`PIPELINE_RUN_LIST_OVERVIEW::${defaultNamespace}`}
-      matchFunctions={matchFunctions}
-      valueMap={{
-        pipelineType: "all",
+    <FilterProvider<PipelineRun, PipelineRunListFilterValues>
+      defaultValues={{
+        [pipelineRunFilterControlNames.CODEBASES]: [],
+        [pipelineRunFilterControlNames.STATUS]: "all",
+        [pipelineRunFilterControlNames.PIPELINE_TYPE]: "all",
       }}
-      saveToLocalStorage
+      matchFunctions={matchFunctions}
+      syncWithUrl
     >
       <TabsContextProvider id="pipeline-run-list" initialTabIdx={initialTabIdx}>
         <PipelineRunListView />

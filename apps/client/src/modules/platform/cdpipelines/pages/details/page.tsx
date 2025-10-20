@@ -1,26 +1,17 @@
-import { FilterProvider } from "@/core/providers/Filter/provider";
+import { FilterProvider } from "@/core/providers/Filter";
 import { ViewModeContextProvider } from "@/core/providers/ViewMode/provider";
 import { VIEW_MODES } from "@/core/providers/ViewMode/types";
-import { useClusterStore } from "@/k8s/store";
-import { useShallow } from "zustand/react/shallow";
-import { CDPipelineDetailsFilterValueMap, matchFunctions } from "./constants";
+import type { StageWithApplication } from "@/k8s/api/groups/KRCI/Stage/utils/combineStageWithApplications";
+import { matchFunctions, stageFilterDefaultValues } from "./components/StageListFilter/constants";
+import { StageFilterValues } from "./components/StageListFilter/types";
 import CDPipelineDetailsPageContent from "./view";
 
 export default function CDPipelineDetailsPage() {
-  const defaultNamespace = useClusterStore(useShallow((state) => state.defaultNamespace));
-
-  const valueMap: CDPipelineDetailsFilterValueMap = {
-    stages: [],
-    applications: [],
-    health: "",
-  };
-
   return (
-    <FilterProvider
-      entityID={`CDPIPELINE_DETAILS::${defaultNamespace}`}
+    <FilterProvider<StageWithApplication, StageFilterValues>
+      defaultValues={stageFilterDefaultValues}
       matchFunctions={matchFunctions}
-      valueMap={valueMap}
-      saveToLocalStorage
+      syncWithUrl
     >
       <ViewModeContextProvider entityID={"cdpipeline"} defaultViewMode={VIEW_MODES.COMPACT}>
         <CDPipelineDetailsPageContent />

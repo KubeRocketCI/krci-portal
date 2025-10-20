@@ -1,148 +1,159 @@
-import { KubeObjectBase } from "@my-project/shared";
-import React from "react";
-import { LOCAL_STORAGE_SERVICE } from "../../services/local-storage";
-import { namespaceFunction, searchFunction } from "./constants";
+import { FormAsyncValidateOrFn, FormValidateOrFn, useForm } from "@tanstack/react-form";
+import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { FilterContext } from "./context";
-import { FilterContextValue, FilterProviderProps, FilterState, FilterValue, FilterValueMap } from "./types";
+import { FilterContextValue, FilterProviderProps, FilterValueMap } from "./types";
 
-const LS_FILTER_KEY = "FILTER_STATE";
-
-const createDefaultFilterState = <
-  Item extends KubeObjectBase,
-  ControlNames extends string,
-  ValueMap extends FilterValueMap,
->(
-  matchFunctions: Record<ControlNames, (item: Item, value: FilterValue) => boolean>,
-  valueMap?: ValueMap
-): FilterState<Item, ControlNames, ValueMap> => {
-  const defaultValues: Record<string, FilterValue> = {};
-  const defaultMatchFunctions: Record<string, (item: Item, value: FilterValue) => boolean> = {};
-
-  if ("search" in matchFunctions) {
-    defaultValues.search = "";
-    defaultMatchFunctions.search = searchFunction;
-  }
-
-  if ("namespace" in matchFunctions) {
-    defaultValues.namespace = "";
-    defaultMatchFunctions.namespace = namespaceFunction;
-  }
-
-  Object.entries(matchFunctions).forEach(([key, fn]) => {
-    if (!defaultValues[key]) {
-      defaultValues[key] = "";
-    }
-    defaultMatchFunctions[key] = fn as (item: Item, value: FilterValue) => boolean;
-  });
-
-  const finalValues = valueMap ? { ...defaultValues, ...valueMap } : defaultValues;
-
-  return {
-    values: finalValues as {
-      [K in ControlNames]: ValueMap[K];
-    },
-    matchFunctions: defaultMatchFunctions as Record<ControlNames, (item: Item, value: FilterValue) => boolean>,
-  };
-};
-
-export const FilterProvider = <
-  Item extends KubeObjectBase,
-  ControlNames extends string,
-  ValueMap extends FilterValueMap = Record<ControlNames, FilterValue>,
->({
+export const FilterProvider = <Item, Values extends FilterValueMap>({
   children,
-  entityID,
+  defaultValues,
   matchFunctions,
-  valueMap,
-  saveToLocalStorage = false,
-}: FilterProviderProps<Item, ControlNames, ValueMap>) => {
-  const LS_FILTER_ENTITY_KEY = `${LS_FILTER_KEY}_${entityID}`;
-  const lsFilterState = LOCAL_STORAGE_SERVICE.getItem(LS_FILTER_ENTITY_KEY);
+  syncWithUrl = false,
+}: FilterProviderProps<Item, Values>) => {
+  const navigate = useNavigate();
+  // Always call useSearch unconditionally to follow React Hooks rules
+  const searchParams = useSearch({ strict: false }) as Record<string, unknown>;
 
-  const defaultState = createDefaultFilterState<Item, ControlNames, ValueMap>(matchFunctions, valueMap);
-
-  const [filter, setFilter] = React.useState<FilterState<Item, ControlNames, ValueMap>>(() => {
-    if (saveToLocalStorage && lsFilterState) {
-      return {
-        ...defaultState,
-        values: {
-          ...defaultState.values,
-          ...lsFilterState.values,
-        },
-      };
-    }
-
-    return defaultState;
-  });
-
-  const [showFilter, setShowFilter] = React.useState<boolean>(lsFilterState?.showFilter ?? false);
-
-  const filterFunction = React.useCallback(
-    (item: Item) => {
-      let matches = true;
-
-      for (const [key, filterFn] of Object.entries(filter.matchFunctions)) {
-        const keyControlValue = filter.values[key as ControlNames];
-
-        matches = keyControlValue
-          ? (filterFn as (item: Item, value: FilterValue) => boolean)(item, keyControlValue)
-          : true;
-
-        if (!matches) {
-          break;
+  // Helper to create filterFunction from values
+  const createFilterFunction = useCallback(
+    (values: Values) => {
+      return (item: Item) => {
+        if (!values) {
+          return true;
         }
-      }
 
-      return matches;
+        return Object.entries(values).every(([fieldName, fieldValue]) => {
+          const matchFn = matchFunctions[fieldName as keyof Values];
+          if (!matchFn) {
+            return true;
+          }
+          return matchFn(item, fieldValue as Values[keyof Values]);
+        });
+      };
     },
-    [filter]
+    [matchFunctions]
   );
 
-  const setFilterItem = React.useCallback(
-    <K extends ControlNames>(key: K, value: ValueMap[K]) => {
-      setFilter((prev) => {
-        const newFilters = {
-          ...prev,
-          values: {
-            ...prev.values,
-            [key]: value,
-          },
-        };
+  // Keep track of whether we're initializing to avoid unnecessary URL updates
+  const isInitializing = useRef(true);
 
-        if (saveToLocalStorage) {
-          LOCAL_STORAGE_SERVICE.setItem(LS_FILTER_ENTITY_KEY, {
-            values: newFilters.values,
-            showFilter,
+  // Initialize values from URL if syncWithUrl is enabled
+  const initialValues = useMemo(() => {
+    if (!syncWithUrl) {
+      return defaultValues;
+    }
+
+    const mergedValues = { ...defaultValues };
+
+    // Merge URL search params with default values
+    Object.keys(defaultValues).forEach((key) => {
+      const urlValue = searchParams[key];
+      if (urlValue !== undefined) {
+        mergedValues[key as keyof Values] = urlValue as Values[keyof Values];
+      }
+    });
+
+    return mergedValues;
+  }, [defaultValues, searchParams, syncWithUrl]);
+
+  const [filterFunction, setFilterFunction] = useState<(item: Item) => boolean>(() =>
+    createFilterFunction(initialValues)
+  );
+
+  const form = useForm<
+    Values,
+    FormValidateOrFn<Values>,
+    FormValidateOrFn<Values>,
+    FormAsyncValidateOrFn<Values>,
+    FormValidateOrFn<Values>,
+    FormAsyncValidateOrFn<Values>,
+    FormValidateOrFn<Values>,
+    FormAsyncValidateOrFn<Values>,
+    FormValidateOrFn<Values>,
+    FormAsyncValidateOrFn<Values>,
+    FormAsyncValidateOrFn<Values>,
+    never
+  >({
+    defaultValues: initialValues,
+    listeners: {
+      onChange: ({ formApi }) => {
+        const values = formApi.state.values;
+
+        // Update filterFunction based on current form values
+        setFilterFunction(() => createFilterFunction(values));
+
+        // Sync with URL if enabled (skip during initialization)
+        if (syncWithUrl && !isInitializing.current) {
+          // Create a clean object with only non-default values
+          const urlParams: Record<string, unknown> = {};
+
+          Object.keys(defaultValues).forEach((key) => {
+            const currentValue = values[key as keyof Values];
+            const defaultValue = defaultValues[key as keyof Values];
+
+            // Only include values that differ from defaults
+            if (Array.isArray(currentValue)) {
+              if (currentValue.length > 0) {
+                urlParams[key] = currentValue;
+              }
+            } else if (typeof currentValue === "string") {
+              if (currentValue !== "" && currentValue !== defaultValue) {
+                urlParams[key] = currentValue;
+              }
+            } else if (currentValue !== defaultValue) {
+              urlParams[key] = currentValue;
+            }
+          });
+
+          // Update URL without navigation (replace instead of push)
+          void navigate({
+            search: urlParams as never,
+            replace: true,
+          }).catch(() => {
+            // Ignore navigation errors
           });
         }
 
-        return newFilters;
-      });
+        // Mark initialization as complete after first change
+        if (isInitializing.current) {
+          isInitializing.current = false;
+        }
+      },
+      // Debounce form-level onChange to avoid excessive re-renders during typing
+      onChangeDebounceMs: 300,
     },
-    [LS_FILTER_ENTITY_KEY, saveToLocalStorage, showFilter]
+  });
+
+  // Reset function
+  const reset = useCallback(() => {
+    form.reset();
+
+    // form.reset() doesn't trigger onChange listener, so manually handle side effects:
+    // 1. Update filterFunction immediately (no debounce on reset for better UX)
+    setFilterFunction(() => createFilterFunction(defaultValues));
+
+    // 2. Clear URL params (empty object means no search params)
+    if (syncWithUrl) {
+      void navigate({
+        search: {} as never,
+        replace: true,
+      }).catch(() => {
+        // Ignore navigation errors
+      });
+    }
+  }, [form, createFilterFunction, defaultValues, syncWithUrl, navigate]);
+
+  const contextValue = useMemo(
+    () => ({
+      form,
+      filterFunction,
+      reset,
+    }),
+    [form, filterFunction, reset]
   );
 
-  const resetFilter = React.useCallback(() => {
-    setFilter(defaultState);
-
-    if (saveToLocalStorage) {
-      LOCAL_STORAGE_SERVICE.removeItem(LS_FILTER_ENTITY_KEY);
-    }
-  }, [defaultState, LS_FILTER_ENTITY_KEY, saveToLocalStorage]);
-
-  const contextValue: FilterContextValue<Item, ControlNames, ValueMap> = {
-    showFilter,
-    filter,
-    setFilterItem,
-    setShowFilter,
-    resetFilter,
-    filterFunction,
-  };
-
   return (
-    <FilterContext.Provider
-      value={contextValue as unknown as FilterContextValue<unknown, string, Record<string, FilterValue>>}
-    >
+    <FilterContext.Provider value={contextValue as FilterContextValue<unknown, Record<string, unknown>>}>
       {children}
     </FilterContext.Provider>
   );
