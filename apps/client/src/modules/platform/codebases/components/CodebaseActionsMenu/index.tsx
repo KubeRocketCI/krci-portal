@@ -1,23 +1,123 @@
-import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
-import { useDialogContext } from "@/core/providers/Dialog/hooks";
-import { createResourceAction } from "@/core/utils/createResourceAction";
-import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
-import { Typography } from "@mui/material";
-import { k8sCodebaseConfig, k8sOperation } from "@my-project/shared";
-import { Pencil, Trash } from "lucide-react";
-import React from "react";
-import { ManageCodebaseDialog } from "../../dialogs/ManageCodebase";
-import { useStyles } from "./styles";
-import { CodebaseActionsMenuProps } from "./types";
-import { useCodebasePermissions } from "@/k8s/api/groups/KRCI/Codebase";
 import { ActionsInlineList } from "@/core/components/ActionsInlineList";
 import { ActionsMenuList } from "@/core/components/ActionsMenuList";
 import { DeleteKubeObjectDialog } from "@/core/components/DeleteKubeObject";
-import { useDeletionConflictItem } from "./hooks/useDeletionConflictItem";
-import { Link } from "@tanstack/react-router";
-import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
+import { DIALOG_NAME_DELETE_KUBE_OBJECT } from "@/core/components/DeleteKubeObject/constants";
+import { useDialogContext } from "@/core/providers/Dialog/hooks";
+import { createResourceAction } from "@/core/utils/createResourceAction";
+import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
+import { useCodebasePermissions } from "@/k8s/api/groups/KRCI/Codebase";
+import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import { useClusterStore } from "@/k8s/store";
+import { Box, Button, Typography } from "@mui/material";
+import type { CDPipeline, Codebase } from "@my-project/shared";
+import { k8sCodebaseConfig, k8sOperation } from "@my-project/shared";
+import { Link } from "@tanstack/react-router";
+import { AlertCircle, Pencil, Trash } from "lucide-react";
+import React from "react";
 import { useShallow } from "zustand/react/shallow";
+import { ManageCodebaseDialog } from "../../dialogs/ManageCodebase";
+import { useCodebaseDeletionConflictResourceQuery } from "./hooks/useDeletionConflictItem";
+import { CodebaseActionsMenuProps } from "./types";
+import { PATH_CDPIPELINE_DETAILS_FULL } from "@/modules/platform/cdpipelines/pages/details/route";
+
+interface DeletionErrorMessageProps {
+  codebase: Codebase;
+  conflictedPipeline: CDPipeline;
+  clusterName: string;
+}
+
+const DeletionErrorMessage = ({ codebase, conflictedPipeline, clusterName }: DeletionErrorMessageProps) => {
+  const { closeDialog } = useDialogContext();
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 2,
+        padding: 2.5,
+        borderRadius: 1.5,
+        backgroundColor: "rgba(244, 67, 54, 0.08)",
+        border: "1px solid rgba(244, 67, 54, 0.3)",
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <AlertCircle size={20} style={{ color: "#d32f2f", flexShrink: 0 }} />
+        <Typography
+          variant="subtitle2"
+          sx={{
+            fontWeight: 600,
+            color: "#d32f2f",
+            fontSize: "0.9375rem",
+          }}
+        >
+          Cannot Delete Codebase
+        </Typography>
+      </Box>
+
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, paddingLeft: 4.5 }}>
+        <Typography
+          variant="body2"
+          sx={{
+            color: "text.primary",
+            lineHeight: 1.6,
+          }}
+        >
+          {capitalizeFirstLetter(codebase.spec.type)}{" "}
+          <Typography
+            component="span"
+            sx={{
+              fontWeight: 600,
+              color: "text.primary",
+            }}
+          >
+            {codebase.metadata.name}
+          </Typography>{" "}
+          is currently being used in the following Deployment Flow:
+        </Typography>
+
+        <Box
+          sx={{
+            marginTop: 1,
+            padding: 1.5,
+            borderRadius: 1,
+            backgroundColor: "background.paper",
+            border: "1px solid",
+            borderColor: "divider",
+          }}
+        >
+          {/* @ts-expect-error TODO: Fix when migrating to tailwind */}
+          <Button
+            component={Link}
+            variant="text"
+            to={PATH_CDPIPELINE_DETAILS_FULL}
+            params={{
+              clusterName,
+              name: conflictedPipeline.metadata.name,
+              namespace: conflictedPipeline.metadata.namespace!,
+            }}
+            onClick={() => {
+              closeDialog(DIALOG_NAME_DELETE_KUBE_OBJECT);
+            }}
+          >
+            {conflictedPipeline.metadata.name}
+          </Button>
+        </Box>
+
+        <Typography
+          variant="body2"
+          sx={{
+            marginTop: 1,
+            color: "text.secondary",
+            fontSize: "0.875rem",
+          }}
+        >
+          Please remove this codebase from the Deployment Flow before deleting it.
+        </Typography>
+      </Box>
+    </Box>
+  );
+};
 
 export const CodebaseActionsMenu = ({
   backRoute,
@@ -26,47 +126,32 @@ export const CodebaseActionsMenu = ({
   anchorEl,
   handleCloseResourceActionListMenu,
 }: CodebaseActionsMenuProps) => {
-  const classes = useStyles();
-
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
 
   const codebasePermissions = useCodebasePermissions();
 
   const { setDialog } = useDialogContext();
 
-  const conflictedCDPipeline = useDeletionConflictItem(codebase);
+  const conflictedCDPipelineQuery = useCodebaseDeletionConflictResourceQuery(codebase);
 
   const ErrorMessage = React.useMemo(() => {
-    if (!conflictedCDPipeline || !codebase) {
+    if (!conflictedCDPipelineQuery?.data || !codebase) {
       return null;
     }
 
     return (
-      <div className={classes.message}>
-        <Typography component={"span"}>
-          {capitalizeFirstLetter(codebase.spec.type)} {codebase.metadata.name} is used in
-        </Typography>
-        <div className={classes.conflictEntityName}>
-          <Link
-            to={routeCDPipelineDetails.fullPath}
-            params={{
-              clusterName,
-              name: conflictedCDPipeline.metadata.name,
-              namespace: conflictedCDPipeline.metadata.namespace!,
-            }}
-          >
-            {conflictedCDPipeline.metadata.name}
-          </Link>
-        </div>
-        <Typography component={"span"}> Deployment Flow</Typography>
-      </div>
+      <DeletionErrorMessage
+        codebase={codebase}
+        conflictedPipeline={conflictedCDPipelineQuery.data}
+        clusterName={clusterName}
+      />
     );
-  }, [classes.conflictEntityName, classes.message, clusterName, codebase, conflictedCDPipeline]);
+  }, [clusterName, codebase, conflictedCDPipelineQuery]);
 
   const onBeforeSubmit = React.useCallback(
     async (setErrorTemplate: (error: React.ReactNode) => void, setLoadingActive: (loading: boolean) => void) => {
       setLoadingActive(true);
-      if (!conflictedCDPipeline) {
+      if (!conflictedCDPipelineQuery || !conflictedCDPipelineQuery?.data) {
         setLoadingActive(false);
         return;
       }
@@ -74,7 +159,7 @@ export const CodebaseActionsMenu = ({
       setErrorTemplate(ErrorMessage);
       setLoadingActive(false);
     },
-    [conflictedCDPipeline, ErrorMessage]
+    [conflictedCDPipelineQuery, ErrorMessage]
   );
 
   const actions = React.useMemo(() => {

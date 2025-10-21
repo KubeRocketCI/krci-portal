@@ -1,13 +1,13 @@
-import { useWatchCDPipelineByAutotest, useWatchCDPipelineByApplication } from "@/k8s/api/groups/KRCI/CDPipeline";
+import { useWatchCDPipelineByAutotest, useWatchCDPipelineByApplicationQuery } from "@/k8s/api/groups/KRCI/CDPipeline";
 import { Codebase, codebaseType } from "@my-project/shared";
 
-export const useDeletionConflictItem = (codebase: Codebase) => {
+export const useCodebaseDeletionConflictResourceQuery = (codebase: Codebase) => {
   const cdPipelineByAutotestWatch = useWatchCDPipelineByAutotest(
     codebase.spec.type === codebaseType.autotest ? codebase.metadata.name : undefined,
     codebase.metadata.namespace
   );
 
-  const cdPipelineByApplicationWatch = useWatchCDPipelineByApplication(
+  const cdPipelineByApplicationWatchQuery = useWatchCDPipelineByApplicationQuery(
     codebase.spec.type === codebaseType.application ? codebase.metadata.name : undefined,
     codebase.metadata.namespace
   );
@@ -16,11 +16,11 @@ export const useDeletionConflictItem = (codebase: Codebase) => {
     return null;
   }
 
-  if (cdPipelineByAutotestWatch.data) {
-    return cdPipelineByAutotestWatch.data;
+  if (cdPipelineByAutotestWatch.query.data) {
+    return cdPipelineByAutotestWatch.query;
   }
 
-  if (cdPipelineByApplicationWatch) {
-    return cdPipelineByApplicationWatch;
+  if (cdPipelineByApplicationWatchQuery.data) {
+    return cdPipelineByApplicationWatchQuery;
   }
 };

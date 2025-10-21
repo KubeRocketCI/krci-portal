@@ -2,10 +2,10 @@ import { QuickLink } from "@/core/components/QuickLink";
 import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { CDPipelineActionsMenu } from "@/modules/platform/cdpipelines/components/CDPipelineActionsMenu";
-import { routeSonarConfiguration } from "@/modules/platform/configuration/modules/sonar/route";
+import { PATH_CONFIG_SONAR_FULL } from "@/modules/platform/configuration/modules/sonar/route";
 import { Grid } from "@mui/material";
 import { systemQuickLink } from "@my-project/shared";
-import { routeCDPipelineList } from "../../../list/route";
+import { PATH_CDPIPELINES_FULL } from "../../../list/route";
 import { routeCDPipelineDetails } from "../../route";
 import { useCDPipelineWatch, useQuickLinksUrlListWatch } from "../../hooks/data";
 
@@ -27,7 +27,7 @@ export const HeaderActions = () => {
           }}
           externalLink={LinkCreationService.argocd.createPipelineLink(quickLinksURLs?.[systemQuickLink.argocd], name)}
           configurationRoute={{
-            to: routeSonarConfiguration.to,
+            to: PATH_CONFIG_SONAR_FULL,
           }}
           isTextButton
         />
@@ -39,7 +39,7 @@ export const HeaderActions = () => {
               CDPipeline: cdPipeline!,
             }}
             backRoute={{
-              to: routeCDPipelineList.to,
+              to: PATH_CDPIPELINES_FULL,
             }}
             variant="inline"
           />

@@ -3,7 +3,7 @@ import React from "react";
 import { Terminal } from "@/core/components/Terminal";
 import { StyledAccordionSummary } from "../../../../styles";
 import { StyledDetailsBody, StyledDetailsHeader } from "../../../Details/styles";
-import { routePipelineRunDetails } from "../../../../route";
+import { routePipelineRunDetails, PATH_PIPELINERUN_DETAILS_FULL } from "../../../../route";
 import { usePipelineRunLogsQueryWithPageParams } from "../../../../hooks/data";
 import { router } from "@/core/router";
 
@@ -18,7 +18,7 @@ export const LogsByTask = () => {
 
   const handleAccordionChange = (taskRun: string) => () => {
     router.navigate({
-      to: routePipelineRunDetails.to,
+      to: PATH_PIPELINERUN_DETAILS_FULL,
       params: {
         clusterName: params.clusterName,
         namespace: params.namespace,

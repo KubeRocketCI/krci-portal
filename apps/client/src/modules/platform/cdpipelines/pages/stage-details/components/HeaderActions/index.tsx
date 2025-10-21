@@ -5,9 +5,9 @@ import { StageActionsMenu } from "@/modules/platform/cdpipelines/components/Stag
 import { Box, Stack } from "@mui/material";
 import { quickLinkLabels, systemQuickLink } from "@my-project/shared";
 import { routeStageDetails } from "../../route";
-import { routeArgocdConfiguration } from "@/modules/platform/configuration/modules/argocd/route";
+import { PATH_CONFIG_ARGOCD_FULL } from "@/modules/platform/configuration/modules/argocd/route";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { routeCDPipelineDetails } from "../../../details/route";
+import { PATH_CDPIPELINE_DETAILS_FULL } from "../../../details/route";
 import { useQuickLinksUrlListWatch, useStageListWatch, useCDPipelineWatch, useStageWatch } from "../../hooks";
 
 export const HeaderActions = () => {
@@ -40,7 +40,7 @@ export const HeaderActions = () => {
           params.stage
         )}
         configurationRoute={{
-          to: routeArgocdConfiguration.to,
+          to: PATH_CONFIG_ARGOCD_FULL,
           params: {
             name: params.cdPipeline,
             namespace: params.namespace,
@@ -89,7 +89,7 @@ export const HeaderActions = () => {
               cdPipeline: cdPipeline!,
             }}
             backRoute={{
-              to: routeCDPipelineDetails.to,
+              to: PATH_CDPIPELINE_DETAILS_FULL,
               params: {
                 clusterName: params.clusterName,
                 name: params.cdPipeline,

@@ -3,7 +3,7 @@ import React from "react";
 import { Details } from "../components/Details";
 import { Overview } from "../components/Overview";
 import { ViewPipelineRun } from "../components/ViewPipelineRun";
-import { routePipelineRunDetails, RouteSearchTab, routeSearchTabSchema } from "../route";
+import { routePipelineRunDetails, RouteSearchTab, routeSearchTabSchema, PATH_PIPELINERUN_DETAILS_FULL } from "../route";
 import { Tab } from "@/core/providers/Tabs/components/Tabs/types";
 import { router } from "@/core/router";
 import { Diagram } from "../components/Diagram";
@@ -15,7 +15,7 @@ export const useTabs = (): Tab[] => {
   const handleTabNavigate = React.useCallback(
     (tab: RouteSearchTab) => {
       router.navigate({
-        to: routePipelineRunDetails.to,
+        to: PATH_PIPELINERUN_DETAILS_FULL,
         params,
         search: (prev) => ({ ...prev, tab }),
       });

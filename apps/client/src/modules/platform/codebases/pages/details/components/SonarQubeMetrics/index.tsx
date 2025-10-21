@@ -3,7 +3,7 @@ import { NoDataWidgetWrapper } from "@/core/components/NoDataWidgetWrapper";
 import { Button } from "@/core/components/ui/button";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { useClusterStore } from "@/k8s/store";
-import { routeSonarConfiguration } from "@/modules/platform/configuration/modules/sonar/route";
+import { PATH_CONFIG_SONAR_FULL } from "@/modules/platform/configuration/modules/sonar/route";
 import { CircularProgress, Stack, Typography } from "@mui/material";
 import { NormalizedSonarQubeMetrics } from "@my-project/shared";
 import { useQuery } from "@tanstack/react-query";
@@ -112,7 +112,7 @@ export const SonarMetrics = ({ componentName }: SonarQubeMetricsProps) => {
           No metrics available.{" "}
           <Button variant="link" asChild className="p-0!">
             <Link
-              to={routeSonarConfiguration.to}
+              to={PATH_CONFIG_SONAR_FULL}
               params={{
                 clusterName,
               }}

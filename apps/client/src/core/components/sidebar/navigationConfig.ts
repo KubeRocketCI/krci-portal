@@ -1,26 +1,24 @@
 import { Bot, Layers, PanelsTopLeft, Rows2, Settings, ShoppingCart } from "lucide-react";
-import { routeOverviewDetails } from "@/modules/platform/overview/pages/details/route";
-import { routeComponentList } from "@/modules/platform/codebases/pages/list/route";
-import { routeCDPipelineList } from "@/modules/platform/cdpipelines/pages/list/route";
-import { routePipelineRunList } from "@/modules/platform/pipelineruns/pages/list/route";
-import { routeTaskList } from "@/modules/platform/tasks/pages/list/route";
 import { routeCICD, routeConfiguration } from "@/core/router";
-import { routePipelineList } from "@/modules/platform/pipelines/pages/list/route";
-import { routeQuicklinksConfiguration } from "@/modules/platform/configuration/modules/quicklinks/route";
-import { routeNexusConfiguration } from "@/modules/platform/configuration/modules/nexus/route";
-import { routeRegistryConfiguration } from "@/modules/platform/configuration/modules/registry/route";
-import { routeClustersConfiguration } from "@/modules/platform/configuration/modules/clusters/route";
-import { routeGitopsConfiguration } from "@/modules/platform/configuration/modules/gitops/route";
-import { routeArgocdConfiguration } from "@/modules/platform/configuration/modules/argocd/route";
-import { routeDefectdojoConfiguration } from "@/modules/platform/configuration/modules/defectdojo/route";
-import { routeDependencyTrackConfiguration } from "@/modules/platform/configuration/modules/dependency-track/route";
-import { routeSonarConfiguration } from "@/modules/platform/configuration/modules/sonar/route";
-import { routeGitserversConfiguration } from "@/modules/platform/configuration/modules/gitservers/route";
-import { routeJiraConfiguration } from "@/modules/platform/configuration/modules/jira/route";
-// import { routeChatAssistantConfiguration } from "@/modules/platform/configuration/modules/chat-assistant/route";
-// import { routeCodemieConfiguration } from "@/modules/platform/configuration/modules/codemie/route";
+import { PATH_OVERVIEW_FULL } from "@/modules/platform/overview/pages/details/route";
+import { PATH_COMPONENTS_FULL } from "@/modules/platform/codebases/pages/list/route";
+import { PATH_MARKETPLACE_FULL } from "@/modules/platform/marketplace/route";
+import { PATH_CDPIPELINES_FULL } from "@/modules/platform/cdpipelines/pages/list/route";
+import { PATH_PIPELINERUNS_FULL } from "@/modules/platform/pipelineruns/pages/list/route";
+import { PATH_PIPELINES_FULL } from "@/modules/platform/pipelines/pages/list/route";
+import { PATH_TASKS_FULL } from "@/modules/platform/tasks/pages/list/route";
+import { PATH_CONFIG_QUICKLINKS_FULL } from "@/modules/platform/configuration/modules/quicklinks/route";
+import { PATH_CONFIG_NEXUS_FULL } from "@/modules/platform/configuration/modules/nexus/route";
+import { PATH_CONFIG_REGISTRY_FULL } from "@/modules/platform/configuration/modules/registry/route";
+import { PATH_CONFIG_CLUSTERS_FULL } from "@/modules/platform/configuration/modules/clusters/route";
+import { PATH_CONFIG_GITOPS_FULL } from "@/modules/platform/configuration/modules/gitops/route";
+import { PATH_CONFIG_ARGOCD_FULL } from "@/modules/platform/configuration/modules/argocd/route";
+import { PATH_CONFIG_DEFECTDOJO_FULL } from "@/modules/platform/configuration/modules/defectdojo/route";
+import { PATH_CONFIG_DEPENDENCY_TRACK_FULL } from "@/modules/platform/configuration/modules/dependency-track/route";
+import { PATH_CONFIG_SONAR_FULL } from "@/modules/platform/configuration/modules/sonar/route";
+import { PATH_CONFIG_GITSERVERS_FULL } from "@/modules/platform/configuration/modules/gitservers/route";
+import { PATH_CONFIG_JIRA_FULL } from "@/modules/platform/configuration/modules/jira/route";
 import type { NavItem } from "./types";
-import { routeMarketplace } from "@/modules/platform/marketplace/route";
 
 /**
  * Creates the navigation configuration for the sidebar
@@ -34,12 +32,13 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
     namespace,
   };
 
+
   return [
     {
       title: "Overview",
       icon: PanelsTopLeft,
       route: {
-        to: routeOverviewDetails.to,
+        to: PATH_OVERVIEW_FULL,
         params: clusterDefaultParams,
       },
     },
@@ -47,7 +46,7 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
       title: "CI/CD Pipelines",
       icon: Bot,
       defaultRoute: {
-        to: routePipelineRunList.to,
+        to: PATH_PIPELINERUNS_FULL,
         params: clusterDefaultParams,
       },
       groupRoute: routeCICD,
@@ -55,21 +54,21 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
         {
           title: "PipelineRuns",
           route: {
-            to: routePipelineRunList.to,
+            to: PATH_PIPELINERUNS_FULL,
             params: clusterDefaultParams,
           },
         },
         {
           title: "Pipelines",
           route: {
-            to: routePipelineList.to,
+            to: PATH_PIPELINES_FULL,
             params: clusterDefaultParams,
           },
         },
         {
           title: "Tasks",
           route: {
-            to: routeTaskList.to,
+            to: PATH_TASKS_FULL,
             params: clusterDefaultParams,
           },
         },
@@ -79,7 +78,7 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
       title: "Marketplace",
       icon: ShoppingCart,
       route: {
-        to: routeMarketplace.to,
+        to: PATH_MARKETPLACE_FULL,
         params: clusterDefaultParams,
       },
     },
@@ -87,7 +86,7 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
       title: "Components",
       icon: Layers,
       route: {
-        to: routeComponentList.to,
+        to: PATH_COMPONENTS_FULL,
         params: clusterDefaultParams,
       },
     },
@@ -95,7 +94,7 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
       title: "Deployment Flows",
       icon: Rows2,
       route: {
-        to: routeCDPipelineList.to,
+        to: PATH_CDPIPELINES_FULL,
         params: clusterDefaultParams,
       },
     },
@@ -103,7 +102,7 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
       title: "Configuration",
       icon: Settings,
       defaultRoute: {
-        to: routeQuicklinksConfiguration.to,
+        to: PATH_CONFIG_QUICKLINKS_FULL,
         params: clusterDefaultParams,
       },
       groupRoute: routeConfiguration,
@@ -114,7 +113,7 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
             {
               title: "QuickLinks",
               route: {
-                to: routeQuicklinksConfiguration.to,
+                to: PATH_CONFIG_QUICKLINKS_FULL,
                 params: clusterDefaultParams,
               },
             },
@@ -126,14 +125,14 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
             {
               title: "Nexus",
               route: {
-                to: routeNexusConfiguration.to,
+                to: PATH_CONFIG_NEXUS_FULL,
                 params: clusterDefaultParams,
               },
             },
             {
               title: "Registry",
               route: {
-                to: routeRegistryConfiguration.to,
+                to: PATH_CONFIG_REGISTRY_FULL,
                 params: clusterDefaultParams,
               },
             },
@@ -145,21 +144,21 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
             {
               title: "Clusters",
               route: {
-                to: routeClustersConfiguration.to,
+                to: PATH_CONFIG_CLUSTERS_FULL,
                 params: clusterDefaultParams,
               },
             },
             {
               title: "GitOps",
               route: {
-                to: routeGitopsConfiguration.to,
+                to: PATH_CONFIG_GITOPS_FULL,
                 params: clusterDefaultParams,
               },
             },
             {
               title: "ArgoCD",
               route: {
-                to: routeArgocdConfiguration.to,
+                to: PATH_CONFIG_ARGOCD_FULL,
                 params: clusterDefaultParams,
               },
             },
@@ -171,14 +170,14 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
             {
               title: "DefectDojo",
               route: {
-                to: routeDefectdojoConfiguration.to,
+                to: PATH_CONFIG_DEFECTDOJO_FULL,
                 params: clusterDefaultParams,
               },
             },
             {
               title: "DependencyTrack",
               route: {
-                to: routeDependencyTrackConfiguration.to,
+                to: PATH_CONFIG_DEPENDENCY_TRACK_FULL,
                 params: clusterDefaultParams,
               },
             },
@@ -190,7 +189,7 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
             {
               title: "SonarQube",
               route: {
-                to: routeSonarConfiguration.to,
+                to: PATH_CONFIG_SONAR_FULL,
                 params: clusterDefaultParams,
               },
             },
@@ -202,7 +201,7 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
             {
               title: "Git Servers",
               route: {
-                to: routeGitserversConfiguration.to,
+                to: PATH_CONFIG_GITSERVERS_FULL,
                 params: clusterDefaultParams,
               },
             },
@@ -214,7 +213,7 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
             {
               title: "Jira",
               route: {
-                to: routeJiraConfiguration.to,
+                to: PATH_CONFIG_JIRA_FULL,
                 params: clusterDefaultParams,
               },
             },

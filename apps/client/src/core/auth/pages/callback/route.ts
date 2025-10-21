@@ -1,7 +1,9 @@
 import { createRoute } from "@tanstack/react-router";
 import AuthCallbackPage from "./view";
 import { RoutePath } from "@/core/router/types";
-import { authRoute } from "@/core/router";
+import { authRoute } from "@/core/router/routes";
+
+export const PATH_AUTH_CALLBACK = "/callback" as const;
 
 export interface Search {
   redirect?: RoutePath | undefined;
@@ -13,7 +15,7 @@ export interface Search {
 
 export const routeAuthCallback = createRoute({
   getParentRoute: () => authRoute,
-  path: "/callback",
+  path: PATH_AUTH_CALLBACK,
   validateSearch: (search: Record<string, string>): Search => {
     return {
       redirect: search?.redirect as RoutePath,
@@ -24,4 +26,7 @@ export const routeAuthCallback = createRoute({
     };
   },
   component: AuthCallbackPage,
+  head: () => ({
+    meta: [{ title: "Continue Sign In | KRCI" }],
+  }),
 });

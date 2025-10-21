@@ -2,7 +2,7 @@ import { Box } from "@mui/material";
 import React from "react";
 import { Overview } from "../components/Overview";
 import { ViewTask } from "../components/ViewTask";
-import { routeTaskDetails, RouteSearchTab, routeSearchTabSchema } from "../route";
+import { routeTaskDetails, RouteSearchTab, routeSearchTabSchema, PATH_TASK_DETAILS_FULL } from "../route";
 import { Tab } from "@/core/providers/Tabs/components/Tabs/types";
 import { router } from "@/core/router";
 
@@ -12,7 +12,7 @@ export const useTabs = (): Tab[] => {
   const handleTabNavigate = React.useCallback(
     (tab: RouteSearchTab) => {
       router.navigate({
-        to: routeTaskDetails.to,
+        to: PATH_TASK_DETAILS_FULL,
         params,
         search: (prev) => ({ ...prev, tab }),
       });
@@ -45,7 +45,7 @@ export const useTabs = (): Tab[] => {
             sx={{
               pt: (t) => t.typography.pxToRem(24),
               height: "100%",
-              overflow: 'hidden'
+              overflow: "hidden",
             }}
           >
             <ViewTask />

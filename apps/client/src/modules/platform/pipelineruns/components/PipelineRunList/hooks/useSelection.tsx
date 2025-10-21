@@ -1,13 +1,13 @@
 import React from "react";
-import { PipelineRunKubeObjectInterface } from "../../../k8s/groups/Tekton/PipelineRun/types";
+import { PipelineRun } from "@my-project/shared";
 
 export const useSelection = () => {
   const [selected, setSelected] = React.useState<string[]>([]);
 
   const handleSelectAllClick = React.useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>, paginatedItems: PipelineRunKubeObjectInterface[]) => {
+    (event: React.ChangeEvent<HTMLInputElement>, paginatedItems: PipelineRun[]) => {
       if (event.target.checked) {
-        const newSelected = paginatedItems.map(({ metadata: { name } }) => name);
+        const newSelected = paginatedItems.map((item) => item.metadata.name);
         setSelected(newSelected);
         return;
       }
@@ -17,8 +17,13 @@ export const useSelection = () => {
   );
 
   const handleSelectRowClick = React.useCallback(
-    (event: React.MouseEvent<unknown>, row: PipelineRunKubeObjectInterface) => {
-      const name = row.metadata.name;
+    (_event: React.MouseEvent<unknown>, row: PipelineRun) => {
+      const name = row.metadata?.name;
+
+      if (!name) {
+        return;
+      }
+
       const selectedIndex = selected.indexOf(name);
       let newSelected: string[] = [];
 

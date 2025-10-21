@@ -1,6 +1,6 @@
 import { Button } from "@/core/components/ui/button";
 import { useClusterStore } from "@/k8s/store";
-import { routeComponentDetails } from "@/modules/platform/codebases/pages/details/route";
+import { PATH_COMPONENT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { Codebase } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import { useShallow } from "zustand/react/shallow";
@@ -16,7 +16,7 @@ export const NameColumn = ({ appCodebase }: { appCodebase: Codebase }) => {
   return (
     <Button variant="link" asChild className="p-0">
       <Link
-        to={routeComponentDetails.to}
+        to={PATH_COMPONENT_DETAILS_FULL}
         params={{
           clusterName,
           name: appCodebase.metadata.name,

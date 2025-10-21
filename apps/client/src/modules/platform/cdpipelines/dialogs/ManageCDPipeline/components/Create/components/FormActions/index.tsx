@@ -14,10 +14,15 @@ import { CDPipelineDraft, createCDPipelineDraftObject } from "@my-project/shared
 import { SuccessDialog } from "@/modules/platform/codebases/dialogs/Success";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
+import { PATH_CDPIPELINE_DETAILS_FULL } from "@/modules/platform/cdpipelines/pages/details/route";
 
 export const FormActions = () => {
-  const clusterName = useClusterStore(useShallow((state) => state.clusterName));
+  const { clusterName, defaultNamespace } = useClusterStore(
+    useShallow((state) => ({
+      clusterName: state.clusterName,
+      defaultNamespace: state.defaultNamespace,
+    }))
+  );
 
   const {
     state: { closeDialog },
@@ -81,14 +86,18 @@ export const FormActions = () => {
         title: "Your new Deployment Flow is created",
         description: "Kickstart application rollouts by adding Environments to your Deployment Flow.",
         route: {
-          to: routeCDPipelineDetails.to,
-          params: { clusterName, namespace: cdPipeline.metadata.namespace, name: cdPipeline.metadata.name },
+          to: PATH_CDPIPELINE_DETAILS_FULL,
+          params: {
+            clusterName,
+            namespace: cdPipeline.metadata.namespace || defaultNamespace,
+            name: cdPipeline.metadata.name,
+          },
         },
       });
 
       handleClose();
     },
-    [clusterName, handleClose, openSuccessDialog]
+    [clusterName, defaultNamespace, handleClose, openSuccessDialog]
   );
 
   const {

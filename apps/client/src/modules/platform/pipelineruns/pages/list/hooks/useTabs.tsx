@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import React from "react";
-import { routePipelineRunList, RouteSearchTab, routeSearchTabSchema } from "../route";
+import { routePipelineRunList, RouteSearchTab, routeSearchTabSchema, PATH_PIPELINERUNS_FULL } from "../route";
 import { Tab } from "@/core/providers/Tabs/components/Tabs/types";
 import { router } from "@/core/router";
 import { Live } from "../components/Live";
@@ -12,7 +12,7 @@ export const useTabs = (): Tab[] => {
   const handleTabNavigate = React.useCallback(
     (tab: RouteSearchTab) => {
       router.navigate({
-        to: routePipelineRunList.to,
+        to: PATH_PIPELINERUNS_FULL,
         params,
         search: (prev) => ({ ...prev, tab }),
       });

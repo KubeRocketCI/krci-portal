@@ -2,7 +2,7 @@ import { Box, CircularProgress, Stack, Typography } from "@mui/material";
 import React from "react";
 import { NoDataWidgetWrapper } from "@/core/components/NoDataWidgetWrapper";
 import { Link } from "@tanstack/react-router";
-import { routeDependencyTrackConfiguration } from "@/modules/platform/configuration/modules/dependency-track/route";
+import { PATH_CONFIG_DEPENDENCY_TRACK_FULL } from "@/modules/platform/configuration/modules/dependency-track/route";
 import { useClusterStore } from "@/k8s/store";
 import { Button } from "@/core/components/ui/button";
 import { LinkCreationService } from "@/k8s/services/link-creation";
@@ -77,7 +77,7 @@ export const DependencyTrackMetrics = ({ componentName }: DependencyTrackMetrics
           No metrics available.{" "}
           <Button variant="link" asChild className="p-0!">
             <Link
-              to={routeDependencyTrackConfiguration.to}
+              to={PATH_CONFIG_DEPENDENCY_TRACK_FULL}
               params={{
                 clusterName,
               }}

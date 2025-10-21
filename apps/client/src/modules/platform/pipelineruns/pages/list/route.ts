@@ -1,6 +1,9 @@
-import { routeCICD } from "@/core/router";
+import { routeCICD } from "@/core/router/routes";
 import { createRoute } from "@tanstack/react-router";
 import z from "zod";
+
+export const PATH_PIPELINERUNS = "pipelineruns" as const;
+export const PATH_PIPELINERUNS_FULL = "/c/$clusterName/cicd/pipelineruns" as const;
 
 export const routeSearchTabSchema = z.enum(["live", "history"]);
 export const routeSearchTabName = routeSearchTabSchema.enum;
@@ -13,7 +16,7 @@ export interface Search {
 
 export const routePipelineRunList = createRoute({
   getParentRoute: () => routeCICD,
-  path: "/pipelineruns",
+  path: PATH_PIPELINERUNS,
   validateSearch: (search: Record<string, unknown>): Search => {
     const parsed = z
       .object({
@@ -25,4 +28,7 @@ export const routePipelineRunList = createRoute({
       tab: parsed.tab ?? "live",
     };
   },
+  head: () => ({
+    meta: [{ title: "Pipeline Runs | KRCI" }],
+  }),
 }).lazy(() => import("./route.lazy").then((m) => m.Route));

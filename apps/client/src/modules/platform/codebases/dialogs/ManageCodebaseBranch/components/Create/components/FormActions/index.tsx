@@ -26,7 +26,9 @@ export const FormActions = () => {
     reset();
   }, [reset]);
 
-  const handleClose = () => closeDialog();
+  const handleClose = React.useCallback(() => {
+    closeDialog();
+  }, [closeDialog]);
 
   const {
     triggerCreateCodebaseBranch,
@@ -63,17 +65,22 @@ export const FormActions = () => {
         });
 
         await triggerCreateCodebaseBranch({
-          codebaseBranch: newCodebaseBranch,
-          defaultCodebaseBranch: newDefaultCodebaseBranch,
+          data: {
+            codebaseBranch: newCodebaseBranch,
+            defaultCodebaseBranch: newDefaultCodebaseBranch,
+          },
         });
       } else {
         await triggerCreateCodebaseBranch({
-          codebaseBranch: newCodebaseBranch,
+          data: {
+            codebaseBranch: newCodebaseBranch,
+          },
         });
       }
       reset();
+      handleClose();
     },
-    [codebase.metadata.name, reset, defaultBranch, triggerCreateCodebaseBranch]
+    [codebase.metadata.name, reset, handleClose, defaultBranch, triggerCreateCodebaseBranch]
   );
 
   const theme = useTheme();

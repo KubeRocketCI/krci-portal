@@ -1,7 +1,13 @@
-import { routeCluster } from "@/core/router";
+import { routeConfiguration } from "@/core/router/routes";
 import { createRoute } from "@tanstack/react-router";
 
+export const PATH_CONFIG_GITSERVERS = "gitservers" as const;
+export const PATH_CONFIG_GITSERVERS_FULL = "/c/$clusterName/configuration/gitservers" as const;
+
 export const routeGitserversConfiguration = createRoute({
-  getParentRoute: () => routeCluster,
-  path: "/configuration/gitservers",
+  getParentRoute: () => routeConfiguration,
+  path: PATH_CONFIG_GITSERVERS,
+  head: () => ({
+    meta: [{ title: "Git Servers Configuration | KRCI" }],
+  }),
 }).lazy(() => import("./route.lazy").then((res) => res.default));

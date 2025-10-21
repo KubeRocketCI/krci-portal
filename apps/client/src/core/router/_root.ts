@@ -7,6 +7,23 @@ export const rootRoute = createRootRouteWithContext<MyRouterContext>()({
   component: Root,
   loader: () => void 0,
   notFoundComponent: NotFound,
+  head: () => ({
+    meta: [
+      {
+        name: "description",
+        content: "KRCI Portal - Your comprehensive platform for managing CI/CD pipelines, components, and deployments",
+      },
+      {
+        title: "KRCI Portal",
+      },
+    ],
+    links: [
+      {
+        rel: "icon",
+        href: "/krci-logo.svg",
+      },
+    ],
+  }),
   beforeLoad: ({ context, location }) => {
     const queryClient = context.queryClient;
 

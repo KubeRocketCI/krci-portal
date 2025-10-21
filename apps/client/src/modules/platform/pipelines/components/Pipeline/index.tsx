@@ -1,7 +1,7 @@
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { Stack, IconButton } from "@mui/material";
 import { PipelineGraphDialog } from "../../dialogs/PipelineGraph";
-import { routePipelineDetails } from "../../pages/details/route";
+import { PATH_PIPELINE_DETAILS_FULL } from "../../pages/details/route";
 import { VectorSquare } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useClusterStore } from "@/k8s/store";
@@ -16,7 +16,7 @@ export const Pipeline = ({ pipelineName, namespace }: { pipelineName: string; na
     <Stack spacing={1} alignItems="center" direction="row">
       <Button variant="link" asChild className="p-0">
         <Link
-          to={routePipelineDetails.to}
+          to={PATH_PIPELINE_DETAILS_FULL}
           params={{
             clusterName,
             name: pipelineName,

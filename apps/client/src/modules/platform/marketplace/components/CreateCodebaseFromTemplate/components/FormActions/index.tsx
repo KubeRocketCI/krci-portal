@@ -1,7 +1,7 @@
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { useCodebaseCRUD } from "@/k8s/api/groups/KRCI/Codebase";
 import { SuccessDialog } from "@/modules/platform/codebases/dialogs/Success";
-import { routeComponentDetails } from "@/modules/platform/codebases/pages/details/route";
+import { PATH_COMPONENT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { Box, Button, Stack, useTheme } from "@mui/material";
 import { codebaseDeploymentScript, CodebaseDraft, createCodebaseDraftObject } from "@my-project/shared";
 import React from "react";
@@ -34,7 +34,7 @@ export const FormActions = () => {
         title: `Your new Application is created`,
         description: `Browse your new Application and start working with it.`,
         route: {
-          to: routeComponentDetails.to,
+          to: PATH_COMPONENT_DETAILS_FULL,
           params: {
             namespace: codebaseData.metadata.namespace || defaultNamespace,
             name: codebaseData.metadata.name,

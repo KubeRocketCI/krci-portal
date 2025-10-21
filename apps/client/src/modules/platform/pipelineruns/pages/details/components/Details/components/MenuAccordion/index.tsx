@@ -5,7 +5,7 @@ import { Accordion, Stack, Typography, useTheme } from "@mui/material";
 import { ApprovalTask, approvalTaskAction, getTaskRunStepStatus, Task, TaskRun } from "@my-project/shared";
 import { ChevronDown } from "lucide-react";
 import React from "react";
-import { routePipelineRunDetails, routeSearchTabName } from "../../../../route";
+import { routePipelineRunDetails, routeSearchTabName, PATH_PIPELINERUN_DETAILS_FULL } from "../../../../route";
 import { StyledAccordionChildBtn, StyledAccordionDetails, StyledAccordionSummary } from "../../../../styles";
 import {
   approvalTaskBackground,
@@ -52,7 +52,7 @@ export const MenuAccordion = ({
   const handleAccordionChange = React.useCallback(
     (taskRunName: string, taskRunStepName?: string) => {
       router.navigate({
-        to: routePipelineRunDetails.to,
+        to: PATH_PIPELINERUN_DETAILS_FULL,
         params: {
           clusterName: params.clusterName,
           namespace: params.namespace,

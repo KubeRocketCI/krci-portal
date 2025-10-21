@@ -8,14 +8,14 @@ import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
 import { useClusterStore } from "@/k8s/store";
 import { humanize } from "@/core/utils/date-humanize";
-import { routePipelineRunDetails } from "@/modules/platform/pipelineruns/pages/details/route";
+import { PATH_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/pipelineruns/pages/details/route";
 import { IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import { getPipelineRunStatus, getPullRequestURL, PipelineRun } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import { VectorSquare, ExternalLink } from "lucide-react";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
-import { routePipelineDetails } from "../../../../pipelines/pages/details/route";
+import { PATH_PIPELINE_DETAILS_FULL } from "../../../../pipelines/pages/details/route";
 import { PipelineRunResults } from "../components/PipelineRunResults";
 import { Actions } from "../components/Actions";
 import { columnNames } from "../constants";
@@ -77,7 +77,7 @@ export const useColumns = ({
             return (
               <Button variant="link" asChild className="p-0">
                 <Link
-                  to={routePipelineRunDetails.fullPath}
+                  to={PATH_PIPELINERUN_DETAILS_FULL}
                   params={{
                     clusterName,
                     namespace: namespace || defaultNamespace,
@@ -115,7 +115,7 @@ export const useColumns = ({
             return (
               <Button variant="link" asChild className="p-0">
                 <Link
-                  to={routePipelineDetails.fullPath}
+                  to={PATH_PIPELINE_DETAILS_FULL}
                   params={{
                     name: pipelineRefName,
                     namespace: namespace || defaultNamespace,
@@ -137,9 +137,7 @@ export const useColumns = ({
         label: "Results",
         data: {
           render: ({ data }) => {
-            const vcsTag = data?.status?.results?.find(
-              (el: { name: string; value: string }) => el.name === "VCS_TAG"
-            )?.value;
+            const vcsTag = data?.status?.results?.find((el) => el.name === "VCS_TAG")?.value;
 
             if (!vcsTag) {
               return null;
@@ -207,6 +205,10 @@ export const useColumns = ({
             const aStartTime = a?.status?.startTime;
             const bStartTime = b?.status?.startTime;
 
+            if (!aStartTime || !bStartTime) {
+              return 0;
+            }
+
             const aStartTimeDate = new Date(aStartTime).getTime();
             const bStartTimeDate = new Date(bStartTime).getTime();
 
@@ -219,7 +221,12 @@ export const useColumns = ({
             return 0;
           },
           render: ({ data }) => {
-            const startedAt = new Date(data.status?.startTime).toLocaleString("en-mini", {
+            const startTime = data.status?.startTime;
+            if (!startTime) {
+              return null;
+            }
+
+            const startedAt = new Date(startTime).toLocaleString("en-mini", {
               month: "short",
               day: "numeric",
               hour: "numeric",
@@ -243,6 +250,10 @@ export const useColumns = ({
             const bStartTime = b?.status?.startTime;
             const bCompletionTime = b?.status?.completionTime;
 
+            if (!aStartTime || !aCompletionTime || !bStartTime || !bCompletionTime) {
+              return 0;
+            }
+
             const aDurationTime = aCompletionTime
               ? new Date(aCompletionTime).getTime() - new Date(aStartTime).getTime()
               : new Date().getTime() - new Date(aStartTime).getTime();
@@ -261,9 +272,15 @@ export const useColumns = ({
           },
           render: ({ data }) => {
             const completionTime = data?.status?.completionTime;
+            const startTime = data?.status?.startTime;
+
+            if (!completionTime || !startTime) {
+              return null;
+            }
+
             const durationTime = completionTime
-              ? new Date(completionTime).getTime() - new Date(data.status?.startTime).getTime()
-              : new Date().getTime() - new Date(data.status?.startTime).getTime();
+              ? new Date(completionTime).getTime() - new Date(startTime).getTime()
+              : new Date().getTime() - new Date(startTime).getTime();
 
             const activeDuration = humanize(durationTime, {
               language: "en-mini",

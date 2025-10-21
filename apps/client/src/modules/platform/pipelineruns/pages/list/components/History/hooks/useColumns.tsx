@@ -7,7 +7,7 @@ import { useClusterStore } from "@/k8s/store";
 import { Link } from "@tanstack/react-router";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
-import { routePipelineRunDetails } from "../../../../details/route";
+import { PATH_PIPELINERUN_DETAILS_FULL } from "../../../../details/route";
 
 export const useColumns = (): TableColumn<string>[] => {
   const { namespace: defaultNamespace, clusterName } = useClusterStore(
@@ -30,7 +30,7 @@ export const useColumns = (): TableColumn<string>[] => {
           render: ({ data: name }) => (
             <Button variant="link" asChild className="p-0">
               <Link
-                to={routePipelineRunDetails.to}
+                to={PATH_PIPELINERUN_DETAILS_FULL}
                 params={{
                   clusterName,
                   namespace: defaultNamespace,
