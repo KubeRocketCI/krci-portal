@@ -11,9 +11,7 @@ export const BranchListItem = React.memo<BranchListItemProps>(
   ({ codebaseBranch, expandedPanel, id, handlePanelChange }) => {
     const isExpanded = expandedPanel === id;
 
-    const pipelineRunListWatch = useCodebaseBranchPipelineRunListWatch(codebaseBranch, {
-      enabled: isExpanded,
-    });
+    const pipelineRunListWatch = useCodebaseBranchPipelineRunListWatch(codebaseBranch);
 
     const pipelineRuns = React.useMemo(() => {
       const allItems = [...pipelineRunListWatch.dataArray].sort(sortKubeObjectByCreationTimestamp);

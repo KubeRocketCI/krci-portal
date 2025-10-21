@@ -1,6 +1,3 @@
-/*
-   Hook for getting CDPipeline name by autotest name used in CDPipeline stages
-*/
 
 import React from "react";
 import { useStageWatchList } from "../../../Stage";

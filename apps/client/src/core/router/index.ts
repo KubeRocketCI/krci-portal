@@ -1,4 +1,4 @@
-import { createRoute, createRouter, redirect } from "@tanstack/react-router";
+import { createRouter } from "@tanstack/react-router";
 import { LoadingProgressBar } from "../components/ui/LoadingProgressBar";
 import { routeHome } from "../../modules/home/pages/home/route";
 import { routeComponentList } from "../../modules/platform/codebases/pages/list/route";
@@ -7,7 +7,15 @@ import { routeAuthLogin } from "../auth/pages/login/route";
 import ContentLayout from "../components/PageLayout";
 import { rootRoute } from "./_root";
 import { routeComponentDetails } from "../../modules/platform/codebases/pages/details/route";
+import { authRoute, contentLayoutRoute, routeCluster, routeCICD, routeConfiguration } from "./routes";
 import { routeCDPipelineList } from "@/modules/platform/cdpipelines/pages/list/route";
+
+// Assign the ContentLayout component here to avoid circular dependency
+contentLayoutRoute.update({
+  component: ContentLayout,
+});
+
+export { authRoute, contentLayoutRoute, routeCluster, routeCICD, routeConfiguration };
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
 import { routePipelineDetails } from "@/modules/platform/pipelines/pages/details/route";
 import { routePipelineList } from "@/modules/platform/pipelines/pages/list/route";
@@ -31,57 +39,6 @@ import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-de
 import { routeTaskList } from "@/modules/platform/tasks/pages/list/route";
 import { routeTaskDetails } from "@/modules/platform/tasks/pages/details/route";
 import { routeMarketplace } from "@/modules/platform/marketplace/route";
-import { DefaultError } from "./components/DefaultError";
-
-export const authRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "auth",
-});
-
-export const contentLayoutRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/",
-  component: ContentLayout,
-});
-
-export const routeCluster = createRoute({
-  getParentRoute: () => contentLayoutRoute,
-  path: "c/$clusterName",
-  beforeLoad: ({ location, params, context }) => {
-    const queryClient = context.queryClient;
-    const clusterName =
-      queryClient.getQueryData<string>(["clusterName"]) || import.meta.env.VITE_K8S_DEFAULT_CLUSTER_NAME || "";
-
-    if (params.clusterName !== clusterName) {
-      // Load only known cluster
-
-      throw redirect({
-        to: routeHome.fullPath,
-      });
-    }
-
-    if (location.pathname === `/c/${params.clusterName}` || location.pathname === `/c/${params.clusterName}/`) {
-      throw redirect({
-        to: routeComponentList.fullPath,
-        params: {
-          clusterName: params.clusterName,
-        },
-      });
-    }
-  },
-});
-
-export const routeCICD = createRoute({
-  getParentRoute: () => routeCluster,
-  path: "cicd",
-});
-
-export const routeConfiguration = createRoute({
-  getParentRoute: () => routeCluster,
-  path: "configuration",
-});
-
-const DefaultErrorComponent = DefaultError;
 
 const routeTree = rootRoute.addChildren([
   authRoute.addChildren([routeAuthLogin, routeAuthCallback]),
@@ -128,7 +85,6 @@ export const router = createRouter({
   defaultStaleTime: 5000,
   scrollRestoration: true,
   defaultPendingComponent: LoadingProgressBar,
-  defaultErrorComponent: DefaultErrorComponent,
   context: {
     queryClient: undefined!,
   },

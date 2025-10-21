@@ -8,7 +8,7 @@ import { getPullRequestURL } from "@my-project/shared";
 import { SquareArrowOutUpRight } from "lucide-react";
 import React from "react";
 import { PipelineRunActionsMenu } from "../../components/PipelineRunActionsMenu";
-import { routePipelineRunList } from "../list/route";
+import { PATH_PIPELINERUNS_FULL } from "../list/route";
 import { ReserveLogs } from "./components/ReserveLogs";
 import { usePipelineRunWatchWithPageParams } from "./hooks/data";
 import { useTabs } from "./hooks/useTabs";
@@ -61,7 +61,7 @@ export default function PipelineRunDetailsPageContent() {
             pipelineRun: pipelineRun!,
           }}
           backRoute={{
-            to: routePipelineRunList.to,
+            to: PATH_PIPELINERUNS_FULL,
             params: {
               clusterName: params.clusterName,
             },
@@ -78,7 +78,7 @@ export default function PipelineRunDetailsPageContent() {
         {
           label: "PipelineRuns",
           route: {
-            to: routePipelineRunList.to,
+            to: PATH_PIPELINERUNS_FULL,
           },
         },
         {

@@ -6,7 +6,7 @@ import { Stack, Typography } from "@mui/material";
 import { TriangleAlert } from "lucide-react";
 import React from "react";
 import { TaskActionsMenu } from "../../components/TaskActionsMenu";
-import { routeTaskList } from "../list/route";
+import { PATH_TASKS_FULL } from "../list/route";
 import { useTaskWatch } from "./hooks/data";
 import { useTabs } from "./hooks/useTabs";
 import { routeTaskDetails } from "./route";
@@ -67,7 +67,7 @@ export default function TaskDetailsPageContent() {
         {
           label: "Tasks",
           route: {
-            to: routeTaskList.to,
+            to: PATH_TASKS_FULL,
           },
         },
         {

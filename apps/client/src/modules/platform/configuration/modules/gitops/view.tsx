@@ -10,7 +10,7 @@ import { ManageGitOps } from "./components/ManageGitOps";
 import { pageDescription } from "./constants";
 import { getCodebaseStatusIcon, useCodebasePermissions, useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
 import { codebaseLabels, codebaseStatus, codebaseType } from "@my-project/shared";
-import { routeGitserversConfiguration } from "../gitservers/route";
+import { PATH_CONFIG_GITSERVERS_FULL } from "../gitservers/route";
 import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { FolderGit2 } from "lucide-react";
 
@@ -18,7 +18,7 @@ export default function GitopsConfigurationPage() {
   const gitOpsCodebasesWatch = useCodebaseWatchList({
     labels: {
       [codebaseLabels.codebaseType]: codebaseType.system,
-      [codebaseLabels.systemType]: "gitops",
+      // [codebaseLabels.systemType]: "gitops",
     },
   });
   const gitOpsCodebase = gitOpsCodebasesWatch.dataArray[0];
@@ -54,7 +54,7 @@ export default function GitopsConfigurationPage() {
           customText={"No Git Servers Connected."}
           linkText={"Click here to add a Git Server."}
           route={{
-            to: routeGitserversConfiguration.to,
+            to: PATH_CONFIG_GITSERVERS_FULL,
             params: {
               namespace: "asd",
             },

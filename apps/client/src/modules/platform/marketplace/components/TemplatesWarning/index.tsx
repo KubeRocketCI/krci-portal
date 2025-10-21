@@ -1,6 +1,6 @@
 import { EmptyList } from "@/core/components/EmptyList";
 import { useClusterStore } from "@/k8s/store";
-import { routeGitserversConfiguration } from "@/modules/platform/configuration/modules/gitservers/route";
+import { PATH_CONFIG_GITSERVERS_FULL } from "@/modules/platform/configuration/modules/gitservers/route";
 import { useShallow } from "zustand/react/shallow";
 
 export const TemplatesWarning = () => {
@@ -11,7 +11,7 @@ export const TemplatesWarning = () => {
       customText={"No Git Servers Connected."}
       linkText={"Click here to add a Git Server."}
       route={{
-        to: routeGitserversConfiguration.to,
+        to: PATH_CONFIG_GITSERVERS_FULL,
         params: {
           clusterName,
         },

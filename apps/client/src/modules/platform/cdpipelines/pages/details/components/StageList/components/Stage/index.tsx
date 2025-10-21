@@ -7,7 +7,7 @@ import { getStageStatusIcon } from "@/k8s/api/groups/KRCI/Stage";
 import { useViewModeContext } from "@/core/providers/ViewMode/hooks";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { useClusterStore } from "@/k8s/store";
-import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
+import { PATH_CDPIPELINE_STAGE_DETAILS_FULL } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import { Stack, Typography } from "@mui/material";
 import { getApplicationStatus, quickLinkLabels, systemQuickLink } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
@@ -155,7 +155,7 @@ export const Stage = ({ stageWithApplications: { stage, applications } }: Enviro
                 <Stack direction="row" spacing={1} alignItems="center">
                   <Button variant="link" asChild className="p-0 text-2xl font-medium">
                     <Link
-                      to={routeStageDetails.to}
+                      to={PATH_CDPIPELINE_STAGE_DETAILS_FULL}
                       params={{
                         clusterName,
                         cdPipeline: params.name,

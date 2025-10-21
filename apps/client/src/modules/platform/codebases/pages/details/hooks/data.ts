@@ -63,10 +63,7 @@ export const useGitServerWatch = () => {
   });
 };
 
-export const useCodebaseBranchPipelineRunListWatch = (
-  codebaseBranch: CodebaseBranch,
-  options?: { enabled?: boolean }
-) => {
+export const useCodebaseBranchPipelineRunListWatch = (codebaseBranch: CodebaseBranch) => {
   const params = routeComponentDetails.useParams();
 
   return usePipelineRunWatchList({
@@ -75,7 +72,7 @@ export const useCodebaseBranchPipelineRunListWatch = (
       [pipelineRunLabels.codebaseBranch]: codebaseBranch.metadata.name,
     },
     queryOptions: {
-      enabled: options?.enabled !== undefined ? options.enabled : !!codebaseBranch,
+      enabled: !!codebaseBranch,
     },
   });
 };

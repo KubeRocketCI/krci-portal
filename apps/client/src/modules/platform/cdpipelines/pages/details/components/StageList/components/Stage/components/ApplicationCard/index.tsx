@@ -19,15 +19,15 @@ import { TooltipWithLinkList } from "@/core/components/TooltipWithLinkList";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { VIEW_MODES } from "@/core/providers/ViewMode/types";
 import { LinkCreationService } from "@/k8s/services/link-creation";
-import { routeComponentDetails } from "@/modules/platform/codebases/pages/details/route";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { Link } from "@tanstack/react-router";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { QuickLink } from "@/core/components/QuickLink";
 import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
-import { routeArgocdConfiguration } from "@/modules/platform/configuration/modules/argocd/route";
+import { PATH_CONFIG_ARGOCD_FULL } from "@/modules/platform/configuration/modules/argocd/route";
 import { Button } from "@/core/components/ui/button";
+import { PATH_COMPONENT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import moment from "moment";
 import { useQuickLinksUrlListWatch } from "@/modules/platform/cdpipelines/pages/details/hooks/data";
 
@@ -170,7 +170,7 @@ export const ApplicationCard = ({
             />
             <Button variant="link" asChild className="p-0 text-xl">
               <Link
-                to={routeComponentDetails.to}
+                to={PATH_COMPONENT_DETAILS_FULL}
                 params={{
                   clusterName,
                   name: application.metadata.name,
@@ -210,7 +210,7 @@ export const ApplicationCard = ({
                 iconBase64={argocdQuickLink?.spec.icon}
                 externalLink={_createArgoCDLink(argoApplication)}
                 configurationRoute={{
-                  to: routeArgocdConfiguration.to,
+                  to: PATH_CONFIG_ARGOCD_FULL,
                   params: {
                     clusterName,
                   },

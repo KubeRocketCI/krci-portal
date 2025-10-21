@@ -2,10 +2,15 @@ import { useTableSettings } from "@/core/components/Table/components/TableSettin
 import { usePipelineRunWatchList } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { TABLE } from "@/k8s/constants/tables";
 import { PipelineRunList } from "@/modules/platform/pipelineruns/components/PipelineRunList";
+import { sortKubeObjectByCreationTimestamp } from "@my-project/shared";
 import React from "react";
 
 export const Live = () => {
   const pipelineRunsWatch = usePipelineRunWatchList();
+
+  const sortedPipelineRuns = React.useMemo(() => {
+    return pipelineRunsWatch.dataArray.toSorted(sortKubeObjectByCreationTimestamp);
+  }, [pipelineRunsWatch.dataArray]);
 
   const { loadSettings } = useTableSettings(TABLE.GENERAL_PIPELINE_RUN_LIST.id);
 
@@ -16,7 +21,7 @@ export const Live = () => {
       tableId={TABLE.GENERAL_PIPELINE_RUN_LIST.id}
       tableName={TABLE.GENERAL_PIPELINE_RUN_LIST.name}
       tableSettings={tableSettings}
-      pipelineRuns={pipelineRunsWatch.dataArray}
+      pipelineRuns={sortedPipelineRuns}
       isLoading={pipelineRunsWatch.isInitialLoading}
       errors={pipelineRunsWatch.query.error ? [pipelineRunsWatch.query.error] : []}
     />

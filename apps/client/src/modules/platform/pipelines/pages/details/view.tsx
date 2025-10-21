@@ -6,7 +6,7 @@ import { Stack, Typography } from "@mui/material";
 import { TriangleAlert } from "lucide-react";
 import React from "react";
 import { PipelineActionsMenu } from "../../components/PipelineActionsMenu";
-import { routePipelineList } from "../list/route";
+import { PATH_PIPELINES_FULL } from "../list/route";
 import { usePipelineWatch } from "./hooks/data";
 import { useTabs } from "./hooks/useTabs";
 import { routePipelineDetails } from "./route";
@@ -67,7 +67,7 @@ export default function PipelineDetailsPageContent() {
         {
           label: "Pipelines",
           route: {
-            to: routePipelineList.to,
+            to: PATH_PIPELINES_FULL,
           },
         },
         {

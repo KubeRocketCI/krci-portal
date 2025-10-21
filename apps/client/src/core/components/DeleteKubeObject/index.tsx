@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { DIALOG_NAME } from "./constants";
+import { DIALOG_NAME_DELETE_KUBE_OBJECT } from "./constants";
 import { DeleteKubeObjectDialogProps } from "./types";
 import { useResourceCRUDMutation } from "@/k8s/api/hooks/useResourceCRUDMutation";
 import { k8sOperation, KubeObjectBase } from "@my-project/shared";
@@ -137,4 +137,4 @@ export const DeleteKubeObjectDialog: React.FC<DeleteKubeObjectDialogProps> = (_p
   );
 };
 
-DeleteKubeObjectDialog.displayName = DIALOG_NAME;
+DeleteKubeObjectDialog.displayName = DIALOG_NAME_DELETE_KUBE_OBJECT;

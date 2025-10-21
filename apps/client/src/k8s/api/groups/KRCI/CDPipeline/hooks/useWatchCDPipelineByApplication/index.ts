@@ -1,7 +1,10 @@
-import React from "react";
 import { useCDPipelineWatchList } from "..";
+import { useQuery } from "@tanstack/react-query";
 
-export const useWatchCDPipelineByApplication = (codebaseName: string | undefined, namespace: string | undefined) => {
+export const useWatchCDPipelineByApplicationQuery = (
+  codebaseName: string | undefined,
+  namespace: string | undefined
+) => {
   const cdPipelineListWatch = useCDPipelineWatchList({
     namespace,
     queryOptions: {
@@ -9,7 +12,11 @@ export const useWatchCDPipelineByApplication = (codebaseName: string | undefined
     },
   });
 
-  return React.useMemo(() => {
-    return cdPipelineListWatch.dataArray.find((item) => item.spec.applications.includes(codebaseName!));
-  }, [cdPipelineListWatch.dataArray, codebaseName]);
+  return useQuery({
+    queryKey: ["cd-pipeline-by-application", codebaseName, namespace, cdPipelineListWatch.resourceVersion],
+    queryFn: () => {
+      return cdPipelineListWatch.dataArray.find((item) => item.spec.applications.includes(codebaseName!));
+    },
+    enabled: !!codebaseName && !!namespace && cdPipelineListWatch.query.isFetched,
+  });
 };

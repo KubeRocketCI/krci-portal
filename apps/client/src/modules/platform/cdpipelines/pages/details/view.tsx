@@ -1,5 +1,5 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { routeCDPipelineList } from "../list/route";
+import { PATH_CDPIPELINES_FULL } from "../list/route";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { HeaderActions } from "./components/HeaderActions";
@@ -10,7 +10,7 @@ import { Section } from "@/core/components/Section";
 import { Box, Stack } from "@mui/material";
 
 export default function CDPipelineDetailsPageContent() {
-  const { name } = routeCDPipelineDetails.useParams();
+  const { name, clusterName } = routeCDPipelineDetails.useParams();
 
   return (
     <PageWrapper
@@ -18,7 +18,10 @@ export default function CDPipelineDetailsPageContent() {
         {
           label: "Deployment Flows",
           route: {
-            to: routeCDPipelineList.to,
+            to: PATH_CDPIPELINES_FULL,
+            params: {
+              clusterName,
+            },
           },
         },
         {

@@ -5,7 +5,6 @@ import { AuthProvider } from "./core/auth/provider";
 import AppRouter from "./core/router/components/AppRouter";
 import { lightTheme } from "./core/router/components/themes";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material";
-import { DialogContextProvider } from "./core/providers/Dialog/provider";
 
 function App() {
   return (
@@ -14,9 +13,7 @@ function App() {
         <ThemeProvider theme={lightTheme}>
           <BasicLayout>
             <AuthProvider>
-              <DialogContextProvider>
-                <AppRouter />
-              </DialogContextProvider>
+              <AppRouter />
             </AuthProvider>
           </BasicLayout>
         </ThemeProvider>
