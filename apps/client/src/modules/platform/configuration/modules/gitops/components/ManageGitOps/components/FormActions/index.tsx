@@ -5,7 +5,7 @@ import { ManageGitOpsDataContext, ManageGitOpsValues } from "../../types";
 import { useFormContext } from "@/core/providers/Form/hooks";
 import { FORM_MODES } from "@/core/types/forms";
 import { useCodebaseCRUD, useCodebasePermissions } from "@/k8s/api/groups/KRCI/Codebase";
-import { createCodebaseDraftObject } from "@my-project/shared/models/k8s/groups/KRCI/Codebase";
+import { codebaseLabels, createCodebaseDraftObject } from "@my-project/shared/models/k8s/groups/KRCI/Codebase";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 
 export const FormActions = () => {
@@ -69,6 +69,10 @@ export const FormActions = () => {
           startFrom: values.versioningStartFrom,
         },
         ciTool: values.ciTool,
+        labels: {
+          [codebaseLabels.systemType]: "gitops",
+          [codebaseLabels.codebaseType]: values.type,
+        },
       });
 
       await triggerCreateCodebase({

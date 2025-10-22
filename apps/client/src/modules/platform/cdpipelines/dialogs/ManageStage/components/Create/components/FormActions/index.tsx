@@ -12,8 +12,16 @@ import { STAGE_FORM_NAMES } from "../../../../names";
 import { useCurrentDialog } from "../../../../providers/CurrentDialog/hooks";
 import { ManageStageFormValues } from "../../../../types";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
+import { useClusterStore } from "@/k8s/store";
+import { useShallow } from "zustand/react/shallow";
 
 export const FormActions = () => {
+  const { defaultNamespace } = useClusterStore(
+    useShallow((state) => ({
+      defaultNamespace: state.defaultNamespace,
+    }))
+  );
+
   const openSuccessDialog = useDialogOpener(SuccessDialog);
 
   const {
@@ -49,7 +57,7 @@ export const FormActions = () => {
         route: {
           to: routeStageDetails.fullPath,
           params: {
-            namespace: stage.metadata.namespace,
+            namespace: stage.metadata.namespace || defaultNamespace,
             stage: stage.metadata.name,
             cdPipeline: cdPipeline.metadata.name,
           },
@@ -58,7 +66,7 @@ export const FormActions = () => {
 
       handleClose();
     },
-    [cdPipeline, handleClose, openSuccessDialog]
+    [cdPipeline, defaultNamespace, handleClose, openSuccessDialog]
   );
 
   const {

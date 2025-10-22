@@ -18,7 +18,7 @@ export default function GitopsConfigurationPage() {
   const gitOpsCodebasesWatch = useCodebaseWatchList({
     labels: {
       [codebaseLabels.codebaseType]: codebaseType.system,
-      // [codebaseLabels.systemType]: "gitops",
+      [codebaseLabels.systemType]: "gitops",
     },
   });
   const gitOpsCodebase = gitOpsCodebasesWatch.dataArray[0];

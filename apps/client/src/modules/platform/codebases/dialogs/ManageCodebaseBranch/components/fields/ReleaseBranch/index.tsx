@@ -23,7 +23,7 @@ const createReleaseName = (versionFieldValue: string) => {
   return createReleaseNameString(major, minor);
 };
 
-export const ReleaseBranch = ({ defaultBranchVersion }: ReleaseBranchProps) => {
+export const ReleaseBranch = ({ isDefaultBranchProtected, defaultBranchVersion }: ReleaseBranchProps) => {
   const {
     register,
     control,
@@ -35,7 +35,7 @@ export const ReleaseBranch = ({ defaultBranchVersion }: ReleaseBranchProps) => {
   const handleReleaseValueChange = React.useCallback(
     ({ target: { value } }: FieldEvent<string>) => {
       const { version, releaseBranchVersionStart, defaultBranchVersionPostfix } = getValues();
-      if (!version || !defaultBranchVersion) {
+      if (!version || !defaultBranchVersion || isDefaultBranchProtected) {
         return;
       }
 
@@ -61,7 +61,7 @@ export const ReleaseBranch = ({ defaultBranchVersion }: ReleaseBranchProps) => {
         setValue(CODEBASE_BRANCH_FORM_NAMES.defaultBranchVersionPostfix.name, postfix);
       }
     },
-    [defaultBranchVersion, getValues, setValue]
+    [defaultBranchVersion, getValues, isDefaultBranchProtected, setValue]
   );
 
   return (
@@ -72,6 +72,7 @@ export const ReleaseBranch = ({ defaultBranchVersion }: ReleaseBranchProps) => {
       label={<FormControlLabelWithTooltip label={"Release branch"} />}
       control={control}
       errors={errors}
+      disabled={isDefaultBranchProtected}
     />
   );
 };

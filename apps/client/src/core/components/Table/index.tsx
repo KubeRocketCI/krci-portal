@@ -145,6 +145,20 @@ export const Table = <DataType,>({
     [paginatedData.items, selectionSettings.isRowSelectable]
   );
 
+  const validSelectedCount = React.useMemo(() => {
+    if (!selectionSettings.selected?.length || !data?.length || !selectionSettings.isRowSelected) {
+      return selectionSettings.selected?.length || 0;
+    }
+
+    return data.filter((item) => selectionSettings.isRowSelected?.(item)).length;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectionSettings.selected, selectionSettings.isRowSelected, data]);
+
+  const validSelected = React.useMemo(
+    () => (validSelectedCount > 0 ? Array(validSelectedCount).fill("") : []),
+    [validSelectedCount]
+  );
+
   const _handleSelectAllClick = React.useMemo(() => {
     if (!selectionSettings.handleSelectAll || !filteredData || !filteredData.length) {
       return null;
@@ -157,7 +171,7 @@ export const Table = <DataType,>({
   const colGroupRef = React.useRef<HTMLTableColElement | null>(null);
 
   const renderHeader = React.useCallback(() => {
-    if (slots?.header || tableSettings.show || (selectionSettings.renderSelectionInfo && selectionSettings.selected)) {
+    if (slots?.header || tableSettings.show || (selectionSettings.renderSelectionInfo && validSelected)) {
       return (
         <Stack spacing={2}>
           {slots?.header || tableSettings.show ? (
@@ -177,15 +191,15 @@ export const Table = <DataType,>({
               </Box>
             </Stack>
           ) : null}
-          {selectionSettings.renderSelectionInfo && selectionSettings.selected && (
+          {selectionSettings.renderSelectionInfo && validSelected && (
             <Box sx={{ pl: (t) => t.typography.pxToRem(11) }}>
-              {selectionSettings.renderSelectionInfo(selectionSettings.selected.length)}
+              {selectionSettings.renderSelectionInfo(validSelected.length)}
             </Box>
           )}
         </Stack>
       );
     }
-  }, [_columns, columns, id, name, selectionSettings, slots?.header, tableSettings.show]);
+  }, [_columns, columns, id, name, selectionSettings, slots?.header, tableSettings.show, validSelected]);
 
   return (
     <Paper
@@ -224,7 +238,7 @@ export const Table = <DataType,>({
             setSort={setSortState}
             rowCount={paginatedData?.count}
             selectableRowCount={selectableRowCount}
-            selected={selectionSettings.selected}
+            selected={validSelected}
             handleSelectAllClick={_handleSelectAllClick}
             minimal={minimal}
           />

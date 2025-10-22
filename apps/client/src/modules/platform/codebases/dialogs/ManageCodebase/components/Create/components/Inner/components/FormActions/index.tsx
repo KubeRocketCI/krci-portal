@@ -1,13 +1,10 @@
 import { TabPanel } from "@/core/components/TabPanel";
-import { useCodebaseCRUD } from "@/k8s/api/groups/KRCI/Codebase";
-import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { useStepperContext } from "@/core/providers/Stepper/hooks";
 import { ValueOf } from "@/core/types/global";
-import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
+import { useCodebaseCRUD } from "@/k8s/api/groups/KRCI/Codebase";
 import { configurationStepper, mainTabs } from "@/modules/platform/codebases/dialogs/ManageCodebase/constants";
-import { SuccessDialog } from "@/modules/platform/codebases/dialogs/Success";
 import { Box, Button, Stack, useTheme } from "@mui/material";
-import { codebaseCreationStrategy, createCodebaseDraftObject } from "@my-project/shared";
+import { codebaseCreationStrategy, codebaseLabels, createCodebaseDraftObject } from "@my-project/shared";
 import React from "react";
 import { useTypedFormContext } from "../../../../../../hooks/useFormContext";
 import { CODEBASE_FORM_NAMES, NAMES } from "../../../../../../names";
@@ -18,7 +15,6 @@ import { FormActionsProps } from "./types";
 export const FormActions = ({ baseDefaultValues, setActiveTab }: FormActionsProps) => {
   const theme = useTheme();
   const { activeStep, setActiveStep, nextStep } = useStepperContext();
-  const { setDialog } = useDialogContext();
   const {
     state: { closeDialog },
   } = useCurrentDialog();
@@ -146,6 +142,9 @@ export const FormActions = ({ baseDefaultValues, setActiveTab }: FormActionsProp
           startFrom: values.versioningStartFrom,
         },
         ciTool: values.ciTool,
+        labels: {
+          [codebaseLabels.codebaseType]: values.type,
+        },
       });
 
       const hasCodebaseAuth = values?.repositoryLogin && values?.repositoryPasswordOrApiToken;
