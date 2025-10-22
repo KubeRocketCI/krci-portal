@@ -1,5 +1,5 @@
 import { Grid } from "@mui/material";
-import { codebaseBranchStatus, codebaseVersioning } from "@my-project/shared";
+import { codebaseBranchStatus, codebaseVersioning, krciCommonLabels } from "@my-project/shared";
 import React from "react";
 import { useTypedFormContext } from "../../../../hooks/useFormContext";
 import { CODEBASE_BRANCH_FORM_NAMES } from "../../../../names";
@@ -34,12 +34,19 @@ export const Form = () => {
 
   const releaseFieldValue = watch(CODEBASE_BRANCH_FORM_NAMES.release.name);
 
+  const isDefaultBranchProtected = React.useMemo(() => {
+    return !!defaultBranch?.metadata?.labels?.[krciCommonLabels.editProtection];
+  }, [defaultBranch]);
+
   return (
     <>
       <Grid container spacing={2}>
         {canCreateReleaseBranch && (
           <Grid item xs={12}>
-            <ReleaseBranch defaultBranchVersion={defaultBranchVersion!} />
+            <ReleaseBranch
+              isDefaultBranchProtected={isDefaultBranchProtected}
+              defaultBranchVersion={defaultBranchVersion!}
+            />
           </Grid>
         )}
         {releaseFieldValue ? (

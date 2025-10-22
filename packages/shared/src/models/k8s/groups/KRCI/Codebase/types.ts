@@ -10,16 +10,13 @@ import {
   codebaseTestReportFrameworkEnum,
   codebaseTypeEnum,
   codebaseVersioningEnum,
-  createCodebaseDraftInputSchema,
   createCodebaseDraftSecretInputSchema,
   editCodebaseInputSchema,
 } from "./schema";
 
 export type Codebase = z.infer<typeof codebaseSchema>;
 export type CodebaseDraft = z.infer<typeof codebaseDraftSchema>;
-export type CreateCodebaseDraftInput = z.infer<
-  typeof createCodebaseDraftInputSchema
->;
+
 export type EditCodebaseInput = z.infer<typeof editCodebaseInputSchema>;
 
 export type CodebaseSecret = z.infer<typeof codebaseSecretSchema>;

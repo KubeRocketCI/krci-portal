@@ -3,7 +3,7 @@ import { useCodebaseCRUD } from "@/k8s/api/groups/KRCI/Codebase";
 import { SuccessDialog } from "@/modules/platform/codebases/dialogs/Success";
 import { PATH_COMPONENT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { Box, Button, Stack, useTheme } from "@mui/material";
-import { codebaseDeploymentScript, CodebaseDraft, createCodebaseDraftObject } from "@my-project/shared";
+import { codebaseDeploymentScript, CodebaseDraft, codebaseLabels, createCodebaseDraftObject } from "@my-project/shared";
 import React from "react";
 import { useTypedFormContext } from "../../hooks/useFormContext";
 import { useCurrentDialog } from "../../providers/CurrentDialog/hooks";
@@ -76,6 +76,9 @@ export const FormActions = () => {
           startFrom: values.versioningStartFrom,
         },
         ciTool: values.ciTool,
+        labels: {
+          [codebaseLabels.codebaseType]: values.type,
+        },
       });
 
       await triggerCreateCodebase({

@@ -22,7 +22,12 @@ import { routeComponentDetails } from "@/modules/platform/codebases/pages/detail
 import { Button } from "@/core/components/ui/button";
 
 export const useColumns = (): TableColumn<CDPipeline>[] => {
-  const clusterName = useClusterStore(useShallow((state) => state.clusterName));
+  const { clusterName, defaultNamespace } = useClusterStore(
+    useShallow((state) => ({
+      clusterName: state.clusterName,
+      defaultNamespace: state.defaultNamespace,
+    }))
+  );
   const { loadSettings } = useTableSettings(TABLE.CDPIPELINE_LIST.id);
   const tableSettings = loadSettings();
 
@@ -85,7 +90,7 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                     params={{
                       clusterName: clusterName,
                       name,
-                      namespace: namespace!,
+                      namespace: namespace || defaultNamespace,
                     }}
                   >
                     <TextWithTooltip text={name} />
@@ -206,6 +211,6 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
           },
         },
       ] as TableColumn<CDPipeline>[],
-    [clusterName, tableSettings]
+    [clusterName, defaultNamespace, tableSettings]
   );
 };
