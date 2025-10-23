@@ -8,16 +8,16 @@ The platform implements a comprehensive authentication system using Keycloak as 
 
 ### Backend Authentication Stack
 
-- **Keycloak**: Primary user management and identity provider
-- **openid-client**: Open-source package for OAuth provider connectivity
-- **OIDCClient**: Custom wrapper around openid-client with simplified interface
-- **tRPC Procedures**: Authenticated endpoints for auth and Kubernetes operations
+- Keycloak: Primary user management and identity provider
+- openid-client: Open-source package for OAuth provider connectivity
+- OIDCClient: Custom wrapper around openid-client with simplified interface
+- tRPC Procedures: Authenticated endpoints for auth and Kubernetes operations
 
 ### Frontend Authentication
 
-- **Login Page**: Initiates the OAuth authorization flow
-- **Login Callback Page**: Handles OAuth callback and token exchange
-- **Session Management**: HTTP-only cookie-based session handling
+- Login Page: Initiates the OAuth authorization flow
+- Login Callback Page: Handles OAuth callback and token exchange
+- Session Management: HTTP-only cookie-based session handling
 
 ## Authentication Flow
 
@@ -49,13 +49,13 @@ The platform implements a comprehensive authentication system using Keycloak as 
 
 ## Security Features
 
-- **HTTP-only Cookies**: Prevents XSS attacks on session tokens
-- **Session Database**: Centralized session management with SQLite storage
-- **Token Refresh**: Automatic token renewal using refresh tokens
-- **Secure Token Storage**: Tokens stored server-side, not in browser
+- HTTP-only Cookies: Prevents XSS attacks on session tokens
+- Session Database: Centralized session management with SQLite storage
+- Token Refresh: Automatic token renewal using refresh tokens
+- Secure Token Storage: Tokens stored server-side, not in browser
 
 ## Integration Points
 
-- **tRPC Authentication**: All tRPC procedures protected by session validation
-- **Kubernetes Operations**: ID tokens used for cluster communication
-- **Permission Checking**: Role-based access control through Keycloak groups
+- tRPC Authentication: All tRPC procedures protected by session validation
+- Kubernetes Operations: ID tokens used for cluster communication
+- Permission Checking: Role-based access control through Keycloak groups

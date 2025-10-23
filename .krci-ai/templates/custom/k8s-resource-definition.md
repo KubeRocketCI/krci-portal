@@ -7,7 +7,7 @@ Location: `shared/src/k8s/groups/Core/{ResourceName}/`
 
 ### Required files:
 - `index.ts` - Main exports
-- `types.ts` - TypeScript interfaces  
+- `types.ts` - TypeScript interfaces
 - `schema.ts` - Zod schemas
 - `config.ts` - Resource configuration
 - `labels.ts` - Resource labels (if any)
@@ -20,7 +20,7 @@ export type Pod = z.infer<typeof podSchema>
 // shared/src/k8s/groups/Core/Pod/config.ts
 export const k8sPodConfig = {
   apiVersion: "v1",
-  kind: "Pod", 
+  kind: "Pod",
   group: "",
   version: "v1",
   singularName: "pod",
@@ -46,7 +46,7 @@ const resourceConfig = {
 };
 ```
 
-### **Add to Principles section:**
+### Add to Principles section:
 ```yaml
 principles:
   - "Always use shared package resource definitions, never hardcode configs"
@@ -57,10 +57,10 @@ principles:
 
 ---
 
-## 🔨 **Immediate Fixes Needed:**
+## 🔨 Immediate Fixes Needed:
 
-1. **Create proper Pod resource definition in shared package**
-2. **Replace hardcoded resourceConfig with imported config**
-3. **Use useWatchList for real-time pod updates instead of polling**
-4. **Remove unused defaultNamespace from page.tsx**
-5. **Create proper container and log-related schemas**
+1. Create proper Pod resource definition in shared package
+2. Replace hardcoded resourceConfig with imported config
+3. Use useWatchList for real-time pod updates instead of polling
+4. Remove unused defaultNamespace from page.tsx
+5. Create proper container and log-related schemas

@@ -8,11 +8,11 @@ The application uses React Hook Form with Zod validation for all form implementa
 
 ### Multi-Step Form Architecture
 
-- **Stepper Context**: Centralized step navigation and validation
-- **Form Provider**: React Hook Form integration with TypeScript
-- **Step-by-Step Validation**: Partial validation per form section
-- **Error Navigation**: Automatic navigation to first error step
-- **State Management**: Persistent form state across steps
+- Stepper Context: Centralized step navigation and validation
+- Form Provider: React Hook Form integration with TypeScript
+- Step-by-Step Validation: Partial validation per form section
+- Error Navigation: Automatic navigation to first error step
+- State Management: Persistent form state across steps
 
 ### Core Components
 
@@ -27,25 +27,25 @@ The application uses React Hook Form with Zod validation for all form implementa
 
 Every multi-step form follows this structure:
 
-1. **Form Constants** - Field names and step definitions
-2. **Form Provider** - Context wrapper with validation schema
-3. **Step Components** - Individual form sections
-4. **Form Actions** - Navigation and submission logic
-5. **Field Components** - Reusable form field components
+1. Form Constants - Field names and step definitions
+2. Form Provider - Context wrapper with validation schema
+3. Step Components - Individual form sections
+4. Form Actions - Navigation and submission logic
+5. Field Components - Reusable form field components
 
 ### Validation Strategy
 
-- **Schema-First**: Zod schemas define validation rules
-- **Partial Validation**: Validate only current step fields
-- **Error Handling**: Navigate to first error on submission
-- **Real-Time**: `onChange` mode for immediate feedback
+- Schema-First: Zod schemas define validation rules
+- Partial Validation: Validate only current step fields
+- Error Handling: Navigate to first error on submission
+- Real-Time: `onChange` mode for immediate feedback
 
 ### State Management Patterns
 
-- **Centralized State**: All form data in single React Hook Form instance
-- **Step Persistence**: Form state maintained across step navigation
-- **Reset Handling**: Proper cleanup on form close/cancel
-- **Dirty State**: Track unsaved changes for user warnings
+- Centralized State: All form data in single React Hook Form instance
+- Step Persistence: Form state maintained across step navigation
+- Reset Handling: Proper cleanup on form close/cancel
+- Dirty State: Track unsaved changes for user warnings
 
 ## Common Use Cases
 
@@ -70,14 +70,14 @@ Every multi-step form follows this structure:
 
 ## Best Practices
 
-1. **Schema Validation**: Always use Zod schemas for type safety
-2. **Step Validation**: Validate only relevant fields per step
-3. **Error Feedback**: Clear error messages and navigation
-4. **Loading States**: Show progress during form submission
-5. **Accessibility**: Proper ARIA labels and keyboard navigation
-6. **Mobile Support**: Responsive form layouts
-7. **Data Consistency**: Validate against business rules
-8. **User Experience**: Smooth step transitions and feedback
+1. Schema Validation: Always use Zod schemas for type safety
+2. Step Validation: Validate only relevant fields per step
+3. Error Feedback: Clear error messages and navigation
+4. Loading States: Show progress during form submission
+5. Accessibility: Proper ARIA labels and keyboard navigation
+6. Mobile Support: Responsive form layouts
+7. Data Consistency: Validate against business rules
+8. User Experience: Smooth step transitions and feedback
 
 ## Template Reference
 

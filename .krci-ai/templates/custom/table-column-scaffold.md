@@ -82,29 +82,29 @@ const {{column_name}}Column: TableColumn<{{data_type}}> = {
 
 ### Core Properties
 
-- **`id`**: Unique column identifier (required)
-- **`label`**: Column header text or React element
-- **`render`**: Function that returns cell content
+- `id`: Unique column identifier (required)
+- `label`: Column header text or React element
+- `render`: Function that returns cell content
 
 ### Data Properties
 
-- **`columnSortableValuePath`**: Dot-notation path for simple property sorting
-- **`customSortFn`**: Custom comparison function for complex sorting
+- `columnSortableValuePath`: Dot-notation path for simple property sorting
+- `customSortFn`: Custom comparison function for complex sorting
 
 ### Cell Properties
 
-- **`baseWidth`**: Default column width percentage
-- **`width`**: Current column width (managed by settings)
-- **`show`**: Column visibility (managed by settings)
-- **`isFixed`**: Prevents column from being hidden by users
-- **`colSpan`**: Number of columns to span
-- **`props`**: Additional TableCell props
-- **`customizable`**: Whether width can be customized (default: true)
+- `baseWidth`: Default column width percentage
+- `width`: Current column width (managed by settings)
+- `show`: Column visibility (managed by settings)
+- `isFixed`: Prevents column from being hidden by users
+- `colSpan`: Number of columns to span
+- `props`: Additional TableCell props
+- `customizable`: Whether width can be customized (default: true)
 
 ### Render Function Parameters
 
-- **`data`**: The row data object
-- **`meta`**: Additional metadata including:
+- `data`: The row data object
+- `meta`: Additional metadata including:
   - `selectionLength`: Number of selected rows
 
 ## Column Types & Examples
@@ -167,11 +167,11 @@ render: ({ data }) => (
 
 ## Best Practices
 
-1. **Unique IDs**: Use centralized `columnNames` constants
-2. **Type Safety**: Define proper TypeScript interfaces for data
-3. **Performance**: Memoize complex render functions when needed
-4. **Accessibility**: Provide meaningful labels and ARIA attributes
-5. **Error Handling**: Handle undefined/null data gracefully
-6. **Consistency**: Follow established UI patterns and Typography usage
-7. **Responsive**: Set appropriate base widths for different content types
-8. **Permissions**: Check permissions before rendering sensitive actions
+1. Unique IDs: Use centralized `columnNames` constants
+2. Type Safety: Define proper TypeScript interfaces for data
+3. Performance: Memoize complex render functions when needed
+4. Accessibility: Provide meaningful labels and ARIA attributes
+5. Error Handling: Handle undefined/null data gracefully
+6. Consistency: Follow established UI patterns and Typography usage
+7. Responsive: Set appropriate base widths for different content types
+8. Permissions: Check permissions before rendering sensitive actions

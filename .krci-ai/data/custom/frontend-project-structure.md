@@ -4,8 +4,8 @@ This project follows a domain-driven architecture approach similar to Angular's 
 
 ## Core Architecture Principles
 
-- **Domain-Attached Organization**: All code is organized by domain/feature. Module-specific constants, components, and utilities must be placed within their respective modules rather than in shared/core directories.
-- **Clear Separation of Concerns**: Shared code lives in `core/`, while feature-specific code lives in `modules/`.
+- Domain-Attached Organization: All code is organized by domain/feature. Module-specific constants, components, and utilities must be placed within their respective modules rather than in shared/core directories.
+- Clear Separation of Concerns: Shared code lives in `core/`, while feature-specific code lives in `modules/`.
 
 ## Root Directory Structure
 
@@ -80,7 +80,7 @@ Feature-specific modules containing domain logic:
 └── route.lazy.ts          # Lazy route definition
 ```
 
-**Page Architecture Pattern:**
+Page Architecture Pattern:
 
 - `page.tsx`: Handles context providers, layout, and page-level concerns
 - `view.tsx`: Contains the actual page content and business logic
@@ -95,7 +95,7 @@ Feature-specific modules containing domain logic:
 └── pages/                 # Module pages
 ```
 
-**Dialog Implementation:**
+Dialog Implementation:
 
 - Dialogs are specialized components designed to work exclusively with the `useDialogContext` hook
 - Must be used in conjunction with the global `DialogContextProvider`
@@ -103,10 +103,10 @@ Feature-specific modules containing domain logic:
 
 ## File Naming Conventions
 
-- **Components**: Use PascalCase for directories and files (`UserProfile/`, `index.tsx`)
-- **Pages**: Use kebab-case for directories (`user-profile/`, `page.tsx`)
-- **Utilities**: Use camelCase (`utils.ts`, `formatDate.ts`)
-- **Types**: Use camelCase with `.ts` extension (`types.ts`, `userTypes.ts`)
+- Components: Use PascalCase for directories and files (`UserProfile/`, `index.tsx`)
+- Pages: Use kebab-case for directories (`user-profile/`, `page.tsx`)
+- Utilities: Use camelCase (`utils.ts`, `formatDate.ts`)
+- Types: Use camelCase with `.ts` extension (`types.ts`, `userTypes.ts`)
 
 ## Testing Strategy
 
@@ -116,7 +116,7 @@ Feature-specific modules containing domain logic:
 
 ## Key Guidelines
 
-1. **Domain Boundaries**: Never place domain-specific code in the `core/` directory
-2. **Component Isolation**: Each component should be self-contained with its own types, constants, and utilities
-3. **Page/View Separation**: Always separate page setup from page content for better testability
-4. **Shared vs. Private**: Clearly distinguish between shared components (in `core/`) and private components (within feature modules)
+1. Domain Boundaries: Never place domain-specific code in the `core/` directory
+2. Component Isolation: Each component should be self-contained with its own types, constants, and utilities
+3. Page/View Separation: Always separate page setup from page content for better testability
+4. Shared vs. Private: Clearly distinguish between shared components (in `core/`) and private components (within feature modules)

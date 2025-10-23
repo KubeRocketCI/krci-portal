@@ -237,7 +237,7 @@ import { createSearchMatchFunction } from "@/core/providers/Filter";
 [FILTER_NAMES.SEARCH]: createSearchMatchFunction<EntityType>(),
 ```
 
-**Features:**
+Features:
 
 - Searches in `metadata.name`
 - Searches in all label keys
@@ -254,7 +254,7 @@ import { createNamespaceMatchFunction } from "@/core/providers/Filter";
 [FILTER_NAMES.NAMESPACES]: createNamespaceMatchFunction<EntityType>(),
 ```
 
-**Usage:** Pass array of namespace strings as filter value.
+Usage: Pass array of namespace strings as filter value.
 
 ### 3. createExactMatchFunction
 
@@ -268,7 +268,7 @@ import { createExactMatchFunction } from "@/core/providers/Filter";
 ),
 ```
 
-**Features:**
+Features:
 
 - Handles "all" as a special value (returns true)
 - Supports exact string matching
@@ -285,7 +285,7 @@ import { createArrayIncludesMatchFunction } from "@/core/providers/Filter";
 ),
 ```
 
-**Usage:** Pass array of allowed values as filter value.
+Usage: Pass array of allowed values as filter value.
 
 ### 5. createLabelMatchFunction
 
@@ -297,7 +297,7 @@ import { createLabelMatchFunction } from "@/core/providers/Filter";
 [FILTER_NAMES.ENVIRONMENT]: createLabelMatchFunction<EntityType>("environment"),
 ```
 
-**Features:**
+Features:
 
 - Handles "all" as a special value (returns true)
 - Matches exact label value
@@ -314,7 +314,7 @@ import { createBooleanMatchFunction } from "@/core/providers/Filter";
 ),
 ```
 
-**Usage:** Pass boolean as filter value. Only filters when value is `true`.
+Usage: Pass boolean as filter value. Only filters when value is `true`.
 
 ## Custom Match Function Examples
 
@@ -420,16 +420,16 @@ import { Autocomplete } from "@/core/components/form";
 
 ## Best Practices
 
-1. **Consistent Naming**: Use `{{ENTITY_NAME}}_FILTER_NAMES` pattern for filter field constants
-2. **Type Safety**: Always define filter value types in separate types file
-3. **Default Values**: Provide sensible defaults for all filter fields
-4. **URL Sync**: Use `syncWithUrl` prop for shareable filter states
-5. **Performance**: Use built-in match functions when possible for optimal performance
-6. **User Experience**: Show clear button only when `form.state.isDirty` is true
-7. **Accessibility**: Provide labels and placeholders for all inputs
-8. **Layout**: Use consistent width classes (e.g., `w-64`) for filter fields
-9. **Memoization**: Wrap `tableSlots` in `React.useMemo` to prevent unnecessary re-renders
-10. **Documentation**: Comment complex custom match functions
+1. Consistent Naming: Use `{{ENTITY_NAME}}_FILTER_NAMES` pattern for filter field constants
+2. Type Safety: Always define filter value types in separate types file
+3. Default Values: Provide sensible defaults for all filter fields
+4. URL Sync: Use `syncWithUrl` prop for shareable filter states
+5. Performance: Use built-in match functions when possible for optimal performance
+6. User Experience: Show clear button only when `form.state.isDirty` is true
+7. Accessibility: Provide labels and placeholders for all inputs
+8. Layout: Use consistent width classes (e.g., `w-64`) for filter fields
+9. Memoization: Wrap `tableSlots` in `React.useMemo` to prevent unnecessary re-renders
+10. Documentation: Comment complex custom match functions
 
 ## Reference Implementations
 

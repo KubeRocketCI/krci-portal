@@ -193,18 +193,18 @@ Comprehensive data table with sorting, pagination, selection.
 
 ### Core UI Components
 
-- **LoadingSpinner**: Standard loading indicator
-- **LoadingProgressBar**: Progress bar for operations
-- **Button**: Extended MUI button with theme
-- **Input**: Form input components
-- **Dialog**: Modal dialog wrapper
-- **Sheet**: Side panel component
-- **Sidebar**: Collapsible sidebar container
-- **Tooltip**: Enhanced tooltip component
-- **Skeleton**: Loading skeleton screens
-- **Alert**: Notification alerts
-- **Checkbox**: Form checkbox component
-- **DropdownMenu**: Context menu component
+- LoadingSpinner: Standard loading indicator
+- LoadingProgressBar: Progress bar for operations
+- Button: Extended MUI button with theme
+- Input: Form input components
+- Dialog: Modal dialog wrapper
+- Sheet: Side panel component
+- Sidebar: Collapsible sidebar container
+- Tooltip: Enhanced tooltip component
+- Skeleton: Loading skeleton screens
+- Alert: Notification alerts
+- Checkbox: Form checkbox component
+- DropdownMenu: Context menu component
 
 ## Icon & Visual Components
 
@@ -303,17 +303,17 @@ News and updates display component.
 ### Form Integration
 
 For multi-step forms and complex form workflows:
-**Pattern Reference:** [form-implementation.md](./.krci-ai/data/custom/patterns/form-implementation.md)
+Pattern Reference: [form-implementation.md](./.krci-ai/data/custom/patterns/form-implementation.md)
 
 ### Filter Integration
 
 For search and filtering capabilities:
-**Pattern Reference:** [filter-implementation.md](./.krci-ai/data/custom/patterns/filter-implementation.md)
+Pattern Reference: [filter-implementation.md](./.krci-ai/data/custom/patterns/filter-implementation.md)
 
 ### Error Handling
 
 For consistent error display and user feedback:
-**Pattern Reference:** [error-handling.md](./.krci-ai/data/custom/patterns/error-handling.md)
+Pattern Reference: [error-handling.md](./.krci-ai/data/custom/patterns/error-handling.md)
 
 ### Component Import Pattern
 
@@ -355,11 +355,11 @@ sx={{
 
 ## Best Practices
 
-1. **Consistent Imports**: Use absolute imports with `@/core/components`
-2. **Permission Checks**: Always use `ButtonWithPermission` for protected actions
-3. **Empty States**: Use `EmptyList` for consistent empty state UX
-4. **Status Display**: Use `StatusIcon` for all status representations
-5. **Text Overflow**: Use `TextWithTooltip` for potentially long text
-6. **Conditional Logic**: Use `ConditionalWrapper` for clean conditional rendering
-7. **Copy Functionality**: Use `CopyButton` for copyable content
-8. **Confirmation**: Use `ConfirmDialog` for destructive actions
+1. Consistent Imports: Use absolute imports with `@/core/components`
+2. Permission Checks: Always use `ButtonWithPermission` for protected actions
+3. Empty States: Use `EmptyList` for consistent empty state UX
+4. Status Display: Use `StatusIcon` for all status representations
+5. Text Overflow: Use `TextWithTooltip` for potentially long text
+6. Conditional Logic: Use `ConditionalWrapper` for clean conditional rendering
+7. Copy Functionality: Use `CopyButton` for copyable content
+8. Confirmation: Use `ConfirmDialog` for destructive actions

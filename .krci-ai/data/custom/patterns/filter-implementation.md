@@ -8,11 +8,11 @@ The application provides a sophisticated filtering system through the FilterProv
 
 ### FilterProvider Pattern
 
-- **Centralized State**: Filter values managed via TanStack Form in provider context
-- **URL Synchronization**: Filter state synced with URL parameters (when `syncWithUrl` is enabled)
-- **Match Functions**: Declarative filtering logic per filter field
-- **Real-Time**: Debounced filtering as values change (300ms default)
-- **Type Safety**: Fully typed filter values and match functions
+- Centralized State: Filter values managed via TanStack Form in provider context
+- URL Synchronization: Filter state synced with URL parameters (when `syncWithUrl` is enabled)
+- Match Functions: Declarative filtering logic per filter field
+- Real-Time: Debounced filtering as values change (300ms default)
+- Type Safety: Fully typed filter values and match functions
 
 ### Core Components
 
@@ -196,14 +196,14 @@ import { createSearchMatchFunction } from "@/core/providers/Filter";
 [FILTER_NAMES.SEARCH]: createSearchMatchFunction<EntityType>(),
 ```
 
-**Features:**
+Features:
 
 - Searches in `metadata.name` (case-insensitive)
 - Searches in all label keys
 - Supports `labelKey:value` syntax for specific label search (e.g., "env:prod")
 - Returns true if value is empty
 
-**Example usage:**
+Example usage:
 
 - `"my-app"` → matches resources with "my-app" in name or any label key
 - `"environment:production"` → matches resources with label `environment=production`
@@ -218,8 +218,8 @@ import { createNamespaceMatchFunction } from "@/core/providers/Filter";
 [FILTER_NAMES.NAMESPACES]: createNamespaceMatchFunction<EntityType>(),
 ```
 
-**Filter value type:** `string[]`  
-**Usage:** Matches if item's namespace is in the provided array. Empty array returns true.
+Filter value type: `string[]`
+Usage: Matches if item's namespace is in the provided array. Empty array returns true.
 
 ### 3. createExactMatchFunction
 
@@ -233,7 +233,7 @@ import { createExactMatchFunction } from "@/core/providers/Filter";
 ),
 ```
 
-**Features:**
+Features:
 
 - Accepts a getter function to extract the value from the item
 - Returns true if filter value is empty or "all"
@@ -251,8 +251,8 @@ import { createArrayIncludesMatchFunction } from "@/core/providers/Filter";
 ),
 ```
 
-**Filter value type:** `string[]`  
-**Features:**
+Filter value type: `string[]`
+Features:
 
 - Accepts a getter function to extract the value from the item
 - Returns true if filter value is empty array
@@ -268,7 +268,7 @@ import { createLabelMatchFunction } from "@/core/providers/Filter";
 [FILTER_NAMES.ENVIRONMENT]: createLabelMatchFunction<EntityType>("environment"),
 ```
 
-**Features:**
+Features:
 
 - Matches exact label value for the specified label key
 - Returns true if filter value is empty or "all"
@@ -286,8 +286,8 @@ import { createBooleanMatchFunction } from "@/core/providers/Filter";
 ),
 ```
 
-**Filter value type:** `boolean`  
-**Features:**
+Filter value type: `boolean`
+Features:
 
 - Accepts a getter function to extract boolean from the item
 - Only filters when value is `true` (returns true if falsy)
@@ -411,35 +411,35 @@ import { Autocomplete } from "@/core/components/form";
 
 ### Props
 
-- **`defaultValues`**: Initial filter values (required)
-- **`matchFunctions`**: Filtering logic for each field (required)
-- **`syncWithUrl`**: Enable URL parameter synchronization (optional, default: false)
-- **`children`**: React children to wrap (required)
+- `defaultValues`: Initial filter values (required)
+- `matchFunctions`: Filtering logic for each field (required)
+- `syncWithUrl`: Enable URL parameter synchronization (optional, default: false)
+- `children`: React children to wrap (required)
 
 ### Context Value
 
 The `useFilterContext` hook provides:
 
-- **`form`**: TanStack Form instance with all form methods and state
-- **`filterFunction`**: Computed filter function for data filtering
-- **`reset`**: Function to reset all filters to default values
+- `form`: TanStack Form instance with all form methods and state
+- `filterFunction`: Computed filter function for data filtering
+- `reset`: Function to reset all filters to default values
 
 ## Performance Optimizations
 
 ### Efficient Filtering
 
-- **Debounced Input**: 300ms debounce on form changes reduces re-filtering
-- **Memoized Functions**: Filter function memoized to prevent re-creation
-- **Lazy Evaluation**: Filters only apply when data or values change
-- **URL Sync Optimization**: Skips URL updates during initialization
+- Debounced Input: 300ms debounce on form changes reduces re-filtering
+- Memoized Functions: Filter function memoized to prevent re-creation
+- Lazy Evaluation: Filters only apply when data or values change
+- URL Sync Optimization: Skips URL updates during initialization
 
 ### Best Practices
 
-1. **Memoize Table Slots**: Wrap filter components in `React.useMemo`
-2. **Simple Match Functions**: Keep match functions pure and fast
-3. **Avoid Heavy Computations**: Defer complex logic outside match functions
-4. **Use Built-in Functions**: Leverage pre-built match functions for optimal performance
-5. **Early Returns**: Return true early in match functions when no filtering is needed
+1. Memoize Table Slots: Wrap filter components in `React.useMemo`
+2. Simple Match Functions: Keep match functions pure and fast
+3. Avoid Heavy Computations: Defer complex logic outside match functions
+4. Use Built-in Functions: Leverage pre-built match functions for optimal performance
+5. Early Returns: Return true early in match functions when no filtering is needed
 
 ## URL State Synchronization
 
@@ -455,7 +455,7 @@ When `syncWithUrl` is enabled:
 
 ### isDirty Behavior
 
-The `form.state.isDirty` flag indicates whether any form field has been modified from its initial state. **Note**: This flag remains `true` even if you revert a field to its original value (a limitation of TanStack Form).
+The `form.state.isDirty` flag indicates whether any form field has been modified from its initial state. Note: This flag remains `true` even if you revert a field to its original value (a limitation of TanStack Form).
 
 ### Reset Functionality
 
@@ -530,10 +530,10 @@ export const ComplexFilter = () => {
 
 See these complete examples in the codebase:
 
-- **QuickLinkFilter**: `apps/client/src/modules/platform/configuration/modules/quicklinks/components/QuickLinkFilter/`
-- **CodebaseFilter**: `apps/client/src/modules/platform/codebases/pages/list/components/CodebaseFilter/`
-- **PipelineFilter**: `apps/client/src/modules/platform/pipelines/pages/list/components/PipelineFilter/`
-- **TaskFilter**: `apps/client/src/modules/platform/tasks/pages/list/components/TaskFilter/`
+- QuickLinkFilter: `apps/client/src/modules/platform/configuration/modules/quicklinks/components/QuickLinkFilter/`
+- CodebaseFilter: `apps/client/src/modules/platform/codebases/pages/list/components/CodebaseFilter/`
+- PipelineFilter: `apps/client/src/modules/platform/pipelines/pages/list/components/PipelineFilter/`
+- TaskFilter: `apps/client/src/modules/platform/tasks/pages/list/components/TaskFilter/`
 
 ## Template Reference
 
@@ -542,7 +542,7 @@ For step-by-step implementation guidance:
 
 ## Related Documentation
 
-- **Table Integration**: `./.krci-ai/data/custom/patterns/tables.md`
-- **Form Components**: `apps/client/src/core/components/form/`
-- **FilterProvider Source**: `apps/client/src/core/providers/Filter/provider.tsx`
-- **Match Functions Source**: `apps/client/src/core/providers/Filter/matchFunctions.ts`
+- Table Integration: `./.krci-ai/data/custom/patterns/tables.md`
+- Form Components: `apps/client/src/core/components/form/`
+- FilterProvider Source: `apps/client/src/core/providers/Filter/provider.tsx`
+- Match Functions Source: `apps/client/src/core/providers/Filter/matchFunctions.ts`
