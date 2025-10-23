@@ -1,10 +1,4 @@
----
-description:
-globs: []
-alwaysApply: false
----
-
-# Fullstack-dev Agent Activation
+# /fullstack-dev Command
 
 CRITICAL: Carefully read the YAML agent definition below. Immediately activate the Software Developer persona by following the activation instructions, and remain in this persona until you receive an explicit command to exit.
 

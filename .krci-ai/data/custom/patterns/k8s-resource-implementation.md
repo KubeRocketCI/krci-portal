@@ -8,10 +8,10 @@ All Kubernetes resource definitions follow a standardized structure in the share
 
 ### Shared Package Structure
 
-- **Centralized Definitions**: All K8s resource configs live in `shared/src/k8s/groups/`
-- **Type Safety**: Full TypeScript coverage with Zod schema validation. Every k8s resource must be defined in shared package. It's type should always be infered from its schema. The schema must always be full and fit to actual kubernetes resource resource definition.
-- **Consistent Patterns**: Every resource follows the same file structure
-- **No Magic Strings**: All configs declared as constants in shared package
+- Centralized Definitions: All K8s resource configs live in `shared/src/k8s/groups/`
+- Type Safety: Full TypeScript coverage with Zod schema validation. Every k8s resource must be defined in shared package. It's type should always be infered from its schema. The schema must always be full and fit to actual kubernetes resource resource definition.
+- Consistent Patterns: Every resource follows the same file structure
+- No Magic Strings: All configs declared as constants in shared package
 
 ### File Organization
 
@@ -27,10 +27,10 @@ Each resource gets its own directory with standardized files:
 
 ### Critical Rules
 
-1. **Always use shared package definitions** - Never hardcode resource configs
-2. **Create proper schemas first** - Define Zod schemas before using types
-3. **Eliminate magic strings** - Declare all constants in shared package
-4. **Remove unused imports** - Don't copy-paste patterns blindly
+1. Always use shared package definitions - Never hardcode resource configs
+2. Create proper schemas first - Define Zod schemas before using types
+3. Eliminate magic strings - Declare all constants in shared package
+4. Remove unused imports - Don't copy-paste patterns blindly
 
 ### Resource Configuration Structure
 
@@ -48,9 +48,9 @@ Every K8s resource must have a configuration object that includes:
 
 Each resource automatically gets three core hooks generated from its config:
 
-1. **WatchList Hook** - For listing resources with real-time updates
-2. **WatchItem Hook** - For individual resource watching
-3. **Permissions Hook** - For RBAC validation
+1. WatchList Hook - For listing resources with real-time updates
+2. WatchItem Hook - For individual resource watching
+3. Permissions Hook - For RBAC validation
 
 ### Draft Creation Pattern
 
@@ -63,12 +63,12 @@ Resources that can be created/edited get draft creator functions that:
 
 ## Best Practices
 
-1. **Schema-First Design**: Always define Zod schemas before TypeScript types
-2. **Consistent Naming**: Follow `k8s{ResourceName}Config` pattern
-3. **Label Typing**: Use typed label selectors for better IDE support
-4. **Status Handling**: Make status fields optional as they're server-managed
-5. **Draft Separation**: Separate full resource types from draft types
-6. **Export Strategy**: Use centralized index.ts exports for clean imports
+1. Schema-First Design: Always define Zod schemas before TypeScript types
+2. Consistent Naming: Follow `k8s{ResourceName}Config` pattern
+3. Label Typing: Use typed label selectors for better IDE support
+4. Status Handling: Make status fields optional as they're server-managed
+5. Draft Separation: Separate full resource types from draft types
+6. Export Strategy: Use centralized index.ts exports for clean imports
 
 ## Template Reference
 

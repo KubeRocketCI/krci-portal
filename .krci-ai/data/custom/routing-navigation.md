@@ -2,7 +2,7 @@
 
 ## Overview
 
-The application uses **Tanstack Router** for client-side routing, implementing a hierarchical route structure with authentication guards, layout components, and Kubernetes-specific navigation patterns.
+The application uses Tanstack Router for client-side routing, implementing a hierarchical route structure with authentication guards, layout components, and Kubernetes-specific navigation patterns.
 
 ## Router Architecture
 
@@ -26,8 +26,8 @@ rootRoute
 
 #### 1. Root Route (`rootRoute`)
 
-- **Purpose**: Main base route inherited by all other route groups
-- **Responsibilities**:
+- Purpose: Main base route inherited by all other route groups
+- Responsibilities:
   - Authentication state validation
   - Route access control decisions
   - Redirect logic to auth routes when unauthorized
@@ -35,16 +35,16 @@ rootRoute
 
 #### 2. Auth Route (`authRoute`)
 
-- **Purpose**: Handles authentication flow
-- **Child Routes**:
+- Purpose: Handles authentication flow
+- Child Routes:
   - `/login` - User authentication initiation
   - `/login-callback` - OAuth callback handling
-- **Behavior**: Accessible only when user is not authenticated
+- Behavior: Accessible only when user is not authenticated
 
 #### 3. Content Layout Route (`contentLayoutRoute`)
 
-- **Purpose**: Provides base UI/UX for authenticated content pages
-- **Layout Features**:
+- Purpose: Provides base UI/UX for authenticated content pages
+- Layout Features:
   - Application header with user controls
   - Collapsible sidebar navigation
   - Expandable content area (flex-grow to viewport height)
@@ -52,9 +52,9 @@ rootRoute
 
 #### 4. Cluster Route (`routeCluster`)
 
-- **Purpose**: Kubernetes-specific navigation and parameter handling
-- **Inheritance**: Extends `contentLayoutRoute`
-- **URL Parameters**:
+- Purpose: Kubernetes-specific navigation and parameter handling
+- Inheritance: Extends `contentLayoutRoute`
+- URL Parameters:
   - `clusterName` - Target Kubernetes cluster
   - `namespace` - Kubernetes namespace
   - `name` - Resource name (matches `resource.metadata.name`)
@@ -90,9 +90,9 @@ Each feature module defines its own routes:
 
 ### Sidebar Navigation
 
-- **Location**: `@/core/components/app-sidebar.tsx`
-- **Purpose**: Primary navigation for application modules
-- **Behavior**:
+- Location: `@/core/components/app-sidebar.tsx`
+- Purpose: Primary navigation for application modules
+- Behavior:
   - Shows only list/index pages as navigation items
   - Module detail pages accessible via list navigation
   - Collapsible design for responsive layouts
@@ -134,16 +134,16 @@ export const exampleRouteLazy = createLazyRoute("/example")({
 
 Most application pages follow a list → details navigation pattern:
 
-- **List Pages**: Show resource overview with short info and actions button
-- **Details Pages**: Full resource information with tabbed sections using `useTabs` hooks
-- **Tab Organization**: Each tab is a separate component for modularity
+- List Pages: Show resource overview with short info and actions button
+- Details Pages: Full resource information with tabbed sections using `useTabs` hooks
+- Tab Organization: Each tab is a separate component for modularity
 
 ### Module Navigation Structure
 
-- **List Pages**: Primary navigation entries in sidebar
-- **Detail Pages**: Accessible through list interactions
-- **Create/Edit**: Modal dialogs or dedicated routes
-- **Nested Resources**: Follow cluster/namespace/resource hierarchy
+- List Pages: Primary navigation entries in sidebar
+- Detail Pages: Accessible through list interactions
+- Create/Edit: Modal dialogs or dedicated routes
+- Nested Resources: Follow cluster/namespace/resource hierarchy
 
 ### URL Parameter Flow
 
@@ -160,14 +160,14 @@ Most application pages follow a list → details navigation pattern:
 
 ## Best Practices
 
-1. **Route Organization**: Keep route definitions close to their components
-2. **Lazy Loading**: Use lazy routes for code splitting and performance
-3. **Parameter Validation**: Validate route parameters in `beforeLoad`
-4. **Error Boundaries**: Implement route-level error handling
-5. **Type Safety**: Leverage Tanstack Router's TypeScript integration
-6. **Navigation State**: Use router state for navigation UI feedback
-7. **Deep Linking**: Ensure all application states are URL-addressable
-8. **Permission Checks**: Validate route access permissions before rendering
+1. Route Organization: Keep route definitions close to their components
+2. Lazy Loading: Use lazy routes for code splitting and performance
+3. Parameter Validation: Validate route parameters in `beforeLoad`
+4. Error Boundaries: Implement route-level error handling
+5. Type Safety: Leverage Tanstack Router's TypeScript integration
+6. Navigation State: Use router state for navigation UI feedback
+7. Deep Linking: Ensure all application states are URL-addressable
+8. Permission Checks: Validate route access permissions before rendering
 
 ## Router Registry
 

@@ -6,39 +6,39 @@ Application tables follow a consistent design pattern across all resource views,
 
 ## Template Reference
 
-For implementing tables, use the **Table Implementation Patterns**:
+For implementing tables, use the Table Implementation Patterns:
 📄 `./.krci-ai/templates/custom/table-patterns.md`
 📄 `./.krci-ai/templates/custom/table-column-scaffold.md`
 
-**Related Patterns:**
+Related Patterns:
 
-- **Filter Integration**: `./.krci-ai/data/custom/patterns/filter-implementation.md`
-- **Filter Templates**: `./.krci-ai/templates/custom/filter-patterns-scaffold.md`
-- **Permission Validation**: `./.krci-ai/data/custom/auth.md`
-- **Error Handling**: `./.krci-ai/data/custom/patterns/error-handling.md`
+- Filter Integration: `./.krci-ai/data/custom/patterns/filter-implementation.md`
+- Filter Templates: `./.krci-ai/templates/custom/filter-patterns-scaffold.md`
+- Permission Validation: `./.krci-ai/data/custom/auth.md`
+- Error Handling: `./.krci-ai/data/custom/patterns/error-handling.md`
 
 ## Table Component Features
 
 ### Core Functionality
 
-- **Data Display**: Structured presentation of resource data
-- **Sorting**: Column-based sorting with custom and simple sort functions
-- **Pagination**: Configurable page size and navigation
-- **Selection**: Multi-row selection with bulk operations
-- **Filtering**: Custom filter functions for data refinement
-- **Settings**: Persistent column visibility and width customization
-- **Loading States**: Built-in loading and error handling
-- **Responsive Design**: Adaptive layout for different screen sizes
+- Data Display: Structured presentation of resource data
+- Sorting: Column-based sorting with custom and simple sort functions
+- Pagination: Configurable page size and navigation
+- Selection: Multi-row selection with bulk operations
+- Filtering: Custom filter functions for data refinement
+- Settings: Persistent column visibility and width customization
+- Loading States: Built-in loading and error handling
+- Responsive Design: Adaptive layout for different screen sizes
 
 ### Standard Table Structure
 
 #### Core Components
 
-- **Status Icon**: Visual status representation (if applicable to resource)
-- **Name Field**: Primary identifier column
-- **Resource Fields**: Domain-specific data columns
-- **Actions Column**: Permission-protected action buttons that open related dialogs
-- **Column Management**: User-customizable column visibility and width settings
+- Status Icon: Visual status representation (if applicable to resource)
+- Name Field: Primary identifier column
+- Resource Fields: Domain-specific data columns
+- Actions Column: Permission-protected action buttons that open related dialogs
+- Column Management: User-customizable column visibility and width settings
 
 #### Table Settings
 
@@ -55,35 +55,35 @@ const tableSettings = loadSettings();
 
 Each table column follows a standardized configuration pattern with these key properties:
 
-- **`id`**: Unique column identifier (required)
-- **`label`**: Column header text or React element
-- **`render`**: Function that returns cell content
-- **`columnSortableValuePath`**: Dot-notation path for simple property sorting
-- **`customSortFn`**: Custom comparison function for complex sorting
-- **`cell`**: Configuration for width, visibility, and responsiveness
+- `id`: Unique column identifier (required)
+- `label`: Column header text or React element
+- `render`: Function that returns cell content
+- `columnSortableValuePath`: Dot-notation path for simple property sorting
+- `customSortFn`: Custom comparison function for complex sorting
+- `cell`: Configuration for width, visibility, and responsiveness
 
 ### Column Properties Reference
 
 #### Data Properties
 
-- **`columnSortableValuePath`**: Dot-notation path for simple sorting
-- **`customSortFn`**: Custom comparison function for complex sorting logic
-- **`render`**: React component render function for cell content
+- `columnSortableValuePath`: Dot-notation path for simple sorting
+- `customSortFn`: Custom comparison function for complex sorting logic
+- `render`: React component render function for cell content
 
 #### Cell Properties
 
-- **`baseWidth`**: Default column width percentage
-- **`width`**: Current column width percentage (managed by settings)
-- **`show`**: Column visibility (managed by settings)
-- **`isFixed`**: Prevents column from being hidden by users
-- **`colSpan`**: Number of columns to span
-- **`props`**: Additional TableCell props
-- **`customizable`**: Whether width can be customized (default: true)
+- `baseWidth`: Default column width percentage
+- `width`: Current column width percentage (managed by settings)
+- `show`: Column visibility (managed by settings)
+- `isFixed`: Prevents column from being hidden by users
+- `colSpan`: Number of columns to span
+- `props`: Additional TableCell props
+- `customizable`: Whether width can be customized (default: true)
 
 #### Render Function Parameters
 
-- **`data`**: The row data object
-- **`meta`**: Additional metadata including:
+- `data`: The row data object
+- `meta`: Additional metadata including:
   - `selectionLength`: Number of selected rows
 
 ## Table Configuration
@@ -114,21 +114,21 @@ interface TableProps<DataType> {
 
 Pagination supports:
 
-- **`show`**: Enable/disable pagination
-- **`rowsPerPage`**: Default page size
-- **`initialPage`**: Starting page
-- **`reflectInURL`**: URL state synchronization
+- `show`: Enable/disable pagination
+- `rowsPerPage`: Default page size
+- `initialPage`: Starting page
+- `reflectInURL`: URL state synchronization
 
 ### Selection Configuration
 
 Selection supports:
 
-- **`selected`**: Array of selected IDs
-- **`isRowSelectable`**: Selection validation function
-- **`isRowSelected`**: Selection state function
-- **`handleSelectAll`**: Select all handler
-- **`handleSelectRow`**: Individual selection handler
-- **`renderSelectionInfo`**: Selection info display component
+- `selected`: Array of selected IDs
+- `isRowSelectable`: Selection validation function
+- `isRowSelected`: Selection state function
+- `handleSelectAll`: Select all handler
+- `handleSelectRow`: Individual selection handler
+- `renderSelectionInfo`: Selection info display component
 
 ## Hooks and Utilities
 
@@ -150,9 +150,9 @@ saveSettings({ columnId: { width: 200, show: false } });
 
 Tables support both simple and complex data manipulation:
 
-- **Simple Sorting**: Use `columnSortableValuePath` for property-based sorting
-- **Complex Sorting**: Implement `customSortFn` for advanced sorting logic
-- **Filtering**: Use `filterFunction` prop with FilterProvider pattern
+- Simple Sorting: Use `columnSortableValuePath` for property-based sorting
+- Complex Sorting: Implement `customSortFn` for advanced sorting logic
+- Filtering: Use `filterFunction` prop with FilterProvider pattern
 
 #### Filter Integration Example
 
@@ -185,14 +185,14 @@ See `./.krci-ai/data/custom/patterns/filter-implementation.md` for complete filt
 
 ### Loading States
 
-- **`isLoading`**: Shows skeleton/loading indicators
-- **`blockerError`**: Displays error state blocking table interaction
-- **`errors`**: Shows non-blocking error messages
+- `isLoading`: Shows skeleton/loading indicators
+- `blockerError`: Displays error state blocking table interaction
+- `errors`: Shows non-blocking error messages
 
 ### Custom Components
 
-- **`emptyListComponent`**: Custom empty state display
-- **`blockerComponent`**: Custom loading/blocking overlay
+- `emptyListComponent`: Custom empty state display
+- `blockerComponent`: Custom loading/blocking overlay
 
 ## Advanced Features
 
@@ -206,10 +206,10 @@ Tables automatically sync column settings with localStorage using `getSyncedColu
 
 ### Performance Optimization
 
-1. **Memoized Render Functions**: Use `React.useMemo` for complex renders
-2. **Filtered Data Caching**: Built-in memoization of filtered/sorted data
-3. **Pagination**: Only renders visible rows
-4. **Column Virtualization**: Efficient handling of many columns
+1. Memoized Render Functions: Use `React.useMemo` for complex renders
+2. Filtered Data Caching: Built-in memoization of filtered/sorted data
+3. Pagination: Only renders visible rows
+4. Column Virtualization: Efficient handling of many columns
 
 ## Table Slots
 
@@ -231,7 +231,7 @@ const tableSlots = React.useMemo(
 />
 ```
 
-**Filter Integration Best Practices:**
+Filter Integration Best Practices:
 
 - Wrap filter component in `React.useMemo` to prevent unnecessary re-renders
 - Use the standard filter structure from `./.krci-ai/templates/custom/filter-patterns-scaffold.md`
@@ -273,13 +273,13 @@ Custom content below pagination for additional information or actions.
 
 ## Best Practices
 
-1. **Consistent Column IDs**: Use centralized `columnNames` constants
-2. **Permission Checks**: Always protect action buttons with permission validation
-3. **Responsive Design**: Set appropriate base widths for different screen sizes
-4. **Accessibility**: Provide meaningful tooltips and ARIA labels
-5. **Performance**: Use memoization for complex render functions
-6. **User Experience**: Mark critical columns as `isFixed` to prevent accidental hiding
-7. **Error Boundaries**: Implement proper error handling for render functions
-8. **Type Safety**: Use TypeScript interfaces for data types
-9. **Testing**: Test column configurations and table interactions
-10. **Documentation**: Document custom sort functions and complex render logic
+1. Consistent Column IDs: Use centralized `columnNames` constants
+2. Permission Checks: Always protect action buttons with permission validation
+3. Responsive Design: Set appropriate base widths for different screen sizes
+4. Accessibility: Provide meaningful tooltips and ARIA labels
+5. Performance: Use memoization for complex render functions
+6. User Experience: Mark critical columns as `isFixed` to prevent accidental hiding
+7. Error Boundaries: Implement proper error handling for render functions
+8. Type Safety: Use TypeScript interfaces for data types
+9. Testing: Test column configurations and table interactions
+10. Documentation: Document custom sort functions and complex render logic
