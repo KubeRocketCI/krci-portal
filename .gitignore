@@ -31,3 +31,19 @@ deploy
 bin
 coverage
 .scannerwork
+
+# TypeScript build artifacts
+*.tsbuildinfo
+*.d.ts
+*.d.ts.map
+*.js.map
+
+# Vitest config build outputs
+vitest.config.js
+vitest.config.d.ts
+vitest.workspace.js
+vitest.workspace.d.ts
+
+# Test build artifacts (keep .test.ts source files, ignore compiled .test.js)
+*.test.js
+*.test.d.ts
