@@ -4,7 +4,7 @@ import {
   createUseWatchListHook,
   UseWatchItemParamsWithoutResourceConfig,
   UseWatchListParamsWithoutResourceConfig,
-} from "@/k8s/api/utils/hook-creators";
+} from "@/k8s/api/hooks/hook-creators";
 import { CodebaseImageStream, k8sCodebaseImageStreamConfig } from "@my-project/shared";
 
 export const useCodebaseImageStreamPermissions = createUsePermissionsHook(k8sCodebaseImageStreamConfig);

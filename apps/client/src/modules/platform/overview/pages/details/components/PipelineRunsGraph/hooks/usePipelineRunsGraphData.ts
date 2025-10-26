@@ -26,7 +26,7 @@ export const usePipelineRunsGraphData = () => {
       };
     }
 
-    return pipelineRunListWatch.dataArray.reduce<GraphData>(
+    return pipelineRunListWatch.data.array.reduce<GraphData>(
       (acc, cur) => {
         const { status, reason } = getPipelineRunStatus(cur);
 
@@ -67,7 +67,7 @@ export const usePipelineRunsGraphData = () => {
         suspended: 0,
       }
     );
-  }, [pipelineRunListWatch.dataArray, pipelineRunListWatch.query.data, pipelineRunListWatch.query.isFetching]);
+  }, [pipelineRunListWatch.data.array, pipelineRunListWatch.query.data, pipelineRunListWatch.query.isFetching]);
 
   return {
     graphData,

@@ -40,7 +40,7 @@ export const Actions = () => {
       };
     }
 
-    if (codebasesByGitServerWatch.dataArray?.length) {
+    if (codebasesByGitServerWatch.data.array?.length) {
       return {
         status: true,
         reason: "You cannot delete this Git Server because it has associated codebases.",
@@ -59,7 +59,7 @@ export const Actions = () => {
       reason: null,
     };
   }, [
-    codebasesByGitServerWatch.dataArray?.length,
+    codebasesByGitServerWatch.data.array?.length,
     gitServerPermissions.data.delete.allowed,
     gitServerPermissions.data.delete.reason,
     gitServerSecret?.metadata?.ownerReferences,

@@ -7,7 +7,7 @@ import { RequestError } from "@/core/types/global";
 export const useWatchKRCIConfig = () => {
   const configMapListWatch = useConfigMapWatchList();
 
-  const configMapList = configMapListWatch.dataArray;
+  const configMapList = configMapListWatch.data.array;
 
   return useQuery<ConfigMap | undefined, RequestError>({
     queryKey: ["krciConfigMap", configMapListWatch.resourceVersion],

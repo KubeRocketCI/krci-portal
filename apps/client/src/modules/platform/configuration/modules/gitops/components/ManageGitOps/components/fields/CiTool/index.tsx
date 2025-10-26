@@ -14,7 +14,7 @@ export const CiTool = () => {
   } = useReactHookFormContext<ManageGitOpsValues>();
 
   const gitServersWatch = useGitServerWatchList();
-  const gitServers = gitServersWatch.dataArray;
+  const gitServers = gitServersWatch.data.array;
 
   const gitServerFieldValue = watch(CODEBASE_FORM_NAMES.GIT_SERVER);
   const selectedGitServer = gitServers.find((gitServer) => gitServer.metadata.name === gitServerFieldValue);

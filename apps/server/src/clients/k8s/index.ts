@@ -8,6 +8,7 @@ import {
 import fetch from "node-fetch";
 import https from "https";
 import fs from "fs";
+import { K8sApiError } from "./K8sApiError";
 
 export const isCoreKubernetesResource = (resourceConfig: K8sResourceConfig) =>
   resourceConfig.group === "";
@@ -331,9 +332,7 @@ export class K8sClient {
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => "");
-      throw new Error(
-        `Kubernetes API request failed: ${response.status} ${response.statusText}. ${errorText}`
-      );
+      throw new K8sApiError(response.status, response.statusText, errorText);
     }
 
     const contentType = response.headers.get("content-type") || "";

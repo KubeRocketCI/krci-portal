@@ -26,19 +26,19 @@ export const ResourceQuotas = () => {
   });
 
   const globalRQs = React.useMemo(() => {
-    if (!globalRQsWatch.isReady || globalRQsWatch.dataArray.length === 0) {
+    if (!globalRQsWatch.isReady || globalRQsWatch.data.array.length === 0) {
       return {
         quotas: {},
         highestUsedQuota: null,
       };
     }
 
-    const useAnnotations = Object.keys(globalRQsWatch.dataArray[0]?.metadata?.annotations || {}).some((key) =>
+    const useAnnotations = Object.keys(globalRQsWatch.data.array[0]?.metadata?.annotations || {}).some((key) =>
       key.includes("quota.capsule.clastix.io")
     );
 
-    return parseResourceQuota(globalRQsWatch.dataArray, useAnnotations);
-  }, [globalRQsWatch.isReady, globalRQsWatch.dataArray]);
+    return parseResourceQuota(globalRQsWatch.data.array, useAnnotations);
+  }, [globalRQsWatch.isReady, globalRQsWatch.data.array]);
 
   // Find first in-cluster Stage
   const stagesWatch = useStageWatchList({
@@ -47,8 +47,8 @@ export const ResourceQuotas = () => {
 
   const firstInClusterStage = React.useMemo(() => {
     if (!stagesWatch.isReady) return null;
-    return stagesWatch.dataArray.find((stage) => stage.spec.clusterName === inClusterName) ?? null;
-  }, [stagesWatch.isReady, stagesWatch.dataArray]);
+    return stagesWatch.data.array.find((stage) => stage.spec.clusterName === inClusterName) ?? null;
+  }, [stagesWatch.isReady, stagesWatch.data.array]);
 
   // Stage Resource Quotas
   const stageRQsWatch = useResourceQuotaWatchList({
@@ -59,19 +59,19 @@ export const ResourceQuotas = () => {
   });
 
   const stageRQs = React.useMemo(() => {
-    if (!stageRQsWatch.isReady || stageRQsWatch.dataArray.length === 0) {
+    if (!stageRQsWatch.isReady || stageRQsWatch.data.array.length === 0) {
       return {
         quotas: {},
         highestUsedQuota: null,
       };
     }
 
-    const useAnnotations = Object.keys(stageRQsWatch.dataArray[0]?.metadata?.annotations || {}).some((key) =>
+    const useAnnotations = Object.keys(stageRQsWatch.data.array[0]?.metadata?.annotations || {}).some((key) =>
       key.includes("quota.capsule.clastix.io")
     );
 
-    return parseResourceQuota(stageRQsWatch.dataArray, useAnnotations);
-  }, [stageRQsWatch.isReady, stageRQsWatch.dataArray]);
+    return parseResourceQuota(stageRQsWatch.data.array, useAnnotations);
+  }, [stageRQsWatch.isReady, stageRQsWatch.data.array]);
 
   // Tenant/Namespace Quota
   const tenantWatch = useTenantWatchItem({
@@ -80,14 +80,14 @@ export const ResourceQuotas = () => {
   });
 
   const namespacesQuota = React.useMemo(() => {
-    if (!tenantWatch.isReady || !tenantWatch.query.data) {
+    if (!tenantWatch.isReady || !tenantWatch.data) {
       return {
         quotas: {} as ParsedQuotas,
         highestUsedQuota: null,
       };
     }
 
-    const namespacesHard = tenantWatch.query.data.spec?.namespaceOptions?.quota;
+    const namespacesHard = tenantWatch.data.spec?.namespaceOptions?.quota;
 
     if (!namespacesHard) {
       return {
@@ -96,7 +96,7 @@ export const ResourceQuotas = () => {
       };
     }
 
-    const namespacesUsed = tenantWatch.query.data.status?.size ?? 0;
+    const namespacesUsed = tenantWatch.data.status?.size ?? 0;
     const usedPercentage = (namespacesUsed / namespacesHard) * 100;
 
     return {
@@ -113,7 +113,7 @@ export const ResourceQuotas = () => {
         usedPercentage: usedPercentage,
       },
     };
-  }, [tenantWatch.isReady, tenantWatch.query.data]);
+  }, [tenantWatch.isReady, tenantWatch.data]);
 
   // Calculate highest used quota
   const highestUsedQuota = React.useMemo(() => {
@@ -133,10 +133,7 @@ export const ResourceQuotas = () => {
     );
   }, [globalRQs, stageRQs, namespacesQuota]);
 
-  const globalRQsDataIsLoading = globalRQsWatch.isInitialLoading;
-  const stageRQsDataIsLoading = stageRQsWatch.isInitialLoading;
-
-  if (globalRQsDataIsLoading || stageRQsDataIsLoading) {
+  if (globalRQsWatch.isLoading || stageRQsWatch.isLoading) {
     return null;
   }
 
@@ -173,7 +170,7 @@ export const ResourceQuotas = () => {
               <Activity className="text-primary h-4 w-4" />
               <h3 className="text-sm font-semibold">Platform Resource Usage</h3>
             </div>
-            {globalRQsDataIsLoading ? (
+            {globalRQsWatch.isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <LoadingSpinner size={24} />
               </div>
@@ -199,7 +196,7 @@ export const ResourceQuotas = () => {
               <Activity className="text-primary h-4 w-4" />
               <h3 className="text-sm font-semibold">Deployment Flows Resource Usage</h3>
             </div>
-            {stageRQsDataIsLoading ? (
+            {stageRQsWatch.isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <LoadingSpinner size={24} />
               </div>

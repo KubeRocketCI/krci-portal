@@ -14,7 +14,7 @@ export const GitServer = () => {
   } = useTypedFormContext();
 
   const gitServersWatch = useGitServerWatchList();
-  const gitServers = gitServersWatch.dataArray;
+  const gitServers = gitServersWatch.data.array;
 
   const gitServersOptions = React.useMemo(
     () =>

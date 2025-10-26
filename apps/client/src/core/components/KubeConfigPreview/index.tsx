@@ -1,8 +1,9 @@
 import { trpc } from "@/core/clients/trpc";
 import { DialogProps } from "@/core/providers/Dialog/types";
 import CodeEditor, { CodeEditorHandle } from "@/core/components/CodeEditor";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Alert } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
+import { humanize } from "@/core/utils/date-humanize";
 
 import React from "react";
 import { useClusterStore } from "@/k8s/store";
@@ -12,18 +13,48 @@ type KubeConfigPreviewDialogProps = DialogProps<object>;
 export default function KubeConfigPreviewDialog({ state }: KubeConfigPreviewDialogProps) {
   const { open, closeDialog } = state;
 
-  const { clusterName } = useClusterStore();
+  const { clusterName, defaultNamespace } = useClusterStore();
   const editorRef = React.useRef<CodeEditorHandle>(null);
+  const [timeRemaining, setTimeRemaining] = React.useState<string>("");
 
   const { data } = useQuery({
     queryKey: ["k8s.kubeconfig", clusterName],
-    queryFn: () => trpc.k8s.kubeconfig.query(),
+    queryFn: () => trpc.k8s.kubeconfig.query({ namespace: defaultNamespace }),
     enabled: Boolean(clusterName),
   });
 
   React.useEffect(() => {
-    // Content is passed via props; rerender updates the editor value
-  }, [data]);
+    if (!data?.tokenExpiresAt) {
+      setTimeRemaining("");
+      return;
+    }
+
+    const expiresAt = data.tokenExpiresAt;
+
+    const updateTimeRemaining = () => {
+      const now = Date.now();
+      const diff = expiresAt - now;
+
+      if (diff <= 0) {
+        setTimeRemaining("Token has expired");
+        return;
+      }
+
+      const formattedTime = humanize(diff, {
+        largest: 3,
+        round: true,
+        conjunction: " and ",
+        serialComma: false,
+      });
+
+      setTimeRemaining(`The token expires in ${formattedTime}`);
+    };
+
+    updateTimeRemaining();
+    const interval = setInterval(updateTimeRemaining, 1000);
+
+    return () => clearInterval(interval);
+  }, [data?.tokenExpiresAt]);
 
   const copyToClipboard = () => {
     const text = editorRef.current?.getValue();
@@ -53,9 +84,14 @@ export default function KubeConfigPreviewDialog({ state }: KubeConfigPreviewDial
     <Dialog open={open} onClose={closeDialog} maxWidth="md" fullWidth>
       <DialogTitle>Kubeconfig Preview</DialogTitle>
       <DialogContent>
+        {timeRemaining && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            {timeRemaining}
+          </Alert>
+        )}
         <CodeEditor
           ref={editorRef}
-          content={data || {}}
+          content={data?.config || {}}
           height="400px"
           language="yaml"
           readOnly

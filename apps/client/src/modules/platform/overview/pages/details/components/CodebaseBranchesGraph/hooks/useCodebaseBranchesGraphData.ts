@@ -24,7 +24,7 @@ export const useCodebaseBranchesGraphData = () => {
       };
     }
 
-    return codebaseBranchListWatch.dataArray.reduce<GraphData>(
+    return codebaseBranchListWatch.data.array.reduce<GraphData>(
       (acc, cur) => {
         const status = cur?.status?.status;
 
@@ -58,7 +58,11 @@ export const useCodebaseBranchesGraphData = () => {
         unknown: 0,
       }
     );
-  }, [codebaseBranchListWatch.dataArray, codebaseBranchListWatch.query.data, codebaseBranchListWatch.query.isFetching]);
+  }, [
+    codebaseBranchListWatch.data.array,
+    codebaseBranchListWatch.query.data,
+    codebaseBranchListWatch.query.isFetching,
+  ]);
 
   return {
     graphData,

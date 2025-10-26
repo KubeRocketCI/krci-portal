@@ -5,7 +5,7 @@ import {
   createUseWatchItemHook,
   UseWatchItemParamsWithoutResourceConfig,
   UseWatchListParamsWithoutResourceConfig,
-} from "@/k8s/api/utils/hook-creators";
+} from "@/k8s/api/hooks/hook-creators";
 import { k8sCodemieApplicationConfig, CodemieApplication } from "@my-project/shared";
 
 export const useCodemieApplicationCRUD = () => {
@@ -24,9 +24,7 @@ export const useCodemieApplicationCRUD = () => {
 };
 
 export const useCodemieApplicationPermissions = createUsePermissionsHook(k8sCodemieApplicationConfig);
-export const useCodemieApplicationWatchList = (
-  params?: UseWatchListParamsWithoutResourceConfig<CodemieApplication>
-) => createUseWatchListHook<CodemieApplication>(k8sCodemieApplicationConfig)(params);
-export const useCodemieApplicationWatchItem = (
-  params: UseWatchItemParamsWithoutResourceConfig<CodemieApplication>
-) => createUseWatchItemHook<CodemieApplication>(k8sCodemieApplicationConfig)(params);
+export const useCodemieApplicationWatchList = (params?: UseWatchListParamsWithoutResourceConfig<CodemieApplication>) =>
+  createUseWatchListHook<CodemieApplication>(k8sCodemieApplicationConfig)(params);
+export const useCodemieApplicationWatchItem = (params: UseWatchItemParamsWithoutResourceConfig<CodemieApplication>) =>
+  createUseWatchItemHook<CodemieApplication>(k8sCodemieApplicationConfig)(params);

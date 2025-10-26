@@ -16,7 +16,7 @@ export const GitServer = () => {
 
   const gitServersOptions = React.useMemo(
     () =>
-      gitServersWatch.dataArray.map((gitServer) => {
+      gitServersWatch.data.array.map((gitServer) => {
         const statusIcon = getGitServerStatusIcon(gitServer);
 
         return {
@@ -26,7 +26,7 @@ export const GitServer = () => {
           icon: <StatusIcon Icon={statusIcon.component} color={statusIcon.color} isSpinning={statusIcon.isSpinning} />,
         };
       }),
-    [gitServersWatch.dataArray]
+    [gitServersWatch.data.array]
   );
 
   return (

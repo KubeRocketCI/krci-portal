@@ -14,12 +14,12 @@ import React from "react";
 
 export const TemplatesGrid = () => {
   const templatesWatch = useTemplateWatchList();
-  const templates = templatesWatch.dataArray;
+  const templates = templatesWatch.data.array;
 
   const { filterFunction } = useFilterContext();
 
   const gitServersWatch = useGitServerWatchList();
-  const gitServers = gitServersWatch.dataArray;
+  const gitServers = gitServersWatch.data.array;
   const hasAtLeastOneGitServer = gitServers?.length > 0;
 
   const openCreateCodebaseFromTemplateDialog = useDialogOpener(CreateCodebaseFromTemplateDialog);

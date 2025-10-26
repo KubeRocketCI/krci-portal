@@ -35,6 +35,7 @@ export const PipelineRunList = ({
     pipelineRunFilterControlNames.CODEBASES,
     pipelineRunFilterControlNames.STATUS,
     pipelineRunFilterControlNames.PIPELINE_TYPE,
+    pipelineRunFilterControlNames.NAMESPACES,
   ],
   tableSettings,
 }: PipelineRunListProps) => {

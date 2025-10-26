@@ -1,69 +1,45 @@
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Grid,
-  IconButton,
-  Stack,
-  Tooltip,
-  Typography,
-  useTheme,
-} from "@mui/material";
+import { Box, Dialog, DialogContent, DialogTitle, IconButton, Stack, Typography } from "@mui/material";
 import { ConfigurationPageContentProps } from "./types";
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
+import { Section } from "@/core/components/Section";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { Plus, X } from "lucide-react";
+import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 
 export const ConfigurationPageContent = ({
   creationForm,
   children,
   pageDescription,
 }: ConfigurationPageContentProps) => {
-  const theme = useTheme();
-
   const { label, description, docLink } = pageDescription;
 
   return (
     <>
-      <PageWrapper containerMaxWidth={"xl"}>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Typography fontSize={theme.typography.pxToRem(28)} color="primary.dark" gutterBottom>
-              {label}
-            </Typography>
-            {description && (
-              <Typography variant={"body1"}>
+      <PageWrapper breadcrumbs={[{ label }]}>
+        <Section
+          description={
+            <Stack spacing={1} direction="row" alignItems="center" justifyContent="space-between">
+              <Box>
                 {description} {docLink && <LearnMoreLink url={docLink} />}
-              </Typography>
-            )}
-          </Grid>
-          <Grid item xs={12}>
-            <Stack direction="row" justifyContent="flex-end">
-              <ConditionalWrapper
-                condition={!creationForm.permission.allowed}
-                wrapper={(children) => (
-                  <Tooltip title={creationForm.permission.reason}>
-                    <div>{children}</div>
-                  </Tooltip>
-                )}
+              </Box>
+              <ButtonWithPermission
+                ButtonProps={{
+                  startIcon: <Plus size={16} />,
+                  color: "primary",
+                  variant: "contained",
+                  onClick: creationForm.onOpen,
+                  disabled: creationForm.isDisabled,
+                }}
+                allowed={creationForm.permission.allowed}
+                reason={creationForm.permission.reason}
               >
-                <Button
-                  variant="contained"
-                  onClick={creationForm.onOpen}
-                  disabled={creationForm.isDisabled || !creationForm.permission.allowed}
-                  startIcon={<Plus size={20} />}
-                >
-                  {creationForm.label || "add"}
-                </Button>
-              </ConditionalWrapper>
+                {creationForm.label || "add"}
+              </ButtonWithPermission>
             </Stack>
-          </Grid>
-          <Grid item xs={12}>
-            {children}
-          </Grid>
-        </Grid>
+          }
+        >
+          {children}
+        </Section>
       </PageWrapper>
       {creationForm && (
         <Dialog

@@ -59,15 +59,15 @@ export const useStagesWithItsApplicationsWatch = () => {
     ],
     queryFn: () => {
       const cdPipeline = cdPipelineWatch.query.data;
-      const stageAppCodebaseList = appCodebaseListWatch.dataArray.filter((appCodebase) =>
+      const stageAppCodebaseList = appCodebaseListWatch.data.array.filter((appCodebase) =>
         cdPipeline?.spec.applications.some((cdPipelineApp) => cdPipelineApp === appCodebase.metadata.name)
       );
-      const sortedStageList = stageListWatch.dataArray.toSorted((a, b) => a.spec.order - b.spec.order);
+      const sortedStageList = stageListWatch.data.array.toSorted((a, b) => a.spec.order - b.spec.order);
 
       return {
         stages: sortedStageList,
         stagesWithItsApplications: combineStageWithApplications(
-          applicationListWatch.dataArray,
+          applicationListWatch.data.array,
           stageAppCodebaseList,
           sortedStageList
         ),

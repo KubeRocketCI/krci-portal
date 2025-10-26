@@ -1,9 +1,9 @@
-// import { CodebaseKubeObjectInterface } from '../../../../../../k8s/groups/EDP/Codebase/types';
+import { Codebase } from "@my-project/shared";
 
-// export interface ComponentMultiDeletionProps {
-//   components: CodebaseKubeObjectInterface[];
-//   selected: string[];
-//   open: boolean;
-//   handleClose: () => void;
-//   onDelete: () => void;
-// }
+export interface ComponentMultiDeletionProps {
+  components: Codebase[];
+  selected: string[];
+  open: boolean;
+  handleClose: () => void;
+  onDelete: () => void;
+}

@@ -18,7 +18,7 @@ export const HeaderActions = () => {
   const cdPipelineWatch = useCDPipelineWatch();
 
   const stage = stageWatch.query.data;
-  const stages = stageListWatch.dataArray;
+  const stages = stageListWatch.data.array;
   const cdPipeline = cdPipelineWatch.query.data;
 
   const quickLinksUrls = quickLinksUrlListWatch.data?.quickLinkURLs;

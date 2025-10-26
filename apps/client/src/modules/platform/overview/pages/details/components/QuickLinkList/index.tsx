@@ -21,7 +21,7 @@ const StyledGridItem = styled(Grid)`
 
 export const QuickLinkList = () => {
   const quickLinkListWatch = useQuickLinkWatchList();
-  const quickLinkList = quickLinkListWatch.dataArray;
+  const quickLinkList = quickLinkListWatch.data.array;
 
   return quickLinkListWatch.query.error ? (
     <ErrorContent error={quickLinkListWatch.query.error} outlined />

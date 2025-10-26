@@ -4,7 +4,7 @@ import {
   createUseWatchItemHook,
   UseWatchItemParamsWithoutResourceConfig,
   UseWatchListParamsWithoutResourceConfig,
-} from "@/k8s/api/utils/hook-creators";
+} from "@/k8s/api/hooks/hook-creators";
 import { k8sTemplateConfig, Template } from "@my-project/shared";
 
 export const useTemplatePermissions = createUsePermissionsHook(k8sTemplateConfig);

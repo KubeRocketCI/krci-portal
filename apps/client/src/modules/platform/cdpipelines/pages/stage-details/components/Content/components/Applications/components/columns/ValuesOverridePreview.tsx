@@ -29,10 +29,10 @@ export const ValuesOverridePreviewColumn = ({ appCodebase }: { appCodebase: Code
   } = useTypedFormContext();
 
   const gitOpsGitServer = React.useMemo(() => {
-    return gitServerListWatch.dataArray?.find(
+    return gitServerListWatch.data.array?.find(
       (gitServer) => gitServer.metadata.name === gitOpsCodebase?.spec.gitServer
     );
-  }, [gitOpsCodebase?.spec.gitServer, gitServerListWatch.dataArray]);
+  }, [gitOpsCodebase?.spec.gitServer, gitServerListWatch.data.array]);
 
   return (
     <Stack direction="row" alignItems="center" spacing={1}>

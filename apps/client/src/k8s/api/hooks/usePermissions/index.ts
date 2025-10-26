@@ -3,7 +3,7 @@ import { defaultPermissions, DefaultPermissionListCheckResult } from "@my-projec
 import { useShallow } from "zustand/react/shallow";
 import { trpc } from "@/core/clients/trpc";
 import { useClusterStore } from "@/k8s/store";
-import { getK8sItemPermissionsQueryCacheKey, getK8sAPIQueryCacheKey } from "../../utils/query-keys";
+import { getK8sItemPermissionsQueryCacheKey, getK8sAPIQueryCacheKey } from "../useWatch/query-keys";
 
 export const usePermissions = ({
   group,

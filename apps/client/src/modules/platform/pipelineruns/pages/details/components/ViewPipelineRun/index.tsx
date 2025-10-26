@@ -7,7 +7,7 @@ export const ViewPipelineRun = () => {
   const pipelineRun = pipelineRunWatch.query.data;
 
   return (
-    <LoadingWrapper isLoading={pipelineRunWatch.isInitialLoading}>
+    <LoadingWrapper isLoading={pipelineRunWatch.isLoading}>
       <CodeEditor content={pipelineRun!} />
     </LoadingWrapper>
   );

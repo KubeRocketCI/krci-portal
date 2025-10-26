@@ -12,7 +12,7 @@ import { gitProvider } from "@my-project/shared";
 export const GitServer = () => {
   const gitServersWatch = useGitServerWatchList();
 
-  const gitServers = gitServersWatch.dataArray;
+  const gitServers = gitServersWatch.data.array;
 
   const gitServersOptions = React.useMemo(
     () =>

@@ -4,7 +4,7 @@ import { EmptyList } from "@/core/components/EmptyList";
 import { TABLE } from "@/k8s/constants/tables";
 import { K8sRelatedIconsSVGSprite } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { Table } from "@/core/components/Table";
-import { useCodebasePermissions, useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
+import { useCodebasePermissions, useCodebaseWatchListMultiple } from "@/k8s/api/groups/KRCI/Codebase";
 import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { ManageCodebaseDialog } from "@/modules/platform/codebases/dialogs/ManageCodebase";
@@ -16,10 +16,12 @@ import { CodebaseFilter } from "../CodebaseFilter";
 import { useColumns } from "./hooks/useColumns";
 import { useSelection } from "./hooks/useSelection";
 import { useCodebaseFilter } from "../CodebaseFilter/hooks/useFilter";
+import { ComponentMultiDeletion } from "./components/ComponentMultiDeletion";
 
 export const ComponentList = () => {
   const columns = useColumns();
-  const codebaseListWatch = useCodebaseWatchList();
+  const codebaseListWatch = useCodebaseWatchListMultiple();
+
   const codebasePermissions = useCodebasePermissions();
 
   const gitServerListWatch = useGitServerWatchList();
@@ -28,10 +30,10 @@ export const ComponentList = () => {
 
   const { setDialog } = useDialogContext();
 
-  // const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
   const emptyListComponent = React.useMemo(() => {
-    if (codebaseListWatch.query.isFetching || gitServerListWatch.query.isFetching || codebasePermissions.isFetching) {
+    if (codebaseListWatch.isLoading || gitServerListWatch.isLoading || codebasePermissions.isFetching) {
       return null;
     }
 
@@ -61,16 +63,16 @@ export const ComponentList = () => {
       />
     );
   }, [
-    codebaseListWatch.query.isFetching,
+    codebaseListWatch.isLoading,
     codebasePermissions.data.create.allowed,
     codebasePermissions.data.create.reason,
     codebasePermissions.isFetching,
-    gitServerListWatch.query.isFetching,
+    gitServerListWatch.isLoading,
     noGitServers,
     setDialog,
   ]);
 
-  const { selected, handleSelectAllClick, handleSelectRowClick } = useSelection();
+  const { selected, setSelected, handleSelectAllClick, handleSelectRowClick } = useSelection();
   const { filterFunction } = useCodebaseFilter();
 
   const tableSlots = React.useMemo(
@@ -107,9 +109,9 @@ export const ComponentList = () => {
           <Table<Codebase>
             id={TABLE.COMPONENT_LIST.id}
             name={TABLE.COMPONENT_LIST.name}
-            data={codebaseListWatch.dataArray}
-            isLoading={codebaseListWatch.query.isFetching}
-            // errors={codebases.errors}
+            data={codebaseListWatch.data.array}
+            isLoading={codebaseListWatch.isLoading}
+            errors={codebaseListWatch.errors}
             columns={columns}
             selection={{
               selected,
@@ -142,9 +144,9 @@ export const ComponentList = () => {
                             ButtonProps={{
                               size: "small",
                               disabled: !selectionLength,
-                              // onClick: () => {
-                              //   setDeleteDialogOpen(true);
-                              // },
+                              onClick: () => {
+                                setDeleteDialogOpen(true);
+                              },
                               startIcon: <Trash />,
                               variant: "outlined",
                               color: "inherit",
@@ -167,7 +169,7 @@ export const ComponentList = () => {
           />
         </Suspense>
       </Stack>
-      {/* {deleteDialogOpen && (
+      {deleteDialogOpen && (
         <ComponentMultiDeletion
           open={deleteDialogOpen}
           handleClose={() => setDeleteDialogOpen(false)}
@@ -175,10 +177,10 @@ export const ComponentList = () => {
             setDeleteDialogOpen(false);
             setSelected([]);
           }}
-          components={codebases.data!}
+          components={codebaseListWatch.data.array}
           selected={selected}
         />
-      )} */}
+      )}
     </>
   );
 };

@@ -22,7 +22,7 @@ export const TemplatesTable = () => {
 
   const templatePermissions = useTemplatePermissions();
   const templatesWatch = useTemplateWatchList();
-  const templates = templatesWatch.dataArray;
+  const templates = templatesWatch.data.array;
 
   const openCreateCodebaseFromTemplateDialog = useDialogOpener(CreateCodebaseFromTemplateDialog);
 
@@ -40,7 +40,7 @@ export const TemplatesTable = () => {
   const errors = templatesWatch.query.error ? [templatesWatch.query.error] : undefined;
 
   const gitServersWatch = useGitServerWatchList();
-  const gitServers = gitServersWatch.dataArray;
+  const gitServers = gitServersWatch.data.array;
   const hasAtLeastOneGitServer = gitServers?.length > 0;
 
   const { filterFunction } = useFilterContext();

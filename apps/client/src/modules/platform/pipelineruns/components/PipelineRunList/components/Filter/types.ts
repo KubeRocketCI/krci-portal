@@ -9,4 +9,5 @@ export type PipelineRunListFilterValues = {
   [pipelineRunFilterControlNames.CODEBASES]: string[];
   [pipelineRunFilterControlNames.STATUS]: FilterTypeWithOptionAll<PipelineRunStatus>;
   [pipelineRunFilterControlNames.PIPELINE_TYPE]: FilterTypeWithOptionAll<PipelineType>;
+  [pipelineRunFilterControlNames.NAMESPACES]: string[];
 };

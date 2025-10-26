@@ -9,8 +9,8 @@ export const Live = () => {
   const pipelineRunsWatch = usePipelineRunWatchList();
 
   const sortedPipelineRuns = React.useMemo(() => {
-    return pipelineRunsWatch.dataArray.toSorted(sortKubeObjectByCreationTimestamp);
-  }, [pipelineRunsWatch.dataArray]);
+    return pipelineRunsWatch.data.array.toSorted(sortKubeObjectByCreationTimestamp);
+  }, [pipelineRunsWatch.data.array]);
 
   const { loadSettings } = useTableSettings(TABLE.GENERAL_PIPELINE_RUN_LIST.id);
 
@@ -22,7 +22,7 @@ export const Live = () => {
       tableName={TABLE.GENERAL_PIPELINE_RUN_LIST.name}
       tableSettings={tableSettings}
       pipelineRuns={sortedPipelineRuns}
-      isLoading={pipelineRunsWatch.isInitialLoading}
+      isLoading={pipelineRunsWatch.isLoading}
       errors={pipelineRunsWatch.query.error ? [pipelineRunsWatch.query.error] : []}
     />
   );

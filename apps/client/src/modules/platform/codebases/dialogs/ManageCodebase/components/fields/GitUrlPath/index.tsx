@@ -18,7 +18,7 @@ export const GitUrlPath = () => {
 
   const gitServerFieldValue = watch(CODEBASE_FORM_NAMES.gitServer.name);
 
-  const gitServer = gitServersWatch.dataArray.find((gitServer) => gitServer.metadata.name === gitServerFieldValue);
+  const gitServer = gitServersWatch.data.array.find((gitServer) => gitServer.metadata.name === gitServerFieldValue);
 
   const gitServerProvider = gitServer?.spec.gitProvider;
 

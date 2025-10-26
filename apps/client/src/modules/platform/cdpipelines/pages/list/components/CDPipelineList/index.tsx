@@ -57,7 +57,7 @@ export const CDPipelineList = ({ blockerComponent }: CDPipelineListProps) => {
       id={TABLE.CDPIPELINE_LIST.id}
       name={TABLE.CDPIPELINE_LIST.name}
       isLoading={!cdPipelineListWatch.query.isFetched || !cdPipelinePermissions.isFetched}
-      data={cdPipelineListWatch.dataArray}
+      data={cdPipelineListWatch.data.array}
       errors={[]}
       columns={columns}
       filterFunction={filterFunction}

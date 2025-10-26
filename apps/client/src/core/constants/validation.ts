@@ -7,7 +7,7 @@ export const validationRules: Record<string, ValidationRule[]> = {
   // TODO: to extend
   GIT_URL_PATH: [
     {
-      pattern: /^[^/].*[^/]$/, // same: no leading/trailing slash
+      pattern: /^[^/].*[^/]$/, // no leading/trailing slash
       message: "String cannot start or end with a slash symbol",
     },
     {
@@ -15,16 +15,60 @@ export const validationRules: Record<string, ValidationRule[]> = {
       message: "String has to start with an alphabet letter or a number",
     },
     {
-      pattern: /^(?!.*[.]{2})(?!.*[/]{2})[a-zA-Z0-9._-]+(\/[a-zA-Z0-9._-]+)*$/,
-      message:
-        "Only alphanumeric characters, dot, dash, underscore and slashes are allowed. Consecutive slashes or dots are not allowed.",
+      pattern: /^[a-zA-Z0-9._-]+(\/[a-zA-Z0-9._-]+)*$/, // only alphanumeric, dot, dash, underscore and slashes
+      message: "Only alphanumeric characters, dot, dash, underscore and slashes are allowed",
+    },
+    {
+      pattern: /^(?!.*[.]{2})/, // no consecutive dots
+      message: "Consecutive dots are not allowed",
+    },
+    {
+      pattern: /^(?!.*[/]{2})/, // no consecutive slashes
+      message: "Consecutive slashes are not allowed",
+    },
+  ],
+  REPOSITORY_NAME: [
+    {
+      pattern: /^[^/].*[^/]$/, // no leading/trailing slash
+      message: "Repository name cannot start or end with a slash symbol",
+    },
+    {
+      pattern: /^[a-zA-Z0-9]/, // must start with alphanumeric
+      message: "Repository name has to start with an alphabet letter or a number",
+    },
+    {
+      pattern: /^[a-zA-Z0-9._-]+$/, // only alphanumeric, dot, dash, underscore
+      message: "Only alphanumeric characters, dot, dash, and underscore are allowed",
+    },
+    {
+      pattern: /^(?!.*[.]{2})/, // no consecutive dots
+      message: "Consecutive dots are not allowed",
+    },
+    {
+      pattern: /^(?!.*[/]{2})/, // no consecutive slashes
+      message: "Consecutive slashes are not allowed",
     },
   ],
   BRANCH_NAME: [
     {
-      pattern: /^(?![/.-])[A-Za-z0-9/._-]*(?<![/.-])$/,
-      message:
-        "Branch name may contain: upper-case and lower-case letters, numbers, slashes (/), dashes (-), dots (.), and underscores (_). It cannot start or end with a slash (/), dot (.), or dash (-). Consecutive special characters are not allowed. Minimum 2 characters.",
+      pattern: /^.{1,}$/, // minimum 1 character
+      message: "Branch name must be at least 1 character long",
+    },
+    {
+      pattern: /^[^/.-]/, // cannot start with slash, dot, or dash
+      message: "Branch name cannot start with a slash (/), dot (.), or dash (-)",
+    },
+    {
+      pattern: /[^/.-]$/, // cannot end with slash, dot, or dash
+      message: "Branch name cannot end with a slash (/), dot (.), or dash (-)",
+    },
+    {
+      pattern: /^(?!.*[/.-]{2})/, // no consecutive slashes, dots, or dashes
+      message: "Branch name cannot contain consecutive slashes (/), dots (.), or dashes (-)",
+    },
+    {
+      pattern: /^[a-zA-Z0-9/._\-а-яА-Я\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\u3400-\u4dbf\uff00-\uffef@#$%!]+$/, // allows alphanumeric, slashes, dots, underscores, dashes, Cyrillic, CJK characters, and special characters @#$%!
+      message: "Branch name contains unsupported characters",
     },
   ],
 };

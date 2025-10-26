@@ -23,7 +23,7 @@ export const CleanTemplate = () => {
 
   const triggerTemplateListWatch = useTriggerTemplateWatchList();
 
-  const triggerTemplateList = triggerTemplateListWatch.dataArray;
+  const triggerTemplateList = triggerTemplateListWatch.data.array;
 
   const cleanTriggerTemplateList = triggerTemplateList.filter(
     (el) => el.metadata.labels?.[triggerTemplateLabels.pipelineType] === pipelineType.clean

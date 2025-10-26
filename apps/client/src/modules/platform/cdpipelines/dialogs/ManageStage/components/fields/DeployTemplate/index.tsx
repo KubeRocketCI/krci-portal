@@ -22,7 +22,7 @@ export const DeployTemplate = () => {
 
   const triggerTemplateListWatch = useTriggerTemplateWatchList();
 
-  const triggerTemplateList = triggerTemplateListWatch.dataArray;
+  const triggerTemplateList = triggerTemplateListWatch.data.array;
 
   const deployTriggerTemplateList = triggerTemplateList.filter(
     (el) => el.metadata.labels?.[triggerTemplateLabels.pipelineType] === pipelineType.deploy

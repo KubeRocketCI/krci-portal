@@ -19,7 +19,7 @@ export const TaskRunStepLogs = ({ stepName, taskRunName }: { stepName: string; t
     },
   });
 
-  const pods = pipelineRunPodsWatch.dataArray.filter(
+  const pods = pipelineRunPodsWatch.data.array.filter(
     (pod) => pod.metadata?.labels?.["tekton.dev/taskRun"] === taskRunName
   );
 

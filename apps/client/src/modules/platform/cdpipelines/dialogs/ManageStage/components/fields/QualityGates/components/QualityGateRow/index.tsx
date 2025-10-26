@@ -9,44 +9,43 @@ import {
   createQualityGateTypeFieldName,
 } from "../../utils";
 import { QualityGateRowProps } from "./types";
-import { AutotestWithBranchesOption, FormStageQualityGate } from "../../../../../types";
+import { FormStageQualityGate } from "../../../../../types";
 import { FieldEvent, SelectOption } from "@/core/types/forms";
 import { mapArrayToSelectOptions } from "@/core/utils/forms/mapToSelectOptions";
-import { StageQualityGateType, stageQualityGateType } from "@my-project/shared";
+import {
+  StageQualityGateType,
+  stageQualityGateType,
+  Codebase,
+  codebaseBranchLabels,
+  codebaseLabels,
+  codebaseType,
+} from "@my-project/shared";
 import { FormSelect } from "@/core/providers/Form/components/FormSelect";
 import { FormTextField } from "@/core/providers/Form/components/FormTextField";
+import { useCodebaseBranchWatchList } from "@/k8s/api/groups/KRCI/CodebaseBranch";
+import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
 
 const getAvailableAutotests = (
-  autotestsWithBranchesOptions: AutotestWithBranchesOption[],
-  qualityGatesFieldValue: FormStageQualityGate[]
+  autotests: Codebase[],
+  qualityGatesFieldValue: FormStageQualityGate[],
+  currentQualityGateId: string
 ) => {
-  return autotestsWithBranchesOptions.map((autotest) => {
-    const { name, branches } = autotest;
-    const alreadyChosenAutotest = qualityGatesFieldValue.find(({ autotestName }) => autotestName === name);
+  return autotests.map((autotest) => {
+    const name = autotest.metadata.name;
 
-    const qualityGatesByChosenAutotest = qualityGatesFieldValue.filter(({ autotestName }) => autotestName === name);
+    // Check if this autotest is already used in other quality gates (excluding current one)
+    const qualityGatesByChosenAutotest = qualityGatesFieldValue.filter(
+      (qg) => qg.autotestName === name && qg.id !== currentQualityGateId
+    );
 
-    const allBranchesAreChosen =
-      qualityGatesByChosenAutotest.length === branches.length &&
-      qualityGatesByChosenAutotest.every((qualityGate) =>
-        qualityGate.branchName ? branches.includes(qualityGate.branchName) : false
-      );
+    // An autotest can be selected multiple times if it has multiple branches
+    // We can't determine if all branches are used without fetching all branches,
+    // so we keep the autotest enabled. The branch selection will handle the validation.
 
-    if (alreadyChosenAutotest && branches.length <= 1) {
-      return {
-        ...autotest,
-        disabled: true,
-      };
-    }
-
-    if (allBranchesAreChosen) {
-      return {
-        ...autotest,
-        disabled: true,
-      };
-    }
-
-    return autotest;
+    return {
+      name,
+      disabled: false, // Always allow selection; branch availability will be validated separately
+    };
   });
 };
 
@@ -75,25 +74,18 @@ const getAvailableAutotestBranches = (
   });
 };
 
-const getCurrentQualityGateBranchesOptions = (
-  autotestsWithBranchesOptions: AutotestWithBranchesOption[],
-  currentQualityGateAutotestFieldValue: string
-) => {
-  return autotestsWithBranchesOptions.length && currentQualityGateAutotestFieldValue
-    ? autotestsWithBranchesOptions
-        .filter((el) => el.name === currentQualityGateAutotestFieldValue)[0]
-        .branches.map((el) => ({
-          label: el,
-          value: el,
-        }))
-    : [];
+const getCurrentQualityGateBranchesOptions = (branches: string[]) => {
+  return branches.map((branchName) => ({
+    label: branchName,
+    value: branchName,
+  }));
 };
 
 const qualityGateTypeSelectOptions = mapArrayToSelectOptions(Object.values(stageQualityGateType));
 
-const getAvailableQualityGateTypeSelectOptions = (autotestsWithBranchesOptions: AutotestWithBranchesOption[]) => {
+const getAvailableQualityGateTypeSelectOptions = (autotests: Codebase[]) => {
   return qualityGateTypeSelectOptions.map((el) => {
-    if (el.value === stageQualityGateType.autotests && !autotestsWithBranchesOptions.length) {
+    if (el.value === stageQualityGateType.autotests && !autotests.length) {
       return {
         ...el,
         disabled: true,
@@ -104,7 +96,7 @@ const getAvailableQualityGateTypeSelectOptions = (autotestsWithBranchesOptions: 
   });
 };
 
-export const QualityGateRow = ({ autotestsWithBranchesOptions, currentQualityGate }: QualityGateRowProps) => {
+export const QualityGateRow = ({ namespace, currentQualityGate }: QualityGateRowProps) => {
   const {
     register,
     control,
@@ -119,14 +111,36 @@ export const QualityGateRow = ({ autotestsWithBranchesOptions, currentQualityGat
   const currentQualityGateTypeFieldValue = watch(createQualityGateTypeFieldName(currentQualityGate.id));
   const currentQualityGateAutotestFieldValue = watch(createQualityGateAutotestFieldName(currentQualityGate.id));
 
-  const availableQualityGateTypeSelectOptions = getAvailableQualityGateTypeSelectOptions(autotestsWithBranchesOptions);
+  const autotestsWatch = useCodebaseWatchList({
+    namespace,
+    labels: {
+      [codebaseLabels.codebaseType]: codebaseType.autotest,
+    },
+  });
 
-  const currentQualityGateBranchesOptions = getCurrentQualityGateBranchesOptions(
-    autotestsWithBranchesOptions,
-    currentQualityGateAutotestFieldValue
+  const branchesWatch = useCodebaseBranchWatchList({
+    namespace,
+    labels: {
+      [codebaseBranchLabels.codebase]: currentQualityGateAutotestFieldValue,
+    },
+    queryOptions: {
+      enabled: !!currentQualityGateAutotestFieldValue && !!namespace,
+    },
+  });
+
+  const autotests = autotestsWatch.data.array;
+
+  const availableQualityGateTypeSelectOptions = getAvailableQualityGateTypeSelectOptions(autotests);
+
+  // Get branch names from the watched branches
+  const branches = React.useMemo(
+    () => branchesWatch.data.array.map((branch) => branch.spec.branchName),
+    [branchesWatch.data.array]
   );
 
-  const availableAutotests = getAvailableAutotests(autotestsWithBranchesOptions, qualityGatesFieldValue);
+  const currentQualityGateBranchesOptions = getCurrentQualityGateBranchesOptions(branches);
+
+  const availableAutotests = getAvailableAutotests(autotests, qualityGatesFieldValue, currentQualityGate.id);
 
   const availableAutotestBranches = getAvailableAutotestBranches(
     currentQualityGateBranchesOptions,
@@ -266,8 +280,7 @@ export const QualityGateRow = ({ autotestsWithBranchesOptions, currentQualityGat
             </Grid>
           )}
 
-          {!!autotestsWithBranchesOptions.length &&
-          currentQualityGateTypeFieldValue === stageQualityGateType.autotests ? (
+          {!!autotests.length && currentQualityGateTypeFieldValue === stageQualityGateType.autotests ? (
             <>
               <Grid item xs={3}>
                 <FormSelect
@@ -278,7 +291,7 @@ export const QualityGateRow = ({ autotestsWithBranchesOptions, currentQualityGat
                   tooltipText={"Specify an automated test to associate with this stage."}
                   control={control}
                   errors={errors}
-                  options={availableAutotests.map(({ name, disabled = false }) => ({
+                  options={availableAutotests.map(({ name, disabled }) => ({
                     label: name,
                     value: name,
                     disabled,

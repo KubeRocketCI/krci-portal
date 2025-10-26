@@ -52,17 +52,14 @@ export const Details = () => {
   const pipelineRunTasksByNameMap = React.useMemo(() => {
     return buildPipelineRunTasksByNameMap({
       allPipelineTasks: pipelineRunTasks.allTasks,
-      tasks: tasksWatch.dataArray,
-      taskRuns: taskRunsWatch.dataArray,
-      approvalTasks: approvalTasksWatch.dataArray,
+      tasks: tasksWatch.data.array,
+      taskRuns: taskRunsWatch.data.array,
+      approvalTasks: approvalTasksWatch.data.array,
     });
-  }, [pipelineRunTasks.allTasks, tasksWatch.dataArray, taskRunsWatch.dataArray, approvalTasksWatch.dataArray]);
+  }, [pipelineRunTasks.allTasks, tasksWatch.data.array, taskRunsWatch.data.array, approvalTasksWatch.data.array]);
 
   const isLoading =
-    pipelineRunWatch.isInitialLoading ||
-    tasksWatch.isInitialLoading ||
-    taskRunsWatch.isInitialLoading ||
-    approvalTasksWatch.isInitialLoading;
+    pipelineRunWatch.isLoading || tasksWatch.isLoading || taskRunsWatch.isLoading || approvalTasksWatch.isLoading;
 
   const queryParamTaskRun = queryParams.taskRun;
   const queryParamStep = queryParams.step;

@@ -5,7 +5,7 @@ import {
   createUseWatchListHook,
   UseWatchItemParamsWithoutResourceConfig,
   UseWatchListParamsWithoutResourceConfig,
-} from "@/k8s/api/utils/hook-creators";
+} from "@/k8s/api/hooks/hook-creators";
 import { ConfigMap, k8sConfigMapConfig } from "@my-project/shared";
 
 export const useConfigMapCRUD = () => {

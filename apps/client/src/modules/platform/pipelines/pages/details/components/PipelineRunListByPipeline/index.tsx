@@ -19,7 +19,7 @@ export const PipelineRunListByPipeline = () => {
     },
   });
 
-  const pipelineRuns = pipelineRunListWatch.dataArray;
+  const pipelineRuns = pipelineRunListWatch.data.array;
 
   const { loadSettings } = useTableSettings(TABLE.PIPELINE_PIPELINE_RUN_LIST.id);
 

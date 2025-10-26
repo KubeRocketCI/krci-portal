@@ -34,7 +34,7 @@ export const BuildPipeline = () => {
     },
   } = useCurrentDialog();
 
-  const buildPipelines = buildPipelinesWatch.dataArray;
+  const buildPipelines = buildPipelinesWatch.data.array;
 
   const options = buildPipelinesWatch.query.isLoading
     ? [
