@@ -105,7 +105,7 @@ export const usePipelineNamesWatch = () => {
   const codebase = codebaseWatch.query.data;
 
   const codebaseBranchListWatch = useCodebaseBranchListWatch();
-  const defaultBranch = codebaseBranchListWatch.dataArray[0];
+  const defaultBranch = codebaseBranchListWatch.data.array[0];
 
   const gitServerByCodebaseWatch = useGitServerWatch();
   const gitServerByCodebase = gitServerByCodebaseWatch.query.data;

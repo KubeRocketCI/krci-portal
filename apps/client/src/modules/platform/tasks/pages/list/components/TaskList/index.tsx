@@ -34,7 +34,7 @@ export const TaskList = () => {
       id={TABLE.TASK_LIST?.id || "task-list"}
       name={TABLE.TASK_LIST?.name || "Tasks"}
       isLoading={!taskListWatch.query.isFetched || !taskPermissions.isFetched}
-      data={taskListWatch.dataArray}
+      data={taskListWatch.data.array}
       errors={[]}
       columns={columns}
       emptyListComponent={renderEmptyList}

@@ -16,7 +16,7 @@ export const useDefaultValues = () => {
 
   const triggerTemplateListWatch = useTriggerTemplateWatchList();
 
-  const triggerTemplateList = triggerTemplateListWatch.dataArray;
+  const triggerTemplateList = triggerTemplateListWatch.data.array;
 
   const deployTriggerTemplate = triggerTemplateList.find(
     (el) => el.metadata.labels?.[triggerTemplateLabels.pipelineType] === pipelineType.deploy

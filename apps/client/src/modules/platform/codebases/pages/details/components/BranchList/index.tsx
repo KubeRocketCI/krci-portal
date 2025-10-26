@@ -17,12 +17,12 @@ export const BranchList = () => {
   const codebase = codebaseWatch.query.data;
 
   const codebaseBranchListWatch = useCodebaseBranchListWatch();
-  const defaultBranch = codebaseBranchListWatch.dataArray[0];
+  const defaultBranch = codebaseBranchListWatch.data.array[0];
 
   const { setDialog } = useDialogContext();
 
   const [expandedPanel, setExpandedPanel] = React.useState<string | null>(
-    codebaseBranchListWatch?.dataArray.length === 1 ? codebaseBranchListWatch?.dataArray[0].spec.branchName : null
+    codebaseBranchListWatch?.data.array.length === 1 ? codebaseBranchListWatch?.data.array[0].spec.branchName : null
   );
 
   const handleChange = React.useCallback(
@@ -52,9 +52,9 @@ export const BranchList = () => {
     >
       <LoadingWrapper isLoading={!codebaseBranchListWatch.query.isFetched}>
         <>
-          {codebaseBranchListWatch.dataArray.length ? (
+          {codebaseBranchListWatch.data.array.length ? (
             <>
-              {codebaseBranchListWatch.dataArray.map((codebaseBranch: CodebaseBranch) => {
+              {codebaseBranchListWatch.data.array.map((codebaseBranch: CodebaseBranch) => {
                 const branchId = codebaseBranch.metadata.name;
 
                 return (
@@ -73,7 +73,7 @@ export const BranchList = () => {
               missingItemName={"branches"}
               handleClick={() =>
                 setDialog(ManageCodebaseBranchDialog, {
-                  codebaseBranches: codebaseBranchListWatch.dataArray,
+                  codebaseBranches: codebaseBranchListWatch.data.array,
                   codebase: codebase!,
                   defaultBranch: defaultBranch!,
                   pipelines: {

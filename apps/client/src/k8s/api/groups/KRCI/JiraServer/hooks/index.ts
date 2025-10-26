@@ -5,7 +5,7 @@ import {
   createUseWatchItemHook,
   UseWatchItemParamsWithoutResourceConfig,
   UseWatchListParamsWithoutResourceConfig,
-} from "@/k8s/api/utils/hook-creators";
+} from "@/k8s/api/hooks/hook-creators";
 import { k8sJiraServerConfig, JiraServer } from "@my-project/shared";
 
 export const useJiraServerCRUD = () => {

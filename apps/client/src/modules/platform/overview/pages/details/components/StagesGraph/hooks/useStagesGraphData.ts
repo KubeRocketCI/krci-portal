@@ -24,7 +24,7 @@ export const useStagesGraphData = () => {
       };
     }
 
-    return stageListWatch.dataArray.reduce<GraphData>(
+    return stageListWatch.data.array.reduce<GraphData>(
       (acc, cur) => {
         const status = cur?.status?.status;
 
@@ -58,7 +58,7 @@ export const useStagesGraphData = () => {
         unknown: 0,
       }
     );
-  }, [stageListWatch.dataArray, stageListWatch.query.data, stageListWatch.query.isFetching]);
+  }, [stageListWatch.data.array, stageListWatch.query.data, stageListWatch.query.isFetching]);
 
   return {
     graphData,

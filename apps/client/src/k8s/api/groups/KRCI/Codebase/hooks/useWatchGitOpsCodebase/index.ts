@@ -13,7 +13,7 @@ export const useWatchGitOpsCodebase = (namespace: string) => {
   return useQuery({
     queryKey: ["gitOpsCodebase", systemCodebaseListWatch.resourceVersion],
     queryFn: () => {
-      return systemCodebaseListWatch.dataArray.find(
+      return systemCodebaseListWatch.data.array.find(
         (el) => el.metadata?.labels?.[codebaseLabels.systemType] === codebaseGitOpsSystemType
       );
     },

@@ -1,4 +1,4 @@
-import { Autocomplete, Select } from "@/core/components/form";
+import { Autocomplete, NamespaceAutocomplete, Select } from "@/core/components/form";
 import { FORM_CONTROL_LABEL_HEIGHT } from "@/core/providers/Form/constants";
 import { ValueOf } from "@/core/types/global";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
@@ -8,6 +8,8 @@ import { PipelineRun, pipelineRunLabels, pipelineRunStatus, PipelineType } from 
 import React from "react";
 import { pipelineRunFilterControlNames } from "./constants";
 import { usePipelineRunFilter } from "./hooks/usePipelineRunFilter";
+import { useClusterStore } from "@/k8s/store";
+import { useShallow } from "zustand/react/shallow";
 
 export const PipelineRunFilter = ({
   pipelineRuns,
@@ -18,6 +20,8 @@ export const PipelineRunFilter = ({
   pipelineRunTypes: FilterTypeWithOptionAll<PipelineType>[];
   filterControls: ValueOf<typeof pipelineRunFilterControlNames>[];
 }) => {
+  const { form, reset } = usePipelineRunFilter();
+
   const codebaseOptions = React.useMemo(() => {
     const set = new Set(
       pipelineRuns?.map(({ metadata: { labels } }) => labels?.[pipelineRunLabels.codebase]).filter(Boolean)
@@ -26,6 +30,10 @@ export const PipelineRunFilter = ({
     return Array.from(set);
   }, [pipelineRuns]);
 
+  const allowedNamespaces = useClusterStore(useShallow((state) => state.allowedNamespaces));
+  const showNamespaceFilter = allowedNamespaces.length > 1;
+
+  const namespaceOptions = React.useMemo(() => allowedNamespaces, [allowedNamespaces]);
 
   const pipelineTypeOptions = React.useMemo(
     () => [
@@ -42,8 +50,6 @@ export const PipelineRunFilter = ({
     ],
     []
   );
-
-  const { form, reset } = usePipelineRunFilter();
 
   return (
     <Stack direction="row" spacing={2} alignItems="flex-start">
@@ -80,6 +86,21 @@ export const PipelineRunFilter = ({
                 multiple
                 freeSolo
                 ChipProps={{ size: "small", color: "primary" }}
+              />
+            )}
+          </form.Field>
+        </Box>
+      )}
+
+      {showNamespaceFilter && filterControls.includes(pipelineRunFilterControlNames.NAMESPACES) && (
+        <Box sx={{ width: (t) => t.typography.pxToRem(400) }}>
+          <form.Field name="namespaces">
+            {(field) => (
+              <NamespaceAutocomplete
+                field={field}
+                options={namespaceOptions}
+                label="Namespaces"
+                placeholder="Select namespaces"
               />
             )}
           </form.Field>

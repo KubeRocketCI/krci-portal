@@ -18,7 +18,7 @@ export const useDefaultValues = ({ formData }: { formData: ManageGitOpsDataConte
 
   const gitServersWatch = useGitServerWatchList();
 
-  const gitServers = gitServersWatch.dataArray;
+  const gitServers = gitServersWatch.data.array;
 
   const firstValidGitServer = gitServers?.find((gitServer) => gitServer?.status?.connected);
 

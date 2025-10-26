@@ -20,8 +20,10 @@ export const Actions = ({ codebaseBranch }: ActionsProps) => {
   const pipelineNames = pipelineNamesWatch.data;
 
   const sortedCodebaseBranchList = React.useMemo(() => {
-    return codebaseBranchListWatch.dataArray.sort((a) => (checkIsDefaultBranch(codebaseWatch.query.data!, a) ? -1 : 1));
-  }, [codebaseWatch.query.data, codebaseBranchListWatch.dataArray]);
+    return codebaseBranchListWatch.data.array.sort((a) =>
+      checkIsDefaultBranch(codebaseWatch.query.data!, a) ? -1 : 1
+    );
+  }, [codebaseWatch.query.data, codebaseBranchListWatch.data.array]);
 
   const defaultBranch = sortedCodebaseBranchList[0];
 
@@ -45,7 +47,7 @@ export const Actions = ({ codebaseBranch }: ActionsProps) => {
           data={{
             codebaseBranch,
             codebase: codebase!,
-            codebaseBranches: codebaseBranchListWatch.dataArray,
+            codebaseBranches: codebaseBranchListWatch.data.array,
             defaultBranch,
             pipelines: {
               review: pipelineNames?.reviewPipelineName || "",

@@ -26,7 +26,7 @@ export default function ClustersConfigurationPage() {
       [SECRET_LABEL_SECRET_TYPE]: "cluster",
     },
   });
-  const clusterSecrets = clusterSecretsWatch.dataArray;
+  const clusterSecrets = clusterSecretsWatch.data.array;
 
   const secretPermissions = useSecretPermissions();
   const applicationPermissions = useApplicationPermissions();

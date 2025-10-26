@@ -80,7 +80,7 @@ export const AppVersion = ({
             minimal
             outlined={false}
             id={"appVersion"}
-            data={applicationListWatch.dataArray}
+            data={applicationListWatch.data.array}
             isLoading={applicationListWatch.query.isLoading}
             columns={columns}
             settings={{

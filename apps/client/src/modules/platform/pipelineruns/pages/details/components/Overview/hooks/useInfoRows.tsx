@@ -12,7 +12,7 @@ export const useInfoRows = (): InfoRow[] => {
   const pipelineRun = pipelineRunWatch.query.data;
 
   return React.useMemo(() => {
-    if (pipelineRunWatch.isInitialLoading) {
+    if (pipelineRunWatch.isLoading) {
       return [];
     }
 
@@ -107,5 +107,5 @@ export const useInfoRows = (): InfoRow[] => {
         },
       ],
     ];
-  }, [pipelineRun, pipelineRunWatch.isInitialLoading]);
+  }, [pipelineRun, pipelineRunWatch.isLoading]);
 };

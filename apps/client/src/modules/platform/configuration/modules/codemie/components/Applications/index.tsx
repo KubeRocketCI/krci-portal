@@ -13,7 +13,7 @@ import { Pencil } from "lucide-react";
 export const CodemieApplications = () => {
   const theme = useTheme();
   const codemieApplicationsWatch = useCodemieApplicationWatchList();
-  const codemieApplications = codemieApplicationsWatch.dataArray;
+  const codemieApplications = codemieApplicationsWatch.data.array;
 
   const openEditorDialog = useDialogOpener(EditorYAML);
 

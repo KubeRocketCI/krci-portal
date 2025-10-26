@@ -14,14 +14,14 @@ export const BranchListItem = React.memo<BranchListItemProps>(
     const pipelineRunListWatch = useCodebaseBranchPipelineRunListWatch(codebaseBranch);
 
     const pipelineRuns = React.useMemo(() => {
-      const allItems = [...pipelineRunListWatch.dataArray].sort(sortKubeObjectByCreationTimestamp);
+      const allItems = [...pipelineRunListWatch.data.array].sort(sortKubeObjectByCreationTimestamp);
       return {
         all: allItems,
         latestBuildPipelineRun: allItems.find(
           (el) => el.metadata.labels?.[pipelineRunLabels.pipelineType] === pipelineType.build
         ),
       };
-    }, [pipelineRunListWatch.dataArray]);
+    }, [pipelineRunListWatch.data.array]);
 
     // const { createPipelineRun } = usePipelineRunCRUD();
 

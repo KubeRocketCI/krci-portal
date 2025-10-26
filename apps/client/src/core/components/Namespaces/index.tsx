@@ -1,31 +1,32 @@
-import { Box, Button, Chip, Dialog, DialogContent, DialogTitle, Stack, Tooltip } from "@mui/material";
+import { Autocomplete, Box, Button, Chip, Dialog, DialogContent, DialogTitle, Stack, TextField } from "@mui/material";
 import { Check, CircleX, X } from "lucide-react";
-import { FormProvider, useForm, useWatch } from "react-hook-form";
+import { Controller, FormProvider, useForm } from "react-hook-form";
 import { useShallow } from "zustand/react/shallow";
 import { DialogProps } from "../../providers/Dialog/types";
-import { FormTextField } from "../../providers/Form/components/FormTextField";
-import { FORM_CONTROL_LABEL_HEIGHT } from "../../providers/Form/constants";
 import { useClusterStore } from "../../../k8s/store";
+import { LOCAL_STORAGE_SERVICE } from "../../services/local-storage";
+import { useMemo } from "react";
 
 type NamespacesDialogProps = DialogProps<object>;
 
 const names = {
   DEFAULT_NAMESPACE: "defaultNamespace",
   ALLOWED_NAMESPACES: "allowedNamespaces",
-  ALLOWED_NAMESPACES_INPUT: "allowedNamespacesInput",
 } as const;
 
 type FormValues = {
   [names.DEFAULT_NAMESPACE]: string;
   [names.ALLOWED_NAMESPACES]: string[];
-  [names.ALLOWED_NAMESPACES_INPUT]: string;
 };
+
+const LOCAL_STORAGE_KEY = "cluster_settings";
 
 export default function NamespacesDialog({ state }: NamespacesDialogProps) {
   const { open, closeDialog } = state;
 
   const clusterStore = useClusterStore(
     useShallow((state) => ({
+      clusterName: state.clusterName,
       defaultNamespace: state.defaultNamespace,
       setDefaultNamespace: state.setDefaultNamespace,
       allowedNamespaces: state.allowedNamespaces,
@@ -33,42 +34,52 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
     }))
   );
 
+  const clusterSettings = useMemo(() => {
+    const settings = LOCAL_STORAGE_SERVICE.getItem(LOCAL_STORAGE_KEY) || {};
+    return settings[clusterStore.clusterName] || {};
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clusterStore.clusterName, open]);
+
+  const savedDefaultNamespaces = clusterSettings.saved_default_namespaces || [];
+  const savedAllowedNamespaces = clusterSettings.saved_allowed_namespaces || [];
+
   const form = useForm<FormValues>({
     mode: "onBlur",
-    defaultValues: {
+    values: {
       defaultNamespace: clusterStore.defaultNamespace,
       allowedNamespaces: clusterStore.allowedNamespaces,
     },
   });
 
-  const allowedNamespacesValue =
-    useWatch({
-      control: form.control,
-      name: names.ALLOWED_NAMESPACES,
-    }) || [];
+  const handleSave = () => {
+    const defaultNamespace = form.getValues(names.DEFAULT_NAMESPACE);
+    const allowedNamespaces = form.getValues(names.ALLOWED_NAMESPACES);
 
-  const allowedNamespacesInputValue = useWatch({
-    control: form.control,
-    name: names.ALLOWED_NAMESPACES_INPUT,
-  });
+    clusterStore.setDefaultNamespace(defaultNamespace);
+    clusterStore.setAllowedNamespaces(allowedNamespaces);
 
-  const handleAdd = () => {
-    const currentNamespaces = form.getValues(names.ALLOWED_NAMESPACES) || [];
-    const input = form.getValues(names.ALLOWED_NAMESPACES_INPUT);
+    const settings = LOCAL_STORAGE_SERVICE.getItem(LOCAL_STORAGE_KEY) || {};
 
-    if (input && !currentNamespaces.includes(input)) {
-      form.setValue(names.ALLOWED_NAMESPACES, [...currentNamespaces, input]);
-      form.setValue(names.ALLOWED_NAMESPACES_INPUT, "");
-    }
+    const allDefaultNamespaces = new Set(
+      [...savedDefaultNamespaces, clusterStore.defaultNamespace, defaultNamespace].filter(Boolean)
+    );
+    const updatedSavedDefaultNamespaces = Array.from(allDefaultNamespaces);
+
+    const allAllowedNamespaces = new Set([...savedAllowedNamespaces, ...allowedNamespaces].filter(Boolean));
+    const updatedSavedAllowedNamespaces = Array.from(allAllowedNamespaces);
+
+    settings[clusterStore.clusterName] = {
+      ...(settings[clusterStore.clusterName] || {}),
+      default_namespace: defaultNamespace,
+      allowed_namespaces: allowedNamespaces,
+      saved_default_namespaces: updatedSavedDefaultNamespaces,
+      saved_allowed_namespaces: updatedSavedAllowedNamespaces,
+    };
+
+    LOCAL_STORAGE_SERVICE.setItem(LOCAL_STORAGE_KEY, settings);
+
+    closeDialog();
   };
-
-  const handleDelete = (namespace: string) => {
-    const currentNamespaces = form.getValues(names.ALLOWED_NAMESPACES) || [];
-    const updatedNamespaces = currentNamespaces.filter((ns) => ns !== namespace);
-    form.setValue(names.ALLOWED_NAMESPACES, updatedNamespaces);
-  };
-
-  const allowedNamespacesInputError = form.formState.errors[names.ALLOWED_NAMESPACES_INPUT]?.message;
 
   return (
     <Dialog open={open} onClose={closeDialog} maxWidth="sm" fullWidth>
@@ -76,26 +87,9 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
       <DialogContent>
         <FormProvider {...form}>
           <Stack spacing={2}>
-            <FormTextField
+            <Controller
               name={names.DEFAULT_NAMESPACE}
               control={form.control}
-              errors={form.formState.errors}
-              label={"Default Namespace"}
-              placeholder={"Enter a default namespace"}
-              TextFieldProps={{
-                helperText: "The default namespace for e.g. when applying resources (when not specified directly).",
-                InputProps: {
-                  startAdornment: (
-                    <Box sx={{ mr: 0.5 }}>
-                      {form.formState.errors[names.DEFAULT_NAMESPACE] ? (
-                        <CircleX className="size-4" />
-                      ) : (
-                        <Check className="size-4" />
-                      )}
-                    </Box>
-                  ),
-                },
-              }}
               rules={{
                 required: "Enter a default namespace.",
                 pattern: {
@@ -103,84 +97,104 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
                   message: "Invalid namespace format.",
                 },
               }}
+              render={({ field, fieldState }) => (
+                <Autocomplete
+                  freeSolo
+                  options={savedDefaultNamespaces}
+                  value={field.value || ""}
+                  onInputChange={(_event, newInputValue) => {
+                    field.onChange(newInputValue);
+                  }}
+                  onChange={(_event, newValue) => {
+                    if (typeof newValue === "string") {
+                      field.onChange(newValue);
+                    }
+                  }}
+                  getOptionDisabled={(option) => option === clusterStore.defaultNamespace}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="standard"
+                      label="Default Namespace"
+                      placeholder="Enter or select a default namespace"
+                      error={!!fieldState.error}
+                      helperText={
+                        fieldState.error?.message ||
+                        "The default namespace for e.g. when applying resources (when not specified directly)."
+                      }
+                      InputProps={{
+                        ...params.InputProps,
+                        startAdornment: (
+                          <>
+                            <Box sx={{ mr: 0.5 }}>
+                              {fieldState.error ? <CircleX className="size-4" /> : <Check className="size-4" />}
+                            </Box>
+                            {params.InputProps.startAdornment}
+                          </>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+              )}
             />
-            <Stack spacing={2}>
-              <Stack direction="row" spacing={1} alignItems="center" width="100%">
-                <Box flexGrow={1}>
-                  <FormTextField
-                    {...form.register(names.ALLOWED_NAMESPACES_INPUT, {
-                      required: "Enter a valid namespace.",
-                      pattern: {
-                        value: /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/,
-                        message: "Invalid namespace format.",
-                      },
-                      validate: (value) => {
-                        const currentNamespaces = form.getValues(names.ALLOWED_NAMESPACES) || [];
+            <Controller
+              name={names.ALLOWED_NAMESPACES}
+              control={form.control}
+              render={({ field }) => (
+                <Autocomplete
+                  multiple
+                  freeSolo
+                  options={savedAllowedNamespaces}
+                  value={field.value || []}
+                  onChange={(_event, newValue) => {
+                    const namespaces = newValue.filter((ns) => {
+                      return /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(ns);
+                    });
 
-                        if (currentNamespaces.includes(value)) {
-                          return "Namespace already set.";
-                        }
-                        return true;
-                      },
-                    })}
-                    control={form.control}
-                    label="Allowed namespaces"
-                    placeholder="Type a namespace"
-                    errors={form.formState.errors}
-                    TextFieldProps={{
-                      autoComplete: "off",
-                      fullWidth: true,
-                      helperText: "The list of namespaces you are allowed to access in this cluster.",
-                    }}
-                  />
-                </Box>
-                <Box sx={{ pt: (t) => t.typography.pxToRem(FORM_CONTROL_LABEL_HEIGHT) }}>
-                  <Tooltip title="Add Namespace">
-                    <Button
-                      onClick={handleAdd}
-                      size="small"
-                      disabled={!!allowedNamespacesInputError || !allowedNamespacesInputValue}
-                    >
-                      add
-                    </Button>
-                  </Tooltip>
-                </Box>
-              </Stack>
-
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                {allowedNamespacesValue.map((namespace) => (
-                  <Chip
-                    key={namespace}
-                    label={namespace}
-                    color="primary"
-                    onDelete={() => handleDelete(namespace)}
-                    deleteIcon={<X className="size-4" />}
-                    size="small"
-                  />
-                ))}
-              </Box>
-            </Stack>
+                    field.onChange(namespaces);
+                  }}
+                  getOptionDisabled={(option) => {
+                    const currentValues = field.value || [];
+                    return currentValues.includes(option);
+                  }}
+                  renderTags={(value: readonly string[], getTagProps) =>
+                    value.map((namespace: string, index: number) => {
+                      const { key, ...tagProps } = getTagProps({ index });
+                      return (
+                        <Chip
+                          key={key}
+                          {...tagProps}
+                          label={String(namespace)}
+                          color="primary"
+                          size="small"
+                          deleteIcon={<X className="size-4" />}
+                        />
+                      );
+                    })
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="standard"
+                      label="Allowed namespaces"
+                      placeholder="Type or select namespaces"
+                      helperText="The list of namespaces you are allowed to access in this cluster."
+                    />
+                  )}
+                />
+              )}
+            />
           </Stack>
           <Stack direction="row" justifyContent="flex-end" spacing={1} sx={{ mt: 2 }}>
-            <Button
-              size="small"
-              color="inherit"
-              onClick={() => {
-                closeDialog();
-                form.reset();
-              }}
-            >
+            <Button size="small" color="inherit" onClick={closeDialog}>
               Cancel
             </Button>
             <Button
               variant={"contained"}
               color={"primary"}
               size="small"
-              onClick={() => {
-                clusterStore.setDefaultNamespace(form.getValues(names.DEFAULT_NAMESPACE));
-                clusterStore.setAllowedNamespaces(form.getValues(names.ALLOWED_NAMESPACES));
-                closeDialog();
-              }}
+              onClick={handleSave}
               disabled={!form.formState.isDirty}
             >
               Save

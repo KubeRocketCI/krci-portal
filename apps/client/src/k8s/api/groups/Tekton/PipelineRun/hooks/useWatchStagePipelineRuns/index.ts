@@ -14,7 +14,7 @@ export const useWatchStagePipelineRuns = (stageMetadataName: string, cdPipelineN
   return useQuery({
     queryKey: ["stagePipelineRuns", pipelineRunWatchList.resourceVersion],
     queryFn: () => {
-      return pipelineRunWatchList.dataArray.reduce<{
+      return pipelineRunWatchList.data.array.reduce<{
         all: PipelineRun[];
         deploy: PipelineRun[];
         clean: PipelineRun[];

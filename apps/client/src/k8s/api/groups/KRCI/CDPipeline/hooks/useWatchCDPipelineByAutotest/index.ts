@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useStageWatchList } from "../../../Stage";
 import { useCDPipelineWatchItem } from "..";
@@ -12,14 +11,14 @@ export const useWatchCDPipelineByAutotest = (codebaseName: string | undefined, n
   });
 
   const cdPipelineName = React.useMemo(() => {
-    const stage = stageListWatch.dataArray.find((stage) => {
+    const stage = stageListWatch.data.array.find((stage) => {
       return stage.spec.qualityGates.some((qualityGate) => {
         return qualityGate.autotestName === codebaseName;
       });
     });
 
     return stage?.spec.cdPipeline;
-  }, [codebaseName, stageListWatch.dataArray]);
+  }, [codebaseName, stageListWatch.data.array]);
 
   return useCDPipelineWatchItem({
     name: cdPipelineName,

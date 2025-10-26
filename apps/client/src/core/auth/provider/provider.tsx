@@ -63,6 +63,7 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
     refetchOnReconnect: true, // Refetch if the app regains connection,
     refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
     staleTime: 5 * 60 * 1000, // Cache the data for 5 minutes
+    gcTime: Infinity, // Never garbage collect the data
   });
 
   const isAuthenticated = meQuery.isFetched && !!meQuery.data;

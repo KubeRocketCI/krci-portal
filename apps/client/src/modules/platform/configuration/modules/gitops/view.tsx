@@ -21,13 +21,13 @@ export default function GitopsConfigurationPage() {
       [codebaseLabels.systemType]: "gitops",
     },
   });
-  const gitOpsCodebase = gitOpsCodebasesWatch.dataArray[0];
+  const gitOpsCodebase = gitOpsCodebasesWatch.data.array[0];
   const status = gitOpsCodebase?.status?.status;
 
   const codebasePermissions = useCodebasePermissions();
 
   const gitServersWatch = useGitServerWatchList();
-  const gitServers = gitServersWatch.dataArray;
+  const gitServers = gitServersWatch.data.array;
 
   const error = gitOpsCodebasesWatch.query.error || gitServersWatch.query.error;
   const isLoading = !gitOpsCodebasesWatch.isReady || !gitServersWatch.isReady;

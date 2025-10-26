@@ -113,22 +113,20 @@ export const Repository = () => {
           if (!value) {
             return "Repository name is required";
           }
-          if (typeof value === "string" && value.length < 3) {
+          if (value.length < 3) {
             return "Repository name must be at least 3 characters long";
           }
 
-          if (validationRules.GIT_URL_PATH && typeof value === "string") {
-            const validationResult = validateField(value, validationRules.GIT_URL_PATH);
-            if (validationResult !== true) {
-              return validationResult;
-            }
+          const validationResult = validateField(value, validationRules.REPOSITORY_NAME);
+          if (validationResult !== true) {
+            return validationResult;
           }
 
           if (
             !query.isLoading &&
             !query.isError &&
             repositoryOptions.length > 0 &&
-            repositoryOptions.some((option: { value: string }) => option.value === value)
+            repositoryOptions.some((option) => option.value === value)
           ) {
             return "Repository with this name already exists";
           }

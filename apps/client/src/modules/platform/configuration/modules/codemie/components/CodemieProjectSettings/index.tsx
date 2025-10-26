@@ -16,7 +16,7 @@ import { CodemieProjectSettings } from "@my-project/shared";
 export const CodemieProjectSettingsSection = () => {
   const theme = useTheme();
   const codemieProjectSettingsWatch = useCodemieProjectSettingsWatchList();
-  const codemieProjectSettings = codemieProjectSettingsWatch.dataArray;
+  const codemieProjectSettings = codemieProjectSettingsWatch.data.array;
 
   const openEditorDialog = useDialogOpener(EditorYAML);
 

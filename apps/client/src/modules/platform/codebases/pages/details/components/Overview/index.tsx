@@ -50,7 +50,7 @@ export const Overview = () => {
     <Stack spacing={3}>
       <BorderedSection title="Component Details">
         <div>
-          <LoadingWrapper isLoading={codebaseWatch.isInitialLoading}>
+          <LoadingWrapper isLoading={codebaseWatch.isLoading}>
             <InfoColumns infoRows={infoRows!} />
           </LoadingWrapper>
         </div>

@@ -14,6 +14,7 @@ interface SidebarMenuItemWithHoverProps {
   onToggle: (groupId: string) => void;
   onOpenMenu: (groupId: string) => void;
   onNavigate: (groupId?: string) => void;
+  isMinimized?: boolean;
 }
 
 /**
@@ -26,6 +27,7 @@ export const SidebarMenuItemWithHover = ({
   onToggle,
   onOpenMenu,
   onNavigate,
+  isMinimized = false,
 }: SidebarMenuItemWithHoverProps) => {
   const matches = useMatches();
 
@@ -65,11 +67,12 @@ export const SidebarMenuItemWithHover = ({
 
   // Handle group button click - should navigate and open menu
   const handleGroupButtonClick = useCallback(() => {
-    // For group buttons, we want to close other menus and open this one
     onNavigate(groupId);
-    // Ensure this menu opens regardless of current state
-    onOpenMenu(groupId);
-  }, [onNavigate, groupId, onOpenMenu]);
+    // Only open submenu if not minimized
+    if (!isMinimized) {
+      onOpenMenu(groupId);
+    }
+  }, [onNavigate, groupId, onOpenMenu, isMinimized]);
 
   if ("route" in item && item.route) {
     // Simple menu item without children - use existing pattern
@@ -109,7 +112,7 @@ export const SidebarMenuItemWithHover = ({
 
   return (
     <SidebarMenuItem key={item.title}>
-      <Collapsible open={isOpen} onOpenChange={handleToggle}>
+      <Collapsible open={isOpen && !isMinimized} onOpenChange={handleToggle}>
         <div className="relative">
           <SidebarMenuButton
             asChild

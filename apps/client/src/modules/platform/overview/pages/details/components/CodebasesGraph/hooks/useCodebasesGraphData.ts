@@ -24,7 +24,7 @@ export const useCodebasesGraphData = () => {
       };
     }
 
-    return codebaseListWatch.dataArray.reduce<GraphData>(
+    return codebaseListWatch.data.array.reduce<GraphData>(
       (acc, cur) => {
         const status = cur?.status?.status;
 
@@ -58,7 +58,7 @@ export const useCodebasesGraphData = () => {
         unknown: 0,
       }
     );
-  }, [codebaseListWatch.dataArray, codebaseListWatch.query.data, codebaseListWatch.query.isFetching]);
+  }, [codebaseListWatch.data.array, codebaseListWatch.query.data, codebaseListWatch.query.isFetching]);
 
   return {
     graphData,

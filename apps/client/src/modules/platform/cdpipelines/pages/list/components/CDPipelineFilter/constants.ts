@@ -5,11 +5,13 @@ import { CDPipelineFilterValues } from "./types";
 export const CDPIPELINE_LIST_FILTER_NAMES = {
   SEARCH: "search",
   CODEBASES: "codebases",
+  NAMESPACES: "namespaces",
 } as const;
 
 export const cdPipelineFilterDefaultValues: CDPipelineFilterValues = {
   [CDPIPELINE_LIST_FILTER_NAMES.SEARCH]: "",
   [CDPIPELINE_LIST_FILTER_NAMES.CODEBASES]: [],
+  [CDPIPELINE_LIST_FILTER_NAMES.NAMESPACES]: [],
 };
 
 export const matchFunctions: MatchFunctions<CDPipeline, CDPipelineFilterValues> = {
@@ -20,5 +22,10 @@ export const matchFunctions: MatchFunctions<CDPipeline, CDPipelineFilterValues> 
     return Array.isArray(item.spec.applications)
       ? item.spec.applications.some((app) => arrayValue.includes(app))
       : false;
+  },
+  [CDPIPELINE_LIST_FILTER_NAMES.NAMESPACES]: (item, value) => {
+    const arrayValue = Array.isArray(value) ? value : value ? [value] : [];
+    if (arrayValue.length === 0) return true;
+    return arrayValue.includes(item.metadata.namespace!);
   },
 };

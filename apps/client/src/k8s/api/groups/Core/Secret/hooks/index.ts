@@ -4,7 +4,7 @@ import {
   createUseWatchItemHook,
   UseWatchItemParamsWithoutResourceConfig,
   UseWatchListParamsWithoutResourceConfig,
-} from "@/k8s/api/utils/hook-creators";
+} from "@/k8s/api/hooks/hook-creators";
 import { k8sSecretConfig, Secret } from "@my-project/shared";
 import { useBasicCRUD } from "@/k8s/api/hooks/useBasicCRUD";
 

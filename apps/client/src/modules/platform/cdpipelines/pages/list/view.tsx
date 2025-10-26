@@ -26,7 +26,7 @@ export default function CDPipelineListPage() {
     },
   });
 
-  const gitOpsCodebase = gitOpsCodebaseWatch.dataArray?.[0];
+  const gitOpsCodebase = gitOpsCodebaseWatch.data.array?.[0];
 
   const renderBlockerIfNoGitOpsCodebase = React.useMemo(() => {
     if (gitOpsCodebaseWatch.query.isFetched && !gitOpsCodebase) {

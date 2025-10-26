@@ -12,7 +12,7 @@ export const JiraServer = () => {
   } = useTypedFormContext();
 
   const jiraServerListWatch = useJiraServerWatchList();
-  const jiraServerList = jiraServerListWatch.dataArray;
+  const jiraServerList = jiraServerListWatch.data.array;
   const jiraServersNames = jiraServerList.map((jiraServer) => jiraServer.metadata.name);
 
   return (

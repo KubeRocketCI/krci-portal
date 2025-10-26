@@ -15,7 +15,7 @@ import { ChevronDown } from "lucide-react";
 
 export default function GitserversConfigurationPage() {
   const gitServerWatch = useGitServerWatchList();
-  const gitServers = gitServerWatch.dataArray;
+  const gitServers = gitServerWatch.data.array;
 
   const secretPermissions = useSecretPermissions();
   const gitServerPermissions = useGitServerPermissions();

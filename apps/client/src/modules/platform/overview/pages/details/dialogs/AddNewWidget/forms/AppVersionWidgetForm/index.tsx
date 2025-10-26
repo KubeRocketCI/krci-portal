@@ -38,8 +38,8 @@ export const AppVersionWidgetForm = ({
   });
 
   const codebasesOptions = React.useMemo(
-    () => mapArrayToSelectOptions(codebaseListWatch.dataArray.map((el) => el.metadata.name)),
-    [codebaseListWatch.dataArray]
+    () => mapArrayToSelectOptions(codebaseListWatch.data.array.map((el) => el.metadata.name)),
+    [codebaseListWatch.data.array]
   );
 
   const handleAddButtonClick = React.useCallback(() => {

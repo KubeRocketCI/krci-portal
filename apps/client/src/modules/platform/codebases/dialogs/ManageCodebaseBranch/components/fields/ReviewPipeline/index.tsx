@@ -40,10 +40,10 @@ export const ReviewPipeline = () => {
           value: reviewPipeline,
         },
       ]
-    : mapArrayToSelectOptions(reviewPipelinesWatch.dataArray.map(({ metadata: { name } }) => name));
+    : mapArrayToSelectOptions(reviewPipelinesWatch.data.array.map(({ metadata: { name } }) => name));
 
   const currentValue = watch(CODEBASE_BRANCH_FORM_NAMES.reviewPipeline.name);
-  const currentPipeline = reviewPipelinesWatch.dataArray.find(({ metadata: { name } }) => name === currentValue);
+  const currentPipeline = reviewPipelinesWatch.data.array.find(({ metadata: { name } }) => name === currentValue);
 
   return (
     <Stack spacing={2} direction="row" alignItems="center">

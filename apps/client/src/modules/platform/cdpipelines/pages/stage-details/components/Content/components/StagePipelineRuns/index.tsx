@@ -18,7 +18,7 @@ export const StagePipelineRuns = () => {
     },
   });
 
-  const pipelineRuns = pipelineRunsWatch.dataArray;
+  const pipelineRuns = pipelineRunsWatch.data.array;
 
   return (
     <FilterProvider

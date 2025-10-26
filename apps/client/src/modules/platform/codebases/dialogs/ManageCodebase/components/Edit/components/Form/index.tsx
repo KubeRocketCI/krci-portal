@@ -15,7 +15,7 @@ export const Form = () => {
   const { watch } = useTypedFormContext();
 
   const jiraServerListWatch = useJiraServerWatchList();
-  const jiraServerList = jiraServerListWatch.dataArray;
+  const jiraServerList = jiraServerListWatch.data.array;
   const jiraServerNames = jiraServerList.map((jiraServer) => jiraServer.metadata.name);
 
   const hasJiraServerIntegrationFieldValue = watch(CODEBASE_FORM_NAMES.hasJiraServerIntegration.name);

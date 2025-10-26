@@ -24,7 +24,7 @@ export const useCDPipelinesGraphData = () => {
       };
     }
 
-    return cdPipelineListWatch.dataArray.reduce<GraphData>(
+    return cdPipelineListWatch.data.array.reduce<GraphData>(
       (acc, cur) => {
         const status = cur?.status?.status;
 
@@ -58,7 +58,7 @@ export const useCDPipelinesGraphData = () => {
         unknown: 0,
       }
     );
-  }, [cdPipelineListWatch.dataArray, cdPipelineListWatch.query.data, cdPipelineListWatch.query.isLoading]);
+  }, [cdPipelineListWatch.data.array, cdPipelineListWatch.query.data, cdPipelineListWatch.query.isLoading]);
 
   return {
     graphData,

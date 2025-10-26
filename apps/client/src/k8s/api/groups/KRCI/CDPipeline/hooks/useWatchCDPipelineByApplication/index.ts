@@ -15,7 +15,7 @@ export const useWatchCDPipelineByApplicationQuery = (
   return useQuery({
     queryKey: ["cd-pipeline-by-application", codebaseName, namespace, cdPipelineListWatch.resourceVersion],
     queryFn: () => {
-      return cdPipelineListWatch.dataArray.find((item) => item.spec.applications.includes(codebaseName!));
+      return cdPipelineListWatch.data.array.find((item) => item.spec.applications.includes(codebaseName!));
     },
     enabled: !!codebaseName && !!namespace && cdPipelineListWatch.query.isFetched,
   });

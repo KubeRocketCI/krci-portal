@@ -6,6 +6,7 @@ export const pipelineRunFilterControlNames = {
   CODEBASES: "codebases",
   STATUS: "status",
   PIPELINE_TYPE: "pipelineType",
+  NAMESPACES: "namespaces",
 } as const;
 
 export const matchFunctions: MatchFunctions<PipelineRun, PipelineRunListFilterValues> = {
@@ -47,5 +48,10 @@ export const matchFunctions: MatchFunctions<PipelineRun, PipelineRunListFilterVa
     }
 
     return item?.metadata?.labels?.[pipelineRunLabels.pipelineType] === value;
+  },
+  [pipelineRunFilterControlNames.NAMESPACES]: (item, value) => {
+    const arrayValue = Array.isArray(value) ? value : value ? [value] : [];
+    if (arrayValue.length === 0) return true;
+    return arrayValue.includes(item.metadata.namespace!);
   },
 };

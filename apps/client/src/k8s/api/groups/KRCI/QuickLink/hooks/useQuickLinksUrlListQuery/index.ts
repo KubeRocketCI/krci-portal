@@ -11,8 +11,8 @@ export const useQuickLinkWatchURLs = (namespace: string) => {
     queryKey: ["quickLinksUrlList", quickLinkListWatch.resourceVersion],
     queryFn: () => {
       return {
-        quickLinkList: quickLinkListWatch.dataArray,
-        quickLinkURLs: getQuickLinkURLsFromList(quickLinkListWatch.dataArray),
+        quickLinkList: quickLinkListWatch.data.array,
+        quickLinkURLs: getQuickLinkURLsFromList(quickLinkListWatch.data.array),
       };
     },
     enabled: quickLinkListWatch.query.isSuccess,

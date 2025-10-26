@@ -299,7 +299,7 @@ export const useWatchStageAppCodebasesCombinedData = () => {
       const cdPipeline = cdPipelineWatch.query.data!;
       const stageData = stageWatch.query.data!;
 
-      const stageAppCodebaseList = appCodebaseListWatch.dataArray.filter((appCodebase: Codebase) =>
+      const stageAppCodebaseList = appCodebaseListWatch.data.array.filter((appCodebase: Codebase) =>
         cdPipeline.spec.applications.some((cdPipelineApp: string) => cdPipelineApp === appCodebase.metadata.name)
       );
 
@@ -312,9 +312,9 @@ export const useWatchStageAppCodebasesCombinedData = () => {
           cdPipelineApplicationToPromoteListSet,
           cdPipelineAppsToPromoteSet,
           cdPipelineInputDockerStreamsSet,
-          imageStreams: codebaseImageStreamListWatch.dataArray,
-          argoApplications: argoApplicationListWatch.dataArray,
-          stages: stageListWatch.dataArray,
+          imageStreams: codebaseImageStreamListWatch.data.array,
+          argoApplications: argoApplicationListWatch.data.array,
+          stages: stageListWatch.data.array,
           stageOrder: stageData.spec.order,
           cdPipelineName: params.cdPipeline,
           stageName: params.stage,

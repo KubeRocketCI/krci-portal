@@ -12,7 +12,7 @@ export const CiTool = () => {
     watch,
   } = useTypedFormContext();
   const gitServersWatch = useGitServerWatchList();
-  const gitServers = gitServersWatch.dataArray;
+  const gitServers = gitServersWatch.data.array;
 
   const gitServerFieldValue = watch(CODEBASE_FORM_NAMES.gitServer.name);
   const selectedGitServer = gitServers.find((gitServer) => gitServer.metadata.name === gitServerFieldValue);

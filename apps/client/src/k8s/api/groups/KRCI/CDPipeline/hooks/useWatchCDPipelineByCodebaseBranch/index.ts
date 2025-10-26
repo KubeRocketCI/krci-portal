@@ -14,14 +14,14 @@ export const useWatchCDPipelineByCodebaseBranch = (
   });
 
   const cdPipelineName = React.useMemo(() => {
-    const stage = stageListWatch.dataArray.find((stage) => {
+    const stage = stageListWatch.data.array.find((stage) => {
       return stage.spec.qualityGates.some((qualityGate) => {
         return qualityGate.branchName === codebaseBranchName;
       });
     });
 
     return stage?.spec.cdPipeline;
-  }, [codebaseBranchName, stageListWatch.dataArray]);
+  }, [codebaseBranchName, stageListWatch.data.array]);
 
   return useCDPipelineWatchItem({
     name: cdPipelineName,

@@ -4,7 +4,10 @@ import {
   createUseWatchItemHook,
   UseWatchItemParamsWithoutResourceConfig,
   UseWatchListParamsWithoutResourceConfig,
-} from "@/k8s/api/utils/hook-creators";
+  createUseWatchListMultipleHook,
+  UseWatchListMultipleParamsWithoutResourceConfig,
+} from "@/k8s/api/hooks/hook-creators";
+
 import { k8sCodebaseConfig, Codebase } from "@my-project/shared";
 
 export { useCRUD as useCodebaseCRUD } from "./useCRUD";
@@ -15,3 +18,5 @@ export const useCodebaseWatchList = (params?: UseWatchListParamsWithoutResourceC
   createUseWatchListHook<Codebase>(k8sCodebaseConfig)(params);
 export const useCodebaseWatchItem = (params: UseWatchItemParamsWithoutResourceConfig<Codebase>) =>
   createUseWatchItemHook<Codebase>(k8sCodebaseConfig)(params);
+export const useCodebaseWatchListMultiple = (params?: UseWatchListMultipleParamsWithoutResourceConfig<Codebase>) =>
+  createUseWatchListMultipleHook<Codebase>(k8sCodebaseConfig)(params);

@@ -17,7 +17,7 @@ export const RepositoryUrl = () => {
   const fieldRequirementLabel =
     "Specify the application URL in the following format: http(s)://git.example.com/example.";
   const gitServersWatch = useGitServerWatchList();
-  const gitServers = gitServersWatch.dataArray;
+  const gitServers = gitServersWatch.data.array;
 
   const hasGerritGitServer = React.useMemo(() => {
     return gitServers.some((el) => el.spec.gitProvider === gitProvider.gerrit);

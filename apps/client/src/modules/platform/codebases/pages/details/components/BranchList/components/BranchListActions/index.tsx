@@ -14,8 +14,8 @@ export const BranchListActions = () => {
   const codebaseBranchListWatch = useCodebaseBranchListWatch();
 
   const sortedCodebaseBranchList = React.useMemo(
-    () => sortCodebaseBranches(codebaseBranchListWatch.dataArray, codebase!),
-    [codebaseBranchListWatch.dataArray, codebase]
+    () => sortCodebaseBranches(codebaseBranchListWatch.data.array, codebase!),
+    [codebaseBranchListWatch.data.array, codebase]
   );
 
   const defaultBranch = sortedCodebaseBranchList[0];
@@ -36,7 +36,7 @@ export const BranchListActions = () => {
         variant: "contained",
         onClick: () => {
           setDialog(ManageCodebaseBranchDialog, {
-            codebaseBranches: codebaseBranchListWatch.dataArray,
+            codebaseBranches: codebaseBranchListWatch.data.array,
             codebase: codebase!,
             defaultBranch,
             pipelines: {

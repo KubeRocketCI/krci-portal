@@ -46,7 +46,7 @@ export default function CodebaseDetailsPageContent() {
 
   const quickLinkListWatch = useQuickLinkWatchList();
 
-  const quickLinkList = quickLinkListWatch.dataArray;
+  const quickLinkList = quickLinkListWatch.data.array;
   const quickLinksURLs = getQuickLinkURLsFromList(quickLinkList || []);
 
   const tabs = usePageTabs();

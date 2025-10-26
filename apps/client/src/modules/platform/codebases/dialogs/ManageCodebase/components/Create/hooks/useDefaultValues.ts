@@ -15,7 +15,7 @@ export const useDefaultValues = (): Partial<ManageCodebaseFormValues> => {
       return {};
     }
 
-    const firstValidGitServer = gitServersWatch.dataArray.find((gitServer) => gitServer.status?.connected);
+    const firstValidGitServer = gitServersWatch.data.array.find((gitServer) => gitServer.status?.connected);
 
     return {
       [CODEBASE_FORM_NAMES.defaultBranch.name]: "main",
@@ -28,5 +28,5 @@ export const useDefaultValues = (): Partial<ManageCodebaseFormValues> => {
       [CODEBASE_FORM_NAMES.ciTool.name]: ciTool.tekton,
       [CODEBASE_FORM_NAMES.gitServer.name]: firstValidGitServer?.metadata.name || "",
     };
-  }, [gitServersWatch.dataArray, gitServersWatch.query.isLoading]);
+  }, [gitServersWatch.data.array, gitServersWatch.query.isLoading]);
 };

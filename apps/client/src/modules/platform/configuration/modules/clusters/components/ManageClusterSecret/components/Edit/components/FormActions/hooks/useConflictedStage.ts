@@ -7,7 +7,7 @@ export const useConflictedStageWatch = (clusterName: string | undefined) => {
   return useQuery({
     queryKey: ["conflicted-stage", clusterName],
     queryFn: () => {
-      return stageListWatch.dataArray.find((item) => {
+      return stageListWatch.data.array.find((item) => {
         return item.spec.clusterName === clusterName;
       });
     },

@@ -4,7 +4,7 @@ import {
   createUseWatchListHook,
   UseWatchItemParamsWithoutResourceConfig,
   UseWatchListParamsWithoutResourceConfig,
-} from "@/k8s/api/utils/hook-creators";
+} from "@/k8s/api/hooks/hook-creators";
 import { CodebaseBranch, k8sCodebaseBranchConfig } from "@my-project/shared";
 
 export { useCRUD as useCodebaseBranchCRUD } from "./useCRUD";

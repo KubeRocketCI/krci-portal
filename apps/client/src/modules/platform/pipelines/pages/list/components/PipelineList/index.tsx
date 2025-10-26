@@ -35,7 +35,7 @@ export const PipelineList = () => {
       id={TABLE.PIPELINE_LIST?.id || "pipeline-list"}
       name={TABLE.PIPELINE_LIST?.name || "Pipelines"}
       isLoading={!pipelineListWatch.query.isFetched || !pipelinePermissions.isFetched}
-      data={pipelineListWatch.dataArray}
+      data={pipelineListWatch.data.array}
       errors={[]}
       columns={columns}
       emptyListComponent={renderEmptyList}

@@ -15,7 +15,7 @@ export const JiraServerIntegration = () => {
   } = useTypedFormContext();
 
   const jiraServerListWatch = useJiraServerWatchList();
-  const jiraServerList = jiraServerListWatch.dataArray;
+  const jiraServerList = jiraServerListWatch.data.array;
 
   return (
     <Grid container spacing={2}>

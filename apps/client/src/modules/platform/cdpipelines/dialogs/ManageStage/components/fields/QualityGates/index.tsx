@@ -3,7 +3,7 @@ import React from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { STAGE_FORM_NAMES } from "../../../names";
-// import { useCurrentDialog } from '../../../providers/CurrentDialog/hooks';
+import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
 import { Info, Plus, Trash } from "lucide-react";
 import { QualityGateRow } from "./components/QualityGateRow";
 import { defaultQualityGate } from "./constants";
@@ -19,9 +19,11 @@ export const QualityGates = () => {
 
   const { resetField, watch, setValue } = useTypedFormContext();
 
-  // const {
-  //   props: { cdPipeline },
-  // } = useCurrentDialog();
+  const {
+    props: { cdPipeline },
+  } = useCurrentDialog();
+
+  const namespace = cdPipeline?.metadata.namespace;
 
   const qualityGatesFieldValue = watch(STAGE_FORM_NAMES.qualityGates.name);
 
@@ -51,8 +53,6 @@ export const QualityGates = () => {
     [qualityGatesFieldValue, resetField, setValue]
   );
 
-  // const autotestsWithBranchesOptions = useAutotestsWithBranches(cdPipeline?.metadata.namespace);
-
   return (
     <Stack spacing={2}>
       <Stack direction="row" spacing={1} alignItems="center" flexWrap={"nowrap"}>
@@ -71,7 +71,7 @@ export const QualityGates = () => {
             <div key={key}>
               <Grid container spacing={1} alignItems="center">
                 <Grid item xs={10}>
-                  <QualityGateRow autotestsWithBranchesOptions={[]} currentQualityGate={el} />
+                  <QualityGateRow namespace={namespace} currentQualityGate={el} />
                 </Grid>
                 <Grid item xs={2}>
                   <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>

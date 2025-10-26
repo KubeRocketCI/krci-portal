@@ -29,6 +29,7 @@ const SIDEBAR_WIDTH_MOBILE = "18rem";
  */
 export function AppSidebar() {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+  console.log("state", state);
   const matches = useMatches();
 
   const { clusterName, defaultNamespace } = useClusterStore(
@@ -83,6 +84,7 @@ export function AppSidebar() {
                       onToggle={toggleMenu}
                       onOpenMenu={openMenu}
                       onNavigate={closeMenusExcept}
+                      isMinimized={state === "collapsed"}
                     />
                   ))}
                 </SidebarMenu>
@@ -146,6 +148,7 @@ export function AppSidebar() {
                     onToggle={toggleMenu}
                     onOpenMenu={openMenu}
                     onNavigate={closeMenusExcept}
+                    isMinimized={state === "collapsed"}
                   />
                 ))}
               </SidebarMenu>

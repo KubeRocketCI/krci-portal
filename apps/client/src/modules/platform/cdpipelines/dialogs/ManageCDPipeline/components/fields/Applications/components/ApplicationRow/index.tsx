@@ -41,9 +41,9 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
   });
 
   const sortedApplicationBranchList = React.useMemo(() => {
-    if (!applicationBranchListWatch.dataArray) return [];
-    return [...applicationBranchListWatch.dataArray].sort(sortKubeObjectByCreationTimestamp);
-  }, [applicationBranchListWatch.dataArray]);
+    if (!applicationBranchListWatch.data.array) return [];
+    return [...applicationBranchListWatch.data.array].sort(sortKubeObjectByCreationTimestamp);
+  }, [applicationBranchListWatch.data.array]);
 
   const rowAppNameField = `${CDPIPELINE_FORM_NAMES.applicationsFieldArray.name}.${index}.appName` as const;
   const rowAppBranchField = `${CDPIPELINE_FORM_NAMES.applicationsFieldArray.name}.${index}.appBranch` as const;
