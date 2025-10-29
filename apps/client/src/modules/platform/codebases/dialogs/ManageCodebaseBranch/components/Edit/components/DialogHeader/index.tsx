@@ -1,4 +1,3 @@
-import { Stack, Typography, useTheme } from "@mui/material";
 import { useCurrentDialog } from "../../../../providers/CurrentDialog/hooks";
 
 export const DialogHeader = () => {
@@ -6,16 +5,11 @@ export const DialogHeader = () => {
     props: { codebaseBranch },
   } = useCurrentDialog();
 
-  const theme = useTheme();
-
   return (
-    <Stack direction="row" alignItems={"flex-start"} justifyContent={"space-between"} spacing={1}>
-      <Stack spacing={2}>
-        <Typography
-          fontSize={theme.typography.pxToRem(20)}
-          fontWeight={500}
-        >{`Edit ${codebaseBranch?.spec.branchName}`}</Typography>
-      </Stack>
-    </Stack>
+    <div className="flex flex-row items-start justify-between gap-2">
+      <div className="flex flex-col gap-4">
+        <h2 className="text-xl font-medium">{`Edit ${codebaseBranch?.spec.branchName}`}</h2>
+      </div>
+    </div>
   );
 };

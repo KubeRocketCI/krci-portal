@@ -7,7 +7,7 @@ import {
   VALUES_OVERRIDE_POSTFIX,
   ALL_VALUES_OVERRIDE_KEY,
 } from "@/modules/platform/cdpipelines/pages/stage-details/constants";
-import { Stack, Tooltip, Box } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import { SquareArrowOutUpRight, TriangleAlert } from "lucide-react";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import React from "react";
@@ -45,8 +45,8 @@ export const ValuesOverrideConfigurationColumn = ({
   }, [gitOpsCodebase?.spec.gitServer, gitServerListWatch.data.array]);
 
   return (
-    <Stack direction="row" alignItems="center" spacing={1}>
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ width: "100%" }}>
+    <div className="flex flex-row items-center gap-2">
+      <div className="flex flex-row items-center gap-2 w-full">
         <div>
           <FormSwitch
             label={<></>}
@@ -64,13 +64,13 @@ export const ValuesOverrideConfigurationColumn = ({
           />
         </div>
         {thisFieldValue !== currentResourceValue && (
-          <Box sx={{ lineHeight: 0 }}>
+          <div className="leading-none">
             <Tooltip title="Warning: This action will mutate override values usage for this application deployment.">
               <TriangleAlert size={16} />
             </Tooltip>
-          </Box>
+          </div>
         )}
-      </Stack>
+      </div>
       {gitOpsCodebase?.status?.gitWebUrl && (
         <ResourceIconLink
           tooltipTitle={"Go to the Source Code"}
@@ -85,6 +85,6 @@ export const ValuesOverrideConfigurationColumn = ({
           name="source code"
         />
       )}
-    </Stack>
+    </div>
   );
 };

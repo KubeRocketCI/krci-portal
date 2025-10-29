@@ -4,7 +4,6 @@ import {
   CODEBASE_COMMON_FRAMEWORKS,
   CODEBASE_COMMON_LANGUAGES,
 } from "@/k8s/api/groups/KRCI/Codebase/configs/mappings";
-import { Stack, Typography } from "@mui/material";
 import { getDeployedVersion } from "@my-project/shared";
 import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -99,11 +98,11 @@ export const Applications = () => {
     <FormProvider {...formState}>
       <TabSection
         title={
-          <Stack spacing={1} alignItems="center" direction="row">
-            <Typography fontSize={28} color="primary.dark">
+          <div className="flex flex-row gap-2 items-center">
+            <h2 className="text-3xl font-semibold text-foreground">
               Applications
-            </Typography>
-          </Stack>
+            </h2>
+          </div>
         }
       >
         <LoadingWrapper isLoading={stageAppCodebasesCombinedDataWatch.isLoading}>

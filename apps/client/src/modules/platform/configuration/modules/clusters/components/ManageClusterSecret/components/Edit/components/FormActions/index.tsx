@@ -1,4 +1,4 @@
-import { Button, Grid, IconButton, Tooltip } from "@mui/material";
+import { Button, IconButton, Tooltip } from "@mui/material";
 import React from "react";
 import { useFormContext as useReactHookFormContext } from "react-hook-form";
 import { ManageClusterSecretDataContext, ManageClusterSecretValues } from "../../../../types";
@@ -143,8 +143,8 @@ export const FormActions = () => {
 
   return (
     <>
-      <Grid container spacing={2} justifyContent={"space-between"}>
-        <Grid item>
+      <div className="flex justify-between gap-4">
+        <div>
           <ConditionalWrapper
             condition={!secretPermissions.data.delete.allowed || !!ownerReference}
             wrapper={(children) => (
@@ -162,15 +162,15 @@ export const FormActions = () => {
               <Trash size={20} />
             </IconButton>
           </ConditionalWrapper>
-        </Grid>
-        <Grid item>
-          <Grid container spacing={2} alignItems={"center"}>
-            <Grid item>
+        </div>
+        <div>
+          <div className="flex gap-4 items-center">
+            <div>
               <Button onClick={() => reset()} size="small" component={"button"} disabled={!isDirty}>
                 undo changes
               </Button>
-            </Grid>
-            <Grid item>
+            </div>
+            <div>
               <ConditionalWrapper
                 condition={!secretPermissions.data.patch.allowed || !!ownerReference}
                 wrapper={(children) => (
@@ -191,10 +191,10 @@ export const FormActions = () => {
                   save
                 </Button>
               </ConditionalWrapper>
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 };

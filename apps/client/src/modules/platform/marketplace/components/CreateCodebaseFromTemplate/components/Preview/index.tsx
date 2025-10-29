@@ -3,7 +3,7 @@ import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter
 import { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/mappings/types";
 import { getMappingByType } from "@/k8s/api/groups/KRCI/Codebase/utils/getMappingByType";
 import { getIconByPattern } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
-import { Box, Grid, Link, Tooltip, Typography } from "@mui/material";
+import { Link, Tooltip } from "@mui/material";
 import makeStyles from "@mui/styles/makeStyles";
 import React from "react";
 import { useCurrentDialog } from "../../providers/CurrentDialog/hooks";
@@ -41,160 +41,158 @@ export const Preview = () => {
 
   return (
     template && (
-      <Box sx={{ mt: 3 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Grid container spacing={2} alignItems={"center"} justifyContent={"space-between"} wrap={"nowrap"}>
-              <Grid item xs={10}>
-                <Grid container spacing={2} alignItems={"center"} wrap={"nowrap"}>
-                  <Grid item>
-                    <img
-                      style={{ width: "40px" }}
-                      src={`data:${template?.spec?.icon?.[0]?.mediatype};base64,${template?.spec?.icon?.[0]?.base64data}`}
-                      alt=""
-                    />
-                  </Grid>
-                  <Grid item>
-                    <Tooltip title={template?.spec.displayName}>
-                      <Typography variant={"h5"} className={classes.templateName}>
-                        {template?.spec.displayName}
-                      </Typography>
-                    </Tooltip>
-                  </Grid>
-                </Grid>
-              </Grid>
-            </Grid>
-          </Grid>
-          <Grid item xs={12}>
-            <Typography variant={"body2"}>{template?.spec.description}</Typography>
-          </Grid>
-          <Grid item xs={12}>
-            <Grid container alignItems={"flex-start"} spacing={2}>
-              <Grid item xs={4}>
-                <Typography variant={"body1"} gutterBottom>
+      <div className="mt-3">
+        <div className="flex flex-col gap-4">
+          <div>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div>
+                  <img
+                    style={{ width: "40px" }}
+                    src={`data:${template?.spec?.icon?.[0]?.mediatype};base64,${template?.spec?.icon?.[0]?.base64data}`}
+                    alt=""
+                  />
+                </div>
+                <div>
+                  <Tooltip title={template?.spec.displayName}>
+                    <h5 className={`text-2xl font-medium ${classes.templateName}`}>
+                      {template?.spec.displayName}
+                    </h5>
+                  </Tooltip>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <p className="text-sm">{template?.spec.description}</p>
+          </div>
+          <div>
+            <div className="grid grid-cols-3 gap-4 items-start">
+              <div>
+                <p className="text-base font-medium mb-2">
                   Language
-                </Typography>
-                <Grid container spacing={1} alignItems={"center"}>
-                  <Grid item>
+                </p>
+                <div className="flex gap-2 items-center">
+                  <div>
                     <UseSpriteSymbol name={getIconByPattern(language)} width={20} height={20} />
-                  </Grid>
-                  <Grid item>{codebaseMappingByLang?.language?.name || capitalizeFirstLetter(lang)}</Grid>
-                </Grid>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography variant={"body1"} gutterBottom>
+                  </div>
+                  <div>{codebaseMappingByLang?.language?.name || capitalizeFirstLetter(lang)}</div>
+                </div>
+              </div>
+              <div>
+                <p className="text-base font-medium mb-2">
                   Framework
-                </Typography>
-                <Grid container spacing={1} alignItems={"center"}>
-                  <Grid item>
+                </p>
+                <div className="flex gap-2 items-center">
+                  <div>
                     <UseSpriteSymbol name={getIconByPattern(_framework)} width={20} height={20} />
-                  </Grid>
-                  <Grid item>
+                  </div>
+                  <div>
                     {framework
                       ? codebaseMappingByLang?.frameworks?.[framework]?.name ||
                         (_framework && capitalizeFirstLetter(_framework)) ||
                         "N/A"
                       : "N/A"}
-                  </Grid>
-                </Grid>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography variant={"body1"} gutterBottom>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <p className="text-base font-medium mb-2">
                   Build Tool
-                </Typography>
-                <Grid container spacing={1} alignItems={"center"}>
-                  <Grid item>
+                </p>
+                <div className="flex gap-2 items-center">
+                  <div>
                     <UseSpriteSymbol name={getIconByPattern(_buildTool)} width={20} height={20} />
-                  </Grid>
-                  <Grid item>
+                  </div>
+                  <div>
                     {codebaseMappingByLang?.buildTools?.[buildTool]?.name || capitalizeFirstLetter(_buildTool)}
-                  </Grid>
-                </Grid>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography variant={"body1"} gutterBottom>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <p className="text-base font-medium mb-2">
                   Type
-                </Typography>
-                <Typography variant={"body2"}>{template?.spec.type}</Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography variant={"body1"} gutterBottom>
+                </p>
+                <p className="text-sm">{template?.spec.type}</p>
+              </div>
+              <div>
+                <p className="text-base font-medium mb-2">
                   Category
-                </Typography>
-                <Typography variant={"body2"}>{template?.spec.category}</Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography variant={"body1"} gutterBottom>
+                </p>
+                <p className="text-sm">{template?.spec.category}</p>
+              </div>
+              <div>
+                <p className="text-base font-medium mb-2">
                   Maturity
-                </Typography>
-                <Typography variant={"body2"}>{template?.spec.maturity}</Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography variant={"body1"} gutterBottom>
+                </p>
+                <p className="text-sm">{template?.spec.maturity}</p>
+              </div>
+              <div>
+                <p className="text-base font-medium mb-2">
                   Version
-                </Typography>
-                <Typography variant={"body2"}>{template?.spec.version}</Typography>
-              </Grid>
-              <Grid item xs={8}>
-                <Typography variant={"body1"} gutterBottom>
+                </p>
+                <p className="text-sm">{template?.spec.version}</p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-base font-medium mb-2">
                   Source
-                </Typography>
+                </p>
                 <Link href={template?.spec.source} target={"_blank"}>
                   {template?.spec.source}
                 </Link>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant={"body1"} gutterBottom>
+              </div>
+              <div className="col-span-3">
+                <p className="text-base font-medium mb-2">
                   Maintainers
-                </Typography>
+                </p>
                 {(template?.spec.maintainers || []).map((maintainer) => {
                   return (
-                    <Typography gutterBottom key={maintainer.name}>
+                    <p className="mb-2" key={maintainer.name}>
                       <div>
-                        <Typography variant={"body2"} component={"span"}>
+                        <span className="text-sm">
                           Name:{" "}
-                        </Typography>
-                        <Typography variant={"caption"} component={"span"}>
+                        </span>
+                        <span className="text-xs">
                           {maintainer.name}
-                        </Typography>
+                        </span>
                       </div>
                       <div>
-                        <Typography variant={"body2"} component={"span"}>
+                        <span className="text-sm">
                           Email:{" "}
-                        </Typography>
-                        <Typography variant={"caption"} component={"span"}>
+                        </span>
+                        <span className="text-xs">
                           {maintainer.email}
-                        </Typography>
+                        </span>
                       </div>
-                    </Typography>
+                    </p>
                   );
                 })}
-              </Grid>
+              </div>
               {template?.spec.keywords && (
-                <Grid item xs={12}>
-                  <Typography variant={"body1"} gutterBottom>
+                <div className="col-span-3">
+                  <p className="text-base font-medium mb-2">
                     Keywords
-                  </Typography>
+                  </p>
                   {(template?.spec.keywords || []).map((el, idx) => {
                     const propertyId = `${el}:${idx}`;
 
                     return (
                       <React.Fragment key={propertyId}>
                         <>
-                          {idx !== 0 && <Typography component="span">, </Typography>}
-                          <Typography component="span" variant={"caption"}>
+                          {idx !== 0 && <span>, </span>}
+                          <span className="text-xs">
                             {el}
-                          </Typography>
+                          </span>
                         </>
                       </React.Fragment>
                     );
                   })}
-                </Grid>
+                </div>
               )}
-            </Grid>
-          </Grid>
-        </Grid>
-      </Box>
+            </div>
+          </div>
+        </div>
+      </div>
     )
   );
 };

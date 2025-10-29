@@ -1,5 +1,5 @@
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
-import { Stack, IconButton } from "@mui/material";
+import { IconButton } from "@mui/material";
 import { PipelineGraphDialog } from "../../dialogs/PipelineGraph";
 import { PATH_PIPELINE_DETAILS_FULL } from "../../pages/details/route";
 import { VectorSquare } from "lucide-react";
@@ -13,7 +13,7 @@ export const Pipeline = ({ pipelineName, namespace }: { pipelineName: string; na
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
 
   return (
-    <Stack spacing={1} alignItems="center" direction="row">
+    <div className="flex items-center gap-1">
       <Button variant="link" asChild className="p-0">
         <Link
           to={PATH_PIPELINE_DETAILS_FULL}
@@ -38,6 +38,6 @@ export const Pipeline = ({ pipelineName, namespace }: { pipelineName: string; na
       >
         <VectorSquare size={16} />
       </IconButton>
-    </Stack>
+    </div>
   );
 };

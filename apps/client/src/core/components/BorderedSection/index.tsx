@@ -1,28 +1,20 @@
-import { Box, Stack, Typography } from '@mui/material';
-import React from 'react';
 import { BorderedSectionProps } from './types';
 
 export const BorderedSection = ({ title, children }: BorderedSectionProps) => {
   return (
-    <Box
-      sx={{
-        backgroundColor: 'background.paper',
-        boxShadow: '0px 1px 10px 0px #0024461F',
-        borderLeft: (t) => `4px solid ${t.palette.primary.main}`,
-        borderRadius: '4px',
-        padding: (t) => t.typography.pxToRem(24),
-      }}
+    <div
+      className="rounded shadow-md border-l-4 border-primary bg-card p-6"
     >
-      <Stack spacing={3}>
+      <div className="flex flex-col gap-6">
         {title && typeof title === 'string' ? (
-          <Typography fontSize={20} fontWeight={600} color="primary.dark">
+          <h3 className="text-xl font-semibold text-foreground">
             {title}
-          </Typography>
+          </h3>
         ) : title ? (
           title
         ) : null}
         {children}
-      </Stack>
-    </Box>
+      </div>
+    </div>
   );
 };

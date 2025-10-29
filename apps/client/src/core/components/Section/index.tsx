@@ -1,20 +1,19 @@
-import { Box, Stack, Tooltip, Typography, useTheme } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import React from "react";
 import { SectionProps } from "./types";
 import { CopyButton } from "../CopyButton";
 import { Info } from "lucide-react";
 
 export const Section: React.FC<SectionProps> = ({ title, titleTooltip, enableCopyTitle, description, children }) => {
-  const theme = useTheme();
   return (
-    <Stack spacing={4} flexGrow={1}>
-      <Stack spacing={1}>
+    <div className="flex flex-col gap-8 grow">
+      <div className="flex flex-col gap-2">
         {title && (
-          <Stack direction="row" spacing={0} alignItems={"center"}>
+          <div className="flex flex-row gap-0 items-center">
             {typeof title === "string" ? (
-              <Typography color="primary.dark" fontSize={theme.typography.pxToRem(32)}>
+              <h2 className="text-4xl text-foreground">
                 {title}
-              </Typography>
+              </h2>
             ) : (
               title
             )}
@@ -24,21 +23,14 @@ export const Section: React.FC<SectionProps> = ({ title, titleTooltip, enableCop
               </Tooltip>
             )}
             {enableCopyTitle && typeof title === "string" && <CopyButton text={title} />}
-          </Stack>
+          </div>
         )}
-        {description && <Typography variant={"body1"}>{description}</Typography>}
-      </Stack>
+        {description && <p className="text-base">{description}</p>}
+      </div>
 
-      <Box
-        sx={{
-          mt: theme.typography.pxToRem(16),
-          flexGrow: 1,
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+      <div className="flex flex-col grow mt-4">
         {children}
-      </Box>
-    </Stack>
+      </div>
+    </div>
   );
 };

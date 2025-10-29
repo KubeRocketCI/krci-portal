@@ -1,4 +1,4 @@
-import { Grid, IconButton } from "@mui/material";
+import { IconButton } from "@mui/material";
 import React from "react";
 import { BranchNameProps } from "./types";
 import { CODEBASE_BRANCH_FORM_NAMES } from "../../../names";
@@ -135,7 +135,7 @@ export const BranchName = ({ defaultBranchVersion }: BranchNameProps) => {
   }, [apiBaseUrl, query.isError]);
 
   return (
-    <Grid item xs={12}>
+    <div>
       <FormAutocompleteSingle
         placeholder="Branch name"
         {...register(CODEBASE_BRANCH_FORM_NAMES.branchName.name, {
@@ -183,6 +183,6 @@ export const BranchName = ({ defaultBranchVersion }: BranchNameProps) => {
           },
         }}
       />
-    </Grid>
+    </div>
   );
 };

@@ -1,10 +1,11 @@
-import { Box, SxProps, Theme, Tooltip } from "@mui/material";
 import React from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/core/components/ui/tooltip";
+import { cn } from "@/core/utils/classname";
 import { TextWithTooltipProps } from "./types";
 
-export const TextWithTooltip = ({ text, textSX, maxLineAmount = 1 }: TextWithTooltipProps) => {
+export const TextWithTooltip = ({ text, className, maxLineAmount = 1 }: TextWithTooltipProps) => {
   const [isOverflowed, setIsOverflowed] = React.useState(false);
-  const textRef = React.useRef<HTMLDivElement>(null);
+  const textRef = React.useRef<HTMLParagraphElement>(null);
 
   const handleResize = () => {
     if (textRef.current) {
@@ -15,34 +16,35 @@ export const TextWithTooltip = ({ text, textSX, maxLineAmount = 1 }: TextWithToo
     }
   };
 
-  const calculatedSX = React.useMemo(() => {
-    const base: SxProps<Theme> = {
-      fontSize: (t) => t.typography.pxToRem(14),
-      textOverflow: "ellipsis",
-      overflow: "hidden",
-      WebkitLineClamp: maxLineAmount,
-      WebkitBoxOrient: "vertical",
-      display: "-webkit-box",
-      wordBreak: "break-word",
-      color: "inherit",
-    };
-
-    return textSX ? { ...base, ...textSX } : base;
-  }, [maxLineAmount, textSX]);
-
   React.useEffect(() => {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [text, maxLineAmount, textSX]);
+  }, [text, maxLineAmount, className]);
+
 
   const Content = (
-    <Box ref={textRef} sx={calculatedSX}>
+    <p ref={textRef} className={cn(
+      "text-sm",
+      "wrap-break-word",
+      "text-inherit",
+      `line-clamp-${maxLineAmount}`,
+      className
+    )}>
       {text}
-    </Box>
+    </p>
   );
 
-  return isOverflowed ? <Tooltip title={text}>{Content}</Tooltip> : Content;
+  if (isOverflowed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{Content}</TooltipTrigger>
+        <TooltipContent>{text}</TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return Content;
 };

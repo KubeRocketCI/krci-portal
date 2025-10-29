@@ -6,7 +6,7 @@ import { useSecretPermissions } from "@/k8s/api/groups/Core/Secret";
 import { useGitServerPermissions, useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { getGitServerStatusIcon } from "@/k8s/api/groups/KRCI/GitServer/utils";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionSummary, Typography, AccordionDetails, Grid } from "@mui/material";
+import { Accordion, AccordionSummary, AccordionDetails, Grid } from "@mui/material";
 import React from "react";
 import { ManageGitServer } from "./components/ManageGitServer";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
@@ -54,7 +54,7 @@ export default function GitserversConfigurationPage() {
 
     return (
       <LoadingWrapper isLoading={isLoading}>
-        <Grid container spacing={1}>
+        <div className="flex flex-col gap-2">
           {gitServers?.map((gitServer) => {
             const connected = gitServer?.status?.connected;
             const error = gitServer?.status?.error;
@@ -68,7 +68,7 @@ export default function GitserversConfigurationPage() {
             const webhookURL = gitServer.spec?.gitHost ? `https://${gitServer.spec.gitHost}` : "";
 
             return (
-              <Grid item xs={12} key={gitServer.metadata.uid}>
+              <div key={gitServer.metadata.uid}>
                 <Accordion
                   expanded={singleItem || isExpanded}
                   onChange={singleItem ? undefined : handleChange(gitServerName)}
@@ -79,29 +79,29 @@ export default function GitserversConfigurationPage() {
                       cursor: singleItem ? "default" : "pointer",
                     }}
                   >
-                    <Typography variant={"h6"}>
-                      <Grid container spacing={1} alignItems={"center"}>
-                        <Grid item sx={{ mr: (t) => t.typography.pxToRem(5) }}>
+                    <h6 className="text-base font-medium">
+                      <div className="flex gap-2 items-center">
+                        <div className="mr-1">
                           <StatusIcon
                             Icon={statusIcon.component}
                             color={statusIcon.color}
                             Title={
                               <>
-                                <Typography variant={"subtitle2"} style={{ fontWeight: 600 }}>
+                                <p className="text-sm font-semibold">
                                   {`Connected: ${connected === undefined ? "Unknown" : connected}`}
-                                </Typography>
+                                </p>
                                 {!!error && (
-                                  <Typography variant={"subtitle2"} sx={{ mt: (t) => t.typography.pxToRem(10) }}>
+                                  <p className="text-sm font-medium mt-3">
                                     {error}
-                                  </Typography>
+                                  </p>
                                 )}
                               </>
                             }
                           />
-                        </Grid>
-                        <Grid item>{gitServerName}</Grid>
-                      </Grid>
-                    </Typography>
+                        </div>
+                        <div>{gitServerName}</div>
+                      </div>
+                    </h6>
                   </AccordionSummary>
                   <AccordionDetails>
                     {(singleItem || isExpanded) && (
@@ -113,10 +113,10 @@ export default function GitserversConfigurationPage() {
                     )}
                   </AccordionDetails>
                 </Accordion>
-              </Grid>
+              </div>
             );
           })}
-        </Grid>
+        </div>
       </LoadingWrapper>
     );
   }, [gitServerWatch.query.error, gitServerWatch.query.isLoading, gitServers, expandedPanel]);

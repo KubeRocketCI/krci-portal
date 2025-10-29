@@ -1,5 +1,4 @@
 import { usePipelineRunsWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
-import { Stack } from "@mui/material";
 import { getPipelineRunStatus, pipelineRunReason } from "@my-project/shared";
 import React from "react";
 import { CleanButton } from "./components/CleanButton";
@@ -38,7 +37,7 @@ export const PreviewTableActions = ({ toggleMode }: PreviewTableActionsProps) =>
   }, [pipelineRunsWatch.data?.deploy]);
 
   return (
-    <Stack spacing={2} alignItems="center" direction="row" justifyContent="flex-end">
+    <div className="flex flex-row gap-4 items-center justify-end">
       <CleanButton
         latestCleanPipelineRunIsRunning={latestCleanPipelineRunIsRunning}
         latestDeployPipelineRunIsRunning={latestDeployPipelineRunIsRunning}
@@ -48,6 +47,6 @@ export const PreviewTableActions = ({ toggleMode }: PreviewTableActionsProps) =>
         latestDeployPipelineRunIsRunning={latestDeployPipelineRunIsRunning}
         toggleMode={toggleMode}
       />
-    </Stack>
+    </div>
   );
 };

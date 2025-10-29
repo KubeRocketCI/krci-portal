@@ -1,7 +1,7 @@
 import React from "react";
 import { Pipeline } from "@my-project/shared";
 import { TableColumn } from "@/core/components/Table/types";
-import { Box, IconButton, Tooltip } from "@mui/material";
+import { IconButton, Tooltip } from "@mui/material";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { PipelineGraphDialog } from "@/modules/platform/pipelines/dialogs/PipelineGraph";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
@@ -70,9 +70,9 @@ export const useColumns = (): TableColumn<Pipeline>[] => {
             const description = data.spec?.description || data.spec?.displayName || "No description available";
 
             return (
-              <Box>
+              <div>
                 <TextWithTooltip text={description} />
-              </Box>
+              </div>
             );
           },
         },

@@ -1,4 +1,3 @@
-import { Box } from "@mui/material";
 import React from "react";
 import { Overview } from "../components/Overview";
 import { ViewTask } from "../components/ViewTask";
@@ -27,13 +26,9 @@ export const useTabs = (): Tab[] => {
         label: "Overview",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.overview),
         component: (
-          <Box
-            sx={{
-              pt: (t) => t.typography.pxToRem(24),
-            }}
-          >
+          <div className="pt-6">
             <Overview />
-          </Box>
+          </div>
         ),
       },
       {
@@ -41,15 +36,9 @@ export const useTabs = (): Tab[] => {
         label: "View YAML",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.yaml),
         component: (
-          <Box
-            sx={{
-              pt: (t) => t.typography.pxToRem(24),
-              height: "100%",
-              overflow: "hidden",
-            }}
-          >
+          <div className="pt-6 h-full overflow-hidden">
             <ViewTask />
-          </Box>
+          </div>
         ),
       },
     ],

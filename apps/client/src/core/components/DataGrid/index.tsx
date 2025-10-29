@@ -1,4 +1,4 @@
-import { Alert, Box, CircularProgress, Grid, Stack } from "@mui/material";
+import { Alert, CircularProgress } from "@mui/material";
 import React from "react";
 import { EmptyList } from "../EmptyList";
 import { ErrorContent } from "../ErrorContent";
@@ -6,8 +6,9 @@ import { Pagination } from "./components/Pagination";
 import { useReadyData } from "./hooks/useReadyData";
 import { DataGridProps } from "./types";
 import { usePagination } from "./hooks/usePagination";
+import { KubeObjectBase } from "@my-project/shared";
 
-export const DataGrid = <DataType = unknown,>({
+export const DataGrid = <DataType = KubeObjectBase,>({
   isLoading,
   blockerError,
   errors,
@@ -51,23 +52,23 @@ export const DataGrid = <DataType = unknown,>({
   const renderGrid = React.useCallback(() => {
     if (blockerError) {
       return (
-        <Box display="flex" justifyContent={"center"}>
+        <div className="flex justify-center">
           <ErrorContent error={blockerError} outlined />
-        </Box>
+        </div>
       );
     }
 
     if (isLoading) {
       return (
-        <Box display="flex" justifyContent={"center"}>
+        <div className="flex justify-center">
           <CircularProgress />
-        </Box>
+        </div>
       );
     }
 
     if (readyData !== null && readyData.length > 0) {
       return (
-        <Stack spacing={2}>
+        <div className="flex flex-col gap-4">
           <div>
             {errors && !!errors.length && (
               <Alert severity="warning">
@@ -78,13 +79,13 @@ export const DataGrid = <DataType = unknown,>({
             )}
           </div>
           <div>
-            <Grid container spacing={spacing}>
+            <div className={`grid grid-cols-3 gap-${spacing}`}>
               {readyData.slice(page * _rowsPerPage, page * _rowsPerPage + _rowsPerPage).map((item) => {
-                return <>{renderItem(item)}</>;
+                return <div className="col-span-1 h-full">{renderItem(item)}</div>;
               })}
-            </Grid>
+            </div>
           </div>
-        </Stack>
+        </div>
       );
     }
 
@@ -107,7 +108,7 @@ export const DataGrid = <DataType = unknown,>({
   ]);
 
   return (
-    <Stack spacing={2}>
+    <div className="flex flex-col gap-4">
       <div>{renderGrid()}</div>
       {showPagination && data?.length > _rowsPerPage && (
         <div>
@@ -120,6 +121,6 @@ export const DataGrid = <DataType = unknown,>({
           />
         </div>
       )}
-    </Stack>
+    </div>
   );
 };

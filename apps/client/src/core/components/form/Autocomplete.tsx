@@ -16,7 +16,6 @@ import {
   ChipTypeMap,
   FormControl,
   FormHelperText,
-  Stack,
   TextField as MuiTextField,
   Tooltip,
 } from "@mui/material";
@@ -103,15 +102,15 @@ export const Autocomplete = <
   const displayHelperText = errorText || helperText;
 
   const endAdornment = tooltipText ? (
-    <Stack direction="row" alignItems="center" spacing={0.5}>
+    <div className="flex flex-row items-center gap-1">
       <Tooltip title={tooltipText}>
         <Info size={16} />
       </Tooltip>
-    </Stack>
+    </div>
   ) : undefined;
 
   return (
-    <Stack spacing={1}>
+    <div className="flex flex-col gap-2">
       <FormControl fullWidth>
         <MuiAutocomplete
           {...AutocompleteProps}
@@ -149,6 +148,6 @@ export const Autocomplete = <
         {/* Additional helper text if needed outside of TextField */}
         {!displayHelperText && hasError && <FormHelperText error>{errorText}</FormHelperText>}
       </FormControl>
-    </Stack>
+    </div>
   );
 };

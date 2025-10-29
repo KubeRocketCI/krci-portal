@@ -2,7 +2,7 @@ import { FormCheckbox } from "@/core/providers/Form/components/FormCheckbox";
 import { FormControlLabelWithTooltip } from "@/core/providers/Form/components/FormControlLabelWithTooltip";
 import { useClusterStore } from "@/k8s/store";
 import { FORM_MODES, FieldEvent } from "@/core/types/forms";
-import { Alert, Grid } from "@mui/material";
+import { Alert } from "@mui/material";
 import { useShallow } from "zustand/react/shallow";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_FORM_NAMES } from "../../../names";
@@ -47,17 +47,17 @@ export const CodemieIntegration = () => {
   const codemieProjectStatusIsOk = codemieProjectWatchQuery.query.data?.status?.value === "created";
 
   return (
-    <Grid container spacing={2}>
+    <div className="flex flex-col gap-4">
       {!hasCodemieAndProject ? (
-        <Grid item xs={12}>
+        <div>
           <Alert severity="info" variant="outlined">
             There is no Codemie or CodemieProject available
           </Alert>
-        </Grid>
+        </div>
       ) : null}
-      <Grid item xs={12}>
-        <Grid container spacing={1} alignItems={"center"}>
-          <Grid item>
+      <div>
+        <div className="flex gap-2 items-center">
+          <div>
             <FormCheckbox
               {...register(CODEBASE_FORM_NAMES.hasCodemieIntegration.name, {
                 onChange: ({ target: { value } }: FieldEvent) => {
@@ -79,9 +79,9 @@ export const CodemieIntegration = () => {
                 mode === FORM_MODES.EDIT
               }
             />
-          </Grid>
-        </Grid>
-      </Grid>
-    </Grid>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };

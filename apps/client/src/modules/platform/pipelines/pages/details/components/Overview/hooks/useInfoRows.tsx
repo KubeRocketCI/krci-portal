@@ -1,5 +1,5 @@
 import { InfoRow } from "@/core/components/InfoColumns/types";
-import { Chip, Grid, Typography } from "@mui/material";
+import { Chip } from "@mui/material";
 import React from "react";
 import { usePipelineWatch } from "../../../hooks/data";
 
@@ -51,17 +51,17 @@ export const useInfoRows = (): InfoRow[] => {
           label: "Labels",
           text:
             pipelineLabels.length > 0 ? (
-              <Grid container spacing={1} flexWrap="wrap">
+              <div className="flex flex-wrap gap-2">
                 {pipelineLabels.map((el) => (
-                  <Grid item key={el}>
+                  <div key={el}>
                     <Chip label={el} size="small" />
-                  </Grid>
+                  </div>
                 ))}
-              </Grid>
+              </div>
             ) : (
-              <Typography fontSize={13} color="text.secondary">
+              <span className="text-sm text-muted-foreground">
                 No labels
-              </Typography>
+              </span>
             ),
           columnXs: 12,
         },

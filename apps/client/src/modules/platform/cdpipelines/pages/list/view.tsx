@@ -4,7 +4,6 @@ import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { ResourceActionListContextProvider } from "@/core/providers/ResourceActionList/provider";
-import { Stack } from "@mui/material";
 import { ManageCDPipelineDialog } from "../../dialogs/ManageCDPipeline";
 import { Section } from "@/core/components/Section";
 import { useCDPipelinePermissions } from "@/k8s/api/groups/KRCI/CDPipeline";
@@ -52,8 +51,8 @@ export default function CDPipelineListPage() {
           </>
         }
       >
-        <Stack spacing={2}>
-          <Stack direction="row" justifyContent="flex-end">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-row justify-end">
             <ButtonWithPermission
               ButtonProps={{
                 variant: "contained",
@@ -70,11 +69,11 @@ export default function CDPipelineListPage() {
             >
               create deployment flow
             </ButtonWithPermission>
-          </Stack>
+          </div>
           <ResourceActionListContextProvider>
             <CDPipelineList blockerComponent={renderBlockerIfNoGitOpsCodebase} />
           </ResourceActionListContextProvider>
-        </Stack>
+        </div>
       </Section>
     </PageWrapper>
   );

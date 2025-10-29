@@ -1,6 +1,6 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { Section } from "@/core/components/Section";
-import { IconButton, Paper, Stack, Tooltip, useTheme } from "@mui/material";
+import { IconButton, Paper, Tooltip, useTheme } from "@mui/material";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { useViewModeContext } from "@/core/providers/ViewMode/hooks";
@@ -31,7 +31,7 @@ export default function MarketplacePageContent() {
           </>
         }
       >
-        <Stack spacing={3} flexGrow={1} display="flex">
+        <div className="flex flex-col gap-3 flex-grow">
           <>
             <K8sRelatedIconsSVGSprite />
             {viewMode === VIEW_MODES.TABLE ? (
@@ -42,10 +42,10 @@ export default function MarketplacePageContent() {
                 elevation={0}
                 sx={{ p: (t) => t.typography.pxToRem(20), backgroundColor: "transparent" }}
               >
-                <Stack spacing={2}>
-                  <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
                     <TemplateFilter />
-                    <Stack direction="row" alignItems="center">
+                    <div className="flex items-center">
                       <Tooltip title={"Block View"}>
                         <IconButton onClick={() => handleChangeViewMode(VIEW_MODES.GRID)} size="large">
                           <Grid3x2 color={theme.palette.primary.main} />
@@ -56,14 +56,14 @@ export default function MarketplacePageContent() {
                           <Rows3 color={theme.palette.action.active} />
                         </IconButton>
                       </Tooltip>
-                    </Stack>
-                  </Stack>
+                    </div>
+                  </div>
                   <TemplatesGrid />
-                </Stack>
+                </div>
               </Paper>
             )}
           </>
-        </Stack>
+        </div>
       </Section>
     </PageWrapper>
   );

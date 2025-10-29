@@ -1,4 +1,4 @@
-import { FormControl, Stack, TextField as MuiTextField, Tooltip } from "@mui/material";
+import { FormControl, TextField as MuiTextField, Tooltip } from "@mui/material";
 import type {
   DeepKeys,
   DeepValue,
@@ -63,15 +63,15 @@ export const TextField = <
   const helperText = hasError ? (error as string) : undefined;
 
   const endAdornment = tooltipText ? (
-    <Stack direction="row" alignItems="center" spacing={0.5}>
+    <div className="flex flex-row items-center gap-1">
       <Tooltip title={tooltipText}>
         <Info size={16} />
       </Tooltip>
-    </Stack>
+    </div>
   ) : undefined;
 
   return (
-    <Stack spacing={1}>
+    <div className="flex flex-col gap-2">
       <FormControl fullWidth>
         <MuiTextField
           value={field.state.value as string}
@@ -90,6 +90,6 @@ export const TextField = <
           aria-describedby={hasError ? `${String(field.name)}-error` : undefined}
         />
       </FormControl>
-    </Stack>
+    </div>
   );
 };

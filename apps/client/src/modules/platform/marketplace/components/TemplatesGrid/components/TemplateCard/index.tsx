@@ -1,4 +1,4 @@
-import { Box, Chip, Grid, Stack, Typography, useTheme } from "@mui/material";
+import { Chip, useTheme } from "@mui/material";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { useStyles } from "./styles";
 import { Template } from "@my-project/shared";
@@ -42,10 +42,10 @@ export const TemplateCard = ({ template, handleTemplateClick }: TemplateCardProp
   const codebaseMappingByLang = codebaseMapping?.[lang as keyof typeof codebaseMapping] as unknown as CodebaseInterface;
 
   return (
-    <Box className={classes.cardRoot}>
-      <Stack spacing={3}>
-        <Stack spacing={2}>
-          <Stack direction="row" spacing={1} alignItems={"center"}>
+    <div className={classes.cardRoot}>
+      <div className="flex flex-col gap-6 h-full">
+        <div className="flex flex-col gap-4 mb-auto">
+          <div className="flex flex-row gap-2 items-center">
             {icon && (
               <img
                 className={classes.templateIcon}
@@ -60,81 +60,81 @@ export const TemplateCard = ({ template, handleTemplateClick }: TemplateCardProp
                 fontSize: (t) => t.typography.pxToRem(18),
               }}
             />
-          </Stack>
-          <Typography variant={"caption"} className={classes.templateDescription}>
+          </div>
+          <span className={`text-xs ${classes.templateDescription}`}>
             {description}
-          </Typography>
-        </Stack>
-        <Stack spacing={2}>
-          <Box>
-            <Grid container alignItems={"center"} spacing={1}>
-              <Grid item lg={4}>
-                <Stack spacing={0.5}>
-                  <Typography variant={"caption"}>Language:</Typography>
-                  <Stack direction="row" spacing={0.5}>
+          </span>
+        </div>
+        <div className="flex flex-col gap-4">
+          <div>
+            <div className="grid grid-cols-3 gap-2 items-center">
+              <div className="col-span-1">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs">Language:</span>
+                  <div className="flex flex-row gap-1">
                     <UseSpriteSymbol name={getIconByPattern(_language)} width={16} height={16} />
-                    <Typography variant={"caption"} color={theme.palette.secondary.dark}>
+                    <span className="text-xs text-muted-foreground">
                       {codebaseMappingByLang?.language?.name || capitalizeFirstLetter(_language)}
-                    </Typography>
-                  </Stack>
-                </Stack>
-              </Grid>
-              <Grid item lg={4}>
-                <Stack spacing={0.5}>
-                  <Typography variant={"caption"}>Framework:</Typography>
-                  <Stack direction="row" spacing={0.5}>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="col-span-1">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs">Framework:</span>
+                  <div className="flex flex-row gap-1">
                     <UseSpriteSymbol name={getIconByPattern(_framework)} width={16} height={16} />
-                    <Typography variant={"caption"} color={theme.palette.secondary.dark}>
+                    <span className="text-xs text-muted-foreground">
                       {framework
                         ? codebaseMappingByLang?.frameworks?.[framework]?.name ||
                           (_framework && capitalizeFirstLetter(_framework)) ||
                           "N/A"
                         : "N/A"}
-                    </Typography>
-                  </Stack>
-                </Stack>
-              </Grid>
-              <Grid item lg={4}>
-                <Stack spacing={0.5}>
-                  <Typography variant={"caption"}>Build Tool:</Typography>
-                  <Stack direction="row" spacing={0.5}>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="col-span-1">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs">Build Tool:</span>
+                  <div className="flex flex-row gap-1">
                     <UseSpriteSymbol name={getIconByPattern(_buildTool)} width={16} height={16} />
-                    <Typography variant={"caption"} color={theme.palette.secondary.dark}>
+                    <span className="text-xs text-muted-foreground">
                       {codebaseMappingByLang?.buildTools?.[buildTool]?.name || capitalizeFirstLetter(_buildTool)}
-                    </Typography>
-                  </Stack>
-                </Stack>
-              </Grid>
-            </Grid>
-          </Box>
-          <Box>
-            <Grid container spacing={1} alignItems={"center"}>
-              <Grid item lg={4}>
-                <Stack spacing={0.5} alignItems="flex-start">
-                  <Typography variant={"caption"}>Type:</Typography>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div className="grid grid-cols-3 gap-2 items-center">
+              <div className="col-span-1">
+                <div className="flex flex-col gap-1 items-start">
+                  <span className="text-xs">Type:</span>
                   <Chip size={"small"} label={type} sx={{ backgroundColor: theme.palette.secondary.main }} />
-                </Stack>
-              </Grid>
-              <Grid item lg={4}>
-                <Stack spacing={0.5} alignItems="flex-start">
-                  <Typography variant={"caption"}>Category:</Typography>
+                </div>
+              </div>
+              <div className="col-span-1">
+                <div className="flex flex-col gap-1 items-start">
+                  <span className="text-xs">Category:</span>
                   <Chip size={"small"} label={category} sx={{ backgroundColor: theme.palette.secondary.main }} />
-                </Stack>
-              </Grid>
-              <Grid item lg={4}>
-                <Stack spacing={0.5} alignItems="flex-start">
-                  <Typography variant={"caption"}>Maturity:</Typography>
+                </div>
+              </div>
+              <div className="col-span-1">
+                <div className="flex flex-col gap-1 items-start">
+                  <span className="text-xs">Maturity:</span>
                   <Chip size={"small"} label={maturity} sx={{ backgroundColor: theme.palette.secondary.main }} />
-                </Stack>
-              </Grid>
-            </Grid>
-          </Box>
-        </Stack>
-        <Stack direction="row" spacing={2} alignItems="flex-end" justifyContent="space-between">
-          <Stack spacing={0.5}>
-            <Typography variant={"caption"}>Version</Typography>
-            <Typography variant={"body1"}>{version}</Typography>
-          </Stack>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-row gap-4 items-end justify-between">
+          <div className="flex flex-col gap-1">
+            <span className="text-xs">Version</span>
+            <p className="text-base">{version}</p>
+          </div>
           <ButtonWithPermission
             allowed={templatePermissions.data.create.allowed}
             reason={templatePermissions.data.create.reason}
@@ -147,8 +147,8 @@ export const TemplateCard = ({ template, handleTemplateClick }: TemplateCardProp
           >
             use template
           </ButtonWithPermission>
-        </Stack>
-      </Stack>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 };

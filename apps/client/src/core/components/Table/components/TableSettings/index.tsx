@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, Tooltip } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip } from "@mui/material";
 import React from "react";
 import { Table } from "../..";
 import { TABLE_CELL_DEFAULTS, TABLE_DEFAULT_WIDTH, TABLE_DEFAULT_WIDTH_WITH_SELECTION } from "../../constants";
@@ -190,7 +190,7 @@ export const TableSettings = <DataType,>({
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle>{`Table "${name}" Settings`}</DialogTitle>
         <DialogContent>
-          <Stack spacing={2}>
+          <div className="flex flex-col gap-4">
             <Table
               id="tableSettings"
               name="Table Settings"
@@ -225,7 +225,7 @@ export const TableSettings = <DataType,>({
                 reflectInURL: false,
               }}
             />
-          </Stack>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>close</Button>

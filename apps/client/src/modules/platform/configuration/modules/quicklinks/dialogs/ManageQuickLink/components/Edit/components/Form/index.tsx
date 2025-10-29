@@ -1,22 +1,21 @@
-import { Grid } from "@mui/material";
 import { Icon, URL, Visible } from "../../../fields";
 
 export const Form = () => {
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12}>
-        <Grid container spacing={2}>
-          <Grid item xs={8}>
+    <div className="flex flex-col gap-4">
+      <div>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="col-span-2">
             <URL />
-          </Grid>
-          <Grid item xs={4} sx={{ marginTop: "auto" }}>
+          </div>
+          <div className="col-span-1 self-end">
             <Visible />
-          </Grid>
-        </Grid>
-      </Grid>
-      <Grid item xs={12}>
+          </div>
+        </div>
+      </div>
+      <div>
         <Icon />
-      </Grid>
-    </Grid>
+      </div>
+    </div>
   );
 };

@@ -1,4 +1,4 @@
-import { Box, Button, Stack, Tooltip } from "@mui/material";
+import { Button, Tooltip } from "@mui/material";
 import React from "react";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
@@ -56,8 +56,8 @@ export const Actions = ({ handleCloseCreateDialog }: { handleCloseCreateDialog: 
   const mode = registryType ? FORM_MODES.EDIT : FORM_MODES.CREATE;
 
   return (
-    <Stack direction="row" spacing={2} sx={{ justifyContent: "space-between" }}>
-      <Box sx={{ mr: "auto" }}>
+    <div className="flex justify-between gap-2">
+      <div className="mr-auto">
         {mode === FORM_MODES.EDIT ? (
           <ConditionalWrapper
             condition={!canReset}
@@ -90,8 +90,8 @@ export const Actions = ({ handleCloseCreateDialog }: { handleCloseCreateDialog: 
             cancel
           </Button>
         )}
-      </Box>
-      <Stack direction="row" spacing={2}>
+      </div>
+      <div className="flex gap-2">
         <Button
           onClick={() => {
             resetAll();
@@ -127,7 +127,7 @@ export const Actions = ({ handleCloseCreateDialog }: { handleCloseCreateDialog: 
             save
           </Button>
         </ConditionalWrapper>
-      </Stack>
-    </Stack>
+      </div>
+    </div>
   );
 };

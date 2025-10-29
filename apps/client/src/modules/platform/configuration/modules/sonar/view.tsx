@@ -6,7 +6,7 @@ import { FORM_MODES } from "@/core/types/forms";
 import { useSecretPermissions, useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
 import { useQuickLinkPermissions, useQuickLinkWatchItem } from "@/k8s/api/groups/KRCI/QuickLink";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionSummary, Typography, AccordionDetails, Grid, Tooltip } from "@mui/material";
+import { Accordion, AccordionSummary, AccordionDetails, Tooltip } from "@mui/material";
 import { getIntegrationSecretStatus, integrationSecretName, systemQuickLink } from "@my-project/shared";
 import React from "react";
 import { ManageSonar } from "./components/ManageSonar";
@@ -66,36 +66,36 @@ export default function SonarConfigurationPage() {
       <LoadingWrapper isLoading={isLoading}>
         <Accordion expanded>
           <AccordionSummary style={{ cursor: "default" }}>
-            <Typography variant={"h6"}>
-              <Grid container spacing={1} alignItems={"center"}>
-                <Grid item sx={{ mr: (t) => t.typography.pxToRem(5) }}>
+            <h6 className="text-base font-medium">
+              <div className="flex gap-2 items-center">
+                <div className="mr-1">
                   <StatusIcon
                     Icon={statusIcon.component}
                     color={statusIcon.color}
                     Title={
                       <>
-                        <Typography variant={"subtitle2"} style={{ fontWeight: 600 }}>
+                        <p className="text-sm font-semibold">
                           {`Connected: ${status.connected === undefined ? "Unknown" : status.connected}`}
-                        </Typography>
+                        </p>
                         {!!status.statusError && (
-                          <Typography variant={"subtitle2"} sx={{ mt: (t) => t.typography.pxToRem(10) }}>
+                          <p className="text-sm font-medium mt-3">
                             {status.statusError}
-                          </Typography>
+                          </p>
                         )}
                       </>
                     }
                   />
-                </Grid>
-                <Grid item>{sonarSecret?.metadata.name}</Grid>
+                </div>
+                <div>{sonarSecret?.metadata.name}</div>
                 {!!ownerReference && (
-                  <Grid item>
+                  <div>
                     <Tooltip title={`Managed by ${ownerReference}`}>
                       <ShieldX size={20} />
                     </Tooltip>
-                  </Grid>
+                  </div>
                 )}
-              </Grid>
-            </Typography>
+              </div>
+            </h6>
           </AccordionSummary>
           <AccordionDetails>
             <ManageSonar

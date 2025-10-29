@@ -1,19 +1,8 @@
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import makeStyles from "@mui/styles/makeStyles";
-import Stack from "@mui/material/Stack";
-import { styled } from "@mui/material/styles";
 import { PieChart, Pie, Label } from "recharts";
 import React from "react";
+import { cn } from "@/core/utils/classname";
 import { ErrorContent } from "../ErrorContent";
 import { RequestError } from "@/core/types/global";
-
-const useStyle = makeStyles(() => ({
-  chart: {
-    marginLeft: "auto",
-    marginRight: "auto",
-  },
-}));
 
 export interface ChartDataPoint {
   name: string;
@@ -35,24 +24,6 @@ export interface PercentageCircleChartProps {
   thickness?: number;
 }
 
-const StyledTileChartWrapper = styled(Box)<{ error: boolean }>(({ theme, error }) => ({
-  padding: theme.typography.pxToRem(24),
-  boxShadow: "0px 1px 10px 0px #0024461f",
-  borderLeft: `4px solid ${error ? theme.palette.error.main : theme.palette.primary.main}`,
-  borderRadius: 4,
-  overflow: "hidden",
-  height: "100%",
-  "& .recharts-sector": { stroke: "none" },
-  "& .recharts-wrapper": {
-    width: "100% !important",
-    height: "100% !important",
-    lineHeight: 0,
-  },
-  "& .recharts-surface": {
-    width: "100%",
-    height: "100%",
-  },
-}));
 
 export const PercentageCircleChart = ({
   title,
@@ -67,11 +38,10 @@ export const PercentageCircleChart = ({
   totalProps = {},
   thickness = 16,
 }: PercentageCircleChartProps) => {
-  const classes = useStyle();
   const chartSize = size * 0.8;
   const isLoading = total < 0;
 
-  const fillColor = "#1976d2";
+  const fillColor = "#0094FF";
   const strokeColor = "#e0e0e0";
   const labelColor = "#424242";
 
@@ -98,25 +68,51 @@ export const PercentageCircleChart = ({
   };
 
   return (
-    <StyledTileChartWrapper error={!!error}>
-      <Stack>
-        <Stack direction="row" alignItems="center" spacing={2}>
-          <Typography variant="h6" color="primary.dark">
-            {title}
-          </Typography>
-        </Stack>
+    <div
+      className={cn(
+        "p-6",
+        "shadow-[0px_1px_10px_0px_rgba(0,36,70,0.12)]",
+        "border-l-4",
+        error ? "border-destructive" : "border-primary",
+        "rounded",
+        "overflow-hidden",
+        "h-full"
+      )}
+    >
+      <style>{`
+        .percentage-chart-wrapper .recharts-sector {
+          stroke: none;
+        }
+        .percentage-chart-wrapper .recharts-wrapper {
+          width: 100% !important;
+          height: 100% !important;
+          line-height: 0;
+        }
+        .percentage-chart-wrapper .recharts-surface {
+          width: 100%;
+          height: 100%;
+        }
+      `}</style>
+      <div className="flex flex-col percentage-chart-wrapper">
+        <div className="flex flex-row items-center gap-4">
+          {title && (
+            <h6 className="text-lg font-medium text-[#002446]">
+              {title}
+            </h6>
+          )}
+        </div>
         {error ? (
           <ErrorContent error={error} orientation="vertical" />
         ) : (
-          <Stack direction="row" spacing={2}>
-            <Box sx={BoxSx}>
-              <Box aria-busy={isLoading} aria-live="polite" justifyContent="center" alignItems="center" mx="auto">
+          <div className="flex flex-row gap-4">
+            <div style={BoxSx as React.CSSProperties}>
+              <div aria-busy={isLoading} aria-live="polite" className="flex justify-center items-center mx-auto">
                 <PieChart
                   cx={size / 2}
                   cy={size / 2}
                   width={chartSize}
                   height={chartSize}
-                  className={classes.chart}
+                  className="mx-auto"
                   margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
                 >
                   <Pie
@@ -142,16 +138,16 @@ export const PercentageCircleChart = ({
                   </Pie>
                 </PieChart>
                 {!isLoading && typeof legend === "string" && (
-                  <Typography align="center" fontSize="1.1em" fontWeight="normal">
+                  <p className="text-center text-[1.1em] font-normal">
                     {legend}
-                  </Typography>
+                  </p>
                 )}
-              </Box>
-            </Box>
-            {legend && typeof legend !== "string" && <Box sx={{ pt: "16px" }}>{legend}</Box>}
-          </Stack>
+              </div>
+            </div>
+            {legend && typeof legend !== "string" && <div className="pt-4">{legend}</div>}
+          </div>
         )}
-      </Stack>
-    </StyledTileChartWrapper>
+      </div>
+    </div>
   );
 };

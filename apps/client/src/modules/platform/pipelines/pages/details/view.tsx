@@ -2,7 +2,6 @@ import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { Tabs } from "@/core/providers/Tabs/components/Tabs";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
-import { Stack, Typography } from "@mui/material";
 import { TriangleAlert } from "lucide-react";
 import React from "react";
 import { PipelineActionsMenu } from "../../components/PipelineActionsMenu";
@@ -22,18 +21,18 @@ export default function PipelineDetailsPageContent() {
   const renderPageContent = React.useCallback(() => {
     if (pipelineWatch.query.error) {
       return (
-        <Stack spacing={1}>
+        <div className="flex flex-col gap-1">
           <LoadingWrapper isLoading={false}>
-            <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
+            <div className="flex items-center justify-center gap-1">
               <TriangleAlert size={48} />
-              <Stack spacing={1} direction="row" alignItems="center">
-                <Typography component="span" fontSize={(t) => t.typography.pxToRem(14)} color="#596D80">
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-muted-foreground">
                   No pipeline was found for the requested resource. Please ensure you have checked the correct resource.
-                </Typography>
-              </Stack>
-            </Stack>
+                </span>
+              </div>
+            </div>
           </LoadingWrapper>
-        </Stack>
+        </div>
       );
     }
 
@@ -50,14 +49,14 @@ export default function PipelineDetailsPageContent() {
     }
 
     return (
-      <Stack direction="row" spacing={2} alignItems="center">
+      <div className="flex items-center gap-2">
         <PipelineActionsMenu
           data={{
             pipeline: pipeline!,
           }}
           variant="inline"
         />
-      </Stack>
+      </div>
     );
   };
 

@@ -3,7 +3,7 @@ import { useStepperContext } from "@/core/providers/Stepper/hooks";
 import { ValueOf } from "@/core/types/global";
 import { useCodebaseCRUD } from "@/k8s/api/groups/KRCI/Codebase";
 import { configurationStepper, mainTabs } from "@/modules/platform/codebases/dialogs/ManageCodebase/constants";
-import { Box, Button, Stack, useTheme } from "@mui/material";
+import { Button, useTheme } from "@mui/material";
 import { codebaseCreationStrategy, codebaseLabels, createCodebaseDraftObject } from "@my-project/shared";
 import React from "react";
 import { useTypedFormContext } from "../../../../../../hooks/useFormContext";
@@ -170,30 +170,30 @@ export const FormActions = ({ baseDefaultValues, setActiveTab }: FormActionsProp
   const configurationFormIsDirty = Object.keys(dirtyFields).length > 2; // 2 is the number of fields that are always dirty
 
   return (
-    <Stack direction="row" spacing={2} justifyContent="space-between" width="100%">
-      <Stack direction="row" spacing={1}>
-        <Box sx={{ color: theme.palette.text.primary }}>
+    <div className="flex justify-between w-full gap-2">
+      <div className="flex gap-1">
+        <div className="text-foreground">
           <Button onClick={handleClose} size="small" color="inherit">
             cancel
           </Button>
-        </Box>
+        </div>
         <Button onClick={handleResetFields} size="small" disabled={!configurationFormIsDirty}>
           undo changes
         </Button>
-      </Stack>
+      </div>
       <div>
         <TabPanel value={activeStep} index={configurationStepper.CODEBASE_INFO.idx}>
-          <Stack direction="row">
+          <div className="flex">
             <Button onClick={() => setActiveTab(mainTabs.selection)} size="small">
               back
             </Button>
             <Button onClick={handleProceed} variant={"contained"} color={"primary"} size="small">
               next
             </Button>
-          </Stack>
+          </div>
         </TabPanel>
         <TabPanel value={activeStep} index={configurationStepper.ADVANCED_SETTINGS.idx}>
-          <Stack direction="row">
+          <div className="flex">
             <Button
               onClick={() => {
                 setActiveStep(configurationStepper.CODEBASE_INFO.idx);
@@ -211,9 +211,9 @@ export const FormActions = ({ baseDefaultValues, setActiveTab }: FormActionsProp
             >
               create
             </Button>
-          </Stack>
+          </div>
         </TabPanel>
       </div>
-    </Stack>
+    </div>
   );
 };

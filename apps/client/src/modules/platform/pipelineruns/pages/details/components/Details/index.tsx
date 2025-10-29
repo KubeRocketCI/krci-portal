@@ -1,4 +1,3 @@
-import { Grid, Stack } from "@mui/material";
 import React from "react";
 import { MenuAccordion } from "./components/MenuAccordion";
 import { TaskRunStepWrapper } from "./components/TaskRunStepWrapper";
@@ -80,9 +79,9 @@ export const Details = () => {
 
   return (
     <LoadingWrapper isLoading={isLoading}>
-      <Grid container rowSpacing={3}>
-        <Grid item xs={2}>
-          <Stack>
+      <div className="grid grid-cols-12 gap-6">
+        <div className="col-span-2">
+          <div className="flex flex-col">
             {pipelineRunTasksByNameMap &&
               pipelineRunTasks!.allTasks?.map(({ name: taskRunName }) =>
                 taskRunName ? (
@@ -93,12 +92,12 @@ export const Details = () => {
                   />
                 ) : null
               )}
-          </Stack>
-        </Grid>
-        <Grid item xs={10}>
+          </div>
+        </div>
+        <div className="col-span-10">
           {renderDetails()}
-        </Grid>
-      </Grid>
+        </div>
+      </div>
     </LoadingWrapper>
   );
 };

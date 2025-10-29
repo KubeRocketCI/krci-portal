@@ -4,7 +4,7 @@ import { Button } from "@/core/components/ui/button";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { useClusterStore } from "@/k8s/store";
 import { PATH_CONFIG_SONAR_FULL } from "@/modules/platform/configuration/modules/sonar/route";
-import { CircularProgress, Stack, Typography } from "@mui/material";
+import { CircularProgress } from "@mui/material";
 import { NormalizedSonarQubeMetrics } from "@my-project/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -108,7 +108,7 @@ export const SonarMetrics = ({ componentName }: SonarQubeMetricsProps) => {
       hasData={!!sonarDataQuery.data?.metrics && !!sonarDataQuery.data?.baseUrl}
       isLoading={sonarDataQuery.isLoading}
       text={
-        <Typography variant={"body1"} color="secondary.dark" component={"div"}>
+        <p className="text-base text-muted-foreground">
           No metrics available.{" "}
           <Button variant="link" asChild className="p-0!">
             <Link
@@ -121,13 +121,13 @@ export const SonarMetrics = ({ componentName }: SonarQubeMetricsProps) => {
             </Link>
           </Button>{" "}
           and enable reporting in your pipeline.
-        </Typography>
+        </p>
       }
     >
       {sonarDataQuery.isLoading ? (
         <CircularProgress />
       ) : sonarDataQuery.data?.baseUrl ? (
-        <Stack spacing={3} alignItems={"center"} direction="row">
+        <div className="flex items-center gap-3">
           <MetricsItem
             titleIcon={<Bug {...IconProps} />}
             title="Bugs"
@@ -219,7 +219,7 @@ export const SonarMetrics = ({ componentName }: SonarQubeMetricsProps) => {
             leftSlot={<Rating rating={getDuplicationRating(sonarDataQuery.data!.metrics)} hideValue />}
             rightSlot={<Value value={`${sonarDataQuery.data!.metrics?.duplicated_lines_density}%`} />}
           />
-        </Stack>
+        </div>
       ) : null}
     </NoDataWidgetWrapper>
   );

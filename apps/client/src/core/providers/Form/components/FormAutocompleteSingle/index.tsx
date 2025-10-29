@@ -1,5 +1,5 @@
 import { SelectOption } from "@/core/providers/Form/types";
-import { Autocomplete, AutocompleteRenderInputParams, FormControl, Stack, TextField, Tooltip } from "@mui/material";
+import { Autocomplete, AutocompleteRenderInputParams, FormControl, TextField, Tooltip } from "@mui/material";
 import { Info } from "lucide-react";
 import { Controller, Path, PathValue } from "react-hook-form";
 import { FormAutocompleteSingleProps } from "./types";
@@ -38,7 +38,7 @@ const FormAutocompleteSingleInner = React.forwardRef(
           ...originalInputProps,
           ...autocompleteInputProps,
           endAdornment: (
-            <Stack direction="row" alignItems="center" spacing={0.5}>
+            <div className="flex flex-row items-center gap-1">
               {autocompleteInputProps.endAdornment}
               {userEndAdornment}
               {tooltipText && (
@@ -46,7 +46,7 @@ const FormAutocompleteSingleInner = React.forwardRef(
                   <Info size={16} />
                 </Tooltip>
               )}
-            </Stack>
+            </div>
           ),
         };
       },
@@ -54,7 +54,7 @@ const FormAutocompleteSingleInner = React.forwardRef(
     );
 
     return (
-      <Stack spacing={1}>
+      <div className="flex flex-col gap-2">
         <FormControl fullWidth>
           <Controller
             name={name}
@@ -116,7 +116,7 @@ const FormAutocompleteSingleInner = React.forwardRef(
             {...props}
           />
         </FormControl>
-      </Stack>
+      </div>
     );
   }
 );

@@ -1,6 +1,6 @@
 import React from "react";
 import { Handle, Position } from "@xyflow/react";
-import { Box, Typography, Tooltip, Chip } from "@mui/material";
+import { Tooltip, Chip } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { getTaskRunStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun/utils";
@@ -70,34 +70,34 @@ export const PipelineRunTaskNode: React.FC<{
   const statusText = getStatusText();
 
   const tooltipContent = (
-    <Box>
-      <Typography variant="subtitle2" fontWeight={600}>
+    <div>
+      <p className="text-sm font-semibold">
         {displayName}
-      </Typography>
-      <Typography variant="body2" sx={{ mt: 0.5 }}>
+      </p>
+      <p className="text-sm mt-1">
         Status: {statusText}
-      </Typography>
+      </p>
       {duration && (
-        <Typography variant="body2" sx={{ mt: 0.5 }}>
+        <p className="text-sm mt-1">
           Duration: {duration}
-        </Typography>
+        </p>
       )}
       {data.task?.spec?.description && (
-        <Typography variant="body2" sx={{ mt: 0.5 }}>
+        <p className="text-sm mt-1">
           {data.task.spec.description}
-        </Typography>
+        </p>
       )}
       {data.taskRun?.status?.steps && data.taskRun.status.steps.length > 0 && (
-        <Typography variant="caption" sx={{ mt: 0.5, display: "block" }}>
+        <span className="text-xs mt-1 block">
           Steps: {data.taskRun.status.steps.map((step) => step.name).join(", ")}
-        </Typography>
+        </span>
       )}
       {data.isFinally && (
-        <Typography variant="caption" sx={{ mt: 0.5, display: "block", fontStyle: "italic" }}>
+        <span className="text-xs mt-1 block italic">
           Finally task - runs after all main tasks complete
-        </Typography>
+        </span>
       )}
-    </Box>
+    </div>
   );
 
   return (
@@ -115,28 +115,11 @@ export const PipelineRunTaskNode: React.FC<{
       />
 
       <Tooltip title={tooltipContent} arrow placement="top">
-        <Box
-          sx={{
-            width: 180,
-            height: 60,
-            backgroundColor: theme.palette.background.paper,
+        <div
+          className="w-[180px] h-[60px] bg-background rounded-md p-6 flex flex-col justify-center items-center cursor-default relative"
+          style={{
             border: `2px solid ${statusData.color}`,
-            borderRadius: 2,
-            padding: 1.5,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            cursor: "default",
-            position: "relative",
-            pointerEvents: "auto",
-            "&:hover": {
-              borderColor: statusData.color,
-              boxShadow: theme.shadows[4],
-            },
-            ...((data.isFinally || data.isIsolated) && {
-              borderStyle: "dashed",
-            }),
+            borderStyle: data.isFinally || data.isIsolated ? "dashed" : "solid",
           }}
         >
           {/* Task type indicators */}
@@ -157,7 +140,7 @@ export const PipelineRunTaskNode: React.FC<{
           )}
 
           {/* Status icon and task name */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+          <div className="flex items-center gap-4 mb-2">
             {statusData.component && (
               <StatusIcon
                 Icon={statusData.component}
@@ -167,35 +150,18 @@ export const PipelineRunTaskNode: React.FC<{
                 Title={statusText}
               />
             )}
-            <Typography
-              variant="body2"
-              fontWeight={600}
-              textAlign="center"
-              sx={{
-                color: theme.palette.text.primary,
-                lineHeight: 1.2,
-                wordBreak: "break-word",
-              }}
-            >
+            <p className="text-sm font-semibold text-center text-foreground leading-tight break-word">
               {truncatedName}
-            </Typography>
-          </Box>
+            </p>
+          </div>
 
           {/* Task reference */}
           {data.pipelineTask?.taskRef?.name && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              textAlign="center"
-              sx={{
-                fontSize: "0.65rem",
-                lineHeight: 1,
-              }}
-            >
+            <span className="text-xs text-muted-foreground text-center leading-none">
               {data.pipelineTask.taskRef.name}
-            </Typography>
+            </span>
           )}
-        </Box>
+        </div>
       </Tooltip>
 
       {/* Output handle */}

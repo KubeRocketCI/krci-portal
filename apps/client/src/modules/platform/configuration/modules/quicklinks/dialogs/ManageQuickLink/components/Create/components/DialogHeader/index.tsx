@@ -1,18 +1,15 @@
-import { Stack, Typography, useTheme } from "@mui/material";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 
 export const DialogHeader = () => {
-  const theme = useTheme();
-
   return (
-    <Stack direction="row" alignItems={"flex-start"} justifyContent={"space-between"} spacing={1}>
-      <Stack spacing={2}>
-        <Typography fontSize={theme.typography.pxToRem(20)} fontWeight={500}>
+    <div className="flex items-start justify-between gap-1">
+      <div className="flex flex-col gap-2">
+        <h2 className="text-xl font-medium">
           Create Link
-        </Typography>
+        </h2>
         <LearnMoreLink url={EDP_USER_GUIDE.OVERVIEW.url} />
-      </Stack>
-    </Stack>
+      </div>
+    </div>
   );
 };

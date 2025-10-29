@@ -5,9 +5,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Grid,
   TextField,
-  Typography,
 } from "@mui/material";
 import React from "react";
 import { useForm } from "react-hook-form";
@@ -87,38 +85,38 @@ export const DeleteKubeObjectDialog: React.FC<DeleteKubeObjectDialogProps> = (_p
     <Dialog open={open} onClose={handleClosePopup} fullWidth data-testid="dialog">
       <DialogTitle>{dialogTitle}</DialogTitle>
       <DialogContent>
-        <Grid container spacing={1}>
+        <div className="flex flex-col gap-2">
           {!loadingActive && !errorTemplate && (
-            <Grid item xs={12}>
-              <Typography>{description}</Typography>
-            </Grid>
+            <div>
+              <p>{description}</p>
+            </div>
           )}
-          <Grid item xs={12}>
+          <div>
             <form onSubmit={handleSubmit(onSubmit)}>
-              <Grid container spacing={1}>
+              <div className="flex flex-col gap-2">
                 {!!loadingActive && (
-                  <Grid container justifyContent="center">
-                    <Grid item>
+                  <div className="flex justify-center">
+                    <div>
                       <CircularProgress />
-                    </Grid>
-                  </Grid>
+                    </div>
+                  </div>
                 )}
                 {!!errorTemplate && !loadingActive && (
-                  <Grid item xs={12}>
+                  <div>
                     {errorTemplate}
-                  </Grid>
+                  </div>
                 )}
                 {!loadingActive && !errorTemplate && (
-                  <Grid item xs={12}>
+                  <div>
                     <TextField
                       {...register(NAMES.name, { required: true })}
                       label={`Enter "${objectName}" to delete`}
                       variant="outlined"
                       fullWidth
                     />
-                  </Grid>
+                  </div>
                 )}
-                <Grid item xs={12}>
+                <div>
                   <DialogActions>
                     <Button type={"button"} onClick={handleClosePopup}>
                       Cancel
@@ -127,11 +125,11 @@ export const DeleteKubeObjectDialog: React.FC<DeleteKubeObjectDialogProps> = (_p
                       Confirm
                     </Button>
                   </DialogActions>
-                </Grid>
-              </Grid>
+                </div>
+              </div>
             </form>
-          </Grid>
-        </Grid>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

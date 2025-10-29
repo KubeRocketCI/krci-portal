@@ -8,7 +8,7 @@ import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { useTemplatePermissions, useTemplateWatchList } from "@/k8s/api/groups/KRCI/Template";
 import { TABLE } from "@/k8s/constants/tables";
 import { Shop } from "@/k8s/icons/other/Shop";
-import { IconButton, Stack, Tooltip, useTheme } from "@mui/material";
+import { IconButton, Tooltip, useTheme } from "@mui/material";
 import { Template } from "@my-project/shared";
 import { Grid3x2, Rows3 } from "lucide-react";
 import React from "react";
@@ -67,9 +67,9 @@ export const TemplatesTable = () => {
       slots={{
         header: (
           <>
-            <Stack direction="row" spacing={0} alignItems={"center"} justifyContent="space-between">
+            <div className="flex items-center justify-between gap-0">
               <TemplateFilter />
-              <Stack direction="row" alignItems="center">
+              <div className="flex items-center">
                 <Tooltip title={"Block View"}>
                   <IconButton onClick={() => handleChangeViewMode(VIEW_MODES.GRID)} size="large">
                     <Grid3x2 color={theme.palette.action.active} />
@@ -80,8 +80,8 @@ export const TemplatesTable = () => {
                     <Rows3 color={theme.palette.primary.main} />
                   </IconButton>
                 </Tooltip>
-              </Stack>
-            </Stack>
+              </div>
+            </div>
           </>
         ),
       }}

@@ -3,7 +3,7 @@ import { ErrorContent } from "@/core/components/ErrorContent";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionDetails, AccordionSummary, Button, Grid, Link, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Button, Grid, Link } from "@mui/material";
 import React from "react";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
 import { ManageGitOps } from "./components/ManageGitOps";
@@ -81,28 +81,28 @@ export default function GitopsConfigurationPage() {
       <LoadingWrapper isLoading={isLoading}>
         <Accordion expanded>
           <AccordionSummary>
-            <Grid container spacing={1} alignItems={"center"}>
-              <Grid item sx={{ mr: (t) => t.typography.pxToRem(5) }}>
+            <div className="flex gap-2 items-center">
+              <div className="mr-1">
                 <StatusIcon
                   Icon={codebaseStatusIcon.component}
                   color={codebaseStatusIcon.color}
                   isSpinning={codebaseStatusIcon.isSpinning}
                   Title={
                     <>
-                      <Typography variant={"subtitle2"} style={{ fontWeight: 600 }}>
+                      <p className="text-sm font-semibold">
                         {`Status: ${status || "Unknown"}`}
-                      </Typography>
+                      </p>
                       {status === codebaseStatus.failed && (
-                        <Typography variant={"subtitle2"} sx={{ mt: (t) => t.typography.pxToRem(10) }}>
+                        <p className="text-sm font-medium mt-3">
                           {gitOpsCodebase?.status?.detailedMessage}
-                        </Typography>
+                        </p>
                       )}
                     </>
                   }
                 />
-              </Grid>
-              <Grid item>GitOps</Grid>
-              <Grid item sx={{ ml: "auto" }}>
+              </div>
+              <div>GitOps</div>
+              <div className="ml-auto">
                 <Button
                   component={Link}
                   href={gitOpsCodebase?.status?.gitWebUrl}
@@ -111,8 +111,8 @@ export default function GitopsConfigurationPage() {
                 >
                   Go to the Source Code
                 </Button>
-              </Grid>
-            </Grid>
+              </div>
+            </div>
           </AccordionSummary>
           <AccordionDetails>
             <ManageGitOps

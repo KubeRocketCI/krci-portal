@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import { Actions } from "./components/Actions";
 import { JiraServerForm } from "./components/JiraServer";
 import { SecretForm } from "./components/Secret";
@@ -40,17 +39,17 @@ export const ManageJiraServer = ({ jiraServer, secret, ownerReference, handleClo
             secret: secretForm,
           }}
         >
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
+          <div className="flex flex-col gap-6">
+            <div>
               <JiraServerForm />
-            </Grid>
-            <Grid item xs={12}>
+            </div>
+            <div>
               <SecretForm />
-            </Grid>
-            <Grid item xs={12}>
+            </div>
+            <div>
               <Actions />
-            </Grid>
-          </Grid>
+            </div>
+          </div>
         </MultiFormContextProvider>
       </DataContextProvider>
     </div>

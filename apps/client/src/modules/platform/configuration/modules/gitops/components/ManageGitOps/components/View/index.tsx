@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import { useFormContext } from "react-hook-form";
 import { CODEBASE_FORM_NAMES } from "../../names";
 import { ManageGitOpsValues } from "../../types";
@@ -21,19 +20,19 @@ export const View = () => {
 
   return (
     <>
-      <Grid container spacing={2}>
-        <Grid item xs={4}>
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-4">
           <GitServer />
-        </Grid>
+        </div>
         {gitServerProvider !== gitProvider.gerrit && !!gitServerWatch.isReady && (
-          <Grid item xs={5}>
+          <div className="col-span-5">
             <GitRepoPath />
-          </Grid>
+          </div>
         )}
-        <Grid item xs={3}>
+        <div className="col-span-3">
           <Name />
-        </Grid>
-      </Grid>
+        </div>
+      </div>
     </>
   );
 };

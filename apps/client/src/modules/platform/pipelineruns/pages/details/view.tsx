@@ -3,7 +3,6 @@ import { PageWrapper } from "@/core/components/PageWrapper";
 import { ResourceIconLink } from "@/core/components/ResourceIconLink";
 import { Tabs } from "@/core/providers/Tabs/components/Tabs";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
-import { Stack } from "@mui/material";
 import { getPullRequestURL } from "@my-project/shared";
 import { SquareArrowOutUpRight } from "lucide-react";
 import React from "react";
@@ -42,7 +41,7 @@ export default function PipelineRunDetailsPageContent() {
     const pullRequestLink = getPullRequestURL(pipelineRun!);
 
     return (
-      <Stack direction="row" spacing={2} alignItems="center">
+      <div className="flex items-center gap-2">
         {pullRequestLink && (
           <div>
             <ResourceIconLink
@@ -68,7 +67,7 @@ export default function PipelineRunDetailsPageContent() {
           }}
           variant="inline"
         />
-      </Stack>
+      </div>
     );
   };
 

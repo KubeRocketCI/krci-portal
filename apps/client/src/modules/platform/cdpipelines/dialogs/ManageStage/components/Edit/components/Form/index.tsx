@@ -1,22 +1,21 @@
-import { Grid } from "@mui/material";
 import { CleanTemplate, DeployTemplate, TriggerType } from "../../../fields";
 
 export const Form = () => {
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12}>
-        <Grid container spacing={2}>
-          <Grid item xs={6}>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <div className="grid grid-cols-1 gap-4">
+          <div className="col-span-6">
             <TriggerType />
-          </Grid>
-        </Grid>
-      </Grid>
-      <Grid item xs={6}>
+          </div>
+        </div>
+      </div>
+      <div>
         <DeployTemplate />
-      </Grid>
-      <Grid item xs={6}>
+      </div>
+      <div>
         <CleanTemplate />
-      </Grid>
-    </Grid>
+      </div>
+    </div>
   );
 };

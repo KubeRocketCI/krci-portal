@@ -3,7 +3,7 @@ import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { EmptyList } from "@/core/components/EmptyList";
 import { Table } from "@/core/components/Table";
 import { usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
-import { Box, Stack, Tooltip, Typography } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import { pipelineType } from "@my-project/shared";
 import { Trash } from "lucide-react";
 import React from "react";
@@ -88,16 +88,11 @@ export const PipelineRunList = ({
           handleSelectRow: handleSelectRowClick,
           isRowSelected: (row) => selected.indexOf(row.metadata.name) !== -1,
           renderSelectionInfo: (selectedCount: number) => (
-            <Box
-              sx={{
-                visibility: selectedCount ? "visible" : "hidden",
-                pointerEvents: selectedCount ? "auto" : "none",
-              }}
-            >
-              <Stack direction="row" alignItems="center" spacing={2}>
-                <Box sx={{ minWidth: (t) => t.typography.pxToRem(150) }}>
-                  <Typography variant={"body1"}>{selectedCount} item(s) selected</Typography>
-                </Box>
+            <div className={selectedCount ? "visible" : "invisible pointer-events-none"}>
+              <div className="flex flex-row items-center gap-4">
+                <div className="min-w-[150px]">
+                  <p className="text-base">{selectedCount} item(s) selected</p>
+                </div>
                 <ConditionalWrapper
                   condition={pipelineRunPermissions.data.delete.allowed}
                   wrapper={(children) => (
@@ -106,7 +101,7 @@ export const PipelineRunList = ({
                     </Tooltip>
                   )}
                 >
-                  <Box sx={{ color: (t) => t.palette.secondary.dark }}>
+                  <div className="text-secondary-700">
                     <ButtonWithPermission
                       ButtonProps={{
                         size: "small",
@@ -121,10 +116,10 @@ export const PipelineRunList = ({
                     >
                       delete
                     </ButtonWithPermission>
-                  </Box>
+                  </div>
                 </ConditionalWrapper>
-              </Stack>
-            </Box>
+              </div>
+            </div>
           ),
         }}
         slots={tableSlots}

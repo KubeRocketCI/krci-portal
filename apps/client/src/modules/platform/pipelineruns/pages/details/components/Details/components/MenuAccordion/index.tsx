@@ -1,7 +1,7 @@
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { getStepStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun/utils/getStepStatusIcon";
 import { router } from "@/core/router";
-import { Accordion, Stack, Typography, useTheme } from "@mui/material";
+import { Accordion, useTheme } from "@mui/material";
 import { ApprovalTask, approvalTaskAction, getTaskRunStepStatus, Task, TaskRun } from "@my-project/shared";
 import { ChevronDown } from "lucide-react";
 import React from "react";
@@ -98,7 +98,7 @@ export const MenuAccordion = ({
             : {}),
         }}
       >
-        <Stack direction="row" alignItems="center" spacing={2}>
+        <div className="flex items-center gap-2">
           <StatusIcon
             Icon={taskStatusIcon.component}
             color={taskStatusIcon.color}
@@ -106,11 +106,11 @@ export const MenuAccordion = ({
             Title={statusTitle}
             width={20}
           />
-          <Typography>{taskRunName}</Typography>
-        </Stack>
+          <span>{taskRunName}</span>
+        </div>
       </StyledAccordionSummary>
       <StyledAccordionDetails>
-        <Stack>
+        <div className="flex flex-col">
           {taskSteps?.map((step) => {
             const taskRunStepName = step?.name;
 
@@ -125,7 +125,7 @@ export const MenuAccordion = ({
                 onClick={() => handleAccordionChange(taskRunName, taskRunStepName)}
                 isActive={isActive}
               >
-                <Stack direction="row" alignItems="center" spacing={2}>
+                <div className="flex items-center gap-2">
                   <StatusIcon
                     Icon={stepStatusIcon.component}
                     color={stepStatusIcon.color}
@@ -133,18 +133,14 @@ export const MenuAccordion = ({
                     Title={`Status: ${stepStatus.status}. Reason: ${stepStatus.reason}`}
                     width={20}
                   />
-                  <Typography
-                    fontSize={(t) => t.typography.pxToRem(14)}
-                    fontWeight={isActive ? 500 : 400}
-                    textAlign="left"
-                  >
+                  <span className={`text-sm ${isActive ? 'font-medium' : 'font-normal'} text-left`}>
                     {taskRunStepName}
-                  </Typography>
-                </Stack>
+                  </span>
+                </div>
               </StyledAccordionChildBtn>
             );
           })}
-        </Stack>
+        </div>
       </StyledAccordionDetails>
     </Accordion>
   );

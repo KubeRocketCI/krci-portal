@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import { Actions } from "./components/Actions";
 import { ConfigMapForm } from "./components/ConfigMap";
 import { UseSameAccount } from "./components/fields";
@@ -85,14 +84,14 @@ export const ManageRegistry = ({
           }}
           sharedForm={sharedForm.form}
         >
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
+          <div className="flex flex-col gap-6">
+            <div>
               <ConfigMapForm />
-            </Grid>
+            </div>
             {satisfiesType(registryTypeFieldValue, [containerRegistryType.ecr]) && (
-              <Grid item xs={12}>
+              <div>
                 <ServiceAccountForm />
-              </Grid>
+              </div>
             )}
             {satisfiesType(registryTypeFieldValue, [
               containerRegistryType.harbor,
@@ -101,9 +100,9 @@ export const ManageRegistry = ({
               containerRegistryType.dockerhub,
               containerRegistryType.ghcr,
             ]) && (
-              <Grid item xs={12}>
+              <div>
                 <PushAccountForm />
-              </Grid>
+              </div>
             )}
             {satisfiesType(registryTypeFieldValue, [
               containerRegistryType.harbor,
@@ -111,9 +110,9 @@ export const ManageRegistry = ({
               containerRegistryType.dockerhub,
               containerRegistryType.ghcr,
             ]) && (
-              <Grid item xs={12}>
+              <div>
                 <UseSameAccount />
-              </Grid>
+              </div>
             )}
             {satisfiesType(registryTypeFieldValue, [
               containerRegistryType.harbor,
@@ -121,14 +120,14 @@ export const ManageRegistry = ({
               containerRegistryType.dockerhub,
               containerRegistryType.ghcr,
             ]) && (
-              <Grid item xs={12}>
+              <div>
                 <PullAccountForm />
-              </Grid>
+              </div>
             )}
-            <Grid item xs={12}>
+            <div>
               <Actions handleCloseCreateDialog={handleCloseCreateDialog} />
-            </Grid>
-          </Grid>
+            </div>
+          </div>
         </MultiFormContextProvider>
       </DataContextProvider>
     </div>

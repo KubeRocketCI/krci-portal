@@ -8,7 +8,6 @@ import { useViewModeContext } from "@/core/providers/ViewMode/hooks";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { useClusterStore } from "@/k8s/store";
 import { PATH_CDPIPELINE_STAGE_DETAILS_FULL } from "@/modules/platform/cdpipelines/pages/stage-details/route";
-import { Stack, Typography } from "@mui/material";
 import { getApplicationStatus, quickLinkLabels, systemQuickLink } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import React from "react";
@@ -148,11 +147,11 @@ export const Stage = ({ stageWithApplications: { stage, applications } }: Enviro
   return (
     <StyledCardWrapper>
       <LoadingWrapper isLoading={!stageIsLoaded}>
-        <Stack spacing={2}>
+        <div className="flex flex-col gap-4">
           <StyledCardHeader stageStatusColor={stageStatusIcon.color} variant="outlined">
-            <Stack spacing={1}>
-              <Stack spacing={2} justifyContent="space-between" direction="row">
-                <Stack direction="row" spacing={1} alignItems="center">
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-4 justify-between flex-row">
+                <div className="flex flex-row gap-2 items-center">
                   <Button variant="link" asChild className="p-0 text-2xl font-medium">
                     <Link
                       to={PATH_CDPIPELINE_STAGE_DETAILS_FULL}
@@ -166,40 +165,40 @@ export const Stage = ({ stageWithApplications: { stage, applications } }: Enviro
                       {stage.spec.name.toUpperCase()}
                     </Link>
                   </Button>{" "}
-                  <Typography variant="caption" color="secondary.dark">
-                    ({stage.spec.clusterName})
-                  </Typography>
-                </Stack>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="caption" color="primary.dark">
+                  <span className="text-xs text-muted-foreground">
+                      ({stage.spec.clusterName})
+                  </span>
+                </div>
+                <div className="flex flex-row gap-2 items-center">
+                  <span className="text-xs text-foreground">
                     Open In:
-                  </Typography>
-                  <Stack direction="row" spacing={1}>
+                  </span>
+                  <div className="flex flex-row gap-2">
                     {renderArgoCDQuickLink()}
                     {renderMonitoringQuickLink()}
                     {renderLoggingQuickLink()}
-                  </Stack>
-                </Stack>
-              </Stack>
-              <Stack spacing={1}>
-                <Stack spacing={1} direction="row">
-                  <Typography variant="caption" color="primary.dark">
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-2 flex-row">
+                  <span className="text-xs text-foreground">
                     Namespace:
-                  </Typography>
+                  </span>
                   <StyledChip label={<TextWithTooltip text={stage.spec.namespace} />} />
-                </Stack>
-                <Stack spacing={1} direction="row">
-                  <Typography variant="caption" color="primary.dark">
+                </div>
+                <div className="flex gap-2 flex-row">
+                    <span className="text-xs text-foreground">
                     Trigger Type:
-                  </Typography>
+                  </span>
                   <StyledChip label={<TextWithTooltip text={stage.spec.triggerType} />} />
-                </Stack>
-              </Stack>
-            </Stack>
+                </div>
+              </div>
+            </div>
           </StyledCardHeader>
 
           <StyledCardBody>
-            <Stack spacing={2}>
+            <div className="flex flex-col gap-4">
               <LoadingWrapper isLoading={quickLinksUrlListWatch.isLoading}>
                 {filteredApplications.map((el) => {
                   const key = el.argoApplication?.metadata.name;
@@ -217,9 +216,9 @@ export const Stage = ({ stageWithApplications: { stage, applications } }: Enviro
                   ) : null;
                 })}
               </LoadingWrapper>
-            </Stack>
+            </div>
           </StyledCardBody>
-        </Stack>
+        </div>
       </LoadingWrapper>
     </StyledCardWrapper>
   );

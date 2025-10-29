@@ -1,5 +1,5 @@
 import { FormTextField } from "@/core/providers/Form/components/FormTextField";
-import { Button, FormControl, Grid, TextField, useTheme } from "@mui/material";
+import { Button, FormControl, TextField, useTheme } from "@mui/material";
 import { Pencil } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { createAdvancedMappingRowName } from "../../constants";
@@ -20,12 +20,12 @@ export const AdvancedJiraMappingRow = ({
   const theme = useTheme();
 
   return (
-    <Grid item xs={12}>
-      <Grid container spacing={2}>
-        <Grid item xs={5}>
+    <div>
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-5">
           <TextField disabled value={label} fullWidth />
-        </Grid>
-        <Grid item xs={5}>
+        </div>
+        <div className="col-span-5">
           <FormControl fullWidth>
             <FormTextField
               {...register(createAdvancedMappingRowName(value), {
@@ -37,15 +37,8 @@ export const AdvancedJiraMappingRow = ({
               errors={errors}
             />
           </FormControl>
-        </Grid>
-        <Grid
-          item
-          xs={2}
-          direction={"column"}
-          justifyContent={"flex-end"}
-          alignItems={"center"}
-          style={{ display: "flex" }}
-        >
+        </div>
+        <div className="col-span-2 flex flex-col justify-end items-center">
           <Button
             type={"button"}
             size={"small"}
@@ -55,8 +48,8 @@ export const AdvancedJiraMappingRow = ({
           >
             <Pencil size={20} color={theme.palette.grey["500"]} />
           </Button>
-        </Grid>
-      </Grid>
-    </Grid>
+        </div>
+      </div>
+    </div>
   );
 };

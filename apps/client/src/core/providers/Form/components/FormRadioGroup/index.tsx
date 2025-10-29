@@ -3,7 +3,6 @@ import {
   FormControl,
   FormControlLabel,
   FormHelperText,
-  Grid,
   Radio,
   RadioGroup,
   Tooltip,
@@ -40,14 +39,14 @@ const FormRadioGroupInner = React.forwardRef(
     const classes = useStyles();
 
     return (
-      <Grid container spacing={1}>
-        <Grid item xs={12} style={{ display: "flex" }}>
+      <div className="flex flex-col gap-2">
+        <div className="flex">
           <FormControl error={hasError} component="fieldset" fullWidth>
-            <Grid container spacing={1}>
-              <Grid item xs={12}>
+            <div className="flex flex-col gap-2">
+              <div>
                 <FormControlLabelWithTooltip label={label} title={tooltipText} />
-              </Grid>
-              <Grid item xs={12}>
+              </div>
+              <div>
                 <Controller
                   name={name}
                   control={control}
@@ -100,12 +99,12 @@ const FormRadioGroupInner = React.forwardRef(
                     </RadioGroup>
                   )}
                 />
-              </Grid>
-            </Grid>
+              </div>
+            </div>
             {helperText && <FormHelperText>{helperText}</FormHelperText>}
           </FormControl>
-        </Grid>
-      </Grid>
+        </div>
+      </div>
     );
   }
 );

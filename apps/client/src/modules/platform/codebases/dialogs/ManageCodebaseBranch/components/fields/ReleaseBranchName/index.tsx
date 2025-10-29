@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import React from "react";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_BRANCH_FORM_NAMES } from "../../../names";
@@ -36,7 +35,7 @@ export const ReleaseBranchName = ({ defaultBranchVersion }: BranchNameProps) => 
   );
 
   return (
-    <Grid item xs={12}>
+    <div>
       <FormTextField
         {...register(CODEBASE_BRANCH_FORM_NAMES.releaseBranchName.name, {
           pattern: {
@@ -55,6 +54,6 @@ export const ReleaseBranchName = ({ defaultBranchVersion }: BranchNameProps) => 
         errors={errors}
         disabled={releaseFieldValue}
       />
-    </Grid>
+    </div>
   );
 };

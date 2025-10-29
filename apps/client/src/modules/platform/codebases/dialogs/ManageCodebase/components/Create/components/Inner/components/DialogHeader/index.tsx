@@ -3,12 +3,10 @@ import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { useTypedFormContext } from "@/modules/platform/codebases/dialogs/ManageCodebase/hooks/useFormContext";
 import { CODEBASE_FORM_NAMES } from "@/modules/platform/codebases/dialogs/ManageCodebase/names";
-import { Stack, Typography, useTheme } from "@mui/material";
 import { codebaseType } from "@my-project/shared";
 import React from "react";
 
 export const DialogHeader = () => {
-  const theme = useTheme();
   const { watch } = useTypedFormContext();
 
   const typeFieldValue = watch(CODEBASE_FORM_NAMES.type.name) as string;
@@ -29,11 +27,11 @@ export const DialogHeader = () => {
   }, [typeFieldValue]);
 
   return (
-    <Stack direction="row" alignItems={"flex-start"} justifyContent={"space-between"} spacing={1}>
-      <Stack spacing={2}>
-        <Typography fontSize={theme.typography.pxToRem(20)} fontWeight={500}>{`Create ${capitalizedType}`}</Typography>
+    <div className="flex items-start justify-between gap-1">
+      <div className="flex flex-col gap-2">
+        <h2 className="text-xl font-medium">{`Create ${capitalizedType}`}</h2>
         <LearnMoreLink url={docLink} />
-      </Stack>
-    </Stack>
+      </div>
+    </div>
   );
 };

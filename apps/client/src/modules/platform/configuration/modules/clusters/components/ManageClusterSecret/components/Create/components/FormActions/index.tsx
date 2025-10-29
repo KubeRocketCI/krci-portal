@@ -1,4 +1,4 @@
-import { Button, Grid, Tooltip } from "@mui/material";
+import { Button, Tooltip } from "@mui/material";
 import React from "react";
 import { useFormContext as useReactHookFormContext } from "react-hook-form";
 import { ManageClusterSecretDataContext, ManageClusterSecretValues } from "../../../../types";
@@ -68,15 +68,15 @@ export const FormActions = ({ activeClusterType }: { activeClusterType: ClusterT
 
   return (
     <>
-      <Grid container spacing={2} justifyContent={"space-between"}>
-        <Grid item>
+      <div className="flex justify-between gap-4">
+        <div>
           <Button onClick={handleClosePlaceholder} size="small" component={"button"}>
             cancel
           </Button>
-        </Grid>
-        <Grid item>
-          <Grid container spacing={2} alignItems={"center"}>
-            <Grid item>
+        </div>
+        <div>
+          <div className="flex gap-4 items-center">
+            <div>
               <Button
                 onClick={() => reset({}, { keepDirty: false })}
                 size="small"
@@ -85,8 +85,8 @@ export const FormActions = ({ activeClusterType }: { activeClusterType: ClusterT
               >
                 undo changes
               </Button>
-            </Grid>
-            <Grid item>
+            </div>
+            <div>
               <ConditionalWrapper
                 condition={!secretPermissions.data.create.allowed}
                 wrapper={(children) => (
@@ -107,10 +107,10 @@ export const FormActions = ({ activeClusterType }: { activeClusterType: ClusterT
                   save
                 </Button>
               </ConditionalWrapper>
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 };

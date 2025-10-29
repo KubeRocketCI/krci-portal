@@ -1,4 +1,3 @@
-import { Box, Grid, Stack, useTheme } from "@mui/material";
 import { useFormContext } from "react-hook-form";
 import { CODEBASE_FORM_NAMES } from "../../names";
 import { ManageGitOpsValues } from "../../types";
@@ -36,7 +35,6 @@ export const Create = () => {
 
   const gitServerProvider = gitServer?.spec.gitProvider;
 
-  const theme = useTheme();
 
   const {
     register,
@@ -45,7 +43,7 @@ export const Create = () => {
   } = useFormContext();
 
   return (
-    <Stack spacing={2}>
+    <div className="flex flex-col gap-2">
       <TileRadioGroup
         {...register(CODEBASE_FORM_NAMES.STRATEGY)}
         control={control}
@@ -54,24 +52,24 @@ export const Create = () => {
         gridItemSize={4}
       />
 
-      <Box sx={{ p: `${theme.typography.pxToRem(24)} ${theme.typography.pxToRem(8)}` }}>
-        <Grid container spacing={2}>
-          <Grid item xs={6}>
+      <div className="p-6 px-2">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
             <GitServer />
-          </Grid>
-          <Grid item xs={6}>
+          </div>
+          <div>
             <CiTool />
-          </Grid>
+          </div>
           {gitServerProvider !== gitProvider.gerrit && !!gitServerWatch.isReady && (
-            <Grid item xs={9}>
+            <div className="col-span-2">
               <GitRepoPath />
-            </Grid>
+            </div>
           )}
-          <Grid item xs={3}>
+          <div className="w-1/4">
             <Name />
-          </Grid>
-        </Grid>
-      </Box>
-    </Stack>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };

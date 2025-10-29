@@ -1,13 +1,10 @@
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Grid,
   TextField,
-  Typography,
 } from "@mui/material";
 import React from "react";
 import { useForm } from "react-hook-form";
@@ -35,41 +32,31 @@ export const ConfirmResourcesUpdatesDialog: React.FC<ConfirmResourcesUpdatesDial
     <Dialog open={open} onClose={handleClosePopup} fullWidth data-testid="dialog">
       <DialogTitle>Confirm action</DialogTitle>
       <DialogContent>
-        <Box sx={{ mb: (t) => t.typography.pxToRem(40) }}>
-          <Grid container spacing={2}>
+        <div className="mb-10">
+          <div className="flex flex-col gap-4">
             {!!text && (
-              <Grid item xs={12}>
-                <Typography variant={"subtitle1"}>{text}</Typography>
-              </Grid>
+              <div>
+                <p className="text-lg">{text}</p>
+              </div>
             )}
             {!!resourcesArray && (
-              <Grid item xs={12}>
-                <Grid container spacing={1}>
+              <div>
+                <div className="flex flex-col gap-2">
                   {resourcesArray
                     ? resourcesArray.map(({ name, kind, actionType }) => {
                         return (
-                          <Grid item xs={12} key={name}>
-                            <Typography
-                              variant={"body2"}
-                              component={"span"}
-                              style={{
-                                fontStyle: "italic",
-                                marginRight: "5px",
-                              }}
+                          <div key={name}>
+                            <span
+                              className="text-sm italic mr-1"
                             >
                               {kind}
-                            </Typography>
-                            <Typography
-                              variant={"body2"}
-                              component={"span"}
-                              style={{
-                                fontWeight: "bold",
-                                marginRight: "5px",
-                              }}
+                            </span>
+                            <span
+                              className="text-sm font-bold mr-1"
                             >
                               {name}
-                            </Typography>
-                            <Typography variant={"body2"} component={"span"}>
+                            </span>
+                            <span className="text-sm">
                               will be{" "}
                               {actionType === k8sOperation.patch
                                 ? "updated"
@@ -78,24 +65,24 @@ export const ConfirmResourcesUpdatesDialog: React.FC<ConfirmResourcesUpdatesDial
                                   : k8sOperation.create
                                     ? "created"
                                     : ""}
-                            </Typography>
-                          </Grid>
+                            </span>
+                          </div>
                         );
                       })
                     : null}
-                </Grid>
-              </Grid>
+                </div>
+              </div>
             )}
-            <Grid item xs={12}>
+            <div>
               <TextField
                 {...register("confirm", { required: true })}
                 label={'Enter "confirm" to confirm action'}
                 variant="outlined"
                 fullWidth
               />
-            </Grid>
-          </Grid>
-        </Box>
+            </div>
+          </div>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button type={"button"} onClick={handleClosePopup}>

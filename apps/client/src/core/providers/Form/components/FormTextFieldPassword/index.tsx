@@ -1,4 +1,4 @@
-import { FormControl, IconButton, Stack, TextField, Tooltip } from "@mui/material";
+import { FormControl, IconButton, TextField, Tooltip } from "@mui/material";
 import { Eye, EyeOff, Info } from "lucide-react";
 import React from "react";
 import { Controller, Path, PathValue } from "react-hook-form";
@@ -37,7 +37,7 @@ const FormTextFieldPasswordInner = React.forwardRef(
     const mergedInputProps = {
       ...originalInputProps,
       endAdornment: (
-        <Stack direction="row" alignItems="center" spacing={0.5}>
+        <div className="flex flex-row items-center gap-1">
           {userEndAdornment}
           {tooltipText && (
             <>
@@ -53,14 +53,14 @@ const FormTextFieldPasswordInner = React.forwardRef(
               </Tooltip>
             </>
           )}
-        </Stack>
+        </div>
       ),
       type: _type,
       autoComplete: "off",
     };
 
     return (
-      <Stack spacing={1}>
+      <div className="flex flex-col gap-2">
         <FormControl fullWidth>
           <Controller
             name={name}
@@ -83,7 +83,7 @@ const FormTextFieldPasswordInner = React.forwardRef(
             )}
           />
         </FormControl>
-      </Stack>
+      </div>
     );
   }
 );

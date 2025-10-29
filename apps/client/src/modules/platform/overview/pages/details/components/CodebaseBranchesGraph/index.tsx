@@ -1,4 +1,3 @@
-import { Stack } from "@mui/material";
 import { LegendListItem } from "../LegendListItem";
 import { useCodebaseBranchesGraphData } from "./hooks/useCodebaseBranchesGraphData";
 import { CHART_STATUS_COLOR } from "@/k8s/constants/colors";
@@ -35,7 +34,7 @@ export const CodebaseBranchesGraph = () => {
       ]}
       title={`Branches (${graphData.total || 0})`}
       legend={
-        <Stack spacing={0.5}>
+        <div className="flex flex-col gap-1">
           {!!graphData.ok && <LegendListItem color={CHART_STATUS_COLOR.SUCCESS} number={graphData.ok} label="Ok" />}
           {!!graphData.error && (
             <LegendListItem color={CHART_STATUS_COLOR.ERROR} number={graphData.error} label="Failed" />
@@ -46,10 +45,9 @@ export const CodebaseBranchesGraph = () => {
           {!!graphData.unknown && (
             <LegendListItem color={CHART_STATUS_COLOR.UNKNOWN} number={graphData.unknown} label="Unknown" />
           )}
-        </Stack>
+        </div>
       }
       thickness={20}
-      BoxSx={{ width: "129px", height: "129px" }}
     />
   );
 };

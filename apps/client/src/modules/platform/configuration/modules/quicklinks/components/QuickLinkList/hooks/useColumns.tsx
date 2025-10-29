@@ -1,4 +1,4 @@
-import { Link as MuiLink, Stack } from "@mui/material";
+import { Link as MuiLink } from "@mui/material";
 import React from "react";
 import { columnNames } from "../constants";
 import { useStyles } from "../styles";
@@ -65,10 +65,10 @@ export const useColumns = (): TableColumn<QuickLink>[] => {
 
             return url ? (
               <MuiLink href={_url} target="_blank" rel="noopener">
-                <Stack direction="row" spacing={1} alignItems="center">
+                <div className="flex items-center gap-1">
                   <span>{_url} </span>
                   <SquareArrowOutUpRight size={15} />
-                </Stack>
+                </div>
               </MuiLink>
             ) : null;
           },

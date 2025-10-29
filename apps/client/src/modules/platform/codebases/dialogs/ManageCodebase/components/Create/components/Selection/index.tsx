@@ -3,16 +3,14 @@ import { TileRadioGroup } from "@/core/providers/Form/components/MainRadioGroup"
 import { useStepperContext } from "@/core/providers/Stepper/hooks";
 import { FieldEvent } from "@/core/types/forms";
 import {
-  Box,
   Button,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Stack,
+  Box,
   Step,
   StepLabel,
   Stepper,
-  Typography,
   useTheme,
 } from "@mui/material";
 import { codebaseDeploymentScript, codebaseTestReportFramework, codebaseType } from "@my-project/shared";
@@ -48,13 +46,13 @@ export const Selection = ({ setActiveTab }: SelectionProps) => {
   return (
     <>
       <DialogTitle>
-        <Typography fontSize={theme.typography.pxToRem(20)} fontWeight={500}>
+        <h2 className="text-xl font-medium">
           Create new component
-        </Typography>
+        </h2>
       </DialogTitle>
       <DialogContent>
-        <Stack spacing={2}>
-          <Box sx={{ pt: theme.typography.pxToRem(24) }}>
+        <div className="flex flex-col gap-4">
+          <div className="pt-6">
             <Stepper activeStep={activeStep}>
               {mainStepperSteps.map((label) => {
                 return (
@@ -64,8 +62,8 @@ export const Selection = ({ setActiveTab }: SelectionProps) => {
                 );
               })}
             </Stepper>
-          </Box>
-          <Box sx={{ p: `${theme.typography.pxToRem(24)} ${theme.typography.pxToRem(8)}` }}>
+          </div>
+          <div className="p-6 px-2">
             <TabPanel value={activeStep} index={selectionStepper.SELECT_COMPONENT.idx}>
               <TileRadioGroup
                 {...register(CODEBASE_FORM_NAMES.type.name, {
@@ -99,16 +97,16 @@ export const Selection = ({ setActiveTab }: SelectionProps) => {
                 gridItemSize={6}
               />
             </TabPanel>
-          </Box>
-        </Stack>
+          </div>
+        </div>
       </DialogContent>
       <DialogActions>
-        <Stack direction="row" spacing={2} justifyContent="space-between" width="100%">
-          <Box sx={{ color: theme.palette.text.primary }}>
+        <div className="flex flex-row gap-4 justify-between w-full">
+          <div className="text-foreground">
             <Button onClick={closeDialog} color="inherit" size="small">
               cancel
             </Button>
-          </Box>
+          </div>
           <div>
             <TabPanel value={activeStep} index={selectionStepper.SELECT_COMPONENT.idx}>
               <Button variant="contained" onClick={nextStep} disabled={!componentTypeFieldValue} size="small">
@@ -116,7 +114,7 @@ export const Selection = ({ setActiveTab }: SelectionProps) => {
               </Button>
             </TabPanel>
             <TabPanel value={activeStep} index={selectionStepper.SELECT_STRATEGY.idx}>
-              <Stack direction="row" spacing={1}>
+              <div className="flex gap-1">
                 <Button onClick={prevStep} size="small">
                   back
                 </Button>
@@ -128,10 +126,10 @@ export const Selection = ({ setActiveTab }: SelectionProps) => {
                 >
                   create
                 </Button>
-              </Stack>
+              </div>
             </TabPanel>
           </div>
-        </Stack>
+        </div>
       </DialogActions>
     </>
   );

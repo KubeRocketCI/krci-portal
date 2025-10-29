@@ -1,4 +1,4 @@
-import { Button, Grid, Tooltip } from "@mui/material";
+import { Button, Tooltip } from "@mui/material";
 import React from "react";
 import { useFormContext as useReactHookFormContext } from "react-hook-form";
 import { ManageGitOpsDataContext, ManageGitOpsValues } from "../../types";
@@ -90,22 +90,22 @@ export const FormActions = () => {
 
   return (
     <>
-      <Grid container spacing={2} justifyContent={"space-between"}>
-        <Grid item>
+      <div className="flex justify-between gap-4">
+        <div>
           {mode === FORM_MODES.CREATE && (
             <Button onClick={handleClosePlaceholder} size="small" component={"button"}>
               cancel
             </Button>
           )}
-        </Grid>
-        <Grid item>
-          <Grid container spacing={2} alignItems={"center"}>
-            <Grid item>
+        </div>
+        <div>
+          <div className="flex gap-4 items-center">
+            <div>
               <Button onClick={() => reset()} size="small" component={"button"} disabled={!isDirty || isReadOnly}>
                 undo changes
               </Button>
-            </Grid>
-            <Grid item>
+            </div>
+            <div>
               <ConditionalWrapper
                 condition={!codebasePermissions.data.create.allowed}
                 wrapper={(children) => (
@@ -126,10 +126,10 @@ export const FormActions = () => {
                   save
                 </Button>
               </ConditionalWrapper>
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 };

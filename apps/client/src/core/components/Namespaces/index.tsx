@@ -1,4 +1,4 @@
-import { Autocomplete, Box, Button, Chip, Dialog, DialogContent, DialogTitle, Stack, TextField } from "@mui/material";
+import { Autocomplete, Button, Chip, Dialog, DialogContent, DialogTitle, TextField } from "@mui/material";
 import { Check, CircleX, X } from "lucide-react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { useShallow } from "zustand/react/shallow";
@@ -86,7 +86,7 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
       <DialogTitle>Namespaces</DialogTitle>
       <DialogContent>
         <FormProvider {...form}>
-          <Stack spacing={2}>
+          <div className="flex flex-col gap-4">
             <Controller
               name={names.DEFAULT_NAMESPACE}
               control={form.control}
@@ -126,9 +126,9 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
                         ...params.InputProps,
                         startAdornment: (
                           <>
-                            <Box sx={{ mr: 0.5 }}>
+                            <div className="mr-2">
                               {fieldState.error ? <CircleX className="size-4" /> : <Check className="size-4" />}
-                            </Box>
+                            </div>
                             {params.InputProps.startAdornment}
                           </>
                         ),
@@ -185,8 +185,8 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
                 />
               )}
             />
-          </Stack>
-          <Stack direction="row" justifyContent="flex-end" spacing={1} sx={{ mt: 2 }}>
+          </div>
+          <div className="flex flex-row justify-end gap-2" style={{ marginTop: '16px' }}>
             <Button size="small" color="inherit" onClick={closeDialog}>
               Cancel
             </Button>
@@ -199,7 +199,7 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
             >
               Save
             </Button>
-          </Stack>
+          </div>
         </FormProvider>
       </DialogContent>
     </Dialog>

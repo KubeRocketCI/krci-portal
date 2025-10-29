@@ -1,40 +1,39 @@
-import { Grid, GridSize, Typography } from "@mui/material";
 import React from "react";
 import { InfoColumnsProps } from "./types";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 
 export const InfoColumns = ({ infoRows }: InfoColumnsProps) => {
   return (
-    <Grid container spacing={4}>
+    <div className="grid grid-cols-1 gap-4">
       {infoRows.map((row, index) => (
-        <Grid item xs={12} key={`row::${index}`}>
-          <Grid container spacing={2}>
+        <div key={`row::${index}`}>
+          <div className="grid grid-cols-12 gap-2">
             {row.map(({ label, text, icon, columnXs = 2 }, index) => (
               <React.Fragment key={`column::${index}`}>
                 {!!label && !!text && (
-                  <Grid item xs={columnXs as GridSize}>
-                    <Typography component="div" fontWeight={500} fontSize={14} color="primary.dark" gutterBottom>
+                  <div className={`col-span-${columnXs}`}>
+                    <div className="font-medium text-sm mb-1 text-foreground">
                       {label}
-                    </Typography>
-                    <Grid container spacing={1} alignItems={"center"}>
+                    </div>
+                    <div className="grid grid-cols-[auto_1fr] items-center gap-1">
                       {!!icon && (
-                        <Grid item>
+                        <div>
                           {typeof icon === "string" ? <UseSpriteSymbol name={icon} width={20} height={20} /> : icon}
-                        </Grid>
+                        </div>
                       )}
-                      <Grid item flexGrow={1}>
-                        <Typography fontSize={13} color="secondary.dark" sx={{ wordBreak: "break-word" }}>
+                      <div className="flex-1">
+                        <span className="text-sm break-word text-muted-foreground">
                           {text}
-                        </Typography>
-                      </Grid>
-                    </Grid>
-                  </Grid>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </React.Fragment>
             ))}
-          </Grid>
-        </Grid>
+          </div>
+        </div>
       ))}
-    </Grid>
+    </div>
   );
 };

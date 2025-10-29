@@ -6,12 +6,11 @@ import { StatusIcon } from "@/core/components/StatusIcon";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { useCodemieApplicationCRUD, useCodemieApplicationWatchList } from "@/k8s/api/groups/KRCI/CodemieApplication";
 import { getCodemieApplicationStatusIcon } from "@/k8s/api/groups/KRCI/CodemieApplication/utils/getStatusIcon";
-import { Button, Grid, Paper, Stack, Typography, useTheme } from "@mui/material";
+import { Button, Paper } from "@mui/material";
 import { CodemieApplication } from "@my-project/shared";
 import { Pencil } from "lucide-react";
 
 export const CodemieApplications = () => {
-  const theme = useTheme();
   const codemieApplicationsWatch = useCodemieApplicationWatchList();
   const codemieApplications = codemieApplicationsWatch.data.array;
 
@@ -21,18 +20,14 @@ export const CodemieApplications = () => {
 
   return (
     <>
-      <Typography
-        fontSize={theme.typography.pxToRem(24)}
-        color="primary.dark"
-        sx={{ mb: (t) => t.typography.pxToRem(24) }}
-      >
+      <h2 className="text-2xl font-semibold text-foreground mb-6">
         Applications
-      </Typography>
+      </h2>
       <LoadingWrapper isLoading={!codemieApplicationsWatch.isReady}>
         {codemieApplicationsWatch.query.error ? (
           <ErrorContent error={codemieApplicationsWatch.query.error} outlined />
         ) : codemieApplications?.length ? (
-          <Grid container spacing={2}>
+          <div className="flex flex-col gap-4">
             {codemieApplications?.map((application) => {
               const status = application?.status?.value;
               const statusError = application?.status?.error;
@@ -40,28 +35,28 @@ export const CodemieApplications = () => {
               const statusIcon = getCodemieApplicationStatusIcon(application);
 
               return (
-                <Grid item xs={12} key={application.metadata.name}>
+                <div key={application.metadata.name}>
                   <Paper sx={{ p: (t) => `${t.typography.pxToRem(10)} ${t.typography.pxToRem(20)}` }}>
-                    <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-                      <Stack direction="row" spacing={2} alignItems="center">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
                         <StatusIcon
                           Icon={statusIcon.component}
                           color={statusIcon.color}
                           Title={
                             <>
-                              <Typography variant={"subtitle2"} style={{ fontWeight: 600 }}>
+                              <p className="text-sm font-semibold">
                                 {`Status: ${status || "Unknown"}`}
-                              </Typography>
+                              </p>
                               {!!statusError && (
-                                <Typography variant={"subtitle2"} sx={{ mt: theme.typography.pxToRem(10) }}>
+                                <p className="text-sm font-medium mt-3">
                                   {statusError}
-                                </Typography>
+                                </p>
                               )}
                             </>
                           }
                         />
-                        <Typography variant={"h6"}>{application.metadata.name}</Typography>
-                      </Stack>
+                        <h6 className="text-base font-medium">{application.metadata.name}</h6>
+                      </div>
                       <Button
                         startIcon={<Pencil size={16} />}
                         size="small"
@@ -87,12 +82,12 @@ export const CodemieApplications = () => {
                       >
                         Edit YAML
                       </Button>
-                    </Stack>
+                    </div>
                   </Paper>
-                </Grid>
+                </div>
               );
             })}
-          </Grid>
+          </div>
         ) : (
           <EmptyList customText={"No CodeMie Applications Found."} />
         )}

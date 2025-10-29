@@ -7,7 +7,7 @@ import { useCodemieProjectWatchItem } from "@/k8s/api/groups/KRCI/CodemieProject
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { useClusterStore } from "@/k8s/store";
-import { Accordion, AccordionDetails, AccordionSummary, Grid, Tooltip, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Tooltip } from "@mui/material";
 import { useShallow } from "zustand/react/shallow";
 import { ManageCodeMie } from "../ManageCodeMie";
 import { integrationSecretName, systemQuickLink } from "@my-project/shared";
@@ -94,36 +94,36 @@ export const CodemieSection = ({
     <LoadingWrapper isLoading={isLoading}>
       <Accordion expanded>
         <AccordionSummary style={{ cursor: "default" }}>
-          <Typography variant={"h6"}>
-            <Grid container spacing={1} alignItems={"center"}>
-              <Grid item sx={{ mr: (t) => t.typography.pxToRem(5) }}>
+          <h6 className="text-base font-medium">
+            <div className="flex gap-2 items-center">
+              <div className="mr-1">
                 <StatusIcon
                   Icon={statusIcon.component}
                   color={statusIcon.color}
                   Title={
                     <>
-                      <Typography variant={"subtitle2"} style={{ fontWeight: 600 }}>
+                      <p className="text-sm font-semibold">
                         {`Status: ${status || "Unknown"}`}
-                      </Typography>
+                      </p>
                       {!!statusError && (
-                        <Typography variant={"subtitle2"} sx={{ marginTop: (t) => t.typography.pxToRem(10) }}>
+                        <p className="text-sm font-medium mt-3">
                           {statusError}
-                        </Typography>
+                        </p>
                       )}
                     </>
                   }
                 />
-              </Grid>
-              <Grid item>{codemieProject?.metadata.name}</Grid>
+              </div>
+              <div>{codemieProject?.metadata.name}</div>
               {!!ownerReference && (
-                <Grid item>
+                <div>
                   <Tooltip title={`Managed by ${ownerReference}`}>
                     <ShieldX size={16} />
                   </Tooltip>
-                </Grid>
+                </div>
               )}
-            </Grid>
-          </Typography>
+            </div>
+          </h6>
         </AccordionSummary>
         <AccordionDetails>
           <ManageCodeMie

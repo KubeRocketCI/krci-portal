@@ -1,4 +1,4 @@
-import { Link, Stack, Typography } from '@mui/material';
+import { Link } from '@mui/material';
 import React from 'react';
 
 export const MetricsItem = ({
@@ -16,19 +16,15 @@ export const MetricsItem = ({
 }) => {
   return (
     <Link href={link} target={'_blank'} color="inherit" underline="none">
-      <Stack spacing={1} alignItems="center">
-        <Stack spacing={1} alignItems="center" direction="row">
+      <div className="flex flex-col items-center gap-1">
+        <div className="flex items-center gap-1">
           <div>{leftSlot}</div>
           <div>{rightSlot}</div>
-        </Stack>
-        <Typography
-          fontSize={12}
-          color="secondary.dark"
-          sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}
-        >
+        </div>
+        <span className="text-xs text-muted-foreground flex items-center gap-1">
           {titleIcon} {title}
-        </Typography>
-      </Stack>
+        </span>
+      </div>
     </Link>
   );
 };

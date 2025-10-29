@@ -1,4 +1,3 @@
-import { Grid, Typography } from "@mui/material";
 
 import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
 import { FilterProvider } from "@/core/providers/Filter/provider";
@@ -19,13 +18,13 @@ export const Details = ({ pipelineRuns }: DetailsProps) => {
   const tableSettings = loadSettings();
 
   return (
-    <Grid container spacing={4} sx={{ mt: (t) => t.typography.pxToRem(20) }}>
-      <Grid item xs={12}>
-        <Grid container spacing={2} alignItems={"flex-end"}>
-          <Grid item>
-            <Typography variant={"h6"}>Pipeline Runs</Typography>
-          </Grid>
-          <Grid item xs={12}>
+    <div className="mt-5">
+      <div>
+        <div className="flex flex-col gap-4 items-start mb-4">
+          <div>
+            <h6 className="text-base font-medium">Pipeline Runs</h6>
+          </div>
+          <div className="w-full">
             <ResourceActionListContextProvider>
               <FilterProvider<PipelineRun, PipelineRunListFilterValues>
                 matchFunctions={matchFunctions}
@@ -47,9 +46,9 @@ export const Details = ({ pipelineRuns }: DetailsProps) => {
                 />
               </FilterProvider>
             </ResourceActionListContextProvider>
-          </Grid>
-        </Grid>
-      </Grid>
-    </Grid>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };

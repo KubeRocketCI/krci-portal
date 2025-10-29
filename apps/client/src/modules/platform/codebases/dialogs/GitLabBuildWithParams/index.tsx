@@ -4,10 +4,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Grid,
   IconButton,
-  Stack,
-  Typography,
 } from "@mui/material";
 import { GitLabPipelineVariable } from "@my-project/shared";
 import { LoaderCircle, Play, Plus, Trash2 } from "lucide-react";
@@ -81,44 +78,44 @@ export const GitLabBuildWithParamsDialog: React.FC<GitLabBuildWithParamsDialogPr
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
       <form onSubmit={handleSubmit(onFormSubmit)}>
         <DialogTitle>
-          <Grid container alignItems="center" spacing={1}>
-            <Grid item>
+          <div className="flex items-center gap-2">
+            <div>
               <Play size={24} />
-            </Grid>
-            <Grid item>
-              <Typography variant="h6">Build GitLab Pipeline with Parameters</Typography>
-            </Grid>
-          </Grid>
+            </div>
+            <div>
+              <h6 className="text-base font-medium">Build GitLab Pipeline with Parameters</h6>
+            </div>
+          </div>
         </DialogTitle>
         <DialogContent>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography variant="body2" color="textSecondary" gutterBottom>
+          <div className="flex flex-col gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground mb-2">
                 <strong>Git Server:</strong> {triggerData.gitServer}
-              </Typography>
-              <Typography variant="body2" color="textSecondary" gutterBottom>
+              </p>
+              <p className="text-sm text-muted-foreground mb-2">
                 <strong>Project:</strong> {triggerData.gitUrlPath}
-              </Typography>
-              <Typography variant="body2" color="textSecondary" gutterBottom>
+              </p>
+              <p className="text-sm text-muted-foreground mb-2">
                 <strong>Branch:</strong> {triggerData.branchName}
-              </Typography>
-            </Grid>
+              </p>
+            </div>
 
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+            <div>
+              <h6 className="text-base font-medium mt-2 mb-2">
                 Pipeline Variables
-              </Typography>
-              <Typography variant="body2" color="textSecondary" gutterBottom>
+              </h6>
+              <p className="text-sm text-muted-foreground mb-2">
                 Add key-value pairs to pass as environment variables to the GitLab CI pipeline.
-              </Typography>
-            </Grid>
+              </p>
+            </div>
 
             {fields.length > 0 && (
-              <Grid item xs={12}>
-                <Stack spacing={2}>
+              <div>
+                <div className="flex flex-col gap-2">
                   {fields.map((field, index) => (
-                    <Grid container spacing={2} alignItems="flex-start" key={field.id}>
-                      <Grid item xs={5}>
+                    <div className="grid grid-cols-12 gap-4 items-start" key={field.id}>
+                      <div className="col-span-5">
                         <FormTextField
                           {...register(`variables.${index}.key`, {
                             required: "Key is required",
@@ -128,8 +125,8 @@ export const GitLabBuildWithParamsDialog: React.FC<GitLabBuildWithParamsDialogPr
                           control={control as unknown as Control}
                           errors={{}}
                         />
-                      </Grid>
-                      <Grid item xs={6}>
+                      </div>
+                      <div className="col-span-6">
                         <FormTextField
                           {...register(`variables.${index}.value`)}
                           label="Value"
@@ -137,8 +134,8 @@ export const GitLabBuildWithParamsDialog: React.FC<GitLabBuildWithParamsDialogPr
                           control={control as unknown as Control}
                           errors={{}}
                         />
-                      </Grid>
-                      <Grid item xs={1}>
+                      </div>
+                      <div className="col-span-1">
                         <IconButton
                           onClick={() => handleDeleteVariable(index)}
                           size="small"
@@ -147,14 +144,14 @@ export const GitLabBuildWithParamsDialog: React.FC<GitLabBuildWithParamsDialogPr
                         >
                           <Trash2 size={20} />
                         </IconButton>
-                      </Grid>
-                    </Grid>
+                      </div>
+                    </div>
                   ))}
-                </Stack>
-              </Grid>
+                </div>
+              </div>
             )}
 
-            <Grid item xs={12}>
+            <div>
               <Button
                 type="button"
                 variant="outlined"
@@ -164,8 +161,8 @@ export const GitLabBuildWithParamsDialog: React.FC<GitLabBuildWithParamsDialogPr
               >
                 Add Variable
               </Button>
-            </Grid>
-          </Grid>
+            </div>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button type="button" onClick={handleClose} disabled={isLoading}>

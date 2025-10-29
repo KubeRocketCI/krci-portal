@@ -1,5 +1,5 @@
 import { useStepperContext } from "@/core/providers/Stepper/hooks";
-import { Box, DialogActions, DialogContent, DialogTitle, Step, StepLabel, Stepper, useTheme } from "@mui/material";
+import { DialogActions, DialogContent, DialogTitle, Step, StepLabel, Stepper, useTheme } from "@mui/material";
 import { configurationStepperSteps } from "../../../../constants";
 import { DialogHeader } from "./components/DialogHeader";
 import { Form } from "./components/Form";
@@ -19,7 +19,7 @@ export const Configuration = ({ baseDefaultValues, setActiveTab }: Configuration
       </DialogTitle>
       <DialogContent className={classes.dialogContent}>
         <div className={classes.dialogContentForm}>
-          <Box sx={{ pt: theme.typography.pxToRem(24) }}>
+          <div className="pt-6">
             <Stepper activeStep={activeStep}>
               {configurationStepperSteps.map((label) => {
                 return (
@@ -29,10 +29,10 @@ export const Configuration = ({ baseDefaultValues, setActiveTab }: Configuration
                 );
               })}
             </Stepper>
-            <Box sx={{ p: `${theme.typography.pxToRem(24)} ${theme.typography.pxToRem(8)}` }}>
+            <div className="p-6 px-2">
               <Form />
-            </Box>
-          </Box>
+            </div>
+          </div>
         </div>
       </DialogContent>
       <DialogActions>

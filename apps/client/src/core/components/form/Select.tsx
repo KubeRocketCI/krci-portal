@@ -9,7 +9,6 @@ import type {
   FormValidateOrFn,
 } from "@tanstack/react-form";
 import {
-  Box,
   FormControl,
   FormHelperText,
   InputLabel,
@@ -17,9 +16,7 @@ import {
   ListItemText,
   MenuItem,
   Select as MuiSelect,
-  Stack,
   Tooltip,
-  useTheme,
 } from "@mui/material";
 import { Info } from "lucide-react";
 
@@ -77,8 +74,6 @@ export const Select = <
   disabled = false,
   options,
 }: SelectProps<Values, TName>) => {
-
-  const theme = useTheme();
   const error = field.state.meta.errors?.[0];
   const hasError = !!error;
   const helperText = hasError ? (error as string) : undefined;
@@ -89,10 +84,10 @@ export const Select = <
         const foundOption = options.find(({ value }) => value === optionValue);
         if (foundOption) {
           return foundOption.icon ? (
-            <Stack spacing={2} direction="row" alignItems="center">
+            <div className="flex gap-4 flex-row items-center">
               <ListItemIcon sx={{ minWidth: 0 }}>{foundOption.icon}</ListItemIcon>
               <ListItemText>{foundOption.label}</ListItemText>
-            </Stack>
+            </div>
           ) : (
             foundOption.label
           );
@@ -118,21 +113,16 @@ export const Select = <
         renderValue={(value) => (value !== "" ? getOptionValue(value as string) : placeholder)}
         endAdornment={
           tooltipText ? (
-            <Box
-              sx={{
-                position: "absolute",
-                top: "50%",
-                transform: "translateY(-50%)",
-                right: theme.typography.pxToRem(24),
-                lineHeight: 0,
-              }}
+            <div
+              className="absolute top-1/2 right-6 leading-none"
+              style={{ transform: "translateY(-50%)" }}
             >
-              <Stack direction="row" alignItems="center" spacing={0.5}>
+              <div className="flex flex-row items-center gap-1">
                 <Tooltip title={tooltipText}>
                   <Info size={16} />
                 </Tooltip>
-              </Stack>
-            </Box>
+              </div>
+            </div>
           ) : undefined
         }
       >

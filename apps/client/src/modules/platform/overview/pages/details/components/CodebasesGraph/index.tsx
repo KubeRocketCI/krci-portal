@@ -1,4 +1,3 @@
-import { Stack } from "@mui/material";
 import { LegendListItem } from "../LegendListItem";
 import { useCodebasesGraphData } from "./hooks/useCodebasesGraphData";
 import { PercentageCircleChart } from "@/core/components/PercentageCircleChart";
@@ -34,7 +33,7 @@ export const CodebasesGraph = () => {
       ]}
       title={`Codebases (${graphData.total || 0})`}
       legend={
-        <Stack spacing={0.5}>
+        <div className="flex flex-col gap-1">
           {!!graphData.ok && <LegendListItem color={CHART_STATUS_COLOR.SUCCESS} number={graphData.ok} label="Ok" />}
           {!!graphData.error && (
             <LegendListItem color={CHART_STATUS_COLOR.ERROR} number={graphData.error} label="Failed" />
@@ -45,10 +44,9 @@ export const CodebasesGraph = () => {
           {!!graphData.unknown && (
             <LegendListItem color={CHART_STATUS_COLOR.UNKNOWN} number={graphData.unknown} label="Unknown" />
           )}
-        </Stack>
+        </div>
       }
       thickness={20}
-      BoxSx={{ width: "129px", height: "129px" }}
       error={error}
     />
   );

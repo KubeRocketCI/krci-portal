@@ -1,4 +1,4 @@
-import { Box, Checkbox, TableCell, TableRow as MuiTableRow, useTheme } from "@mui/material";
+import { Checkbox, TableCell, TableRow as MuiTableRow, useTheme } from "@mui/material";
 import React from "react";
 import { TableRowProps } from "./types";
 import { TABLE_CELL_DEFAULTS } from "@/core/components/Table/constants";
@@ -96,12 +96,15 @@ export const TableRow = <DataType,>({
             }}
             {...props}
           >
-            <Box
-              sx={getColumnStyles(!!data?.columnSortableValuePath, props?.align)}
-              justifyContent={getFlexPropertyByTextAlign(props?.align)}
+            <div
+              className="flex items-center"
+              style={{
+                justifyContent: getFlexPropertyByTextAlign(props?.align),
+                ...getColumnStyles(!!data?.columnSortableValuePath, props?.align),
+              }}
             >
               {data.render({ data: item })}
-            </Box>
+            </div>
           </TableCell>
         ) : null;
       })}

@@ -11,7 +11,6 @@ import {
 import { CodemieIntegration } from "@/modules/platform/codebases/dialogs/ManageCodebase/components/fields/CodemieIntegration";
 import { useTypedFormContext } from "@/modules/platform/codebases/dialogs/ManageCodebase/hooks/useFormContext";
 import { CODEBASE_FORM_NAMES } from "@/modules/platform/codebases/dialogs/ManageCodebase/names";
-import { Grid } from "@mui/material";
 import { codebaseType } from "@my-project/shared";
 
 export const Advanced = () => {
@@ -22,41 +21,41 @@ export const Advanced = () => {
   const codebaseTypeFieldValue = watch(CODEBASE_FORM_NAMES.type.name);
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12}>
+    <div className="flex flex-col gap-4">
+      <div>
         <DefaultBranch />
-      </Grid>
+      </div>
       {codebaseTypeFieldValue === codebaseType.application && (
-        <Grid item xs={12}>
+        <div>
           <DeploymentScript />
-        </Grid>
+        </div>
       )}
-      <Grid item xs={12}>
+      <div>
         <CodebaseVersioning />
-      </Grid>
-      <Grid item xs={12}>
+      </div>
+      <div>
         <CommitMessagePattern />
-      </Grid>
-      <Grid item xs={12}>
+      </div>
+      <div>
         <JiraServerIntegration />
-      </Grid>
-      <Grid item xs={12}>
+      </div>
+      <div>
         <CodemieIntegration />
-      </Grid>
+      </div>
 
       {hasJiraServerIntegrationFieldValue ? (
         <>
-          <Grid item xs={12}>
+          <div>
             <JiraServer />
-          </Grid>
-          <Grid item xs={12}>
+          </div>
+          <div>
             <TicketNamePattern />
-          </Grid>
-          <Grid item xs={12}>
+          </div>
+          <div>
             <AdvancedJiraMapping />
-          </Grid>
+          </div>
         </>
       ) : null}
-    </Grid>
+    </div>
   );
 };

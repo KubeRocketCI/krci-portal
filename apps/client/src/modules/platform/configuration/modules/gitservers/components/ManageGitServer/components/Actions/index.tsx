@@ -1,4 +1,4 @@
-import { Button, IconButton, Stack, Tooltip } from "@mui/material";
+import { Button, IconButton, Tooltip } from "@mui/material";
 import React from "react";
 import { useFormsContext } from "../../hooks/useFormsContext";
 import { useDataContext } from "../../providers/Data/hooks";
@@ -75,7 +75,7 @@ export const Actions = () => {
 
   return (
     <>
-      <Stack direction="row" alignItems="center" spacing={2} sx={{ justifyContent: "space-between" }}>
+      <div className="flex items-center justify-between gap-2">
         {mode === FORM_MODES.EDIT ? (
           <ConditionalWrapper
             condition={deletedDisabledState.status}
@@ -121,10 +121,10 @@ export const Actions = () => {
             color={"primary"}
             disabled={!isAnyFormDirty || isAnyFormSubmitting || isAnyFormForbiddenToSubmit}
           >
-            save
-          </Button>
+          save
+        </Button>
         </ConditionalWrapper>
-      </Stack>
+      </div>
       <DeletionDialog
         gitServer={gitServer}
         gitServerSecret={gitServerSecret}

@@ -1,4 +1,3 @@
-import { Typography } from "@mui/material";
 import { useStyles } from "./styles";
 import { Link } from "@tanstack/react-router";
 import { ConflictItemErrorProps } from "./types";
@@ -13,7 +12,7 @@ export const ConflictItemError = ({ conflictedCDPipeline, name }: ConflictItemEr
 
   return (
     <div className={classes.message}>
-      <Typography component={"span"}>Branch {name} is used in </Typography>
+      <span>Branch {name} is used in </span>
       <div className={classes.conflictEntityName}>
         <Link
           to={routeCDPipelineDetails.fullPath}
@@ -26,7 +25,7 @@ export const ConflictItemError = ({ conflictedCDPipeline, name }: ConflictItemEr
           {conflictedCDPipeline.metadata.name}
         </Link>
       </div>
-      <Typography component={"span"}> Deployment Flow</Typography>
+      <span> Deployment Flow</span>
     </div>
   );
 };

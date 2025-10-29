@@ -8,7 +8,7 @@ import { useCodebasePermissions, useCodebaseWatchListMultiple } from "@/k8s/api/
 import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { ManageCodebaseDialog } from "@/modules/platform/codebases/dialogs/ManageCodebase";
-import { Box, Stack, Tooltip, Typography } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import { codebaseType, type Codebase } from "@my-project/shared";
 import { Plus, Trash } from "lucide-react";
 import React, { Suspense } from "react";
@@ -85,8 +85,8 @@ export const ComponentList = () => {
   return (
     <>
       <K8sRelatedIconsSVGSprite />
-      <Stack spacing={2}>
-        <Stack direction="row" justifyContent="flex-end" alignItems="center">
+      <div className="flex flex-col gap-2">
+        <div className="flex justify-end items-center">
           <ButtonWithPermission
             ButtonProps={{
               size: "medium",
@@ -104,7 +104,7 @@ export const ComponentList = () => {
           >
             create component
           </ButtonWithPermission>
-        </Stack>
+        </div>
         <Suspense fallback={<div>Loading...</div>}>
           <Table<Codebase>
             id={TABLE.COMPONENT_LIST.id}
@@ -120,17 +120,14 @@ export const ComponentList = () => {
               isRowSelected: (row) => selected.indexOf(row.metadata.name) !== -1,
               isRowSelectable: (row) => row.spec.type !== codebaseType.system,
               renderSelectionInfo: (selectionLength) => (
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
-                  <Box
-                    sx={{
-                      visibility: selectionLength ? "visible" : "hidden",
-                      pointerEvents: selectionLength ? "auto" : "none",
-                    }}
+                <div className="flex items-center justify-between">
+                  <div
+                    className={selectionLength ? "visible" : "invisible pointer-events-none"}
                   >
-                    <Stack direction="row" alignItems="center" spacing={2}>
-                      <Box sx={{ minWidth: (t) => t.typography.pxToRem(150) }}>
-                        <Typography variant="body1">{selectionLength} item(s) selected</Typography>
-                      </Box>
+                    <div className="flex items-center gap-2">
+                      <div className="min-w-38">
+                        <p className="text-base">{selectionLength} item(s) selected</p>
+                      </div>
                       <ConditionalWrapper
                         condition={codebasePermissions.data.delete.allowed}
                         wrapper={(children) => (
@@ -139,7 +136,7 @@ export const ComponentList = () => {
                           </Tooltip>
                         )}
                       >
-                        <Box sx={{ color: (t) => t.palette.secondary.dark }}>
+                        <div className="text-secondary-700">
                           <ButtonWithPermission
                             ButtonProps={{
                               size: "small",
@@ -156,11 +153,11 @@ export const ComponentList = () => {
                           >
                             delete
                           </ButtonWithPermission>
-                        </Box>
+                        </div>
                       </ConditionalWrapper>
-                    </Stack>
-                  </Box>
-                </Stack>
+                    </div>
+                  </div>
+                </div>
               ),
             }}
             filterFunction={filterFunction}
@@ -168,7 +165,7 @@ export const ComponentList = () => {
             slots={tableSlots}
           />
         </Suspense>
-      </Stack>
+      </div>
       {deleteDialogOpen && (
         <ComponentMultiDeletion
           open={deleteDialogOpen}

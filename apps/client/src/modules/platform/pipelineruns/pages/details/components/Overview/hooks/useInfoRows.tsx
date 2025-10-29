@@ -1,5 +1,5 @@
 import { InfoRow } from "@/core/components/InfoColumns/types";
-import { Chip, Grid, Stack, Typography } from "@mui/material";
+import { Chip } from "@mui/material";
 import React from "react";
 import { usePipelineRunWatchWithPageParams } from "../../../hooks/data";
 import { humanize } from "@/core/utils/date-humanize";
@@ -60,14 +60,14 @@ export const useInfoRows = (): InfoRow[] => {
         {
           label: "Status",
           text: (
-            <Stack direction="row" spacing={1} alignItems="flex-start">
+            <div className="flex items-start gap-1">
               <StatusIcon
                 Icon={pipelineRunStatusIcon.component}
                 isSpinning={pipelineRunStatusIcon.isSpinning}
                 color={pipelineRunStatusIcon.color}
               />
-              <Typography fontSize={13}>{`${pipelineRunStatus.status}, ${pipelineRunStatus.reason}`}</Typography>
-            </Stack>
+              <span className="text-sm">{`${pipelineRunStatus.status}, ${pipelineRunStatus.reason}`}</span>
+            </div>
           ),
         },
 
@@ -95,13 +95,13 @@ export const useInfoRows = (): InfoRow[] => {
         {
           label: "Labels",
           text: (
-            <Grid container spacing={1} flexWrap="wrap">
+            <div className="flex flex-wrap gap-2">
               {pipelineRunLabels.map((el) => (
-                <Grid item key={el}>
+                <div key={el}>
                   <Chip label={el} size="small" />
-                </Grid>
+                </div>
               ))}
-            </Grid>
+            </div>
           ),
           columnXs: 12,
         },

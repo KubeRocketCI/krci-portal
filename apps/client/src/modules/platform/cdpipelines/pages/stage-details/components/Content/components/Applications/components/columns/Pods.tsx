@@ -1,4 +1,4 @@
-// import { Stack, Tooltip } from "@mui/material";
+// import { Tooltip } from "@mui/material";
 
 export const PodsColumn = () => {
   //   const appName = appCodebase?.metadata.name;
@@ -28,7 +28,7 @@ export const PodsColumn = () => {
   //   const buttonIconColor = disabled.status ? theme.palette.action.disabled : theme.palette.text.primary;
 
   //   return (
-  //     <Stack direction="row" spacing={1} alignItems={"center"} justifyContent="center">
+  //     <div className="flex flex-row gap-2 items-center justify-center">
   //       <Tooltip title={disabled.status ? disabled.reason : "Show Logs"}>
   //         <div>
   //           <IconButton
@@ -59,7 +59,7 @@ export const PodsColumn = () => {
   //           </IconButton>
   //         </div>
   //       </Tooltip>
-  //     </Stack>
+  //     </div>
   //   );
   return null;
 };

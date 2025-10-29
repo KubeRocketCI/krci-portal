@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import { useTypedFormContext } from "../../../../hooks/useFormContext";
 import { CODEBASE_FORM_NAMES } from "../../../../names";
 import {
@@ -21,29 +20,29 @@ export const Form = () => {
   const hasJiraServerIntegrationFieldValue = watch(CODEBASE_FORM_NAMES.hasJiraServerIntegration.name);
 
   return (
-    <Grid container spacing={1}>
-      <Grid item xs={12}>
+    <div className="flex flex-col gap-2">
+      <div>
         <CommitMessagePattern />
-      </Grid>
-      <Grid item xs={12}>
+      </div>
+      <div>
         <JiraServerIntegration />
-      </Grid>
-      <Grid item xs={12}>
+      </div>
+      <div>
         <CodemieIntegration />
-      </Grid>
+      </div>
       {jiraServerNames.length && hasJiraServerIntegrationFieldValue ? (
         <>
-          <Grid item xs={12}>
+          <div>
             <JiraServer />
-          </Grid>
-          <Grid item xs={12}>
+          </div>
+          <div>
             <TicketNamePattern />
-          </Grid>
-          <Grid item xs={12}>
+          </div>
+          <div>
             <AdvancedJiraMapping />
-          </Grid>
+          </div>
         </>
       ) : null}
-    </Grid>
+    </div>
   );
 };

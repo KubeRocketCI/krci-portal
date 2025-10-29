@@ -6,7 +6,7 @@ import {
 import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { useQuickLinksUrlListWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
-import { Box, Grid, Tooltip } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import { Application, applicationLabels, Codebase, getDeployedVersion, systemQuickLink } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import { SquareArrowOutUpRight } from "lucide-react";
@@ -46,20 +46,20 @@ export const DeployedVersionPreviewColumn = ({
   return application && deployedVersion !== "NaN" ? (
     <Tooltip
       title={
-        <Grid container alignItems={"center"} spacing={1}>
-          <Grid item>Open in {quickLinkUiNames[systemQuickLink.argocd]}</Grid>
+        <div className="flex items-center gap-2">
+          <div>Open in {quickLinkUiNames[systemQuickLink.argocd]}</div>
           <span> </span>
-          <Grid item>
+          <div>
             <SquareArrowOutUpRight size={16} />
-          </Grid>
-        </Grid>
+          </div>
+        </div>
       }
     >
-      <Box sx={{ m: "2px 0" }}>
+      <div className="my-0.5">
         <Link to={argoCDLink} target={"_blank"}>
           {deployedVersion}
         </Link>
-      </Box>
+      </div>
     </Tooltip>
   ) : (
     "No deploy"

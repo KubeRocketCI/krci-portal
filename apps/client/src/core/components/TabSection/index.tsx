@@ -1,4 +1,3 @@
-import { Box, Stack, Typography } from '@mui/material';
 import React from 'react';
 
 export const TabSection = ({
@@ -9,19 +8,19 @@ export const TabSection = ({
   title: string | React.ReactNode;
 }) => {
   return (
-    <Box sx={{ mt: (t) => t.typography.pxToRem(24) }}>
-      <Stack spacing={3}>
-        <Box>
+    <div className="mt-6">
+      <div className="flex flex-col gap-6">
+        <div>
           {typeof title === 'string' ? (
-            <Typography fontSize={28} color="primary.dark">
+            <h2 className="text-3xl text-foreground">
               {title}
-            </Typography>
+            </h2>
           ) : (
             title
           )}
-        </Box>
+        </div>
         {children}
-      </Stack>
-    </Box>
+      </div>
+    </div>
   );
 };

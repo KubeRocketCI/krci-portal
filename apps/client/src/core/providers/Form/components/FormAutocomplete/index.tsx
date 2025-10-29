@@ -2,11 +2,9 @@ import { SelectOption } from "@/core/providers/Form/types";
 import {
   Autocomplete,
   AutocompleteRenderInputParams,
-  Box,
   Checkbox,
   Chip,
   FormControl,
-  Stack,
   TextField,
   Tooltip,
   useTheme,
@@ -50,7 +48,7 @@ const FormAutocompleteMultiInner = React.forwardRef(
           ...originalInputProps,
           ...autocompleteInputProps,
           endAdornment: (
-            <Stack direction="row" alignItems="center" spacing={0.5}>
+            <div className="flex flex-row items-center gap-1">
               {autocompleteInputProps.endAdornment}
               {userEndAdornment}
               {tooltipText && (
@@ -58,7 +56,7 @@ const FormAutocompleteMultiInner = React.forwardRef(
                   <Info size={16} />
                 </Tooltip>
               )}
-            </Stack>
+            </div>
           ),
         };
       },
@@ -66,7 +64,7 @@ const FormAutocompleteMultiInner = React.forwardRef(
     );
 
     return (
-      <Stack spacing={1}>
+      <div className="flex flex-col gap-2">
         <FormControl fullWidth>
           <Controller
             name={name}
@@ -120,7 +118,7 @@ const FormAutocompleteMultiInner = React.forwardRef(
                         const { key, ...tagProps } = getTagProps({ index });
                         return <Chip key={key} {...tagProps} label={option.label} color="primary" size="small" />;
                       })}
-                      {value.length > limit && <Box sx={{ mx: 1 }}>+{value.length - limit}</Box>}
+                      {value.length > limit && <span className="mx-1">+{value.length - limit}</span>}
                     </>
                   );
                 }}
@@ -135,7 +133,7 @@ const FormAutocompleteMultiInner = React.forwardRef(
             {...props}
           />
         </FormControl>
-      </Stack>
+      </div>
     );
   }
 );

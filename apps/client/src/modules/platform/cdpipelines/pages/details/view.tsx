@@ -7,7 +7,6 @@ import { StageList } from "./components/StageList";
 import { StageListFilter } from "./components/StageListFilter";
 import { routeCDPipelineDetails } from "./route";
 import { Section } from "@/core/components/Section";
-import { Box, Stack } from "@mui/material";
 
 export default function CDPipelineDetailsPageContent() {
   const { name, clusterName } = routeCDPipelineDetails.useParams();
@@ -41,14 +40,14 @@ export default function CDPipelineDetailsPageContent() {
           </>
         }
       >
-        <Stack spacing={3} flexGrow={1} display="flex">
-          <Box>
+        <div className="flex flex-col gap-6 grow">
+          <div>
             <StageListFilter />
-          </Box>
-          <Box flexGrow={1} display="flex" flexDirection="column">
+          </div>
+          <div className="flex-1 flex flex-col">
             <StageList />
-          </Box>
-        </Stack>
+          </div>
+        </div>
       </Section>
     </PageWrapper>
   );

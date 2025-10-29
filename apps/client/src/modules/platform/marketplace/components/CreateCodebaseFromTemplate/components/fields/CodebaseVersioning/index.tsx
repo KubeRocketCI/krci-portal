@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_FROM_TEMPLATE_FORM_NAMES } from "../../../names";
 import { FieldEvent } from "@/core/types/forms";
@@ -35,8 +34,8 @@ export const CodebaseVersioning = () => {
   };
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={4}>
+    <div className="grid grid-cols-12 gap-4">
+      <div className="col-span-4">
         <FormSelect
           {...register(CODEBASE_FROM_TEMPLATE_FORM_NAMES.VERSIONING_TYPE, {
             required: "Select codebase versioning type",
@@ -47,11 +46,11 @@ export const CodebaseVersioning = () => {
           errors={errors}
           options={mapObjectValuesToSelectOptions(codebaseVersioning)}
         />
-      </Grid>
+      </div>
       {codebaseVersioningTypeFieldValue === codebaseVersioning.edp ||
       codebaseVersioningTypeFieldValue === codebaseVersioning.semver ? (
         <>
-          <Grid item xs={4}>
+          <div className="col-span-4">
             <FormTextField
               {...register(CODEBASE_FROM_TEMPLATE_FORM_NAMES.VERSIONING_START_FROM_VERSION, {
                 required: "Specify the initial version.",
@@ -69,10 +68,9 @@ export const CodebaseVersioning = () => {
               control={control}
               errors={errors}
             />
-          </Grid>
-          <Grid
-            item
-            xs={4}
+          </div>
+          <div
+            className="col-span-4"
             style={{
               display: "flex",
               justifyContent: "flex-end",
@@ -92,9 +90,9 @@ export const CodebaseVersioning = () => {
               control={control}
               errors={errors}
             />
-          </Grid>
+          </div>
         </>
       ) : null}
-    </Grid>
+    </div>
   );
 };

@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, alpha, Box } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, alpha } from "@mui/material";
 import { pipelineRunLabels, pipelineType, sortKubeObjectByCreationTimestamp } from "@my-project/shared";
 import { ChevronDown } from "lucide-react";
 import React from "react";
@@ -35,7 +35,7 @@ export const BranchListItem = React.memo<BranchListItemProps>(
 
     return (
       <>
-        <Box sx={{ pb: (t) => t.typography.pxToRem(16) }}>
+        <div className="pb-4">
           <Accordion expanded={isExpanded} onChange={handlePanelChange(id)}>
             <AccordionSummary
               expandIcon={<ChevronDown size={16} />}
@@ -65,7 +65,7 @@ export const BranchListItem = React.memo<BranchListItemProps>(
               </AccordionDetails>
             )}
           </Accordion>
-        </Box>
+        </div>
       </>
     );
   }

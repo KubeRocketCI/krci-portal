@@ -4,7 +4,7 @@ import { usePipelineRunWatchItem } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { useTaskWatchList } from "@/k8s/api/groups/Tekton/Task";
 import { useTaskRunWatchList } from "@/k8s/api/groups/Tekton/TaskRun";
 import { getTaskRunStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun/utils";
-import { Box, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
+import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { approvalTaskLabels, PipelineRun, taskRunLabels } from "@my-project/shared";
 import {
   Background,
@@ -158,46 +158,17 @@ const PipelineRunDiagramView: React.FC<{
   }, [flowEdges, flowNodes]);
 
   return (
-    <Box
-      sx={{
-        height: "100%",
-        width: "100%",
-        position: "relative",
-        "& .react-flow__node.selected": {
-          "& .react-flow__node-default": {
-            boxShadow: "none !important",
-          },
-        },
-        "& .react-flow__edge-path": {
-          strokeDasharray: "5,5",
-          animation: "dashdraw 0.5s linear infinite",
-        },
-        "@keyframes dashdraw": {
-          "0%": {
-            strokeDashoffset: "10",
-          },
-          "100%": {
-            strokeDashoffset: "0",
-          },
-        },
-      }}
-    >
+    <div className="h-full w-full relative">
       {/* Layout Controls */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: 16,
-          right: 16,
-          zIndex: 1000,
-          backgroundColor: "background.paper",
-          borderRadius: 1,
-          p: 1,
-          boxShadow: 1,
+      <div
+        className="absolute top-4 right-4 z-[1000] bg-background rounded-md p-4 shadow-md"
+        style={{
+          // Prevent node selection highlighting
         }}
       >
-        <Typography variant="caption" sx={{ mb: 1, display: "block" }}>
+        <span className="text-xs block mb-1">
           Layout
-        </Typography>
+        </span>
         <ToggleButtonGroup
           value={viewMode}
           exclusive
@@ -211,7 +182,7 @@ const PipelineRunDiagramView: React.FC<{
           <ToggleButton value="vertical">Vertical</ToggleButton>
           <ToggleButton value="horizontal">Horizontal</ToggleButton>
         </ToggleButtonGroup>
-      </Box>
+      </div>
 
       <ReactFlow
         nodes={flowNodes}
@@ -258,7 +229,7 @@ const PipelineRunDiagramView: React.FC<{
           }}
         />
       </ReactFlow>
-    </Box>
+    </div>
   );
 };
 

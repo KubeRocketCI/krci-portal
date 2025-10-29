@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import { Actions } from "./components/Actions";
 import { CodemieForm } from "./components/Codemie";
 import { CodemieSecretForm } from "./components/CodemieSecret";
@@ -45,20 +44,20 @@ export const ManageCodeMie = ({ quickLink, codemie, codemieSecret, handleClosePa
             codemieSecret: codemieSecretForm,
           }}
         >
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
+          <div className="flex flex-col gap-6">
+            <div>
               <QuickLinkForm />
-            </Grid>
-            <Grid item xs={12}>
+            </div>
+            <div>
               <CodemieForm />
-            </Grid>
-            <Grid item xs={12}>
+            </div>
+            <div>
               <CodemieSecretForm />
-            </Grid>
-            <Grid item xs={12}>
+            </div>
+            <div>
               <Actions />
-            </Grid>
-          </Grid>
+            </div>
+          </div>
         </MultiFormContextProvider>
       </DataContextProvider>
     </div>

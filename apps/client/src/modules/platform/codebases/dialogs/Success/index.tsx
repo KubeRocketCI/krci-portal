@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography, useTheme } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, useTheme } from "@mui/material";
 import React from "react";
 import { DIALOG_NAME } from "./constants";
 import { SuccessGraphDialogProps } from "./types";
@@ -14,24 +14,24 @@ export const SuccessDialog: React.FC<SuccessGraphDialogProps> = ({
   return (
     <Dialog open={open} fullWidth onClose={() => closeDialog()} maxWidth={"sm"}>
       <DialogTitle>
-        <Typography fontSize={theme.typography.pxToRem(20)} fontWeight={500}>
+        <h2 className="text-xl font-medium">
           {dialogTitle}
-        </Typography>
+        </h2>
       </DialogTitle>
       <DialogContent>
-        <Stack spacing={1} alignItems="center">
+        <div className="flex flex-col gap-2 items-center">
           <PartyPopper size={theme.typography.pxToRem(128)} color="#A2A7B7" />
           {title && (
-            <Typography color="primary.dark" fontSize={theme.typography.pxToRem(20)} fontWeight={500}>
+            <h3 className="text-xl font-medium text-foreground">
               {title}
-            </Typography>
+            </h3>
           )}
           {description && (
-            <Typography color="secondary.dark" fontSize={theme.typography.pxToRem(14)}>
+            <p className="text-sm text-muted-foreground">
               {description}
-            </Typography>
+            </p>
           )}
-        </Stack>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={() => closeDialog()} color="primary">

@@ -1,8 +1,6 @@
-import { Box, useTheme } from "@mui/material";
 import React from "react";
 
 export const HorizontalScrollContainer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const theme = useTheme();
 
   const container = React.useRef<HTMLDivElement | null>(null);
 
@@ -31,20 +29,11 @@ export const HorizontalScrollContainer: React.FC<{ children: React.ReactNode }> 
   }, [handler]);
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        maxWidth: "100%",
-        overflowX: "auto",
-        overflowY: "hidden",
-        p: theme.typography.pxToRem(5),
-      }}
+    <div
+      className="w-full flex items-center max-w-full overflow-x-auto overflow-y-hidden p-1"
       ref={container}
     >
       {children}
-    </Box>
+    </div>
   );
 };

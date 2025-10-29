@@ -1,7 +1,5 @@
 import React, { useState, useRef, useMemo } from "react";
 import {
-  Box,
-  Typography,
   FormControl,
   InputLabel,
   MenuItem,
@@ -255,9 +253,9 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
   // Early return if no pods
   if (!pods.length) {
     return (
-      <Box sx={{ height, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Typography sx={{ color: "#666" }}>No pods available</Typography>
-      </Box>
+      <div className="flex items-center justify-center" style={{ height }}>
+        <span className="text-gray-500">No pods available</span>
+      </div>
     );
   }
 
@@ -265,9 +263,9 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
   const errorHeight = isLoading || !podReadyForLogs || error ? 50 : 0;
 
   return (
-    <Box sx={{ height, display: "flex", flexDirection: "column", gap: 2 }}>
+    <div className="flex flex-col gap-8" style={{ height }}>
       {/* Controls */}
-      <Box sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}>
+      <div className="flex gap-8 items-center flex-wrap">
         {pods.length > 1 && (
           <FormControl size="small" sx={{ minWidth: 180 }}>
             <InputLabel>Pod</InputLabel>
@@ -315,7 +313,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
         />
 
         {/* Action Buttons */}
-        <Box sx={{ display: "flex", gap: 1 }}>
+        <div className="flex gap-1">
           <Tooltip title="Search logs (Ctrl+F)">
             <IconButton size="small" onClick={handleSearch} disabled={!formattedLogs}>
               <Search className="h-4 w-4" />
@@ -333,72 +331,60 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
               <Copy className="h-4 w-4" />
             </IconButton>
           </Tooltip>
-        </Box>
+        </div>
 
         {currentPod && (
-          <Typography variant="caption" sx={{ color: "#757575", ml: 1 }}>
+          <span className="text-xs text-gray-500 ml-1">
             Pod: {currentPod.status?.phase || "Unknown"} | Ready: {podReadyForLogs ? "✅" : "⏳"} | Containers:{" "}
             {currentPod.spec?.containers?.length || 0} | Created:{" "}
             {currentPod.metadata?.creationTimestamp
               ? new Date(currentPod.metadata.creationTimestamp).toLocaleTimeString()
               : "Unknown"}
-          </Typography>
+          </span>
         )}
-      </Box>
+      </div>
 
       {/* Logs Display */}
-      <Box
-        sx={{
-          flex: 1,
-          overflow: "hidden",
-          position: "relative",
-        }}
-      >
+      <div className="flex-1 overflow-hidden relative">
         {/* Status Messages */}
         {(isLoading || !podReadyForLogs || error) && (
-          <Box
-            sx={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              backgroundColor: "#fff",
-              padding: 1.5,
-              borderBottom: "1px solid #e0e0e0",
-              zIndex: 1,
+          <div
+            className="absolute top-0 left-0 right-0 bg-white border-b border-gray-300 z-10"
+            style={{
+              padding: "6px", // 1.5 * 4 = 6px
               height: errorHeight,
             }}
           >
             {!podReadyForLogs && !error && (
-              <Typography sx={{ color: "#1976d2", fontSize: "12px" }}>
+              <span className="text-blue-600 text-xs">
                 🚀 Pod is getting ready...
                 {currentPod?.status?.phase === "Pending" && " (Container is being scheduled)"}
                 {currentPod?.status?.phase === "ContainerCreating" && " (Container is starting up)"}
                 {!currentPod?.status?.phase && " (Initializing)"}
-                <span style={{ display: "block", marginTop: "2px", color: "#666" }}>
+                <span className="block mt-1 text-gray-500">
                   Logs will be available once the container is running
                 </span>
-              </Typography>
+              </span>
             )}
 
             {isLoading && podReadyForLogs && (
-              <Typography sx={{ color: "#1976d2", fontSize: "12px" }}>
+              <span className="text-blue-600 text-xs">
                 📦 Loading logs from {activeContainer} container...
-              </Typography>
+              </span>
             )}
 
             {error && (
-              <Typography sx={{ color: "#d32f2f", fontSize: "12px" }}>
+              <span className="text-red-600 text-xs">
                 ❌ Error loading logs:{" "}
                 {typeof error === "object" && error !== null && "message" in error
                   ? (error as Error).message
                   : String(error)}
-                <span style={{ display: "block", marginTop: "2px", color: "#666" }}>
+                <span className="block mt-1 text-gray-500">
                   Will retry automatically when the container is ready
                 </span>
-              </Typography>
+              </span>
             )}
-          </Box>
+          </div>
         )}
 
         {/* Terminal Display */}
@@ -416,8 +402,8 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
 
         {/* Search Overlay */}
         <SearchPopover open={showSearch} onClose={() => setShowSearch(false)} terminalRef={terminalRef} />
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 };
 
@@ -634,17 +620,9 @@ const SearchPopover: React.FC<SearchPopoverProps> = ({ open, onClose, terminalRe
       </Tooltip>
 
       {/* Search Results */}
-      <Typography
-        variant="caption"
-        sx={{
-          color: getSearchResultColor(),
-          minWidth: 80,
-          textAlign: "center",
-          fontSize: "12px",
-        }}
-      >
+      <span className={`text-xs text-center min-w-20 ${getSearchResultColor()}`}>
         {getSearchResultText()}
-      </Typography>
+      </span>
 
       {/* Navigation */}
       <Tooltip title="Previous (Shift+Enter)">

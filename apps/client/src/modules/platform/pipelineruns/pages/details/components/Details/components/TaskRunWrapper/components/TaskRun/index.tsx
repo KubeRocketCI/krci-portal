@@ -1,4 +1,4 @@
-import { Divider, Paper, Stack, Typography } from "@mui/material";
+import { Divider, Paper } from "@mui/material";
 import { useTabs } from "./hooks/useTabs";
 import { TaskRunProps } from "./types";
 import { getTaskRunStatus, taskRunLabels } from "@my-project/shared";
@@ -34,35 +34,35 @@ export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
   return (
     <Paper>
       <StyledDetailsHeader>
-        <Stack spacing={1}>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <Typography fontSize={(t) => t.typography.pxToRem(20)} fontWeight={500}>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <h3 className="text-xl font-medium">
               {taskRunName}
-            </Typography>
-          </Stack>
-          <Stack direction="row" alignItems="center" spacing={3}>
-            <Typography fontSize={(t) => t.typography.pxToRem(14)} fontWeight={500} color="primary.dark">
+            </h3>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-foreground">
               Status:{" "}
-              <Typography fontSize={(t) => t.typography.pxToRem(14)} component="span" color="secondary.dark">
+              <span className="text-sm text-muted-foreground">
                 {taskRunStatus.reason}
-              </Typography>
-            </Typography>
-            <Typography fontSize={(t) => t.typography.pxToRem(14)} fontWeight={500} color="primary.dark">
+              </span>
+            </span>
+            <span className="text-sm font-medium text-foreground">
               Duration:{" "}
-              <Typography fontSize={(t) => t.typography.pxToRem(14)} component="span" color="secondary.dark">
+              <span className="text-sm text-muted-foreground">
                 {duration}
-              </Typography>
-            </Typography>
-          </Stack>
+              </span>
+            </span>
+          </div>
           {taskDescription && (
-            <Typography fontSize={(t) => t.typography.pxToRem(14)} fontWeight={500} color="primary.dark">
+            <span className="text-sm font-medium text-foreground">
               Description:{" "}
-              <Typography fontSize={(t) => t.typography.pxToRem(14)} component="span" color="secondary.dark">
+              <span className="text-sm text-muted-foreground">
                 {taskDescription}
-              </Typography>
-            </Typography>
+              </span>
+            </span>
           )}
-        </Stack>
+        </div>
       </StyledDetailsHeader>
       <Divider orientation="horizontal" />
       <StyledDetailsBody>

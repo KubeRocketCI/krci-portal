@@ -2,7 +2,7 @@ import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { useCodebaseCRUD } from "@/k8s/api/groups/KRCI/Codebase";
 import { SuccessDialog } from "@/modules/platform/codebases/dialogs/Success";
 import { PATH_COMPONENT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
-import { Box, Button, Stack, useTheme } from "@mui/material";
+import { Button } from "@mui/material";
 import { codebaseDeploymentScript, CodebaseDraft, codebaseLabels, createCodebaseDraftObject } from "@my-project/shared";
 import React from "react";
 import { useTypedFormContext } from "../../hooks/useFormContext";
@@ -12,7 +12,6 @@ import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 
 export const FormActions = () => {
-  const theme = useTheme();
   const {
     state: { closeDialog },
   } = useCurrentDialog();
@@ -101,17 +100,17 @@ export const FormActions = () => {
   }, [reset]);
 
   return (
-    <Stack direction="row" spacing={2} justifyContent="space-between" width="100%">
-      <Stack direction="row" spacing={1}>
-        <Box sx={{ color: theme.palette.text.primary }}>
+    <div className="flex justify-between w-full gap-2">
+      <div className="flex gap-1">
+        <div className="text-foreground">
           <Button onClick={closeDialog} size="small" color="inherit">
             cancel
           </Button>
-        </Box>
+        </div>
         <Button onClick={handleResetFields} size="small" disabled={!isDirty}>
           undo changes
         </Button>
-      </Stack>
+      </div>
       <Button
         type={"submit"}
         onClick={handleSubmit(onSubmit)}
@@ -122,6 +121,6 @@ export const FormActions = () => {
       >
         create
       </Button>
-    </Stack>
+    </div>
   );
 };

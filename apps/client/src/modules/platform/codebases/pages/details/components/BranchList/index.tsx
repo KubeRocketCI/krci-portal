@@ -4,7 +4,6 @@ import { Section } from "@/core/components/Section";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { ManageCodebaseBranchDialog } from "@/modules/platform/codebases/dialogs/ManageCodebaseBranch";
-import { Grid, Typography } from "@mui/material";
 import { CodebaseBranch } from "@my-project/shared";
 import React from "react";
 import { useCodebaseBranchListWatch, useCodebaseWatch, usePipelineNamesWatch } from "../../hooks/data";
@@ -38,16 +37,16 @@ export const BranchList = () => {
   return (
     <Section
       title={
-        <Grid container alignItems={"center"} spacing={1}>
-          <Grid item>
-            <Typography variant={"h1"}>
+        <div className="flex items-center gap-1 justify-between w-full">
+          <div>
+            <h1 className="text-4xl font-bold">
               Branches <LearnMoreLink url={EDP_USER_GUIDE.BRANCHES_MANAGE.url} />
-            </Typography>
-          </Grid>
-          <Grid item style={{ marginLeft: "auto" }}>
+            </h1>
+          </div>
+          <div className="ml-auto">
             <BranchListActions />
-          </Grid>
-        </Grid>
+          </div>
+        </div>
       }
     >
       <LoadingWrapper isLoading={!codebaseBranchListWatch.query.isFetched}>

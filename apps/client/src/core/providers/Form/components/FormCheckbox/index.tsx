@@ -1,4 +1,4 @@
-import { Checkbox, FormControl, FormControlLabel, FormHelperText, Stack } from "@mui/material";
+import { Checkbox, FormControl, FormControlLabel, FormHelperText } from "@mui/material";
 import React from "react";
 import { Controller, Path, PathValue } from "react-hook-form";
 import { FormCheckboxProps } from "./types";
@@ -23,7 +23,7 @@ const FormCheckboxInner = React.forwardRef(
     const helperText = hasError ? errorMessage : helperTextProp;
 
     return (
-      <Stack spacing={1}>
+      <div className="flex flex-col gap-2">
         <FormControl fullWidth error={hasError}>
           <Controller
             name={name}
@@ -50,7 +50,7 @@ const FormCheckboxInner = React.forwardRef(
           />
           {helperText && <FormHelperText error={hasError}>{helperText}</FormHelperText>}
         </FormControl>
-      </Stack>
+      </div>
     );
   }
 );

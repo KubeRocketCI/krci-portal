@@ -1,8 +1,7 @@
 import { TextField, Select, SelectOption } from "@/core/components/form";
 import { useFilterContext } from "@/core/providers/Filter";
 import { codebaseType } from "@my-project/shared";
-import { Box, Button } from "@mui/material";
-import { FORM_CONTROL_LABEL_HEIGHT } from "@/core/providers/Form/constants";
+import { Button } from "@mui/material";
 
 const codebaseTypeOptions: SelectOption[] = [
   { label: "All", value: "all" },
@@ -37,11 +36,11 @@ export const TemplateFilter = () => {
       </div>
 
       {form.state.isDirty && (
-        <Box sx={{ mt: (t) => t.typography.pxToRem(FORM_CONTROL_LABEL_HEIGHT) }}>
+        <div className="mt-6">
           <Button variant="outlined" onClick={reset} size="small">
             Clear
           </Button>
-        </Box>
+        </div>
       )}
     </div>
   );
