@@ -1,5 +1,5 @@
 import { InfoRow } from "@/core/components/InfoColumns/types";
-import { Chip, Grid } from "@mui/material";
+import { Chip } from "@mui/material";
 import { Task } from "@my-project/shared";
 import React from "react";
 
@@ -21,13 +21,13 @@ export const useInfoRows = (task: Task): InfoRow[] => {
         {
           label: "Labels",
           text: (
-            <Grid container spacing={1} flexWrap="wrap">
+            <div className="flex flex-wrap gap-2">
               {pipelineLabels.map((el) => (
-                <Grid item key={el}>
+                <div key={el}>
                   <Chip label={el} size="small" />
-                </Grid>
+                </div>
               ))}
-            </Grid>
+            </div>
           ),
           columnXs: 10,
         },

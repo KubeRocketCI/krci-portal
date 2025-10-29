@@ -3,7 +3,7 @@ import { FORM_CONTROL_LABEL_HEIGHT } from "@/core/providers/Form/constants";
 import { ValueOf } from "@/core/types/global";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { FilterTypeWithOptionAll } from "@/k8s/types";
-import { Box, Button, FormHelperText, Stack } from "@mui/material";
+import { Button, FormHelperText } from "@mui/material";
 import { PipelineRun, pipelineRunLabels, pipelineRunStatus, PipelineType } from "@my-project/shared";
 import React from "react";
 import { pipelineRunFilterControlNames } from "./constants";
@@ -52,9 +52,9 @@ export const PipelineRunFilter = ({
   );
 
   return (
-    <Stack direction="row" spacing={2} alignItems="flex-start">
+    <div className="flex flex-row gap-4 items-start">
       {filterControls.includes(pipelineRunFilterControlNames.PIPELINE_TYPE) && (
-        <Box sx={{ width: (t) => t.typography.pxToRem(256) }}>
+        <div className="w-64">
           <form.Field name="pipelineType">
             {(field) => <Select field={field} label="Type" options={pipelineTypeOptions} placeholder="Select type" />}
           </form.Field>
@@ -62,20 +62,20 @@ export const PipelineRunFilter = ({
             {pipelineRunTypes.slice(0, 5).map(capitalizeFirstLetter).join(" / ")}
             {pipelineRunTypes.length > 5 ? "..." : ""}
           </FormHelperText>
-        </Box>
+        </div>
       )}
 
       {filterControls.includes(pipelineRunFilterControlNames.STATUS) && (
-        <Box sx={{ width: (t) => t.typography.pxToRem(256) }}>
+        <div className="w-64">
           <form.Field name="status">
             {(field) => <Select field={field} label="Status" options={statusOptions} placeholder="Select status" />}
           </form.Field>
           <FormHelperText>Success / Failure / Unknown</FormHelperText>
-        </Box>
+        </div>
       )}
 
       {filterControls.includes(pipelineRunFilterControlNames.CODEBASES) && (
-        <Box sx={{ width: (t) => t.typography.pxToRem(480) }}>
+        <div className="w-[480px]">
           <form.Field name="codebases">
             {(field) => (
               <Autocomplete
@@ -89,11 +89,11 @@ export const PipelineRunFilter = ({
               />
             )}
           </form.Field>
-        </Box>
+        </div>
       )}
 
       {showNamespaceFilter && filterControls.includes(pipelineRunFilterControlNames.NAMESPACES) && (
-        <Box sx={{ width: (t) => t.typography.pxToRem(400) }}>
+        <div className="w-96">
           <form.Field name="namespaces">
             {(field) => (
               <NamespaceAutocomplete
@@ -104,18 +104,18 @@ export const PipelineRunFilter = ({
               />
             )}
           </form.Field>
-        </Box>
+        </div>
       )}
 
       {form.state.isDirty && (
-        <Box>
-          <Box sx={{ mt: (t) => t.typography.pxToRem(FORM_CONTROL_LABEL_HEIGHT) }}>
+        <div>
+          <div className="mt-6">
             <Button variant="outlined" onClick={reset} size="small">
               Clear
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
-    </Stack>
+    </div>
   );
 };

@@ -1,4 +1,4 @@
-import { Box, Paper, Stack, Table as MuiTable } from "@mui/material";
+import { Paper, Table as MuiTable } from "@mui/material";
 import React from "react";
 import { TableBody } from "./components/TableBody";
 import { TableHead } from "./components/TableHead";
@@ -173,11 +173,11 @@ export const Table = <DataType,>({
   const renderHeader = React.useCallback(() => {
     if (slots?.header || tableSettings.show || (selectionSettings.renderSelectionInfo && validSelected)) {
       return (
-        <Stack spacing={2}>
+        <div className="flex flex-col gap-4">
           {slots?.header || tableSettings.show ? (
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Box flexGrow={1}>{slots?.header && slots.header}</Box>
-              <Box sx={{ pl: (t) => t.typography.pxToRem(20) }}>
+            <div className="flex flex-row gap-4 items-center">
+              <div className="grow">{slots?.header && slots.header}</div>
+              <div className="pl-5">
                 {columns && tableSettings.show && (
                   <TableSettings
                     id={id}
@@ -188,15 +188,15 @@ export const Table = <DataType,>({
                     hasSelection={!!selectionSettings.handleSelectRow}
                   />
                 )}
-              </Box>
-            </Stack>
+              </div>
+            </div>
           ) : null}
           {selectionSettings.renderSelectionInfo && validSelected && (
-            <Box sx={{ pl: (t) => t.typography.pxToRem(11) }}>
+            <div className="pl-3">
               {selectionSettings.renderSelectionInfo(validSelected.length)}
-            </Box>
+            </div>
           )}
-        </Stack>
+        </div>
       );
     }
   }, [_columns, columns, id, name, selectionSettings, slots?.header, tableSettings.show, validSelected]);
@@ -216,7 +216,7 @@ export const Table = <DataType,>({
             }
       }
     >
-      <Stack spacing={2}>
+      <div className="flex flex-col gap-4">
         {renderHeader()}
         <MuiTable sx={{ borderRadius: (t) => t.typography.pxToRem(5), overflow: "hidden" }}>
           <colgroup ref={colGroupRef}>
@@ -258,7 +258,7 @@ export const Table = <DataType,>({
             minimal={minimal}
           />
         </MuiTable>
-        <Box sx={{ m: "0 !important" }}>
+        <div className="m-0">
           {paginationSettings.show && (
             <TablePagination
               dataCount={filteredData && filteredData.length}
@@ -268,9 +268,9 @@ export const Table = <DataType,>({
               handleChangeRowsPerPage={handleChangeRowsPerPage}
             />
           )}
-        </Box>
+        </div>
         {slots?.footer && slots.footer}
-      </Stack>
+      </div>
     </Paper>
   );
 };

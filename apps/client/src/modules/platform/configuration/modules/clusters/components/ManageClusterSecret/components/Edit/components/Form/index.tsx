@@ -1,4 +1,4 @@
-import { Grid, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import React from "react";
 import { useFormContext as useReactHookFormContext } from "react-hook-form";
 import { CLUSTER_FORM_NAMES } from "../../../../names";
@@ -36,21 +36,21 @@ export const Form = () => {
   const renderBearerFormPart = React.useCallback(() => {
     return (
       <>
-        <Grid item xs={12}>
+        <div>
           <ClusterToken />
-        </Grid>
-        <Grid item xs={12} sx={{ mt: theme.typography.pxToRem(20) }}>
-          <Grid container spacing={2} alignItems="flex-end">
-            <Grid item xs={6}>
+        </div>
+        <div style={{ marginTop: theme.typography.pxToRem(20) }}>
+          <div className="grid grid-cols-12 gap-4 items-end">
+            <div className="col-span-6">
               <SkipTLSVerify />
-            </Grid>
+            </div>
             {!skipTLSVerify && (
-              <Grid item xs={6}>
+              <div className="col-span-6">
                 <ClusterCertificate />
-              </Grid>
+              </div>
             )}
-          </Grid>
-        </Grid>
+          </div>
+        </div>
       </>
     );
   }, [skipTLSVerify, theme.typography]);
@@ -58,12 +58,12 @@ export const Form = () => {
   const renderIRSAFormPart = React.useCallback(() => {
     return (
       <>
-        <Grid item xs={6}>
+        <div className="col-span-6">
           <CaData />
-        </Grid>
-        <Grid item xs={6}>
+        </div>
+        <div className="col-span-6">
           <RoleARN />
-        </Grid>
+        </div>
       </>
     );
   }, []);
@@ -73,17 +73,19 @@ export const Form = () => {
   }, []);
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12}>
+    <div className="flex flex-col gap-4">
+      <div>
         <ClusterTypeField onChange={onClusterChange} value={activeClusterType} />
-      </Grid>
-      <Grid item xs={6}>
-        <ClusterName />
-      </Grid>
-      <Grid item xs={6}>
-        <ClusterHost />
-      </Grid>
+      </div>
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-6">
+          <ClusterName />
+        </div>
+        <div className="col-span-6">
+          <ClusterHost />
+        </div>
+      </div>
       {activeClusterType === clusterType.bearer ? renderBearerFormPart() : renderIRSAFormPart()}
-    </Grid>
+    </div>
   );
 };

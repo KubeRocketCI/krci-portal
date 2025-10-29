@@ -1,6 +1,6 @@
 import "@xterm/xterm/css/xterm.css";
 import React, { useRef, useEffect, useImperativeHandle, forwardRef, useState } from "react";
-import { Box, IconButton, Tooltip, Paper, InputBase } from "@mui/material";
+import { IconButton, Tooltip, Paper, InputBase } from "@mui/material";
 import { Search, Download, Copy, ChevronUp, ChevronDown, X } from "lucide-react";
 import { Terminal as XTerminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
@@ -254,23 +254,13 @@ export const Terminal = forwardRef<TerminalRef, TerminalProps>(
     );
 
     return (
-      <Box
-        className={className}
-        style={style}
-        sx={{
-          height,
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-          border: "1px solid #e0e0e0",
-          borderRadius: 1,
-          backgroundColor: theme?.background || "#ffffff",
-          position: "relative",
-        }}
+      <div
+        className={`flex flex-col overflow-hidden border border-gray-300 rounded relative ${className || ''}`}
+        style={{ height, backgroundColor: theme?.background || "#ffffff", ...style }}
       >
         {/* Toolbar */}
         {showToolbar && (
-          <Box sx={{ display: "flex", gap: 1, p: 1, borderBottom: "1px solid #e0e0e0" }}>
+          <div className="flex gap-1 p-1 border-b border-gray-300">
             {enableSearch && (
               <Tooltip title="Search (Ctrl+F)">
                 <IconButton size="small" onClick={handleSearch} disabled={!content}>
@@ -294,7 +284,7 @@ export const Terminal = forwardRef<TerminalRef, TerminalProps>(
                 </IconButton>
               </Tooltip>
             )}
-          </Box>
+          </div>
         )}
 
         {/* Terminal Display */}
@@ -305,9 +295,9 @@ export const Terminal = forwardRef<TerminalRef, TerminalProps>(
               initializeTerminal(element);
             }
           }}
+          className="w-full"
           style={{
             height: showToolbar ? "calc(100% - 48px)" : "100%",
-            width: "100%",
           }}
         />
 
@@ -327,7 +317,7 @@ export const Terminal = forwardRef<TerminalRef, TerminalProps>(
             }
           />
         )}
-      </Box>
+      </div>
     );
   }
 );
@@ -553,16 +543,12 @@ const SearchPopover: React.FC<SearchPopoverProps> = ({ open, onClose, terminalRe
       </Tooltip>
 
       {/* Search Results */}
-      <Box
-        sx={{
-          color: getSearchResultColor(),
-          minWidth: 80,
-          textAlign: "center",
-          fontSize: "12px",
-        }}
+      <div
+        className="min-w-20 text-center text-xs"
+        style={{ color: getSearchResultColor() }}
       >
         {getSearchResultText()}
-      </Box>
+      </div>
 
       {/* Navigation */}
       <Tooltip title="Previous (Shift+Enter)">

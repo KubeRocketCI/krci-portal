@@ -1,4 +1,4 @@
-import { Box, Dialog, DialogContent, DialogTitle, IconButton, Stack, Typography } from "@mui/material";
+import { Dialog, DialogContent, DialogTitle, IconButton } from "@mui/material";
 import { ConfigurationPageContentProps } from "./types";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { Section } from "@/core/components/Section";
@@ -18,10 +18,10 @@ export const ConfigurationPageContent = ({
       <PageWrapper breadcrumbs={[{ label }]}>
         <Section
           description={
-            <Stack spacing={1} direction="row" alignItems="center" justifyContent="space-between">
-              <Box>
+            <div className="flex items-center justify-between gap-1">
+              <div>
                 {description} {docLink && <LearnMoreLink url={docLink} />}
-              </Box>
+              </div>
               <ButtonWithPermission
                 ButtonProps={{
                   startIcon: <Plus size={16} />,
@@ -35,7 +35,7 @@ export const ConfigurationPageContent = ({
               >
                 {creationForm.label || "add"}
               </ButtonWithPermission>
-            </Stack>
+            </div>
           }
         >
           {children}
@@ -49,18 +49,12 @@ export const ConfigurationPageContent = ({
           onClose={(_e, reason) => reason !== "backdropClick" && creationForm.onClose()}
         >
           <DialogTitle component="div">
-            <Stack
-              direction="row"
-              spacing={2}
-              justifyContent="space-between"
-              alignItems="center"
-              sx={{ width: "100%" }}
-            >
-              <Typography variant="h6">{creationForm.label}</Typography>
+            <div className="flex justify-between items-center w-full gap-2">
+              <h2 className="text-xl font-medium">{creationForm.label}</h2>
               <IconButton onClick={creationForm.onClose}>
                 <X size={20} />
               </IconButton>
-            </Stack>
+            </div>
           </DialogTitle>
           <DialogContent>{creationForm.component}</DialogContent>
         </Dialog>

@@ -4,7 +4,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Stack,
   Step,
   StepLabel,
   Stepper,
@@ -38,7 +37,7 @@ export const DialogInner = () => {
     <Dialog open={open} maxWidth={"sm"} fullWidth data-testid="dialog">
       <DialogTitle>Add New Widget</DialogTitle>
       <DialogContent>
-        <Stack spacing={2} sx={{ mt: 3 }}>
+        <div className="flex flex-col gap-4 mt-6">
           <Stepper activeStep={activeStep}>
             {STEPPER_STEPS.map((label) => {
               return (
@@ -54,12 +53,12 @@ export const DialogInner = () => {
               <Configuration widgetType={widgetType as WidgetType} addButtonContainerRef={addButtonContainerRef} />
             )}
           </div>
-        </Stack>
+        </div>
       </DialogContent>
       <DialogActions>
-        <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="center" width="100%">
+        <div className="flex flex-row gap-4 justify-between items-center w-full">
           <Button onClick={closeDialog}>cancel</Button>
-          <Stack direction="row" spacing={2}>
+          <div className="flex flex-row gap-4">
             {activeStep === STEPPER.SELECTION.idx && (
               <Button disabled={!widgetType} onClick={nextStep}>
                 next
@@ -71,8 +70,8 @@ export const DialogInner = () => {
                 <div ref={addButtonContainerRef} />
               </>
             )}
-          </Stack>
-        </Stack>
+          </div>
+        </div>
       </DialogActions>
     </Dialog>
   );

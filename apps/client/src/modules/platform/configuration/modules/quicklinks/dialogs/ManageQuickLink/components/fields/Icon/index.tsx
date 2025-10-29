@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { QUICK_LINK_FORM_NAMES } from "../../../names";
 import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
@@ -20,8 +19,8 @@ export const Icon = () => {
   const fieldValue = watch(QUICK_LINK_FORM_NAMES.icon.name);
 
   return (
-    <Grid container alignItems={"flex-end"} justifyContent={"space-between"}>
-      <Grid item xs={9}>
+    <div className="flex items-end justify-between gap-4">
+      <div className="flex-1">
         <FormTextField
           {...register(QUICK_LINK_FORM_NAMES.icon.name, {
             required: "Paste the SVG code for the icon, encoded in base64 format.",
@@ -38,10 +37,10 @@ export const Icon = () => {
           }}
           disabled={isSystem}
         />
-      </Grid>
-      <Grid item xs={3}>
+      </div>
+      <div className="w-1/4">
         <SvgBase64Icon width={100} height={100} icon={fieldValue} />
-      </Grid>
-    </Grid>
+      </div>
+    </div>
   );
 };

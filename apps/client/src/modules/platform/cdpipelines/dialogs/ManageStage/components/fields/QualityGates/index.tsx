@@ -1,4 +1,4 @@
-import { Alert, Button, Divider, Grid, Stack, Tooltip, Typography, useTheme } from "@mui/material";
+import { Alert, Button, Divider, Tooltip, useTheme } from "@mui/material";
 import React from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
@@ -54,14 +54,14 @@ export const QualityGates = () => {
   );
 
   return (
-    <Stack spacing={2}>
-      <Stack direction="row" spacing={1} alignItems="center" flexWrap={"nowrap"}>
-        <Typography variant={"h6"}>Quality gates</Typography>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-row gap-2 items-center flex-nowrap">
+        <h6 className="text-base font-medium">Quality gates</h6>
         <Tooltip title={"Define quality gates before promoting applications to the next environment."}>
           <Info size={16} />
         </Tooltip>
-      </Stack>
-      <Stack spacing={2}>
+      </div>
+      <div className="flex flex-col gap-4">
         {qualityGatesFieldValue.map((el, idx) => {
           const key = `quality-gate-row::${el.id}`;
           const isLast = idx === qualityGatesFieldValue.length - 1;
@@ -69,12 +69,12 @@ export const QualityGates = () => {
 
           return (
             <div key={key}>
-              <Grid container spacing={1} alignItems="center">
-                <Grid item xs={10}>
+              <div className="grid grid-cols-12 gap-2 items-center">
+                <div className="col-span-10">
                   <QualityGateRow namespace={namespace} currentQualityGate={el} />
-                </Grid>
-                <Grid item xs={2}>
-                  <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
+                </div>
+                <div className="col-span-2">
+                  <div className="flex flex-row items-center justify-end gap-2">
                     {!isOnly && (
                       <Button
                         type={"button"}
@@ -100,18 +100,18 @@ export const QualityGates = () => {
                         <Plus size={20} />
                       </Button>
                     )}
-                  </Stack>
-                </Grid>
-              </Grid>
+                  </div>
+                </div>
+              </div>
             </div>
           );
         })}
-      </Stack>
+      </div>
       {(!qualityGatesFieldValue || !qualityGatesFieldValue.length) && (
         <Alert severity="info" variant="outlined">
           Add at least one quality gate
         </Alert>
       )}
-    </Stack>
+    </div>
   );
 };

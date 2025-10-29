@@ -1,5 +1,4 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
-import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { Table } from "@/core/components/Table";
 import { useApplicationPermissions } from "@/k8s/api/groups/ArgoCD/Application";
 import { TABLE } from "@/k8s/constants/tables";
@@ -7,7 +6,7 @@ import {
   StageAppCodebaseCombinedData,
   useWatchStageAppCodebasesCombinedData,
 } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
-import { Box, Stack, Typography, Tooltip } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import { useColumns } from "./hooks/useColumns";
 import { useSelection } from "../../hooks/useSelection";
 import { Trash } from "lucide-react";
@@ -37,26 +36,38 @@ export const PreviewTable = () => {
           handleSelectAll: handleClickSelectAll,
           handleSelectRow: handleClickSelectRow,
           renderSelectionInfo: (selectionLength) => (
-            <Stack direction="row" alignItems="center" justifyContent="space-between">
-              <Box
-                sx={{
+            <div className="flex flex-row items-center justify-between">
+              <div
+                style={{
                   visibility: selectionLength ? "visible" : "hidden",
                   pointerEvents: selectionLength ? "auto" : "none",
                 }}
               >
-                <Stack direction="row" alignItems="center" spacing={2}>
-                  <Box sx={{ minWidth: (t) => t.typography.pxToRem(150) }}>
-                    <Typography variant="body1">{selectionLength} item(s) selected</Typography>
-                  </Box>
-                  <ConditionalWrapper
-                    condition={applicationPermissions.data?.delete.allowed}
-                    wrapper={(children) => (
-                      <Tooltip title="Uninstall selected applications">
-                        <div>{children}</div>
-                      </Tooltip>
-                    )}
-                  >
-                    <Box sx={{ color: (t) => t.palette.secondary.dark }}>
+                <div className="flex flex-row items-center gap-4">
+                  <div className="min-w-38">
+                    <p className="text-base">{selectionLength} item(s) selected</p>
+                  </div>
+                  {applicationPermissions.data?.delete.allowed ? (
+                    <Tooltip title="Uninstall selected applications">
+                      <div className="text-secondary-foreground">
+                        <ButtonWithPermission
+                          ButtonProps={{
+                            size: "small",
+                            variant: "outlined",
+                            color: "inherit",
+                            startIcon: <Trash size={16} />,
+                            // onClick: () => setDeleteDialogOpen(true),
+                            disabled: !selectionLength || !buttonsEnabledMap.uninstall,
+                          }}
+                          allowed={applicationPermissions.data?.delete.allowed}
+                          reason={applicationPermissions.data?.delete.reason}
+                        >
+                          delete
+                        </ButtonWithPermission>
+                      </div>
+                    </Tooltip>
+                  ) : (
+                    <div className="text-secondary-foreground">
                       <ButtonWithPermission
                         ButtonProps={{
                           size: "small",
@@ -71,11 +82,11 @@ export const PreviewTable = () => {
                       >
                         delete
                       </ButtonWithPermission>
-                    </Box>
-                  </ConditionalWrapper>
-                </Stack>
-              </Box>
-            </Stack>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           ),
         }}
         settings={{

@@ -5,7 +5,7 @@ import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWat
 import { useSecretPermissions, useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
 import { useServiceAccountWatchItem } from "@/k8s/api/groups/Core/ServiceAccount";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionDetails, AccordionSummary, Grid, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Grid } from "@mui/material";
 import { ContainerRegistryType, containerRegistryTypeLabelMap, registrySecretName } from "@my-project/shared";
 import React from "react";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
@@ -72,13 +72,13 @@ export default function RegistryConfigurationPage() {
       <LoadingWrapper isLoading={isLoading}>
         <Accordion expanded>
           <AccordionSummary style={{ cursor: "default" }}>
-            <Typography variant={"h6"}>
+            <h6 className="text-base font-medium">
               {containerRegistryTypeLabelMap[registryType as ContainerRegistryType]}
-            </Typography>
+            </h6>
           </AccordionSummary>
           <AccordionDetails>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
+            <div className="flex flex-col gap-4">
+              <div>
                 <ManageRegistry
                   EDPConfigMap={krciConfigMap!}
                   pullAccountSecret={pullAccountSecretWatch.query.data!}
@@ -86,8 +86,8 @@ export default function RegistryConfigurationPage() {
                   tektonServiceAccount={tektonServiceAccountWatch.query.data!}
                   handleCloseCreateDialog={handleCloseCreateDialog}
                 />
-              </Grid>
-            </Grid>
+              </div>
+            </div>
           </AccordionDetails>
         </Accordion>
       </LoadingWrapper>

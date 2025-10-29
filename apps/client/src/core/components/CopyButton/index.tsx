@@ -1,4 +1,4 @@
-import { Box, Button } from "@mui/material";
+import { Button } from "@mui/material";
 import { Copy, CopyCheck } from "lucide-react";
 import React from "react";
 
@@ -22,7 +22,7 @@ export const CopyButton = ({ text, size = "small" }: { text: string; size?: "med
   };
 
   return (
-    <Box sx={{ color: "text.secondary", pt: "0.4%" }}>
+    <div className="text-muted-foreground pt-[0.4%]">
       <Button
         onClick={handleClickCopy}
         sx={{ minWidth: 0, p: (t) => t.typography.pxToRem(iconSize / 2.5) }}
@@ -30,6 +30,6 @@ export const CopyButton = ({ text, size = "small" }: { text: string; size?: "med
       >
         {showCopied ? <CopyCheck size={iconSize} /> : <Copy size={iconSize} />}
       </Button>
-    </Box>
+    </div>
   );
 };

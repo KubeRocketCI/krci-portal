@@ -1,4 +1,3 @@
-import { Box } from "@mui/material";
 import React from "react";
 import { Overview } from "../components/Overview";
 import { ViewPipeline } from "../components/ViewPipeline";
@@ -30,13 +29,9 @@ export const useTabs = (): Tab[] => {
         label: "Overview",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.overview),
         component: (
-          <Box
-            sx={{
-              pt: (t) => t.typography.pxToRem(24),
-            }}
-          >
+          <div className="pt-6">
             <Overview />
-          </Box>
+          </div>
         ),
       },
       {
@@ -44,13 +39,9 @@ export const useTabs = (): Tab[] => {
         label: "View YAML",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.yaml),
         component: (
-          <Box
-            sx={{
-              pt: (t) => t.typography.pxToRem(24),
-            }}
-          >
+          <div className="pt-6">
             <ViewPipeline />
-          </Box>
+          </div>
         ),
       },
       {
@@ -58,13 +49,9 @@ export const useTabs = (): Tab[] => {
         label: "PipelineRuns",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.pipelineRunList),
         component: (
-          <Box
-            sx={{
-              pt: (t) => t.typography.pxToRem(24),
-            }}
-          >
+          <div className="pt-6">
             <PipelineRunListByPipeline />
-          </Box>
+          </div>
         ),
       },
       {
@@ -72,13 +59,9 @@ export const useTabs = (): Tab[] => {
         label: "History",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.history),
         component: (
-          <Box
-            sx={{
-              pt: (t) => t.typography.pxToRem(24),
-            }}
-          >
+          <div className="pt-6">
             <History />
-          </Box>
+          </div>
         ),
       },
       {

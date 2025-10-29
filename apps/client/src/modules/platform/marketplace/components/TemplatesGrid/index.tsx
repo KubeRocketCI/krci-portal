@@ -5,7 +5,6 @@ import { Shop } from "@/k8s/icons/other/Shop";
 import { Template } from "@my-project/shared";
 import { TemplateCard } from "./components/TemplateCard";
 import { useFilterContext } from "@/core/providers/Filter/hooks";
-import { Grid } from "@mui/material";
 import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { TemplatesWarning } from "../TemplatesWarning";
 import { CreateCodebaseFromTemplateDialog } from "../CreateCodebaseFromTemplate";
@@ -53,9 +52,9 @@ export const TemplatesGrid = () => {
         const key = `marketplace-item-${item?.spec?.displayName}`;
 
         return (
-          <Grid key={key} item xs={12} md={6} lg={4}>
+          <div key={key} className="h-full">
             <TemplateCard handleTemplateClick={handleTemplateClick} template={item} />
-          </Grid>
+          </div>
         );
       }}
     />

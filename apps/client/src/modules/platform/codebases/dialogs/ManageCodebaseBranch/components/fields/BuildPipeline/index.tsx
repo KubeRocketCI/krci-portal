@@ -5,7 +5,7 @@ import { FormAutocompleteSingle } from "@/core/providers/Form/components/FormAut
 import { FORM_CONTROL_LABEL_HEIGHT } from "@/core/providers/Form/constants";
 import { mapArrayToSelectOptions } from "@/core/utils/forms/mapToSelectOptions";
 import { PipelineGraphDialog } from "@/modules/platform/pipelines/dialogs/PipelineGraph";
-import { Box, IconButton, Stack } from "@mui/material";
+import { IconButton } from "@mui/material";
 import { pipelineLabels, pipelineType } from "@my-project/shared";
 import { VectorSquare } from "lucide-react";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
@@ -49,8 +49,8 @@ export const BuildPipeline = () => {
   const currentPipeline = buildPipelines.find(({ metadata: { name } }) => name === currentValue);
 
   return (
-    <Stack spacing={2} direction="row" alignItems="center">
-      <Box flexGrow={1}>
+    <div className="flex items-center gap-2">
+      <div className="grow">
         <FormAutocompleteSingle
           {...register(CODEBASE_BRANCH_FORM_NAMES.buildPipeline.name, {
             required: "Select Build pipeline",
@@ -61,8 +61,8 @@ export const BuildPipeline = () => {
           errors={errors}
           options={options}
         />
-      </Box>
-      <Box sx={{ pt: (t) => t.typography.pxToRem(FORM_CONTROL_LABEL_HEIGHT) }}>
+      </div>
+      <div className="pt-6">
         <LoadingWrapper isLoading={buildPipelinesWatch.query.isLoading}>
           <IconButton
             onClick={() => {
@@ -80,7 +80,7 @@ export const BuildPipeline = () => {
             <VectorSquare size={20} />
           </IconButton>
         </LoadingWrapper>
-      </Box>
-    </Stack>
+      </div>
+    </div>
   );
 };

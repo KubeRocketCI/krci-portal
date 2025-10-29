@@ -1,23 +1,18 @@
-import { Box, Stack, Typography } from "@mui/material";
 import React from "react";
 
 export const LegendListItem = ({ color, number, label }: { color: string; number: number; label: string }) => {
   return (
-    <Stack direction="row" alignItems="center" spacing={1}>
-      <Box
-        sx={{
-          width: "12px",
-          height: "12px",
-          borderRadius: "50%",
-          backgroundColor: color,
-        }}
+    <div className="flex flex-row items-center gap-2">
+      <div
+        className="w-3 h-3 rounded-full"
+        style={{ backgroundColor: color }}
       />
-      <Typography fontSize="15px" fontWeight={500} color="primary.dark">
+      <span className="text-base font-medium text-foreground">
         {number}
-      </Typography>
-      <Typography fontSize="15px" color="secondary.dark">
+      </span>
+      <span className="text-base text-muted-foreground">
         {label}
-      </Typography>
-    </Stack>
+      </span>
+    </div>
   );
 };

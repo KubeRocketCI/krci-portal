@@ -1,4 +1,4 @@
-import { Chip, Grid, Stack, Typography } from "@mui/material";
+import { Chip } from "@mui/material";
 import { useInfoRows } from "./hooks/useInfoRows";
 import { InfoColumns } from "@/core/components/InfoColumns";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
@@ -47,7 +47,7 @@ export const Overview = () => {
   });
 
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-3">
       <BorderedSection title="Component Details">
         <div>
           <LoadingWrapper isLoading={codebaseWatch.isLoading}>
@@ -57,10 +57,10 @@ export const Overview = () => {
       </BorderedSection>
       <BorderedSection
         title={
-          <Stack spacing={2} alignItems="center" direction="row">
-            <Typography fontSize={20} fontWeight={600} color="primary.dark">
+          <div className="flex items-center gap-2">
+            <h3 className="text-xl font-semibold text-foreground">
               Code Quality
-            </Typography>
+            </h3>
             <Chip
               sx={{
                 backgroundColor:
@@ -79,20 +79,20 @@ export const Overview = () => {
               }
             />
             <LearnMoreLink url={EDP_OPERATOR_GUIDE.SONAR.url} />
-          </Stack>
+          </div>
         }
       >
         <div>
-          <Grid container alignItems={"center"}>
-            <Grid item>
+          <div className="flex items-center">
+            <div>
               <SonarMetrics componentName={params.name} />
-            </Grid>
-            <Grid item style={{ marginLeft: "auto" }}>
+            </div>
+            <div className="ml-auto">
               <DependencyTrackMetrics componentName={params.name} />
-            </Grid>
-          </Grid>
+            </div>
+          </div>
         </div>
       </BorderedSection>
-    </Stack>
+    </div>
   );
 };

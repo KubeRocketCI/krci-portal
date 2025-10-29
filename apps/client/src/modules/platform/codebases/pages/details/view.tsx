@@ -13,7 +13,6 @@ import { ResourceActionListContextProvider } from "@/core/providers/ResourceActi
 import { Tabs } from "@/core/providers/Tabs/components/Tabs";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { LinkCreationService } from "@/k8s/services/link-creation";
-import { Stack } from "@mui/material";
 import { CodebaseType, codebaseType, isSystem, systemQuickLink } from "@my-project/shared";
 import React from "react";
 import { CodebaseActionsMenu } from "../../components/CodebaseActionsMenu";
@@ -85,7 +84,7 @@ export default function CodebaseDetailsPageContent() {
         <>
           {codebaseIsLoaded && (
             <div style={{ marginLeft: "auto" }}>
-              <Stack spacing={2} direction="row" alignItems="center">
+              <div className="flex items-center gap-2">
                 <QuickLink
                   name={{
                     label: "git",
@@ -123,7 +122,7 @@ export default function CodebaseDetailsPageContent() {
                     />
                   </ResourceActionListContextProvider>
                 )}
-              </Stack>
+              </div>
             </div>
           )}
         </>

@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import { Actions } from "./components/Actions";
 import { CredentialsForm } from "./components/Credentials";
 import { GitServerForm } from "./components/GitServer";
@@ -51,17 +50,17 @@ export const ManageGitServer = ({ gitServer, webhookURL, handleClosePanel }: Man
           }}
           sharedForm={sharedForm}
         >
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
+          <div className="flex flex-col gap-6">
+            <div>
               <GitServerForm />
-            </Grid>
-            <Grid item xs={12}>
+            </div>
+            <div>
               <CredentialsForm />
-            </Grid>
-            <Grid item xs={12}>
+            </div>
+            <div>
               <Actions />
-            </Grid>
-          </Grid>
+            </div>
+          </div>
         </MultiFormContextProvider>
       </DataContextProvider>
     </div>

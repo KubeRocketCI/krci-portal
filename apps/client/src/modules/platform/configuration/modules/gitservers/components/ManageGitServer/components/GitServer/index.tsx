@@ -1,4 +1,4 @@
-import { Grid, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import {
   GitProviderField,
   HostName,
@@ -16,51 +16,51 @@ export const GitServerForm = () => {
 
   return (
     <>
-      <Grid container spacing={2}>
-        <Grid item xs={6} sx={{ mt: theme.typography.pxToRem(16) }}>
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-6" style={{ marginTop: theme.typography.pxToRem(16) }}>
           <Name />
-        </Grid>
-        <Grid item xs={6}>
+        </div>
+        <div className="col-span-6">
           <GitProviderField />
-        </Grid>
-        <Grid item xs={12}>
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
+        </div>
+        <div className="col-span-12">
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-6">
               <HostName />
-            </Grid>
-            <Grid item xs={6}>
+            </div>
+            <div className="col-span-6">
               <UserName />
-            </Grid>
-          </Grid>
-        </Grid>
-        <Grid item xs={12}>
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
+            </div>
+          </div>
+        </div>
+        <div className="col-span-12">
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-6">
               <SSHPort />
-            </Grid>
-            <Grid item xs={6}>
+            </div>
+            <div className="col-span-6">
               <HTTPSPort />
-            </Grid>
-          </Grid>
-        </Grid>
-        <Grid item xs={12}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={6} sx={{ mt: "16px" }}>
+            </div>
+          </div>
+        </div>
+        <div className="col-span-12">
+          <div className="grid grid-cols-12 gap-4 items-center">
+            <div className="col-span-6" style={{ marginTop: "16px" }}>
               <OverrideWebhookURL />
-            </Grid>
-            <Grid item xs={6}>
+            </div>
+            <div className="col-span-6">
               <WebHookURL />
-            </Grid>
-          </Grid>
-        </Grid>
-        <Grid item xs={12}>
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
+            </div>
+          </div>
+        </div>
+        <div className="col-span-12">
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-6">
               <SkipWebHookSSL />
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 };

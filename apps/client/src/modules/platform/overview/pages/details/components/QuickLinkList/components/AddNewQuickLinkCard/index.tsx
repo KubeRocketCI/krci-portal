@@ -1,4 +1,4 @@
-import { IconButton, Stack, Tooltip, Typography } from "@mui/material";
+import { IconButton, Tooltip } from "@mui/material";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { useStyles } from "./styles";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
@@ -26,12 +26,12 @@ export const AddNewQuickLinkCard = () => {
         onClick={() => setDialog(ManageQuickLinkDialog, { quickLink: undefined })}
         disabled={!quickLinkPermissions.data.create.allowed}
       >
-        <Stack direction="row" spacing={2} alignItems="center">
-          <Plus size={16} color={"inherit"} />
-          <Typography fontSize="15px" fontWeight={500}>
+        <div className="flex items-center gap-2">
+          <Plus size={16} />
+          <span className="text-base font-medium">
             ADD LINK
-          </Typography>
-        </Stack>
+          </span>
+        </div>
       </IconButton>
     </ConditionalWrapper>
   );

@@ -1,5 +1,4 @@
 import {
-  Box,
   FormControl,
   FormHelperText,
   InputLabel,
@@ -7,9 +6,7 @@ import {
   ListItemText,
   MenuItem,
   Select,
-  Stack,
   Tooltip,
-  useTheme,
 } from "@mui/material";
 import clsx from "clsx";
 import React from "react";
@@ -35,7 +32,6 @@ const FormSelectInner = React.forwardRef(
     }: FormSelectProps<TFormValues>,
     ref: React.ForwardedRef<HTMLInputElement>
   ) => {
-    const theme = useTheme();
     const classes = useStyles();
     const error = errors[name];
     const hasError = !!error;
@@ -48,10 +44,10 @@ const FormSelectInner = React.forwardRef(
           const [foundOptionByName] = options.filter(({ value }) => value === optionValue);
           if (foundOptionByName) {
             return foundOptionByName.icon ? (
-              <Stack spacing={2} direction="row" alignItems="center">
+              <div className="flex gap-4 flex-row items-center">
                 <ListItemIcon sx={{ minWidth: 0 }}>{foundOptionByName.icon}</ListItemIcon>
-                <ListItemText>{foundOptionByName.label}</ListItemText>
-              </Stack>
+                <ListItemText sx={{ m: 0 }}>{foundOptionByName.label}</ListItemText>
+              </div>
             ) : (
               foundOptionByName.label
             );
@@ -80,24 +76,19 @@ const FormSelectInner = React.forwardRef(
                   [classes.selectWithDefaultValue]: field.value === "",
                 })}
                 endAdornment={
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      right: theme.typography.pxToRem(24),
-                      lineHeight: 0,
-                    }}
+                  <div
+                    className="absolute top-1/2 right-6 leading-none"
+                    style={{ transform: "translateY(-50%)" }}
                   >
-                    <Stack direction="row" alignItems="center" spacing={0.5}>
+                    <div className="flex flex-row items-center gap-1">
                       {tooltipText && (
                         <Tooltip title={tooltipText}>
                           <Info size={16} />
                         </Tooltip>
                       )}
                       {endAdornment}
-                    </Stack>
-                  </Box>
+                    </div>
+                  </div>
                 }
               >
                 {options.map(({ label, value, disabled = false, icon }, idx) => {

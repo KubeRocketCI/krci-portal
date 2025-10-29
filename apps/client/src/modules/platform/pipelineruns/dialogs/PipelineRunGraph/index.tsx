@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogTitle, Grid, IconButton, Typography } from "@mui/material";
+import { Dialog, DialogContent, DialogTitle, IconButton } from "@mui/material";
 import { X } from "lucide-react";
 import React from "react";
 import { PipelineRunDiagram } from "../../components/PipelineRunDiagram";
@@ -12,16 +12,16 @@ export const PipelineRunGraphDialog: React.FC<PipelineRunGraphDialogPropsWithBas
   return (
     <Dialog open={open} fullScreen onClose={() => closeDialog()}>
       <DialogTitle>
-        <Grid container spacing={2} alignItems={"center"} justifyContent={"space-between"}>
-          <Grid item>
-            <Typography variant={"h4"}>{pipelineRunName ? `Pipeline Run: ${pipelineRunName}` : "Not found"}</Typography>
-          </Grid>
-          <Grid item>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold">{pipelineRunName ? `Pipeline Run: ${pipelineRunName}` : "Not found"}</h1>
+          </div>
+          <div>
             <IconButton onClick={() => closeDialog()} size="large">
               <X size={20} />
             </IconButton>
-          </Grid>
-        </Grid>
+          </div>
+        </div>
       </DialogTitle>
       <DialogContent sx={{ height: "100%", p: 0 }}>
         <PipelineRunDiagram pipelineRunName={pipelineRunName} namespace={namespace} />

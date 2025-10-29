@@ -2,7 +2,6 @@ import { QuickLink } from "@/core/components/QuickLink";
 import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { StageActionsMenu } from "@/modules/platform/cdpipelines/components/StageActionsMenu";
-import { Box, Stack } from "@mui/material";
 import { quickLinkLabels, systemQuickLink } from "@my-project/shared";
 import { routeStageDetails } from "../../route";
 import { PATH_CONFIG_ARGOCD_FULL } from "@/modules/platform/configuration/modules/argocd/route";
@@ -28,7 +27,7 @@ export const HeaderActions = () => {
   const loggingQuickLink = quickLinks?.find((el) => el.metadata.name === systemQuickLink.logging);
 
   return (
-    <Stack direction="row" alignItems="center" spacing={1}>
+    <div className="flex items-center gap-1">
       <QuickLink
         name={{
           label: quickLinkUiNames[systemQuickLink.argocd],
@@ -78,7 +77,7 @@ export const HeaderActions = () => {
         })}
         isTextButton
       />
-      <Box sx={{ ml: (t) => t.typography.pxToRem(20) }}>
+      <div className="ml-5">
         <LoadingWrapper
           isLoading={stageWatch.query.isLoading && stageListWatch.query.isLoading && cdPipelineWatch.query.isLoading}
         >
@@ -99,7 +98,7 @@ export const HeaderActions = () => {
             variant="inline"
           />
         </LoadingWrapper>
-      </Box>
-    </Stack>
+      </div>
+    </div>
   );
 };

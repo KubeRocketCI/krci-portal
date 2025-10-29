@@ -8,7 +8,6 @@ import { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/mappin
 import { getMappingByType } from "@/k8s/api/groups/KRCI/Codebase/utils/getMappingByType";
 import { getIconByPattern } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
 import { TABLE } from "@/k8s/constants/tables";
-import { Grid } from "@mui/material";
 import { Template } from "@my-project/shared";
 import React from "react";
 import { columnNames } from "../constants";
@@ -121,12 +120,12 @@ export const useColumns = (): TableColumn<Template>[] => {
             ] as unknown as CodebaseInterface;
 
             return (
-              <Grid container spacing={1} alignItems={"center"} wrap={"nowrap"}>
-                <Grid item>
+              <div className="flex gap-2 items-center flex-nowrap">
+                <div>
                   <UseSpriteSymbol name={getIconByPattern(_language)} width={20} height={20} />
-                </Grid>
-                <Grid item>{codebaseMappingByLang?.language?.name || capitalizeFirstLetter(_language)}</Grid>
-              </Grid>
+                </div>
+                <div>{codebaseMappingByLang?.language?.name || capitalizeFirstLetter(_language)}</div>
+              </div>
             );
           },
         },
@@ -152,18 +151,18 @@ export const useColumns = (): TableColumn<Template>[] => {
             ] as unknown as CodebaseInterface;
 
             return (
-              <Grid container spacing={1} alignItems={"center"} wrap={"nowrap"}>
-                <Grid item>
+              <div className="flex gap-2 items-center flex-nowrap">
+                <div>
                   <UseSpriteSymbol name={getIconByPattern(_framework)} width={20} height={20} />
-                </Grid>
-                <Grid item>
+                </div>
+                <div>
                   {framework
                     ? codebaseMappingByLang?.frameworks?.[framework]?.name ||
                       (_framework && capitalizeFirstLetter(_framework)) ||
                       "N/A"
                     : "N/A"}
-                </Grid>
-              </Grid>
+                </div>
+              </div>
             );
           },
         },
@@ -189,14 +188,14 @@ export const useColumns = (): TableColumn<Template>[] => {
             ] as unknown as CodebaseInterface;
 
             return (
-              <Grid container spacing={1} alignItems={"center"} wrap={"nowrap"}>
-                <Grid item>
+              <div className="flex gap-2 items-center flex-nowrap">
+                <div>
                   <UseSpriteSymbol name={getIconByPattern(_buildTool)} width={20} height={20} />
-                </Grid>
-                <Grid item>
+                </div>
+                <div>
                   {codebaseMappingByLang?.buildTools?.[buildTool]?.name || capitalizeFirstLetter(_buildTool)}
-                </Grid>
-              </Grid>
+                </div>
+              </div>
             );
           },
         },

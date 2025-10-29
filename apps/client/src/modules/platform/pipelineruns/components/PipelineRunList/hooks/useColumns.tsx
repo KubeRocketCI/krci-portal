@@ -9,7 +9,7 @@ import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/ut
 import { useClusterStore } from "@/k8s/store";
 import { humanize } from "@/core/utils/date-humanize";
 import { PATH_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/pipelineruns/pages/details/route";
-import { IconButton, Stack, Tooltip, Typography } from "@mui/material";
+import { IconButton, Tooltip } from "@mui/material";
 import { getPipelineRunStatus, getPullRequestURL, PipelineRun } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import { VectorSquare, ExternalLink } from "lucide-react";
@@ -145,21 +145,12 @@ export const useColumns = ({
 
             return (
               <Tooltip title={<PipelineRunResults pipelineRun={data} />}>
-                <Stack direction="row" alignItems="center" spacing={0.5}>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      borderBottom: (t) => `1px dashed ${t.palette.action.disabled}`,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      maxWidth: (t) => t.typography.pxToRem(300),
-                    }}
-                  >
+                <div className="flex items-center gap-0.5">
+                  <span className="text-sm border-b border-dashed border-muted whitespace-nowrap overflow-hidden text-ellipsis max-w-[300px]">
                     {vcsTag}
-                  </Typography>
+                  </span>
                   <CopyButton text={vcsTag} size="small" />
-                </Stack>
+                </div>
               </Tooltip>
             );
           },

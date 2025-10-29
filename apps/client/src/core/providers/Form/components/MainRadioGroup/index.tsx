@@ -3,11 +3,8 @@ import {
   FormControl,
   FormControlLabel,
   FormHelperText,
-  Grid,
   Radio,
   RadioGroup,
-  Stack,
-  Typography,
 } from "@mui/material";
 import clsx from "clsx";
 import React from "react";
@@ -34,6 +31,22 @@ const TileRadioGroupInner = React.forwardRef(
     const errorMessage = error?.message as string;
     const helperText = hasError ? errorMessage : helperTextProp;
 
+    // Convert MUI GridSize to Tailwind grid columns (12/gridItemSize)
+    const getGridColsClass = (size: number | string | boolean | undefined): string => {
+      if (typeof size === "number") {
+        const cols = 12 / size;
+        if (cols === 1) return "grid-cols-1";
+        if (cols === 2) return "grid-cols-2";
+        if (cols === 3) return "grid-cols-3";
+        if (cols === 4) return "grid-cols-4";
+        if (cols === 6) return "grid-cols-6";
+        return "grid-cols-12";
+      }
+      return "grid-cols-12";
+    };
+
+    const gridColsClass = getGridColsClass(gridItemSize);
+
     return (
       <FormControl fullWidth error={hasError}>
         <Controller
@@ -43,13 +56,13 @@ const TileRadioGroupInner = React.forwardRef(
           {...props}
           render={({ field }) => (
             <RadioGroup {...field} row className={classes.radioGroup}>
-              <Grid container spacing={2}>
+              <div className={`grid ${gridColsClass} gap-4`}>
                 {options.map(({ value, label, description, icon, checkedIcon, disabled }, idx) => {
                   const isChecked = field.value === value;
                   const key = `${value}::${idx}`;
 
                   return (
-                    <Grid item xs={gridItemSize} key={key}>
+                    <div key={key}>
                       <ButtonBase
                         className={clsx(classes.radioControlButton, {
                           [classes.radioControlButtonActive]: isChecked,
@@ -62,16 +75,16 @@ const TileRadioGroupInner = React.forwardRef(
                             <Radio
                               checked={isChecked}
                               icon={
-                                <Stack direction="row" spacing={1} alignItems="center">
+                                <div className="flex flex-row gap-2 items-center">
                                   {icon}
-                                  <Typography variant="h6">{label}</Typography>
-                                </Stack>
+                                  <h6 className="text-base font-medium">{label}</h6>
+                                </div>
                               }
                               checkedIcon={
-                                <Stack direction="row" spacing={1} alignItems="center">
+                                <div className="flex flex-row gap-2 items-center">
                                   {checkedIcon}
-                                  <Typography variant="h6">{label}</Typography>
-                                </Stack>
+                                  <h6 className="text-base font-medium">{label}</h6>
+                                </div>
                               }
                               disableRipple
                               inputRef={ref}
@@ -79,25 +92,24 @@ const TileRadioGroupInner = React.forwardRef(
                           }
                           disabled={disabled}
                           label={
-                            <Stack
-                              spacing={2}
+                            <div
+                              className={`flex flex-col gap-4 ${description ? "items-start" : "items-center"}`}
                               style={{ height: description ? "auto" : "100%" }}
-                              alignItems={description ? "flex-start" : "center"}
                             >
                               {!!description && (
-                                <Typography variant="caption" align="left">
+                                <span className="text-xs text-left">
                                   {description}
-                                </Typography>
+                                </span>
                               )}
-                            </Stack>
+                            </div>
                           }
                           className={classes.radioControlLabel}
                         />
                       </ButtonBase>
-                    </Grid>
+                    </div>
                   );
                 })}
-              </Grid>
+              </div>
             </RadioGroup>
           )}
         />

@@ -7,10 +7,9 @@ import {
 } from "@/modules/platform/cdpipelines/pages/stage-details/constants";
 import { useGitOpsCodebaseWatch, useGitServersWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
-import { Stack } from "@mui/material";
+import React from "react";
 import { Codebase, GitProvider } from "@my-project/shared";
 import { SquareArrowOutUpRight } from "lucide-react";
-import React from "react";
 import { useTypedFormContext } from "../../hooks/useTypedFormContext";
 
 export const ValuesOverridePreviewColumn = ({ appCodebase }: { appCodebase: Codebase }) => {
@@ -35,8 +34,8 @@ export const ValuesOverridePreviewColumn = ({ appCodebase }: { appCodebase: Code
   }, [gitOpsCodebase?.spec.gitServer, gitServerListWatch.data.array]);
 
   return (
-    <Stack direction="row" alignItems="center" spacing={1}>
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ width: "100%" }}>
+    <div className="flex flex-row items-center gap-2">
+      <div className="flex flex-row items-center gap-2 w-full">
         <div>
           <FormSwitch
             label={<></>}
@@ -54,7 +53,7 @@ export const ValuesOverridePreviewColumn = ({ appCodebase }: { appCodebase: Code
             disabled
           />
         </div>
-      </Stack>
+      </div>
       {gitOpsCodebase?.status?.gitWebUrl && (
         <ResourceIconLink
           tooltipTitle={"Go to the Source Code"}
@@ -66,9 +65,9 @@ export const ValuesOverridePreviewColumn = ({ appCodebase }: { appCodebase: Code
             gitOpsGitServer?.spec.gitProvider as GitProvider
           )}
           Icon={<SquareArrowOutUpRight size={16} />}
-          name="source code"
+            name="source code"
         />
       )}
-    </Stack>
+    </div>
   );
 };

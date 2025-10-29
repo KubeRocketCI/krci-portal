@@ -1,6 +1,6 @@
 import React from "react";
 import { Handle, Position } from "@xyflow/react";
-import { Box, Typography, Tooltip, Chip } from "@mui/material";
+import { Tooltip, Chip } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 
 export interface PipelineTaskNodeData {
@@ -25,26 +25,26 @@ export const PipelineTaskNode: React.FC<{
   const truncatedName = displayName.length > 20 ? `${displayName.slice(0, 17)}...` : displayName;
 
   const tooltipContent = (
-    <Box>
-      <Typography variant="subtitle2" fontWeight={600}>
+    <div>
+      <p className="text-sm font-semibold">
         {displayName}
-      </Typography>
+      </p>
       {data.description && (
-        <Typography variant="body2" sx={{ mt: 0.5 }}>
+        <p className="text-sm mt-1">
           {data.description}
-        </Typography>
+        </p>
       )}
       {data.taskRef?.name && (
-        <Typography variant="caption" sx={{ mt: 0.5, display: "block" }}>
+        <span className="text-xs mt-1 block">
           Task: {data.taskRef.name}
-        </Typography>
+        </span>
       )}
       {data.isFinally && (
-        <Typography variant="caption" sx={{ mt: 0.5, display: "block", fontStyle: "italic" }}>
+        <span className="text-xs mt-1 block italic">
           Finally task - runs after all main tasks complete
-        </Typography>
+        </span>
       )}
-    </Box>
+    </div>
   );
 
   return (
@@ -62,29 +62,17 @@ export const PipelineTaskNode: React.FC<{
       />
 
       <Tooltip title={tooltipContent} arrow placement="top">
-        <Box
-          sx={{
-            width: "100%",
-            height: "100%",
+        <div
+          className={`w-full h-full rounded-lg p-6 flex flex-col justify-center items-center cursor-default relative pointer-events-auto transition-all border-2 ${
+            data.isFinally || data.isIsolated
+              ? "border-dashed"
+              : "border-border hover:border-primary hover:shadow-lg"
+          }`}
+          style={{
             backgroundColor: theme.palette.background.paper,
-            border: `2px solid ${theme.palette.divider}`,
-            borderRadius: 2,
-            padding: 1.5,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            cursor: "default",
-            position: "relative",
-            pointerEvents: "auto", // Ensure hover events work
-            "&:hover": {
-              borderColor: theme.palette.primary.main,
-              boxShadow: theme.shadows[4],
-            },
-            ...((data.isFinally || data.isIsolated) && {
-              borderColor: theme.palette.grey[400],
-              borderStyle: "dashed",
-            }),
+            ...(data.isFinally || data.isIsolated
+              ? { borderColor: theme.palette.grey[400] }
+              : {}),
           }}
         >
           {/* Task type indicators */}
@@ -104,34 +92,18 @@ export const PipelineTaskNode: React.FC<{
             />
           )}
 
-          <Typography
-            variant="body2"
-            fontWeight={600}
-            textAlign="center"
-            sx={{
-              color: theme.palette.text.primary,
-              lineHeight: 1.2,
-              wordBreak: "break-word",
-            }}
-          >
+          <p className="text-sm font-semibold text-center leading-tight break-word text-foreground">
             {truncatedName}
-          </Typography>
+          </p>
 
           {data.taskRef?.name && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              textAlign="center"
-              sx={{
-                mt: 0.5,
-                fontSize: "0.65rem",
-                lineHeight: 1,
-              }}
+            <span
+              className="text-xs text-muted-foreground text-center mt-1 leading-none"
             >
               {data.taskRef.name}
-            </Typography>
+            </span>
           )}
-        </Box>
+        </div>
       </Tooltip>
 
       {/* Output handle */}

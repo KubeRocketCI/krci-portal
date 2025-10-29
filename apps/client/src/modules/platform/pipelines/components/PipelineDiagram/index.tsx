@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
+import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -54,42 +54,16 @@ const PipelineDiagramInner: React.FC<PipelineDiagramProps> = ({ pipeline }) => {
   }, [nodes, edges, setFlowNodes, setFlowEdges, fitView]);
 
   return (
-    <Box
-      sx={{
-        height: "100%",
-        width: "100%",
-        position: "relative",
-        // Prevent node selection highlighting
-        "& .react-flow__node.selected": {
-          "& .react-flow__node-default": {
-            boxShadow: "none !important",
-          },
-        },
-        "& .react-flow__node": {
-          "& .react-flow__node-default": {
-            "&:focus": {
-              outline: "none",
-            },
-          },
-        },
-      }}
+    <div
+      className="h-full w-full relative"
     >
       {/* View Mode Toggle */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: 16,
-          right: 16,
-          zIndex: 1000,
-          backgroundColor: "background.paper",
-          borderRadius: 1,
-          p: 1,
-          boxShadow: 1,
-        }}
+      <div
+        className="absolute top-4 right-4 z-50 bg-background rounded p-4 shadow-sm"
       >
-        <Typography variant="caption" sx={{ mb: 1, display: "block" }}>
+        <span className="text-xs block mb-1">
           Layout
-        </Typography>
+        </span>
         <ToggleButtonGroup
           value={viewMode}
           exclusive
@@ -103,7 +77,7 @@ const PipelineDiagramInner: React.FC<PipelineDiagramProps> = ({ pipeline }) => {
           <ToggleButton value="vertical">Vertical</ToggleButton>
           <ToggleButton value="horizontal">Horizontal</ToggleButton>
         </ToggleButtonGroup>
-      </Box>
+      </div>
 
       {/* React Flow */}
       <ReactFlow
@@ -152,7 +126,7 @@ const PipelineDiagramInner: React.FC<PipelineDiagramProps> = ({ pipeline }) => {
           zoomable
         />
       </ReactFlow>
-    </Box>
+    </div>
   );
 };
 

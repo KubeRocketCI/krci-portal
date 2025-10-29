@@ -1,9 +1,8 @@
-import { Grid, IconButton, useTheme } from "@mui/material";
+import { IconButton, useTheme } from "@mui/material";
 import React from "react";
 import { useTypedFormContext } from "../../../../../hooks/useFormContext";
 import { CDPIPELINE_FORM_NAMES, NAMES } from "../../../../../names";
 import { useCurrentDialog } from "../../../../../providers/CurrentDialog/hooks";
-import { useStyles } from "./styles";
 import { ApplicationRowProps } from "./types";
 import { useCodebaseBranchWatchList } from "@/k8s/api/groups/KRCI/CodebaseBranch/hooks";
 import { codebaseBranchLabels, sortKubeObjectByCreationTimestamp } from "@my-project/shared";
@@ -18,7 +17,6 @@ import { FieldError } from "react-hook-form";
 
 export const ApplicationRow = ({ application, index, removeRow }: ApplicationRowProps) => {
   const theme = useTheme();
-  const classes = useStyles();
   const appName = application.metadata.name;
 
   const {
@@ -137,56 +135,54 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
   )?.[index]?.appBranch;
 
   return (
-    <Grid item xs={12} className={classes.application}>
-      <LoadingWrapper isLoading={applicationBranchListWatch.query.isLoading}>
-        <Grid container spacing={2}>
-          <Grid item xs={5}>
-            <FormTextField
-              {...register(rowAppNameField)}
-              label="Application"
-              disabled
-              defaultValue={appName}
-              control={control}
-              errors={errors}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <FormAutocompleteSingle
-              placeholder={"Select branch"}
-              {...register(rowAppBranchField, {
-                required: "Select branch",
-                onChange: ({ target: { value } }: FieldEvent) => {
-                  const currentInputDockerStreamsValue = getValues(CDPIPELINE_FORM_NAMES.inputDockerStreams.name);
+    <LoadingWrapper isLoading={applicationBranchListWatch.query.isLoading}>
+      <div className="grid grid-cols-12 gap-4 col-span-12">
+        <div className="col-span-5">
+          <FormTextField
+            {...register(rowAppNameField)}
+            label="Application"
+            disabled
+            defaultValue={appName}
+            control={control}
+            errors={errors}
+          />
+        </div>
+        <div className="col-span-6">
+          <FormAutocompleteSingle
+            placeholder={"Select branch"}
+            {...register(rowAppBranchField, {
+              required: "Select branch",
+              onChange: ({ target: { value } }: FieldEvent) => {
+                const currentInputDockerStreamsValue = getValues(CDPIPELINE_FORM_NAMES.inputDockerStreams.name);
 
-                  const newInputDockerStreamsValue = [
-                    ...currentInputDockerStreamsValue.filter((el: string) => el !== rowAppBranchFieldValue),
-                    value,
-                  ] as string[];
-                  setValue(CDPIPELINE_FORM_NAMES.inputDockerStreams.name, newInputDockerStreamsValue);
-                },
-              })}
-              label="Branch"
-              control={control}
-              errors={{
-                [appBranchError?.ref?.name as string]: appBranchError,
-              }}
-              options={
-                sortedApplicationBranchList
-                  ? sortedApplicationBranchList.map((el) => ({
-                      label: el.spec.branchName,
-                      value: el.metadata.name,
-                    }))
-                  : []
-              }
-            />
-          </Grid>
-          <Grid item xs={1} sx={{ mt: theme.typography.pxToRem(FORM_CONTROL_LABEL_HEIGHT) }}>
-            <IconButton size={"small"} style={{ minWidth: 0 }} onClick={handleDeleteApplicationRow}>
-              <Trash size={20} />
-            </IconButton>
-          </Grid>
-        </Grid>
-      </LoadingWrapper>
-    </Grid>
+                const newInputDockerStreamsValue = [
+                  ...currentInputDockerStreamsValue.filter((el: string) => el !== rowAppBranchFieldValue),
+                  value,
+                ] as string[];
+                setValue(CDPIPELINE_FORM_NAMES.inputDockerStreams.name, newInputDockerStreamsValue);
+              },
+            })}
+            label="Branch"
+            control={control}
+            errors={{
+              [appBranchError?.ref?.name as string]: appBranchError,
+            }}
+            options={
+              sortedApplicationBranchList
+                ? sortedApplicationBranchList.map((el) => ({
+                    label: el.spec.branchName,
+                    value: el.metadata.name,
+                  }))
+                : []
+            }
+          />
+        </div>
+        <div className="col-span-1" style={{ marginTop: theme.typography.pxToRem(FORM_CONTROL_LABEL_HEIGHT) }}>
+          <IconButton size={"small"} style={{ minWidth: 0 }} onClick={handleDeleteApplicationRow}>
+            <Trash size={20} />
+          </IconButton>
+        </div>
+      </div>
+    </LoadingWrapper>
   );
 };

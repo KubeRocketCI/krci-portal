@@ -54,10 +54,10 @@ export const AdvancedJiraMapping = () => {
   useUpdateJiraMapping({ setAdvancedMapping, setAdvancedMappingRows });
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12}>
-        <Grid container spacing={2}>
-          <Grid item xs={10}>
+    <div className="flex flex-col gap-4">
+      <div>
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-10">
             <FormSelect
               {...register(CODEBASE_FORM_NAMES.advancedMappingFieldName.name)}
               label={"Mapping field name"}
@@ -96,15 +96,8 @@ export const AdvancedJiraMapping = () => {
               disabled={advancedMappingFieldNameIsDisabled}
               options={advancedMappingOptions}
             />
-          </Grid>
-          <Grid
-            item
-            xs={2}
-            direction={"column"}
-            justifyContent={"flex-end"}
-            alignItems={"center"}
-            style={{ display: "flex" }}
-          >
+          </div>
+          <div className="col-span-2 flex flex-col justify-end items-center">
             <Button
               type={"button"}
               size={"small"}
@@ -116,11 +109,11 @@ export const AdvancedJiraMapping = () => {
             >
               add
             </Button>
-          </Grid>
-        </Grid>
-      </Grid>
-      <Grid item xs={12}>
-        <Grid container spacing={0}>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div className="flex flex-col gap-0">
           {advancedMappingRows.length ? (
             <>
               {advancedMappingRows.map(({ label, value }, idx) => {
@@ -138,8 +131,8 @@ export const AdvancedJiraMapping = () => {
               })}
             </>
           ) : null}
-        </Grid>
-      </Grid>
-    </Grid>
+        </div>
+      </div>
+    </div>
   );
 };

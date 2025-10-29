@@ -19,7 +19,7 @@ import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSpr
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
-import { Chip, Grid, Typography } from "@mui/material";
+import { Chip } from "@mui/material";
 import { DefaultTheme } from "@mui/styles/defaultTheme";
 import { Codebase, codebaseType } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
@@ -76,13 +76,13 @@ export const useColumns = (): TableColumn<Codebase>[] => {
 
             const title = (
               <>
-                <Typography variant={"subtitle2"} style={{ fontWeight: 600 }}>
+                <p className="text-sm font-semibold">
                   {`Status: ${status || "Unknown"}`}
-                </Typography>
+                </p>
                 {status === CUSTOM_RESOURCE_STATUS.FAILED && (
-                  <Typography variant={"subtitle2"} sx={{ marginTop: (t) => t.typography.pxToRem(10) }}>
+                  <p className="text-sm font-medium mt-3">
                     {detailedMessage}
-                  </Typography>
+                  </p>
                 )}
               </>
             );
@@ -152,8 +152,8 @@ export const useColumns = (): TableColumn<Codebase>[] => {
             const codebaseMappingByLang = codebaseMapping?.[lang];
 
             return (
-              <Grid container spacing={1} alignItems={"center"} wrap={"nowrap"}>
-                <Grid item>
+              <div className="flex gap-2 items-center flex-nowrap">
+                <div>
                   <UseSpriteSymbol
                     name={
                       LANGUAGE_ICON_MAPPING?.[lang as keyof typeof LANGUAGE_ICON_MAPPING] || RESOURCE_ICON_NAMES.OTHER
@@ -161,9 +161,9 @@ export const useColumns = (): TableColumn<Codebase>[] => {
                     width={20}
                     height={20}
                   />
-                </Grid>
-                <Grid item>{codebaseMappingByLang?.language?.name || capitalizeFirstLetter(_lang)}</Grid>
-              </Grid>
+                </div>
+                <div>{codebaseMappingByLang?.language?.name || capitalizeFirstLetter(_lang)}</div>
+              </div>
             );
           },
         },
@@ -187,8 +187,8 @@ export const useColumns = (): TableColumn<Codebase>[] => {
             const codebaseMappingByLang = codebaseMapping?.[lang];
 
             return (
-              <Grid container spacing={1} alignItems={"center"} wrap={"nowrap"}>
-                <Grid item>
+              <div className="flex gap-2 items-center flex-nowrap">
+                <div>
                   <UseSpriteSymbol
                     name={
                       FRAMEWORK_ICON_MAPPING?.[framework as keyof typeof FRAMEWORK_ICON_MAPPING] ||
@@ -197,15 +197,15 @@ export const useColumns = (): TableColumn<Codebase>[] => {
                     width={20}
                     height={20}
                   />
-                </Grid>
-                <Grid item>
+                </div>
+                <div>
                   {framework
                     ? codebaseMappingByLang?.frameworks?.[framework]?.name ||
                       (_framework && capitalizeFirstLetter(_framework)) ||
                       "N/A"
                     : "N/A"}
-                </Grid>
-              </Grid>
+                </div>
+              </div>
             );
           },
         },
@@ -229,8 +229,8 @@ export const useColumns = (): TableColumn<Codebase>[] => {
             const codebaseMappingByLang = codebaseMapping?.[lang];
 
             return (
-              <Grid container spacing={1} alignItems={"center"} wrap={"nowrap"}>
-                <Grid item>
+              <div className="flex gap-2 items-center flex-nowrap">
+                <div>
                   <UseSpriteSymbol
                     name={
                       BUILD_TOOL_ICON_MAPPING?.[buildTool as keyof typeof BUILD_TOOL_ICON_MAPPING] ||
@@ -239,11 +239,11 @@ export const useColumns = (): TableColumn<Codebase>[] => {
                     width={20}
                     height={20}
                   />
-                </Grid>
-                <Grid item>
+                </div>
+                <div>
                   {codebaseMappingByLang?.buildTools?.[buildTool]?.name || capitalizeFirstLetter(_buildTool)}
-                </Grid>
-              </Grid>
+                </div>
+              </div>
             );
           },
         },

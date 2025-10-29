@@ -1,4 +1,3 @@
-import { Box } from "@mui/material";
 import React from "react";
 import { Details } from "../components/Details";
 import { Overview } from "../components/Overview";
@@ -30,13 +29,9 @@ export const useTabs = (): Tab[] => {
         label: "Overview",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.overview),
         component: (
-          <Box
-            sx={{
-              pt: (t) => t.typography.pxToRem(24),
-            }}
-          >
+          <div className="pt-6">
             <Overview />
-          </Box>
+          </div>
         ),
       },
       {
@@ -44,13 +39,9 @@ export const useTabs = (): Tab[] => {
         label: "Details",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.details),
         component: (
-          <Box
-            sx={{
-              pt: (t) => t.typography.pxToRem(24),
-            }}
-          >
+          <div className="pt-6">
             <Details />
-          </Box>
+          </div>
         ),
       },
       {
@@ -58,13 +49,9 @@ export const useTabs = (): Tab[] => {
         label: "View YAML",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.yaml),
         component: (
-          <Box
-            sx={{
-              pt: (t) => t.typography.pxToRem(24),
-            }}
-          >
+          <div className="pt-6">
             <ViewPipelineRun />
-          </Box>
+          </div>
         ),
       },
       {
@@ -72,13 +59,9 @@ export const useTabs = (): Tab[] => {
         label: "Results",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.results),
         component: (
-          <Box
-            sx={{
-              pt: (t) => t.typography.pxToRem(24),
-            }}
-          >
+          <div className="pt-6">
             <Results />
-          </Box>
+          </div>
         ),
       },
       {
@@ -86,14 +69,9 @@ export const useTabs = (): Tab[] => {
         label: "Diagram",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.diagram),
         component: (
-          <Box
-            sx={{
-              pt: (t) => t.typography.pxToRem(24),
-              height: "100%",
-            }}
-          >
+          <div className="pt-6 h-full">
             <Diagram />
-          </Box>
+          </div>
         ),
       },
     ],

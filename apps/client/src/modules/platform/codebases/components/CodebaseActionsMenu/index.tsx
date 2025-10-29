@@ -8,7 +8,7 @@ import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter
 import { useCodebasePermissions } from "@/k8s/api/groups/KRCI/Codebase";
 import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import { useClusterStore } from "@/k8s/store";
-import { Box, Button, Typography } from "@mui/material";
+import { Button } from "@mui/material";
 import type { CDPipeline, Codebase } from "@my-project/shared";
 import { k8sCodebaseConfig, k8sOperation } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
@@ -30,61 +30,27 @@ const DeletionErrorMessage = ({ codebase, conflictedPipeline, clusterName }: Del
   const { closeDialog } = useDialogContext();
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 2,
-        padding: 2.5,
-        borderRadius: 1.5,
-        backgroundColor: "rgba(244, 67, 54, 0.08)",
-        border: "1px solid rgba(244, 67, 54, 0.3)",
-      }}
+    <div
+      className="flex flex-col gap-8 p-10 rounded-md bg-red-50/30 border border-red-400/30"
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+      <div className="flex items-center gap-6">
         <AlertCircle size={20} style={{ color: "#d32f2f", flexShrink: 0 }} />
-        <Typography
-          variant="subtitle2"
-          sx={{
-            fontWeight: 600,
-            color: "#d32f2f",
-            fontSize: "0.9375rem",
-          }}
-        >
+        <p className="text-sm font-semibold text-[#d32f2f] text-[0.9375rem]">
           Cannot Delete Codebase
-        </Typography>
-      </Box>
+        </p>
+      </div>
 
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, paddingLeft: 4.5 }}>
-        <Typography
-          variant="body2"
-          sx={{
-            color: "text.primary",
-            lineHeight: 1.6,
-          }}
-        >
+      <div className="flex flex-col gap-2 pl-18">
+        <p className="text-sm text-foreground leading-relaxed">
           {capitalizeFirstLetter(codebase.spec.type)}{" "}
-          <Typography
-            component="span"
-            sx={{
-              fontWeight: 600,
-              color: "text.primary",
-            }}
-          >
+          <span className="font-semibold text-foreground">
             {codebase.metadata.name}
-          </Typography>{" "}
+          </span>{" "}
           is currently being used in the following Deployment Flow:
-        </Typography>
+        </p>
 
-        <Box
-          sx={{
-            marginTop: 1,
-            padding: 1.5,
-            borderRadius: 1,
-            backgroundColor: "background.paper",
-            border: "1px solid",
-            borderColor: "divider",
-          }}
+        <div
+          className="mt-4 p-6 rounded bg-background border border-border"
         >
           {/* @ts-expect-error TODO: Fix when migrating to tailwind */}
           <Button
@@ -102,20 +68,13 @@ const DeletionErrorMessage = ({ codebase, conflictedPipeline, clusterName }: Del
           >
             {conflictedPipeline.metadata.name}
           </Button>
-        </Box>
+        </div>
 
-        <Typography
-          variant="body2"
-          sx={{
-            marginTop: 1,
-            color: "text.secondary",
-            fontSize: "0.875rem",
-          }}
-        >
+        <p className="text-sm mt-4 text-muted-foreground">
           Please remove this codebase from the Deployment Flow before deleting it.
-        </Typography>
-      </Box>
-    </Box>
+        </p>
+      </div>
+    </div>
   );
 };
 

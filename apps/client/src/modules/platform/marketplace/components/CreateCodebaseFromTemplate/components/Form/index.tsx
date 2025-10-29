@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import { CodebaseVersioning, Description, GitServer, GitUrlPath, Name, Private } from "../fields";
 import { useUpdateVersioningFields } from "./hooks/useUpdateVersioningFields";
 
@@ -6,29 +5,31 @@ export const Form = () => {
   useUpdateVersioningFields();
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={4}>
-        <Name />
-      </Grid>
-      <Grid item xs={8}>
-        <Description />
-      </Grid>
-      <Grid item xs={12}>
-        <Grid container spacing={2} alignItems={"flex-start"}>
-          <Grid item xs={4}>
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-4">
+          <Name />
+        </div>
+        <div className="col-span-8">
+          <Description />
+        </div>
+      </div>
+      <div>
+        <div className="grid grid-cols-12 gap-4 items-start">
+          <div className="col-span-4">
             <GitServer />
-          </Grid>
-          <Grid item xs={8}>
+          </div>
+          <div className="col-span-8">
             <GitUrlPath />
-          </Grid>
-        </Grid>
-      </Grid>
-      <Grid item xs={12}>
+          </div>
+        </div>
+      </div>
+      <div>
         <Private />
-      </Grid>
-      <Grid item xs={12}>
+      </div>
+      <div>
         <CodebaseVersioning />
-      </Grid>
-    </Grid>
+      </div>
+    </div>
   );
 };

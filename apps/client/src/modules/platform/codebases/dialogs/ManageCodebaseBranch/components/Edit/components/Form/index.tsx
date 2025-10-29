@@ -1,15 +1,14 @@
-import { Grid } from "@mui/material";
 import { BuildPipeline, ReviewPipeline } from "../../../fields";
 
 export const Form = () => {
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12}>
+    <div className="flex flex-col gap-4">
+      <div>
         <ReviewPipeline />
-      </Grid>
-      <Grid item xs={12}>
+      </div>
+      <div>
         <BuildPipeline />
-      </Grid>
-    </Grid>
+      </div>
+    </div>
   );
 };

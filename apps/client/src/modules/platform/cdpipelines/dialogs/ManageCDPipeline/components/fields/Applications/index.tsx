@@ -1,4 +1,4 @@
-import { Grid, Stack, Tooltip, Typography } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import React from "react";
 import { useFieldArray } from "react-hook-form";
 import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
@@ -87,7 +87,7 @@ export const Applications = () => {
   };
 
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       <FormAutocompleteMulti
         {...register(CDPIPELINE_FORM_NAMES.applicationsToAddChooser.name, {
           onChange: ({ target: { value } }: FieldEvent<string[]>) => handleApplicationChanges(value),
@@ -106,25 +106,25 @@ export const Applications = () => {
         tooltipText={"Select the applications linked to this Deployment Flow."}
       />
       <div>
-        <Grid container spacing={1}>
+        <div className="grid grid-cols-12 gap-2">
           {!!fields && !!fields.length ? (
             <>
-              <Grid item xs={5}>
-                <Typography>Application</Typography>
-              </Grid>
-              <Grid item xs={6}>
-                <Grid container spacing={1} alignItems={"center"} wrap={"nowrap"}>
-                  <Grid item>Branch</Grid>
-                  <Grid item>
+              <div className="col-span-5">
+                <span>Application</span>
+              </div>
+              <div className="col-span-6">
+                <div className="flex gap-2 items-center">
+                  <div>Branch</div>
+                  <div>
                     <Tooltip title={"Specify the branch of the selected applications for deployment."}>
                       <Info size={16} />
                     </Tooltip>
-                  </Grid>
-                </Grid>
-              </Grid>
-              <Grid item xs={1}>
-                <Typography>Delete</Typography>
-              </Grid>
+                  </div>
+                </div>
+              </div>
+              <div className="col-span-1">
+                <span>Delete</span>
+              </div>
             </>
           ) : null}
           {fields.map((field, index) => {
@@ -138,10 +138,10 @@ export const Applications = () => {
               <ApplicationRow application={application!} removeRow={() => remove(index)} index={index} key={field.id} />
             );
           })}
-        </Grid>
+        </div>
       </div>
       <div>
-        <Stack spacing={0} alignItems={"flex-start"}>
+        <div className="flex flex-col gap-0 items-start">
           <FormControlLabelWithTooltip
             label="Promote applications"
             title="Enables the promotion of applications to the higher environment upon the successful pass through all quality gates."
@@ -162,8 +162,8 @@ export const Applications = () => {
             control={control}
             errors={errors}
           />
-        </Stack>
+        </div>
       </div>
-    </Stack>
+    </div>
   );
 };

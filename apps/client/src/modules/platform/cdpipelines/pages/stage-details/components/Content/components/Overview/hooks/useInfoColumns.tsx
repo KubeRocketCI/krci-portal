@@ -1,4 +1,4 @@
-import { Chip, Grid, Stack, Typography, useTheme } from "@mui/material";
+import { Chip } from "@mui/material";
 import makeStyles from "@mui/styles/makeStyles";
 import clsx from "clsx";
 import React from "react";
@@ -30,7 +30,6 @@ const useStyles = makeStyles((theme) => ({
 export const useInfoColumns = () => {
   const stageWatch = useStageWatch();
 
-  const theme = useTheme();
   const classes = useStyles();
 
   return React.useMemo(() => {
@@ -47,8 +46,8 @@ export const useInfoColumns = () => {
         {
           label: "Status",
           text: (
-            <Grid container spacing={1} alignItems={"center"}>
-              <Grid item>
+            <div className="flex gap-2 items-center">
+              <div>
                 <StatusIcon
                   Icon={stageStatusIcon.component}
                   color={stageStatusIcon.color}
@@ -56,22 +55,22 @@ export const useInfoColumns = () => {
                   width={20}
                   Title={
                     <>
-                      <Typography variant={"subtitle2"} sx={{ fontWeight: 600 }}>
+                      <p className="text-sm font-semibold">
                         {`Status: ${stage.status?.status || "unknown"}`}
-                      </Typography>
+                      </p>
                       {!!stage.status?.detailed_message && (
-                        <Typography variant={"subtitle2"} sx={{ mt: theme.typography.pxToRem(10) }}>
+                        <p className="text-sm font-medium mt-3">
                           {stage.status?.detailed_message}
-                        </Typography>
+                        </p>
                       )}
                     </>
                   }
                 />
-              </Grid>
-              <Grid item>
-                <Typography variant={"body2"}>{stage.status?.status || "unknown"}</Typography>
-              </Grid>
-            </Grid>
+              </div>
+              <div>
+                <p className="text-sm">{stage.status?.status || "unknown"}</p>
+              </div>
+            </div>
           ),
         },
         {
@@ -86,20 +85,20 @@ export const useInfoColumns = () => {
         {
           label: "Cluster",
           text: (
-            <Grid container spacing={1} alignItems={"center"}>
-              <Grid item>
+            <div className="flex gap-2 items-center">
+              <div>
                 <KubernetesIcon width={20} height={20} />
-              </Grid>
-              <Grid item>{stage.spec.clusterName}</Grid>
-            </Grid>
+              </div>
+              <div>{stage.spec.clusterName}</div>
+            </div>
           ),
         },
         {
           label: "Namespace",
           text: (
-            <Stack direction="row" alignItems="center">
+            <div className="flex items-center">
               {stage.spec.namespace} <CopyButton text={stage.spec.namespace} />
-            </Stack>
+            </div>
           ),
         },
         {
@@ -127,6 +126,5 @@ export const useInfoColumns = () => {
     classes.labelChipGreen,
     stageWatch.query.data,
     stageWatch.query.isLoading,
-    theme.typography,
   ]);
 };

@@ -1,6 +1,6 @@
 import { K8sRelatedIconsSVGSprite } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWatchKRCIConfig";
-import { Box, Grid, Stack, Typography, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import { codebaseCreationStrategy, codebaseType, gitProvider } from "@my-project/shared";
 import { useTypedFormContext } from "../../../../../../../../hooks/useFormContext";
 import { CODEBASE_FORM_NAMES } from "../../../../../../../../names";
@@ -42,97 +42,97 @@ export const Info = () => {
   return (
     <>
       <K8sRelatedIconsSVGSprite />
-      <Grid container spacing={2}>
+      <div className="flex flex-col gap-4">
         {isCloneStrategy(strategyFieldValue) ? (
           <>
-            <Grid item xs={12}>
+            <div>
               <RepositoryUrl />
-            </Grid>
+            </div>
           </>
         ) : null}
 
-        <Grid item xs={12}>
-          <Stack spacing={1} direction="row" alignItems="flex-start">
-            <Box sx={{ maxWidth: "25%", width: "100%" }}>
+        <div>
+          <div className="flex items-start gap-1">
+            <div className="w-full max-w-[25%]">
               <GitServer />
-            </Box>
+            </div>
             {gitServerFieldValue.includes(gitProvider.gerrit) || !apiBaseUrl ? (
-              <Box sx={{ maxWidth: "75%", width: "100%" }}>
+              <div className="w-full max-w-[75%]">
                 <GitUrlPath />
-              </Box>
+              </div>
             ) : (
               <>
-                <Box sx={{ maxWidth: "30%", width: "100%" }}>
+                <div className="w-full max-w-[30%]">
                   <Owner />
-                </Box>
-                <Stack spacing={1} direction="row" sx={{ maxWidth: "45%", width: "100%" }}>
-                  <Typography sx={{ pt: theme.typography.pxToRem(24) }}>/</Typography>
-                  <Box flexGrow={1} flexShrink={0}>
+                </div>
+                <div className="flex gap-1 max-w-[45%] w-full">
+                  <span className="pt-6">/</span>
+                  <div className="grow shrink-0">
                     <Repository />
-                  </Box>
-                </Stack>
+                  </div>
+                </div>
               </>
             )}
-          </Stack>
-        </Grid>
+          </div>
+        </div>
 
-        <Grid item xs={12}>
+        <div>
           <CiTool />
-        </Grid>
+        </div>
 
         {isCloneStrategy(strategyFieldValue) ? (
           <>
-            <Grid item xs={12}>
+            <div>
               <CodebaseAuth />
-            </Grid>
+            </div>
             {hasCodebaseAuthFieldValue ? (
               <>
-                <Grid item xs={12}>
+                <div>
                   <RepositoryLogin />
-                </Grid>
-                <Grid item xs={12}>
+                </div>
+                <div>
                   <RepositoryPasswordOrApiToken />
-                </Grid>
+                </div>
               </>
             ) : null}
           </>
         ) : null}
-        <Grid item xs={12}>
+        <div>
           <Name />
-        </Grid>
-        <Grid item xs={12}>
+        </div>
+        <div>
           <Description />
-        </Grid>
+        </div>
         {(strategyFieldValue === codebaseCreationStrategy.create ||
           strategyFieldValue === codebaseCreationStrategy.clone) && (
-          <Grid item xs={12}>
+          <div>
             <Private />
-          </Grid>
+          </div>
         )}
         {strategyFieldValue === codebaseCreationStrategy.create && (
-          <Grid item xs={12}>
+          <div>
             <EmptyProject />
-          </Grid>
+          </div>
         )}
-        <Grid item xs={12}>
+        <div>
           <Lang />
-        </Grid>
+        </div>
         {langFieldValue && (
-          <Grid item xs={12}>
+          <div>
             <Framework />
-          </Grid>
+          </div>
         )}
         {langFieldValue && (
-          <Grid item xs={12}>
+          <div>
             <BuildTool />
-          </Grid>
+          </div>
         )}
         {typeFieldValue === codebaseType.autotest && (
-          <Grid item xs={12}>
+          <div>
             <TestReportFramework />
-          </Grid>
+          </div>
         )}
-      </Grid>
+      </div>
     </>
   );
 };

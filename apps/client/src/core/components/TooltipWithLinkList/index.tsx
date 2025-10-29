@@ -1,4 +1,4 @@
-import { Box, Link, MenuItem, MenuList, Paper, Stack, Tooltip } from "@mui/material";
+import { Link, MenuItem, MenuList, Paper, Tooltip } from "@mui/material";
 import { ChevronDown, SquareArrowOutUpRight } from "lucide-react";
 
 export const TooltipWithLinkList = ({ urls, size }: { urls: string[]; size?: "medium" | "small" }) => {
@@ -35,12 +35,12 @@ export const TooltipWithLinkList = ({ urls, size }: { urls: string[]; size?: "me
         placement: "top-end",
       }}
     >
-      <Box sx={{ lineHeight: 0, mx: (t) => t.typography.pxToRem(32) }}>
-        <Stack direction="row" alignItems="center">
+      <div className="leading-none mx-8">
+        <div className="flex flex-row items-center">
           <SquareArrowOutUpRight size={iconSize} />
           <ChevronDown size={iconSize} />
-        </Stack>
-      </Box>
+        </div>
+      </div>
     </Tooltip>
   );
 };

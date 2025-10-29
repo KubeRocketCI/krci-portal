@@ -3,7 +3,7 @@ import {
   ALL_VALUES_OVERRIDE_KEY,
   VALUES_OVERRIDE_POSTFIX,
 } from "@/modules/platform/cdpipelines/pages/stage-details/constants";
-import { Box, Stack, Tooltip } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import { TriangleAlert } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { applicationTableMode } from "../../constants";
@@ -25,7 +25,7 @@ export const ValuesOverrideSwitch = ({ enrichedApplicationWithArgoApplication, m
   const thisFieldValue = watch(`${application.metadata.name}${VALUES_OVERRIDE_POSTFIX}`) as boolean;
 
   return (
-    <Stack direction="row" alignItems="center" spacing={1} sx={{ width: "100%" }}>
+    <div className="flex items-center gap-1 w-full">
       <div>
         <FormSwitch
           label={<></>}
@@ -44,12 +44,12 @@ export const ValuesOverrideSwitch = ({ enrichedApplicationWithArgoApplication, m
         />
       </div>
       {mode === applicationTableMode.configuration && thisFieldValue !== currentResourceValue && (
-        <Box sx={{ lineHeight: 0 }}>
+        <div className="leading-none">
           <Tooltip title="Warning: This action will mutate override values usage for this application deployment.">
             <TriangleAlert size={16} />
           </Tooltip>
-        </Box>
+        </div>
       )}
-    </Stack>
+    </div>
   );
 };

@@ -1,6 +1,5 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { Section } from "@/core/components/Section";
-import { Stack } from "@mui/material";
 import { TaskList } from "./components/TaskList";
 
 export default function PipelineListPage() {
@@ -13,9 +12,9 @@ export default function PipelineListPage() {
       ]}
     >
       <Section description="Browse and visualize your Tekton tasks. View task definitions and their task dependencies.">
-        <Stack spacing={3} flexGrow={1} display="flex">
+        <div className="flex flex-col gap-6 flex-grow">
           <TaskList />
-        </Stack>
+        </div>
       </Section>
     </PageWrapper>
   );

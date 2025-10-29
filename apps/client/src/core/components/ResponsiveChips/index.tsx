@@ -1,4 +1,4 @@
-import { Box, Chip, ChipProps, darken, Stack, Tooltip } from "@mui/material";
+import { Chip, ChipProps, darken, Tooltip } from "@mui/material";
 import React from "react";
 
 // Default renderers
@@ -12,11 +12,11 @@ const defaultChipRender = (label: string, key: string, size = "small") => (
 );
 
 const defaultTooltipRender = (chipsToHide: string[]) => (
-  <Box sx={{ py: (t) => t.typography.pxToRem(6), px: (t) => t.typography.pxToRem(10) }}>
-    <Stack spacing={1.5} flexWrap="wrap" sx={{ fontWeight: 400 }}>
+  <div className="py-1 px-3">
+    <div className="flex flex-wrap gap-6" style={{ fontWeight: 400 }}>
       {chipsToHide.map((chip) => defaultChipRender(chip, chip))}
-    </Stack>
-  </Box>
+    </div>
+  </div>
 );
 
 // Constants
@@ -180,7 +180,7 @@ export const ResponsiveChips = ({
     <>
       {MeasurementContainer}
       <div ref={containerRef} style={{ width: "100%" }}>
-        <Stack direction="row" spacing={STACK_GAP} alignItems="center">
+        <div className="flex flex-row gap-2 items-center">
           {visibleChips.map((chip) => renderChip(chip, chip))}
           {hiddenChips.length > 0 && (
             <Tooltip title={renderTooltip(hiddenChips, visibleChips)}>
@@ -195,7 +195,7 @@ export const ResponsiveChips = ({
               />
             </Tooltip>
           )}
-        </Stack>
+        </div>
       </div>
     </>
   );

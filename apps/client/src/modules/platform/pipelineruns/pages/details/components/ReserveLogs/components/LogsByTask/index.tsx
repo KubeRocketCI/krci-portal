@@ -1,4 +1,4 @@
-import { Accordion, Divider, Grid, Paper, Stack, Typography, useTheme } from "@mui/material";
+import { Accordion, Divider, Grid, Paper, useTheme } from "@mui/material";
 import React from "react";
 import { Terminal } from "@/core/components/Terminal";
 import { StyledAccordionSummary } from "../../../../styles";
@@ -40,13 +40,13 @@ export const LogsByTask = () => {
     return (
       <Paper>
         <StyledDetailsHeader>
-          <Stack spacing={1}>
-            <Stack direction="row" alignItems="center" spacing={2}>
-              <Typography fontSize={(t) => t.typography.pxToRem(20)} fontWeight={500}>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-xl font-medium">
                 {queryParamTaskRun}
-              </Typography>
-            </Stack>
-          </Stack>
+              </h3>
+            </div>
+          </div>
         </StyledDetailsHeader>
         <Divider orientation="horizontal" />
         <StyledDetailsBody>
@@ -66,9 +66,9 @@ export const LogsByTask = () => {
   }, [logs?.map, params.name, queryParamTaskRun]);
 
   return (
-    <Grid container rowSpacing={3}>
-      <Grid item xs={2}>
-        <Stack>
+    <div className="grid grid-cols-12 gap-6">
+      <div className="col-span-2">
+        <div className="flex flex-col">
           {logs &&
             logs.order?.map((taskRunName) => {
               const isExpanded = queryParamTaskRun === taskRunName;
@@ -93,16 +93,16 @@ export const LogsByTask = () => {
                   }}
                 >
                   <StyledAccordionSummary isActive={isActive} disableRipple={false} disableTouchRipple={false}>
-                    <Typography>{taskRunName}</Typography>
+                    <span>{taskRunName}</span>
                   </StyledAccordionSummary>
                 </Accordion>
               );
             })}
-        </Stack>
-      </Grid>
-      <Grid item xs={10}>
+        </div>
+      </div>
+      <div className="col-span-10">
         {renderDetails()}
-      </Grid>
-    </Grid>
+      </div>
+    </div>
   );
 };

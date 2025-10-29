@@ -1,4 +1,4 @@
-import { Grid, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import React from "react";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_BRANCH_FORM_NAMES } from "../../../names";
@@ -55,8 +55,8 @@ export const BranchVersion = () => {
   );
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={6}>
+    <div className="grid grid-cols-2 gap-4">
+      <div>
         <FormTextField
           {...register(CODEBASE_BRANCH_FORM_NAMES.releaseBranchVersionStart.name, {
             required: "Branch version",
@@ -72,8 +72,8 @@ export const BranchVersion = () => {
           control={control}
           errors={errors}
         />
-      </Grid>
-      <Grid item xs={6} sx={{ mt: theme.typography.pxToRem(FORM_CONTROL_LABEL_HEIGHT) }}>
+      </div>
+      <div style={{ marginTop: theme.typography.pxToRem(FORM_CONTROL_LABEL_HEIGHT) }}>
         <FormTextField
           {...register(CODEBASE_BRANCH_FORM_NAMES.releaseBranchVersionPostfix.name, {
             onBlur: onBranchVersionPostfixFieldValueChange,
@@ -82,7 +82,7 @@ export const BranchVersion = () => {
           control={control}
           errors={errors}
         />
-      </Grid>
-    </Grid>
+      </div>
+    </div>
   );
 };

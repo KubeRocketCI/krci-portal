@@ -3,7 +3,7 @@ import { useStageCRUD } from "@/k8s/api/groups/KRCI/Stage";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { useStepperContext } from "@/core/providers/Stepper/hooks";
 import { SuccessDialog } from "@/modules/platform/codebases/dialogs/Success";
-import { Box, Button, Stack, useTheme } from "@mui/material";
+import { Button, useTheme } from "@mui/material";
 import { createStageDraftObject, StageDraft } from "@my-project/shared";
 import React from "react";
 import { FORM_STEPPER } from "../../../../constants";
@@ -139,27 +139,27 @@ export const FormActions = () => {
   }, [activeTabFormPartName, nextStep, trigger]);
 
   return (
-    <Stack direction="row" spacing={2} justifyContent="space-between" width="100%">
-      <Stack direction="row" spacing={1}>
-        <Box sx={{ color: theme.palette.text.primary }}>
+    <div className="flex flex-row gap-4 justify-between w-full">
+      <div className="flex flex-row gap-2">
+        <div style={{ color: theme.palette.text.primary }}>
           <Button onClick={handleClose} size="small" color="inherit">
             cancel
           </Button>
-        </Box>
+        </div>
         <Button onClick={handleResetFields} size="small" disabled={!isDirty}>
           undo changes
         </Button>
-      </Stack>
+      </div>
       <div>
         <TabPanel value={activeStep} index={FORM_STEPPER.CONFIGURATION.idx}>
-          <Stack direction="row">
+          <div className="flex flex-row">
             <Button onClick={handleProceed} variant={"contained"} color={"primary"} size="small">
               next
             </Button>
-          </Stack>
+          </div>
         </TabPanel>
         <TabPanel value={activeStep} index={FORM_STEPPER.QUALITY_GATES.idx}>
-          <Stack direction="row">
+          <div className="flex flex-row">
             <Button onClick={prevStep} size="small">
               back
             </Button>
@@ -172,9 +172,9 @@ export const FormActions = () => {
             >
               create
             </Button>
-          </Stack>
+          </div>
         </TabPanel>
       </div>
-    </Stack>
+    </div>
   );
 };

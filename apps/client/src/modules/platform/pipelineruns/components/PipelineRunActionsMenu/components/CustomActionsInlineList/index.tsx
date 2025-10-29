@@ -11,7 +11,6 @@ import {
   MenuList,
   Paper,
   Popper,
-  Stack,
   useTheme,
 } from "@mui/material";
 import { ChevronDown } from "lucide-react";
@@ -40,7 +39,7 @@ export const CustomActionsInlineList = ({ groupActions, inlineActions }: CustomA
 
   return (
     <>
-      <Stack spacing={1} direction="row" alignItems="center">
+      <div className="flex flex-row gap-2 items-center">
         <ButtonGroup variant="outlined" ref={anchorRef}>
           <ButtonWithPermission
             ButtonProps={{
@@ -75,7 +74,7 @@ export const CustomActionsInlineList = ({ groupActions, inlineActions }: CustomA
           </ButtonWithPermission>
         </ButtonGroup>
         <ActionsInlineList actions={inlineActions} />
-      </Stack>
+      </div>
 
       <Popper sx={{ zIndex: 1 }} open={open} anchorEl={anchorRef.current} role={undefined} transition disablePortal>
         {({ TransitionProps, placement }) => (

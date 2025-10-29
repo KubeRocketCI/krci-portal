@@ -1,4 +1,4 @@
-import { Box, CircularProgress, Stack, Typography } from "@mui/material";
+import { CircularProgress } from "@mui/material";
 import React from "react";
 import { NoDataWidgetWrapper } from "@/core/components/NoDataWidgetWrapper";
 import { Link } from "@tanstack/react-router";
@@ -20,25 +20,18 @@ const MetricsCell = ({
   value: number | string | React.ReactNode;
 }) => {
   return (
-    <Box
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      textAlign="center"
-      sx={{
-        backgroundColor: (t) => color ?? t.palette.secondary.dark,
-        px: (t) => t.typography.pxToRem(9),
-        py: (t) => t.typography.pxToRem(5),
-      }}
+    <div
+      className="flex items-center justify-center text-center px-[9px] py-[5px]"
+      style={{ backgroundColor: color ?? '#424242', color: textColor ?? '#ffffff' }}
     >
       {typeof value === "string" || typeof value === "number" ? (
-        <Typography fontSize={10} fontWeight={500} color={(t) => textColor ?? t.palette.common.white}>
+        <span className="text-[10px] font-medium" style={{ color: textColor ?? '#ffffff' }}>
           {value}
-        </Typography>
+        </span>
       ) : (
         value
       )}
-    </Box>
+    </div>
   );
 };
 
@@ -73,7 +66,7 @@ export const DependencyTrackMetrics = ({ componentName }: DependencyTrackMetrics
       }
       isLoading={depTrackDataQuery.isLoading}
       text={
-        <Typography variant={"body1"} color="secondary.dark" component={"div"}>
+        <p className="text-base text-muted-foreground">
           No metrics available.{" "}
           <Button variant="link" asChild className="p-0!">
             <Link
@@ -86,7 +79,7 @@ export const DependencyTrackMetrics = ({ componentName }: DependencyTrackMetrics
             </Link>
           </Button>{" "}
           and enable reporting in your pipeline.
-        </Typography>
+        </p>
       }
     >
       {depTrackDataQuery.isLoading ? (
@@ -101,7 +94,7 @@ export const DependencyTrackMetrics = ({ componentName }: DependencyTrackMetrics
             target={"_blank"}
             color="inherit"
           >
-            <Stack direction="row" sx={{ borderRadius: "2px", overflow: "hidden" }}>
+            <div className="flex rounded-[2px] overflow-hidden">
               <MetricsCell value="dependencies" />
               {!!depTrackDataQuery.data?.metrics && !depTrackDataQuery.isLoading ? (
                 <>
@@ -118,11 +111,8 @@ export const DependencyTrackMetrics = ({ componentName }: DependencyTrackMetrics
               ) : (
                 <MetricsCell
                   value={
-                    <Box
-                      minWidth={(t) => t.typography.pxToRem(120)}
-                      display="flex"
-                      justifyContent="center"
-                      alignItems="center"
+                    <div
+                      className="min-w-[120px] flex justify-center items-center"
                     >
                       <CircularProgress
                         sx={{
@@ -130,13 +120,13 @@ export const DependencyTrackMetrics = ({ componentName }: DependencyTrackMetrics
                           height: (t) => `${t.typography.pxToRem(14)} !important`,
                         }}
                       />
-                    </Box>
+                    </div>
                   }
                   color="#E6E6F0"
                   textColor="#596D80"
                 />
               )}
-            </Stack>
+            </div>
           </Link>
         </>
       ) : null}

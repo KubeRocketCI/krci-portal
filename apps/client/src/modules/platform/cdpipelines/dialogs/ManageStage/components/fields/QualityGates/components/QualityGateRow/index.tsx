@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import React from "react";
 import { useTypedFormContext } from "../../../../../hooks/useFormContext";
 import { STAGE_FORM_NAMES } from "../../../../../names";
@@ -245,9 +244,9 @@ export const QualityGateRow = ({ namespace, currentQualityGate }: QualityGateRow
 
   return (
     <>
-      <Grid item xs={12}>
-        <Grid container spacing={1}>
-          <Grid item xs={3}>
+      <div>
+        <div className="grid grid-cols-12 gap-2">
+          <div className="col-span-3">
             <FormSelect
               {...register(createQualityGateTypeFieldName(currentQualityGate.id), {
                 onChange: handleChangeQualityGateType,
@@ -261,9 +260,9 @@ export const QualityGateRow = ({ namespace, currentQualityGate }: QualityGateRow
               defaultValue={currentQualityGate.qualityGateType}
               options={availableQualityGateTypeSelectOptions}
             />
-          </Grid>
+          </div>
           {currentQualityGateTypeFieldValue && currentQualityGateTypeFieldValue !== stageQualityGateType.manual && (
-            <Grid item xs={3}>
+            <div className="col-span-3">
               <FormTextField
                 {...register(createQualityGateStepNameFieldName(currentQualityGate.id), {
                   required: "Enter step name.",
@@ -277,12 +276,12 @@ export const QualityGateRow = ({ namespace, currentQualityGate }: QualityGateRow
                 control={control}
                 errors={errors}
               />
-            </Grid>
+            </div>
           )}
 
           {!!autotests.length && currentQualityGateTypeFieldValue === stageQualityGateType.autotests ? (
             <>
-              <Grid item xs={3}>
+              <div className="col-span-3">
                 <FormSelect
                   {...register(createQualityGateAutotestFieldName(currentQualityGate.id), {
                     onChange: handleChangeQualityGateAutotestName,
@@ -297,8 +296,8 @@ export const QualityGateRow = ({ namespace, currentQualityGate }: QualityGateRow
                     disabled,
                   }))}
                 />
-              </Grid>
-              <Grid item xs={3}>
+              </div>
+              <div className="col-span-3">
                 <FormSelect
                   {...register(createQualityGateTypeAutotestsBranchFieldName(currentQualityGate.id), {
                     onChange: handleChangeQualityGateAutotestBranchName,
@@ -310,11 +309,11 @@ export const QualityGateRow = ({ namespace, currentQualityGate }: QualityGateRow
                   disabled={!currentQualityGateBranchesOptions.length}
                   options={availableAutotestBranches}
                 />
-              </Grid>
+              </div>
             </>
           ) : null}
-        </Grid>
-      </Grid>
+        </div>
+      </div>
     </>
   );
 };

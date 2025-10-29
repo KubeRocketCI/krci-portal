@@ -1,4 +1,4 @@
-import { Grid, Tooltip, Typography } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import React from "react";
 import { useFormsContext } from "../../hooks/useFormsContext";
 import { GIT_SERVER_FORM_NAMES } from "../../names";
@@ -27,71 +27,71 @@ export const CredentialsForm = () => {
       case gitProvider.gerrit:
         return (
           <>
-            <Grid item xs={12}>
+            <div>
               <SSHPrivateKey />
-            </Grid>
-            <Grid item xs={12}>
+            </div>
+            <div>
               <SSHPublicKey />
-            </Grid>
+            </div>
           </>
         );
       case gitProvider.github:
         return (
           <>
-            <Grid item xs={12}>
+            <div>
               <SSHPrivateKey />
-            </Grid>
-            <Grid item xs={12}>
+            </div>
+            <div>
               <Token />
-            </Grid>
+            </div>
           </>
         );
       case gitProvider.gitlab:
         return (
           <>
-            <Grid item xs={12}>
+            <div>
               <SSHPrivateKey />
-            </Grid>
-            <Grid item xs={12}>
+            </div>
+            <div>
               <Token />
-            </Grid>
+            </div>
           </>
         );
       case gitProvider.bitbucket:
         return (
           <>
-            <Grid item xs={12}>
+            <div>
               <SSHPrivateKey />
-            </Grid>
-            <Grid item xs={12}>
+            </div>
+            <div>
               <Token />
-            </Grid>
+            </div>
           </>
         );
     }
   }, [sharedGitProviderValue]);
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12}>
-        <Grid container spacing={1} alignItems={"center"}>
-          <Grid item>
-            <Typography variant={"h6"}>Credentials</Typography>
-          </Grid>
+    <div className="flex flex-col gap-4">
+      <div>
+        <div className="flex gap-2 items-center">
+          <div>
+            <h6 className="text-base font-medium">Credentials</h6>
+          </div>
           {!!gitServerSecretOwnerReference && (
-            <Grid item>
+            <div>
               <Tooltip title={`Managed by ${gitServerSecretOwnerReference}`}>
                 <ShieldX size={20} />
               </Tooltip>
-            </Grid>
+            </div>
           )}
-        </Grid>
-      </Grid>
-      <Grid item xs={12}>
-        <Grid container spacing={2}>
+        </div>
+      </div>
+      <div>
+        <div className="flex flex-col gap-4">
           {secretFieldsRenderer()}
-        </Grid>
-      </Grid>
-    </Grid>
+        </div>
+      </div>
+    </div>
   );
 };

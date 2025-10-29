@@ -4,9 +4,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Grid,
   TextField,
-  Typography,
 } from '@mui/material';
 import React from 'react';
 import { useForm } from 'react-hook-form';
@@ -29,27 +27,28 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     handleClosePopup();
     reset();
   }, [actionCallback, handleClosePopup, reset]);
+  
 
   return (
     <Dialog open={open} onClose={handleClosePopup} fullWidth data-testid="dialog">
       <DialogTitle>Confirm action</DialogTitle>
       <DialogContent>
         <div>
-          <Grid container spacing={2}>
+          <div className="flex flex-col gap-4">
             {!!text && (
-              <Grid item xs={12}>
-                <Typography variant={'subtitle1'}>{text}</Typography>
-              </Grid>
+              <div>
+                <p className="text-lg">{text}</p>
+              </div>
             )}
-            <Grid item xs={12}>
+            <div>
               <TextField
                 {...register('confirm', { required: true })}
                 label={'Enter "confirm" to confirm action'}
                 variant="outlined"
                 fullWidth
               />
-            </Grid>
-          </Grid>
+            </div>
+          </div>
         </div>
       </DialogContent>
       <DialogActions>

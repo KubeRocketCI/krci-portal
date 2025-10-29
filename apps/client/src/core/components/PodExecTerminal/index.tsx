@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo } from "react";
-import { Box, FormControl, InputLabel, MenuItem, Select, Typography } from "@mui/material";
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 
 import { Terminal } from "@/core/components/Terminal";
 import { TerminalRef } from "@/core/components/Terminal/types";
@@ -230,9 +230,9 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
   const isWindows = ["Windows", "Win16", "Win32", "WinCE"].indexOf(navigator?.platform) >= 0;
 
   return (
-    <Box sx={{ height, display: "flex", flexDirection: "column", gap: 2 }}>
+    <div className="flex flex-col gap-2" style={{ height }}>
       {/* Controls */}
-      <Box sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}>
+      <div className="flex gap-2 items-center flex-wrap">
         {pods.length > 1 && (
           <FormControl size="small" sx={{ minWidth: 180 }}>
             <InputLabel>Pod</InputLabel>
@@ -264,10 +264,10 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
           </Select>
         </FormControl>
 
-        <Typography variant="caption" color="textSecondary">
+        <span className="text-xs text-muted-foreground">
           {isAttach ? `Attach: ${podName}` : `Terminal: ${podName}`}
-        </Typography>
-      </Box>
+        </span>
+      </div>
 
       {/* Terminal Display */}
       <Terminal
@@ -286,6 +286,6 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
           },
         }}
       />
-    </Box>
+    </div>
   );
 };

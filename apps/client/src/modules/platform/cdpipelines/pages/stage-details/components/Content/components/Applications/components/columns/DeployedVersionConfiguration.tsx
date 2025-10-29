@@ -1,11 +1,10 @@
 import { FormSelect } from "@/core/providers/Form/components/FormSelect";
 import { SelectOption } from "@/core/providers/Form/types";
 import { IMAGE_TAG_POSTFIX } from "@/modules/platform/cdpipelines/pages/stage-details/constants";
-import { Box, Stack } from "@mui/material";
 import React from "react";
 import { useFormContext } from "react-hook-form";
 import { createImageStreamTags } from "../../utils/createImageStreamTags";
-import { StageAppCodebaseCombinedData } from "@/k8s/api/groups/KRCI/Stage/hooks/useWatchStageAppCodebasesCombinedData";
+import { StageAppCodebaseCombinedData } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 
 export const DeployedVersionConfigurationColumn = ({
   stageAppCodebasesCombinedData,
@@ -49,21 +48,20 @@ export const DeployedVersionConfigurationColumn = ({
   const isSameAsDefaultValue = currentValue?.includes(currentDefaultValue);
 
   return (
-    <Stack direction="row" spacing={1} width="100%">
-      <Box
-        sx={{
+    <div className="flex flex-row gap-2 w-full">
+      <div
+        style={{
           flexShrink: 0,
           width: "4px",
-          backgroundColor: (t) =>
-            !imageTagsLength
-              ? t.palette.error.main
-              : isSameAsDefaultValue
-                ? t.palette.action.disabled
-                : t.palette.primary.main,
+          backgroundColor: !imageTagsLength
+            ? "var(--error-main)"
+            : isSameAsDefaultValue
+              ? "var(--action-disabled)"
+              : "var(--primary-main)",
           borderRadius: "1px",
         }}
       />
-      <Box flexGrow={1}>
+      <div className="grow">
         <FormSelect
           {...register(`${appCodebase.metadata.name}${IMAGE_TAG_POSTFIX}`, {
             required: "Select image tag",
@@ -77,7 +75,7 @@ export const DeployedVersionConfigurationColumn = ({
             imageStreamTagsOptions.length ? "" : "Run at least one build pipeline to produce the necessary artifacts."
           }
         />
-      </Box>
-    </Stack>
+      </div>
+    </div>
   );
 };

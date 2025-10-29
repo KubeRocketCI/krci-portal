@@ -1,4 +1,3 @@
-import { Grid } from '@mui/material';
 import { Form } from './components/Form';
 import { FormActions } from './components/FormActions';
 import { useDefaultValues } from './hooks/useDefaultValues';
@@ -16,14 +15,14 @@ export const Edit = ({ formData }: EditProps) => {
       }}
       formData={formData}
     >
-      <Grid container spacing={4}>
-        <Grid item xs={12}>
+      <div className="flex flex-col gap-6">
+        <div>
           <Form />
-        </Grid>
-        <Grid item xs={12}>
+        </div>
+        <div>
           <FormActions />
-        </Grid>
-      </Grid>
+        </div>
+      </div>
     </FormContextProvider>
   );
 };

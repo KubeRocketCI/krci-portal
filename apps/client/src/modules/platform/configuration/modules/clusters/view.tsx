@@ -5,7 +5,7 @@ import { StatusIcon } from "@/core/components/StatusIcon";
 import { useSecretPermissions, useSecretWatchList } from "@/k8s/api/groups/Core/Secret";
 import { useApplicationPermissions } from "@/k8s/api/groups/ArgoCD/Application";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionSummary, Typography, AccordionDetails, Grid, Tooltip } from "@mui/material";
+import { Accordion, AccordionSummary, AccordionDetails, Grid, Tooltip } from "@mui/material";
 import {
   SECRET_LABEL_SECRET_TYPE,
   SECRET_ANNOTATION_CLUSTER_CONNECTED,
@@ -65,7 +65,7 @@ export default function ClustersConfigurationPage() {
 
     return (
       <LoadingWrapper isLoading={isLoading}>
-        <Grid container spacing={1}>
+        <div className="flex flex-col gap-2">
           {clusterSecrets?.map((clusterSecret) => {
             const connected = clusterSecret?.metadata?.annotations?.[SECRET_ANNOTATION_CLUSTER_CONNECTED];
             const error = clusterSecret?.metadata?.annotations?.[SECRET_ANNOTATION_CLUSTER_ERROR];
@@ -78,7 +78,7 @@ export default function ClustersConfigurationPage() {
             const ownerReference = clusterSecret?.metadata?.ownerReferences?.[0]?.kind;
 
             return (
-              <Grid item xs={12} key={clusterSecret.metadata.uid}>
+              <div key={clusterSecret.metadata.uid}>
                 <Accordion
                   expanded={singleItem || isExpanded}
                   onChange={singleItem ? undefined : handleChange(clusterName)}
@@ -89,36 +89,36 @@ export default function ClustersConfigurationPage() {
                       cursor: singleItem ? "default" : "pointer",
                     }}
                   >
-                    <Typography variant={"h6"}>
-                      <Grid container spacing={1} alignItems={"center"}>
-                        <Grid item sx={{ mr: (t) => t.typography.pxToRem(5) }}>
+                    <h6 className="text-base font-medium">
+                      <div className="flex gap-2 items-center">
+                        <div className="mr-1">
                           <StatusIcon
                             Icon={statusIcon.component}
                             color={statusIcon.color}
                             Title={
                               <>
-                                <Typography variant={"subtitle2"} style={{ fontWeight: 600 }}>
+                                <p className="text-sm font-semibold">
                                   {`Connected: ${connected === undefined ? "Unknown" : connected}`}
-                                </Typography>
+                                </p>
                                 {!!error && (
-                                  <Typography variant={"subtitle2"} sx={{ mt: (t) => t.typography.pxToRem(10) }}>
+                                  <p className="text-sm font-medium mt-3">
                                     {error}
-                                  </Typography>
+                                  </p>
                                 )}
                               </>
                             }
                           />
-                        </Grid>
-                        <Grid item>{clusterName}</Grid>
+                        </div>
+                        <div>{clusterName}</div>
                         {!!ownerReference && (
-                          <Grid item>
+                          <div>
                             <Tooltip title={`Managed by ${ownerReference}`}>
                               <ShieldX size={20} />
                             </Tooltip>
-                          </Grid>
+                          </div>
                         )}
-                      </Grid>
-                    </Typography>
+                      </div>
+                    </h6>
                   </AccordionSummary>
                   <AccordionDetails>
                     {(singleItem || isExpanded) && (
@@ -133,10 +133,10 @@ export default function ClustersConfigurationPage() {
                     )}
                   </AccordionDetails>
                 </Accordion>
-              </Grid>
+              </div>
             );
           })}
-        </Grid>
+        </div>
       </LoadingWrapper>
     );
   }, [clusterSecretsWatch.query.error, clusterSecretsWatch.query.isLoading, clusterSecrets, expandedPanel]);

@@ -9,12 +9,11 @@ import {
   useCodemieProjectSettingsWatchList,
 } from "@/k8s/api/groups/KRCI/CodemieProjectSettings";
 import { getCodemieProjectSettingsStatusIcon } from "@/k8s/api/groups/KRCI/CodemieProjectSettings/utils/getStatusIcon";
-import { Button, Grid, Paper, Stack, Typography, useTheme } from "@mui/material";
+import { Button, Paper } from "@mui/material";
 import { Pencil } from "lucide-react";
 import { CodemieProjectSettings } from "@my-project/shared";
 
 export const CodemieProjectSettingsSection = () => {
-  const theme = useTheme();
   const codemieProjectSettingsWatch = useCodemieProjectSettingsWatchList();
   const codemieProjectSettings = codemieProjectSettingsWatch.data.array;
 
@@ -24,18 +23,14 @@ export const CodemieProjectSettingsSection = () => {
 
   return (
     <>
-      <Typography
-        fontSize={theme.typography.pxToRem(24)}
-        color="primary.dark"
-        sx={{ mb: (t) => t.typography.pxToRem(24) }}
-      >
+      <h2 className="text-2xl font-semibold text-foreground mb-6">
         Project Settings
-      </Typography>
+      </h2>
       <LoadingWrapper isLoading={!codemieProjectSettingsWatch.isReady}>
         {codemieProjectSettingsWatch.query.error ? (
           <ErrorContent error={codemieProjectSettingsWatch.query.error} outlined />
         ) : codemieProjectSettings?.length ? (
-          <Grid container spacing={2}>
+          <div className="flex flex-col gap-4">
             {codemieProjectSettings.map((setting) => {
               const status = setting?.status?.value;
               const statusError = setting?.status?.error;
@@ -43,28 +38,28 @@ export const CodemieProjectSettingsSection = () => {
               const statusIcon = getCodemieProjectSettingsStatusIcon(setting);
 
               return (
-                <Grid item xs={12} key={setting.metadata.name}>
+                <div key={setting.metadata.name}>
                   <Paper sx={{ p: (t) => `${t.typography.pxToRem(10)} ${t.typography.pxToRem(20)}` }}>
-                    <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-                      <Stack direction="row" spacing={2} alignItems="center">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
                         <StatusIcon
                           Icon={statusIcon.component}
                           color={statusIcon.color}
                           Title={
                             <>
-                              <Typography variant={"subtitle2"} style={{ fontWeight: 600 }}>
+                              <p className="text-sm font-semibold">
                                 {`Status: ${status || "Unknown"}`}
-                              </Typography>
+                              </p>
                               {!!statusError && (
-                                <Typography variant={"subtitle2"} sx={{ mt: theme.typography.pxToRem(10) }}>
+                                <p className="text-sm font-medium mt-3">
                                   {statusError}
-                                </Typography>
+                                </p>
                               )}
                             </>
                           }
                         />
-                        <Typography variant={"h6"}>{setting.metadata.name}</Typography>
-                      </Stack>
+                        <h6 className="text-base font-medium">{setting.metadata.name}</h6>
+                      </div>
                       <Button
                         startIcon={<Pencil size={16} />}
                         size="small"
@@ -90,12 +85,12 @@ export const CodemieProjectSettingsSection = () => {
                       >
                         Edit YAML
                       </Button>
-                    </Stack>
+                    </div>
                   </Paper>
-                </Grid>
+                </div>
               );
             })}
-          </Grid>
+          </div>
         ) : (
           <EmptyList customText={"No CodeMie Project Settings Found."} />
         )}

@@ -1,4 +1,3 @@
-import { Grid } from '@mui/material';
 import React from 'react';
 import { Form } from './components/Form';
 import { FormActions } from './components/FormActions';
@@ -16,14 +15,14 @@ export const Create = ({ formData }: CreateProps) => {
       }}
       formData={formData}
     >
-      <Grid container spacing={4}>
-        <Grid item xs={12}>
+      <div className="flex flex-col gap-6">
+        <div>
           <Form activeClusterType={activeClusterType} setActiveClusterType={setActiveClusterType} />
-        </Grid>
-        <Grid item xs={12}>
+        </div>
+        <div>
           <FormActions activeClusterType={activeClusterType} />
-        </Grid>
-      </Grid>
+        </div>
+      </div>
     </FormContextProvider>
   );
 };

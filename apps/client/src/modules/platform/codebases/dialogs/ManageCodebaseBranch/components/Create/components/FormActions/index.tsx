@@ -1,5 +1,5 @@
 import { useCodebaseBranchCRUD } from "@/k8s/api/groups/KRCI/CodebaseBranch";
-import { Box, Button, Stack, useTheme } from "@mui/material";
+import { Button, useTheme } from "@mui/material";
 import {
   createCodebaseBranchDraftObject,
   createVersioningString,
@@ -86,17 +86,17 @@ export const FormActions = () => {
   const theme = useTheme();
 
   return (
-    <Stack direction="row" spacing={2} justifyContent="space-between" width="100%">
-      <Stack direction="row" spacing={1}>
-        <Box sx={{ color: theme.palette.text.primary }}>
+    <div className="flex justify-between w-full">
+      <div className="flex gap-1">
+        <div className="text-foreground">
           <Button onClick={handleClose} size="small" color="inherit">
             cancel
           </Button>
-        </Box>
+        </div>
         <Button onClick={handleResetFields} size="small" disabled={!isDirty}>
           undo changes
         </Button>
-      </Stack>
+      </div>
       <Button
         onClick={handleSubmit(onSubmit)}
         variant={"contained"}
@@ -106,6 +106,6 @@ export const FormActions = () => {
       >
         create
       </Button>
-    </Stack>
+    </div>
   );
 };

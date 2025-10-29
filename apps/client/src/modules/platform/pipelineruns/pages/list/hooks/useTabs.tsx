@@ -1,4 +1,3 @@
-import { Box } from "@mui/material";
 import React from "react";
 import { routePipelineRunList, RouteSearchTab, routeSearchTabSchema, PATH_PIPELINERUNS_FULL } from "../route";
 import { Tab } from "@/core/providers/Tabs/components/Tabs/types";
@@ -27,13 +26,9 @@ export const useTabs = (): Tab[] => {
         label: "Live",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.live),
         component: (
-          <Box
-            sx={{
-              pt: (t) => t.typography.pxToRem(24),
-            }}
-          >
+          <div className="pt-6">
             <Live />
-          </Box>
+          </div>
         ),
       },
       {
@@ -41,13 +36,9 @@ export const useTabs = (): Tab[] => {
         label: "History",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.history),
         component: (
-          <Box
-            sx={{
-              pt: (t) => t.typography.pxToRem(24),
-            }}
-          >
+          <div className="pt-6">
             <History />
-          </Box>
+          </div>
         ),
       },
     ],

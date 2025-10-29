@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import { Create } from "./components/Create";
 import { FormActions } from "./components/FormActions";
 import { View } from "./components/View";
@@ -19,14 +18,14 @@ export const ManageGitOps = ({ formData }: ManageGitOpsProps) => {
       }}
       formData={formData}
     >
-      <Grid container spacing={2} data-testid="form">
-        <Grid item xs={12}>
+      <div className="flex flex-col gap-4" data-testid="form">
+        <div>
           {isReadOnly ? <View /> : <Create />}
-        </Grid>
-        <Grid item xs={12}>
+        </div>
+        <div>
           <FormActions />
-        </Grid>
-      </Grid>
+        </div>
+      </div>
     </FormContextProvider>
   );
 };

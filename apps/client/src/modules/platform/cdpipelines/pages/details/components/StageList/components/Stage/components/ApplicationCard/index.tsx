@@ -3,9 +3,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   Button as MuiButton,
-  Stack,
   Tooltip,
-  Typography,
   useTheme,
 } from "@mui/material";
 import React from "react";
@@ -154,14 +152,8 @@ export const ApplicationCard = ({
           },
         }}
       >
-        <Stack
-          direction="row"
-          spacing={2}
-          alignItems="center"
-          sx={{ minWidth: 0, width: "100%", pr: theme.typography.pxToRem(16) }}
-          justifyContent="space-between"
-        >
-          <Stack direction="row" spacing={2} alignItems="center" sx={{ minWidth: 0 }}>
+        <div className="flex flex-row gap-4 items-center justify-between min-w-0 w-full pr-4">
+          <div className="flex flex-row gap-4 items-center min-w-0">
             <StatusIcon
               Title={`Health status: ${argoAppHealthStatus || "Unknown"}`}
               Icon={applicationHealthStatusIcon.component}
@@ -185,7 +177,7 @@ export const ApplicationCard = ({
                 />
               </Link>
             </Button>
-          </Stack>
+          </div>
           <TextWithTooltip
             text={argoApplication?.spec.source?.targetRevision ?? "Unknown"}
             textSX={{
@@ -193,15 +185,15 @@ export const ApplicationCard = ({
               fontWeight: 300,
             }}
           />
-        </Stack>
+        </div>
       </AccordionSummary>
       <AccordionDetails>
-        <Stack spacing={1}>
-          <Stack direction="row" spacing={1} alignItems="center" flexShrink={0}>
-            <Typography variant="caption" color="primary.dark">
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-row gap-2 items-center shrink-0">
+            <span className="text-xs text-muted-foreground">
               Open In:
-            </Typography>
-            <Stack direction="row" spacing={1}>
+            </span>
+            <div className="flex flex-row gap-2">
               <QuickLink
                 name={{
                   label: quickLinkUiNames[systemQuickLink.argocd],
@@ -217,33 +209,33 @@ export const ApplicationCard = ({
                 }}
                 size="small"
               />
-            </Stack>
-          </Stack>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <Typography variant="caption" color="primary.dark">
+            </div>
+          </div>
+          <div className="flex flex-row items-center gap-4">
+            <span className="text-xs text-muted-foreground">
               Sync status:
-            </Typography>
+            </span>
             <StatusIcon
               Title={`Sync status: ${argoAppSyncStatus || "Unknown"}`}
               Icon={applicationSyncStatusIcon.component}
               color={applicationSyncStatusIcon.color}
               isSpinning={applicationSyncStatusIcon.isSpinning}
             />
-          </Stack>
-          <Stack direction="row" alignItems="center" spacing={2} justifyContent="space-between">
-            <Stack direction="row" alignItems="center" spacing={2}>
-              <Typography variant="caption" color="primary.dark">
+          </div>
+          <div className="flex flex-row items-center gap-4 justify-between">
+            <div className="flex flex-row items-center gap-4">
+              <span className="text-xs text-muted-foreground">
                 Created:
-              </Typography>
+              </span>
               <StyledChip
                 label={argoApplication ? formatDate(argoApplication?.metadata.creationTimestamp) : "Unknown"}
               />
-            </Stack>
+            </div>
             {argoAppExternalURLs && <TooltipWithLinkList urls={argoAppExternalURLs} size="small" />}
-          </Stack>
+          </div>
 
           {!isExternalCluster && (
-            <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing={1}>
+            <div className="flex flex-row justify-end items-center gap-2">
               <ConditionalWrapper
                 condition={podButtonDisabled.status}
                 wrapper={(children) => (
@@ -288,9 +280,9 @@ export const ApplicationCard = ({
                   terminal
                 </MuiButton>
               </ConditionalWrapper>
-            </Stack>
+            </div>
           )}
-        </Stack>
+        </div>
       </AccordionDetails>
     </Accordion>
   );

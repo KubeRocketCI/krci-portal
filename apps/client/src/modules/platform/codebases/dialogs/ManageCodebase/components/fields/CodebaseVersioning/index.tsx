@@ -2,7 +2,6 @@ import { FormSelect } from "@/core/providers/Form/components/FormSelect";
 import { FormTextField } from "@/core/providers/Form/components/FormTextField";
 import { FieldEvent } from "@/core/types/forms";
 import { mapObjectValuesToSelectOptions } from "@/core/utils/forms/mapToSelectOptions";
-import { Grid } from "@mui/material";
 import { codebaseVersioning } from "@my-project/shared";
 import React from "react";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
@@ -50,8 +49,8 @@ export const CodebaseVersioning = () => {
   );
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12}>
+    <div className="flex flex-col gap-4">
+      <div>
         <FormSelect
           {...register(CODEBASE_FORM_NAMES.versioningType.name, {
             required: "Select codebase versioning type",
@@ -63,50 +62,50 @@ export const CodebaseVersioning = () => {
           errors={errors}
           options={mapObjectValuesToSelectOptions(codebaseVersioning)}
         />
-      </Grid>
+      </div>
       {codebaseVersioningTypeFieldValue === codebaseVersioning.edp ||
       codebaseVersioningTypeFieldValue === codebaseVersioning.semver ? (
         <>
-          <Grid item xs={6}>
-            <FormTextField
-              {...register(CODEBASE_FORM_NAMES.versioningStartFromVersion.name, {
-                required: "Specify the initial version.",
-                onBlur: onStartVersionFromVersionChange,
-                pattern: {
-                  value: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/,
-                  message: "Enter valid semantic versioning format",
-                },
-              })}
-              label="Start version from"
-              tooltipText="Define the initial version number or identifier for your codebase to mark the starting point for version control."
-              placeholder={"0.0.0"}
-              control={control}
-              errors={errors}
-            />
-          </Grid>
-          <Grid
-            item
-            xs={6}
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              flexDirection: "column",
-            }}
-          >
-            <FormTextField
-              {...register(CODEBASE_FORM_NAMES.versioningStartFromSnapshot.name, {
-                required: "Add a suffix.",
-                onBlur: onStartVersionFromSnapshotStaticFieldChange,
-              })}
-              placeholder="SNAPSHOT"
-              label="Suffix"
-              tooltipText="Add a suffix to your version name to provide categorization. E.g. SNAPSHOT, unstable, test."
-              control={control}
-              errors={errors}
-            />
-          </Grid>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <FormTextField
+                {...register(CODEBASE_FORM_NAMES.versioningStartFromVersion.name, {
+                  required: "Specify the initial version.",
+                  onBlur: onStartVersionFromVersionChange,
+                  pattern: {
+                    value: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/,
+                    message: "Enter valid semantic versioning format",
+                  },
+                })}
+                label="Start version from"
+                tooltipText="Define the initial version number or identifier for your codebase to mark the starting point for version control."
+                placeholder={"0.0.0"}
+                control={control}
+                errors={errors}
+              />
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                flexDirection: "column",
+              }}
+            >
+              <FormTextField
+                {...register(CODEBASE_FORM_NAMES.versioningStartFromSnapshot.name, {
+                  required: "Add a suffix.",
+                  onBlur: onStartVersionFromSnapshotStaticFieldChange,
+                })}
+                placeholder="SNAPSHOT"
+                label="Suffix"
+                tooltipText="Add a suffix to your version name to provide categorization. E.g. SNAPSHOT, unstable, test."
+                control={control}
+                errors={errors}
+              />
+            </div>
+          </div>
         </>
       ) : null}
-    </Grid>
+    </div>
   );
 };

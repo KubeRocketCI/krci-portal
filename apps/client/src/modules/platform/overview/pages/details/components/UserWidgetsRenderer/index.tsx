@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+
 import { WIDGET_TYPE } from "../../dialogs/AddNewWidget/constants";
 import { WidgetConfig } from "../../dialogs/AddNewWidget/types";
 import { useUserWidgets } from "../../providers/UserWidgets/hooks";
@@ -27,15 +27,11 @@ export const UserWidgetRenderer = ({ widgetConfig }: { widgetConfig: WidgetConfi
   const { userWidgets, setUserWidgets } = useUserWidgets();
 
   return (
-    <Box
-      sx={{
-        p: 3,
-        borderLeft: (t) => `4px solid ${t.palette.primary.main}`,
-        height: "100%",
-        boxShadow: "0px 1px 10px 0px #0024461f",
-      }}
+    <div
+      className="p-6 h-full shadow-md"
+      style={{ borderLeft: "4px solid #1976d2" }}
     >
       {renderer(widgetConfig, userWidgets, setUserWidgets)}
-    </Box>
+    </div>
   );
 };

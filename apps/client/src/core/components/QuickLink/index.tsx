@@ -2,7 +2,7 @@ import React from "react";
 import { useDialogOpener } from "../../providers/Dialog/hooks";
 import { ResourceIconLink } from "../ResourceIconLink";
 import { QuickLinkExternalLinkProps } from "./types";
-import { Button, Grid } from "@mui/material";
+import { Button } from "@mui/material";
 import { Link } from "@tanstack/react-router";
 import { systemQuickLink } from "@my-project/shared";
 import { ManageQuickLinkDialog } from "@/modules/platform/configuration/modules/quicklinks/dialogs/ManageQuickLink";
@@ -24,18 +24,18 @@ export const QuickLink = ({
   const renderDisabledTooltip = React.useCallback(() => {
     return (
       <>
-        <Grid container spacing={1}>
-          <Grid item>Link to {name?.label} is not available.</Grid>
+        <div className="flex flex-col gap-1">
+          <div>Link to {name?.label} is not available.</div>
           {!!configurationRoute && (
-            <Grid item>
+            <div>
               Please, set up {name?.label}{" "}
               <Link to={configurationRoute?.to} params={configurationRoute?.params}>
                 here
               </Link>
-            </Grid>
+            </div>
           )}
           {!!quickLink && (
-            <Grid item>
+            <div>
               Please, set up {name?.label}{" "}
               <Button
                 variant="text"
@@ -48,9 +48,9 @@ export const QuickLink = ({
               >
                 here
               </Button>
-            </Grid>
+            </div>
           )}
-        </Grid>
+        </div>
       </>
     );
   }, [configurationRoute, name?.label, quickLink, openManageQuickLinkDialog]);

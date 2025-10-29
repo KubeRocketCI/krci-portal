@@ -5,7 +5,7 @@ import {
   VALUES_OVERRIDE_POSTFIX,
 } from "@/modules/platform/cdpipelines/pages/stage-details/constants";
 import { useWatchStageAppCodebasesCombinedData } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
-import { Stack, Tooltip } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import { Info } from "lucide-react";
 import React from "react";
 import { applicationTableMode } from "../../constants";
@@ -51,9 +51,9 @@ export const ValuesOverrideHeadColumn = ({ mode }: { mode: ApplicationsTableMode
   const buttonsHighlighted = checkHighlightedButtons(values);
 
   return (
-    <Stack spacing={2}>
+    <div className="flex flex-col gap-4">
       {mode === applicationTableMode.configuration && (
-        <Stack direction="row" alignItems="center" spacing={1}>
+        <div className="flex flex-row items-center gap-2">
           <div>
             <FormSwitch
               label={<></>}
@@ -65,15 +65,15 @@ export const ValuesOverrideHeadColumn = ({ mode }: { mode: ApplicationsTableMode
               defaultValue={buttonsHighlighted.valuesOverride}
             />
           </div>
-        </Stack>
+        </div>
       )}
 
-      <Stack direction="row" spacing={1} alignItems="center" flexWrap="nowrap">
+      <div className="flex flex-row gap-2 items-center flex-nowrap">
         <div>Values override</div>
         <Tooltip title={"Override default deployment settings with custom configurations."}>
           <Info size={16} />
         </Tooltip>
-      </Stack>
-    </Stack>
+      </div>
+    </div>
   );
 };

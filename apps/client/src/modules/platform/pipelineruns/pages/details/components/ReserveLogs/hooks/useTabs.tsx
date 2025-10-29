@@ -1,4 +1,3 @@
-import { Box } from "@mui/material";
 import React from "react";
 import { AllLogs } from "../components/AllLogs";
 import { LogsByTask } from "../components/LogsByTask";
@@ -9,25 +8,17 @@ export const useTabs = () => {
       {
         label: "All Logs",
         component: (
-          <Box
-            sx={{
-              pt: (t) => t.typography.pxToRem(24),
-            }}
-          >
+          <div className="pt-6">
             <AllLogs />
-          </Box>
+          </div>
         ),
       },
       {
         label: "Logs By Task",
         component: (
-          <Box
-            sx={{
-              pt: (t) => t.typography.pxToRem(24),
-            }}
-          >
+          <div className="pt-6">
             <LogsByTask />
-          </Box>
+          </div>
         ),
       },
     ];

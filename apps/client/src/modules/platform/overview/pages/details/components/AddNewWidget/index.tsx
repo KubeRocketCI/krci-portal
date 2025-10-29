@@ -1,5 +1,5 @@
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
-import { IconButton, Stack, Typography } from "@mui/material";
+import { IconButton } from "@mui/material";
 import { Plus } from "lucide-react";
 import { AddNewWidget } from "../../dialogs/AddNewWidget";
 import { WidgetConfig } from "../../dialogs/AddNewWidget/types";
@@ -26,12 +26,12 @@ export const AddNewWidgetCard = ({
         });
       }}
     >
-      <Stack direction="row" spacing={2} alignItems="center">
-        <Plus size={16} color={"inherit"} />
-        <Typography fontSize="15px" fontWeight={500}>
+      <div className="flex flex-row gap-4 items-center">
+        <Plus size={16}  />
+        <span className="text-base font-medium">
           ADD WIDGET
-        </Typography>
-      </Stack>
+        </span>
+      </div>
     </IconButton>
   );
 };

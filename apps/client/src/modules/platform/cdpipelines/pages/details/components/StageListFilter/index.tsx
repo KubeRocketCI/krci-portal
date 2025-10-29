@@ -7,7 +7,7 @@ import { VIEW_MODES } from "@/core/providers/ViewMode/types";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { useStagePermissions } from "@/k8s/api/groups/KRCI/Stage";
 import { ManageStageDialog } from "@/modules/platform/cdpipelines/dialogs/ManageStage";
-import { Grid, IconButton, Stack, Tooltip, useTheme } from "@mui/material";
+import { IconButton, Tooltip, useTheme } from "@mui/material";
 import { applicationHealthStatus } from "@my-project/shared";
 import { Plus, Rows2, Rows3 } from "lucide-react";
 import React from "react";
@@ -55,10 +55,10 @@ export const StageListFilter = () => {
   const { viewMode, handleChangeViewMode } = useViewModeContext();
 
   return (
-    <Grid container spacing={2} alignItems={"center"} justifyContent={"flex-end"}>
-      <Grid item flexGrow={1}>
-        <Grid container spacing={2} alignItems={"center"}>
-          <Grid item xs={3}>
+    <div className="flex gap-4 items-center justify-end">
+      <div className="flex-1">
+        <div className="grid grid-cols-12 gap-4 items-center">
+          <div className="col-span-3">
             <form.Field name={stagesFilterControlNames.APPLICATION}>
               {(field) => (
                 <FormAutocomplete
@@ -72,8 +72,8 @@ export const StageListFilter = () => {
                 />
               )}
             </form.Field>
-          </Grid>
-          <Grid item xs={3}>
+          </div>
+          <div className="col-span-3">
             <form.Field name={stagesFilterControlNames.STAGES}>
               {(field) => (
                 <FormAutocomplete
@@ -87,16 +87,16 @@ export const StageListFilter = () => {
                 />
               )}
             </form.Field>
-          </Grid>
-          <Grid item xs={2}>
+          </div>
+          <div className="col-span-2">
             <form.Field name={stagesFilterControlNames.HEALTH}>
               {(field) => <FormSelect field={field} label="Health" options={healthOptions} placeholder="Health" />}
             </form.Field>
-          </Grid>
-        </Grid>
-      </Grid>
-      <Grid item>
-        <Stack direction="row" spacing={0} justifyContent={"flex-end"}>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div className="flex flex-row gap-0 justify-end">
           <Tooltip title={"View Less Details"}>
             <IconButton onClick={() => handleChangeViewMode(VIEW_MODES.COMPACT)} size="large">
               <Rows2
@@ -113,9 +113,9 @@ export const StageListFilter = () => {
               />
             </IconButton>
           </Tooltip>
-        </Stack>
-      </Grid>
-      <Grid item>
+        </div>
+      </div>
+      <div>
         <ButtonWithPermission
           ButtonProps={{
             startIcon: <Plus />,
@@ -133,7 +133,7 @@ export const StageListFilter = () => {
         >
           create environment
         </ButtonWithPermission>
-      </Grid>
-    </Grid>
+      </div>
+    </div>
   );
 };

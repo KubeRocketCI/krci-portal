@@ -1,4 +1,3 @@
-import { Stack, Typography, useTheme } from "@mui/material";
 import React from "react";
 import { useCurrentDialog } from "../../../../providers/CurrentDialog/hooks";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
@@ -6,7 +5,6 @@ import { codebaseType } from "@my-project/shared";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 
 export const DialogHeader = () => {
-  const theme = useTheme();
   const {
     props: { codebase },
   } = useCurrentDialog();
@@ -27,14 +25,11 @@ export const DialogHeader = () => {
   }, [codebase]);
 
   return (
-    <Stack direction="row" alignItems={"flex-start"} justifyContent={"space-between"} spacing={1}>
-      <Stack spacing={2}>
-        <Typography
-          fontSize={theme.typography.pxToRem(20)}
-          fontWeight={500}
-        >{`Edit ${codebase?.metadata.name}`}</Typography>
+    <div className="flex flex-row items-start justify-between gap-2">
+      <div className="flex flex-col gap-4">
+        <h2 className="text-xl font-medium">{`Edit ${codebase?.metadata.name}`}</h2>
         <LearnMoreLink url={docLink} />
-      </Stack>
-    </Stack>
+      </div>
+    </div>
   );
 };

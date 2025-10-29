@@ -2,7 +2,7 @@ import { EmptyList } from "@/core/components/EmptyList";
 import { HorizontalScrollContainer } from "@/core/components/HorizontalScrollContainer";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { ManageStageDialog } from "@/modules/platform/cdpipelines/dialogs/ManageStage";
-import { Grid, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import { Table } from "lucide-react";
 import React from "react";
 import { useCDPipelineWatch, useStagesWithItsApplicationsWatch } from "../../hooks/data";
@@ -54,15 +54,15 @@ export const StageList = () => {
 
     return (
       <HorizontalScrollContainer>
-        <Grid container spacing={6} wrap="nowrap" sx={{ pb: theme.typography.pxToRem(50) }}>
+        <div className="flex gap-12 w-1/3" style={{ paddingBottom: theme.typography.pxToRem(50) }}>
           {filteredStages.map((stageWithApplications) => {
             return (
-              <Grid item xs={6} flexShrink="0" key={stageWithApplications.stage.spec.name}>
+              <div className="shrink-0 w-full" key={stageWithApplications.stage.spec.name}>
                 <Stage stageWithApplications={stageWithApplications} />
-              </Grid>
+              </div>
             );
           })}
-        </Grid>
+        </div>
       </HorizontalScrollContainer>
     );
   }, [

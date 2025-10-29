@@ -1,4 +1,4 @@
-import { FormControl, Stack, TextField, Tooltip } from "@mui/material";
+import { FormControl, TextField, Tooltip } from "@mui/material";
 import { Info } from "lucide-react";
 import React from "react";
 import { Controller, Path, PathValue } from "react-hook-form";
@@ -31,19 +31,19 @@ const FormTextFieldInner = React.forwardRef(
     const mergedInputProps = {
       ...originalInputProps,
       endAdornment: (
-        <Stack direction="row" alignItems="center" spacing={0.5}>
+        <div className="flex flex-row items-center gap-1">
           {userEndAdornment}
           {tooltipText && (
             <Tooltip title={tooltipText}>
               <Info size={16} />
             </Tooltip>
           )}
-        </Stack>
+        </div>
       ),
     };
 
     return (
-      <Stack spacing={1}>
+      <div className="flex flex-col gap-2">
         <FormControl fullWidth>
           <Controller
             name={name}
@@ -66,7 +66,7 @@ const FormTextFieldInner = React.forwardRef(
             {...props}
           />
         </FormControl>
-      </Stack>
+      </div>
     );
   }
 );

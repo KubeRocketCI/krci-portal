@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import { Create } from "./components/Create";
 import { Edit } from "./components/Edit";
 import { ManageClusterSecretProps } from "./types";
@@ -8,10 +7,10 @@ export const ManageClusterSecret = ({ formData }: ManageClusterSecretProps) => {
   const { mode } = formData;
 
   return (
-    <Grid container spacing={2} data-testid="form">
-      <Grid item xs={12}>
+    <div className="flex flex-col gap-4" data-testid="form">
+      <div>
         {mode === FORM_MODES.CREATE ? <Create formData={formData} /> : <Edit formData={formData} />}
-      </Grid>
-    </Grid>
+      </div>
+    </div>
   );
 };

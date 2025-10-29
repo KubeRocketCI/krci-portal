@@ -1,4 +1,4 @@
-import { Stack, ButtonGroup, Button, Typography, Tooltip } from "@mui/material";
+import { ButtonGroup, Button, Tooltip } from "@mui/material";
 import { Info } from "lucide-react";
 import { checkHighlightedButtons } from "../../utils/checkHighlightedButtons";
 import { useTypedFormContext } from "../../hooks/useTypedFormContext";
@@ -82,7 +82,7 @@ export const DeployedVersionConfigurationHeadColumn = () => {
   }, [resetField, setValue, stageAppCodebasesCombinedDataWatch.data, stageAppCodebasesCombinedDataWatch.isLoading]);
 
   return (
-    <Stack spacing={2}>
+    <div className="flex flex-col gap-4">
       <ButtonGroup>
         <Tooltip title={"Set selected applications latest image stream version"}>
           <Button
@@ -107,22 +107,22 @@ export const DeployedVersionConfigurationHeadColumn = () => {
           </Button>
         </Tooltip>
       </ButtonGroup>
-      <Stack direction="row" spacing={1} alignItems="center" flexWrap="nowrap">
+      <div className="flex flex-row gap-2 items-center flex-nowrap">
         <div>Deployed version</div>
         <Tooltip
           title={
             <>
-              <Typography variant="body2">Choose the application image version to deploy.</Typography>
-              <Typography component="div" variant="body2">
+              <p className="text-sm">Choose the application image version to deploy.</p>
+              <div className="text-sm">
                 This field is enabled after a successful build and promotion through previous Environments, if any.
-              </Typography>
+              </div>
             </>
           }
           sx={{ lineHeight: 1 }}
         >
           <Info size={16} />
         </Tooltip>
-      </Stack>
-    </Stack>
+      </div>
+    </div>
   );
 };

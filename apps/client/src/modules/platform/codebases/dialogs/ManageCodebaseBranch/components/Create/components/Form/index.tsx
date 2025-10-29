@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import { codebaseBranchStatus, codebaseVersioning, krciCommonLabels } from "@my-project/shared";
 import React from "react";
 import { useTypedFormContext } from "../../../../hooks/useFormContext";
@@ -40,46 +39,46 @@ export const Form = () => {
 
   return (
     <>
-      <Grid container spacing={2}>
+      <div className="flex flex-col gap-4">
         {canCreateReleaseBranch && (
-          <Grid item xs={12}>
+          <div>
             <ReleaseBranch
               isDefaultBranchProtected={isDefaultBranchProtected}
               defaultBranchVersion={defaultBranchVersion!}
             />
-          </Grid>
+          </div>
         )}
         {releaseFieldValue ? (
-          <Grid item xs={12}>
+          <div>
             <ReleaseBranchName defaultBranchVersion={defaultBranchVersion!} />
-          </Grid>
+          </div>
         ) : (
-          <Grid item xs={12}>
+          <div>
             <BranchName defaultBranchVersion={defaultBranchVersion!} />
-          </Grid>
+          </div>
         )}
-        <Grid item xs={12}>
+        <div>
           <FromCommit />
-        </Grid>
+        </div>
         {canCreateReleaseBranch && (
           <>
-            <Grid item xs={12}>
+            <div>
               <BranchVersion />
-            </Grid>
+            </div>
             {!!releaseFieldValue && (
-              <Grid item xs={12}>
+              <div>
                 <DefaultBranchVersion />
-              </Grid>
+              </div>
             )}
           </>
         )}
-        <Grid item xs={12}>
+        <div>
           <ReviewPipeline />
-        </Grid>
-        <Grid item xs={12}>
+        </div>
+        <div>
           <BuildPipeline />
-        </Grid>
-      </Grid>
+        </div>
+      </div>
     </>
   );
 };

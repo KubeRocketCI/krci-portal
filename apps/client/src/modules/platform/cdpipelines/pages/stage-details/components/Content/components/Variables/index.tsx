@@ -1,4 +1,4 @@
-import { Button, IconButton, Stack, Typography } from "@mui/material";
+import { Button, IconButton } from "@mui/material";
 import React from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import { useVariablesConfigMapWatch } from "../../../../hooks";
@@ -74,7 +74,7 @@ export const Variables = () => {
     if (fields.length || dataEntries?.length) {
       return (
         <form>
-          <Stack spacing={4}>
+          <div className="flex flex-col gap-4">
             {fields.length ? (
               <NameValueTable
                 rows={fields.map((_field, index) => ({
@@ -90,7 +90,7 @@ export const Variables = () => {
                     />
                   ),
                   value: (
-                    <Stack direction="row" alignItems="center" spacing={1}>
+                    <div className="flex items-center gap-1">
                       <FormTextField
                         {...register(`variables.${index}.value`, {
                           required: "Enter a value",
@@ -103,14 +103,14 @@ export const Variables = () => {
                       <IconButton onClick={() => handleDelete(index)} size="small" data-test="delete">
                         <Trash size={16} />
                       </IconButton>
-                    </Stack>
+                    </div>
                   ),
                 }))}
               />
             ) : (
               <EmptyList customText="Are you sure you want to save empty variable list?" />
             )}
-            <Stack alignItems="flex-end" sx={{ pr: (t) => t.typography.pxToRem(16) }}>
+            <div className="flex flex-col items-end pr-4">
               <Button
                 type={"button"}
                 size={"small"}
@@ -121,8 +121,8 @@ export const Variables = () => {
               >
                 <Plus size={16} />
               </Button>
-            </Stack>
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ justifyContent: "flex-end" }}>
+            </div>
+            <div className="flex items-center gap-2 justify-end">
               <Button
                 size="small"
                 component={"button"}
@@ -142,8 +142,8 @@ export const Variables = () => {
               >
                 save
               </Button>
-            </Stack>
-          </Stack>
+            </div>
+          </div>
         </form>
       );
     }
@@ -175,9 +175,9 @@ export const Variables = () => {
     <TabSection
       title={
         <>
-          <Typography fontSize={28} color="primary.dark" component="span">
+          <span className="text-3xl font-semibold text-foreground">
             Variables
-          </Typography>{" "}
+          </span>{" "}
           <LearnMoreLink url={EDP_USER_GUIDE.VARIABLES_INJECTION.url} />
         </>
       }

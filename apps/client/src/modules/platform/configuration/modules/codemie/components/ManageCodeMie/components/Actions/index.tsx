@@ -1,4 +1,4 @@
-import { Button, Stack, Tooltip } from "@mui/material";
+import { Button, Tooltip } from "@mui/material";
 import { useFormsContext } from "../../hooks/useFormsContext";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 
@@ -11,7 +11,7 @@ export const Actions = () => {
     : "";
 
   return (
-    <Stack direction="row" alignItems="center" spacing={2} sx={{ justifyContent: "flex-end" }}>
+    <div className="flex items-center justify-end gap-2">
       <Button
         onClick={resetAll}
         size="small"
@@ -40,6 +40,6 @@ export const Actions = () => {
           save
         </Button>
       </ConditionalWrapper>
-    </Stack>
+    </div>
   );
 };

@@ -14,7 +14,7 @@ import {
   useStageWatch,
   useWatchStageAppCodebasesCombinedData,
 } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
-import { Button, Stack, Tooltip } from "@mui/material";
+import { Button, Tooltip } from "@mui/material";
 import {
   createDeployPipelineRunDraft,
   getPipelineRunStatus,
@@ -170,7 +170,7 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
   const buttonsEnabledMap = useButtonsEnabledMap();
 
   return (
-    <Stack spacing={3} alignItems="center" direction="row" justifyContent="flex-end">
+    <div className="flex flex-row gap-6 items-center justify-end">
       <Tooltip title={"Reset selected image stream versions"}>
         <Button onClick={() => reset()} disabled={!isDirty} sx={{ color: (t) => t.palette.secondary.dark }}>
           undo changes
@@ -210,6 +210,6 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
           Start Deploy
         </ButtonWithPermission>
       </ConditionalWrapper>
-    </Stack>
+    </div>
   );
 };

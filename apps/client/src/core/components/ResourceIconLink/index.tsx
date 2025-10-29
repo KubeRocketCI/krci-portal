@@ -1,4 +1,4 @@
-import { Button, ButtonProps, Grid, IconButton, Link as MuiLink, Tooltip, useTheme } from "@mui/material";
+import { Button, ButtonProps, IconButton, Link as MuiLink, Tooltip, useTheme } from "@mui/material";
 import React from "react";
 import { ResourceIconLinkProps } from "./types";
 import { SquareArrowOutUpRight } from "lucide-react";
@@ -85,13 +85,13 @@ const EnabledResourceIconLink = ({
   ) : (
     <Tooltip
       title={
-        <Grid container alignItems={"center"} spacing={1}>
-          <Grid item>{tooltipTitle}</Grid>
+        <div className="flex items-center gap-1">
+          <div>{tooltipTitle}</div>
           <span> </span>
-          <Grid item>
+          <div>
             <SquareArrowOutUpRight size={iconSize} />
-          </Grid>
-        </Grid>
+          </div>
+        </div>
       }
     >
       <span>

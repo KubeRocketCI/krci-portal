@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import { Actions } from "./components/Actions";
 import { QuickLinkForm } from "./components/QuickLink";
 import { SecretForm } from "./components/Secret";
@@ -41,17 +40,17 @@ export const ManageDependencyTrack = ({
             secret: secretForm,
           }}
         >
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
+          <div className="flex flex-col gap-6">
+            <div>
               <QuickLinkForm />
-            </Grid>
-            <Grid item xs={12}>
+            </div>
+            <div>
               <SecretForm />
-            </Grid>
-            <Grid item xs={12}>
+            </div>
+            <div>
               <Actions />
-            </Grid>
-          </Grid>
+            </div>
+          </div>
         </MultiFormContextProvider>
       </DataContextProvider>
     </div>

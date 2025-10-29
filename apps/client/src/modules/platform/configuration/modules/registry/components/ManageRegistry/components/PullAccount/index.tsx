@@ -1,4 +1,4 @@
-import { Grid, Tooltip, Typography } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import { useRegistryFormsContext } from "../../hooks/useRegistryFormsContext";
 import { SHARED_FORM_NAMES } from "../../names";
 import { useDataContext } from "../../providers/Data/hooks";
@@ -31,53 +31,53 @@ export const PullAccountForm = () => {
 
   return (
     <>
-      <Grid item xs={12}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Grid container spacing={1} alignItems={"center"}>
-              <Grid item>
+      <div>
+        <div className="flex flex-col gap-4">
+          <div>
+            <div className="flex gap-2 items-center">
+              <div>
                 <StatusIcon
                   Icon={statusIcon.component}
                   color={statusIcon.color}
                   Title={
                     <>
-                      <Typography variant={"subtitle2"} style={{ fontWeight: 600 }}>
+                      <p className="text-sm font-semibold">
                         {`Connected: ${pullAccountConnected === undefined ? "Unknown" : pullAccountConnected}`}
-                      </Typography>
+                      </p>
                       {!!pullAccountError && (
-                        <Typography variant={"subtitle2"} sx={{ mt: (t) => t.typography.pxToRem(10) }}>
+                        <p className="text-sm font-medium mt-3">
                           {pullAccountError}
-                        </Typography>
+                        </p>
                       )}
                     </>
                   }
                   width={20}
                 />
-              </Grid>
-              <Grid item>
-                <Typography variant={"h6"}>Pull Account</Typography>
-              </Grid>
+              </div>
+              <div>
+                <h6 className="text-base font-medium">Pull Account</h6>
+              </div>
               {!!pullAccountOwnerReference && (
-                <Grid item>
+                <div>
                   <Tooltip title={`Managed by ${pullAccountOwnerReference}`}>
                     <ShieldX size={15} />
                   </Tooltip>
-                </Grid>
+                </div>
               )}
-            </Grid>
-          </Grid>
+            </div>
+          </div>
           {!useSameAccountFieldValue && (
             <>
-              <Grid item xs={6}>
+              <div className="col-span-6">
                 <PullAccountUser />
-              </Grid>
-              <Grid item xs={6}>
+              </div>
+              <div className="col-span-6">
                 <PullAccountPassword />
-              </Grid>
+              </div>
             </>
           )}
-        </Grid>
-      </Grid>
+        </div>
+      </div>
     </>
   );
 };

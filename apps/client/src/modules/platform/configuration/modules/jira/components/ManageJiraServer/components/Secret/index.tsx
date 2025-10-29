@@ -1,16 +1,15 @@
-import { Grid } from '@mui/material';
 import React from 'react';
 import { Password, User } from './fields';
 
 export const SecretForm = () => {
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={6}>
+    <div className="grid grid-cols-12 gap-4">
+      <div className="col-span-6">
         <User />
-      </Grid>
-      <Grid item xs={6}>
+      </div>
+      <div className="col-span-6">
         <Password />
-      </Grid>
-    </Grid>
+      </div>
+    </div>
   );
 };

@@ -1,7 +1,6 @@
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { Tabs } from "@/core/providers/Tabs/components/Tabs";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
-import { Stack, Typography } from "@mui/material";
 import { TriangleAlert } from "lucide-react";
 import { usePipelineRunLogsQueryWithPageParams } from "../../hooks/data";
 import { useTabs } from "./hooks/useTabs";
@@ -16,12 +15,12 @@ export const ReserveLogs = () => {
   const { handleChangeTab, activeTab } = useTabsContext();
 
   return (
-    <Stack spacing={1}>
+    <div className="flex flex-col gap-2">
       <LoadingWrapper isLoading={pipelineRunLogsQuery.isLoading}>
-        <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
+        <div className="flex flex-row gap-2 items-center justify-center">
           <TriangleAlert size={48} />
-          <Stack spacing={1} direction="row" alignItems="center">
-            <Typography component="span" fontSize={(t) => t.typography.pxToRem(14)} color="#596D80">
+          <div className="flex flex-row gap-2 items-center">
+            <span className="text-sm text-muted-foreground">
               {hasReserveLogs ? (
                 "No pipeline runs were found for the requested resource. Logs have been retrieved from OpenSearch."
               ) : (
@@ -33,11 +32,11 @@ export const ReserveLogs = () => {
                   {pipelineRunLogsQuery.error && pipelineRunLogsQuery.error?.message}
                 </>
               )}
-            </Typography>
-          </Stack>
-        </Stack>
+            </span>
+          </div>
+        </div>
         {hasReserveLogs && <Tabs tabs={tabs} activeTabIdx={activeTab} handleChangeTab={handleChangeTab} />}
       </LoadingWrapper>
-    </Stack>
+    </div>
   );
 };

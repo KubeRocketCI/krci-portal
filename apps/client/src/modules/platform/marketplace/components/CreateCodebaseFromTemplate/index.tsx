@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography, useTheme } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, useTheme } from "@mui/material";
 import React from "react";
 import { Form } from "./components/Form";
 import { FormActions } from "./components/FormActions";
@@ -35,26 +35,26 @@ export const CreateCodebaseFromTemplateDialog: React.FC<CreateCodebaseFromTempla
           }}
         >
           <DialogTitle>
-            <Typography fontSize={theme.typography.pxToRem(20)} fontWeight={500}>
+            <h2 className="text-xl font-medium">
               Create application from template
-            </Typography>
+            </h2>
           </DialogTitle>
 
           <DialogContent>
             {isPreviewPanel && <Preview />}
 
             {isFormPanel && (
-              <Stack spacing={2}>
+              <div className="flex flex-col gap-2">
                 <FormDefaultValues />
                 <div>
                   <Form />
                 </div>
-              </Stack>
+              </div>
             )}
           </DialogContent>
           <DialogActions>
             {isPreviewPanel && (
-              <Stack direction="row" justifyContent="space-between" width="100%">
+              <div className="flex justify-between w-full gap-2">
                 <Button onClick={closeDialog} size="small" component={"button"} color="inherit">
                   cancel
                 </Button>
@@ -67,7 +67,7 @@ export const CreateCodebaseFromTemplateDialog: React.FC<CreateCodebaseFromTempla
                 >
                   proceed
                 </Button>
-              </Stack>
+              </div>
             )}
             {isFormPanel && <FormActions />}
           </DialogActions>

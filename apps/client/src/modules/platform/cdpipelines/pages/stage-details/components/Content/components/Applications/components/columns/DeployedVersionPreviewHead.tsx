@@ -1,4 +1,4 @@
-import { Stack, Tooltip } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import { CopyButton } from "@/core/components/CopyButton";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import {
@@ -46,13 +46,13 @@ export const DeployedVersionHeadColumn = () => {
   ]);
 
   return (
-    <Stack spacing={1} alignItems="center" direction="row">
+    <div className="flex gap-2 items-center flex-row">
       Deployed Version
       <Tooltip title="Copy Environment Deployed Versions">
         <div>
           <CopyButton text={copyVersionsValue} size="small" />
         </div>
       </Tooltip>
-    </Stack>
+    </div>
   );
 };

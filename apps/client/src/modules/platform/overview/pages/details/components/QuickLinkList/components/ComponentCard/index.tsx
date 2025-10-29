@@ -1,4 +1,4 @@
-import { Card, IconButton, Link as MuiLink, Stack, useTheme } from "@mui/material";
+import { Card, IconButton, Link as MuiLink, useTheme } from "@mui/material";
 import React from "react";
 import { useStyles } from "./styles";
 import { ComponentCardProps } from "./types";
@@ -21,16 +21,16 @@ export const ComponentCard = ({ component }: ComponentCardProps) => {
 
   return (
     <Card className={classes.cardRoot}>
-      <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+      <div className="flex flex-row gap-4 items-center justify-between">
         <MuiLink href={_url} target="_blank" rel="noopener" style={{ minWidth: 0 }}>
-          <Stack direction="row" spacing={2} alignItems="center">
+          <div className="flex flex-row gap-4 items-center">
             <span className={classes.serviceItemIcon}>
               <img src={`data:image/svg+xml;base64,${icon}`} alt="" />
             </span>
             <div style={{ minWidth: 0 }}>
               <TextWithTooltip text={name} />
             </div>
-          </Stack>
+          </div>
         </MuiLink>
         <IconButton
           ref={buttonRef}
@@ -40,7 +40,7 @@ export const ComponentCard = ({ component }: ComponentCardProps) => {
         >
           <EllipsisVertical size={20} color={theme.palette.secondary.dark} />
         </IconButton>
-      </Stack>
+      </div>
     </Card>
   );
 };

@@ -1,14 +1,11 @@
 import {
   alpha,
-  Box,
   ButtonBase,
   Checkbox,
-  Stack,
   SvgIcon,
   TableCell,
   TableHead as MuiTableHead,
   TableRow as MuiTableRow,
-  Typography,
   useTheme,
 } from "@mui/material";
 import React from "react";
@@ -223,13 +220,7 @@ export const TableHead = <DataType,>({
               }}
               {...props}
             >
-              <Stack
-                direction="row"
-                spacing={0.2}
-                alignItems={"center"}
-                flexWrap="nowrap"
-                justifyContent={getFlexPropertyByTextAlign(props?.align)}
-              >
+              <div className="flex flex-row gap-0.5 items-center flex-nowrap" style={{ justifyContent: getFlexPropertyByTextAlign(props?.align) }}>
                 {(!!data?.columnSortableValuePath || !!data?.customSortFn) && (
                   <ButtonBase onClick={() => handleRequestSort(column)} disableRipple>
                     <SvgIcon
@@ -247,37 +238,23 @@ export const TableHead = <DataType,>({
                     </SvgIcon>
                   </ButtonBase>
                 )}
-                <Typography
-                  variant={"body1"}
-                  sx={{
-                    fontSize: (t) => t.typography.pxToRem(14),
-                    fontWeight: 600,
-                    marginTop: (t) => t.typography.pxToRem(2),
-                  }}
-                >
+                <span className="text-sm font-semibold mt-1">
                   {label}
-                </Typography>
-              </Stack>
+                </span>
+              </div>
               {!isLast && !column.cell.isFixed && !columns?.[idx + 1].cell.isFixed && (
-                <Box
-                  sx={{
-                    margin: 0,
-                    position: "absolute",
-                    top: 0,
-                    bottom: 0,
-                    right: 0,
-                    width: "1px",
-                    height: "100%",
-                    padding: "0 5px",
-                    translate: "50% 0",
-                    zIndex: 1,
-                    cursor: "col-resize",
-
-                    "&:hover": {
-                      backgroundColor: (t) => alpha(t.palette.divider, 0.05),
-                    },
+                <div
+                  className="absolute top-0 bottom-0 right-0 w-px h-full py-0 px-1 z-1 cursor-col-resize -translate-x-1/2"
+                  style={{
+                    backgroundColor: "transparent",
                   }}
                   onMouseDown={(e) => handleMouseDown(e, column.id)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = alpha(theme.palette.divider, 0.05) as string;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
                 />
               )}
             </TableCell>

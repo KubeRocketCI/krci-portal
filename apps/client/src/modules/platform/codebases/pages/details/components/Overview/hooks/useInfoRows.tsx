@@ -11,7 +11,7 @@ import {
 import { MAIN_COLOR } from "@/k8s/constants/colors";
 import { RESOURCE_ICON_NAMES } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
-import { Chip, Grid, Tooltip, Typography } from "@mui/material";
+import { Chip, Tooltip } from "@mui/material";
 import { DefaultTheme } from "@mui/styles/defaultTheme";
 import { codebaseType, codebaseVersioning } from "@my-project/shared";
 import React from "react";
@@ -83,8 +83,8 @@ export const useInfoRows = () => {
         {
           label: "Status",
           text: (
-            <Grid container spacing={1} alignItems={"center"}>
-              <Grid item>
+            <div className="flex gap-2 items-center">
+              <div>
                 <StatusIcon
                   Icon={codebaseStatusIcon.component}
                   color={codebaseStatusIcon.color}
@@ -92,27 +92,22 @@ export const useInfoRows = () => {
                   width={20}
                   Title={
                     <>
-                      <Typography variant={"subtitle2"} style={{ fontWeight: 600 }}>
+                      <p className="text-sm font-semibold">
                         {`Status: ${codebase?.status?.status || "unknown"}`}
-                      </Typography>
+                      </p>
                       {!!codebase?.status?.detailedMessage && (
-                        <Typography
-                          variant={"subtitle2"}
-                          sx={{
-                            mt: (t) => t.typography.pxToRem(10),
-                          }}
-                        >
+                        <p className="text-sm font-medium mt-3">
                           {codebase?.status?.detailedMessage}
-                        </Typography>
+                        shaky</p>
                       )}
                     </>
                   }
                 />
-              </Grid>
-              <Grid item>
-                <Typography variant={"body2"}>{codebase?.status?.status || "unknown"}</Typography>
-              </Grid>
-            </Grid>
+              </div>
+              <div>
+                <p className="text-sm">{codebase?.status?.status || "unknown"}</p>
+              </div>
+            </div>
           ),
         },
         {

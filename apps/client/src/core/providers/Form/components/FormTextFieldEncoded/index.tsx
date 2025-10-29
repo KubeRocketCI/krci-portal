@@ -4,10 +4,8 @@
 //   FormControl,
 //   IconButton,
 //   InputAdornment,
-//   Stack,
 //   TextField,
 //   Tooltip,
-//   Typography,
 //   useTheme,
 // } from '@mui/material';
 // import React from 'react';
@@ -41,7 +39,7 @@
 //       () => ({
 //         ...InputProps,
 //         endAdornment: (
-//           <Stack direction="row" spacing={1}>
+//           <div className="flex flex-row gap-2">
 //             {title && (
 //               <InputAdornment position="end">
 //                 <Tooltip title={title}>
@@ -54,7 +52,7 @@
 //                 <Icon icon={hidden ? ICONS.PENCIL : ICONS.CROSS} />
 //               </IconButton>
 //             </InputAdornment>
-//           </Stack>
+//           </div>
 //         ),
 //       }),
 //       [InputProps, hidden, theme.palette.action.active, title]
@@ -63,7 +61,7 @@
 //     const disabledInputRef = React.useRef(null);
 
 //     return (
-//       <Stack spacing={1}>
+//       <div className="flex flex-col gap-2">
 //         <FormControl fullWidth>
 //           {!hidden ? (
 //             <Controller
@@ -100,11 +98,11 @@
 //           )}
 //         </FormControl>
 //         {hasError && (
-//           <Typography component={'span'} variant={'subtitle2'} color={'error'}>
+//           <span className="text-sm font-medium text-destructive">
 //             <ErrorMessage errors={errors} name={name} />
-//           </Typography>
+//           </span>
 //         )}
-//       </Stack>
+//       </div>
 //     );
 //   }
 // );

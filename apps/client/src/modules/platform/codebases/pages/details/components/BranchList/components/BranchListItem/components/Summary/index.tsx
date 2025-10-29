@@ -7,7 +7,7 @@ import { getCodebaseBranchStatusIcon } from "@/k8s/api/groups/KRCI/CodebaseBranc
 import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { useCodebaseWatch, useGitServerWatch } from "@/modules/platform/codebases/pages/details/hooks/data";
-import { Box, Chip, Grid, Stack, Tooltip, Typography, useTheme } from "@mui/material";
+import { Chip, Tooltip, useTheme } from "@mui/material";
 import {
   checkForKRCIVersioning,
   checkIsDefaultBranch,
@@ -67,33 +67,28 @@ export const Summary = ({
 
   return (
     <>
-      <Stack
-        spacing={2}
-        alignItems="center"
-        direction="row"
-        width={"100%"}
-        justifyContent="space-between"
-        flexWrap="nowrap"
+      <div
+        className="flex items-center justify-between w-full flex-nowrap gap-2"
       >
-        <Stack spacing={2} alignItems="center" direction="row">
+        <div className="flex items-center gap-2">
           <StatusIcon
             Icon={codebaseBranchStatusIcon.component}
             color={codebaseBranchStatusIcon.color}
             isSpinning={codebaseBranchStatusIcon.isSpinning}
             Title={
               <>
-                <Typography variant={"subtitle2"} sx={{ fontWeight: 600 }}>
+                <p className="text-sm font-semibold">
                   {`Status: ${status || "Unknown"}`}
-                </Typography>
+                </p>
                 {status === codebaseBranchStatus.failed && (
-                  <Typography variant={"subtitle2"} sx={{ mt: (t) => t.typography.pxToRem(10) }}>
+                  <p className="text-sm font-medium mt-3">
                     {detailedMessage}
-                  </Typography>
+                  </p>
                 )}
               </>
             }
           />
-          <Stack direction="row" alignItems="center" spacing={0}>
+          <div className="flex items-center gap-0">
             <TextWithTooltip
               text={codebaseBranch.spec.branchName}
               textSX={{
@@ -102,15 +97,15 @@ export const Summary = ({
                 fontWeight: 500,
               }}
             />
-            <Box
+            <div
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
               }}
             >
               <CopyButton text={codebaseBranch.spec.branchName} size="small" />
-            </Box>
-          </Stack>
+            </div>
+          </div>
 
           {codebase && checkIsDefaultBranch(codebase, codebaseBranch) && (
             <Chip label="default" size="small" className={clsx([classes.labelChip, classes.labelChipBlue])} />
@@ -119,35 +114,35 @@ export const Summary = ({
             <Chip label="release" size="small" className={clsx([classes.labelChip, classes.labelChipGreen])} />
           )}
           {latestBuildPipelineRun && (
-            <Stack spacing={1} alignItems="center" direction="row">
-              <Typography fontSize={12}>Build status</Typography>
+            <div className="flex items-center gap-1">
+              <span className="text-xs">Build status</span>
               <StatusIcon
                 Icon={lastPipelineRunStatusIcon.component}
                 color={lastPipelineRunStatusIcon.color}
                 isSpinning={lastPipelineRunStatusIcon.isSpinning}
                 Title={
                   <>
-                    <Typography variant={"subtitle2"} style={{ fontWeight: 600 }}>
+                    <p className="text-sm font-semibold">
                       {`Last Build PipelineRun status: ${lastPipelineRunStatus}. Reason: ${lastPipelineRunReason}`}
-                    </Typography>
+                    </p>
                   </>
                 }
-              />
-            </Stack>
+            />
+            </div>
           )}
 
           {isKRCIVersioning ? (
             <>
-              <Stack spacing={1} alignItems="center" direction="row">
-                <Typography fontSize={12}>Build:</Typography>
+              <div className="flex items-center gap-1">
+                <span className="text-xs">Build:</span>
                 <Chip label={codebaseBranch?.status?.build || "N/A"} size="small" />
-              </Stack>
-              <Stack spacing={1} alignItems="center" direction="row">
-                <Typography fontSize={12}>Successful build:</Typography>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-xs">Successful build:</span>
                 <Chip label={codebaseBranch?.status?.lastSuccessfulBuild || "N/A"} size="small" />
-              </Stack>
-              <Stack spacing={1} alignItems="center" direction="row">
-                <Typography fontSize={12}>Version:</Typography>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-xs">Version:</span>
                 <Tooltip title={codebaseBranch?.spec?.version || "N/A"}>
                   <Chip
                     label={codebaseBranch?.spec?.version || "N/A"}
@@ -160,20 +155,20 @@ export const Summary = ({
                     size="small"
                   />
                 </Tooltip>
-              </Stack>
+              </div>
             </>
           ) : null}
-        </Stack>
+        </div>
 
-        <Box
-          sx={{ pr: theme.typography.pxToRem(16), flexShrink: 0 }}
+        <div
+          className="pr-4 shrink-0"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
           }}
         >
-          <Grid container spacing={3} alignItems={"center"}>
-            <Grid item>
+          <div className="flex gap-3 items-center">
+            <div>
               <QuickLink
                 enabledText="Open in GIT"
                 name={{ label: "GIT" }}
@@ -182,8 +177,8 @@ export const Summary = ({
                 variant="text"
                 isTextButton
               />
-            </Grid>
-            <Grid item>
+            </div>
+            <div>
               <BuildGroup
                 menuAnchorEl={menuAnchorEl}
                 handleClickMenu={handleClickMenu}
@@ -191,16 +186,16 @@ export const Summary = ({
                 codebaseBranch={codebaseBranch}
                 latestBuildPipelineRun={latestBuildPipelineRun}
               />
-            </Grid>
+            </div>
 
-            <Grid item>
+            <div>
               <LoadingWrapper isLoading={codebaseWatchQuery.query.isLoading}>
                 <Actions codebaseBranch={codebaseBranch} />
               </LoadingWrapper>
-            </Grid>
-          </Grid>
-        </Box>
-      </Stack>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 };

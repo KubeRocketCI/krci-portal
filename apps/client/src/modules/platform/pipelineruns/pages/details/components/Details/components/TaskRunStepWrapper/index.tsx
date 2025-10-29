@@ -1,6 +1,6 @@
 import { humanize } from "@/core/utils/date-humanize";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
-import { Divider, Paper, Stack, Typography } from "@mui/material";
+import { Divider, Paper } from "@mui/material";
 import { getTaskRunStepStatus } from "@my-project/shared";
 import { StyledDetailsBody, StyledDetailsHeader } from "../../styles";
 import { TaskRunStep } from "./components/TaskRunStep";
@@ -42,35 +42,35 @@ export const TaskRunStepWrapper = ({ pipelineRunTaskData, stepName }: TaskRunSte
   return (
     <Paper>
       <StyledDetailsHeader>
-        <Stack spacing={1}>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <Typography fontSize={(t) => t.typography.pxToRem(20)} fontWeight={500}>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <h3 className="text-xl font-medium">
               {step?.name}
-            </Typography>
-          </Stack>
-          <Stack direction="row" alignItems="center" spacing={3}>
-            <Typography fontSize={(t) => t.typography.pxToRem(14)} fontWeight={500} color="primary.dark">
+            </h3>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-foreground">
               Status:{" "}
-              <Typography fontSize={(t) => t.typography.pxToRem(14)} component="span" color="secondary.dark">
+              <span className="text-sm text-muted-foreground">
                 {capitalizeFirstLetter(taskRunStepStatus.reason || taskRunStepStatus.status || "unknown")}
-              </Typography>
-            </Typography>
-            <Typography fontSize={(t) => t.typography.pxToRem(14)} fontWeight={500} color="primary.dark">
+              </span>
+            </span>
+            <span className="text-sm font-medium text-foreground">
               Duration:{" "}
-              <Typography fontSize={(t) => t.typography.pxToRem(14)} component="span" color="secondary.dark">
+              <span className="text-sm text-muted-foreground">
                 {step && Object.hasOwn(step, "terminated") ? duration || "Not started" : "In progress"}
-              </Typography>
-            </Typography>
-          </Stack>
+              </span>
+            </span>
+          </div>
           {taskDescription && (
-            <Typography fontSize={(t) => t.typography.pxToRem(14)} fontWeight={500} color="primary.dark">
+            <span className="text-sm font-medium text-foreground">
               Description:{" "}
-              <Typography fontSize={(t) => t.typography.pxToRem(14)} component="span" color="secondary.dark">
+              <span className="text-sm text-muted-foreground">
                 {taskDescription}
-              </Typography>
-            </Typography>
+              </span>
+            </span>
           )}
-        </Stack>
+        </div>
       </StyledDetailsHeader>
       <Divider orientation="horizontal" />
       <StyledDetailsBody>

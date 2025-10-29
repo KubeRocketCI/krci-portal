@@ -1,11 +1,11 @@
-import { Button, IconButton, Stack, Tooltip, useTheme } from "@mui/material";
+import { Button, IconButton, Tooltip, useTheme } from "@mui/material";
 import { ActionsInlineListProps } from "./types";
 
 export const ActionsInlineList = ({ actions }: ActionsInlineListProps) => {
   const theme = useTheme();
 
   return (
-    <Stack direction="row" spacing={1} alignItems="center">
+    <div className="flex flex-row gap-2 items-center">
       {actions.map(({ name, action, disabled, Icon, label, isTextButton }, idx) => {
         const actionId = `${name}:${idx}`;
 
@@ -38,6 +38,6 @@ export const ActionsInlineList = ({ actions }: ActionsInlineListProps) => {
           </div>
         );
       })}
-    </Stack>
+    </div>
   );
 };

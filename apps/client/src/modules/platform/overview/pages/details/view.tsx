@@ -2,7 +2,6 @@ import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { Section } from "@/core/components/Section";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
-import { Grid, Typography, useTheme } from "@mui/material";
 import { AddNewWidgetCard } from "./components/AddNewWidget";
 import { CDPipelinesGraph } from "./components/CDPipelinesGraph";
 import { CodebaseBranchesGraph } from "./components/CodebaseBranchesGraph";
@@ -15,14 +14,12 @@ import { UserWidgetRenderer } from "./components/UserWidgetsRenderer";
 import { useUserWidgets } from "./providers/UserWidgets/hooks";
 
 export default function OverviewDetailsPageContent() {
-  const theme = useTheme();
-
   const { userWidgets, setUserWidgets } = useUserWidgets();
 
   return (
     <PageWrapper breadcrumbs={[{ label: "Overview" }]}>
-      <Grid container spacing={6}>
-        <Grid item xs={12}>
+      <div className="flex flex-col gap-12">
+        <div>
           <Section
             description={
               <>
@@ -31,49 +28,49 @@ export default function OverviewDetailsPageContent() {
               </>
             }
           >
-            <Grid container spacing={3}>
-              <Grid item xs={6} sm={4} xl={4}>
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
+              <div className="col-span-1">
                 <CodebasesGraph />
-              </Grid>
-              <Grid item xs={6} sm={4} xl={4}>
+              </div>
+              <div className="col-span-1">
                 <CodebaseBranchesGraph />
-              </Grid>
-              <Grid item xs={6} sm={4} xl={4}>
+              </div>
+              <div className="col-span-1">
                 <PipelineRunsGraph />
-              </Grid>
-              <Grid item xs={6} sm={4} xl={4}>
+              </div>
+              <div className="col-span-1">
                 <CDPipelinesGraph />
-              </Grid>
-              <Grid item xs={6} sm={4} xl={4}>
+              </div>
+              <div className="col-span-1">
                 <StagesGraph />
-              </Grid>
+              </div>
               {userWidgets.map((widget) => {
                 return (
-                  <Grid item xs={6} sm={4} xl={4} key={widget.type}>
+                  <div className="col-span-1" key={widget.type}>
                     <UserWidgetRenderer widgetConfig={widget} />
-                  </Grid>
+                  </div>
                 );
               })}
-              <Grid item xs={6} sm={4} xl={4}>
+              <div className="col-span-1">
                 <AddNewWidgetCard userWidgets={userWidgets} setUserWidgets={setUserWidgets} />
-              </Grid>
-            </Grid>
+              </div>
+            </div>
           </Section>
-        </Grid>
-        <Grid item xs={12}>
+        </div>
+        <div>
           <Section
             title={
-              <Typography color="primary.dark" fontSize={theme.typography.pxToRem(28)}>
+              <h2 className="text-3xl font-semibold text-foreground">
                 Links
-              </Typography>
+              </h2>
             }
             description={"A set of icons with links that redirect you to corresponding tools."}
           >
             <QuickLinkList />
             <QuickLinkActions />
           </Section>
-        </Grid>
-      </Grid>
+        </div>
+      </div>
     </PageWrapper>
   );
 }

@@ -7,7 +7,7 @@ import React from "react";
 import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { CDPipeline } from "@my-project/shared";
 import { TableColumn } from "@/core/components/Table/types";
-import { Box, Chip, Stack, Typography } from "@mui/material";
+import { Chip } from "@mui/material";
 import { CUSTOM_RESOURCE_STATUS } from "@/k8s/constants/statuses";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { Link } from "@tanstack/react-router";
@@ -47,13 +47,13 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
 
               const title = (
                 <>
-                  <Typography variant={"subtitle2"} style={{ fontWeight: 600 }}>
+                  <p className="text-sm font-semibold">
                     {`Status: ${status || "Unknown"}`}
-                  </Typography>
+                  </p>
                   {status === CUSTOM_RESOURCE_STATUS.FAILED && (
-                    <Typography variant={"subtitle2"} sx={{ mt: (t) => t.typography.pxToRem(10) }}>
+                    <p className="text-sm font-medium mt-3">
                       {detailedMessage}
-                    </Typography>
+                    </p>
                   )}
                 </>
               );
@@ -156,13 +156,15 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                   }}
                   renderTooltip={(chipsToHide) => {
                     return (
-                      <Box
-                        sx={{
-                          py: (t) => t.typography.pxToRem(6),
-                          px: (t) => t.typography.pxToRem(10),
+                      <div
+                        style={{
+                          paddingTop: "6px",  // pxToRem(6) = 6px
+                          paddingBottom: "6px",
+                          paddingLeft: "10px", // pxToRem(10) = 10px
+                          paddingRight: "10px",
                         }}
                       >
-                        <Stack spacing={1.5} flexWrap="wrap" sx={{ fontWeight: 400 }}>
+                        <div className="flex flex-wrap gap-6" style={{ fontWeight: 400 }}>
                           {chipsToHide.map((label) => (
                             <Chip
                               key={label}
@@ -186,8 +188,8 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                               }
                             />
                           ))}
-                        </Stack>
-                      </Box>
+                        </div>
+                      </div>
                     );
                   }}
                 />

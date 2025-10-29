@@ -2,7 +2,7 @@ import { Table } from "@/core/components/Table";
 import { useApplicationWatchList } from "@/k8s/api/groups/ArgoCD/Application";
 import { useClusterStore } from "@/k8s/store";
 import { routeComponentDetails } from "@/modules/platform/codebases/pages/details/route";
-import { Box, IconButton, Stack, Tooltip, Typography } from "@mui/material";
+import { IconButton, Tooltip } from "@mui/material";
 import { applicationLabels } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import { Trash2 } from "lucide-react";
@@ -42,7 +42,7 @@ export const AppVersion = ({
   const [showActions, setShowActions] = React.useState(false);
 
   return (
-    <Box
+    <div
       onMouseOver={() => {
         setShowActions(true);
       }}
@@ -50,9 +50,9 @@ export const AppVersion = ({
         setShowActions(false);
       }}
     >
-      <Stack spacing={2}>
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Typography variant="h6" color="primary.dark">
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <h6 className="text-base font-medium text-foreground">
             Deployed versions for:{" "}
             <Link
               to={routeComponentDetails.fullPath}
@@ -60,22 +60,19 @@ export const AppVersion = ({
             >
               {widgetConfig.data.appName}
             </Link>
-          </Typography>
-          <Box
-            sx={{
-              visibility: showActions ? "visible" : "hidden",
-              opacity: showActions ? 1 : 0,
-              transition: "visibility 0.3s, opacity 0.3s",
-            }}
+          </h6>
+          <div
+            className={showActions ? "visible opacity-100" : "invisible opacity-0"}
+            style={{ transition: "visibility 0.3s, opacity 0.3s" }}
           >
             <Tooltip title="Remove this widget from your dashboard.">
               <IconButton size="small" onClick={handleDeleteWidget}>
                 <Trash2 size={16} />
               </IconButton>
             </Tooltip>
-          </Box>
-        </Stack>
-        <Box sx={{ maxHeight: (t) => t.typography.pxToRem(140), overflowY: "auto" }}>
+          </div>
+        </div>
+        <div className="max-h-35 overflow-y-auto">
           <Table
             minimal
             outlined={false}
@@ -91,8 +88,8 @@ export const AppVersion = ({
               rowsPerPage: 100,
             }}
           />
-        </Box>
-      </Stack>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 };

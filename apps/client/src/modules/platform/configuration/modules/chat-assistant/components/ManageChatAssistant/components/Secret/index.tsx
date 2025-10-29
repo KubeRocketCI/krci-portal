@@ -1,18 +1,19 @@
-import { Grid } from '@mui/material';
 import { ApiUrl, AssistantId, Token } from './fields';
 
 export const SecretForm = () => {
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={6}>
-        <ApiUrl />
-      </Grid>
-      <Grid item xs={6}>
-        <AssistantId />
-      </Grid>
-      <Grid item xs={12}>
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-6">
+          <ApiUrl />
+        </div>
+        <div className="col-span-6">
+          <AssistantId />
+        </div>
+      </div>
+      <div>
         <Token />
-      </Grid>
-    </Grid>
+      </div>
+    </div>
   );
 };

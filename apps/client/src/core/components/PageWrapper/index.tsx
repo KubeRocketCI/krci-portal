@@ -1,4 +1,4 @@
-import { Box, Breadcrumbs, Grid, Typography, useTheme } from "@mui/material";
+import { Breadcrumbs } from "@mui/material";
 import React from "react";
 import { PageWrapperProps } from "./types";
 import { Link } from "@tanstack/react-router";
@@ -10,24 +10,16 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({
   headerSlot,
   breadcrumbsExtraContent,
 }) => {
-  const theme = useTheme();
   const hasBreadcrumbs = !!breadcrumbs && !!breadcrumbs.length;
 
   return (
-    <Box
-      sx={{
-        pb: theme.typography.pxToRem(120),
-        flexGrow: 1,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div className="flex flex-col grow pb-30">
       {hasBreadcrumbs ? (
         <div className="my-2 flex h-12 border-b px-4">
-          <Grid container spacing={1} alignItems={"center"} justifyContent={"space-between"}>
-            <Grid item>
-              <Grid container spacing={2} alignItems={"center"}>
-                <Grid item>
+          <div className="flex gap-2 items-center justify-between w-full">
+            <div>
+              <div className="flex gap-4 items-center">
+                <div>
                   <Breadcrumbs>
                     {breadcrumbs?.map(({ label, route }) => {
                       const key = `breadcrumb-${label}`;
@@ -39,28 +31,24 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({
                           </Link>
                         </Button>
                       ) : (
-                        <Typography
+                        <span
                           key={key}
-                          color="textPrimary"
-                          sx={{
-                            marginBottom: theme.typography.pxToRem(1),
-                            fontSize: theme.typography.pxToRem(14),
-                          }}
+                          className="mb-1 text-sm text-foreground"
                         >
                           {label}
-                        </Typography>
+                        </span>
                       );
                     })}
                   </Breadcrumbs>
-                </Grid>
-                <Grid item>{breadcrumbsExtraContent}</Grid>
-              </Grid>
-            </Grid>
-            <Grid item>{headerSlot}</Grid>
-          </Grid>
+                </div>
+                <div>{breadcrumbsExtraContent}</div>
+              </div>
+            </div>
+            <div>{headerSlot}</div>
+          </div>
         </div>
       ) : null}
-      <div className="flex-grow px-6 py-4">{children}</div>
-    </Box>
+      <div className="grow px-6 py-4">{children}</div>
+    </div>
   );
 };

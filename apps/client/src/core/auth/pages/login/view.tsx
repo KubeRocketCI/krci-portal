@@ -1,7 +1,7 @@
 import { useSearch } from "@tanstack/react-router";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useCallback } from "react";
-import { Box, Button, Divider, Stack } from "@mui/material";
+import { Button, Divider } from "@mui/material";
 import withStyles from "@mui/styles/withStyles";
 import { routeAuthLogin } from "./route";
 import { Alert, AlertDescription, AlertTitle } from "@/core/components/ui/alert";
@@ -44,7 +44,7 @@ export default function LoginPage() {
           </div>
 
           <div className="w-full max-w-72">
-            <Stack spacing={2}>
+            <div className="flex flex-col gap-4">
               {loginMutation?.isPending ? (
                 <Button variant="contained" fullWidth disabled>
                   <Loader2 className="animate-spin" />
@@ -55,7 +55,7 @@ export default function LoginPage() {
                   Sign In
                 </Button>
               )}
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ px: "16px" }}>
+              <div className="flex flex-row gap-2 items-center px-4">
                 <Divider
                   orientation="horizontal"
                   sx={{
@@ -64,7 +64,7 @@ export default function LoginPage() {
                     borderColor: (t) => t.palette.secondary.dark,
                   }}
                 />
-                <Box>or</Box>
+                <span>or</span>
                 <Divider
                   orientation="horizontal"
                   sx={{
@@ -73,11 +73,11 @@ export default function LoginPage() {
                     borderColor: (t) => t.palette.secondary.dark,
                   }}
                 />
-              </Stack>
+              </div>
               <ColorButton variant="contained" fullWidth>
                 use token
               </ColorButton>
-            </Stack>
+            </div>
           </div>
 
           {loginMutation?.isError || loginCallbackMutation?.isError ? (

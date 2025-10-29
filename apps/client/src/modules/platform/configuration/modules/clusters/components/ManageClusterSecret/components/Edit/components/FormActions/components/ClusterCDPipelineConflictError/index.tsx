@@ -1,4 +1,3 @@
-import { Typography } from "@mui/material";
 import { useStyles } from "./styles";
 import { ClusterCDPipelineConflictErrorProps } from "./types";
 import { Link } from "@tanstack/react-router";
@@ -15,7 +14,7 @@ export const ClusterCDPipelineConflictError = ({
 
   return (
     <div className={classes.message}>
-      <Typography component={"span"}>{clusterName} is used in</Typography>
+      <span>{clusterName} is used in</span>
       <div className={classes.conflictEntityName}>
         <Link
           to={routeCDPipelineDetails.fullPath}
@@ -28,7 +27,7 @@ export const ClusterCDPipelineConflictError = ({
           {conflictedStage.spec.cdPipeline}
         </Link>
       </div>
-      <Typography component={"span"}> CD Pipeline</Typography>
+      <span> CD Pipeline</span>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import React from "react";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_BRANCH_FORM_NAMES } from "../../../names";
@@ -167,8 +166,8 @@ export const FromCommit = () => {
   };
 
   return (
-    <Grid container spacing={2} alignItems="flex-start">
-      <Grid item xs={6}>
+    <div className="grid grid-cols-2 gap-4 items-start">
+      <div>
         <FormSelect
           {...register(CODEBASE_BRANCH_FORM_NAMES.fromType.name, {
             onChange: ({ target: { value } }: FieldEvent) => {
@@ -190,10 +189,10 @@ export const FromCommit = () => {
           options={FROM_TYPE_OPTIONS}
           defaultValue="branch"
         />
-      </Grid>
-      <Grid item xs={6}>
+      </div>
+      <div>
         {renderInputField()}
-      </Grid>
-    </Grid>
+      </div>
+    </div>
   );
 };

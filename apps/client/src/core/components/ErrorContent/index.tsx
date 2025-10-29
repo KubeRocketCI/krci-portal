@@ -1,14 +1,11 @@
 import { RequestError } from "@/core/types/global";
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Link,
-  Stack,
-  Typography,
   useTheme,
 } from "@mui/material";
 import { SearchX, TriangleAlert } from "lucide-react";
@@ -41,41 +38,31 @@ export const ErrorContent = ({
     switch (error?.data?.httpStatus) {
       case 403:
         return (
-          <Stack
-            direction={orientation === "horizontal" ? "row" : "column"}
-            spacing={1}
-            alignItems="center"
-            justifyContent="center"
-          >
+          <div className={`flex flex-${orientation === "horizontal" ? "row" : "col"} gap-2 items-center justify-center`}>
             <TriangleAlert color="#A2A7B7" size={48} />
-            <Stack spacing={1} direction="row" alignItems="center">
-              <Typography component="span" fontSize={theme.typography.pxToRem(14)} color="#596D80">
+            <div className="flex gap-2 flex-row items-center">
+              <span className="text-sm text-muted-foreground">
                 Sorry. You don't have permissions to access this data.
-              </Typography>
-              <Link component={"button"} onClick={handleOpen} sx={{ fontSize: theme.typography.pxToRem(14) }}>
+              </span>
+              <Link component={"button"} onClick={handleOpen} className="text-sm">
                 More details
               </Link>
-            </Stack>
-          </Stack>
+            </div>
+          </div>
         );
       case 404:
         return (
-          <Stack
-            direction={orientation === "horizontal" ? "row" : "column"}
-            spacing={1}
-            alignItems="center"
-            justifyContent="center"
-          >
+          <div className={`flex flex-${orientation === "horizontal" ? "row" : "col"} gap-2 items-center justify-center`}>
             <SearchX color="#A2A7B7" size={48} />
-            <Stack spacing={1} direction="row" alignItems="center">
-              <Typography component="span" fontSize={theme.typography.pxToRem(14)} color="#596D80">
+            <div className="flex gap-2 flex-row items-center">
+              <span className="text-sm text-muted-foreground">
                 Sorry. The requested resource was not found.
-              </Typography>
-              <Link component={"button"} onClick={handleOpen} sx={{ fontSize: theme.typography.pxToRem(14) }}>
+              </span>
+              <Link component={"button"} onClick={handleOpen} className="text-sm">
                 More details
               </Link>
-            </Stack>
-          </Stack>
+            </div>
+          </div>
         );
       default:
         return "Oops! Something went wrong. Please try again later.";
@@ -83,39 +70,38 @@ export const ErrorContent = ({
   }, [error?.data?.httpStatus, orientation, theme.typography]);
 
   return (
-    <Box
-      width="100%"
-      sx={
+    <div
+      className={outlined ? "w-full p-3" : "w-full"}
+      style={
         outlined
           ? {
-              p: theme.typography.pxToRem(10),
               borderTop: `1px solid ${theme.palette.action.selected}`,
               borderBottom: `1px solid ${theme.palette.action.selected}`,
             }
-          : null
+          : undefined
       }
     >
-      <Box>{renderError()}</Box>
+      <div>{renderError()}</div>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>More Details</DialogTitle>
         <DialogContent>
-          <Stack spacing={1}>
-            <Typography>{error?.message}</Typography>
+          <div className="flex flex-col gap-2">
+            <p>{error?.message}</p>
             {extraInfoLink && (
-              <Stack spacing={1} direction="row" alignItems="center">
-                <Typography>Additional information can be found</Typography>
+              <div className="flex gap-2 flex-row items-center">
+                <span>Additional information can be found</span>
                 <Link href={extraInfoLink} target="_blank">
                   here
                 </Link>
                 .
-              </Stack>
+              </div>
             )}
-          </Stack>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>close</Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </div>
   );
 };

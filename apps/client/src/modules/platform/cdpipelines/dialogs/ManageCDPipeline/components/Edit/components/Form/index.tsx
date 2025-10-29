@@ -1,11 +1,10 @@
-import { Stack } from "@mui/material";
 import { Applications, Description } from "../../../fields";
 
 export const Form = () => {
   return (
-    <Stack spacing={5}>
+    <div className="flex flex-col gap-10">
       <Description />
       <Applications />
-    </Stack>
+    </div>
   );
 };

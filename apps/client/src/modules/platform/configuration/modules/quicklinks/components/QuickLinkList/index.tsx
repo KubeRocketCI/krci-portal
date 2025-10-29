@@ -9,7 +9,6 @@ import { useQuickLinkFilter } from "../QuickLinkFilter/hooks/useFilter";
 import React from "react";
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { Plus } from "lucide-react";
-import { Stack } from "@mui/material";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { ManageQuickLinkDialog } from "../../dialogs/ManageQuickLink";
 
@@ -39,8 +38,8 @@ export const QuickLinkList = () => {
   );
 
   return (
-    <Stack spacing={2}>
-      <Stack direction="row" justifyContent="flex-end" alignItems="center">
+    <div className="flex flex-col gap-2">
+      <div className="flex justify-end items-center">
         <ButtonWithPermission
           ButtonProps={{
             startIcon: <Plus size={16} />,
@@ -55,7 +54,7 @@ export const QuickLinkList = () => {
         >
           add link
         </ButtonWithPermission>
-      </Stack>
+      </div>
       <Table
         id={TABLE.QUICKLINK_LIST.id}
         name={TABLE.QUICKLINK_LIST.name}
@@ -66,6 +65,6 @@ export const QuickLinkList = () => {
         filterFunction={filterFunction}
         slots={tableSlots}
       />
-    </Stack>
+    </div>
   );
 };

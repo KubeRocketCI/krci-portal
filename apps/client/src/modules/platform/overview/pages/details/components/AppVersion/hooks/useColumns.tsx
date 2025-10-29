@@ -1,7 +1,7 @@
 import { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
-import { Box, Tooltip } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import { Application, applicationLabels } from "@my-project/shared";
 import { Link, useParams } from "@tanstack/react-router";
 import React from "react";
@@ -90,11 +90,11 @@ export const useColumns = (): TableColumn<Application>[] => {
           render: ({ data }) => {
             if (data?.spec.source?.targetRevision === "build/NaN") {
               return (
-                <Box flexGrow={1}>
+                <div className="grow">
                   <Tooltip title="No deployment." followCursor>
                     <div>—</div>
                   </Tooltip>
-                </Box>
+                </div>
               );
             }
 
