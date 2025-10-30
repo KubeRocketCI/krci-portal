@@ -5,7 +5,7 @@ import { StatusIcon } from "@/core/components/StatusIcon";
 import { useSecretPermissions, useSecretWatchList } from "@/k8s/api/groups/Core/Secret";
 import { useApplicationPermissions } from "@/k8s/api/groups/ArgoCD/Application";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionSummary, AccordionDetails, Grid, Tooltip } from "@mui/material";
+import { Accordion, AccordionSummary, AccordionDetails, Tooltip } from "@mui/material";
 import {
   SECRET_LABEL_SECRET_TYPE,
   SECRET_ANNOTATION_CLUSTER_CONNECTED,
@@ -13,7 +13,7 @@ import {
 } from "@my-project/shared";
 import React from "react";
 import { ManageClusterSecret } from "./components/ManageClusterSecret";
-import { getIntegrationSecretStatusIcon } from "@/k8s/integrations/secret/utils/getStatusIcon";
+import { getClusterSecretStatusIcon,  } from "@/k8s/integrations/secret/utils/getStatusIcon";
 import { ShieldX } from "lucide-react";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
 import { pageDescription } from "./constants";
@@ -71,7 +71,7 @@ export default function ClustersConfigurationPage() {
             const error = clusterSecret?.metadata?.annotations?.[SECRET_ANNOTATION_CLUSTER_ERROR];
 
             // Use the integration secret status icon for cluster secrets
-            const statusIcon = getIntegrationSecretStatusIcon(clusterSecret);
+            const statusIcon = getClusterSecretStatusIcon(clusterSecret);
 
             const clusterName = clusterSecret.metadata.name;
             const isExpanded = expandedPanel === clusterName;

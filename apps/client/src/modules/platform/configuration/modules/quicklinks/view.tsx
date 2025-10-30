@@ -6,7 +6,7 @@ import { QuickLinkList } from "./components/QuickLinkList";
 
 export default function QuickLinkListPageContent() {
   return (
-    <PageWrapper breadcrumbs={[{ label: "Overview" }]}>
+    <PageWrapper breadcrumbs={[{ label: "QuickLinks" }]}>
       <Section
         description={
           <>

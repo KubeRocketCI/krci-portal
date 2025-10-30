@@ -32,13 +32,13 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
     queryFn: () => trpc.config.get.query(),
     retry: 1,
     staleTime: Infinity, // Config doesn't change during session
+    gcTime: Infinity, // Never garbage collect the data
   });
 
   // Initialize cluster store with server config when available
   useMemo(() => {
     if (configQuery.data) {
       const { clusterName, defaultNamespace } = configQuery.data;
-      queryClient.setQueryData(["clusterName"], clusterName);
 
       // Only initialize if not already set
       if (!clusterStore.clusterName) {
@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
         }
       }
     }
-  }, [configQuery.data, queryClient, clusterStore]);
+  }, [configQuery.data, clusterStore]);
 
   const meQuery = useQuery({
     queryKey: ["auth.me"],
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
     refetchOnWindowFocus: true, // Ensure that user's session is still valid on page focus
     refetchOnReconnect: true, // Refetch if the app regains connection,
     refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
-    staleTime: 5 * 60 * 1000, // Cache the data for 5 minutes
+    staleTime: Infinity, // Never consider the data stale - auth state should persist
     gcTime: Infinity, // Never garbage collect the data
   });
 

@@ -15,7 +15,10 @@ import { Chip, Tooltip } from "@mui/material";
 import { DefaultTheme } from "@mui/styles/defaultTheme";
 import { codebaseType, codebaseVersioning } from "@my-project/shared";
 import React from "react";
-import { useCodebaseWatch } from "../../../hooks/data";
+import { useCodebaseWatch, usePipelineNamesWatch } from "../../../hooks/data";
+import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
+import { Pipeline } from "@/modules/platform/pipelines/components/Pipeline";
+import { routeComponentDetails } from "../../../route";
 
 const getColorByType = (type: string) => {
   switch (type) {
@@ -45,9 +48,12 @@ const getChipSX = (type: string) => {
 };
 
 export const useInfoRows = () => {
+  const params = routeComponentDetails.useParams();
   const codebaseWatch = useCodebaseWatch();
-
   const codebase = codebaseWatch.query.data;
+
+  const pipelineNamesWatch = usePipelineNamesWatch();
+  const pipelineNames = pipelineNamesWatch.data;
 
   return React.useMemo((): InfoRow[] => {
     if (!codebase) {
@@ -174,24 +180,30 @@ export const useInfoRows = () => {
           text: gitServer,
         },
       ],
-      // [
-      //   {
-      //     label: "Review Pipeline",
-      //     text: (
-      //       <LoadingWrapper isLoading={pipelinesIsLoading}>
-      //         <Pipeline pipelineName={pipelines?.review} namespace={namespace} />
-      //       </LoadingWrapper>
-      //     ),
-      //   },
-      //   {
-      //     label: "Build Pipeline",
-      //     text: (
-      //       <LoadingWrapper isLoading={pipelinesIsLoading}>
-      //         <Pipeline pipelineName={pipelines?.build} namespace={namespace} />
-      //       </LoadingWrapper>
-      //     ),
-      //   },
-      // ],
+      [
+        {
+          label: "Review Pipeline",
+          text: (
+            <LoadingWrapper isLoading={pipelineNamesWatch.isLoading}>
+              { pipelineNames?.reviewPipelineName ? 
+                  <Pipeline pipelineName={pipelineNames.reviewPipelineName} namespace={params.namespace} /> : 
+                null
+              }
+            </LoadingWrapper>
+          ),
+        },
+        {
+          label: "Build Pipeline",
+          text: (
+            <LoadingWrapper isLoading={pipelineNamesWatch.isLoading}>
+              { pipelineNames?.buildPipelineName ? 
+                  <Pipeline pipelineName={pipelineNames.buildPipelineName} namespace={params.namespace} /> : 
+                null
+              }
+            </LoadingWrapper>
+          ),
+        },
+      ],
     ];
-  }, [codebase]);
+  }, [codebase, params.namespace, pipelineNames?.buildPipelineName, pipelineNames?.reviewPipelineName, pipelineNamesWatch.isLoading]);
 };

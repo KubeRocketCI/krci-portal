@@ -2,6 +2,8 @@ import { produce, Draft } from "immer";
 import { z } from "zod";
 import { Secret } from "../groups/Core";
 import {
+  SECRET_ANNOTATION_CLUSTER_CONNECTED,
+  SECRET_ANNOTATION_CLUSTER_ERROR,
   SECRET_ANNOTATION_INTEGRATION_SECRET_CONNECTED,
   SECRET_ANNOTATION_INTEGRATION_SECRET_ERROR,
 } from "./constants";
@@ -25,6 +27,19 @@ export const getIntegrationSecretStatus = (
     connected,
     statusError,
   };
+};
+
+export const getClusterSecretStatus = (clusterSecret: Secret): {
+  connected: string | undefined;
+  statusError: string | undefined;
+} => {
+  const connected = clusterSecret?.metadata?.annotations?.[SECRET_ANNOTATION_CLUSTER_CONNECTED];
+  const statusError = clusterSecret?.metadata?.annotations?.[SECRET_ANNOTATION_CLUSTER_ERROR];
+
+  return {
+    connected,
+    statusError
+  }
 };
 
 /**

@@ -8,6 +8,7 @@ import {
   MessageSquareMore,
   MessageSquareShare,
   Sparkles,
+  Users,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/core/components/ui/avatar";
@@ -96,18 +97,18 @@ export function NavUser() {
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-medium">{user.name}</span>
                     <span className="truncate text-xs">{user.email}</span>
+                    {user.groups && user.groups.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        <Users className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">
+                          {user.groups.join(", ")}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-                <ExternalLink className="ml-auto size-4" />
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               {HELP_MENU_LIST.map(({ id, url, icon: Icon, label }) => {

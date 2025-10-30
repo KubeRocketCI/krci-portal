@@ -1,5 +1,4 @@
 import { Autocomplete, NamespaceAutocomplete, Select } from "@/core/components/form";
-import { FORM_CONTROL_LABEL_HEIGHT } from "@/core/providers/Form/constants";
 import { ValueOf } from "@/core/types/global";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { FilterTypeWithOptionAll } from "@/k8s/types";

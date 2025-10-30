@@ -1,5 +1,6 @@
 import { createRoute, redirect } from "@tanstack/react-router";
 import { rootRoute } from "./_root";
+import { useClusterStore } from "@/k8s/store";
 
 // Route path constants
 export const PATH_AUTH = "auth" as const;
@@ -16,31 +17,51 @@ export const contentLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
   beforeLoad: ({ location }) => {
+    console.log("🔍 Content layout route beforeLoad debug:", {
+      pathname: location.pathname,
+      isRootPath: location.pathname === "/",
+      timestamp: new Date().toISOString(),
+    });
+
     if (location.pathname === "/") {
+      console.log("🔄 Redirecting from root to home");
       throw redirect({
         to: "/home",
       });
     }
+
+    console.log("✅ Content layout route beforeLoad passed - no redirect needed");
   },
 });
 
 export const routeCluster = createRoute({
   getParentRoute: () => contentLayoutRoute,
   path: PATH_CLUSTER,
-  beforeLoad: ({ location, params, context }) => {
-    const queryClient = context.queryClient;
-    const clusterName =
-      queryClient.getQueryData<string>(["clusterName"]) || import.meta.env.VITE_K8S_DEFAULT_CLUSTER_NAME || "";
+  beforeLoad: ({ location, params }) => {
+    const clusterName = useClusterStore.getState().clusterName || import.meta.env.VITE_K8S_DEFAULT_CLUSTER_NAME || "";
+
+    console.log("🔍 Cluster route beforeLoad debug:", {
+      pathname: location.pathname,
+      paramsClusterName: params.clusterName,
+      storeClusterName: clusterName,
+      envDefaultCluster: import.meta.env.VITE_K8S_DEFAULT_CLUSTER_NAME,
+      clusterMatch: params.clusterName === clusterName,
+      timestamp: new Date().toISOString(),
+    });
 
     if (params.clusterName !== clusterName) {
       // Load only known cluster
-
+      console.log("🔄 Redirecting to home (cluster name mismatch)", {
+        expected: clusterName,
+        actual: params.clusterName,
+      });
       throw redirect({
         to: "/home",
       });
     }
 
     if (location.pathname === `/c/${params.clusterName}` || location.pathname === `/c/${params.clusterName}/`) {
+      console.log("🔄 Redirecting to components (cluster root path)");
       throw redirect({
         to: "/c/$clusterName/components",
         params: {
@@ -48,6 +69,8 @@ export const routeCluster = createRoute({
         },
       });
     }
+
+    console.log("✅ Cluster route beforeLoad passed - no redirect needed");
   },
 });
 
