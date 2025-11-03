@@ -52,7 +52,7 @@ export const AppVersion = ({
     >
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <h6 className="text-base font-medium text-foreground">
+          <h6 className="text-foreground text-base font-medium">
             Deployed versions for:{" "}
             <Link
               to={routeComponentDetails.fullPath}

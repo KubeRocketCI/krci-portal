@@ -1,7 +1,7 @@
-import { KubeObjectAction } from "../../types/actions";
+import { ListItemAction } from "@/core/types/global";
 
 export interface ActionsMenuListProps {
-  actions: KubeObjectAction[];
+  actions: ListItemAction[];
   handleCloseActionsMenu: ((event: MouseEvent | TouchEvent) => void) | undefined;
   anchorEl?: HTMLElement | null;
 }

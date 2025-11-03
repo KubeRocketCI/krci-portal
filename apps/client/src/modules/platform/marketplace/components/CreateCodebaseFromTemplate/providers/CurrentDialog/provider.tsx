@@ -1,6 +1,6 @@
-import React from 'react';
-import { CurrentDialogContext } from './context';
-import { CurrentDialogContextProviderProps } from './types';
+import React from "react";
+import { CurrentDialogContext } from "./context";
+import { CurrentDialogContextProviderProps } from "./types";
 
 export const CurrentDialogContextProvider: React.FC<CurrentDialogContextProviderProps> = ({
   children,
@@ -15,9 +15,5 @@ export const CurrentDialogContextProvider: React.FC<CurrentDialogContextProvider
     [props, state]
   );
 
-  return (
-    <CurrentDialogContext.Provider value={CurrentDialogContextValue}>
-      {children}
-    </CurrentDialogContext.Provider>
-  );
+  return <CurrentDialogContext.Provider value={CurrentDialogContextValue}>{children}</CurrentDialogContext.Provider>;
 };

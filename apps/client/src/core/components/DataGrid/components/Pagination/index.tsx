@@ -1,6 +1,5 @@
-import { TablePagination as MuiTablePagination } from '@mui/material';
-import React from 'react';
-import { PaginationProps } from './types';
+import { TablePagination as MuiTablePagination } from "@mui/material";
+import { PaginationProps } from "./types";
 
 export const Pagination = ({
   dataCount,
@@ -18,7 +17,7 @@ export const Pagination = ({
       page={page}
       onPageChange={handleChangePage}
       onRowsPerPageChange={handleChangeRowsPerPage}
-      labelRowsPerPage={'Cards per page:'}
+      labelRowsPerPage={"Cards per page:"}
     />
   );
 };

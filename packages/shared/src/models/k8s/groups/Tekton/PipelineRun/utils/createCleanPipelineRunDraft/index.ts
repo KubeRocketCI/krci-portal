@@ -35,7 +35,7 @@ export const createCleanPipelineRunDraft = ({
   base.metadata.labels[pipelineRunLabels.cdStage] = stage.metadata.name;
   base.metadata.labels[pipelineRunLabels.pipelineType] = pipelineType.clean;
 
-  for (const param of base.spec.params) {
+  for (const param of base.spec.params || []) {
     switch (param.name) {
       case "CDSTAGE":
         param.value = stage.spec.name;

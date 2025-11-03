@@ -23,8 +23,10 @@ export interface MultiFormContextProviderValue<FormName extends string> {
   isAnyFormSubmitting: boolean;
 }
 
-export interface MultiFormContextProviderProps<FormName extends string, FormValues extends Record<string, unknown>> {
+export interface MultiFormContextProviderProps<FormName extends string> {
   children: React.ReactNode;
-  forms: { [formName in FormName]: MultiFormItem<FormValues> };
-  sharedForm?: UseFormReturn<FormValues>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  forms: Record<FormName, MultiFormItem<any>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sharedForm?: UseFormReturn<any>;
 }

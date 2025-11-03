@@ -13,12 +13,12 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({
   const hasBreadcrumbs = !!breadcrumbs && !!breadcrumbs.length;
 
   return (
-    <div className="flex flex-col grow pb-30">
+    <div className="flex grow flex-col pb-30">
       {hasBreadcrumbs ? (
         <div className="my-2 flex h-12 border-b px-4">
-          <div className="flex gap-2 items-center justify-between w-full">
+          <div className="flex w-full items-center justify-between gap-2">
             <div>
-              <div className="flex gap-4 items-center">
+              <div className="flex items-center gap-4">
                 <div>
                   <Breadcrumbs>
                     {breadcrumbs?.map(({ label, route }) => {
@@ -31,10 +31,7 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({
                           </Link>
                         </Button>
                       ) : (
-                        <span
-                          key={key}
-                          className="mb-1 text-sm text-foreground"
-                        >
+                        <span key={key} className="text-foreground mb-1 text-sm">
                           {label}
                         </span>
                       );

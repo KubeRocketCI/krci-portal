@@ -1,20 +1,19 @@
-import React from 'react';
-import { DataContext } from './context';
-import { DataContextProviderProps } from './types';
+import React from "react";
+import { DataContext } from "./context";
+import { DataContextProviderProps } from "./types";
 
 export const DataContextProvider: React.FC<DataContextProviderProps> = ({
   children,
   gitServer,
   gitServerSecret,
-  handleClosePanel
+  handleClosePanel,
 }) => {
-
   return (
     <DataContext.Provider
       value={{
         gitServer,
         gitServerSecret,
-        handleClosePanel
+        handleClosePanel,
       }}
     >
       {children}

@@ -1,8 +1,4 @@
-import {
-  kubeObjectBaseDraftSchema,
-  kubeObjectBaseSchema,
-  kubeObjectDraftMetadataSchema,
-} from "../../../common";
+import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema, kubeObjectDraftMetadataSchema } from "../../../common";
 
 import * as z from "zod";
 

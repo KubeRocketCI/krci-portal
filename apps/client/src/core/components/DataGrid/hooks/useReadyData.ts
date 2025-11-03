@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface UseReadyDataProps<DataType = unknown> {
   data: DataType[];
@@ -7,12 +7,7 @@ interface UseReadyDataProps<DataType = unknown> {
   error: unknown;
 }
 
-export const useReadyData = <DataType>({
-  data,
-  filterFunction,
-  isLoading,
-  error,
-}: UseReadyDataProps<DataType>) => {
+export const useReadyData = <DataType>({ data, filterFunction, isLoading, error }: UseReadyDataProps<DataType>) => {
   return React.useMemo(() => {
     if (!data || isLoading || error) {
       return null;

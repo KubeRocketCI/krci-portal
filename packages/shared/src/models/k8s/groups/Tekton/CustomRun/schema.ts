@@ -1,8 +1,5 @@
 import z from "zod";
-import {
-  kubeObjectBaseSchema,
-  kubeObjectMetadataSchema,
-} from "../../../common";
+import { kubeObjectBaseSchema, kubeObjectMetadataSchema } from "../../../common";
 import { customRunLabels } from "./labels";
 
 const customRunLabelsSchema = z.object({
@@ -120,9 +117,7 @@ const workspaceBindingSchema = z
                         resourceFieldRef: z
                           .object({
                             containerName: z.string().optional(),
-                            divisor: z
-                              .union([z.number().int(), z.string()])
-                              .optional(),
+                            divisor: z.union([z.number().int(), z.string()]).optional(),
                             resource: z.string(),
                           })
                           .optional(),

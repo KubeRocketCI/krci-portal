@@ -5,7 +5,7 @@ export const ActionsInlineList = ({ actions }: ActionsInlineListProps) => {
   const theme = useTheme();
 
   return (
-    <div className="flex flex-row gap-2 items-center">
+    <div className="flex flex-row items-center gap-2">
       {actions.map(({ name, action, disabled, Icon, label, isTextButton }, idx) => {
         const actionId = `${name}:${idx}`;
 

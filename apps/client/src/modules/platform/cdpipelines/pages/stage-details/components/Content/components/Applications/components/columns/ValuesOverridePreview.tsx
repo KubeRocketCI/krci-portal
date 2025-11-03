@@ -35,7 +35,7 @@ export const ValuesOverridePreviewColumn = ({ appCodebase }: { appCodebase: Code
 
   return (
     <div className="flex flex-row items-center gap-2">
-      <div className="flex flex-row items-center gap-2 w-full">
+      <div className="flex w-full flex-row items-center gap-2">
         <div>
           <FormSwitch
             label={<></>}
@@ -65,7 +65,7 @@ export const ValuesOverridePreviewColumn = ({ appCodebase }: { appCodebase: Code
             gitOpsGitServer?.spec.gitProvider as GitProvider
           )}
           Icon={<SquareArrowOutUpRight size={16} />}
-            name="source code"
+          name="source code"
         />
       )}
     </div>

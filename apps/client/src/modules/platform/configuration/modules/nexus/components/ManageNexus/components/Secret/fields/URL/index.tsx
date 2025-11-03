@@ -31,7 +31,7 @@ export const URL = () => {
         },
       })}
       label={`URL`}
-      title={
+      tooltipText={
         <>
           <p>
             Enter the Nexus repository URL depending service type. Ensure it includes the correct protocol and endpoint:

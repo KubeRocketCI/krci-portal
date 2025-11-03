@@ -28,11 +28,7 @@ export const rbacToK8sVerbMap: Record<RBACOperation, K8sOperation> = {
   [rbacOperation.connect]: k8sOperation.connect,
 };
 
-export const defaultPermissionsToCheck = [
-  k8sOperation.create,
-  k8sOperation.patch,
-  k8sOperation.delete,
-] as const;
+export const defaultPermissionsToCheck = [k8sOperation.create, k8sOperation.patch, k8sOperation.delete] as const;
 
 export const defaultPermissions = {
   [k8sOperation.create]: {

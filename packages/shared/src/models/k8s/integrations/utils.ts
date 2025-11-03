@@ -14,14 +14,8 @@ export const getIntegrationSecretStatus = (
   connected: string | undefined;
   statusError: string | undefined;
 } => {
-  const connected =
-    integrationSecret?.metadata?.annotations?.[
-      SECRET_ANNOTATION_INTEGRATION_SECRET_CONNECTED
-    ];
-  const statusError =
-    integrationSecret?.metadata?.annotations?.[
-      SECRET_ANNOTATION_INTEGRATION_SECRET_ERROR
-    ];
+  const connected = integrationSecret?.metadata?.annotations?.[SECRET_ANNOTATION_INTEGRATION_SECRET_CONNECTED];
+  const statusError = integrationSecret?.metadata?.annotations?.[SECRET_ANNOTATION_INTEGRATION_SECRET_ERROR];
 
   return {
     connected,
@@ -29,7 +23,9 @@ export const getIntegrationSecretStatus = (
   };
 };
 
-export const getClusterSecretStatus = (clusterSecret: Secret): {
+export const getClusterSecretStatus = (
+  clusterSecret: Secret
+): {
   connected: string | undefined;
   statusError: string | undefined;
 } => {
@@ -38,8 +34,8 @@ export const getClusterSecretStatus = (clusterSecret: Secret): {
 
   return {
     connected,
-    statusError
-  }
+    statusError,
+  };
 };
 
 /**

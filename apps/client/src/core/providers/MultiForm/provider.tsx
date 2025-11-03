@@ -1,12 +1,16 @@
 import React from "react";
+import { UseFormReturn } from "react-hook-form";
 import { MultiFormContext } from "./context";
 import { MultiFormItem, MultiFormContextProviderProps } from "./types";
 
 export const MultiFormContextProvider = <FormName extends string>({
   children,
-  forms,
-  sharedForm,
+  forms: formsInput,
+  sharedForm: sharedFormInput,
 }: MultiFormContextProviderProps<FormName>) => {
+  const forms = formsInput as Record<FormName, MultiFormItem>;
+  const sharedForm = sharedFormInput as UseFormReturn<Record<string, unknown>> | undefined;
+
   const { isAnyFormDirty, isAnyFormSubmitting, isAnyFormForbiddenToSubmit } = React.useMemo(
     () =>
       Object.values<MultiFormItem>(forms).reduce<{

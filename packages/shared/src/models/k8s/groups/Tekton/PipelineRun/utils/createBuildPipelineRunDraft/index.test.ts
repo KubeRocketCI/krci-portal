@@ -160,8 +160,7 @@ describe("testing createBuildPipelineRunDraft", () => {
         name: `build-test-codebase-name-test-codebase-branch-name-very-lo-${MOCKED_UUID}`,
         labels: {
           "app.edp.epam.com/codebase": "test-codebase-name",
-          "app.edp.epam.com/codebasebranch":
-            "test-codebase-name-test-codebase-branch-name-very-long-long-name",
+          "app.edp.epam.com/codebasebranch": "test-codebase-name-test-codebase-branch-name-very-long-long-name",
           "app.edp.epam.com/pipelinetype": "build",
         },
       },
@@ -178,8 +177,7 @@ describe("testing createBuildPipelineRunDraft", () => {
           { name: "CODEBASE_NAME", value: "test-codebase-name" },
           {
             name: "CODEBASEBRANCH_NAME",
-            value:
-              "test-codebase-name-test-codebase-branch-name-very-long-long-name",
+            value: "test-codebase-name-test-codebase-branch-name-very-long-long-name",
           },
           { name: "changeNumber", value: "1" },
           { name: "patchsetNumber", value: "1" },
@@ -236,8 +234,7 @@ describe("testing createBuildPipelineRunDraft", () => {
         },
         labels: {
           "app.edp.epam.com/codebase": "test-codebase-name",
-          "app.edp.epam.com/codebasebranch":
-            "test-codebase-name-test-codebase-branch-name-very-long-long-name",
+          "app.edp.epam.com/codebasebranch": "test-codebase-name-test-codebase-branch-name-very-long-long-name",
           "app.edp.epam.com/pipelinetype": "build",
         },
         name: `build-test-codebase-name-test-codebase-branch-name-very-lo-${MOCKED_UUID}`,
@@ -255,8 +252,7 @@ describe("testing createBuildPipelineRunDraft", () => {
           { name: "CODEBASE_NAME", value: "test-codebase-name" },
           {
             name: "CODEBASEBRANCH_NAME",
-            value:
-              "test-codebase-name-test-codebase-branch-name-very-long-long-name",
+            value: "test-codebase-name-test-codebase-branch-name-very-long-long-name",
           },
           { name: "changeNumber", value: "1" },
           { name: "patchsetNumber", value: "1" },
@@ -313,8 +309,7 @@ describe("testing createBuildPipelineRunDraft", () => {
         },
         labels: {
           "app.edp.epam.com/codebase": "test-codebase-name",
-          "app.edp.epam.com/codebasebranch":
-            "test-codebase-name-test-codebase-branch-name-very-long-long-name",
+          "app.edp.epam.com/codebasebranch": "test-codebase-name-test-codebase-branch-name-very-long-long-name",
           "app.edp.epam.com/pipelinetype": "build",
         },
         name: `build-test-codebase-name-test-codebase-branch-name-very-lo-${MOCKED_UUID}`,
@@ -332,8 +327,7 @@ describe("testing createBuildPipelineRunDraft", () => {
           { name: "CODEBASE_NAME", value: "test-codebase-name" },
           {
             name: "CODEBASEBRANCH_NAME",
-            value:
-              "test-codebase-name-test-codebase-branch-name-very-long-long-name",
+            value: "test-codebase-name-test-codebase-branch-name-very-long-long-name",
           },
           { name: "changeNumber", value: "1" },
           { name: "patchsetNumber", value: "1" },
@@ -390,8 +384,7 @@ describe("testing createBuildPipelineRunDraft", () => {
         },
         labels: {
           "app.edp.epam.com/codebase": "test-codebase-name",
-          "app.edp.epam.com/codebasebranch":
-            "test-codebase-name-test-codebase-branch-name-very-long-long-name",
+          "app.edp.epam.com/codebasebranch": "test-codebase-name-test-codebase-branch-name-very-long-long-name",
           "app.edp.epam.com/pipelinetype": "build",
         },
         name: `build-test-codebase-name-test-codebase-branch-name-very-lo-${MOCKED_UUID}`,
@@ -409,8 +402,7 @@ describe("testing createBuildPipelineRunDraft", () => {
           { name: "CODEBASE_NAME", value: "test-codebase-name" },
           {
             name: "CODEBASEBRANCH_NAME",
-            value:
-              "test-codebase-name-test-codebase-branch-name-very-long-long-name",
+            value: "test-codebase-name-test-codebase-branch-name-very-long-long-name",
           },
           { name: "changeNumber", value: "1" },
           { name: "patchsetNumber", value: "1" },

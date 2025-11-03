@@ -68,7 +68,7 @@ export const ValuesOverrideHeadColumn = ({ mode }: { mode: ApplicationsTableMode
         </div>
       )}
 
-      <div className="flex flex-row gap-2 items-center flex-nowrap">
+      <div className="flex flex-row flex-nowrap items-center gap-2">
         <div>Values override</div>
         <Tooltip title={"Override default deployment settings with custom configurations."}>
           <Info size={16} />

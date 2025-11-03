@@ -4,5 +4,6 @@ export default {
   tabWidth: 2,
   trailingComma: "es5",
   printWidth: 120,
+  endOfLine: "lf",
   plugins: ["prettier-plugin-tailwindcss"],
 };

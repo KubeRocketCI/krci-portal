@@ -186,7 +186,7 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
               )}
             />
           </div>
-          <div className="flex flex-row justify-end gap-2" style={{ marginTop: '16px' }}>
+          <div className="flex flex-row justify-end gap-2" style={{ marginTop: "16px" }}>
             <Button size="small" color="inherit" onClick={closeDialog}>
               Cancel
             </Button>

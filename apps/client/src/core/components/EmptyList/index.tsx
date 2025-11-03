@@ -45,9 +45,7 @@ export const EmptyList = ({
     if (route) {
       return (
         <RouterLink to={route.to} params={route.params}>
-          <span className="text-sm">
-            {linkText}
-          </span>
+          <span className="text-sm">{linkText}</span>
         </RouterLink>
       );
     }
@@ -55,9 +53,7 @@ export const EmptyList = ({
     if (handleClick) {
       return (
         <Link onClick={handleClick} component={"button"} lineHeight={1}>
-          <span className="text-sm">
-            {linkText}
-          </span>
+          <span className="text-sm">{linkText}</span>
         </Link>
       );
     }
@@ -66,29 +62,17 @@ export const EmptyList = ({
   };
 
   return (
-    <div className="flex justify-center w-full">
-      <div
-        className="flex flex-col items-center justify-center w-full p-3 border border-dashed rounded border-border"
-      >
+    <div className="flex w-full justify-center">
+      <div className="border-border flex w-full flex-col items-center justify-center rounded border border-dashed p-3">
         <div className="mb-4">{renderIcon(icon, isSearch, iconSize, theme)}</div>
-        <div className="flex flex-col gap-2 items-center mb-1">
-          <p className="text-xl font-medium">
-            {customText ? customText : `There are no ${missingItemName} here.`}
-          </p>
+        <div className="mb-1 flex flex-col items-center gap-2">
+          <p className="text-xl font-medium">{customText ? customText : `There are no ${missingItemName} here.`}</p>
           <div className="flex flex-row items-center gap-2">
-            {!!beforeLinkText && (
-              <span className="text-sm text-muted-foreground">
-                {beforeLinkText}
-              </span>
-            )}
+            {!!beforeLinkText && <span className="text-muted-foreground text-sm">{beforeLinkText}</span>}
             {renderActionLink()}
           </div>
         </div>
-        {!!description && (
-          <p className="text-sm text-muted-foreground">
-            {description}
-          </p>
-        )}
+        {!!description && <p className="text-muted-foreground text-sm">{description}</p>}
       </div>
     </div>
   );

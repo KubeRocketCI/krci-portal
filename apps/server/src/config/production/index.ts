@@ -1,8 +1,10 @@
 import { DBSessionStore } from "@/clients/db-session-store";
-import { K8sClient } from "@/clients/k8s";
-import { OIDCClient } from "@/clients/oidc";
-import { appRouter } from "@/trpc/routers";
-import { AppRouter } from "@/trpc/routers/types";
+import {
+  appRouter,
+  type AppRouter,
+  type CustomSession,
+  createContext,
+} from "@my-project/trpc";
 import FastifyCookie from "@fastify/cookie";
 import FastifySession from "@fastify/session";
 import FastifyStatic from "@fastify/static";
@@ -13,7 +15,6 @@ import {
 } from "@trpc/server/adapters/fastify";
 import Fastify, { FastifyInstance, FastifyRequest } from "fastify";
 import { IncomingMessage } from "http";
-import { createContext, CustomSession } from "../../trpc/context";
 import { fromMonorepoRoot } from "@/paths";
 
 export class ProductionFastifyServer {
@@ -114,15 +115,15 @@ export class ProductionFastifyServer {
             return createContext({
               req: realReq as FastifyRequest,
               res,
+              session,
               sessionStore,
-              K8sClient: new K8sClient(session),
-              oidcClient: new OIDCClient({
+              oidcConfig: {
                 issuerURL: process.env.OIDC_ISSUER_URL!,
                 clientID: process.env.OIDC_CLIENT_ID!,
                 clientSecret: process.env.OIDC_CLIENT_SECRET!,
                 scope: process.env.OIDC_SCOPE!,
                 codeChallengeMethod: process.env.OIDC_CODE_CHALLENGE_METHOD!,
-              }),
+              },
             });
           },
         } satisfies FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],

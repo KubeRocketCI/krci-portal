@@ -46,7 +46,7 @@ export const ValuesOverrideConfigurationColumn = ({
 
   return (
     <div className="flex flex-row items-center gap-2">
-      <div className="flex flex-row items-center gap-2 w-full">
+      <div className="flex w-full flex-row items-center gap-2">
         <div>
           <FormSwitch
             label={<></>}

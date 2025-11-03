@@ -1,6 +1,6 @@
 export const sortByName = (a?: string, b?: string): number => {
   if (a && b) {
-    return a.localeCompare(b, undefined, { sensitivity: 'accent' });
+    return a.localeCompare(b, undefined, { sensitivity: "accent" });
   }
 
   if (a && !b) {

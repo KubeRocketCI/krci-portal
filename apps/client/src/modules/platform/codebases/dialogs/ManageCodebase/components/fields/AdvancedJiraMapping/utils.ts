@@ -35,7 +35,7 @@ export const getJiraIssueMetadataPayload = (rows: AdvancedMappingRow[]): string 
 };
 
 export const getAdvancedMappingOptions = (advancedMapping: AdvancedMappingItem[]) => {
-  return advancedMapping.reduce<SelectOption[]>((acc, cur) => {
+  return advancedMapping.reduce<SelectOption<string>[]>((acc, cur) => {
     if (!cur.isUsed) {
       acc.push({
         label: cur.label,

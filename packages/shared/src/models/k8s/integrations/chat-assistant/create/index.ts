@@ -1,10 +1,6 @@
 import { safeEncode } from "../../../../../utils";
 import { SecretDraft, secretDraftSchema } from "../../../groups/Core";
-import {
-  integrationSecretName,
-  SECRET_LABEL_SECRET_TYPE,
-  SECRET_LABEL_INTEGRATION_SECRET,
-} from "../../constants";
+import { integrationSecretName, SECRET_LABEL_SECRET_TYPE, SECRET_LABEL_INTEGRATION_SECRET } from "../../constants";
 import z, { ZodError } from "zod";
 
 const createChatAssistantIntegrationSecretDraftSchema = z.object({
@@ -16,8 +12,7 @@ const createChatAssistantIntegrationSecretDraftSchema = z.object({
 export const createChatAssistantIntegrationSecretDraft = (
   input: z.infer<typeof createChatAssistantIntegrationSecretDraftSchema>
 ): SecretDraft => {
-  const parsedInput =
-    createChatAssistantIntegrationSecretDraftSchema.safeParse(input);
+  const parsedInput = createChatAssistantIntegrationSecretDraftSchema.safeParse(input);
 
   if (!parsedInput.success) {
     throw new ZodError(parsedInput.error.errors);

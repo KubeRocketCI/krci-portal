@@ -5,7 +5,7 @@ import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWat
 import { useSecretPermissions, useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
 import { useServiceAccountWatchItem } from "@/k8s/api/groups/Core/ServiceAccount";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionDetails, AccordionSummary, Grid } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
 import { ContainerRegistryType, containerRegistryTypeLabelMap, registrySecretName } from "@my-project/shared";
 import React from "react";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";

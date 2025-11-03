@@ -1,10 +1,6 @@
 import { safeEncode } from "../../../../../utils";
 import { SecretDraft, secretDraftSchema } from "../../../groups/Core";
-import {
-  integrationSecretName,
-  SECRET_LABEL_SECRET_TYPE,
-  SECRET_LABEL_INTEGRATION_SECRET,
-} from "../../constants";
+import { integrationSecretName, SECRET_LABEL_SECRET_TYPE, SECRET_LABEL_INTEGRATION_SECRET } from "../../constants";
 import z, { ZodError } from "zod";
 
 const createNexusIntegrationSecretDraftSchema = z.object({

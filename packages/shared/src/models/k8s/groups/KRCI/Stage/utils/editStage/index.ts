@@ -6,10 +6,7 @@ import { editStageInputSchema, stageSchema } from "../../schema";
  * Updates a Stage resource with editable fields
  * Only allows editing: triggerType, triggerTemplate, cleanTemplate
  */
-export const editStageObject = (
-  originalStage: Stage,
-  input: EditStageInput
-): Stage => {
+export const editStageObject = (originalStage: Stage, input: EditStageInput): Stage => {
   const parsedInput = editStageInputSchema.safeParse(input);
 
   if (!parsedInput.success) {

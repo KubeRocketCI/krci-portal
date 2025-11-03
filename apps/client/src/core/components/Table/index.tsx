@@ -175,7 +175,7 @@ export const Table = <DataType,>({
       return (
         <div className="flex flex-col gap-4">
           {slots?.header || tableSettings.show ? (
-            <div className="flex flex-row gap-4 items-center">
+            <div className="flex flex-row items-center gap-4">
               <div className="grow">{slots?.header && slots.header}</div>
               <div className="pl-5">
                 {columns && tableSettings.show && (
@@ -192,9 +192,7 @@ export const Table = <DataType,>({
             </div>
           ) : null}
           {selectionSettings.renderSelectionInfo && validSelected && (
-            <div className="pl-3">
-              {selectionSettings.renderSelectionInfo(validSelected.length)}
-            </div>
+            <div className="pl-3">{selectionSettings.renderSelectionInfo(validSelected.length)}</div>
           )}
         </div>
       );

@@ -5,14 +5,11 @@
     "declaration": true,
     "declarationMap": true,
     "rootDir": "src",
-    "moduleResolution": "bundler"
+    "outDir": "dist",
+    "moduleResolution": "bundler",
+    "noEmit": false,
+    "skipLibCheck": true
   },
   "include": ["src/**/*"],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "@my-project/shared"
-  ]
+  "exclude": ["node_modules", "dist"]
 }

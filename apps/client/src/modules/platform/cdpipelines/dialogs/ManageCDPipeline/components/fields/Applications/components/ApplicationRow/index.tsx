@@ -136,7 +136,7 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
 
   return (
     <LoadingWrapper isLoading={applicationBranchListWatch.query.isLoading}>
-      <div className="grid grid-cols-12 gap-4 col-span-12">
+      <div className="col-span-12 grid grid-cols-12 gap-4">
         <div className="col-span-5">
           <FormTextField
             {...register(rowAppNameField)}

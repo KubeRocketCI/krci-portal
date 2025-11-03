@@ -38,7 +38,7 @@ export const AdvancedJiraMappingRow = ({
             />
           </FormControl>
         </div>
-        <div className="col-span-2 flex flex-col justify-end items-center">
+        <div className="col-span-2 flex flex-col items-center justify-end">
           <Button
             type={"button"}
             size={"small"}

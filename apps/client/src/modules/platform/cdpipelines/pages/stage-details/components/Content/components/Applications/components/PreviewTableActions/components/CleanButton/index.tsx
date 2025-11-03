@@ -43,9 +43,6 @@ export const CleanButton = ({
       showRequestErrorMessage(k8sOperation.create, {
         customMessage: {
           message: "Clean PipelineRun template is not found.",
-          options: {
-            variant: "error",
-          },
         },
       });
 

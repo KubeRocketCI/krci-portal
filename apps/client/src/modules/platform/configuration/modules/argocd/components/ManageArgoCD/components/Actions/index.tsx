@@ -41,13 +41,13 @@ export const Actions = () => {
       resource: secret,
       description: `Confirm the deletion of the integration.`,
       createCustomMessages: (item) => ({
-        onMutate: {
+        loading: {
           message: `${item.metadata.name} has been marked for deletion`,
         },
-        onError: {
+        error: {
           message: `Failed to initiate ${item.metadata.name}'s deletion`,
         },
-        onSuccess: {
+        success: {
           message: "The deletion process has been started",
         },
       }),
@@ -57,7 +57,7 @@ export const Actions = () => {
   const mode = secret ? FORM_MODES.EDIT : FORM_MODES.CREATE;
 
   return (
-    <div className="flex flex-row items-center gap-4 justify-between">
+    <div className="flex flex-row items-center justify-between gap-4">
       {mode === FORM_MODES.EDIT ? (
         <ConditionalWrapper
           condition={!canDelete}

@@ -122,7 +122,7 @@ export const Variables = () => {
                 <Plus size={16} />
               </Button>
             </div>
-            <div className="flex items-center gap-2 justify-end">
+            <div className="flex items-center justify-end gap-2">
               <Button
                 size="small"
                 component={"button"}
@@ -175,9 +175,7 @@ export const Variables = () => {
     <TabSection
       title={
         <>
-          <span className="text-3xl font-semibold text-foreground">
-            Variables
-          </span>{" "}
+          <span className="text-foreground text-3xl font-semibold">Variables</span>{" "}
           <LearnMoreLink url={EDP_USER_GUIDE.VARIABLES_INJECTION.url} />
         </>
       }

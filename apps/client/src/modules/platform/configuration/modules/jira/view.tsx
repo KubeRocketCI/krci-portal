@@ -70,7 +70,7 @@ export default function JiraConfigurationPage() {
         <Accordion expanded>
           <AccordionSummary style={{ cursor: "default" }}>
             <h6 className="text-base font-medium">
-              <div className="flex gap-2 items-center">
+              <div className="flex items-center gap-2">
                 <div className="mr-1">
                   <StatusIcon
                     Icon={statusIcon.component}
@@ -80,11 +80,7 @@ export default function JiraConfigurationPage() {
                         <p className="text-sm font-semibold">
                           {`Status: ${status === undefined ? "Unknown" : status}`}
                         </p>
-                        {!!errorMessage && (
-                          <p className="text-sm font-medium mt-3">
-                            {errorMessage}
-                          </p>
-                        )}
+                        {!!errorMessage && <p className="mt-3 text-sm font-medium">{errorMessage}</p>}
                       </>
                     }
                   />

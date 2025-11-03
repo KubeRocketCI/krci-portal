@@ -1,14 +1,7 @@
 import z from "zod";
-import {
-  kubeObjectBaseSchema,
-  kubeObjectMetadataSchema,
-} from "../../../common";
+import { kubeObjectBaseSchema, kubeObjectMetadataSchema } from "../../../common";
 import { taskRunLabels } from "./labels";
-import {
-  paramValueSchema,
-  taskRefSchema,
-  whenExpressionSchema,
-} from "../common/schema";
+import { paramValueSchema, taskRefSchema, whenExpressionSchema } from "../common/schema";
 
 const resourceQuantitySchema = z.union([
   z.number().int(),
@@ -554,8 +547,4 @@ export const taskRunSchema = kubeObjectBaseSchema
   })
   .required();
 
-export const taskRunStepStatusFieldNameEnum = z.enum([
-  "running",
-  "terminated",
-  "waiting",
-]);
+export const taskRunStepStatusFieldNameEnum = z.enum(["running", "terminated", "waiting"]);

@@ -17,10 +17,10 @@ export const ReserveLogs = () => {
   return (
     <div className="flex flex-col gap-2">
       <LoadingWrapper isLoading={pipelineRunLogsQuery.isLoading}>
-        <div className="flex flex-row gap-2 items-center justify-center">
+        <div className="flex flex-row items-center justify-center gap-2">
           <TriangleAlert size={48} />
-          <div className="flex flex-row gap-2 items-center">
-            <span className="text-sm text-muted-foreground">
+          <div className="flex flex-row items-center gap-2">
+            <span className="text-muted-foreground text-sm">
               {hasReserveLogs ? (
                 "No pipeline runs were found for the requested resource. Logs have been retrieved from OpenSearch."
               ) : (

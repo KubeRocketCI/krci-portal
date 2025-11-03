@@ -1,5 +1,3 @@
-"use client";
-
 import {
   BookOpenText,
   ChevronsUpDown,
@@ -7,7 +5,6 @@ import {
   LogOut,
   MessageSquareMore,
   MessageSquareShare,
-  Sparkles,
   Users,
 } from "lucide-react";
 
@@ -98,11 +95,9 @@ export function NavUser() {
                     <span className="truncate font-medium">{user.name}</span>
                     <span className="truncate text-xs">{user.email}</span>
                     {user.groups && user.groups.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        <Users className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">
-                          {user.groups.join(", ")}
-                        </span>
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        <Users className="text-muted-foreground h-3 w-3" />
+                        <span className="text-muted-foreground text-xs">{user.groups.join(", ")}</span>
                       </div>
                     )}
                   </div>

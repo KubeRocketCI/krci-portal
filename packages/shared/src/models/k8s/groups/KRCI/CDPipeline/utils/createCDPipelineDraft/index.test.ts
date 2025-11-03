@@ -154,10 +154,6 @@ describe("K8sCDPipeline: createCDPipelineDraft", () => {
       inputDockerStreams: ["stream1", "stream2", "stream3"],
     });
 
-    expect(result.spec.inputDockerStreams).toEqual([
-      "stream1",
-      "stream2",
-      "stream3",
-    ]);
+    expect(result.spec.inputDockerStreams).toEqual(["stream1", "stream2", "stream3"]);
   });
 });

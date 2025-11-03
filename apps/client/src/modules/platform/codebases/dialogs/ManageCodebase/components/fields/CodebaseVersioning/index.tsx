@@ -66,14 +66,15 @@ export const CodebaseVersioning = () => {
       {codebaseVersioningTypeFieldValue === codebaseVersioning.edp ||
       codebaseVersioningTypeFieldValue === codebaseVersioning.semver ? (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <FormTextField
                 {...register(CODEBASE_FORM_NAMES.versioningStartFromVersion.name, {
                   required: "Specify the initial version.",
                   onBlur: onStartVersionFromVersionChange,
                   pattern: {
-                    value: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/,
+                    value:
+                      /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/,
                     message: "Enter valid semantic versioning format",
                   },
                 })}

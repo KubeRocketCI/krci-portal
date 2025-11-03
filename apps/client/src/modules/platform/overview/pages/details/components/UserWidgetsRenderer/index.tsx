@@ -1,4 +1,3 @@
-
 import { WIDGET_TYPE } from "../../dialogs/AddNewWidget/constants";
 import { WidgetConfig } from "../../dialogs/AddNewWidget/types";
 import { useUserWidgets } from "../../providers/UserWidgets/hooks";
@@ -27,10 +26,7 @@ export const UserWidgetRenderer = ({ widgetConfig }: { widgetConfig: WidgetConfi
   const { userWidgets, setUserWidgets } = useUserWidgets();
 
   return (
-    <div
-      className="p-6 h-full shadow-md"
-      style={{ borderLeft: "4px solid #1976d2" }}
-    >
+    <div className="h-full p-6 shadow-md" style={{ borderLeft: "4px solid #1976d2" }}>
       {renderer(widgetConfig, userWidgets, setUserWidgets)}
     </div>
   );

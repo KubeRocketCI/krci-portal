@@ -1,9 +1,5 @@
 import { z } from "zod";
-import {
-  kubeObjectBaseDraftSchema,
-  kubeObjectBaseSchema,
-  kubeObjectMetadataSchema,
-} from "../../../common";
+import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema, kubeObjectMetadataSchema } from "../../../common";
 
 const LabelSelectorRequirementSchema = z.object({
   key: z.string(),
@@ -74,23 +70,14 @@ const AllowedServicesSchema = z.object({
 });
 
 const OwnerProxySettingsSchema = z.object({
-  kind: z.enum([
-    "Nodes",
-    "StorageClasses",
-    "IngressClasses",
-    "PriorityClasses",
-    "RuntimeClasses",
-    "PersistentVolumes",
-  ]),
+  kind: z.enum(["Nodes", "StorageClasses", "IngressClasses", "PriorityClasses", "RuntimeClasses", "PersistentVolumes"]),
   operations: z.array(z.enum(["List", "Update", "Delete"])).min(1),
 });
 
 const TenantOwnerSchema = z.object({
   kind: z.enum(["User", "Group", "ServiceAccount"]),
   name: z.string(),
-  clusterRoles: z
-    .array(z.string())
-    .default(["admin", "capsule-namespace-deleter"]),
+  clusterRoles: z.array(z.string()).default(["admin", "capsule-namespace-deleter"]),
   proxySettings: z.array(OwnerProxySettingsSchema).optional(),
 });
 
@@ -121,17 +108,13 @@ const TenantSpecSchema = z.object({
     })
     .optional(),
   cordoned: z.boolean().optional(),
-  imagePullPolicies: z
-    .array(z.enum(["Always", "Never", "IfNotPresent"]))
-    .optional(),
+  imagePullPolicies: z.array(z.enum(["Always", "Never", "IfNotPresent"])).optional(),
   ingressOptions: z
     .object({
       allowWildcardHostnames: z.boolean().optional(),
       allowedClasses: AllowedRegexSchema.optional(),
       allowedHostnames: AllowedRegexSchema.optional(),
-      hostnameCollisionScope: z
-        .enum(["Cluster", "Tenant", "Namespace", "Disabled"])
-        .optional(),
+      hostnameCollisionScope: z.enum(["Cluster", "Tenant", "Namespace", "Disabled"]).optional(),
     })
     .optional(),
   limitRanges: z
@@ -142,21 +125,11 @@ const TenantSpecSchema = z.object({
             limits: z.array(
               z.object({
                 type: z.string(),
-                default: z
-                  .record(z.union([z.string(), z.number()]).optional())
-                  .optional(),
-                defaultRequest: z
-                  .record(z.union([z.string(), z.number()]).optional())
-                  .optional(),
-                min: z
-                  .record(z.union([z.string(), z.number()]).optional())
-                  .optional(),
-                max: z
-                  .record(z.union([z.string(), z.number()]).optional())
-                  .optional(),
-                maxLimitRequestRatio: z
-                  .record(z.union([z.string(), z.number()]).optional())
-                  .optional(),
+                default: z.record(z.union([z.string(), z.number()]).optional()).optional(),
+                defaultRequest: z.record(z.union([z.string(), z.number()]).optional()).optional(),
+                min: z.record(z.union([z.string(), z.number()]).optional()).optional(),
+                max: z.record(z.union([z.string(), z.number()]).optional()).optional(),
+                maxLimitRequestRatio: z.record(z.union([z.string(), z.number()]).optional()).optional(),
               })
             ),
           })
@@ -184,9 +157,7 @@ const TenantSpecSchema = z.object({
           podSelector: z
             .object({
               matchLabels: z.record(z.string()).optional(),
-              matchExpressions: z
-                .array(LabelSelectorRequirementSchema)
-                .optional(),
+              matchExpressions: z.array(LabelSelectorRequirementSchema).optional(),
             })
             .optional(),
           ingress: z.array(NetworkPolicyIngressRuleSchema).optional(),
@@ -219,12 +190,7 @@ const TenantSpecSchema = z.object({
       externalIPs: z
         .object({
           allowed: z.array(
-            z
-              .string()
-              .regex(
-                /^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/,
-                "Invalid IP format"
-              )
+            z.string().regex(/^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/, "Invalid IP format")
           ),
         })
         .optional(),

@@ -1,9 +1,6 @@
 import z, { ZodError } from "zod";
 import { Secret, SecretDraft, secretDraftSchema } from "../../../groups/Core";
-import {
-  SECRET_LABEL_CLUSTER_TYPE,
-  SECRET_LABEL_SECRET_TYPE,
-} from "../../constants";
+import { SECRET_LABEL_CLUSTER_TYPE, SECRET_LABEL_SECRET_TYPE } from "../../constants";
 import { safeDecode, safeEncode, parseConfigJson } from "../../../../../utils";
 
 export const clusterTypeEnum = z.enum(["bearer", "irsa"]);
@@ -31,13 +28,9 @@ const createClusterSecretDraftSchema = z.discriminatedUnion("clusterType", [
   }),
 ]);
 
-type CreateClusterSecretDraftInput = z.infer<
-  typeof createClusterSecretDraftSchema
->;
+type CreateClusterSecretDraftInput = z.infer<typeof createClusterSecretDraftSchema>;
 
-export const createClusterSecretDraft = (
-  input: CreateClusterSecretDraftInput
-): SecretDraft => {
+export const createClusterSecretDraft = (input: CreateClusterSecretDraftInput): SecretDraft => {
   const parsedInput = createClusterSecretDraftSchema.safeParse(input);
 
   if (!parsedInput.success) {
@@ -147,8 +140,7 @@ export const createClusterSecretDraft = (
 };
 
 export const getClusterName = (secret: Secret): string => {
-  const _clusterType =
-    secret.metadata?.labels?.[SECRET_LABEL_CLUSTER_TYPE] ?? clusterType.bearer;
+  const _clusterType = secret.metadata?.labels?.[SECRET_LABEL_CLUSTER_TYPE] ?? clusterType.bearer;
   const config = parseConfigJson(secret.data?.config || "");
 
   if (_clusterType === clusterType.bearer) {

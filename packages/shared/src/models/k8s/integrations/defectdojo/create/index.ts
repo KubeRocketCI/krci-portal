@@ -1,10 +1,6 @@
 import { safeEncode } from "../../../../../utils";
 import { SecretDraft, secretDraftSchema } from "../../../groups/Core";
-import {
-  integrationSecretName,
-  SECRET_LABEL_SECRET_TYPE,
-  SECRET_LABEL_INTEGRATION_SECRET,
-} from "../../constants";
+import { integrationSecretName, SECRET_LABEL_SECRET_TYPE, SECRET_LABEL_INTEGRATION_SECRET } from "../../constants";
 import z, { ZodError } from "zod";
 
 const createDefectDojoIntegrationSecretDraftSchema = z.object({
@@ -15,8 +11,7 @@ const createDefectDojoIntegrationSecretDraftSchema = z.object({
 export const createDefectDojoIntegrationSecretDraft = (
   input: z.infer<typeof createDefectDojoIntegrationSecretDraftSchema>
 ): SecretDraft => {
-  const parsedInput =
-    createDefectDojoIntegrationSecretDraftSchema.safeParse(input);
+  const parsedInput = createDefectDojoIntegrationSecretDraftSchema.safeParse(input);
 
   if (!parsedInput.success) {
     throw new ZodError(parsedInput.error.errors);

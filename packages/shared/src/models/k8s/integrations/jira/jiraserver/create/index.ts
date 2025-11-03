@@ -1,17 +1,11 @@
 import z, { ZodError } from "zod";
-import {
-  JiraServerDraft,
-  jiraServerDraftSchema,
-  k8sJiraServerConfig,
-} from "../../../../groups/KRCI";
+import { JiraServerDraft, jiraServerDraftSchema, k8sJiraServerConfig } from "../../../../groups/KRCI";
 
 const createJiraServerDraftSchema = z.object({
   url: z.string(),
 });
 
-export const createJiraServerDraft = (
-  input: z.infer<typeof createJiraServerDraftSchema>
-): JiraServerDraft => {
+export const createJiraServerDraft = (input: z.infer<typeof createJiraServerDraftSchema>): JiraServerDraft => {
   const parsedInput = createJiraServerDraftSchema.safeParse(input);
 
   if (!parsedInput.success) {

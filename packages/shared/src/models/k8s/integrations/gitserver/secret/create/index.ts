@@ -1,10 +1,6 @@
 import z, { ZodError } from "zod";
 import { GitProvider, gitProvider } from "../../../../groups/KRCI";
-import {
-  k8sSecretConfig,
-  SecretDraft,
-  secretDraftSchema,
-} from "../../../../groups/Core";
+import { k8sSecretConfig, SecretDraft, secretDraftSchema } from "../../../../groups/Core";
 import { SECRET_LABEL_SECRET_TYPE } from "../../../constants";
 import { safeEncode } from "../../../../../../utils";
 
@@ -15,12 +11,8 @@ export const gitUser = {
   BITBUCKET: "git",
 };
 
-export const createGitServerSecretName = (
-  _gitProvider: GitProvider
-): string => {
-  return _gitProvider === gitProvider.gerrit
-    ? "gerrit-ciuser-sshkey"
-    : `ci-${_gitProvider}`;
+export const createGitServerSecretName = (_gitProvider: GitProvider): string => {
+  return _gitProvider === gitProvider.gerrit ? "gerrit-ciuser-sshkey" : `ci-${_gitProvider}`;
 };
 
 const createGitServerSecretDraftSchema = z.discriminatedUnion("gitProvider", [
@@ -46,9 +38,7 @@ const createGitServerSecretDraftSchema = z.discriminatedUnion("gitProvider", [
   }),
 ]);
 
-export const createGitServerSecretDraft = (
-  input: z.infer<typeof createGitServerSecretDraftSchema>
-): SecretDraft => {
+export const createGitServerSecretDraft = (input: z.infer<typeof createGitServerSecretDraftSchema>): SecretDraft => {
   const parsedInput = createGitServerSecretDraftSchema.safeParse(input);
 
   if (!parsedInput.success) {
@@ -59,25 +49,21 @@ export const createGitServerSecretDraft = (
 
   switch (parsedInput.data.gitProvider) {
     case gitProvider.gerrit:
-      data.id_rsa =
-        safeEncode(parsedInput.data.sshPrivateKey.trim() + "\n") || "";
+      data.id_rsa = safeEncode(parsedInput.data.sshPrivateKey.trim() + "\n") || "";
       data["id_rsa.pub"] = safeEncode(parsedInput.data.sshPublicKey) || "";
       data.username = safeEncode(gitUser.GERRIT) || "";
       break;
     case gitProvider.github:
-      data.id_rsa =
-        safeEncode(parsedInput.data.sshPrivateKey.trim() + "\n") || "";
+      data.id_rsa = safeEncode(parsedInput.data.sshPrivateKey.trim() + "\n") || "";
       data.token = safeEncode(parsedInput.data.token) || "";
       data.username = safeEncode(gitUser.GITHUB) || "";
       break;
     case gitProvider.gitlab:
-      data.id_rsa =
-        safeEncode(parsedInput.data.sshPrivateKey.trim() + "\n") || "";
+      data.id_rsa = safeEncode(parsedInput.data.sshPrivateKey.trim() + "\n") || "";
       data.token = safeEncode(parsedInput.data.token) || "";
       break;
     case gitProvider.bitbucket:
-      data.id_rsa =
-        safeEncode(parsedInput.data.sshPrivateKey.trim() + "\n") || "";
+      data.id_rsa = safeEncode(parsedInput.data.sshPrivateKey.trim() + "\n") || "";
       data.token = safeEncode(parsedInput.data.token) || "";
       break;
   }

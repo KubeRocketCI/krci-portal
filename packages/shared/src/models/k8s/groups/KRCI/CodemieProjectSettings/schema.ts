@@ -1,8 +1,5 @@
 import { z } from "zod";
-import {
-  kubeObjectBaseDraftSchema,
-  kubeObjectBaseSchema,
-} from "../../../common";
+import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema } from "../../../common";
 
 const secretRefSchema = z.object({
   name: z.string(),
@@ -54,7 +51,6 @@ export const codemieProjectSettingsSchema = kubeObjectBaseSchema
   })
   .required();
 
-export const codemieProjectSettingsDraftSchema =
-  kubeObjectBaseDraftSchema.extend({
-    spec: codemieProjectSettingsSpecSchema,
-  });
+export const codemieProjectSettingsDraftSchema = kubeObjectBaseDraftSchema.extend({
+  spec: codemieProjectSettingsSpecSchema,
+});

@@ -6,13 +6,15 @@ export const QuickLinkActions = () => {
   const { data, anchorEl, handleCloseResourceActionListMenu } = useResourceActionListContext<QuickLink>();
 
   return (
-    <QuickLinkActionsMenu
-      data={{
-        quickLink: data,
-      }}
-      anchorEl={anchorEl}
-      handleCloseResourceActionListMenu={handleCloseResourceActionListMenu}
-      variant="menu"
-    />
+    anchorEl && (
+      <QuickLinkActionsMenu
+        data={{
+          quickLink: data,
+        }}
+        anchorEl={anchorEl}
+        handleCloseResourceActionListMenu={handleCloseResourceActionListMenu}
+        variant="menu"
+      />
+    )
   );
 };

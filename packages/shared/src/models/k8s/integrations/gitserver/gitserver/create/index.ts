@@ -1,10 +1,5 @@
 import z, { ZodError } from "zod";
-import {
-  gitProviderEnum,
-  GitServerDraft,
-  gitServerDraftSchema,
-  k8sGitServerConfig,
-} from "../../../../groups/KRCI";
+import { gitProviderEnum, GitServerDraft, gitServerDraftSchema, k8sGitServerConfig } from "../../../../groups/KRCI";
 
 const createGitServerDraftSchema = z.object({
   name: z.string(),
@@ -18,9 +13,7 @@ const createGitServerDraftSchema = z.object({
   webhookUrl: z.string().optional(),
 });
 
-export const createGitServerDraft = (
-  input: z.infer<typeof createGitServerDraftSchema>
-): GitServerDraft => {
+export const createGitServerDraft = (input: z.infer<typeof createGitServerDraftSchema>): GitServerDraft => {
   const parsedInput = createGitServerDraftSchema.safeParse(input);
 
   if (!parsedInput.success) {

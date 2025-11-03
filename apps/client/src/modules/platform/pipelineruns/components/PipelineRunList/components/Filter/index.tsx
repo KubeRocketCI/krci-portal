@@ -51,7 +51,7 @@ export const PipelineRunFilter = ({
   );
 
   return (
-    <div className="flex flex-row gap-4 items-start">
+    <div className="flex flex-row items-start gap-4">
       {filterControls.includes(pipelineRunFilterControlNames.PIPELINE_TYPE) && (
         <div className="w-64">
           <form.Field name="pipelineType">

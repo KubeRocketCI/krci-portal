@@ -1,8 +1,5 @@
 import z from "zod";
-import {
-  kubeObjectBaseDraftSchema,
-  kubeObjectBaseSchema,
-} from "../../../common";
+import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema } from "../../../common";
 
 export const applicationHealthStatusSchema = z.enum([
   "healthy",
@@ -14,10 +11,6 @@ export const applicationHealthStatusSchema = z.enum([
 ]);
 export const applicationSyncStatusSchema = z.enum(["synced", "outofsync"]);
 
-export const applicationSchema = kubeObjectBaseSchema
-  .extend({})
-  .catchall(z.any());
+export const applicationSchema = kubeObjectBaseSchema.extend({}).catchall(z.any());
 
-export const applicationDraftSchema = kubeObjectBaseDraftSchema
-  .extend({})
-  .catchall(z.any());
+export const applicationDraftSchema = kubeObjectBaseDraftSchema.extend({}).catchall(z.any());

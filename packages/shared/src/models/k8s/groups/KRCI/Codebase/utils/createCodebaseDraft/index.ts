@@ -5,8 +5,7 @@ import { codebaseDraftSchema } from "../../schema";
 
 const { kind, apiVersion } = k8sCodebaseConfig;
 
-const normalizePath = (path: string) =>
-  path.startsWith("/") ? path : `/${path}`;
+const normalizePath = (path: string) => (path.startsWith("/") ? path : `/${path}`);
 
 const createCodebaseDraftInputSchema = z.object({
   name: codebaseDraftSchema.shape.metadata.shape.name,
@@ -27,9 +26,7 @@ const createCodebaseDraftInputSchema = z.object({
   labels: codebaseDraftSchema.shape.metadata.shape.labels,
 });
 
-export const createCodebaseDraftObject = (
-  input: z.infer<typeof createCodebaseDraftInputSchema>
-): CodebaseDraft => {
+export const createCodebaseDraftObject = (input: z.infer<typeof createCodebaseDraftInputSchema>): CodebaseDraft => {
   const parsedInput = createCodebaseDraftInputSchema.safeParse(input);
 
   if (!parsedInput.success) {

@@ -27,7 +27,7 @@ export const JiraServerIntegration = () => {
         </div>
       ) : null}
       <div>
-        <div className="flex gap-2 items-center">
+        <div className="flex items-center gap-2">
           <div>
             <FormCheckbox
               {...register(CODEBASE_FORM_NAMES.hasJiraServerIntegration.name)}

@@ -164,7 +164,7 @@ export const FormActions = () => {
           </ConditionalWrapper>
         </div>
         <div>
-          <div className="flex gap-4 items-center">
+          <div className="flex items-center gap-4">
             <div>
               <Button onClick={() => reset()} size="small" component={"button"} disabled={!isDirty}>
                 undo changes

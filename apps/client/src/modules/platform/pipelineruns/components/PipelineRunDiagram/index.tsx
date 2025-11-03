@@ -158,17 +158,17 @@ const PipelineRunDiagramView: React.FC<{
   }, [flowEdges, flowNodes]);
 
   return (
-    <div className="h-full w-full relative">
+    <div className="relative h-full w-full">
       {/* Layout Controls */}
       <div
-        className="absolute top-4 right-4 z-[1000] bg-background rounded-md p-4 shadow-md"
-        style={{
-          // Prevent node selection highlighting
-        }}
+        className="bg-background absolute top-4 right-4 z-[1000] rounded-md p-4 shadow-md"
+        style={
+          {
+            // Prevent node selection highlighting
+          }
+        }
       >
-        <span className="text-xs block mb-1">
-          Layout
-        </span>
+        <span className="mb-1 block text-xs">Layout</span>
         <ToggleButtonGroup
           value={viewMode}
           exclusive

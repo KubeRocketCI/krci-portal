@@ -1,8 +1,8 @@
-import { Form } from './components/Form';
-import { FormActions } from './components/FormActions';
-import { useDefaultValues } from './hooks/useDefaultValues';
-import { EditProps } from './types';
-import { FormContextProvider } from '@/core/providers/Form/provider';
+import { Form } from "./components/Form";
+import { FormActions } from "./components/FormActions";
+import { useDefaultValues } from "./hooks/useDefaultValues";
+import { EditProps } from "./types";
+import { FormContextProvider } from "@/core/providers/Form/provider";
 
 export const Edit = ({ formData }: EditProps) => {
   const baseDefaultValues = useDefaultValues({ formData });
@@ -10,7 +10,7 @@ export const Edit = ({ formData }: EditProps) => {
   return (
     <FormContextProvider
       formSettings={{
-        mode: 'onBlur',
+        mode: "onBlur",
         defaultValues: baseDefaultValues,
       }}
       formData={formData}

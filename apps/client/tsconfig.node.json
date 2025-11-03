@@ -17,6 +17,6 @@
       "@my-project/shared/*": ["packages/shared/src/*"]
     }
   },
-  "include": ["vite.config.ts"],
+  "include": ["vite.config.ts", "vitest.config.ts"],
   "exclude": ["@my-project/server", "node_modules", "dist"]
 }

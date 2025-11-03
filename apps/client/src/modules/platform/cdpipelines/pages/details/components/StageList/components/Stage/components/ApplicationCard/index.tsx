@@ -1,11 +1,4 @@
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Button as MuiButton,
-  Tooltip,
-  useTheme,
-} from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Button as MuiButton, Tooltip, useTheme } from "@mui/material";
 import React from "react";
 import { StyledChip } from "../../styles";
 import { ApplicationCardProps } from "./types";
@@ -152,8 +145,8 @@ export const ApplicationCard = ({
           },
         }}
       >
-        <div className="flex flex-row gap-4 items-center justify-between min-w-0 w-full pr-4">
-          <div className="flex flex-row gap-4 items-center min-w-0">
+        <div className="flex w-full min-w-0 flex-row items-center justify-between gap-4 pr-4">
+          <div className="flex min-w-0 flex-row items-center gap-4">
             <StatusIcon
               Title={`Health status: ${argoAppHealthStatus || "Unknown"}`}
               Icon={applicationHealthStatusIcon.component}
@@ -169,30 +162,20 @@ export const ApplicationCard = ({
                   namespace: application.metadata.namespace || defaultNamespace,
                 }}
               >
-                <TextWithTooltip
-                  text={application.metadata.name}
-                  textSX={{
-                    fontSize: theme.typography.pxToRem(16),
-                  }}
-                />
+                <TextWithTooltip text={application.metadata.name} className="text-base" />
               </Link>
             </Button>
           </div>
           <TextWithTooltip
             text={argoApplication?.spec.source?.targetRevision ?? "Unknown"}
-            textSX={{
-              fontSize: theme.typography.pxToRem(12),
-              fontWeight: 300,
-            }}
+            className="text-xs font-light"
           />
         </div>
       </AccordionSummary>
       <AccordionDetails>
         <div className="flex flex-col gap-2">
-          <div className="flex flex-row gap-2 items-center shrink-0">
-            <span className="text-xs text-muted-foreground">
-              Open In:
-            </span>
+          <div className="flex shrink-0 flex-row items-center gap-2">
+            <span className="text-muted-foreground text-xs">Open In:</span>
             <div className="flex flex-row gap-2">
               <QuickLink
                 name={{
@@ -212,9 +195,7 @@ export const ApplicationCard = ({
             </div>
           </div>
           <div className="flex flex-row items-center gap-4">
-            <span className="text-xs text-muted-foreground">
-              Sync status:
-            </span>
+            <span className="text-muted-foreground text-xs">Sync status:</span>
             <StatusIcon
               Title={`Sync status: ${argoAppSyncStatus || "Unknown"}`}
               Icon={applicationSyncStatusIcon.component}
@@ -222,11 +203,9 @@ export const ApplicationCard = ({
               isSpinning={applicationSyncStatusIcon.isSpinning}
             />
           </div>
-          <div className="flex flex-row items-center gap-4 justify-between">
+          <div className="flex flex-row items-center justify-between gap-4">
             <div className="flex flex-row items-center gap-4">
-              <span className="text-xs text-muted-foreground">
-                Created:
-              </span>
+              <span className="text-muted-foreground text-xs">Created:</span>
               <StyledChip
                 label={argoApplication ? formatDate(argoApplication?.metadata.creationTimestamp) : "Unknown"}
               />
@@ -235,7 +214,7 @@ export const ApplicationCard = ({
           </div>
 
           {!isExternalCluster && (
-            <div className="flex flex-row justify-end items-center gap-2">
+            <div className="flex flex-row items-center justify-end gap-2">
               <ConditionalWrapper
                 condition={podButtonDisabled.status}
                 wrapper={(children) => (

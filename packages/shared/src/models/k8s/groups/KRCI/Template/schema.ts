@@ -21,18 +21,7 @@ const templateSpecSchema = z.object({
   keywords: z.array(z.string()).optional(),
   language: z.string(),
   maintainers: z.array(MaintainerSchema).optional(),
-  maturity: z
-    .enum([
-      "planning",
-      "pre-alpha",
-      "alpha",
-      "beta",
-      "stable",
-      "mature",
-      "inactive",
-      "deprecated",
-    ])
-    .optional(),
+  maturity: z.enum(["planning", "pre-alpha", "alpha", "beta", "stable", "mature", "inactive", "deprecated"]).optional(),
   minEDPVersion: z.string().optional(),
   source: z.string(),
   type: z.string(),

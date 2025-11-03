@@ -84,7 +84,7 @@ export const Select = <
         const foundOption = options.find(({ value }) => value === optionValue);
         if (foundOption) {
           return foundOption.icon ? (
-            <div className="flex gap-4 flex-row items-center">
+            <div className="flex flex-row items-center gap-4">
               <ListItemIcon sx={{ minWidth: 0 }}>{foundOption.icon}</ListItemIcon>
               <ListItemText>{foundOption.label}</ListItemText>
             </div>
@@ -113,10 +113,7 @@ export const Select = <
         renderValue={(value) => (value !== "" ? getOptionValue(value as string) : placeholder)}
         endAdornment={
           tooltipText ? (
-            <div
-              className="absolute top-1/2 right-6 leading-none"
-              style={{ transform: "translateY(-50%)" }}
-            >
+            <div className="absolute top-1/2 right-6 leading-none" style={{ transform: "translateY(-50%)" }}>
               <div className="flex flex-row items-center gap-1">
                 <Tooltip title={tooltipText}>
                   <Info size={16} />

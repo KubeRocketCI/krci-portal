@@ -1,5 +1,4 @@
-import React from 'react';
-import { ClientId, ClientSecret } from './fields';
+import { ClientId, ClientSecret } from "./fields";
 
 export const CodemieSecretForm = () => {
   return (

@@ -1,8 +1,8 @@
-import { BaseDialogProps } from "@/core/providers/Dialog/types";
+import { DialogProps } from "@/core/providers/Dialog/types";
 
 export interface PipelineRunGraphDialogProps {
   pipelineRunName: string;
   namespace: string;
 }
 
-export type PipelineRunGraphDialogPropsWithBaseDialogProps = BaseDialogProps<PipelineRunGraphDialogProps>;
+export type PipelineRunGraphDialogPropsWithBaseDialogProps = DialogProps<PipelineRunGraphDialogProps>;

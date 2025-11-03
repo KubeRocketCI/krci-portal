@@ -120,7 +120,7 @@ export const useColumns = (): TableColumn<Template>[] => {
             ] as unknown as CodebaseInterface;
 
             return (
-              <div className="flex gap-2 items-center flex-nowrap">
+              <div className="flex flex-nowrap items-center gap-2">
                 <div>
                   <UseSpriteSymbol name={getIconByPattern(_language)} width={20} height={20} />
                 </div>
@@ -151,7 +151,7 @@ export const useColumns = (): TableColumn<Template>[] => {
             ] as unknown as CodebaseInterface;
 
             return (
-              <div className="flex gap-2 items-center flex-nowrap">
+              <div className="flex flex-nowrap items-center gap-2">
                 <div>
                   <UseSpriteSymbol name={getIconByPattern(_framework)} width={20} height={20} />
                 </div>
@@ -188,13 +188,11 @@ export const useColumns = (): TableColumn<Template>[] => {
             ] as unknown as CodebaseInterface;
 
             return (
-              <div className="flex gap-2 items-center flex-nowrap">
+              <div className="flex flex-nowrap items-center gap-2">
                 <div>
                   <UseSpriteSymbol name={getIconByPattern(_buildTool)} width={20} height={20} />
                 </div>
-                <div>
-                  {codebaseMappingByLang?.buildTools?.[buildTool]?.name || capitalizeFirstLetter(_buildTool)}
-                </div>
+                <div>{codebaseMappingByLang?.buildTools?.[buildTool]?.name || capitalizeFirstLetter(_buildTool)}</div>
               </div>
             );
           },

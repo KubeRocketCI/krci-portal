@@ -2,7 +2,6 @@ import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { usePipelineWatchList } from "@/k8s/api/groups/Tekton/Pipeline";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { FormAutocompleteSingle } from "@/core/providers/Form/components/FormAutocompleteSingle";
-import { FORM_CONTROL_LABEL_HEIGHT } from "@/core/providers/Form/constants";
 import { mapArrayToSelectOptions } from "@/core/utils/forms/mapToSelectOptions";
 import { PipelineGraphDialog } from "@/modules/platform/pipelines/dialogs/PipelineGraph";
 import { IconButton } from "@mui/material";

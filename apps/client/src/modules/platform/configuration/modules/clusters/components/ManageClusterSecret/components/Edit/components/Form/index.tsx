@@ -40,7 +40,7 @@ export const Form = () => {
           <ClusterToken />
         </div>
         <div style={{ marginTop: theme.typography.pxToRem(20) }}>
-          <div className="grid grid-cols-12 gap-4 items-end">
+          <div className="grid grid-cols-12 items-end gap-4">
             <div className="col-span-6">
               <SkipTLSVerify />
             </div>

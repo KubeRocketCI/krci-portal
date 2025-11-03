@@ -235,7 +235,6 @@ describe("K8sQuickLink: editQuickLink", () => {
       metadata: {
         name: "different-quicklink",
         namespace: "custom-namespace",
-        labels: { app: "test" },
         creationTimestamp: "2023-01-01T00:00:00Z",
         uid: "different-uid-456",
       },

@@ -1,5 +1,5 @@
-import { lighten } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
+import { lighten } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 
 export const useStyles = makeStyles((theme) => {
   const commonCardRating = {
@@ -12,27 +12,27 @@ export const useStyles = makeStyles((theme) => {
   return {
     ratingDefault: {
       ...commonCardRating,
-      background: '#E6E6F0',
+      background: "#E6E6F0",
     },
     ratingA: {
       ...commonCardRating,
-      background: '#18BE94',
+      background: "#18BE94",
     },
     ratingB: {
       ...commonCardRating,
-      background: lighten('#18BE94', 0.5),
+      background: lighten("#18BE94", 0.5),
     },
     ratingC: {
       ...commonCardRating,
-      background: '#FFC754',
+      background: "#FFC754",
     },
     ratingD: {
       ...commonCardRating,
-      background: '#FF8832',
+      background: "#FF8832",
     },
     ratingE: {
       ...commonCardRating,
-      background: '#FD4C4D',
+      background: "#FD4C4D",
     },
   };
 });

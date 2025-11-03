@@ -1,5 +1,5 @@
-import { Link } from '@mui/material';
-import React from 'react';
+import { Link } from "@mui/material";
+import React from "react";
 
 export const MetricsItem = ({
   leftSlot,
@@ -15,13 +15,13 @@ export const MetricsItem = ({
   link: string | undefined;
 }) => {
   return (
-    <Link href={link} target={'_blank'} color="inherit" underline="none">
+    <Link href={link} target={"_blank"} color="inherit" underline="none">
       <div className="flex flex-col items-center gap-1">
         <div className="flex items-center gap-1">
           <div>{leftSlot}</div>
           <div>{rightSlot}</div>
         </div>
-        <span className="text-xs text-muted-foreground flex items-center gap-1">
+        <span className="text-muted-foreground flex items-center gap-1 text-xs">
           {titleIcon} {title}
         </span>
       </div>

@@ -74,7 +74,7 @@ export const CredentialsForm = () => {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <div className="flex gap-2 items-center">
+        <div className="flex items-center gap-2">
           <div>
             <h6 className="text-base font-medium">Credentials</h6>
           </div>
@@ -88,9 +88,7 @@ export const CredentialsForm = () => {
         </div>
       </div>
       <div>
-        <div className="flex flex-col gap-4">
-          {secretFieldsRenderer()}
-        </div>
+        <div className="flex flex-col gap-4">{secretFieldsRenderer()}</div>
       </div>
     </div>
   );

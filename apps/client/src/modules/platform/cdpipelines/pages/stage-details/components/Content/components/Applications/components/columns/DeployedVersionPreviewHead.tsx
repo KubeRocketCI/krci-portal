@@ -46,7 +46,7 @@ export const DeployedVersionHeadColumn = () => {
   ]);
 
   return (
-    <div className="flex gap-2 items-center flex-row">
+    <div className="flex flex-row items-center gap-2">
       Deployed Version
       <Tooltip title="Copy Environment Deployed Versions">
         <div>

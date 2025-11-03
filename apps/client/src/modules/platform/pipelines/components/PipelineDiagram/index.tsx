@@ -54,16 +54,10 @@ const PipelineDiagramInner: React.FC<PipelineDiagramProps> = ({ pipeline }) => {
   }, [nodes, edges, setFlowNodes, setFlowEdges, fitView]);
 
   return (
-    <div
-      className="h-full w-full relative"
-    >
+    <div className="relative h-full w-full">
       {/* View Mode Toggle */}
-      <div
-        className="absolute top-4 right-4 z-50 bg-background rounded p-4 shadow-sm"
-      >
-        <span className="text-xs block mb-1">
-          Layout
-        </span>
+      <div className="bg-background absolute top-4 right-4 z-50 rounded p-4 shadow-sm">
+        <span className="mb-1 block text-xs">Layout</span>
         <ToggleButtonGroup
           value={viewMode}
           exclusive

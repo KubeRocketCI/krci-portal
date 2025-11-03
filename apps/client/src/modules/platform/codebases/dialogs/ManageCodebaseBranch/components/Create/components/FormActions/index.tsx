@@ -1,5 +1,5 @@
 import { useCodebaseBranchCRUD } from "@/k8s/api/groups/KRCI/CodebaseBranch";
-import { Button, useTheme } from "@mui/material";
+import { Button } from "@mui/material";
 import {
   createCodebaseBranchDraftObject,
   createVersioningString,
@@ -83,10 +83,8 @@ export const FormActions = () => {
     [codebase.metadata.name, reset, handleClose, defaultBranch, triggerCreateCodebaseBranch]
   );
 
-  const theme = useTheme();
-
   return (
-    <div className="flex justify-between w-full">
+    <div className="flex w-full justify-between">
       <div className="flex gap-1">
         <div className="text-foreground">
           <Button onClick={handleClose} size="small" color="inherit">

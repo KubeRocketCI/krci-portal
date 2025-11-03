@@ -16,13 +16,12 @@
     "moduleResolution": "bundler",
     "paths": {
       "@/*": ["apps/client/src/*"],
-      "@my-project/server": ["apps/server/src"],
-      "@my-project/server/*": ["apps/server/src/*"],
-      "@my-project/shared": ["packages/shared/src"],
-      "@my-project/shared/*": ["packages/shared/src/*"]
+      "@my-project/trpc": ["packages/trpc/dist"],
+      "@my-project/trpc/*": ["packages/trpc/dist/*"],
+      "@my-project/shared": ["packages/shared/dist"],
+      "@my-project/shared/*": ["packages/shared/dist/*"]
     }
   },
   "include": ["src"],
-  "exclude": ["node_modules", "dist"],
-  "references": [{ "path": "../../packages/shared" }, { "path": "../../apps/server" }]
+  "exclude": ["node_modules", "dist"]
 }

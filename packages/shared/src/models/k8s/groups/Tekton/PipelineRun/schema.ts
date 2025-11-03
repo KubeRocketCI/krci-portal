@@ -7,11 +7,7 @@ import {
 } from "../../../common";
 import { pipelineSpecSchema, pipelineTypeEnum } from "../Pipeline/schema";
 import { pipelineRunLabels } from "./labels";
-import {
-  pipelineRefSchema,
-  whenExpressionSchema,
-  paramValueSchema,
-} from "../common/schema";
+import { pipelineRefSchema, whenExpressionSchema, paramValueSchema } from "../common/schema";
 import { stepStateSchema } from "../TaskRun/schema";
 
 const pipelineRunLabelsSchema = z
@@ -632,9 +628,7 @@ const statusSchema = z.object({
                     runningInEnvWithInjectedSidecars: z.boolean().optional(),
                     sendCloudEventsForRuns: z.boolean().optional(),
                     setSecurityContext: z.boolean().optional(),
-                    setSecurityContextReadOnlyRootFilesystem: z
-                      .boolean()
-                      .optional(),
+                    setSecurityContextReadOnlyRootFilesystem: z.boolean().optional(),
                     verificationNoMatchPolicy: z.string().optional(),
                   })
                   .optional(),

@@ -1,4 +1,4 @@
-import { ManageClusterSecretDataContext } from '../../types';
+import { ManageClusterSecretDataContext } from "../../types";
 
 export interface EditProps {
   formData: ManageClusterSecretDataContext;

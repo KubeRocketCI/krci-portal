@@ -1,2 +1,2 @@
-export * from './ApiUrl';
-export * from './TokenEndpoint';
+export * from "./ApiUrl";
+export * from "./TokenEndpoint";

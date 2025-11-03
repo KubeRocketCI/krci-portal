@@ -43,7 +43,7 @@ export const createDeployPipelineRunDraft = ({
   base.metadata.labels[pipelineRunLabels.cdStage] = stage.metadata.namespace;
   base.metadata.labels[pipelineRunLabels.pipelineType] = pipelineType.deploy;
 
-  for (const param of base.spec.params) {
+  for (const param of base.spec.params || []) {
     switch (param.name) {
       case "CDSTAGE":
         param.value = stage.spec.name;

@@ -21,11 +21,11 @@ const MetricsCell = ({
 }) => {
   return (
     <div
-      className="flex items-center justify-center text-center px-[9px] py-[5px]"
-      style={{ backgroundColor: color ?? '#424242', color: textColor ?? '#ffffff' }}
+      className="flex items-center justify-center px-[9px] py-[5px] text-center"
+      style={{ backgroundColor: color ?? "#424242", color: textColor ?? "#ffffff" }}
     >
       {typeof value === "string" || typeof value === "number" ? (
-        <span className="text-[10px] font-medium" style={{ color: textColor ?? '#ffffff' }}>
+        <span className="text-[10px] font-medium" style={{ color: textColor ?? "#ffffff" }}>
           {value}
         </span>
       ) : (
@@ -66,7 +66,7 @@ export const DependencyTrackMetrics = ({ componentName }: DependencyTrackMetrics
       }
       isLoading={depTrackDataQuery.isLoading}
       text={
-        <p className="text-base text-muted-foreground">
+        <p className="text-muted-foreground text-base">
           No metrics available.{" "}
           <Button variant="link" asChild className="p-0!">
             <Link
@@ -94,7 +94,7 @@ export const DependencyTrackMetrics = ({ componentName }: DependencyTrackMetrics
             target={"_blank"}
             color="inherit"
           >
-            <div className="flex rounded-[2px] overflow-hidden">
+            <div className="flex overflow-hidden rounded-[2px]">
               <MetricsCell value="dependencies" />
               {!!depTrackDataQuery.data?.metrics && !depTrackDataQuery.isLoading ? (
                 <>
@@ -111,9 +111,7 @@ export const DependencyTrackMetrics = ({ componentName }: DependencyTrackMetrics
               ) : (
                 <MetricsCell
                   value={
-                    <div
-                      className="min-w-[120px] flex justify-center items-center"
-                    >
+                    <div className="flex min-w-[120px] items-center justify-center">
                       <CircularProgress
                         sx={{
                           width: (t) => `${t.typography.pxToRem(14)} !important`,

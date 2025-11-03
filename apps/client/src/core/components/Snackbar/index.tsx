@@ -72,6 +72,7 @@ const getVariantStyles = (variant: ToastVariant) => {
 };
 
 // Fully custom toast component (Headless approach)
+// eslint-disable-next-line react-refresh/only-export-components
 const CustomToast = ({
   id,
   message,
@@ -102,7 +103,7 @@ const CustomToast = ({
       }}
     >
       <div className="flex items-center gap-3">
-        <div className="flex-shrink-0 text-white">{variantIcon}</div>
+        <div className="shrink-0 text-white">{variantIcon}</div>
         <div className="flex-1">
           <p className="text-sm font-medium text-white">{message}</p>
         </div>

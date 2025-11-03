@@ -26,7 +26,7 @@ export default function PipelineDetailsPageContent() {
             <div className="flex items-center justify-center gap-1">
               <TriangleAlert size={48} />
               <div className="flex items-center gap-1">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-muted-foreground text-sm">
                   No pipeline was found for the requested resource. Please ensure you have checked the correct resource.
                 </span>
               </div>

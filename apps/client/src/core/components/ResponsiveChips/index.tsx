@@ -12,7 +12,7 @@ const defaultChipRender = (label: string, key: string, size = "small") => (
 );
 
 const defaultTooltipRender = (chipsToHide: string[]) => (
-  <div className="py-1 px-3">
+  <div className="px-3 py-1">
     <div className="flex flex-wrap gap-6" style={{ fontWeight: 400 }}>
       {chipsToHide.map((chip) => defaultChipRender(chip, chip))}
     </div>
@@ -180,7 +180,7 @@ export const ResponsiveChips = ({
     <>
       {MeasurementContainer}
       <div ref={containerRef} style={{ width: "100%" }}>
-        <div className="flex flex-row gap-2 items-center">
+        <div className="flex flex-row items-center gap-2">
           {visibleChips.map((chip) => renderChip(chip, chip))}
           {hiddenChips.length > 0 && (
             <Tooltip title={renderTooltip(hiddenChips, visibleChips)}>

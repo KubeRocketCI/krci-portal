@@ -19,9 +19,7 @@ export const ManageGitOps = ({ formData }: ManageGitOpsProps) => {
       formData={formData}
     >
       <div className="flex flex-col gap-4" data-testid="form">
-        <div>
-          {isReadOnly ? <View /> : <Create />}
-        </div>
+        <div>{isReadOnly ? <View /> : <Create />}</div>
         <div>
           <FormActions />
         </div>

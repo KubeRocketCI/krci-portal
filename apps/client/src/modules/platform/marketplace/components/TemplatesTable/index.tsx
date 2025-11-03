@@ -7,10 +7,9 @@ import { VIEW_MODES } from "@/core/providers/ViewMode/types";
 import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { useTemplatePermissions, useTemplateWatchList } from "@/k8s/api/groups/KRCI/Template";
 import { TABLE } from "@/k8s/constants/tables";
-import { Shop } from "@/k8s/icons/other/Shop";
 import { IconButton, Tooltip, useTheme } from "@mui/material";
 import { Template } from "@my-project/shared";
-import { Grid3x2, Rows3 } from "lucide-react";
+import { Grid3x2, Rows3, ShoppingBag } from "lucide-react";
 import React from "react";
 import { CreateCodebaseFromTemplateDialog } from "../CreateCodebaseFromTemplate";
 import { TemplateFilter } from "../Filter";
@@ -61,7 +60,7 @@ export const TemplatesTable = () => {
         hasAtLeastOneGitServer ? (
           <TemplatesWarning />
         ) : (
-          <EmptyList missingItemName={"templates"} icon={<Shop width={128} height={128} fill="#A2A7B7" />} />
+          <EmptyList missingItemName={"templates"} icon={<ShoppingBag size={128} fill="#A2A7B7" />} />
         )
       }
       slots={{

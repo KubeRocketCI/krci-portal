@@ -32,4 +32,4 @@ export interface SonarQubeMetrics {
   };
 }
 
-export type NormalizedSonarQubeMetrics = Record<MetricKey, string>
+export type NormalizedSonarQubeMetrics = Record<MetricKey, string>;

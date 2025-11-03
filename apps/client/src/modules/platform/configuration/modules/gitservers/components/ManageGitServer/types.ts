@@ -1,5 +1,5 @@
 import { GitProvider, GitServer } from "@my-project/shared";
-import { ValueOf } from "@my-project/shared/types";
+import { ValueOf } from "@my-project/shared";
 import { FORM_NAMES } from "./constants";
 import { CREDENTIALS_FORM_NAMES, GIT_SERVER_FORM_NAMES, SHARED_FORM_NAMES } from "./names";
 

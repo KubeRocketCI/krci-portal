@@ -108,7 +108,7 @@ export const SonarMetrics = ({ componentName }: SonarQubeMetricsProps) => {
       hasData={!!sonarDataQuery.data?.metrics && !!sonarDataQuery.data?.baseUrl}
       isLoading={sonarDataQuery.isLoading}
       text={
-        <p className="text-base text-muted-foreground">
+        <p className="text-muted-foreground text-base">
           No metrics available.{" "}
           <Button variant="link" asChild className="p-0!">
             <Link

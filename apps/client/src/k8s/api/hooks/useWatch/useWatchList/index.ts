@@ -151,6 +151,7 @@ export const useWatchList = <I extends KubeObjectBase>({
       clusterName,
       _namespace,
       resourceConfig.pluralName,
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       labels ? JSON.stringify(labels) : undefined,
       queryKey,
     ]

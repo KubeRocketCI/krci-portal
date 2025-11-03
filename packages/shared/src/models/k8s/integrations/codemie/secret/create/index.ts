@@ -9,9 +9,7 @@ const createCodemieSecretDraftSchema = z.object({
   clientSecret: z.string(),
 });
 
-export const createCodemieSecretDraft = (
-  input: z.infer<typeof createCodemieSecretDraftSchema>
-): SecretDraft => {
+export const createCodemieSecretDraft = (input: z.infer<typeof createCodemieSecretDraftSchema>): SecretDraft => {
   const parsedInput = createCodemieSecretDraftSchema.safeParse(input);
 
   if (!parsedInput.success) {

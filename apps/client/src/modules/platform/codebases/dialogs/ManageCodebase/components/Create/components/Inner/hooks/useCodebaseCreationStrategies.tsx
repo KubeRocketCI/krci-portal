@@ -18,7 +18,7 @@ export const useCodebaseCreationStrategies = () => {
               description: "Create a sample project from a template to start quickly.",
               icon: <FolderPlus size={24} color="#002446" />,
               checkedIcon: <FolderPlus size={24} color="#002446" />,
-              disabled: !typeFieldValue || typeFieldValue === codebaseType.autotest,
+              disabled: !typeFieldValue,
             },
           ]
         : []),

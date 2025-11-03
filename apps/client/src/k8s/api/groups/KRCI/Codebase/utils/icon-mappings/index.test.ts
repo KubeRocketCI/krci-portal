@@ -1,5 +1,5 @@
-import { RESOURCE_ICON_NAMES } from "../../../../../../icons/sprites/Resources/names";
-import { CODEBASE_ICON_PATTERNS, getIconByPattern } from "./index";
+import { describe, test, expect } from "vitest";
+import { CODEBASE_ICON_PATTERNS, getIconByPattern, RESOURCE_ICON_NAMES } from "./index";
 
 describe("getIconByPattern", () => {
   describe("Language patterns", () => {

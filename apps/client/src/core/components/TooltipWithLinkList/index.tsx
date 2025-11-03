@@ -35,7 +35,7 @@ export const TooltipWithLinkList = ({ urls, size }: { urls: string[]; size?: "me
         placement: "top-end",
       }}
     >
-      <div className="leading-none mx-8">
+      <div className="mx-8 leading-none">
         <div className="flex flex-row items-center">
           <SquareArrowOutUpRight size={iconSize} />
           <ChevronDown size={iconSize} />

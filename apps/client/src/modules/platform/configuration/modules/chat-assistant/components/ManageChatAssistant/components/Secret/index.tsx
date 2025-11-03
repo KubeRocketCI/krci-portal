@@ -1,4 +1,4 @@
-import { ApiUrl, AssistantId, Token } from './fields';
+import { ApiUrl, AssistantId, Token } from "./fields";
 
 export const SecretForm = () => {
   return (

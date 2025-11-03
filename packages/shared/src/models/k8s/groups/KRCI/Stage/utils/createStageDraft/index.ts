@@ -5,9 +5,7 @@ import { stageDraftSchema, createStageDraftInputSchema } from "../../schema";
 
 const { kind, apiVersion } = k8sStageConfig;
 
-export const createStageDraftObject = (
-  input: CreateStageDraftInput
-): StageDraft => {
+export const createStageDraftObject = (input: CreateStageDraftInput): StageDraft => {
   const parsedInput = createStageDraftInputSchema.safeParse(input);
 
   if (!parsedInput.success) {

@@ -55,7 +55,7 @@ export const QualityGates = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-row gap-2 items-center flex-nowrap">
+      <div className="flex flex-row flex-nowrap items-center gap-2">
         <h6 className="text-base font-medium">Quality gates</h6>
         <Tooltip title={"Define quality gates before promoting applications to the next environment."}>
           <Info size={16} />
@@ -69,7 +69,7 @@ export const QualityGates = () => {
 
           return (
             <div key={key}>
-              <div className="grid grid-cols-12 gap-2 items-center">
+              <div className="grid grid-cols-12 items-center gap-2">
                 <div className="col-span-10">
                   <QualityGateRow namespace={namespace} currentQualityGate={el} />
                 </div>

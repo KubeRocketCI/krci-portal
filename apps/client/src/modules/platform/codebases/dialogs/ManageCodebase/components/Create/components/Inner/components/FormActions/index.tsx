@@ -3,7 +3,7 @@ import { useStepperContext } from "@/core/providers/Stepper/hooks";
 import { ValueOf } from "@/core/types/global";
 import { useCodebaseCRUD } from "@/k8s/api/groups/KRCI/Codebase";
 import { configurationStepper, mainTabs } from "@/modules/platform/codebases/dialogs/ManageCodebase/constants";
-import { Button, useTheme } from "@mui/material";
+import { Button } from "@mui/material";
 import { codebaseCreationStrategy, codebaseLabels, createCodebaseDraftObject } from "@my-project/shared";
 import React from "react";
 import { useTypedFormContext } from "../../../../../../hooks/useFormContext";
@@ -13,7 +13,6 @@ import { ManageCodebaseFormValues } from "../../../../../../types";
 import { FormActionsProps } from "./types";
 
 export const FormActions = ({ baseDefaultValues, setActiveTab }: FormActionsProps) => {
-  const theme = useTheme();
   const { activeStep, setActiveStep, nextStep } = useStepperContext();
   const {
     state: { closeDialog },
@@ -170,7 +169,7 @@ export const FormActions = ({ baseDefaultValues, setActiveTab }: FormActionsProp
   const configurationFormIsDirty = Object.keys(dirtyFields).length > 2; // 2 is the number of fields that are always dirty
 
   return (
-    <div className="flex justify-between w-full gap-2">
+    <div className="flex w-full justify-between gap-2">
       <div className="flex gap-1">
         <div className="text-foreground">
           <Button onClick={handleClose} size="small" color="inherit">

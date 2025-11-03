@@ -41,7 +41,6 @@ const MemoizedApplicationsInner = React.memo(
 export const Applications = () => {
   const stageAppCodebasesCombinedDataWatch = useWatchStageAppCodebasesCombinedData();
 
-
   const baseDefaultValues = React.useMemo(
     () =>
       (stageAppCodebasesCombinedDataWatch.data?.stageAppCodebasesCombinedData || []).reduce<
@@ -98,10 +97,8 @@ export const Applications = () => {
     <FormProvider {...formState}>
       <TabSection
         title={
-          <div className="flex flex-row gap-2 items-center">
-            <h2 className="text-3xl font-semibold text-foreground">
-              Applications
-            </h2>
+          <div className="flex flex-row items-center gap-2">
+            <h2 className="text-foreground text-3xl font-semibold">Applications</h2>
           </div>
         }
       >

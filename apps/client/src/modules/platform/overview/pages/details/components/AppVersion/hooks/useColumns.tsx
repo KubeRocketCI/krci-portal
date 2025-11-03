@@ -66,8 +66,8 @@ export const useColumns = (): TableColumn<Application>[] => {
                 to={routeStageDetails.fullPath}
                 params={{
                   clusterName,
-                  CDPipelineName: CDPipelineName!,
-                  stageName: stageName!,
+                  cdPipeline: CDPipelineName!,
+                  stage: stageName!,
                   namespace,
                 }}
               >

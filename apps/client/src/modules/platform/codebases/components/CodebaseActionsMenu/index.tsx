@@ -30,28 +30,20 @@ const DeletionErrorMessage = ({ codebase, conflictedPipeline, clusterName }: Del
   const { closeDialog } = useDialogContext();
 
   return (
-    <div
-      className="flex flex-col gap-8 p-10 rounded-md bg-red-50/30 border border-red-400/30"
-    >
+    <div className="flex flex-col gap-8 rounded-md border border-red-400/30 bg-red-50/30 p-10">
       <div className="flex items-center gap-6">
         <AlertCircle size={20} style={{ color: "#d32f2f", flexShrink: 0 }} />
-        <p className="text-sm font-semibold text-[#d32f2f] text-[0.9375rem]">
-          Cannot Delete Codebase
-        </p>
+        <p className="text-sm text-[0.9375rem] font-semibold text-[#d32f2f]">Cannot Delete Codebase</p>
       </div>
 
       <div className="flex flex-col gap-2 pl-18">
-        <p className="text-sm text-foreground leading-relaxed">
+        <p className="text-foreground text-sm leading-relaxed">
           {capitalizeFirstLetter(codebase.spec.type)}{" "}
-          <span className="font-semibold text-foreground">
-            {codebase.metadata.name}
-          </span>{" "}
-          is currently being used in the following Deployment Flow:
+          <span className="text-foreground font-semibold">{codebase.metadata.name}</span> is currently being used in the
+          following Deployment Flow:
         </p>
 
-        <div
-          className="mt-4 p-6 rounded bg-background border border-border"
-        >
+        <div className="bg-background border-border mt-4 rounded border p-6">
           {/* @ts-expect-error TODO: Fix when migrating to tailwind */}
           <Button
             component={Link}
@@ -70,7 +62,7 @@ const DeletionErrorMessage = ({ codebase, conflictedPipeline, clusterName }: Del
           </Button>
         </div>
 
-        <p className="text-sm mt-4 text-muted-foreground">
+        <p className="text-muted-foreground mt-4 text-sm">
           Please remove this codebase from the Deployment Flow before deleting it.
         </p>
       </div>

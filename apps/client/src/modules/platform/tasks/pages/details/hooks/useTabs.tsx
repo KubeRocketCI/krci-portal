@@ -36,7 +36,7 @@ export const useTabs = (): Tab[] => {
         label: "View YAML",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.yaml),
         component: (
-          <div className="pt-6 h-full overflow-hidden">
+          <div className="h-full overflow-hidden pt-6">
             <ViewTask />
           </div>
         ),

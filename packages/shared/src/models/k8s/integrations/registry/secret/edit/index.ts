@@ -54,9 +54,7 @@ export const editPullAccountRegistrySecret = (
               [registryEndpoint]: {
                 username: validatedInput.user,
                 password: validatedInput.password,
-                auth: safeEncode(
-                  `${validatedInput.user}:${validatedInput.password}`
-                ),
+                auth: safeEncode(`${validatedInput.user}:${validatedInput.password}`),
               },
             },
           })
@@ -105,9 +103,7 @@ export const editPushAccountRegistrySecret = (
               [registryEndpoint]: {
                 username: validatedInput.user,
                 password: validatedInput.password,
-                auth: safeEncode(
-                  `${validatedInput.user}:${validatedInput.password}`
-                ),
+                auth: safeEncode(`${validatedInput.user}:${validatedInput.password}`),
               },
             },
           };
@@ -123,8 +119,7 @@ export const editPushAccountRegistrySecret = (
           break;
       }
 
-      draft.data[".dockerconfigjson"] =
-        safeEncode(JSON.stringify(dockerConfigData)) || "";
+      draft.data[".dockerconfigjson"] = safeEncode(JSON.stringify(dockerConfigData)) || "";
     }
   );
 };

@@ -133,7 +133,7 @@ export const MenuAccordion = ({
                     Title={`Status: ${stepStatus.status}. Reason: ${stepStatus.reason}`}
                     width={20}
                   />
-                  <span className={`text-sm ${isActive ? 'font-medium' : 'font-normal'} text-left`}>
+                  <span className={`text-sm ${isActive ? "font-medium" : "font-normal"} text-left`}>
                     {taskRunStepName}
                   </span>
                 </div>

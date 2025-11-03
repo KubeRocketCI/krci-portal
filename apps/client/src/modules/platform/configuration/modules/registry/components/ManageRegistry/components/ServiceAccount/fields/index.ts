@@ -1,1 +1,1 @@
-export * from './IrsaRoleArn';
+export * from "./IrsaRoleArn";

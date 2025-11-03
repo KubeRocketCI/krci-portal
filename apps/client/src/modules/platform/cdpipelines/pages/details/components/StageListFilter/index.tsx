@@ -55,9 +55,9 @@ export const StageListFilter = () => {
   const { viewMode, handleChangeViewMode } = useViewModeContext();
 
   return (
-    <div className="flex gap-4 items-center justify-end">
+    <div className="flex items-center justify-end gap-4">
       <div className="flex-1">
-        <div className="grid grid-cols-12 gap-4 items-center">
+        <div className="grid grid-cols-12 items-center gap-4">
           <div className="col-span-3">
             <form.Field name={stagesFilterControlNames.APPLICATION}>
               {(field) => (
@@ -96,7 +96,7 @@ export const StageListFilter = () => {
         </div>
       </div>
       <div>
-        <div className="flex flex-row gap-0 justify-end">
+        <div className="flex flex-row justify-end gap-0">
           <Tooltip title={"View Less Details"}>
             <IconButton onClick={() => handleChangeViewMode(VIEW_MODES.COMPACT)} size="large">
               <Rows2

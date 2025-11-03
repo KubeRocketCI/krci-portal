@@ -1,11 +1,5 @@
 import z from "zod";
-import {
-  pipelineSchema,
-  pipelineSpecSchema,
-  pipelineTaskSchema,
-  pipelineTypeEnum,
-  pipelineDraftSchema,
-} from ".";
+import { pipelineSchema, pipelineSpecSchema, pipelineTaskSchema, pipelineTypeEnum, pipelineDraftSchema } from ".";
 
 export type Pipeline = z.infer<typeof pipelineSchema>;
 

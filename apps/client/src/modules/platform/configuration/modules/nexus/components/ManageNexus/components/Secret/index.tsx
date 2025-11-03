@@ -1,5 +1,4 @@
-import React from 'react';
-import { Password, URL, User } from './fields';
+import { Password, URL, User } from "./fields";
 
 export const SecretForm = () => {
   return (

@@ -13,7 +13,7 @@ export interface ConfigurationPageContentProps {
     onOpen: () => void;
     permission: {
       allowed: boolean;
-      reason: string | undefined;
+      reason: string;
     };
     label?: string;
     isDisabled?: boolean;

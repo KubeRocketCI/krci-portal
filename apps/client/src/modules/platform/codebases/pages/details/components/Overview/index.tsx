@@ -58,9 +58,7 @@ export const Overview = () => {
       <BorderedSection
         title={
           <div className="flex items-center gap-2">
-            <h3 className="text-xl font-semibold text-foreground">
-              Code Quality
-            </h3>
+            <h3 className="text-foreground text-xl font-semibold">Code Quality</h3>
             <Chip
               sx={{
                 backgroundColor:

@@ -1,5 +1,5 @@
 import React from "react";
-import {  GitServer, Secret } from "@my-project/shared";
+import { GitServer, Secret } from "@my-project/shared";
 import { DataContextProviderValue } from "./types";
 
 export const DataContext = React.createContext<DataContextProviderValue>({

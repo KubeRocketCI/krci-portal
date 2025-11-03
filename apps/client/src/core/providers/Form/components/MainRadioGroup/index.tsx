@@ -1,11 +1,4 @@
-import {
-  ButtonBase,
-  FormControl,
-  FormControlLabel,
-  FormHelperText,
-  Radio,
-  RadioGroup,
-} from "@mui/material";
+import { ButtonBase, FormControl, FormControlLabel, FormHelperText, Radio, RadioGroup } from "@mui/material";
 import clsx from "clsx";
 import React from "react";
 import { Controller, Path, PathValue } from "react-hook-form";
@@ -75,13 +68,13 @@ const TileRadioGroupInner = React.forwardRef(
                             <Radio
                               checked={isChecked}
                               icon={
-                                <div className="flex flex-row gap-2 items-center">
+                                <div className="flex flex-row items-center gap-2">
                                   {icon}
                                   <h6 className="text-base font-medium">{label}</h6>
                                 </div>
                               }
                               checkedIcon={
-                                <div className="flex flex-row gap-2 items-center">
+                                <div className="flex flex-row items-center gap-2">
                                   {checkedIcon}
                                   <h6 className="text-base font-medium">{label}</h6>
                                 </div>
@@ -96,11 +89,7 @@ const TileRadioGroupInner = React.forwardRef(
                               className={`flex flex-col gap-4 ${description ? "items-start" : "items-center"}`}
                               style={{ height: description ? "auto" : "100%" }}
                             >
-                              {!!description && (
-                                <span className="text-xs text-left">
-                                  {description}
-                                </span>
-                              )}
+                              {!!description && <span className="text-left text-xs">{description}</span>}
                             </div>
                           }
                           className={classes.radioControlLabel}

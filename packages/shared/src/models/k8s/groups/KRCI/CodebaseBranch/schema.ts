@@ -8,12 +8,7 @@ import {
 import { codebaseBranchLabels } from "./labels";
 import { krciCommonLabelsSchema } from "../common";
 
-export const codebaseBranchStatusEnum = z.enum([
-  "created",
-  "initialized",
-  "in_progress",
-  "failed",
-]);
+export const codebaseBranchStatusEnum = z.enum(["created", "initialized", "in_progress", "failed"]);
 
 export const codebaseBranchResultEnum = z.enum(["success", "error"]);
 

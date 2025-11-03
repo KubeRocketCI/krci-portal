@@ -47,13 +47,9 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
 
               const title = (
                 <>
-                  <p className="text-sm font-semibold">
-                    {`Status: ${status || "Unknown"}`}
-                  </p>
+                  <p className="text-sm font-semibold">{`Status: ${status || "Unknown"}`}</p>
                   {status === CUSTOM_RESOURCE_STATUS.FAILED && (
-                    <p className="text-sm font-medium mt-3">
-                      {detailedMessage}
-                    </p>
+                    <p className="mt-3 text-sm font-medium">{detailedMessage}</p>
                   )}
                 </>
               );
@@ -158,7 +154,7 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                     return (
                       <div
                         style={{
-                          paddingTop: "6px",  // pxToRem(6) = 6px
+                          paddingTop: "6px", // pxToRem(6) = 6px
                           paddingBottom: "6px",
                           paddingLeft: "10px", // pxToRem(10) = 10px
                           paddingRight: "10px",

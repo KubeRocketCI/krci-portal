@@ -43,7 +43,7 @@ export const DeletionDialog = ({
     k8sOperation.delete,
     {
       createCustomMessages: () => ({
-        onSuccess: {
+        success: {
           message: "Selected PipelineRuns have been deleted",
         },
       }),

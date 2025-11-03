@@ -10,10 +10,8 @@ export const getMajorMinorPatchOfVersion = (
   return { major, minor, patch };
 };
 
-export const createVersioningString = (
-  version: string,
-  postfix: string
-): string => (!postfix ? version : `${version}-${postfix}`);
+export const createVersioningString = (version: string, postfix: string): string =>
+  !postfix ? version : `${version}-${postfix}`;
 
 export const getVersionAndPostfixFromVersioningString = (
   versioning: string
@@ -26,5 +24,4 @@ export const getVersionAndPostfixFromVersioningString = (
   return { version, postfix };
 };
 
-export const createReleaseNameString = (major: number, minor: number): string =>
-  `release/${major}.${minor}`;
+export const createReleaseNameString = (major: number, minor: number): string => `release/${major}.${minor}`;

@@ -36,30 +36,19 @@ export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
       <StyledDetailsHeader>
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
-            <h3 className="text-xl font-medium">
-              {taskRunName}
-            </h3>
+            <h3 className="text-xl font-medium">{taskRunName}</h3>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-foreground">
-              Status:{" "}
-              <span className="text-sm text-muted-foreground">
-                {taskRunStatus.reason}
-              </span>
+            <span className="text-foreground text-sm font-medium">
+              Status: <span className="text-muted-foreground text-sm">{taskRunStatus.reason}</span>
             </span>
-            <span className="text-sm font-medium text-foreground">
-              Duration:{" "}
-              <span className="text-sm text-muted-foreground">
-                {duration}
-              </span>
+            <span className="text-foreground text-sm font-medium">
+              Duration: <span className="text-muted-foreground text-sm">{duration}</span>
             </span>
           </div>
           {taskDescription && (
-            <span className="text-sm font-medium text-foreground">
-              Description:{" "}
-              <span className="text-sm text-muted-foreground">
-                {taskDescription}
-              </span>
+            <span className="text-foreground text-sm font-medium">
+              Description: <span className="text-muted-foreground text-sm">{taskDescription}</span>
             </span>
           )}
         </div>

@@ -1,33 +1,18 @@
 import z from "zod";
 
-export const registrySecretNameEnum = z.enum([
-  "kaniko-docker-config",
-  "regcred",
-]);
+export const registrySecretNameEnum = z.enum(["kaniko-docker-config", "regcred"]);
 
 export const registrySecretName = registrySecretNameEnum.enum;
 
 export type RegistrySecretName = z.infer<typeof registrySecretNameEnum>;
 
-export const containerRegistryPlatformEnum = z.enum([
-  "kubernetes",
-  "openshift",
-]);
+export const containerRegistryPlatformEnum = z.enum(["kubernetes", "openshift"]);
 
 export const containerRegistryPlatform = containerRegistryPlatformEnum.enum;
 
-export type ContainerRegistryPlatform = z.infer<
-  typeof containerRegistryPlatformEnum
->;
+export type ContainerRegistryPlatform = z.infer<typeof containerRegistryPlatformEnum>;
 
-export const containerRegistryTypeEnum = z.enum([
-  "ecr",
-  "dockerhub",
-  "harbor",
-  "openshift",
-  "nexus",
-  "ghcr",
-]);
+export const containerRegistryTypeEnum = z.enum(["ecr", "dockerhub", "harbor", "openshift", "nexus", "ghcr"]);
 
 export const containerRegistryType = containerRegistryTypeEnum.enum;
 
@@ -61,6 +46,5 @@ export const containerRegistryTypeByPlatform = {
 };
 
 export const IRSA_ROLE_ARN_ANNOTATION = "eks.amazonaws.com/role-arn";
-export const DOCKER_HUB_DEFAULT_REGISTRY_ENDPOINT =
-  "https://index.docker.io/v1/";
+export const DOCKER_HUB_DEFAULT_REGISTRY_ENDPOINT = "https://index.docker.io/v1/";
 export const GHCR_DEFAULT_REGISTRY_ENDPOINT = "https://ghcr.io";

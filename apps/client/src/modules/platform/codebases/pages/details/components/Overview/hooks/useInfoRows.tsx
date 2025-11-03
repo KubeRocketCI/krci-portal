@@ -89,7 +89,7 @@ export const useInfoRows = () => {
         {
           label: "Status",
           text: (
-            <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-2">
               <div>
                 <StatusIcon
                   Icon={codebaseStatusIcon.component}
@@ -98,13 +98,12 @@ export const useInfoRows = () => {
                   width={20}
                   Title={
                     <>
-                      <p className="text-sm font-semibold">
-                        {`Status: ${codebase?.status?.status || "unknown"}`}
-                      </p>
+                      <p className="text-sm font-semibold">{`Status: ${codebase?.status?.status || "unknown"}`}</p>
                       {!!codebase?.status?.detailedMessage && (
-                        <p className="text-sm font-medium mt-3">
+                        <p className="mt-3 text-sm font-medium">
                           {codebase?.status?.detailedMessage}
-                        shaky</p>
+                          shaky
+                        </p>
                       )}
                     </>
                   }
@@ -185,10 +184,9 @@ export const useInfoRows = () => {
           label: "Review Pipeline",
           text: (
             <LoadingWrapper isLoading={pipelineNamesWatch.isLoading}>
-              { pipelineNames?.reviewPipelineName ? 
-                  <Pipeline pipelineName={pipelineNames.reviewPipelineName} namespace={params.namespace} /> : 
-                null
-              }
+              {pipelineNames?.reviewPipelineName ? (
+                <Pipeline pipelineName={pipelineNames.reviewPipelineName} namespace={params.namespace} />
+              ) : null}
             </LoadingWrapper>
           ),
         },
@@ -196,14 +194,19 @@ export const useInfoRows = () => {
           label: "Build Pipeline",
           text: (
             <LoadingWrapper isLoading={pipelineNamesWatch.isLoading}>
-              { pipelineNames?.buildPipelineName ? 
-                  <Pipeline pipelineName={pipelineNames.buildPipelineName} namespace={params.namespace} /> : 
-                null
-              }
+              {pipelineNames?.buildPipelineName ? (
+                <Pipeline pipelineName={pipelineNames.buildPipelineName} namespace={params.namespace} />
+              ) : null}
             </LoadingWrapper>
           ),
         },
       ],
     ];
-  }, [codebase, params.namespace, pipelineNames?.buildPipelineName, pipelineNames?.reviewPipelineName, pipelineNamesWatch.isLoading]);
+  }, [
+    codebase,
+    params.namespace,
+    pipelineNames?.buildPipelineName,
+    pipelineNames?.reviewPipelineName,
+    pipelineNamesWatch.isLoading,
+  ]);
 };

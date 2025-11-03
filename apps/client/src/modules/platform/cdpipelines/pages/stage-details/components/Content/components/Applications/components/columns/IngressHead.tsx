@@ -3,7 +3,7 @@ import { Info } from "lucide-react";
 
 export const IngressHeadColumn = () => {
   return (
-    <div className="flex flex-row gap-2 items-center flex-nowrap">
+    <div className="flex flex-row flex-nowrap items-center gap-2">
       <div>Ingress</div>
       <Tooltip
         title={

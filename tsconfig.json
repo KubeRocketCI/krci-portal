@@ -21,10 +21,5 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true
-  },
-  "references": [
-    { "path": "apps/client" },
-    { "path": "apps/server" },
-    { "path": "packages/shared" }
-  ]
+  }
 }

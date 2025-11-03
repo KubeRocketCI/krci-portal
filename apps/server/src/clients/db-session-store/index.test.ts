@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach, afterEach, Mock } from "vitest";
 import Database from "better-sqlite3";
-import { CustomSession } from "../../trpc/context";
 import { DBSessionStore } from ".";
+import { CustomSession } from "@my-project/trpc";
 
 // Mock the better-sqlite3 module
 vi.mock("better-sqlite3", () => {

@@ -1,15 +1,8 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-} from '@mui/material';
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { DIALOG_NAME } from './constants';
-import { ConfirmDialogProps } from './types';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { DIALOG_NAME } from "./constants";
+import { ConfirmDialogProps } from "./types";
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   props: { actionCallback, text },
@@ -17,8 +10,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 }) => {
   const { register, watch, reset } = useForm();
 
-  const confirmFieldValue = watch('confirm');
-  const isSubmitNotAllowed = confirmFieldValue !== 'confirm';
+  const confirmFieldValue = watch("confirm");
+  const isSubmitNotAllowed = confirmFieldValue !== "confirm";
 
   const handleClosePopup = React.useCallback(() => closeDialog(), [closeDialog]);
 
@@ -27,7 +20,6 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     handleClosePopup();
     reset();
   }, [actionCallback, handleClosePopup, reset]);
-  
 
   return (
     <Dialog open={open} onClose={handleClosePopup} fullWidth data-testid="dialog">
@@ -42,7 +34,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             )}
             <div>
               <TextField
-                {...register('confirm', { required: true })}
+                {...register("confirm", { required: true })}
                 label={'Enter "confirm" to confirm action'}
                 variant="outlined"
                 fullWidth
@@ -52,7 +44,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         </div>
       </DialogContent>
       <DialogActions>
-        <Button type={'button'} onClick={handleClosePopup}>
+        <Button type={"button"} onClick={handleClosePopup}>
           Cancel
         </Button>
         <Button onClick={onSubmit} disabled={isSubmitNotAllowed}>

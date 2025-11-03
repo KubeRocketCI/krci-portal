@@ -28,7 +28,7 @@ export default function OverviewDetailsPageContent() {
               </>
             }
           >
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-4">
               <div className="col-span-1">
                 <CodebasesGraph />
               </div>
@@ -59,11 +59,7 @@ export default function OverviewDetailsPageContent() {
         </div>
         <div>
           <Section
-            title={
-              <h2 className="text-3xl font-semibold text-foreground">
-                Links
-              </h2>
-            }
+            title={<h2 className="text-foreground text-3xl font-semibold">Links</h2>}
             description={"A set of icons with links that redirect you to corresponding tools."}
           >
             <QuickLinkList />

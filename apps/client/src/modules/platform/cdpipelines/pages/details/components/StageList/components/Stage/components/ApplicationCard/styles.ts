@@ -1,4 +1,4 @@
-import { Chip, Paper, styled } from '@mui/material';
+import { Chip, Paper, styled } from "@mui/material";
 
 export const StyledCard = styled(Paper)(
   ({ theme }) => `

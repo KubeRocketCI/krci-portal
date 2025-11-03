@@ -121,8 +121,8 @@ export const Actions = () => {
             color={"primary"}
             disabled={!isAnyFormDirty || isAnyFormSubmitting || isAnyFormForbiddenToSubmit}
           >
-          save
-        </Button>
+            save
+          </Button>
         </ConditionalWrapper>
       </div>
       <DeletionDialog

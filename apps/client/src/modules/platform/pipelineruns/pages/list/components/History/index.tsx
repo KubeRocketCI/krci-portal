@@ -21,7 +21,7 @@ export const History = () => {
     <Table
       id={"pipeline-run-history-of-pipeline"}
       isLoading={logsQuery.isLoading}
-      data={logsQuery.data! || []}
+      data={logsQuery?.data?.all || []}
       blockerError={logsQuery.error}
       columns={columns}
       settings={{

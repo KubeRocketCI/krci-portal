@@ -2,17 +2,7 @@ import { TabPanel } from "@/core/components/TabPanel";
 import { TileRadioGroup } from "@/core/providers/Form/components/MainRadioGroup";
 import { useStepperContext } from "@/core/providers/Stepper/hooks";
 import { FieldEvent } from "@/core/types/forms";
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Box,
-  Step,
-  StepLabel,
-  Stepper,
-  useTheme,
-} from "@mui/material";
+import { Button, DialogActions, DialogContent, DialogTitle, Step, StepLabel, Stepper } from "@mui/material";
 import { codebaseDeploymentScript, codebaseTestReportFramework, codebaseType } from "@my-project/shared";
 import { mainStepperSteps, mainTabs, selectionStepper } from "../../../../constants";
 import { useTypedFormContext } from "../../../../hooks/useFormContext";
@@ -23,7 +13,6 @@ import { useCodebaseTypeOptions } from "../Inner/hooks/useCodebaseTypes";
 import { SelectionProps } from "./types";
 
 export const Selection = ({ setActiveTab }: SelectionProps) => {
-  const theme = useTheme();
   const { activeStep, nextStep, prevStep } = useStepperContext();
   const {
     register,
@@ -46,9 +35,7 @@ export const Selection = ({ setActiveTab }: SelectionProps) => {
   return (
     <>
       <DialogTitle>
-        <h2 className="text-xl font-medium">
-          Create new component
-        </h2>
+        <h2 className="text-xl font-medium">Create new component</h2>
       </DialogTitle>
       <DialogContent>
         <div className="flex flex-col gap-4">
@@ -101,7 +88,7 @@ export const Selection = ({ setActiveTab }: SelectionProps) => {
         </div>
       </DialogContent>
       <DialogActions>
-        <div className="flex flex-row gap-4 justify-between w-full">
+        <div className="flex w-full flex-row justify-between gap-4">
           <div className="text-foreground">
             <Button onClick={closeDialog} color="inherit" size="small">
               cancel
