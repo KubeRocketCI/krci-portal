@@ -48,7 +48,7 @@ export const DeployedVersionConfigurationColumn = ({
   const isSameAsDefaultValue = currentValue?.includes(currentDefaultValue);
 
   return (
-    <div className="flex flex-row gap-2 w-full">
+    <div className="flex w-full flex-row gap-2">
       <div
         style={{
           flexShrink: 0,

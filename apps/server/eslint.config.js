@@ -1,6 +1,11 @@
 import globals from "globals";
 import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -14,6 +19,8 @@ export default [
       parserOptions: {
         ecmaVersion: 2020,
         sourceType: "module", // Allow module imports in TS files
+        project: "./tsconfig.json",
+        tsconfigRootDir: __dirname,
       },
     },
   },

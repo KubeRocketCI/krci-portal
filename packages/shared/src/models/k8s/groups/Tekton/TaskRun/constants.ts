@@ -1,10 +1,5 @@
 import { K8sResourceConfig } from "../../../common";
-import {
-  reasonSchema,
-  statusSchema,
-  taskRunStepReasonFieldNameEnum,
-  taskRunStepStatusFieldNameEnum,
-} from "./schema";
+import { reasonSchema, statusSchema, taskRunStepReasonFieldNameEnum, taskRunStepStatusFieldNameEnum } from "./schema";
 
 export const k8sTaskRunConfig = {
   apiVersion: "tekton.dev/v1",

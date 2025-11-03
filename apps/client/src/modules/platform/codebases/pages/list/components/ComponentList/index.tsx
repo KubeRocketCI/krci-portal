@@ -86,7 +86,7 @@ export const ComponentList = () => {
     <>
       <K8sRelatedIconsSVGSprite />
       <div className="flex flex-col gap-2">
-        <div className="flex justify-end items-center">
+        <div className="flex items-center justify-end">
           <ButtonWithPermission
             ButtonProps={{
               size: "medium",
@@ -121,9 +121,7 @@ export const ComponentList = () => {
               isRowSelectable: (row) => row.spec.type !== codebaseType.system,
               renderSelectionInfo: (selectionLength) => (
                 <div className="flex items-center justify-between">
-                  <div
-                    className={selectionLength ? "visible" : "invisible pointer-events-none"}
-                  >
+                  <div className={selectionLength ? "visible" : "pointer-events-none invisible"}>
                     <div className="flex items-center gap-2">
                       <div className="min-w-38">
                         <p className="text-base">{selectionLength} item(s) selected</p>

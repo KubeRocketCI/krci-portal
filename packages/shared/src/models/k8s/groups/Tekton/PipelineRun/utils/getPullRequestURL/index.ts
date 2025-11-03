@@ -1,27 +1,16 @@
 import { gitProvider } from "../../../../KRCI";
 import { PipelineRun } from "../../types";
 
-export const getPullRequestURL = (
-  pipelineRun: PipelineRun
-): string | undefined => {
-  const hasParams = pipelineRun?.spec?.params?.length > 0;
+export const getPullRequestURL = (pipelineRun: PipelineRun): string | undefined => {
+  const hasParams = (pipelineRun?.spec?.params?.length || 0) > 0;
 
   const gitSourceUrl =
-    hasParams &&
-    pipelineRun?.spec?.params.find(
-      (el: { name: string }) => el.name === "git-source-url"
-    )?.value;
+    hasParams && pipelineRun?.spec?.params?.find((el: { name: string }) => el.name === "git-source-url")?.value;
 
   const changeNumber =
-    hasParams &&
-    pipelineRun?.spec?.params.find(
-      (el: { name: string }) => el.name === "changeNumber"
-    )?.value;
+    hasParams && pipelineRun?.spec?.params?.find((el: { name: string }) => el.name === "changeNumber")?.value;
 
-  const gitProviderLabelValue =
-    pipelineRun.metadata.labels?.["triggers.tekton.dev/trigger"]?.split(
-      "-"
-    )?.[0];
+  const gitProviderLabelValue = pipelineRun.metadata.labels?.["triggers.tekton.dev/trigger"]?.split("-")?.[0];
 
   if (!gitSourceUrl || !changeNumber || !gitProviderLabelValue) {
     return undefined;

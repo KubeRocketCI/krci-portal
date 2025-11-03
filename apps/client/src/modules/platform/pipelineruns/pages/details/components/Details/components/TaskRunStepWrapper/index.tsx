@@ -44,30 +44,25 @@ export const TaskRunStepWrapper = ({ pipelineRunTaskData, stepName }: TaskRunSte
       <StyledDetailsHeader>
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
-            <h3 className="text-xl font-medium">
-              {step?.name}
-            </h3>
+            <h3 className="text-xl font-medium">{step?.name}</h3>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-foreground">
+            <span className="text-foreground text-sm font-medium">
               Status:{" "}
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 {capitalizeFirstLetter(taskRunStepStatus.reason || taskRunStepStatus.status || "unknown")}
               </span>
             </span>
-            <span className="text-sm font-medium text-foreground">
+            <span className="text-foreground text-sm font-medium">
               Duration:{" "}
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 {step && Object.hasOwn(step, "terminated") ? duration || "Not started" : "In progress"}
               </span>
             </span>
           </div>
           {taskDescription && (
-            <span className="text-sm font-medium text-foreground">
-              Description:{" "}
-              <span className="text-sm text-muted-foreground">
-                {taskDescription}
-              </span>
+            <span className="text-foreground text-sm font-medium">
+              Description: <span className="text-muted-foreground text-sm">{taskDescription}</span>
             </span>
           )}
         </div>

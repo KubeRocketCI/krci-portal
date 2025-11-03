@@ -1,1 +1,1 @@
-export { getStatusIcon as getCDPipelineStatusIcon } from "./getStatusIcon";
+export * from "./getStatusIcon";

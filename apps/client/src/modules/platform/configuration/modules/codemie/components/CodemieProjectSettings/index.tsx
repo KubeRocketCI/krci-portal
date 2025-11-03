@@ -23,9 +23,7 @@ export const CodemieProjectSettingsSection = () => {
 
   return (
     <>
-      <h2 className="text-2xl font-semibold text-foreground mb-6">
-        Project Settings
-      </h2>
+      <h2 className="text-foreground mb-6 text-2xl font-semibold">Project Settings</h2>
       <LoadingWrapper isLoading={!codemieProjectSettingsWatch.isReady}>
         {codemieProjectSettingsWatch.query.error ? (
           <ErrorContent error={codemieProjectSettingsWatch.query.error} outlined />
@@ -47,14 +45,8 @@ export const CodemieProjectSettingsSection = () => {
                           color={statusIcon.color}
                           Title={
                             <>
-                              <p className="text-sm font-semibold">
-                                {`Status: ${status || "Unknown"}`}
-                              </p>
-                              {!!statusError && (
-                                <p className="text-sm font-medium mt-3">
-                                  {statusError}
-                                </p>
-                              )}
+                              <p className="text-sm font-semibold">{`Status: ${status || "Unknown"}`}</p>
+                              {!!statusError && <p className="mt-3 text-sm font-medium">{statusError}</p>}
                             </>
                           }
                         />

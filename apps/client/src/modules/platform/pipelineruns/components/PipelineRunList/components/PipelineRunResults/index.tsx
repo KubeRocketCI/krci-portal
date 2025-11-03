@@ -16,7 +16,7 @@ export const PipelineRunResults = ({ pipelineRun }: { pipelineRun: PipelineRun }
         <col style={{ width: "70%" }} />
       </colgroup>
       <TableBody>
-        {results.map((el: { name: string; value: string }) => (
+        {results.map((el) => (
           <TableRow>
             <TableCell sx={{ fontWeight: 500 }}>{el.name}</TableCell>
             <TableCell>{el.value}</TableCell>

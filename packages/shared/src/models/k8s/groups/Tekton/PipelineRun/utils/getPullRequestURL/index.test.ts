@@ -43,9 +43,7 @@ describe("testing getPullRequestURL function", () => {
 
     const result = getPullRequestURL(pipelineRun as unknown as PipelineRun);
 
-    expect(result).toBe(
-      "https://my-gitlab-provider.com/user/test/merge_requests/456"
-    );
+    expect(result).toBe("https://my-gitlab-provider.com/user/test/merge_requests/456");
   });
 
   it("should return the correct URL for Bitbucket", () => {
@@ -68,9 +66,7 @@ describe("testing getPullRequestURL function", () => {
 
     const result = getPullRequestURL(pipelineRun as unknown as PipelineRun);
 
-    expect(result).toBe(
-      "https://my-bitbucket-provider.com/user/test/pull-requests/456"
-    );
+    expect(result).toBe("https://my-bitbucket-provider.com/user/test/pull-requests/456");
   });
 
   it("should return null if gitSourceUrl or changeNumber is missing", () => {

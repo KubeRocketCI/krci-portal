@@ -33,43 +33,33 @@ export const editGitServerSecret = (
   existingSecret: Secret,
   input: z.infer<typeof editGitServerSecretSchema>
 ): Secret => {
-  return editResource(
-    existingSecret,
-    input,
-    editGitServerSecretSchema,
-    (draft: Draft<Secret>, validatedInput) => {
-      if (!draft.data) {
-        draft.data = {};
-      }
-
-      // Clear existing data
+  return editResource(existingSecret, input, editGitServerSecretSchema, (draft: Draft<Secret>, validatedInput) => {
+    if (!draft.data) {
       draft.data = {};
-
-      switch (validatedInput.gitProvider) {
-        case gitProvider.gerrit:
-          draft.data.id_rsa =
-            safeEncode(validatedInput.sshPrivateKey.trim() + "\n") || "";
-          draft.data["id_rsa.pub"] =
-            safeEncode(validatedInput.sshPublicKey) || "";
-          draft.data.username = safeEncode(gitUser.GERRIT) || "";
-          break;
-        case gitProvider.github:
-          draft.data.id_rsa =
-            safeEncode(validatedInput.sshPrivateKey.trim() + "\n") || "";
-          draft.data.token = safeEncode(validatedInput.token) || "";
-          draft.data.username = safeEncode(gitUser.GITHUB) || "";
-          break;
-        case gitProvider.gitlab:
-          draft.data.id_rsa =
-            safeEncode(validatedInput.sshPrivateKey.trim() + "\n") || "";
-          draft.data.token = safeEncode(validatedInput.token) || "";
-          break;
-        case gitProvider.bitbucket:
-          draft.data.id_rsa =
-            safeEncode(validatedInput.sshPrivateKey.trim() + "\n") || "";
-          draft.data.token = safeEncode(validatedInput.token) || "";
-          break;
-      }
     }
-  );
+
+    // Clear existing data
+    draft.data = {};
+
+    switch (validatedInput.gitProvider) {
+      case gitProvider.gerrit:
+        draft.data.id_rsa = safeEncode(validatedInput.sshPrivateKey.trim() + "\n") || "";
+        draft.data["id_rsa.pub"] = safeEncode(validatedInput.sshPublicKey) || "";
+        draft.data.username = safeEncode(gitUser.GERRIT) || "";
+        break;
+      case gitProvider.github:
+        draft.data.id_rsa = safeEncode(validatedInput.sshPrivateKey.trim() + "\n") || "";
+        draft.data.token = safeEncode(validatedInput.token) || "";
+        draft.data.username = safeEncode(gitUser.GITHUB) || "";
+        break;
+      case gitProvider.gitlab:
+        draft.data.id_rsa = safeEncode(validatedInput.sshPrivateKey.trim() + "\n") || "";
+        draft.data.token = safeEncode(validatedInput.token) || "";
+        break;
+      case gitProvider.bitbucket:
+        draft.data.id_rsa = safeEncode(validatedInput.sshPrivateKey.trim() + "\n") || "";
+        draft.data.token = safeEncode(validatedInput.token) || "";
+        break;
+    }
+  });
 };

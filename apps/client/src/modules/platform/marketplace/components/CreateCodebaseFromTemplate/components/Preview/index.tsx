@@ -8,6 +8,7 @@ import makeStyles from "@mui/styles/makeStyles";
 import React from "react";
 import { useCurrentDialog } from "../../providers/CurrentDialog/hooks";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     top: "64px",
@@ -55,9 +56,7 @@ export const Preview = () => {
                 </div>
                 <div>
                   <Tooltip title={template?.spec.displayName}>
-                    <h5 className={`text-2xl font-medium ${classes.templateName}`}>
-                      {template?.spec.displayName}
-                    </h5>
+                    <h5 className={`text-2xl font-medium ${classes.templateName}`}>{template?.spec.displayName}</h5>
                   </Tooltip>
                 </div>
               </div>
@@ -67,12 +66,10 @@ export const Preview = () => {
             <p className="text-sm">{template?.spec.description}</p>
           </div>
           <div>
-            <div className="grid grid-cols-3 gap-4 items-start">
+            <div className="grid grid-cols-3 items-start gap-4">
               <div>
-                <p className="text-base font-medium mb-2">
-                  Language
-                </p>
-                <div className="flex gap-2 items-center">
+                <p className="mb-2 text-base font-medium">Language</p>
+                <div className="flex items-center gap-2">
                   <div>
                     <UseSpriteSymbol name={getIconByPattern(language)} width={20} height={20} />
                   </div>
@@ -80,10 +77,8 @@ export const Preview = () => {
                 </div>
               </div>
               <div>
-                <p className="text-base font-medium mb-2">
-                  Framework
-                </p>
-                <div className="flex gap-2 items-center">
+                <p className="mb-2 text-base font-medium">Framework</p>
+                <div className="flex items-center gap-2">
                   <div>
                     <UseSpriteSymbol name={getIconByPattern(_framework)} width={20} height={20} />
                   </div>
@@ -97,72 +92,48 @@ export const Preview = () => {
                 </div>
               </div>
               <div>
-                <p className="text-base font-medium mb-2">
-                  Build Tool
-                </p>
-                <div className="flex gap-2 items-center">
+                <p className="mb-2 text-base font-medium">Build Tool</p>
+                <div className="flex items-center gap-2">
                   <div>
                     <UseSpriteSymbol name={getIconByPattern(_buildTool)} width={20} height={20} />
                   </div>
-                  <div>
-                    {codebaseMappingByLang?.buildTools?.[buildTool]?.name || capitalizeFirstLetter(_buildTool)}
-                  </div>
+                  <div>{codebaseMappingByLang?.buildTools?.[buildTool]?.name || capitalizeFirstLetter(_buildTool)}</div>
                 </div>
               </div>
               <div>
-                <p className="text-base font-medium mb-2">
-                  Type
-                </p>
+                <p className="mb-2 text-base font-medium">Type</p>
                 <p className="text-sm">{template?.spec.type}</p>
               </div>
               <div>
-                <p className="text-base font-medium mb-2">
-                  Category
-                </p>
+                <p className="mb-2 text-base font-medium">Category</p>
                 <p className="text-sm">{template?.spec.category}</p>
               </div>
               <div>
-                <p className="text-base font-medium mb-2">
-                  Maturity
-                </p>
+                <p className="mb-2 text-base font-medium">Maturity</p>
                 <p className="text-sm">{template?.spec.maturity}</p>
               </div>
               <div>
-                <p className="text-base font-medium mb-2">
-                  Version
-                </p>
+                <p className="mb-2 text-base font-medium">Version</p>
                 <p className="text-sm">{template?.spec.version}</p>
               </div>
               <div className="col-span-2">
-                <p className="text-base font-medium mb-2">
-                  Source
-                </p>
+                <p className="mb-2 text-base font-medium">Source</p>
                 <Link href={template?.spec.source} target={"_blank"}>
                   {template?.spec.source}
                 </Link>
               </div>
               <div className="col-span-3">
-                <p className="text-base font-medium mb-2">
-                  Maintainers
-                </p>
+                <p className="mb-2 text-base font-medium">Maintainers</p>
                 {(template?.spec.maintainers || []).map((maintainer) => {
                   return (
                     <p className="mb-2" key={maintainer.name}>
                       <div>
-                        <span className="text-sm">
-                          Name:{" "}
-                        </span>
-                        <span className="text-xs">
-                          {maintainer.name}
-                        </span>
+                        <span className="text-sm">Name: </span>
+                        <span className="text-xs">{maintainer.name}</span>
                       </div>
                       <div>
-                        <span className="text-sm">
-                          Email:{" "}
-                        </span>
-                        <span className="text-xs">
-                          {maintainer.email}
-                        </span>
+                        <span className="text-sm">Email: </span>
+                        <span className="text-xs">{maintainer.email}</span>
                       </div>
                     </p>
                   );
@@ -170,9 +141,7 @@ export const Preview = () => {
               </div>
               {template?.spec.keywords && (
                 <div className="col-span-3">
-                  <p className="text-base font-medium mb-2">
-                    Keywords
-                  </p>
+                  <p className="mb-2 text-base font-medium">Keywords</p>
                   {(template?.spec.keywords || []).map((el, idx) => {
                     const propertyId = `${el}:${idx}`;
 
@@ -180,9 +149,7 @@ export const Preview = () => {
                       <React.Fragment key={propertyId}>
                         <>
                           {idx !== 0 && <span>, </span>}
-                          <span className="text-xs">
-                            {el}
-                          </span>
+                          <span className="text-xs">{el}</span>
                         </>
                       </React.Fragment>
                     );

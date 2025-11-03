@@ -1,4 +1,4 @@
-import { Button, Grid } from "@mui/material";
+import { Button } from "@mui/material";
 import React from "react";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_FORM_NAMES } from "../../../names";
@@ -27,7 +27,7 @@ export const AdvancedJiraMapping = () => {
 
   const [advancedMappingRows, setAdvancedMappingRows] = React.useState<AdvancedMappingRow[]>([]);
 
-  const advancedMappingOptions: SelectOption[] = React.useMemo(
+  const advancedMappingOptions: SelectOption<string>[] = React.useMemo(
     () => getAdvancedMappingOptions(advancedMapping),
     [advancedMapping]
   );
@@ -97,7 +97,7 @@ export const AdvancedJiraMapping = () => {
               options={advancedMappingOptions}
             />
           </div>
-          <div className="col-span-2 flex flex-col justify-end items-center">
+          <div className="col-span-2 flex flex-col items-center justify-end">
             <Button
               type={"button"}
               size={"small"}

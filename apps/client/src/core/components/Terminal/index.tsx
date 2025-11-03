@@ -255,12 +255,12 @@ export const Terminal = forwardRef<TerminalRef, TerminalProps>(
 
     return (
       <div
-        className={`flex flex-col overflow-hidden border border-gray-300 rounded relative ${className || ''}`}
+        className={`relative flex flex-col overflow-hidden rounded border border-gray-300 ${className || ""}`}
         style={{ height, backgroundColor: theme?.background || "#ffffff", ...style }}
       >
         {/* Toolbar */}
         {showToolbar && (
-          <div className="flex gap-1 p-1 border-b border-gray-300">
+          <div className="flex gap-1 border-b border-gray-300 p-1">
             {enableSearch && (
               <Tooltip title="Search (Ctrl+F)">
                 <IconButton size="small" onClick={handleSearch} disabled={!content}>
@@ -543,10 +543,7 @@ const SearchPopover: React.FC<SearchPopoverProps> = ({ open, onClose, terminalRe
       </Tooltip>
 
       {/* Search Results */}
-      <div
-        className="min-w-20 text-center text-xs"
-        style={{ color: getSearchResultColor() }}
-      >
+      <div className="min-w-20 text-center text-xs" style={{ color: getSearchResultColor() }}>
         {getSearchResultText()}
       </div>
 

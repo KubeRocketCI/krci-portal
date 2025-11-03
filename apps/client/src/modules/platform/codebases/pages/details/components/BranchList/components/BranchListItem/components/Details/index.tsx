@@ -1,4 +1,3 @@
-
 import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
 import { FilterProvider } from "@/core/providers/Filter/provider";
 import { ResourceActionListContextProvider } from "@/core/providers/ResourceActionList/provider";
@@ -20,7 +19,7 @@ export const Details = ({ pipelineRuns }: DetailsProps) => {
   return (
     <div className="mt-5">
       <div>
-        <div className="flex flex-col gap-4 items-start mb-4">
+        <div className="mb-4 flex flex-col items-start gap-4">
           <div>
             <h6 className="text-base font-medium">Pipeline Runs</h6>
           </div>
@@ -30,6 +29,7 @@ export const Details = ({ pipelineRuns }: DetailsProps) => {
                 matchFunctions={matchFunctions}
                 syncWithUrl
                 defaultValues={{
+                  [pipelineRunFilterControlNames.NAMESPACES]: [],
                   [pipelineRunFilterControlNames.CODEBASES]: [],
                   [pipelineRunFilterControlNames.STATUS]: "all",
                   [pipelineRunFilterControlNames.PIPELINE_TYPE]: "all",

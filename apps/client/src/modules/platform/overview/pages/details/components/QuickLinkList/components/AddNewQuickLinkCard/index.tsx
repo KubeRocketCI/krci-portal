@@ -28,9 +28,7 @@ export const AddNewQuickLinkCard = () => {
       >
         <div className="flex items-center gap-2">
           <Plus size={16} />
-          <span className="text-base font-medium">
-            ADD LINK
-          </span>
+          <span className="text-base font-medium">ADD LINK</span>
         </div>
       </IconButton>
     </ConditionalWrapper>

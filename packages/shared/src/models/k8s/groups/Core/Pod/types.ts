@@ -6,8 +6,4 @@ export type PodDraft = z.infer<typeof podDraftSchema>;
 
 // Convenience types for components
 export type Container = Pod["spec"]["containers"][0];
-export type ContainerStatus = NonNullable<
-  Pod["status"]
->["containerStatuses"] extends (infer T)[]
-  ? T
-  : never;
+export type ContainerStatus = NonNullable<Pod["status"]>["containerStatuses"] extends (infer T)[] ? T : never;

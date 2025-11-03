@@ -6,22 +6,9 @@ import {
   kubeObjectMetadataSchema,
 } from "../../../common";
 import { pipelineLabels } from "./labels";
-import {
-  pipelineRefSchema,
-  taskRefSchema,
-  whenExpressionSchema,
-  paramValueSchema,
-} from "../common/schema";
+import { pipelineRefSchema, taskRefSchema, whenExpressionSchema, paramValueSchema } from "../common/schema";
 
-export const pipelineTypeEnum = z.enum([
-  "build",
-  "review",
-  "deploy",
-  "clean",
-  "security",
-  "release",
-  "tests",
-]);
+export const pipelineTypeEnum = z.enum(["build", "review", "deploy", "clean", "security", "release", "tests"]);
 
 const pipelineLabelsSchema = z.object({
   [pipelineLabels.pipelineType]: pipelineTypeEnum,

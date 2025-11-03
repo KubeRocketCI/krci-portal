@@ -57,7 +57,6 @@ export const TextField = <
   tooltipText,
   disabled = false,
 }: TextFieldProps<Values, TName>) => {
-
   const error = field.state.meta.errors?.[0];
   const hasError = !!error;
   const helperText = hasError ? (error as string) : undefined;

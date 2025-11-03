@@ -1,13 +1,7 @@
 import { taskRunStepStatusFieldName } from "../../constants";
-import {
-  TaskRunStepReason,
-  TaskRunStepState,
-  TaskRunStepStatus,
-} from "../../types";
+import { TaskRunStepReason, TaskRunStepState, TaskRunStepStatus } from "../../types";
 
-type StepWithReasonFieldName =
-  | typeof taskRunStepStatusFieldName.terminated
-  | typeof taskRunStepStatusFieldName.waiting;
+type StepWithReasonFieldName = typeof taskRunStepStatusFieldName.terminated | typeof taskRunStepStatusFieldName.waiting;
 
 type StepWithReason = TaskRunStepState & {
   [key in StepWithReasonFieldName]: {
@@ -26,8 +20,7 @@ export const getTaskRunStepStatus = (
 } => {
   const statusObject = step?.[taskRunStepStatusFieldName.running]
     ? undefined
-    : step?.[taskRunStepStatusFieldName.waiting] ||
-      step?.[taskRunStepStatusFieldName.terminated];
+    : step?.[taskRunStepStatusFieldName.waiting] || step?.[taskRunStepStatusFieldName.terminated];
 
   const status = step?.[taskRunStepStatusFieldName.running]
     ? taskRunStepStatusFieldName.running

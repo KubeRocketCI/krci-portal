@@ -34,7 +34,7 @@ export const PullAccountForm = () => {
       <div>
         <div className="flex flex-col gap-4">
           <div>
-            <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-2">
               <div>
                 <StatusIcon
                   Icon={statusIcon.component}
@@ -44,11 +44,7 @@ export const PullAccountForm = () => {
                       <p className="text-sm font-semibold">
                         {`Connected: ${pullAccountConnected === undefined ? "Unknown" : pullAccountConnected}`}
                       </p>
-                      {!!pullAccountError && (
-                        <p className="text-sm font-medium mt-3">
-                          {pullAccountError}
-                        </p>
-                      )}
+                      {!!pullAccountError && <p className="mt-3 text-sm font-medium">{pullAccountError}</p>}
                     </>
                   }
                   width={20}

@@ -26,23 +26,11 @@ export const PipelineTaskNode: React.FC<{
 
   const tooltipContent = (
     <div>
-      <p className="text-sm font-semibold">
-        {displayName}
-      </p>
-      {data.description && (
-        <p className="text-sm mt-1">
-          {data.description}
-        </p>
-      )}
-      {data.taskRef?.name && (
-        <span className="text-xs mt-1 block">
-          Task: {data.taskRef.name}
-        </span>
-      )}
+      <p className="text-sm font-semibold">{displayName}</p>
+      {data.description && <p className="mt-1 text-sm">{data.description}</p>}
+      {data.taskRef?.name && <span className="mt-1 block text-xs">Task: {data.taskRef.name}</span>}
       {data.isFinally && (
-        <span className="text-xs mt-1 block italic">
-          Finally task - runs after all main tasks complete
-        </span>
+        <span className="mt-1 block text-xs italic">Finally task - runs after all main tasks complete</span>
       )}
     </div>
   );
@@ -63,16 +51,12 @@ export const PipelineTaskNode: React.FC<{
 
       <Tooltip title={tooltipContent} arrow placement="top">
         <div
-          className={`w-full h-full rounded-lg p-6 flex flex-col justify-center items-center cursor-default relative pointer-events-auto transition-all border-2 ${
-            data.isFinally || data.isIsolated
-              ? "border-dashed"
-              : "border-border hover:border-primary hover:shadow-lg"
+          className={`pointer-events-auto relative flex h-full w-full cursor-default flex-col items-center justify-center rounded-lg border-2 p-6 transition-all ${
+            data.isFinally || data.isIsolated ? "border-dashed" : "border-border hover:border-primary hover:shadow-lg"
           }`}
           style={{
             backgroundColor: theme.palette.background.paper,
-            ...(data.isFinally || data.isIsolated
-              ? { borderColor: theme.palette.grey[400] }
-              : {}),
+            ...(data.isFinally || data.isIsolated ? { borderColor: theme.palette.grey[400] } : {}),
           }}
         >
           {/* Task type indicators */}
@@ -92,16 +76,10 @@ export const PipelineTaskNode: React.FC<{
             />
           )}
 
-          <p className="text-sm font-semibold text-center leading-tight break-word text-foreground">
-            {truncatedName}
-          </p>
+          <p className="break-word text-foreground text-center text-sm leading-tight font-semibold">{truncatedName}</p>
 
           {data.taskRef?.name && (
-            <span
-              className="text-xs text-muted-foreground text-center mt-1 leading-none"
-            >
-              {data.taskRef.name}
-            </span>
+            <span className="text-muted-foreground mt-1 text-center text-xs leading-none">{data.taskRef.name}</span>
           )}
         </div>
       </Tooltip>

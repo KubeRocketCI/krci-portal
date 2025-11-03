@@ -20,9 +20,7 @@ export const CodemieApplications = () => {
 
   return (
     <>
-      <h2 className="text-2xl font-semibold text-foreground mb-6">
-        Applications
-      </h2>
+      <h2 className="text-foreground mb-6 text-2xl font-semibold">Applications</h2>
       <LoadingWrapper isLoading={!codemieApplicationsWatch.isReady}>
         {codemieApplicationsWatch.query.error ? (
           <ErrorContent error={codemieApplicationsWatch.query.error} outlined />
@@ -44,14 +42,8 @@ export const CodemieApplications = () => {
                           color={statusIcon.color}
                           Title={
                             <>
-                              <p className="text-sm font-semibold">
-                                {`Status: ${status || "Unknown"}`}
-                              </p>
-                              {!!statusError && (
-                                <p className="text-sm font-medium mt-3">
-                                  {statusError}
-                                </p>
-                              )}
+                              <p className="text-sm font-semibold">{`Status: ${status || "Unknown"}`}</p>
+                              {!!statusError && <p className="mt-3 text-sm font-medium">{statusError}</p>}
                             </>
                           }
                         />

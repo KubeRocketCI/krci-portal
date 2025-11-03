@@ -76,13 +76,9 @@ export const useColumns = (): TableColumn<Codebase>[] => {
 
             const title = (
               <>
-                <p className="text-sm font-semibold">
-                  {`Status: ${status || "Unknown"}`}
-                </p>
+                <p className="text-sm font-semibold">{`Status: ${status || "Unknown"}`}</p>
                 {status === CUSTOM_RESOURCE_STATUS.FAILED && (
-                  <p className="text-sm font-medium mt-3">
-                    {detailedMessage}
-                  </p>
+                  <p className="mt-3 text-sm font-medium">{detailedMessage}</p>
                 )}
               </>
             );
@@ -152,7 +148,7 @@ export const useColumns = (): TableColumn<Codebase>[] => {
             const codebaseMappingByLang = codebaseMapping?.[lang];
 
             return (
-              <div className="flex gap-2 items-center flex-nowrap">
+              <div className="flex flex-nowrap items-center gap-2">
                 <div>
                   <UseSpriteSymbol
                     name={
@@ -187,7 +183,7 @@ export const useColumns = (): TableColumn<Codebase>[] => {
             const codebaseMappingByLang = codebaseMapping?.[lang];
 
             return (
-              <div className="flex gap-2 items-center flex-nowrap">
+              <div className="flex flex-nowrap items-center gap-2">
                 <div>
                   <UseSpriteSymbol
                     name={
@@ -229,7 +225,7 @@ export const useColumns = (): TableColumn<Codebase>[] => {
             const codebaseMappingByLang = codebaseMapping?.[lang];
 
             return (
-              <div className="flex gap-2 items-center flex-nowrap">
+              <div className="flex flex-nowrap items-center gap-2">
                 <div>
                   <UseSpriteSymbol
                     name={
@@ -240,9 +236,7 @@ export const useColumns = (): TableColumn<Codebase>[] => {
                     height={20}
                   />
                 </div>
-                <div>
-                  {codebaseMappingByLang?.buildTools?.[buildTool]?.name || capitalizeFirstLetter(_buildTool)}
-                </div>
+                <div>{codebaseMappingByLang?.buildTools?.[buildTool]?.name || capitalizeFirstLetter(_buildTool)}</div>
               </div>
             );
           },

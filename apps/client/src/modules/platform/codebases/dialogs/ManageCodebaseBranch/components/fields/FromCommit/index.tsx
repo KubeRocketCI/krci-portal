@@ -166,7 +166,7 @@ export const FromCommit = () => {
   };
 
   return (
-    <div className="grid grid-cols-2 gap-4 items-start">
+    <div className="grid grid-cols-2 items-start gap-4">
       <div>
         <FormSelect
           {...register(CODEBASE_BRANCH_FORM_NAMES.fromType.name, {
@@ -190,9 +190,7 @@ export const FromCommit = () => {
           defaultValue="branch"
         />
       </div>
-      <div>
-        {renderInputField()}
-      </div>
+      <div>{renderInputField()}</div>
     </div>
   );
 };

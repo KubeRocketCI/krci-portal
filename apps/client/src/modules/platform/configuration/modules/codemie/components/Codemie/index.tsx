@@ -95,21 +95,15 @@ export const CodemieSection = ({
       <Accordion expanded>
         <AccordionSummary style={{ cursor: "default" }}>
           <h6 className="text-base font-medium">
-            <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-2">
               <div className="mr-1">
                 <StatusIcon
                   Icon={statusIcon.component}
                   color={statusIcon.color}
                   Title={
                     <>
-                      <p className="text-sm font-semibold">
-                        {`Status: ${status || "Unknown"}`}
-                      </p>
-                      {!!statusError && (
-                        <p className="text-sm font-medium mt-3">
-                          {statusError}
-                        </p>
-                      )}
+                      <p className="text-sm font-semibold">{`Status: ${status || "Unknown"}`}</p>
+                      {!!statusError && <p className="mt-3 text-sm font-medium">{statusError}</p>}
                     </>
                   }
                 />

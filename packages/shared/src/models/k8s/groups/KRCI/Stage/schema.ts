@@ -8,12 +8,7 @@ import {
 import { stageLabels } from "./labels";
 import { krciCommonLabelsSchema } from "../common";
 
-export const stageStatusEnum = z.enum([
-  "created",
-  "initialized",
-  "in_progress",
-  "failed",
-]);
+export const stageStatusEnum = z.enum(["created", "initialized", "in_progress", "failed"]);
 
 export const stageResultEnum = z.enum(["success", "error"]);
 

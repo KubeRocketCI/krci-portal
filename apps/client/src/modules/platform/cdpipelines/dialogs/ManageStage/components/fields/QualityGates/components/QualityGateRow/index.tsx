@@ -24,22 +24,9 @@ import { FormTextField } from "@/core/providers/Form/components/FormTextField";
 import { useCodebaseBranchWatchList } from "@/k8s/api/groups/KRCI/CodebaseBranch";
 import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
 
-const getAvailableAutotests = (
-  autotests: Codebase[],
-  qualityGatesFieldValue: FormStageQualityGate[],
-  currentQualityGateId: string
-) => {
+const getAvailableAutotests = (autotests: Codebase[]) => {
   return autotests.map((autotest) => {
     const name = autotest.metadata.name;
-
-    // Check if this autotest is already used in other quality gates (excluding current one)
-    const qualityGatesByChosenAutotest = qualityGatesFieldValue.filter(
-      (qg) => qg.autotestName === name && qg.id !== currentQualityGateId
-    );
-
-    // An autotest can be selected multiple times if it has multiple branches
-    // We can't determine if all branches are used without fetching all branches,
-    // so we keep the autotest enabled. The branch selection will handle the validation.
 
     return {
       name,
@@ -139,7 +126,7 @@ export const QualityGateRow = ({ namespace, currentQualityGate }: QualityGateRow
 
   const currentQualityGateBranchesOptions = getCurrentQualityGateBranchesOptions(branches);
 
-  const availableAutotests = getAvailableAutotests(autotests, qualityGatesFieldValue, currentQualityGate.id);
+  const availableAutotests = getAvailableAutotests(autotests);
 
   const availableAutotestBranches = getAvailableAutotestBranches(
     currentQualityGateBranchesOptions,

@@ -1,9 +1,5 @@
 import { z } from "zod";
-import {
-  kubeObjectBaseDraftSchema,
-  kubeObjectBaseSchema,
-  kubeObjectMetadataSchema,
-} from "../../../common";
+import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema, kubeObjectMetadataSchema } from "../../../common";
 
 // ResourceQuota Spec
 const resourceQuotaSpecSchema = z.object({

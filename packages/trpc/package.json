@@ -1,0 +1,36 @@
+{
+  "name": "@my-project/trpc",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json",
+    "build:watch": "tsc --project tsconfig.build.json --watch",
+    "tsc": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@fastify/session": "^11.1.0",
+    "@kubernetes/client-node": "^1.4.0",
+    "@my-project/shared": "workspace:*",
+    "fastify": "^5.2.1",
+    "jwt-decode": "^4.0.0",
+    "node-fetch": "^3.3.2",
+    "openid-client": "^6.5.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.5",
+    "@types/node-fetch": "^2.6.13",
+    "@types/openid-client": "^3.7.0",
+    "typescript": "^5.8.3"
+  }
+}

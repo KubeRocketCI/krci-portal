@@ -10,18 +10,14 @@ import { createCodebaseBranchDraftInputSchema } from "./schema";
 
 const { kind, apiVersion } = k8sCodebaseBranchConfig;
 
-export const createCodebaseBranchDraftObject = (
-  input: CreateCodebaseBranchDraftInput
-): CodebaseBranchDraft => {
+export const createCodebaseBranchDraftObject = (input: CreateCodebaseBranchDraftInput): CodebaseBranchDraft => {
   const parsedInput = createCodebaseBranchDraftInputSchema.safeParse(input);
 
   if (!parsedInput.success) {
     throw new ZodError(parsedInput.error.errors);
   }
 
-  const _branchName = input.release
-    ? input.releaseBranchName
-    : input.branchName;
+  const _branchName = input.release ? input.releaseBranchName : input.branchName;
 
   const transformedBranchName = _branchName
     ? _branchName

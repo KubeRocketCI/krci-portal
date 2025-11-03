@@ -9,31 +9,13 @@ import { secretDraftSchema, secretSchema } from "../../Core";
 import { codebaseLabels } from "./labels";
 import { ciToolEnum, krciCommonLabelsSchema } from "../common";
 
-export const codebaseTypeEnum = z.enum([
-  "application",
-  "autotest",
-  "library",
-  "infrastructure",
-  "system",
-]);
+export const codebaseTypeEnum = z.enum(["application", "autotest", "library", "infrastructure", "system"]);
 
-export const codebaseCreationStrategyEnum = z.enum([
-  "create",
-  "clone",
-  "import",
-]);
+export const codebaseCreationStrategyEnum = z.enum(["create", "clone", "import"]);
 
-export const codebaseStatusEnum = z.enum([
-  "created",
-  "initialized",
-  "in_progress",
-  "failed",
-]);
+export const codebaseStatusEnum = z.enum(["created", "initialized", "in_progress", "failed"]);
 
-export const codebaseDeploymentScriptEnum = z.enum([
-  "helm-chart",
-  "rpm-package",
-]);
+export const codebaseDeploymentScriptEnum = z.enum(["helm-chart", "rpm-package"]);
 
 export const codebaseTestReportFrameworkEnum = z.enum(["allure"]);
 
@@ -123,8 +105,7 @@ export const editCodebaseInputSchema = z.object({
 export const codebaseSecretSchema = secretSchema.extend({
   metadata: kubeObjectMetadataSchema.extend({
     name: z.string().regex(/^repository-codebase-[a-zA-Z0-9-]+-temp$/, {
-      message:
-        "Name must match repository-codebase-${codebaseName}-temp pattern",
+      message: "Name must match repository-codebase-${codebaseName}-temp pattern",
     }),
   }),
   data: z.object({
@@ -136,8 +117,7 @@ export const codebaseSecretSchema = secretSchema.extend({
 export const codebaseDraftSecretSchema = secretDraftSchema.extend({
   metadata: kubeObjectDraftMetadataSchema.extend({
     name: z.string().regex(/^repository-codebase-[a-zA-Z0-9-]+-temp$/, {
-      message:
-        "Name must match repository-codebase-${codebaseName}-temp pattern",
+      message: "Name must match repository-codebase-${codebaseName}-temp pattern",
     }),
   }),
   data: z.object({

@@ -44,7 +44,7 @@ const FormSelectInner = React.forwardRef(
           const [foundOptionByName] = options.filter(({ value }) => value === optionValue);
           if (foundOptionByName) {
             return foundOptionByName.icon ? (
-              <div className="flex gap-4 flex-row items-center">
+              <div className="flex flex-row items-center gap-4">
                 <ListItemIcon sx={{ minWidth: 0 }}>{foundOptionByName.icon}</ListItemIcon>
                 <ListItemText sx={{ m: 0 }}>{foundOptionByName.label}</ListItemText>
               </div>
@@ -76,10 +76,7 @@ const FormSelectInner = React.forwardRef(
                   [classes.selectWithDefaultValue]: field.value === "",
                 })}
                 endAdornment={
-                  <div
-                    className="absolute top-1/2 right-6 leading-none"
-                    style={{ transform: "translateY(-50%)" }}
-                  >
+                  <div className="absolute top-1/2 right-6 leading-none" style={{ transform: "translateY(-50%)" }}>
                     <div className="flex flex-row items-center gap-1">
                       {tooltipText && (
                         <Tooltip title={tooltipText}>

@@ -37,7 +37,7 @@ export const BranchList = () => {
   return (
     <Section
       title={
-        <div className="flex items-center gap-1 justify-between w-full">
+        <div className="flex w-full items-center justify-between gap-1">
           <div>
             <h1 className="text-4xl font-bold">
               Branches <LearnMoreLink url={EDP_USER_GUIDE.BRANCHES_MANAGE.url} />

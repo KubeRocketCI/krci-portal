@@ -66,7 +66,15 @@ export const Details = () => {
   const renderDetails = React.useCallback(() => {
     const initialTaskRunName = pipelineRunTasks?.allTasks?.[0]?.name;
 
-    const activePipelineRunTaskData = pipelineRunTasksByNameMap?.get(queryParamTaskRun || initialTaskRunName);
+    if (!queryParamTaskRun || !initialTaskRunName) {
+      return null;
+    }
+
+    const activePipelineRunTaskData = pipelineRunTasksByNameMap.get(queryParamTaskRun || initialTaskRunName);
+
+    if (!activePipelineRunTaskData) {
+      return null;
+    }
 
     if (!queryParamTaskRun || (queryParamTaskRun && !queryParamStep)) {
       return <TaskRunWrapper pipelineRunTaskData={activePipelineRunTaskData} />;
@@ -94,9 +102,7 @@ export const Details = () => {
               )}
           </div>
         </div>
-        <div className="col-span-10">
-          {renderDetails()}
-        </div>
+        <div className="col-span-10">{renderDetails()}</div>
       </div>
     </LoadingWrapper>
   );

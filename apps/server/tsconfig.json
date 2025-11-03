@@ -7,9 +7,12 @@
     "moduleResolution": "bundler",
     "paths": {
       "@/*": ["apps/server/src/*"],
-      "@my-project/shared": ["dist/shared/index.js"],
-      "@my-project/shared/*": ["dist/shared/*"]
-    }
+      "@my-project/trpc": ["packages/trpc/dist"],
+      "@my-project/trpc/*": ["packages/trpc/dist/*"],
+      "@my-project/shared": ["packages/shared/dist"],
+      "@my-project/shared/*": ["packages/shared/dist/*"]
+    },
+    "skipLibCheck": true
   },
   "include": ["./src/**/*", "build.config.js"],
   "exclude": ["node_modules", "dist"]

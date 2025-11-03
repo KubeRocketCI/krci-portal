@@ -1,5 +1,4 @@
-import React from 'react';
-import { Token, URL } from './fields';
+import { Token, URL } from "./fields";
 
 export const SecretForm = () => {
   return (

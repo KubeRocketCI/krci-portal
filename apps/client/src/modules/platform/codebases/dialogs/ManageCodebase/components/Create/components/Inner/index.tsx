@@ -1,5 +1,5 @@
 import { useStepperContext } from "@/core/providers/Stepper/hooks";
-import { DialogActions, DialogContent, DialogTitle, Step, StepLabel, Stepper, useTheme } from "@mui/material";
+import { DialogActions, DialogContent, DialogTitle, Step, StepLabel, Stepper } from "@mui/material";
 import { configurationStepperSteps } from "../../../../constants";
 import { DialogHeader } from "./components/DialogHeader";
 import { Form } from "./components/Form";
@@ -8,7 +8,6 @@ import { useStyles } from "./styles";
 import { ConfigurationProps } from "./types";
 
 export const Configuration = ({ baseDefaultValues, setActiveTab }: ConfigurationProps) => {
-  const theme = useTheme();
   const { activeStep } = useStepperContext();
   const classes = useStyles();
 

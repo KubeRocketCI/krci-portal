@@ -100,7 +100,7 @@ export const FormActions = () => {
   }, [reset]);
 
   return (
-    <div className="flex justify-between w-full gap-2">
+    <div className="flex w-full justify-between gap-2">
       <div className="flex gap-1">
         <div className="text-foreground">
           <Button onClick={closeDialog} size="small" color="inherit">

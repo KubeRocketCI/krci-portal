@@ -5,10 +5,8 @@ export const sortKubeObjectByCreationTimestamp = (
   b: KubeObjectBase,
   backwards?: boolean
 ): number => {
-  const aResourceCreationTimeStamp =
-    a.metadata.creationTimestamp?.valueOf() ?? 0;
-  const bResourceCreationTimeStamp =
-    b.metadata.creationTimestamp?.valueOf() ?? 0;
+  const aResourceCreationTimeStamp = a.metadata.creationTimestamp?.valueOf() ?? 0;
+  const bResourceCreationTimeStamp = b.metadata.creationTimestamp?.valueOf() ?? 0;
 
   if (aResourceCreationTimeStamp > bResourceCreationTimeStamp) {
     return backwards ? 1 : -1;

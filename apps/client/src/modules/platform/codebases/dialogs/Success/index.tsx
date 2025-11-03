@@ -14,23 +14,13 @@ export const SuccessDialog: React.FC<SuccessGraphDialogProps> = ({
   return (
     <Dialog open={open} fullWidth onClose={() => closeDialog()} maxWidth={"sm"}>
       <DialogTitle>
-        <h2 className="text-xl font-medium">
-          {dialogTitle}
-        </h2>
+        <h2 className="text-xl font-medium">{dialogTitle}</h2>
       </DialogTitle>
       <DialogContent>
-        <div className="flex flex-col gap-2 items-center">
+        <div className="flex flex-col items-center gap-2">
           <PartyPopper size={theme.typography.pxToRem(128)} color="#A2A7B7" />
-          {title && (
-            <h3 className="text-xl font-medium text-foreground">
-              {title}
-            </h3>
-          )}
-          {description && (
-            <p className="text-sm text-muted-foreground">
-              {description}
-            </p>
-          )}
+          {title && <h3 className="text-foreground text-xl font-medium">{title}</h3>}
+          {description && <p className="text-muted-foreground text-sm">{description}</p>}
         </div>
       </DialogContent>
       <DialogActions>

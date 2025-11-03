@@ -19,6 +19,9 @@ const baseInput = {
   strategy: "create",
   versioning: { type: "edp", startFrom: "0.0.0-SNAPSHOT" },
   ciTool: "tekton",
+  labels: {
+    "app.edp.epam.com/codebaseType": codebaseType.application,
+  },
 } as const;
 
 describe("K8sCodebase: createCodebaseDraft", () => {
@@ -84,6 +87,9 @@ describe("K8sCodebase: createCodebaseDraft", () => {
     const result = createCodebaseDraftObject({
       ...baseInput,
       type: codebaseType.library,
+      labels: {
+        "app.edp.epam.com/codebaseType": codebaseType.library,
+      },
     });
 
     expect(result.spec.type).toBe("library");
@@ -93,6 +99,9 @@ describe("K8sCodebase: createCodebaseDraft", () => {
     const result = createCodebaseDraftObject({
       ...baseInput,
       type: codebaseType.autotest,
+      labels: {
+        "app.edp.epam.com/codebaseType": codebaseType.autotest,
+      },
     });
 
     expect(result.spec.type).toBe("autotest");

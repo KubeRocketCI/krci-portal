@@ -1,3 +1,3 @@
-export * from './SSHPrivateKey';
-export * from './SSHPublicKey';
-export * from './Token';
+export * from "./SSHPrivateKey";
+export * from "./SSHPublicKey";
+export * from "./Token";

@@ -1,10 +1,5 @@
 import { truncateName, createRandomString } from "../../../../../../../utils";
-import {
-  Codebase,
-  GitServer,
-  CodebaseBranch,
-  gitProvider,
-} from "../../../../KRCI";
+import { Codebase, GitServer, CodebaseBranch, gitProvider } from "../../../../KRCI";
 import { PipelineRun } from "../../types";
 import { pipelineRunLabels } from "../../labels";
 import { pipelineType } from "../../../Pipeline/constants";
@@ -22,11 +17,7 @@ export const createBuildPipelineRunDraft = ({
 }): PipelineRun => {
   const {
     metadata: { name: codebaseName },
-    spec: {
-      gitUrlPath: codebaseGitUrlPath,
-      buildTool: codebaseBuildTool,
-      gitServer: codebaseGitServer,
-    },
+    spec: { gitUrlPath: codebaseGitUrlPath, buildTool: codebaseBuildTool, gitServer: codebaseGitServer },
   } = codebase;
 
   const {
@@ -43,10 +34,7 @@ export const createBuildPipelineRunDraft = ({
   const namePrefix = `build-`;
   const namePostfix = `-${createRandomString(4)}`;
 
-  const truncatedName = truncateName(
-    codebaseBranchMetadataName,
-    namePrefix.length + namePostfix.length
-  );
+  const truncatedName = truncateName(codebaseBranchMetadataName, namePrefix.length + namePostfix.length);
 
   const fullPipelineRunName = `${namePrefix}${truncatedName}${namePostfix}`;
 
@@ -56,28 +44,27 @@ export const createBuildPipelineRunDraft = ({
 
   base.metadata.labels = base.metadata.labels || {};
   base.metadata.labels[pipelineRunLabels.codebase] = codebaseName;
-  base.metadata.labels[pipelineRunLabels.codebaseBranch] =
-    codebaseBranchMetadataName;
+  base.metadata.labels[pipelineRunLabels.codebaseBranch] = codebaseBranchMetadataName;
   base.metadata.labels[pipelineRunLabels.pipelineType] = pipelineType.build;
 
-  base.spec.pipelineRef.name = codebaseBranch.spec?.pipelines?.build;
+  if (base.spec.pipelineRef) {
+    base.spec.pipelineRef.name = codebaseBranch.spec?.pipelines?.build;
+  }
 
   base.spec.workspaces = [
-    ...base.spec.workspaces,
+    ...(base.spec.workspaces || []),
     {
       name: "settings",
       configMap: {
         name: `custom-${codebaseBuildTool}-settings`,
       },
-    },
+    } as any,
   ];
 
   const gitUrlPathWithoutSlashAtStart =
-    codebaseGitUrlPath && codebaseGitUrlPath.startsWith("/")
-      ? codebaseGitUrlPath.slice(1)
-      : codebaseGitUrlPath || "";
+    codebaseGitUrlPath && codebaseGitUrlPath.startsWith("/") ? codebaseGitUrlPath.slice(1) : codebaseGitUrlPath || "";
 
-  for (const param of base.spec.params) {
+  for (const param of base.spec.params || []) {
     switch (param.name) {
       case "git-source-url":
         param.value =

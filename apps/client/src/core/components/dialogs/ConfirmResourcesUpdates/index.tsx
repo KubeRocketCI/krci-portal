@@ -1,11 +1,4 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-} from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { DIALOG_NAME } from "./constants";
@@ -46,16 +39,8 @@ export const ConfirmResourcesUpdatesDialog: React.FC<ConfirmResourcesUpdatesDial
                     ? resourcesArray.map(({ name, kind, actionType }) => {
                         return (
                           <div key={name}>
-                            <span
-                              className="text-sm italic mr-1"
-                            >
-                              {kind}
-                            </span>
-                            <span
-                              className="text-sm font-bold mr-1"
-                            >
-                              {name}
-                            </span>
+                            <span className="mr-1 text-sm italic">{kind}</span>
+                            <span className="mr-1 text-sm font-bold">{name}</span>
                             <span className="text-sm">
                               will be{" "}
                               {actionType === k8sOperation.patch

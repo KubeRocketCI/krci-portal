@@ -54,10 +54,10 @@ export const StageList = () => {
 
     return (
       <HorizontalScrollContainer>
-        <div className="flex gap-12 w-1/3" style={{ paddingBottom: theme.typography.pxToRem(50) }}>
+        <div className="flex w-1/3 gap-12" style={{ paddingBottom: theme.typography.pxToRem(50) }}>
           {filteredStages.map((stageWithApplications) => {
             return (
-              <div className="shrink-0 w-full" key={stageWithApplications.stage.spec.name}>
+              <div className="w-full shrink-0" key={stageWithApplications.stage.spec.name}>
                 <Stage stageWithApplications={stageWithApplications} />
               </div>
             );

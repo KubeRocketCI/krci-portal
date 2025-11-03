@@ -1,7 +1,4 @@
-/**
- * @jest-environment jsdom
- */
-
+import { describe, it, expect } from "vitest";
 import { SonarQubeURLService } from "./index";
 
 describe("testing link-creation SonarQubeURLService", () => {

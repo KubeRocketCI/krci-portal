@@ -72,13 +72,13 @@ export const QuickLinkActionsMenu = ({
             description: `Confirm the deletion of the Deployment Flow with all its environments.`,
             backRoute,
             createCustomMessages: (item) => ({
-              onMutate: {
+              loading: {
                 message: `${item.metadata.name} has been marked for deletion`,
               },
-              onError: {
+              error: {
                 message: `Failed to initiate ${item.metadata.name}'s deletion`,
               },
-              onSuccess: {
+              success: {
                 message: "The deletion process has been started",
               },
             }),

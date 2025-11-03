@@ -12,9 +12,7 @@ const createQuickLinkDraftInputSchema = z.object({
   visible: z.boolean(),
 });
 
-export const createQuickLinkDraft = (
-  input: z.infer<typeof createQuickLinkDraftInputSchema>
-): QuickLinkDraft => {
+export const createQuickLinkDraft = (input: z.infer<typeof createQuickLinkDraftInputSchema>): QuickLinkDraft => {
   const parsedInput = createQuickLinkDraftInputSchema.safeParse(input);
 
   if (!parsedInput.success) {

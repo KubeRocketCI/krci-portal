@@ -220,7 +220,10 @@ export const TableHead = <DataType,>({
               }}
               {...props}
             >
-              <div className="flex flex-row gap-0.5 items-center flex-nowrap" style={{ justifyContent: getFlexPropertyByTextAlign(props?.align) }}>
+              <div
+                className="flex flex-row flex-nowrap items-center gap-0.5"
+                style={{ justifyContent: getFlexPropertyByTextAlign(props?.align) }}
+              >
                 {(!!data?.columnSortableValuePath || !!data?.customSortFn) && (
                   <ButtonBase onClick={() => handleRequestSort(column)} disableRipple>
                     <SvgIcon
@@ -238,13 +241,11 @@ export const TableHead = <DataType,>({
                     </SvgIcon>
                   </ButtonBase>
                 )}
-                <span className="text-sm font-semibold mt-1">
-                  {label}
-                </span>
+                <span className="mt-1 text-sm font-semibold">{label}</span>
               </div>
               {!isLast && !column.cell.isFixed && !columns?.[idx + 1].cell.isFixed && (
                 <div
-                  className="absolute top-0 bottom-0 right-0 w-px h-full py-0 px-1 z-1 cursor-col-resize -translate-x-1/2"
+                  className="absolute top-0 right-0 bottom-0 z-1 h-full w-px -translate-x-1/2 cursor-col-resize px-1 py-0"
                   style={{
                     backgroundColor: "transparent",
                   }}

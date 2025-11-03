@@ -40,11 +40,11 @@ export default function CDPipelineDetailsPageContent() {
           </>
         }
       >
-        <div className="flex flex-col gap-6 grow">
+        <div className="flex grow flex-col gap-6">
           <div>
             <StageListFilter />
           </div>
-          <div className="flex-1 flex flex-col">
+          <div className="flex flex-1 flex-col">
             <StageList />
           </div>
         </div>

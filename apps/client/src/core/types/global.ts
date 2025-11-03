@@ -1,4 +1,4 @@
-import { AppRouter } from "@my-project/server/router";
+import type { AppRouter } from "@my-project/trpc";
 import { TRPCClientError } from "@trpc/client";
 
 export type ValueOf<T> = T[keyof T];

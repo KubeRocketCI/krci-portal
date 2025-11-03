@@ -1,10 +1,6 @@
 import { safeEncode } from "../../../../../utils";
 import { SecretDraft, secretDraftSchema } from "../../../groups/Core";
-import {
-  integrationSecretName,
-  SECRET_LABEL_SECRET_TYPE,
-  SECRET_LABEL_INTEGRATION_SECRET,
-} from "../../constants";
+import { integrationSecretName, SECRET_LABEL_SECRET_TYPE, SECRET_LABEL_INTEGRATION_SECRET } from "../../constants";
 import z, { ZodError } from "zod";
 
 const createSonarQubeIntegrationSecretDraftSchema = z.object({
@@ -15,8 +11,7 @@ const createSonarQubeIntegrationSecretDraftSchema = z.object({
 export const createSonarQubeIntegrationSecretDraft = (
   input: z.infer<typeof createSonarQubeIntegrationSecretDraftSchema>
 ): SecretDraft => {
-  const parsedInput =
-    createSonarQubeIntegrationSecretDraftSchema.safeParse(input);
+  const parsedInput = createSonarQubeIntegrationSecretDraftSchema.safeParse(input);
 
   if (!parsedInput.success) {
     throw new ZodError(parsedInput.error.errors);

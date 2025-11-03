@@ -59,9 +59,7 @@ export const useInfoRows = (): InfoRow[] => {
                 ))}
               </div>
             ) : (
-              <span className="text-sm text-muted-foreground">
-                No labels
-              </span>
+              <span className="text-muted-foreground text-sm">No labels</span>
             ),
           columnXs: 12,
         },

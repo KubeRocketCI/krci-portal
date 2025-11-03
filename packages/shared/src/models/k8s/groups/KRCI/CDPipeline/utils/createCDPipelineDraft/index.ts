@@ -1,16 +1,11 @@
 import { ZodError } from "zod";
 import { k8sCDPipelineConfig } from "../../constants";
 import { CDPipelineDraft, CreateCDPipelineDraftInput } from "../../types";
-import {
-  cdPipelineDraftSchema,
-  createCDPipelineDraftInputSchema,
-} from "../../schema";
+import { cdPipelineDraftSchema, createCDPipelineDraftInputSchema } from "../../schema";
 
 const { kind, apiVersion } = k8sCDPipelineConfig;
 
-export const createCDPipelineDraftObject = (
-  input: CreateCDPipelineDraftInput
-): CDPipelineDraft => {
+export const createCDPipelineDraftObject = (input: CreateCDPipelineDraftInput): CDPipelineDraft => {
   const parsedInput = createCDPipelineDraftInputSchema.safeParse(input);
 
   if (!parsedInput.success) {

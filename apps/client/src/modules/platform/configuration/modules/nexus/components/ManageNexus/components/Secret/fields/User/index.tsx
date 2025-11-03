@@ -25,7 +25,7 @@ export const User = () => {
         required: "Enter your Nexus username.",
       })}
       label={`User`}
-      title={"Provide your Nexus repository username for authentication."}
+      tooltipText={"Provide your Nexus repository username for authentication."}
       placeholder={"Enter user name"}
       control={control}
       errors={errors}

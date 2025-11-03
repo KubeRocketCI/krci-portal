@@ -5,8 +5,7 @@ export const getApplicationStatus = (
 ): {
   status: ApplicationHealthStatus;
 } => {
-  const status =
-    application?.status?.health?.status?.toLowerCase() || "Unknown";
+  const status = application?.status?.health?.status?.toLowerCase() || "Unknown";
 
   return {
     status,

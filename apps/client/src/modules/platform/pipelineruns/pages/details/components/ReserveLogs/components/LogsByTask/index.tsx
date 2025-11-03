@@ -1,4 +1,4 @@
-import { Accordion, Divider, Grid, Paper, useTheme } from "@mui/material";
+import { Accordion, Divider, Paper, useTheme } from "@mui/material";
 import React from "react";
 import { Terminal } from "@/core/components/Terminal";
 import { StyledAccordionSummary } from "../../../../styles";
@@ -42,9 +42,7 @@ export const LogsByTask = () => {
         <StyledDetailsHeader>
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
-              <h3 className="text-xl font-medium">
-                {queryParamTaskRun}
-              </h3>
+              <h3 className="text-xl font-medium">{queryParamTaskRun}</h3>
             </div>
           </div>
         </StyledDetailsHeader>
@@ -100,9 +98,7 @@ export const LogsByTask = () => {
             })}
         </div>
       </div>
-      <div className="col-span-10">
-        {renderDetails()}
-      </div>
+      <div className="col-span-10">{renderDetails()}</div>
     </div>
   );
 };

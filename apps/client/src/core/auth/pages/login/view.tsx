@@ -55,7 +55,7 @@ export default function LoginPage() {
                   Sign In
                 </Button>
               )}
-              <div className="flex flex-row gap-2 items-center px-4">
+              <div className="flex flex-row items-center gap-2 px-4">
                 <Divider
                   orientation="horizontal"
                   sx={{

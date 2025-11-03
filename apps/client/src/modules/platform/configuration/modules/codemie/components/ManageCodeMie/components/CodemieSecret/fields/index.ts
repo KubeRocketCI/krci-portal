@@ -1,2 +1,2 @@
-export * from './ClientId';
-export * from './ClientSecret';
+export * from "./ClientId";
+export * from "./ClientSecret";

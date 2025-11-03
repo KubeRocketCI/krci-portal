@@ -1,15 +1,7 @@
 import z from "zod";
-import {
-  kubeObjectBaseDraftSchema,
-  kubeObjectBaseSchema,
-} from "../../../common";
+import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema } from "../../../common";
 
-export const cdPipelineStatusEnum = z.enum([
-  "created",
-  "initialized",
-  "in_progress",
-  "failed",
-]);
+export const cdPipelineStatusEnum = z.enum(["created", "initialized", "in_progress", "failed"]);
 
 export const cdPipelineResultEnum = z.enum(["success", "error"]);
 
@@ -46,8 +38,7 @@ export const cdPipelineDraftSchema = kubeObjectBaseDraftSchema.extend({
 
 export const createCDPipelineDraftInputSchema = z.object({
   applications: cdPipelineDraftSchema.shape.spec.shape.applications,
-  applicationsToPromote:
-    cdPipelineDraftSchema.shape.spec.shape.applicationsToPromote,
+  applicationsToPromote: cdPipelineDraftSchema.shape.spec.shape.applicationsToPromote,
   deploymentType: cdPipelineDraftSchema.shape.spec.shape.deploymentType,
   description: cdPipelineDraftSchema.shape.spec.shape.description,
   inputDockerStreams: cdPipelineDraftSchema.shape.spec.shape.inputDockerStreams,

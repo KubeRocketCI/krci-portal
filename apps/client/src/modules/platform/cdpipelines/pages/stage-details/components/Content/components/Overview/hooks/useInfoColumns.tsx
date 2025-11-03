@@ -46,7 +46,7 @@ export const useInfoColumns = () => {
         {
           label: "Status",
           text: (
-            <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-2">
               <div>
                 <StatusIcon
                   Icon={stageStatusIcon.component}
@@ -55,13 +55,9 @@ export const useInfoColumns = () => {
                   width={20}
                   Title={
                     <>
-                      <p className="text-sm font-semibold">
-                        {`Status: ${stage.status?.status || "unknown"}`}
-                      </p>
+                      <p className="text-sm font-semibold">{`Status: ${stage.status?.status || "unknown"}`}</p>
                       {!!stage.status?.detailed_message && (
-                        <p className="text-sm font-medium mt-3">
-                          {stage.status?.detailed_message}
-                        </p>
+                        <p className="mt-3 text-sm font-medium">{stage.status?.detailed_message}</p>
                       )}
                     </>
                   }
@@ -85,7 +81,7 @@ export const useInfoColumns = () => {
         {
           label: "Cluster",
           text: (
-            <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-2">
               <div>
                 <KubernetesIcon width={20} height={20} />
               </div>

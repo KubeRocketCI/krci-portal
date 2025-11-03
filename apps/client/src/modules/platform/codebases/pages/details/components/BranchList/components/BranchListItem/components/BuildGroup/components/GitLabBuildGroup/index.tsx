@@ -10,7 +10,6 @@ import {
   Popper,
   useTheme,
 } from "@mui/material";
-import React from "react";
 
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { StatusIcon } from "@/core/components/StatusIcon";

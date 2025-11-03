@@ -43,9 +43,9 @@ export const TemplateCard = ({ template, handleTemplateClick }: TemplateCardProp
 
   return (
     <div className={classes.cardRoot}>
-      <div className="flex flex-col gap-6 h-full">
-        <div className="flex flex-col gap-4 mb-auto">
-          <div className="flex flex-row gap-2 items-center">
+      <div className="flex h-full flex-col gap-6">
+        <div className="mb-auto flex flex-col gap-4">
+          <div className="flex flex-row items-center gap-2">
             {icon && (
               <img
                 className={classes.templateIcon}
@@ -53,27 +53,19 @@ export const TemplateCard = ({ template, handleTemplateClick }: TemplateCardProp
                 alt=""
               />
             )}
-            <TextWithTooltip
-              text={displayName}
-              textSX={{
-                fontWeight: 500,
-                fontSize: (t) => t.typography.pxToRem(18),
-              }}
-            />
+            <TextWithTooltip text={displayName} className="text-lg font-medium" />
           </div>
-          <span className={`text-xs ${classes.templateDescription}`}>
-            {description}
-          </span>
+          <span className={`text-xs ${classes.templateDescription}`}>{description}</span>
         </div>
         <div className="flex flex-col gap-4">
           <div>
-            <div className="grid grid-cols-3 gap-2 items-center">
+            <div className="grid grid-cols-3 items-center gap-2">
               <div className="col-span-1">
                 <div className="flex flex-col gap-1">
                   <span className="text-xs">Language:</span>
                   <div className="flex flex-row gap-1">
                     <UseSpriteSymbol name={getIconByPattern(_language)} width={16} height={16} />
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       {codebaseMappingByLang?.language?.name || capitalizeFirstLetter(_language)}
                     </span>
                   </div>
@@ -84,7 +76,7 @@ export const TemplateCard = ({ template, handleTemplateClick }: TemplateCardProp
                   <span className="text-xs">Framework:</span>
                   <div className="flex flex-row gap-1">
                     <UseSpriteSymbol name={getIconByPattern(_framework)} width={16} height={16} />
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       {framework
                         ? codebaseMappingByLang?.frameworks?.[framework]?.name ||
                           (_framework && capitalizeFirstLetter(_framework)) ||
@@ -99,7 +91,7 @@ export const TemplateCard = ({ template, handleTemplateClick }: TemplateCardProp
                   <span className="text-xs">Build Tool:</span>
                   <div className="flex flex-row gap-1">
                     <UseSpriteSymbol name={getIconByPattern(_buildTool)} width={16} height={16} />
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       {codebaseMappingByLang?.buildTools?.[buildTool]?.name || capitalizeFirstLetter(_buildTool)}
                     </span>
                   </div>
@@ -108,21 +100,21 @@ export const TemplateCard = ({ template, handleTemplateClick }: TemplateCardProp
             </div>
           </div>
           <div>
-            <div className="grid grid-cols-3 gap-2 items-center">
+            <div className="grid grid-cols-3 items-center gap-2">
               <div className="col-span-1">
-                <div className="flex flex-col gap-1 items-start">
+                <div className="flex flex-col items-start gap-1">
                   <span className="text-xs">Type:</span>
                   <Chip size={"small"} label={type} sx={{ backgroundColor: theme.palette.secondary.main }} />
                 </div>
               </div>
               <div className="col-span-1">
-                <div className="flex flex-col gap-1 items-start">
+                <div className="flex flex-col items-start gap-1">
                   <span className="text-xs">Category:</span>
                   <Chip size={"small"} label={category} sx={{ backgroundColor: theme.palette.secondary.main }} />
                 </div>
               </div>
               <div className="col-span-1">
-                <div className="flex flex-col gap-1 items-start">
+                <div className="flex flex-col items-start gap-1">
                   <span className="text-xs">Maturity:</span>
                   <Chip size={"small"} label={maturity} sx={{ backgroundColor: theme.palette.secondary.main }} />
                 </div>
@@ -130,7 +122,7 @@ export const TemplateCard = ({ template, handleTemplateClick }: TemplateCardProp
             </div>
           </div>
         </div>
-        <div className="flex flex-row gap-4 items-end justify-between">
+        <div className="flex flex-row items-end justify-between gap-4">
           <div className="flex flex-col gap-1">
             <span className="text-xs">Version</span>
             <p className="text-base">{version}</p>

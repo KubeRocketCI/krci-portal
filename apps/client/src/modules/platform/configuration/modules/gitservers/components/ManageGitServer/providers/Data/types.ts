@@ -10,5 +10,5 @@ export interface DataContextProviderProps {
   gitServer: GitServer | undefined;
   gitServerSecret: Secret | undefined;
   handleClosePanel: (() => void) | undefined;
-  
+  children: React.ReactNode;
 }

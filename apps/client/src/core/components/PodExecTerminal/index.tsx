@@ -232,7 +232,7 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
   return (
     <div className="flex flex-col gap-2" style={{ height }}>
       {/* Controls */}
-      <div className="flex gap-2 items-center flex-wrap">
+      <div className="flex flex-wrap items-center gap-2">
         {pods.length > 1 && (
           <FormControl size="small" sx={{ minWidth: 180 }}>
             <InputLabel>Pod</InputLabel>
@@ -264,7 +264,7 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
           </Select>
         </FormControl>
 
-        <span className="text-xs text-muted-foreground">
+        <span className="text-muted-foreground text-xs">
           {isAttach ? `Attach: ${podName}` : `Terminal: ${podName}`}
         </span>
       </div>

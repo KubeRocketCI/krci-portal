@@ -24,7 +24,6 @@ export interface PercentageCircleChartProps {
   thickness?: number;
 }
 
-
 export const PercentageCircleChart = ({
   title,
   legend,
@@ -93,20 +92,16 @@ export const PercentageCircleChart = ({
           height: 100%;
         }
       `}</style>
-      <div className="flex flex-col percentage-chart-wrapper">
+      <div className="percentage-chart-wrapper flex flex-col">
         <div className="flex flex-row items-center gap-4">
-          {title && (
-            <h6 className="text-lg font-medium text-[#002446]">
-              {title}
-            </h6>
-          )}
+          {title && <h6 className="text-lg font-medium text-[#002446]">{title}</h6>}
         </div>
         {error ? (
           <ErrorContent error={error} orientation="vertical" />
         ) : (
           <div className="flex flex-row gap-4">
             <div style={BoxSx as React.CSSProperties}>
-              <div aria-busy={isLoading} aria-live="polite" className="flex justify-center items-center mx-auto">
+              <div aria-busy={isLoading} aria-live="polite" className="mx-auto flex items-center justify-center">
                 <PieChart
                   cx={size / 2}
                   cy={size / 2}
@@ -138,9 +133,7 @@ export const PercentageCircleChart = ({
                   </Pie>
                 </PieChart>
                 {!isLoading && typeof legend === "string" && (
-                  <p className="text-center text-[1.1em] font-normal">
-                    {legend}
-                  </p>
+                  <p className="text-center text-[1.1em] font-normal">{legend}</p>
                 )}
               </div>
             </div>

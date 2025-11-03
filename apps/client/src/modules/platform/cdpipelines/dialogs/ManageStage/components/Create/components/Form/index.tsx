@@ -42,7 +42,7 @@ export const Form = () => {
         </div>
         <div style={{ padding: `${theme.typography.pxToRem(24)} ${theme.typography.pxToRem(8)}` }}>
           <TabPanel value={activeStep} index={FORM_STEPPER.CONFIGURATION.idx}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="col-span-1 md:col-span-2">
                 <Cluster />
               </div>

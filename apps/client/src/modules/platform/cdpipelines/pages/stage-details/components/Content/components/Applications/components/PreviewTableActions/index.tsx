@@ -37,7 +37,7 @@ export const PreviewTableActions = ({ toggleMode }: PreviewTableActionsProps) =>
   }, [pipelineRunsWatch.data?.deploy]);
 
   return (
-    <div className="flex flex-row gap-4 items-center justify-end">
+    <div className="flex flex-row items-center justify-end gap-4">
       <CleanButton
         latestCleanPipelineRunIsRunning={latestCleanPipelineRunIsRunning}
         latestDeployPipelineRunIsRunning={latestDeployPipelineRunIsRunning}

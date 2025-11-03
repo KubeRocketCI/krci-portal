@@ -12,7 +12,7 @@ export default function PipelineListPage() {
       ]}
     >
       <Section description="Browse and visualize your Tekton tasks. View task definitions and their task dependencies.">
-        <div className="flex flex-col gap-6 flex-grow">
+        <div className="flex flex-grow flex-col gap-6">
           <TaskList />
         </div>
       </Section>

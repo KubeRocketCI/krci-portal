@@ -30,6 +30,6 @@ export const usePipelineRunWatchWithPageParams = () => {
 
 export const usePipelineRunLogsQueryWithPageParams = () => {
   const params = routePipelineRunDetails.useParams();
-  
+
   return usePipelineRunLogsQuery(params.clusterName, params.namespace, params.name);
 };

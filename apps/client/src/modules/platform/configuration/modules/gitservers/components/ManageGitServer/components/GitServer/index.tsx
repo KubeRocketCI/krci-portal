@@ -44,7 +44,7 @@ export const GitServerForm = () => {
           </div>
         </div>
         <div className="col-span-12">
-          <div className="grid grid-cols-12 gap-4 items-center">
+          <div className="grid grid-cols-12 items-center gap-4">
             <div className="col-span-6" style={{ marginTop: "16px" }}>
               <OverrideWebhookURL />
             </div>

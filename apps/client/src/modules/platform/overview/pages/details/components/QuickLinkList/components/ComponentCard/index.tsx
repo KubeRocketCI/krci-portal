@@ -21,9 +21,9 @@ export const ComponentCard = ({ component }: ComponentCardProps) => {
 
   return (
     <Card className={classes.cardRoot}>
-      <div className="flex flex-row gap-4 items-center justify-between">
+      <div className="flex flex-row items-center justify-between gap-4">
         <MuiLink href={_url} target="_blank" rel="noopener" style={{ minWidth: 0 }}>
-          <div className="flex flex-row gap-4 items-center">
+          <div className="flex flex-row items-center gap-4">
             <span className={classes.serviceItemIcon}>
               <img src={`data:image/svg+xml;base64,${icon}`} alt="" />
             </span>

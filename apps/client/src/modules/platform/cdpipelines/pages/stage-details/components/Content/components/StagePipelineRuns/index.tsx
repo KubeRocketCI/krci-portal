@@ -26,6 +26,7 @@ export const StagePipelineRuns = () => {
       syncWithUrl
       defaultValues={{
         [pipelineRunFilterControlNames.CODEBASES]: [],
+        [pipelineRunFilterControlNames.NAMESPACES]: [],
         [pipelineRunFilterControlNames.STATUS]: "all",
         [pipelineRunFilterControlNames.PIPELINE_TYPE]: "all",
       }}

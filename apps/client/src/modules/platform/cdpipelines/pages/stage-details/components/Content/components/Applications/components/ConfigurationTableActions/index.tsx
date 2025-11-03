@@ -122,9 +122,6 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
       showRequestErrorMessage(k8sOperation.create, {
         customMessage: {
           message: "Deploy PipelineRun template is not found.",
-          options: {
-            variant: "error",
-          },
         },
       });
 
@@ -170,7 +167,7 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
   const buttonsEnabledMap = useButtonsEnabledMap();
 
   return (
-    <div className="flex flex-row gap-6 items-center justify-end">
+    <div className="flex flex-row items-center justify-end gap-6">
       <Tooltip title={"Reset selected image stream versions"}>
         <Button onClick={() => reset()} disabled={!isDirty} sx={{ color: (t) => t.palette.secondary.dark }}>
           undo changes

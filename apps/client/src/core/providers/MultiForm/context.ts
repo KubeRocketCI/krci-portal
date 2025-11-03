@@ -1,6 +1,6 @@
-import React from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { MultiFormContextProviderValue } from './types';
+import React from "react";
+import { UseFormReturn } from "react-hook-form";
+import { MultiFormContextProviderValue } from "./types";
 
 export const MultiFormContext = React.createContext<MultiFormContextProviderValue<string>>({
   forms: {},

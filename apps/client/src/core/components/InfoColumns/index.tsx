@@ -12,9 +12,7 @@ export const InfoColumns = ({ infoRows }: InfoColumnsProps) => {
               <React.Fragment key={`column::${index}`}>
                 {!!label && !!text && (
                   <div className={`col-span-${columnXs}`}>
-                    <div className="font-medium text-sm mb-1 text-foreground">
-                      {label}
-                    </div>
+                    <div className="text-foreground mb-1 text-sm font-medium">{label}</div>
                     <div className="grid grid-cols-[auto_1fr] items-center gap-1">
                       {!!icon && (
                         <div>
@@ -22,9 +20,7 @@ export const InfoColumns = ({ infoRows }: InfoColumnsProps) => {
                         </div>
                       )}
                       <div className="flex-1">
-                        <span className="text-sm break-word text-muted-foreground">
-                          {text}
-                        </span>
+                        <span className="break-word text-muted-foreground text-sm">{text}</span>
                       </div>
                     </div>
                   </div>

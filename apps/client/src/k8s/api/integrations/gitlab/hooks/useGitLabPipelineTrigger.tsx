@@ -2,7 +2,7 @@ import { trpc } from "@/core/clients/trpc";
 import { showToast } from "@/core/components/Snackbar";
 import { useRequestStatusMessages } from "@/k8s/api/hooks/useResourceRequestStatusMessages";
 import { useClusterStore } from "@/k8s/store";
-import { GitLabPipelineResponse, GitLabPipelineVariable } from "@my-project/shared";
+import { GitLabPipelineResponse, GitLabPipelineVariable, k8sOperation } from "@my-project/shared";
 import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -24,8 +24,7 @@ export const useGitLabPipelineTrigger = (
 ): UseMutationResult<GitLabPipelineResponse, Error, TriggerGitLabPipelineParams> & {
   triggerPipeline: (params: TriggerGitLabPipelineParams) => void;
 } => {
-  const { showRequestSuccessMessage, showRequestErrorMessage, showRequestErrorDetailedMessage } =
-    useRequestStatusMessages();
+  const { showRequestErrorMessage, showRequestErrorDetailedMessage } = useRequestStatusMessages();
 
   const { clusterName, namespace } = useClusterStore(
     useShallow((state) => ({
@@ -46,7 +45,7 @@ export const useGitLabPipelineTrigger = (
         variables,
       });
     },
-    onSuccess: (response, variables) => {
+    onSuccess: (response) => {
       showToast("GitLab pipeline triggered successfully!", "success", {
         duration: 8000,
         externalLink: response.web_url
@@ -59,7 +58,7 @@ export const useGitLabPipelineTrigger = (
       options?.onSuccess?.(response);
     },
     onError: (error, variables) => {
-      showRequestErrorMessage("create" as any, {
+      showRequestErrorMessage(k8sOperation.create, {
         entityName: `GitLab pipeline for ${variables.ref}`,
         customMessage: {
           message: `Failed to trigger GitLab pipeline: ${error.message}`,

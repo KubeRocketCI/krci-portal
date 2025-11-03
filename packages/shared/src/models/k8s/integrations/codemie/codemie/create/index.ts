@@ -1,9 +1,5 @@
 import z, { ZodError } from "zod";
-import {
-  CodemieDraft,
-  codemieDraftSchema,
-  k8sCodemieConfig,
-} from "../../../../groups/KRCI";
+import { CodemieDraft, codemieDraftSchema, k8sCodemieConfig } from "../../../../groups/KRCI";
 
 const createCodemieDraftSchema = z.object({
   tokenEndpoint: z.string(),
@@ -11,9 +7,7 @@ const createCodemieDraftSchema = z.object({
   name: z.string(),
 });
 
-export const createCodemieDraft = (
-  input: z.infer<typeof createCodemieDraftSchema>
-): CodemieDraft => {
+export const createCodemieDraft = (input: z.infer<typeof createCodemieDraftSchema>): CodemieDraft => {
   const parsedInput = createCodemieDraftSchema.safeParse(input);
 
   if (!parsedInput.success) {

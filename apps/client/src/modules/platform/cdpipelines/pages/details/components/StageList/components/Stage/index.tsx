@@ -150,8 +150,8 @@ export const Stage = ({ stageWithApplications: { stage, applications } }: Enviro
         <div className="flex flex-col gap-4">
           <StyledCardHeader stageStatusColor={stageStatusIcon.color} variant="outlined">
             <div className="flex flex-col gap-2">
-              <div className="flex gap-4 justify-between flex-row">
-                <div className="flex flex-row gap-2 items-center">
+              <div className="flex flex-row justify-between gap-4">
+                <div className="flex flex-row items-center gap-2">
                   <Button variant="link" asChild className="p-0 text-2xl font-medium">
                     <Link
                       to={PATH_CDPIPELINE_STAGE_DETAILS_FULL}
@@ -165,14 +165,10 @@ export const Stage = ({ stageWithApplications: { stage, applications } }: Enviro
                       {stage.spec.name.toUpperCase()}
                     </Link>
                   </Button>{" "}
-                  <span className="text-xs text-muted-foreground">
-                      ({stage.spec.clusterName})
-                  </span>
+                  <span className="text-muted-foreground text-xs">({stage.spec.clusterName})</span>
                 </div>
-                <div className="flex flex-row gap-2 items-center">
-                  <span className="text-xs text-foreground">
-                    Open In:
-                  </span>
+                <div className="flex flex-row items-center gap-2">
+                  <span className="text-foreground text-xs">Open In:</span>
                   <div className="flex flex-row gap-2">
                     {renderArgoCDQuickLink()}
                     {renderMonitoringQuickLink()}
@@ -181,16 +177,12 @@ export const Stage = ({ stageWithApplications: { stage, applications } }: Enviro
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <div className="flex gap-2 flex-row">
-                  <span className="text-xs text-foreground">
-                    Namespace:
-                  </span>
+                <div className="flex flex-row gap-2">
+                  <span className="text-foreground text-xs">Namespace:</span>
                   <StyledChip label={<TextWithTooltip text={stage.spec.namespace} />} />
                 </div>
-                <div className="flex gap-2 flex-row">
-                    <span className="text-xs text-foreground">
-                    Trigger Type:
-                  </span>
+                <div className="flex flex-row gap-2">
+                  <span className="text-foreground text-xs">Trigger Type:</span>
                   <StyledChip label={<TextWithTooltip text={stage.spec.triggerType} />} />
                 </div>
               </div>

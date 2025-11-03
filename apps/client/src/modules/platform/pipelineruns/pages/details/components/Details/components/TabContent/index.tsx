@@ -1,9 +1,5 @@
-import React from 'react';
+import React from "react";
 
 export const TabContent = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className="pt-6">
-      {children}
-    </div>
-  );
+  return <div className="pt-6">{children}</div>;
 };

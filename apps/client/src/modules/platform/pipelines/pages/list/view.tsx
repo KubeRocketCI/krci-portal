@@ -6,7 +6,7 @@ export default function PipelineListPage() {
   return (
     <PageWrapper breadcrumbs={[{ label: "Pipelines" }]}>
       <Section description="Browse and visualize your Tekton pipelines. View pipeline definitions and their task dependencies.">
-        <div className="flex flex-col gap-6 flex-grow">
+        <div className="flex flex-grow flex-col gap-6">
           <PipelineList />
         </div>
       </Section>

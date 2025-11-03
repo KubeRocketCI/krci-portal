@@ -1,9 +1,5 @@
 import { z } from "zod";
-import {
-  kubeObjectBaseDraftSchema,
-  kubeObjectBaseSchema,
-  kubeObjectMetadataSchema,
-} from "../../../common";
+import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema, kubeObjectMetadataSchema } from "../../../common";
 
 // Common schemas
 const intOrStringSchema = z.union([z.string(), z.number().int()]);
@@ -346,9 +342,7 @@ const nodeAffinitySchema = z.object({
       nodeSelectorTerms: z.array(nodeSelectorTermSchema),
     })
     .optional(),
-  preferredDuringSchedulingIgnoredDuringExecution: z
-    .array(preferredSchedulingTermSchema)
-    .optional(),
+  preferredDuringSchedulingIgnoredDuringExecution: z.array(preferredSchedulingTermSchema).optional(),
 });
 
 const podAffinityTermSchema = z.object({
@@ -392,12 +386,8 @@ const weightedPodAffinityTermSchema = z.object({
 });
 
 const podAffinitySchema = z.object({
-  requiredDuringSchedulingIgnoredDuringExecution: z
-    .array(podAffinityTermSchema)
-    .optional(),
-  preferredDuringSchedulingIgnoredDuringExecution: z
-    .array(weightedPodAffinityTermSchema)
-    .optional(),
+  requiredDuringSchedulingIgnoredDuringExecution: z.array(podAffinityTermSchema).optional(),
+  preferredDuringSchedulingIgnoredDuringExecution: z.array(weightedPodAffinityTermSchema).optional(),
 });
 
 const affinitySchema = z.object({

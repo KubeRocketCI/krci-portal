@@ -1,5 +1,5 @@
 import { ConfigMap, ContainerRegistryType, Secret, ServiceAccount } from "@my-project/shared";
-import { ValueOf } from "@my-project/shared/types";
+import { ValueOf } from "@my-project/shared";
 import { FORM_NAMES } from "./constants";
 import {
   CONFIG_MAP_FORM_NAMES,

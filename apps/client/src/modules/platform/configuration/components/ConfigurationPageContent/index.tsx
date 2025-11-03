@@ -49,7 +49,7 @@ export const ConfigurationPageContent = ({
           onClose={(_e, reason) => reason !== "backdropClick" && creationForm.onClose()}
         >
           <DialogTitle component="div">
-            <div className="flex justify-between items-center w-full gap-2">
+            <div className="flex w-full items-center justify-between gap-2">
               <h2 className="text-xl font-medium">{creationForm.label}</h2>
               <IconButton onClick={creationForm.onClose}>
                 <X size={20} />

@@ -8,9 +8,7 @@ export const ManageClusterSecret = ({ formData }: ManageClusterSecretProps) => {
 
   return (
     <div className="flex flex-col gap-4" data-testid="form">
-      <div>
-        {mode === FORM_MODES.CREATE ? <Create formData={formData} /> : <Edit formData={formData} />}
-      </div>
+      <div>{mode === FORM_MODES.CREATE ? <Create formData={formData} /> : <Edit formData={formData} />}</div>
     </div>
   );
 };

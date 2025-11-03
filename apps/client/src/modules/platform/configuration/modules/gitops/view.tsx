@@ -3,7 +3,7 @@ import { ErrorContent } from "@/core/components/ErrorContent";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionDetails, AccordionSummary, Button, Grid, Link } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Button, Link } from "@mui/material";
 import React from "react";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
 import { ManageGitOps } from "./components/ManageGitOps";
@@ -81,7 +81,7 @@ export default function GitopsConfigurationPage() {
       <LoadingWrapper isLoading={isLoading}>
         <Accordion expanded>
           <AccordionSummary>
-            <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-2">
               <div className="mr-1">
                 <StatusIcon
                   Icon={codebaseStatusIcon.component}
@@ -89,13 +89,9 @@ export default function GitopsConfigurationPage() {
                   isSpinning={codebaseStatusIcon.isSpinning}
                   Title={
                     <>
-                      <p className="text-sm font-semibold">
-                        {`Status: ${status || "Unknown"}`}
-                      </p>
+                      <p className="text-sm font-semibold">{`Status: ${status || "Unknown"}`}</p>
                       {status === codebaseStatus.failed && (
-                        <p className="text-sm font-medium mt-3">
-                          {gitOpsCodebase?.status?.detailedMessage}
-                        </p>
+                        <p className="mt-3 text-sm font-medium">{gitOpsCodebase?.status?.detailedMessage}</p>
                       )}
                     </>
                   }

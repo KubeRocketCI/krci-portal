@@ -1,17 +1,9 @@
 import { safeEncode } from "../../../../../../../utils";
 import { ZodError } from "zod";
-import {
-  codebaseDraftSecretSchema,
-  createCodebaseDraftSecretInputSchema,
-} from "../../schema";
-import {
-  CodebaseDraftSecret,
-  CreateCodebaseDraftSecretInput,
-} from "../../types";
+import { codebaseDraftSecretSchema, createCodebaseDraftSecretInputSchema } from "../../schema";
+import { CodebaseDraftSecret, CreateCodebaseDraftSecretInput } from "../../types";
 
-export const createCodebaseDraftSecretObject = (
-  input: CreateCodebaseDraftSecretInput
-): CodebaseDraftSecret => {
+export const createCodebaseDraftSecretObject = (input: CreateCodebaseDraftSecretInput): CodebaseDraftSecret => {
   const parsedInput = createCodebaseDraftSecretInputSchema.safeParse(input);
 
   if (!parsedInput.success) {

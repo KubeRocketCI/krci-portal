@@ -6,10 +6,7 @@ import { editCDPipelineInputSchema, cdPipelineSchema } from "../../schema";
  * Updates a CDPipeline resource with editable fields
  * Only allows editing: description, applications
  */
-export const editCDPipelineObject = (
-  originalCDPipeline: CDPipeline,
-  input: EditCDPipelineInput
-): CDPipeline => {
+export const editCDPipelineObject = (originalCDPipeline: CDPipeline, input: EditCDPipelineInput): CDPipeline => {
   const parsedInput = editCDPipelineInputSchema.safeParse(input);
 
   if (!parsedInput.success) {

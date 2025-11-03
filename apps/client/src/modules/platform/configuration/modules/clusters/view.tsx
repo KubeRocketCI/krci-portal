@@ -13,7 +13,7 @@ import {
 } from "@my-project/shared";
 import React from "react";
 import { ManageClusterSecret } from "./components/ManageClusterSecret";
-import { getClusterSecretStatusIcon,  } from "@/k8s/integrations/secret/utils/getStatusIcon";
+import { getClusterSecretStatusIcon } from "@/k8s/integrations/secret/utils/getStatusIcon";
 import { ShieldX } from "lucide-react";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
 import { pageDescription } from "./constants";
@@ -90,7 +90,7 @@ export default function ClustersConfigurationPage() {
                     }}
                   >
                     <h6 className="text-base font-medium">
-                      <div className="flex gap-2 items-center">
+                      <div className="flex items-center gap-2">
                         <div className="mr-1">
                           <StatusIcon
                             Icon={statusIcon.component}
@@ -100,11 +100,7 @@ export default function ClustersConfigurationPage() {
                                 <p className="text-sm font-semibold">
                                   {`Connected: ${connected === undefined ? "Unknown" : connected}`}
                                 </p>
-                                {!!error && (
-                                  <p className="text-sm font-medium mt-3">
-                                    {error}
-                                  </p>
-                                )}
+                                {!!error && <p className="mt-3 text-sm font-medium">{error}</p>}
                               </>
                             }
                           />

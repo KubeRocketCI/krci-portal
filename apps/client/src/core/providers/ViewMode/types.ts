@@ -1,10 +1,10 @@
-import { ValueOf } from '../../types/global';
+import { ValueOf } from "../../types/global";
 
 export const VIEW_MODES = {
-  TABLE: 'table',
-  GRID: 'grid',
-  COMPACT: 'compact',
-  DETAILED: 'detailed',
+  TABLE: "table",
+  GRID: "grid",
+  COMPACT: "compact",
+  DETAILED: "detailed",
 } as const;
 
 export type ViewMode = ValueOf<typeof VIEW_MODES>;

@@ -1,5 +1,4 @@
-import React from 'react';
-import { ApiUrl, TokenEndpoint } from './fields';
+import { ApiUrl, TokenEndpoint } from "./fields";
 
 export const CodemieForm = () => {
   return (

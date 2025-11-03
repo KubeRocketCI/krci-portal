@@ -6,10 +6,7 @@ import { editCodebaseInputSchema, codebaseSchema } from "../../schema";
  * Updates a Codebase resource with editable fields
  * Only allows editing: jiraServer, commitMessagePattern, ticketNamePattern, jiraIssueMetadataPayload
  */
-export const editCodebaseObject = (
-  originalCodebase: Codebase,
-  input: EditCodebaseInput
-): Codebase => {
+export const editCodebaseObject = (originalCodebase: Codebase, input: EditCodebaseInput): Codebase => {
   const parsedInput = editCodebaseInputSchema.safeParse(input);
 
   if (!parsedInput.success) {

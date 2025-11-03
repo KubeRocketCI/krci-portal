@@ -1,4 +1,3 @@
-import React from "react";
 import { errorBase64Icon } from "./constants";
 import { useStyles } from "./styles";
 

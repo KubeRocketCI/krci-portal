@@ -26,11 +26,9 @@ export const AddNewWidgetCard = ({
         });
       }}
     >
-      <div className="flex flex-row gap-4 items-center">
-        <Plus size={16}  />
-        <span className="text-base font-medium">
-          ADD WIDGET
-        </span>
+      <div className="flex flex-row items-center gap-4">
+        <Plus size={16} />
+        <span className="text-base font-medium">ADD WIDGET</span>
       </div>
     </IconButton>
   );

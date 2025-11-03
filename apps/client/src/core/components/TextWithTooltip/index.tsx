@@ -24,15 +24,11 @@ export const TextWithTooltip = ({ text, className, maxLineAmount = 1 }: TextWith
     };
   }, [text, maxLineAmount, className]);
 
-
   const Content = (
-    <p ref={textRef} className={cn(
-      "text-sm",
-      "wrap-break-word",
-      "text-inherit",
-      `line-clamp-${maxLineAmount}`,
-      className
-    )}>
+    <p
+      ref={textRef}
+      className={cn("text-sm", "wrap-break-word", "text-inherit", `line-clamp-${maxLineAmount}`, className)}
+    >
       {text}
     </p>
   );

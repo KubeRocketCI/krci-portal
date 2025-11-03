@@ -22,8 +22,7 @@ describe("testing createRerunPipelineRun", () => {
         name: `build-test-codebase-name-test-codebase-branch-name-very-lo-${MOCKED_UUID}`,
         labels: {
           "app.edp.epam.com/codebase": "test-codebase-name",
-          "app.edp.epam.com/codebasebranch":
-            "test-codebase-name-test-codebase-branch-name-very-long-long-name",
+          "app.edp.epam.com/codebasebranch": "test-codebase-name-test-codebase-branch-name-very-long-long-name",
           "app.edp.epam.com/pipelinetype": "build",
         },
       },
@@ -40,8 +39,7 @@ describe("testing createRerunPipelineRun", () => {
           { name: "CODEBASE_NAME", value: "test-codebase-name" },
           {
             name: "CODEBASEBRANCH_NAME",
-            value:
-              "test-codebase-name-test-codebase-branch-name-very-long-long-name",
+            value: "test-codebase-name-test-codebase-branch-name-very-long-long-name",
           },
           { name: "changeNumber", value: "1" },
           { name: "patchsetNumber", value: "1" },
@@ -55,6 +53,7 @@ describe("testing createRerunPipelineRun", () => {
         pipelineRef: { name: "test-build-pipeline" },
         taskRunTemplate: { serviceAccountName: "tekton" },
         workspaces: [
+          // @ts-ignore
           {
             name: "shared-workspace",
             subPath: "codebase",
@@ -65,7 +64,9 @@ describe("testing createRerunPipelineRun", () => {
               },
             },
           },
+          // @ts-ignore
           { name: "ssh-creds", secret: { secretName: "secretName" } },
+          // @ts-ignore
           {
             name: "settings",
             configMap: { name: "custom-test-build-tool-settings" },
@@ -84,11 +85,9 @@ describe("testing createRerunPipelineRun", () => {
         name: "r-build-test-codebase-name-test-codebase-branch-name-very--1234",
         labels: {
           "app.edp.epam.com/codebase": "test-codebase-name",
-          "app.edp.epam.com/codebasebranch":
-            "test-codebase-name-test-codebase-branch-name-very-long-long-name",
+          "app.edp.epam.com/codebasebranch": "test-codebase-name-test-codebase-branch-name-very-long-long-name",
           "app.edp.epam.com/pipelinetype": "build",
-          "dashboard.tekton.dev/rerunOf":
-            "build-test-codebase-name-test-codebase-branch-name-very-lo-1234",
+          "dashboard.tekton.dev/rerunOf": "build-test-codebase-name-test-codebase-branch-name-very-lo-1234",
         },
       },
       spec: {
@@ -104,8 +103,7 @@ describe("testing createRerunPipelineRun", () => {
           { name: "CODEBASE_NAME", value: "test-codebase-name" },
           {
             name: "CODEBASEBRANCH_NAME",
-            value:
-              "test-codebase-name-test-codebase-branch-name-very-long-long-name",
+            value: "test-codebase-name-test-codebase-branch-name-very-long-long-name",
           },
           { name: "changeNumber", value: "1" },
           { name: "patchsetNumber", value: "1" },

@@ -1,18 +1,7 @@
-import {
-  parseConfigJson,
-  safeDecode,
-  safeEncode,
-} from "../../../../../../utils";
+import { parseConfigJson, safeDecode, safeEncode } from "../../../../../../utils";
 import z, { ZodError } from "zod";
-import {
-  Secret,
-  SecretDraft,
-  secretDraftSchema,
-} from "../../../../groups/Core";
-import {
-  SECRET_LABEL_SECRET_TYPE,
-  SECRET_LABEL_INTEGRATION_SECRET,
-} from "../../../constants";
+import { Secret, SecretDraft, secretDraftSchema } from "../../../../groups/Core";
+import { SECRET_LABEL_SECRET_TYPE, SECRET_LABEL_INTEGRATION_SECRET } from "../../../constants";
 import {
   containerRegistryType,
   containerRegistryTypeEnum,
@@ -69,8 +58,7 @@ export const parseRegistrySecretAuth = (secret: Secret | undefined) => {
     return fallbackValue;
   }
 
-  const auth = (Object.values(parsedConfigJson.auths)[0] as { auth?: string })
-    ?.auth;
+  const auth = (Object.values(parsedConfigJson.auths)[0] as { auth?: string })?.auth;
 
   return { auth };
 };
@@ -85,8 +73,7 @@ const createPullAccountRegistrySecretDraftSchema = z.object({
 export const createPullAccountRegistrySecretDraft = (
   input: z.infer<typeof createPullAccountRegistrySecretDraftSchema>
 ): SecretDraft => {
-  const parsedInput =
-    createPullAccountRegistrySecretDraftSchema.safeParse(input);
+  const parsedInput = createPullAccountRegistrySecretDraftSchema.safeParse(input);
 
   if (!parsedInput.success) {
     throw new ZodError(parsedInput.error.errors);
@@ -148,8 +135,7 @@ const createPushAccountRegistrySecretDraftSchema = z.object({
 export const createPushAccountRegistrySecretDraft = (
   input: z.infer<typeof createPushAccountRegistrySecretDraftSchema>
 ): SecretDraft => {
-  const parsedInput =
-    createPushAccountRegistrySecretDraftSchema.safeParse(input);
+  const parsedInput = createPushAccountRegistrySecretDraftSchema.safeParse(input);
 
   if (!parsedInput.success) {
     throw new ZodError(parsedInput.error.errors);

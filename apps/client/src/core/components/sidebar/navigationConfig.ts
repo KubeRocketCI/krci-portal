@@ -32,7 +32,6 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
     namespace,
   };
 
-
   return [
     {
       title: "Overview",

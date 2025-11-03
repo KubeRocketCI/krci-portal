@@ -31,7 +31,7 @@ export default function MarketplacePageContent() {
           </>
         }
       >
-        <div className="flex flex-col gap-3 flex-grow">
+        <div className="flex flex-grow flex-col gap-3">
           <>
             <K8sRelatedIconsSVGSprite />
             {viewMode === VIEW_MODES.TABLE ? (

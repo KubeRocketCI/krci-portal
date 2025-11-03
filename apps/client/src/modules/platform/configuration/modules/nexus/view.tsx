@@ -67,7 +67,7 @@ export default function NexusConfigurationPage() {
         <Accordion expanded>
           <AccordionSummary style={{ cursor: "default" }}>
             <h6 className="text-base font-medium">
-              <div className="flex gap-2 items-center">
+              <div className="flex items-center gap-2">
                 <div className="mr-1">
                   <StatusIcon
                     Icon={statusIcon.component}
@@ -77,11 +77,7 @@ export default function NexusConfigurationPage() {
                         <p className="text-sm font-semibold">
                           {`Connected: ${status.connected === undefined ? "Unknown" : status.connected}`}
                         </p>
-                        {!!status.statusError && (
-                          <p className="text-sm font-medium mt-3">
-                            {status.statusError}
-                          </p>
-                        )}
+                        {!!status.statusError && <p className="mt-3 text-sm font-medium">{status.statusError}</p>}
                       </>
                     }
                   />

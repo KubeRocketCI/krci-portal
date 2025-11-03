@@ -1,7 +1,6 @@
 import { DataGrid } from "@/core/components/DataGrid";
 import { EmptyList } from "@/core/components/EmptyList";
 import { useTemplateWatchList } from "@/k8s/api/groups/KRCI/Template";
-import { Shop } from "@/k8s/icons/other/Shop";
 import { Template } from "@my-project/shared";
 import { TemplateCard } from "./components/TemplateCard";
 import { useFilterContext } from "@/core/providers/Filter/hooks";
@@ -10,6 +9,7 @@ import { TemplatesWarning } from "../TemplatesWarning";
 import { CreateCodebaseFromTemplateDialog } from "../CreateCodebaseFromTemplate";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import React from "react";
+import { ShoppingBag } from "lucide-react";
 
 export const TemplatesGrid = () => {
   const templatesWatch = useTemplateWatchList();
@@ -45,7 +45,7 @@ export const TemplatesGrid = () => {
         hasAtLeastOneGitServer ? (
           <TemplatesWarning />
         ) : (
-          <EmptyList missingItemName={"templates"} icon={<Shop width={128} height={128} fill="#A2A7B7" />} />
+          <EmptyList missingItemName={"templates"} icon={<ShoppingBag size={128} fill="#A2A7B7" />} />
         )
       }
       renderItem={(item) => {

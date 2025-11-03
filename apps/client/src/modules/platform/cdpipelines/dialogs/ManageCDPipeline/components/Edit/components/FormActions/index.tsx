@@ -66,7 +66,7 @@ export const FormActions = () => {
   const isDirty = Object.keys(dirtyFields).length;
 
   return (
-    <div className="flex flex-row gap-4 justify-between w-full">
+    <div className="flex w-full flex-row justify-between gap-4">
       <div className="flex flex-row gap-2">
         <div style={{ color: theme.palette.text.primary }}>
           <Button onClick={handleClose} size="small" color="inherit">

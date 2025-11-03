@@ -6,7 +6,7 @@ import { FORM_MODES } from "@/core/types/forms";
 import { useSecretPermissions, useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
 import { useQuickLinkPermissions, useQuickLinkWatchItem } from "@/k8s/api/groups/KRCI/QuickLink";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionSummary, AccordionDetails, Grid, Tooltip } from "@mui/material";
+import { Accordion, AccordionSummary, AccordionDetails, Tooltip } from "@mui/material";
 import { getIntegrationSecretStatus, integrationSecretName, systemQuickLink } from "@my-project/shared";
 import React from "react";
 import { ManageArgoCD } from "./components/ManageArgoCD";
@@ -68,8 +68,8 @@ export default function ArgocdConfigurationPage() {
         <Accordion expanded>
           <AccordionSummary style={{ cursor: "default" }}>
             <h6 className="text-base font-medium">
-            <div className="flex gap-2 items-center">
-              <div className="mr-1">
+              <div className="flex items-center gap-2">
+                <div className="mr-1">
                   <StatusIcon
                     Icon={statusIcon.component}
                     color={statusIcon.color}
@@ -78,11 +78,7 @@ export default function ArgocdConfigurationPage() {
                         <p className="text-sm font-semibold">
                           {`Connected: ${status.connected === undefined ? "Unknown" : status.connected}`}
                         </p>
-                        {!!status.statusError && (
-                          <p className="text-sm font-medium mt-3">
-                            {status.statusError}
-                          </p>
-                        )}
+                        {!!status.statusError && <p className="mt-3 text-sm font-medium">{status.statusError}</p>}
                       </>
                     }
                   />

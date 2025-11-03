@@ -39,7 +39,7 @@ export const QuickLinkList = () => {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex justify-end items-center">
+      <div className="flex items-center justify-end">
         <ButtonWithPermission
           ButtonProps={{
             startIcon: <Plus size={16} />,

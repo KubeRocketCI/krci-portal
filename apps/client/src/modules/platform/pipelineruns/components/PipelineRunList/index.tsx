@@ -88,7 +88,7 @@ export const PipelineRunList = ({
           handleSelectRow: handleSelectRowClick,
           isRowSelected: (row) => selected.indexOf(row.metadata.name) !== -1,
           renderSelectionInfo: (selectedCount: number) => (
-            <div className={selectedCount ? "visible" : "invisible pointer-events-none"}>
+            <div className={selectedCount ? "visible" : "pointer-events-none invisible"}>
               <div className="flex flex-row items-center gap-4">
                 <div className="min-w-[150px]">
                   <p className="text-base">{selectedCount} item(s) selected</p>

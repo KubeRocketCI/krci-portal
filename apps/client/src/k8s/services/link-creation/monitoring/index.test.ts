@@ -1,11 +1,12 @@
-import { MONITORING_PROVIDERS } from "../../../../k8s/groups/EDP/QuickLink/constants";
+import { describe, it, expect } from "vitest";
 import { MonitoringURLService } from "./index";
+import { monitoringProvider } from "@my-project/shared";
 
 describe("testing link-creation MonitoringURLService", () => {
   it("should successfully create grafana url based on given baseURL and namespace params", () => {
     expect(
       MonitoringURLService.createDashboardLink({
-        provider: MONITORING_PROVIDERS.GRAFANA,
+        provider: monitoringProvider.grafana,
         baseURL: "https://grafana-test.com",
         namespace: "test-namespace",
       })
@@ -16,7 +17,7 @@ describe("testing link-creation MonitoringURLService", () => {
   it("should successfully create datadog url based on given baseURL and namespace params", () => {
     expect(
       MonitoringURLService.createDashboardLink({
-        provider: MONITORING_PROVIDERS.DATADOG,
+        provider: monitoringProvider.datadog,
         baseURL: "https://datadog-test.com",
         namespace: "test-namespace",
         clusterName: "test-cluster-name",

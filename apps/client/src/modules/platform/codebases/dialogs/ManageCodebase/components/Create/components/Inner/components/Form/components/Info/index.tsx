@@ -1,6 +1,5 @@
 import { K8sRelatedIconsSVGSprite } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWatchKRCIConfig";
-import { useTheme } from "@mui/material";
 import { codebaseCreationStrategy, codebaseType, gitProvider } from "@my-project/shared";
 import { useTypedFormContext } from "../../../../../../../../hooks/useFormContext";
 import { CODEBASE_FORM_NAMES } from "../../../../../../../../names";
@@ -26,7 +25,6 @@ import {
 } from "../../../../../../../fields";
 
 export const Info = () => {
-  const theme = useTheme();
   const { watch } = useTypedFormContext();
 
   const langFieldValue = watch(CODEBASE_FORM_NAMES.lang.name);
@@ -65,9 +63,9 @@ export const Info = () => {
                 <div className="w-full max-w-[30%]">
                   <Owner />
                 </div>
-                <div className="flex gap-1 max-w-[45%] w-full">
+                <div className="flex w-full max-w-[45%] gap-1">
                   <span className="pt-6">/</span>
-                  <div className="grow shrink-0">
+                  <div className="shrink-0 grow">
                     <Repository />
                   </div>
                 </div>

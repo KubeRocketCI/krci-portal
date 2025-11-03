@@ -1,4 +1,4 @@
-import { AppRouter } from "@my-project/server/router";
+import type { AppRouter } from "@my-project/trpc";
 import type { TRPCClient } from "@trpc/client";
 import { createTRPCClient, createWSClient, httpBatchLink, splitLink, wsLink } from "@trpc/client";
 import { router } from "../router";

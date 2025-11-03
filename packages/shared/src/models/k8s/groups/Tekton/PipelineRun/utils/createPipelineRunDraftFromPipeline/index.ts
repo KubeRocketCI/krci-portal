@@ -5,10 +5,7 @@ import { TriggerTemplate } from "../../../TriggerTemplate";
 import { pipelineLabels } from "../../../Pipeline/labels";
 import { pipelineRunLabels } from "../../labels";
 
-const getPipelineRunFromTriggerTemplate = (
-  triggerTemplate: TriggerTemplate,
-  pipeline: Pipeline
-) => {
+const getPipelineRunFromTriggerTemplate = (triggerTemplate: TriggerTemplate, pipeline: Pipeline) => {
   if (!triggerTemplate) {
     return null;
   }
@@ -34,10 +31,7 @@ export const createPipelineRunDraftFromPipeline = (
   const pipelineRunNamePrefix = "run-";
   const pipelineRunNamePostfix = `-${createRandomString()}`;
 
-  const truncatedName = truncateName(
-    pipelineName,
-    pipelineRunNamePrefix.length + pipelineRunNamePostfix.length
-  );
+  const truncatedName = truncateName(pipelineName, pipelineRunNamePrefix.length + pipelineRunNamePostfix.length);
 
   const pipelineRunName = `${pipelineRunNamePrefix}${truncatedName}${pipelineRunNamePostfix}`;
 
@@ -48,8 +42,7 @@ export const createPipelineRunDraftFromPipeline = (
       name: pipelineRunName,
       namespace: pipeline.metadata.namespace,
       labels: {
-        [pipelineRunLabels.pipelineType]:
-          pipeline.metadata.labels[pipelineLabels.pipelineType],
+        [pipelineRunLabels.pipelineType]: pipeline.metadata.labels[pipelineLabels.pipelineType],
         [pipelineRunLabels.pipeline]: pipeline.metadata.name,
       },
     },

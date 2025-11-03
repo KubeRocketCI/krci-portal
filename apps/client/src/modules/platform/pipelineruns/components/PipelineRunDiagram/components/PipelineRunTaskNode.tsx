@@ -71,31 +71,17 @@ export const PipelineRunTaskNode: React.FC<{
 
   const tooltipContent = (
     <div>
-      <p className="text-sm font-semibold">
-        {displayName}
-      </p>
-      <p className="text-sm mt-1">
-        Status: {statusText}
-      </p>
-      {duration && (
-        <p className="text-sm mt-1">
-          Duration: {duration}
-        </p>
-      )}
-      {data.task?.spec?.description && (
-        <p className="text-sm mt-1">
-          {data.task.spec.description}
-        </p>
-      )}
+      <p className="text-sm font-semibold">{displayName}</p>
+      <p className="mt-1 text-sm">Status: {statusText}</p>
+      {duration && <p className="mt-1 text-sm">Duration: {duration}</p>}
+      {data.task?.spec?.description && <p className="mt-1 text-sm">{data.task.spec.description}</p>}
       {data.taskRun?.status?.steps && data.taskRun.status.steps.length > 0 && (
-        <span className="text-xs mt-1 block">
+        <span className="mt-1 block text-xs">
           Steps: {data.taskRun.status.steps.map((step) => step.name).join(", ")}
         </span>
       )}
       {data.isFinally && (
-        <span className="text-xs mt-1 block italic">
-          Finally task - runs after all main tasks complete
-        </span>
+        <span className="mt-1 block text-xs italic">Finally task - runs after all main tasks complete</span>
       )}
     </div>
   );
@@ -116,7 +102,7 @@ export const PipelineRunTaskNode: React.FC<{
 
       <Tooltip title={tooltipContent} arrow placement="top">
         <div
-          className="w-[180px] h-[60px] bg-background rounded-md p-6 flex flex-col justify-center items-center cursor-default relative"
+          className="bg-background relative flex h-[60px] w-[180px] cursor-default flex-col items-center justify-center rounded-md p-6"
           style={{
             border: `2px solid ${statusData.color}`,
             borderStyle: data.isFinally || data.isIsolated ? "dashed" : "solid",
@@ -140,7 +126,7 @@ export const PipelineRunTaskNode: React.FC<{
           )}
 
           {/* Status icon and task name */}
-          <div className="flex items-center gap-4 mb-2">
+          <div className="mb-2 flex items-center gap-4">
             {statusData.component && (
               <StatusIcon
                 Icon={statusData.component}
@@ -150,14 +136,14 @@ export const PipelineRunTaskNode: React.FC<{
                 Title={statusText}
               />
             )}
-            <p className="text-sm font-semibold text-center text-foreground leading-tight break-word">
+            <p className="text-foreground break-word text-center text-sm leading-tight font-semibold">
               {truncatedName}
             </p>
           </div>
 
           {/* Task reference */}
           {data.pipelineTask?.taskRef?.name && (
-            <span className="text-xs text-muted-foreground text-center leading-none">
+            <span className="text-muted-foreground text-center text-xs leading-none">
               {data.pipelineTask.taskRef.name}
             </span>
           )}

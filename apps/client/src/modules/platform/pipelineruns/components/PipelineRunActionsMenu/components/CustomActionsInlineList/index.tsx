@@ -39,7 +39,7 @@ export const CustomActionsInlineList = ({ groupActions, inlineActions }: CustomA
 
   return (
     <>
-      <div className="flex flex-row gap-2 items-center">
+      <div className="flex flex-row items-center gap-2">
         <ButtonGroup variant="outlined" ref={anchorRef}>
           <ButtonWithPermission
             ButtonProps={{

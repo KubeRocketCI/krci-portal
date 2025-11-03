@@ -35,7 +35,6 @@ export const Create = () => {
 
   const gitServerProvider = gitServer?.spec.gitProvider;
 
-
   const {
     register,
     control,

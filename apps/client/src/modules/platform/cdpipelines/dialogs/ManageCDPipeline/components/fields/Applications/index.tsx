@@ -113,7 +113,7 @@ export const Applications = () => {
                 <span>Application</span>
               </div>
               <div className="col-span-6">
-                <div className="flex gap-2 items-center">
+                <div className="flex items-center gap-2">
                   <div>Branch</div>
                   <div>
                     <Tooltip title={"Specify the branch of the selected applications for deployment."}>
@@ -141,7 +141,7 @@ export const Applications = () => {
         </div>
       </div>
       <div>
-        <div className="flex flex-col gap-0 items-start">
+        <div className="flex flex-col items-start gap-0">
           <FormControlLabelWithTooltip
             label="Promote applications"
             title="Enables the promotion of applications to the higher environment upon the successful pass through all quality gates."

@@ -1,14 +1,6 @@
 import z from "zod";
 
-export const k8sOperationEnum = z.enum([
-  "list",
-  "read",
-  "create",
-  "delete",
-  "patch",
-  "connect",
-  "replace",
-]);
+export const k8sOperationEnum = z.enum(["list", "read", "create", "delete", "patch", "connect", "replace"]);
 
 export const rbacOperationEnum = z.enum([
   "get",

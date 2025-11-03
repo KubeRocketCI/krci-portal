@@ -24,8 +24,4 @@ export const CurrentDialogContext = React.createContext<CurrentDialogContextProv
     },
   },
   state: dialogInitialState,
-  extra: {
-    buildPipelines: null as unknown as DataProviderValue<KubeObjectListInterface<PipelineKubeObjectInterface>>,
-    reviewPipelines: null as unknown as DataProviderValue<KubeObjectListInterface<PipelineKubeObjectInterface>>,
-  },
 });

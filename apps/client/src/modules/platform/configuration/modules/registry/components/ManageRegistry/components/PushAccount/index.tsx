@@ -35,7 +35,7 @@ export const PushAccountForm = () => {
       <div>
         <div className="flex flex-col gap-4">
           <div>
-            <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-2">
               <div>
                 <StatusIcon
                   Icon={statusIcon.component}
@@ -45,11 +45,7 @@ export const PushAccountForm = () => {
                       <p className="text-sm font-semibold">
                         {`Connected: ${pushAccountConnected === undefined ? "Unknown" : pushAccountConnected}`}
                       </p>
-                      {!!pushAccountError && (
-                        <p className="text-sm font-medium mt-3">
-                          {pushAccountError}
-                        </p>
-                      )}
+                      {!!pushAccountError && <p className="mt-3 text-sm font-medium">{pushAccountError}</p>}
                     </>
                   }
                   width={20}

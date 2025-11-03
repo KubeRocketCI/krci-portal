@@ -1,12 +1,4 @@
-import {
-  Button,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-} from "@mui/material";
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { DIALOG_NAME_DELETE_KUBE_OBJECT } from "./constants";
@@ -101,11 +93,7 @@ export const DeleteKubeObjectDialog: React.FC<DeleteKubeObjectDialogProps> = (_p
                     </div>
                   </div>
                 )}
-                {!!errorTemplate && !loadingActive && (
-                  <div>
-                    {errorTemplate}
-                  </div>
-                )}
+                {!!errorTemplate && !loadingActive && <div>{errorTemplate}</div>}
                 {!loadingActive && !errorTemplate && (
                   <div>
                     <TextField

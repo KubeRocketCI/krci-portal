@@ -4,45 +4,42 @@ import { editResource } from "../../../utils";
 import { containerRegistryType } from "../../constants";
 import { Draft } from "immer";
 
-const editKRCIConfigMapRegistryDataSchema = z.discriminatedUnion(
-  "registryType",
-  [
-    z.object({
-      registryType: z.literal(containerRegistryType.ecr),
-      registrySpace: z.string(),
-      awsRegion: z.string(),
-      registryEndpoint: z.string(),
-    }),
+const editKRCIConfigMapRegistryDataSchema = z.discriminatedUnion("registryType", [
+  z.object({
+    registryType: z.literal(containerRegistryType.ecr),
+    registrySpace: z.string(),
+    awsRegion: z.string(),
+    registryEndpoint: z.string(),
+  }),
 
-    z.object({
-      registryType: z.literal(containerRegistryType.ghcr),
-      registrySpace: z.string(),
-    }),
+  z.object({
+    registryType: z.literal(containerRegistryType.ghcr),
+    registrySpace: z.string(),
+  }),
 
-    z.object({
-      registryType: z.literal(containerRegistryType.dockerhub),
-      registrySpace: z.string(),
-    }),
+  z.object({
+    registryType: z.literal(containerRegistryType.dockerhub),
+    registrySpace: z.string(),
+  }),
 
-    z.object({
-      registryType: z.literal(containerRegistryType.harbor),
-      registrySpace: z.string(),
-      registryEndpoint: z.string(),
-    }),
+  z.object({
+    registryType: z.literal(containerRegistryType.harbor),
+    registrySpace: z.string(),
+    registryEndpoint: z.string(),
+  }),
 
-    z.object({
-      registryType: z.literal(containerRegistryType.openshift),
-      registrySpace: z.string(),
-      registryEndpoint: z.string(),
-    }),
+  z.object({
+    registryType: z.literal(containerRegistryType.openshift),
+    registrySpace: z.string(),
+    registryEndpoint: z.string(),
+  }),
 
-    z.object({
-      registryType: z.literal(containerRegistryType.nexus),
-      registrySpace: z.string(),
-      registryEndpoint: z.string(),
-    }),
-  ]
-);
+  z.object({
+    registryType: z.literal(containerRegistryType.nexus),
+    registrySpace: z.string(),
+    registryEndpoint: z.string(),
+  }),
+]);
 
 export const editKRCIConfigMapRegistryData = (
   configMap: ConfigMap,

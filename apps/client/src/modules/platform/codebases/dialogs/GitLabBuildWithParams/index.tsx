@@ -1,11 +1,4 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-} from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from "@mui/material";
 import { GitLabPipelineVariable } from "@my-project/shared";
 import { LoaderCircle, Play, Plus, Trash2 } from "lucide-react";
 import React from "react";
@@ -90,22 +83,20 @@ export const GitLabBuildWithParamsDialog: React.FC<GitLabBuildWithParamsDialogPr
         <DialogContent>
           <div className="flex flex-col gap-4">
             <div>
-              <p className="text-sm text-muted-foreground mb-2">
+              <p className="text-muted-foreground mb-2 text-sm">
                 <strong>Git Server:</strong> {triggerData.gitServer}
               </p>
-              <p className="text-sm text-muted-foreground mb-2">
+              <p className="text-muted-foreground mb-2 text-sm">
                 <strong>Project:</strong> {triggerData.gitUrlPath}
               </p>
-              <p className="text-sm text-muted-foreground mb-2">
+              <p className="text-muted-foreground mb-2 text-sm">
                 <strong>Branch:</strong> {triggerData.branchName}
               </p>
             </div>
 
             <div>
-              <h6 className="text-base font-medium mt-2 mb-2">
-                Pipeline Variables
-              </h6>
-              <p className="text-sm text-muted-foreground mb-2">
+              <h6 className="mt-2 mb-2 text-base font-medium">Pipeline Variables</h6>
+              <p className="text-muted-foreground mb-2 text-sm">
                 Add key-value pairs to pass as environment variables to the GitLab CI pipeline.
               </p>
             </div>
@@ -114,7 +105,7 @@ export const GitLabBuildWithParamsDialog: React.FC<GitLabBuildWithParamsDialogPr
               <div>
                 <div className="flex flex-col gap-2">
                   {fields.map((field, index) => (
-                    <div className="grid grid-cols-12 gap-4 items-start" key={field.id}>
+                    <div className="grid grid-cols-12 items-start gap-4" key={field.id}>
                       <div className="col-span-5">
                         <FormTextField
                           {...register(`variables.${index}.key`, {

@@ -1,6 +1,7 @@
 import { OIDCUser } from "@my-project/shared";
 import { UseMutationResult } from "@tanstack/react-query";
-import type { AppRouter, inferProcedureInput, inferProcedureOutput } from "@my-project/server";
+import type { AppRouter } from "@my-project/trpc";
+import { inferProcedureInput, inferProcedureOutput } from "@trpc/server";
 import React from "react";
 
 export type AuthLoginInput = inferProcedureInput<AppRouter["auth"]["login"]>;

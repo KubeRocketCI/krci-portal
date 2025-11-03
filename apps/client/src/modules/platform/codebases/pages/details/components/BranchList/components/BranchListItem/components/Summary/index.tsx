@@ -67,9 +67,7 @@ export const Summary = ({
 
   return (
     <>
-      <div
-        className="flex items-center justify-between w-full flex-nowrap gap-2"
-      >
+      <div className="flex w-full flex-nowrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <StatusIcon
             Icon={codebaseBranchStatusIcon.component}
@@ -77,26 +75,15 @@ export const Summary = ({
             isSpinning={codebaseBranchStatusIcon.isSpinning}
             Title={
               <>
-                <p className="text-sm font-semibold">
-                  {`Status: ${status || "Unknown"}`}
-                </p>
+                <p className="text-sm font-semibold">{`Status: ${status || "Unknown"}`}</p>
                 {status === codebaseBranchStatus.failed && (
-                  <p className="text-sm font-medium mt-3">
-                    {detailedMessage}
-                  </p>
+                  <p className="mt-3 text-sm font-medium">{detailedMessage}</p>
                 )}
               </>
             }
           />
           <div className="flex items-center gap-0">
-            <TextWithTooltip
-              text={codebaseBranch.spec.branchName}
-              textSX={{
-                marginTop: theme.typography.pxToRem(2),
-                fontSize: (t) => t.typography.pxToRem(20),
-                fontWeight: 500,
-              }}
-            />
+            <TextWithTooltip text={codebaseBranch.spec.branchName} className="mt-0.5 text-xl font-medium" />
             <div
               onClick={(e) => {
                 e.preventDefault();
@@ -127,7 +114,7 @@ export const Summary = ({
                     </p>
                   </>
                 }
-            />
+              />
             </div>
           )}
 
@@ -161,13 +148,13 @@ export const Summary = ({
         </div>
 
         <div
-          className="pr-4 shrink-0"
+          className="shrink-0 pr-4"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
           }}
         >
-          <div className="flex gap-3 items-center">
+          <div className="flex items-center gap-3">
             <div>
               <QuickLink
                 enabledText="Open in GIT"

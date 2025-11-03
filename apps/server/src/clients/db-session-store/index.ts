@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 import { SessionStore } from "@fastify/session";
-import { CustomSession } from "../../trpc/context";
+import { CustomSession } from "@my-project/trpc";
 import { fromServerRoot } from "@/paths";
 
 const sessionDbPath = fromServerRoot("db", "sessions.sqlite");

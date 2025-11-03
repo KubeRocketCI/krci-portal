@@ -17,17 +17,13 @@ export const editRegistryServiceAccount = (
     input,
     editRegistryServiceAccountSchema,
     (draft: Draft<ServiceAccount>, validatedInput) => {
-      // Initialize metadata if it doesn't exist
-      if (!draft.metadata) {
-        draft.metadata = {};
-      }
+      // Initialize annotations if it doesn't exist
       if (!draft.metadata.annotations) {
         draft.metadata.annotations = {};
       }
 
       // Update the IRSA role ARN annotation
-      draft.metadata.annotations[IRSA_ROLE_ARN_ANNOTATION] =
-        validatedInput.irsaRoleArn;
+      draft.metadata.annotations[IRSA_ROLE_ARN_ANNOTATION] = validatedInput.irsaRoleArn;
     }
   );
 };

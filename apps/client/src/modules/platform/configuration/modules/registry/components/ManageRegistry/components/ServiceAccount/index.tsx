@@ -1,5 +1,4 @@
-import React from 'react';
-import { IrsaRoleArn } from './fields';
+import { IrsaRoleArn } from "./fields";
 
 export const ServiceAccountForm = () => {
   return (

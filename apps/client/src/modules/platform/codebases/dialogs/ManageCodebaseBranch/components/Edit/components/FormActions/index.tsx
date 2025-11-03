@@ -1,5 +1,5 @@
 import { useCodebaseBranchCRUD } from "@/k8s/api/groups/KRCI/CodebaseBranch";
-import { Button, useTheme } from "@mui/material";
+import { Button } from "@mui/material";
 import { editCodebaseBranchObject } from "@my-project/shared";
 import React from "react";
 import { useTypedFormContext } from "../../../../hooks/useFormContext";
@@ -30,9 +30,7 @@ export const FormActions = () => {
   const {
     triggerEditCodebaseBranch,
     mutations: { codebaseBranchEditMutation },
-  } = useCodebaseBranchCRUD({
-    onSuccess: handleClose,
-  });
+  } = useCodebaseBranchCRUD();
 
   const isPending = React.useMemo(() => codebaseBranchEditMutation.isPending, [codebaseBranchEditMutation.isPending]);
 
@@ -49,15 +47,16 @@ export const FormActions = () => {
         },
       });
 
-      await triggerEditCodebaseBranch({ codebaseBranch: newCodebaseBranch });
+      await triggerEditCodebaseBranch({
+        data: { codebaseBranch: newCodebaseBranch },
+        callbacks: { onSuccess: handleClose },
+      });
     },
-    [codebaseBranch, triggerEditCodebaseBranch]
+    [codebaseBranch, handleClose, triggerEditCodebaseBranch]
   );
 
-  const theme = useTheme();
-
   return (
-    <div className="flex justify-between w-full gap-2">
+    <div className="flex w-full justify-between gap-2">
       <div className="flex gap-1">
         <div className="text-foreground">
           <Button onClick={handleClose} size="small" color="inherit">

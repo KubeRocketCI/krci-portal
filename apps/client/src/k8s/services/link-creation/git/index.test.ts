@@ -1,5 +1,6 @@
-import { GIT_PROVIDER } from "../../../constants/gitProviders";
+import { describe, it, expect } from "vitest";
 import { GitURLService } from "./index";
+import { gitProvider } from "@my-project/shared";
 
 describe("testing link-creation GitURLService", () => {
   it("should successfully create git ops value file url  based on given gitOpsWebUrl, pipeline name,  stage name, app name and git server params", () => {
@@ -9,7 +10,7 @@ describe("testing link-creation GitURLService", () => {
         "test-pipeline-name",
         "test-stage-name",
         "test-app-name",
-        GIT_PROVIDER.GITHUB
+        gitProvider.github
       )
     ).toEqual(
       "https://git.test.com/test-project/test-env/krci-gitops/blob/main/test-pipeline-name/test-stage-name/test-app-name-values.yaml"
@@ -20,7 +21,7 @@ describe("testing link-creation GitURLService", () => {
         "test-pipeline-name",
         "test-stage-name",
         "test-app-name",
-        GIT_PROVIDER.GITLAB
+        gitProvider.gitlab
       )
     ).toEqual(
       "https://git.test.com/test-project/test-env/krci-gitops/blob/main/test-pipeline-name/test-stage-name/test-app-name-values.yaml"
@@ -31,7 +32,7 @@ describe("testing link-creation GitURLService", () => {
         "test-pipeline-name",
         "test-stage-name",
         "test-app-name",
-        GIT_PROVIDER.GERRIT
+        gitProvider.gerrit
       )
     ).toEqual(
       "https://test-gerrit.com/gitweb?p=krci-gitops.git&f=test-pipeline-name%2Ftest-stage-name%2Ftest-app-name-values.yaml&hb=refs%2Fheads%2Fmain&a=blob"
@@ -42,7 +43,7 @@ describe("testing link-creation GitURLService", () => {
         "test-pipeline-name",
         "test-stage-name",
         "test-app-name",
-        GIT_PROVIDER.BITBUCKET
+        gitProvider.bitbucket
       )
     ).toEqual(
       "https://git.test.com/test-project/test-env/krci-gitops/src/main/test-pipeline-name/test-stage-name/test-app-name-values.yaml"
@@ -52,28 +53,28 @@ describe("testing link-creation GitURLService", () => {
   it("should successfully create repo branch link based on given git server, baseUrl, and branch", () => {
     expect(
       GitURLService.createRepoBranchLink(
-        GIT_PROVIDER.GITHUB,
+        gitProvider.github,
         "https://git.test.com/test-project/test-repo",
         "test-branch"
       )
     ).toEqual("https://git.test.com/test-project/test-repo/tree/test-branch");
     expect(
       GitURLService.createRepoBranchLink(
-        GIT_PROVIDER.GITLAB,
+        gitProvider.gitlab,
         "https://git.test.com/test-project/test-repo",
         "test-branch"
       )
     ).toEqual("https://git.test.com/test-project/test-repo/-/tree/test-branch");
     expect(
       GitURLService.createRepoBranchLink(
-        GIT_PROVIDER.GERRIT,
+        gitProvider.gerrit,
         "https://test-gerrit.com/gitweb?p=test-repo",
         "test-branch"
       )
     ).toEqual("https://test-gerrit.com/gitweb?p=test-repo&a=refs%2Fheads%2Ftest-branch");
     expect(
       GitURLService.createRepoBranchLink(
-        GIT_PROVIDER.BITBUCKET,
+        gitProvider.bitbucket,
         "https://git.test.com/test-project/test-repo",
         "feature/test-branch"
       )

@@ -15,7 +15,7 @@ export const Form = () => {
         </div>
       </div>
       <div>
-        <div className="grid grid-cols-12 gap-4 items-start">
+        <div className="grid grid-cols-12 items-start gap-4">
           <div className="col-span-4">
             <GitServer />
           </div>

@@ -8,10 +8,7 @@ const editQuickLinkInputSchema = z.object({
   icon: z.string(),
 });
 
-export const editQuickLink = (
-  quickLink: QuickLink,
-  input: z.infer<typeof editQuickLinkInputSchema>
-): QuickLink => {
+export const editQuickLink = (quickLink: QuickLink, input: z.infer<typeof editQuickLinkInputSchema>): QuickLink => {
   const parsedInput = editQuickLinkInputSchema.safeParse(input);
 
   if (!parsedInput.success) {

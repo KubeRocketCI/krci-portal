@@ -1,7 +1,6 @@
 import React from "react";
 
 export const HorizontalScrollContainer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-
   const container = React.useRef<HTMLDivElement | null>(null);
 
   const handler = React.useCallback((e: WheelEvent) => {
@@ -29,10 +28,7 @@ export const HorizontalScrollContainer: React.FC<{ children: React.ReactNode }> 
   }, [handler]);
 
   return (
-    <div
-      className="w-full flex items-center max-w-full overflow-x-auto overflow-y-hidden p-1"
-      ref={container}
-    >
+    <div className="flex w-full max-w-full items-center overflow-x-auto overflow-y-hidden p-1" ref={container}>
       {children}
     </div>
   );

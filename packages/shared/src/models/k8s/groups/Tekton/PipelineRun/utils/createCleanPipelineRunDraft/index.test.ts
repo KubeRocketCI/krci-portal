@@ -23,11 +23,9 @@ describe("testing createCleanPipelineRunDraft", () => {
           generateName: "clean-$(tt.params.CDPIPELINE)-$(tt.params.CDSTAGE)-",
           labels: {
             "app.edp.epam.com/cdpipeline": "$(tt.params.CDPIPELINE)",
-            "app.edp.epam.com/cdstage":
-              "$(tt.params.CDPIPELINE)-$(tt.params.CDSTAGE)",
+            "app.edp.epam.com/cdstage": "$(tt.params.CDPIPELINE)-$(tt.params.CDSTAGE)",
             "app.edp.epam.com/pipelinetype": "clean",
-            "app.edp.epam.com/codebasebranch":
-              "$(tt.params.CDPIPELINE)-$(tt.params.CDSTAGE)",
+            "app.edp.epam.com/codebasebranch": "$(tt.params.CDPIPELINE)-$(tt.params.CDSTAGE)",
             "app.edp.epam.com/codebase": "$(tt.params.CODEBASE)",
           },
         },
@@ -45,9 +43,7 @@ describe("testing createCleanPipelineRunDraft", () => {
           pipelineRef: {
             name: "clean",
           },
-          taskRunTemplate: {
-            serviceAccountName: "tekton",
-          },
+          serviceAccountName: "tekton",
           timeouts: {
             pipeline: "1h00m0s",
           },
@@ -83,8 +79,7 @@ describe("testing createCleanPipelineRunDraft", () => {
           clusterName: "in-cluster",
           description: "sit",
           name: "sit",
-          namespace:
-            "test-namespace-test-pipe-very-long-long-long-long-long-long-name-sit",
+          namespace: "test-namespace-test-pipe-very-long-long-long-long-long-long-name-sit",
           order: 0,
           qualityGates: [
             {
@@ -116,10 +111,8 @@ describe("testing createCleanPipelineRunDraft", () => {
         },
         name: `clean-test-pipe-very-long-long-long-long-long-long-name-si-${MOCKED_UUID}`,
         labels: {
-          "app.edp.epam.com/cdpipeline":
-            "test-pipe-very-long-long-long-long-long-long-name",
-          "app.edp.epam.com/cdstage":
-            "test-pipe-very-long-long-long-long-long-long-name-sit",
+          "app.edp.epam.com/cdpipeline": "test-pipe-very-long-long-long-long-long-long-name",
+          "app.edp.epam.com/cdstage": "test-pipe-very-long-long-long-long-long-long-name-sit",
           "app.edp.epam.com/pipelinetype": "clean",
         },
       },
@@ -132,7 +125,7 @@ describe("testing createCleanPipelineRunDraft", () => {
           },
         ],
         pipelineRef: { name: "clean" },
-        taskRunTemplate: { serviceAccountName: "tekton" },
+        serviceAccountName: "tekton",
         timeouts: { pipeline: "1h00m0s" },
       },
     });

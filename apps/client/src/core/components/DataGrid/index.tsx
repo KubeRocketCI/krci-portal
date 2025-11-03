@@ -21,7 +21,6 @@ export const DataGrid = <DataType = KubeObjectBase,>({
   rowsPerPage = 9,
   emptyListComponent,
 }: DataGridProps<DataType>) => {
-
   const {
     page,
     rowsPerPage: _rowsPerPage,

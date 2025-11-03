@@ -1,8 +1,7 @@
 import { ConfigMap, krciConfigMapNames } from "@my-project/shared";
-import { ValueOf } from "@my-project/shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { useConfigMapWatchList } from "..";
-import { RequestError } from "@/core/types/global";
+import { RequestError, ValueOf } from "@/core/types/global";
 
 export const useWatchKRCIConfig = () => {
   const configMapListWatch = useConfigMapWatchList();

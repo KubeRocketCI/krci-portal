@@ -19,6 +19,7 @@ export const PipelineRunListPage = () => {
   return (
     <FilterProvider<PipelineRun, PipelineRunListFilterValues>
       defaultValues={{
+        [pipelineRunFilterControlNames.NAMESPACES]: [],
         [pipelineRunFilterControlNames.CODEBASES]: [],
         [pipelineRunFilterControlNames.STATUS]: "all",
         [pipelineRunFilterControlNames.PIPELINE_TYPE]: "all",

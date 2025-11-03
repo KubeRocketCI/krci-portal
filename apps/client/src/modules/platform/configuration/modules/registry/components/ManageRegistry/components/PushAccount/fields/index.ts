@@ -1,2 +1,2 @@
-export * from './PushAccountPassword';
-export * from './PushAccountUser';
+export * from "./PushAccountPassword";
+export * from "./PushAccountUser";

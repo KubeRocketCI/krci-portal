@@ -15,30 +15,15 @@ const removeSystemLabels = (resource: KubeObjectBase) => {
 const getNamePrefixForRerun = (name: string) => {
   const namePostfix = `-${createRandomString(4)}`;
 
-  const truncatedName = truncateName(
-    name,
-    rerunIdentifier.length + namePostfix.length
-  );
+  const truncatedName = truncateName(name, rerunIdentifier.length + namePostfix.length);
 
   const fullPipelineRunName = `${rerunIdentifier}${truncatedName}${namePostfix}`;
 
   return fullPipelineRunName;
 };
 
-const generateNewPipelineRunPayload = ({
-  pipelineRun,
-  rerun,
-}: {
-  pipelineRun: PipelineRun;
-  rerun: boolean;
-}) => {
-  const {
-    annotations,
-    labels,
-    name: _name,
-    namespace,
-    generateName,
-  } = pipelineRun.metadata;
+const generateNewPipelineRunPayload = ({ pipelineRun, rerun }: { pipelineRun: PipelineRun; rerun: boolean }) => {
+  const { annotations, labels, name: _name, namespace, generateName } = pipelineRun.metadata;
 
   let name = _name;
 
@@ -84,15 +69,12 @@ const generateNewPipelineRunPayload = ({
     */
   if (payload.metadata.annotations) {
     delete payload.metadata.annotations["tekton.dev/v1beta1TaskRuns"];
-    delete payload.metadata.annotations[
-      "kubectl.kubernetes.io/last-applied-configuration"
-    ];
+    delete payload.metadata.annotations["kubectl.kubernetes.io/last-applied-configuration"];
   }
 
   Object.keys(payload.metadata).forEach(
     (i) =>
-      (payload.metadata as Record<string, any>)[i] === undefined &&
-      delete (payload.metadata as Record<string, any>)[i]
+      (payload.metadata as Record<string, any>)[i] === undefined && delete (payload.metadata as Record<string, any>)[i]
   );
 
   delete payload.status;

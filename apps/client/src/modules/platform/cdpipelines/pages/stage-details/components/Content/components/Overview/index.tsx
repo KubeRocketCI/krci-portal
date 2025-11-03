@@ -9,7 +9,6 @@ export const Overview = () => {
   const infoColumns = useInfoColumns();
   const stageWatch = useStageWatch();
 
-
   return (
     <TabSection title="Overview">
       <BorderedSection title="Stage Details">

@@ -265,7 +265,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
   return (
     <div className="flex flex-col gap-8" style={{ height }}>
       {/* Controls */}
-      <div className="flex gap-8 items-center flex-wrap">
+      <div className="flex flex-wrap items-center gap-8">
         {pods.length > 1 && (
           <FormControl size="small" sx={{ minWidth: 180 }}>
             <InputLabel>Pod</InputLabel>
@@ -334,7 +334,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
         </div>
 
         {currentPod && (
-          <span className="text-xs text-gray-500 ml-1">
+          <span className="ml-1 text-xs text-gray-500">
             Pod: {currentPod.status?.phase || "Unknown"} | Ready: {podReadyForLogs ? "✅" : "⏳"} | Containers:{" "}
             {currentPod.spec?.containers?.length || 0} | Created:{" "}
             {currentPod.metadata?.creationTimestamp
@@ -345,43 +345,37 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
       </div>
 
       {/* Logs Display */}
-      <div className="flex-1 overflow-hidden relative">
+      <div className="relative flex-1 overflow-hidden">
         {/* Status Messages */}
         {(isLoading || !podReadyForLogs || error) && (
           <div
-            className="absolute top-0 left-0 right-0 bg-white border-b border-gray-300 z-10"
+            className="absolute top-0 right-0 left-0 z-10 border-b border-gray-300 bg-white"
             style={{
               padding: "6px", // 1.5 * 4 = 6px
               height: errorHeight,
             }}
           >
             {!podReadyForLogs && !error && (
-              <span className="text-blue-600 text-xs">
+              <span className="text-xs text-blue-600">
                 🚀 Pod is getting ready...
                 {currentPod?.status?.phase === "Pending" && " (Container is being scheduled)"}
                 {currentPod?.status?.phase === "ContainerCreating" && " (Container is starting up)"}
                 {!currentPod?.status?.phase && " (Initializing)"}
-                <span className="block mt-1 text-gray-500">
-                  Logs will be available once the container is running
-                </span>
+                <span className="mt-1 block text-gray-500">Logs will be available once the container is running</span>
               </span>
             )}
 
             {isLoading && podReadyForLogs && (
-              <span className="text-blue-600 text-xs">
-                📦 Loading logs from {activeContainer} container...
-              </span>
+              <span className="text-xs text-blue-600">📦 Loading logs from {activeContainer} container...</span>
             )}
 
             {error && (
-              <span className="text-red-600 text-xs">
+              <span className="text-xs text-red-600">
                 ❌ Error loading logs:{" "}
                 {typeof error === "object" && error !== null && "message" in error
                   ? (error as Error).message
                   : String(error)}
-                <span className="block mt-1 text-gray-500">
-                  Will retry automatically when the container is ready
-                </span>
+                <span className="mt-1 block text-gray-500">Will retry automatically when the container is ready</span>
               </span>
             )}
           </div>
@@ -620,9 +614,7 @@ const SearchPopover: React.FC<SearchPopoverProps> = ({ open, onClose, terminalRe
       </Tooltip>
 
       {/* Search Results */}
-      <span className={`text-xs text-center min-w-20 ${getSearchResultColor()}`}>
-        {getSearchResultText()}
-      </span>
+      <span className={`min-w-20 text-center text-xs ${getSearchResultColor()}`}>{getSearchResultText()}</span>
 
       {/* Navigation */}
       <Tooltip title="Previous (Shift+Enter)">

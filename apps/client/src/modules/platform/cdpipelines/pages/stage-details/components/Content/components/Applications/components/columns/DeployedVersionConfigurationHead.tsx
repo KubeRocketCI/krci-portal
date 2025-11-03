@@ -107,7 +107,7 @@ export const DeployedVersionConfigurationHeadColumn = () => {
           </Button>
         </Tooltip>
       </ButtonGroup>
-      <div className="flex flex-row gap-2 items-center flex-nowrap">
+      <div className="flex flex-row flex-nowrap items-center gap-2">
         <div>Deployed version</div>
         <Tooltip
           title={
