@@ -47,6 +47,11 @@ export class LocalFastifyServer {
   private registerPlugins() {
     const sessionStore = new DBSessionStore();
 
+    if (process.env.NODE_ENV === "development") {
+      sessionStore.clearAllSessions();
+      console.log("🧹 Cleared all sessions for development");
+    }
+
     this.fastify.register(FastifyCors, {
       origin: process.env.LOCAL_CLIENT_ORIGIN,
       credentials: true,

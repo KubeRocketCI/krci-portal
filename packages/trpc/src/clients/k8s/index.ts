@@ -28,6 +28,11 @@ export class K8sClient {
       return;
     }
 
+    const idTokenExpiresAt = session.user.secret.idTokenExpiresAt;
+    if (idTokenExpiresAt && Date.now() >= idTokenExpiresAt) {
+      throw new Error("Token has expired. Please log in again.");
+    }
+
     this.KubeConfig = new KubeConfig();
 
     if (process.env.NODE_ENV === "production") {
