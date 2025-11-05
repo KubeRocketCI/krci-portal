@@ -1,18 +1,18 @@
-import React from "react";
-import { useTypedFormContext } from "../../../hooks/useFormContext";
-import { CODEBASE_BRANCH_FORM_NAMES } from "../../../names";
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
+import { trpc } from "@/core/clients/trpc";
+import { validationRules } from "@/core/constants/validation";
 import { FormAutocompleteSingle } from "@/core/providers/Form/components/FormAutocompleteSingle";
 import { FormSelect } from "@/core/providers/Form/components/FormSelect";
-import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
-import { useQuery } from "@tanstack/react-query";
-import { useClusterStore } from "@/k8s/store";
-import { useShallow } from "zustand/react/shallow";
-import { trpc } from "@/core/clients/trpc";
-import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWatchKRCIConfig";
-import { validateField } from "@/core/utils/forms/validation";
-import { validationRules } from "@/core/constants/validation";
+import { FormTextField } from "@/core/providers/Form/components/FormTextField";
 import { FieldEvent } from "@/core/types/forms";
+import { validateField } from "@/core/utils/forms/validation";
+import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWatchKRCIConfig";
+import { useClusterStore } from "@/k8s/store";
+import { useQuery } from "@tanstack/react-query";
+import React from "react";
+import { useShallow } from "zustand/react/shallow";
+import { useTypedFormContext } from "../../../hooks/useFormContext";
+import { CODEBASE_BRANCH_FORM_NAMES } from "../../../names";
+import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
 
 const FROM_TYPE_OPTIONS = [
   {
@@ -35,8 +35,11 @@ export const FromCommit = () => {
     formState: { errors },
   } = useTypedFormContext();
 
+  const releaseValue = watch(CODEBASE_BRANCH_FORM_NAMES.release.name);
+  const fromType = watch(CODEBASE_BRANCH_FORM_NAMES.fromType.name) || "branch";
+
   const {
-    props: { codebase },
+    props: { codebase, defaultBranch },
   } = useCurrentDialog();
 
   const { clusterName, defaultNamespace } = useClusterStore(
@@ -68,29 +71,31 @@ export const FromCommit = () => {
     enabled: !!apiBaseUrl && !!codebaseGitServer && !!codebaseOwner && !!codebaseRepoName,
   });
 
+  const defaultBranchName = defaultBranch?.spec.branchName;
+
+  const defaultBranchOption = React.useMemo(() => {
+    return {
+      label: defaultBranchName,
+      value: defaultBranchName,
+    };
+  }, [defaultBranchName]);
+
   const branchesOptions = React.useMemo(() => {
-    if (query.isLoading || query.isError || !query.data) {
-      return [];
+    if (releaseValue && defaultBranch) {
+      return [defaultBranchOption];
     }
 
-    if (codebaseGitServer === "gerrit") {
-      return [
-        {
-          label: codebase.spec.defaultBranch,
-          value: codebase.spec.defaultBranch,
-        },
-      ];
+    if (query.isLoading || query.isError || !query.data) {
+      return [defaultBranchOption];
     }
 
     return (
-      query.data.data?.map((branch: { name: string }) => ({
+      query.data.data?.map((branch) => ({
         label: branch.name,
         value: branch.name,
-      })) || []
+      })) || [defaultBranchOption]
     );
-  }, [query.isLoading, query.isError, query.data, codebaseGitServer, codebase.spec.defaultBranch]);
-
-  const fromType = watch(CODEBASE_BRANCH_FORM_NAMES.fromType.name) || "branch";
+  }, [releaseValue, defaultBranch, query.isLoading, query.isError, query.data, defaultBranchOption]);
 
   const helperText = React.useMemo(() => {
     if (!apiBaseUrl) {
@@ -105,7 +110,7 @@ export const FromCommit = () => {
   }, [apiBaseUrl, query.isError]);
 
   const renderInputField = () => {
-    if (fromType === "branch") {
+    if (releaseValue || fromType === "branch") {
       return (
         <FormAutocompleteSingle
           key="branch"
@@ -165,6 +170,13 @@ export const FromCommit = () => {
     }
   };
 
+  const fromTypeOptions = React.useMemo(() => {
+    return FROM_TYPE_OPTIONS.map((option) => ({
+      ...option,
+      disabled: releaseValue && option.value === "commit",
+    }));
+  }, [releaseValue]);
+
   return (
     <div className="grid grid-cols-2 items-start gap-4">
       <div>
@@ -186,7 +198,7 @@ export const FromCommit = () => {
           errors={errors}
           label="From"
           tooltipText="Choose whether to create the branch from an existing branch or a specific commit hash"
-          options={FROM_TYPE_OPTIONS}
+          options={fromTypeOptions}
           defaultValue="branch"
         />
       </div>

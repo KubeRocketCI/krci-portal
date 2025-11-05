@@ -101,4 +101,12 @@ export class DBSessionStore implements SessionStore {
       console.error("Error cleaning up sessions:", err);
     }
   }
+
+  clearAllSessions(): void {
+    try {
+      this.db.prepare("DELETE FROM sessions").run();
+    } catch (err) {
+      console.error("Error clearing all sessions:", err);
+    }
+  }
 }

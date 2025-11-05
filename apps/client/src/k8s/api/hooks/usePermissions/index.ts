@@ -28,7 +28,7 @@ export const usePermissions = ({
     queryKey: k8sItemPermissionsCacheKey,
     queryFn: async () => {
       const cachedApiVersion = queryClient.getQueryData<string>(k8sAPIQueryCacheKey);
-      let apiVersion = "v1"; // default apiVersion
+      let apiVersion = cachedApiVersion || "v1"; // default apiVersion
 
       if (!cachedApiVersion) {
         apiVersion = await trpc.k8s.apiVersions.query();
