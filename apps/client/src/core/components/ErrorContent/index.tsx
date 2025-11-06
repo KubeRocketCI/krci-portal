@@ -1,5 +1,13 @@
 import { RequestError } from "@/core/types/global";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Link, useTheme } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
 import { SearchX, TriangleAlert } from "lucide-react";
 import React from "react";
 
@@ -14,8 +22,6 @@ export const ErrorContent = ({
   orientation?: "vertical" | "horizontal";
   extraInfoLink?: string;
 }) => {
-  const theme = useTheme();
-
   const [open, setOpen] = React.useState<boolean>(false);
 
   const handleClose = () => {
@@ -38,9 +44,9 @@ export const ErrorContent = ({
               <span className="text-muted-foreground text-sm">
                 Sorry. You don't have permissions to access this data.
               </span>
-              <Link component={"button"} onClick={handleOpen} className="text-sm">
+              <Button variant="link" onClick={handleOpen} className="h-auto p-0 text-sm">
                 More details
-              </Link>
+              </Button>
             </div>
           </div>
         );
@@ -52,9 +58,9 @@ export const ErrorContent = ({
             <SearchX color="#A2A7B7" size={48} />
             <div className="flex flex-row items-center gap-2">
               <span className="text-muted-foreground text-sm">Sorry. The requested resource was not found.</span>
-              <Link component={"button"} onClick={handleOpen} className="text-sm">
+              <Button variant="link" onClick={handleOpen} className="h-auto p-0 text-sm">
                 More details
-              </Link>
+              </Button>
             </div>
           </div>
         );
@@ -64,37 +70,36 @@ export const ErrorContent = ({
   }, [error?.data?.httpStatus, orientation]);
 
   return (
-    <div
-      className={outlined ? "w-full p-3" : "w-full"}
-      style={
-        outlined
-          ? {
-              borderTop: `1px solid ${theme.palette.action.selected}`,
-              borderBottom: `1px solid ${theme.palette.action.selected}`,
-            }
-          : undefined
-      }
-    >
+    <div className={outlined ? "border-border w-full border-t border-b p-3" : "w-full"}>
       <div>{renderError()}</div>
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>More Details</DialogTitle>
+      <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
         <DialogContent>
-          <div className="flex flex-col gap-2">
-            <p>{error?.message}</p>
-            {extraInfoLink && (
-              <div className="flex flex-row items-center gap-2">
-                <span>Additional information can be found</span>
-                <Link href={extraInfoLink} target="_blank">
-                  here
-                </Link>
-                .
-              </div>
-            )}
-          </div>
+          <DialogHeader>
+            <DialogTitle>More Details</DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <div className="flex flex-col gap-2">
+              <p>{error?.message}</p>
+              {extraInfoLink && (
+                <div className="flex flex-row items-center gap-2">
+                  <span>Additional information can be found</span>
+                  <a
+                    href={extraInfoLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:no-underline"
+                  >
+                    here
+                  </a>
+                  .
+                </div>
+              )}
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button onClick={handleClose}>Close</Button>
+          </DialogFooter>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>close</Button>
-        </DialogActions>
       </Dialog>
     </div>
   );

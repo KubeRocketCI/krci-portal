@@ -64,7 +64,7 @@ export const Info = () => {
                   <Owner />
                 </div>
                 <div className="flex w-full max-w-[45%] gap-1">
-                  <span className="pt-6">/</span>
+                  <span className="pt-8">/</span>
                   <div className="shrink-0 grow">
                     <Repository />
                   </div>

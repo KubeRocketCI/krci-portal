@@ -1,12 +1,13 @@
 import { publicProcedure } from "../../../../procedures/public";
 import { loginInputSchema, loginOutputSchema } from "@my-project/shared";
+import { OIDCClient } from "../../../../clients/oidc";
 
 export const authLoginProcedure = publicProcedure
   .input(loginInputSchema)
   .output(loginOutputSchema)
   .mutation(async ({ input, ctx }) => {
     const clientRedirectURI = new URL(input);
-    const { oidcClient } = ctx;
+    const oidcClient = new OIDCClient(ctx.oidcConfig);
 
     const config = await oidcClient.discover();
     const state = oidcClient.generateState();

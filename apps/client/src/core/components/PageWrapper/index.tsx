@@ -1,4 +1,3 @@
-import { Breadcrumbs } from "@mui/material";
 import React from "react";
 import { PageWrapperProps } from "./types";
 import { Link } from "@tanstack/react-router";
@@ -19,24 +18,26 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({
           <div className="flex w-full items-center justify-between gap-2">
             <div>
               <div className="flex items-center gap-4">
-                <div>
-                  <Breadcrumbs>
-                    {breadcrumbs?.map(({ label, route }) => {
-                      const key = `breadcrumb-${label}`;
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  {breadcrumbs?.map(({ label, route }, index, array) => {
+                    const isLast = index === array.length - 1;
+                    const key = `breadcrumb-${label}`;
 
-                      return route ? (
-                        <Button variant="link" asChild key={key} className="p-0">
-                          <Link to={route.to} params={route.params}>
-                            {label}
-                          </Link>
-                        </Button>
-                      ) : (
-                        <span key={key} className="text-foreground mb-1 text-sm">
-                          {label}
-                        </span>
-                      );
-                    })}
-                  </Breadcrumbs>
+                    return (
+                      <React.Fragment key={key}>
+                        {route ? (
+                          <Button variant="link" asChild className="p-0">
+                            <Link to={route.to} params={route.params}>
+                              {label}
+                            </Link>
+                          </Button>
+                        ) : (
+                          <span className={isLast ? "text-foreground" : ""}>{label}</span>
+                        )}
+                        {!isLast && <span>/</span>}
+                      </React.Fragment>
+                    );
+                  })}
                 </div>
                 <div>{breadcrumbsExtraContent}</div>
               </div>

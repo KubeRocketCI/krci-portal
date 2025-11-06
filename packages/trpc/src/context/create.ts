@@ -1,8 +1,7 @@
-import type { FastifyRequest, FastifyReply } from "fastify";
-import { K8sClient } from "../clients/k8s";
-import { OIDCClient } from "../clients/oidc";
-import type { CustomSession, TRPCContext } from "./types";
 import type { ISessionStore } from "@my-project/shared";
+import type { FastifyReply, FastifyRequest } from "fastify";
+import type { CustomSession, TRPCContext } from "./types";
+import type { OIDCConfig } from "../clients/oidc";
 
 export function createContext({
   req,
@@ -15,20 +14,13 @@ export function createContext({
   res: FastifyReply;
   session: CustomSession;
   sessionStore: ISessionStore;
-  oidcConfig: {
-    issuerURL: string;
-    clientID: string;
-    clientSecret: string;
-    scope: string;
-    codeChallengeMethod: string;
-  };
+  oidcConfig: OIDCConfig;
 }): TRPCContext {
   return {
     req,
     res,
     session,
     sessionStore,
-    K8sClient: new K8sClient(session),
-    oidcClient: new OIDCClient(oidcConfig),
+    oidcConfig,
   };
 }

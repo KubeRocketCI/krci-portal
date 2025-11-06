@@ -1,5 +1,4 @@
-import { FormCheckbox } from "@/core/providers/Form/components/FormCheckbox";
-import { FormControlLabelWithTooltip } from "@/core/providers/Form/components/FormControlLabelWithTooltip";
+import { FormSwitchRich } from "@/core/providers/Form/components/FormSwitchRich";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_FORM_NAMES } from "../../../names";
 
@@ -11,16 +10,10 @@ export const EmptyProject = () => {
   } = useTypedFormContext();
 
   return (
-    <FormCheckbox
+    <FormSwitchRich
       {...register(CODEBASE_FORM_NAMES.emptyProject.name)}
-      label={
-        <FormControlLabelWithTooltip
-          label={"Empty project"}
-          title={
-            "An empty project does not contain any template code. However, KubeRocketCI pipelines and deployment templates will be created"
-          }
-        />
-      }
+      label="Empty project"
+      helperText="An empty project does not contain any template code. However, KubeRocketCI pipelines and deployment templates will be created"
       control={control}
       errors={errors}
     />

@@ -10,7 +10,7 @@ export interface FormContextProviderProps<FormData = object> {
   formData?: FormData;
 }
 export interface SelectOption {
-  label: string;
+  label: string | React.ReactNode;
   value: string;
   disabled?: boolean;
   icon?: React.ReactNode;

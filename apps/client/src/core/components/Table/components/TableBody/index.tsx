@@ -1,5 +1,7 @@
-import { Alert, CircularProgress, TableBody as MuiTableBody, TableCell, TableRow as MuiTableRow } from "@mui/material";
+import { Alert } from "@/core/components/ui/alert";
+import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
 import React from "react";
+import { TableBodyUI, TableCellUI, TableRowUI } from "@/core/components/ui/table";
 import { TableRow } from "./components/TableRow";
 import { TableBodyProps } from "./types";
 import { EmptyList } from "@/core/components/EmptyList";
@@ -20,38 +22,37 @@ export const TableBody = <DataType,>({
   rowsPerPage,
   isEmptyFilterResult,
   blockerComponent,
-  minimal,
 }: TableBodyProps<DataType>) => {
   const renderTableBody = React.useCallback(() => {
     const columnsLength = columns.length;
 
     if (blockerError) {
       return (
-        <MuiTableRow>
-          <TableCell colSpan={columnsLength} align={"center"} sx={{ px: 0, pb: 0, borderBottom: 0 }}>
+        <TableRowUI>
+          <TableCellUI colSpan={columnsLength} className="text-center px-0 pb-0 border-b-0">
             {/* <ErrorContent error={blockerError} /> */}
-          </TableCell>
-        </MuiTableRow>
+          </TableCellUI>
+        </TableRowUI>
       );
     }
 
     if (blockerComponent) {
       return (
-        <MuiTableRow>
-          <TableCell colSpan={columnsLength} align={"center"} sx={{ px: 0, pb: 0, borderBottom: 0 }}>
+        <TableRowUI>
+          <TableCellUI colSpan={columnsLength} className="text-center px-0 pb-0 border-b-0">
             {blockerComponent}
-          </TableCell>
-        </MuiTableRow>
+          </TableCellUI>
+        </TableRowUI>
       );
     }
 
     if (isLoading) {
       return (
-        <MuiTableRow>
-          <TableCell colSpan={columnsLength} align={"center"} sx={{ px: 0, pb: 0, borderBottom: 0 }}>
-            <CircularProgress />
-          </TableCell>
-        </MuiTableRow>
+        <TableRowUI>
+          <TableCellUI colSpan={columnsLength} className="text-center px-0 pb-0 border-b-0">
+            <LoadingSpinner />
+          </TableCellUI>
+        </TableRowUI>
       );
     }
 
@@ -59,15 +60,15 @@ export const TableBody = <DataType,>({
       return (
         <>
           {errors && !!errors.length && (
-            <MuiTableRow>
-              <TableCell colSpan={columnsLength} align={"center"} sx={{ px: 0, pb: 0, borderBottom: 0 }}>
-                <Alert severity="warning">
-                  {errors.map((error) => (
-                    <div>{error?.message || error?.toString()}</div>
+            <TableRowUI>
+              <TableCellUI colSpan={columnsLength} className="text-center px-0 pb-0 border-b-0">
+                <Alert variant="default">
+                  {errors.map((error, index) => (
+                    <div key={index}>{error?.message || error?.toString()}</div>
                   ))}
                 </Alert>
-              </TableCell>
-            </MuiTableRow>
+              </TableCellUI>
+            </TableRowUI>
           )}
           {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, idx: number) => {
             const _isSelected = selection?.isRowSelected ? isSelectedRow(selection.isRowSelected, row) : false;
@@ -82,7 +83,6 @@ export const TableBody = <DataType,>({
                 isRowSelectable={_isSelectable}
                 handleRowClick={handleRowClick}
                 handleSelectRowClick={selection?.handleSelectRow}
-                minimal={minimal}
               />
             );
           })}
@@ -92,20 +92,20 @@ export const TableBody = <DataType,>({
 
     if (isEmptyFilterResult) {
       return (
-        <MuiTableRow>
-          <TableCell colSpan={columnsLength} align={"center"} sx={{ px: 0, pb: 0, borderBottom: 0 }}>
+        <TableRowUI>
+          <TableCellUI colSpan={columnsLength} className="text-center px-0 pb-0 border-b-0">
             <EmptyList customText={"No results found!"} isSearch />
-          </TableCell>
-        </MuiTableRow>
+          </TableCellUI>
+        </TableRowUI>
       );
     }
 
     return (
-      <MuiTableRow>
-        <TableCell colSpan={columnsLength} align={"center"} sx={{ px: 0, pb: 0, borderBottom: 0 }}>
+      <TableRowUI>
+        <TableCellUI colSpan={columnsLength} className="text-center px-0 pb-0 border-b-0">
           <>{emptyListComponent}</>
-        </TableCell>
-      </MuiTableRow>
+        </TableCellUI>
+      </TableRowUI>
     );
   }, [
     columns,
@@ -120,8 +120,7 @@ export const TableBody = <DataType,>({
     rowsPerPage,
     selection,
     handleRowClick,
-    minimal,
   ]);
 
-  return <MuiTableBody>{renderTableBody()}</MuiTableBody>;
+  return <TableBodyUI>{renderTableBody()}</TableBodyUI>;
 };

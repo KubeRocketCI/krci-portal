@@ -7,36 +7,26 @@ import { getCodebaseBranchStatusIcon } from "@/k8s/api/groups/KRCI/CodebaseBranc
 import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { useCodebaseWatch, useGitServerWatch } from "@/modules/platform/codebases/pages/details/hooks/data";
-import { Chip, Tooltip, useTheme } from "@mui/material";
+import { Badge } from "@/core/components/ui/badge";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import {
   checkForKRCIVersioning,
   checkIsDefaultBranch,
   codebaseBranchStatus,
   getPipelineRunStatus,
 } from "@my-project/shared";
-import clsx from "clsx";
 import { ExternalLink } from "lucide-react";
 import React from "react";
 import { Actions } from "../Actions";
 import { BuildGroup } from "../BuildGroup";
-import { useStyles } from "./styles";
 import { SummaryProps } from "./types";
 
-export const Summary = ({
-  codebaseBranch,
-  latestBuildPipelineRun,
-  menuAnchorEl,
-  handleClickMenu,
-  handleCloseMenu,
-}: SummaryProps) => {
-  const theme = useTheme();
-
+export const Summary = ({ codebaseBranch, latestBuildPipelineRun }: SummaryProps) => {
   const codebaseWatchQuery = useCodebaseWatch();
   const codebase = codebaseWatchQuery.query.data;
 
   const gitServerByCodebaseWatch = useGitServerWatch();
 
-  const classes = useStyles();
   const status = codebaseBranch?.status?.status;
   const detailedMessage = codebaseBranch?.status?.detailedMessage;
 
@@ -83,7 +73,7 @@ export const Summary = ({
             }
           />
           <div className="flex items-center gap-0">
-            <TextWithTooltip text={codebaseBranch.spec.branchName} className="mt-0.5 text-xl font-medium" />
+            <TextWithTooltip text={codebaseBranch.spec.branchName} className="mt-0.5 text-lg font-medium" />
             <div
               onClick={(e) => {
                 e.preventDefault();
@@ -95,10 +85,14 @@ export const Summary = ({
           </div>
 
           {codebase && checkIsDefaultBranch(codebase, codebaseBranch) && (
-            <Chip label="default" size="small" className={clsx([classes.labelChip, classes.labelChipBlue])} />
+            <Badge variant="default" className="h-6">
+              default
+            </Badge>
           )}
           {codebaseBranch.spec.release && (
-            <Chip label="release" size="small" className={clsx([classes.labelChip, classes.labelChipGreen])} />
+            <Badge variant="default" className="h-6 bg-green-600 hover:bg-green-700">
+              release
+            </Badge>
           )}
           {latestBuildPipelineRun && (
             <div className="flex items-center gap-1">
@@ -122,25 +116,18 @@ export const Summary = ({
             <>
               <div className="flex items-center gap-1">
                 <span className="text-xs">Build:</span>
-                <Chip label={codebaseBranch?.status?.build || "N/A"} size="small" />
+                <Badge variant="secondary">{codebaseBranch?.status?.build || "N/A"}</Badge>
               </div>
               <div className="flex items-center gap-1">
                 <span className="text-xs">Successful build:</span>
-                <Chip label={codebaseBranch?.status?.lastSuccessfulBuild || "N/A"} size="small" />
+                <Badge variant="secondary">{codebaseBranch?.status?.lastSuccessfulBuild || "N/A"}</Badge>
               </div>
               <div className="flex items-center gap-1">
                 <span className="text-xs">Version:</span>
                 <Tooltip title={codebaseBranch?.spec?.version || "N/A"}>
-                  <Chip
-                    label={codebaseBranch?.spec?.version || "N/A"}
-                    sx={{
-                      maxWidth: theme.typography.pxToRem(200),
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                    size="small"
-                  />
+                  <Badge variant="secondary" className="max-w-[200px] truncate">
+                    {codebaseBranch?.spec?.version || "N/A"}
+                  </Badge>
                 </Tooltip>
               </div>
             </>
@@ -161,18 +148,12 @@ export const Summary = ({
                 name={{ label: "GIT" }}
                 Icon={<ExternalLink size={16} />}
                 externalLink={gitRepoBranchLink}
-                variant="text"
+                variant="ghost"
                 isTextButton
               />
             </div>
             <div>
-              <BuildGroup
-                menuAnchorEl={menuAnchorEl}
-                handleClickMenu={handleClickMenu}
-                handleCloseMenu={handleCloseMenu}
-                codebaseBranch={codebaseBranch}
-                latestBuildPipelineRun={latestBuildPipelineRun}
-              />
+              <BuildGroup codebaseBranch={codebaseBranch} latestBuildPipelineRun={latestBuildPipelineRun} />
             </div>
 
             <div>

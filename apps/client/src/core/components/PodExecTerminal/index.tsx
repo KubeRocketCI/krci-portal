@@ -1,5 +1,6 @@
 import React, { useState, useRef, useMemo } from "react";
-import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
+import { Label } from "@/core/components/ui/label";
 
 import { Terminal } from "@/core/components/Terminal";
 import { TerminalRef } from "@/core/components/Terminal/types";
@@ -212,8 +213,8 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
   }, [selectedContainer]);
 
   // Event handlers
-  const handlePodChange = (event: { target: { value: string } }) => {
-    const pod = pods.find((p) => p.metadata?.name === event.target.value);
+  const handlePodChange = (value: string) => {
+    const pod = pods.find((p) => p.metadata?.name === value);
     if (pod) {
       setActivePod(pod);
       // Reset container selection when pod changes
@@ -223,8 +224,8 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
     }
   };
 
-  const handleContainerChange = (event: { target: { value: string } }) => {
-    setSelectedContainer(event.target.value);
+  const handleContainerChange = (value: string) => {
+    setSelectedContainer(value);
   };
 
   const isWindows = ["Windows", "Win16", "Win32", "WinCE"].indexOf(navigator?.platform) >= 0;
@@ -234,35 +235,38 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-2">
         {pods.length > 1 && (
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel>Pod</InputLabel>
-            <Select value={podName} label="Pod" onChange={handlePodChange}>
-              {pods.map((pod) => (
-                <MenuItem key={pod.metadata?.name} value={pod.metadata?.name || ""}>
-                  {pod.metadata?.name}
-                </MenuItem>
-              ))}
+          <div className="flex flex-col gap-1.5 min-w-[180px]">
+            <Label htmlFor="pod-select">Pod</Label>
+            <Select value={podName} onValueChange={handlePodChange}>
+              <SelectTrigger id="pod-select" className="h-9">
+                <SelectValue placeholder="Select pod" />
+              </SelectTrigger>
+              <SelectContent>
+                {pods.map((pod) => (
+                  <SelectItem key={pod.metadata?.name} value={pod.metadata?.name || ""}>
+                    {pod.metadata?.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
-          </FormControl>
+          </div>
         )}
 
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel shrink id="container-name-chooser-label">
-            Container
-          </InputLabel>
-          <Select
-            labelId="container-name-chooser-label"
-            id="container-name-chooser"
-            value={selectedContainer}
-            onChange={handleContainerChange}
-          >
-            {availableContainers.map((container) => (
-              <MenuItem key={container.name} value={container.name}>
-                {container.name} {container.type !== "container" && <em>({container.type})</em>}
-              </MenuItem>
-            ))}
+        <div className="flex flex-col gap-1.5 min-w-[200px]">
+          <Label htmlFor="container-name-chooser">Container</Label>
+          <Select value={selectedContainer} onValueChange={handleContainerChange}>
+            <SelectTrigger id="container-name-chooser" className="h-9">
+              <SelectValue placeholder="Select container" />
+            </SelectTrigger>
+            <SelectContent>
+              {availableContainers.map((container) => (
+                <SelectItem key={container.name} value={container.name}>
+                  {container.name} {container.type !== "container" && <em>({container.type})</em>}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
-        </FormControl>
+        </div>
 
         <span className="text-muted-foreground text-xs">
           {isAttach ? `Attach: ${podName}` : `Terminal: ${podName}`}

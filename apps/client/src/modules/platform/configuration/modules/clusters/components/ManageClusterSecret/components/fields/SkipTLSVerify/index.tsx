@@ -2,8 +2,7 @@ import { useFormContext as useReactHookFormContext } from "react-hook-form";
 import { CLUSTER_FORM_NAMES } from "../../../names";
 import { ManageClusterSecretDataContext } from "../../../types";
 import { useFormContext } from "@/core/providers/Form/hooks";
-import { FormCheckbox } from "@/core/providers/Form/components/FormCheckbox";
-import { FormControlLabelWithTooltip } from "@/core/providers/Form/components/FormControlLabelWithTooltip";
+import { FormSwitchRich } from "@/core/providers/Form/components/FormSwitchRich";
 import { FORM_MODES } from "@/core/types/forms";
 
 export const SkipTLSVerify = () => {
@@ -18,14 +17,9 @@ export const SkipTLSVerify = () => {
   } = useFormContext<ManageClusterSecretDataContext>();
 
   return (
-    <FormCheckbox
+    <FormSwitchRich
       {...register(CLUSTER_FORM_NAMES.SKIP_TLS_VERIFY)}
-      label={
-        <FormControlLabelWithTooltip
-          label={"Skip TLS verification"}
-          disabled={mode === FORM_MODES.EDIT && !!ownerReference}
-        />
-      }
+      label="Skip TLS verification"
       control={control}
       errors={errors}
       disabled={mode === FORM_MODES.EDIT && !!ownerReference}

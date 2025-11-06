@@ -22,7 +22,7 @@ export const SSHPort = () => {
       placeholder={"Enter SSH port"}
       control={gitServerForm.form.control}
       errors={gitServerForm.form.formState.errors}
-      TextFieldProps={{
+      inputProps={{
         type: "number",
       }}
     />

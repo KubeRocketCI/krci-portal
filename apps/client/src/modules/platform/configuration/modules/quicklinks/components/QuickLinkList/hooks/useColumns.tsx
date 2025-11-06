@@ -1,7 +1,6 @@
-import { Link as MuiLink } from "@mui/material";
 import React from "react";
 import { columnNames } from "../constants";
-import { useStyles } from "../styles";
+import { serviceItemIconClasses } from "../styles";
 import { QuickLink } from "@my-project/shared";
 import { TableColumn } from "@/core/components/Table/types";
 import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
@@ -9,10 +8,10 @@ import { TABLE } from "@/k8s/constants/tables";
 import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { CheckCircle, SquareArrowOutUpRight, XCircle } from "lucide-react";
 import { Actions } from "../components/Actions";
+import { Link } from "@tanstack/react-router";
+import { Button } from "@/core/components/ui/button";
 
 export const useColumns = (): TableColumn<QuickLink>[] => {
-  const classes = useStyles();
-
   const { loadSettings } = useTableSettings(TABLE.QUICKLINK_LIST.id);
   const tableSettings = loadSettings();
 
@@ -27,7 +26,7 @@ export const useColumns = (): TableColumn<QuickLink>[] => {
               spec: { icon },
             },
           }) => (
-            <span className={classes.serviceItemIcon}>
+            <span className={serviceItemIconClasses}>
               <img src={`data:image/svg+xml;base64,${icon}`} alt="" />
             </span>
           ),
@@ -64,12 +63,14 @@ export const useColumns = (): TableColumn<QuickLink>[] => {
             const _url = !/^https?:\/\//i.test(url) ? `https://${url}` : url;
 
             return url ? (
-              <MuiLink href={_url} target="_blank" rel="noopener">
-                <div className="flex items-center gap-1">
-                  <span>{_url} </span>
-                  <SquareArrowOutUpRight size={15} />
-                </div>
-              </MuiLink>
+              <Button asChild variant="link">
+                <Link to={_url} target="_blank" rel="noopener noreferrer">
+                  <div className="flex items-center gap-1">
+                    <span>{_url} </span>
+                    <SquareArrowOutUpRight size={15} />
+                  </div>
+                </Link>
+              </Button>
             ) : null;
           },
         },
@@ -105,6 +106,6 @@ export const useColumns = (): TableColumn<QuickLink>[] => {
         },
       },
     ],
-    [classes.serviceItemIcon, tableSettings]
+    [tableSettings]
   );
 };

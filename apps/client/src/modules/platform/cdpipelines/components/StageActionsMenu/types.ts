@@ -10,6 +10,4 @@ export interface StageActionsMenuProps {
   };
   backRoute?: RouteParams;
   variant?: ActionMenuType;
-  anchorEl?: HTMLElement;
-  handleCloseResourceActionListMenu?: () => void;
 }

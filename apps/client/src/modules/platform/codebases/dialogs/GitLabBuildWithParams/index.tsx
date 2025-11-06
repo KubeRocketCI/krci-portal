@@ -1,4 +1,12 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
 import { GitLabPipelineVariable } from "@my-project/shared";
 import { LoaderCircle, Play, Plus, Trash2 } from "lucide-react";
 import React from "react";
@@ -68,20 +76,22 @@ export const GitLabBuildWithParamsDialog: React.FC<GitLabBuildWithParamsDialogPr
   }, [closeDialog, reset]);
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <form onSubmit={handleSubmit(onFormSubmit)}>
-        <DialogTitle>
-          <div className="flex items-center gap-2">
-            <div>
-              <Play size={24} />
+    <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="w-full max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>
+            <div className="flex items-center gap-2">
+              <div>
+                <Play size={24} />
+              </div>
+              <div>
+                <h6 className="text-base font-medium">Build GitLab Pipeline with Parameters</h6>
+              </div>
             </div>
-            <div>
-              <h6 className="text-base font-medium">Build GitLab Pipeline with Parameters</h6>
-            </div>
-          </div>
-        </DialogTitle>
-        <DialogContent>
-          <div className="flex flex-col gap-4">
+          </DialogTitle>
+        </DialogHeader>
+        <DialogBody>
+          <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col gap-4">
             <div>
               <p className="text-muted-foreground mb-2 text-sm">
                 <strong>Git Server:</strong> {triggerData.gitServer}
@@ -127,14 +137,14 @@ export const GitLabBuildWithParamsDialog: React.FC<GitLabBuildWithParamsDialogPr
                         />
                       </div>
                       <div className="col-span-1">
-                        <IconButton
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleDeleteVariable(index)}
-                          size="small"
-                          color="error"
-                          sx={{ mt: 1 }}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10 mt-1"
                         >
                           <Trash2 size={20} />
-                        </IconButton>
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -143,33 +153,23 @@ export const GitLabBuildWithParamsDialog: React.FC<GitLabBuildWithParamsDialogPr
             )}
 
             <div>
-              <Button
-                type="button"
-                variant="outlined"
-                size="small"
-                startIcon={<Plus size={16} />}
-                onClick={handleAddVariable}
-              >
+              <Button type="button" variant="outline" size="sm" onClick={handleAddVariable}>
+                <Plus size={16} />
                 Add Variable
               </Button>
             </div>
-          </div>
-        </DialogContent>
-        <DialogActions>
-          <Button type="button" onClick={handleClose} disabled={isLoading}>
+          </form>
+        </DialogBody>
+        <DialogFooter>
+          <Button type="button" onClick={handleClose} variant="ghost" disabled={isLoading}>
             Cancel
           </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            disabled={isLoading}
-            startIcon={isLoading ? <LoaderCircle size={20} /> : <Play size={20} />}
-          >
+          <Button type="button" variant="default" disabled={isLoading} onClick={handleSubmit(onFormSubmit)}>
+            {isLoading ? <LoaderCircle size={20} /> : <Play size={20} />}
             {isLoading ? "Triggering..." : "Trigger Pipeline"}
           </Button>
-        </DialogActions>
-      </form>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 };

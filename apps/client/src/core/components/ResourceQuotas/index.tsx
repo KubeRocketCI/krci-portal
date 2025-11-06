@@ -156,7 +156,7 @@ export const ResourceQuotas = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="relative h-10 w-10 rounded-full text-white hover:bg-white/10"
+          className="relative h-8 w-8 rounded-full text-white hover:bg-white/10"
           title="Platform Resource Usage"
         >
           <CircleProgress loadPercentage={highestPercentage} color={quotaColor} />

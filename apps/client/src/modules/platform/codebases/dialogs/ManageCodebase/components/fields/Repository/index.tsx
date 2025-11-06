@@ -1,6 +1,6 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { FormAutocompleteSingle } from "@/core/providers/Form/components/FormAutocompleteSingle";
+import { FormCombobox } from "@/core/providers/Form/components/FormCombobox";
 import { FormTextField } from "@/core/providers/Form/components/FormTextField";
 import { FieldEvent } from "@/core/types/forms";
 import { validateField } from "@/core/utils/forms/validation";
@@ -75,7 +75,7 @@ export const Repository = () => {
   }, [apiBaseUrl, query.isError]);
 
   return isImportStrategy(strategyFieldValue) ? (
-    <FormAutocompleteSingle
+    <FormCombobox
       placeholder={"repository_name"}
       {...register(CODEBASE_FORM_NAMES.repositoryName.name, {
         required: "Select repository",
@@ -91,13 +91,9 @@ export const Repository = () => {
       errors={errors}
       disabled={!ownerFieldValue}
       options={repositoryOptions}
-      AutocompleteProps={{
-        freeSolo: true,
-        loading: !!apiBaseUrl && query.isLoading,
-      }}
-      TextFieldProps={{
-        helperText,
-      }}
+      freeSolo={true}
+      loading={!!apiBaseUrl && query.isLoading}
+      helperText={helperText}
     />
   ) : (
     <FormTextField

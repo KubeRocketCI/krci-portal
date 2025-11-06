@@ -3,12 +3,12 @@ import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { EmptyList } from "@/core/components/EmptyList";
 import { TABLE } from "@/k8s/constants/tables";
 import { K8sRelatedIconsSVGSprite } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
-import { Table } from "@/core/components/Table";
+import { DataTable } from "@/core/components/Table";
 import { useCodebasePermissions, useCodebaseWatchListMultiple } from "@/k8s/api/groups/KRCI/Codebase";
 import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { ManageCodebaseDialog } from "@/modules/platform/codebases/dialogs/ManageCodebase";
-import { Tooltip } from "@mui/material";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { codebaseType, type Codebase } from "@my-project/shared";
 import { Plus, Trash } from "lucide-react";
 import React, { Suspense } from "react";
@@ -89,10 +89,7 @@ export const ComponentList = () => {
         <div className="flex items-center justify-end">
           <ButtonWithPermission
             ButtonProps={{
-              size: "medium",
-              startIcon: <Plus />,
-              color: "primary",
-              variant: "contained",
+              variant: "default",
               disabled: noGitServers,
               onClick: () =>
                 setDialog(ManageCodebaseDialog, {
@@ -102,11 +99,12 @@ export const ComponentList = () => {
             allowed={codebasePermissions.data.create.allowed}
             reason={codebasePermissions.data.create.reason}
           >
-            create component
+            <Plus />
+            Create Component
           </ButtonWithPermission>
         </div>
         <Suspense fallback={<div>Loading...</div>}>
-          <Table<Codebase>
+          <DataTable<Codebase>
             id={TABLE.COMPONENT_LIST.id}
             name={TABLE.COMPONENT_LIST.name}
             data={codebaseListWatch.data.array}
@@ -137,19 +135,18 @@ export const ComponentList = () => {
                         <div className="text-secondary-700">
                           <ButtonWithPermission
                             ButtonProps={{
-                              size: "small",
+                              size: "sm",
+                              variant: "outline",
                               disabled: !selectionLength,
                               onClick: () => {
                                 setDeleteDialogOpen(true);
                               },
-                              startIcon: <Trash />,
-                              variant: "outlined",
-                              color: "inherit",
                             }}
                             allowed={codebasePermissions.data.delete.allowed}
                             reason={codebasePermissions.data.delete.reason}
                           >
-                            delete
+                            <Trash />
+                            Delete
                           </ButtonWithPermission>
                         </div>
                       </ConditionalWrapper>

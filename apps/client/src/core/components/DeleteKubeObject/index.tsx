@@ -1,4 +1,7 @@
-import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
+import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
+import { Button } from "@/core/components/ui/button";
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
+import { FormTextField } from "@/core/providers/Form/components/FormTextField";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { DIALOG_NAME_DELETE_KUBE_OBJECT } from "./constants";
@@ -21,13 +24,10 @@ export const DeleteKubeObjectDialog: React.FC<DeleteKubeObjectDialogProps> = (_p
 
   const [errorTemplate, setErrorTemplate] = React.useState<React.ReactNode | string>(null);
   const [loadingActive, setLoadingActive] = React.useState<boolean>(false);
-  const { register, handleSubmit, watch, reset } = useForm<{ name: string }>();
+  const { control, handleSubmit, watch, reset, formState: { errors } } = useForm<{ name: string }>();
   const kubeObjectNameFieldValue = watch(NAMES.name);
 
-  const handleClosePopup = React.useCallback(
-    (_?: unknown, reason?: string) => (reason !== "backdropClick" ? closeDialog() : false),
-    [closeDialog]
-  );
+  const handleClosePopup = React.useCallback(() => closeDialog(), [closeDialog]);
 
   const resourceDeleteMutation = useResourceCRUDMutation<KubeObjectBase, typeof k8sOperation.delete>(
     "resourceDeleteMutation",
@@ -74,50 +74,47 @@ export const DeleteKubeObjectDialog: React.FC<DeleteKubeObjectDialogProps> = (_p
   const dialogTitle = React.useMemo(() => getDialogTitle(errorTemplate, objectName || ""), [errorTemplate, objectName]);
 
   return (
-    <Dialog open={open} onClose={handleClosePopup} fullWidth data-testid="dialog">
-      <DialogTitle>{dialogTitle}</DialogTitle>
-      <DialogContent>
-        <div className="flex flex-col gap-2">
-          {!loadingActive && !errorTemplate && (
-            <div>
-              <p>{description}</p>
-            </div>
-          )}
-          <div>
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="flex flex-col gap-2">
-                {!!loadingActive && (
-                  <div className="flex justify-center">
-                    <div>
-                      <CircularProgress />
-                    </div>
-                  </div>
-                )}
-                {!!errorTemplate && !loadingActive && <div>{errorTemplate}</div>}
-                {!loadingActive && !errorTemplate && (
-                  <div>
-                    <TextField
-                      {...register(NAMES.name, { required: true })}
-                      label={`Enter "${objectName}" to delete`}
-                      variant="outlined"
-                      fullWidth
-                    />
-                  </div>
-                )}
-                <div>
-                  <DialogActions>
-                    <Button type={"button"} onClick={handleClosePopup}>
-                      Cancel
-                    </Button>
-                    <Button type={"submit"} disabled={isSubmitNotAllowed}>
-                      Confirm
-                    </Button>
-                  </DialogActions>
-                </div>
+    <Dialog open={open} onOpenChange={(open) => !open && handleClosePopup()} data-testid="dialog">
+      <DialogContent className="w-full max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>{dialogTitle}</DialogTitle>
+        </DialogHeader>
+        <DialogBody>
+          <div className="flex flex-col gap-2">
+            {!loadingActive && !errorTemplate && (
+              <div>
+                <p>{description}</p>
               </div>
+            )}
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
+              {!!loadingActive && (
+                <div className="flex justify-center">
+                  <div>
+                    <LoadingSpinner />
+                  </div>
+                </div>
+              )}
+              {!!errorTemplate && !loadingActive && <div>{errorTemplate}</div>}
+              {!loadingActive && !errorTemplate && (
+                <FormTextField
+                  name={NAMES.name}
+                  control={control}
+                  errors={errors}
+                  label={`Enter "${objectName}" to delete`}
+                  rules={{ required: true }}
+                />
+              )}
             </form>
           </div>
-        </div>
+        </DialogBody>
+        <DialogFooter>
+          <Button type="button" variant="ghost" onClick={handleClosePopup}>
+            Cancel
+          </Button>
+          <Button type="button" variant="default" onClick={handleSubmit(onSubmit)} disabled={isSubmitNotAllowed}>
+            Confirm
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

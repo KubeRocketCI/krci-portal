@@ -1,10 +1,8 @@
-import { Divider, Paper } from "@mui/material";
 import { useTabs } from "./hooks/useTabs";
 import { TaskRunProps } from "./types";
 import { getTaskRunStatus, taskRunLabels } from "@my-project/shared";
 import { humanize } from "@/core/utils/date-humanize";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
-import { StyledDetailsBody, StyledDetailsHeader } from "../../../../styles";
 import { Tabs } from "@/core/providers/Tabs/components/Tabs";
 
 export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
@@ -32,8 +30,8 @@ export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
   const { activeTab, handleChangeTab } = useTabsContext();
 
   return (
-    <Paper>
-      <StyledDetailsHeader>
+    <div className="bg-card rounded shadow">
+      <div className="p-6">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h3 className="text-xl font-medium">{taskRunName}</h3>
@@ -52,11 +50,11 @@ export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
             </span>
           )}
         </div>
-      </StyledDetailsHeader>
-      <Divider orientation="horizontal" />
-      <StyledDetailsBody>
+      </div>
+      <hr className="border-border" />
+      <div className="px-6 pb-6">
         <Tabs tabs={tabs} activeTabIdx={activeTab} handleChangeTab={handleChangeTab} />
-      </StyledDetailsBody>
-    </Paper>
+      </div>
+    </div>
   );
 };

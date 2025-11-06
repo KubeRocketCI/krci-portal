@@ -80,6 +80,7 @@ export const BuildTool = () => {
             "Choose the build tool your project uses. This information is crucial for accurate build pipeline configuration."
           }
           options={buildToolOptions}
+          className="grid-cols-6"
         />
       )}
     </>

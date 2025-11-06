@@ -30,7 +30,7 @@ export const useColumns = (): TableColumn<Template>[] => {
             return (
               icon && (
                 <img
-                  style={{ height: "30px", verticalAlign: "middle" }}
+                  className="h-[30px] align-middle"
                   src={`data:${icon[0].mediatype};base64,${icon[0].base64data}`}
                   alt=""
                 />

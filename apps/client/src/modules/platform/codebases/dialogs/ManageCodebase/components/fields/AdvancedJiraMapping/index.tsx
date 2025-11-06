@@ -1,4 +1,4 @@
-import { Button } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import React from "react";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_FORM_NAMES } from "../../../names";
@@ -100,10 +100,9 @@ export const AdvancedJiraMapping = () => {
           <div className="col-span-2 flex flex-col items-center justify-end">
             <Button
               type={"button"}
-              size={"small"}
-              component={"button"}
-              style={{ minWidth: 0 }}
-              variant={"contained"}
+              size={"sm"}
+              variant={"default"}
+              className="min-w-0"
               disabled={!advancedMappingFieldNameValue}
               onClick={handleAddMappingRow}
             >

@@ -3,6 +3,7 @@ import { protectedProcedure } from "../../../../procedures/protected";
 import { TRPCError } from "@trpc/server";
 import { k8sConfigMapConfig, ConfigMap, krciConfigMapNames, GitLabPipelineVariable } from "@my-project/shared";
 import { z } from "zod";
+import { K8sClient } from "../../../../clients/k8s";
 
 const gitLabPipelineVariableSchema = z.object({
   key: z.string(),
@@ -22,7 +23,8 @@ export const triggerGitLabPipelineProcedure = protectedProcedure
   )
   .mutation(async ({ input, ctx }) => {
     const { namespace, gitServer, project, ref, variables } = input;
-    const { session, K8sClient } = ctx;
+    const { session } = ctx;
+    const k8sClient = new K8sClient(session);
 
     console.log("triggerGitLabPipeline - Input:", {
       namespace,
@@ -34,7 +36,7 @@ export const triggerGitLabPipelineProcedure = protectedProcedure
 
     const idToken = session.user!.secret.idToken;
 
-    const configMapList = await K8sClient.listResource(k8sConfigMapConfig, namespace);
+    const configMapList = await k8sClient.listResource(k8sConfigMapConfig, namespace);
 
     const configMaps = (configMapList.items || []) as ConfigMap[];
 

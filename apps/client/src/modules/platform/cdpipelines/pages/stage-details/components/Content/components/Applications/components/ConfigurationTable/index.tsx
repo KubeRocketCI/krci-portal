@@ -1,4 +1,4 @@
-import { Table } from "@/core/components/Table";
+import { DataTable } from "@/core/components/Table";
 import { TABLE } from "@/k8s/constants/tables";
 import {
   StageAppCodebaseCombinedData,
@@ -22,7 +22,7 @@ export const ConfigurationTable = () => {
   // }, [buttonsHighlighted]);
 
   return (
-    <Table<StageAppCodebaseCombinedData>
+    <DataTable<StageAppCodebaseCombinedData>
       // key={key}
       id={TABLE.STAGE_APPLICATION_LIST_CONFIGURATION.id}
       name={TABLE.STAGE_APPLICATION_LIST_CONFIGURATION.name}

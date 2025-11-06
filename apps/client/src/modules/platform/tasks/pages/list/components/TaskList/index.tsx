@@ -1,5 +1,5 @@
 import React from "react";
-import { Table } from "@/core/components/Table";
+import { DataTable } from "@/core/components/Table";
 import { EmptyList } from "@/core/components/EmptyList";
 import { TABLE } from "@/k8s/constants/tables";
 import { useColumns } from "./hooks/useColumns";
@@ -30,7 +30,7 @@ export const TaskList = () => {
   );
 
   return (
-    <Table
+    <DataTable
       id={TABLE.TASK_LIST?.id || "task-list"}
       name={TABLE.TASK_LIST?.name || "Tasks"}
       isLoading={!taskListWatch.query.isFetched || !taskPermissions.isFetched}

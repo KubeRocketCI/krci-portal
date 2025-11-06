@@ -1,12 +1,12 @@
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { getStepStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun/utils/getStepStatusIcon";
 import { router } from "@/core/router";
-import { Accordion, useTheme } from "@mui/material";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/core/components/ui/accordion";
 import { ApprovalTask, approvalTaskAction, getTaskRunStepStatus, Task, TaskRun } from "@my-project/shared";
-import { ChevronDown } from "lucide-react";
 import React from "react";
 import { routePipelineRunDetails, routeSearchTabName, PATH_PIPELINERUN_DETAILS_FULL } from "../../../../route";
-import { StyledAccordionChildBtn, StyledAccordionDetails, StyledAccordionSummary } from "../../../../styles";
+import { Button } from "@/core/components/ui/button";
+import { cn } from "@/core/utils/classname";
 import {
   approvalTaskBackground,
   getApprovalTaskOrTaskRunStatusIcon,
@@ -47,8 +47,6 @@ export const MenuAccordion = ({
   const isExpanded = queryParamTaskRun === taskRunName;
   const isActive = queryParamTaskRun === taskRunName && !queryParamStep;
 
-  const theme = useTheme();
-
   const handleAccordionChange = React.useCallback(
     (taskRunName: string, taskRunStepName?: string) => {
       router.navigate({
@@ -68,80 +66,88 @@ export const MenuAccordion = ({
     [params.clusterName, params.name, params.namespace]
   );
 
+  const hasApprovalTaskPending =
+    pipelineRunTaskData?.approvalTask &&
+    pipelineRunTaskData?.approvalTask?.spec.action === approvalTaskAction.Pending;
+
   return (
     <Accordion
       key={taskRunName}
-      expanded={isExpanded}
-      onChange={() => handleAccordionChange(taskRunName)}
-      sx={{
-        borderLeft: isExpanded ? `2px solid ${theme.palette.primary.main}` : null,
-        maxWidth: isExpanded ? "100%" : "90%",
-
-        "&.Mui-expanded": {
-          margin: 0,
-
-          "&::before": {
-            opacity: 1,
-          },
-        },
+      type="single"
+      collapsible
+      value={isExpanded ? taskRunName : undefined}
+      onValueChange={(value) => {
+        if (value === taskRunName) {
+          handleAccordionChange(taskRunName);
+        } else {
+          handleAccordionChange(taskRunName);
+        }
       }}
     >
-      <StyledAccordionSummary
-        expandIcon={taskSteps?.length ? <ChevronDown size={16} /> : null}
-        isActive={isActive}
-        disableRipple={false}
-        disableTouchRipple={false}
-        sx={{
-          ...(pipelineRunTaskData?.approvalTask &&
-          pipelineRunTaskData?.approvalTask?.spec.action === approvalTaskAction.Pending
-            ? { background: approvalTaskBackground }
-            : {}),
-        }}
+      <AccordionItem
+        value={taskRunName}
+        className={cn(
+          "border-0",
+          isExpanded && "border-l-2 border-l-primary",
+          !isExpanded && "max-w-[90%]"
+        )}
       >
-        <div className="flex items-center gap-2">
-          <StatusIcon
-            Icon={taskStatusIcon.component}
-            color={taskStatusIcon.color}
-            isSpinning={taskStatusIcon.isSpinning}
-            Title={statusTitle}
-            width={20}
-          />
-          <span>{taskRunName}</span>
-        </div>
-      </StyledAccordionSummary>
-      <StyledAccordionDetails>
-        <div className="flex flex-col">
-          {taskSteps?.map((step) => {
-            const taskRunStepName = step?.name;
+        <AccordionTrigger
+          className={cn(
+            "min-h-0 transition-colors [&>svg]:h-4 [&>svg]:w-4",
+            isActive && "bg-accent font-medium",
+            !isActive && "font-normal",
+            !taskSteps?.length && "[&>svg]:hidden"
+          )}
+          style={hasApprovalTaskPending ? { background: approvalTaskBackground } : undefined}
+        >
+          <div className="flex items-center gap-2">
+            <StatusIcon
+              Icon={taskStatusIcon.component}
+              color={taskStatusIcon.color}
+              isSpinning={taskStatusIcon.isSpinning}
+              Title={statusTitle}
+              width={20}
+            />
+            <span>{taskRunName}</span>
+          </div>
+        </AccordionTrigger>
+        <AccordionContent className="p-0">
+          <div className="flex flex-col">
+            {taskSteps?.map((step) => {
+              const taskRunStepName = step?.name;
 
-            const stepStatus = getTaskRunStepStatus(step);
-            const stepStatusIcon = getStepStatusIcon(step);
+              const stepStatus = getTaskRunStepStatus(step);
+              const stepStatusIcon = getStepStatusIcon(step);
 
-            const isActive = !!queryParamStep && queryParamStep === taskRunStepName;
+              const isActive = !!queryParamStep && queryParamStep === taskRunStepName;
 
-            return (
-              <StyledAccordionChildBtn
-                color="inherit"
-                onClick={() => handleAccordionChange(taskRunName, taskRunStepName)}
-                isActive={isActive}
-              >
-                <div className="flex items-center gap-2">
-                  <StatusIcon
-                    Icon={stepStatusIcon.component}
-                    color={stepStatusIcon.color}
-                    isSpinning={stepStatusIcon.isSpinning}
-                    Title={`Status: ${stepStatus.status}. Reason: ${stepStatus.reason}`}
-                    width={20}
-                  />
-                  <span className={`text-sm ${isActive ? "font-medium" : "font-normal"} text-left`}>
-                    {taskRunStepName}
-                  </span>
-                </div>
-              </StyledAccordionChildBtn>
-            );
-          })}
-        </div>
-      </StyledAccordionDetails>
+              return (
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-start px-4 py-2.5 text-left normal-case ${
+                    isActive ? "bg-accent font-medium" : "font-normal"
+                  }`}
+                  onClick={() => handleAccordionChange(taskRunName, taskRunStepName)}
+                >
+                  <div className="flex items-center gap-2">
+                    <StatusIcon
+                      Icon={stepStatusIcon.component}
+                      color={stepStatusIcon.color}
+                      isSpinning={stepStatusIcon.isSpinning}
+                      Title={`Status: ${stepStatus.status}. Reason: ${stepStatus.reason}`}
+                      width={20}
+                    />
+                    <span className={`text-sm ${isActive ? "font-medium" : "font-normal"} text-left`}>
+                      {taskRunStepName}
+                    </span>
+                  </div>
+                </Button>
+              );
+            })}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
     </Accordion>
   );
 };

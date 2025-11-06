@@ -7,7 +7,7 @@ import {
   VALUES_OVERRIDE_POSTFIX,
   ALL_VALUES_OVERRIDE_KEY,
 } from "@/modules/platform/cdpipelines/pages/stage-details/constants";
-import { Tooltip } from "@mui/material";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { SquareArrowOutUpRight, TriangleAlert } from "lucide-react";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import React from "react";
@@ -49,7 +49,6 @@ export const ValuesOverrideConfigurationColumn = ({
       <div className="flex w-full flex-row items-center gap-2">
         <div>
           <FormSwitch
-            label={<></>}
             {...register(`${appCodebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}`, {
               onChange: () => {
                 const hasAtLeastOneFalse = Object.entries(getValues())

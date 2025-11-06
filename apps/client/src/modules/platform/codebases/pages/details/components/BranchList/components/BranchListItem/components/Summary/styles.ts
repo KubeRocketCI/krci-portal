@@ -1,24 +1,10 @@
 import { STATUS_COLOR } from "@/k8s/constants/colors";
-import makeStyles from "@mui/styles/makeStyles";
+import { cn } from "@/core/utils/classname";
 
-export const useStyles = makeStyles((theme) => ({
-  pipelineRunStatus: {
-    paddingTop: theme.typography.pxToRem(1),
-    display: "flex",
-    justifyContent: "center",
-    width: theme.typography.pxToRem(44),
-  },
-  labelChip: {
-    height: theme.typography.pxToRem(24),
-    lineHeight: 1,
-    paddingTop: theme.typography.pxToRem(2),
-  },
-  labelChipBlue: {
-    backgroundColor: theme.palette.primary.main,
-    color: "#fff",
-  },
-  labelChipGreen: {
-    backgroundColor: STATUS_COLOR.SUCCESS,
-    color: "#fff",
-  },
-}));
+export const pipelineRunStatusClasses = "pt-[1px] flex justify-center w-[44px]";
+
+export const labelChipClasses = "h-6 leading-none pt-0.5";
+
+export const labelChipBlueClasses = cn("bg-primary text-white", labelChipClasses);
+
+export const labelChipGreenClasses = cn(`bg-[${STATUS_COLOR.SUCCESS}] text-white`, labelChipClasses);

@@ -4,7 +4,6 @@ import { ManageCodeMie } from "./components/ManageCodeMie";
 import { useSecretPermissions, useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
 import React from "react";
 import { pageDescription } from "./constants";
-import { useTheme } from "@mui/material";
 import { CodemieApplications } from "./components/Applications";
 import { CodemieSection } from "./components/Codemie";
 import { CodemieProjectSettingsSection } from "./components/CodemieProjectSettings";
@@ -13,7 +12,6 @@ import { useQuickLinkWatchItem } from "@/k8s/api/groups/KRCI/QuickLink";
 import { useCodemieWatchItem } from "@/k8s/api/groups/KRCI/Codemie";
 
 export default function CodemieConfigurationPage() {
-  const theme = useTheme();
   const [isCreateDialogOpen, setCreateDialogOpen] = React.useState<boolean>(false);
 
   const handleOpenCreateDialog = () => setCreateDialogOpen(true);
@@ -73,7 +71,7 @@ export default function CodemieConfigurationPage() {
         <div>
           <CodemieProjectSettingsSection />
         </div>
-        <div style={{ paddingBottom: theme.typography.pxToRem(40) }}>
+        <div className="pb-10">
           <CodemieApplications />
         </div>
       </div>

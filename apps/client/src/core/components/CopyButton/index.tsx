@@ -1,9 +1,10 @@
-import { Button } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import { Copy, CopyCheck } from "lucide-react";
 import React from "react";
 
 export const CopyButton = ({ text, size = "small" }: { text: string; size?: "medium" | "small" }) => {
   const iconSize = size === "medium" ? 20 : 15;
+  const shadcnSize = size === "medium" ? "default" : "sm";
 
   const [showCopied, setShowCopied] = React.useState<boolean>(false);
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -25,8 +26,9 @@ export const CopyButton = ({ text, size = "small" }: { text: string; size?: "med
     <div className="text-muted-foreground pt-[0.4%]">
       <Button
         onClick={handleClickCopy}
-        sx={{ minWidth: 0, p: (t) => t.typography.pxToRem(iconSize / 2.5) }}
-        color="inherit"
+        variant="ghost"
+        size={shadcnSize}
+        className="min-w-0 p-1"
       >
         {showCopied ? <CopyCheck size={iconSize} /> : <Copy size={iconSize} />}
       </Button>

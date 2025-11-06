@@ -1,26 +1,30 @@
 import { TaskActionsMenu } from "@/modules/platform/tasks/components/TaskActionsMenu";
-import { IconButton } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { DropdownMenu, DropdownMenuTrigger } from "@/core/components/ui/dropdown-menu";
 import { Task } from "@my-project/shared";
 import { EllipsisVertical } from "lucide-react";
 import React from "react";
 
 export const Actions = ({ task }: { task: Task }) => {
-  const buttonRef = React.createRef<HTMLButtonElement>();
-  const [anchor, setAnchor] = React.useState<(EventTarget & HTMLButtonElement) | null>(null);
+  const [open, setOpen] = React.useState(false);
 
   return (
-    <>
-      <IconButton ref={buttonRef} aria-label={"Options"} onClick={(e) => setAnchor(e.currentTarget)} size="large">
-        <EllipsisVertical size={20} />
-      </IconButton>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={"Options"}
+        >
+          <EllipsisVertical size={20} />
+        </Button>
+      </DropdownMenuTrigger>
       <TaskActionsMenu
         variant="menu"
         data={{
           task,
         }}
-        anchorEl={anchor}
-        handleCloseResourceActionListMenu={() => setAnchor(null)}
       />
-    </>
+    </DropdownMenu>
   );
 };

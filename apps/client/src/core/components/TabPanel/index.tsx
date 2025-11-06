@@ -1,8 +1,7 @@
-import { useStyles } from "./styles";
+import { tabPanelClasses } from "./styles";
 import { TabPanelProps } from "./types";
 
 export const TabPanel = ({ children, value, index, shouldRender = true, ...other }: TabPanelProps) => {
-  const classes = useStyles();
 
   const isActive = value === index;
   return (
@@ -11,7 +10,7 @@ export const TabPanel = ({ children, value, index, shouldRender = true, ...other
       hidden={!isActive}
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
-      className={classes.tabPanel}
+      className={tabPanelClasses}
       {...other}
     >
       {shouldRender && isActive ? children : null}

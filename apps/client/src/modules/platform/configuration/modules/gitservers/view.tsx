@@ -6,12 +6,11 @@ import { useSecretPermissions } from "@/k8s/api/groups/Core/Secret";
 import { useGitServerPermissions, useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { getGitServerStatusIcon } from "@/k8s/api/groups/KRCI/GitServer/utils";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/core/components/ui/accordion";
 import React from "react";
 import { ManageGitServer } from "./components/ManageGitServer";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
 import { pageDescription } from "./constants";
-import { ChevronDown } from "lucide-react";
 
 export default function GitserversConfigurationPage() {
   const gitServerWatch = useGitServerWatchList();
@@ -21,14 +20,14 @@ export default function GitserversConfigurationPage() {
   const gitServerPermissions = useGitServerPermissions();
 
   const [isCreateDialogOpen, setCreateDialogOpen] = React.useState<boolean>(false);
-  const [expandedPanel, setExpandedPanel] = React.useState<string | null>(null);
+  const [expandedPanel, setExpandedPanel] = React.useState<string | undefined>(undefined);
 
   const handleOpenCreateDialog = () => setCreateDialogOpen(true);
   const handleCloseCreateDialog = () => setCreateDialogOpen(false);
 
-  const handleChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
-    setExpandedPanel(isExpanded ? panel : null);
-  };
+  const handleChange = React.useCallback((value: string) => {
+    setExpandedPanel(value === "" ? undefined : value);
+  }, []);
 
   const renderPageContent = React.useCallback(() => {
     const gitServerError = gitServerWatch.query.error && getForbiddenError(gitServerWatch.query.error);
@@ -54,68 +53,67 @@ export default function GitserversConfigurationPage() {
 
     return (
       <LoadingWrapper isLoading={isLoading}>
-        <div className="flex flex-col gap-2">
-          {gitServers?.map((gitServer) => {
-            const connected = gitServer?.status?.connected;
-            const error = gitServer?.status?.error;
+        <Accordion
+          type="single"
+          collapsible
+          value={singleItem ? gitServers?.[0]?.metadata.name : expandedPanel}
+          onValueChange={singleItem ? undefined : handleChange}
+        >
+          <div className="flex flex-col gap-2">
+            {gitServers?.map((gitServer) => {
+              const connected = gitServer?.status?.connected;
+              const error = gitServer?.status?.error;
 
-            const statusIcon = getGitServerStatusIcon(gitServer);
+              const statusIcon = getGitServerStatusIcon(gitServer);
 
-            const gitServerName = gitServer.metadata.name;
-            const isExpanded = expandedPanel === gitServerName;
+              const gitServerName = gitServer.metadata.name;
+              const isExpanded = singleItem || expandedPanel === gitServerName;
 
-            // Get webhook URL from the GitServer spec or status
-            const webhookURL = gitServer.spec?.gitHost ? `https://${gitServer.spec.gitHost}` : "";
+              // Get webhook URL from the GitServer spec or status
+              const webhookURL = gitServer.spec?.gitHost ? `https://${gitServer.spec.gitHost}` : "";
 
-            return (
-              <div key={gitServer.metadata.uid}>
-                <Accordion
-                  expanded={singleItem || isExpanded}
-                  onChange={singleItem ? undefined : handleChange(gitServerName)}
-                >
-                  <AccordionSummary
-                    expandIcon={singleItem ? null : <ChevronDown size={20} />}
-                    style={{
-                      cursor: singleItem ? "default" : "pointer",
-                    }}
-                  >
-                    <h6 className="text-base font-medium">
-                      <div className="flex items-center gap-2">
-                        <div className="mr-1">
-                          <StatusIcon
-                            Icon={statusIcon.component}
-                            color={statusIcon.color}
-                            Title={
-                              <>
-                                <p className="text-sm font-semibold">
-                                  {`Connected: ${connected === undefined ? "Unknown" : connected}`}
-                                </p>
-                                {!!error && <p className="mt-3 text-sm font-medium">{error}</p>}
-                              </>
-                            }
-                          />
+              return (
+                <div key={gitServer.metadata.uid}>
+                  <AccordionItem value={gitServerName}>
+                    <AccordionTrigger className={singleItem ? "cursor-default" : "cursor-pointer"}>
+                      <h6 className="text-base font-medium">
+                        <div className="flex items-center gap-2">
+                          <div className="mr-1">
+                            <StatusIcon
+                              Icon={statusIcon.component}
+                              color={statusIcon.color}
+                              Title={
+                                <>
+                                  <p className="text-sm font-semibold">
+                                    {`Connected: ${connected === undefined ? "Unknown" : connected}`}
+                                  </p>
+                                  {!!error && <p className="mt-3 text-sm font-medium">{error}</p>}
+                                </>
+                              }
+                            />
+                          </div>
+                          <div>{gitServerName}</div>
                         </div>
-                        <div>{gitServerName}</div>
-                      </div>
-                    </h6>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    {(singleItem || isExpanded) && (
-                      <ManageGitServer
-                        gitServer={gitServer}
-                        webhookURL={webhookURL}
-                        handleClosePanel={handleCloseCreateDialog}
-                      />
-                    )}
-                  </AccordionDetails>
-                </Accordion>
-              </div>
-            );
-          })}
-        </div>
+                      </h6>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      {isExpanded && (
+                        <ManageGitServer
+                          gitServer={gitServer}
+                          webhookURL={webhookURL}
+                          handleClosePanel={handleCloseCreateDialog}
+                        />
+                      )}
+                    </AccordionContent>
+                  </AccordionItem>
+                </div>
+              );
+            })}
+          </div>
+        </Accordion>
       </LoadingWrapper>
     );
-  }, [gitServerWatch.query.error, gitServerWatch.query.isLoading, gitServers, expandedPanel]);
+  }, [gitServerWatch.query.error, gitServerWatch.query.isLoading, gitServers, expandedPanel, handleChange]);
 
   return (
     <ConfigurationPageContent

@@ -1,16 +1,8 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  TextField,
-} from "@mui/material";
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
+import { TableUI, TableBodyUI, TableCellUI, TableHeadUI, TableHeaderUI, TableRowUI } from "@/core/components/ui/table";
+import { Button } from "@/core/components/ui/button";
+import { Input } from "@/core/components/ui/input";
+import { Label } from "@/core/components/ui/label";
 import React from "react";
 import { DeletionDialogProps } from "./types";
 import { useGitServerCRUD } from "@/k8s/api/groups/KRCI/GitServer";
@@ -48,37 +40,45 @@ export const DeletionDialog = ({ gitServer, gitServerSecret, open, handleClose }
   }, [gitServer, gitServerSecret, triggerDeleteGitServer, triggerDeleteSecret]);
 
   return (
-    <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Are you sure you want to delete these?</DialogTitle>
-      <DialogContent sx={{ pt: "20px !important" }}>
-        <Table sx={{ mb: (t) => t.typography.pxToRem(20) }}>
-          <TableHead>
-            <TableRow>
-              <TableCell>GitServer</TableCell>
-              <TableCell>Secret</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            <TableRow>
-              <TableCell>{gitServer?.metadata.name}</TableCell>
-              <TableCell>{gitServerSecret?.metadata.name}</TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-        <TextField
-          label={`Enter "${CONFIRM_TEXT_VALUE}" to start deletion`}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          variant="outlined"
-          fullWidth
-        />
+    <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Are you sure you want to delete these?</DialogTitle>
+        </DialogHeader>
+        <DialogBody>
+          <div className="mb-5 rounded-md border">
+            <TableUI>
+              <TableHeaderUI>
+                <TableRowUI>
+                  <TableHeadUI>GitServer</TableHeadUI>
+                  <TableHeadUI>Secret</TableHeadUI>
+                </TableRowUI>
+              </TableHeaderUI>
+              <TableBodyUI>
+                <TableRowUI>
+                  <TableCellUI>{gitServer?.metadata.name}</TableCellUI>
+                  <TableCellUI>{gitServerSecret?.metadata.name}</TableCellUI>
+                </TableRowUI>
+              </TableBodyUI>
+            </TableUI>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="confirm-delete">{`Enter "${CONFIRM_TEXT_VALUE}" to start deletion`}</Label>
+            <Input
+              id="confirm-delete"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              className="w-full"
+            />
+          </div>
+        </DialogBody>
+        <DialogFooter>
+          <Button onClick={handleClose} variant="ghost">Cancel</Button>
+          <Button onClick={handleDelete} disabled={deletionDisabled} variant="default">
+            Delete
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleDelete} disabled={deletionDisabled} color="primary">
-          Delete
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 };

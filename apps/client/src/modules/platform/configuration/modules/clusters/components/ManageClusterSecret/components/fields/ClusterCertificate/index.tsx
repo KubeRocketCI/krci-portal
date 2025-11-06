@@ -29,9 +29,7 @@ export const ClusterCertificate = () => {
       control={control}
       errors={errors}
       disabled={mode === FORM_MODES.EDIT && !!ownerReference}
-      TextFieldProps={{
-        helperText: ownerReference && `This field value is managed by ${ownerReference}`,
-      }}
+      helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
     />
   );
 };

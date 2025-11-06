@@ -10,6 +10,7 @@ import {
 } from "./context";
 import { trpc } from "@/core/clients/trpc";
 import { LoadingProgressBar } from "@/core/components/ui/LoadingProgressBar";
+import { CriticalError } from "@/core/components/CriticalError";
 import { router } from "@/core/router";
 import { routeHome } from "@/modules/home/pages/home/route";
 import { routeAuthCallback } from "../pages/callback/route";
@@ -152,11 +153,13 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
 
   if (configQuery.isError) {
     return (
-      <div style={{ padding: "20px", textAlign: "center" }}>
-        <h2>Configuration Error</h2>
-        <p>Failed to load server configuration. Please check your deployment environment variables.</p>
-        <p style={{ color: "red", fontSize: "12px" }}>{configQuery.error?.message}</p>
-      </div>
+      <CriticalError
+        title="Configuration Error"
+        message="Failed to load server configuration. Please check your deployment environment variables."
+        error={configQuery.error}
+        onRetry={() => configQuery.refetch()}
+        showActions={true}
+      />
     );
   }
 

@@ -7,7 +7,9 @@ import type {
   FormAsyncValidateOrFn,
   FormValidateOrFn,
 } from "@tanstack/react-form";
-import { Autocomplete as MuiAutocomplete, Chip, FormControl, TextField as MuiTextField } from "@mui/material";
+import React from "react";
+import { Combobox, ComboboxOption } from "@/core/components/ui/combobox";
+import { FormField } from "@/core/components/ui/form-field";
 
 export interface NamespaceAutocompleteProps<
   Values extends Record<string, unknown> = Record<string, unknown>,
@@ -57,45 +59,26 @@ export const NamespaceAutocomplete = <
   const hasError = !!error;
   const errorText = hasError ? (error as string) : undefined;
 
-  return (
-    <FormControl fullWidth>
-      <MuiAutocomplete
-        multiple
-        value={value}
-        onChange={(_event, newValue) => {
-          field.handleChange(newValue as never);
-        }}
-        onBlur={field.handleBlur}
-        options={options}
-        disableCloseOnSelect
-        renderTags={(tagValue, getTagProps) => {
-          if (tagValue.length === 0) return null;
+  // Convert string array to ComboboxOption array
+  const comboboxOptions: ComboboxOption[] = React.useMemo(
+    () => options.map((option) => ({ value: option, label: option })),
+    [options]
+  );
 
-          return (
-            <>
-              <Chip {...getTagProps({ index: 0 })} label={tagValue[0]} size="small" color="primary" />
-              {tagValue.length > 1 && (
-                <Chip
-                  label={`+${tagValue.length - 1}`}
-                  size="small"
-                  color="primary"
-                  variant="outlined"
-                  sx={{ ml: 0.5 }}
-                />
-              )}
-            </>
-          );
+  return (
+    <FormField label={label} error={errorText} id={`namespace-autocomplete-${field.name}`}>
+      <Combobox
+        options={comboboxOptions}
+        value={value}
+        onValueChange={(newValue) => {
+          if (Array.isArray(newValue)) {
+            field.handleChange(newValue as never);
+          }
         }}
-        renderInput={(params) => (
-          <MuiTextField
-            {...params}
-            label={label}
-            placeholder={value.length === 0 ? placeholder : undefined}
-            error={hasError}
-            helperText={errorText}
-          />
-        )}
+        placeholder={value.length === 0 ? placeholder : undefined}
+        multiple={true}
+        maxShownItems={1}
       />
-    </FormControl>
+    </FormField>
   );
 };

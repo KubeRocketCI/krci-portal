@@ -1,48 +1,33 @@
-import { ClickAwayListener, ListItemButton, ListItemIcon, ListItemText, Popper, Tooltip } from "@mui/material";
+import { Tooltip } from "@/core/components/ui/tooltip";
+import { DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem } from "@/core/components/ui/dropdown-menu";
 import { ConditionalWrapper } from "../ConditionalWrapper";
-import { useStyles } from "./styles";
 import { ActionsMenuListProps } from "./types";
 
-export const ActionsMenuList = ({ actions, anchorEl, handleCloseActionsMenu }: ActionsMenuListProps) => {
-  const classes = useStyles();
-
+export const ActionsMenuList = ({ actions }: ActionsMenuListProps) => {
   return (
-    <ClickAwayListener onClickAway={handleCloseActionsMenu!} mouseEvent="onMouseDown" touchEvent="onTouchStart">
-      <div className={classes.actions}>
-        {anchorEl ? (
-          <Popper
-            open={Boolean(anchorEl)}
-            anchorEl={anchorEl}
-            disablePortal
-            className={classes.popper}
-            placement={"bottom-end"}
-          >
-            <div role="list" className={classes.actionList}>
-              {actions.map(({ name, label, action, disabled, Icon }, idx) => {
-                const actionId = `${name}:${idx}`;
+    <DropdownMenuContent align="end" className="w-auto">
+      <DropdownMenuGroup>
+        {actions.map(({ name, label, action, disabled, Icon }, idx) => {
+          const actionId = `${name}:${idx}`;
 
-                return (
-                  <div key={actionId}>
-                    <ConditionalWrapper
-                      condition={!!disabled?.status}
-                      wrapper={(children) => (
-                        <Tooltip title={disabled?.reason}>
-                          <div>{children}</div>
-                        </Tooltip>
-                      )}
-                    >
-                      <ListItemButton disabled={disabled?.status} onClick={action}>
-                        <ListItemIcon>{Icon}</ListItemIcon>
-                        <ListItemText primary={label} />
-                      </ListItemButton>
-                    </ConditionalWrapper>
-                  </div>
-                );
-              })}
-            </div>
-          </Popper>
-        ) : null}
-      </div>
-    </ClickAwayListener>
+          return (
+            <ConditionalWrapper
+              key={actionId}
+              condition={!!disabled?.status}
+              wrapper={(children) => (
+                <Tooltip title={disabled?.reason}>
+                  <div>{children}</div>
+                </Tooltip>
+              )}
+            >
+              <DropdownMenuItem disabled={disabled?.status} onClick={action}>
+                {Icon}
+                <span>{label}</span>
+              </DropdownMenuItem>
+            </ConditionalWrapper>
+          );
+        })}
+      </DropdownMenuGroup>
+    </DropdownMenuContent>
   );
 };

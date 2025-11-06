@@ -1,7 +1,9 @@
 import { TextField } from "@/core/components/form";
-import { Button } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import { QUICKLINK_LIST_FILTER_NAMES } from "./constants";
 import { useQuickLinkFilter } from "./hooks/useFilter";
+import { Label } from "@/core/components/ui/label";
+import { X } from "lucide-react";
 
 export const QuickLinkFilter = () => {
   const { form, reset } = useQuickLinkFilter();
@@ -15,8 +17,10 @@ export const QuickLinkFilter = () => {
       </div>
 
       {form.state.isDirty && (
-        <div className="mt-4">
-          <Button variant="outlined" onClick={reset} size="small">
+        <div className="flex flex-col gap-2">
+          <Label> </Label>
+          <Button variant="secondary" onClick={reset} size="sm" className="mt-0.5">
+            <X size={16} />
             Clear
           </Button>
         </div>

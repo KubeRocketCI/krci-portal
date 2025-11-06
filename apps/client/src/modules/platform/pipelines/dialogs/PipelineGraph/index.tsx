@@ -1,5 +1,4 @@
-import { Dialog, DialogContent, DialogTitle, IconButton } from "@mui/material";
-import { X } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
 import React from "react";
 import { PipelineDiagram } from "../../components/PipelineDiagram";
 import { PIPELINE_GRAPH_DIALOG_NAME } from "./constants";
@@ -10,21 +9,14 @@ export const PipelineGraphDialog: React.FC<PipelineGraphDialogProps> = ({
   state: { closeDialog, open },
 }) => {
   return (
-    <Dialog open={open} fullScreen onClose={() => closeDialog()}>
-      <DialogTitle>
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-4xl font-bold">{`Pipeline: ${pipelineName}`}</h1>
-          </div>
-          <div>
-            <IconButton onClick={() => closeDialog()} size="large">
-              <X size={20} />
-            </IconButton>
-          </div>
+    <Dialog open={open} onOpenChange={(open) => !open && closeDialog()}>
+      <DialogContent className="flex h-full w-full max-w-full flex-col">
+        <DialogHeader className="shrink-0">
+          <DialogTitle className="text-2xl font-medium">{`Pipeline: ${pipelineName}`}</DialogTitle>
+        </DialogHeader>
+        <div className="min-h-0 flex-1">
+          <PipelineDiagram pipelineName={pipelineName} namespace={namespace!} />
         </div>
-      </DialogTitle>
-      <DialogContent sx={{ height: "100%", p: 0 }}>
-        <PipelineDiagram pipelineName={pipelineName} namespace={namespace!} />
       </DialogContent>
     </Dialog>
   );

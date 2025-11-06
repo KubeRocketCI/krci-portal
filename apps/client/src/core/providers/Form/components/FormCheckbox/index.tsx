@@ -1,6 +1,8 @@
-import { Checkbox, FormControl, FormControlLabel, FormHelperText } from "@mui/material";
 import React from "react";
 import { Controller, Path, PathValue } from "react-hook-form";
+import { Checkbox } from "@/core/components/ui/checkbox";
+import { FormField } from "@/core/components/ui/form-field";
+import { Label } from "@/core/components/ui/label";
 import { FormCheckboxProps } from "./types";
 
 const FormCheckboxInner = React.forwardRef(
@@ -12,45 +14,48 @@ const FormCheckboxInner = React.forwardRef(
       errors,
       defaultValue = false,
       disabled,
-      helperText: helperTextProp,
+      helperText,
       ...props
     }: FormCheckboxProps<TFormValues>,
-    ref: React.ForwardedRef<HTMLInputElement>
+    ref: React.ForwardedRef<HTMLButtonElement>
   ) => {
     const error = errors[name];
     const hasError = !!error;
-    const errorMessage = error?.message as string;
-    const helperText = hasError ? errorMessage : helperTextProp;
+    const errorMessage = error?.message as string | undefined;
+    const fieldId = React.useId();
 
     return (
-      <div className="flex flex-col gap-2">
-        <FormControl fullWidth error={hasError}>
-          <Controller
-            name={name}
-            control={control}
-            defaultValue={defaultValue as PathValue<TFormValues, Path<TFormValues>>}
-            {...props}
-            render={({ field }) => (
-              <FormControlLabel
-                style={{ margin: 0 }}
-                control={
-                  <Checkbox
-                    {...field}
-                    inputRef={ref}
-                    checked={!!field.value}
-                    onChange={(e) => field.onChange(e.target.checked)}
-                    disabled={disabled}
-                    color="primary"
-                    sx={{ translate: "-9px 0" }}
-                  />
-                }
-                label={<span style={{ display: "inline-block", marginTop: "2px" }}>{label}</span>}
+      <Controller
+        name={name}
+        control={control}
+        defaultValue={defaultValue as PathValue<TFormValues, Path<TFormValues>>}
+        render={({ field }) => (
+          <FormField
+            label={undefined} // Checkbox label is handled separately
+            helperText={hasError ? errorMessage : helperText}
+            error={hasError ? errorMessage : undefined}
+            id={fieldId}
+          >
+            <div className="flex items-center gap-2">
+              <Checkbox
+                ref={ref}
+                checked={!!field.value}
+                onCheckedChange={(checked) => field.onChange(checked)}
+                disabled={disabled}
+                id={fieldId}
+                invalid={hasError}
+                aria-describedby={helperText || hasError ? `${fieldId}-helper` : undefined}
               />
-            )}
-          />
-          {helperText && <FormHelperText error={hasError}>{helperText}</FormHelperText>}
-        </FormControl>
-      </div>
+              {label && (
+                <Label htmlFor={fieldId} className="cursor-pointer">
+                  {label}
+                </Label>
+              )}
+            </div>
+          </FormField>
+        )}
+        {...props}
+      />
     );
   }
 );
@@ -60,5 +65,5 @@ FormCheckboxInner.displayName = "FormCheckbox";
 export const FormCheckbox = FormCheckboxInner as <
   TFormValues extends Record<string, unknown> = Record<string, unknown>,
 >(
-  props: FormCheckboxProps<TFormValues> & { ref?: React.ForwardedRef<HTMLInputElement> }
+  props: FormCheckboxProps<TFormValues> & { ref?: React.ForwardedRef<HTMLButtonElement> }
 ) => React.JSX.Element;

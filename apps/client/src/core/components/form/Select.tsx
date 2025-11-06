@@ -9,16 +9,13 @@ import type {
   FormValidateOrFn,
 } from "@tanstack/react-form";
 import {
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  ListItemIcon,
-  ListItemText,
-  MenuItem,
-  Select as MuiSelect,
-  Tooltip,
-} from "@mui/material";
-import { Info } from "lucide-react";
+  Select as SelectPrimitive,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/core/components/ui/select";
+import { FormField } from "@/core/components/ui/form-field";
 
 export interface SelectOption {
   label: string;
@@ -76,65 +73,51 @@ export const Select = <
 }: SelectProps<Values, TName>) => {
   const error = field.state.meta.errors?.[0];
   const hasError = !!error;
-  const helperText = hasError ? (error as string) : undefined;
+  const errorMessage = hasError ? (error as string) : undefined;
+  const fieldId = React.useId();
 
-  const getOptionValue = React.useCallback(
-    (optionValue: string) => {
-      if (options.length) {
-        const foundOption = options.find(({ value }) => value === optionValue);
-        if (foundOption) {
-          return foundOption.icon ? (
-            <div className="flex flex-row items-center gap-4">
-              <ListItemIcon sx={{ minWidth: 0 }}>{foundOption.icon}</ListItemIcon>
-              <ListItemText>{foundOption.label}</ListItemText>
-            </div>
-          ) : (
-            foundOption.label
-          );
-        }
-      }
-      return placeholder || "";
-    },
-    [placeholder, options]
-  );
+  const selectedOption = React.useMemo(() => {
+    const value = field.state.value as string;
+    return options.find((option) => option.value === value);
+  }, [field.state.value, options]);
 
   return (
-    <FormControl fullWidth>
-      <InputLabel>{label}</InputLabel>
-      <MuiSelect
-        value={field.state.value as string}
-        onChange={(e) => field.handleChange(e.target.value as never)}
-        onBlur={field.handleBlur}
-        error={hasError}
-        displayEmpty
+    <FormField
+      label={label}
+      tooltipText={tooltipText}
+      error={hasError ? errorMessage : undefined}
+      helperText={errorMessage}
+      id={fieldId}
+    >
+      <SelectPrimitive
+        value={(field.state.value ?? "") as string}
+        onValueChange={(value) => {
+          field.handleChange(value as never);
+          // Trigger blur after value change
+          setTimeout(() => field.handleBlur(), 0);
+        }}
         disabled={disabled}
-        fullWidth
-        label={label}
-        renderValue={(value) => (value !== "" ? getOptionValue(value as string) : placeholder)}
-        endAdornment={
-          tooltipText ? (
-            <div className="absolute top-1/2 right-6 leading-none" style={{ transform: "translateY(-50%)" }}>
-              <div className="flex flex-row items-center gap-1">
-                <Tooltip title={tooltipText}>
-                  <Info size={16} />
-                </Tooltip>
-              </div>
-            </div>
-          ) : undefined
-        }
       >
-        {options.map(({ label: optionLabel, value, disabled: optionDisabled = false, icon }, idx) => {
-          const key = `${optionLabel}::${idx}`;
+        <SelectTrigger id={fieldId} aria-describedby={hasError ? `${fieldId}-helper` : undefined}>
+          <div className="flex items-center gap-2">
+            {selectedOption?.icon && (
+              <span className="flex size-4 shrink-0 items-center justify-center">{selectedOption.icon}</span>
+            )}
+            <SelectValue placeholder={placeholder}>{selectedOption?.label || placeholder}</SelectValue>
+          </div>
+        </SelectTrigger>
+        <SelectContent>
+          {options.map(({ label: optionLabel, value, disabled: optionDisabled = false, icon }, idx) => {
+            const key = `${optionLabel}::${idx}`;
 
-          return (
-            <MenuItem value={value} key={key} disabled={optionDisabled}>
-              {icon && <ListItemIcon>{icon}</ListItemIcon>}
-              <ListItemText>{optionLabel}</ListItemText>
-            </MenuItem>
-          );
-        })}
-      </MuiSelect>
-      {helperText && <FormHelperText error={hasError}>{helperText}</FormHelperText>}
-    </FormControl>
+            return (
+              <SelectItem key={key} value={value} disabled={optionDisabled} icon={icon}>
+                {optionLabel}
+              </SelectItem>
+            );
+          })}
+        </SelectContent>
+      </SelectPrimitive>
+    </FormField>
   );
 };

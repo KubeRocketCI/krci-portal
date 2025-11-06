@@ -1,4 +1,4 @@
-import { ButtonProps } from "@mui/material";
+import type { ButtonProps } from "@/core/components/ui/button";
 
 export interface ResourceIconLinkProps {
   tooltipTitle: string | React.ReactElement;

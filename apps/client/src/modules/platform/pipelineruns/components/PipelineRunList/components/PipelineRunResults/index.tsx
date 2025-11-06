@@ -1,4 +1,9 @@
-import { Table, TableBody, TableCell, TableRow } from "@mui/material";
+import {
+  TableUI,
+  TableBodyUI,
+  TableCellUI,
+  TableRowUI,
+} from "@/core/components/ui/table";
 
 import { PipelineRun } from "@my-project/shared";
 
@@ -10,19 +15,19 @@ export const PipelineRunResults = ({ pipelineRun }: { pipelineRun: PipelineRun }
   }
 
   return (
-    <Table size="small">
+    <TableUI>
       <colgroup>
-        <col style={{ width: "30%" }} />
-        <col style={{ width: "70%" }} />
+        <col className="w-[30%]" />
+        <col className="w-[70%]" />
       </colgroup>
-      <TableBody>
-        {results.map((el) => (
-          <TableRow>
-            <TableCell sx={{ fontWeight: 500 }}>{el.name}</TableCell>
-            <TableCell>{el.value}</TableCell>
-          </TableRow>
+      <TableBodyUI>
+        {results.map((el, index) => (
+          <TableRowUI key={index}>
+            <TableCellUI className="h-8 text-sm font-medium">{el.name}</TableCellUI>
+            <TableCellUI className="h-8 text-sm">{el.value}</TableCellUI>
+          </TableRowUI>
         ))}
-      </TableBody>
-    </Table>
+      </TableBodyUI>
+    </TableUI>
   );
 };

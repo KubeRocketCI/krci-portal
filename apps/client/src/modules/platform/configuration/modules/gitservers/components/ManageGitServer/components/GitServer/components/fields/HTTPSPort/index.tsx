@@ -22,7 +22,7 @@ export const HTTPSPort = () => {
       placeholder={"Enter HTTPS port"}
       control={gitServerForm.form.control}
       errors={gitServerForm.form.formState.errors}
-      TextFieldProps={{
+      inputProps={{
         type: "number",
       }}
     />

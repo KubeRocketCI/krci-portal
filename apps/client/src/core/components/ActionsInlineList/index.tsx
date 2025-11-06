@@ -1,9 +1,8 @@
-import { Button, IconButton, Tooltip, useTheme } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { ActionsInlineListProps } from "./types";
 
 export const ActionsInlineList = ({ actions }: ActionsInlineListProps) => {
-  const theme = useTheme();
-
   return (
     <div className="flex flex-row items-center gap-2">
       {actions.map(({ name, action, disabled, Icon, label, isTextButton }, idx) => {
@@ -11,28 +10,22 @@ export const ActionsInlineList = ({ actions }: ActionsInlineListProps) => {
 
         return isTextButton ? (
           <Button
-            size="small"
+            size="sm"
             onClick={action}
-            variant="outlined"
+            variant="outline"
             disabled={disabled?.status}
-            endIcon={Icon}
-            sx={{ color: theme.palette.secondary.dark, borderColor: theme.palette.secondary.dark }}
+            className="text-secondary-dark border-secondary-dark hover:bg-secondary-dark/10"
           >
+            {Icon}
             {name}
           </Button>
         ) : (
           <div key={actionId}>
             <Tooltip title={disabled?.reason || label}>
               <div>
-                <IconButton
-                  component="span"
-                  disabled={disabled?.status}
-                  onClick={action}
-                  size="medium"
-                  sx={{ color: theme.palette.secondary.dark }}
-                >
+                <Button variant="ghost" size="icon" disabled={disabled?.status} onClick={action}>
                   {Icon}
-                </IconButton>
+                </Button>
               </div>
             </Tooltip>
           </div>

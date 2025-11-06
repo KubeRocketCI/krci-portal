@@ -1,4 +1,4 @@
-import { Button, useTheme } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import React from "react";
 import { FORM_STEPPER } from "../../../../constants";
 import { useTypedFormContext } from "../../../../hooks/useFormContext";
@@ -130,41 +130,36 @@ export const FormActions = () => {
     [onSuccess, triggerCreateCDPipeline]
   );
 
-  const theme = useTheme();
-
   const isDirty = Object.keys(dirtyFields).length;
 
   return (
     <div className="flex w-full flex-row justify-between gap-4">
       <div className="flex flex-row gap-2">
-        <div style={{ color: theme.palette.text.primary }}>
-          <Button onClick={handleClose} size="small" color="inherit">
-            cancel
-          </Button>
-        </div>
-        <Button onClick={handleResetFields} size="small" disabled={!isDirty}>
-          undo changes
+        <Button onClick={handleClose} variant="ghost" size="sm">
+          Cancel
+        </Button>
+        <Button onClick={handleResetFields} variant="ghost" size="sm" disabled={!isDirty}>
+          Undo Changes
         </Button>
       </div>
       <div>
         <TabPanel value={activeStep} index={FORM_STEPPER.PIPELINE.idx}>
-          <Button onClick={handleProceed} variant={"contained"} color={"primary"} size="small">
-            next
+          <Button onClick={handleProceed} variant="default" size="sm">
+            Next
           </Button>
         </TabPanel>
         <TabPanel value={activeStep} index={FORM_STEPPER.APPLICATIONS.idx}>
-          <div className="flex flex-row">
-            <Button onClick={prevStep} size="small">
-              back
+          <div className="flex flex-row gap-2">
+            <Button onClick={prevStep} variant="ghost" size="sm">
+              Back
             </Button>
             <Button
               onClick={handleSubmit(onSubmit, handleValidationError)}
-              variant={"contained"}
-              color={"primary"}
-              size="small"
+              variant="default"
+              size="sm"
               disabled={!isDirty || isLoading}
             >
-              create
+              Create
             </Button>
           </div>
         </TabPanel>

@@ -4,6 +4,7 @@ import { k8sResourceConfigSchema } from "@my-project/shared";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors";
+import { K8sClient } from "../../../../../clients/k8s";
 
 export const k8sCreateItemProcedure = protectedProcedure
   .input(
@@ -16,15 +17,15 @@ export const k8sCreateItemProcedure = protectedProcedure
   )
   .mutation(async ({ input, ctx }) => {
     try {
-      const { K8sClient } = ctx;
+      const k8sClient = new K8sClient(ctx.session);
 
-      if (!K8sClient.KubeConfig) {
+      if (!k8sClient.KubeConfig) {
         throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
       }
 
       const { namespace, resourceConfig, resource } = input;
 
-      return await K8sClient.createResource(resourceConfig, namespace, resource);
+      return await k8sClient.createResource(resourceConfig, namespace, resource);
     } catch (error) {
       throw handleK8sError(error);
     }

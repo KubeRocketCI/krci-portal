@@ -1,4 +1,4 @@
-import { Tooltip } from "@mui/material";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import React from "react";
 import { useFormsContext } from "../../hooks/useFormsContext";
 import { GIT_SERVER_FORM_NAMES } from "../../names";

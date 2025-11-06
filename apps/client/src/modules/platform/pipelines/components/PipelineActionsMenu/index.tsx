@@ -21,8 +21,6 @@ import { useTriggerTemplateWatchItem } from "@/k8s/api/groups/Tekton/TriggerTemp
 export const PipelineActionsMenu = ({
   variant,
   data: { pipeline },
-  anchorEl,
-  handleCloseResourceActionListMenu,
 }: PipelineActionsMenuProps) => {
   const pipelinePermissions = usePipelinePermissions();
   const { triggerCreatePipelineRun } = usePipelineRunCRUD();
@@ -71,10 +69,6 @@ export const PipelineActionsMenu = ({
               });
             },
           });
-
-          if (handleCloseResourceActionListMenu) {
-            handleCloseResourceActionListMenu();
-          }
         },
       }),
       createResourceAction({
@@ -101,10 +95,6 @@ export const PipelineActionsMenu = ({
               });
             },
           });
-
-          if (handleCloseResourceActionListMenu) {
-            handleCloseResourceActionListMenu();
-          }
         },
       }),
     ];
@@ -116,7 +106,6 @@ export const PipelineActionsMenu = ({
     pipelinePermissions.data.patch.reason,
     triggerTemplate,
     openEditorDialog,
-    handleCloseResourceActionListMenu,
     triggerCreatePipelineRun,
     triggerPatchPipeline,
   ]);
@@ -125,12 +114,8 @@ export const PipelineActionsMenu = ({
     <>
       {variant === actionMenuType.inline ? (
         <ActionsInlineList actions={actions} />
-      ) : variant === actionMenuType.menu && anchorEl ? (
-        <ActionsMenuList
-          actions={actions}
-          anchorEl={anchorEl}
-          handleCloseActionsMenu={handleCloseResourceActionListMenu}
-        />
+      ) : variant === actionMenuType.menu ? (
+        <ActionsMenuList actions={actions} />
       ) : null}
     </>
   );

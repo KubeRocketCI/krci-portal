@@ -85,13 +85,7 @@ export const CodebaseVersioning = () => {
                 errors={errors}
               />
             </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                flexDirection: "column",
-              }}
-            >
+            <div className="flex flex-col justify-end">
               <FormTextField
                 {...register(CODEBASE_FORM_NAMES.versioningStartFromSnapshot.name, {
                   required: "Add a suffix.",

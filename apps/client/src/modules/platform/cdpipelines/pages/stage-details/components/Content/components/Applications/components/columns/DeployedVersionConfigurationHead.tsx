@@ -1,4 +1,5 @@
-import { ButtonGroup, Button, Tooltip } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { Info } from "lucide-react";
 import { checkHighlightedButtons } from "../../utils/checkHighlightedButtons";
 import { useTypedFormContext } from "../../hooks/useTypedFormContext";
@@ -83,14 +84,13 @@ export const DeployedVersionConfigurationHeadColumn = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <ButtonGroup>
+      <div className="flex gap-1">
         <Tooltip title={"Set selected applications latest image stream version"}>
           <Button
             onClick={handleClickLatest}
-            variant={buttonsHighlighted.latest ? "contained" : "outlined"}
-            color={"primary"}
-            size="small"
-            fullWidth
+            variant={buttonsHighlighted.latest ? "default" : "outline"}
+            size="sm"
+            className="flex-1"
           >
             latest
           </Button>
@@ -98,15 +98,14 @@ export const DeployedVersionConfigurationHeadColumn = () => {
         <Tooltip title={"Set selected applications stable image stream version"}>
           <Button
             onClick={handleClickStable}
-            variant={buttonsHighlighted.stable ? "contained" : "outlined"}
-            color={"primary"}
-            size="small"
-            fullWidth
+            variant={buttonsHighlighted.stable ? "default" : "outline"}
+            size="sm"
+            className="flex-1"
           >
             stable
           </Button>
         </Tooltip>
-      </ButtonGroup>
+      </div>
       <div className="flex flex-row flex-nowrap items-center gap-2">
         <div>Deployed version</div>
         <Tooltip
@@ -118,7 +117,7 @@ export const DeployedVersionConfigurationHeadColumn = () => {
               </div>
             </>
           }
-          sx={{ lineHeight: 1 }}
+          className="leading-none"
         >
           <Info size={16} />
         </Tooltip>

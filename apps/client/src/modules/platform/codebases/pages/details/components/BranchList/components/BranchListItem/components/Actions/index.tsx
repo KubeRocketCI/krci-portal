@@ -4,7 +4,8 @@ import {
   useCodebaseWatch,
   usePipelineNamesWatch,
 } from "@/modules/platform/codebases/pages/details/hooks/data";
-import { IconButton } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { DropdownMenu, DropdownMenuTrigger } from "@/core/components/ui/dropdown-menu";
 import { checkIsDefaultBranch } from "@my-project/shared";
 import { EllipsisVertical } from "lucide-react";
 import React from "react";
@@ -27,8 +28,7 @@ export const Actions = ({ codebaseBranch }: ActionsProps) => {
 
   const defaultBranch = sortedCodebaseBranchList[0];
 
-  const buttonRef = React.createRef<HTMLButtonElement>();
-  const [anchor, setAnchor] = React.useState<(EventTarget & HTMLButtonElement) | null>(null);
+  const [open, setOpen] = React.useState(false);
 
   const resourcesAreLoaded =
     codebaseWatch.query.isFetched &&
@@ -37,10 +37,12 @@ export const Actions = ({ codebaseBranch }: ActionsProps) => {
     pipelineNamesWatch.isFetched;
 
   return (
-    <>
-      <IconButton ref={buttonRef} aria-label={"Options"} onClick={(e) => setAnchor(e.currentTarget)} size="large">
-        <EllipsisVertical size={20} color={"grey"} />
-      </IconButton>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" aria-label={"Options"}>
+          <EllipsisVertical size={20} color={"grey"} />
+        </Button>
+      </DropdownMenuTrigger>
       {resourcesAreLoaded && (
         <CodebaseBranchActionsMenu
           variant="menu"
@@ -54,10 +56,8 @@ export const Actions = ({ codebaseBranch }: ActionsProps) => {
               build: pipelineNames?.buildPipelineName || "",
             },
           }}
-          anchorEl={anchor}
-          handleCloseResourceActionListMenu={() => setAnchor(null)}
         />
       )}
-    </>
+    </DropdownMenu>
   );
 };

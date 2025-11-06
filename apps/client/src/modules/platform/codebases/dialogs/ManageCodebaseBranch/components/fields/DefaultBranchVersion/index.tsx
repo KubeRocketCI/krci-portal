@@ -1,11 +1,8 @@
 import { FormTextField } from "@/core/providers/Form/components/FormTextField";
-import { FORM_CONTROL_LABEL_HEIGHT } from "@/core/providers/Form/constants";
-import { useTheme } from "@mui/material";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_BRANCH_FORM_NAMES } from "../../../names";
 
 export const DefaultBranchVersion = () => {
-  const theme = useTheme();
 
   const {
     register,
@@ -31,7 +28,7 @@ export const DefaultBranchVersion = () => {
           errors={errors}
         />
       </div>
-      <div style={{ marginTop: theme.typography.pxToRem(FORM_CONTROL_LABEL_HEIGHT) }}>
+      <div className="mt-4">
         <FormTextField
           {...register(CODEBASE_BRANCH_FORM_NAMES.defaultBranchVersionPostfix.name, {
             required: "Default branch version",

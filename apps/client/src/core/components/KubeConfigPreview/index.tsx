@@ -1,7 +1,16 @@
 import { trpc } from "@/core/clients/trpc";
 import { DialogProps } from "@/core/providers/Dialog/types";
 import CodeEditor, { CodeEditorHandle } from "@/core/components/CodeEditor";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Alert } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Alert } from "@/core/components/ui/alert";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
 import { humanize } from "@/core/utils/date-humanize";
 
@@ -81,35 +90,39 @@ export default function KubeConfigPreviewDialog({ state }: KubeConfigPreviewDial
   };
 
   return (
-    <Dialog open={open} onClose={closeDialog} maxWidth="md" fullWidth>
-      <DialogTitle>Kubeconfig Preview</DialogTitle>
-      <DialogContent>
-        {timeRemaining && (
-          <Alert severity="info" sx={{ mb: 2 }}>
-            {timeRemaining}
-          </Alert>
-        )}
-        <CodeEditor
-          ref={editorRef}
-          content={data?.config || {}}
-          height="400px"
-          language="yaml"
-          readOnly
-          onChange={() => {}}
-          theme="vs-light"
-        />
+    <Dialog open={open} onOpenChange={(open) => !open && closeDialog()}>
+      <DialogContent className="w-full max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>Kubeconfig Preview</DialogTitle>
+        </DialogHeader>
+        <DialogBody>
+          {timeRemaining && (
+            <Alert variant="default" className="mb-2">
+              {timeRemaining}
+            </Alert>
+          )}
+          <CodeEditor
+            ref={editorRef}
+            content={data?.config || {}}
+            height="400px"
+            language="yaml"
+            readOnly
+            onChange={() => {}}
+            theme="vs-light"
+          />
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="outline" size="sm" onClick={closeDialog}>
+            Close
+          </Button>
+          <Button variant="default" size="sm" onClick={downloadKubeConfig}>
+            Download
+          </Button>
+          <Button variant="default" size="sm" onClick={copyToClipboard}>
+            Copy YAML
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <Button variant="outlined" size="small" onClick={closeDialog}>
-          Close
-        </Button>
-        <Button variant="contained" size="small" onClick={downloadKubeConfig}>
-          Download
-        </Button>
-        <Button variant="contained" size="small" onClick={copyToClipboard}>
-          Copy YAML
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 }

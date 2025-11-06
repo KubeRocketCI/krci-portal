@@ -1,16 +1,11 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { useApprovalTaskPermissions } from "@/k8s/api/groups/KRCI/ApprovalTask";
 import {
-  ButtonGroup,
-  ClickAwayListener,
-  Grow,
-  ListItemIcon,
-  ListItemText,
-  MenuItem,
-  MenuList,
-  Paper,
-  Popper,
-} from "@mui/material";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/core/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
 import React from "react";
 
@@ -22,73 +17,48 @@ export const ChoiceButtonGroup = ({
   type: "accept" | "reject";
 }) => {
   const [open, setOpen] = React.useState(false);
-  const anchorRef = React.useRef<HTMLDivElement>(null);
-
-  const handleToggle = () => {
-    setOpen((prevOpen) => !prevOpen);
-  };
-
-  const handleClose = (event: Event) => {
-    if (anchorRef.current && anchorRef.current.contains(event.target as HTMLElement)) {
-      return;
-    }
-
-    setOpen(false);
-  };
-
   const optionsWithoutFirstItem = options.slice(1);
 
   const approvalTaskPermissions = useApprovalTaskPermissions();
 
   return (
-    <>
-      <ButtonGroup variant={type === "accept" ? "contained" : "outlined"} ref={anchorRef}>
-        <ButtonWithPermission
-          ButtonProps={{
-            size: "small",
-            startIcon: options[0].Icon,
-            onClick: options[0].onClick,
-          }}
-          allowed={approvalTaskPermissions.data?.patch?.allowed}
-          reason={approvalTaskPermissions.data?.patch?.reason}
-        >
-          {options[0].label}
-        </ButtonWithPermission>
-        <ButtonWithPermission
-          ButtonProps={{
-            size: "small",
-            onClick: handleToggle,
-            sx: { height: "100%" },
-          }}
-          allowed={approvalTaskPermissions.data?.patch?.allowed}
-          reason={approvalTaskPermissions.data?.patch?.reason}
-        >
-          <ChevronDown size={15} />
-        </ButtonWithPermission>
-      </ButtonGroup>
-      <Popper sx={{ zIndex: 1 }} open={open} anchorEl={anchorRef.current} role={undefined} transition disablePortal>
-        {({ TransitionProps, placement }) => (
-          <Grow
-            {...TransitionProps}
-            style={{
-              transformOrigin: placement === "bottom" ? "center top" : "center bottom",
+    <div className="flex">
+      <ButtonWithPermission
+        ButtonProps={{
+          size: "sm",
+          variant: type === "accept" ? "default" : "outline",
+          onClick: options[0].onClick,
+          className: "rounded-r-none border-r-0",
+        }}
+        allowed={approvalTaskPermissions.data?.patch?.allowed}
+        reason={approvalTaskPermissions.data?.patch?.reason}
+      >
+        {options[0].Icon}
+        {options[0].label}
+      </ButtonWithPermission>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger asChild>
+          <ButtonWithPermission
+            ButtonProps={{
+              size: "sm",
+              variant: type === "accept" ? "default" : "outline",
+              className: "rounded-l-none",
             }}
+            allowed={approvalTaskPermissions.data?.patch?.allowed}
+            reason={approvalTaskPermissions.data?.patch?.reason}
           >
-            <Paper>
-              <ClickAwayListener onClickAway={handleClose}>
-                <MenuList autoFocusItem>
-                  {optionsWithoutFirstItem.map((option) => (
-                    <MenuItem key={option.id} onClick={option.onClick}>
-                      <ListItemIcon>{option.Icon}</ListItemIcon>
-                      <ListItemText>{option.label}</ListItemText>
-                    </MenuItem>
-                  ))}
-                </MenuList>
-              </ClickAwayListener>
-            </Paper>
-          </Grow>
-        )}
-      </Popper>
-    </>
+            <ChevronDown size={15} />
+          </ButtonWithPermission>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="z-[1]">
+          {optionsWithoutFirstItem.map((option) => (
+            <DropdownMenuItem key={option.id} onClick={option.onClick} className="flex items-center gap-2">
+              {option.Icon}
+              {option.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 };

@@ -1,5 +1,6 @@
 import { FormTextField } from "@/core/providers/Form/components/FormTextField";
-import { Button, FormControl, TextField, useTheme } from "@mui/material";
+import { Input } from "@/core/components/ui/input";
+import { Button } from "@/core/components/ui/button";
 import { Pencil } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { createAdvancedMappingRowName } from "../../constants";
@@ -12,41 +13,39 @@ export const AdvancedJiraMappingRow = ({
   onChangeJiraPattern,
 }: AdvancedJiraMappingRowProps) => {
   const {
-    register,
     control,
     formState: { errors },
   } = useFormContext();
-
-  const theme = useTheme();
 
   return (
     <div>
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-5">
-          <TextField disabled value={label} fullWidth />
+          <Input disabled value={label} className="w-full" />
         </div>
         <div className="col-span-5">
-          <FormControl fullWidth>
-            <FormTextField
-              {...register(createAdvancedMappingRowName(value), {
-                required: "Add at least one variable.",
-                onBlur: (event) => onChangeJiraPattern(event, value),
-              })}
-              placeholder={`Enter Jira pattern`}
-              control={control}
-              errors={errors}
-            />
-          </FormControl>
+          <FormTextField
+            name={createAdvancedMappingRowName(value)}
+            control={control}
+            errors={errors}
+            placeholder={`Enter Jira pattern`}
+            rules={{
+              required: "Add at least one variable.",
+            }}
+            inputProps={{
+              onBlur: (event) => onChangeJiraPattern(event, value),
+            }}
+          />
         </div>
         <div className="col-span-2 flex flex-col items-center justify-end">
           <Button
             type={"button"}
-            size={"small"}
-            component={"button"}
-            style={{ minWidth: 0 }}
+            size={"sm"}
+            variant="ghost"
+            className="min-w-0"
             onClick={() => handleDeleteMappingRow(value)}
           >
-            <Pencil size={20} color={theme.palette.grey["500"]} />
+            <Pencil size={20} className="text-muted-foreground" />
           </Button>
         </div>
       </div>

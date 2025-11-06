@@ -8,13 +8,7 @@ import { useGitLabPipelineTrigger } from "@/k8s/api/integrations/gitlab/hooks/us
 import { GitLabBuildWithParamsDialog } from "@/modules/platform/codebases/dialogs/GitLabBuildWithParams";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 
-export const BuildGroup = ({
-  codebaseBranch,
-  latestBuildPipelineRun,
-  menuAnchorEl,
-  handleClickMenu,
-  handleCloseMenu,
-}: BuildGroupProps) => {
+export const BuildGroup = ({ codebaseBranch, latestBuildPipelineRun }: BuildGroupProps) => {
   const codebaseWatch = useCodebaseWatch();
   const codebase = codebaseWatch.query.data;
 
@@ -77,21 +71,10 @@ export const BuildGroup = ({
         codebaseBranch={codebaseBranch}
         handleOpenGitLabParamsDialog={handleOpenGitLabParamsDialog}
         handleDirectGitLabBuild={handleDirectGitLabBuild}
-        menuAnchorEl={menuAnchorEl}
-        handleClickMenu={handleClickMenu}
-        handleCloseMenu={handleCloseMenu}
         isGitLabLoading={isGitLabLoading}
       />
     );
   }
 
-  return (
-    <TektonBuildGroup
-      codebaseBranch={codebaseBranch}
-      latestBuildPipelineRun={latestBuildPipelineRun}
-      menuAnchorEl={menuAnchorEl}
-      handleClickMenu={handleClickMenu}
-      handleCloseMenu={handleCloseMenu}
-    />
-  );
+  return <TektonBuildGroup codebaseBranch={codebaseBranch} latestBuildPipelineRun={latestBuildPipelineRun} />;
 };

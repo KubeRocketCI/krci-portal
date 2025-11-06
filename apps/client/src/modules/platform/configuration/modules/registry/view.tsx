@@ -5,7 +5,7 @@ import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWat
 import { useSecretPermissions, useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
 import { useServiceAccountWatchItem } from "@/k8s/api/groups/Core/ServiceAccount";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/core/components/ui/accordion";
 import { ContainerRegistryType, containerRegistryTypeLabelMap, registrySecretName } from "@my-project/shared";
 import React from "react";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
@@ -70,26 +70,28 @@ export default function RegistryConfigurationPage() {
 
     return (
       <LoadingWrapper isLoading={isLoading}>
-        <Accordion expanded>
-          <AccordionSummary style={{ cursor: "default" }}>
-            <h6 className="text-base font-medium">
-              {containerRegistryTypeLabelMap[registryType as ContainerRegistryType]}
-            </h6>
-          </AccordionSummary>
-          <AccordionDetails>
-            <div className="flex flex-col gap-4">
-              <div>
-                <ManageRegistry
-                  EDPConfigMap={krciConfigMap!}
-                  pullAccountSecret={pullAccountSecretWatch.query.data!}
-                  pushAccountSecret={pushAccountSecretWatch.query.data!}
-                  tektonServiceAccount={tektonServiceAccountWatch.query.data!}
-                  handleCloseCreateDialog={handleCloseCreateDialog}
-                />
-              </div>
-            </div>
-          </AccordionDetails>
-        </Accordion>
+        <Accordion type="single" collapsible defaultValue="item-1">
+          <AccordionItem value="item-1">
+              <AccordionTrigger className="cursor-default">
+                <h6 className="text-base font-medium">
+                  {containerRegistryTypeLabelMap[registryType as ContainerRegistryType]}
+                </h6>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <ManageRegistry
+                      EDPConfigMap={krciConfigMap!}
+                      pullAccountSecret={pullAccountSecretWatch.query.data!}
+                      pushAccountSecret={pushAccountSecretWatch.query.data!}
+                      tektonServiceAccount={tektonServiceAccountWatch.query.data!}
+                      handleCloseCreateDialog={handleCloseCreateDialog}
+                    />
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
       </LoadingWrapper>
     );
   }, [

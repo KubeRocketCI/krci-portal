@@ -1,4 +1,5 @@
-import { Button, Tooltip } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import React from "react";
 import { useFormContext as useReactHookFormContext } from "react-hook-form";
 import { ManageGitOpsDataContext, ManageGitOpsValues } from "../../types";
@@ -93,16 +94,16 @@ export const FormActions = () => {
       <div className="flex justify-between gap-4">
         <div>
           {mode === FORM_MODES.CREATE && (
-            <Button onClick={handleClosePlaceholder} size="small" component={"button"}>
-              cancel
+            <Button onClick={handleClosePlaceholder} variant="ghost" size="sm">
+              Cancel
             </Button>
           )}
         </div>
         <div>
           <div className="flex items-center gap-4">
             <div>
-              <Button onClick={() => reset()} size="small" component={"button"} disabled={!isDirty || isReadOnly}>
-                undo changes
+              <Button onClick={() => reset()} size="sm" variant="ghost" disabled={!isDirty || isReadOnly}>
+                Undo Changes
               </Button>
             </div>
             <div>
@@ -116,14 +117,12 @@ export const FormActions = () => {
               >
                 <Button
                   type={"button"}
-                  size={"small"}
-                  component={"button"}
-                  variant={"contained"}
-                  color={"primary"}
+                  size={"sm"}
+                  variant={"default"}
                   disabled={isLoading || isReadOnly || !codebasePermissions.data.create.allowed}
                   onClick={handleSubmit(onSubmit)}
                 >
-                  save
+                  Save
                 </Button>
               </ConditionalWrapper>
             </div>

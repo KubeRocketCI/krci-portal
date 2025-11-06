@@ -22,8 +22,6 @@ export const PipelineRunActionsMenu = ({
   backRoute,
   variant,
   data: { pipelineRun },
-  anchorEl,
-  handleCloseResourceActionListMenu,
 }: PipelineRunActionsMenuProps) => {
   const status = getPipelineRunStatus(pipelineRun);
   const pipelineRunPermissions = usePipelineRunPermissions();
@@ -58,10 +56,6 @@ export const PipelineRunActionsMenu = ({
           reason: pipelineRunPermissions.data.create.reason,
         },
         callback: (pipelineRun) => {
-          if (variant === actionMenuType.menu && handleCloseResourceActionListMenu) {
-            handleCloseResourceActionListMenu();
-          }
-
           const newPipelineRun = createRerunPipelineRun(pipelineRun);
 
           triggerCreatePipelineRun({
@@ -96,10 +90,6 @@ export const PipelineRunActionsMenu = ({
               });
             },
           });
-
-          if (handleCloseResourceActionListMenu) {
-            handleCloseResourceActionListMenu();
-          }
         },
       }),
       ...(isInProgress
@@ -118,10 +108,6 @@ export const PipelineRunActionsMenu = ({
                     : "",
               },
               callback: (pipelineRun) => {
-                if (variant === actionMenuType.menu && handleCloseResourceActionListMenu) {
-                  handleCloseResourceActionListMenu();
-                }
-
                 const newPipelineRun = { ...pipelineRun };
                 newPipelineRun.spec.status = "Cancelled";
 
@@ -140,10 +126,6 @@ export const PipelineRunActionsMenu = ({
           reason: pipelineRunPermissions.data.delete.reason,
         },
         callback: (pipelineRun) => {
-          if (variant === actionMenuType.menu && handleCloseResourceActionListMenu) {
-            handleCloseResourceActionListMenu();
-          }
-
           triggerDeletePipelineRun({ data: { pipelineRun: pipelineRun }, callbacks: { onSuccess: onDelete } });
         },
       }),
@@ -158,7 +140,6 @@ export const PipelineRunActionsMenu = ({
     pipelineRunPermissions.data.delete.reason,
     isInProgress,
     variant,
-    handleCloseResourceActionListMenu,
     triggerCreatePipelineRun,
     openEditorDialog,
     triggerPatchPipelineRun,
@@ -176,12 +157,8 @@ export const PipelineRunActionsMenu = ({
       )} */}
       {variant === actionMenuType.inline ? (
         <CustomActionsInlineList groupActions={groupActions} inlineActions={inlineActions} />
-      ) : variant === actionMenuType.menu && anchorEl ? (
-        <ActionsMenuList
-          actions={actions}
-          anchorEl={anchorEl}
-          handleCloseActionsMenu={handleCloseResourceActionListMenu}
-        />
+      ) : variant === actionMenuType.menu ? (
+        <ActionsMenuList actions={actions} />
       ) : null}
     </>
   );

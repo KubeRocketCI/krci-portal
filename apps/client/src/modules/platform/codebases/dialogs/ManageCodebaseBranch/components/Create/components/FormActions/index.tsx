@@ -1,5 +1,5 @@
 import { useCodebaseBranchCRUD } from "@/k8s/api/groups/KRCI/CodebaseBranch";
-import { Button } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import {
   createCodebaseBranchDraftObject,
   createVersioningString,
@@ -86,23 +86,20 @@ export const FormActions = () => {
   return (
     <div className="flex w-full justify-between">
       <div className="flex gap-1">
-        <div className="text-foreground">
-          <Button onClick={handleClose} size="small" color="inherit">
-            cancel
-          </Button>
-        </div>
-        <Button onClick={handleResetFields} size="small" disabled={!isDirty}>
-          undo changes
+        <Button onClick={handleClose} variant="ghost" size="sm">
+          Cancel
+        </Button>
+        <Button onClick={handleResetFields} variant="ghost" size="sm" disabled={!isDirty}>
+          Undo Changes
         </Button>
       </div>
       <Button
         onClick={handleSubmit(onSubmit)}
-        variant={"contained"}
-        color={"primary"}
-        size="small"
+        variant="default"
+        size="sm"
         disabled={!isDirty || isPending}
       >
-        create
+        Create
       </Button>
     </div>
   );

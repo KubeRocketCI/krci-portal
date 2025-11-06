@@ -2,103 +2,64 @@ import { ActionsInlineList } from "@/core/components/ActionsInlineList";
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
 import {
-  ButtonGroup,
-  ClickAwayListener,
-  Grow,
-  ListItemIcon,
-  ListItemText,
-  MenuItem,
-  MenuList,
-  Paper,
-  Popper,
-  useTheme,
-} from "@mui/material";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/core/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
 import React from "react";
 import { CustomActionsInlineListProps } from "./types";
 
 export const CustomActionsInlineList = ({ groupActions, inlineActions }: CustomActionsInlineListProps) => {
   const [open, setOpen] = React.useState(false);
-  const anchorRef = React.useRef<HTMLDivElement>(null);
   const pipelineRunPermissions = usePipelineRunPermissions();
 
-  const handleToggle = () => {
-    setOpen((prevOpen) => !prevOpen);
-  };
-
-  const handleClose = (event: Event) => {
-    if (anchorRef.current && anchorRef.current.contains(event.target as HTMLElement)) {
-      return;
-    }
-
-    setOpen(false);
-  };
-
   const groupActionsWithoutFirstItem = groupActions.slice(1);
-  const theme = useTheme();
 
   return (
     <>
       <div className="flex flex-row items-center gap-2">
-        <ButtonGroup variant="outlined" ref={anchorRef}>
+        <div className="flex">
           <ButtonWithPermission
             ButtonProps={{
-              startIcon: groupActions[0].Icon,
-              size: "small",
+              size: "sm",
+              variant: "outline",
               onClick: groupActions[0].action,
-              sx: {
-                height: "100%",
-                color: theme.palette.secondary.dark,
-                borderColor: theme.palette.secondary.dark,
-              },
+              className: "rounded-r-none border-r-0 text-secondary-dark border-secondary-dark hover:bg-secondary-dark/10",
             }}
             allowed={pipelineRunPermissions.data.create.allowed}
             reason={pipelineRunPermissions.data.create.reason}
           >
+            {groupActions[0].Icon}
             {groupActions[0].label}
           </ButtonWithPermission>
-          <ButtonWithPermission
-            ButtonProps={{
-              size: "small",
-              onClick: handleToggle,
-              sx: {
-                height: "100%",
-                color: theme.palette.secondary.dark,
-                borderColor: theme.palette.secondary.dark,
-              },
-            }}
-            allowed={pipelineRunPermissions.data.create.allowed}
-            reason={pipelineRunPermissions.data.create.reason}
-          >
-            <ChevronDown size={16} />
-          </ButtonWithPermission>
-        </ButtonGroup>
+          <DropdownMenu open={open} onOpenChange={setOpen}>
+            <DropdownMenuTrigger asChild>
+              <ButtonWithPermission
+                ButtonProps={{
+                  size: "sm",
+                  variant: "outline",
+                  className: "rounded-l-none text-secondary-dark border-secondary-dark hover:bg-secondary-dark/10",
+                }}
+                allowed={pipelineRunPermissions.data.create.allowed}
+                reason={pipelineRunPermissions.data.create.reason}
+              >
+                <ChevronDown size={16} />
+              </ButtonWithPermission>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="z-[1]">
+              {groupActionsWithoutFirstItem.map((option) => (
+                <DropdownMenuItem key={option.label} onClick={option.action} className="flex items-center gap-2">
+                  {option.Icon}
+                  {option.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
         <ActionsInlineList actions={inlineActions} />
       </div>
-
-      <Popper sx={{ zIndex: 1 }} open={open} anchorEl={anchorRef.current} role={undefined} transition disablePortal>
-        {({ TransitionProps, placement }) => (
-          <Grow
-            {...TransitionProps}
-            style={{
-              transformOrigin: placement === "bottom" ? "center top" : "center bottom",
-            }}
-          >
-            <Paper>
-              <ClickAwayListener onClickAway={handleClose}>
-                <MenuList autoFocusItem>
-                  {groupActionsWithoutFirstItem.map((option) => (
-                    <MenuItem key={option.label} onClick={option.action}>
-                      <ListItemIcon>{option.Icon}</ListItemIcon>
-                      <ListItemText>{option.label}</ListItemText>
-                    </MenuItem>
-                  ))}
-                </MenuList>
-              </ClickAwayListener>
-            </Paper>
-          </Grow>
-        )}
-      </Popper>
     </>
   );
 };

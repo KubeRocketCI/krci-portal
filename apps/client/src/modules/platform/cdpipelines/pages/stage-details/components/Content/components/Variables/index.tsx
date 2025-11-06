@@ -1,4 +1,4 @@
-import { Button, IconButton } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import React from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import { useVariablesConfigMapWatch } from "../../../../hooks";
@@ -100,9 +100,14 @@ export const Variables = () => {
                         control={control}
                         errors={errors}
                       />
-                      <IconButton onClick={() => handleDelete(index)} size="small" data-test="delete">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(index)}
+                        data-test="delete"
+                      >
                         <Trash size={16} />
-                      </IconButton>
+                      </Button>
                     </div>
                   ),
                 }))}
@@ -113,9 +118,9 @@ export const Variables = () => {
             <div className="flex flex-col items-end pr-4">
               <Button
                 type={"button"}
-                size={"small"}
-                component={"button"}
-                style={{ minWidth: 0 }}
+                size={"sm"}
+                variant="ghost"
+                className="min-w-0"
                 onClick={appendNewRow}
                 data-test="add"
               >
@@ -124,19 +129,16 @@ export const Variables = () => {
             </div>
             <div className="flex items-center justify-end gap-2">
               <Button
-                size="small"
-                component={"button"}
-                sx={{ ml: "auto !important" }}
+                size="sm"
+                variant="ghost"
                 onClick={() => reset()}
                 disabled={!isDirty}
               >
                 undo changes
               </Button>
               <Button
-                size={"small"}
-                component={"button"}
-                variant={"contained"}
-                color={"primary"}
+                size={"sm"}
+                variant={"default"}
                 // disabled={configMapEditMutation.isLoading || !isDirty}
                 onClick={handleSubmit(onSubmit)}
               >

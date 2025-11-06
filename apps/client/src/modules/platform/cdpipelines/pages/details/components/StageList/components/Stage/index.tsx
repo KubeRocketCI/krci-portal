@@ -14,7 +14,8 @@ import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { routeCDPipelineDetails } from "../../../../route";
 import { ApplicationCard } from "./components/ApplicationCard";
-import { StyledCardBody, StyledCardHeader, StyledCardWrapper, StyledChip } from "./styles";
+import { Badge } from "@/core/components/ui/badge";
+import { cn } from "@/core/utils/classname";
 import { EnvironmentStageProps } from "./types";
 import { useQuickLinksUrlListWatch } from "../../../../hooks/data";
 import { useStageFilter } from "../../../StageListFilter/hooks/useStageFilter";
@@ -82,7 +83,7 @@ export const Stage = ({ stageWithApplications: { stage, applications } }: Enviro
           enabledText="Open ArgoCD"
           externalLink={LinkCreationService.argocd.createStageLink(baseURL, params.name, clusterName)}
           quickLink={argocdQuickLink}
-          size="small"
+          size="sm"
         />
       )
     );
@@ -110,7 +111,7 @@ export const Stage = ({ stageWithApplications: { stage, applications } }: Enviro
             clusterName,
           })}
           quickLink={monitoringQuickLink}
-          size="small"
+          size="sm"
         />
       )
     );
@@ -138,17 +139,28 @@ export const Stage = ({ stageWithApplications: { stage, applications } }: Enviro
             clusterName,
           })}
           quickLink={loggingQuickLink}
-          size="small"
+          size="sm"
         />
       )
     );
   }, [loggingQuickLink, quickLinksUrlListWatch.data?.quickLinkURLs, stage.spec.clusterName, stage.spec.namespace]);
 
   return (
-    <StyledCardWrapper>
+    <div className="w-full rounded bg-purple-50 p-4 px-8">
       <LoadingWrapper isLoading={!stageIsLoaded}>
         <div className="flex flex-col gap-4">
-          <StyledCardHeader stageStatusColor={stageStatusIcon.color} variant="outlined">
+          <div
+            className={cn(
+              "border-border bg-card relative border border-r-0 px-6 py-2.5",
+              "w-[calc(100%-1rem)] drop-shadow-[0px_0_5px_#0024461F]",
+              "before:clip-[polygon(0_0,0%_100%,100%_50%)] before:absolute before:top-0 before:bottom-0 before:left-full before:-ml-px before:h-full before:w-8 before:bg-inherit before:content-['']"
+            )}
+            style={
+              stageStatusIcon.color
+                ? ({ borderLeftWidth: "5px", borderLeftColor: stageStatusIcon.color } as React.CSSProperties)
+                : undefined
+            }
+          >
             <div className="flex flex-col gap-2">
               <div className="flex flex-row justify-between gap-4">
                 <div className="flex flex-row items-center gap-2">
@@ -179,17 +191,21 @@ export const Stage = ({ stageWithApplications: { stage, applications } }: Enviro
               <div className="flex flex-col gap-2">
                 <div className="flex flex-row gap-2">
                   <span className="text-foreground text-xs">Namespace:</span>
-                  <StyledChip label={<TextWithTooltip text={stage.spec.namespace} />} />
+                  <Badge variant="secondary" className="h-5 min-w-0 bg-purple-50 pt-0.5 leading-none">
+                    <TextWithTooltip text={stage.spec.namespace} />
+                  </Badge>
                 </div>
                 <div className="flex flex-row gap-2">
                   <span className="text-foreground text-xs">Trigger Type:</span>
-                  <StyledChip label={<TextWithTooltip text={stage.spec.triggerType} />} />
+                  <Badge variant="secondary" className="h-5 min-w-0 bg-purple-50 pt-0.5 leading-none">
+                    <TextWithTooltip text={stage.spec.triggerType} />
+                  </Badge>
                 </div>
               </div>
             </div>
-          </StyledCardHeader>
+          </div>
 
-          <StyledCardBody>
+          <div className="px-5">
             <div className="flex flex-col gap-4">
               <LoadingWrapper isLoading={quickLinksUrlListWatch.isLoading}>
                 {filteredApplications.map((el) => {
@@ -209,9 +225,9 @@ export const Stage = ({ stageWithApplications: { stage, applications } }: Enviro
                 })}
               </LoadingWrapper>
             </div>
-          </StyledCardBody>
+          </div>
         </div>
       </LoadingWrapper>
-    </StyledCardWrapper>
+    </div>
   );
 };

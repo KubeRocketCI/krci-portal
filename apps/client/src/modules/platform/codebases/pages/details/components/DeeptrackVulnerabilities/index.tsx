@@ -1,4 +1,4 @@
-import { CircularProgress } from "@mui/material";
+import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
 import React from "react";
 import { NoDataWidgetWrapper } from "@/core/components/NoDataWidgetWrapper";
 import { Link } from "@tanstack/react-router";
@@ -83,7 +83,7 @@ export const DependencyTrackMetrics = ({ componentName }: DependencyTrackMetrics
       }
     >
       {depTrackDataQuery.isLoading ? (
-        <CircularProgress />
+        <LoadingSpinner />
       ) : depTrackDataQuery.data?.baseUrl ? (
         <>
           <Link
@@ -112,12 +112,7 @@ export const DependencyTrackMetrics = ({ componentName }: DependencyTrackMetrics
                 <MetricsCell
                   value={
                     <div className="flex min-w-[120px] items-center justify-center">
-                      <CircularProgress
-                        sx={{
-                          width: (t) => `${t.typography.pxToRem(14)} !important`,
-                          height: (t) => `${t.typography.pxToRem(14)} !important`,
-                        }}
-                      />
+                      <LoadingSpinner size={14} />
                     </div>
                   }
                   color="#E6E6F0"

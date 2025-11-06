@@ -7,7 +7,11 @@ dagreGraph.setDefaultEdgeLabel(() => ({}));
 const nodeWidth = 180;
 const nodeHeight = 60;
 
-export const getLayoutedElements = (nodes: Node[], edges: Edge[], direction: "TB" | "LR" = "TB") => {
+export const getLayoutedElements = (
+  nodes: Node[],
+  edges: Edge[],
+  direction: "TB" | "LR" = "TB"
+): { nodes: Node[]; edges: Edge[] } => {
   const isHorizontal = direction === "LR";
   dagreGraph.setGraph({
     rankdir: direction,

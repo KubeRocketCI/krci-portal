@@ -1,4 +1,3 @@
-import { Link } from "@mui/material";
 import { useCurrentDialog } from "../../providers/CurrentDialog/hooks";
 import { getMappingByType } from "@/k8s/api/groups/KRCI/Codebase/utils/getMappingByType";
 import { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/mappings/types";
@@ -47,9 +46,9 @@ export const FormDefaultValues = () => {
       {
         label: "Source",
         text: (
-          <Link href={source} target={"_blank"}>
+          <a href={source} target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">
             {source}
-          </Link>
+          </a>
         ),
         columnXs: 6,
       },

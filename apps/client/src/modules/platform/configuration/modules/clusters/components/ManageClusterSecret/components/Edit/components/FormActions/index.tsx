@@ -1,4 +1,5 @@
-import { Button, IconButton, Tooltip } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import React from "react";
 import { useFormContext as useReactHookFormContext } from "react-hook-form";
 import { ManageClusterSecretDataContext, ManageClusterSecretValues } from "../../../../types";
@@ -153,21 +154,22 @@ export const FormActions = () => {
               </Tooltip>
             )}
           >
-            <IconButton
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={handleClickDelete}
-              size="large"
               disabled={!secretPermissions.data.delete.allowed || !!ownerReference}
               data-test-id="delete_button"
             >
               <Trash size={20} />
-            </IconButton>
+            </Button>
           </ConditionalWrapper>
         </div>
         <div>
           <div className="flex items-center gap-4">
             <div>
-              <Button onClick={() => reset()} size="small" component={"button"} disabled={!isDirty}>
-                undo changes
+              <Button onClick={() => reset()} size="sm" variant="ghost" disabled={!isDirty}>
+                Undo Changes
               </Button>
             </div>
             <div>
@@ -181,14 +183,12 @@ export const FormActions = () => {
               >
                 <Button
                   type={"button"}
-                  size={"small"}
-                  component={"button"}
-                  variant={"contained"}
-                  color={"primary"}
+                  size={"sm"}
+                  variant={"default"}
                   disabled={isLoading || !isDirty || !secretPermissions.data.patch.allowed}
                   onClick={handleSubmit(onSubmit)}
                 >
-                  save
+                  Save
                 </Button>
               </ConditionalWrapper>
             </div>

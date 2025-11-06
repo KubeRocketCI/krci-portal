@@ -1,33 +1,13 @@
-import makeStyles from "@mui/styles/makeStyles";
+import { cn } from "@/core/utils/classname";
 
-export const useStyles = makeStyles((theme) => ({
-  actions: {
-    display: "flex",
-    justifyContent: "flex-end",
-    alignItems: "center",
+export const actionsClasses = cn("flex justify-end items-center", "[&_.MuiTooltip-popper]:pointer-events-auto");
 
-    "& .MuiTooltip-popper": {
-      pointerEvents: "auto",
-    },
-  },
-  actionList: {
-    backgroundColor: theme.palette.background.paper,
-    borderRadius: theme.typography.pxToRem(5),
-    overflow: "hidden",
-    padding: `${theme.typography.pxToRem(8)} 0`,
-  },
-  popper: {
-    zIndex: 5,
-    cursor: "default",
-    padding: 0,
-    backgroundColor: theme.palette.background.paper,
-    color: theme.palette.text.primary,
-    boxShadow: "0px 5px 5px -3px #00000033, 0px 8px 10px 1px #00000024, 0px 3px 14px 2px #0000001F",
-    borderRadius: theme.typography.pxToRem(5),
-  },
-  childrenWrapper: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-end",
-  },
-}));
+export const actionListClasses = "bg-background rounded-[5px] overflow-hidden py-2";
+
+export const popperClasses = cn(
+  "z-[5] cursor-default p-0 bg-background text-foreground",
+  "shadow-[0px_5px_5px_-3px_#00000033,0px_8px_10px_1px_#00000024,0px_3px_14px_2px_#0000001F]",
+  "rounded-[5px]"
+);
+
+export const childrenWrapperClasses = "flex items-center justify-end";

@@ -9,7 +9,7 @@ import {
   useCodemieProjectSettingsWatchList,
 } from "@/k8s/api/groups/KRCI/CodemieProjectSettings";
 import { getCodemieProjectSettingsStatusIcon } from "@/k8s/api/groups/KRCI/CodemieProjectSettings/utils/getStatusIcon";
-import { Button, Paper } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import { Pencil } from "lucide-react";
 import { CodemieProjectSettings } from "@my-project/shared";
 
@@ -37,7 +37,7 @@ export const CodemieProjectSettingsSection = () => {
 
               return (
                 <div key={setting.metadata.name}>
-                  <Paper sx={{ p: (t) => `${t.typography.pxToRem(10)} ${t.typography.pxToRem(20)}` }}>
+                  <div className="bg-card rounded shadow py-2.5 px-5">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <StatusIcon
@@ -53,11 +53,9 @@ export const CodemieProjectSettingsSection = () => {
                         <h6 className="text-base font-medium">{setting.metadata.name}</h6>
                       </div>
                       <Button
-                        startIcon={<Pencil size={16} />}
-                        size="small"
-                        component={"button"}
-                        style={{ flexShrink: 0 }}
-                        color="inherit"
+                        variant="ghost"
+                        size="sm"
+                        className="shrink-0"
                         onClick={() => {
                           openEditorDialog({
                             content: setting,
@@ -75,10 +73,11 @@ export const CodemieProjectSettingsSection = () => {
                           });
                         }}
                       >
+                        <Pencil size={16} />
                         Edit YAML
                       </Button>
                     </div>
-                  </Paper>
+                  </div>
                 </div>
               );
             })}

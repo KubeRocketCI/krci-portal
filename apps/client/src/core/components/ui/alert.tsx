@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { AlertCircle } from "lucide-react";
 
 import { cn } from "@/core/utils/classname";
 
@@ -19,9 +20,13 @@ const alertVariants = cva(
   }
 );
 
-function Alert({ className, variant, ...props }: React.ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
-  return <div data-slot="alert" role="alert" className={cn(alertVariants({ variant }), className)} {...props} />;
-}
+const AlertRoot = React.forwardRef<HTMLDivElement, React.ComponentProps<"div"> & VariantProps<typeof alertVariants>>(
+  ({ className, variant, ...props }, ref) => {
+    return (
+      <div ref={ref} data-slot="alert" role="alert" className={cn(alertVariants({ variant }), className)} {...props} />
+    );
+  }
+);
 
 function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -46,4 +51,25 @@ function AlertDescription({ className, ...props }: React.ComponentProps<"div">) 
   );
 }
 
-export { Alert, AlertTitle, AlertDescription };
+export { AlertRoot, AlertTitle, AlertDescription };
+
+export interface AlertProps {
+  variant?: "default" | "destructive";
+  title?: string | null;
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
+  ({ variant = "default", title, children, className, ...props }, ref) => {
+    return (
+      <AlertRoot ref={ref} variant={variant} className={className} {...props}>
+        <AlertCircle className="h-4 w-4" />
+        {title ? <AlertTitle>{title}</AlertTitle> : null}
+        <AlertDescription>{children}</AlertDescription>
+      </AlertRoot>
+    );
+  }
+);
+
+Alert.displayName = "Alert";

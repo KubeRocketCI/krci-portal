@@ -1,4 +1,4 @@
-import { Tooltip } from "@mui/material";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { useRegistryFormsContext } from "../../hooks/useRegistryFormsContext";
 import { SHARED_FORM_NAMES } from "../../names";
 import { useDataContext } from "../../providers/Data/hooks";

@@ -10,6 +10,7 @@ import {
   QuickLink,
 } from "@my-project/shared";
 import { z } from "zod";
+import { K8sClient } from "../../../../clients/k8s";
 
 export const getSonarQubeProjectDataProcedure = protectedProcedure
   .input(
@@ -21,11 +22,12 @@ export const getSonarQubeProjectDataProcedure = protectedProcedure
   )
   .query(async ({ input, ctx }) => {
     const { namespace, name } = input;
-    const { session, K8sClient } = ctx;
+    const { session } = ctx;
+    const k8sClient = new K8sClient(session);
 
     const idToken = session.user!.secret.idToken;
 
-    const configMapList = await K8sClient.listResource(k8sConfigMapConfig, namespace);
+    const configMapList = await k8sClient.listResource(k8sConfigMapConfig, namespace);
 
     const configMaps = (configMapList.items || []) as ConfigMap[];
 
@@ -41,7 +43,7 @@ export const getSonarQubeProjectDataProcedure = protectedProcedure
       });
     }
 
-    const sonarQuickLink = (await K8sClient.getResource(
+    const sonarQuickLink = (await k8sClient.getResource(
       k8sQuickLinkConfig,
       systemQuickLink.sonar,
       namespace

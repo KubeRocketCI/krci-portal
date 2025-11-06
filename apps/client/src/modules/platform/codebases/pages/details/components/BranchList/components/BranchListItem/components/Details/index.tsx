@@ -1,6 +1,5 @@
 import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
 import { FilterProvider } from "@/core/providers/Filter/provider";
-import { ResourceActionListContextProvider } from "@/core/providers/ResourceActionList/provider";
 import { TABLE } from "@/k8s/constants/tables";
 import { PipelineRunList } from "@/modules/platform/pipelineruns/components/PipelineRunList";
 import {
@@ -24,28 +23,26 @@ export const Details = ({ pipelineRuns }: DetailsProps) => {
             <h6 className="text-base font-medium">Pipeline Runs</h6>
           </div>
           <div className="w-full">
-            <ResourceActionListContextProvider>
-              <FilterProvider<PipelineRun, PipelineRunListFilterValues>
-                matchFunctions={matchFunctions}
-                syncWithUrl
-                defaultValues={{
-                  [pipelineRunFilterControlNames.NAMESPACES]: [],
-                  [pipelineRunFilterControlNames.CODEBASES]: [],
-                  [pipelineRunFilterControlNames.STATUS]: "all",
-                  [pipelineRunFilterControlNames.PIPELINE_TYPE]: "all",
-                }}
-              >
-                <PipelineRunList
-                  pipelineRuns={pipelineRuns!}
-                  isLoading={pipelineRuns === null}
-                  pipelineRunTypes={[pipelineType.review, pipelineType.build]}
-                  filterControls={[pipelineRunFilterControlNames.PIPELINE_TYPE, pipelineRunFilterControlNames.STATUS]}
-                  tableId={TABLE.BRANCH_PIPELINE_RUN_LIST.id}
-                  tableName={TABLE.BRANCH_PIPELINE_RUN_LIST.name}
-                  tableSettings={tableSettings}
-                />
-              </FilterProvider>
-            </ResourceActionListContextProvider>
+            <FilterProvider<PipelineRun, PipelineRunListFilterValues>
+              matchFunctions={matchFunctions}
+              syncWithUrl
+              defaultValues={{
+                [pipelineRunFilterControlNames.NAMESPACES]: [],
+                [pipelineRunFilterControlNames.CODEBASES]: [],
+                [pipelineRunFilterControlNames.STATUS]: "all",
+                [pipelineRunFilterControlNames.PIPELINE_TYPE]: "all",
+              }}
+            >
+              <PipelineRunList
+                pipelineRuns={pipelineRuns!}
+                isLoading={pipelineRuns === null}
+                pipelineRunTypes={[pipelineType.review, pipelineType.build]}
+                filterControls={[pipelineRunFilterControlNames.PIPELINE_TYPE, pipelineRunFilterControlNames.STATUS]}
+                tableId={TABLE.BRANCH_PIPELINE_RUN_LIST.id}
+                tableName={TABLE.BRANCH_PIPELINE_RUN_LIST.name}
+                tableSettings={tableSettings}
+              />
+            </FilterProvider>
           </div>
         </div>
       </div>

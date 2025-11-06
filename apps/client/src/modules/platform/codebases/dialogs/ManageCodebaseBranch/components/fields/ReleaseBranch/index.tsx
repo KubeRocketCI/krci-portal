@@ -3,8 +3,7 @@ import { RELEASE_BRANCH_POSTFIX } from "../../../constants";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_BRANCH_FORM_NAMES } from "../../../names";
 import { ReleaseBranchProps } from "./types";
-import { FormCheckbox } from "@/core/providers/Form/components/FormCheckbox";
-import { FormControlLabelWithTooltip } from "@/core/providers/Form/components/FormControlLabelWithTooltip";
+import { FormSwitchRich } from "@/core/providers/Form/components/FormSwitchRich";
 import { FieldEvent } from "@/core/types/forms";
 import {
   getVersionAndPostfixFromVersioningString,
@@ -65,11 +64,11 @@ export const ReleaseBranch = ({ isDefaultBranchProtected, defaultBranchVersion }
   );
 
   return (
-    <FormCheckbox
+    <FormSwitchRich
       {...register(CODEBASE_BRANCH_FORM_NAMES.release.name, {
         onChange: handleReleaseValueChange,
       })}
-      label={<FormControlLabelWithTooltip label={"Release branch"} />}
+      label="Release branch"
       control={control}
       errors={errors}
       disabled={isDefaultBranchProtected}

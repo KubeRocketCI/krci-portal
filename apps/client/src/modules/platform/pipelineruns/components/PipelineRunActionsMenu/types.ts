@@ -8,6 +8,4 @@ export interface PipelineRunActionsMenuProps {
   };
   backRoute?: RouteParams;
   variant?: ActionMenuType;
-  anchorEl?: HTMLElement | null;
-  handleCloseResourceActionListMenu?: () => void;
 }

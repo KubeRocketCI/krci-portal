@@ -1,5 +1,5 @@
 import { InfoRow } from "@/core/components/InfoColumns/types";
-import { Chip } from "@mui/material";
+import { Badge } from "@/core/components/ui/badge";
 import React from "react";
 import { usePipelineWatch } from "../../../hooks/data";
 
@@ -54,7 +54,7 @@ export const useInfoRows = (): InfoRow[] => {
               <div className="flex flex-wrap gap-2">
                 {pipelineLabels.map((el) => (
                   <div key={el}>
-                    <Chip label={el} size="small" />
+                    <Badge variant="secondary">{el}</Badge>
                   </div>
                 ))}
               </div>

@@ -7,7 +7,7 @@ import React from "react";
 import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { CDPipeline } from "@my-project/shared";
 import { TableColumn } from "@/core/components/Table/types";
-import { Chip } from "@mui/material";
+import { Badge } from "@/core/components/ui/badge";
 import { CUSTOM_RESOURCE_STATUS } from "@/k8s/constants/statuses";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { Link } from "@tanstack/react-router";
@@ -127,62 +127,53 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                   chipsData={applications}
                   renderChip={(label, key) => {
                     return (
-                      <Chip
+                      <Badge
                         key={key}
-                        sx={{
+                        variant="default"
+                        className="text-white"
+                        style={{
                           backgroundColor: MAIN_COLOR.GREEN,
-                          borderColor: "transparent",
                         }}
-                        size="small"
-                        label={
-                          <Link
-                            to={routeComponentDetails.fullPath}
-                            params={{
-                              clusterName,
-                              name: label,
-                              namespace: namespace!,
-                            }}
-                            style={{ color: "white" }}
-                          >
-                            {label}
-                          </Link>
-                        }
-                      />
+                      >
+                        <Link
+                          to={routeComponentDetails.fullPath}
+                          params={{
+                            clusterName,
+                            name: label,
+                            namespace: namespace!,
+                          }}
+                          className="text-white"
+                        >
+                          {label}
+                        </Link>
+                      </Badge>
                     );
                   }}
                   renderTooltip={(chipsToHide) => {
                     return (
-                      <div
-                        style={{
-                          paddingTop: "6px", // pxToRem(6) = 6px
-                          paddingBottom: "6px",
-                          paddingLeft: "10px", // pxToRem(10) = 10px
-                          paddingRight: "10px",
-                        }}
-                      >
-                        <div className="flex flex-wrap gap-6" style={{ fontWeight: 400 }}>
+                      <div className="py-1.5 px-2.5">
+                        <div className="flex flex-wrap gap-6 font-normal">
                           {chipsToHide.map((label) => (
-                            <Chip
+                            <Badge
                               key={label}
-                              sx={{
+                              variant="default"
+                              className="text-white"
+                              style={{
                                 backgroundColor: MAIN_COLOR.GREEN,
-                                borderColor: "transparent",
                               }}
-                              size="small"
-                              label={
-                                <Link
-                                  to={routeComponentDetails.fullPath}
-                                  params={{
-                                    name: label,
-                                    namespace: namespace!,
-                                    clusterName,
-                                  }}
-                                  style={{ color: "white" }}
-                                >
-                                  {label}
-                                </Link>
-                              }
-                            />
+                            >
+                              <Link
+                                to={routeComponentDetails.fullPath}
+                                params={{
+                                  name: label,
+                                  namespace: namespace!,
+                                  clusterName,
+                                }}
+                                className="text-white"
+                              >
+                                {label}
+                              </Link>
+                            </Badge>
                           ))}
                         </div>
                       </div>

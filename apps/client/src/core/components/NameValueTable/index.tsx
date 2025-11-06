@@ -1,5 +1,12 @@
 import React from "react";
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import {
+  TableUI,
+  TableBodyUI,
+  TableCellUI,
+  TableHeadUI,
+  TableHeaderUI,
+  TableRowUI,
+} from "@/core/components/ui/table";
 
 export type NameValueRow = {
   name: React.ReactNode;
@@ -12,23 +19,23 @@ export const NameValueTable = ({ rows }: { rows: NameValueRow[] }) => {
   }
 
   return (
-    <TableContainer component={Paper} variant="outlined">
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell width="45%">Name</TableCell>
-            <TableCell width="55%">Value</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
+    <div className="rounded-md border">
+      <TableUI>
+        <TableHeaderUI>
+          <TableRowUI>
+            <TableHeadUI className="w-[45%]">Name</TableHeadUI>
+            <TableHeadUI className="w-[55%]">Value</TableHeadUI>
+          </TableRowUI>
+        </TableHeaderUI>
+        <TableBodyUI>
           {rows.map((row, index) => (
-            <TableRow key={index}>
-              <TableCell>{row.name}</TableCell>
-              <TableCell>{row.value}</TableCell>
-            </TableRow>
+            <TableRowUI key={index}>
+              <TableCellUI className="h-8 text-sm">{row.name}</TableCellUI>
+              <TableCellUI className="h-8 text-sm">{row.value}</TableCellUI>
+            </TableRowUI>
           ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+        </TableBodyUI>
+      </TableUI>
+    </div>
   );
 };

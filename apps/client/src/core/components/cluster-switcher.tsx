@@ -44,7 +44,7 @@ export function ClusterSwitcher({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <div className="text-sidebar-primary flex aspect-square size-8 items-center justify-center rounded-lg">
-                <activeCluster.logo className="size-6" />
+                <activeCluster.logo className="text-foreground size-6" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{activeCluster.name}</span>
@@ -61,7 +61,7 @@ export function ClusterSwitcher({
           >
             <DropdownMenuLabel className="flex items-center gap-2 p-0 font-normal">
               <div className="text-sidebar-primary flex aspect-square size-8 items-center justify-center rounded-lg">
-                <activeCluster.logo className="size-6" />
+                <activeCluster.logo className="text-foreground size-6" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{activeCluster.name}</span>

@@ -238,7 +238,6 @@ export const QualityGateRow = ({ namespace, currentQualityGate }: QualityGateRow
               {...register(createQualityGateTypeFieldName(currentQualityGate.id), {
                 onChange: handleChangeQualityGateType,
               })}
-              label={"Quality gate type"}
               tooltipText={
                 "Quality gates can be either manual approvals or autotests. To select autotest, create the corresponding codebase beforehand."
               }
@@ -255,7 +254,6 @@ export const QualityGateRow = ({ namespace, currentQualityGate }: QualityGateRow
                   required: "Enter step name.",
                   onChange: handleChangeQualityGateStepName,
                 })}
-                label={"Step name"}
                 tooltipText={
                   "Name the deployment step within the stage to distinguish different phases of the deployment process."
                 }
@@ -273,7 +271,6 @@ export const QualityGateRow = ({ namespace, currentQualityGate }: QualityGateRow
                   {...register(createQualityGateAutotestFieldName(currentQualityGate.id), {
                     onChange: handleChangeQualityGateAutotestName,
                   })}
-                  label={"Autotest"}
                   tooltipText={"Specify an automated test to associate with this stage."}
                   control={control}
                   errors={errors}
@@ -289,7 +286,6 @@ export const QualityGateRow = ({ namespace, currentQualityGate }: QualityGateRow
                   {...register(createQualityGateTypeAutotestsBranchFieldName(currentQualityGate.id), {
                     onChange: handleChangeQualityGateAutotestBranchName,
                   })}
-                  label={"Autotest branch"}
                   tooltipText={"Specify the branch for the automated tests."}
                   control={control}
                   errors={errors}

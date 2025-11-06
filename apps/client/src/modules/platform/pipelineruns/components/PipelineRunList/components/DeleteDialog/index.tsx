@@ -1,5 +1,8 @@
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
 import { useResourceCRUDMutation } from "@/k8s/api/hooks/useResourceCRUDMutation";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Input } from "@/core/components/ui/input";
+import { Label } from "@/core/components/ui/label";
 import { k8sOperation, k8sPipelineRunConfig, PipelineRun } from "@my-project/shared";
 import React from "react";
 
@@ -76,23 +79,29 @@ export const DeletionDialog = ({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Are you sure you want to delete the selected PipelineRuns?</DialogTitle>
-      <DialogContent sx={{ pt: "20px !important" }}>
-        <TextField
-          label={`Enter "${CONFIRM_TEXT_VALUE}" to start deletion`}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          variant="outlined"
-          fullWidth
-        />
+    <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Are you sure you want to delete the selected PipelineRuns?</DialogTitle>
+        </DialogHeader>
+        <DialogBody>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="confirm-delete">{`Enter "${CONFIRM_TEXT_VALUE}" to start deletion`}</Label>
+            <Input
+              id="confirm-delete"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              className="w-full"
+            />
+          </div>
+        </DialogBody>
+        <DialogFooter>
+          <Button onClick={handleClose} variant="ghost">Cancel</Button>
+          <Button onClick={handleDelete} disabled={deletionDisabled}>
+            Delete
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleDelete} disabled={deletionDisabled} color="primary">
-          Delete
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 };

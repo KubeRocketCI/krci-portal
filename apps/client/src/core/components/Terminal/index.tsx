@@ -1,6 +1,8 @@
 import "@xterm/xterm/css/xterm.css";
 import React, { useRef, useEffect, useImperativeHandle, forwardRef, useState } from "react";
-import { IconButton, Tooltip, Paper, InputBase } from "@mui/material";
+import { Input } from "@/core/components/ui/input";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { Search, Download, Copy, ChevronUp, ChevronDown, X } from "lucide-react";
 import { Terminal as XTerminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
@@ -263,25 +265,25 @@ export const Terminal = forwardRef<TerminalRef, TerminalProps>(
           <div className="flex gap-1 border-b border-gray-300 p-1">
             {enableSearch && (
               <Tooltip title="Search (Ctrl+F)">
-                <IconButton size="small" onClick={handleSearch} disabled={!content}>
+                <Button variant="ghost" size="icon" onClick={handleSearch} disabled={!content}>
                   <Search className="h-4 w-4" />
-                </IconButton>
+                </Button>
               </Tooltip>
             )}
 
             {enableDownload && (
               <Tooltip title="Download content">
-                <IconButton size="small" onClick={handleDownload} disabled={!content}>
+                <Button variant="ghost" size="icon" onClick={handleDownload} disabled={!content}>
                   <Download className="h-4 w-4" />
-                </IconButton>
+                </Button>
               </Tooltip>
             )}
 
             {enableCopy && (
               <Tooltip title="Copy content">
-                <IconButton size="small" onClick={handleCopy} disabled={!content}>
+                <Button variant="ghost" size="icon" onClick={handleCopy} disabled={!content}>
                   <Copy className="h-4 w-4" />
-                </IconButton>
+                </Button>
               </Tooltip>
             )}
           </div>
@@ -467,79 +469,49 @@ const SearchPopover: React.FC<SearchPopoverProps> = ({ open, onClose, terminalRe
   if (!open) return null;
 
   return (
-    <Paper
-      sx={{
-        position: "absolute",
-        top: 8,
-        right: 15,
-        padding: "8px 12px",
-        zIndex: 1000,
-        display: "flex",
-        alignItems: "center",
-        gap: 1,
-        backgroundColor: "#f5f5f5",
-        border: "1px solid #e0e0e0",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-      }}
-    >
+    <div className="absolute top-2 right-[15px] p-2 z-[1000] flex items-center gap-1 bg-[#f5f5f5] border border-[#e0e0e0] rounded shadow-[0_2px_8px_rgba(0,0,0,0.15)]">
       {/* Search Input */}
-      <InputBase
+      <Input
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Search..."
         autoFocus
-        sx={{
-          width: 200,
-          backgroundColor: "#fff",
-          border: "1px solid #ccc",
-          borderRadius: 1,
-          padding: "2px 8px",
-          fontSize: "14px",
-          "&.Mui-focused": {
-            borderColor: "#1976d2",
-          },
-        }}
+        className="w-[200px] bg-white border border-gray-300 rounded px-2 py-0.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
       />
 
       {/* Search Options */}
       <Tooltip title="Case sensitive">
-        <IconButton
-          size="small"
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => setCaseSensitive(!caseSensitive)}
-          sx={{
-            color: caseSensitive ? "#1976d2" : "#666",
-            backgroundColor: caseSensitive ? "#e3f2fd" : "transparent",
-          }}
+          className={caseSensitive ? "bg-blue-50 text-blue-600" : "text-gray-600"}
         >
           Aa
-        </IconButton>
+        </Button>
       </Tooltip>
 
       <Tooltip title="Whole word">
-        <IconButton
-          size="small"
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => setWholeWord(!wholeWord)}
-          sx={{
-            color: wholeWord ? "#1976d2" : "#666",
-            backgroundColor: wholeWord ? "#e3f2fd" : "transparent",
-          }}
+          className={wholeWord ? "bg-blue-50 text-blue-600" : "text-gray-600"}
         >
           Ab
-        </IconButton>
+        </Button>
       </Tooltip>
 
       <Tooltip title="Regular expression">
-        <IconButton
-          size="small"
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => setRegex(!regex)}
-          sx={{
-            color: regex ? "#1976d2" : "#666",
-            backgroundColor: regex ? "#e3f2fd" : "transparent",
-          }}
+          className={regex ? "bg-blue-50 text-blue-600" : "text-gray-600"}
         >
           .*
-        </IconButton>
+        </Button>
       </Tooltip>
 
       {/* Search Results */}
@@ -549,31 +521,33 @@ const SearchPopover: React.FC<SearchPopoverProps> = ({ open, onClose, terminalRe
 
       {/* Navigation */}
       <Tooltip title="Previous (Shift+Enter)">
-        <IconButton
-          size="small"
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={handleFindPrevious}
           disabled={!searchText || !searchResult || searchResult.resultCount === 0}
         >
           <ChevronUp className="h-4 w-4" />
-        </IconButton>
+        </Button>
       </Tooltip>
 
       <Tooltip title="Next (Enter)">
-        <IconButton
-          size="small"
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={handleFindNext}
           disabled={!searchText || !searchResult || searchResult.resultCount === 0}
         >
           <ChevronDown className="h-4 w-4" />
-        </IconButton>
+        </Button>
       </Tooltip>
 
       {/* Close */}
       <Tooltip title="Close (Esc)">
-        <IconButton size="small" onClick={onClose}>
+        <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-4 w-4" />
-        </IconButton>
+        </Button>
       </Tooltip>
-    </Paper>
+    </div>
   );
 };

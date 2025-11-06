@@ -1,4 +1,4 @@
-import { IconButton, useTheme } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import React from "react";
 import { useTypedFormContext } from "../../../../../hooks/useFormContext";
 import { CDPIPELINE_FORM_NAMES, NAMES } from "../../../../../names";
@@ -7,16 +7,14 @@ import { ApplicationRowProps } from "./types";
 import { useCodebaseBranchWatchList } from "@/k8s/api/groups/KRCI/CodebaseBranch/hooks";
 import { codebaseBranchLabels, sortKubeObjectByCreationTimestamp } from "@my-project/shared";
 import { FormTextField } from "@/core/providers/Form/components/FormTextField";
-import { FormAutocompleteSingle } from "@/core/providers/Form/components/FormAutocompleteSingle";
+import { FormCombobox } from "@/core/providers/Form/components/FormCombobox";
 import { FieldEvent } from "@/core/types/forms";
 import { ValueOf } from "@/core/types/global";
-import { FORM_CONTROL_LABEL_HEIGHT } from "@/core/providers/Form/constants";
 import { Trash } from "lucide-react";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { FieldError } from "react-hook-form";
 
 export const ApplicationRow = ({ application, index, removeRow }: ApplicationRowProps) => {
-  const theme = useTheme();
   const appName = application.metadata.name;
 
   const {
@@ -136,11 +134,10 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
 
   return (
     <LoadingWrapper isLoading={applicationBranchListWatch.query.isLoading}>
-      <div className="col-span-12 grid grid-cols-12 gap-4">
+      <div className="col-span-12 grid grid-cols-12 items-center gap-4">
         <div className="col-span-5">
           <FormTextField
             {...register(rowAppNameField)}
-            label="Application"
             disabled
             defaultValue={appName}
             control={control}
@@ -148,7 +145,7 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
           />
         </div>
         <div className="col-span-6">
-          <FormAutocompleteSingle
+          <FormCombobox
             placeholder={"Select branch"}
             {...register(rowAppBranchField, {
               required: "Select branch",
@@ -162,7 +159,6 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
                 setValue(CDPIPELINE_FORM_NAMES.inputDockerStreams.name, newInputDockerStreamsValue);
               },
             })}
-            label="Branch"
             control={control}
             errors={{
               [appBranchError?.ref?.name as string]: appBranchError,
@@ -177,10 +173,10 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
             }
           />
         </div>
-        <div className="col-span-1" style={{ marginTop: theme.typography.pxToRem(FORM_CONTROL_LABEL_HEIGHT) }}>
-          <IconButton size={"small"} style={{ minWidth: 0 }} onClick={handleDeleteApplicationRow}>
+        <div className="col-span-1 flex justify-end">
+          <Button variant="ghost" size="icon" className="min-w-0" onClick={handleDeleteApplicationRow}>
             <Trash size={20} />
-          </IconButton>
+          </Button>
         </div>
       </div>
     </LoadingWrapper>

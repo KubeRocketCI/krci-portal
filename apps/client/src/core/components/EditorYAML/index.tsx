@@ -1,5 +1,7 @@
 import React from "react";
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Alert } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Alert } from "@/core/components/ui/alert";
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
 import CodeEditor, { CodeEditorHandle } from "../CodeEditor";
 import { KubeResourceEditorProps } from "./types";
 
@@ -27,41 +29,45 @@ export default function EditorYAML({ props, state }: KubeResourceEditorProps) {
   };
 
   return (
-    <Dialog open={state.open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Kubernetes Resource Editor</DialogTitle>
-      <DialogContent>
-        <CodeEditor
-          ref={editorRef}
-          content={content}
-          height={height}
-          language="yaml"
-          onChange={(text, json, err) => {
-            if (err) setError(err.message);
-            else setError(null);
-            onChange?.(text, json, err);
-          }}
-          theme="vs-light"
-          options={{
-            readOnly,
-            minimap: { enabled: false },
-          }}
-        />
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} variant="outlined" size="small">
-          Close
-        </Button>
-        {!readOnly && (
-          <Button onClick={handleSave} variant="contained" size="small">
-            Save
+    <Dialog open={state.open} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="w-full max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>Kubernetes Resource Editor</DialogTitle>
+        </DialogHeader>
+        <DialogBody>
+          <CodeEditor
+            ref={editorRef}
+            content={content}
+            height={height}
+            language="yaml"
+            onChange={(text, json, err) => {
+              if (err) setError(err.message);
+              else setError(null);
+              onChange?.(text, json, err);
+            }}
+            theme="vs-light"
+            options={{
+              readOnly,
+              minimap: { enabled: false },
+            }}
+          />
+          {error && (
+            <Alert variant="destructive" className="mb-2">
+              {error}
+            </Alert>
+          )}
+        </DialogBody>
+        <DialogFooter>
+          <Button onClick={onClose} variant="outline" size="sm">
+            Close
           </Button>
-        )}
-      </DialogActions>
+          {!readOnly && (
+            <Button onClick={handleSave} variant="default" size="sm">
+              Save
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 }

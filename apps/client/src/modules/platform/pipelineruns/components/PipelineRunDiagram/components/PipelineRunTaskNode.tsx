@@ -1,7 +1,7 @@
 import React from "react";
 import { Handle, Position } from "@xyflow/react";
-import { Tooltip, Chip } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { Badge } from "@/core/components/ui/badge";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { getTaskRunStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun/utils";
 import { getApprovalTaskStatusIcon } from "@/k8s/api/groups/KRCI/ApprovalTask/utils";
@@ -13,8 +13,6 @@ export const PipelineRunTaskNode: React.FC<{
   sourcePosition?: Position;
   targetPosition?: Position;
 }> = ({ data, sourcePosition, targetPosition }) => {
-  const theme = useTheme();
-
   const displayName = data.name;
   const truncatedName = displayName.length > 20 ? `${displayName.slice(0, 17)}...` : displayName;
 
@@ -28,7 +26,7 @@ export const PipelineRunTaskNode: React.FC<{
     }
     return {
       component: null,
-      color: theme.palette.grey[400],
+      color: "#9ca3af", // gray-400 equivalent
     };
   };
 
@@ -88,19 +86,16 @@ export const PipelineRunTaskNode: React.FC<{
 
   return (
     <>
-      {/* Input handle */}
       <Handle
         type="target"
         position={targetPosition || Position.Top}
+        className="border-background h-2 w-2 border-2"
         style={{
           background: statusData.color,
-          width: 8,
-          height: 8,
-          border: `2px solid ${theme.palette.background.paper}`,
         }}
       />
 
-      <Tooltip title={tooltipContent} arrow placement="top">
+      <Tooltip title={tooltipContent} placement="top">
         <div
           className="bg-background relative flex h-[60px] w-[180px] cursor-default flex-col items-center justify-center rounded-md p-6"
           style={{
@@ -110,19 +105,9 @@ export const PipelineRunTaskNode: React.FC<{
         >
           {/* Task type indicators */}
           {data.isFinally && (
-            <Chip
-              label="Finally"
-              size="small"
-              sx={{
-                position: "absolute",
-                top: -8,
-                right: -8,
-                fontSize: "0.6rem",
-                height: 16,
-                backgroundColor: theme.palette.grey[300],
-                color: theme.palette.grey[700],
-              }}
-            />
+            <Badge variant="secondary" className="absolute -top-2 -right-2 h-4 bg-gray-300 text-[0.6rem] text-gray-700">
+              Finally
+            </Badge>
           )}
 
           {/* Status icon and task name */}
@@ -154,11 +139,9 @@ export const PipelineRunTaskNode: React.FC<{
       <Handle
         type="source"
         position={sourcePosition || Position.Bottom}
+        className="border-background h-2 w-2 border-2"
         style={{
           background: statusData.color,
-          width: 8,
-          height: 8,
-          border: `2px solid ${theme.palette.background.paper}`,
         }}
       />
     </>

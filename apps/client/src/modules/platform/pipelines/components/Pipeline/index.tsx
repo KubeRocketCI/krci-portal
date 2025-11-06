@@ -1,5 +1,4 @@
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
-import { IconButton } from "@mui/material";
 import { PipelineGraphDialog } from "../../dialogs/PipelineGraph";
 import { PATH_PIPELINE_DETAILS_FULL } from "../../pages/details/route";
 import { VectorSquare } from "lucide-react";
@@ -27,17 +26,18 @@ export const Pipeline = ({ pipelineName, namespace }: { pipelineName: string; na
         </Link>
       </Button>
 
-      <IconButton
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={() =>
           openPipelineGraphDialog({
             pipelineName,
             namespace,
           })
         }
-        size={"small"}
       >
         <VectorSquare size={16} />
-      </IconButton>
+      </Button>
     </div>
   );
 };

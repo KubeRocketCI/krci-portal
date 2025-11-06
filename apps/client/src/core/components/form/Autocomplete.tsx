@@ -8,18 +8,8 @@ import type {
   FormAsyncValidateOrFn,
   FormValidateOrFn,
 } from "@tanstack/react-form";
-import {
-  Autocomplete as MuiAutocomplete,
-  AutocompleteFreeSoloValueMapping,
-  AutocompleteProps as MuiAutocompleteProps,
-  AutocompleteValue,
-  ChipTypeMap,
-  FormControl,
-  FormHelperText,
-  TextField as MuiTextField,
-  Tooltip,
-} from "@mui/material";
-import { Info } from "lucide-react";
+import { Combobox, ComboboxOption } from "@/core/components/ui/combobox";
+import { FormField } from "@/core/components/ui/form-field";
 
 export interface AutocompleteProps<
   Values extends Record<string, unknown> = Record<string, unknown>,
@@ -63,15 +53,9 @@ export interface AutocompleteProps<
   multiple?: Multiple;
   freeSolo?: FreeSolo;
   disableClearable?: DisableClearable;
-  getOptionLabel?: (option: TOption | AutocompleteFreeSoloValueMapping<FreeSolo>) => string;
-  ChipProps?: ChipTypeMap["props"];
-  // Allow passing through other Autocomplete props
-  AutocompleteProps?: Partial<
-    Omit<
-      MuiAutocompleteProps<TOption, Multiple, DisableClearable, FreeSolo>,
-      "value" | "onChange" | "onBlur" | "renderInput" | "options"
-    >
-  >;
+  getOptionLabel?: (option: TOption | string) => string;
+  // Legacy props - kept for backward compatibility but not used
+  ChipProps?: Record<string, unknown>;
 }
 
 export const Autocomplete = <
@@ -90,64 +74,63 @@ export const Autocomplete = <
   helperText,
   options,
   multiple,
-  freeSolo,
-  disableClearable,
   getOptionLabel,
-  ChipProps,
-  AutocompleteProps,
 }: AutocompleteProps<Values, TName, TOption, Multiple, DisableClearable, FreeSolo>) => {
   const error = field.state.meta.errors?.[0];
   const hasError = !!error;
-  const errorText = hasError ? (error as string) : undefined;
-  const displayHelperText = errorText || helperText;
+  const errorMessage = hasError ? (error as string) : undefined;
+  const fieldId = React.useId();
 
-  const endAdornment = tooltipText ? (
-    <div className="flex flex-row items-center gap-1">
-      <Tooltip title={tooltipText}>
-        <Info size={16} />
-      </Tooltip>
-    </div>
-  ) : undefined;
+  // Convert options to ComboboxOption format
+  const comboboxOptions: ComboboxOption[] = React.useMemo(() => {
+    return options.map((option) => {
+      const label = getOptionLabel ? getOptionLabel(option) : String(option);
+      const value = typeof option === "string" ? option : String(option);
+      return { label, value };
+    });
+  }, [options, getOptionLabel]);
+
+  // Handle value conversion
+  const comboboxValue = React.useMemo(() => {
+    const fieldValue = field.state.value;
+    if (multiple) {
+      return Array.isArray(fieldValue) ? fieldValue.map((v) => String(v)) : [];
+    }
+    return fieldValue ? String(fieldValue) : "";
+  }, [field.state.value, multiple]);
+
+  const handleValueChange = React.useCallback(
+    (value: string | string[]) => {
+      if (multiple) {
+        field.handleChange((Array.isArray(value) ? value : [value]) as never);
+      } else {
+        field.handleChange((value as string) as never);
+      }
+    },
+    [field, multiple]
+  );
+
+  // Note: freeSolo and disableClearable are not directly supported by Combobox
+  // These would need to be handled at a higher level if needed
 
   return (
-    <div className="flex flex-col gap-2">
-      <FormControl fullWidth>
-        <MuiAutocomplete
-          {...AutocompleteProps}
-          value={(field.state.value ?? null) as AutocompleteValue<TOption, Multiple, DisableClearable, FreeSolo>}
-          onChange={(_event, newValue) => {
-            field.handleChange(newValue as never);
-          }}
-          onBlur={field.handleBlur}
-          options={options}
-          disabled={disabled}
-          multiple={multiple}
-          freeSolo={freeSolo}
-          disableClearable={disableClearable}
-          getOptionLabel={getOptionLabel}
-          ChipProps={ChipProps}
-          renderInput={(params) => (
-            <MuiTextField
-              {...params}
-              label={label}
-              placeholder={placeholder}
-              error={hasError}
-              helperText={displayHelperText}
-              InputProps={{
-                ...params.InputProps,
-                endAdornment: (
-                  <>
-                    {params.InputProps.endAdornment}
-                    {endAdornment}
-                  </>
-                ),
-              }}
-            />
-          )}
-        />
-        {/* Additional helper text if needed outside of TextField */}
-        {!displayHelperText && hasError && <FormHelperText error>{errorText}</FormHelperText>}
-      </FormControl>
-    </div>
+    <FormField
+      label={label}
+      tooltipText={tooltipText}
+      error={hasError ? errorMessage : undefined}
+      helperText={errorMessage || helperText}
+      id={fieldId}
+    >
+      <Combobox
+        options={comboboxOptions}
+        value={comboboxValue}
+        onValueChange={handleValueChange}
+        placeholder={placeholder}
+        multiple={multiple}
+        disabled={disabled}
+        id={fieldId}
+        aria-describedby={hasError ? `${fieldId}-helper` : undefined}
+      />
+    </FormField>
   );
 };

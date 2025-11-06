@@ -1,10 +1,12 @@
 import { useCDPipelineWatchList } from "@/k8s/api/groups/KRCI/CDPipeline";
 import { useCDPipelineFilter } from "./hooks/useCDPipelineFilter";
 import { Autocomplete, NamespaceAutocomplete, TextField } from "@/core/components/form";
-import { Button } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import React from "react";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
+import { Label } from "@/core/components/ui/label";
+import { X } from "lucide-react";
 
 export const CDPipelineFilter = () => {
   const { form, reset } = useCDPipelineFilter();
@@ -67,8 +69,10 @@ export const CDPipelineFilter = () => {
         )}
 
         {form.state.isDirty && (
-          <div className="mt-4">
-            <Button variant="outlined" onClick={reset} size="small">
+          <div className="flex flex-col gap-2">
+            <Label> </Label>
+            <Button variant="secondary" onClick={reset} size="sm" className="mt-0.5">
+              <X size={16} />
               Clear
             </Button>
           </div>

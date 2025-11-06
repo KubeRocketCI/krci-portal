@@ -1,7 +1,7 @@
 import { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
-import { Tooltip } from "@mui/material";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { Application, applicationLabels } from "@my-project/shared";
 import { Link, useParams } from "@tanstack/react-router";
 import React from "react";
@@ -91,7 +91,7 @@ export const useColumns = (): TableColumn<Application>[] => {
             if (data?.spec.source?.targetRevision === "build/NaN") {
               return (
                 <div className="grow">
-                  <Tooltip title="No deployment." followCursor>
+                  <Tooltip title="No deployment.">
                     <div>—</div>
                   </Tooltip>
                 </div>

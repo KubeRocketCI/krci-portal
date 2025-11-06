@@ -8,6 +8,4 @@ export interface CDPipelineActionsMenuProps {
   };
   backRoute?: RouteParams;
   variant?: ActionMenuType;
-  anchorEl?: HTMLElement;
-  handleCloseResourceActionListMenu?: () => void;
 }

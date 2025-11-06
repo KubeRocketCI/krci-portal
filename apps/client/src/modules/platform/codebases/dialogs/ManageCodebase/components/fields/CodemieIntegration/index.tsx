@@ -1,8 +1,7 @@
-import { FormCheckbox } from "@/core/providers/Form/components/FormCheckbox";
-import { FormControlLabelWithTooltip } from "@/core/providers/Form/components/FormControlLabelWithTooltip";
+import { FormSwitchRich } from "@/core/providers/Form/components/FormSwitchRich";
 import { useClusterStore } from "@/k8s/store";
 import { FORM_MODES, FieldEvent } from "@/core/types/forms";
-import { Alert } from "@mui/material";
+import { Alert } from "@/core/components/ui/alert";
 import { useShallow } from "zustand/react/shallow";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_FORM_NAMES } from "../../../names";
@@ -45,42 +44,39 @@ export const CodemieIntegration = () => {
   const hasError = codemieWatchQuery.query.error || codemieProjectWatchQuery.query.error;
   const codemieStatusIsOk = !!codemieWatchQuery.query.data?.status?.connected;
   const codemieProjectStatusIsOk = codemieProjectWatchQuery.query.data?.status?.value === "created";
+  const hasNoCodemieAndProject = !hasCodemieAndProject;
 
   return (
-    <div className="flex flex-col gap-4">
-      {!hasCodemieAndProject ? (
-        <div>
-          <Alert severity="info" variant="outlined">
+    <div className={hasNoCodemieAndProject ? "flex gap-4" : "w-full"}>
+      {hasNoCodemieAndProject && (
+        <div className="w-1/2">
+          <Alert variant="default" className="h-full">
             There is no Codemie or CodemieProject available
           </Alert>
         </div>
-      ) : null}
-      <div>
-        <div className="flex items-center gap-2">
-          <div>
-            <FormCheckbox
-              {...register(CODEBASE_FORM_NAMES.hasCodemieIntegration.name, {
-                onChange: ({ target: { value } }: FieldEvent) => {
-                  if (value) {
-                    setValue(CODEBASE_FORM_NAMES.codemieIntegrationLabel.name, "codemie");
-                  } else {
-                    setValue(CODEBASE_FORM_NAMES.codemieIntegrationLabel.name, "");
-                  }
-                },
-              })}
-              label={<FormControlLabelWithTooltip label={"Integrate with Codemie"} />}
-              control={control}
-              errors={errors}
-              disabled={
-                !hasCodemieAndProject ||
-                !codemieStatusIsOk ||
-                !codemieProjectStatusIsOk ||
-                !!hasError ||
-                mode === FORM_MODES.EDIT
+      )}
+      <div className={hasNoCodemieAndProject ? "w-1/2" : "w-full"}>
+        <FormSwitchRich
+          {...register(CODEBASE_FORM_NAMES.hasCodemieIntegration.name, {
+            onChange: ({ target: { value } }: FieldEvent) => {
+              if (value) {
+                setValue(CODEBASE_FORM_NAMES.codemieIntegrationLabel.name, "codemie");
+              } else {
+                setValue(CODEBASE_FORM_NAMES.codemieIntegrationLabel.name, "");
               }
-            />
-          </div>
-        </div>
+            },
+          })}
+          label="Integrate with Codemie"
+          control={control}
+          errors={errors}
+          disabled={
+            !hasCodemieAndProject ||
+            !codemieStatusIsOk ||
+            !codemieProjectStatusIsOk ||
+            !!hasError ||
+            mode === FORM_MODES.EDIT
+          }
+        />
       </div>
     </div>
   );

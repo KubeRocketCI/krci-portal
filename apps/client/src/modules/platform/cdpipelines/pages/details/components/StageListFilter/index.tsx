@@ -7,7 +7,8 @@ import { VIEW_MODES } from "@/core/providers/ViewMode/types";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { useStagePermissions } from "@/k8s/api/groups/KRCI/Stage";
 import { ManageStageDialog } from "@/modules/platform/cdpipelines/dialogs/ManageStage";
-import { IconButton, Tooltip, useTheme } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { applicationHealthStatus } from "@my-project/shared";
 import { Plus, Rows2, Rows3 } from "lucide-react";
 import React from "react";
@@ -16,7 +17,6 @@ import { useStageFilter } from "./hooks/useStageFilter";
 import { stagesFilterControlNames } from "./constants";
 
 export const StageListFilter = () => {
-  const theme = useTheme();
   const cdPipelineWatch = useCDPipelineWatch();
   const stagesWithItsApplicationsWatch = useStagesWithItsApplicationsWatch();
 
@@ -98,29 +98,37 @@ export const StageListFilter = () => {
       <div>
         <div className="flex flex-row justify-end gap-0">
           <Tooltip title={"View Less Details"}>
-            <IconButton onClick={() => handleChangeViewMode(VIEW_MODES.COMPACT)} size="large">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleChangeViewMode(VIEW_MODES.COMPACT)}
+              className={viewMode === VIEW_MODES.COMPACT ? "text-primary" : "text-muted-foreground"}
+            >
               <Rows2
-                color={viewMode === VIEW_MODES.COMPACT ? theme.palette.primary.main : theme.palette.action.active}
+                className={viewMode === VIEW_MODES.COMPACT ? "text-primary" : "text-muted-foreground"}
                 size={16}
               />
-            </IconButton>
+            </Button>
           </Tooltip>
           <Tooltip title={"View More Details"}>
-            <IconButton onClick={() => handleChangeViewMode(VIEW_MODES.DETAILED)} size="large">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleChangeViewMode(VIEW_MODES.DETAILED)}
+              className={viewMode === VIEW_MODES.DETAILED ? "text-primary" : "text-muted-foreground"}
+            >
               <Rows3
-                color={viewMode === VIEW_MODES.DETAILED ? theme.palette.primary.main : theme.palette.action.active}
+                className={viewMode === VIEW_MODES.DETAILED ? "text-primary" : "text-muted-foreground"}
                 size={16}
               />
-            </IconButton>
+            </Button>
           </Tooltip>
         </div>
       </div>
       <div>
         <ButtonWithPermission
           ButtonProps={{
-            startIcon: <Plus />,
-            color: "primary",
-            variant: "contained",
+            variant: "default",
             onClick: () => {
               openManageStageDialog({
                 cdPipeline: cdPipelineWatch.query.data!,
@@ -131,7 +139,8 @@ export const StageListFilter = () => {
           allowed={stagePermissions.data.create.allowed}
           reason={stagePermissions.data.create.reason}
         >
-          create environment
+          <Plus />
+          Create Environment
         </ButtonWithPermission>
       </div>
     </div>

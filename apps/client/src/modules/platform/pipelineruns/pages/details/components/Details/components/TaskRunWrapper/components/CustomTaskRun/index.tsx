@@ -4,7 +4,6 @@ import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { Tabs } from "@/core/providers/Tabs/components/Tabs";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { humanize } from "@/core/utils/date-humanize";
-import { Divider, Paper } from "@mui/material";
 import {
   ApprovalTask,
   ApprovalTaskAction,
@@ -17,7 +16,6 @@ import {
 } from "@my-project/shared";
 import { CheckLine, MessageSquareMore, XCircle } from "lucide-react";
 import React from "react";
-import { StyledDetailsBody, StyledDetailsHeader } from "../../../../styles";
 import { ChoiceButtonGroup } from "./components/ChoiceButtonGroup";
 import { CommentDialog } from "./components/CommentDialog";
 import { useTabs } from "./hooks/useTabs";
@@ -171,8 +169,8 @@ export const CustomTaskRun = ({ pipelineRunTaskData }: CustomTaskRunProps) => {
   const { activeTab, handleChangeTab } = useTabsContext();
 
   return (
-    <Paper>
-      <StyledDetailsHeader>
+    <div className="bg-card rounded shadow">
+      <div className="p-6">
         <div className="flex justify-between gap-2">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
@@ -199,11 +197,11 @@ export const CustomTaskRun = ({ pipelineRunTaskData }: CustomTaskRunProps) => {
             </div>
           )}
         </div>
-      </StyledDetailsHeader>
-      <Divider orientation="horizontal" />
-      <StyledDetailsBody>
+      </div>
+      <hr className="border-border" />
+      <div className="px-6 pb-6">
         <Tabs tabs={tabs} activeTabIdx={activeTab} handleChangeTab={handleChangeTab} />
-      </StyledDetailsBody>
-    </Paper>
+      </div>
+    </div>
   );
 };

@@ -1,4 +1,5 @@
-import { Button, Tooltip } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { useFormsContext } from "../../hooks/useFormsContext";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 
@@ -14,12 +15,12 @@ export const Actions = () => {
     <div className="flex items-center justify-end gap-2">
       <Button
         onClick={resetAll}
-        size="small"
-        component={"button"}
+        size="sm"
+        variant="ghost"
         disabled={!isAnyFormDirty}
-        sx={{ ml: "auto !important" }}
+        className="ml-auto"
       >
-        undo changes
+        Undo Changes
       </Button>
       <ConditionalWrapper
         condition={isAnyFormForbiddenToSubmit}
@@ -31,13 +32,11 @@ export const Actions = () => {
       >
         <Button
           onClick={() => submitAll(true)}
-          size={"small"}
-          component={"button"}
-          variant={"contained"}
-          color={"primary"}
+          size={"sm"}
+          variant={"default"}
           disabled={!isAnyFormDirty || isAnyFormSubmitting || isAnyFormForbiddenToSubmit}
         >
-          save
+          Save
         </Button>
       </ConditionalWrapper>
     </div>

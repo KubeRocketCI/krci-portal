@@ -22,7 +22,7 @@ export const Selection = ({
           checkedIcon: <Table size={24} color="#002446" />,
         },
       ]}
-      gridItemSize={12}
+      gridCols={1}
     />
   );
 };

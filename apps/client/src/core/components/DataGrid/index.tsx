@@ -1,4 +1,5 @@
-import { Alert, CircularProgress } from "@mui/material";
+import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
+import { Alert } from "@/core/components/ui/alert";
 import React from "react";
 import { EmptyList } from "../EmptyList";
 import { ErrorContent } from "../ErrorContent";
@@ -60,7 +61,7 @@ export const DataGrid = <DataType = KubeObjectBase,>({
     if (isLoading) {
       return (
         <div className="flex justify-center">
-          <CircularProgress />
+          <LoadingSpinner />
         </div>
       );
     }
@@ -70,7 +71,7 @@ export const DataGrid = <DataType = KubeObjectBase,>({
         <div className="flex flex-col gap-4">
           <div>
             {errors && !!errors.length && (
-              <Alert severity="warning">
+              <Alert variant="default">
                 {errors.map((error) => (
                   <div>{error?.message || error?.toString()}</div>
                 ))}

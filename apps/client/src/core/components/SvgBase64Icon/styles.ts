@@ -1,18 +1,9 @@
-import makeStyles from "@mui/styles/makeStyles";
+export const getIconClasses = () => {
+  // Use Tailwind arbitrary values for dynamic sizes
+  return `flex justify-center items-center m-auto [&_img]:w-full [&_img]:h-full`;
+};
 
-export const useStyles = (width: number, height: number) =>
-  makeStyles((theme) => ({
-    icon: {
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      margin: "auto",
-      width: theme.typography.pxToRem(width),
-      height: theme.typography.pxToRem(height),
-
-      "& img": {
-        width: "100%",
-        height: "100%",
-      },
-    },
-  }))();
+export const getIconStyle = (width: number, height: number): React.CSSProperties => ({
+  width: `${width}px`,
+  height: `${height}px`,
+});

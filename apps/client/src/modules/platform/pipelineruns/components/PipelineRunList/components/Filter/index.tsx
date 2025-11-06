@@ -2,13 +2,15 @@ import { Autocomplete, NamespaceAutocomplete, Select } from "@/core/components/f
 import { ValueOf } from "@/core/types/global";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { FilterTypeWithOptionAll } from "@/k8s/types";
-import { Button, FormHelperText } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import { PipelineRun, pipelineRunLabels, pipelineRunStatus, PipelineType } from "@my-project/shared";
 import React from "react";
 import { pipelineRunFilterControlNames } from "./constants";
 import { usePipelineRunFilter } from "./hooks/usePipelineRunFilter";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
+import { Label } from "@/core/components/ui/label";
+import { X } from "lucide-react";
 
 export const PipelineRunFilter = ({
   pipelineRuns,
@@ -57,10 +59,10 @@ export const PipelineRunFilter = ({
           <form.Field name="pipelineType">
             {(field) => <Select field={field} label="Type" options={pipelineTypeOptions} placeholder="Select type" />}
           </form.Field>
-          <FormHelperText>
+          <p className="text-muted-foreground text-xs mt-1">
             {pipelineRunTypes.slice(0, 5).map(capitalizeFirstLetter).join(" / ")}
             {pipelineRunTypes.length > 5 ? "..." : ""}
-          </FormHelperText>
+          </p>
         </div>
       )}
 
@@ -69,7 +71,7 @@ export const PipelineRunFilter = ({
           <form.Field name="status">
             {(field) => <Select field={field} label="Status" options={statusOptions} placeholder="Select status" />}
           </form.Field>
-          <FormHelperText>Success / Failure / Unknown</FormHelperText>
+          <p className="text-muted-foreground text-xs mt-1">Success / Failure / Unknown</p>
         </div>
       )}
 
@@ -107,12 +109,12 @@ export const PipelineRunFilter = ({
       )}
 
       {form.state.isDirty && (
-        <div>
-          <div className="mt-6">
-            <Button variant="outlined" onClick={reset} size="small">
-              Clear
-            </Button>
-          </div>
+        <div className="flex flex-col gap-2">
+          <Label> </Label>
+          <Button variant="secondary" onClick={reset} size="sm" className="mt-0.5">
+            <X size={16} />
+            Clear
+          </Button>
         </div>
       )}
     </div>

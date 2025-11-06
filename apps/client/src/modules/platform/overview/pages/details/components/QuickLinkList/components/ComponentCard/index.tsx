@@ -1,46 +1,50 @@
-import { Card, IconButton, Link as MuiLink, useTheme } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { DropdownMenu, DropdownMenuTrigger } from "@/core/components/ui/dropdown-menu";
 import React from "react";
-import { useStyles } from "./styles";
 import { ComponentCardProps } from "./types";
-import { useResourceActionListContext } from "@/core/providers/ResourceActionList/hooks";
-import { QuickLink } from "@my-project/shared";
+import { QuickLinkActionsMenu } from "@/modules/platform/configuration/modules/quicklinks/components/QuickLinkActionsMenu";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { EllipsisVertical } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export const ComponentCard = ({ component }: ComponentCardProps) => {
-  const theme = useTheme();
-  const classes = useStyles();
   const {
     spec: { url, icon },
     metadata: { name },
   } = component;
 
   const _url = !/^https?:\/\//i.test(url) ? `https://${url}` : url;
-  const buttonRef = React.createRef<HTMLButtonElement>();
-  const { handleOpenResourceActionListMenu } = useResourceActionListContext<QuickLink>();
+  const [open, setOpen] = React.useState(false);
 
   return (
-    <Card className={classes.cardRoot}>
+    <div className="bg-card relative h-16 rounded border p-4 shadow-xs">
       <div className="flex flex-row items-center justify-between gap-4">
-        <MuiLink href={_url} target="_blank" rel="noopener" style={{ minWidth: 0 }}>
-          <div className="flex flex-row items-center gap-4">
-            <span className={classes.serviceItemIcon}>
-              <img src={`data:image/svg+xml;base64,${icon}`} alt="" />
-            </span>
-            <div style={{ minWidth: 0 }}>
-              <TextWithTooltip text={name} />
+        <Button variant="link" asChild>
+          <Link to={_url} target="_blank" rel="noopener" className="min-w-0">
+            <div className="flex flex-row items-center gap-4">
+              <span className="block h-8 w-8 shrink-0">
+                <img src={`data:image/svg+xml;base64,${icon}`} alt="" className="h-full w-full" />
+              </span>
+              <div className="min-w-0">
+                <TextWithTooltip text={name} />
+              </div>
             </div>
-          </div>
-        </MuiLink>
-        <IconButton
-          ref={buttonRef}
-          aria-label={"Options"}
-          onClick={() => handleOpenResourceActionListMenu(buttonRef.current, component)}
-          size="medium"
-        >
-          <EllipsisVertical size={20} color={theme.palette.secondary.dark} />
-        </IconButton>
+          </Link>
+        </Button>
+        <DropdownMenu open={open} onOpenChange={setOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label={"Options"}>
+              <EllipsisVertical size={20} className="text-secondary-dark" />
+            </Button>
+          </DropdownMenuTrigger>
+          <QuickLinkActionsMenu
+            data={{
+              quickLink: component,
+            }}
+            variant="menu"
+          />
+        </DropdownMenu>
       </div>
-    </Card>
+    </div>
   );
 };

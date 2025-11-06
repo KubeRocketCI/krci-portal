@@ -1,4 +1,3 @@
-import { FormControl, TextField as MuiTextField, Tooltip } from "@mui/material";
 import type {
   DeepKeys,
   DeepValue,
@@ -9,8 +8,9 @@ import type {
   FormValidateOrFn,
   Updater,
 } from "@tanstack/react-form";
-import { Info } from "lucide-react";
 import React from "react";
+import { Input } from "@/core/components/ui/input";
+import { FormField } from "@/core/components/ui/form-field";
 
 export interface TextFieldProps<
   Values extends Record<string, unknown> = Record<string, unknown>,
@@ -59,36 +59,29 @@ export const TextField = <
 }: TextFieldProps<Values, TName>) => {
   const error = field.state.meta.errors?.[0];
   const hasError = !!error;
-  const helperText = hasError ? (error as string) : undefined;
-
-  const endAdornment = tooltipText ? (
-    <div className="flex flex-row items-center gap-1">
-      <Tooltip title={tooltipText}>
-        <Info size={16} />
-      </Tooltip>
-    </div>
-  ) : undefined;
+  const errorMessage = hasError ? (error as string) : undefined;
+  const fieldId = React.useId();
 
   return (
-    <div className="flex flex-col gap-2">
-      <FormControl fullWidth>
-        <MuiTextField
-          value={field.state.value as string}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            field.handleChange(e.target.value as Updater<DeepValue<Values, TName>>)
-          }
-          onBlur={field.handleBlur}
-          placeholder={placeholder}
-          disabled={disabled}
-          error={hasError}
-          label={label}
-          helperText={helperText}
-          InputProps={{
-            endAdornment,
-          }}
-          aria-describedby={hasError ? `${String(field.name)}-error` : undefined}
-        />
-      </FormControl>
-    </div>
+    <FormField
+      label={label}
+      tooltipText={tooltipText}
+      error={hasError ? errorMessage : undefined}
+      helperText={errorMessage}
+      id={fieldId}
+    >
+      <Input
+        value={(field.state.value ?? "") as string}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          field.handleChange(e.target.value as Updater<DeepValue<Values, TName>>)
+        }
+        onBlur={field.handleBlur}
+        placeholder={placeholder}
+        disabled={disabled}
+        invalid={hasError}
+        id={fieldId}
+        aria-describedby={hasError ? `${fieldId}-helper` : undefined}
+      />
+    </FormField>
   );
 };

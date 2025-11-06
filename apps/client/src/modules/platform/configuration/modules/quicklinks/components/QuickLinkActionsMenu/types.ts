@@ -8,6 +8,4 @@ export interface QuickLinkActionsMenuProps {
   };
   backRoute?: RouteParams;
   variant?: ActionMenuType;
-  anchorEl?: HTMLElement;
-  handleCloseResourceActionListMenu?: () => void;
 }

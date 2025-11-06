@@ -1,15 +1,3 @@
-import {
-  ButtonGroup,
-  ClickAwayListener,
-  Grow,
-  ListItemIcon,
-  ListItemText,
-  MenuItem,
-  MenuList,
-  Paper,
-  Popper,
-  useTheme,
-} from "@mui/material";
 import React from "react";
 
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
@@ -26,24 +14,20 @@ import { ChevronDown, LoaderCircle, Play } from "lucide-react";
 import { TektonBuildGroupProps } from "./types";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import EditorYAML from "@/core/components/EditorYAML";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/core/components/ui/dropdown-menu";
+import { Button } from "@/core/components/ui/button";
 
-export const TektonBuildGroup = ({
-  codebaseBranch,
-  latestBuildPipelineRun,
-  menuAnchorEl,
-  handleClickMenu,
-  handleCloseMenu,
-}: TektonBuildGroupProps) => {
+export const TektonBuildGroup = ({ codebaseBranch, latestBuildPipelineRun }: TektonBuildGroupProps) => {
   const codebaseWatch = useCodebaseWatch();
   const codebase = codebaseWatch.query.data;
 
   const gitServerByCodebaseWatch = useGitServerWatch();
   const gitServerByCodebase = gitServerByCodebaseWatch.query.data;
-
-  const open = Boolean(menuAnchorEl);
-  const id = open ? "simple-popper" : undefined;
-
-  const theme = useTheme();
 
   const buildTriggerTemplateWatch = useBuildTriggerTemplateWatch();
 
@@ -114,89 +98,65 @@ export const TektonBuildGroup = ({
 
   return (
     <>
-      <ButtonGroup variant="outlined" sx={{ color: theme.palette.text.primary }}>
+      <div className="flex">
         <ButtonWithPermission
           ButtonProps={{
-            startIcon: latestBuildIsRunning ? (
-              <StatusIcon Icon={LoaderCircle} isSpinning color={theme.palette.secondary.dark} />
-            ) : (
-              <Play size={20} />
-            ),
+            size: "sm",
+            variant: "outline",
             onClick: onBuildButtonClick,
-            size: "small",
-            sx: {
-              height: "100%",
-              color: theme.palette.secondary.dark,
-              borderColor: theme.palette.secondary.dark,
-            },
+            className: "rounded-r-none border-r-0 text-secondary-dark border-secondary-dark hover:bg-secondary-dark/10",
           }}
           allowed={!buildButtonDisabled}
           reason={buildButtonTooltip}
         >
-          {latestBuildIsRunning ? "building" : "build"}
+          {latestBuildIsRunning ? (
+            <StatusIcon Icon={LoaderCircle} isSpinning color="#596D80" />
+          ) : (
+            <Play size={20} className="text-secondary-dark" />
+          )}
+          {latestBuildIsRunning ? "Building" : "Build"}
         </ButtonWithPermission>
-        <ButtonWithPermission
-          ButtonProps={{
-            size: "small",
-            onClick: handleClickMenu,
-            sx: {
-              height: "100%",
-              color: theme.palette.secondary.dark,
-              borderColor: theme.palette.secondary.dark,
-            },
-          }}
-          allowed={!buildButtonDisabled}
-          reason={buildButtonTooltip}
-        >
-          <ChevronDown size={16} />
-        </ButtonWithPermission>
-      </ButtonGroup>
-      <Popper id={id} sx={{ zIndex: 1 }} open={open} anchorEl={menuAnchorEl} role={undefined} transition disablePortal>
-        {({ TransitionProps, placement }) => (
-          <Grow
-            {...TransitionProps}
-            style={{
-              transformOrigin: placement === "bottom" ? "center top" : "center bottom",
-            }}
-          >
-            <Paper>
-              <ClickAwayListener onClickAway={handleCloseMenu}>
-                <MenuList autoFocusItem>
-                  <MenuItem
-                    onClick={() => {
-                      if (!buildPipelineRunData) {
-                        return;
-                      }
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              disabled={buildButtonDisabled}
+              variant="outline"
+              size="sm"
+              className="text-secondary-dark border-secondary-dark hover:bg-secondary-dark/10 rounded-l-none"
+            >
+              <ChevronDown size={16} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={() => {
+                if (!buildPipelineRunData) {
+                  return;
+                }
 
-                      openEditorDialog({
-                        content: buildPipelineRunData,
-                        onSave: (_yaml, json) => {
-                          if (!json) {
-                            return;
-                          }
+                openEditorDialog({
+                  content: buildPipelineRunData,
+                  onSave: (_yaml, json) => {
+                    if (!json) {
+                      return;
+                    }
 
-                          triggerCreatePipelineRun({
-                            data: {
-                              pipelineRun: json as PipelineRun,
-                            },
-                          });
-                        },
-                      });
-
-                      handleCloseMenu();
-                    }}
-                  >
-                    <ListItemIcon>
-                      <Play size={25} />
-                    </ListItemIcon>
-                    <ListItemText>Build with params</ListItemText>
-                  </MenuItem>
-                </MenuList>
-              </ClickAwayListener>
-            </Paper>
-          </Grow>
-        )}
-      </Popper>
+                    triggerCreatePipelineRun({
+                      data: {
+                        pipelineRun: json as PipelineRun,
+                      },
+                    });
+                  },
+                });
+              }}
+              className="flex items-center gap-2"
+            >
+              <Play size={25} />
+              Build with params
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </>
   );
 };

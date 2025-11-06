@@ -1,38 +1,10 @@
-import { lighten } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
+import { cn } from "@/core/utils/classname";
 
-export const useStyles = makeStyles((theme) => {
-  const commonCardRating = {
-    height: theme.typography.pxToRem(21),
-    width: theme.typography.pxToRem(21),
-    color: theme.palette.common.white,
-    fontSize: theme.typography.pxToRem(13),
-  };
+const commonCardRatingClasses = "h-[21px] w-[21px] text-white text-[13px]";
 
-  return {
-    ratingDefault: {
-      ...commonCardRating,
-      background: "#E6E6F0",
-    },
-    ratingA: {
-      ...commonCardRating,
-      background: "#18BE94",
-    },
-    ratingB: {
-      ...commonCardRating,
-      background: lighten("#18BE94", 0.5),
-    },
-    ratingC: {
-      ...commonCardRating,
-      background: "#FFC754",
-    },
-    ratingD: {
-      ...commonCardRating,
-      background: "#FF8832",
-    },
-    ratingE: {
-      ...commonCardRating,
-      background: "#FD4C4D",
-    },
-  };
-});
+export const ratingDefault = cn(commonCardRatingClasses, "bg-[#E6E6F0]");
+export const ratingA = cn(commonCardRatingClasses, "bg-[#18BE94]");
+export const ratingB = cn(commonCardRatingClasses, "bg-[#8CDFC9]"); // lighten("#18BE94", 0.5) ≈ #8CDFC9
+export const ratingC = cn(commonCardRatingClasses, "bg-[#FFC754]");
+export const ratingD = cn(commonCardRatingClasses, "bg-[#FF8832]");
+export const ratingE = cn(commonCardRatingClasses, "bg-[#FD4C4D]");

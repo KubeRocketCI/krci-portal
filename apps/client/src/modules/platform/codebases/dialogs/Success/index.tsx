@@ -1,4 +1,5 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, useTheme } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
 import React from "react";
 import { DIALOG_NAME } from "./constants";
 import { SuccessGraphDialogProps } from "./types";
@@ -9,38 +10,38 @@ export const SuccessDialog: React.FC<SuccessGraphDialogProps> = ({
   props: { dialogTitle, title, description, route },
   state: { closeDialog, open },
 }) => {
-  const theme = useTheme();
-
   return (
-    <Dialog open={open} fullWidth onClose={() => closeDialog()} maxWidth={"sm"}>
-      <DialogTitle>
-        <h2 className="text-xl font-medium">{dialogTitle}</h2>
-      </DialogTitle>
-      <DialogContent>
-        <div className="flex flex-col items-center gap-2">
-          <PartyPopper size={theme.typography.pxToRem(128)} color="#A2A7B7" />
-          {title && <h3 className="text-foreground text-xl font-medium">{title}</h3>}
-          {description && <p className="text-muted-foreground text-sm">{description}</p>}
-        </div>
+    <Dialog open={open} onOpenChange={(open) => !open && closeDialog()}>
+      <DialogContent className="w-full max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-medium">{dialogTitle}</DialogTitle>
+        </DialogHeader>
+        <DialogBody>
+          <div className="flex flex-col items-center gap-2">
+            <PartyPopper size={128} color="#A2A7B7" />
+            {title && <h3 className="text-foreground text-xl font-medium">{title}</h3>}
+            {description && <p className="text-muted-foreground text-sm">{description}</p>}
+          </div>
+        </DialogBody>
+        <DialogFooter>
+          <Button onClick={() => closeDialog()} variant="ghost">
+            Close
+          </Button>
+          {route && (
+            <Link
+              to={route.to}
+              params={route.params}
+              search={route.search}
+              onClick={() => closeDialog()}
+              className="no-underline"
+            >
+              <Button variant="default">
+                Proceed
+              </Button>
+            </Link>
+          )}
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={() => closeDialog()} color="primary">
-          Close
-        </Button>
-        {route && (
-          <Link
-            to={route.to}
-            params={route.params}
-            search={route.search}
-            onClick={() => closeDialog()}
-            style={{ textDecoration: "none" }}
-          >
-            <Button color="primary" variant="contained">
-              proceed
-            </Button>
-          </Link>
-        )}
-      </DialogActions>
     </Dialog>
   );
 };

@@ -1,4 +1,4 @@
-import { Button } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
@@ -9,7 +9,7 @@ import { codebaseLabels, codebaseType } from "@my-project/shared";
 import { mapArrayToSelectOptions } from "@/core/utils/forms/mapToSelectOptions";
 import { ErrorContent } from "@/core/components/ErrorContent";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { FormAutocompleteSingle } from "@/core/providers/Form/components/FormAutocompleteSingle";
+import { FormCombobox } from "@/core/providers/Form/components/FormCombobox";
 import { RefPortal } from "@/core/components/RefPortal";
 
 export const AppVersionWidgetForm = ({
@@ -59,7 +59,7 @@ export const AppVersionWidgetForm = ({
       <LoadingWrapper isLoading={codebaseListWatch.query.isFetching}>
         {codebaseListWatch.query.error && <ErrorContent error={codebaseListWatch.query.error} />}
 
-        <FormAutocompleteSingle
+        <FormCombobox
           {...form.register("appName")}
           control={form.control}
           placeholder={"Select Application"}
@@ -68,7 +68,7 @@ export const AppVersionWidgetForm = ({
         />
       </LoadingWrapper>
       <RefPortal containerRef={addButtonContainerRef}>
-        <Button onClick={handleAddButtonClick} disabled={!appNameFieldValue}>
+        <Button variant="default" onClick={handleAddButtonClick} disabled={!appNameFieldValue}>
           add
         </Button>
       </RefPortal>

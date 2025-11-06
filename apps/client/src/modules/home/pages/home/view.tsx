@@ -57,14 +57,11 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-full flex-col">
-      {/* Hero Section - Centered */}
       <div className="flex flex-1 flex-col items-center justify-center gap-6 px-8 py-16">
-        {/* Large Logo */}
         <div className="flex h-32 w-32 items-center justify-center">
           <img src="/krci-logo.svg" alt="kuberocket-ci-logo" className="h-full w-full" />
         </div>
 
-        {/* Welcome Message */}
         <div className="flex flex-col items-center gap-3 text-center">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">Welcome to KRCI Portal</h1>
           <p className="max-w-2xl text-lg text-gray-600 dark:text-gray-400">
@@ -73,10 +70,8 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Navigation Links Section */}
       <div className="border-t border-gray-200 bg-gray-50 px-8 py-12 dark:border-gray-700 dark:bg-gray-900/50">
         <div className="mx-auto max-w-6xl">
-          {/* Quick Start Section */}
           <div className="mb-8 flex flex-col gap-3">
             <div className="flex items-center gap-2">
               <Zap className="h-4 w-4 text-yellow-500" />
@@ -110,7 +105,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* CI/CD & Development Section */}
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
               <GitBranch className="h-4 w-4 text-blue-500" />

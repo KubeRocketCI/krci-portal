@@ -1,10 +1,10 @@
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { usePipelineWatchList } from "@/k8s/api/groups/Tekton/Pipeline";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
-import { FormAutocompleteSingle } from "@/core/providers/Form/components/FormAutocompleteSingle";
+import { FormCombobox } from "@/core/providers/Form/components/FormCombobox";
 import { mapArrayToSelectOptions } from "@/core/utils/forms/mapToSelectOptions";
 import { PipelineGraphDialog } from "@/modules/platform/pipelines/dialogs/PipelineGraph";
-import { IconButton } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import { pipelineLabels, pipelineType } from "@my-project/shared";
 import { VectorSquare } from "lucide-react";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
@@ -47,7 +47,7 @@ export const ReviewPipeline = () => {
   return (
     <div className="flex items-center gap-2">
       <div className="grow">
-        <FormAutocompleteSingle
+        <FormCombobox
           {...register(CODEBASE_BRANCH_FORM_NAMES.reviewPipeline.name, {
             required: "Select Review pipeline",
           })}
@@ -61,7 +61,9 @@ export const ReviewPipeline = () => {
 
       <div className="pt-6">
         <LoadingWrapper isLoading={reviewPipelinesWatch.query.isLoading}>
-          <IconButton
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => {
               if (!currentPipeline) {
                 return;
@@ -72,10 +74,9 @@ export const ReviewPipeline = () => {
                 pipelineName: currentPipeline?.metadata.name,
               });
             }}
-            size={"small"}
           >
             <VectorSquare size={20} />
-          </IconButton>
+          </Button>
         </LoadingWrapper>
       </div>
     </div>

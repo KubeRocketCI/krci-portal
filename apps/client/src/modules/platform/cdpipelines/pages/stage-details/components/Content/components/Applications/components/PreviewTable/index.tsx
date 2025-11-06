@@ -1,12 +1,12 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
-import { Table } from "@/core/components/Table";
+import { DataTable } from "@/core/components/Table";
 import { useApplicationPermissions } from "@/k8s/api/groups/ArgoCD/Application";
 import { TABLE } from "@/k8s/constants/tables";
 import {
   StageAppCodebaseCombinedData,
   useWatchStageAppCodebasesCombinedData,
 } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
-import { Tooltip } from "@mui/material";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { useColumns } from "./hooks/useColumns";
 import { useSelection } from "../../hooks/useSelection";
 import { Trash } from "lucide-react";
@@ -24,7 +24,7 @@ export const PreviewTable = () => {
 
   return (
     <>
-      <Table<StageAppCodebaseCombinedData>
+      <DataTable<StageAppCodebaseCombinedData>
         id={TABLE.STAGE_APPLICATION_LIST_PREVIEW.id}
         name={TABLE.STAGE_APPLICATION_LIST_PREVIEW.name}
         isLoading={!stageAppCodebasesCombinedDataWatch.isFetched}
@@ -52,17 +52,16 @@ export const PreviewTable = () => {
                       <div className="text-secondary-foreground">
                         <ButtonWithPermission
                           ButtonProps={{
-                            size: "small",
-                            variant: "outlined",
-                            color: "inherit",
-                            startIcon: <Trash size={16} />,
+                            size: "sm",
+                            variant: "outline",
                             // onClick: () => setDeleteDialogOpen(true),
                             disabled: !selectionLength || !buttonsEnabledMap.uninstall,
                           }}
                           allowed={applicationPermissions.data?.delete.allowed}
                           reason={applicationPermissions.data?.delete.reason}
                         >
-                          delete
+                          <Trash size={16} />
+                          Delete
                         </ButtonWithPermission>
                       </div>
                     </Tooltip>
@@ -70,18 +69,17 @@ export const PreviewTable = () => {
                     <div className="text-secondary-foreground">
                       <ButtonWithPermission
                         ButtonProps={{
-                          size: "small",
-                          variant: "outlined",
-                          color: "inherit",
-                          startIcon: <Trash size={16} />,
+                          size: "sm",
+                          variant: "outline",
                           // onClick: () => setDeleteDialogOpen(true),
                           disabled: !selectionLength || !buttonsEnabledMap.uninstall,
                         }}
                         allowed={applicationPermissions.data?.delete.allowed}
                         reason={applicationPermissions.data?.delete.reason}
                       >
-                        delete
-                      </ButtonWithPermission>
+                          <Trash size={16} />
+                          Delete
+                        </ButtonWithPermission>
                     </div>
                   )}
                 </div>

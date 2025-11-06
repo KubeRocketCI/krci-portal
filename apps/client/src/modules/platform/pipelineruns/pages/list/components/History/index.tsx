@@ -1,4 +1,4 @@
-import { Table } from "@/core/components/Table";
+import { DataTable } from "@/core/components/Table";
 import { useAllPipelineRunLogsQuery } from "@/k8s/krakend/hooks/usePipelineRunLogs";
 import { routePipelineRunList } from "../../route";
 import { useShallow } from "zustand/react/shallow";
@@ -18,7 +18,7 @@ export const History = () => {
   const columns = useColumns();
 
   return (
-    <Table
+    <DataTable
       id={"pipeline-run-history-of-pipeline"}
       isLoading={logsQuery.isLoading}
       data={logsQuery?.data?.all || []}

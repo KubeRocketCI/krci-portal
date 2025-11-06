@@ -1,5 +1,6 @@
 import { createRouter } from "@tanstack/react-router";
 import { LoadingProgressBar } from "../components/ui/LoadingProgressBar";
+import { RouterErrorComponent } from "./components/RouterErrorComponent";
 import { routeHome } from "../../modules/home/pages/home/route";
 import { routeComponentList } from "../../modules/platform/codebases/pages/list/route";
 import { routeAuthCallback } from "../auth/pages/callback/route";
@@ -86,6 +87,7 @@ export const router = createRouter({
   scrollRestoration: true,
   defaultPreloadStaleTime: 0,
   defaultPendingComponent: LoadingProgressBar,
+  defaultErrorComponent: RouterErrorComponent,
   context: {
     queryClient: undefined!,
   },

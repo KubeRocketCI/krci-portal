@@ -1,5 +1,4 @@
 import { RouteParams } from "@/core/router/types";
-import { ContainerTypeMap } from "@mui/material/Container/Container";
 import React from "react";
 
 export interface Breadcrumb {
@@ -7,10 +6,12 @@ export interface Breadcrumb {
   route?: RouteParams;
 }
 
+export type ContainerMaxWidth = "xs" | "sm" | "md" | "lg" | "xl" | false;
+
 export interface PageWrapperProps {
   children: React.ReactNode;
   breadcrumbs?: Breadcrumb[];
   headerSlot?: React.ReactElement | undefined;
   breadcrumbsExtraContent?: React.ReactElement;
-  containerMaxWidth?: ContainerTypeMap["props"]["maxWidth"];
+  containerMaxWidth?: ContainerMaxWidth;
 }

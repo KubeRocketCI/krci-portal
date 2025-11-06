@@ -4,6 +4,7 @@ import { z } from "zod";
 import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors";
 import { handleK8sError } from "../../../utils/handleK8sError";
 import * as k8s from "@kubernetes/client-node";
+import { K8sClient } from "../../../../../clients/k8s";
 
 export const k8sPodExecProcedure = protectedProcedure
   .input(
@@ -21,15 +22,15 @@ export const k8sPodExecProcedure = protectedProcedure
   )
   .mutation(async ({ input, ctx }) => {
     try {
-      const { K8sClient } = ctx;
+      const k8sClient = new K8sClient(ctx.session);
 
-      if (!K8sClient.KubeConfig) {
+      if (!k8sClient.KubeConfig) {
         throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
       }
 
       const { namespace, podName, container, command, stdin, stdout, stderr, tty } = input;
 
-      const exec = new k8s.Exec(K8sClient.KubeConfig);
+      const exec = new k8s.Exec(k8sClient.KubeConfig);
 
       return new Promise((resolve, reject) => {
         exec
@@ -71,15 +72,15 @@ export const k8sPodAttachProcedure = protectedProcedure
   )
   .mutation(async ({ input, ctx }) => {
     try {
-      const { K8sClient } = ctx;
+      const k8sClient = new K8sClient(ctx.session);
 
-      if (!K8sClient.KubeConfig) {
+      if (!k8sClient.KubeConfig) {
         throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
       }
 
       const { namespace, podName, container, stdin, stdout, stderr, tty } = input;
 
-      const exec = new k8s.Exec(K8sClient.KubeConfig);
+      const exec = new k8s.Exec(k8sClient.KubeConfig);
 
       return new Promise((resolve, reject) => {
         exec

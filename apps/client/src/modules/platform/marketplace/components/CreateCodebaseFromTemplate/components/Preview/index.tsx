@@ -3,32 +3,19 @@ import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter
 import { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/mappings/types";
 import { getMappingByType } from "@/k8s/api/groups/KRCI/Codebase/utils/getMappingByType";
 import { getIconByPattern } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
-import { Link, Tooltip } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
+import { Tooltip } from "@/core/components/ui/tooltip";
+import { cn } from "@/core/utils/classname";
 import React from "react";
 import { useCurrentDialog } from "../../providers/CurrentDialog/hooks";
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const useStyles = makeStyles((theme) => ({
-  drawerPaper: {
-    top: "64px",
-    bottom: 0,
-    padding: `${theme.typography.pxToRem(20)}`,
-    maxWidth: theme.typography.pxToRem(500),
-  },
-  templateName: {
-    display: "-webkit-box",
-    "-webkit-line-clamp": 4,
-    "-webkit-box-orient": "vertical",
-    overflow: "hidden",
-  },
-}));
+export const drawerPaperClasses = "top-16 bottom-0 p-5 max-w-[500px]";
+
+export const templateNameClasses = "line-clamp-4";
 
 export const Preview = () => {
   const {
     props: { template },
   } = useCurrentDialog();
-  const classes = useStyles();
   const {
     spec: { type: codebaseType, language, framework: _framework, buildTool: _buildTool },
   } = template;
@@ -49,14 +36,14 @@ export const Preview = () => {
               <div className="flex items-center gap-4">
                 <div>
                   <img
-                    style={{ width: "40px" }}
+                    className="w-10"
                     src={`data:${template?.spec?.icon?.[0]?.mediatype};base64,${template?.spec?.icon?.[0]?.base64data}`}
                     alt=""
                   />
                 </div>
                 <div>
                   <Tooltip title={template?.spec.displayName}>
-                    <h5 className={`text-2xl font-medium ${classes.templateName}`}>{template?.spec.displayName}</h5>
+                    <h5 className={cn("text-2xl font-medium", templateNameClasses)}>{template?.spec.displayName}</h5>
                   </Tooltip>
                 </div>
               </div>
@@ -118,9 +105,9 @@ export const Preview = () => {
               </div>
               <div className="col-span-2">
                 <p className="mb-2 text-base font-medium">Source</p>
-                <Link href={template?.spec.source} target={"_blank"}>
+                <a href={template?.spec.source} target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">
                   {template?.spec.source}
-                </Link>
+                </a>
               </div>
               <div className="col-span-3">
                 <p className="mb-2 text-base font-medium">Maintainers</p>

@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { ConfigMap, krciConfigMapNames } from "@my-project/shared";
 import { k8sConfigMapConfig } from "@my-project/shared";
+import { K8sClient } from "../../../../clients/k8s";
 
 export const getPipelineRunLogsProcedure = protectedProcedure
   .input(
@@ -15,11 +16,12 @@ export const getPipelineRunLogsProcedure = protectedProcedure
   )
   .query(async ({ input, ctx }) => {
     const { namespace, name } = input;
-    const { session, K8sClient } = ctx;
+    const { session } = ctx;
+    const k8sClient = new K8sClient(session);
 
     const idToken = session.user!.secret.idToken;
 
-    const listRes = await K8sClient.listResource(k8sConfigMapConfig, namespace);
+    const listRes = await k8sClient.listResource(k8sConfigMapConfig, namespace);
     const configMaps = (listRes.items || []) as ConfigMap[];
 
     const allowedNames = new Set(Object.values(krciConfigMapNames) as string[]);
@@ -47,11 +49,12 @@ export const getAllPipelineRunsLogsProcedure = protectedProcedure
   )
   .query(async ({ input, ctx }) => {
     const { namespace } = input;
-    const { session, K8sClient } = ctx;
+    const { session } = ctx;
+    const k8sClient = new K8sClient(session);
 
     const idToken = session.user!.secret.idToken;
 
-    const listRes = await K8sClient.listResource(k8sConfigMapConfig, namespace);
+    const listRes = await k8sClient.listResource(k8sConfigMapConfig, namespace);
     const configMaps = (listRes.items || []) as ConfigMap[];
 
     const allowedNames = new Set(Object.values(krciConfigMapNames) as string[]);

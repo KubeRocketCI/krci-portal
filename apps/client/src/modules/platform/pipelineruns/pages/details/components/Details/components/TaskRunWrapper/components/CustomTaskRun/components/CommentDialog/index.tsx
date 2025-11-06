@@ -1,4 +1,5 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
+import { Button } from "@/core/components/ui/button";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { DIALOG_NAME } from "./constants";
@@ -29,25 +30,29 @@ export const CommentDialog: React.FC<CommentDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={closeDialog} maxWidth="sm" fullWidth>
-      <DialogTitle>{title}</DialogTitle>
-      <DialogContent>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <FormTextField
-            {...register(names.COMMENT, {
-              required: "Enter a comment.",
-            })}
-            placeholder={"Enter a comment"}
-            label={"Comment"}
-            control={control}
-            errors={errors}
-          />
-        </form>
+    <Dialog open={open} onOpenChange={(open) => !open && closeDialog()}>
+      <DialogContent className="max-w-2xl w-full">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <DialogBody>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <FormTextField
+              {...register(names.COMMENT, {
+                required: "Enter a comment.",
+              })}
+              placeholder={"Enter a comment"}
+              label={"Comment"}
+              control={control}
+              errors={errors}
+            />
+          </form>
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="ghost" onClick={closeDialog}>Cancel</Button>
+          <Button variant="default" onClick={handleSubmit(onSubmit)}>Confirm</Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={closeDialog}>Cancel</Button>
-        <Button onClick={handleSubmit(onSubmit)}>Confirm</Button>
-      </DialogActions>
     </Dialog>
   );
 };

@@ -6,7 +6,8 @@ import { FORM_MODES } from "@/core/types/forms";
 import { useSecretPermissions, useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
 import { useQuickLinkPermissions, useQuickLinkWatchItem } from "@/k8s/api/groups/KRCI/QuickLink";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionSummary, AccordionDetails, Tooltip } from "@mui/material";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/core/components/ui/accordion";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { getIntegrationSecretStatus, systemQuickLink } from "@my-project/shared";
 import React from "react";
 import { ManageChatAssistant } from "./components/ManageChatAssistant";
@@ -66,45 +67,47 @@ export default function ChatAssistantConfigurationPage() {
 
     return (
       <LoadingWrapper isLoading={isLoading}>
-        <Accordion expanded>
-          <AccordionSummary style={{ cursor: "default" }}>
-            <h6 className="text-base font-medium">
-              <div className="flex items-center gap-2">
-                <div className="mr-1">
-                  <StatusIcon
-                    Icon={statusIcon.component}
-                    color={statusIcon.color}
-                    Title={
-                      <>
-                        <p className="text-sm font-semibold">
-                          {`Connected: ${status.connected === undefined ? "Unknown" : status.connected}`}
-                        </p>
-                        {!!status.statusError && <p className="mt-3 text-sm font-medium">{status.statusError}</p>}
-                      </>
-                    }
-                  />
-                </div>
-                <div>{chatAssistantSecret?.metadata.name}</div>
-                {!!ownerReference && (
-                  <div>
-                    <Tooltip title={`Managed by ${ownerReference}`}>
-                      <ShieldX size={20} />
-                    </Tooltip>
+        <Accordion type="single" collapsible defaultValue="item-1">
+          <AccordionItem value="item-1">
+              <AccordionTrigger className="cursor-default">
+                <h6 className="text-base font-medium">
+                  <div className="flex items-center gap-2">
+                    <div className="mr-1">
+                      <StatusIcon
+                        Icon={statusIcon.component}
+                        color={statusIcon.color}
+                        Title={
+                          <>
+                            <p className="text-sm font-semibold">
+                              {`Connected: ${status.connected === undefined ? "Unknown" : status.connected}`}
+                            </p>
+                            {!!status.statusError && <p className="mt-3 text-sm font-medium">{status.statusError}</p>}
+                          </>
+                        }
+                      />
+                    </div>
+                    <div>{chatAssistantSecret?.metadata.name}</div>
+                    {!!ownerReference && (
+                      <div>
+                        <Tooltip title={`Managed by ${ownerReference}`}>
+                          <ShieldX size={20} />
+                        </Tooltip>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </h6>
-          </AccordionSummary>
-          <AccordionDetails>
-            <ManageChatAssistant
-              secret={chatAssistantSecret}
-              quickLink={chatAssistantQuickLink}
-              mode={mode}
-              ownerReference={ownerReference}
-              handleClosePanel={handleCloseCreateDialog}
-            />
-          </AccordionDetails>
-        </Accordion>
+                </h6>
+              </AccordionTrigger>
+              <AccordionContent>
+                <ManageChatAssistant
+                  secret={chatAssistantSecret}
+                  quickLink={chatAssistantQuickLink}
+                  mode={mode}
+                  ownerReference={ownerReference}
+                  handleClosePanel={handleCloseCreateDialog}
+                />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
       </LoadingWrapper>
     );
   }, [

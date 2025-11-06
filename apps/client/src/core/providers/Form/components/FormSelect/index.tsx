@@ -1,19 +1,9 @@
-import {
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  ListItemIcon,
-  ListItemText,
-  MenuItem,
-  Select,
-  Tooltip,
-} from "@mui/material";
-import clsx from "clsx";
 import React from "react";
 import { Controller, Path, PathValue } from "react-hook-form";
-import { useStyles } from "./styles";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
+import { FormField } from "@/core/components/ui/form-field";
 import { FormSelectProps } from "./types";
-import { Info } from "lucide-react";
+import { cn } from "@/core/utils/classname";
 
 const FormSelectInner = React.forwardRef(
   <TFormValues extends Record<string, unknown> = Record<string, unknown>>(
@@ -21,93 +11,71 @@ const FormSelectInner = React.forwardRef(
       name,
       label,
       tooltipText,
+      helperText,
       control,
       defaultValue = "",
       errors,
       options = [],
       disabled = false,
-      endAdornment,
-      helperText,
+      placeholder,
+      suffix,
       ...props
     }: FormSelectProps<TFormValues>,
-    ref: React.ForwardedRef<HTMLInputElement>
+    ref: React.ForwardedRef<HTMLButtonElement>
   ) => {
-    const classes = useStyles();
     const error = errors[name];
     const hasError = !!error;
-    const errorMessage = error?.message as string;
-    const _helperText = hasError ? errorMessage : helperText;
-
-    const getOptionValue = React.useCallback(
-      (optionValue: string) => {
-        if (options.length) {
-          const [foundOptionByName] = options.filter(({ value }) => value === optionValue);
-          if (foundOptionByName) {
-            return foundOptionByName.icon ? (
-              <div className="flex flex-row items-center gap-4">
-                <ListItemIcon sx={{ minWidth: 0 }}>{foundOptionByName.icon}</ListItemIcon>
-                <ListItemText sx={{ m: 0 }}>{foundOptionByName.label}</ListItemText>
-              </div>
-            ) : (
-              foundOptionByName.label
-            );
-          }
-        }
-        return defaultValue;
-      },
-      [defaultValue, options]
-    );
+    const errorMessage = error?.message as string | undefined;
+    const fieldId = React.useId();
 
     return (
-      <FormControl fullWidth>
-        <InputLabel>{label}</InputLabel>
-        <Controller
-          render={({ field }) => {
-            return (
-              <Select
-                {...field}
-                inputRef={ref}
-                error={hasError}
-                displayEmpty
-                disabled={disabled}
-                fullWidth
-                renderValue={(value) => (value !== "" ? getOptionValue(value as string) : label)}
-                className={clsx({
-                  [classes.selectWithDefaultValue]: field.value === "",
-                })}
-                endAdornment={
-                  <div className="absolute top-1/2 right-6 leading-none" style={{ transform: "translateY(-50%)" }}>
-                    <div className="flex flex-row items-center gap-1">
-                      {tooltipText && (
-                        <Tooltip title={tooltipText}>
-                          <Info size={16} />
-                        </Tooltip>
-                      )}
-                      {endAdornment}
-                    </div>
-                  </div>
-                }
-              >
-                {options.map(({ label, value, disabled = false, icon }, idx) => {
-                  const key = `${label}::${idx}`;
+      <Controller
+        name={name}
+        control={control}
+        defaultValue={defaultValue as PathValue<TFormValues, Path<TFormValues>>}
+        render={({ field }) => {
+          const fieldValue = (field.value ?? "") as string;
+          const currentOption = options.find((option) => option.value === fieldValue);
+          const displayValue = currentOption ? currentOption.label : placeholder || label || "";
 
-                  return (
-                    <MenuItem value={value} key={key} disabled={disabled}>
-                      {icon && <ListItemIcon>{icon}</ListItemIcon>}
-                      <ListItemText>{label}</ListItemText>
-                    </MenuItem>
-                  );
-                })}
+          return (
+            <FormField
+              label={label}
+              tooltipText={tooltipText}
+              error={hasError ? errorMessage : undefined}
+              helperText={helperText}
+              id={fieldId}
+              suffix={suffix}
+            >
+              <Select value={fieldValue} onValueChange={(value) => field.onChange(value)} disabled={disabled}>
+                <SelectTrigger
+                  ref={ref}
+                  id={fieldId}
+                  className={cn("rounded border-0 shadow-none", !field.value && "text-muted-foreground")}
+                >
+                  <div className="flex items-center gap-2">
+                    {currentOption?.icon && (
+                      <span className="flex size-4 shrink-0 items-center justify-center">{currentOption.icon}</span>
+                    )}
+                    <SelectValue placeholder={placeholder || label}>{displayValue}</SelectValue>
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {options.map(({ label, value, disabled: optionDisabled = false, icon }, idx) => {
+                    const key = `${label}::${idx}`;
+                    return (
+                      <SelectItem key={key} value={value} disabled={optionDisabled} icon={icon}>
+                        {label}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
               </Select>
-            );
-          }}
-          name={name}
-          defaultValue={defaultValue as PathValue<TFormValues, Path<TFormValues>>}
-          control={control}
-          {...props}
-        />
-        {_helperText && <FormHelperText error={hasError}>{_helperText}</FormHelperText>}
-      </FormControl>
+            </FormField>
+          );
+        }}
+        {...props}
+      />
     );
   }
 );
@@ -115,5 +83,5 @@ const FormSelectInner = React.forwardRef(
 FormSelectInner.displayName = "FormSelect";
 
 export const FormSelect = FormSelectInner as <TFormValues extends Record<string, unknown> = Record<string, unknown>>(
-  props: FormSelectProps<TFormValues> & { ref?: React.ForwardedRef<HTMLInputElement> }
+  props: FormSelectProps<TFormValues> & { ref?: React.ForwardedRef<HTMLButtonElement> }
 ) => React.JSX.Element;

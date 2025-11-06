@@ -16,8 +16,6 @@ export const CDPipelineActionsMenu = ({
   backRoute,
   variant,
   data: { CDPipeline },
-  anchorEl,
-  handleCloseResourceActionListMenu,
 }: CDPipelineActionsMenuProps) => {
   const openManageCDPipelineDialog = useDialogOpener(ManageCDPipelineDialog);
   const openDeleteKubeObjectDialog = useDialogOpener(DeleteKubeObjectDialog);
@@ -39,9 +37,6 @@ export const CDPipelineActionsMenu = ({
           reason: cdPipelinePermissions.data.patch.reason,
         },
         callback: () => {
-          if (variant === actionMenuType.menu && handleCloseResourceActionListMenu) {
-            handleCloseResourceActionListMenu();
-          }
           openManageCDPipelineDialog({ CDPipeline });
         },
       }),
@@ -55,10 +50,6 @@ export const CDPipelineActionsMenu = ({
           reason: cdPipelinePermissions.data.delete.reason,
         },
         callback: () => {
-          if (variant === actionMenuType.menu && handleCloseResourceActionListMenu) {
-            handleCloseResourceActionListMenu();
-          }
-
           openDeleteKubeObjectDialog({
             objectName: CDPipeline?.metadata.name,
             resourceConfig: k8sCDPipelineConfig,
@@ -87,7 +78,6 @@ export const CDPipelineActionsMenu = ({
     cdPipelinePermissions.data.delete.allowed,
     cdPipelinePermissions.data.delete.reason,
     variant,
-    handleCloseResourceActionListMenu,
     openManageCDPipelineDialog,
     openDeleteKubeObjectDialog,
     backRoute,
@@ -96,10 +86,6 @@ export const CDPipelineActionsMenu = ({
   return variant === actionMenuType.inline ? (
     <ActionsInlineList actions={actions} />
   ) : variant === actionMenuType.menu ? (
-    <ActionsMenuList
-      actions={actions}
-      anchorEl={anchorEl!}
-      handleCloseActionsMenu={handleCloseResourceActionListMenu!}
-    />
+    <ActionsMenuList actions={actions} />
   ) : null;
 };

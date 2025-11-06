@@ -1,27 +1,8 @@
-import { Checkbox, TableCell, TableRow as MuiTableRow, useTheme } from "@mui/material";
+import { Checkbox } from "@/core/components/ui/checkbox";
 import React from "react";
+import { TableCellUI, TableRowUI } from "@/core/components/ui/table";
 import { TableRowProps } from "./types";
 import { TABLE_CELL_DEFAULTS } from "@/core/components/Table/constants";
-
-const getRowStyles = (isSelected: boolean) => {
-  return {
-    cursor: "pointer",
-    ...(isSelected && {
-      backgroundColor: "rgb(137 196 244 / 16%)",
-    }),
-  };
-};
-
-const getFlexPropertyByTextAlign = (textAlign: string) => {
-  switch (textAlign) {
-    case "center":
-      return "center";
-    case "right":
-      return "flex-end";
-    default:
-      return "flex-start";
-  }
-};
 
 export const TableRow = <DataType,>({
   item,
@@ -30,54 +11,58 @@ export const TableRow = <DataType,>({
   handleSelectRowClick,
   isRowSelected,
   isRowSelectable,
-  minimal,
 }: TableRowProps<DataType>) => {
-  const theme = useTheme();
-
   const selectableRowProps = (row: DataType, isSelected: boolean) => {
     return handleRowClick
       ? {
-          hover: true,
           role: "radio",
           "aria-checked": isSelected,
-          selected: isSelected,
           tabIndex: -1,
           onClick: (event: React.MouseEvent<HTMLTableRowElement>) => {
             handleRowClick(event, row);
           },
-          sx: getRowStyles(isSelected),
+          className: `cursor-pointer ${isSelected ? "bg-[rgb(137_196_244_/_16%)]" : ""}`,
         }
       : {};
   };
 
-  const getColumnStyles = React.useCallback(
-    (hasSortableValue: boolean, textAlign: string) => ({
-      display: "flex",
-      alignItems: "center",
-      pl: hasSortableValue && textAlign !== "center" ? theme.typography.pxToRem(18 + 1.6) : 0, // 18px is the width of the arrow icon + 1.6px is the padding between the icon and the text
-    }),
-    [theme]
-  );
+  const getColumnPadding = React.useCallback((hasSortableValue: boolean, textAlign: string) => {
+    // 18px is the width of the arrow icon + 1.6px is the padding between the icon and the text
+    // 18 + 1.6 = 19.6px ≈ 20px = pl-5
+    if (hasSortableValue && textAlign !== "center") {
+      return "pl-5";
+    }
+    return "";
+  }, []);
+
+  const getJustifyClass = (align?: string) => {
+    switch (align) {
+      case "center":
+        return "justify-center";
+      case "right":
+        return "justify-end";
+      default:
+        return "justify-start";
+    }
+  };
 
   return (
-    <MuiTableRow {...selectableRowProps(item, !!isRowSelected)}>
+    <TableRowUI {...selectableRowProps(item, !!isRowSelected)}>
       {!!handleSelectRowClick && (
-        <TableCell
-          component="td"
-          scope="row"
-          align="center"
-          sx={{
-            p: minimal ? theme.typography.pxToRem(4) : theme.typography.pxToRem(11),
-          }}
-        >
+        <TableCellUI className="p-1 text-center">
           <Checkbox
-            color={"primary"}
             checked={isRowSelected}
-            onClick={(event) => handleSelectRowClick(event, item)}
+            onCheckedChange={(checked) => {
+              const syntheticEvent = {
+                currentTarget: { checked },
+                stopPropagation: () => {},
+                preventDefault: () => {},
+              } as unknown as React.MouseEvent<HTMLButtonElement>;
+              handleSelectRowClick(syntheticEvent, item);
+            }}
             disabled={!isRowSelectable}
-            size="small"
           />
-        </TableCell>
+        </TableCellUI>
       )}
       {columns.map(({ id, data, cell }) => {
         const show = cell?.show ?? TABLE_CELL_DEFAULTS.SHOW;
@@ -86,28 +71,23 @@ export const TableRow = <DataType,>({
           ...cell?.props,
         };
 
+        const alignClass = props?.align === "center" ? "text-center" : props?.align === "right" ? "text-right" : "";
+        const paddingClass = "p-1";
+        const sortablePaddingClass = getColumnPadding(!!data?.columnSortableValuePath, props?.align || "");
+
         return show ? (
-          <TableCell
+          <TableCellUI
             key={id}
-            component="td"
-            scope="row"
-            sx={{
-              p: minimal ? theme.typography.pxToRem(4) : theme.typography.pxToRem(11),
-            }}
-            {...props}
+            className={`${paddingClass} ${alignClass} ${sortablePaddingClass} ${id === "description" ? "min-w-0" : ""}`}
           >
             <div
-              className="flex items-center"
-              style={{
-                justifyContent: getFlexPropertyByTextAlign(props?.align),
-                ...getColumnStyles(!!data?.columnSortableValuePath, props?.align),
-              }}
+              className={`flex items-center ${getJustifyClass(props?.align)} ${id === "description" ? "w-full min-w-0" : ""}`}
             >
               {data.render({ data: item })}
             </div>
-          </TableCell>
+          </TableCellUI>
         ) : null;
       })}
-    </MuiTableRow>
+    </TableRowUI>
   );
 };

@@ -1,5 +1,5 @@
 import { InfoRow } from "@/core/components/InfoColumns/types";
-import { Chip } from "@mui/material";
+import { Badge } from "@/core/components/ui/badge";
 import { Task } from "@my-project/shared";
 import React from "react";
 
@@ -24,7 +24,7 @@ export const useInfoRows = (task: Task): InfoRow[] => {
             <div className="flex flex-wrap gap-2">
               {pipelineLabels.map((el) => (
                 <div key={el}>
-                  <Chip label={el} size="small" />
+                  <Badge variant="secondary">{el}</Badge>
                 </div>
               ))}
             </div>

@@ -1,31 +1,12 @@
-import makeStyles from "@mui/styles/makeStyles";
+import { cn } from "@/core/utils/classname";
 
-export const useStyles = makeStyles((theme) => ({
-  cardRoot: {
-    height: "100%",
-    borderLeft: `4px solid ${theme.palette.primary.main}`,
-    borderRadius: theme.typography.pxToRem(4),
-    backgroundColor: theme.palette.common.white,
-    padding: theme.typography.pxToRem(24),
-    boxShadow: "0px 1px 10px 0px #0024461F",
+export const cardRootClasses = cn(
+  "h-full border-l-4 border-l-primary rounded bg-white p-6 shadow-[0px_1px_10px_0px_#0024461F]",
+  "hover:bg-muted/50"
+);
 
-    "&:hover": {
-      backgroundColor: theme.palette.action.hover,
-    },
-  },
-  chipWithRoundedAvatar: {
-    "& .MuiChip-avatar": {
-      borderRadius: "50%",
-    },
-  },
-  templateDescription: {
-    display: "-webkit-box",
-    "-webkit-line-clamp": 3,
-    "-webkit-box-orient": "vertical",
-    overflow: "hidden",
-  },
-  templateIcon: {
-    height: theme.typography.pxToRem(24),
-    verticalAlign: "middle",
-  },
-}));
+export const chipWithRoundedAvatarClasses = "[&_.MuiChip-avatar]:rounded-full";
+
+export const templateDescriptionClasses = "line-clamp-3";
+
+export const templateIconClasses = "h-6 align-middle";

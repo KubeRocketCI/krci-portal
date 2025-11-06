@@ -1,4 +1,5 @@
-import { Dialog, DialogContent, DialogTitle, IconButton } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
 import { X } from "lucide-react";
 import React from "react";
 import { PipelineRunDiagram } from "../../components/PipelineRunDiagram";
@@ -10,21 +11,25 @@ export const PipelineRunGraphDialog: React.FC<PipelineRunGraphDialogPropsWithBas
   state: { closeDialog, open },
 }) => {
   return (
-    <Dialog open={open} fullScreen onClose={() => closeDialog()}>
-      <DialogTitle>
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-4xl font-bold">{pipelineRunName ? `Pipeline Run: ${pipelineRunName}` : "Not found"}</h1>
+    <Dialog open={open} onOpenChange={(open) => !open && closeDialog()}>
+      <DialogContent className="h-full w-full max-w-full p-0">
+        <DialogHeader>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <DialogTitle className="text-4xl font-bold">
+                {pipelineRunName ? `Pipeline Run: ${pipelineRunName}` : "Not found"}
+              </DialogTitle>
+            </div>
+            <div>
+              <Button variant="ghost" size="icon" onClick={() => closeDialog()}>
+                <X size={20} />
+              </Button>
+            </div>
           </div>
-          <div>
-            <IconButton onClick={() => closeDialog()} size="large">
-              <X size={20} />
-            </IconButton>
-          </div>
+        </DialogHeader>
+        <div className="h-full">
+          <PipelineRunDiagram pipelineRunName={pipelineRunName} namespace={namespace} />
         </div>
-      </DialogTitle>
-      <DialogContent sx={{ height: "100%", p: 0 }}>
-        <PipelineRunDiagram pipelineRunName={pipelineRunName} namespace={namespace} />
       </DialogContent>
     </Dialog>
   );

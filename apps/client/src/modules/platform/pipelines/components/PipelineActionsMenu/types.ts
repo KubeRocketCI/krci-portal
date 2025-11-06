@@ -6,6 +6,4 @@ export interface PipelineActionsMenuProps {
   data: {
     pipeline: Pipeline;
   };
-  anchorEl?: HTMLElement | null;
-  handleCloseResourceActionListMenu?: () => void;
 }

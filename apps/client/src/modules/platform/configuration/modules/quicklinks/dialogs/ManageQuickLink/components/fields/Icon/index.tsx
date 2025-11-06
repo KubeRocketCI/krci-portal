@@ -1,7 +1,7 @@
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { QUICK_LINK_FORM_NAMES } from "../../../names";
 import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
+import { FormTextarea } from "@/core/providers/Form/components/FormTextarea";
 import { SvgBase64Icon } from "@/core/components/SvgBase64Icon";
 
 export const Icon = () => {
@@ -21,7 +21,7 @@ export const Icon = () => {
   return (
     <div className="flex items-end justify-between gap-4">
       <div className="flex-1">
-        <FormTextField
+        <FormTextarea
           {...register(QUICK_LINK_FORM_NAMES.icon.name, {
             required: "Paste the SVG code for the icon, encoded in base64 format.",
           })}
@@ -30,11 +30,7 @@ export const Icon = () => {
           placeholder={"svg in base64"}
           control={control}
           errors={errors}
-          TextFieldProps={{
-            multiline: true,
-            minRows: 5,
-            maxRows: 5,
-          }}
+          rows={5}
           disabled={isSystem}
         />
       </div>

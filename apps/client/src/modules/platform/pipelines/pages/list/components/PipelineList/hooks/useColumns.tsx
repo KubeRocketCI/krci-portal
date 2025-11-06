@@ -1,7 +1,8 @@
 import React from "react";
 import { Pipeline } from "@my-project/shared";
 import { TableColumn } from "@/core/components/Table/types";
-import { IconButton, Tooltip } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { PipelineGraphDialog } from "@/modules/platform/pipelines/dialogs/PipelineGraph";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
@@ -13,7 +14,6 @@ import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { routePipelineDetails } from "@/modules/platform/pipelines/pages/details/route";
 import { Link } from "@tanstack/react-router";
-import { Button } from "@/core/components/ui/button";
 import { Actions } from "../components/Actions";
 
 export const useColumns = (): TableColumn<Pipeline>[] => {
@@ -69,11 +69,7 @@ export const useColumns = (): TableColumn<Pipeline>[] => {
           render: ({ data }) => {
             const description = data.spec?.description || data.spec?.displayName || "No description available";
 
-            return (
-              <div>
-                <TextWithTooltip text={description} />
-              </div>
-            );
+            return <TextWithTooltip text={description} />;
           },
         },
         cell: {
@@ -88,17 +84,18 @@ export const useColumns = (): TableColumn<Pipeline>[] => {
           render: ({ data }) => {
             return (
               <Tooltip title="View Pipeline Diagram">
-                <IconButton
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() =>
                     openPipelineGraphDialog({
                       pipelineName: data.metadata.name,
                       namespace: data.metadata.namespace || "",
                     })
                   }
-                  size="medium"
                 >
                   <VectorSquare size={16} />
-                </IconButton>
+                </Button>
               </Tooltip>
             );
           },

@@ -22,9 +22,7 @@ export const PullAccountPassword = () => {
       placeholder={"Enter password or token"}
       control={pullAccount.form.control}
       errors={pullAccount.form.formState.errors}
-      TextFieldProps={{
-        helperText: ownerReference && `This field value is managed by ${ownerReference}`,
-      }}
+      helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
       disabled={!!ownerReference}
     />
   );

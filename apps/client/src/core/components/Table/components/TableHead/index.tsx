@@ -1,28 +1,12 @@
-import {
-  alpha,
-  ButtonBase,
-  Checkbox,
-  SvgIcon,
-  TableCell,
-  TableHead as MuiTableHead,
-  TableRow as MuiTableRow,
-  useTheme,
-} from "@mui/material";
+import { Checkbox } from "@/core/components/ui/checkbox";
+import { TableHeadUI, TableHeaderUI, TableRowUI } from "@/core/components/ui/table";
 import React from "react";
 import { SORT_ORDERS, TABLE_CELL_DEFAULTS } from "../../constants";
 import { TableColumn } from "../../types";
-import {
-  createCustomSortFunction,
-  createSortFunction,
-  getFlexPropertyByTextAlign,
-  getSortOrder,
-  isAsc,
-  isDesc,
-} from "../../utils";
+import { createCustomSortFunction, createSortFunction, getSortOrder, isAsc, isDesc } from "../../utils";
 import { useTableSettings } from "../TableSettings/hooks/useTableSettings";
 import { SavedTableSettings } from "../TableSettings/types";
 import { TableHeadProps } from "./types";
-import { ValueOf } from "@/core/types/global";
 
 export const TableHead = <DataType,>({
   tableId,
@@ -34,10 +18,7 @@ export const TableHead = <DataType,>({
   selectableRowCount,
   selected,
   handleSelectAllClick,
-  minimal,
 }: TableHeadProps<DataType>) => {
-  const theme = useTheme();
-
   const { loadSettings, saveSettings } = useTableSettings(tableId);
 
   const tableSettings = loadSettings();
@@ -57,22 +38,6 @@ export const TableHead = <DataType,>({
   };
 
   const selectedLength = React.useMemo(() => selected?.length, [selected]);
-
-  const getArrowsColors = React.useCallback(
-    (activeColumnSort: boolean, sortOrder: ValueOf<typeof SORT_ORDERS>) => {
-      return {
-        upperArrowColor:
-          activeColumnSort && sortOrder === SORT_ORDERS.DESC
-            ? theme.palette.action.disabledBackground
-            : theme.palette.action.active,
-        bottomArrowColor:
-          activeColumnSort && sortOrder === SORT_ORDERS.ASC
-            ? theme.palette.action.disabledBackground
-            : theme.palette.action.active,
-      };
-    },
-    [theme]
-  );
 
   const saveNewColumnsWidth = React.useCallback(() => {
     if (!tableSettings) return;
@@ -169,28 +134,19 @@ export const TableHead = <DataType,>({
   const selectAllChecked = selectedLength === selectableRowCount || selectedLength === rowCount;
 
   return (
-    <MuiTableHead>
-      <MuiTableRow>
+    <TableHeaderUI>
+      <TableRowUI>
         {!!handleSelectAllClick && !!selectableRowCount && (
-          <TableCell
-            component="th"
-            scope="row"
-            align="center"
-            sx={{
-              p: minimal
-                ? theme.typography.pxToRem(4)
-                : `${theme.typography.pxToRem(5)} ${theme.typography.pxToRem(11)}`,
-              verticalAlign: "bottom",
-            }}
-          >
+          <TableHeadUI className="p-1 text-center align-bottom">
             <Checkbox
-              color={"primary"}
-              indeterminate={selectedAllIndeterminate}
-              checked={selectAllChecked}
-              onChange={handleSelectAllClick}
-              size={minimal ? "small" : "medium"}
+              checked={selectedAllIndeterminate ? "indeterminate" : selectAllChecked}
+              onCheckedChange={(checked) => {
+                if (typeof handleSelectAllClick === "function") {
+                  handleSelectAllClick({ target: { checked } } as React.ChangeEvent<HTMLInputElement>);
+                }
+              }}
             />
-          </TableCell>
+          </TableHeadUI>
         )}
         {columns.map((column, idx) => {
           const isLast = idx === columns.length - 1;
@@ -202,66 +158,45 @@ export const TableHead = <DataType,>({
           };
 
           const activeColumnSort = sort.sortBy === id;
-          const { upperArrowColor, bottomArrowColor } = getArrowsColors(activeColumnSort, sort.order);
+          const isAscending = activeColumnSort && sort.order === SORT_ORDERS.ASC;
+          const isDescending = activeColumnSort && sort.order === SORT_ORDERS.DESC;
+
+          const alignJustifyClass =
+            props?.align === "center" ? "justify-center" : props?.align === "right" ? "justify-end" : "justify-start";
 
           return show ? (
-            <TableCell
-              key={id}
-              component="th"
-              scope="row"
-              sortDirection={sort.sortBy === id ? sort.order : false}
-              sx={{
-                color: theme.palette.text.primary,
-                p: minimal
-                  ? `${theme.typography.pxToRem(4)}`
-                  : `${theme.typography.pxToRem(16)} ${theme.typography.pxToRem(11)}`,
-                verticalAlign: "bottom",
-                position: "relative",
-              }}
-              {...props}
-            >
-              <div
-                className="flex flex-row flex-nowrap items-center gap-0.5"
-                style={{ justifyContent: getFlexPropertyByTextAlign(props?.align) }}
-              >
+            <TableHeadUI key={id} className="relative p-1 align-bottom" {...props}>
+              <div className={`flex flex-row flex-nowrap items-center gap-0.5 ${alignJustifyClass}`}>
                 {(!!data?.columnSortableValuePath || !!data?.customSortFn) && (
-                  <ButtonBase onClick={() => handleRequestSort(column)} disableRipple>
-                    <SvgIcon
-                      viewBox={"0 0 18 18"}
-                      width={theme.typography.pxToRem(18)}
-                      height={theme.typography.pxToRem(18)}
-                      style={{
-                        width: theme.typography.pxToRem(18),
-                        height: theme.typography.pxToRem(18),
-                        display: "block",
-                      }}
-                    >
-                      <path d="M5.25 6L9 2.25L12.75 6H5.25Z" fill={upperArrowColor} />
-                      <path d="M5.25 12L9 15.75L12.75 12H5.25Z" fill={bottomArrowColor} />
-                    </SvgIcon>
-                  </ButtonBase>
+                  <button
+                    type="button"
+                    onClick={() => handleRequestSort(column)}
+                    className="focus-visible:ring-ring cursor-pointer border-none bg-transparent p-0 outline-none hover:opacity-70 focus-visible:ring-2"
+                  >
+                    <svg viewBox={"0 0 18 18"} width={16} height={16} className="block h-4 w-4">
+                      <path
+                        d="M5.25 6L9 2.25L12.75 6H5.25Z"
+                        className={isAscending ? "fill-foreground" : "fill-ring/50"}
+                      />
+                      <path
+                        d="M5.25 12L9 15.75L12.75 12H5.25Z"
+                        className={isDescending ? "fill-foreground" : "fill-ring/50"}
+                      />
+                    </svg>
+                  </button>
                 )}
                 <span className="mt-1 text-sm font-semibold">{label}</span>
               </div>
               {!isLast && !column.cell.isFixed && !columns?.[idx + 1].cell.isFixed && (
                 <div
-                  className="absolute top-0 right-0 bottom-0 z-1 h-full w-px -translate-x-1/2 cursor-col-resize px-1 py-0"
-                  style={{
-                    backgroundColor: "transparent",
-                  }}
+                  className="absolute top-0 right-0 bottom-0 z-1 h-full w-px -translate-x-1/2 cursor-col-resize bg-transparent px-1 py-0 hover:bg-[hsl(var(--border)/0.05)]"
                   onMouseDown={(e) => handleMouseDown(e, column.id)}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = alpha(theme.palette.divider, 0.05) as string;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
                 />
               )}
-            </TableCell>
+            </TableHeadUI>
           ) : null;
         })}
-      </MuiTableRow>
-    </MuiTableHead>
+      </TableRowUI>
+    </TableHeaderUI>
   );
 };

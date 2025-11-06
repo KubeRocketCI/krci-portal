@@ -19,13 +19,6 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
     throw ERROR_TOKEN_EXPIRED;
   }
 
-  if (!ctx.K8sClient.KubeConfig) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Kubernetes client not initialized",
-    });
-  }
-
   return next({
     ctx: {
       ...ctx,

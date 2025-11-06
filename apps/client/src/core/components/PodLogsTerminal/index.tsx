@@ -1,17 +1,10 @@
 import React, { useState, useRef, useMemo } from "react";
-import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-  Switch,
-  FormControlLabel,
-  IconButton,
-  Tooltip,
-  Paper,
-  InputBase,
-} from "@mui/material";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
+import { Label } from "@/core/components/ui/label";
+import { Input } from "@/core/components/ui/input";
+import { Switch } from "@/core/components/ui/switch";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { Search, Download, Copy, ChevronUp, ChevronDown, X } from "lucide-react";
 
 import { Terminal } from "@/core/components/Terminal";
@@ -217,8 +210,8 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
   };
 
   // Event handlers
-  const handlePodChange = (event: { target: { value: string } }) => {
-    const pod = pods.find((p: Pod) => p.metadata?.name === event.target.value);
+  const handlePodChange = (value: string) => {
+    const pod = pods.find((p: Pod) => p.metadata?.name === value);
     if (pod) {
       setActivePod(pod);
       // Reset container selection
@@ -228,8 +221,8 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
     }
   };
 
-  const handleContainerChange = (event: { target: { value: string } }) => {
-    setActiveContainer(event.target.value);
+  const handleContainerChange = (value: string) => {
+    setActiveContainer(value);
   };
 
   const handleTailLinesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -267,69 +260,79 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-8">
         {pods.length > 1 && (
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel>Pod</InputLabel>
-            <Select value={currentPod?.metadata?.name || ""} label="Pod" onChange={handlePodChange}>
-              {pods.map((pod: Pod) => (
-                <MenuItem key={pod.metadata?.name} value={pod.metadata?.name || ""}>
-                  {pod.metadata?.name}
-                </MenuItem>
-              ))}
+          <div className="flex flex-col gap-1.5 min-w-[180px]">
+            <Label htmlFor="pod-select">Pod</Label>
+            <Select value={currentPod?.metadata?.name || ""} onValueChange={handlePodChange}>
+              <SelectTrigger id="pod-select" className="h-9">
+                <SelectValue placeholder="Select pod" />
+              </SelectTrigger>
+              <SelectContent>
+                {pods.map((pod: Pod) => (
+                  <SelectItem key={pod.metadata?.name} value={pod.metadata?.name || ""}>
+                    {pod.metadata?.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
-          </FormControl>
+          </div>
         )}
 
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel>Container</InputLabel>
-          <Select value={activeContainer} label="Container" onChange={handleContainerChange}>
-            {availableContainers.map((container) => (
-              <MenuItem key={container.name} value={container.name}>
-                {container.name} {container.type !== "container" && <em>({container.type})</em>}
-              </MenuItem>
-            ))}
+        <div className="flex flex-col gap-1.5 min-w-[200px]">
+          <Label htmlFor="container-select">Container</Label>
+          <Select value={activeContainer} onValueChange={handleContainerChange}>
+            <SelectTrigger id="container-select" className="h-9">
+              <SelectValue placeholder="Select container" />
+            </SelectTrigger>
+            <SelectContent>
+              {availableContainers.map((container) => (
+                <SelectItem key={container.name} value={container.name}>
+                  {container.name} {container.type !== "container" && <em>({container.type})</em>}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
-        </FormControl>
+        </div>
 
-        <TextField
-          label="Tail Lines"
-          type="text"
-          size="small"
-          value={logsTailLines === -1 ? "all" : logsTailLines}
-          onChange={handleTailLinesChange}
-          placeholder="100 or 'all'"
-          sx={{ width: 140 }}
-        />
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="tail-lines-input">Tail Lines</Label>
+          <Input
+            id="tail-lines-input"
+            type="text"
+            value={logsTailLines === -1 ? "all" : logsTailLines}
+            onChange={handleTailLinesChange}
+            placeholder="100 or 'all'"
+            className="h-9 w-[140px]"
+          />
+        </div>
 
-        <FormControlLabel
-          control={<Switch size="small" checked={logsFollow} onChange={(e) => setLogsFollow(e.target.checked)} />}
-          label="Follow"
-        />
+        <div className="flex items-center gap-2">
+          <Switch checked={logsFollow} onCheckedChange={setLogsFollow} id="follow-switch" />
+          <Label htmlFor="follow-switch" className="cursor-pointer">Follow</Label>
+        </div>
 
-        <FormControlLabel
-          control={
-            <Switch size="small" checked={logsTimestamps} onChange={(e) => setLogsTimestamps(e.target.checked)} />
-          }
-          label="Timestamps"
-        />
+        <div className="flex items-center gap-2">
+          <Switch checked={logsTimestamps} onCheckedChange={setLogsTimestamps} id="timestamps-switch" />
+          <Label htmlFor="timestamps-switch" className="cursor-pointer">Timestamps</Label>
+        </div>
 
         {/* Action Buttons */}
         <div className="flex gap-1">
           <Tooltip title="Search logs (Ctrl+F)">
-            <IconButton size="small" onClick={handleSearch} disabled={!formattedLogs}>
+            <Button variant="ghost" size="icon" onClick={handleSearch} disabled={!formattedLogs}>
               <Search className="h-4 w-4" />
-            </IconButton>
+            </Button>
           </Tooltip>
 
           <Tooltip title="Download logs">
-            <IconButton size="small" onClick={handleDownload} disabled={!formattedLogs}>
+            <Button variant="ghost" size="icon" onClick={handleDownload} disabled={!formattedLogs}>
               <Download className="h-4 w-4" />
-            </IconButton>
+            </Button>
           </Tooltip>
 
           <Tooltip title="Copy logs">
-            <IconButton size="small" onClick={handleCopy} disabled={!formattedLogs}>
+            <Button variant="ghost" size="icon" onClick={handleCopy} disabled={!formattedLogs}>
               <Copy className="h-4 w-4" />
-            </IconButton>
+            </Button>
           </Tooltip>
         </div>
 
@@ -538,111 +541,85 @@ const SearchPopover: React.FC<SearchPopoverProps> = ({ open, onClose, terminalRe
   if (!open) return null;
 
   return (
-    <Paper
-      sx={{
-        position: "absolute",
-        top: 8,
-        right: 15,
-        padding: "8px 12px",
-        zIndex: 1000,
-        display: "flex",
-        alignItems: "center",
-        gap: 1,
-        backgroundColor: "#f5f5f5",
-        border: "1px solid #e0e0e0",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-      }}
-    >
+    <div className="absolute top-2 right-[15px] p-2 z-[1000] flex items-center gap-1 bg-[#f5f5f5] border border-[#e0e0e0] rounded shadow-[0_2px_8px_rgba(0,0,0,0.15)]">
       {/* Search Input */}
-      <InputBase
+      <Input
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Search logs..."
         autoFocus
-        sx={{
-          width: 200,
-          backgroundColor: "#fff",
-          border: "1px solid #ccc",
-          borderRadius: 1,
-          padding: "2px 8px",
-          fontSize: "14px",
-          "&.Mui-focused": {
-            borderColor: "#1976d2",
-          },
-        }}
+        className="w-[200px] bg-white border border-gray-300 rounded px-2 py-0.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
       />
 
       {/* Search Options */}
       <Tooltip title="Case sensitive">
-        <IconButton
-          size="small"
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => setCaseSensitive(!caseSensitive)}
-          sx={{
-            color: caseSensitive ? "#1976d2" : "#666",
-            backgroundColor: caseSensitive ? "#e3f2fd" : "transparent",
-          }}
+          className={`h-8 w-8 ${caseSensitive ? "text-primary bg-primary/10" : "text-gray-600"}`}
         >
           Aa
-        </IconButton>
+        </Button>
       </Tooltip>
 
       <Tooltip title="Whole word">
-        <IconButton
-          size="small"
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => setWholeWord(!wholeWord)}
-          sx={{
-            color: wholeWord ? "#1976d2" : "#666",
-            backgroundColor: wholeWord ? "#e3f2fd" : "transparent",
-          }}
+          className={`h-8 w-8 ${wholeWord ? "text-primary bg-primary/10" : "text-gray-600"}`}
         >
           Ab
-        </IconButton>
+        </Button>
       </Tooltip>
 
       <Tooltip title="Regular expression">
-        <IconButton
-          size="small"
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => setRegex(!regex)}
-          sx={{
-            color: regex ? "#1976d2" : "#666",
-            backgroundColor: regex ? "#e3f2fd" : "transparent",
-          }}
+          className={`h-8 w-8 ${regex ? "text-primary bg-primary/10" : "text-gray-600"}`}
         >
           .*
-        </IconButton>
+        </Button>
       </Tooltip>
 
       {/* Search Results */}
-      <span className={`min-w-20 text-center text-xs ${getSearchResultColor()}`}>{getSearchResultText()}</span>
+      <span style={{ color: getSearchResultColor() }} className="min-w-20 text-center text-xs">
+        {getSearchResultText()}
+      </span>
 
       {/* Navigation */}
       <Tooltip title="Previous (Shift+Enter)">
-        <IconButton
-          size="small"
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={handleFindPrevious}
           disabled={!searchText || !searchResult || searchResult.resultCount === 0}
         >
           <ChevronUp className="h-4 w-4" />
-        </IconButton>
+        </Button>
       </Tooltip>
 
       <Tooltip title="Next (Enter)">
-        <IconButton
-          size="small"
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={handleFindNext}
           disabled={!searchText || !searchResult || searchResult.resultCount === 0}
         >
           <ChevronDown className="h-4 w-4" />
-        </IconButton>
+        </Button>
       </Tooltip>
 
       {/* Close */}
       <Tooltip title="Close (Esc)">
-        <IconButton size="small" onClick={onClose}>
+        <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-4 w-4" />
-        </IconButton>
+        </Button>
       </Tooltip>
-    </Paper>
+    </div>
   );
 };

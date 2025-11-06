@@ -1,4 +1,3 @@
-import { InputAdornment } from "@mui/material";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_FROM_TEMPLATE_FORM_NAMES } from "../../../names";
 import { gitProvider } from "@my-project/shared";
@@ -34,11 +33,7 @@ export const GitUrlPath = () => {
       placeholder={"Indicate the repository relative path in the following format project/repository"}
       control={control}
       errors={errors}
-      TextFieldProps={{
-        InputProps: {
-          startAdornment: <InputAdornment position="start">{slashSymbol}</InputAdornment>,
-        },
-      }}
+      prefix={slashSymbol}
     />
   );
 };
