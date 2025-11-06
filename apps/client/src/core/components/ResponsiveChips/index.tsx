@@ -1,19 +1,17 @@
-import { Chip, ChipProps, darken, Tooltip } from "@mui/material";
+import { Badge } from "@/core/components/ui/badge";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import React from "react";
 
 // Default renderers
-const defaultChipRender = (label: string, key: string, size = "small") => (
-  <Chip
-    sx={{ backgroundColor: (t) => t.palette.secondary.main }}
-    label={label}
-    size={size as ChipProps["size"]}
-    key={key}
-  />
+const defaultChipRender = (label: string, key: string) => (
+  <Badge variant="secondary" key={key}>
+    {label}
+  </Badge>
 );
 
 const defaultTooltipRender = (chipsToHide: string[]) => (
   <div className="px-3 py-1">
-    <div className="flex flex-wrap gap-6" style={{ fontWeight: 400 }}>
+    <div className="flex flex-wrap gap-6 font-normal">
       {chipsToHide.map((chip) => defaultChipRender(chip, chip))}
     </div>
   </div>
@@ -56,15 +54,8 @@ const useChipMeasurements = (
     () => (
       <div
         ref={measurementRef}
-        style={{
-          position: "absolute",
-          visibility: "hidden",
-          pointerEvents: "none",
-          top: 0,
-          left: 0,
-          display: "flex",
-          gap: `${STACK_GAP * 8}px`,
-        }}
+        className="absolute invisible pointer-events-none top-0 left-0 flex"
+        style={{ gap: `${STACK_GAP * 8}px` }}
         aria-hidden="true"
       >
         {chipsData.map((chip, index) => (
@@ -179,20 +170,14 @@ export const ResponsiveChips = ({
   return (
     <>
       {MeasurementContainer}
-      <div ref={containerRef} style={{ width: "100%" }}>
+      <div ref={containerRef} className="w-full">
         <div className="flex flex-row items-center gap-2">
           {visibleChips.map((chip) => renderChip(chip, chip))}
           {hiddenChips.length > 0 && (
             <Tooltip title={renderTooltip(hiddenChips, visibleChips)}>
-              <Chip
-                ref={showMoreButtonRef}
-                sx={{
-                  flexShrink: 0,
-                  backgroundColor: (t) => darken(t.palette.secondary.main, 0.1),
-                }}
-                label={`+${hiddenChips.length}`}
-                size="small"
-              />
+              <Badge ref={showMoreButtonRef} variant="secondary" className="shrink-0 bg-secondary/90">
+                +{hiddenChips.length}
+              </Badge>
             </Tooltip>
           )}
         </div>

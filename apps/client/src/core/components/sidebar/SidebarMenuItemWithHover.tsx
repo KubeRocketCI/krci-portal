@@ -92,9 +92,9 @@ export const SidebarMenuItemWithHover = ({
             {({ isActive }) => (
               <>
                 {simpleItem.icon && (
-                  <simpleItem.icon className={cn(isActive ? "text-primary" : "text-sidebar-foreground")} />
+                  <simpleItem.icon className={cn(isActive ? "text-foreground" : "text-sidebar-foreground")} />
                 )}
-                <span className={cn(isActive ? "text-primary" : "text-sidebar-foreground")}>{simpleItem.title}</span>
+                <span className={cn(isActive ? "text-foreground" : "text-sidebar-foreground")}>{simpleItem.title}</span>
               </>
             )}
           </Link>

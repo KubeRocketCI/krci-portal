@@ -1,11 +1,13 @@
 import { NamespaceAutocomplete, Select, SelectOption, TextField } from "@/core/components/form";
-import { Button } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import { codebaseType } from "@my-project/shared";
 import { CODEBASE_LIST_FILTER_NAMES } from "./constants";
 import { useCodebaseFilter } from "./hooks/useFilter";
 import { useClusterStore } from "@/k8s/store";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
+import { Label } from "@/core/components/ui/label";
+import { X } from "lucide-react";
 
 const codebaseTypeOptions: SelectOption[] = [
   { label: "All", value: "all" },
@@ -55,8 +57,10 @@ export const CodebaseFilter = () => {
       )}
 
       {form.state.isDirty && (
-        <div className="mt-4">
-          <Button variant="outlined" onClick={reset} size="small">
+        <div className="flex flex-col gap-2">
+          <Label> </Label>
+          <Button variant="secondary" onClick={reset} size="sm" className="mt-0.5">
+            <X size={16} />
             Clear
           </Button>
         </div>

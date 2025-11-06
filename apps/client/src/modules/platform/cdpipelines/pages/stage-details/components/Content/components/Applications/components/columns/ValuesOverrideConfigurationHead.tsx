@@ -4,7 +4,7 @@ import {
   VALUES_OVERRIDE_POSTFIX,
   ALL_VALUES_OVERRIDE_KEY,
 } from "@/modules/platform/cdpipelines/pages/stage-details/constants";
-import { Tooltip } from "@mui/material";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { Info } from "lucide-react";
 import React from "react";
 import { useTypedFormContext } from "../../hooks/useTypedFormContext";
@@ -53,7 +53,6 @@ export const ValuesOverrideConfigurationHeadColumn = () => {
       <div className="flex flex-row items-center gap-2">
         <div>
           <FormSwitch
-            label={<></>}
             {...register(ALL_VALUES_OVERRIDE_KEY, {
               onChange: handleClickOverrideValuesAll,
             })}

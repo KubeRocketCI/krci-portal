@@ -35,6 +35,6 @@ export const TaskRunStepLogs = ({ stepName, taskRunName }: { stepName: string; t
       height={400}
     />
   ) : (
-    <div style={{ padding: 16, textAlign: "center", color: "#666" }}>No pods available for this step</div>
+    <div className="p-4 text-center text-[#666]">No pods available for this step</div>
   );
 };

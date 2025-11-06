@@ -19,8 +19,7 @@ import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSpr
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
-import { Chip } from "@mui/material";
-import { DefaultTheme } from "@mui/styles/defaultTheme";
+import { Badge } from "@/core/components/ui/badge";
 import { Codebase, codebaseType } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import React from "react";
@@ -43,16 +42,6 @@ const getColorByType = (type: string) => {
     default:
       return MAIN_COLOR.GREY;
   }
-};
-
-const getChipSX = (type: string) => {
-  const color = getColorByType(type);
-
-  return {
-    color: (t: DefaultTheme) => t.palette.common.white,
-    backgroundColor: color,
-    borderColor: "transparent",
-  };
 };
 
 export const useColumns = (): TableColumn<Codebase>[] => {
@@ -127,7 +116,14 @@ export const useColumns = (): TableColumn<Codebase>[] => {
             data: {
               spec: { type },
             },
-          }) => <Chip sx={getChipSX(type)} size="small" variant="outlined" label={capitalizeFirstLetter(type)} />,
+          }) => {
+            const backgroundColor = getColorByType(type);
+            return (
+              <Badge variant="outline" className="border-transparent text-white" style={{ backgroundColor }}>
+                {capitalizeFirstLetter(type)}
+              </Badge>
+            );
+          },
         },
         cell: {
           ...getSyncedColumnData(tableSettings, columnNames.TYPE, 20),

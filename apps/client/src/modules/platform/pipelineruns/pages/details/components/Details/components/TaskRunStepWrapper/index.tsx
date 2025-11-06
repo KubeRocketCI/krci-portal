@@ -1,8 +1,6 @@
 import { humanize } from "@/core/utils/date-humanize";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
-import { Divider, Paper } from "@mui/material";
 import { getTaskRunStepStatus } from "@my-project/shared";
-import { StyledDetailsBody, StyledDetailsHeader } from "../../styles";
 import { TaskRunStep } from "./components/TaskRunStep";
 import { useTabs } from "./hooks/useTabs";
 import { TaskRunStepProps } from "./types";
@@ -40,8 +38,8 @@ export const TaskRunStepWrapper = ({ pipelineRunTaskData, stepName }: TaskRunSte
   const taskDescription = pipelineRunTaskData?.task?.spec?.description || "";
 
   return (
-    <Paper>
-      <StyledDetailsHeader>
+    <div className="bg-card rounded shadow">
+      <div className="p-6">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h3 className="text-xl font-medium">{step?.name}</h3>
@@ -66,13 +64,13 @@ export const TaskRunStepWrapper = ({ pipelineRunTaskData, stepName }: TaskRunSte
             </span>
           )}
         </div>
-      </StyledDetailsHeader>
-      <Divider orientation="horizontal" />
-      <StyledDetailsBody>
+      </div>
+      <hr className="border-border" />
+      <div className="px-6 pb-6">
         <TabsContextProvider id="pipeline-details-page-inner-taskrun-step">
           <TaskRunStep tabs={tabs} />
         </TabsContextProvider>
-      </StyledDetailsBody>
-    </Paper>
+      </div>
+    </div>
   );
 };

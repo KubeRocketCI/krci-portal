@@ -3,6 +3,7 @@ import { protectedProcedure } from "../../../../procedures/protected";
 import { TRPCError } from "@trpc/server";
 import { k8sConfigMapConfig, ConfigMap, krciConfigMapNames } from "@my-project/shared";
 import { z } from "zod";
+import { K8sClient } from "../../../../clients/k8s";
 
 export const getBranchListProcedure = protectedProcedure
   .input(
@@ -16,11 +17,12 @@ export const getBranchListProcedure = protectedProcedure
   )
   .query(async ({ input, ctx }) => {
     const { namespace, gitServer, owner, repoName } = input;
-    const { session, K8sClient } = ctx;
+    const { session } = ctx;
+    const k8sClient = new K8sClient(session);
 
     const idToken = session.user!.secret.idToken;
 
-    const configMapList = await K8sClient.listResource(k8sConfigMapConfig, namespace);
+    const configMapList = await k8sClient.listResource(k8sConfigMapConfig, namespace);
 
     const configMaps = (configMapList.items || []) as ConfigMap[];
 

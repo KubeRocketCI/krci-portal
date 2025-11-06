@@ -14,6 +14,4 @@ export interface CodebaseBranchActionsProps {
   };
   backRoute?: string;
   variant?: ActionMenuType;
-  anchorEl?: HTMLElement | null;
-  handleCloseResourceActionListMenu?: () => void;
 }

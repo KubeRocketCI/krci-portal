@@ -2,7 +2,7 @@ import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { useCodebaseCRUD } from "@/k8s/api/groups/KRCI/Codebase";
 import { SuccessDialog } from "@/modules/platform/codebases/dialogs/Success";
 import { PATH_COMPONENT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
-import { Button } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import { codebaseDeploymentScript, CodebaseDraft, codebaseLabels, createCodebaseDraftObject } from "@my-project/shared";
 import React from "react";
 import { useTypedFormContext } from "../../hooks/useFormContext";
@@ -102,24 +102,21 @@ export const FormActions = () => {
   return (
     <div className="flex w-full justify-between gap-2">
       <div className="flex gap-1">
-        <div className="text-foreground">
-          <Button onClick={closeDialog} size="small" color="inherit">
-            cancel
-          </Button>
-        </div>
-        <Button onClick={handleResetFields} size="small" disabled={!isDirty}>
-          undo changes
+        <Button onClick={closeDialog} variant="ghost" size="sm">
+          Cancel
+        </Button>
+        <Button onClick={handleResetFields} variant="ghost" size="sm" disabled={!isDirty}>
+          Undo Changes
         </Button>
       </div>
       <Button
         type={"submit"}
         onClick={handleSubmit(onSubmit)}
-        variant={"contained"}
-        color={"primary"}
-        size="small"
+        variant={"default"}
+        size="sm"
         disabled={!isDirty || codebaseCreateMutation.isPending}
       >
-        create
+        Create
       </Button>
     </div>
   );

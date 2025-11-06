@@ -1,4 +1,4 @@
-import { Tooltip } from "@mui/material";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { Info } from "lucide-react";
 import { FormControlLabelWithTooltipProps } from "./types";
 

@@ -8,6 +8,4 @@ export interface CodebaseActionsMenuProps {
   };
   backRoute?: RouteParams;
   variant?: ActionMenuType;
-  anchorEl?: HTMLElement;
-  handleCloseResourceActionListMenu?: () => void;
 }

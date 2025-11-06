@@ -1,11 +1,12 @@
 import { publicProcedure } from "../../../../procedures/public";
 import { loginCallbackInputSchema, loginCallbackOutputSchema } from "@my-project/shared";
+import { OIDCClient } from "../../../../clients/oidc";
 
 export const authLoginCallbackProcedure = publicProcedure
   .input(loginCallbackInputSchema)
   .output(loginCallbackOutputSchema)
   .mutation(async ({ input, ctx }) => {
-    const { oidcClient } = ctx;
+    const oidcClient = new OIDCClient(ctx.oidcConfig);
     const url = new URL(input);
     const params: URLSearchParams = url.searchParams;
     const stateFromParams = params.get("state");

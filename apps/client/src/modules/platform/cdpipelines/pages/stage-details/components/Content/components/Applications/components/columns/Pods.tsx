@@ -1,5 +1,3 @@
-// import { Tooltip } from "@mui/material";
-
 export const PodsColumn = () => {
   //   const appName = appCodebase?.metadata.name;
   //   const appPods = applicationPodsMap?.[appName];

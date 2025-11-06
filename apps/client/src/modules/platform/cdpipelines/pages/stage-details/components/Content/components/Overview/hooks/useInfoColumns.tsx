@@ -1,6 +1,4 @@
-import { Chip } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
-import clsx from "clsx";
+import { Badge } from "@/core/components/ui/badge";
 import React from "react";
 import { useStageWatch } from "../../../../../hooks/";
 import { getStageStatusIcon } from "@/k8s/api/groups/KRCI/Stage";
@@ -9,28 +7,9 @@ import { stageTriggerType } from "@my-project/shared";
 import KubernetesIcon from "@/assets/icons/k8s/kubernetes.svg?react";
 import { CopyButton } from "@/core/components/CopyButton";
 import { Pipeline } from "@/modules/platform/pipelines/components/Pipeline";
-import { STATUS_COLOR } from "@/k8s/constants/colors";
-
-const useStyles = makeStyles((theme) => ({
-  labelChip: {
-    height: theme.typography.pxToRem(24),
-    lineHeight: 1,
-    paddingTop: theme.typography.pxToRem(2),
-  },
-  labelChipBlue: {
-    backgroundColor: STATUS_COLOR.SUCCESS,
-    color: "#fff",
-  },
-  labelChipGreen: {
-    backgroundColor: STATUS_COLOR.SUCCESS,
-    color: "#fff",
-  },
-}));
 
 export const useInfoColumns = () => {
   const stageWatch = useStageWatch();
-
-  const classes = useStyles();
 
   return React.useMemo(() => {
     if (stageWatch.query.isLoading || !stageWatch.query.data) {
@@ -73,9 +52,9 @@ export const useInfoColumns = () => {
           label: "Trigger Type",
           text:
             stage.spec.triggerType === stageTriggerType.Manual ? (
-              <Chip label="manual" className={clsx([classes.labelChip, classes.labelChipBlue])} />
+              <Badge variant="default" className="h-6 bg-green-600 hover:bg-green-700">manual</Badge>
             ) : (
-              <Chip label="auto" className={clsx([classes.labelChip, classes.labelChipGreen])} />
+              <Badge variant="default" className="h-6 bg-green-600 hover:bg-green-700">auto</Badge>
             ),
         },
         {
@@ -116,11 +95,5 @@ export const useInfoColumns = () => {
         },
       ],
     ];
-  }, [
-    classes.labelChip,
-    classes.labelChipBlue,
-    classes.labelChipGreen,
-    stageWatch.query.data,
-    stageWatch.query.isLoading,
-  ]);
+  }, [stageWatch.query.data, stageWatch.query.isLoading]);
 };

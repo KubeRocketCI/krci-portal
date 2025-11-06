@@ -1,5 +1,3 @@
-"use client";
-
 import { Slot } from "@radix-ui/react-slot";
 import { cva, VariantProps } from "class-variance-authority";
 import { Menu } from "lucide-react";
@@ -9,7 +7,7 @@ import { Button } from "@/core/components/ui/button";
 import { Input } from "@/core/components/ui/input";
 import { Separator } from "@/core/components/ui/separator";
 import { Skeleton } from "@/core/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/core/components/ui/tooltip";
+import { TooltipContent, TooltipProvider, TooltipTrigger, TooltipRoot } from "@/core/components/ui/tooltip";
 import { useIsMobile } from "@/core/hooks/use-mobile";
 import { cn } from "@/core/utils/classname";
 
@@ -365,10 +363,10 @@ function SidebarMenuButton({
   }
 
   return (
-    <Tooltip>
+    <TooltipRoot>
       <TooltipTrigger asChild>{button}</TooltipTrigger>
       <TooltipContent side="right" align="center" hidden={state !== "collapsed" || isMobile} {...tooltip} />
-    </Tooltip>
+    </TooltipRoot>
   );
 }
 

@@ -1,10 +1,9 @@
 import { errorBase64Icon } from "./constants";
-import { useStyles } from "./styles";
+import { getIconClasses, getIconStyle } from "./styles";
 
 export const SvgBase64Icon = ({ width, height, icon }: { width: number; height: number; icon: string }) => {
-  const classes = useStyles(width, height);
   return (
-    <div className={classes.icon}>
+    <div className={getIconClasses()} style={getIconStyle(width, height)}>
       <img
         src={`data:image/svg+xml;base64,${icon}`}
         alt=""

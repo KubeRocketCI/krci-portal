@@ -92,8 +92,6 @@ export const createDeleteAction = ({
 export const StageActionsMenu = ({
   data: { stage, stages, cdPipeline },
   backRoute,
-  handleCloseResourceActionListMenu,
-  anchorEl,
   variant,
 }: StageActionsMenuProps) => {
   const openManageStageDialog = useDialogOpener(ManageStageDialog);
@@ -112,10 +110,6 @@ export const StageActionsMenu = ({
           reason: stagePermissions.data.patch.reason,
         },
         callback: (stage) => {
-          if (variant === actionMenuType.menu && handleCloseResourceActionListMenu) {
-            handleCloseResourceActionListMenu();
-          }
-
           openManageStageDialog({
             stage,
             otherStages: stages,
@@ -128,10 +122,6 @@ export const StageActionsMenu = ({
         currentStage: stage,
         permissions: stagePermissions.data,
         action: (stage) => {
-          if (variant === actionMenuType.menu && handleCloseResourceActionListMenu) {
-            handleCloseResourceActionListMenu();
-          }
-
           openDeleteKubeObjectDialog({
             objectName: stage?.spec?.name,
             resourceConfig: k8sStageConfig,
@@ -147,7 +137,6 @@ export const StageActionsMenu = ({
     stagePermissions.data,
     stages,
     variant,
-    handleCloseResourceActionListMenu,
     openManageStageDialog,
     cdPipeline,
     openDeleteKubeObjectDialog,
@@ -157,6 +146,6 @@ export const StageActionsMenu = ({
   return variant === actionMenuType.inline ? (
     <ActionsInlineList actions={actions} />
   ) : variant === actionMenuType.menu ? (
-    <ActionsMenuList actions={actions} anchorEl={anchorEl} handleCloseActionsMenu={handleCloseResourceActionListMenu} />
+    <ActionsMenuList actions={actions} />
   ) : null;
 };

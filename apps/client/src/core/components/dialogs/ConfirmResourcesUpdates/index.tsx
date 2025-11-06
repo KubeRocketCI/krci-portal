@@ -1,6 +1,8 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
+import { FormTextField } from "@/core/providers/Form/components/FormTextField";
 import { DIALOG_NAME } from "./constants";
 import { ConfirmResourcesUpdatesDialogProps } from "./types";
 import { k8sOperation } from "@my-project/shared";
@@ -8,7 +10,7 @@ import { k8sOperation } from "@my-project/shared";
 export const ConfirmResourcesUpdatesDialog: React.FC<ConfirmResourcesUpdatesDialogProps> = ({ props, state }) => {
   const { deleteCallback, text, resourcesArray } = props;
   const { closeDialog, open } = state;
-  const { register, watch, reset } = useForm();
+  const { control, watch, reset, formState: { errors } } = useForm();
 
   const confirmFieldValue = watch("confirm");
   const isSubmitNotAllowed = confirmFieldValue !== "confirm";
@@ -22,10 +24,12 @@ export const ConfirmResourcesUpdatesDialog: React.FC<ConfirmResourcesUpdatesDial
   }, [deleteCallback, handleClosePopup, reset]);
 
   return (
-    <Dialog open={open} onClose={handleClosePopup} fullWidth data-testid="dialog">
-      <DialogTitle>Confirm action</DialogTitle>
-      <DialogContent>
-        <div className="mb-10">
+    <Dialog open={open} onOpenChange={(open) => !open && handleClosePopup()} data-testid="dialog">
+      <DialogContent className="w-full max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>Confirm action</DialogTitle>
+        </DialogHeader>
+        <DialogBody>
           <div className="flex flex-col gap-4">
             {!!text && (
               <div>
@@ -58,25 +62,24 @@ export const ConfirmResourcesUpdatesDialog: React.FC<ConfirmResourcesUpdatesDial
                 </div>
               </div>
             )}
-            <div>
-              <TextField
-                {...register("confirm", { required: true })}
-                label={'Enter "confirm" to confirm action'}
-                variant="outlined"
-                fullWidth
-              />
-            </div>
+            <FormTextField
+              name="confirm"
+              control={control}
+              errors={errors}
+              label={'Enter "confirm" to confirm action'}
+              rules={{ required: true }}
+            />
           </div>
-        </div>
+        </DialogBody>
+        <DialogFooter>
+          <Button type={"button"} onClick={handleClosePopup} variant="ghost">
+            Cancel
+          </Button>
+          <Button onClick={onSubmit} disabled={isSubmitNotAllowed}>
+            Confirm
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <Button type={"button"} onClick={handleClosePopup}>
-          Cancel
-        </Button>
-        <Button onClick={onSubmit} disabled={isSubmitNotAllowed}>
-          Confirm
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 };

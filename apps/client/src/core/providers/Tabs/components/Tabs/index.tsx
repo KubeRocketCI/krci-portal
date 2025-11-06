@@ -1,43 +1,39 @@
-import { Tabs as MuiTabs, Tab } from "@mui/material";
-import { TabPanel } from "../../../../components/TabPanel";
-import { useStyles } from "./styles";
+import { Tabs as ShadcnTabs, TabsList, TabsTrigger, TabsContent } from "@/core/components/ui/tabs";
 import { TabsProps } from "./types";
 
-const a11yProps = (index: number) => {
-  return {
-    id: `simple-tab-${index}`,
-    "aria-controls": `simple-tabpanel-${index}`,
-  };
-};
-
 export const Tabs = ({ tabs, activeTabIdx, handleChangeTab }: TabsProps) => {
-  const classes = useStyles();
-
   return (
-    <>
-      <MuiTabs
-        value={activeTabIdx}
-        onChange={handleChangeTab}
-        indicatorColor={"primary"}
-        textColor={"primary"}
-        className={classes.tabs}
-      >
+    <ShadcnTabs
+      value={activeTabIdx.toString()}
+      onValueChange={(value) => {
+        const newTabIdx = parseInt(value, 10);
+        handleChangeTab({} as React.ChangeEvent<object>, newTabIdx);
+      }}
+      className="rounded-[0.3125rem]"
+    >
+      <TabsList>
         {tabs.map(({ label, icon, disabled = false, onClick }, idx) => (
-          <Tab
+          <TabsTrigger
             key={`tab::${idx}`}
-            label={label}
+            value={idx.toString()}
             disabled={disabled}
-            icon={icon}
             onClick={onClick}
-            {...a11yProps(idx)}
-          />
+            className="flex items-center gap-2"
+          >
+            {icon}
+            {label}
+          </TabsTrigger>
         ))}
-      </MuiTabs>
+      </TabsList>
       {tabs.map(({ component }, idx) => (
-        <TabPanel key={`tab::${idx}`} value={activeTabIdx} index={idx}>
+        <TabsContent
+          key={`tab::${idx}`}
+          value={idx.toString()}
+          className="h-full flex flex-col relative"
+        >
           {component}
-        </TabPanel>
+        </TabsContent>
       ))}
-    </>
+    </ShadcnTabs>
   );
 };

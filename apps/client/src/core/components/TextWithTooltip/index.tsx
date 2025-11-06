@@ -1,6 +1,6 @@
-import React from "react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/core/components/ui/tooltip";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { cn } from "@/core/utils/classname";
+import React from "react";
 import { TextWithTooltipProps } from "./types";
 
 export const TextWithTooltip = ({ text, className, maxLineAmount = 1 }: TextWithTooltipProps) => {
@@ -34,12 +34,7 @@ export const TextWithTooltip = ({ text, className, maxLineAmount = 1 }: TextWith
   );
 
   if (isOverflowed) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>{Content}</TooltipTrigger>
-        <TooltipContent>{text}</TooltipContent>
-      </Tooltip>
-    );
+    return <Tooltip title={text}>{Content}</Tooltip>;
   }
 
   return Content;

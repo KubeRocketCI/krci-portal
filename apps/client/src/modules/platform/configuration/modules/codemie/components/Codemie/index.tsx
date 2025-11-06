@@ -7,7 +7,8 @@ import { useCodemieProjectWatchItem } from "@/k8s/api/groups/KRCI/CodemieProject
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { useClusterStore } from "@/k8s/store";
-import { Accordion, AccordionDetails, AccordionSummary, Tooltip } from "@mui/material";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/core/components/ui/accordion";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { useShallow } from "zustand/react/shallow";
 import { ManageCodeMie } from "../ManageCodeMie";
 import { integrationSecretName, systemQuickLink } from "@my-project/shared";
@@ -92,42 +93,44 @@ export const CodemieSection = ({
 
   return (
     <LoadingWrapper isLoading={isLoading}>
-      <Accordion expanded>
-        <AccordionSummary style={{ cursor: "default" }}>
-          <h6 className="text-base font-medium">
-            <div className="flex items-center gap-2">
-              <div className="mr-1">
-                <StatusIcon
-                  Icon={statusIcon.component}
-                  color={statusIcon.color}
-                  Title={
-                    <>
-                      <p className="text-sm font-semibold">{`Status: ${status || "Unknown"}`}</p>
-                      {!!statusError && <p className="mt-3 text-sm font-medium">{statusError}</p>}
-                    </>
-                  }
-                />
-              </div>
-              <div>{codemieProject?.metadata.name}</div>
-              {!!ownerReference && (
-                <div>
-                  <Tooltip title={`Managed by ${ownerReference}`}>
-                    <ShieldX size={16} />
-                  </Tooltip>
+      <Accordion type="single" collapsible defaultValue="item-1">
+        <AccordionItem value="item-1">
+            <AccordionTrigger className="cursor-default">
+              <h6 className="text-base font-medium">
+                <div className="flex items-center gap-2">
+                  <div className="mr-1">
+                    <StatusIcon
+                      Icon={statusIcon.component}
+                      color={statusIcon.color}
+                      Title={
+                        <>
+                          <p className="text-sm font-semibold">{`Status: ${status || "Unknown"}`}</p>
+                          {!!statusError && <p className="mt-3 text-sm font-medium">{statusError}</p>}
+                        </>
+                      }
+                    />
+                  </div>
+                  <div>{codemieProject?.metadata.name}</div>
+                  {!!ownerReference && (
+                    <div>
+                      <Tooltip title={`Managed by ${ownerReference}`}>
+                        <ShieldX size={16} />
+                      </Tooltip>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </h6>
-        </AccordionSummary>
-        <AccordionDetails>
-          <ManageCodeMie
-            quickLink={codemieQuickLink!}
-            codemie={codemie!}
-            codemieSecret={codemieSecret!}
-            handleClosePanel={handleCloseCreateDialog}
-          />
-        </AccordionDetails>
-      </Accordion>
+              </h6>
+            </AccordionTrigger>
+            <AccordionContent>
+              <ManageCodeMie
+                quickLink={codemieQuickLink!}
+                codemie={codemie!}
+                codemieSecret={codemieSecret!}
+                handleClosePanel={handleCloseCreateDialog}
+              />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
     </LoadingWrapper>
   );
 };

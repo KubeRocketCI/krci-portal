@@ -25,18 +25,15 @@ export const ConfigureDeployButton = ({
   return (
     <ButtonWithPermission
       ButtonProps={{
-        variant: "contained",
-        color: "primary",
-        size: "medium",
+        variant: "default",
         onClick: toggleMode,
-        startIcon:
-          deployBtnDisabled || latestDeployPipelineRunIsRunning ? <LoadingSpinner size={16} /> : <Pencil size={16} />,
         disabled: latestDeployPipelineRunIsRunning || latestCleanPipelineRunIsRunning || deployBtnDisabled,
       }}
       allowed={pipelineRunPermissions.data?.create.allowed}
       reason={pipelineRunPermissions.data?.create.reason}
     >
-      {deployBtnDisabled || latestDeployPipelineRunIsRunning ? "Deploying" : "Configure deploy"}
+      {deployBtnDisabled || latestDeployPipelineRunIsRunning ? <LoadingSpinner size={16} /> : <Pencil size={16} />}
+      {deployBtnDisabled || latestDeployPipelineRunIsRunning ? "Deploying" : "Configure Deploy"}
     </ButtonWithPermission>
   );
 };

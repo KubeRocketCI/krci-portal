@@ -1,9 +1,7 @@
-import { Link } from "@mui/material";
-
 export const LearnMoreLink = ({ url }: { url: string }) => {
   return (
-    <Link href={url} target={"_blank"}>
+    <a href={url} target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">
       <span className="text-sm">Learn more.</span>
-    </Link>
+    </a>
   );
 };

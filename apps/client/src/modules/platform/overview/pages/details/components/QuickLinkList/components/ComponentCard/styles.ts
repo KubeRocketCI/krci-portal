@@ -1,27 +1,7 @@
-import makeStyles from "@mui/styles/makeStyles";
+import { cn } from "@/core/utils/classname";
 
-export const useStyles = makeStyles((theme) => ({
-  cardRoot: {
-    height: theme.typography.pxToRem(64),
-    position: "relative",
-    padding: `${theme.typography.pxToRem(15)} ${theme.typography.pxToRem(16)}`,
-    boxShadow: "0px 1px 10px 0px #0024461F",
-    borderRadius: "4px",
-  },
-  cardTitle: {
-    textOverflow: "ellipsis",
-    overflow: "hidden",
-    whiteSpace: "nowrap",
-  },
-  serviceItemIcon: {
-    flexShrink: 0,
-    display: "block",
-    width: theme.typography.pxToRem(32),
-    height: theme.typography.pxToRem(32),
+export const cardRootClasses = cn("h-16 relative py-[15px] px-4 shadow-[0px_1px_10px_0px_#0024461F] rounded");
 
-    "& img": {
-      width: "100%",
-      height: "100%",
-    },
-  },
-}));
+export const cardTitleClasses = "truncate";
+
+export const serviceItemIconClasses = "shrink-0 block w-8 h-8 [&_img]:w-full [&_img]:h-full";

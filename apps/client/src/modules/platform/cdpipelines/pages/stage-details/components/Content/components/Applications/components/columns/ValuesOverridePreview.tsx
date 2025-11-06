@@ -38,7 +38,6 @@ export const ValuesOverridePreviewColumn = ({ appCodebase }: { appCodebase: Code
       <div className="flex w-full flex-row items-center gap-2">
         <div>
           <FormSwitch
-            label={<></>}
             {...register(`${appCodebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}`, {
               onChange: () => {
                 const hasAtLeastOneFalse = Object.entries(getValues())

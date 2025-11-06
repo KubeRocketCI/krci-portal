@@ -1,4 +1,3 @@
-import { useTheme } from "@mui/material";
 import {
   GitProviderField,
   HostName,
@@ -12,12 +11,10 @@ import {
 } from "./components/fields";
 
 export const GitServerForm = () => {
-  const theme = useTheme();
-
   return (
     <>
       <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-6" style={{ marginTop: theme.typography.pxToRem(16) }}>
+        <div className="col-span-6 mt-4">
           <Name />
         </div>
         <div className="col-span-6">
@@ -45,7 +42,7 @@ export const GitServerForm = () => {
         </div>
         <div className="col-span-12">
           <div className="grid grid-cols-12 items-center gap-4">
-            <div className="col-span-6" style={{ marginTop: "16px" }}>
+            <div className="col-span-6 mt-4">
               <OverrideWebhookURL />
             </div>
             <div className="col-span-6">

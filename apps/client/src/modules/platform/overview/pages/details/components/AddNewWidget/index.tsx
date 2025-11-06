@@ -1,9 +1,8 @@
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
-import { IconButton } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import { Plus } from "lucide-react";
 import { AddNewWidget } from "../../dialogs/AddNewWidget";
 import { WidgetConfig } from "../../dialogs/AddNewWidget/types";
-import { useStyles } from "./styles";
 
 export const AddNewWidgetCard = ({
   userWidgets,
@@ -12,13 +11,12 @@ export const AddNewWidgetCard = ({
   userWidgets: WidgetConfig[];
   setUserWidgets: (widgets: WidgetConfig[]) => void;
 }) => {
-  const classes = useStyles();
-
   const { setDialog } = useDialogContext();
 
   return (
-    <IconButton
-      className={classes.cardRoot}
+    <Button
+      variant="ghost"
+      className="bg-card h-full w-full rounded border shadow-xs"
       onClick={() => {
         setDialog(AddNewWidget, {
           userWidgets,
@@ -30,6 +28,6 @@ export const AddNewWidgetCard = ({
         <Plus size={16} />
         <span className="text-base font-medium">ADD WIDGET</span>
       </div>
-    </IconButton>
+    </Button>
   );
 };

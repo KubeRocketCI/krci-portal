@@ -6,7 +6,7 @@ import {
 import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { useQuickLinksUrlListWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
-import { Tooltip } from "@mui/material";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { Application, applicationLabels, Codebase, getDeployedVersion, systemQuickLink } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import { SquareArrowOutUpRight } from "lucide-react";

@@ -17,8 +17,6 @@ import { CodebaseBranchActionsProps } from "./types";
 export const CodebaseBranchActionsMenu = ({
   data: { codebase, codebaseBranch, codebaseBranches, defaultBranch, pipelines },
   variant,
-  handleCloseResourceActionListMenu,
-  anchorEl,
 }: CodebaseBranchActionsProps) => {
   const { setDialog: setNewDialog } = useDialogContext();
 
@@ -60,10 +58,6 @@ export const CodebaseBranchActionsMenu = ({
           reason: codebaseBranchPermissions.data.patch.reason,
         },
         callback: (codebaseBranch) => {
-          if (variant === actionMenuType.menu && handleCloseResourceActionListMenu) {
-            handleCloseResourceActionListMenu();
-          }
-
           setNewDialog(ManageCodebaseBranchDialog, {
             codebaseBranches,
             codebase,
@@ -88,10 +82,6 @@ export const CodebaseBranchActionsMenu = ({
             : codebaseBranchPermissions.data.delete.reason,
         },
         callback: (codebaseBranch) => {
-          if (variant === actionMenuType.menu && handleCloseResourceActionListMenu) {
-            handleCloseResourceActionListMenu();
-          }
-
           setNewDialog(DeleteKubeObjectDialog, {
             objectName: codebaseBranch?.spec?.branchName,
             resource: codebaseBranch,
@@ -111,7 +101,6 @@ export const CodebaseBranchActionsMenu = ({
     codebaseBranchPermissions.data.patch.reason,
     codebaseBranches,
     defaultBranch,
-    handleCloseResourceActionListMenu,
     isDefaultBranch,
     onBeforeSubmit,
     pipelines?.build,
@@ -123,10 +112,6 @@ export const CodebaseBranchActionsMenu = ({
   return variant === actionMenuType.inline ? (
     <ActionsInlineList actions={actions} />
   ) : variant === actionMenuType.menu ? (
-    <ActionsMenuList
-      actions={actions}
-      anchorEl={anchorEl!}
-      handleCloseActionsMenu={handleCloseResourceActionListMenu!}
-    />
+    <ActionsMenuList actions={actions} />
   ) : null;
 };

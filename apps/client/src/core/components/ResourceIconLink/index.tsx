@@ -1,16 +1,24 @@
-import { Button, ButtonProps, IconButton, Link as MuiLink, Tooltip, useTheme } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import React from "react";
 import { ResourceIconLinkProps } from "./types";
 import { SquareArrowOutUpRight } from "lucide-react";
+import type { VariantProps } from "class-variance-authority";
+import { buttonVariants } from "@/core/components/ui/button";
 
 const stopPropagation = (e: React.SyntheticEvent) => e.stopPropagation();
 
-const iconSizeByBtnSize = (btnSize: ButtonProps["size"]) => {
+type ButtonSize = VariantProps<typeof buttonVariants>["size"];
+
+const iconSizeByBtnSize = (btnSize: ButtonSize) => {
   switch (btnSize) {
-    case "small":
+    case "sm":
       return 16;
-    case "medium":
+    case "default":
+    case "lg":
       return 20;
+    case "icon":
+      return 16;
   }
 };
 
@@ -24,34 +32,23 @@ const DisabledResourceIconLink = ({
   name,
   size,
 }: ResourceIconLinkProps) => {
-  const theme = useTheme();
-
   const iconSize = iconSizeByBtnSize(size);
 
   return isTextButton ? (
-    <Button
-      variant={variant}
-      disabled
-      sx={!withoutDisabledStyle ? { opacity: 0.5 } : {}}
-      endIcon={<SquareArrowOutUpRight color={theme.palette.grey["500"]} size={iconSize} />}
-      size={size}
-    >
+    <Button variant={variant} disabled className={!withoutDisabledStyle ? "opacity-50" : ""} size={size}>
       {name}
+      <SquareArrowOutUpRight className="text-muted-foreground" size={iconSize} />
     </Button>
   ) : (
     <Tooltip title={<div>{tooltipTitle}</div>}>
       <div>
-        <IconButton disabled style={!withoutDisabledStyle ? { opacity: 0.5 } : {}} size={size}>
+        <Button variant="ghost" size="icon" disabled className={!withoutDisabledStyle ? "opacity-50" : ""}>
           {iconBase64 ? (
-            <img
-              src={`data:image/svg+xml;base64,${iconBase64}`}
-              style={{ width: theme.typography.pxToRem(16), height: theme.typography.pxToRem(16) }}
-              alt=""
-            />
+            <img src={`data:image/svg+xml;base64,${iconBase64}`} className="h-4 w-4" alt="" />
           ) : Icon ? (
             Icon
           ) : null}
-        </IconButton>
+        </Button>
       </div>
     </Tooltip>
   );
@@ -67,20 +64,19 @@ const EnabledResourceIconLink = ({
   name,
   size,
 }: ResourceIconLinkProps) => {
-  const theme = useTheme();
   const iconSize = iconSizeByBtnSize(size);
 
   return isTextButton ? (
     <Button
       variant={variant}
-      component={MuiLink}
-      href={link}
-      target={"_blank"}
-      endIcon={<SquareArrowOutUpRight size={iconSize} />}
+      asChild
       size={size}
-      sx={{ color: theme.palette.secondary.dark, borderColor: theme.palette.secondary.dark }}
+      className="text-secondary-dark border-secondary-dark hover:bg-secondary-dark/10"
     >
-      {name}
+      <a href={link} target="_blank" rel="noopener noreferrer">
+        {name}
+        <SquareArrowOutUpRight size={iconSize} />
+      </a>
     </Button>
   ) : (
     <Tooltip
@@ -95,17 +91,15 @@ const EnabledResourceIconLink = ({
       }
     >
       <span>
-        <IconButton component={MuiLink} href={link} target={"_blank"} size={size}>
-          {iconBase64 ? (
-            <img
-              src={`data:image/svg+xml;base64,${iconBase64}`}
-              style={{ width: theme.typography.pxToRem(16), height: theme.typography.pxToRem(16) }}
-              alt=""
-            />
-          ) : Icon ? (
-            Icon
-          ) : null}
-        </IconButton>
+        <Button variant="ghost" size="icon" asChild>
+          <a href={link} target="_blank" rel="noopener noreferrer">
+            {iconBase64 ? (
+              <img src={`data:image/svg+xml;base64,${iconBase64}`} className="h-4 w-4" alt="" />
+            ) : Icon ? (
+              Icon
+            ) : null}
+          </a>
+        </Button>
       </span>
     </Tooltip>
   );

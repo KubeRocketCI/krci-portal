@@ -6,7 +6,8 @@ import { FORM_MODES } from "@/core/types/forms";
 import { useSecretPermissions, useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
 import { useQuickLinkPermissions, useQuickLinkWatchItem } from "@/k8s/api/groups/KRCI/QuickLink";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionSummary, AccordionDetails, Tooltip } from "@mui/material";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/core/components/ui/accordion";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { getIntegrationSecretStatus, integrationSecretName, systemQuickLink } from "@my-project/shared";
 import React from "react";
 import { ManageDefectDojo } from "./components/ManageDefectDojo";
@@ -66,44 +67,46 @@ export default function DefectdojoConfigurationPage() {
 
     return (
       <LoadingWrapper isLoading={isLoading}>
-        <Accordion expanded>
-          <AccordionSummary style={{ cursor: "default" }}>
-            <h6 className="text-base font-medium">
-              <div className="flex items-center gap-2">
-                <div className="mr-1">
-                  <StatusIcon
-                    Icon={statusIcon.component}
-                    color={statusIcon.color}
-                    Title={
-                      <>
-                        <p className="text-sm font-semibold">
-                          {`Connected: ${status.connected === undefined ? "Unknown" : status.connected}`}
-                        </p>
-                        {!!status.statusError && <p className="mt-3 text-sm font-medium">{status.statusError}</p>}
-                      </>
-                    }
-                  />
-                </div>
-                <div>{defectDojoSecret?.metadata.name}</div>
-                {!!ownerReference && (
-                  <div>
-                    <Tooltip title={`Managed by ${ownerReference}`}>
-                      <ShieldX size={20} />
-                    </Tooltip>
+        <Accordion type="single" collapsible defaultValue="item-1">
+          <AccordionItem value="item-1">
+            <AccordionTrigger className="cursor-default">
+              <h6 className="text-base font-medium">
+                <div className="flex items-center gap-2">
+                  <div className="mr-1">
+                    <StatusIcon
+                      Icon={statusIcon.component}
+                      color={statusIcon.color}
+                      Title={
+                        <>
+                          <p className="text-sm font-semibold">
+                            {`Connected: ${status.connected === undefined ? "Unknown" : status.connected}`}
+                          </p>
+                          {!!status.statusError && <p className="mt-3 text-sm font-medium">{status.statusError}</p>}
+                        </>
+                      }
+                    />
                   </div>
-                )}
-              </div>
-            </h6>
-          </AccordionSummary>
-          <AccordionDetails>
-            <ManageDefectDojo
-              secret={defectDojoSecret}
-              quickLink={defectDojoQuickLink}
-              mode={mode}
-              ownerReference={ownerReference}
-              handleClosePanel={handleCloseCreateDialog}
-            />
-          </AccordionDetails>
+                  <div>{defectDojoSecret?.metadata.name}</div>
+                  {!!ownerReference && (
+                    <div>
+                      <Tooltip title={`Managed by ${ownerReference}`}>
+                        <ShieldX size={20} />
+                      </Tooltip>
+                    </div>
+                  )}
+                </div>
+              </h6>
+            </AccordionTrigger>
+            <AccordionContent>
+              <ManageDefectDojo
+                secret={defectDojoSecret}
+                quickLink={defectDojoQuickLink}
+                mode={mode}
+                ownerReference={ownerReference}
+                handleClosePanel={handleCloseCreateDialog}
+              />
+            </AccordionContent>
+          </AccordionItem>
         </Accordion>
       </LoadingWrapper>
     );

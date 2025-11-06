@@ -1,6 +1,16 @@
-import { Autocomplete, Button, Chip, Dialog, DialogContent, DialogTitle, TextField } from "@mui/material";
-import { Check, CircleX, X } from "lucide-react";
-import { Controller, FormProvider, useForm } from "react-hook-form";
+import { Button } from "@/core/components/ui/button";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
+import { FormProvider, useForm } from "react-hook-form";
+import { BookmarkIcon } from "lucide-react";
+import { FormCombobox } from "@/core/providers/Form/components/FormCombobox";
+import { FormComboboxMultipleFreeSolo } from "@/core/providers/Form/components/FormComboboxMultipleFreeSolo";
 import { useShallow } from "zustand/react/shallow";
 import { DialogProps } from "../../providers/Dialog/types";
 import { useClusterStore } from "../../../k8s/store";
@@ -37,11 +47,49 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
   const clusterSettings = useMemo(() => {
     const settings = LOCAL_STORAGE_SERVICE.getItem(LOCAL_STORAGE_KEY) || {};
     return settings[clusterStore.clusterName] || {};
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clusterStore.clusterName, open]);
+  }, [clusterStore.clusterName]);
 
-  const savedDefaultNamespaces = clusterSettings.saved_default_namespaces || [];
-  const savedAllowedNamespaces = clusterSettings.saved_allowed_namespaces || [];
+  const savedDefaultNamespaces = useMemo(
+    () => clusterSettings.saved_default_namespaces || [],
+    [clusterSettings.saved_default_namespaces]
+  );
+  const savedAllowedNamespaces = useMemo(
+    () => clusterSettings.saved_allowed_namespaces || [],
+    [clusterSettings.saved_allowed_namespaces]
+  );
+
+  const defaultNamespace = clusterStore.defaultNamespace;
+
+  const savedDefaultNamespacesSet = useMemo(() => new Set(savedDefaultNamespaces), [savedDefaultNamespaces]);
+
+  const savedAllowedNamespacesSet = useMemo(() => new Set(savedAllowedNamespaces), [savedAllowedNamespaces]);
+
+  const allowedNamespaceSet = useMemo(() => {
+    const set = new Set<string>(savedAllowedNamespaces);
+    if (defaultNamespace && !set.has(defaultNamespace)) {
+      set.add(defaultNamespace);
+    }
+    return set;
+  }, [savedAllowedNamespaces, defaultNamespace]);
+
+  const allowedNamespaceOptions = useMemo(
+    () =>
+      Array.from(allowedNamespaceSet).map((ns) => {
+        const isSaved = savedAllowedNamespacesSet.has(ns);
+        return {
+          value: ns,
+          label: isSaved ? (
+            <>
+              <BookmarkIcon size={14} className="text-muted-foreground mr-2 shrink-0" />
+              <span className="truncate">{ns}</span>
+            </>
+          ) : (
+            ns
+          ),
+        };
+      }),
+    [allowedNamespaceSet, savedAllowedNamespacesSet]
+  );
 
   const form = useForm<FormValues>({
     mode: "onBlur",
@@ -50,6 +98,31 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
       allowedNamespaces: clusterStore.allowedNamespaces,
     },
   });
+
+  // Watch form value to update options when default namespace changes
+  const currentDefaultNamespace = form.watch(names.DEFAULT_NAMESPACE);
+
+  // Update default namespace options to exclude currently selected value
+  const defaultNamespaceOptionsWithExclusion = useMemo(
+    () =>
+      savedDefaultNamespaces
+        .filter((ns: string) => ns !== currentDefaultNamespace) // Exclude currently selected
+        .map((ns: string) => {
+          const isSaved = savedDefaultNamespacesSet.has(ns);
+          return {
+            value: ns,
+            label: isSaved ? (
+              <>
+                <BookmarkIcon size={14} className="text-muted-foreground mr-2 shrink-0" />
+                <span className="truncate">{ns}</span>
+              </>
+            ) : (
+              ns
+            ),
+          };
+        }),
+    [savedDefaultNamespaces, currentDefaultNamespace, savedDefaultNamespacesSet]
+  );
 
   const handleSave = () => {
     const defaultNamespace = form.getValues(names.DEFAULT_NAMESPACE);
@@ -82,127 +155,64 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
   };
 
   return (
-    <Dialog open={open} onClose={closeDialog} maxWidth="sm" fullWidth>
-      <DialogTitle>Namespaces</DialogTitle>
-      <DialogContent>
-        <FormProvider {...form}>
-          <div className="flex flex-col gap-4">
-            <Controller
-              name={names.DEFAULT_NAMESPACE}
-              control={form.control}
-              rules={{
-                required: "Enter a default namespace.",
-                pattern: {
-                  value: /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/,
-                  message: "Invalid namespace format.",
-                },
-              }}
-              render={({ field, fieldState }) => (
-                <Autocomplete
-                  freeSolo
-                  options={savedDefaultNamespaces}
-                  value={field.value || ""}
-                  onInputChange={(_event, newInputValue) => {
-                    field.onChange(newInputValue);
-                  }}
-                  onChange={(_event, newValue) => {
-                    if (typeof newValue === "string") {
-                      field.onChange(newValue);
+    <FormProvider {...form}>
+      <Dialog open={open} onOpenChange={(open) => !open && closeDialog()}>
+        <DialogContent className="w-full max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Namespaces</DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <div className="flex flex-col gap-4">
+              <FormCombobox
+                name={names.DEFAULT_NAMESPACE}
+                control={form.control}
+                errors={form.formState.errors}
+                label="Default Namespace"
+                placeholder="Enter or select a default namespace"
+                helperText="The default namespace for e.g. when applying resources (when not specified directly)."
+                options={defaultNamespaceOptionsWithExclusion}
+                freeSolo
+                rules={{
+                  required: "Enter a default namespace.",
+                  pattern: {
+                    value: /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/,
+                    message: "Invalid namespace format.",
+                  },
+                }}
+              />
+              <FormComboboxMultipleFreeSolo
+                name={names.ALLOWED_NAMESPACES}
+                control={form.control}
+                errors={form.formState.errors}
+                label="Allowed namespaces"
+                placeholder="Type or select namespaces"
+                helperText="The list of namespaces you are allowed to access in this cluster."
+                options={allowedNamespaceOptions}
+                getChipLabel={(value) => value}
+                rules={{
+                  validate: (value: string | string[]) => {
+                    if (!Array.isArray(value)) return true;
+                    const invalidNamespaces = value.filter((ns) => !/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(ns));
+                    if (invalidNamespaces.length > 0) {
+                      return `Invalid namespace format: ${invalidNamespaces.join(", ")}`;
                     }
-                  }}
-                  getOptionDisabled={(option) => option === clusterStore.defaultNamespace}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="standard"
-                      label="Default Namespace"
-                      placeholder="Enter or select a default namespace"
-                      error={!!fieldState.error}
-                      helperText={
-                        fieldState.error?.message ||
-                        "The default namespace for e.g. when applying resources (when not specified directly)."
-                      }
-                      InputProps={{
-                        ...params.InputProps,
-                        startAdornment: (
-                          <>
-                            <div className="mr-2">
-                              {fieldState.error ? <CircleX className="size-4" /> : <Check className="size-4" />}
-                            </div>
-                            {params.InputProps.startAdornment}
-                          </>
-                        ),
-                      }}
-                    />
-                  )}
-                />
-              )}
-            />
-            <Controller
-              name={names.ALLOWED_NAMESPACES}
-              control={form.control}
-              render={({ field }) => (
-                <Autocomplete
-                  multiple
-                  freeSolo
-                  options={savedAllowedNamespaces}
-                  value={field.value || []}
-                  onChange={(_event, newValue) => {
-                    const namespaces = newValue.filter((ns) => {
-                      return /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(ns);
-                    });
-
-                    field.onChange(namespaces);
-                  }}
-                  getOptionDisabled={(option) => {
-                    const currentValues = field.value || [];
-                    return currentValues.includes(option);
-                  }}
-                  renderTags={(value: readonly string[], getTagProps) =>
-                    value.map((namespace: string, index: number) => {
-                      const { key, ...tagProps } = getTagProps({ index });
-                      return (
-                        <Chip
-                          key={key}
-                          {...tagProps}
-                          label={String(namespace)}
-                          color="primary"
-                          size="small"
-                          deleteIcon={<X className="size-4" />}
-                        />
-                      );
-                    })
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="standard"
-                      label="Allowed namespaces"
-                      placeholder="Type or select namespaces"
-                      helperText="The list of namespaces you are allowed to access in this cluster."
-                    />
-                  )}
-                />
-              )}
-            />
-          </div>
-          <div className="flex flex-row justify-end gap-2" style={{ marginTop: "16px" }}>
-            <Button size="small" color="inherit" onClick={closeDialog}>
+                    return true;
+                  },
+                }}
+              />
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button size="sm" variant="ghost" onClick={closeDialog}>
               Cancel
             </Button>
-            <Button
-              variant={"contained"}
-              color={"primary"}
-              size="small"
-              onClick={handleSave}
-              disabled={!form.formState.isDirty}
-            >
+            <Button variant="default" size="sm" onClick={handleSave} disabled={!form.formState.isDirty}>
               Save
             </Button>
-          </div>
-        </FormProvider>
-      </DialogContent>
-    </Dialog>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </FormProvider>
   );
 }
 

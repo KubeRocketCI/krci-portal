@@ -1,5 +1,5 @@
-import { Paper, Table as MuiTable } from "@mui/material";
 import React from "react";
+import { TableUI } from "@/core/components/ui/table";
 import { TableBody } from "./components/TableBody";
 import { TableHead } from "./components/TableHead";
 import { TablePagination } from "./components/TablePagination";
@@ -23,7 +23,7 @@ import {
 import { createSortFunction } from "./utils";
 import { usePagination } from "./hooks/usePagination";
 
-export const Table = <DataType,>({
+export const DataTable = <DataType,>({
   id,
   name,
   data,
@@ -40,7 +40,6 @@ export const Table = <DataType,>({
   blockerComponent,
   slots,
   settings,
-  minimal,
   outlined = true,
 }: TableProps<DataType>) => {
   const [columns, setColumns] = React.useState(_columns);
@@ -173,7 +172,7 @@ export const Table = <DataType,>({
   const renderHeader = React.useCallback(() => {
     if (slots?.header || tableSettings.show || (selectionSettings.renderSelectionInfo && validSelected)) {
       return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 p-5">
           {slots?.header || tableSettings.show ? (
             <div className="flex flex-row items-center gap-4">
               <div className="grow">{slots?.header && slots.header}</div>
@@ -200,62 +199,49 @@ export const Table = <DataType,>({
   }, [_columns, columns, id, name, selectionSettings, slots?.header, tableSettings.show, validSelected]);
 
   return (
-    <Paper
-      {...(outlined ? { variant: "outlined" } : { elevation: 0 })}
-      sx={
-        minimal
-          ? { maxWidth: "100%", overflowX: "auto", backgroundColor: "transparent" }
-          : {
-              maxWidth: "100%",
-              overflowX: "auto",
-              backgroundColor: "transparent",
-              px: (t) => t.typography.pxToRem(20),
-              pt: (t) => t.typography.pxToRem(20),
-            }
-      }
-    >
+    <div className={`w-full bg-transparent ${outlined ? "rounded-md border" : ""}`}>
       <div className="flex flex-col gap-4">
         {renderHeader()}
-        <MuiTable sx={{ borderRadius: (t) => t.typography.pxToRem(5), overflow: "hidden" }}>
-          <colgroup ref={colGroupRef}>
-            {selectionSettings.handleSelectRow && (
-              <col key={"select-checkbox"} width={`${TABLE_CELL_DEFAULTS.WIDTH}%`} />
-            )}
-            {columns.map(
-              (column) =>
-                column.cell.show !== false && (
-                  <col key={column.id} data-id={column.id} width={`${column.cell.width || 100}%`} />
-                )
-            )}
-          </colgroup>
-          <TableHead
-            tableId={id}
-            columns={columns}
-            colGroupRef={colGroupRef}
-            sort={sortState}
-            setSort={setSortState}
-            rowCount={paginatedData?.count}
-            selectableRowCount={selectableRowCount}
-            selected={validSelected}
-            handleSelectAllClick={_handleSelectAllClick}
-            minimal={minimal}
-          />
-          <TableBody
-            columns={columns}
-            data={filteredData}
-            blockerError={blockerError}
-            errors={errors}
-            isLoading={isLoading}
-            selection={selectionSettings}
-            handleRowClick={handleRowClick}
-            emptyListComponent={emptyListComponent}
-            page={activePage}
-            rowsPerPage={_rowsPerPage}
-            isEmptyFilterResult={isEmptyFilterResult}
-            blockerComponent={blockerComponent}
-            minimal={minimal}
-          />
-        </MuiTable>
+        <div className="w-full overflow-hidden rounded">
+          <TableUI>
+            <colgroup ref={colGroupRef}>
+              {selectionSettings.handleSelectRow && (
+                <col key={"select-checkbox"} width={`${TABLE_CELL_DEFAULTS.WIDTH}%`} />
+              )}
+              {columns.map(
+                (column) =>
+                  column.cell.show !== false && (
+                    <col key={column.id} data-id={column.id} width={`${column.cell.width || 100}%`} />
+                  )
+              )}
+            </colgroup>
+            <TableHead
+              tableId={id}
+              columns={columns}
+              colGroupRef={colGroupRef}
+              sort={sortState}
+              setSort={setSortState}
+              rowCount={paginatedData?.count}
+              selectableRowCount={selectableRowCount}
+              selected={validSelected}
+              handleSelectAllClick={_handleSelectAllClick}
+            />
+            <TableBody
+              columns={columns}
+              data={filteredData}
+              blockerError={blockerError}
+              errors={errors}
+              isLoading={isLoading}
+              selection={selectionSettings}
+              handleRowClick={handleRowClick}
+              emptyListComponent={emptyListComponent}
+              page={activePage}
+              rowsPerPage={_rowsPerPage}
+              isEmptyFilterResult={isEmptyFilterResult}
+              blockerComponent={blockerComponent}
+            />
+          </TableUI>
+        </div>
         <div className="m-0">
           {paginationSettings.show && (
             <TablePagination
@@ -269,6 +255,6 @@ export const Table = <DataType,>({
         </div>
         {slots?.footer && slots.footer}
       </div>
-    </Paper>
+    </div>
   );
 };

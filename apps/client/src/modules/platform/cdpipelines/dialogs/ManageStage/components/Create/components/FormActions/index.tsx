@@ -3,7 +3,7 @@ import { useStageCRUD } from "@/k8s/api/groups/KRCI/Stage";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { useStepperContext } from "@/core/providers/Stepper/hooks";
 import { SuccessDialog } from "@/modules/platform/codebases/dialogs/Success";
-import { Button, useTheme } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import { createStageDraftObject, StageDraft } from "@my-project/shared";
 import React from "react";
 import { FORM_STEPPER } from "../../../../constants";
@@ -118,7 +118,6 @@ export const FormActions = () => {
   const qualityGatesFieldValue = watch(STAGE_FORM_NAMES.qualityGates.name);
 
   const { activeStep, nextStep, prevStep } = useStepperContext();
-  const theme = useTheme();
 
   const activeTabFormPartName = React.useMemo(() => {
     const validEntry = Object.entries(FORM_STEPPER).find(([, { idx }]) => idx === activeStep);
@@ -141,36 +140,31 @@ export const FormActions = () => {
   return (
     <div className="flex w-full flex-row justify-between gap-4">
       <div className="flex flex-row gap-2">
-        <div style={{ color: theme.palette.text.primary }}>
-          <Button onClick={handleClose} size="small" color="inherit">
-            cancel
-          </Button>
-        </div>
-        <Button onClick={handleResetFields} size="small" disabled={!isDirty}>
-          undo changes
+        <Button onClick={handleClose} variant="ghost" size="sm">
+          Cancel
+        </Button>
+        <Button onClick={handleResetFields} variant="ghost" size="sm" disabled={!isDirty}>
+          Undo Changes
         </Button>
       </div>
       <div>
         <TabPanel value={activeStep} index={FORM_STEPPER.CONFIGURATION.idx}>
-          <div className="flex flex-row">
-            <Button onClick={handleProceed} variant={"contained"} color={"primary"} size="small">
-              next
-            </Button>
-          </div>
+          <Button onClick={handleProceed} variant="default" size="sm">
+            Next
+          </Button>
         </TabPanel>
         <TabPanel value={activeStep} index={FORM_STEPPER.QUALITY_GATES.idx}>
-          <div className="flex flex-row">
-            <Button onClick={prevStep} size="small">
-              back
+          <div className="flex flex-row gap-2">
+            <Button onClick={prevStep} variant="ghost" size="sm">
+              Back
             </Button>
             <Button
               onClick={handleSubmit(onSubmit)}
-              variant={"contained"}
-              color={"primary"}
-              size="small"
+              variant="default"
+              size="sm"
               disabled={!isDirty || isLoading || !qualityGatesFieldValue || !qualityGatesFieldValue.length}
             >
-              create
+              Create
             </Button>
           </div>
         </TabPanel>

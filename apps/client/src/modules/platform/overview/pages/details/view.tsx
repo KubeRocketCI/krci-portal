@@ -7,7 +7,6 @@ import { CDPipelinesGraph } from "./components/CDPipelinesGraph";
 import { CodebaseBranchesGraph } from "./components/CodebaseBranchesGraph";
 import { CodebasesGraph } from "./components/CodebasesGraph";
 import { PipelineRunsGraph } from "./components/PipelineRunsGraph";
-import { QuickLinkActions } from "./components/QuickLinkActions";
 import { QuickLinkList } from "./components/QuickLinkList";
 import { StagesGraph } from "./components/StagesGraph";
 import { UserWidgetRenderer } from "./components/UserWidgetsRenderer";
@@ -28,7 +27,7 @@ export default function OverviewDetailsPageContent() {
               </>
             }
           >
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-4">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
               <div className="col-span-1">
                 <CodebasesGraph />
               </div>
@@ -63,7 +62,6 @@ export default function OverviewDetailsPageContent() {
             description={"A set of icons with links that redirect you to corresponding tools."}
           >
             <QuickLinkList />
-            <QuickLinkActions />
           </Section>
         </div>
       </div>

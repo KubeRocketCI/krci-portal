@@ -1,6 +1,7 @@
-import { Chip, useTheme } from "@mui/material";
+import { Badge } from "@/core/components/ui/badge";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
-import { useStyles } from "./styles";
+import { cn } from "@/core/utils/classname";
+import { cardRootClasses, templateIconClasses, templateDescriptionClasses } from "./styles";
 import { Template } from "@my-project/shared";
 import { getCodebaseMappingByType } from "@/k8s/api/groups/KRCI/Codebase";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
@@ -16,7 +17,6 @@ interface TemplateCardProps {
 }
 
 export const TemplateCard = ({ template, handleTemplateClick }: TemplateCardProps) => {
-  const theme = useTheme();
   const {
     spec: {
       displayName,
@@ -31,8 +31,6 @@ export const TemplateCard = ({ template, handleTemplateClick }: TemplateCardProp
       version,
     },
   } = template;
-  const classes = useStyles();
-
   const templatePermissions = useTemplatePermissions();
 
   const codebaseMapping = getCodebaseMappingByType(type);
@@ -42,20 +40,20 @@ export const TemplateCard = ({ template, handleTemplateClick }: TemplateCardProp
   const codebaseMappingByLang = codebaseMapping?.[lang as keyof typeof codebaseMapping] as unknown as CodebaseInterface;
 
   return (
-    <div className={classes.cardRoot}>
+    <div className={cardRootClasses}>
       <div className="flex h-full flex-col gap-6">
         <div className="mb-auto flex flex-col gap-4">
           <div className="flex flex-row items-center gap-2">
             {icon && (
               <img
-                className={classes.templateIcon}
+                className={templateIconClasses}
                 src={`data:${icon[0].mediatype};base64,${icon[0].base64data}`}
                 alt=""
               />
             )}
             <TextWithTooltip text={displayName} className="text-lg font-medium" />
           </div>
-          <span className={`text-xs ${classes.templateDescription}`}>{description}</span>
+          <span className={cn("text-xs", templateDescriptionClasses)}>{description}</span>
         </div>
         <div className="flex flex-col gap-4">
           <div>
@@ -104,19 +102,19 @@ export const TemplateCard = ({ template, handleTemplateClick }: TemplateCardProp
               <div className="col-span-1">
                 <div className="flex flex-col items-start gap-1">
                   <span className="text-xs">Type:</span>
-                  <Chip size={"small"} label={type} sx={{ backgroundColor: theme.palette.secondary.main }} />
+                  <Badge variant="secondary">{type}</Badge>
                 </div>
               </div>
               <div className="col-span-1">
                 <div className="flex flex-col items-start gap-1">
                   <span className="text-xs">Category:</span>
-                  <Chip size={"small"} label={category} sx={{ backgroundColor: theme.palette.secondary.main }} />
+                  <Badge variant="secondary">{category}</Badge>
                 </div>
               </div>
               <div className="col-span-1">
                 <div className="flex flex-col items-start gap-1">
                   <span className="text-xs">Maturity:</span>
-                  <Chip size={"small"} label={maturity} sx={{ backgroundColor: theme.palette.secondary.main }} />
+                  <Badge variant="secondary">{maturity}</Badge>
                 </div>
               </div>
             </div>
@@ -131,13 +129,11 @@ export const TemplateCard = ({ template, handleTemplateClick }: TemplateCardProp
             allowed={templatePermissions.data.create.allowed}
             reason={templatePermissions.data.create.reason}
             ButtonProps={{
-              variant: "outlined",
-              color: "primary",
-              size: "medium",
+              variant: "outline",
               onClick: () => handleTemplateClick(template),
             }}
           >
-            use template
+            Use Template
           </ButtonWithPermission>
         </div>
       </div>

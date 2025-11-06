@@ -1,28 +1,30 @@
 import { CDPipelineActionsMenu } from "@/modules/platform/cdpipelines/components/CDPipelineActionsMenu";
-import { IconButton } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { DropdownMenu, DropdownMenuTrigger } from "@/core/components/ui/dropdown-menu";
 import { CDPipeline } from "@my-project/shared";
 import { EllipsisVertical } from "lucide-react";
 import React from "react";
 
 export const Actions = ({ resource }: { resource: CDPipeline }) => {
-  const buttonRef = React.createRef<HTMLButtonElement>();
-  const [anchor, setAnchor] = React.useState<(EventTarget & HTMLButtonElement) | null>(null);
+  const [open, setOpen] = React.useState(false);
 
   return (
-    <>
-      <IconButton ref={buttonRef} aria-label={"Options"} onClick={(e) => setAnchor(e.currentTarget)} size="large">
-        <EllipsisVertical size={16} />
-      </IconButton>
-      {anchor ? (
-        <CDPipelineActionsMenu
-          variant="menu"
-          data={{
-            CDPipeline: resource,
-          }}
-          anchorEl={anchor}
-          handleCloseResourceActionListMenu={() => setAnchor(null)}
-        />
-      ) : null}
-    </>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={"Options"}
+        >
+          <EllipsisVertical size={16} />
+        </Button>
+      </DropdownMenuTrigger>
+      <CDPipelineActionsMenu
+        variant="menu"
+        data={{
+          CDPipeline: resource,
+        }}
+      />
+    </DropdownMenu>
   );
 };

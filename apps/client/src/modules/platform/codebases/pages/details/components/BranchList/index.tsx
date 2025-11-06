@@ -10,6 +10,7 @@ import { useCodebaseBranchListWatch, useCodebaseWatch, usePipelineNamesWatch } f
 import { BranchListActions } from "./components/BranchListActions";
 import { BranchListItem } from "./components/BranchListItem";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
+import { Accordion } from "@/core/components/ui/accordion";
 
 export const BranchList = () => {
   const codebaseWatch = useCodebaseWatch();
@@ -20,16 +21,15 @@ export const BranchList = () => {
 
   const { setDialog } = useDialogContext();
 
-  const [expandedPanel, setExpandedPanel] = React.useState<string | null>(
-    codebaseBranchListWatch?.data.array.length === 1 ? codebaseBranchListWatch?.data.array[0].spec.branchName : null
+  const [expandedPanel, setExpandedPanel] = React.useState<string | undefined>(
+    codebaseBranchListWatch?.data.array.length === 1
+      ? codebaseBranchListWatch?.data.array[0].spec.branchName
+      : undefined
   );
 
-  const handleChange = React.useCallback(
-    (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
-      setExpandedPanel(isExpanded ? panel : null);
-    },
-    []
-  );
+  const handleChange = React.useCallback((value: string) => {
+    setExpandedPanel(value);
+  }, []);
 
   const pipelineNamesWatch = usePipelineNamesWatch();
   const pipelineNames = pipelineNamesWatch.data;
@@ -38,10 +38,9 @@ export const BranchList = () => {
     <Section
       title={
         <div className="flex w-full items-center justify-between gap-1">
-          <div>
-            <h1 className="text-4xl font-bold">
-              Branches <LearnMoreLink url={EDP_USER_GUIDE.BRANCHES_MANAGE.url} />
-            </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-medium">Branches</h1>
+            <LearnMoreLink url={EDP_USER_GUIDE.BRANCHES_MANAGE.url} />
           </div>
           <div className="ml-auto">
             <BranchListActions />
@@ -52,21 +51,17 @@ export const BranchList = () => {
       <LoadingWrapper isLoading={!codebaseBranchListWatch.query.isFetched}>
         <>
           {codebaseBranchListWatch.data.array.length ? (
-            <>
+            <Accordion type="single" collapsible value={expandedPanel} onValueChange={handleChange}>
               {codebaseBranchListWatch.data.array.map((codebaseBranch: CodebaseBranch) => {
                 const branchId = codebaseBranch.metadata.name;
 
                 return (
-                  <BranchListItem
-                    key={branchId}
-                    id={branchId}
-                    codebaseBranch={codebaseBranch}
-                    expandedPanel={expandedPanel}
-                    handlePanelChange={handleChange}
-                  />
+                  <div key={branchId}>
+                    <BranchListItem id={branchId} codebaseBranch={codebaseBranch} />
+                  </div>
                 );
               })}
-            </>
+            </Accordion>
           ) : (
             <EmptyList
               missingItemName={"branches"}

@@ -35,9 +35,7 @@ export const PushAccountPassword = () => {
       placeholder={"Enter password or token"}
       control={pushAccount.form.control}
       errors={pushAccount.form.formState.errors}
-      TextFieldProps={{
-        helperText: ownerReference && `This field value is managed by ${ownerReference}`,
-      }}
+      helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
       disabled={!!ownerReference}
     />
   );

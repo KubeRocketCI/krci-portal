@@ -1,4 +1,5 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
+import { Button } from "@/core/components/ui/button";
 import React from "react";
 import { Form } from "./components/Form";
 import { FormActions } from "./components/FormActions";
@@ -24,51 +25,51 @@ export const CreateCodebaseFromTemplateDialog: React.FC<CreateCodebaseFromTempla
   const isFormPanel = value === 1;
 
   return (
-    <Dialog open={open} maxWidth={"md"} fullWidth data-testid="dialog">
-      <CurrentDialogContextProvider props={props} state={state}>
-        <FormContextProvider
-          formSettings={{
-            defaultValues: baseDefaultValues,
-            mode: "onBlur",
-          }}
-        >
-          <DialogTitle>
-            <h2 className="text-xl font-medium">Create application from template</h2>
-          </DialogTitle>
+    <Dialog open={open} onOpenChange={(open) => !open && closeDialog()} data-testid="dialog">
+      <DialogContent className="max-w-4xl w-full">
+        <CurrentDialogContextProvider props={props} state={state}>
+          <FormContextProvider
+            formSettings={{
+              defaultValues: baseDefaultValues,
+              mode: "onBlur",
+            }}
+          >
+            <DialogHeader>
+              <DialogTitle className="text-xl font-medium">Create application from template</DialogTitle>
+            </DialogHeader>
+            <DialogBody>
+              {isPreviewPanel && <Preview />}
 
-          <DialogContent>
-            {isPreviewPanel && <Preview />}
-
-            {isFormPanel && (
-              <div className="flex flex-col gap-2">
-                <FormDefaultValues />
-                <div>
-                  <Form />
+              {isFormPanel && (
+                <div className="flex flex-col gap-2">
+                  <FormDefaultValues />
+                  <div>
+                    <Form />
+                  </div>
                 </div>
-              </div>
-            )}
-          </DialogContent>
-          <DialogActions>
-            {isPreviewPanel && (
-              <div className="flex w-full justify-between gap-2">
-                <Button onClick={closeDialog} size="small" component={"button"} color="inherit">
-                  cancel
-                </Button>
-                <Button
-                  type={"submit"}
-                  variant={"contained"}
-                  color={"primary"}
-                  size="small"
-                  onClick={() => handleChange(1)}
-                >
-                  proceed
-                </Button>
-              </div>
-            )}
-            {isFormPanel && <FormActions />}
-          </DialogActions>
-        </FormContextProvider>
-      </CurrentDialogContextProvider>
+              )}
+            </DialogBody>
+            <DialogFooter>
+              {isPreviewPanel && (
+                <div className="flex w-full justify-between gap-2">
+                  <Button onClick={closeDialog} variant="ghost" size="sm">
+                    Cancel
+                  </Button>
+                  <Button
+                    type={"submit"}
+                    variant={"default"}
+                    size="sm"
+                    onClick={() => handleChange(1)}
+                  >
+                    Proceed
+                  </Button>
+                </div>
+              )}
+              {isFormPanel && <FormActions />}
+            </DialogFooter>
+          </FormContextProvider>
+        </CurrentDialogContextProvider>
+      </DialogContent>
     </Dialog>
   );
 };

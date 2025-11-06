@@ -1,7 +1,9 @@
 import { TextField, Select, SelectOption } from "@/core/components/form";
 import { useFilterContext } from "@/core/providers/Filter";
 import { codebaseType } from "@my-project/shared";
-import { Button } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Label } from "@/core/components/ui/label";
+import { X } from "lucide-react";
 
 const codebaseTypeOptions: SelectOption[] = [
   { label: "All", value: "all" },
@@ -36,8 +38,10 @@ export const TemplateFilter = () => {
       </div>
 
       {form.state.isDirty && (
-        <div className="mt-6">
-          <Button variant="outlined" onClick={reset} size="small">
+        <div className="flex flex-col gap-2">
+          <Label> </Label>
+          <Button variant="secondary" onClick={reset} size="sm" className="mt-0.5">
+            <X size={16} />
             Clear
           </Button>
         </div>

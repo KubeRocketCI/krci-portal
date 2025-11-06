@@ -1,4 +1,4 @@
-import { Link, MenuItem, MenuList, Paper, Tooltip } from "@mui/material";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { ChevronDown, SquareArrowOutUpRight } from "lucide-react";
 
 export const TooltipWithLinkList = ({ urls, size }: { urls: string[]; size?: "medium" | "small" }) => {
@@ -7,33 +7,23 @@ export const TooltipWithLinkList = ({ urls, size }: { urls: string[]; size?: "me
   return (
     <Tooltip
       title={
-        <Paper elevation={8}>
-          <MenuList
-            sx={{
-              maxHeight: "40vh",
-              overflowY: "auto",
-            }}
-          >
+        <div className="bg-card rounded shadow-lg p-0 max-h-[40vh] overflow-y-auto">
+          <div className="flex flex-col">
             {urls.map((el) => (
-              <MenuItem
+              <a
                 key={el}
-                component={Link}
                 href={el}
-                target={"_blank"}
-                sx={{ whiteSpace: "normal", wordBreak: "break-word" }}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="whitespace-normal break-words px-2 py-1.5 text-sm hover:bg-accent rounded-sm"
               >
                 {el}
-              </MenuItem>
+              </a>
             ))}
-          </MenuList>
-        </Paper>
+          </div>
+        </div>
       }
-      PopperProps={{
-        sx: {
-          "& .MuiTooltip-tooltip": { p: "0 !important" },
-        },
-        placement: "top-end",
-      }}
+      placement="top"
     >
       <div className="mx-8 leading-none">
         <div className="flex flex-row items-center">

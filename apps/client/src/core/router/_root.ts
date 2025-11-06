@@ -1,5 +1,6 @@
 import { createRootRouteWithContext, redirect } from "@tanstack/react-router";
 import NotFound from "../components/NotFound";
+import { RouterErrorComponent } from "./components/RouterErrorComponent";
 import Root from "./components/root";
 import { MyRouterContext, RoutePath } from "./types";
 
@@ -7,6 +8,7 @@ export const rootRoute = createRootRouteWithContext<MyRouterContext>()({
   component: Root,
   loader: () => void 0,
   notFoundComponent: NotFound,
+  errorComponent: RouterErrorComponent,
   head: () => ({
     meta: [
       {

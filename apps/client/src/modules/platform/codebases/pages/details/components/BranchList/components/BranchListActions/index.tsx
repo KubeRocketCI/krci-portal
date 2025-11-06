@@ -31,9 +31,7 @@ export const BranchListActions = () => {
   return (
     <ButtonWithPermission
       ButtonProps={{
-        startIcon: <Plus size={16} />,
-        color: "primary",
-        variant: "contained",
+        variant: "default",
         onClick: () => {
           setDialog(ManageCodebaseBranchDialog, {
             codebaseBranches: codebaseBranchListWatch.data.array,
@@ -50,7 +48,8 @@ export const BranchListActions = () => {
       allowed={permissions.data.create.allowed}
       reason={permissions.data.create.reason}
     >
-      Create branch
+      <Plus size={16} />
+      Create Branch
     </ButtonWithPermission>
   );
 };

@@ -1,4 +1,4 @@
-import { useStyles } from "./styles";
+import { messageClasses, conflictEntityNameClasses } from "./styles";
 import { ClusterCDPipelineConflictErrorProps } from "./types";
 import { Link } from "@tanstack/react-router";
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
@@ -9,13 +9,12 @@ export const ClusterCDPipelineConflictError = ({
   conflictedStage,
   clusterName,
 }: ClusterCDPipelineConflictErrorProps) => {
-  const classes = useStyles();
   const defaultClusterName = useClusterStore(useShallow((state) => state.clusterName));
 
   return (
-    <div className={classes.message}>
+    <div className={messageClasses}>
       <span>{clusterName} is used in</span>
-      <div className={classes.conflictEntityName}>
+      <div className={conflictEntityNameClasses}>
         <Link
           to={routeCDPipelineDetails.fullPath}
           params={{

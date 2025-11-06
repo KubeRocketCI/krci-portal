@@ -50,8 +50,8 @@ export default function PipelineRunDetailsPageContent() {
               Icon={<SquareArrowOutUpRight />}
               name="pull request"
               isTextButton
-              variant="outlined"
-              size="small"
+              variant="outline"
+              size="sm"
             />
           </div>
         )}

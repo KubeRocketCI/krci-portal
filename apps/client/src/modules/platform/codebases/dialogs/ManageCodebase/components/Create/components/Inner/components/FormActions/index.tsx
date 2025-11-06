@@ -2,8 +2,8 @@ import { TabPanel } from "@/core/components/TabPanel";
 import { useStepperContext } from "@/core/providers/Stepper/hooks";
 import { ValueOf } from "@/core/types/global";
 import { useCodebaseCRUD } from "@/k8s/api/groups/KRCI/Codebase";
-import { configurationStepper, mainTabs } from "@/modules/platform/codebases/dialogs/ManageCodebase/constants";
-import { Button } from "@mui/material";
+import { configurationStepper, mainTabs, selectionStepper } from "@/modules/platform/codebases/dialogs/ManageCodebase/constants";
+import { Button } from "@/core/components/ui/button";
 import { codebaseCreationStrategy, codebaseLabels, createCodebaseDraftObject } from "@my-project/shared";
 import React from "react";
 import { useTypedFormContext } from "../../../../../../hooks/useFormContext";
@@ -13,7 +13,7 @@ import { ManageCodebaseFormValues } from "../../../../../../types";
 import { FormActionsProps } from "./types";
 
 export const FormActions = ({ baseDefaultValues, setActiveTab }: FormActionsProps) => {
-  const { activeStep, setActiveStep, nextStep } = useStepperContext();
+  const { activeStep, setActiveStep, nextStep, prevStep } = useStepperContext();
   const {
     state: { closeDialog },
   } = useCurrentDialog();
@@ -39,7 +39,7 @@ export const FormActions = ({ baseDefaultValues, setActiveTab }: FormActionsProp
         [CODEBASE_FORM_NAMES.strategy.name]: undefined,
         [CODEBASE_FORM_NAMES.type.name]: undefined,
       });
-      setActiveStep(configurationStepper.CODEBASE_INFO.idx);
+      setActiveStep(selectionStepper.SELECT_COMPONENT.idx);
       setActiveTab(mainTabs.selection);
     }, 500);
   }, [closeDialog, reset, baseDefaultValues, setActiveStep, setActiveTab]);
@@ -171,44 +171,43 @@ export const FormActions = ({ baseDefaultValues, setActiveTab }: FormActionsProp
   return (
     <div className="flex w-full justify-between gap-2">
       <div className="flex gap-1">
-        <div className="text-foreground">
-          <Button onClick={handleClose} size="small" color="inherit">
-            cancel
-          </Button>
-        </div>
-        <Button onClick={handleResetFields} size="small" disabled={!configurationFormIsDirty}>
-          undo changes
+        <Button onClick={handleClose} variant="ghost" size="sm">
+          Cancel
+        </Button>
+        <Button onClick={handleResetFields} variant="ghost" size="sm" disabled={!configurationFormIsDirty}>
+          Undo Changes
         </Button>
       </div>
       <div>
         <TabPanel value={activeStep} index={configurationStepper.CODEBASE_INFO.idx}>
-          <div className="flex">
-            <Button onClick={() => setActiveTab(mainTabs.selection)} size="small">
-              back
+          <div className="flex gap-2">
+            <Button
+              onClick={() => {
+                prevStep();
+                setActiveTab(mainTabs.selection);
+              }}
+              variant="ghost"
+              size="sm"
+            >
+              Back
             </Button>
-            <Button onClick={handleProceed} variant={"contained"} color={"primary"} size="small">
-              next
+            <Button onClick={handleProceed} variant="default" size="sm">
+              Next
             </Button>
           </div>
         </TabPanel>
         <TabPanel value={activeStep} index={configurationStepper.ADVANCED_SETTINGS.idx}>
-          <div className="flex">
-            <Button
-              onClick={() => {
-                setActiveStep(configurationStepper.CODEBASE_INFO.idx);
-              }}
-              size="small"
-            >
-              back
+          <div className="flex gap-2">
+            <Button onClick={prevStep} variant="ghost" size="sm">
+              Back
             </Button>
             <Button
               onClick={handleSubmit(onSubmit, handleValidationError)}
-              variant={"contained"}
-              color={"primary"}
-              size="small"
+              variant="default"
+              size="sm"
               disabled={!isDirty || isPending}
             >
-              create
+              Create
             </Button>
           </div>
         </TabPanel>

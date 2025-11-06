@@ -1,4 +1,6 @@
-import { Alert, Button, Divider, Tooltip, useTheme } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Alert } from "@/core/components/ui/alert";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import React from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
@@ -15,8 +17,6 @@ import {
 } from "./utils";
 
 export const QualityGates = () => {
-  const theme = useTheme();
-
   const { resetField, watch, setValue } = useTypedFormContext();
 
   const {
@@ -73,28 +73,26 @@ export const QualityGates = () => {
                 <div className="col-span-10">
                   <QualityGateRow namespace={namespace} currentQualityGate={el} />
                 </div>
-                <div className="col-span-2">
-                  <div className="flex flex-row items-center justify-end gap-2">
+                <div className="col-span-2 mt-6">
+                  <div className="flex flex-row items-center gap-2">
                     {!isOnly && (
                       <Button
                         type={"button"}
-                        size={"small"}
-                        component={"button"}
-                        style={{ minWidth: 0 }}
+                        size={"sm"}
+                        variant="ghost"
+                        className="min-w-0"
                         onClick={() => handleRemoveApplicationRow(el.id)}
                       >
                         <Trash size={20} />
                       </Button>
                     )}
-                    {!isOnly && isLast && (
-                      <Divider orientation="vertical" sx={{ height: theme.typography.pxToRem(28) }} />
-                    )}
+                    {!isOnly && isLast && <div className="bg-border h-7 w-px" />}
                     {isLast && (
                       <Button
                         type={"button"}
-                        size={"small"}
-                        component={"button"}
-                        style={{ minWidth: 0 }}
+                        size={"sm"}
+                        variant="ghost"
+                        className="min-w-0"
                         onClick={handleAddApplicationRow}
                       >
                         <Plus size={20} />
@@ -108,9 +106,7 @@ export const QualityGates = () => {
         })}
       </div>
       {(!qualityGatesFieldValue || !qualityGatesFieldValue.length) && (
-        <Alert severity="info" variant="outlined">
-          Add at least one quality gate
-        </Alert>
+        <Alert variant="default">Add at least one quality gate</Alert>
       )}
     </div>
   );

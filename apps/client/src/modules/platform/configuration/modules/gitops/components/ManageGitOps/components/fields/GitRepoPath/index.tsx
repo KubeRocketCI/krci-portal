@@ -1,4 +1,3 @@
-import { InputAdornment } from "@mui/material";
 import { useFormContext as useReactHookFormContext } from "react-hook-form";
 import { CODEBASE_FORM_NAMES } from "../../../names";
 import { ManageGitOpsDataContext, ManageGitOpsValues } from "../../../types";
@@ -45,11 +44,7 @@ export const GitRepoPath = () => {
       placeholder={"Indicate the repository relative path in the following format project/repository"}
       control={control}
       errors={errors}
-      TextFieldProps={{
-        InputProps: {
-          startAdornment: <InputAdornment position="start">{slashSymbol}</InputAdornment>,
-        },
-      }}
+      prefix={slashSymbol}
       disabled={isReadOnly}
     />
   );

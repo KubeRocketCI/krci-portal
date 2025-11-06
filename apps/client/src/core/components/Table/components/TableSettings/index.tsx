@@ -1,6 +1,8 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
 import React from "react";
-import { Table } from "../..";
+import { DataTable } from "../..";
 import { TABLE_CELL_DEFAULTS, TABLE_DEFAULT_WIDTH, TABLE_DEFAULT_WIDTH_WITH_SELECTION } from "../../constants";
 import { TableColumn } from "../../types";
 import { useTableSettings } from "./hooks/useTableSettings";
@@ -183,56 +185,60 @@ export const TableSettings = <DataType,>({
   return (
     <>
       <Tooltip title={"Table Settings"}>
-        <IconButton onClick={handleOpen}>
+        <Button variant="ghost" size="icon" onClick={handleOpen}>
           <Settings />
-        </IconButton>
+        </Button>
       </Tooltip>
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle>{`Table "${name}" Settings`}</DialogTitle>
-        <DialogContent>
-          <div className="flex flex-col gap-4">
-            <Table
-              id="tableSettings"
-              name="Table Settings"
-              isLoading={false}
-              data={Object.values(getSettingsColumns(columns))}
-              columns={[
-                {
-                  id: "column",
-                  label: "Column Name",
-                  data: {
-                    render: ({ data }) => data?.label || "",
+      <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
+        <DialogContent className="w-full max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{`Table "${name}" Settings`}</DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <div className="flex flex-col gap-4">
+              <DataTable
+                id="tableSettings"
+                name="Table Settings"
+                isLoading={false}
+                data={Object.values(getSettingsColumns(columns))}
+                columns={[
+                  {
+                    id: "column",
+                    label: "Column Name",
+                    data: {
+                      render: ({ data }) => data?.label || "",
+                    },
+                    cell: {
+                      baseWidth: 95,
+                    },
                   },
-                  cell: {
-                    baseWidth: 95,
-                  },
-                },
-              ]}
-              selection={{
-                handleSelectAll: handleSelectAllClick,
-                handleSelectRow: handleSelectRowClick,
-                selected,
-                isRowSelected: (row) => selected.includes(row.id),
-                isRowSelectable: (row) => !row.disabled,
-              }}
-              settings={{
-                show: false,
-              }}
-              pagination={{
-                rowsPerPage: columns.length,
-                show: false,
-                initialPage: 0,
-                reflectInURL: false,
-              }}
-            />
-          </div>
+                ]}
+                selection={{
+                  handleSelectAll: handleSelectAllClick,
+                  handleSelectRow: handleSelectRowClick,
+                  selected,
+                  isRowSelected: (row) => selected.includes(row.id),
+                  isRowSelectable: (row) => !row.disabled,
+                }}
+                settings={{
+                  show: false,
+                }}
+                pagination={{
+                  rowsPerPage: columns.length,
+                  show: false,
+                  initialPage: 0,
+                  reflectInURL: false,
+                }}
+              />
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button onClick={handleClose} variant="ghost">Close</Button>
+            <Button onClick={handleSave} disabled={!isDirty}>
+              Save
+            </Button>
+          </DialogFooter>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>close</Button>
-          <Button onClick={handleSave} disabled={!isDirty}>
-            save
-          </Button>
-        </DialogActions>
       </Dialog>
     </>
   );

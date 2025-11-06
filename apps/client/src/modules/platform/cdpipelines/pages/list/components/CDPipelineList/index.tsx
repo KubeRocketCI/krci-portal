@@ -1,5 +1,5 @@
 import { EmptyList } from "@/core/components/EmptyList";
-import { Table } from "@/core/components/Table";
+import { DataTable } from "@/core/components/Table";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { useCDPipelinePermissions, useCDPipelineWatchList } from "@/k8s/api/groups/KRCI/CDPipeline";
 import { TABLE } from "@/k8s/constants/tables";
@@ -53,7 +53,7 @@ export const CDPipelineList = ({ blockerComponent }: CDPipelineListProps) => {
   );
 
   return (
-    <Table
+    <DataTable
       id={TABLE.CDPIPELINE_LIST.id}
       name={TABLE.CDPIPELINE_LIST.name}
       isLoading={!cdPipelineListWatch.query.isFetched || !cdPipelinePermissions.isFetched}

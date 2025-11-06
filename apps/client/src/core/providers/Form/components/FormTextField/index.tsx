@@ -1,7 +1,7 @@
-import { FormControl, TextField, Tooltip } from "@mui/material";
-import { Info } from "lucide-react";
 import React from "react";
 import { Controller, Path, PathValue } from "react-hook-form";
+import { Input } from "@/core/components/ui/input";
+import { FormField } from "@/core/components/ui/form-field";
 import { FormTextFieldProps } from "./types";
 
 const FormTextFieldInner = React.forwardRef(
@@ -10,63 +10,54 @@ const FormTextFieldInner = React.forwardRef(
       name,
       label,
       tooltipText,
+      helperText,
       control,
       defaultValue = "",
       errors,
       placeholder,
       disabled = false,
-      TextFieldProps = {},
+      inputProps = {},
+      prefix,
+      suffix,
       ...props
     }: FormTextFieldProps<TFormValues>,
     ref: React.ForwardedRef<HTMLInputElement>
   ) => {
     const error = errors[name];
     const hasError = !!error;
-    const errorMessage = error?.message as string;
-    const helperText = hasError ? errorMessage : TextFieldProps?.helperText;
-
-    const originalInputProps = TextFieldProps.InputProps ?? {};
-    const userEndAdornment = originalInputProps.endAdornment;
-
-    const mergedInputProps = {
-      ...originalInputProps,
-      endAdornment: (
-        <div className="flex flex-row items-center gap-1">
-          {userEndAdornment}
-          {tooltipText && (
-            <Tooltip title={tooltipText}>
-              <Info size={16} />
-            </Tooltip>
-          )}
-        </div>
-      ),
-    };
+    const errorMessage = error?.message as string | undefined;
+    const fieldId = React.useId();
 
     return (
-      <div className="flex flex-col gap-2">
-        <FormControl fullWidth>
-          <Controller
-            name={name}
-            control={control}
-            defaultValue={defaultValue as PathValue<TFormValues, Path<TFormValues>>}
-            render={({ field }) => (
-              <TextField
-                {...TextFieldProps}
-                {...field}
-                inputRef={ref}
-                placeholder={placeholder}
-                disabled={disabled}
-                error={hasError}
-                label={label}
-                InputProps={mergedInputProps}
-                helperText={helperText}
-                aria-describedby={hasError ? `${name}-error` : undefined}
-              />
-            )}
-            {...props}
-          />
-        </FormControl>
-      </div>
+      <Controller
+        name={name}
+        control={control}
+        defaultValue={defaultValue as PathValue<TFormValues, Path<TFormValues>>}
+        render={({ field }) => (
+          <FormField
+            label={label}
+            tooltipText={tooltipText}
+            error={hasError ? errorMessage : undefined}
+            helperText={helperText}
+            id={fieldId}
+            prefix={prefix}
+            suffix={suffix}
+          >
+            <Input
+              {...inputProps}
+              {...field}
+              value={(field.value ?? "") as string}
+              ref={ref}
+              id={fieldId}
+              invalid={hasError}
+              aria-describedby={helperText || hasError ? `${fieldId}-helper` : undefined}
+              placeholder={placeholder}
+              disabled={disabled}
+            />
+          </FormField>
+        )}
+        {...props}
+      />
     );
   }
 );

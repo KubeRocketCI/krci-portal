@@ -1,6 +1,5 @@
-import { InputProps } from "@mui/material";
-import { StandardTextFieldProps } from "@mui/material";
 import { Control, FieldErrors } from "react-hook-form";
+import { InputProps } from "@/core/components/ui/input";
 
 export interface FormTextFieldProps {
   name: string;
@@ -12,6 +11,6 @@ export interface FormTextFieldProps {
   placeholder?: string;
   disabled?: boolean;
   partiallyDisabled?: boolean;
-  InputProps?: InputProps;
-  TextFieldProps?: StandardTextFieldProps;
+  InputProps?: Partial<InputProps>;
+  TextFieldProps?: Record<string, unknown>; // Legacy prop, kept for compatibility
 }

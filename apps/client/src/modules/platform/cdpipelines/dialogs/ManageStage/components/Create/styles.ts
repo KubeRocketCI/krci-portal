@@ -1,23 +1,5 @@
-import makeStyles from "@mui/styles/makeStyles";
+export const dialogContentClasses = "flex flex-nowrap gap-5 py-2 px-5 pr-5";
 
-export const useStyles = makeStyles((theme) => ({
-  dialogContent: {
-    display: "flex",
-    flexWrap: "nowrap",
-    gap: theme.typography.pxToRem(20),
-    padding: `${theme.typography.pxToRem(8)} ${theme.typography.pxToRem(20)} ${theme.typography.pxToRem(8)} 0`,
-  },
-  dialogContentTabs: {
-    width: "20%",
-    flexShrink: 0,
-    position: "sticky",
-    top: 0,
+export const dialogContentTabsClasses = "w-[20%] shrink-0 sticky top-0 [&_.MuiTab-wrapper]:items-start";
 
-    "& .MuiTab-wrapper": {
-      alignItems: "flex-start",
-    },
-  },
-  dialogContentForm: {
-    flexGrow: 1,
-  },
-}));
+export const dialogContentFormClasses = "flex-grow";

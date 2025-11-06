@@ -1,5 +1,4 @@
 import React from "react";
-import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -13,6 +12,7 @@ import {
   ConnectionLineType,
   MarkerType,
 } from "@xyflow/react";
+import { ToggleButton, ToggleButtonGroup } from "@/core/components/ui/toggle-button-group";
 import "@xyflow/react/dist/style.css";
 import { Pipeline } from "@my-project/shared";
 import { usePipelineGraphData } from "./hooks/usePipelineGraphData";
@@ -66,7 +66,7 @@ const PipelineDiagramInner: React.FC<PipelineDiagramProps> = ({ pipeline }) => {
               setViewMode(newMode);
             }
           }}
-          size="small"
+          size="sm"
         >
           <ToggleButton value="vertical">Vertical</ToggleButton>
           <ToggleButton value="horizontal">Horizontal</ToggleButton>

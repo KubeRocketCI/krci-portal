@@ -6,6 +6,4 @@ export interface TaskActionsMenuProps {
   data: {
     task: Task;
   };
-  anchorEl?: HTMLElement | null;
-  handleCloseResourceActionListMenu?: () => void;
 }

@@ -1,4 +1,5 @@
-import { Button, Tooltip } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import React from "react";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
@@ -66,10 +67,9 @@ export const Actions = ({ handleCloseCreateDialog }: { handleCloseCreateDialog: 
             }}
           >
             <Button
-              variant="contained"
-              size="small"
-              color="primary"
-              style={{ pointerEvents: "auto" }}
+              variant="default"
+              size="sm"
+              className="pointer-events-auto"
               onClick={() => {
                 setDialog(ConfirmResourcesUpdatesDialog, {
                   deleteCallback: () => {
@@ -79,15 +79,15 @@ export const Actions = ({ handleCloseCreateDialog }: { handleCloseCreateDialog: 
                   resourcesArray: [],
                 });
               }}
-              startIcon={<RotateCcw size={16} />}
               disabled={!registryType || someOfTheSecretsHasExternalOwner}
             >
-              Reset registry
+              <RotateCcw size={16} />
+              Reset Registry
             </Button>
           </ConditionalWrapper>
         ) : (
-          <Button onClick={handleCloseCreateDialog} size="small" color="inherit">
-            cancel
+          <Button onClick={handleCloseCreateDialog} variant="ghost" size="sm">
+            Cancel
           </Button>
         )}
       </div>
@@ -97,11 +97,11 @@ export const Actions = ({ handleCloseCreateDialog }: { handleCloseCreateDialog: 
             resetAll();
             sharedForm.reset();
           }}
-          size="small"
-          component={"button"}
+          size="sm"
+          variant="ghost"
           disabled={!isAnyFormDirty}
         >
-          undo changes
+          Undo Changes
         </Button>
         <ConditionalWrapper
           condition={isAnyFormForbiddenToSubmit}
@@ -118,13 +118,11 @@ export const Actions = ({ handleCloseCreateDialog }: { handleCloseCreateDialog: 
                 handleCloseCreateDialog();
               }
             }}
-            size={"small"}
-            component={"button"}
-            variant={"contained"}
-            color={"primary"}
+            size={"sm"}
+            variant={"default"}
             disabled={!isAnyFormDirty || isAnyFormSubmitting || isResetting || isAnyFormForbiddenToSubmit}
           >
-            save
+            Save
           </Button>
         </ConditionalWrapper>
       </div>

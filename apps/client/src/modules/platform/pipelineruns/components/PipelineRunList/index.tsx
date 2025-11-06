@@ -1,9 +1,9 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { EmptyList } from "@/core/components/EmptyList";
-import { Table } from "@/core/components/Table";
+import { DataTable } from "@/core/components/Table";
 import { usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
-import { Tooltip } from "@mui/material";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { pipelineType } from "@my-project/shared";
 import { Trash } from "lucide-react";
 import React from "react";
@@ -72,7 +72,7 @@ export const PipelineRunList = ({
 
   return (
     <>
-      <Table
+      <DataTable
         id={tableId}
         name={tableName}
         blockerError={blockerError}
@@ -104,17 +104,16 @@ export const PipelineRunList = ({
                   <div className="text-secondary-700">
                     <ButtonWithPermission
                       ButtonProps={{
-                        size: "small",
-                        startIcon: <Trash size={16} />,
+                        size: "sm",
+                        variant: "outline",
                         onClick: onDeleteClick,
                         disabled: !selectedCount,
-                        variant: "outlined",
-                        color: "inherit",
                       }}
                       reason={pipelineRunPermissions.data.delete.reason}
                       allowed={pipelineRunPermissions.data.delete.allowed}
                     >
-                      delete
+                      <Trash size={16} />
+                      Delete
                     </ButtonWithPermission>
                   </div>
                 </ConditionalWrapper>

@@ -76,6 +76,7 @@ export const Framework = () => {
           label={`Language version/framework`}
           tooltipText={"Indicate the version of the programming language or framework your component relies on. "}
           options={frameworkOptions}
+          className="grid-cols-6"
         />
       )}
     </>

@@ -1,6 +1,5 @@
 import { FieldValues, Path, FieldErrors, Control, FieldPath, UseFormRegisterReturn } from "react-hook-form";
 import { SelectOption } from "../../types";
-import { AutocompleteProps, StandardTextFieldProps } from "@mui/material";
 
 export interface FormAutocompleteSingleProps<
   TOption extends SelectOption = SelectOption,
@@ -15,6 +14,10 @@ export interface FormAutocompleteSingleProps<
   defaultValue?: string;
   placeholder?: string;
   disabled?: boolean;
-  TextFieldProps?: StandardTextFieldProps;
-  AutocompleteProps?: Partial<Omit<AutocompleteProps<TOption, boolean, boolean, boolean>, "renderInput" | "options">>;
+  TextFieldProps?: Record<string, unknown>; // Legacy prop, kept for compatibility (helperText is extracted)
+  AutocompleteProps?: {
+    freeSolo?: boolean;
+    loading?: boolean;
+    [key: string]: unknown; // Allow other props for compatibility
+  };
 }

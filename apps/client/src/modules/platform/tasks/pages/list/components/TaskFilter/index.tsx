@@ -1,10 +1,12 @@
 import { NamespaceAutocomplete, TextField } from "@/core/components/form";
-import { Button } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import { TASK_LIST_FILTER_NAMES } from "./constants";
 import { useTaskFilter } from "./hooks/useFilter";
 import { useClusterStore } from "@/k8s/store";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
+import { Label } from "@/core/components/ui/label";
+import { X } from "lucide-react";
 
 export const TaskFilter = () => {
   const { form, reset } = useTaskFilter();
@@ -38,8 +40,10 @@ export const TaskFilter = () => {
       )}
 
       {form.state.isDirty && (
-        <div className="mt-4">
-          <Button variant="outlined" onClick={reset} size="small">
+        <div className="flex flex-col gap-2">
+          <Label> </Label>
+          <Button variant="secondary" onClick={reset} size="sm" className="mt-0.5">
+            <X size={16} />
             Clear
           </Button>
         </div>

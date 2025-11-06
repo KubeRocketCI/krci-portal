@@ -11,6 +11,7 @@ import {
 } from "@my-project/shared";
 import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors";
 import { TRPCError } from "@trpc/server";
+import { K8sClient } from "packages/trpc/src/clients/k8s";
 
 export const k8sGetResourcePermissions = protectedProcedure
   .input(
@@ -26,13 +27,13 @@ export const k8sGetResourcePermissions = protectedProcedure
   .mutation(async ({ input, ctx }) => {
     try {
       const { apiVersion, group, version, namespace, resourcePlural } = input;
-      const { K8sClient } = ctx;
+      const k8sClient = new K8sClient(ctx.session);
 
-      if (!K8sClient.KubeConfig) {
+      if (!k8sClient.KubeConfig) {
         throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
       }
 
-      const authApi = K8sClient.KubeConfig.makeApiClient(AuthorizationV1Api);
+      const authApi = k8sClient.KubeConfig.makeApiClient(AuthorizationV1Api);
 
       const promises = defaultPermissionsToCheck.reduce<Promise<V1SelfSubjectAccessReview>[]>((acc, verb) => {
         const rbacVerb = k8sToRbacVerbMap[verb];

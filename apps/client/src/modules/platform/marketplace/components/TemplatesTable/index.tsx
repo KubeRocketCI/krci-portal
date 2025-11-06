@@ -1,5 +1,5 @@
 import { EmptyList } from "@/core/components/EmptyList";
-import { Table } from "@/core/components/Table";
+import { DataTable } from "@/core/components/Table";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { useFilterContext } from "@/core/providers/Filter/hooks";
 import { useViewModeContext } from "@/core/providers/ViewMode/hooks";
@@ -7,7 +7,8 @@ import { VIEW_MODES } from "@/core/providers/ViewMode/types";
 import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { useTemplatePermissions, useTemplateWatchList } from "@/k8s/api/groups/KRCI/Template";
 import { TABLE } from "@/k8s/constants/tables";
-import { IconButton, Tooltip, useTheme } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { Template } from "@my-project/shared";
 import { Grid3x2, Rows3, ShoppingBag } from "lucide-react";
 import React from "react";
@@ -45,10 +46,9 @@ export const TemplatesTable = () => {
   const { filterFunction } = useFilterContext();
 
   const { handleChangeViewMode } = useViewModeContext();
-  const theme = useTheme();
 
   return (
-    <Table<Template>
+    <DataTable<Template>
       id={TABLE.TEMPLATE_LIST.id}
       name={TABLE.TEMPLATE_LIST.name}
       errors={errors}
@@ -70,14 +70,14 @@ export const TemplatesTable = () => {
               <TemplateFilter />
               <div className="flex items-center">
                 <Tooltip title={"Block View"}>
-                  <IconButton onClick={() => handleChangeViewMode(VIEW_MODES.GRID)} size="large">
-                    <Grid3x2 color={theme.palette.action.active} />
-                  </IconButton>
+                  <Button variant="ghost" size="icon" onClick={() => handleChangeViewMode(VIEW_MODES.GRID)}>
+                    <Grid3x2 className="text-muted-foreground" />
+                  </Button>
                 </Tooltip>
                 <Tooltip title={"List View"}>
-                  <IconButton onClick={() => handleChangeViewMode(VIEW_MODES.TABLE)} size="large">
-                    <Rows3 color={theme.palette.primary.main} />
-                  </IconButton>
+                  <Button variant="ghost" size="icon" onClick={() => handleChangeViewMode(VIEW_MODES.TABLE)}>
+                    <Rows3 className="text-primary" />
+                  </Button>
                 </Tooltip>
               </div>
             </div>

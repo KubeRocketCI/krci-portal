@@ -1,4 +1,4 @@
-import { Tooltip } from "@mui/material";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import React from "react";
 import { SectionProps } from "./types";
 import { CopyButton } from "../CopyButton";

@@ -1,4 +1,4 @@
-import { IconButton } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import React from "react";
 import { BranchNameProps } from "./types";
 import { CODEBASE_BRANCH_FORM_NAMES } from "../../../names";
@@ -6,7 +6,7 @@ import { createVersioningString, getVersionAndPostfixFromVersioningString } from
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
 import { FieldEvent } from "@/core/types/forms";
-import { FormAutocompleteSingle } from "@/core/providers/Form/components/FormAutocompleteSingle";
+import { FormCombobox } from "@/core/providers/Form/components/FormCombobox";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
@@ -136,7 +136,7 @@ export const BranchName = ({ defaultBranchVersion }: BranchNameProps) => {
 
   return (
     <div>
-      <FormAutocompleteSingle
+      <FormCombobox
         placeholder="Branch name"
         {...register(CODEBASE_BRANCH_FORM_NAMES.branchName.name, {
           required: "Enter branch name",
@@ -160,28 +160,23 @@ export const BranchName = ({ defaultBranchVersion }: BranchNameProps) => {
         errors={errors}
         options={branchesOptions}
         disabled={releaseFieldValue}
-        AutocompleteProps={{
-          freeSolo: true,
-          loading: !!apiBaseUrl && query.isLoading,
-        }}
-        TextFieldProps={{
-          helperText,
-          InputProps: {
-            endAdornment: canLoadBranches ? (
-              <IconButton
-                size="small"
-                onClick={handleRefreshBranches}
-                disabled={invalidateBranchListCacheMutation.isPending || query.isLoading}
-                title="Refresh branches"
-                sx={{
-                  color: "inherit",
-                }}
-              >
-                <RotateCw size={16} />
-              </IconButton>
-            ) : null,
-          },
-        }}
+        freeSolo={true}
+        loading={!!apiBaseUrl && query.isLoading}
+        helperText={helperText}
+        suffix={
+          canLoadBranches ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleRefreshBranches}
+              disabled={invalidateBranchListCacheMutation.isPending || query.isLoading}
+              title="Refresh branches"
+              className="text-inherit"
+            >
+              <RotateCw size={16} />
+            </Button>
+          ) : undefined
+        }
       />
     </div>
   );

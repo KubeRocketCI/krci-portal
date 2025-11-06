@@ -1,6 +1,6 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { FormAutocompleteSingle } from "@/core/providers/Form/components/FormAutocompleteSingle";
+import { FormCombobox } from "@/core/providers/Form/components/FormCombobox";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_FORM_NAMES } from "../../../names";
 import { useClusterStore } from "@/k8s/store";
@@ -10,7 +10,6 @@ import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWat
 
 export const Owner = () => {
   const {
-    register,
     control,
     formState: { errors },
     watch,
@@ -66,21 +65,18 @@ export const Owner = () => {
   }, [apiBaseUrl, query.isError]);
 
   return (
-    <FormAutocompleteSingle
+    <FormCombobox
+      name={CODEBASE_FORM_NAMES.repositoryOwner.name}
       placeholder={"owner"}
-      {...register(CODEBASE_FORM_NAMES.repositoryOwner.name, {
-        required: "Select owner",
-      })}
       label={"Owner"}
       control={control}
       errors={errors}
       options={organizationsOptions}
-      AutocompleteProps={{
-        freeSolo: true,
-        loading: !!apiBaseUrl && query.isLoading,
-      }}
-      TextFieldProps={{
-        helperText,
+      freeSolo={true}
+      loading={!!apiBaseUrl && query.isLoading}
+      helperText={helperText}
+      rules={{
+        required: "Select owner",
       }}
     />
   );

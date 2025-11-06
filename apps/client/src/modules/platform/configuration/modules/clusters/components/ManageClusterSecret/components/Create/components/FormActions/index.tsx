@@ -1,4 +1,5 @@
-import { Button, Tooltip } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import React from "react";
 import { useFormContext as useReactHookFormContext } from "react-hook-form";
 import { ManageClusterSecretDataContext, ManageClusterSecretValues } from "../../../../types";
@@ -70,8 +71,8 @@ export const FormActions = ({ activeClusterType }: { activeClusterType: ClusterT
     <>
       <div className="flex justify-between gap-4">
         <div>
-          <Button onClick={handleClosePlaceholder} size="small" component={"button"}>
-            cancel
+          <Button onClick={handleClosePlaceholder} variant="ghost" size="sm">
+            Cancel
           </Button>
         </div>
         <div>
@@ -79,11 +80,11 @@ export const FormActions = ({ activeClusterType }: { activeClusterType: ClusterT
             <div>
               <Button
                 onClick={() => reset({}, { keepDirty: false })}
-                size="small"
-                component={"button"}
+                size="sm"
+                variant="ghost"
                 disabled={!isDirty}
               >
-                undo changes
+                Undo Changes
               </Button>
             </div>
             <div>
@@ -97,14 +98,12 @@ export const FormActions = ({ activeClusterType }: { activeClusterType: ClusterT
               >
                 <Button
                   type={"button"}
-                  size={"small"}
-                  component={"button"}
-                  variant={"contained"}
-                  color={"primary"}
+                  size={"sm"}
+                  variant={"default"}
                   disabled={isLoading || !isDirty || !secretPermissions.data.create.allowed}
                   onClick={handleSubmit(onSubmit)}
                 >
-                  save
+                  Save
                 </Button>
               </ConditionalWrapper>
             </div>

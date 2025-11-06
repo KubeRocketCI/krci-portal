@@ -16,8 +16,6 @@ export const QuickLinkActionsMenu = ({
   backRoute,
   variant,
   data: { quickLink },
-  anchorEl,
-  handleCloseResourceActionListMenu,
 }: QuickLinkActionsMenuProps) => {
   const openManageQuickLinkDialog = useDialogOpener(ManageQuickLinkDialog);
   const openDeleteKubeObjectDialog = useDialogOpener(DeleteKubeObjectDialog);
@@ -41,9 +39,6 @@ export const QuickLinkActionsMenu = ({
           reason: quickLinkPermissions.data.patch.reason,
         },
         callback: () => {
-          if (variant === actionMenuType.menu && handleCloseResourceActionListMenu) {
-            handleCloseResourceActionListMenu();
-          }
           openManageQuickLinkDialog({ quickLink });
         },
       }),
@@ -61,10 +56,6 @@ export const QuickLinkActionsMenu = ({
               : "",
         },
         callback: () => {
-          if (variant === actionMenuType.menu && handleCloseResourceActionListMenu) {
-            handleCloseResourceActionListMenu();
-          }
-
           openDeleteKubeObjectDialog({
             objectName: quickLink?.metadata.name,
             resourceConfig: k8sQuickLinkConfig,
@@ -93,7 +84,6 @@ export const QuickLinkActionsMenu = ({
     quickLinkPermissions.data.delete.allowed,
     quickLinkPermissions.data.delete.reason,
     variant,
-    handleCloseResourceActionListMenu,
     openManageQuickLinkDialog,
     openDeleteKubeObjectDialog,
     backRoute,
@@ -102,10 +92,6 @@ export const QuickLinkActionsMenu = ({
   return variant === actionMenuType.inline ? (
     <ActionsInlineList actions={actions} />
   ) : variant === actionMenuType.menu ? (
-    <ActionsMenuList
-      actions={actions}
-      anchorEl={anchorEl!}
-      handleCloseActionsMenu={handleCloseResourceActionListMenu!}
-    />
+    <ActionsMenuList actions={actions} />
   ) : null;
 };

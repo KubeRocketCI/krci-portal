@@ -1,7 +1,5 @@
 import { SelectOption } from "@/core/providers/Form/types";
-import { Autocomplete, AutocompleteRenderInputParams, FormControl, TextField, Tooltip } from "@mui/material";
-import { Info } from "lucide-react";
-import { Controller, Path, PathValue } from "react-hook-form";
+import { FormCombobox } from "@/core/providers/Form/components/FormCombobox";
 import { FormAutocompleteSingleProps } from "./types";
 import React from "react";
 
@@ -21,102 +19,27 @@ const FormAutocompleteSingleInner = React.forwardRef(
       AutocompleteProps,
       ...props
     }: FormAutocompleteSingleProps<TOption, TFormValues>,
-    ref: React.ForwardedRef<HTMLInputElement>
+    _ref: React.ForwardedRef<HTMLInputElement>
   ) => {
-    const error = errors[name];
-    const hasError = !!error;
-    const errorMessage = error?.message as string;
-    const helperText = hasError ? errorMessage : TextFieldProps?.helperText;
-
-    const createMergedInputProps = React.useCallback(
-      (inputParams: AutocompleteRenderInputParams) => {
-        const originalInputProps = TextFieldProps.InputProps ?? {};
-        const userEndAdornment = originalInputProps.endAdornment;
-        const autocompleteInputProps = inputParams.InputProps ?? {};
-
-        return {
-          ...originalInputProps,
-          ...autocompleteInputProps,
-          endAdornment: (
-            <div className="flex flex-row items-center gap-1">
-              {autocompleteInputProps.endAdornment}
-              {userEndAdornment}
-              {tooltipText && (
-                <Tooltip title={tooltipText}>
-                  <Info size={16} />
-                </Tooltip>
-              )}
-            </div>
-          ),
-        };
-      },
-      [TextFieldProps.InputProps, tooltipText]
-    );
+    // Map TextFieldProps.helperText to helperText
+    const helperText = TextFieldProps?.helperText as string | undefined;
 
     return (
-      <div className="flex flex-col gap-2">
-        <FormControl fullWidth>
-          <Controller
-            name={name}
-            control={control}
-            defaultValue={defaultValue as PathValue<TFormValues, Path<TFormValues>>}
-            render={({ field }) => {
-              return (
-                <Autocomplete
-                  {...AutocompleteProps}
-                  options={options}
-                  disabled={disabled}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      {...TextFieldProps}
-                      inputRef={ref}
-                      InputProps={createMergedInputProps(params)}
-                      variant="standard"
-                      label={label}
-                      fullWidth
-                      style={{ marginTop: 0 }}
-                      placeholder={placeholder}
-                      error={hasError || !!TextFieldProps?.error}
-                      helperText={helperText}
-                    />
-                  )}
-                  isOptionEqualToValue={(option, value) => {
-                    return option.value === value.value;
-                  }}
-                  getOptionLabel={(option) => {
-                    if (typeof option === "string") {
-                      return option;
-                    }
-                    if (typeof option === "object" && "label" in option) {
-                      return option.label || "";
-                    }
-
-                    return "";
-                  }}
-                  onChange={(_event, newValue) => {
-                    if (typeof newValue === "string") {
-                      field.onChange(newValue);
-                    } else if (newValue && typeof newValue === "object" && "value" in newValue) {
-                      field.onChange(newValue.value || "");
-                    } else {
-                      field.onChange("");
-                    }
-                  }}
-                  onInputChange={(_event, newInputValue) => {
-                    if (AutocompleteProps?.freeSolo) {
-                      field.onChange(newInputValue || "");
-                    }
-                  }}
-                  value={options.find((option) => option.value === field.value) || null}
-                  forcePopupIcon
-                />
-              );
-            }}
-            {...props}
-          />
-        </FormControl>
-      </div>
+      <FormCombobox
+        name={name}
+        control={control}
+        errors={errors}
+        label={label}
+        tooltipText={tooltipText}
+        helperText={helperText}
+        placeholder={placeholder}
+        disabled={disabled}
+        options={options}
+        defaultValue={defaultValue}
+        freeSolo={AutocompleteProps?.freeSolo}
+        loading={AutocompleteProps?.loading}
+        {...props}
+      />
     );
   }
 );

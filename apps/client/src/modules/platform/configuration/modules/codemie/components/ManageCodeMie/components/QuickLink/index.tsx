@@ -1,4 +1,4 @@
-import { Alert } from "@mui/material";
+import { Alert } from "@/core/components/ui/alert";
 import { useDataContext } from "../../providers/Data/hooks";
 import { ExternalURL } from "./fields/ExternalURL";
 
@@ -9,7 +9,7 @@ export const QuickLinkForm = () => {
     <div className="flex flex-col gap-2">
       {!quickLink && (
         <div>
-          <Alert severity="info" variant="outlined">
+          <Alert variant="default">
             CodeMie QuickLink has not been found. Please, create it first in order to manage the integration.
           </Alert>
         </div>

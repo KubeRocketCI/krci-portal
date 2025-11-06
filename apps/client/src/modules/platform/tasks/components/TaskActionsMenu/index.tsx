@@ -13,8 +13,6 @@ import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 export const TaskActionsMenu: React.FC<TaskActionsMenuProps> = ({
   variant,
   data: { task },
-  anchorEl,
-  handleCloseResourceActionListMenu,
 }) => {
   const taskPermissions = useTaskPermissions();
   const { triggerPatchTask } = useTaskCRUD();
@@ -50,10 +48,6 @@ export const TaskActionsMenu: React.FC<TaskActionsMenuProps> = ({
               });
             },
           });
-
-          if (handleCloseResourceActionListMenu) {
-            handleCloseResourceActionListMenu();
-          }
         },
       }),
     ];
@@ -62,7 +56,6 @@ export const TaskActionsMenu: React.FC<TaskActionsMenuProps> = ({
     taskPermissions.data.patch.allowed,
     taskPermissions.data.patch.reason,
     openEditorDialog,
-    handleCloseResourceActionListMenu,
     triggerPatchTask,
   ]);
 
@@ -70,12 +63,8 @@ export const TaskActionsMenu: React.FC<TaskActionsMenuProps> = ({
     <>
       {variant === actionMenuType.inline ? (
         <ActionsInlineList actions={actions} />
-      ) : variant === actionMenuType.menu && anchorEl ? (
-        <ActionsMenuList
-          actions={actions}
-          anchorEl={anchorEl}
-          handleCloseActionsMenu={handleCloseResourceActionListMenu}
-        />
+      ) : variant === actionMenuType.menu ? (
+        <ActionsMenuList actions={actions} />
       ) : null}
     </>
   );

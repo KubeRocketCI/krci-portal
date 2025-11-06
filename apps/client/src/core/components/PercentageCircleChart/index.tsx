@@ -67,17 +67,7 @@ export const PercentageCircleChart = ({
   };
 
   return (
-    <div
-      className={cn(
-        "p-6",
-        "shadow-[0px_1px_10px_0px_rgba(0,36,70,0.12)]",
-        "border-l-4",
-        error ? "border-destructive" : "border-primary",
-        "rounded",
-        "overflow-hidden",
-        "h-full"
-      )}
-    >
+    <div className={cn("bg-card border p-6 shadow-xs", "rounded", "overflow-hidden", "h-full")}>
       <style>{`
         .percentage-chart-wrapper .recharts-sector {
           stroke: none;
@@ -94,7 +84,7 @@ export const PercentageCircleChart = ({
       `}</style>
       <div className="percentage-chart-wrapper flex flex-col">
         <div className="flex flex-row items-center gap-4">
-          {title && <h6 className="text-lg font-medium text-[#002446]">{title}</h6>}
+          {title && <h6 className="text-foreground text-lg font-medium">{title}</h6>}
         </div>
         {error ? (
           <ErrorContent error={error} orientation="vertical" />

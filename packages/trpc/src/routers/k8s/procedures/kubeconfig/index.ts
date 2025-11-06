@@ -3,6 +3,7 @@ import { protectedProcedure } from "../../../../procedures/protected";
 import { k8sConfigMapConfig, ConfigMap, krciConfigMapNames } from "@my-project/shared";
 import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors";
 import z from "zod";
+import { K8sClient } from "../../../../clients/k8s";
 
 export const kubeRootConfigName = "kube-root-ca.crt";
 
@@ -14,14 +15,14 @@ export const k8sGetKubeConfig = protectedProcedure
   )
   .query(async ({ input, ctx }) => {
     const { namespace } = input;
-    const { K8sClient } = ctx;
+    const k8sClient = new K8sClient(ctx.session);
 
-    if (!K8sClient.KubeConfig) {
+    if (!k8sClient.KubeConfig) {
       throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
     }
 
-    const currentCluster = K8sClient.KubeConfig.getCurrentCluster();
-    const currentUser = K8sClient.KubeConfig.getCurrentUser();
+    const currentCluster = k8sClient.KubeConfig.getCurrentCluster();
+    const currentUser = k8sClient.KubeConfig.getCurrentUser();
 
     if (!currentCluster || !currentUser) {
       throw new Error("Invalid KubeConfig: missing cluster or user info");
@@ -37,7 +38,7 @@ export const k8sGetKubeConfig = protectedProcedure
     const { name: clusterName, caData } = currentCluster;
 
     // List config maps directly using K8sClient
-    const configMapList = await K8sClient.listResource(k8sConfigMapConfig, namespace);
+    const configMapList = await k8sClient.listResource(k8sConfigMapConfig, namespace);
 
     const configMaps = (configMapList.items || []) as ConfigMap[];
 

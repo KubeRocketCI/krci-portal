@@ -1,5 +1,5 @@
 import { NamespaceAutocomplete, Select, TextField } from "@/core/components/form";
-import { Button } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import { PIPELINE_LIST_FILTER_NAMES } from "./constants";
 import { usePipelineFilter } from "./hooks/useFilter";
 import { useClusterStore } from "@/k8s/store";
@@ -8,6 +8,8 @@ import { useShallow } from "zustand/react/shallow";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { usePipelineWatchList } from "@/k8s/api/groups/Tekton/Pipeline";
 import { pipelineLabels, PipelineType } from "@my-project/shared";
+import { Label } from "@/core/components/ui/label";
+import { X } from "lucide-react";
 
 export const PipelineFilter = () => {
   const { form, reset } = usePipelineFilter();
@@ -63,8 +65,10 @@ export const PipelineFilter = () => {
       )}
 
       {form.state.isDirty && (
-        <div className="mt-4">
-          <Button variant="outlined" onClick={reset} size="small">
+        <div className="flex flex-col gap-2">
+          <Label> </Label>
+          <Button variant="secondary" onClick={reset} size="sm" className="mt-0.5">
+            <X size={16} />
             Clear
           </Button>
         </div>

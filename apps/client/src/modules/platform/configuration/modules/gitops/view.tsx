@@ -3,7 +3,8 @@ import { ErrorContent } from "@/core/components/ErrorContent";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionDetails, AccordionSummary, Button, Link } from "@mui/material";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/core/components/ui/accordion";
+import { Button } from "@/core/components/ui/button";
 import React from "react";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
 import { ManageGitOps } from "./components/ManageGitOps";
@@ -79,45 +80,45 @@ export default function GitopsConfigurationPage() {
 
     return (
       <LoadingWrapper isLoading={isLoading}>
-        <Accordion expanded>
-          <AccordionSummary>
-            <div className="flex items-center gap-2">
-              <div className="mr-1">
-                <StatusIcon
-                  Icon={codebaseStatusIcon.component}
-                  color={codebaseStatusIcon.color}
-                  isSpinning={codebaseStatusIcon.isSpinning}
-                  Title={
-                    <>
-                      <p className="text-sm font-semibold">{`Status: ${status || "Unknown"}`}</p>
-                      {status === codebaseStatus.failed && (
-                        <p className="mt-3 text-sm font-medium">{gitOpsCodebase?.status?.detailedMessage}</p>
-                      )}
-                    </>
-                  }
-                />
+        <Accordion type="single" collapsible defaultValue="item-1">
+          <AccordionItem value="item-1">
+            <AccordionTrigger>
+              <div className="flex items-center gap-2">
+                <div className="mr-1">
+                  <StatusIcon
+                    Icon={codebaseStatusIcon.component}
+                    color={codebaseStatusIcon.color}
+                    isSpinning={codebaseStatusIcon.isSpinning}
+                    Title={
+                      <>
+                        <p className="text-sm font-semibold">{`Status: ${status || "Unknown"}`}</p>
+                        {status === codebaseStatus.failed && (
+                          <p className="mt-3 text-sm font-medium">{gitOpsCodebase?.status?.detailedMessage}</p>
+                        )}
+                      </>
+                    }
+                  />
+                </div>
+                <div>GitOps</div>
+                <div className="ml-auto">
+                  <Button variant="ghost" asChild>
+                    <a href={gitOpsCodebase?.status?.gitWebUrl} target="_blank" rel="noopener noreferrer">
+                      <FolderGit2 size={16} />
+                      Go to the Source Code
+                    </a>
+                  </Button>
+                </div>
               </div>
-              <div>GitOps</div>
-              <div className="ml-auto">
-                <Button
-                  component={Link}
-                  href={gitOpsCodebase?.status?.gitWebUrl}
-                  target="_blank"
-                  startIcon={<FolderGit2 size={16} />}
-                >
-                  Go to the Source Code
-                </Button>
-              </div>
-            </div>
-          </AccordionSummary>
-          <AccordionDetails>
-            <ManageGitOps
-              formData={{
-                currentElement: gitOpsCodebase,
-                isReadOnly: true,
-              }}
-            />
-          </AccordionDetails>
+            </AccordionTrigger>
+            <AccordionContent>
+              <ManageGitOps
+                formData={{
+                  currentElement: gitOpsCodebase,
+                  isReadOnly: true,
+                }}
+              />
+            </AccordionContent>
+          </AccordionItem>
         </Accordion>
       </LoadingWrapper>
     );

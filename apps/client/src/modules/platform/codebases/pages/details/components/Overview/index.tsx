@@ -1,4 +1,4 @@
-import { Chip } from "@mui/material";
+import { Badge } from "@/core/components/ui/badge";
 import { useInfoRows } from "./hooks/useInfoRows";
 import { InfoColumns } from "@/core/components/InfoColumns";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
@@ -59,23 +59,22 @@ export const Overview = () => {
         title={
           <div className="flex items-center gap-2">
             <h3 className="text-foreground text-xl font-semibold">Code Quality</h3>
-            <Chip
-              sx={{
+            <Badge
+              variant="default"
+              className="text-white"
+              style={{
                 backgroundColor:
                   sonarDataQuery.data?.metrics?.alert_status === "OK"
                     ? STATUS_COLOR.SUCCESS
                     : sonarDataQuery.data?.metrics?.alert_status === "ERROR"
                       ? STATUS_COLOR.ERROR
                       : STATUS_COLOR.UNKNOWN,
-                color: "#fff",
               }}
-              size="small"
-              label={
-                sonarDataQuery.data?.metrics?.alert_status
-                  ? getStatusLabel(sonarDataQuery.data?.metrics?.alert_status)
-                  : "N/A"
-              }
-            />
+            >
+              {sonarDataQuery.data?.metrics?.alert_status
+                ? getStatusLabel(sonarDataQuery.data?.metrics?.alert_status)
+                : "N/A"}
+            </Badge>
             <LearnMoreLink url={EDP_OPERATOR_GUIDE.SONAR.url} />
           </div>
         }

@@ -9,7 +9,6 @@ import { useQuickLinkWatchList } from "@/k8s/api/groups/KRCI/QuickLink";
 import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
 import { getQuickLinkURLsFromList } from "@/k8s/api/groups/KRCI/QuickLink/utils/getURLsFromList";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
-import { ResourceActionListContextProvider } from "@/core/providers/ResourceActionList/provider";
 import { Tabs } from "@/core/providers/Tabs/components/Tabs";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { LinkCreationService } from "@/k8s/services/link-creation";
@@ -83,7 +82,7 @@ export default function CodebaseDetailsPageContent() {
       headerSlot={
         <>
           {codebaseIsLoaded && (
-            <div style={{ marginLeft: "auto" }}>
+            <div className="ml-auto">
               <div className="flex items-center gap-2">
                 <QuickLink
                   name={{
@@ -107,20 +106,18 @@ export default function CodebaseDetailsPageContent() {
                   isTextButton
                 />
                 {!isSystem(codebase!) && (
-                  <ResourceActionListContextProvider>
-                    <CodebaseActionsMenu
-                      data={{
-                        codebase: codebase!,
-                      }}
-                      backRoute={{
-                        to: routeComponentList.fullPath,
-                        params: {
-                          clusterName: params.clusterName,
-                        },
-                      }}
-                      variant="inline"
-                    />
-                  </ResourceActionListContextProvider>
+                  <CodebaseActionsMenu
+                    data={{
+                      codebase: codebase!,
+                    }}
+                    backRoute={{
+                      to: routeComponentList.fullPath,
+                      params: {
+                        clusterName: params.clusterName,
+                      },
+                    }}
+                    variant="inline"
+                  />
                 )}
               </div>
             </div>

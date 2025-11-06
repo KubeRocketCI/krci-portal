@@ -1,4 +1,3 @@
-import { StandardTextFieldProps } from "@mui/material";
 import {
   Control,
   FieldErrors,
@@ -8,17 +7,29 @@ import {
   RegisterOptions,
   UseFormRegisterReturn,
 } from "react-hook-form";
+import { InputProps } from "@/core/components/ui/input";
+import { FormFieldProps } from "@/core/components/ui/form-field";
 
 export interface FormTextFieldProps<TFieldValues extends FieldValues = FieldValues>
   extends Partial<UseFormRegisterReturn<Path<TFieldValues>>> {
+  // Controller props
   name: FieldPath<TFieldValues>;
   control: Control<TFieldValues>;
   errors: FieldErrors<TFieldValues>;
-  label?: string;
-  tooltipText?: React.ReactNode;
+  rules?: RegisterOptions<TFieldValues, Path<TFieldValues>>;
   defaultValue?: string;
+
+  // FormField props
+  label?: FormFieldProps["label"];
+  tooltipText?: FormFieldProps["tooltipText"];
+  helperText?: FormFieldProps["helperText"];
+
+  // Input props
   placeholder?: string;
   disabled?: boolean;
-  TextFieldProps?: StandardTextFieldProps;
-  rules?: RegisterOptions<TFieldValues, Path<TFieldValues>>;
+  inputProps?: Partial<Omit<InputProps, "invalid">>; // Exclude invalid as it's derived from error state
+
+  // Adornments
+  prefix?: React.ReactNode;
+  suffix?: React.ReactNode;
 }

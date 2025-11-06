@@ -48,7 +48,7 @@ export const Create = () => {
         control={control}
         errors={errors}
         options={codebaseCreationStrategies}
-        gridItemSize={4}
+        gridCols={3}
       />
 
       <div className="p-6 px-2">

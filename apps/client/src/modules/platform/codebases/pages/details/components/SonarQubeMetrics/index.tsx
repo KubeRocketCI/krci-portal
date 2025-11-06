@@ -4,7 +4,7 @@ import { Button } from "@/core/components/ui/button";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { useClusterStore } from "@/k8s/store";
 import { PATH_CONFIG_SONAR_FULL } from "@/modules/platform/configuration/modules/sonar/route";
-import { CircularProgress } from "@mui/material";
+import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
 import { NormalizedSonarQubeMetrics } from "@my-project/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -125,7 +125,7 @@ export const SonarMetrics = ({ componentName }: SonarQubeMetricsProps) => {
       }
     >
       {sonarDataQuery.isLoading ? (
-        <CircularProgress />
+        <LoadingSpinner />
       ) : sonarDataQuery.data?.baseUrl ? (
         <div className="flex items-center gap-3">
           <MetricsItem

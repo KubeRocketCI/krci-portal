@@ -1,4 +1,3 @@
-import { InputAdornment } from "@mui/material";
 import { useFormContext as useReactHookFormContext } from "react-hook-form";
 import { CODEBASE_FORM_NAMES } from "../../../names";
 import { ManageGitOpsDataContext, ManageGitOpsValues } from "../../../types";
@@ -6,8 +5,6 @@ import { useFormContext } from "@/core/providers/Form/hooks";
 import { FormTextField } from "@/core/providers/Form/components/FormTextField";
 import { FieldEvent } from "@/core/types/forms";
 import { gitProvider } from "@my-project/shared";
-
-const slashSymbol = "/";
 
 export const Name = () => {
   const {
@@ -38,11 +35,7 @@ export const Name = () => {
       tooltipText={"Specify a unique repository name."}
       control={control}
       errors={errors}
-      TextFieldProps={{
-        InputProps: {
-          startAdornment: <InputAdornment position="start">{slashSymbol}</InputAdornment>,
-        },
-      }}
+      prefix={<div className="flex items-center px-5">/</div>}
       disabled={isReadOnly}
     />
   );

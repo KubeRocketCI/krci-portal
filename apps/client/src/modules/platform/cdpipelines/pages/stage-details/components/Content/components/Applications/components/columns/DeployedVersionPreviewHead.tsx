@@ -1,4 +1,4 @@
-import { Tooltip } from "@mui/material";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { CopyButton } from "@/core/components/CopyButton";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import {

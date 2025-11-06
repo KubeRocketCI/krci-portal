@@ -1,6 +1,5 @@
-import { Step, StepLabel, Stepper, useTheme } from "@mui/material";
 import React from "react";
-import { FORM_STEPPER, FORM_STEPPER_STEPS } from "../../../../constants";
+import { FORM_STEPPER } from "../../../../constants";
 import { useCurrentDialog } from "../../../../providers/CurrentDialog/hooks";
 import {
   CleanTemplate,
@@ -22,55 +21,38 @@ export const Form = () => {
 
   const otherStagesNames = React.useMemo(() => otherStages.map(({ spec: { name } }) => name), [otherStages]);
 
-  const theme = useTheme();
-
   const { activeStep } = useStepperContext();
 
   return (
-    <>
-      <div className="flex flex-col gap-4">
-        <div style={{ paddingTop: theme.typography.pxToRem(24) }}>
-          <Stepper activeStep={activeStep}>
-            {FORM_STEPPER_STEPS.map((label) => {
-              return (
-                <Step key={label}>
-                  <StepLabel>{label}</StepLabel>
-                </Step>
-              );
-            })}
-          </Stepper>
+    <div className="p-6 px-2">
+      <TabPanel value={activeStep} index={FORM_STEPPER.CONFIGURATION.idx}>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="col-span-1 md:col-span-2">
+            <Cluster />
+          </div>
+          <div>
+            <StageName otherStagesNames={otherStagesNames} />
+          </div>
+          <div>
+            <Namespace />
+          </div>
+          <div>
+            <Description />
+          </div>
+          <div>
+            <TriggerType />
+          </div>
+          <div>
+            <DeployTemplate />
+          </div>
+          <div>
+            <CleanTemplate />
+          </div>
         </div>
-        <div style={{ padding: `${theme.typography.pxToRem(24)} ${theme.typography.pxToRem(8)}` }}>
-          <TabPanel value={activeStep} index={FORM_STEPPER.CONFIGURATION.idx}>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="col-span-1 md:col-span-2">
-                <Cluster />
-              </div>
-              <div>
-                <StageName otherStagesNames={otherStagesNames} />
-              </div>
-              <div>
-                <Namespace />
-              </div>
-              <div>
-                <Description />
-              </div>
-              <div>
-                <TriggerType />
-              </div>
-              <div>
-                <DeployTemplate />
-              </div>
-              <div>
-                <CleanTemplate />
-              </div>
-            </div>
-          </TabPanel>
-          <TabPanel value={activeStep} index={FORM_STEPPER.QUALITY_GATES.idx}>
-            <QualityGates />
-          </TabPanel>
-        </div>
-      </div>
-    </>
+      </TabPanel>
+      <TabPanel value={activeStep} index={FORM_STEPPER.QUALITY_GATES.idx}>
+        <QualityGates />
+      </TabPanel>
+    </div>
   );
 };

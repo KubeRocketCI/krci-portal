@@ -1,6 +1,6 @@
 import { trpc } from "@/core/clients/trpc";
 import { validationRules } from "@/core/constants/validation";
-import { FormAutocompleteSingle } from "@/core/providers/Form/components/FormAutocompleteSingle";
+import { FormCombobox } from "@/core/providers/Form/components/FormCombobox";
 import { FormSelect } from "@/core/providers/Form/components/FormSelect";
 import { FormTextField } from "@/core/providers/Form/components/FormTextField";
 import { FieldEvent } from "@/core/types/forms";
@@ -112,7 +112,7 @@ export const FromCommit = () => {
   const renderInputField = () => {
     if (releaseValue || fromType === "branch") {
       return (
-        <FormAutocompleteSingle
+        <FormCombobox
           key="branch"
           {...register(CODEBASE_BRANCH_FORM_NAMES.fromCommit.name, {
             validate: (value) => {
@@ -135,13 +135,9 @@ export const FromCommit = () => {
           errors={errors}
           options={branchesOptions}
           disabled={query.isLoading}
-          TextFieldProps={{
-            helperText,
-          }}
-          AutocompleteProps={{
-            loading: !!apiBaseUrl && query.isLoading,
-            freeSolo: true,
-          }}
+          helperText={helperText}
+          loading={!!apiBaseUrl && query.isLoading}
+          freeSolo={true}
         />
       );
     } else {

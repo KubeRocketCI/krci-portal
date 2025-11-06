@@ -68,15 +68,14 @@ export const CleanButton = ({
   return (
     <ButtonWithPermission
       ButtonProps={{
-        variant: "outlined",
-        size: "medium",
+        variant: "outline",
         onClick: handleClickClean,
-        startIcon: latestCleanPipelineRunIsRunning ? <LoadingSpinner size={16} /> : <Trash size={16} />,
         disabled: latestDeployPipelineRunIsRunning || latestCleanPipelineRunIsRunning,
       }}
       allowed={pipelineRunPermissions.data?.create.allowed}
       reason={pipelineRunPermissions.data?.create.reason}
     >
+      {latestCleanPipelineRunIsRunning ? <LoadingSpinner size={16} /> : <Trash size={16} />}
       Clean
     </ButtonWithPermission>
   );

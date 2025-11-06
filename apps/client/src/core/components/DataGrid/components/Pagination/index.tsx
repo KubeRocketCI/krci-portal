@@ -1,4 +1,4 @@
-import { TablePagination as MuiTablePagination } from "@mui/material";
+import { TablePagination as TablePaginationComponent } from "@/core/components/ui/table-pagination";
 import { PaginationProps } from "./types";
 
 export const Pagination = ({
@@ -9,15 +9,14 @@ export const Pagination = ({
   handleChangeRowsPerPage,
 }: PaginationProps) => {
   return (
-    <MuiTablePagination
-      rowsPerPageOptions={[9, 18, 36, 48, 64, 72]}
-      component="div"
-      count={dataCount || 0}
-      rowsPerPage={rowsPerPage}
+    <TablePaginationComponent
+      dataCount={dataCount}
       page={page}
-      onPageChange={handleChangePage}
-      onRowsPerPageChange={handleChangeRowsPerPage}
-      labelRowsPerPage={"Cards per page:"}
+      rowsPerPage={rowsPerPage}
+      handleChangePage={handleChangePage}
+      handleChangeRowsPerPage={handleChangeRowsPerPage}
+      rowsPerPageOptions={[9, 18, 36, 48, 64, 72]}
+      labelRowsPerPage="Cards per page:"
     />
   );
 };

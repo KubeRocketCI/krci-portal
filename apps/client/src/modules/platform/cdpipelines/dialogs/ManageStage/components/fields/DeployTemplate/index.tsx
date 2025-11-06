@@ -4,7 +4,8 @@ import { useTriggerTemplateWatchList } from "@/k8s/api/groups/Tekton/TriggerTemp
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { FormSelect } from "@/core/providers/Form/components/FormSelect";
 import { PipelineGraphDialog } from "@/modules/platform/pipelines/dialogs/PipelineGraph";
-import { IconButton, Tooltip } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { pipelineType, triggerTemplateLabels } from "@my-project/shared";
 import { VectorSquare } from "lucide-react";
 import React from "react";
@@ -79,11 +80,13 @@ export const DeployTemplate = () => {
       control={control}
       errors={errors}
       options={options}
-      endAdornment={
+      suffix={
         <LoadingWrapper isLoading={pipelineIsLoading} iconProps={{ size: 16 }}>
           <Tooltip title={tooltipText}>
             <div>
-              <IconButton
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => {
                   if (!pipeline) {
                     return;
@@ -94,10 +97,10 @@ export const DeployTemplate = () => {
                   });
                 }}
                 disabled={!fieldValue || !pipeline}
-                size={"small"}
+                className="h-full rounded-tl-none rounded-bl-none"
               >
                 <VectorSquare size={16} />
-              </IconButton>
+              </Button>
             </div>
           </Tooltip>
         </LoadingWrapper>

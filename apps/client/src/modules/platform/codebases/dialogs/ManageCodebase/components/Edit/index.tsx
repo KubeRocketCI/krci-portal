@@ -1,5 +1,5 @@
-import { DialogActions, DialogContent, DialogTitle } from "@mui/material";
-import { DialogHeader } from "./components/DialogHeader";
+import { DialogBody, DialogFooter, DialogHeader } from "@/core/components/ui/dialog";
+import { DialogHeader as CustomDialogHeader } from "./components/DialogHeader";
 import { Form } from "./components/Form";
 import { FormActions } from "./components/FormActions";
 import { useDefaultValues } from "./hooks/useDefaultValues";
@@ -15,15 +15,15 @@ export const Edit = () => {
         defaultValues: baseDefaultValues,
       }}
     >
-      <DialogTitle>
-        <DialogHeader />
-      </DialogTitle>
-      <DialogContent>
+      <DialogHeader>
+        <CustomDialogHeader />
+      </DialogHeader>
+      <DialogBody>
         <Form />
-      </DialogContent>
-      <DialogActions>
+      </DialogBody>
+      <DialogFooter>
         <FormActions />
-      </DialogActions>
+      </DialogFooter>
     </FormContextProvider>
   );
 };

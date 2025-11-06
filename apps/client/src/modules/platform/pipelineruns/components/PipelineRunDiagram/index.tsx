@@ -4,7 +4,7 @@ import { usePipelineRunWatchItem } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { useTaskWatchList } from "@/k8s/api/groups/Tekton/Task";
 import { useTaskRunWatchList } from "@/k8s/api/groups/Tekton/TaskRun";
 import { getTaskRunStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun/utils";
-import { ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { ToggleButton, ToggleButtonGroup } from "@/core/components/ui/toggle-button-group";
 import { approvalTaskLabels, PipelineRun, taskRunLabels } from "@my-project/shared";
 import {
   Background,
@@ -177,7 +177,7 @@ const PipelineRunDiagramView: React.FC<{
               setViewMode(newMode);
             }
           }}
-          size="small"
+          size="sm"
         >
           <ToggleButton value="vertical">Vertical</ToggleButton>
           <ToggleButton value="horizontal">Horizontal</ToggleButton>

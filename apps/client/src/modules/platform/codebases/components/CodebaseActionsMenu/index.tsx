@@ -8,7 +8,7 @@ import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter
 import { useCodebasePermissions } from "@/k8s/api/groups/KRCI/Codebase";
 import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import { useClusterStore } from "@/k8s/store";
-import { Button } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import type { CDPipeline, Codebase } from "@my-project/shared";
 import { k8sCodebaseConfig, k8sOperation } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
@@ -32,8 +32,8 @@ const DeletionErrorMessage = ({ codebase, conflictedPipeline, clusterName }: Del
   return (
     <div className="flex flex-col gap-8 rounded-md border border-red-400/30 bg-red-50/30 p-10">
       <div className="flex items-center gap-6">
-        <AlertCircle size={20} style={{ color: "#d32f2f", flexShrink: 0 }} />
-        <p className="text-sm text-[0.9375rem] font-semibold text-[#d32f2f]">Cannot Delete Codebase</p>
+        <AlertCircle size={20} className="text-destructive shrink-0" />
+        <p className="text-sm text-[0.9375rem] font-semibold text-destructive">Cannot Delete Codebase</p>
       </div>
 
       <div className="flex flex-col gap-2 pl-18">
@@ -44,21 +44,24 @@ const DeletionErrorMessage = ({ codebase, conflictedPipeline, clusterName }: Del
         </p>
 
         <div className="bg-background border-border mt-4 rounded border p-6">
-          {/* @ts-expect-error TODO: Fix when migrating to tailwind */}
           <Button
-            component={Link}
-            variant="text"
-            to={PATH_CDPIPELINE_DETAILS_FULL}
-            params={{
-              clusterName,
-              name: conflictedPipeline.metadata.name,
-              namespace: conflictedPipeline.metadata.namespace!,
-            }}
-            onClick={() => {
-              closeDialog(DIALOG_NAME_DELETE_KUBE_OBJECT);
-            }}
+            variant="ghost"
+            asChild
+            className="p-0 h-auto font-semibold"
           >
-            {conflictedPipeline.metadata.name}
+            <Link
+              to={PATH_CDPIPELINE_DETAILS_FULL}
+              params={{
+                clusterName,
+                name: conflictedPipeline.metadata.name,
+                namespace: conflictedPipeline.metadata.namespace!,
+              }}
+              onClick={() => {
+                closeDialog(DIALOG_NAME_DELETE_KUBE_OBJECT);
+              }}
+            >
+              {conflictedPipeline.metadata.name}
+            </Link>
           </Button>
         </div>
 
@@ -74,8 +77,6 @@ export const CodebaseActionsMenu = ({
   backRoute,
   variant,
   data: { codebase },
-  anchorEl,
-  handleCloseResourceActionListMenu,
 }: CodebaseActionsMenuProps) => {
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
 
@@ -129,10 +130,6 @@ export const CodebaseActionsMenu = ({
           reason: codebasePermissions.data.patch.reason,
         },
         callback: (codebase) => {
-          if (variant === actionMenuType.menu && handleCloseResourceActionListMenu) {
-            handleCloseResourceActionListMenu();
-          }
-
           setDialog(ManageCodebaseDialog, { codebase });
         },
       }),
@@ -146,10 +143,6 @@ export const CodebaseActionsMenu = ({
           reason: codebasePermissions.data.delete.reason,
         },
         callback: (codebase) => {
-          if (variant === actionMenuType.menu && handleCloseResourceActionListMenu) {
-            handleCloseResourceActionListMenu();
-          }
-
           setDialog(DeleteKubeObjectDialog, {
             objectName: codebase?.metadata?.name,
             resource: codebase,
@@ -168,7 +161,6 @@ export const CodebaseActionsMenu = ({
     codebasePermissions.data.delete.reason,
     codebasePermissions.data.patch.allowed,
     codebasePermissions.data.patch.reason,
-    handleCloseResourceActionListMenu,
     onBeforeSubmit,
     setDialog,
     variant,
@@ -177,10 +169,6 @@ export const CodebaseActionsMenu = ({
   return variant === actionMenuType.inline ? (
     <ActionsInlineList actions={actions} />
   ) : variant === actionMenuType.menu ? (
-    <ActionsMenuList
-      actions={actions}
-      anchorEl={anchorEl!}
-      handleCloseActionsMenu={handleCloseResourceActionListMenu!}
-    />
+    <ActionsMenuList actions={actions} />
   ) : null;
 };

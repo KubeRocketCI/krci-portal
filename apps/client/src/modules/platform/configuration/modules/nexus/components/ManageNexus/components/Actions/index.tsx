@@ -1,4 +1,5 @@
-import { Button, IconButton, Tooltip } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import React from "react";
 import { useFormsContext } from "../../hooks/useFormsContext";
 import { useDataContext } from "../../providers/Data/hooks";
@@ -67,24 +68,24 @@ export const Actions = () => {
             </Tooltip>
           )}
         >
-          <IconButton onClick={handleDelete} disabled={!canDelete} size="large">
+          <Button variant="ghost" size="icon" onClick={handleDelete} disabled={!canDelete}>
             <Trash size={20} />
-          </IconButton>
+          </Button>
         </ConditionalWrapper>
       ) : (
-        <Button onClick={handleClosePanel} size="small" color="inherit">
-          cancel
+        <Button onClick={handleClosePanel} variant="ghost" size="sm">
+          Cancel
         </Button>
       )}
 
       <Button
         onClick={resetAll}
-        size="small"
-        component={"button"}
+        size="sm"
+        variant="ghost"
         disabled={!isAnyFormDirty}
-        sx={{ ml: "auto !important" }}
+        className="ml-auto"
       >
-        undo changes
+        Undo Changes
       </Button>
       <ConditionalWrapper
         condition={isAnyFormForbiddenToSubmit}
@@ -96,13 +97,11 @@ export const Actions = () => {
       >
         <Button
           onClick={() => submitAll(true)}
-          size={"small"}
-          component={"button"}
-          variant={"contained"}
-          color={"primary"}
+          size={"sm"}
+          variant={"default"}
           disabled={!isAnyFormDirty || isAnyFormSubmitting || isAnyFormForbiddenToSubmit}
         >
-          save
+          Save
         </Button>
       </ConditionalWrapper>
     </div>

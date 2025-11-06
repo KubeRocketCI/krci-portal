@@ -1,14 +1,3 @@
-import makeStyles from "@mui/styles/makeStyles";
+export const messageClasses = "flex items-center";
 
-export const useStyles = makeStyles((theme) => ({
-  message: {
-    display: "flex",
-    alignItems: "center",
-  },
-  conflictEntityName: {
-    backgroundColor: theme.palette.action.selected,
-    padding: `${theme.typography.pxToRem(2)} ${theme.typography.pxToRem(15)}`,
-    margin: `0 ${theme.typography.pxToRem(5)}`,
-    borderRadius: theme.typography.pxToRem(5),
-  },
-}));
+export const conflictEntityNameClasses = "bg-muted py-0.5 px-[15px] mx-[5px] rounded-[5px]";

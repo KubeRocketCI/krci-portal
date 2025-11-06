@@ -1,4 +1,4 @@
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
+import { FormTextarea } from "@/core/providers/Form/components/FormTextarea";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CDPIPELINE_FORM_NAMES } from "../../../names";
 
@@ -10,7 +10,7 @@ export const Description = () => {
   } = useTypedFormContext();
 
   return (
-    <FormTextField
+    <FormTextarea
       {...register(CDPIPELINE_FORM_NAMES.description.name, {
         required: "Description is required",
       })}
@@ -19,11 +19,7 @@ export const Description = () => {
       placeholder={"Enter description"}
       control={control}
       errors={errors}
-      TextFieldProps={{
-        multiline: true,
-        minRows: 4,
-        maxRows: 4,
-      }}
+      rows={4}
     />
   );
 };

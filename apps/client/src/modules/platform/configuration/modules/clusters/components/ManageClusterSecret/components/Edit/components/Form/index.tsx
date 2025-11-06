@@ -1,4 +1,3 @@
-import { useTheme } from "@mui/material";
 import React from "react";
 import { useFormContext as useReactHookFormContext } from "react-hook-form";
 import { CLUSTER_FORM_NAMES } from "../../../../names";
@@ -18,7 +17,6 @@ import { useFormContext } from "@/core/providers/Form/hooks";
 import { FieldEvent } from "@/core/types/forms";
 
 export const Form = () => {
-  const theme = useTheme();
   const { watch } = useReactHookFormContext();
   const { formData } = useFormContext<ManageClusterSecretDataContext>();
 
@@ -39,7 +37,7 @@ export const Form = () => {
         <div>
           <ClusterToken />
         </div>
-        <div style={{ marginTop: theme.typography.pxToRem(20) }}>
+        <div className="mt-5">
           <div className="grid grid-cols-12 items-end gap-4">
             <div className="col-span-6">
               <SkipTLSVerify />
@@ -53,7 +51,7 @@ export const Form = () => {
         </div>
       </>
     );
-  }, [skipTLSVerify, theme.typography]);
+  }, [skipTLSVerify]);
 
   const renderIRSAFormPart = React.useCallback(() => {
     return (

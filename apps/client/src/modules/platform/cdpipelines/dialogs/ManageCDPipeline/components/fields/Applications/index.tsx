@@ -1,13 +1,12 @@
-import { Tooltip } from "@mui/material";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import React from "react";
 import { useFieldArray } from "react-hook-form";
 import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
 import { ApplicationRow } from "./components/ApplicationRow";
 import { CDPIPELINE_FORM_NAMES } from "../../../names";
-import { FormAutocompleteMulti } from "@/core/providers/Form/components/FormAutocomplete";
+import { FormComboboxMultiple } from "@/core/providers/Form/components/FormComboboxMultiple";
 import { FieldEvent } from "@/core/types/forms";
-import { FormControlLabelWithTooltip } from "@/core/providers/Form/components/FormControlLabelWithTooltip";
-import { FormSwitch } from "@/core/providers/Form/components/FormSwitch";
+import { FormSwitchRich } from "@/core/providers/Form/components/FormSwitchRich";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { Info } from "lucide-react";
 
@@ -88,7 +87,7 @@ export const Applications = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <FormAutocompleteMulti
+      <FormComboboxMultiple
         {...register(CDPIPELINE_FORM_NAMES.applicationsToAddChooser.name, {
           onChange: ({ target: { value } }: FieldEvent<string[]>) => handleApplicationChanges(value),
           validate: (value: string[]) => {
@@ -122,11 +121,16 @@ export const Applications = () => {
                   </div>
                 </div>
               </div>
-              <div className="col-span-1">
-                <span>Delete</span>
-              </div>
             </>
-          ) : null}
+          ) : (
+            <div className="col-span-12">
+              <div className="border-input flex h-[70px] items-center justify-center rounded border border-dashed p-4">
+                <p className="text-muted-foreground text-sm">
+                  Select applications from the dropdown above to see them listed here.
+                </p>
+              </div>
+            </div>
+          )}
           {fields.map((field, index) => {
             const application = applications!.find((el) => el.metadata.name === field.appName);
 
@@ -142,13 +146,7 @@ export const Applications = () => {
       </div>
       <div>
         <div className="flex flex-col items-start gap-0">
-          <FormControlLabelWithTooltip
-            label="Promote applications"
-            title="Enables the promotion of applications to the higher environment upon the successful pass through all quality gates."
-          />
-          <FormSwitch
-            label={<></>}
-            labelPlacement="start"
+          <FormSwitchRich
             {...register(CDPIPELINE_FORM_NAMES.applicationsToPromoteAll.name, {
               onChange: ({ target: { value } }: FieldEvent) => {
                 const values = getValues();
@@ -159,6 +157,9 @@ export const Applications = () => {
                 );
               },
             })}
+            label="Promote applications"
+            helperText="Enables the promotion of applications to the higher environment upon the successful pass through all quality gates."
+            labelPlacement="start"
             control={control}
             errors={errors}
           />

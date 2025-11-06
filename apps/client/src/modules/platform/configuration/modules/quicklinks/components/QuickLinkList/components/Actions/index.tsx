@@ -2,27 +2,29 @@ import { QuickLink } from "@my-project/shared";
 import { QuickLinkActionsMenu } from "../../../QuickLinkActionsMenu";
 import React from "react";
 import { EllipsisVertical } from "lucide-react";
-import { IconButton } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { DropdownMenu, DropdownMenuTrigger } from "@/core/components/ui/dropdown-menu";
 
 export const Actions = ({ quickLink }: { quickLink: QuickLink }) => {
-  const buttonRef = React.createRef<HTMLButtonElement>();
-  const [anchor, setAnchor] = React.useState<(EventTarget & HTMLButtonElement) | null>(null);
+  const [open, setOpen] = React.useState(false);
 
   return (
-    <>
-      <IconButton ref={buttonRef} aria-label={"Options"} onClick={(e) => setAnchor(e.currentTarget)} size="large">
-        <EllipsisVertical />
-      </IconButton>
-      {anchor ? (
-        <QuickLinkActionsMenu
-          variant="menu"
-          data={{
-            quickLink,
-          }}
-          anchorEl={anchor}
-          handleCloseResourceActionListMenu={() => setAnchor(null)}
-        />
-      ) : null}
-    </>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={"Options"}
+        >
+          <EllipsisVertical />
+        </Button>
+      </DropdownMenuTrigger>
+      <QuickLinkActionsMenu
+        variant="menu"
+        data={{
+          quickLink,
+        }}
+      />
+    </DropdownMenu>
   );
 };

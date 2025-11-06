@@ -1,4 +1,4 @@
-import { Button, useTheme } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import React from "react";
 import { useTypedFormContext } from "../../../../hooks/useFormContext";
 import { CDPIPELINE_FORM_NAMES } from "../../../../names";
@@ -61,30 +61,25 @@ export const FormActions = () => {
     [CDPipeline, triggerEditCDPipeline, onSuccess]
   );
 
-  const theme = useTheme();
-
   const isDirty = Object.keys(dirtyFields).length;
 
   return (
     <div className="flex w-full flex-row justify-between gap-4">
       <div className="flex flex-row gap-2">
-        <div style={{ color: theme.palette.text.primary }}>
-          <Button onClick={handleClose} size="small" color="inherit">
-            cancel
-          </Button>
-        </div>
-        <Button onClick={handleResetFields} size="small" disabled={!isDirty}>
-          undo changes
+        <Button onClick={handleClose} variant="ghost" size="sm">
+          Cancel
+        </Button>
+        <Button onClick={handleResetFields} variant="ghost" size="sm" disabled={!isDirty}>
+          Undo Changes
         </Button>
       </div>
       <Button
         onClick={handleSubmit(onSubmit)}
-        variant={"contained"}
-        color={"primary"}
-        size="small"
+        variant="default"
+        size="sm"
         disabled={!isDirty || isPending}
       >
-        apply
+        Apply
       </Button>
     </div>
   );

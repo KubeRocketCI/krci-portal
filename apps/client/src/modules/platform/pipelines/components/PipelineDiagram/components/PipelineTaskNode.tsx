@@ -1,7 +1,7 @@
 import React from "react";
 import { Handle, Position } from "@xyflow/react";
-import { Tooltip, Chip } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { Badge } from "@/core/components/ui/badge";
+import { Tooltip } from "@/core/components/ui/tooltip";
 
 export interface PipelineTaskNodeData {
   name: string;
@@ -19,7 +19,6 @@ export const PipelineTaskNode: React.FC<{
   sourcePosition?: Position;
   targetPosition?: Position;
 }> = ({ data, sourcePosition, targetPosition }) => {
-  const theme = useTheme();
 
   const displayName = data.displayName || data.name;
   const truncatedName = displayName.length > 20 ? `${displayName.slice(0, 17)}...` : displayName;
@@ -41,39 +40,22 @@ export const PipelineTaskNode: React.FC<{
       <Handle
         type="target"
         position={targetPosition || Position.Top}
-        style={{
-          background: theme.palette.primary.main,
-          width: 8,
-          height: 8,
-          border: `2px solid ${theme.palette.background.paper}`,
-        }}
+        className="bg-primary w-2 h-2 border-2 border-background"
       />
 
-      <Tooltip title={tooltipContent} arrow placement="top">
+      <Tooltip title={tooltipContent} placement="top">
         <div
-          className={`pointer-events-auto relative flex h-full w-full cursor-default flex-col items-center justify-center rounded-lg border-2 p-6 transition-all ${
-            data.isFinally || data.isIsolated ? "border-dashed" : "border-border hover:border-primary hover:shadow-lg"
+          className={`pointer-events-auto relative flex h-full w-full cursor-default flex-col items-center justify-center rounded-lg border-2 p-6 transition-all bg-background ${
+            data.isFinally || data.isIsolated
+              ? "border-dashed border-muted-foreground"
+              : "border-border hover:border-primary hover:shadow-lg"
           }`}
-          style={{
-            backgroundColor: theme.palette.background.paper,
-            ...(data.isFinally || data.isIsolated ? { borderColor: theme.palette.grey[400] } : {}),
-          }}
         >
           {/* Task type indicators */}
           {data.isFinally && (
-            <Chip
-              label="Finally"
-              size="small"
-              sx={{
-                position: "absolute",
-                top: -8,
-                right: -8,
-                fontSize: "0.6rem",
-                height: 16,
-                backgroundColor: theme.palette.grey[300],
-                color: theme.palette.grey[700],
-              }}
-            />
+            <Badge variant="secondary" className="absolute -top-2 -right-2 h-4 bg-gray-300 text-[0.6rem] text-gray-700">
+              Finally
+            </Badge>
           )}
 
           <p className="break-word text-foreground text-center text-sm leading-tight font-semibold">{truncatedName}</p>
@@ -88,12 +70,7 @@ export const PipelineTaskNode: React.FC<{
       <Handle
         type="source"
         position={sourcePosition || Position.Bottom}
-        style={{
-          background: theme.palette.primary.main,
-          width: 8,
-          height: 8,
-          border: `2px solid ${theme.palette.background.paper}`,
-        }}
+        className="bg-primary w-2 h-2 border-2 border-background"
       />
     </>
   );

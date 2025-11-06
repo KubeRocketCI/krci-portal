@@ -1,4 +1,4 @@
-import { Table } from "@/core/components/Table";
+import { DataTable } from "@/core/components/Table";
 import { useColumns } from "./hooks/useColumns";
 import { TABLE } from "@/k8s/constants/tables";
 import { useQuickLinkWatchList, useQuickLinkPermissions } from "@/k8s/api/groups/KRCI/QuickLink";
@@ -42,9 +42,7 @@ export const QuickLinkList = () => {
       <div className="flex items-center justify-end">
         <ButtonWithPermission
           ButtonProps={{
-            startIcon: <Plus size={16} />,
-            color: "primary",
-            variant: "contained",
+            variant: "default",
             onClick: () => {
               openManageQuickLinkDialog({ quickLink: undefined });
             },
@@ -52,10 +50,11 @@ export const QuickLinkList = () => {
           allowed={quickLinkPermissions.data.create.allowed}
           reason={quickLinkPermissions.data.create.reason}
         >
-          add link
+          <Plus size={16} />
+          Add Link
         </ButtonWithPermission>
       </div>
-      <Table
+      <DataTable
         id={TABLE.QUICKLINK_LIST.id}
         name={TABLE.QUICKLINK_LIST.name}
         isLoading={!quickLinksWatch.isReady}

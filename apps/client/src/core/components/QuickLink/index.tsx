@@ -2,7 +2,7 @@ import React from "react";
 import { useDialogOpener } from "../../providers/Dialog/hooks";
 import { ResourceIconLink } from "../ResourceIconLink";
 import { QuickLinkExternalLinkProps } from "./types";
-import { Button } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import { Link } from "@tanstack/react-router";
 import { systemQuickLink } from "@my-project/shared";
 import { ManageQuickLinkDialog } from "@/modules/platform/configuration/modules/quicklinks/dialogs/ManageQuickLink";
@@ -16,8 +16,8 @@ export const QuickLink = ({
   configurationRoute,
   quickLink,
   isTextButton = false,
-  size = "small",
-  variant = "outlined",
+  size = "sm",
+  variant = "outline",
 }: QuickLinkExternalLinkProps) => {
   const openManageQuickLinkDialog = useDialogOpener(ManageQuickLinkDialog);
 
@@ -38,7 +38,7 @@ export const QuickLink = ({
             <div>
               Please, set up {name?.label}{" "}
               <Button
-                variant="text"
+                variant="ghost"
                 onClick={() =>
                   openManageQuickLinkDialog({
                     quickLink,

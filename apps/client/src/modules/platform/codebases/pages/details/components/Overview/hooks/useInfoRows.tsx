@@ -11,8 +11,8 @@ import {
 import { MAIN_COLOR } from "@/k8s/constants/colors";
 import { RESOURCE_ICON_NAMES } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
-import { Chip, Tooltip } from "@mui/material";
-import { DefaultTheme } from "@mui/styles/defaultTheme";
+import { Badge } from "@/core/components/ui/badge";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { codebaseType, codebaseVersioning } from "@my-project/shared";
 import React from "react";
 import { useCodebaseWatch, usePipelineNamesWatch } from "../../../hooks/data";
@@ -35,16 +35,6 @@ const getColorByType = (type: string) => {
     default:
       return MAIN_COLOR.GREY;
   }
-};
-
-const getChipSX = (type: string) => {
-  const color = getColorByType(type);
-
-  return {
-    color: (t: DefaultTheme) => t.palette.common.white,
-    backgroundColor: color,
-    borderColor: "transparent",
-  };
 };
 
 export const useInfoRows = () => {
@@ -119,7 +109,9 @@ export const useInfoRows = () => {
           label: "Type",
           text: (
             <Tooltip title={"Codebase Type"}>
-              <Chip sx={getChipSX(type)} size="small" variant="outlined" label={capitalizeFirstLetter(type)} />
+              <Badge variant="outline" className="text-white" style={{ backgroundColor: getColorByType(type) }}>
+                {capitalizeFirstLetter(type)}
+              </Badge>
             </Tooltip>
           ),
         },

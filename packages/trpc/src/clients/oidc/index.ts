@@ -15,7 +15,7 @@ import { TRPCError } from "@trpc/server";
 import { getTokenExpirationTime } from "../../utils/getTokenExpirationTime";
 import type { OIDCUser } from "@my-project/shared";
 
-interface OIDCConfig {
+export interface OIDCConfig {
   issuerURL: string;
   clientID: string;
   clientSecret: string;

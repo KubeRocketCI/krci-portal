@@ -1,14 +1,12 @@
-import { IconButton, Tooltip } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
-import { useStyles } from "./styles";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { useQuickLinkPermissions } from "@/k8s/api/groups/KRCI/QuickLink";
 import { ManageQuickLinkDialog } from "@/modules/platform/configuration/modules/quicklinks/dialogs/ManageQuickLink";
 import { Plus } from "lucide-react";
 
 export const AddNewQuickLinkCard = () => {
-  const classes = useStyles();
-
   const { setDialog } = useDialogContext();
   const quickLinkPermissions = useQuickLinkPermissions();
 
@@ -21,8 +19,9 @@ export const AddNewQuickLinkCard = () => {
         </Tooltip>
       )}
     >
-      <IconButton
-        className={classes.cardRoot}
+      <Button
+        variant="ghost"
+        className="bg-card h-16 w-full rounded border shadow-xs"
         onClick={() => setDialog(ManageQuickLinkDialog, { quickLink: undefined })}
         disabled={!quickLinkPermissions.data.create.allowed}
       >
@@ -30,7 +29,7 @@ export const AddNewQuickLinkCard = () => {
           <Plus size={16} />
           <span className="text-base font-medium">ADD LINK</span>
         </div>
-      </IconButton>
+      </Button>
     </ConditionalWrapper>
   );
 };

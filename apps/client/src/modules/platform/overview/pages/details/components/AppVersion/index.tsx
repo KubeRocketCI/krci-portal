@@ -1,8 +1,9 @@
-import { Table } from "@/core/components/Table";
+import { DataTable } from "@/core/components/Table";
 import { useApplicationWatchList } from "@/k8s/api/groups/ArgoCD/Application";
 import { useClusterStore } from "@/k8s/store";
 import { routeComponentDetails } from "@/modules/platform/codebases/pages/details/route";
-import { IconButton, Tooltip } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { applicationLabels } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import { Trash2 } from "lucide-react";
@@ -62,19 +63,17 @@ export const AppVersion = ({
             </Link>
           </h6>
           <div
-            className={showActions ? "visible opacity-100" : "invisible opacity-0"}
-            style={{ transition: "visibility 0.3s, opacity 0.3s" }}
+            className={showActions ? "visible opacity-100" : "invisible opacity-0 transition-all duration-300"}
           >
             <Tooltip title="Remove this widget from your dashboard.">
-              <IconButton size="small" onClick={handleDeleteWidget}>
+              <Button variant="ghost" size="icon" onClick={handleDeleteWidget}>
                 <Trash2 size={16} />
-              </IconButton>
+              </Button>
             </Tooltip>
           </div>
         </div>
         <div className="max-h-35 overflow-y-auto">
-          <Table
-            minimal
+          <DataTable
             outlined={false}
             id={"appVersion"}
             data={applicationListWatch.data.array}

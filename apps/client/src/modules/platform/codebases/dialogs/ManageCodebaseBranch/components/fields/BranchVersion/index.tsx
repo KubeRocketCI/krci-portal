@@ -1,4 +1,3 @@
-import { useTheme } from "@mui/material";
 import React from "react";
 import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_BRANCH_FORM_NAMES } from "../../../names";
@@ -10,11 +9,8 @@ import {
   getVersionAndPostfixFromVersioningString,
 } from "@my-project/shared";
 import { FormTextField } from "@/core/providers/Form/components/FormTextField";
-import { FORM_CONTROL_LABEL_HEIGHT } from "@/core/providers/Form/constants";
 
 export const BranchVersion = () => {
-  const theme = useTheme();
-
   const {
     register,
     control,
@@ -56,33 +52,30 @@ export const BranchVersion = () => {
 
   return (
     <div className="grid grid-cols-2 gap-4">
-      <div>
-        <FormTextField
-          {...register(CODEBASE_BRANCH_FORM_NAMES.releaseBranchVersionStart.name, {
-            required: "Branch version",
-            onBlur: onBranchVersionStartFieldValueChange,
-            pattern: {
-              value: /^([0-9]+)\.([0-9]+)\.([0-9]+)?$/,
-              message: "Enter valid semantic versioning format",
-            },
-          })}
-          label={"Branch version"}
-          tooltipText={"Valid identifiers are in the set [A-Za-z0-9]"}
-          placeholder={"0.0.0"}
-          control={control}
-          errors={errors}
-        />
-      </div>
-      <div style={{ marginTop: theme.typography.pxToRem(FORM_CONTROL_LABEL_HEIGHT) }}>
-        <FormTextField
-          {...register(CODEBASE_BRANCH_FORM_NAMES.releaseBranchVersionPostfix.name, {
-            onBlur: onBranchVersionPostfixFieldValueChange,
-          })}
-          placeholder={"SNAPSHOT"}
-          control={control}
-          errors={errors}
-        />
-      </div>
+      <FormTextField
+        {...register(CODEBASE_BRANCH_FORM_NAMES.releaseBranchVersionStart.name, {
+          required: "Branch version",
+          onBlur: onBranchVersionStartFieldValueChange,
+          pattern: {
+            value: /^([0-9]+)\.([0-9]+)\.([0-9]+)?$/,
+            message: "Enter valid semantic versioning format",
+          },
+        })}
+        label={"Branch version"}
+        tooltipText={"Valid identifiers are in the set [A-Za-z0-9]"}
+        placeholder={"0.0.0"}
+        control={control}
+        errors={errors}
+      />
+      <FormTextField
+        {...register(CODEBASE_BRANCH_FORM_NAMES.releaseBranchVersionPostfix.name, {
+          onBlur: onBranchVersionPostfixFieldValueChange,
+        })}
+        label=" "
+        placeholder={"SNAPSHOT"}
+        control={control}
+        errors={errors}
+      />
     </div>
   );
 };

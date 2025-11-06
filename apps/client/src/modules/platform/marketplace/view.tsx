@@ -1,6 +1,7 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { Section } from "@/core/components/Section";
-import { IconButton, Paper, Tooltip, useTheme } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { useViewModeContext } from "@/core/providers/ViewMode/hooks";
@@ -13,7 +14,6 @@ import { Grid3x2, Rows3 } from "lucide-react";
 
 export default function MarketplacePageContent() {
   const { viewMode, handleChangeViewMode } = useViewModeContext();
-  const theme = useTheme();
 
   return (
     <PageWrapper
@@ -37,34 +37,30 @@ export default function MarketplacePageContent() {
             {viewMode === VIEW_MODES.TABLE ? (
               <TemplatesTable />
             ) : (
-              <Paper
-                variant="outlined"
-                elevation={0}
-                sx={{ p: (t) => t.typography.pxToRem(20), backgroundColor: "transparent" }}
-              >
+              <div className="p-5 bg-transparent border border-border rounded">
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <TemplateFilter />
                     <div className="flex items-center">
                       <Tooltip title={"Block View"}>
-                        <IconButton onClick={() => handleChangeViewMode(VIEW_MODES.GRID)} size="large">
-                          <Grid3x2 color={theme.palette.primary.main} />
-                        </IconButton>
+                        <Button variant="ghost" size="icon" onClick={() => handleChangeViewMode(VIEW_MODES.GRID)}>
+                          <Grid3x2 className="text-primary" />
+                        </Button>
                       </Tooltip>
                       <Tooltip title={"List View"}>
-                        <IconButton onClick={() => handleChangeViewMode(VIEW_MODES.TABLE)} size="large">
-                          <Rows3 color={theme.palette.action.active} />
-                        </IconButton>
+                        <Button variant="ghost" size="icon" onClick={() => handleChangeViewMode(VIEW_MODES.TABLE)}>
+                          <Rows3 className="text-muted-foreground" />
+                        </Button>
                       </Tooltip>
                     </div>
                   </div>
                   <TemplatesGrid />
                 </div>
-              </Paper>
-            )}
-          </>
-        </div>
-      </Section>
-    </PageWrapper>
-  );
-}
+                </div>
+              )}
+            </>
+          </div>
+        </Section>
+      </PageWrapper>
+    );
+  }

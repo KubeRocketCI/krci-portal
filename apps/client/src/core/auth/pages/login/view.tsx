@@ -1,23 +1,10 @@
 import { useSearch } from "@tanstack/react-router";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useCallback } from "react";
-import { Button, Divider } from "@mui/material";
-import withStyles from "@mui/styles/withStyles";
 import { routeAuthLogin } from "./route";
-import { Alert, AlertDescription, AlertTitle } from "@/core/components/ui/alert";
+import { Alert } from "@/core/components/ui/alert";
+import { Button } from "@/core/components/ui/button";
 import { useAuth } from "../../provider/hooks";
-
-const ColorButton = withStyles((theme) => ({
-  root: {
-    color: theme.palette.primary.contrastText,
-    backgroundColor: theme.palette.primary.dark,
-    padding: "0.5rem 2rem",
-    "&:hover": {
-      backgroundColor: theme.palette.primary.dark,
-      opacity: "0.7",
-    },
-  },
-}))(Button);
 
 export default function LoginPage() {
   const { loginMutation, loginCallbackMutation } = useAuth();
@@ -46,45 +33,32 @@ export default function LoginPage() {
           <div className="w-full max-w-72">
             <div className="flex flex-col gap-4">
               {loginMutation?.isPending ? (
-                <Button variant="contained" fullWidth disabled>
+                <Button variant="default" className="w-full" disabled>
                   <Loader2 className="animate-spin" />
                   Signing In
                 </Button>
               ) : (
-                <Button variant="contained" fullWidth onClick={handleLogin}>
+                <Button variant="default" className="w-full" onClick={handleLogin}>
                   Sign In
                 </Button>
               )}
               <div className="flex flex-row items-center gap-2 px-4">
-                <Divider
-                  orientation="horizontal"
-                  sx={{
-                    flexGrow: 1,
-                    borderStyle: "dashed",
-                    borderColor: (t) => t.palette.secondary.dark,
-                  }}
-                />
+                <hr className="border-secondary-dark grow border-dashed" />
                 <span>or</span>
-                <Divider
-                  orientation="horizontal"
-                  sx={{
-                    flexGrow: 1,
-                    borderStyle: "dashed",
-                    borderColor: (t) => t.palette.secondary.dark,
-                  }}
-                />
+                <hr className="border-secondary-dark grow border-dashed" />
               </div>
-              <ColorButton variant="contained" fullWidth>
-                use token
-              </ColorButton>
+              <Button
+                variant="default"
+                className="bg-primary-dark text-primary-foreground hover:bg-primary-dark/70 w-full px-8 py-2"
+              >
+                Use Token
+              </Button>
             </div>
           </div>
 
           {loginMutation?.isError || loginCallbackMutation?.isError ? (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>Something went wrong. Please try again.</AlertDescription>
+            <Alert variant="destructive" title="Error">
+              Something went wrong. Please try again.
             </Alert>
           ) : null}
         </div>

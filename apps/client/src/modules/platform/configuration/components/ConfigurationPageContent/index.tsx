@@ -1,4 +1,5 @@
-import { Dialog, DialogContent, DialogTitle, IconButton } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
 import { ConfigurationPageContentProps } from "./types";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { Section } from "@/core/components/Section";
@@ -24,16 +25,15 @@ export const ConfigurationPageContent = ({
               </div>
               <ButtonWithPermission
                 ButtonProps={{
-                  startIcon: <Plus size={16} />,
-                  color: "primary",
-                  variant: "contained",
+                  variant: "default",
                   onClick: creationForm.onOpen,
                   disabled: creationForm.isDisabled,
                 }}
                 allowed={creationForm.permission.allowed}
                 reason={creationForm.permission.reason}
               >
-                {creationForm.label || "add"}
+                <Plus size={16} />
+                {creationForm.label || "Add"}
               </ButtonWithPermission>
             </div>
           }
@@ -44,19 +44,26 @@ export const ConfigurationPageContent = ({
       {creationForm && (
         <Dialog
           open={creationForm.isOpen}
-          maxWidth="md"
-          fullWidth
-          onClose={(_e, reason) => reason !== "backdropClick" && creationForm.onClose()}
+          onOpenChange={(open) => {
+            if (!open) {
+              creationForm.onClose();
+            }
+          }}
         >
-          <DialogTitle component="div">
-            <div className="flex w-full items-center justify-between gap-2">
-              <h2 className="text-xl font-medium">{creationForm.label}</h2>
-              <IconButton onClick={creationForm.onClose}>
-                <X size={20} />
-              </IconButton>
-            </div>
-          </DialogTitle>
-          <DialogContent>{creationForm.component}</DialogContent>
+          <DialogContent className="w-full max-w-4xl">
+            <DialogHeader>
+              <div className="flex w-full items-center justify-between gap-2">
+                <DialogTitle>{creationForm.label}</DialogTitle>
+                <Button variant="ghost" size="icon" onClick={creationForm.onClose}>
+                  <X size={20} />
+                </Button>
+              </div>
+            </DialogHeader>
+            <DialogBody>
+              {creationForm.component}
+            </DialogBody>
+            <DialogFooter />
+          </DialogContent>
         </Dialog>
       )}
     </>

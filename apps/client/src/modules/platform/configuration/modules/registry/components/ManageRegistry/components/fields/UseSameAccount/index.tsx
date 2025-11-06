@@ -2,8 +2,7 @@ import React from "react";
 import { useRegistryFormsContext } from "../../../hooks/useRegistryFormsContext";
 import { PULL_ACCOUNT_FORM_NAMES, PUSH_ACCOUNT_FORM_NAMES, SHARED_FORM_NAMES } from "../../../names";
 import { useDataContext } from "../../../providers/Data/hooks";
-import { FormCheckbox } from "@/core/providers/Form/components/FormCheckbox";
-import { FormControlLabelWithTooltip } from "@/core/providers/Form/components/FormControlLabelWithTooltip";
+import { FormSwitchRich } from "@/core/providers/Form/components/FormSwitchRich";
 import { FieldEvent } from "@/core/types/forms";
 
 export const UseSameAccount = () => {
@@ -21,7 +20,7 @@ export const UseSameAccount = () => {
   }, [pushAccountSecret, pullAccountSecret]);
 
   return (
-    <FormCheckbox
+    <FormSwitchRich
       {...sharedForm.register(SHARED_FORM_NAMES.USE_SAME_ACCOUNT, {
         onChange: ({ target: { value } }: FieldEvent) => {
           if (value) {
@@ -34,12 +33,8 @@ export const UseSameAccount = () => {
           }
         },
       })}
-      label={
-        <FormControlLabelWithTooltip
-          label={`Use the Push Account's credentials`}
-          title={"Enables using the same account for both pull and push purposes."}
-        />
-      }
+      label="Use the Push Account's credentials"
+      helperText="Enables using the same account for both pull and push purposes."
       control={sharedForm.control}
       errors={sharedForm.formState.errors}
       disabled={someOfTheSecretsHasExternalOwner}

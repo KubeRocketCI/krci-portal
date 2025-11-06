@@ -7,6 +7,7 @@ import { observable } from "@trpc/server/observable";
 import { z } from "zod";
 import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors";
 import { createCustomResourceURL } from "../../../utils/createCustomResourceURL";
+import { K8sClient } from "../../../../../clients/k8s";
 
 export const k8sWatchListProcedure = protectedProcedure
   .input(
@@ -21,13 +22,13 @@ export const k8sWatchListProcedure = protectedProcedure
   .subscription(({ input, ctx }) => {
     return observable<{ type: string; data: KubeObjectBase }>((emit) => {
       try {
-        const { K8sClient } = ctx;
+        const k8sClient = new K8sClient(ctx.session);
 
-        if (!K8sClient.KubeConfig) {
+        if (!k8sClient.KubeConfig) {
           throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
         }
 
-        const watch = new Watch(K8sClient.KubeConfig);
+        const watch = new Watch(k8sClient.KubeConfig);
 
         const { namespace, resourceConfig, resourceVersion, labels } = input;
 

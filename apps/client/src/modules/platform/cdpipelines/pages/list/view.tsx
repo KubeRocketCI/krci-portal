@@ -3,7 +3,6 @@ import { EmptyList } from "@/core/components/EmptyList";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
-import { ResourceActionListContextProvider } from "@/core/providers/ResourceActionList/provider";
 import { ManageCDPipelineDialog } from "../../dialogs/ManageCDPipeline";
 import { Section } from "@/core/components/Section";
 import { useCDPipelinePermissions } from "@/k8s/api/groups/KRCI/CDPipeline";
@@ -55,9 +54,7 @@ export default function CDPipelineListPage() {
           <div className="flex flex-row justify-end">
             <ButtonWithPermission
               ButtonProps={{
-                variant: "contained",
-                color: "primary",
-                startIcon: <Plus />,
+                variant: "default",
                 onClick: () =>
                   setDialog(ManageCDPipelineDialog, {
                     CDPipeline: undefined,
@@ -67,12 +64,11 @@ export default function CDPipelineListPage() {
               allowed={cdPipelinePermissions.data.create.allowed}
               reason={cdPipelinePermissions.data.create.reason}
             >
-              create deployment flow
+              <Plus />
+              Create Deployment Flow
             </ButtonWithPermission>
           </div>
-          <ResourceActionListContextProvider>
-            <CDPipelineList blockerComponent={renderBlockerIfNoGitOpsCodebase} />
-          </ResourceActionListContextProvider>
+          <CDPipelineList blockerComponent={renderBlockerIfNoGitOpsCodebase} />
         </div>
       </Section>
     </PageWrapper>

@@ -1,8 +1,7 @@
-import type { FastifyRequest, FastifyReply } from "fastify";
 import type { FastifySessionObject } from "@fastify/session";
-import type { OIDCUser, ISessionStore } from "@my-project/shared";
-import { K8sClient } from "../clients/k8s";
-import { OIDCClient } from "../clients/oidc";
+import type { ISessionStore, OIDCUser } from "@my-project/shared";
+import type { FastifyReply, FastifyRequest } from "fastify";
+import { OIDCConfig } from "../clients/oidc";
 
 // Session type
 export type CustomSession = FastifySessionObject & {
@@ -29,12 +28,10 @@ export type CustomSession = FastifySessionObject & {
     | undefined;
 };
 
-// Main tRPC Context Interface
 export interface TRPCContext {
   req: FastifyRequest;
   res: FastifyReply;
   session: CustomSession;
-  K8sClient: K8sClient;
-  oidcClient: OIDCClient;
   sessionStore: ISessionStore;
+  oidcConfig: OIDCConfig;
 }

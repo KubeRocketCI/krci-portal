@@ -9,7 +9,8 @@ import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/ut
 import { useClusterStore } from "@/k8s/store";
 import { humanize } from "@/core/utils/date-humanize";
 import { PATH_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/pipelineruns/pages/details/route";
-import { IconButton, Tooltip } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { getPipelineRunStatus, getPullRequestURL, PipelineRun } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import { VectorSquare, ExternalLink } from "lucide-react";
@@ -19,7 +20,6 @@ import { PATH_PIPELINE_DETAILS_FULL } from "../../../../pipelines/pages/details/
 import { PipelineRunResults } from "../components/PipelineRunResults";
 import { Actions } from "../components/Actions";
 import { columnNames } from "../constants";
-import { Button } from "@/core/components/ui/button";
 import { PipelineRunGraphDialog } from "../../../dialogs/PipelineRunGraph";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 
@@ -297,17 +297,18 @@ export const useColumns = ({
           render: ({ data }) => {
             return (
               <Tooltip title="View Pipeline Run Diagram">
-                <IconButton
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() =>
                     openPipelineRunGraphDialog({
                       pipelineRunName: data.metadata.name,
                       namespace: data.metadata.namespace || defaultNamespace,
                     })
                   }
-                  size="medium"
                 >
                   <VectorSquare size={16} />
-                </IconButton>
+                </Button>
               </Tooltip>
             );
           },

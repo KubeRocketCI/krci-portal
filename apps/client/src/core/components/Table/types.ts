@@ -1,7 +1,14 @@
-import { TableCellProps } from "@mui/material";
 import React from "react";
 import { ValueOf } from "@/core/types/global";
 import { SORT_ORDERS } from "./constants";
+
+// Custom type to replace MUI TableCellProps
+export type TableCellProps = React.HTMLAttributes<HTMLTableCellElement> & {
+  align?: "left" | "center" | "right" | "justify";
+  colSpan?: number;
+  rowSpan?: number;
+  scope?: "col" | "row" | "colgroup" | "rowgroup";
+};
 
 export interface TableColumn<DataType> {
   id: string;
@@ -80,6 +87,5 @@ export interface TableProps<DataType = unknown> {
     header?: React.ReactElement;
     footer?: React.ReactElement;
   };
-  minimal?: boolean;
   outlined?: boolean;
 }

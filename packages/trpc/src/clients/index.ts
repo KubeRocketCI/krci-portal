@@ -250,12 +250,7 @@ export class KrakendClient {
 
     const endpoint = `/gitfusion/trigger-pipeline?${params.toString()}`;
 
-    console.log("Triggering GitLab Pipeline:");
-    console.log("  Endpoint:", endpoint);
-    console.log("  Git Server:", gitServer);
-    console.log("  Project:", project);
-    console.log("  Ref:", ref);
-    console.log("  Variables:", variables);
+
 
     return this.fetchJson<GitLabPipelineResponse>(endpoint, {
       method: "POST",

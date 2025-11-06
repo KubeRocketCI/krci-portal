@@ -6,7 +6,7 @@ export interface FormCheckboxProps<TFieldValues extends FieldValues = FieldValue
   name: FieldPath<TFieldValues>;
   control: Control<TFieldValues>;
   errors: FieldErrors<TFieldValues>;
-  label: React.ReactElement;
+  label: React.ReactNode; // Changed from React.ReactElement to React.ReactNode for flexibility
   helperText?: string;
   defaultValue?: boolean;
   disabled?: boolean;

@@ -1,72 +1,32 @@
-import { Accordion, AccordionDetails, AccordionSummary, alpha } from "@mui/material";
+import { AccordionContent, AccordionItem, AccordionTrigger } from "@/core/components/ui/accordion";
 import { pipelineRunLabels, pipelineType, sortKubeObjectByCreationTimestamp } from "@my-project/shared";
-import { ChevronDown } from "lucide-react";
 import React from "react";
 import { useCodebaseBranchPipelineRunListWatch } from "../../../../hooks/data";
 import { Details } from "./components/Details";
 import { Summary } from "./components/Summary";
 import { BranchListItemProps } from "./types";
 
-export const BranchListItem = React.memo<BranchListItemProps>(
-  ({ codebaseBranch, expandedPanel, id, handlePanelChange }) => {
-    const isExpanded = expandedPanel === id;
+export const BranchListItem = React.memo<BranchListItemProps>(({ codebaseBranch, id }) => {
+  const pipelineRunListWatch = useCodebaseBranchPipelineRunListWatch(codebaseBranch);
 
-    const pipelineRunListWatch = useCodebaseBranchPipelineRunListWatch(codebaseBranch);
-
-    const pipelineRuns = React.useMemo(() => {
-      const allItems = [...pipelineRunListWatch.data.array].sort(sortKubeObjectByCreationTimestamp);
-      return {
-        all: allItems,
-        latestBuildPipelineRun: allItems.find(
-          (el) => el.metadata.labels?.[pipelineRunLabels.pipelineType] === pipelineType.build
-        ),
-      };
-    }, [pipelineRunListWatch.data.array]);
-
-    // const { createPipelineRun } = usePipelineRunCRUD();
-
-    const [menuAnchorEl, setMenuAnchorEl] = React.useState<null | HTMLElement>(null);
-
-    const handleClickMenu = (event: React.MouseEvent<HTMLElement>) => {
-      setMenuAnchorEl(menuAnchorEl ? null : event.currentTarget);
+  const pipelineRuns = React.useMemo(() => {
+    const allItems = [...pipelineRunListWatch.data.array].sort(sortKubeObjectByCreationTimestamp);
+    return {
+      all: allItems,
+      latestBuildPipelineRun: allItems.find(
+        (el) => el.metadata.labels?.[pipelineRunLabels.pipelineType] === pipelineType.build
+      ),
     };
+  }, [pipelineRunListWatch.data.array]);
 
-    const handleCloseMenu = () => setMenuAnchorEl(null);
-
-    return (
-      <>
-        <div className="pb-4">
-          <Accordion expanded={isExpanded} onChange={handlePanelChange(id)}>
-            <AccordionSummary
-              expandIcon={<ChevronDown size={16} />}
-              sx={{
-                padding: (t) => `${t.typography.pxToRem(8)} ${t.typography.pxToRem(24)}`,
-                borderBottom: (t) => `1px solid ${alpha(t.palette.common.black, 0.2)}`,
-
-                "& .MuiAccordionSummary-content": {
-                  margin: 0,
-                },
-                "& .MuiAccordionSummary-content.Mui-expanded": {
-                  margin: 0,
-                },
-              }}
-            >
-              <Summary
-                codebaseBranch={codebaseBranch}
-                latestBuildPipelineRun={pipelineRuns.latestBuildPipelineRun}
-                menuAnchorEl={menuAnchorEl}
-                handleClickMenu={handleClickMenu}
-                handleCloseMenu={handleCloseMenu}
-              />
-            </AccordionSummary>
-            {isExpanded && (
-              <AccordionDetails>
-                <Details pipelineRuns={pipelineRuns.all} />
-              </AccordionDetails>
-            )}
-          </Accordion>
-        </div>
-      </>
-    );
-  }
-);
+  return (
+    <AccordionItem value={id}>
+      <AccordionTrigger className="cursor-default [&>svg]:h-4 [&>svg]:w-4">
+        <Summary codebaseBranch={codebaseBranch} latestBuildPipelineRun={pipelineRuns.latestBuildPipelineRun} />
+      </AccordionTrigger>
+      <AccordionContent>
+        <Details pipelineRuns={pipelineRuns.all} />
+      </AccordionContent>
+    </AccordionItem>
+  );
+});

@@ -1,5 +1,5 @@
 import { RouteParams } from "@/core/router/types";
-import { ButtonProps } from "@mui/material";
+import type { ButtonProps } from "@/core/components/ui/button";
 import { QuickLink } from "@my-project/shared";
 import React from "react";
 

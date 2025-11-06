@@ -6,7 +6,7 @@ import { StatusIcon } from "@/core/components/StatusIcon";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { useCodemieApplicationCRUD, useCodemieApplicationWatchList } from "@/k8s/api/groups/KRCI/CodemieApplication";
 import { getCodemieApplicationStatusIcon } from "@/k8s/api/groups/KRCI/CodemieApplication/utils/getStatusIcon";
-import { Button, Paper } from "@mui/material";
+import { Button } from "@/core/components/ui/button";
 import { CodemieApplication } from "@my-project/shared";
 import { Pencil } from "lucide-react";
 
@@ -34,7 +34,7 @@ export const CodemieApplications = () => {
 
               return (
                 <div key={application.metadata.name}>
-                  <Paper sx={{ p: (t) => `${t.typography.pxToRem(10)} ${t.typography.pxToRem(20)}` }}>
+                  <div className="bg-card rounded shadow py-2.5 px-5">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <StatusIcon
@@ -50,11 +50,9 @@ export const CodemieApplications = () => {
                         <h6 className="text-base font-medium">{application.metadata.name}</h6>
                       </div>
                       <Button
-                        startIcon={<Pencil size={16} />}
-                        size="small"
-                        component={"button"}
-                        style={{ flexShrink: 0 }}
-                        color="inherit"
+                        variant="ghost"
+                        size="sm"
+                        className="shrink-0"
                         onClick={() => {
                           openEditorDialog({
                             content: application,
@@ -72,10 +70,11 @@ export const CodemieApplications = () => {
                           });
                         }}
                       >
+                        <Pencil size={16} />
                         Edit YAML
                       </Button>
                     </div>
-                  </Paper>
+                  </div>
                 </div>
               );
             })}
