@@ -21,6 +21,7 @@ export const AppVersion = ({
   userWidgets: WidgetConfig[];
   setUserWidgets: (widgets: WidgetConfig[]) => void;
 }) => {
+  console.log("rerender");
   const applicationListWatch = useApplicationWatchList({
     labels: {
       [applicationLabels.appName]: widgetConfig.data.appName,
@@ -62,9 +63,7 @@ export const AppVersion = ({
               {widgetConfig.data.appName}
             </Link>
           </h6>
-          <div
-            className={showActions ? "visible opacity-100" : "invisible opacity-0 transition-all duration-300"}
-          >
+          <div className={showActions ? "visible opacity-100" : "invisible opacity-0 transition-all duration-300"}>
             <Tooltip title="Remove this widget from your dashboard.">
               <Button variant="ghost" size="icon" onClick={handleDeleteWidget}>
                 <Trash2 size={16} />

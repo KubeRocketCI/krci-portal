@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/core/utils/classname";
 
 const chipVariants = cva(
-  "inline-flex items-center justify-center rounded-full border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 gap-1 transition-[color,box-shadow] overflow-hidden",
+  "inline-flex items-center justify-center rounded-full border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 gap-1 overflow-hidden",
   {
     variants: {
       variant: {
@@ -57,7 +57,7 @@ export const Chip = React.forwardRef<HTMLSpanElement, ChipProps>(
               e.stopPropagation();
               onDelete();
             }}
-            className="ml-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 p-0.5 transition-colors"
+            className="ml-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 p-0.5"
             aria-label="Delete"
           >
             <X className="h-3 w-3" />

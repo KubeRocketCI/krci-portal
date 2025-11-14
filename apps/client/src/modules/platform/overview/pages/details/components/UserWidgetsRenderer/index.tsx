@@ -26,7 +26,7 @@ export const UserWidgetRenderer = ({ widgetConfig }: { widgetConfig: WidgetConfi
   const { userWidgets, setUserWidgets } = useUserWidgets();
 
   return (
-    <div className="h-full p-6 shadow-md border-l-4 border-[#1976d2]">
+    <div className="bg-card h-full overflow-hidden rounded border p-6 shadow-sm">
       {renderer(widgetConfig, userWidgets, setUserWidgets)}
     </div>
   );

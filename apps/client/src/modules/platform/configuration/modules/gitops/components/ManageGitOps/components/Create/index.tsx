@@ -64,7 +64,7 @@ export const Create = () => {
               <GitRepoPath />
             </div>
           )}
-          <div className="w-1/4">
+          <div>
             <Name />
           </div>
         </div>

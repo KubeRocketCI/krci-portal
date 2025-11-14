@@ -30,7 +30,7 @@ function QuickLinkCard({
     <Link
       to={to}
       params={params}
-      className="group relative flex flex-col gap-2 rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-all hover:border-blue-400 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-500"
+      className="group relative flex flex-col gap-2 rounded-lg border border-gray-200 bg-white p-4 shadow-sm hover:border-blue-400 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-500"
     >
       <div className="flex items-start justify-between">
         <div className={`rounded-lg bg-gray-50 p-2 dark:bg-gray-700 ${iconColor}`}>

@@ -33,7 +33,7 @@ const FormSwitchRichInner = React.forwardRef(
           return (
             <div
               className={cn(
-                "border-input relative flex w-full items-start gap-2 rounded border p-4 shadow-xs transition-[border-color] outline-none",
+                "border-input relative flex w-full items-start gap-2 rounded border p-4 shadow-xs outline-none",
                 isChecked && "border-primary/50",
                 hasError && "border-destructive",
                 disabled && "opacity-50"

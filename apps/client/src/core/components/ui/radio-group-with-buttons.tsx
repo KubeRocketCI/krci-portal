@@ -33,7 +33,7 @@ export const RadioGroupWithButtons = React.forwardRef<HTMLDivElement, RadioGroup
             <label
               key={`${id}-${item.value}`}
               className={cn(
-                "bg-card relative flex flex-row items-center gap-2 rounded-md border border-transparent px-2 py-3 text-center shadow-sm transition-colors",
+                "bg-card relative flex flex-row items-center gap-2 rounded-md border border-transparent px-2 py-3 text-center shadow-sm",
                 disabled ? "pointer-events-none cursor-not-allowed opacity-50" : "hover:bg-primary/20",
                 "has-data-[state=checked]:border-primary/80 has-data-[state=checked]:bg-primary/10"
               )}

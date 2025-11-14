@@ -53,7 +53,7 @@ export const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
           {prefix && (
             <div
               className={cn(
-                "text-muted-foreground border-input flex items-stretch rounded-l border border-r-0 shadow-xs transition-[border-color]",
+                "text-muted-foreground border-input flex items-stretch rounded-l border border-r-0 shadow-xs",
                 "*:rounded-none *:border-0 *:shadow-none",
                 "group-focus-within:border-ring",
                 hasError && "border-destructive group-focus-within:border-destructive"
@@ -78,7 +78,7 @@ export const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
           {suffix && (
             <div
               className={cn(
-                "border-input flex items-stretch rounded-r border px-0 transition-[border-color]",
+                "border-input flex items-stretch rounded-r border px-0",
                 "*:h-full *:rounded-none *:border-0 *:shadow-none",
                 "group-focus-within:border-ring",
                 hasError && "border-destructive group-focus-within:border-destructive"

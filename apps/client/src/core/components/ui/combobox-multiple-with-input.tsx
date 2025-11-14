@@ -111,7 +111,7 @@ export const ComboboxMultipleWithInput = React.forwardRef<HTMLInputElement, Comb
           <div className="relative flex w-full items-center" aria-hidden="true">
             <div
               className={cn(
-                "bg-muted flex min-h-9 w-full flex-wrap items-center gap-1 rounded-md border-transparent px-3 text-sm shadow-none transition-[color,box-shadow]",
+                "bg-muted flex min-h-9 w-full flex-wrap items-center gap-1 rounded-md border-transparent px-3 text-sm shadow-none",
                 "focus-within:ring-ring/50 focus-within:ring-[3px]",
                 invalid && "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40",
                 disabled && "pointer-events-none opacity-50",

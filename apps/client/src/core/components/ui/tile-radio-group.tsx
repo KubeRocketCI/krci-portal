@@ -37,7 +37,7 @@ export const TileRadioGroup = React.forwardRef<HTMLLabelElement, TileRadioGroupP
                 htmlFor={radioId}
                 ref={idx === 0 ? ref : undefined}
                 className={cn(
-                  "bg-card block w-full rounded border border-transparent p-6 shadow-sm transition-colors",
+                  "bg-card block w-full rounded border border-transparent p-6 shadow-sm",
                   "hover:bg-primary/20",
                   "has-data-[state=checked]:border-primary/80 has-data-[state=checked]:bg-primary/10",
                   disabled && "cursor-not-allowed opacity-50"

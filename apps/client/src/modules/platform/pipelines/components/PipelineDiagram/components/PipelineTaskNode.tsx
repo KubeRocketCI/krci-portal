@@ -45,7 +45,7 @@ export const PipelineTaskNode: React.FC<{
 
       <Tooltip title={tooltipContent} placement="top">
         <div
-          className={`pointer-events-auto relative flex h-full w-full cursor-default flex-col items-center justify-center rounded-lg border-2 p-6 transition-all bg-background ${
+          className={`pointer-events-auto relative flex h-full w-full cursor-default flex-col items-center justify-center rounded-lg border-2 p-6 bg-background ${
             data.isFinally || data.isIsolated
               ? "border-dashed border-muted-foreground"
               : "border-border hover:border-primary hover:shadow-lg"

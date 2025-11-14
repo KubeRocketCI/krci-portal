@@ -1,6 +1,5 @@
 import React from "react";
 import { columnNames } from "../constants";
-import { serviceItemIconClasses } from "../styles";
 import { QuickLink } from "@my-project/shared";
 import { TableColumn } from "@/core/components/Table/types";
 import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
@@ -26,8 +25,8 @@ export const useColumns = (): TableColumn<QuickLink>[] => {
               spec: { icon },
             },
           }) => (
-            <span className={serviceItemIconClasses}>
-              <img src={`data:image/svg+xml;base64,${icon}`} alt="" />
+            <span className="block px-5">
+              <img className="w-12 shrink-0" src={`data:image/svg+xml;base64,${icon}`} alt="" />
             </span>
           ),
         },
