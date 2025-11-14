@@ -1,7 +1,5 @@
 import { Badge } from "@/core/components/ui/badge";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
-import { cn } from "@/core/utils/classname";
-import { cardRootClasses, templateIconClasses, templateDescriptionClasses } from "./styles";
 import { Template } from "@my-project/shared";
 import { getCodebaseMappingByType } from "@/k8s/api/groups/KRCI/Codebase";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
@@ -40,20 +38,16 @@ export const TemplateCard = ({ template, handleTemplateClick }: TemplateCardProp
   const codebaseMappingByLang = codebaseMapping?.[lang as keyof typeof codebaseMapping] as unknown as CodebaseInterface;
 
   return (
-    <div className={cardRootClasses}>
+    <div className="border-l-primary bg-card h-full rounded border-l-4 p-6">
       <div className="flex h-full flex-col gap-6">
         <div className="mb-auto flex flex-col gap-4">
           <div className="flex flex-row items-center gap-2">
             {icon && (
-              <img
-                className={templateIconClasses}
-                src={`data:${icon[0].mediatype};base64,${icon[0].base64data}`}
-                alt=""
-              />
+              <img className="h-6 align-middle" src={`data:${icon[0].mediatype};base64,${icon[0].base64data}`} alt="" />
             )}
             <TextWithTooltip text={displayName} className="text-lg font-medium" />
           </div>
-          <span className={cn("text-xs", templateDescriptionClasses)}>{description}</span>
+          <span className="line-clamp-3 text-xs">{description}</span>
         </div>
         <div className="flex flex-col gap-4">
           <div>
@@ -63,7 +57,7 @@ export const TemplateCard = ({ template, handleTemplateClick }: TemplateCardProp
                   <span className="text-xs">Language:</span>
                   <div className="flex flex-row gap-1">
                     <UseSpriteSymbol name={getIconByPattern(_language)} width={16} height={16} />
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-foreground text-xs">
                       {codebaseMappingByLang?.language?.name || capitalizeFirstLetter(_language)}
                     </span>
                   </div>
@@ -74,7 +68,7 @@ export const TemplateCard = ({ template, handleTemplateClick }: TemplateCardProp
                   <span className="text-xs">Framework:</span>
                   <div className="flex flex-row gap-1">
                     <UseSpriteSymbol name={getIconByPattern(_framework)} width={16} height={16} />
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-foreground text-xs">
                       {framework
                         ? codebaseMappingByLang?.frameworks?.[framework]?.name ||
                           (_framework && capitalizeFirstLetter(_framework)) ||
@@ -89,7 +83,7 @@ export const TemplateCard = ({ template, handleTemplateClick }: TemplateCardProp
                   <span className="text-xs">Build Tool:</span>
                   <div className="flex flex-row gap-1">
                     <UseSpriteSymbol name={getIconByPattern(_buildTool)} width={16} height={16} />
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-foreground text-xs">
                       {codebaseMappingByLang?.buildTools?.[buildTool]?.name || capitalizeFirstLetter(_buildTool)}
                     </span>
                   </div>

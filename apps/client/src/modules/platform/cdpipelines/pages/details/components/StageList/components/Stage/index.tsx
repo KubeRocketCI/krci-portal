@@ -146,15 +146,11 @@ export const Stage = ({ stageWithApplications: { stage, applications } }: Enviro
   }, [loggingQuickLink, quickLinksUrlListWatch.data?.quickLinkURLs, stage.spec.clusterName, stage.spec.namespace]);
 
   return (
-    <div className="w-full rounded bg-purple-50 p-4 px-8">
+    <div className="bg-card w-full rounded border p-4 px-8 shadow-xs">
       <LoadingWrapper isLoading={!stageIsLoaded}>
         <div className="flex flex-col gap-4">
           <div
-            className={cn(
-              "border-border bg-card relative border border-r-0 px-6 py-2.5",
-              "w-[calc(100%-1rem)] drop-shadow-[0px_0_5px_#0024461F]",
-              "before:clip-[polygon(0_0,0%_100%,100%_50%)] before:absolute before:top-0 before:bottom-0 before:left-full before:-ml-px before:h-full before:w-8 before:bg-inherit before:content-['']"
-            )}
+            className={cn("border-border bg-card relative rounded border px-6 py-2.5")}
             style={
               stageStatusIcon.color
                 ? ({ borderLeftWidth: "5px", borderLeftColor: stageStatusIcon.color } as React.CSSProperties)
@@ -164,7 +160,7 @@ export const Stage = ({ stageWithApplications: { stage, applications } }: Enviro
             <div className="flex flex-col gap-2">
               <div className="flex flex-row justify-between gap-4">
                 <div className="flex flex-row items-center gap-2">
-                  <Button variant="link" asChild className="p-0 text-2xl font-medium">
+                  <Button variant="link" asChild className="text-foreground p-0 text-2xl font-medium">
                     <Link
                       to={PATH_CDPIPELINE_STAGE_DETAILS_FULL}
                       params={{
@@ -177,7 +173,7 @@ export const Stage = ({ stageWithApplications: { stage, applications } }: Enviro
                       {stage.spec.name.toUpperCase()}
                     </Link>
                   </Button>{" "}
-                  <span className="text-muted-foreground text-xs">({stage.spec.clusterName})</span>
+                  <span className="text-foreground text-xs">({stage.spec.clusterName})</span>
                 </div>
                 <div className="flex flex-row items-center gap-2">
                   <span className="text-foreground text-xs">Open In:</span>
@@ -191,13 +187,13 @@ export const Stage = ({ stageWithApplications: { stage, applications } }: Enviro
               <div className="flex flex-col gap-2">
                 <div className="flex flex-row gap-2">
                   <span className="text-foreground text-xs">Namespace:</span>
-                  <Badge variant="secondary" className="h-5 min-w-0 bg-purple-50 pt-0.5 leading-none">
+                  <Badge variant="secondary" className="h-5 min-w-0 pt-0.5 leading-none">
                     <TextWithTooltip text={stage.spec.namespace} />
                   </Badge>
                 </div>
                 <div className="flex flex-row gap-2">
                   <span className="text-foreground text-xs">Trigger Type:</span>
-                  <Badge variant="secondary" className="h-5 min-w-0 bg-purple-50 pt-0.5 leading-none">
+                  <Badge variant="secondary" className="h-5 min-w-0 pt-0.5 leading-none">
                     <TextWithTooltip text={stage.spec.triggerType} />
                   </Badge>
                 </div>

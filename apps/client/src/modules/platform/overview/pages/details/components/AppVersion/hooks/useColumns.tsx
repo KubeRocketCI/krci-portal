@@ -7,6 +7,7 @@ import { Link, useParams } from "@tanstack/react-router";
 import React from "react";
 import { routeOverviewDetails } from "../../../route";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
+import { Button } from "@/core/components/ui/button";
 
 export const useColumns = (): TableColumn<Application>[] => {
   const { clusterName, namespace } = useParams({ from: routeOverviewDetails.fullPath });
@@ -27,16 +28,18 @@ export const useColumns = (): TableColumn<Application>[] => {
             const CDPipelineName = metadata?.labels?.[applicationLabels.pipeline];
 
             return (
-              <Link
-                to={routeCDPipelineDetails.fullPath}
-                params={{
-                  clusterName,
-                  name: CDPipelineName!,
-                  namespace,
-                }}
-              >
-                <TextWithTooltip text={CDPipelineName || ""} />
-              </Link>
+              <Button variant="link" asChild size="sm">
+                <Link
+                  to={routeCDPipelineDetails.fullPath}
+                  params={{
+                    clusterName,
+                    name: CDPipelineName!,
+                    namespace,
+                  }}
+                >
+                  <TextWithTooltip text={CDPipelineName || ""} />
+                </Link>
+              </Button>
             );
           },
         },
@@ -62,17 +65,19 @@ export const useColumns = (): TableColumn<Application>[] => {
             const stageName = metadata?.labels?.[applicationLabels.stage];
 
             return (
-              <Link
-                to={routeStageDetails.fullPath}
-                params={{
-                  clusterName,
-                  cdPipeline: CDPipelineName!,
-                  stage: stageName!,
-                  namespace,
-                }}
-              >
-                <TextWithTooltip text={stageName || ""} />
-              </Link>
+              <Button variant="link" asChild>
+                <Link
+                  to={routeStageDetails.fullPath}
+                  params={{
+                    clusterName,
+                    cdPipeline: CDPipelineName!,
+                    stage: stageName!,
+                    namespace,
+                  }}
+                >
+                  <TextWithTooltip text={stageName || ""} />
+                </Link>
+              </Button>
             );
           },
         },

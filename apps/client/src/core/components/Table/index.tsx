@@ -169,6 +169,31 @@ export const DataTable = <DataType,>({
 
   const colGroupRef = React.useRef<HTMLTableColElement | null>(null);
 
+  const shouldShowSelectionColumn = React.useMemo(() => {
+    // Only show selection column when we have actual data rows to display
+    // Don't show it for empty states, loading, or errors
+    if (!selectionSettings.handleSelectRow) {
+      return false;
+    }
+    if (isLoading || isFilteredDataLoading) {
+      return false;
+    }
+    if (blockerError || blockerComponent) {
+      return false;
+    }
+    if (filteredData === null || filteredData.length === 0) {
+      return false;
+    }
+    return true;
+  }, [
+    selectionSettings.handleSelectRow,
+    isLoading,
+    isFilteredDataLoading,
+    blockerError,
+    blockerComponent,
+    filteredData,
+  ]);
+
   const renderHeader = React.useCallback(() => {
     if (slots?.header || tableSettings.show || (selectionSettings.renderSelectionInfo && validSelected)) {
       return (
@@ -205,9 +230,7 @@ export const DataTable = <DataType,>({
         <div className="w-full overflow-hidden rounded">
           <TableUI>
             <colgroup ref={colGroupRef}>
-              {selectionSettings.handleSelectRow && (
-                <col key={"select-checkbox"} width={`${TABLE_CELL_DEFAULTS.WIDTH}%`} />
-              )}
+              {shouldShowSelectionColumn && <col key={"select-checkbox"} width={`${TABLE_CELL_DEFAULTS.WIDTH}%`} />}
               {columns.map(
                 (column) =>
                   column.cell.show !== false && (

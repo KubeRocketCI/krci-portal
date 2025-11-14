@@ -1,6 +1,6 @@
 import { LegendListItem } from "../LegendListItem";
 import { useStagesGraphData } from "./hooks/useStagesGraphData";
-import { PercentageCircleChart } from "@/core/components/PercentageCircleChart";
+import { PercentageCircleChart } from "@/modules/platform/overview/components/PercentageCircleChart";
 import { CHART_STATUS_COLOR } from "@/k8s/constants/colors";
 
 export const StagesGraph = () => {

@@ -1,7 +1,7 @@
 import { LegendListItem } from "../LegendListItem";
 import { useCodebaseBranchesGraphData } from "./hooks/useCodebaseBranchesGraphData";
 import { CHART_STATUS_COLOR } from "@/k8s/constants/colors";
-import { PercentageCircleChart } from "@/core/components/PercentageCircleChart";
+import { PercentageCircleChart } from "@/modules/platform/overview/components/PercentageCircleChart";
 
 export const CodebaseBranchesGraph = () => {
   const { graphData, error } = useCodebaseBranchesGraphData();

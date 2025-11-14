@@ -8,10 +8,6 @@ import { FieldEvent } from "@/core/types/forms";
 import { validateField } from "@/core/utils/forms/validation";
 import { gitProvider } from "@my-project/shared";
 
-// relative path should always start with slash
-
-const slashSymbol = "/";
-
 export const GitRepoPath = () => {
   const {
     register,
@@ -44,7 +40,7 @@ export const GitRepoPath = () => {
       placeholder={"Indicate the repository relative path in the following format project/repository"}
       control={control}
       errors={errors}
-      prefix={slashSymbol}
+      prefix={<div className="flex items-center px-5">/</div>}
       disabled={isReadOnly}
     />
   );

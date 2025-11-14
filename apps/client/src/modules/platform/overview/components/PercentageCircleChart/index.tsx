@@ -1,7 +1,6 @@
 import { PieChart, Pie, Label } from "recharts";
 import React from "react";
-import { cn } from "@/core/utils/classname";
-import { ErrorContent } from "../ErrorContent";
+import { ErrorContent } from "../../../../../core/components/ErrorContent";
 import { RequestError } from "@/core/types/global";
 
 export interface ChartDataPoint {
@@ -67,7 +66,7 @@ export const PercentageCircleChart = ({
   };
 
   return (
-    <div className={cn("bg-card border p-6 shadow-xs", "rounded", "overflow-hidden", "h-full")}>
+    <div className="bg-card h-full overflow-hidden rounded border p-6 shadow-sm">
       <style>{`
         .percentage-chart-wrapper .recharts-sector {
           stroke: none;

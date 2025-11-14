@@ -28,29 +28,29 @@ export default function OverviewDetailsPageContent() {
             }
           >
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-              <div className="col-span-1">
+              <div className="col-span-1 min-h-60">
                 <CodebasesGraph />
               </div>
-              <div className="col-span-1">
+              <div className="col-span-1 min-h-60">
                 <CodebaseBranchesGraph />
               </div>
-              <div className="col-span-1">
+              <div className="col-span-1 min-h-60">
                 <PipelineRunsGraph />
               </div>
-              <div className="col-span-1">
+              <div className="col-span-1 min-h-60">
                 <CDPipelinesGraph />
               </div>
-              <div className="col-span-1">
+              <div className="col-span-1 min-h-60">
                 <StagesGraph />
               </div>
               {userWidgets.map((widget) => {
                 return (
-                  <div className="col-span-1" key={widget.type}>
+                  <div className="col-span-1 min-h-60" key={widget.type}>
                     <UserWidgetRenderer widgetConfig={widget} />
                   </div>
                 );
               })}
-              <div className="col-span-1">
+              <div className="col-span-1 min-h-60">
                 <AddNewWidgetCard userWidgets={userWidgets} setUserWidgets={setUserWidgets} />
               </div>
             </div>

@@ -3,7 +3,6 @@ import { SidebarTrigger } from "../ui/sidebar";
 import { ResourceQuotas } from "../ResourceQuotas";
 import { ThemeSwitcher } from "../ThemeSwitcher";
 import { PATH_HOME_FULL } from "@/modules/home/pages/home/route";
-import { ThemeProvider } from "@/core/providers/Theme/provider";
 
 function Header() {
   return (
@@ -13,9 +12,7 @@ function Header() {
         <img src="/krci-logo-with-text.svg" alt="kuberocket-ci-logo" className="h-full w-full cursor-pointer" />
       </Link>
       <div className="ml-auto flex items-center gap-2">
-        <ThemeProvider>
-          <ThemeSwitcher />
-        </ThemeProvider>
+        <ThemeSwitcher />
         <ResourceQuotas />
       </div>
     </div>

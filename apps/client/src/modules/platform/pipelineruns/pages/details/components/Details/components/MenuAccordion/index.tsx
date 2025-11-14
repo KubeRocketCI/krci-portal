@@ -94,7 +94,7 @@ export const MenuAccordion = ({
       >
         <AccordionTrigger
           className={cn(
-            "min-h-0 transition-colors [&>svg]:h-4 [&>svg]:w-4",
+            "min-h-0 [&>svg]:h-4 [&>svg]:w-4",
             isActive && "bg-accent font-medium",
             !isActive && "font-normal",
             !taskSteps?.length && "[&>svg]:hidden"

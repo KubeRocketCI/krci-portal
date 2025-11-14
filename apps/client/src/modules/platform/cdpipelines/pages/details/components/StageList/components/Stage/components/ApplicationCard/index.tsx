@@ -195,7 +195,7 @@ export const ApplicationCard = ({
             <div className="flex flex-row items-center justify-between gap-4">
               <div className="flex flex-row items-center gap-4">
                 <span className="text-muted-foreground text-xs">Created:</span>
-                <Badge variant="secondary" className="min-w-0 h-5 leading-none pt-0.5 bg-purple-50">
+                <Badge variant="secondary" className="h-5 min-w-0 pt-0.5 leading-none">
                   {argoApplication ? formatDate(argoApplication?.metadata.creationTimestamp) : "Unknown"}
                 </Badge>
               </div>
