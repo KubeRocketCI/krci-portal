@@ -1,8 +1,8 @@
 import { ZodError } from "zod";
-import { codebaseBranchSchema } from "../../schema";
-import { CodebaseBranch } from "../../types";
-import { editCodebaseBranchInputSchema } from "./schema";
-import { EditCodebaseBranchInput } from "./types";
+import { codebaseBranchSchema } from "../../schema.js";
+import { CodebaseBranch } from "../../types.js";
+import { editCodebaseBranchInputSchema } from "./schema.js";
+import { EditCodebaseBranchInput } from "./types.js";
 
 export const editCodebaseBranchObject = (
   codebaseBranch: CodebaseBranch,

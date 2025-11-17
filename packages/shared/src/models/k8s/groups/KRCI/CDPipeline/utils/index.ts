@@ -1,2 +1,2 @@
-export * from "./createCDPipelineDraft";
-export * from "./editCDPipeline";
+export * from "./createCDPipelineDraft/index.js";
+export * from "./editCDPipeline/index.js";

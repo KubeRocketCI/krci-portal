@@ -1,6 +1,6 @@
-import { K8sResourceConfig } from "../../../common";
-import { pipelineTypeEnum } from "./schema";
-import { pipelineLabels } from "./labels";
+import { K8sResourceConfig } from "../../../common/index.js";
+import { pipelineTypeEnum } from "./schema.js";
+import { pipelineLabels } from "./labels.js";
 
 export const k8sPipelineConfig = {
   apiVersion: "tekton.dev/v1",

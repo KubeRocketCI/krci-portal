@@ -1,4 +1,4 @@
-import { JiraServer, JiraServerStatus } from "../../types";
+import { JiraServer, JiraServerStatus } from "../../types.js";
 
 export const getJiraServerStatus = (
   jiraServer: JiraServer

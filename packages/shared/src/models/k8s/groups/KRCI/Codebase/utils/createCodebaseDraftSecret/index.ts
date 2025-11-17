@@ -1,7 +1,7 @@
-import { safeEncode } from "../../../../../../../utils";
+import { safeEncode } from "../../../../../../../utils/index.js";
 import { ZodError } from "zod";
-import { codebaseDraftSecretSchema, createCodebaseDraftSecretInputSchema } from "../../schema";
-import { CodebaseDraftSecret, CreateCodebaseDraftSecretInput } from "../../types";
+import { codebaseDraftSecretSchema, createCodebaseDraftSecretInputSchema } from "../../schema.js";
+import { CodebaseDraftSecret, CreateCodebaseDraftSecretInput } from "../../types.js";
 
 export const createCodebaseDraftSecretObject = (input: CreateCodebaseDraftSecretInput): CodebaseDraftSecret => {
   const parsedInput = createCodebaseDraftSecretInputSchema.safeParse(input);

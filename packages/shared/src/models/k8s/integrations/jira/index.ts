@@ -1,2 +1,2 @@
-export * from "./jiraserver";
-export * from "./secret";
+export * from "./jiraserver/index.js";
+export * from "./secret/index.js";

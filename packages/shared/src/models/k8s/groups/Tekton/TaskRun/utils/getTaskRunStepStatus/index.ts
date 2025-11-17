@@ -1,5 +1,5 @@
-import { taskRunStepStatusFieldName } from "../../constants";
-import { TaskRunStepReason, TaskRunStepState, TaskRunStepStatus } from "../../types";
+import { taskRunStepStatusFieldName } from "../../constants.js";
+import { TaskRunStepReason, TaskRunStepState, TaskRunStepStatus } from "../../types.js";
 
 type StepWithReasonFieldName = typeof taskRunStepStatusFieldName.terminated | typeof taskRunStepStatusFieldName.waiting;
 

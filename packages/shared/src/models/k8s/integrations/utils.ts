@@ -1,12 +1,12 @@
 import { produce, Draft } from "immer";
 import { z } from "zod";
-import { Secret } from "../groups/Core";
+import { Secret } from "../groups/Core/index.js";
 import {
   SECRET_ANNOTATION_CLUSTER_CONNECTED,
   SECRET_ANNOTATION_CLUSTER_ERROR,
   SECRET_ANNOTATION_INTEGRATION_SECRET_CONNECTED,
   SECRET_ANNOTATION_INTEGRATION_SECRET_ERROR,
-} from "./constants";
+} from "./constants.js";
 
 export const getIntegrationSecretStatus = (
   integrationSecret: Secret

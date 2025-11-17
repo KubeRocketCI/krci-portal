@@ -1,6 +1,6 @@
 import { MeOutput, OIDCUserSchema } from "@my-project/shared";
 import { z } from "zod";
-import { protectedProcedure } from "../../../../procedures/protected";
+import { protectedProcedure } from "../../../../procedures/protected/index.js";
 
 export const authMeProcedure = protectedProcedure
   .output(

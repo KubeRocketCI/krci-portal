@@ -1,4 +1,4 @@
-import { t } from "../../trpc";
+import { t } from "../../trpc.js";
 import {
   getPipelineRunLogsProcedure,
   getDepTrackProjectDataProcedure,
@@ -9,7 +9,7 @@ import {
   getBranchListProcedure,
   invalidateBranchListCacheProcedure,
   triggerGitLabPipelineProcedure,
-} from "./procedures";
+} from "./procedures/index.js";
 
 export const krakendRouter = t.router({
   getPipelineRunLogs: getPipelineRunLogsProcedure,

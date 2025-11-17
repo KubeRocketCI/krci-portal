@@ -4,9 +4,9 @@ import {
   kubeObjectBaseSchema,
   kubeObjectDraftMetadataSchema,
   kubeObjectMetadataSchema,
-} from "../../../common";
+} from "../../../common/index.js";
 import { krciCommonLabelsSchema } from "..";
-import { quickLinkLabels } from "./labels";
+import { quickLinkLabels } from "./labels.js";
 
 export const systemQuickLinksEnum = z.enum([
   "argocd",

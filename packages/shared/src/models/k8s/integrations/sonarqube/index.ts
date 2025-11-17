@@ -1,5 +1,5 @@
-export * from "./create";
-export * from "./edit";
+export * from "./create/index.js";
+export * from "./edit/index.js";
 
 export type MetricKey =
   | "alert_status"

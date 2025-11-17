@@ -1,5 +1,5 @@
 import z from "zod";
-import { approvalTaskActionSchema, approvalTaskSchema } from "./schema";
+import { approvalTaskActionSchema, approvalTaskSchema } from "./schema.js";
 
 export type ApprovalTask = z.infer<typeof approvalTaskSchema>;
 // export type ApprovalTaskDraft = z.infer<typeof approvalTaskDraftSchema>;

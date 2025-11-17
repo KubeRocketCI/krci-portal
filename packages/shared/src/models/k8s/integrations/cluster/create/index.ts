@@ -1,7 +1,7 @@
 import z, { ZodError } from "zod";
-import { Secret, SecretDraft, secretDraftSchema } from "../../../groups/Core";
-import { SECRET_LABEL_CLUSTER_TYPE, SECRET_LABEL_SECRET_TYPE } from "../../constants";
-import { safeDecode, safeEncode, parseConfigJson } from "../../../../../utils";
+import { Secret, SecretDraft, secretDraftSchema } from "../../../groups/Core/index.js";
+import { SECRET_LABEL_CLUSTER_TYPE, SECRET_LABEL_SECRET_TYPE } from "../../constants.js";
+import { safeDecode, safeEncode, parseConfigJson } from "../../../../../utils/index.js";
 
 export const clusterTypeEnum = z.enum(["bearer", "irsa"]);
 

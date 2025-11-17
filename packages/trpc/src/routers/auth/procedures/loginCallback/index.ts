@@ -1,6 +1,6 @@
-import { publicProcedure } from "../../../../procedures/public";
+import { publicProcedure } from "../../../../procedures/public/index.js";
 import { loginCallbackInputSchema, loginCallbackOutputSchema } from "@my-project/shared";
-import { OIDCClient } from "../../../../clients/oidc";
+import { OIDCClient } from "../../../../clients/oidc/index.js";
 
 export const authLoginCallbackProcedure = publicProcedure
   .input(loginCallbackInputSchema)

@@ -1,7 +1,7 @@
 import z from "zod";
-import { IRSA_ROLE_ARN_ANNOTATION } from "../../constants";
-import { ServiceAccount } from "../../../../groups/Core";
-import { editResource } from "../../../utils";
+import { IRSA_ROLE_ARN_ANNOTATION } from "../../constants.js";
+import { ServiceAccount } from "../../../../groups/Core/index.js";
+import { editResource } from "../../../utils.js";
 import { Draft } from "immer";
 
 const editRegistryServiceAccountSchema = z.object({

@@ -4,11 +4,11 @@ import {
   kubeObjectBaseSchema,
   kubeObjectDraftMetadataSchema,
   kubeObjectMetadataSchema,
-} from "../../../common";
-import { pipelineSpecSchema, pipelineTypeEnum } from "../Pipeline/schema";
-import { pipelineRunLabels } from "./labels";
-import { pipelineRefSchema, whenExpressionSchema, paramValueSchema } from "../common/schema";
-import { stepStateSchema } from "../TaskRun/schema";
+} from "../../../common/index.js";
+import { pipelineSpecSchema, pipelineTypeEnum } from "../Pipeline/schema.js";
+import { pipelineRunLabels } from "./labels.js";
+import { pipelineRefSchema, whenExpressionSchema, paramValueSchema } from "../common/schema.js";
+import { stepStateSchema } from "../TaskRun/schema.js";
 
 const pipelineRunLabelsSchema = z
   .object({

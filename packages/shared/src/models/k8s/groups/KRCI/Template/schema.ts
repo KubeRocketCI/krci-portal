@@ -1,5 +1,5 @@
 import z from "zod";
-import { kubeObjectBaseSchema } from "../../../common";
+import { kubeObjectBaseSchema } from "../../../common/index.js";
 
 const IconSchema = z.object({
   base64data: z.string(),

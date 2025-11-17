@@ -1,4 +1,4 @@
-import { K8sResourceConfig } from "../../../common/types";
+import { K8sResourceConfig } from "../../../common/types.js";
 import {
   codebaseCreationStrategyEnum,
   codebaseDeploymentScriptEnum,
@@ -7,8 +7,8 @@ import {
   codebaseTestReportFrameworkEnum,
   codebaseTypeEnum,
   codebaseVersioningEnum,
-} from "./schema";
-import { codebaseLabels } from "./labels";
+} from "./schema.js";
+import { codebaseLabels } from "./labels.js";
 
 export const k8sCodebaseConfig = {
   apiVersion: "v2.edp.epam.com/v1",

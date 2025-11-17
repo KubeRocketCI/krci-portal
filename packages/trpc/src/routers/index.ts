@@ -1,9 +1,9 @@
 import type { inferRouterOutputs, inferRouterInputs } from "@trpc/server";
-import { t } from "../trpc";
-import { authRouter } from "./auth";
-import { configRouter } from "./config";
-import { k8sRouter } from "./k8s";
-import { krakendRouter } from "./krakend";
+import { t } from "../trpc.js";
+import { authRouter } from "./auth/index.js";
+import { configRouter } from "./config/index.js";
+import { k8sRouter } from "./k8s/index.js";
+import { krakendRouter } from "./krakend/index.js";
 
 export const appRouter = t.router({
   auth: authRouter,

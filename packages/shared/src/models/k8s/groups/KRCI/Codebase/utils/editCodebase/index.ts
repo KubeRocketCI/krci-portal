@@ -1,6 +1,6 @@
 import { ZodError } from "zod";
-import { Codebase, EditCodebaseInput } from "../../types";
-import { editCodebaseInputSchema, codebaseSchema } from "../../schema";
+import { Codebase, EditCodebaseInput } from "../../types.js";
+import { editCodebaseInputSchema, codebaseSchema } from "../../schema.js";
 
 /**
  * Updates a Codebase resource with editable fields

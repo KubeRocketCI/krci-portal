@@ -1,5 +1,5 @@
-import { JiraServer } from "../../../../groups/KRCI";
-import { editResource } from "../../../utils";
+import { JiraServer } from "../../../../groups/KRCI/index.js";
+import { editResource } from "../../../utils.js";
 import z from "zod";
 import { Draft } from "immer";
 

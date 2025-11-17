@@ -1,15 +1,15 @@
 import { AuthorizationV1Api } from "@kubernetes/client-node";
 import { V1SelfSubjectAccessReview } from "@kubernetes/client-node";
 import { z } from "zod";
-import { handleK8sError } from "../../utils/handleK8sError";
-import { protectedProcedure } from "../../../../procedures/protected";
+import { handleK8sError } from "../../utils/handleK8sError/index.js";
+import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import {
   defaultPermissions,
   defaultPermissionsToCheck,
   DefaultPermissionListCheckResult,
   k8sToRbacVerbMap,
 } from "@my-project/shared";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors";
+import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors/index.js";
 import { TRPCError } from "@trpc/server";
 import { K8sClient } from "packages/trpc/src/clients/k8s";
 

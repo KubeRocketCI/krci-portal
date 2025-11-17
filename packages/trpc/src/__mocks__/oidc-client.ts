@@ -1,6 +1,6 @@
 import { Configuration, TokenEndpointResponse } from "openid-client";
 import { vi } from "vitest";
-import { OIDCClient } from "../clients/oidc";
+import { OIDCClient } from "../clients/oidc/index.js";
 
 export function createMockedOIDCClient() {
   vi.mock("openid-client", async () => {

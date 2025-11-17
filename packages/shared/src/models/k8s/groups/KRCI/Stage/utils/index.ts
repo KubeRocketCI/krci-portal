@@ -1,2 +1,2 @@
-export * from "./createStageDraft";
-export * from "./editStage";
+export * from "./createStageDraft/index.js";
+export * from "./editStage/index.js";

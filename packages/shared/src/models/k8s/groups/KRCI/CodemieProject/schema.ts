@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema } from "../../../common";
+import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema } from "../../../common/index.js";
 
 const codemieRefSchema = z.object({
   kind: z.string().default("Codemie").optional(),

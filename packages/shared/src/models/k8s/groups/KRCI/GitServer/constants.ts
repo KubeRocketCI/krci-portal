@@ -1,4 +1,4 @@
-import { K8sResourceConfig } from "../../../common";
+import { K8sResourceConfig } from "../../../common/index.js";
 
 export const k8sGitServerConfig = {
   apiVersion: "v2.edp.epam.com/v1",

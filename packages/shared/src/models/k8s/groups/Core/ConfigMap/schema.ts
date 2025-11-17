@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema, kubeObjectMetadataSchema } from "../../../common";
+import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema, kubeObjectMetadataSchema } from "../../../common/index.js";
 
 const stringDictSchema = z.record(z.string());
 

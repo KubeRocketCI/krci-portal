@@ -1,9 +1,9 @@
 import { ApisApi } from "@kubernetes/client-node";
-import { protectedProcedure } from "../../../../../procedures/protected";
+import { protectedProcedure } from "../../../../../procedures/protected/index.js";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors";
-import { K8sClient } from "../../../../../clients/k8s";
+import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors/index.js";
+import { K8sClient } from "../../../../../clients/k8s/index.js";
 
 export const defaultK8sApiVersion = "v1";
 

@@ -4,9 +4,9 @@ import {
   kubeObjectBaseSchema,
   kubeObjectDraftMetadataSchema,
   kubeObjectMetadataSchema,
-} from "../../../common";
-import { secretDraftSchema, secretSchema } from "../../Core";
-import { codemieSecretLabels } from "./labels";
+} from "../../../common/index.js";
+import { secretDraftSchema, secretSchema } from "../../Core/index.js";
+import { codemieSecretLabels } from "./labels.js";
 
 export const codemieSecretRefSchema = z.object({
   clientKey: z.string(),

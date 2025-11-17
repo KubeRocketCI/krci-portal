@@ -1,5 +1,5 @@
-import { gitProvider } from "../../../../KRCI";
-import { PipelineRun } from "../../types";
+import { gitProvider } from "../../../../KRCI/index.js";
+import { PipelineRun } from "../../types.js";
 
 export const getPullRequestURL = (pipelineRun: PipelineRun): string | undefined => {
   const hasParams = (pipelineRun?.spec?.params?.length || 0) > 0;

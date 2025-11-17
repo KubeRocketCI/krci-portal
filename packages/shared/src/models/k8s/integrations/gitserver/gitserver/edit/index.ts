@@ -1,8 +1,8 @@
-import { GitServer } from "../../../../groups/KRCI";
-import { editResource } from "../../../utils";
+import { GitServer } from "../../../../groups/KRCI/index.js";
+import { editResource } from "../../../utils.js";
 import z from "zod";
 import { Draft } from "immer";
-import { gitProviderEnum } from "../../../../groups/KRCI";
+import { gitProviderEnum } from "../../../../groups/KRCI/index.js";
 
 const editGitServerSchema = z.object({
   gitHost: z.string(),

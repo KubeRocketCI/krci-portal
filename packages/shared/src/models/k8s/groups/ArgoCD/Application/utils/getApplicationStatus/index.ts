@@ -1,4 +1,4 @@
-import { Application, ApplicationSyncStatus } from "../../types";
+import { Application, ApplicationSyncStatus } from "../../types.js";
 
 export const getApplicationSyncStatus = (
   application: Application

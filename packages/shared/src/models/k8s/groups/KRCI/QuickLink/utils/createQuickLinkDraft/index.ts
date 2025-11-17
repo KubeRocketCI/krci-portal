@@ -1,7 +1,7 @@
 import z, { ZodError } from "zod";
-import { k8sQuickLinkConfig } from "../../constants";
-import { quickLinkDraftSchema } from "../../schema";
-import { QuickLinkDraft } from "../../types";
+import { k8sQuickLinkConfig } from "../../constants.js";
+import { quickLinkDraftSchema } from "../../schema.js";
+import { QuickLinkDraft } from "../../types.js";
 
 const { kind, apiVersion } = k8sQuickLinkConfig;
 

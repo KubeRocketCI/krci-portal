@@ -1,12 +1,12 @@
-import { K8sResourceConfig } from "../../../common/types";
+import { K8sResourceConfig } from "../../../common/types.js";
 import {
   stageQualityGateTypeEnum,
   stageSourceTypeEnum,
   stageTriggerTypeEnum,
   stageResultEnum,
   stageStatusEnum,
-} from "./schema";
-import { stageLabels } from "./labels";
+} from "./schema.js";
+import { stageLabels } from "./labels.js";
 
 export const k8sStageConfig = {
   apiVersion: "v2.edp.epam.com/v1",

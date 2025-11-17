@@ -1,4 +1,4 @@
-import { publicProcedure } from "../../../../procedures/public";
+import { publicProcedure } from "../../../../procedures/public/index.js";
 import { logoutOutputSchema, LogoutnOutput } from "@my-project/shared";
 
 export const authLogoutProcedure = publicProcedure.output(logoutOutputSchema).mutation(({ ctx }) => {

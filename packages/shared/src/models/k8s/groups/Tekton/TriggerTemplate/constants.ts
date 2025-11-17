@@ -1,4 +1,4 @@
-import { K8sResourceConfig } from "../../../common";
+import { K8sResourceConfig } from "../../../common/index.js";
 
 export const k8sTriggerTemplateConfig = {
   apiVersion: "triggers.tekton.dev/v1beta1",

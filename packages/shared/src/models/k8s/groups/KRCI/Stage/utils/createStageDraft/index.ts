@@ -1,7 +1,7 @@
 import { ZodError } from "zod";
-import { k8sStageConfig, stageLabels } from "../..";
-import { StageDraft, CreateStageDraftInput } from "../../types";
-import { stageDraftSchema, createStageDraftInputSchema } from "../../schema";
+import { k8sStageConfig, stageLabels } from "../../index.js";
+import { StageDraft, CreateStageDraftInput } from "../../types.js";
+import { stageDraftSchema, createStageDraftInputSchema } from "../../schema.js";
 
 const { kind, apiVersion } = k8sStageConfig;
 

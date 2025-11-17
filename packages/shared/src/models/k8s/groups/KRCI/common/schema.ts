@@ -1,6 +1,6 @@
 import z from "zod";
-import { k8sOperation } from "../../../common";
-import { krciCommonLabels } from "./labels";
+import { k8sOperation } from "../../../common/index.js";
+import { krciCommonLabels } from "./labels.js";
 
 export const ciToolEnum = z.enum(["tekton", "gitlab"]);
 

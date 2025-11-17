@@ -1,4 +1,4 @@
-import { PipelineRun, PipelineRunStatus, PipelineRunReason } from "../..";
+import { PipelineRun, PipelineRunStatus, PipelineRunReason } from "../../index.js";
 
 export const getPipelineRunStatus = (
   pipelineRun: PipelineRun | undefined

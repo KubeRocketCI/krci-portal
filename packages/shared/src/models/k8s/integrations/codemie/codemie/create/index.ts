@@ -1,5 +1,5 @@
 import z, { ZodError } from "zod";
-import { CodemieDraft, codemieDraftSchema, k8sCodemieConfig } from "../../../../groups/KRCI";
+import { CodemieDraft, codemieDraftSchema, k8sCodemieConfig } from "../../../../groups/KRCI/index.js";
 
 const createCodemieDraftSchema = z.object({
   tokenEndpoint: z.string(),

@@ -1,4 +1,4 @@
-import { Application, ApplicationHealthStatus } from "../../types";
+import { Application, ApplicationHealthStatus } from "../../types.js";
 
 export const getApplicationStatus = (
   application: Application

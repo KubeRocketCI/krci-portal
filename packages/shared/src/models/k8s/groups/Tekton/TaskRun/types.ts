@@ -6,8 +6,8 @@ import {
   taskRunSchema,
   taskRunStepReasonFieldNameEnum,
   taskRunStepStatusFieldNameEnum,
-} from "./schema";
-import { taskRunStepStatusFieldName } from "./constants";
+} from "./schema.js";
+import { taskRunStepStatusFieldName } from "./constants.js";
 
 export type TaskRun = z.infer<typeof taskRunSchema>;
 export type TaskRunStatus = z.infer<typeof statusSchema>;

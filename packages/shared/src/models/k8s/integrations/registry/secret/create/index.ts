@@ -1,14 +1,14 @@
-import { parseConfigJson, safeDecode, safeEncode } from "../../../../../../utils";
+import { parseConfigJson, safeDecode, safeEncode } from "../../../../../../utils/index.js";
 import z, { ZodError } from "zod";
-import { Secret, SecretDraft, secretDraftSchema } from "../../../../groups/Core";
-import { SECRET_LABEL_SECRET_TYPE, SECRET_LABEL_INTEGRATION_SECRET } from "../../../constants";
+import { Secret, SecretDraft, secretDraftSchema } from "../../../../groups/Core/index.js";
+import { SECRET_LABEL_SECRET_TYPE, SECRET_LABEL_INTEGRATION_SECRET } from "../../../constants.js";
 import {
   containerRegistryType,
   containerRegistryTypeEnum,
   registrySecretName,
   DOCKER_HUB_DEFAULT_REGISTRY_ENDPOINT,
   GHCR_DEFAULT_REGISTRY_ENDPOINT,
-} from "../../constants";
+} from "../../constants.js";
 
 export const parseRegistrySecretUserProtectedData = (
   secret: Secret | undefined

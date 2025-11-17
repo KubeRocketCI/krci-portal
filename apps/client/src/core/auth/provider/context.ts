@@ -1,19 +1,19 @@
-import { OIDCUser } from "@my-project/shared";
+import {
+  OIDCUser,
+  LoginOutput,
+  LoginCallbackInput,
+  LoginCallbackOutput,
+  LoginWithTokenOutput,
+  LogoutnOutput,
+} from "@my-project/shared";
 import { UseMutationResult } from "@tanstack/react-query";
-import type { AppRouter } from "@my-project/trpc";
-import { inferProcedureInput, inferProcedureOutput } from "@trpc/server";
 import React from "react";
 
-export type AuthLoginInput = inferProcedureInput<AppRouter["auth"]["login"]>;
-export type AuthLoginOutput = inferProcedureOutput<AppRouter["auth"]["login"]>;
-
-export type AuthCallbackLoginInput = inferProcedureInput<AppRouter["auth"]["loginCallback"]>;
-export type AuthCallbackLoginOutput = inferProcedureOutput<AppRouter["auth"]["loginCallback"]>;
-
-export type AuthLoginWithTokenInput = inferProcedureInput<AppRouter["auth"]["loginWithToken"]>;
-export type AuthLoginWithTokenOutput = inferProcedureOutput<AppRouter["auth"]["loginWithToken"]>;
-
-export type AuthLogoutOutput = inferProcedureOutput<AppRouter["auth"]["logout"]>;
+export type AuthLoginOutput = LoginOutput;
+export type AuthCallbackLoginInput = LoginCallbackInput;
+export type AuthCallbackLoginOutput = LoginCallbackOutput;
+export type AuthLoginWithTokenOutput = LoginWithTokenOutput;
+export type AuthLogoutOutput = LogoutnOutput;
 
 export interface LoginMutationInput {
   redirectSearchParam: string | undefined;

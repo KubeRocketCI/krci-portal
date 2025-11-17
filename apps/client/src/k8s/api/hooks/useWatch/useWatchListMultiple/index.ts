@@ -115,9 +115,10 @@ export const useWatchListMultiple = <I extends KubeObjectBase>({
   }) as UseQueryResult<CustomKubeObjectList<I>, RequestError>[];
 
   // Stable references for dependency tracking
-  const querySuccessStates = namespaceQueries
-    .map((q) => `${q.isSuccess}-${q.data?.metadata?.resourceVersion}`)
-    .join(",");
+  // Note: We intentionally do NOT include resourceVersion in querySuccessStates.
+  // Kubernetes Watch continues from the initial resourceVersion automatically.
+  // Restarting subscriptions on every resourceVersion change causes excessive start/stop cycles.
+  const querySuccessStates = namespaceQueries.map((q) => q.isSuccess).join(",");
   const namespaceQueryKeysKey = namespaceQueryKeys.map((k) => JSON.stringify(k)).join(",");
 
   // Stable event handler using useEffectEvent

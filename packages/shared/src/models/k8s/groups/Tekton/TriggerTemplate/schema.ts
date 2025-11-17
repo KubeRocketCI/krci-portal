@@ -4,9 +4,9 @@ import {
   kubeObjectBaseSchema,
   kubeObjectDraftMetadataSchema,
   kubeObjectMetadataSchema,
-} from "../../../common";
-import { pipelineTypeEnum } from "../Pipeline";
-import { triggerTemplateLabels } from "./labels";
+} from "../../../common/index.js";
+import { pipelineTypeEnum } from "../Pipeline/index.js";
+import { triggerTemplateLabels } from "./labels.js";
 
 const triggerTemplateLabelsSchema = z.object({
   [triggerTemplateLabels.pipelineType]: pipelineTypeEnum.optional(),

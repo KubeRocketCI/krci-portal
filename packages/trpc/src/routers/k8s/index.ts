@@ -1,17 +1,17 @@
-import { k8sGetApiVersions } from "./procedures/basic/apiVersions";
-import { k8sCreateItemProcedure } from "./procedures/basic/create";
-import { k8sDeleteItemProcedure } from "./procedures/basic/delete";
-import { k8sGetProcedure } from "./procedures/basic/get";
-import { k8sGetKubeConfig } from "./procedures/kubeconfig";
-import { k8sListProcedure } from "./procedures/basic/list";
-import { k8sGetResourcePermissions } from "./procedures/permissions";
-import { k8sPatchItemProcedure } from "./procedures/basic/patch";
-import { k8sWatchItemProcedure } from "./procedures/basic/watchItem";
-import { k8sWatchListProcedure } from "./procedures/basic/watchList";
-import { k8sPodLogsProcedure, k8sWatchPodLogsProcedure } from "./procedures/basic/logs";
-import { k8sPodExecProcedure, k8sPodAttachProcedure } from "./procedures/basic/exec";
-import { k8sGetClusterDetails } from "./procedures/clusterDetails";
-import { t } from "../../trpc";
+import { k8sGetApiVersions } from "./procedures/basic/apiVersions/index.js";
+import { k8sCreateItemProcedure } from "./procedures/basic/create/index.js";
+import { k8sDeleteItemProcedure } from "./procedures/basic/delete/index.js";
+import { k8sGetProcedure } from "./procedures/basic/get/index.js";
+import { k8sGetKubeConfig } from "./procedures/kubeconfig/index.js";
+import { k8sListProcedure } from "./procedures/basic/list/index.js";
+import { k8sGetResourcePermissions } from "./procedures/permissions/index.js";
+import { k8sPatchItemProcedure } from "./procedures/basic/patch/index.js";
+import { k8sWatchItemProcedure } from "./procedures/basic/watchItem/index.js";
+import { k8sWatchListProcedure } from "./procedures/basic/watchList/index.js";
+import { k8sPodLogsProcedure, k8sWatchPodLogsProcedure } from "./procedures/basic/logs/index.js";
+import { k8sPodExecProcedure, k8sPodAttachProcedure } from "./procedures/basic/exec/index.js";
+import { k8sGetClusterDetails } from "./procedures/clusterDetails/index.js";
+import { t } from "../../trpc.js";
 
 export const k8sRouter = t.router({
   get: k8sGetProcedure,

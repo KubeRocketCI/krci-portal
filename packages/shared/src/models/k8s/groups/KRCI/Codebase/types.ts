@@ -12,7 +12,7 @@ import {
   codebaseVersioningEnum,
   createCodebaseDraftSecretInputSchema,
   editCodebaseInputSchema,
-} from "./schema";
+} from "./schema.js";
 
 export type Codebase = z.infer<typeof codebaseSchema>;
 export type CodebaseDraft = z.infer<typeof codebaseDraftSchema>;

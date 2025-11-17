@@ -1,11 +1,12 @@
-import { protectedProcedure } from "../../../../../procedures/protected";
+import { protectedProcedure } from "../../../../../procedures/protected/index.js";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors";
-import { handleK8sError } from "../../../utils/handleK8sError";
+import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors/index.js";
+import { handleK8sError } from "../../../utils/handleK8sError/index.js";
 import * as k8s from "@kubernetes/client-node";
 import { PassThrough } from "stream";
-import { K8sClient } from "../../../../../clients/k8s";
+import { K8sClient } from "../../../../../clients/k8s/index.js";
+import { createEventQueue, yieldEvents } from "../../../utils/createEventQueue/index.js";
 
 export const k8sPodLogsProcedure = protectedProcedure
   .input(
@@ -122,15 +123,13 @@ export const k8sWatchPodLogsProcedure = protectedProcedure
 
     const logStream = new PassThrough();
     let request: AbortController | undefined;
-    let isAborted = false;
 
-    // Create a queue to bridge stream events to async generator
-    const eventQueue: Array<{ logs: string; type: "data" | "end" } | { error: unknown }> = [];
-    let resolveNext: (() => void) | null = null;
+    type LogEvent = { logs: string; type: "data" | "end" };
+    const queue = createEventQueue<LogEvent>();
 
     // Cleanup function
     const cleanup = () => {
-      isAborted = true;
+      queue.abort();
       if (request) {
         try {
           request.abort();
@@ -149,36 +148,18 @@ export const k8sWatchPodLogsProcedure = protectedProcedure
     try {
       // Set up stream event handlers
       logStream.on("data", (chunk) => {
-        if (!isAborted) {
-          const chunkStr = chunk.toString();
-          // Wrap k8s timestamps with [[ ]] for easier frontend parsing
-          const modifiedChunk = chunkStr.replace(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.?\d*Z?)\s+/gm, "[[$1]] ");
-          eventQueue.push({ logs: modifiedChunk, type: "data" });
-          if (resolveNext) {
-            resolveNext();
-            resolveNext = null;
-          }
-        }
+        const chunkStr = chunk.toString();
+        // Wrap k8s timestamps with [[ ]] for easier frontend parsing
+        const modifiedChunk = chunkStr.replace(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.?\d*Z?)\s+/gm, "[[$1]] ");
+        queue.emit({ logs: modifiedChunk, type: "data" });
       });
 
       logStream.on("end", () => {
-        if (!isAborted) {
-          eventQueue.push({ logs: "", type: "end" });
-          if (resolveNext) {
-            resolveNext();
-            resolveNext = null;
-          }
-        }
+        queue.emit({ logs: "", type: "end" });
       });
 
       logStream.on("error", (err) => {
-        if (!isAborted) {
-          eventQueue.push({ error: err });
-          if (resolveNext) {
-            resolveNext();
-            resolveNext = null;
-          }
-        }
+        queue.emitError(err);
       });
 
       // Start the log stream
@@ -189,39 +170,10 @@ export const k8sWatchPodLogsProcedure = protectedProcedure
           request = req;
         })
         .catch((err) => {
-          if (!isAborted) {
-            eventQueue.push({ error: err });
-            if (resolveNext) {
-              resolveNext();
-              resolveNext = null;
-            }
-          }
+          queue.emitError(err);
         });
 
-      // Yield events as they come in
-      while (!isAborted && !signal?.aborted) {
-        // Wait for next event or abort
-        if (eventQueue.length === 0) {
-          await new Promise<void>((resolve) => {
-            resolveNext = resolve;
-            // Check if signal was aborted while waiting
-            if (signal?.aborted) {
-              resolve();
-            }
-          });
-        }
-
-        // Process all queued events
-        while (eventQueue.length > 0 && !signal?.aborted) {
-          const event = eventQueue.shift()!;
-          if ("error" in event) {
-            throw handleK8sError(event.error);
-          }
-          yield event;
-        }
-      }
-    } catch (error) {
-      throw handleK8sError(error);
+      yield* yieldEvents(queue, signal, handleK8sError);
     } finally {
       cleanup();
       if (signal) {

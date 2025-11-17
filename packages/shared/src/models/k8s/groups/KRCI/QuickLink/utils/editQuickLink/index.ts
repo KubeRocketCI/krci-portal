@@ -1,6 +1,6 @@
 import z, { ZodError } from "zod";
-import { quickLinkSchema } from "../../schema";
-import { QuickLink } from "../../types";
+import { quickLinkSchema } from "../../schema.js";
+import { QuickLink } from "../../types.js";
 
 const editQuickLinkInputSchema = z.object({
   url: z.string(),

@@ -1,5 +1,5 @@
 import z from "zod";
-import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema } from "../../../common";
+import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema } from "../../../common/index.js";
 
 export const jiraServerStatusEnum = z.enum(["finished", "error"]);
 

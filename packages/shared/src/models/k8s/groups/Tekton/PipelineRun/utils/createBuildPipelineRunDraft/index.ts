@@ -1,8 +1,8 @@
-import { truncateName, createRandomString } from "../../../../../../../utils";
-import { Codebase, GitServer, CodebaseBranch, gitProvider } from "../../../../KRCI";
-import { PipelineRun } from "../../types";
-import { pipelineRunLabels } from "../../labels";
-import { pipelineType } from "../../../Pipeline/constants";
+import { truncateName, createRandomString } from "../../../../../../../utils/index.js";
+import { Codebase, GitServer, CodebaseBranch, gitProvider } from "../../../../KRCI/index.js";
+import { PipelineRun } from "../../types.js";
+import { pipelineRunLabels } from "../../labels.js";
+import { pipelineType } from "../../../Pipeline/constants.js";
 
 export const createBuildPipelineRunDraft = ({
   codebase,

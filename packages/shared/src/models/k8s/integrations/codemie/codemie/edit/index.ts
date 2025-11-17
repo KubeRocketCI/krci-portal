@@ -1,5 +1,5 @@
-import { Codemie } from "../../../../groups/KRCI";
-import { editResource } from "../../../utils";
+import { Codemie } from "../../../../groups/KRCI/index.js";
+import { editResource } from "../../../utils.js";
 import z from "zod";
 import { Draft } from "immer";
 

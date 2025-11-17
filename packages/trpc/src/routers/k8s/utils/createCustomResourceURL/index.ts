@@ -1,5 +1,5 @@
 import { K8sResourceConfig } from "@my-project/shared";
-import { createLabelSelectorString } from "../createLabelSelectorString";
+import { createLabelSelectorString } from "../createLabelSelectorString/index.js";
 
 const isCoreKubernetesResource = (resourceConfig: K8sResourceConfig) => resourceConfig.group === "";
 

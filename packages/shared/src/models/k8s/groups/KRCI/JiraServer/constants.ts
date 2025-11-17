@@ -1,5 +1,5 @@
-import { K8sResourceConfig } from "../../../common";
-import { jiraServerStatusEnum } from "./schema";
+import { K8sResourceConfig } from "../../../common/index.js";
+import { jiraServerStatusEnum } from "./schema.js";
 
 export const k8sJiraServerConfig = {
   apiVersion: "v2.edp.epam.com/v1",

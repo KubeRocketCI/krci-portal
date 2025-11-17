@@ -1,10 +1,10 @@
-import { protectedProcedure } from "../../../../../procedures/protected";
+import { protectedProcedure } from "../../../../../procedures/protected/index.js";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors";
-import { handleK8sError } from "../../../utils/handleK8sError";
+import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors/index.js";
+import { handleK8sError } from "../../../utils/handleK8sError/index.js";
 import * as k8s from "@kubernetes/client-node";
-import { K8sClient } from "../../../../../clients/k8s";
+import { K8sClient } from "../../../../../clients/k8s/index.js";
 
 export const k8sPodExecProcedure = protectedProcedure
   .input(
