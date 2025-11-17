@@ -1,4 +1,4 @@
-import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema, kubeObjectDraftMetadataSchema } from "../../../common";
+import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema, kubeObjectDraftMetadataSchema } from "../../../common/index.js";
 
 import * as z from "zod";
 

@@ -1,6 +1,6 @@
 import z from "zod";
-import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema } from "../../../common";
-import { gitProviderEnum } from "../common";
+import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema } from "../../../common/index.js";
+import { gitProviderEnum } from "../common/index.js";
 
 const gitServerStatusEnum = z.enum(["ok", "failed"]);
 

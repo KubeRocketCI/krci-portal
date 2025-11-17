@@ -1,5 +1,5 @@
-import { K8sResourceConfig } from "../../../common/types";
-import { codemieSecretLabels } from "./labels";
+import { K8sResourceConfig } from "../../../common/types.js";
+import { codemieSecretLabels } from "./labels.js";
 
 export const k8sCodemieConfig = {
   apiVersion: "edp.epam.com/v1alpha1",

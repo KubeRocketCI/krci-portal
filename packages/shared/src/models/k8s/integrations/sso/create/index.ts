@@ -1,6 +1,6 @@
-import { safeEncode } from "../../../../../utils";
-import { SecretDraft, secretDraftSchema } from "../../../groups/Core";
-import { integrationSecretName, SECRET_LABEL_SECRET_TYPE } from "../../constants";
+import { safeEncode } from "../../../../../utils/index.js";
+import { SecretDraft, secretDraftSchema } from "../../../groups/Core/index.js";
+import { integrationSecretName, SECRET_LABEL_SECRET_TYPE } from "../../constants.js";
 import z, { ZodError } from "zod";
 
 const createSSOIntegrationSecretDraftSchema = z.object({

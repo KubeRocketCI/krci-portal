@@ -1,10 +1,10 @@
-import { CustomSession } from "../../context/types";
+import { CustomSession } from "../../context/types.js";
 import { KubeConfig } from "@kubernetes/client-node";
 import { K8sResourceConfig, KubeObjectBase, KubeObjectListBase } from "@my-project/shared";
 import fetch from "node-fetch";
 import https from "https";
 import fs from "fs";
-import { K8sApiError } from "./K8sApiError";
+import { K8sApiError } from "./K8sApiError.js";
 
 export const isCoreKubernetesResource = (resourceConfig: K8sResourceConfig) => resourceConfig.group === "";
 

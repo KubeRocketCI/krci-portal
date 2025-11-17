@@ -1,6 +1,6 @@
 import { Mock, vi } from "vitest";
-import { K8sClient } from "../clients/k8s";
-import { CustomSession } from "../context/types";
+import { K8sClient } from "../clients/k8s/index.js";
+import { CustomSession } from "../context/types.js";
 
 export type MockK8sClient = {
   KubeConfig: {

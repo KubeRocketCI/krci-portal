@@ -1,13 +1,13 @@
-import { safeEncode } from "../../../../../../utils";
+import { safeEncode } from "../../../../../../utils/index.js";
 import z from "zod";
-import { Secret } from "../../../../groups/Core";
-import { editResource } from "../../../utils";
+import { Secret } from "../../../../groups/Core/index.js";
+import { editResource } from "../../../utils.js";
 import {
   containerRegistryType,
   containerRegistryTypeEnum,
   DOCKER_HUB_DEFAULT_REGISTRY_ENDPOINT,
   GHCR_DEFAULT_REGISTRY_ENDPOINT,
-} from "../../constants";
+} from "../../constants.js";
 import { Draft } from "immer";
 
 const editPullAccountRegistrySecretSchema = z.object({

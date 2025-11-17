@@ -1,7 +1,7 @@
 import z, { ZodError } from "zod";
-import { CodebaseDraft } from "../../types";
-import { k8sCodebaseConfig } from "../../constants";
-import { codebaseDraftSchema } from "../../schema";
+import { CodebaseDraft } from "../../types.js";
+import { k8sCodebaseConfig } from "../../constants.js";
+import { codebaseDraftSchema } from "../../schema.js";
 
 const { kind, apiVersion } = k8sCodebaseConfig;
 

@@ -1,4 +1,4 @@
-import { Application } from "../../types";
+import { Application } from "../../types.js";
 
 export const getDeployedVersion = (
   withValuesOverride: boolean,

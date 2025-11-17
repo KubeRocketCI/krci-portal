@@ -4,10 +4,10 @@ import {
   kubeObjectBaseDraftSchema,
   kubeObjectMetadataSchema,
   kubeObjectDraftMetadataSchema,
-} from "../../../common";
-import { secretDraftSchema, secretSchema } from "../../Core";
-import { codebaseLabels } from "./labels";
-import { ciToolEnum, krciCommonLabelsSchema } from "../common";
+} from "../../../common/index.js";
+import { secretDraftSchema, secretSchema } from "../../Core/index.js";
+import { codebaseLabels } from "./labels.js";
+import { ciToolEnum, krciCommonLabelsSchema } from "../common/index.js";
 
 export const codebaseTypeEnum = z.enum(["application", "autotest", "library", "infrastructure", "system"]);
 

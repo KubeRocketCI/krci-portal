@@ -1,7 +1,7 @@
 import type { ISessionStore } from "@my-project/shared";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import type { CustomSession, TRPCContext } from "./types";
-import type { OIDCConfig } from "../clients/oidc";
+import type { CustomSession, TRPCContext } from "./types.js";
+import type { OIDCConfig } from "../clients/oidc/index.js";
 
 export function createContext({
   req,

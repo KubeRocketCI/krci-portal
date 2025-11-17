@@ -6,7 +6,7 @@ import {
   cdPipelineStatusEnum,
   createCDPipelineDraftInputSchema,
   editCDPipelineInputSchema,
-} from "./schema";
+} from "./schema.js";
 
 export type CDPipeline = z.infer<typeof cdPipelineSchema>;
 export type CDPipelineDraft = z.infer<typeof cdPipelineDraftSchema>;

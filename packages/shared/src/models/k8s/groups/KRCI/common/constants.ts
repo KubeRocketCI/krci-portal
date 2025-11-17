@@ -4,7 +4,7 @@ import {
   gitProviderEnum,
   monitoringProviderEnum,
   protectedOperationsEnum,
-} from "./schema";
+} from "./schema.js";
 
 export const ciTool = ciToolEnum.enum;
 

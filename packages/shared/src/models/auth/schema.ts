@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { OIDCUserSchema } from "../user/schema";
+import { OIDCUserSchema } from "../user/schema.js";
 
 export const loginInputSchema = z.string();
 

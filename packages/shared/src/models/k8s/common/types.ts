@@ -1,5 +1,5 @@
 import z from "zod";
-import { defaultPermissionsToCheck, k8sOperation, rbacOperation } from "./constants";
+import { defaultPermissionsToCheck, k8sOperation, rbacOperation } from "./constants.js";
 import {
   k8sResourceConfigSchema,
   kubeManagedFieldsEntrySchema,
@@ -8,8 +8,8 @@ import {
   kubeObjectDraftMetadataSchema,
   KubeObjectListBaseSchema,
   kubeObjectMetadataSchema,
-} from "./schema";
-import { ValueOf } from "../../../utils/types";
+} from "./schema.js";
+import { ValueOf } from "../../../utils/types.js";
 
 export type KubeManagedFieldsEntry = z.infer<typeof kubeManagedFieldsEntrySchema>;
 

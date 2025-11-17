@@ -1,6 +1,6 @@
-import { Secret } from "../../../../groups/Core";
-import { editResource } from "../../../utils";
-import { safeEncode } from "../../../../../../utils";
+import { Secret } from "../../../../groups/Core/index.js";
+import { editResource } from "../../../utils.js";
+import { safeEncode } from "../../../../../../utils/index.js";
 import z from "zod";
 import { Draft } from "immer";
 

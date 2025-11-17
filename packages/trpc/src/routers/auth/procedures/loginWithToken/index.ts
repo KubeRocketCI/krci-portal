@@ -1,6 +1,6 @@
-import { publicProcedure } from "../../../../procedures/public";
+import { publicProcedure } from "../../../../procedures/public/index.js";
 import { loginWithTokenInputSchema, loginWithTokenOutputSchema } from "@my-project/shared";
-import { OIDCClient } from "../../../../clients/oidc";
+import { OIDCClient } from "../../../../clients/oidc/index.js";
 import { TRPCError } from "@trpc/server";
 
 export const authLoginWithTokenProcedure = publicProcedure

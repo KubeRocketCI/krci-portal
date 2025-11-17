@@ -1,8 +1,8 @@
-import { createRandomString, truncateName } from "../../../../../../../utils";
-import { CDPipeline, Stage } from "../../../../KRCI";
-import { PipelineRun } from "../../types";
-import { pipelineRunLabels } from "../../labels";
-import { pipelineType } from "../../../Pipeline/constants";
+import { createRandomString, truncateName } from "../../../../../../../utils/index.js";
+import { CDPipeline, Stage } from "../../../../KRCI/index.js";
+import { PipelineRun } from "../../types.js";
+import { pipelineRunLabels } from "../../labels.js";
+import { pipelineType } from "../../../Pipeline/constants.js";
 
 export const createDeployPipelineRunDraft = ({
   cdPipeline,

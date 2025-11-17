@@ -4,9 +4,9 @@ import {
   kubeObjectBaseSchema,
   kubeObjectDraftMetadataSchema,
   kubeObjectMetadataSchema,
-} from "../../../common";
-import { pipelineLabels } from "./labels";
-import { pipelineRefSchema, taskRefSchema, whenExpressionSchema, paramValueSchema } from "../common/schema";
+} from "../../../common/index.js";
+import { pipelineLabels } from "./labels.js";
+import { pipelineRefSchema, taskRefSchema, whenExpressionSchema, paramValueSchema } from "../common/schema.js";
 
 export const pipelineTypeEnum = z.enum(["build", "review", "deploy", "clean", "security", "release", "tests"]);
 

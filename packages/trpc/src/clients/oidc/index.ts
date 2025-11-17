@@ -12,7 +12,7 @@ import {
   refreshTokenGrant,
 } from "openid-client";
 import { TRPCError } from "@trpc/server";
-import { getTokenExpirationTime } from "../../utils/getTokenExpirationTime";
+import { getTokenExpirationTime } from "../../utils/getTokenExpirationTime/index.js";
 import type { OIDCUser } from "@my-project/shared";
 import { jwtDecode } from "jwt-decode";
 

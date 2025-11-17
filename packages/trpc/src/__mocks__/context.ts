@@ -1,11 +1,11 @@
-import { createMockedK8sClient, MockK8sClient } from "./k8s-client";
-import { createMockedOIDCClient } from "./oidc-client";
-import { mockSession } from "./session";
+import { createMockedK8sClient, MockK8sClient } from "./k8s-client.js";
+import { createMockedOIDCClient } from "./oidc-client.js";
+import { mockSession } from "./session.js";
 import { FastifyReply, FastifyRequest } from "fastify";
-import { CustomSession } from "../context/types";
+import { CustomSession } from "../context/types.js";
 import { vi } from "vitest";
 import { ISessionStore } from "@my-project/shared";
-import type { OIDCConfig } from "../clients/oidc";
+import type { OIDCConfig } from "../clients/oidc/index.js";
 
 export function createMockedDBSessionStore(mockSession: CustomSession): ISessionStore {
   return {

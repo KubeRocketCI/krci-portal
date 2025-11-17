@@ -8,7 +8,7 @@ import {
   meOutputSchema,
   loginWithTokenInputSchema,
   loginWithTokenOutputSchema,
-} from "./schema";
+} from "./schema.js";
 
 export type LoginInput = z.infer<typeof loginInputSchema>;
 

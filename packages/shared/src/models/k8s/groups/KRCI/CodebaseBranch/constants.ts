@@ -1,6 +1,6 @@
-import { K8sResourceConfig } from "../../../common/types";
-import { codebaseBranchStatusEnum } from "./schema";
-import { codebaseBranchLabels } from "./labels";
+import { K8sResourceConfig } from "../../../common/types.js";
+import { codebaseBranchStatusEnum } from "./schema.js";
+import { codebaseBranchLabels } from "./labels.js";
 
 export const k8sCodebaseBranchConfig = {
   apiVersion: "v2.edp.epam.com/v1",

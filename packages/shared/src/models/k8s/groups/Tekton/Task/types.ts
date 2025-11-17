@@ -1,5 +1,5 @@
 import z from "zod";
-import { taskDraftSchema, taskSchema } from "./schema";
+import { taskDraftSchema, taskSchema } from "./schema.js";
 
 export type Task = z.infer<typeof taskSchema>;
 

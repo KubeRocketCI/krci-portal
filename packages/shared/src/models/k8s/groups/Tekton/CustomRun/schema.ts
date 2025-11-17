@@ -1,6 +1,6 @@
 import z from "zod";
-import { kubeObjectBaseSchema, kubeObjectMetadataSchema } from "../../../common";
-import { customRunLabels } from "./labels";
+import { kubeObjectBaseSchema, kubeObjectMetadataSchema } from "../../../common/index.js";
+import { customRunLabels } from "./labels.js";
 
 const customRunLabelsSchema = z.object({
   [customRunLabels.pipelineRun]: z.string().optional(),

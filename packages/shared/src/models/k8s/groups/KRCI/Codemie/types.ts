@@ -6,7 +6,7 @@ import {
   codemieSecretSchema,
   createCodemieDraftInputSchema,
   createCodemieDraftSecretInputSchema,
-} from "./schema";
+} from "./schema.js";
 
 export type Codemie = z.infer<typeof codemieSchema>;
 export type CodemieDraft = z.infer<typeof codemieDraftSchema>;

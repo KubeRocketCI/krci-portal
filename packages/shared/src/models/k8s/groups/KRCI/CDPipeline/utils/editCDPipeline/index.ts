@@ -1,6 +1,6 @@
 import { ZodError } from "zod";
-import { CDPipeline, EditCDPipelineInput } from "../../types";
-import { editCDPipelineInputSchema, cdPipelineSchema } from "../../schema";
+import { CDPipeline, EditCDPipelineInput } from "../../types.js";
+import { editCDPipelineInputSchema, cdPipelineSchema } from "../../schema.js";
 
 /**
  * Updates a CDPipeline resource with editable fields

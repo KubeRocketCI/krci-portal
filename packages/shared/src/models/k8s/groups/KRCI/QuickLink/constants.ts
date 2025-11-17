@@ -1,5 +1,5 @@
-import { K8sResourceConfig } from "../../../common";
-import { quickLinkTypeEnum, systemQuickLinksEnum } from "./schema";
+import { K8sResourceConfig } from "../../../common/index.js";
+import { quickLinkTypeEnum, systemQuickLinksEnum } from "./schema.js";
 
 export const k8sQuickLinkConfig = {
   apiVersion: "v2.edp.epam.com/v1",

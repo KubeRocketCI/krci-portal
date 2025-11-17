@@ -1,2 +1,2 @@
-export * from "./getTaskRunStatus";
-export * from "./getTaskRunStepStatus";
+export * from "./getTaskRunStatus/index.js";
+export * from "./getTaskRunStepStatus/index.js";

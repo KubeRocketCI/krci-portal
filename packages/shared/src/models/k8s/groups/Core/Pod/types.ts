@@ -1,5 +1,5 @@
 import z from "zod";
-import { podDraftSchema, podSchema } from "./schema";
+import { podDraftSchema, podSchema } from "./schema.js";
 
 export type Pod = z.infer<typeof podSchema>;
 export type PodDraft = z.infer<typeof podDraftSchema>;

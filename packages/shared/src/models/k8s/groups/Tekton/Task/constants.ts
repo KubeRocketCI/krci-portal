@@ -1,4 +1,4 @@
-import { K8sResourceConfig } from "../../../common";
+import { K8sResourceConfig } from "../../../common/index.js";
 
 export const k8sTaskConfig = {
   apiVersion: "tekton.dev/v1",

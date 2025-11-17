@@ -1,10 +1,10 @@
 import { k8sResourceConfigSchema } from "@my-project/shared";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors";
-import { protectedProcedure } from "../../../../../procedures/protected";
-import { handleK8sError } from "../../../utils/handleK8sError";
-import { K8sClient } from "../../../../../clients/k8s";
+import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors/index.js";
+import { protectedProcedure } from "../../../../../procedures/protected/index.js";
+import { handleK8sError } from "../../../utils/handleK8sError/index.js";
+import { K8sClient } from "../../../../../clients/k8s/index.js";
 
 export const k8sGetProcedure = protectedProcedure
   .input(

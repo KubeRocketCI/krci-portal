@@ -9,7 +9,7 @@ import {
   stageTriggerTypeEnum,
   stageQualityGateSchema,
   editStageInputSchema,
-} from "./schema";
+} from "./schema.js";
 
 export type Stage = z.infer<typeof stageSchema>;
 export type StageDraft = z.infer<typeof stageDraftSchema>;

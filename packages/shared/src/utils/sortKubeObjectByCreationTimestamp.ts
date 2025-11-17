@@ -1,4 +1,4 @@
-import { KubeObjectBase } from "../models";
+import { KubeObjectBase } from "../models/index.js";
 
 export const sortKubeObjectByCreationTimestamp = (
   a: KubeObjectBase,

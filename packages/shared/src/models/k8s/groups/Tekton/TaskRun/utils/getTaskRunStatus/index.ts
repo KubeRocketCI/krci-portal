@@ -1,4 +1,4 @@
-import { TaskRun, TaskRunStatus, TaskRunStatusReason } from "../..";
+import { TaskRun, TaskRunStatus, TaskRunStatusReason } from "../../index.js";
 
 export const getTaskRunStatus = (
   taskRun: TaskRun | undefined

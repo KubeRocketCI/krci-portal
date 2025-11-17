@@ -1,6 +1,6 @@
 import { ZodError } from "zod";
-import { Stage, EditStageInput } from "../../types";
-import { editStageInputSchema, stageSchema } from "../../schema";
+import { Stage, EditStageInput } from "../../types.js";
+import { editStageInputSchema, stageSchema } from "../../schema.js";
 
 /**
  * Updates a Stage resource with editable fields

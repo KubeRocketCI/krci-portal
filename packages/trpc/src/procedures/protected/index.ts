@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
-import { ERROR_NO_SESSION_FOUND, ERROR_TOKEN_EXPIRED } from "../../routers/auth/errors";
-import { t } from "../../trpc";
+import { ERROR_NO_SESSION_FOUND, ERROR_TOKEN_EXPIRED } from "../../routers/auth/errors/index.js";
+import { t } from "../../trpc.js";
 
 export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
   const { session } = ctx;

@@ -1,6 +1,6 @@
-import { SecretDraft, secretDraftSchema } from "../../../../groups/Core";
-import { SECRET_LABEL_SECRET_TYPE } from "../../../constants";
-import { safeEncode } from "../../../../../../utils";
+import { SecretDraft, secretDraftSchema } from "../../../../groups/Core/index.js";
+import { SECRET_LABEL_SECRET_TYPE } from "../../../constants.js";
+import { safeEncode } from "../../../../../../utils/index.js";
 import z, { ZodError } from "zod";
 
 const createCodemieSecretDraftSchema = z.object({

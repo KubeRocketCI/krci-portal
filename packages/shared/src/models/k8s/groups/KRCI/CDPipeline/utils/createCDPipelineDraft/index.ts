@@ -1,7 +1,7 @@
 import { ZodError } from "zod";
-import { k8sCDPipelineConfig } from "../../constants";
-import { CDPipelineDraft, CreateCDPipelineDraftInput } from "../../types";
-import { cdPipelineDraftSchema, createCDPipelineDraftInputSchema } from "../../schema";
+import { k8sCDPipelineConfig } from "../../constants.js";
+import { CDPipelineDraft, CreateCDPipelineDraftInput } from "../../types.js";
+import { cdPipelineDraftSchema, createCDPipelineDraftInputSchema } from "../../schema.js";
 
 const { kind, apiVersion } = k8sCDPipelineConfig;
 

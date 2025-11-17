@@ -1,5 +1,5 @@
-import { codebaseType } from "../../constants";
-import { Codebase } from "../../types";
+import { codebaseType } from "../../constants.js";
+import { Codebase } from "../../types.js";
 
 export const isAutotest = (codebase: Codebase) => codebase.spec.type === codebaseType.autotest;
 export const isLibrary = (codebase: Codebase) => codebase.spec.type === codebaseType.library;

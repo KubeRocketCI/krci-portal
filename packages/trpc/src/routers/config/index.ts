@@ -1,4 +1,4 @@
-import { t } from "../../trpc";
+import { t } from "../../trpc.js";
 import { z } from "zod";
 
 export const configRouter = t.router({

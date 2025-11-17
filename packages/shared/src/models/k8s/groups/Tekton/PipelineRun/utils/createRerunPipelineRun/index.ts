@@ -1,6 +1,6 @@
-import { KubeObjectBase } from "../../../../../../../models";
-import { createRandomString, truncateName } from "../../../../../../../utils";
-import { PipelineRun } from "../../types";
+import { KubeObjectBase } from "../../../../../../../models/index.js";
+import { createRandomString, truncateName } from "../../../../../../../utils/index.js";
+import { PipelineRun } from "../../types.js";
 
 const rerunIdentifier = "r-";
 

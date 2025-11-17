@@ -1,5 +1,5 @@
-import { KrakendClient } from "../../../../clients/krakend";
-import { protectedProcedure } from "../../../../procedures/protected";
+import { KrakendClient } from "../../../../clients/krakend/index.js";
+import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { TRPCError } from "@trpc/server";
 import {
   k8sConfigMapConfig,
@@ -10,7 +10,7 @@ import {
   QuickLink,
 } from "@my-project/shared";
 import { z } from "zod";
-import { K8sClient } from "../../../../clients/k8s";
+import { K8sClient } from "../../../../clients/k8s/index.js";
 
 export const getSonarQubeProjectDataProcedure = protectedProcedure
   .input(

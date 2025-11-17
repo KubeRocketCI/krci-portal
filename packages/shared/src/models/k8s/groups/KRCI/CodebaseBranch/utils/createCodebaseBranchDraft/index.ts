@@ -1,12 +1,12 @@
 import { ZodError } from "zod";
-import { codebaseBranchLabels } from "../../labels";
-import { k8sCodebaseBranchConfig } from "../../constants";
-import { codebaseBranchDraftSchema } from "../../schema";
-import { CodebaseBranchDraft } from "../../types";
-import { truncateName } from "../../../../../../../utils/truncateName";
-import { createRandomString } from "../../../../../../../utils/createRandomString";
-import { CreateCodebaseBranchDraftInput } from "./types";
-import { createCodebaseBranchDraftInputSchema } from "./schema";
+import { codebaseBranchLabels } from "../../labels.js";
+import { k8sCodebaseBranchConfig } from "../../constants.js";
+import { codebaseBranchDraftSchema } from "../../schema.js";
+import { CodebaseBranchDraft } from "../../types.js";
+import { truncateName } from "../../../../../../../utils/truncateName.js";
+import { createRandomString } from "../../../../../../../utils/createRandomString.js";
+import { CreateCodebaseBranchDraftInput } from "./types.js";
+import { createCodebaseBranchDraftInputSchema } from "./schema.js";
 
 const { kind, apiVersion } = k8sCodebaseBranchConfig;
 

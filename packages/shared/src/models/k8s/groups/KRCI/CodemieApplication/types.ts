@@ -1,5 +1,5 @@
 import z from "zod";
-import { codemieApplicationDraftSchema, codemieApplicationSchema, codemieApplicationStatusEnum } from "./schema";
+import { codemieApplicationDraftSchema, codemieApplicationSchema, codemieApplicationStatusEnum } from "./schema.js";
 
 export type CodemieApplication = z.infer<typeof codemieApplicationSchema>;
 export type CodemieApplicationDraft = z.infer<typeof codemieApplicationDraftSchema>;

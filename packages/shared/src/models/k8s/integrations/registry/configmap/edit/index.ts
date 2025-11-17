@@ -1,7 +1,7 @@
 import z from "zod";
-import { ConfigMap } from "../../../../groups/Core";
-import { editResource } from "../../../utils";
-import { containerRegistryType } from "../../constants";
+import { ConfigMap } from "../../../../groups/Core/index.js";
+import { editResource } from "../../../utils.js";
+import { containerRegistryType } from "../../constants.js";
 import { Draft } from "immer";
 
 const editKRCIConfigMapRegistryDataSchema = z.discriminatedUnion("registryType", [

@@ -1,5 +1,5 @@
-import { K8sResourceConfig } from "../../../common";
-import { approvalTaskActionSchema } from "./schema";
+import { K8sResourceConfig } from "../../../common/index.js";
+import { approvalTaskActionSchema } from "./schema.js";
 
 export const k8sApprovalTaskConfig = {
   apiVersion: "edp.epam.com/v1alpha1",

@@ -1,5 +1,5 @@
-import { K8sResourceConfig } from "../../../common/types";
-import { codemieProjectSettingsStatusEnum } from "./schema";
+import { K8sResourceConfig } from "../../../common/types.js";
+import { codemieProjectSettingsStatusEnum } from "./schema.js";
 
 export const k8sCodemieProjectSettingsConfig = {
   apiVersion: "edp.epam.com/v1alpha1",

@@ -1,9 +1,9 @@
 import { TRPCError } from "@trpc/server";
-import { protectedProcedure } from "../../../../procedures/protected";
+import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { k8sConfigMapConfig, ConfigMap, krciConfigMapNames } from "@my-project/shared";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors";
+import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors/index.js";
 import z from "zod";
-import { K8sClient } from "../../../../clients/k8s";
+import { K8sClient } from "../../../../clients/k8s/index.js";
 
 export const kubeRootConfigName = "kube-root-ca.crt";
 

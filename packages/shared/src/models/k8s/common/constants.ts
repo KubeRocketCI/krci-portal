@@ -1,5 +1,5 @@
-import { k8sOperationEnum, rbacOperationEnum } from "./schema";
-import { K8sOperation, RBACOperation } from "./types";
+import { k8sOperationEnum, rbacOperationEnum } from "./schema.js";
+import { K8sOperation, RBACOperation } from "./types.js";
 
 export const inClusterName = "in-cluster";
 

@@ -1,5 +1,5 @@
 import z, { ZodError } from "zod";
-import { JiraServerDraft, jiraServerDraftSchema, k8sJiraServerConfig } from "../../../../groups/KRCI";
+import { JiraServerDraft, jiraServerDraftSchema, k8sJiraServerConfig } from "../../../../groups/KRCI/index.js";
 
 const createJiraServerDraftSchema = z.object({
   url: z.string(),

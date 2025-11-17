@@ -1,6 +1,6 @@
-import { integrationSecretName, SECRET_LABEL_INTEGRATION_SECRET, SECRET_LABEL_SECRET_TYPE } from "../../../constants";
-import { safeEncode } from "../../../../../../utils";
-import { k8sSecretConfig, SecretDraft, secretDraftSchema } from "../../../../groups/Core";
+import { integrationSecretName, SECRET_LABEL_INTEGRATION_SECRET, SECRET_LABEL_SECRET_TYPE } from "../../../constants.js";
+import { safeEncode } from "../../../../../../utils/index.js";
+import { k8sSecretConfig, SecretDraft, secretDraftSchema } from "../../../../groups/Core/index.js";
 import z, { ZodError } from "zod";
 
 const createJiraIntegrationSecretDraftSchema = z.object({

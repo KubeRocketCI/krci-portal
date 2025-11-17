@@ -1,8 +1,8 @@
-import { protectedProcedure } from "../../../../procedures/protected";
+import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { K8sClient } from "../../../../clients/k8s";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors";
+import { K8sClient } from "../../../../clients/k8s/index.js";
+import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors/index.js";
 import { VersionApi } from "@kubernetes/client-node";
 
 export const k8sGetClusterDetails = protectedProcedure

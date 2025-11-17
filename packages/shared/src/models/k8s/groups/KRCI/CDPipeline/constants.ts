@@ -1,5 +1,5 @@
-import { K8sResourceConfig } from "../../../common/types";
-import { cdPipelineDeploymentTypeEnum, cdPipelineResultEnum, cdPipelineStatusEnum } from "./schema";
+import { K8sResourceConfig } from "../../../common/types.js";
+import { cdPipelineDeploymentTypeEnum, cdPipelineResultEnum, cdPipelineStatusEnum } from "./schema.js";
 
 export const k8sCDPipelineConfig = {
   apiVersion: "v2.edp.epam.com/v1",

@@ -123,6 +123,9 @@ export const useWatchList = <I extends KubeObjectBase>({
   });
 
   // Register subscription and handle WebSocket events
+  // Note: We intentionally do NOT include resourceVersion in dependencies.
+  // Kubernetes Watch continues from the initial resourceVersion automatically.
+  // Restarting subscriptions on every resourceVersion change causes excessive start/stop cycles.
   useEffect(
     () => {
       if (!query.isSuccess) return;
@@ -136,7 +139,7 @@ export const useWatchList = <I extends KubeObjectBase>({
 
       const unregister = watchListRegistry.register<I>(queryKey, params, onWatchEvent);
 
-      // Start subscription with current resourceVersion
+      // Start subscription with current resourceVersion (only once when query succeeds)
       const resourceVersion = query.data.metadata?.resourceVersion;
       if (resourceVersion) {
         watchListRegistry.startSubscription<I>(queryKey, resourceVersion);
@@ -147,7 +150,7 @@ export const useWatchList = <I extends KubeObjectBase>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       query.isSuccess,
-      query.data?.metadata?.resourceVersion,
+      // Removed query.data?.metadata?.resourceVersion - subscriptions should not restart on resourceVersion changes
       clusterName,
       _namespace,
       resourceConfig.pluralName,

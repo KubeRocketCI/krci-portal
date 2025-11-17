@@ -1,8 +1,8 @@
 import z, { ZodError } from "zod";
-import { GitProvider, gitProvider } from "../../../../groups/KRCI";
-import { k8sSecretConfig, SecretDraft, secretDraftSchema } from "../../../../groups/Core";
-import { SECRET_LABEL_SECRET_TYPE } from "../../../constants";
-import { safeEncode } from "../../../../../../utils";
+import { GitProvider, gitProvider } from "../../../../groups/KRCI/index.js";
+import { k8sSecretConfig, SecretDraft, secretDraftSchema } from "../../../../groups/Core/index.js";
+import { SECRET_LABEL_SECRET_TYPE } from "../../../constants.js";
+import { safeEncode } from "../../../../../../utils/index.js";
 
 export const gitUser = {
   GERRIT: "edp-ci",

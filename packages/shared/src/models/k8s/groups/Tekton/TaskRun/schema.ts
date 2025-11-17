@@ -1,7 +1,7 @@
 import z from "zod";
-import { kubeObjectBaseSchema, kubeObjectMetadataSchema } from "../../../common";
-import { taskRunLabels } from "./labels";
-import { paramValueSchema, taskRefSchema, whenExpressionSchema } from "../common/schema";
+import { kubeObjectBaseSchema, kubeObjectMetadataSchema } from "../../../common/index.js";
+import { taskRunLabels } from "./labels.js";
+import { paramValueSchema, taskRefSchema, whenExpressionSchema } from "../common/schema.js";
 
 const resourceQuantitySchema = z.union([
   z.number().int(),

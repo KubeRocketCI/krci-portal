@@ -1,9 +1,9 @@
-import { createRandomString, truncateName } from "../../../../../../../utils";
-import { Pipeline } from "../../../Pipeline/types";
-import { PipelineRunDraft } from "../../types";
-import { TriggerTemplate } from "../../../TriggerTemplate";
-import { pipelineLabels } from "../../../Pipeline/labels";
-import { pipelineRunLabels } from "../../labels";
+import { createRandomString, truncateName } from "../../../../../../../utils/index.js";
+import { Pipeline } from "../../../Pipeline/types.js";
+import { PipelineRunDraft } from "../../types.js";
+import { TriggerTemplate } from "../../../TriggerTemplate/index.js";
+import { pipelineLabels } from "../../../Pipeline/labels.js";
+import { pipelineRunLabels } from "../../labels.js";
 
 const getPipelineRunFromTriggerTemplate = (triggerTemplate: TriggerTemplate, pipeline: Pipeline) => {
   if (!triggerTemplate) {

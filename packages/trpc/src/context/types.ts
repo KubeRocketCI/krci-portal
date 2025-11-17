@@ -1,7 +1,7 @@
 import type { FastifySessionObject } from "@fastify/session";
 import type { ISessionStore, OIDCUser } from "@my-project/shared";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { OIDCConfig } from "../clients/oidc";
+import { OIDCConfig } from "../clients/oidc/index.js";
 
 // Session type
 export type CustomSession = FastifySessionObject & {

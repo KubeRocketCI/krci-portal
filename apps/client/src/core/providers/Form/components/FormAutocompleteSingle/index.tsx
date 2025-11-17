@@ -18,15 +18,14 @@ const FormAutocompleteSingleInner = React.forwardRef(
       TextFieldProps = {},
       AutocompleteProps,
       ...props
-    }: FormAutocompleteSingleProps<TOption, TFormValues>,
-    ref: React.ForwardedRef<HTMLInputElement>
+    }: FormAutocompleteSingleProps<TOption, TFormValues>
+    // _ref: React.ForwardedRef<HTMLInputElement>
   ) => {
     // Map TextFieldProps.helperText to helperText
     const helperText = TextFieldProps?.helperText as string | undefined;
 
     return (
       <FormCombobox
-        ref={ref}
         name={name}
         control={control}
         errors={errors}

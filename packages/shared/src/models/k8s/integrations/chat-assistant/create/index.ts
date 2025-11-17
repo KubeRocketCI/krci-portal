@@ -1,6 +1,6 @@
-import { safeEncode } from "../../../../../utils";
-import { SecretDraft, secretDraftSchema } from "../../../groups/Core";
-import { integrationSecretName, SECRET_LABEL_SECRET_TYPE, SECRET_LABEL_INTEGRATION_SECRET } from "../../constants";
+import { safeEncode } from "../../../../../utils/index.js";
+import { SecretDraft, secretDraftSchema } from "../../../groups/Core/index.js";
+import { integrationSecretName, SECRET_LABEL_SECRET_TYPE, SECRET_LABEL_INTEGRATION_SECRET } from "../../constants.js";
 import z, { ZodError } from "zod";
 
 const createChatAssistantIntegrationSecretDraftSchema = z.object({

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { codebaseBranchSchema } from "../../schema";
+import { codebaseBranchSchema } from "../../schema.js";
 
 export const createCodebaseBranchDraftInputSchema = z.object({
   releaseBranchName: codebaseBranchSchema.shape.spec.shape.branchName.optional(),
