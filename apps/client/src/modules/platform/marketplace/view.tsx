@@ -37,7 +37,7 @@ export default function MarketplacePageContent() {
             {viewMode === VIEW_MODES.TABLE ? (
               <TemplatesTable />
             ) : (
-              <div className="p-5 bg-transparent border border-border rounded">
+              <div className="border-border rounded border bg-transparent p-5">
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <TemplateFilter />
@@ -56,11 +56,11 @@ export default function MarketplacePageContent() {
                   </div>
                   <TemplatesGrid />
                 </div>
-                </div>
-              )}
-            </>
-          </div>
-        </Section>
-      </PageWrapper>
-    );
-  }
+              </div>
+            )}
+          </>
+        </div>
+      </Section>
+    </PageWrapper>
+  );
+}

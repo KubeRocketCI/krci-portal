@@ -13,6 +13,7 @@ import {
 } from "@/core/components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
 import { humanize } from "@/core/utils/date-humanize";
+import { useMonacoTheme } from "@/core/hooks/useTheme";
 
 import React from "react";
 import { useClusterStore } from "@/k8s/store";
@@ -25,6 +26,7 @@ export default function KubeConfigPreviewDialog({ state }: KubeConfigPreviewDial
   const { clusterName, defaultNamespace } = useClusterStore();
   const editorRef = React.useRef<CodeEditorHandle>(null);
   const [timeRemaining, setTimeRemaining] = React.useState<string>("");
+  const monacoTheme = useMonacoTheme();
 
   const { data } = useQuery({
     queryKey: ["k8s.kubeconfig", clusterName],
@@ -108,7 +110,7 @@ export default function KubeConfigPreviewDialog({ state }: KubeConfigPreviewDial
             language="yaml"
             readOnly
             onChange={() => {}}
-            theme="vs-light"
+            theme={monacoTheme}
           />
         </DialogBody>
         <DialogFooter>

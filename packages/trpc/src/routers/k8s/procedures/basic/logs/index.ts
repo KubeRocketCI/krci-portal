@@ -5,7 +5,6 @@ import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors";
 import { handleK8sError } from "../../../utils/handleK8sError";
 import * as k8s from "@kubernetes/client-node";
 import { PassThrough } from "stream";
-import { observable } from "@trpc/server/observable";
 import { K8sClient } from "../../../../../clients/k8s";
 
 export const k8sPodLogsProcedure = protectedProcedure
@@ -96,84 +95,137 @@ export const k8sWatchPodLogsProcedure = protectedProcedure
       sinceTime: z.string().optional(),
     })
   )
-  .subscription(({ input, ctx }) => {
-    return observable<{ logs: string; type: "data" | "error" | "end" }>((emit) => {
-      try {
-        const k8sClient = new K8sClient(ctx.session);
+  .subscription(async function* ({ input, ctx, signal }) {
+    const k8sClient = new K8sClient(ctx.session);
 
-        if (!k8sClient.KubeConfig) {
-          emit.error(new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED));
-          return;
+    if (!k8sClient.KubeConfig) {
+      throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
+    }
+
+    const log = new k8s.Log(k8sClient.KubeConfig);
+    const { namespace, podName, container, follow, tailLines, previous, sinceTime } = input;
+
+    const logOptions: k8s.LogOptions = {
+      follow,
+      pretty: false,
+      timestamps: true, // Always get timestamps from k8s
+      previous,
+    };
+
+    if (tailLines) {
+      logOptions.tailLines = tailLines;
+    }
+
+    if (sinceTime) {
+      logOptions.sinceTime = sinceTime;
+    }
+
+    const logStream = new PassThrough();
+    let request: AbortController | undefined;
+    let isAborted = false;
+
+    // Create a queue to bridge stream events to async generator
+    const eventQueue: Array<{ logs: string; type: "data" | "end" } | { error: unknown }> = [];
+    let resolveNext: (() => void) | null = null;
+
+    // Cleanup function
+    const cleanup = () => {
+      isAborted = true;
+      if (request) {
+        try {
+          request.abort();
+        } catch {
+          // Ignore abort errors
         }
+      }
+      logStream.destroy();
+    };
 
-        const log = new k8s.Log(k8sClient.KubeConfig);
-        const { namespace, podName, container, follow, tailLines, previous, sinceTime } = input;
+    // Handle abort signal
+    if (signal) {
+      signal.addEventListener("abort", cleanup);
+    }
 
-        const logOptions: k8s.LogOptions = {
-          follow,
-          pretty: false,
-          timestamps: true, // Always get timestamps from k8s
-          previous,
-        };
-
-        if (tailLines) {
-          logOptions.tailLines = tailLines;
+    try {
+      // Set up stream event handlers
+      logStream.on("data", (chunk) => {
+        if (!isAborted) {
+          const chunkStr = chunk.toString();
+          // Wrap k8s timestamps with [[ ]] for easier frontend parsing
+          const modifiedChunk = chunkStr.replace(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.?\d*Z?)\s+/gm, "[[$1]] ");
+          eventQueue.push({ logs: modifiedChunk, type: "data" });
+          if (resolveNext) {
+            resolveNext();
+            resolveNext = null;
+          }
         }
+      });
 
-        if (sinceTime) {
-          logOptions.sinceTime = sinceTime;
+      logStream.on("end", () => {
+        if (!isAborted) {
+          eventQueue.push({ logs: "", type: "end" });
+          if (resolveNext) {
+            resolveNext();
+            resolveNext = null;
+          }
         }
+      });
 
-        const logStream = new PassThrough();
-        let request: AbortController | undefined;
-        let isActive = true;
+      logStream.on("error", (err) => {
+        if (!isAborted) {
+          eventQueue.push({ error: err });
+          if (resolveNext) {
+            resolveNext();
+            resolveNext = null;
+          }
+        }
+      });
 
-        logStream.on("data", (chunk) => {
-          if (isActive) {
-            const chunkStr = chunk.toString();
-            // Wrap k8s timestamps with [[ ]] for easier frontend parsing
-            const modifiedChunk = chunkStr.replace(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.?\d*Z?)\s+/gm, "[[$1]] ");
-            emit.next({ logs: modifiedChunk, type: "data" });
+      // Start the log stream
+      const logPromise = log.log(namespace, podName, container || "", logStream, logOptions);
+
+      logPromise
+        .then((req) => {
+          request = req;
+        })
+        .catch((err) => {
+          if (!isAborted) {
+            eventQueue.push({ error: err });
+            if (resolveNext) {
+              resolveNext();
+              resolveNext = null;
+            }
           }
         });
 
-        logStream.on("end", () => {
-          if (isActive) {
-            emit.next({ logs: "", type: "end" });
-          }
-        });
-
-        logStream.on("error", (err) => {
-          if (isActive) {
-            emit.error(handleK8sError(err));
-          }
-        });
-
-        log
-          .log(namespace, podName, container || "", logStream, logOptions)
-          .then((req) => {
-            request = req;
-          })
-          .catch((err) => {
-            if (isActive) {
-              emit.error(handleK8sError(err));
+      // Yield events as they come in
+      while (!isAborted && !signal?.aborted) {
+        // Wait for next event or abort
+        if (eventQueue.length === 0) {
+          await new Promise<void>((resolve) => {
+            resolveNext = resolve;
+            // Check if signal was aborted while waiting
+            if (signal?.aborted) {
+              resolve();
             }
           });
+        }
 
-        return () => {
-          isActive = false;
-          if (request) {
-            try {
-              request.abort();
-            } catch {
-              // Ignore abort errors
-            }
+        // Process all queued events
+        while (eventQueue.length > 0 && !signal?.aborted) {
+          const event = eventQueue.shift()!;
+          if ("error" in event) {
+            throw handleK8sError(event.error);
           }
-          logStream.destroy();
-        };
-      } catch (error) {
-        emit.error(handleK8sError(error));
-        return () => {};
+          yield event;
+        }
       }
-    });
+    } catch (error) {
+      throw handleK8sError(error);
+    } finally {
+      cleanup();
+      if (signal) {
+        signal.removeEventListener("abort", cleanup);
+      }
+    }
   });

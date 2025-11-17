@@ -53,4 +53,3 @@ export const SelectionFooter = ({ setActiveTab }: SelectionFooterProps) => {
     </div>
   );
 };
-

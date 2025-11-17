@@ -13,4 +13,4 @@ export const fromServerRoot = (...segments: string[]): string =>
 export const fromMonorepoRoot = (...segments: string[]): string =>
   path.join(MONOREPO_ROOT, ...segments);
 
-export { SERVER_ROOT, MONOREPO_ROOT };
+export { MONOREPO_ROOT };

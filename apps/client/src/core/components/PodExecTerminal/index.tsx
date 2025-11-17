@@ -235,7 +235,7 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-2">
         {pods.length > 1 && (
-          <div className="flex flex-col gap-1.5 min-w-[180px]">
+          <div className="flex min-w-[180px] flex-col gap-1.5">
             <Label htmlFor="pod-select">Pod</Label>
             <Select value={podName} onValueChange={handlePodChange}>
               <SelectTrigger id="pod-select" className="h-9">
@@ -252,7 +252,7 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
           </div>
         )}
 
-        <div className="flex flex-col gap-1.5 min-w-[200px]">
+        <div className="flex min-w-[200px] flex-col gap-1.5">
           <Label htmlFor="container-name-chooser">Container</Label>
           <Select value={selectedContainer} onValueChange={handleContainerChange}>
             <SelectTrigger id="container-name-chooser" className="h-9">

@@ -4,7 +4,7 @@ declare global {
     interface ProcessEnv {
       NODE_ENV: "development" | "production" | "test";
 
-      SERVER_PORT: number;
+      SERVER_PORT: string;
       SERVER_SECRET: string;
 
       LOCAL_CLIENT_ORIGIN: string;
@@ -16,6 +16,8 @@ declare global {
       OIDC_CODE_CHALLENGE_METHOD: string;
 
       API_PREFIX: string;
+
+      DEPLOY_CLIENT_DIST_DIR?: string;
     }
   }
 }

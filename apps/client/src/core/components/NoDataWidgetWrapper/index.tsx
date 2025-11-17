@@ -16,7 +16,7 @@ export const NoDataWidgetWrapper: React.FC<NoDataWidgetWrapperProps> = ({
   children,
 }) => {
   return !isLoading && !hasData ? (
-    <div className="flex flex-row items-center gap-2 max-w-[520px]">
+    <div className="flex max-w-[520px] flex-row items-center gap-2">
       <TriangleAlert size={32} color={STATUS_COLOR.UNKNOWN} className="shrink-0" />
       {typeof text === "string" ? <p className="text-muted-foreground text-base">{text}</p> : text}
     </div>

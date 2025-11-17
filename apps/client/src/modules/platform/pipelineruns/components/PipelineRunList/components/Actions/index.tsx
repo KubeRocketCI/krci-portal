@@ -11,11 +11,7 @@ export const Actions = ({ pipelineRun }: { pipelineRun: PipelineRun }) => {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={"Options"}
-        >
+        <Button variant="ghost" size="icon" aria-label={"Options"}>
           <EllipsisVertical size={20} />
         </Button>
       </DropdownMenuTrigger>

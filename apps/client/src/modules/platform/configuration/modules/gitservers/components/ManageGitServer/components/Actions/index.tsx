@@ -96,13 +96,7 @@ export const Actions = () => {
           </Button>
         )}
 
-        <Button
-          onClick={resetAll}
-          size="sm"
-          variant="ghost"
-          disabled={!isAnyFormDirty}
-          className="ml-auto"
-        >
+        <Button onClick={resetAll} size="sm" variant="ghost" disabled={!isAnyFormDirty} className="ml-auto">
           Undo Changes
         </Button>
 

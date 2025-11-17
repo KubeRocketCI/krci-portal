@@ -4,4 +4,3 @@ import { mainTabs } from "@/modules/platform/codebases/dialogs/ManageCodebase/co
 export interface SelectionFooterProps {
   setActiveTab: React.Dispatch<React.SetStateAction<ValueOf<typeof mainTabs>>>;
 }
-

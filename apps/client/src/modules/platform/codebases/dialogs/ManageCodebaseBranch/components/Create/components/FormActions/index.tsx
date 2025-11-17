@@ -93,12 +93,7 @@ export const FormActions = () => {
           Undo Changes
         </Button>
       </div>
-      <Button
-        onClick={handleSubmit(onSubmit)}
-        variant="default"
-        size="sm"
-        disabled={!isDirty || isPending}
-      >
+      <Button onClick={handleSubmit(onSubmit)} variant="default" size="sm" disabled={!isDirty || isPending}>
         Create
       </Button>
     </div>

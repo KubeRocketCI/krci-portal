@@ -469,7 +469,7 @@ const SearchPopover: React.FC<SearchPopoverProps> = ({ open, onClose, terminalRe
   if (!open) return null;
 
   return (
-    <div className="absolute top-2 right-[15px] p-2 z-[1000] flex items-center gap-1 bg-[#f5f5f5] border border-[#e0e0e0] rounded shadow-[0_2px_8px_rgba(0,0,0,0.15)]">
+    <div className="absolute top-2 right-[15px] z-[1000] flex items-center gap-1 rounded border border-[#e0e0e0] bg-[#f5f5f5] p-2 shadow-[0_2px_8px_rgba(0,0,0,0.15)]">
       {/* Search Input */}
       <Input
         value={searchText}
@@ -477,7 +477,7 @@ const SearchPopover: React.FC<SearchPopoverProps> = ({ open, onClose, terminalRe
         onKeyDown={handleKeyDown}
         placeholder="Search..."
         autoFocus
-        className="w-[200px] bg-white border border-gray-300 rounded px-2 py-0.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+        className="focus:border-primary focus:ring-primary/20 w-[200px] rounded border border-gray-300 bg-white px-2 py-0.5 text-sm focus:ring-2 focus:outline-none"
       />
 
       {/* Search Options */}

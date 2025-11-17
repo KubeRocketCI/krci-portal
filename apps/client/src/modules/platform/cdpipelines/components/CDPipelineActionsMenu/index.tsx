@@ -12,11 +12,7 @@ import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import { k8sCDPipelineConfig, k8sOperation } from "@my-project/shared";
 import React from "react";
 
-export const CDPipelineActionsMenu = ({
-  backRoute,
-  variant,
-  data: { CDPipeline },
-}: CDPipelineActionsMenuProps) => {
+export const CDPipelineActionsMenu = ({ backRoute, variant, data: { CDPipeline } }: CDPipelineActionsMenuProps) => {
   const openManageCDPipelineDialog = useDialogOpener(ManageCDPipelineDialog);
   const openDeleteKubeObjectDialog = useDialogOpener(DeleteKubeObjectDialog);
   const cdPipelinePermissions = useCDPipelinePermissions();
@@ -77,7 +73,6 @@ export const CDPipelineActionsMenu = ({
     cdPipelinePermissions.data.patch.reason,
     cdPipelinePermissions.data.delete.allowed,
     cdPipelinePermissions.data.delete.reason,
-    variant,
     openManageCDPipelineDialog,
     openDeleteKubeObjectDialog,
     backRoute,

@@ -14,6 +14,7 @@ import {
 import { TRPCError } from "@trpc/server";
 import { getTokenExpirationTime } from "../../utils/getTokenExpirationTime";
 import type { OIDCUser } from "@my-project/shared";
+import { jwtDecode } from "jwt-decode";
 
 export interface OIDCConfig {
   issuerURL: string;
@@ -134,5 +135,88 @@ export class OIDCClient {
 
   generateCodeVerifier(): string {
     return randomPKCECodeVerifier();
+  }
+
+  async validateTokenAndGetUserInfo(oidcConfig: Configuration, token: string): Promise<OIDCUser> {
+    const isJWT = token.split(".").length === 3;
+
+    if (isJWT) {
+      try {
+        const decoded = jwtDecode<{ exp?: number; sub?: string; iss?: string; aud?: string }>(token);
+
+        if (decoded.exp) {
+          const expiresAt = decoded.exp * 1000;
+          const now = Date.now();
+
+          if (now >= expiresAt) {
+            throw new TRPCError({
+              code: "UNAUTHORIZED",
+              message: `Token expired at ${new Date(expiresAt).toISOString()}. Current time: ${new Date(now).toISOString()}`,
+            });
+          }
+        }
+      } catch (decodeError) {
+        // If decode fails, continue to try fetching user info
+      }
+    }
+
+    try {
+      return await this.fetchUserInfo(oidcConfig, token);
+    } catch (error) {
+      const errorMessage = (error as Error)?.message || "Unknown error";
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: `Token validation failed: ${errorMessage}. Please check your token and try again.`,
+      });
+    }
+  }
+
+  validateTokenAndGetTokenInfo(token: string): {
+    idToken: string;
+    idTokenExpiresAt: number;
+    accessToken: string;
+    accessTokenExpiresAt: number;
+    refreshToken?: string;
+  } {
+    try {
+      // Try to decode as JWT first
+      const decoded = jwtDecode<{ exp?: number; iat?: number }>(token);
+
+      if (decoded.exp) {
+        // It's a JWT token, extract expiration
+        const expiresAt = decoded.exp * 1000; // Convert to milliseconds
+
+        return {
+          idToken: token,
+          idTokenExpiresAt: expiresAt,
+          accessToken: token, // Use same token for both if it's an ID token
+          accessTokenExpiresAt: expiresAt,
+          refreshToken: undefined, // Refresh tokens not available in token-based login
+        };
+      }
+    } catch (error) {
+      // Not a JWT or failed to decode, treat as opaque access token
+      // Use default expiration (5 minutes from now) as we can't determine actual expiration
+      const defaultExpiration = Date.now() + 5 * 60 * 1000; // 5 minutes
+
+      return {
+        idToken: token,
+        idTokenExpiresAt: defaultExpiration,
+        accessToken: token,
+        accessTokenExpiresAt: defaultExpiration,
+        refreshToken: undefined,
+      };
+    }
+
+    // Fallback: if JWT doesn't have exp claim, use default expiration
+    const defaultExpiration = Date.now() + 5 * 60 * 1000; // 5 minutes
+
+    return {
+      idToken: token,
+      idTokenExpiresAt: defaultExpiration,
+      accessToken: token,
+      accessTokenExpiresAt: defaultExpiration,
+      refreshToken: undefined,
+    };
   }
 }

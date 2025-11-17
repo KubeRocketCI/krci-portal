@@ -1,4 +1,11 @@
-import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
 import { TableUI, TableBodyUI, TableCellUI, TableHeadUI, TableHeaderUI, TableRowUI } from "@/core/components/ui/table";
 import { Button } from "@/core/components/ui/button";
 import { Input } from "@/core/components/ui/input";
@@ -64,16 +71,13 @@ export const DeletionDialog = ({ gitServer, gitServerSecret, open, handleClose }
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="confirm-delete">{`Enter "${CONFIRM_TEXT_VALUE}" to start deletion`}</Label>
-            <Input
-              id="confirm-delete"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              className="w-full"
-            />
+            <Input id="confirm-delete" value={value} onChange={(e) => setValue(e.target.value)} className="w-full" />
           </div>
         </DialogBody>
         <DialogFooter>
-          <Button onClick={handleClose} variant="ghost">Cancel</Button>
+          <Button onClick={handleClose} variant="ghost">
+            Cancel
+          </Button>
           <Button onClick={handleDelete} disabled={deletionDisabled} variant="default">
             Delete
           </Button>

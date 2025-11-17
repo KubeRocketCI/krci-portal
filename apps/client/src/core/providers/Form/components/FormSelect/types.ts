@@ -28,7 +28,7 @@ export interface FormSelectProps<TFieldValues extends FieldValues = FieldValues>
   options: SelectOption[];
   disabled?: boolean;
   placeholder?: string;
-  
+
   // Adornments
   suffix?: React.ReactNode;
 }

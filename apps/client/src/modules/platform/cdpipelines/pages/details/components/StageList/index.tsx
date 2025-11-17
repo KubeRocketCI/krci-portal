@@ -9,7 +9,6 @@ import { Stage } from "./components/Stage";
 import { useStageFilter } from "../StageListFilter/hooks/useStageFilter";
 
 export const StageList = () => {
-
   const cdPipelineWatch = useCDPipelineWatch();
 
   const stagesWithItsApplicationsWatch = useStagesWithItsApplicationsWatch();

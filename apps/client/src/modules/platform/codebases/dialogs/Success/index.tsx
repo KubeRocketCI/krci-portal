@@ -1,5 +1,12 @@
 import { Button } from "@/core/components/ui/button";
-import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
 import React from "react";
 import { DIALOG_NAME } from "./constants";
 import { SuccessGraphDialogProps } from "./types";
@@ -35,9 +42,7 @@ export const SuccessDialog: React.FC<SuccessGraphDialogProps> = ({
               onClick={() => closeDialog()}
               className="no-underline"
             >
-              <Button variant="default">
-                Proceed
-              </Button>
+              <Button variant="default">Proceed</Button>
             </Link>
           )}
         </DialogFooter>

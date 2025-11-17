@@ -2,7 +2,11 @@ import { TabPanel } from "@/core/components/TabPanel";
 import { useStepperContext } from "@/core/providers/Stepper/hooks";
 import { ValueOf } from "@/core/types/global";
 import { useCodebaseCRUD } from "@/k8s/api/groups/KRCI/Codebase";
-import { configurationStepper, mainTabs, selectionStepper } from "@/modules/platform/codebases/dialogs/ManageCodebase/constants";
+import {
+  configurationStepper,
+  mainTabs,
+  selectionStepper,
+} from "@/modules/platform/codebases/dialogs/ManageCodebase/constants";
 import { Button } from "@/core/components/ui/button";
 import { codebaseCreationStrategy, codebaseLabels, createCodebaseDraftObject } from "@my-project/shared";
 import React from "react";

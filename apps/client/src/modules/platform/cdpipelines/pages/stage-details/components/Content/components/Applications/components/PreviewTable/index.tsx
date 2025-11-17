@@ -77,9 +77,9 @@ export const PreviewTable = () => {
                         allowed={applicationPermissions.data?.delete.allowed}
                         reason={applicationPermissions.data?.delete.reason}
                       >
-                          <Trash size={16} />
-                          Delete
-                        </ButtonWithPermission>
+                        <Trash size={16} />
+                        Delete
+                      </ButtonWithPermission>
                     </div>
                   )}
                 </div>

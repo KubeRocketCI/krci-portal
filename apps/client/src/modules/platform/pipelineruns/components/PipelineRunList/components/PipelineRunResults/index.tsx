@@ -1,9 +1,4 @@
-import {
-  TableUI,
-  TableBodyUI,
-  TableCellUI,
-  TableRowUI,
-} from "@/core/components/ui/table";
+import { TableUI, TableBodyUI, TableCellUI, TableRowUI } from "@/core/components/ui/table";
 
 import { PipelineRun } from "@my-project/shared";
 

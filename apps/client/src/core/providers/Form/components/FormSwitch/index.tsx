@@ -5,14 +5,7 @@ import { FormSwitchProps } from "./types";
 
 const FormSwitchInner = React.forwardRef(
   <TFormValues extends Record<string, unknown> = Record<string, unknown>>(
-    {
-      name,
-      control,
-      errors,
-      defaultValue = false,
-      disabled,
-      ...props
-    }: FormSwitchProps<TFormValues>,
+    { name, control, errors, defaultValue = false, disabled, ...props }: FormSwitchProps<TFormValues>,
     ref: React.ForwardedRef<HTMLButtonElement>
   ) => {
     const error = errors[name];
@@ -46,9 +39,6 @@ const FormSwitchInner = React.forwardRef(
 
 FormSwitchInner.displayName = "FormSwitch";
 
-export const FormSwitch = FormSwitchInner as <
-  TFormValues extends Record<string, unknown> = Record<string, unknown>,
->(
+export const FormSwitch = FormSwitchInner as <TFormValues extends Record<string, unknown> = Record<string, unknown>>(
   props: FormSwitchProps<TFormValues> & { ref?: React.ForwardedRef<HTMLButtonElement> }
 ) => React.JSX.Element;
-

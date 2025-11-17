@@ -37,7 +37,7 @@ export const CodemieProjectSettingsSection = () => {
 
               return (
                 <div key={setting.metadata.name}>
-                  <div className="bg-card rounded shadow py-2.5 px-5">
+                  <div className="bg-card rounded px-5 py-2.5 shadow">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <StatusIcon

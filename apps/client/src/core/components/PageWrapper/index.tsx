@@ -18,7 +18,7 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({
           <div className="flex w-full items-center justify-between gap-2">
             <div>
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="text-muted-foreground flex items-center gap-2 text-sm">
                   {breadcrumbs?.map(({ label, route }, index, array) => {
                     const isLast = index === array.length - 1;
                     const key = `breadcrumb-${label}`;

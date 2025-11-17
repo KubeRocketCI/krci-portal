@@ -25,7 +25,9 @@ export const SSHPublicKey = () => {
       placeholder={"ssh-rsa PUBLIC KEY"}
       control={credentialsForm.form.control}
       errors={credentialsForm.form.formState.errors}
-      helperText={gitServerSecretOwnerReference ? `This field value is managed by ${gitServerSecretOwnerReference}` : undefined}
+      helperText={
+        gitServerSecretOwnerReference ? `This field value is managed by ${gitServerSecretOwnerReference}` : undefined
+      }
       disabled={credentialsForm.mode === FORM_MODES.EDIT && !!gitServerSecretOwnerReference}
     />
   );

@@ -1,6 +1,13 @@
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
-import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
 import React from "react";
 import { DataTable } from "../..";
 import { TABLE_CELL_DEFAULTS, TABLE_DEFAULT_WIDTH, TABLE_DEFAULT_WIDTH_WITH_SELECTION } from "../../constants";
@@ -233,7 +240,9 @@ export const TableSettings = <DataType,>({
             </div>
           </DialogBody>
           <DialogFooter>
-            <Button onClick={handleClose} variant="ghost">Close</Button>
+            <Button onClick={handleClose} variant="ghost">
+              Close
+            </Button>
             <Button onClick={handleSave} disabled={!isDirty}>
               Save
             </Button>

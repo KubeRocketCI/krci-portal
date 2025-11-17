@@ -1,7 +1,14 @@
 import React from "react";
 import { Button } from "@/core/components/ui/button";
 import { Alert } from "@/core/components/ui/alert";
-import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
 import CodeEditor, { CodeEditorHandle } from "../CodeEditor";
 import { KubeResourceEditorProps } from "./types";
 

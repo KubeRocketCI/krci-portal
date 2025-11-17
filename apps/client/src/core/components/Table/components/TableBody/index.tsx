@@ -29,7 +29,7 @@ export const TableBody = <DataType,>({
     if (blockerError) {
       return (
         <TableRowUI>
-          <TableCellUI colSpan={columnsLength} className="text-center px-0 pb-0 border-b-0">
+          <TableCellUI colSpan={columnsLength} className="border-b-0 px-0 pb-0 text-center">
             {/* <ErrorContent error={blockerError} /> */}
           </TableCellUI>
         </TableRowUI>
@@ -39,7 +39,7 @@ export const TableBody = <DataType,>({
     if (blockerComponent) {
       return (
         <TableRowUI>
-          <TableCellUI colSpan={columnsLength} className="text-center px-0 pb-0 border-b-0">
+          <TableCellUI colSpan={columnsLength} className="border-b-0 px-0 pb-0 text-center">
             {blockerComponent}
           </TableCellUI>
         </TableRowUI>
@@ -49,7 +49,7 @@ export const TableBody = <DataType,>({
     if (isLoading) {
       return (
         <TableRowUI>
-          <TableCellUI colSpan={columnsLength} className="text-center px-0 pb-0 border-b-0">
+          <TableCellUI colSpan={columnsLength} className="border-b-0 px-0 pb-0 text-center">
             <LoadingSpinner />
           </TableCellUI>
         </TableRowUI>
@@ -61,7 +61,7 @@ export const TableBody = <DataType,>({
         <>
           {errors && !!errors.length && (
             <TableRowUI>
-              <TableCellUI colSpan={columnsLength} className="text-center px-0 pb-0 border-b-0">
+              <TableCellUI colSpan={columnsLength} className="border-b-0 px-0 pb-0 text-center">
                 <Alert variant="default">
                   {errors.map((error, index) => (
                     <div key={index}>{error?.message || error?.toString()}</div>
@@ -93,7 +93,7 @@ export const TableBody = <DataType,>({
     if (isEmptyFilterResult) {
       return (
         <TableRowUI>
-          <TableCellUI colSpan={columnsLength} className="text-center px-0 pb-0 border-b-0">
+          <TableCellUI colSpan={columnsLength} className="border-b-0 px-0 pb-0 text-center">
             <EmptyList customText={"No results found!"} isSearch />
           </TableCellUI>
         </TableRowUI>
@@ -102,7 +102,7 @@ export const TableBody = <DataType,>({
 
     return (
       <TableRowUI>
-        <TableCellUI colSpan={columnsLength} className="text-center px-0 pb-0 border-b-0">
+        <TableCellUI colSpan={columnsLength} className="border-b-0 px-0 pb-0 text-center">
           <>{emptyListComponent}</>
         </TableCellUI>
       </TableRowUI>

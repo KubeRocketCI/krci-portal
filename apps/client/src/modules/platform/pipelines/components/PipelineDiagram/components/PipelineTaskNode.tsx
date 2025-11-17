@@ -19,7 +19,6 @@ export const PipelineTaskNode: React.FC<{
   sourcePosition?: Position;
   targetPosition?: Position;
 }> = ({ data, sourcePosition, targetPosition }) => {
-
   const displayName = data.displayName || data.name;
   const truncatedName = displayName.length > 20 ? `${displayName.slice(0, 17)}...` : displayName;
 
@@ -40,14 +39,14 @@ export const PipelineTaskNode: React.FC<{
       <Handle
         type="target"
         position={targetPosition || Position.Top}
-        className="bg-primary w-2 h-2 border-2 border-background"
+        className="bg-primary border-background h-2 w-2 border-2"
       />
 
       <Tooltip title={tooltipContent} placement="top">
         <div
-          className={`pointer-events-auto relative flex h-full w-full cursor-default flex-col items-center justify-center rounded-lg border-2 p-6 bg-background ${
+          className={`bg-background pointer-events-auto relative flex h-full w-full cursor-default flex-col items-center justify-center rounded-lg border-2 p-6 ${
             data.isFinally || data.isIsolated
-              ? "border-dashed border-muted-foreground"
+              ? "border-muted-foreground border-dashed"
               : "border-border hover:border-primary hover:shadow-lg"
           }`}
         >
@@ -70,7 +69,7 @@ export const PipelineTaskNode: React.FC<{
       <Handle
         type="source"
         position={sourcePosition || Position.Bottom}
-        className="bg-primary w-2 h-2 border-2 border-background"
+        className="bg-primary border-background h-2 w-2 border-2"
       />
     </>
   );

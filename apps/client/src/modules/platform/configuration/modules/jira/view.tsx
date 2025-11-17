@@ -70,44 +70,44 @@ export default function JiraConfigurationPage() {
       <LoadingWrapper isLoading={isLoading}>
         <Accordion type="single" collapsible defaultValue="item-1">
           <AccordionItem value="item-1">
-              <AccordionTrigger className="cursor-default">
-                <h6 className="text-base font-medium">
-                  <div className="flex items-center gap-2">
-                    <div className="mr-1">
-                      <StatusIcon
-                        Icon={statusIcon.component}
-                        color={statusIcon.color}
-                        Title={
-                          <>
-                            <p className="text-sm font-semibold">
-                              {`Status: ${status === undefined ? "Unknown" : status}`}
-                            </p>
-                            {!!errorMessage && <p className="mt-3 text-sm font-medium">{errorMessage}</p>}
-                          </>
-                        }
-                      />
-                    </div>
-                    <div>{jiraServerSecret?.metadata.name}</div>
-                    {!!ownerReference && (
-                      <div>
-                        <Tooltip title={`Managed by ${ownerReference}`}>
-                          <ShieldX size={20} />
-                        </Tooltip>
-                      </div>
-                    )}
+            <AccordionTrigger className="cursor-default">
+              <h6 className="text-base font-medium">
+                <div className="flex items-center gap-2">
+                  <div className="mr-1">
+                    <StatusIcon
+                      Icon={statusIcon.component}
+                      color={statusIcon.color}
+                      Title={
+                        <>
+                          <p className="text-sm font-semibold">
+                            {`Status: ${status === undefined ? "Unknown" : status}`}
+                          </p>
+                          {!!errorMessage && <p className="mt-3 text-sm font-medium">{errorMessage}</p>}
+                        </>
+                      }
+                    />
                   </div>
-                </h6>
-              </AccordionTrigger>
-              <AccordionContent>
-                <ManageJiraServer
-                  secret={jiraServerSecret}
-                  jiraServer={jiraServer}
-                  ownerReference={ownerReference}
-                  handleClosePanel={handleCloseCreateDialog}
-                />
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+                  <div>{jiraServerSecret?.metadata.name}</div>
+                  {!!ownerReference && (
+                    <div>
+                      <Tooltip title={`Managed by ${ownerReference}`}>
+                        <ShieldX size={20} />
+                      </Tooltip>
+                    </div>
+                  )}
+                </div>
+              </h6>
+            </AccordionTrigger>
+            <AccordionContent>
+              <ManageJiraServer
+                secret={jiraServerSecret}
+                jiraServer={jiraServer}
+                ownerReference={ownerReference}
+                handleClosePanel={handleCloseCreateDialog}
+              />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </LoadingWrapper>
     );
   }, [

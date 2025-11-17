@@ -20,4 +20,3 @@ export const ConfigurationTab = ({ baseDefaultValues, setActiveTab }: Configurat
     </StepperContextProvider>
   );
 };
-

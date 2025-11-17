@@ -94,7 +94,7 @@ const CustomToast = ({
 
   return (
     <div
-      className="flex flex-col rounded-lg border shadow-lg min-w-[400px] max-w-[600px] py-3 px-4"
+      className="flex max-w-[600px] min-w-[400px] flex-col rounded-lg border px-4 py-3 shadow-lg"
       style={variantStyles}
     >
       <div className="flex items-center gap-3">
@@ -105,7 +105,7 @@ const CustomToast = ({
         {description && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex cursor-pointer items-center justify-center text-white transition-opacity hover:opacity-70 w-6 h-6 p-1"
+            className="flex h-6 w-6 cursor-pointer items-center justify-center p-1 text-white transition-opacity hover:opacity-70"
             aria-label={isExpanded ? "Collapse details" : "Expand details"}
           >
             {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -139,7 +139,7 @@ const CustomToast = ({
         <div className={description ? "ml-0" : "ml-4"}>
           <button
             onClick={() => toast.dismiss(id)}
-            className="flex cursor-pointer items-center justify-center text-white transition-opacity hover:opacity-70 w-6 h-6 p-1"
+            className="flex h-6 w-6 cursor-pointer items-center justify-center p-1 text-white transition-opacity hover:opacity-70"
             aria-label="Close toast"
           >
             <X size={16} />
@@ -147,9 +147,7 @@ const CustomToast = ({
         </div>
       </div>
       {description && isExpanded && (
-        <div className="mt-2 text-xs text-white opacity-90 ml-11 break-words">
-          {description}
-        </div>
+        <div className="mt-2 ml-11 text-xs break-words text-white opacity-90">{description}</div>
       )}
     </div>
   );

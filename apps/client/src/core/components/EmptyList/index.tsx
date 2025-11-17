@@ -10,18 +10,10 @@ const renderIcon = (icon: React.ReactNode, isSearch: boolean, iconSize: number) 
   }
 
   if (isSearch) {
-    return (
-      <Search width={iconSize} height={iconSize} color="#A2A7B7" />
-    );
+    return <Search width={iconSize} height={iconSize} color="#A2A7B7" />;
   }
 
-  return (
-    <TriangleAlert
-      width={iconSize}
-      height={iconSize}
-      color="#A2A7B7"
-    />
-  );
+  return <TriangleAlert width={iconSize} height={iconSize} color="#A2A7B7" />;
 };
 
 export const EmptyList = ({
@@ -36,7 +28,6 @@ export const EmptyList = ({
   icon,
   iconSize = 96,
 }: EmptyListProps) => {
-
   const renderActionLink = () => {
     if (!linkText) return null;
 
@@ -50,7 +41,7 @@ export const EmptyList = ({
 
     if (handleClick) {
       return (
-        <Button variant="link" onClick={handleClick} className="text-sm p-0 h-auto">
+        <Button variant="link" onClick={handleClick} className="h-auto p-0 text-sm">
           <span className="text-sm">{linkText}</span>
         </Button>
       );

@@ -203,11 +203,7 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
           allowed={pipelineRunPermissions.data?.create.allowed}
           reason={pipelineRunPermissions.data?.create.reason}
         >
-          {deployBtnDisabled || latestDeployPipelineRunIsRunning ? (
-            <LoadingSpinner size={16} />
-          ) : (
-            <Check size={16} />
-          )}
+          {deployBtnDisabled || latestDeployPipelineRunIsRunning ? <LoadingSpinner size={16} /> : <Check size={16} />}
           Start Deploy
         </ButtonWithPermission>
       </ConditionalWrapper>

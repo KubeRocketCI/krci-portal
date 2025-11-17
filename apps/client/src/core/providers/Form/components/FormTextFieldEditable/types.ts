@@ -28,7 +28,7 @@ export interface FormTextFieldEditableProps<TFieldValues extends FieldValues = F
   placeholder?: string;
   disabled?: boolean;
   inputProps?: Partial<Omit<InputProps, "invalid">>; // Exclude invalid as it's derived from error state
-  
+
   // Editable props
   initiallyEditable?: boolean;
 }

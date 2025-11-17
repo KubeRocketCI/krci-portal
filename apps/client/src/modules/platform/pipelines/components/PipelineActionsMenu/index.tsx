@@ -18,10 +18,7 @@ import React from "react";
 import { PipelineActionsMenuProps } from "./types";
 import { useTriggerTemplateWatchItem } from "@/k8s/api/groups/Tekton/TriggerTemplate";
 
-export const PipelineActionsMenu = ({
-  variant,
-  data: { pipeline },
-}: PipelineActionsMenuProps) => {
+export const PipelineActionsMenu = ({ variant, data: { pipeline } }: PipelineActionsMenuProps) => {
   const pipelinePermissions = usePipelinePermissions();
   const { triggerCreatePipelineRun } = usePipelineRunCRUD();
   const { triggerPatchPipeline } = usePipelineCRUD();

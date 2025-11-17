@@ -1,6 +1,6 @@
-import { CustomSession } from "@my-project/trpc";
 import { Mock, vi } from "vitest";
 import { K8sClient } from "../clients/k8s";
+import { CustomSession } from "../context/types";
 
 export type MockK8sClient = {
   KubeConfig: {

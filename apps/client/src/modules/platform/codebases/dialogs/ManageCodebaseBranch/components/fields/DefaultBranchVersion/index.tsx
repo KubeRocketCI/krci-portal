@@ -3,7 +3,6 @@ import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { CODEBASE_BRANCH_FORM_NAMES } from "../../../names";
 
 export const DefaultBranchVersion = () => {
-
   const {
     register,
     control,

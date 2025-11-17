@@ -11,9 +11,7 @@ const defaultChipRender = (label: string, key: string) => (
 
 const defaultTooltipRender = (chipsToHide: string[]) => (
   <div className="px-3 py-1">
-    <div className="flex flex-wrap gap-6 font-normal">
-      {chipsToHide.map((chip) => defaultChipRender(chip, chip))}
-    </div>
+    <div className="flex flex-wrap gap-6 font-normal">{chipsToHide.map((chip) => defaultChipRender(chip, chip))}</div>
   </div>
 );
 
@@ -54,7 +52,7 @@ const useChipMeasurements = (
     () => (
       <div
         ref={measurementRef}
-        className="absolute invisible pointer-events-none top-0 left-0 flex"
+        className="pointer-events-none invisible absolute top-0 left-0 flex"
         style={{ gap: `${STACK_GAP * 8}px` }}
         aria-hidden="true"
       >
@@ -175,7 +173,7 @@ export const ResponsiveChips = ({
           {visibleChips.map((chip) => renderChip(chip, chip))}
           {hiddenChips.length > 0 && (
             <Tooltip title={renderTooltip(hiddenChips, visibleChips)}>
-              <Badge ref={showMoreButtonRef} variant="secondary" className="shrink-0 bg-secondary/90">
+              <Badge ref={showMoreButtonRef} variant="secondary" className="bg-secondary/90 shrink-0">
                 +{hiddenChips.length}
               </Badge>
             </Tooltip>

@@ -8,4 +8,3 @@ export interface FormSwitchProps<TFieldValues extends FieldValues = FieldValues>
   defaultValue?: boolean;
   disabled?: boolean;
 }
-

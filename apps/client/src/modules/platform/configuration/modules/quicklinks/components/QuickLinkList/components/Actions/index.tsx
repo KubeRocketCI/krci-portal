@@ -11,11 +11,7 @@ export const Actions = ({ quickLink }: { quickLink: QuickLink }) => {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={"Options"}
-        >
+        <Button variant="ghost" size="icon" aria-label={"Options"}>
           <EllipsisVertical />
         </Button>
       </DropdownMenuTrigger>

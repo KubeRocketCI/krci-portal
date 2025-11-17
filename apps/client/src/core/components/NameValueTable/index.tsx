@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  TableUI,
-  TableBodyUI,
-  TableCellUI,
-  TableHeadUI,
-  TableHeaderUI,
-  TableRowUI,
-} from "@/core/components/ui/table";
+import { TableUI, TableBodyUI, TableCellUI, TableHeadUI, TableHeaderUI, TableRowUI } from "@/core/components/ui/table";
 
 export type NameValueRow = {
   name: React.ReactNode;

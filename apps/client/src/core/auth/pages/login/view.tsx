@@ -1,14 +1,43 @@
 import { useSearch } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
-import { useCallback } from "react";
+import { BookOpenText, Loader2, MessageSquareMore, MessageSquareShare } from "lucide-react";
+import { useCallback, useState } from "react";
 import { routeAuthLogin } from "./route";
 import { Alert } from "@/core/components/ui/alert";
 import { Button } from "@/core/components/ui/button";
 import { useAuth } from "../../provider/hooks";
+import { ThemeSwitcher } from "@/core/components/ThemeSwitcher";
+import { Link } from "@tanstack/react-router";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
+import { Tooltip, TooltipProvider } from "@/core/components/ui/tooltip";
+import { Textarea } from "@/core/components/ui/textarea";
+import { Label } from "@/core/components/ui/label";
+
+const HELP_MENU_LIST = [
+  {
+    id: 0,
+    label: "Documentation",
+    icon: BookOpenText,
+    url: EDP_USER_GUIDE.OVERVIEW.url,
+  },
+  {
+    id: 1,
+    label: "Join Discussions",
+    icon: MessageSquareMore,
+    url: "https://github.com/KubeRocketCI/docs/discussions",
+  },
+  {
+    id: 2,
+    label: "Open an issue/request",
+    icon: MessageSquareShare,
+    url: "https://github.com/epam/edp-install/issues/new/choose",
+  },
+];
 
 export default function LoginPage() {
-  const { loginMutation, loginCallbackMutation } = useAuth();
+  const { loginMutation, loginCallbackMutation, loginWithTokenMutation } = useAuth();
   const search = useSearch({ from: routeAuthLogin.fullPath });
+  const [showTokenInput, setShowTokenInput] = useState(false);
+  const [token, setToken] = useState("");
 
   const handleLogin = useCallback(
     () =>
@@ -18,16 +47,36 @@ export default function LoginPage() {
     [loginMutation, search?.redirect]
   );
 
+  const handleTokenSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (token.trim()) {
+        loginWithTokenMutation!.mutate!({
+          token: token.trim(),
+          redirectSearchParam: search?.redirect,
+        });
+      }
+    },
+    [loginWithTokenMutation, search?.redirect, token]
+  );
+
+  const handleTokenButtonClick = useCallback(() => {
+    setShowTokenInput(!showTokenInput);
+    if (showTokenInput) {
+      setToken("");
+    }
+  }, [showTokenInput]);
+
   return (
     <div className="flex w-full grow items-center justify-center">
-      <div className="z-1 mx-[5vw] w-full max-w-lg rounded-sm bg-white px-6 py-8">
+      <div className="bg-card z-1 mx-[5vw] w-full max-w-lg rounded-lg px-6 py-8">
         <div className="flex flex-col items-center space-y-6">
           <div className="space-y-4 text-center">
             <div>
               <img src="/krci-logo.svg" alt="kuberocket-ci-logo" className="mx-auto h-16 w-16" />
             </div>
-            <h1 className="text-4xl font-medium">KubeRocketCI</h1>
-            <p className="text-lg font-bold">Your Kubernetes Experience</p>
+            <h1 className="text-foreground text-4xl font-medium">KubeRocketCI</h1>
+            <p className="text-foreground text-lg font-bold">Your Kubernetes Experience</p>
           </div>
 
           <div className="w-full max-w-72">
@@ -48,13 +97,74 @@ export default function LoginPage() {
                 <hr className="border-secondary-dark grow border-dashed" />
               </div>
               <Button
-                variant="default"
-                className="bg-primary-dark text-primary-foreground hover:bg-primary-dark/70 w-full px-8 py-2"
+                variant="outline"
+                className={`w-full ${showTokenInput ? "border-primary" : ""}`}
+                onClick={handleTokenButtonClick}
+                disabled={loginWithTokenMutation?.isPending}
               >
-                Use Token
+                {loginWithTokenMutation?.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing In
+                  </>
+                ) : (
+                  "Use Token"
+                )}
               </Button>
             </div>
           </div>
+
+          {showTokenInput && (
+            <div className="w-full">
+              <form onSubmit={handleTokenSubmit} className="flex flex-col gap-3">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="token">Access Token</Label>
+                  <Textarea
+                    id="token"
+                    value={token}
+                    onChange={(e) => setToken(e.target.value)}
+                    placeholder="Paste your access token here..."
+                    rows={4}
+                    className="font-mono text-sm"
+                    disabled={loginWithTokenMutation?.isPending}
+                    spellCheck={false}
+                  />
+                  <p className="text-muted-foreground text-xs">Enter your Keycloak access token to sign in.</p>
+                </div>
+                {loginWithTokenMutation?.isError && (
+                  <Alert variant="destructive" title="Error">
+                    {loginWithTokenMutation.error?.message || "Invalid token. Please try again."}
+                  </Alert>
+                )}
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={handleTokenButtonClick}
+                    disabled={loginWithTokenMutation?.isPending}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="default"
+                    disabled={loginWithTokenMutation?.isPending || !token.trim()}
+                    className="flex-1"
+                  >
+                    {loginWithTokenMutation?.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Signing In
+                      </>
+                    ) : (
+                      "Sign In"
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          )}
 
           {loginMutation?.isError || loginCallbackMutation?.isError ? (
             <Alert variant="destructive" title="Error">
@@ -63,6 +173,26 @@ export default function LoginPage() {
           ) : null}
         </div>
       </div>
+
+      <TooltipProvider>
+        <div className="border-border bg-card/80 fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border px-4 py-2 shadow-lg backdrop-blur-sm">
+          <Tooltip title="Toggle theme" placement="top">
+            <ThemeSwitcher className="h-8 w-8" />
+          </Tooltip>
+
+          {HELP_MENU_LIST.map(({ id, url, icon: Icon, label }) => {
+            return (
+              <Tooltip key={id} title={label} placement="top">
+                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                  <Link to={url} target="_blank" rel="noopener noreferrer">
+                    <Icon className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </Tooltip>
+            );
+          })}
+        </div>
+      </TooltipProvider>
     </div>
   );
 }

@@ -48,17 +48,19 @@ export interface TooltipProps {
   className?: string;
 }
 
-export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(({ title, children, placement = "top", className }) => {
-  const side = placement;
+export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
+  ({ title, children, placement = "top", className }) => {
+    const side = placement;
 
-  return (
-    <TooltipRoot>
-      <TooltipTrigger asChild>{children}</TooltipTrigger>
-      <TooltipContent side={side} sideOffset={5} className={className}>
-        {typeof title === "string" ? <p>{title}</p> : title}
-      </TooltipContent>
-    </TooltipRoot>
-  );
-});
+    return (
+      <TooltipRoot>
+        <TooltipTrigger asChild>{children}</TooltipTrigger>
+        <TooltipContent side={side} sideOffset={5} className={className}>
+          {typeof title === "string" ? <p>{title}</p> : title}
+        </TooltipContent>
+      </TooltipRoot>
+    );
+  }
+);
 
 Tooltip.displayName = "Tooltip";

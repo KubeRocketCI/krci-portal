@@ -33,6 +33,7 @@ const ChipRoot = React.forwardRef<HTMLSpanElement, React.ComponentProps<"span"> 
 );
 ChipRoot.displayName = "ChipRoot";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { ChipRoot, chipVariants };
 
 export interface ChipProps extends Omit<React.ComponentProps<"span">, "children"> {
@@ -57,7 +58,7 @@ export const Chip = React.forwardRef<HTMLSpanElement, ChipProps>(
               e.stopPropagation();
               onDelete();
             }}
-            className="ml-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 p-0.5"
+            className="ml-1 rounded-full p-0.5 hover:bg-black/10 dark:hover:bg-white/10"
             aria-label="Delete"
           >
             <X className="h-3 w-3" />
@@ -69,4 +70,3 @@ export const Chip = React.forwardRef<HTMLSpanElement, ChipProps>(
 );
 
 Chip.displayName = "Chip";
-

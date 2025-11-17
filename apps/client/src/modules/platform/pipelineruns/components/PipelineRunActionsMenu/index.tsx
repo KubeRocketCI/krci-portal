@@ -18,11 +18,7 @@ import React from "react";
 import { CustomActionsInlineList } from "./components/CustomActionsInlineList";
 import { PipelineRunActionsMenuProps } from "./types";
 
-export const PipelineRunActionsMenu = ({
-  backRoute,
-  variant,
-  data: { pipelineRun },
-}: PipelineRunActionsMenuProps) => {
+export const PipelineRunActionsMenu = ({ backRoute, variant, data: { pipelineRun } }: PipelineRunActionsMenuProps) => {
   const status = getPipelineRunStatus(pipelineRun);
   const pipelineRunPermissions = usePipelineRunPermissions();
 
@@ -139,7 +135,6 @@ export const PipelineRunActionsMenu = ({
     pipelineRunPermissions.data.delete.allowed,
     pipelineRunPermissions.data.delete.reason,
     isInProgress,
-    variant,
     triggerCreatePipelineRun,
     openEditorDialog,
     triggerPatchPipelineRun,

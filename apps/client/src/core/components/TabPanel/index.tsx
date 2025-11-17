@@ -2,7 +2,6 @@ import { tabPanelClasses } from "./styles";
 import { TabPanelProps } from "./types";
 
 export const TabPanel = ({ children, value, index, shouldRender = true, ...other }: TabPanelProps) => {
-
   const isActive = value === index;
   return (
     <div

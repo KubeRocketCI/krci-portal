@@ -72,26 +72,26 @@ export default function RegistryConfigurationPage() {
       <LoadingWrapper isLoading={isLoading}>
         <Accordion type="single" collapsible defaultValue="item-1">
           <AccordionItem value="item-1">
-              <AccordionTrigger className="cursor-default">
-                <h6 className="text-base font-medium">
-                  {containerRegistryTypeLabelMap[registryType as ContainerRegistryType]}
-                </h6>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="flex flex-col gap-4">
-                  <div>
-                    <ManageRegistry
-                      EDPConfigMap={krciConfigMap!}
-                      pullAccountSecret={pullAccountSecretWatch.query.data!}
-                      pushAccountSecret={pushAccountSecretWatch.query.data!}
-                      tektonServiceAccount={tektonServiceAccountWatch.query.data!}
-                      handleCloseCreateDialog={handleCloseCreateDialog}
-                    />
-                  </div>
+            <AccordionTrigger className="cursor-default">
+              <h6 className="text-base font-medium">
+                {containerRegistryTypeLabelMap[registryType as ContainerRegistryType]}
+              </h6>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="flex flex-col gap-4">
+                <div>
+                  <ManageRegistry
+                    EDPConfigMap={krciConfigMap!}
+                    pullAccountSecret={pullAccountSecretWatch.query.data!}
+                    pushAccountSecret={pushAccountSecretWatch.query.data!}
+                    tektonServiceAccount={tektonServiceAccountWatch.query.data!}
+                    handleCloseCreateDialog={handleCloseCreateDialog}
+                  />
                 </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </LoadingWrapper>
     );
   }, [

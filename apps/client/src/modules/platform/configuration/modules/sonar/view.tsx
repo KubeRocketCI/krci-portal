@@ -67,45 +67,45 @@ export default function SonarConfigurationPage() {
       <LoadingWrapper isLoading={isLoading}>
         <Accordion type="single" collapsible defaultValue="item-1">
           <AccordionItem value="item-1">
-              <AccordionTrigger className="cursor-default">
-                <h6 className="text-base font-medium">
-                  <div className="flex items-center gap-2">
-                    <div className="mr-1">
-                      <StatusIcon
-                        Icon={statusIcon.component}
-                        color={statusIcon.color}
-                        Title={
-                          <>
-                            <p className="text-sm font-semibold">
-                              {`Connected: ${status.connected === undefined ? "Unknown" : status.connected}`}
-                            </p>
-                            {!!status.statusError && <p className="mt-3 text-sm font-medium">{status.statusError}</p>}
-                          </>
-                        }
-                      />
-                    </div>
-                    <div>{sonarSecret?.metadata.name}</div>
-                    {!!ownerReference && (
-                      <div>
-                        <Tooltip title={`Managed by ${ownerReference}`}>
-                          <ShieldX size={20} />
-                        </Tooltip>
-                      </div>
-                    )}
+            <AccordionTrigger className="cursor-default">
+              <h6 className="text-base font-medium">
+                <div className="flex items-center gap-2">
+                  <div className="mr-1">
+                    <StatusIcon
+                      Icon={statusIcon.component}
+                      color={statusIcon.color}
+                      Title={
+                        <>
+                          <p className="text-sm font-semibold">
+                            {`Connected: ${status.connected === undefined ? "Unknown" : status.connected}`}
+                          </p>
+                          {!!status.statusError && <p className="mt-3 text-sm font-medium">{status.statusError}</p>}
+                        </>
+                      }
+                    />
                   </div>
-                </h6>
-              </AccordionTrigger>
-              <AccordionContent>
-                <ManageSonar
-                  secret={sonarSecret}
-                  quickLink={sonarQuickLink}
-                  mode={mode}
-                  ownerReference={ownerReference}
-                  handleClosePanel={handleCloseCreateDialog}
-                />
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+                  <div>{sonarSecret?.metadata.name}</div>
+                  {!!ownerReference && (
+                    <div>
+                      <Tooltip title={`Managed by ${ownerReference}`}>
+                        <ShieldX size={20} />
+                      </Tooltip>
+                    </div>
+                  )}
+                </div>
+              </h6>
+            </AccordionTrigger>
+            <AccordionContent>
+              <ManageSonar
+                secret={sonarSecret}
+                quickLink={sonarQuickLink}
+                mode={mode}
+                ownerReference={ownerReference}
+                handleClosePanel={handleCloseCreateDialog}
+              />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </LoadingWrapper>
     );
   }, [
