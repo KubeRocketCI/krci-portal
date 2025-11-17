@@ -10,7 +10,7 @@ import {
 import { Button } from "@/core/components/ui/button";
 import { InfoColumns } from "@/core/components/InfoColumns";
 import { useQuery } from "@tanstack/react-query";
-import { trpc } from "@/core/clients/trpc";
+import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -18,6 +18,7 @@ type KubernetesDetailsDialogProps = DialogProps<object>;
 
 export default function KubernetesDetailsDialog({ state }: KubernetesDetailsDialogProps) {
   const { open, closeDialog } = state;
+  const trpc = useTRPCClient();
   const { clusterName, defaultNamespace } = useClusterStore(
     useShallow((state) => ({
       clusterName: state.clusterName,

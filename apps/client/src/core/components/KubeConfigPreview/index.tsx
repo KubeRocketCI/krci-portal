@@ -1,4 +1,4 @@
-import { trpc } from "@/core/clients/trpc";
+import { useTRPCClient } from "@/core/providers/trpc";
 import { DialogProps } from "@/core/providers/Dialog/types";
 import CodeEditor, { CodeEditorHandle } from "@/core/components/CodeEditor";
 import { Button } from "@/core/components/ui/button";
@@ -22,7 +22,7 @@ type KubeConfigPreviewDialogProps = DialogProps<object>;
 
 export default function KubeConfigPreviewDialog({ state }: KubeConfigPreviewDialogProps) {
   const { open, closeDialog } = state;
-
+  const trpc = useTRPCClient();
   const { clusterName, defaultNamespace } = useClusterStore();
   const editorRef = React.useRef<CodeEditorHandle>(null);
   const [timeRemaining, setTimeRemaining] = React.useState<string>("");

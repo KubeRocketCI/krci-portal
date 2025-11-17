@@ -1,4 +1,4 @@
-import { trpc } from "@/core/clients/trpc";
+import { useTRPCClient } from "@/core/providers/trpc";
 import { showToast } from "@/core/components/Snackbar";
 import { useRequestStatusMessages } from "@/k8s/api/hooks/useResourceRequestStatusMessages";
 import { useClusterStore } from "@/k8s/store";
@@ -24,6 +24,7 @@ export const useGitLabPipelineTrigger = (
 ): UseMutationResult<GitLabPipelineResponse, Error, TriggerGitLabPipelineParams> & {
   triggerPipeline: (params: TriggerGitLabPipelineParams) => void;
 } => {
+  const trpc = useTRPCClient();
   const { showRequestErrorMessage, showRequestErrorDetailedMessage } = useRequestStatusMessages();
 
   const { clusterName, namespace } = useClusterStore(

@@ -11,12 +11,13 @@ import { Button } from "@/core/components/ui/button";
 import { useAuth } from "@/core/auth/provider/hooks";
 import { InfoColumns } from "@/core/components/InfoColumns";
 import { useQuery } from "@tanstack/react-query";
-import { trpc } from "@/core/clients/trpc";
+import { useTRPCClient } from "@/core/providers/trpc";
 
 type UserDetailsDialogProps = DialogProps<object>;
 
 export default function UserDetailsDialog({ state }: UserDetailsDialogProps) {
   const { open, closeDialog } = state;
+  const trpc = useTRPCClient();
   const { user } = useAuth();
 
   const userInfo = useQuery({

@@ -10,7 +10,7 @@ import {
   LoginMutationInput,
   LoginWithTokenMutationInput,
 } from "./context";
-import { trpc } from "@/core/clients/trpc";
+import { trpcHttpClient } from "@/core/providers/trpc/http-client";
 import { LoadingProgressBar } from "@/core/components/ui/LoadingProgressBar";
 import { CriticalError } from "@/core/components/CriticalError";
 import { router } from "@/core/router";
@@ -28,6 +28,7 @@ const getLoginOriginURL = (redirectSearchParam?: string) =>
 export const AuthProvider = ({ children }: React.PropsWithChildren) => {
   const queryClient = useQueryClient();
   const clusterStore = useClusterStore();
+  const trpc = trpcHttpClient;
 
   // Fetch server configuration at startup
   const configQuery = useQuery({

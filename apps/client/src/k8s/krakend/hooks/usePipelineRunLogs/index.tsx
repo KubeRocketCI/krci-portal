@@ -1,4 +1,4 @@
-import { trpc } from "@/core/clients/trpc";
+import { useTRPCClient } from "@/core/providers/trpc";
 import { useQuery } from "@tanstack/react-query";
 
 interface OpensearchResponse {
@@ -68,6 +68,7 @@ export const normalizePipelineRunLogs = (response: OpensearchResponse): Normaliz
 };
 
 export const usePipelineRunLogsQuery = (clusterName: string, namespace: string, name: string) => {
+  const trpc = useTRPCClient();
   return useQuery<OpensearchResponse, Error, NormalizedLogs>({
     queryKey: ["pipelineRunLogs", clusterName, namespace, name],
     queryFn: () => {
@@ -92,6 +93,8 @@ export const normalizeAllPipelineRunLogs = (data: OpensearchResponse): Normalize
 };
 
 export const useAllPipelineRunLogsQuery = (clusterName: string, namespace: string) => {
+  const trpc = useTRPCClient();
+
   return useQuery<OpensearchResponse, Error, NormalizedLogs>({
     queryKey: ["pipelineRunLogs", clusterName, namespace],
     queryFn: () => {

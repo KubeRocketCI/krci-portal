@@ -1,7 +1,7 @@
 import { DefinedUseQueryResult, useQuery, useQueryClient } from "@tanstack/react-query";
 import { defaultPermissions, DefaultPermissionListCheckResult } from "@my-project/shared";
 import { useShallow } from "zustand/react/shallow";
-import { trpc } from "@/core/clients/trpc";
+import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { getK8sItemPermissionsQueryCacheKey, getK8sAPIQueryCacheKey } from "../useWatch/query-keys";
 
@@ -14,6 +14,7 @@ export const usePermissions = ({
   version: string;
   resourcePlural: string;
 }) => {
+  const trpc = useTRPCClient();
   const { clusterName, defaultNamespace: namespace } = useClusterStore(
     useShallow((state) => ({
       clusterName: state.clusterName,

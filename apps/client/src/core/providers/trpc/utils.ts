@@ -1,9 +1,6 @@
-import type { AppRouter } from "@my-project/trpc";
-import type { TRPCClient } from "@trpc/client";
-import { createTRPCClient, createWSClient, httpBatchLink, splitLink, wsLink } from "@trpc/client";
-import { router } from "../router";
-import { routeAuthLogin } from "../auth/pages/login/route";
-import { routeAuthCallback } from "../auth/pages/callback/route";
+import { router } from "../../router";
+import { routeAuthLogin } from "../../auth/pages/login/route";
+import { routeAuthCallback } from "../../auth/pages/callback/route";
 
 // Track if we're already redirecting to prevent multiple redirects
 let isRedirecting = false;
@@ -28,7 +25,11 @@ const handleAuthError = () => {
   }
 };
 
-const customFetch = async (url: URL | RequestInfo, options: RequestInit) => {
+/**
+ * Custom fetch function that handles authentication errors.
+ * Used by both HTTP-only and WebSocket-enabled tRPC clients.
+ */
+export const customFetch = async (url: URL | RequestInfo, options: RequestInit) => {
   const res = await fetch(url, options);
 
   // Check HTTP status code for 401
@@ -78,27 +79,3 @@ const customFetch = async (url: URL | RequestInfo, options: RequestInit) => {
 
   return res;
 };
-
-export const trpc: TRPCClient<AppRouter> = createTRPCClient<AppRouter>({
-  links: [
-    splitLink({
-      condition: (op) => op.type === "subscription",
-      true: wsLink({
-        client: createWSClient({
-          url: "/api",
-        }),
-      }),
-      false: httpBatchLink({
-        url: "/api",
-        headers: { credentials: "include" },
-        maxItems: 1,
-        fetch: async (url, options) => {
-          return customFetch(url, {
-            ...options,
-            credentials: "include",
-          });
-        },
-      }),
-    }),
-  ],
-});

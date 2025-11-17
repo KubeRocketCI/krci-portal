@@ -1,4 +1,4 @@
-import { trpc } from "@/core/clients/trpc";
+import { useTRPCClient } from "@/core/providers/trpc";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { usePodWatchItem } from "@/k8s/api/groups/Core/Pod";
@@ -32,6 +32,7 @@ export const usePodLogs = ({
   previous = false,
   enabled = true,
 }: UsePodLogsParams): UsePodLogsResult => {
+  const trpc = useTRPCClient();
   const [accumulatedLogs, setAccumulatedLogs] = useState<string>("");
   const [subscriptionError, setSubscriptionError] = useState<Error | null>(null);
   const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(false);
@@ -192,7 +193,19 @@ export const usePodLogs = ({
         subscriptionRef.current = null;
       }
     };
-  }, [follow, enabled, clusterName, namespace, podName, container, tailLines, timestamps, previous, podReadyForLogs]);
+  }, [
+    follow,
+    enabled,
+    clusterName,
+    namespace,
+    podName,
+    container,
+    tailLines,
+    timestamps,
+    previous,
+    podReadyForLogs,
+    trpc,
+  ]);
 
   // Reset accumulated logs when parameters change
   useEffect(() => {

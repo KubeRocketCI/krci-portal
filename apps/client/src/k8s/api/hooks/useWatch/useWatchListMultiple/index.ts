@@ -1,4 +1,5 @@
-import { trpc } from "@/core/clients/trpc";
+import { useTRPCClient } from "@/core/providers/trpc";
+import { useAuth } from "@/core/auth/provider";
 import { useClusterStore } from "@/k8s/store";
 import { RequestError } from "@/core/types/global";
 import { K8sResourceConfig, KubeObjectBase, ResourceLabels } from "@my-project/shared";
@@ -6,7 +7,7 @@ import { useQueries, useQuery, useQueryClient, UseQueryOptions, UseQueryResult }
 import { useEffect, useEffectEvent, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { getK8sWatchListQueryCacheKey } from "../query-keys";
-import { watchListRegistry } from "../registry";
+import { useWatchRegistries } from "@/core/providers/subscriptions";
 import {
   CustomKubeObjectList,
   UseWatchListMultipleResult,
@@ -56,6 +57,8 @@ export const useWatchListMultiple = <I extends KubeObjectBase>({
   queryOptions,
   transform,
 }: UseWatchListMultipleParams<I>): UseWatchListMultipleResult<I> => {
+  const trpc = useTRPCClient();
+  const { isAuthenticated } = useAuth();
   const { clusterName, allowedNamespaces } = useClusterStore(
     useShallow((state) => ({
       clusterName: state.clusterName,
@@ -118,7 +121,9 @@ export const useWatchListMultiple = <I extends KubeObjectBase>({
   // Note: We intentionally do NOT include resourceVersion in querySuccessStates.
   // Kubernetes Watch continues from the initial resourceVersion automatically.
   // Restarting subscriptions on every resourceVersion change causes excessive start/stop cycles.
-  const querySuccessStates = namespaceQueries.map((q) => q.isSuccess).join(",");
+  const querySuccessStates = namespaceQueries
+    .map((q) => `${q.isSuccess}-${q.data?.metadata?.resourceVersion}`)
+    .join(",");
   const namespaceQueryKeysKey = namespaceQueryKeys.map((k) => JSON.stringify(k)).join(",");
 
   // Stable event handler using useEffectEvent
@@ -166,7 +171,12 @@ export const useWatchListMultiple = <I extends KubeObjectBase>({
   });
 
   // Register subscriptions for each namespace
+  const { watchListRegistry } = useWatchRegistries();
+
   useEffect(() => {
+    // Don't start subscriptions until user is authenticated and registry is available
+    if (!isAuthenticated || !watchListRegistry) return;
+
     const unregisterFns: (() => void)[] = [];
 
     namespaceQueries.forEach((query, index) => {
@@ -182,7 +192,9 @@ export const useWatchListMultiple = <I extends KubeObjectBase>({
         labels,
       };
 
-      const unregister = watchListRegistry.register<I>(queryKey, params, (event) => onWatchEvent(queryKey, event));
+      const unregister = watchListRegistry.register<I>(queryKey, params, (event: { type: string; data: I }) =>
+        onWatchEvent(queryKey, event)
+      );
 
       unregisterFns.push(unregister);
 
@@ -197,7 +209,16 @@ export const useWatchListMultiple = <I extends KubeObjectBase>({
       unregisterFns.forEach((fn) => fn());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [querySuccessStates, clusterName, namespacesKey, resourceConfig.pluralName, labelsKey, namespaceQueryKeysKey]);
+  }, [
+    isAuthenticated,
+    watchListRegistry, // Include registry to ensure effect runs when it becomes available
+    querySuccessStates,
+    clusterName,
+    namespacesKey,
+    resourceConfig.pluralName,
+    labelsKey,
+    namespaceQueryKeysKey,
+  ]);
 
   // Combined query key
   const combinedQueryKey = useMemo(
