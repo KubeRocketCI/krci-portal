@@ -1,4 +1,5 @@
-import { trpc } from "@/core/clients/trpc";
+import { useTRPCClient } from "@/core/providers/trpc";
+import { useAuth } from "@/core/auth/provider";
 import { useClusterStore } from "@/k8s/store";
 import { RequestError } from "@/core/types/global";
 import { K8sResourceConfig, KubeObjectBase, ResourceLabels } from "@my-project/shared";
@@ -6,7 +7,7 @@ import { useQuery, useQueryClient, UseQueryOptions } from "@tanstack/react-query
 import React, { useEffect, useMemo, useEffectEvent } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { getK8sWatchListQueryCacheKey } from "../query-keys";
-import { watchListRegistry } from "../registry";
+import { useWatchRegistries } from "@/core/providers/subscriptions";
 import { CustomKubeObjectList, UseWatchListResult, k8sListInitialData, MSG_TYPE } from "../types";
 
 type OptionalQueryOptions<I extends KubeObjectBase> = Omit<
@@ -33,6 +34,8 @@ export const useWatchList = <I extends KubeObjectBase>({
   queryOptions,
   transform,
 }: UseWatchListParams<I>): UseWatchListResult<I> => {
+  const trpc = useTRPCClient();
+  const { isAuthenticated } = useAuth();
   const { clusterName, defaultNamespace: storedNamespace } = useClusterStore(
     useShallow((state) => ({
       clusterName: state.clusterName,
@@ -126,9 +129,13 @@ export const useWatchList = <I extends KubeObjectBase>({
   // Note: We intentionally do NOT include resourceVersion in dependencies.
   // Kubernetes Watch continues from the initial resourceVersion automatically.
   // Restarting subscriptions on every resourceVersion change causes excessive start/stop cycles.
+  const { watchListRegistry } = useWatchRegistries();
+
+  // Register handler - this should happen as soon as query is successful
   useEffect(
     () => {
-      if (!query.isSuccess) return;
+      // Don't register until user is authenticated and registry is available
+      if (!query.isSuccess || !isAuthenticated || !watchListRegistry) return;
 
       const params = {
         clusterName,
@@ -139,18 +146,13 @@ export const useWatchList = <I extends KubeObjectBase>({
 
       const unregister = watchListRegistry.register<I>(queryKey, params, onWatchEvent);
 
-      // Start subscription with current resourceVersion (only once when query succeeds)
-      const resourceVersion = query.data.metadata?.resourceVersion;
-      if (resourceVersion) {
-        watchListRegistry.startSubscription<I>(queryKey, resourceVersion);
-      }
-
       return unregister;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       query.isSuccess,
-      // Removed query.data?.metadata?.resourceVersion - subscriptions should not restart on resourceVersion changes
+      isAuthenticated,
+      watchListRegistry,
       clusterName,
       _namespace,
       resourceConfig.pluralName,
@@ -159,6 +161,28 @@ export const useWatchList = <I extends KubeObjectBase>({
       queryKey,
     ]
   );
+
+  // Start subscription once resourceVersion becomes available
+  useEffect(() => {
+    // Don't start subscriptions until user is authenticated, registry is available, and resourceVersion exists
+    if (!query.isSuccess || !isAuthenticated || !watchListRegistry) return;
+
+    const resourceVersion = query.data?.metadata?.resourceVersion;
+    if (resourceVersion) {
+      watchListRegistry.startSubscription<I>(queryKey, resourceVersion);
+    }
+  }, [
+    query.isSuccess,
+    query.data?.metadata?.resourceVersion, // Watch for resourceVersion to become available
+    isAuthenticated,
+    watchListRegistry,
+    clusterName,
+    _namespace,
+    resourceConfig.pluralName,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    labels ? JSON.stringify(labels) : undefined,
+    queryKey,
+  ]);
 
   // Derive data structure
   const data = useMemo(() => {

@@ -8,7 +8,7 @@ import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { EDP_OPERATOR_GUIDE } from "@/k8s/constants/docs-urls";
 import { DependencyTrackMetrics } from "../DeeptrackVulnerabilities";
 import { routeComponentDetails } from "../../route";
-import { trpc } from "@/core/clients/trpc";
+import { useTRPCClient } from "@/core/providers/trpc";
 import { STATUS_COLOR } from "@/k8s/constants/colors";
 import { useQuery } from "@tanstack/react-query";
 import { useClusterStore } from "@/k8s/store";
@@ -22,6 +22,7 @@ const statusMap: Record<string, string> = {
 const getStatusLabel = (status: string) => statusMap?.[status] || "Unknown";
 
 export const Overview = () => {
+  const trpc = useTRPCClient();
   const codebaseWatch = useCodebaseWatch();
   const infoRows = useInfoRows();
 

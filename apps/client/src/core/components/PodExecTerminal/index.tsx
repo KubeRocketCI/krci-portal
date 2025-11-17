@@ -5,7 +5,7 @@ import { Label } from "@/core/components/ui/label";
 import { Terminal } from "@/core/components/Terminal";
 import { TerminalRef } from "@/core/components/Terminal/types";
 import { PodExecTerminalProps } from "./types";
-import { trpc } from "@/core/clients/trpc";
+import { useTRPCClient } from "@/core/providers/trpc";
 
 export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
   namespace,
@@ -16,6 +16,7 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
   isAttach = false,
   height = 400,
 }) => {
+  const trpc = useTRPCClient();
   // State management
   const [activePod, setActivePod] = useState(() => {
     if (selectedPod) {

@@ -8,7 +8,7 @@ import { Button } from "@/core/components/ui/button";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { useShallow } from "zustand/react/shallow";
 import { useQuery } from "@tanstack/react-query";
-import { trpc } from "@/core/clients/trpc";
+import { useTRPCClient } from "@/core/providers/trpc";
 
 const MetricsCell = ({
   color,
@@ -40,6 +40,7 @@ interface DependencyTrackMetricsProps {
 }
 
 export const DependencyTrackMetrics = ({ componentName }: DependencyTrackMetricsProps) => {
+  const trpc = useTRPCClient();
   const { clusterName, defaultNamespace } = useClusterStore(
     useShallow((state) => ({
       clusterName: state.clusterName,

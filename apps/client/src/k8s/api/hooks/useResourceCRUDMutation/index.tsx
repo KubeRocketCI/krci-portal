@@ -1,4 +1,4 @@
-import { trpc } from "@/core/clients/trpc";
+import { useTRPCClient } from "@/core/providers/trpc";
 import { showToast, ToastOptions } from "@/core/components/Snackbar";
 import { useClusterStore } from "@/k8s/store";
 import { K8sOperation, k8sOperation, K8sResourceConfig, KubeObjectDraft } from "@my-project/shared";
@@ -41,6 +41,7 @@ export const useResourceCRUDMutation = <KubeObjectData extends KubeObjectDraft, 
   operation: Operation,
   options?: UseResourceCRUDMutationOptions<KubeObjectData>
 ) => {
+  const trpc = useTRPCClient();
   const showMessages = options?.showMessages ?? true;
 
   const { namespace, clusterName } = useClusterStore(

@@ -1,5 +1,10 @@
 import z, { ZodError } from "zod";
-import { gitProviderEnum, GitServerDraft, gitServerDraftSchema, k8sGitServerConfig } from "../../../../groups/KRCI/index.js";
+import {
+  gitProviderEnum,
+  GitServerDraft,
+  gitServerDraftSchema,
+  k8sGitServerConfig,
+} from "../../../../groups/KRCI/index.js";
 
 const createGitServerDraftSchema = z.object({
   name: z.string(),

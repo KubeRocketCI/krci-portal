@@ -1,4 +1,4 @@
-import { trpc } from "@/core/clients/trpc";
+import { useTRPCClient } from "@/core/providers/trpc";
 import { NoDataWidgetWrapper } from "@/core/components/NoDataWidgetWrapper";
 import { Button } from "@/core/components/ui/button";
 import { LinkCreationService } from "@/k8s/services/link-creation";
@@ -82,6 +82,7 @@ interface SonarQubeMetricsProps {
 }
 
 export const SonarMetrics = ({ componentName }: SonarQubeMetricsProps) => {
+  const trpc = useTRPCClient();
   const params = routeComponentDetails.useParams();
 
   const { clusterName, defaultNamespace } = useClusterStore(

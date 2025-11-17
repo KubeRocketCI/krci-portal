@@ -10,13 +10,14 @@ import { FormCombobox } from "@/core/providers/Form/components/FormCombobox";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { trpc } from "@/core/clients/trpc";
+import { useTRPCClient } from "@/core/providers/trpc";
 import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWatchKRCIConfig";
 import { validateField } from "@/core/utils/forms/validation";
 import { validationRules } from "@/core/constants/validation";
 import { RotateCw } from "lucide-react";
 
 export const BranchName = ({ defaultBranchVersion }: BranchNameProps) => {
+  const trpc = useTRPCClient();
   const {
     register,
     control,

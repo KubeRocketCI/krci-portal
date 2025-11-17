@@ -1,4 +1,4 @@
-import { trpc } from "@/core/clients/trpc";
+import { useTRPCClient } from "@/core/providers/trpc";
 import { validationRules } from "@/core/constants/validation";
 import { FormCombobox } from "@/core/providers/Form/components/FormCombobox";
 import { FormSelect } from "@/core/providers/Form/components/FormSelect";
@@ -26,6 +26,7 @@ const FROM_TYPE_OPTIONS = [
 ];
 
 export const FromCommit = () => {
+  const trpc = useTRPCClient();
   const {
     register,
     control,
