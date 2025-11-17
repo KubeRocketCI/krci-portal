@@ -1,6 +1,6 @@
-import { createMockedContext } from "../../__mocks__/context";
-import { createTestRouterCaller } from "../../__mocks__/router";
-import { ERROR_NO_SESSION_FOUND } from "../../routers/auth/errors";
+import { createMockedContext } from "../../__mocks__/context.js";
+import { createTestRouterCaller } from "../../__mocks__/router.js";
+import { ERROR_NO_SESSION_FOUND } from "../../routers/auth/errors/index.js";
 import { TRPCError } from "@trpc/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 

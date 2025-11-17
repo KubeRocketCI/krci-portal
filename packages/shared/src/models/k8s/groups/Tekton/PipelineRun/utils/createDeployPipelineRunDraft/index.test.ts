@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { describe, expect, it, Mock, vi } from "vitest";
-import { createDeployPipelineRunDraft } from "./index";
+import { createDeployPipelineRunDraft } from "./index.js";
 
 vi.mock("uuid", () => ({
   v4: vi.fn(),

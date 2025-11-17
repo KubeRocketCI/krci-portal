@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { createCleanPipelineRunDraft } from "./index";
+import { createCleanPipelineRunDraft } from "./index.js";
 import { describe, it, expect, Mock, vi } from "vitest";
 
 vi.mock("uuid", () => ({

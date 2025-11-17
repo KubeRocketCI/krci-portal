@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { safeDecode, safeEncode } from "./index";
+import { safeDecode, safeEncode } from "./index.js";
 
 describe("testing safeDecode function", () => {
   it("should return decoded value", () => {

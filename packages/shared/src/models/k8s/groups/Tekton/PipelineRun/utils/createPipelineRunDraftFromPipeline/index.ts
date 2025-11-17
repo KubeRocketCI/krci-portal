@@ -50,7 +50,7 @@ export const createPipelineRunDraftFromPipeline = (
       pipelineRef: {
         name: pipeline.metadata.name,
       },
-      params: (pipeline.spec.params || []).map((param) => {
+      params: (pipeline.spec.params || []).map((param: { name: string; default?: unknown }) => {
         return {
           name: param.name,
           value: param.default || "",

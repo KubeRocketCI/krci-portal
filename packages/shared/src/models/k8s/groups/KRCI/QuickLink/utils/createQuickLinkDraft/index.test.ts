@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ZodError } from "zod";
-import { k8sQuickLinkConfig } from "../../constants";
-import { createQuickLinkDraft } from ".";
+import { k8sQuickLinkConfig } from "../../constants.js";
+import { createQuickLinkDraft } from "./index.js";
 
 describe("K8sQuickLink: createQuickLinkDraft", () => {
   it("should return a valid QuickLinkDraft object", () => {

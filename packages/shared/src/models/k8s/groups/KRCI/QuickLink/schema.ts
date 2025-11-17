@@ -5,7 +5,7 @@ import {
   kubeObjectDraftMetadataSchema,
   kubeObjectMetadataSchema,
 } from "../../../common/index.js";
-import { krciCommonLabelsSchema } from "..";
+import { krciCommonLabelsSchema } from "../index.js";
 import { quickLinkLabels } from "./labels.js";
 
 export const systemQuickLinksEnum = z.enum([

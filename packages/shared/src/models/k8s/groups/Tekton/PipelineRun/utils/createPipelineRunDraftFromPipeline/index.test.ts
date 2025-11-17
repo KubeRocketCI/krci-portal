@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it, Mock, vi } from "vitest";
-import { createRandomString } from "../../../../../../../utils";
-import { Pipeline } from "../../../Pipeline/types";
-import { TriggerTemplate } from "../../../TriggerTemplate";
-import { createPipelineRunDraftFromPipeline } from "./index";
+import { createRandomString } from "../../../../../../../utils/index.js";
+import { Pipeline } from "../../../Pipeline/types.js";
+import { TriggerTemplate } from "../../../TriggerTemplate/index.js";
+import { createPipelineRunDraftFromPipeline } from "./index.js";
 
 vi.mock("../../../../../../../utils", () => ({
   createRandomString: vi.fn(),

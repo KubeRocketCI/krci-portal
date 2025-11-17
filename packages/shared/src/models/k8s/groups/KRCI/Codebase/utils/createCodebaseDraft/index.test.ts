@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { createCodebaseDraftObject } from "./index";
+import { createCodebaseDraftObject } from "./index.js";
 import { ZodError } from "zod";
-import { codebaseType } from "../../constants";
+import { codebaseType } from "../../constants.js";
 
 const baseInput = {
   name: "test",
@@ -66,10 +66,9 @@ describe("K8sCodebase: createCodebaseDraft", () => {
   it("should throw ZodError on missing required fields", () => {
     expect(() =>
       createCodebaseDraftObject(
-        // @ts-expect-error intentional missing fields{
         {
           name: "bad",
-        }
+        } as any
       )
     ).toThrowError(ZodError);
   });

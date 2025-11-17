@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { createRerunPipelineRun } from "./index";
+import { createRerunPipelineRun } from "./index.js";
 import { vi, Mock, describe, expect, it } from "vitest";
 
 vi.mock("uuid", () => ({

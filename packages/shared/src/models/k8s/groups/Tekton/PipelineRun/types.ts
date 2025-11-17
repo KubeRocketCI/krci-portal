@@ -1,5 +1,5 @@
 import z from "zod";
-import { pipelineRunDraftSchema, pipelineRunReasonEnum, pipelineRunSchema, pipelineRunStatusEnum } from ".";
+import { pipelineRunDraftSchema, pipelineRunReasonEnum, pipelineRunSchema, pipelineRunStatusEnum } from "./index.js";
 
 export type PipelineRunReason = z.infer<typeof pipelineRunReasonEnum>;
 export type PipelineRunStatus = z.infer<typeof pipelineRunStatusEnum>;

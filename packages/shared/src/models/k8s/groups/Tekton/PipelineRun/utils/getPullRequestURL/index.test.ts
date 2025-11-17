@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { getPullRequestURL } from ".";
-import { PipelineRun } from "../../types";
+import { getPullRequestURL } from "./index.js";
+import { PipelineRun } from "../../types.js";
 
 describe("testing getPullRequestURL function", () => {
   it("should return the correct URL for GitHub", () => {
