@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { getTokenExpirationTime } from ".";
-import { mockToken, mockTokenWithoutExp } from "../../__mocks__/token";
+import { getTokenExpirationTime } from "./index.js";
+import { mockToken, mockTokenWithoutExp } from "../../__mocks__/token.js";
 
 describe("getTokenExpirationTime", () => {
   it("should return decoded expiration time in milliseconds", () => {

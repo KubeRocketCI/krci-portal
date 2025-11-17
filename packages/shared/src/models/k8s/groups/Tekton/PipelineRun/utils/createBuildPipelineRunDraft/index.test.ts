@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from "uuid";
-import { createBuildPipelineRunDraft } from "./index";
-import { Codebase, CodebaseBranch, GitServer } from "../../../../KRCI";
+import { createBuildPipelineRunDraft } from "./index.js";
+import { Codebase, CodebaseBranch, GitServer } from "../../../../KRCI/index.js";
 import { vi, Mock, describe, it, expect } from "vitest";
-import { PipelineRun } from "../../types";
+import { PipelineRun } from "../../types.js";
 
 vi.mock("uuid", () => ({
   v4: vi.fn(),

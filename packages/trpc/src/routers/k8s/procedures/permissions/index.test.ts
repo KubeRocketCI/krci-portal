@@ -1,9 +1,9 @@
-import { createMockedContext } from "../../../../__mocks__/context";
-import { createCaller } from "../../../../routers";
+import { createMockedContext } from "../../../../__mocks__/context.js";
+import { createCaller } from "../../../../routers/index.js";
 import { defaultPermissionsToCheck } from "@my-project/shared";
 import { inferProcedureInput } from "@trpc/server";
 import { afterEach, beforeEach, describe, expect, it, Mock, vi } from "vitest";
-import { k8sGetResourcePermissions } from ".";
+import { k8sGetResourcePermissions } from "./index.js";
 
 describe("k8sGetResourcePermissions", () => {
   let mockContext: ReturnType<typeof createMockedContext>;

@@ -1,8 +1,8 @@
-import { createMockedContext } from "../../../../../__mocks__/context";
-import { createCaller } from "../../../../../routers";
+import { createMockedContext } from "../../../../../__mocks__/context.js";
+import { createCaller } from "../../../../../routers/index.js";
 import { inferProcedureInput } from "@trpc/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { k8sGetProcedure } from ".";
+import { k8sGetProcedure } from "./index.js";
 
 describe("k8sGetProcedure", () => {
   let mockContext: ReturnType<typeof createMockedContext>;

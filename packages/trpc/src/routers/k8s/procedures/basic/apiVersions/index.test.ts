@@ -1,8 +1,8 @@
-import { createCaller } from "../../../../../routers";
+import { createCaller } from "../../../../../routers/index.js";
 import { ApisApi } from "@kubernetes/client-node";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { defaultK8sApiVersion } from ".";
-import { createMockedContext } from "../../../../../__mocks__/context";
+import { defaultK8sApiVersion } from "./index.js";
+import { createMockedContext } from "../../../../../__mocks__/context.js";
 
 describe("k8sGetApiVersions", () => {
   let mockContext: ReturnType<typeof createMockedContext>;

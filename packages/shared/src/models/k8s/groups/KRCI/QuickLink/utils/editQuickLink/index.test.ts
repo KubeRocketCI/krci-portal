@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ZodError } from "zod";
-import { editQuickLink } from ".";
+import { editQuickLink } from "./index.js";
 
 describe("K8sQuickLink: editQuickLink", () => {
   const mockQuickLink = {

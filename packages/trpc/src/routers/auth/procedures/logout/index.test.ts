@@ -1,5 +1,5 @@
-import { createMockedContext } from "../../../../__mocks__/context";
-import { createCaller } from "../../../../routers";
+import { createMockedContext } from "../../../../__mocks__/context.js";
+import { createCaller } from "../../../../routers/index.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("authLogoutProcedure", () => {

@@ -1,7 +1,7 @@
 import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import { KubeConfig } from "@kubernetes/client-node";
-import { K8sClient } from ".";
-import { CustomSession } from "../../context/types";
+import { K8sClient } from "./index.js";
+import { CustomSession } from "../../context/types.js";
 
 vi.mock("@kubernetes/client-node", () => {
   const mockKubeConfig: Partial<KubeConfig> = {

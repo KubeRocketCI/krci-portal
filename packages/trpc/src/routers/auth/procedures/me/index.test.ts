@@ -1,8 +1,8 @@
-import { createMockedContext } from "../../../../__mocks__/context";
-import { mockSession } from "../../../../__mocks__/session";
-import { createCaller } from "../../../../routers";
+import { createMockedContext } from "../../../../__mocks__/context.js";
+import { mockSession } from "../../../../__mocks__/session.js";
+import { createCaller } from "../../../../routers/index.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ERROR_NO_SESSION_FOUND } from "../../errors";
+import { ERROR_NO_SESSION_FOUND } from "../../errors/index.js";
 import { TRPCError } from "@trpc/server";
 
 describe("authMeProcedure", () => {

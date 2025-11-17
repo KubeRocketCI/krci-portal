@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createStageDraftObject } from "./index";
+import { createStageDraftObject } from "./index.js";
 import { ZodError } from "zod";
 
 const baseInput = {
@@ -221,10 +221,9 @@ describe("K8sStage: createStageDraft", () => {
   it("should throw ZodError on missing required fields", () => {
     expect(() =>
       createStageDraftObject(
-        // @ts-expect-error intentional missing fields
         {
           name: "invalid",
-        }
+        } as any
       )
     ).toThrowError(ZodError);
   });

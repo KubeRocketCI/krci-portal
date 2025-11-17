@@ -1,4 +1,4 @@
 import z from "zod";
-import { templateSchema } from ".";
+import { templateSchema } from "./index.js";
 
 export type Template = z.infer<typeof templateSchema>;

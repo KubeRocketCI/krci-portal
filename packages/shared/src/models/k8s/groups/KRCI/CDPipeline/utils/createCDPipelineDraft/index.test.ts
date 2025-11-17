@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createCDPipelineDraftObject } from "./index";
+import { createCDPipelineDraftObject } from "./index.js";
 import { ZodError } from "zod";
 
 const baseInput = {
@@ -86,10 +86,9 @@ describe("K8sCDPipeline: createCDPipelineDraft", () => {
   it("should throw ZodError on missing required fields", () => {
     expect(() =>
       createCDPipelineDraftObject(
-        // @ts-expect-error intentional missing fields
         {
           name: "invalid",
-        }
+        } as any
       )
     ).toThrowError(ZodError);
   });

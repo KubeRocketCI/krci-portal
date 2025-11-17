@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createCodebaseDraftSecretObject } from "./index";
-import { safeEncode } from "../../../../../../../utils";
+import { createCodebaseDraftSecretObject } from "./index.js";
+import { safeEncode } from "../../../../../../../utils/index.js";
 
 describe("K8sCodebase: createCodebaseDraftSecret", () => {
   it("should return a valid SecretDraft object", () => {

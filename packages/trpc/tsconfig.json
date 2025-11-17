@@ -6,6 +6,9 @@
     "declarationMap": true,
     "rootDir": "src",
     "outDir": "dist",
+    "module": "Node16",
+    "moduleResolution": "node16",
+    "target": "ES2022",
     "skipLibCheck": true,
     "noEmit": false,
     "paths": {

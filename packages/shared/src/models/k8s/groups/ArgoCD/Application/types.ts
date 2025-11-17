@@ -4,7 +4,7 @@ import {
   applicationHealthStatusSchema,
   applicationSchema,
   applicationSyncStatusSchema,
-} from ".";
+} from "./index.js";
 
 export type Application = z.infer<typeof applicationSchema>;
 export type ApplicationDraft = z.infer<typeof applicationDraftSchema>;
