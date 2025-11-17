@@ -11,7 +11,7 @@ import {
 } from "@my-project/shared";
 import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors/index.js";
 import { TRPCError } from "@trpc/server";
-import { K8sClient } from "packages/trpc/src/clients/k8s";
+import { K8sClient } from "../../../../clients/k8s/index.js";
 
 export const k8sGetResourcePermissions = protectedProcedure
   .input(
