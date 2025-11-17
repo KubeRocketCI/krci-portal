@@ -132,16 +132,7 @@ export const StageActionsMenu = ({
         },
       }),
     ].filter((action): action is ListItemAction => action !== undefined);
-  }, [
-    stage,
-    stagePermissions.data,
-    stages,
-    variant,
-    openManageStageDialog,
-    cdPipeline,
-    openDeleteKubeObjectDialog,
-    backRoute,
-  ]);
+  }, [stage, stagePermissions.data, stages, openManageStageDialog, cdPipeline, openDeleteKubeObjectDialog, backRoute]);
 
   return variant === actionMenuType.inline ? (
     <ActionsInlineList actions={actions} />

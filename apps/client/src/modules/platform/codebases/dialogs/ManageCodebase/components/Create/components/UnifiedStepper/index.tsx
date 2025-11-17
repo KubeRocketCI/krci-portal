@@ -41,4 +41,3 @@ export const UnifiedStepper = ({ steps }: UnifiedStepperProps) => {
     </Stepper>
   );
 };
-

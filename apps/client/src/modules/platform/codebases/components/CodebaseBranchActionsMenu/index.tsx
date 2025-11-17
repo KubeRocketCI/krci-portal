@@ -106,7 +106,6 @@ export const CodebaseBranchActionsMenu = ({
     pipelines?.build,
     pipelines?.review,
     setNewDialog,
-    variant,
   ]);
 
   return variant === actionMenuType.inline ? (

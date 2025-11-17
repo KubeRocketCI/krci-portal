@@ -52,9 +52,13 @@ export const useInfoColumns = () => {
           label: "Trigger Type",
           text:
             stage.spec.triggerType === stageTriggerType.Manual ? (
-              <Badge variant="default" className="h-6 bg-green-600 hover:bg-green-700">manual</Badge>
+              <Badge variant="default" className="h-6 bg-green-600 hover:bg-green-700">
+                manual
+              </Badge>
             ) : (
-              <Badge variant="default" className="h-6 bg-green-600 hover:bg-green-700">auto</Badge>
+              <Badge variant="default" className="h-6 bg-green-600 hover:bg-green-700">
+                auto
+              </Badge>
             ),
         },
         {

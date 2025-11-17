@@ -26,7 +26,8 @@ export const CustomActionsInlineList = ({ groupActions, inlineActions }: CustomA
               size: "sm",
               variant: "outline",
               onClick: groupActions[0].action,
-              className: "rounded-r-none border-r-0 text-secondary-dark border-secondary-dark hover:bg-secondary-dark/10",
+              className:
+                "rounded-r-none border-r-0 text-secondary-dark border-secondary-dark hover:bg-secondary-dark/10",
             }}
             allowed={pipelineRunPermissions.data.create.allowed}
             reason={pipelineRunPermissions.data.create.reason}

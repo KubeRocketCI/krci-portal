@@ -85,7 +85,7 @@ export const LogsByTask = () => {
                     value={taskRunName}
                     className={cn(
                       "border-0",
-                      isExpanded && "border-l-2 border-l-primary",
+                      isExpanded && "border-l-primary border-l-2",
                       !isExpanded && "max-w-[90%]"
                     )}
                   >

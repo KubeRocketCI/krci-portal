@@ -67,8 +67,7 @@ export const MenuAccordion = ({
   );
 
   const hasApprovalTaskPending =
-    pipelineRunTaskData?.approvalTask &&
-    pipelineRunTaskData?.approvalTask?.spec.action === approvalTaskAction.Pending;
+    pipelineRunTaskData?.approvalTask && pipelineRunTaskData?.approvalTask?.spec.action === approvalTaskAction.Pending;
 
   return (
     <Accordion
@@ -86,11 +85,7 @@ export const MenuAccordion = ({
     >
       <AccordionItem
         value={taskRunName}
-        className={cn(
-          "border-0",
-          isExpanded && "border-l-2 border-l-primary",
-          !isExpanded && "max-w-[90%]"
-        )}
+        className={cn("border-0", isExpanded && "border-l-primary border-l-2", !isExpanded && "max-w-[90%]")}
       >
         <AccordionTrigger
           className={cn(

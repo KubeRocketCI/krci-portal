@@ -32,15 +32,14 @@ export interface FormComboboxProps<TFieldValues extends FieldValues = FieldValue
   searchPlaceholder?: string;
   emptyText?: string;
   disabled?: boolean;
-  
+
   // Autocomplete features
   freeSolo?: boolean; // Allow custom input
   loading?: boolean; // Show loading state
-  
+
   // Adornments
   suffix?: React.ReactNode;
-  
+
   // Rendering
   renderOption?: (option: ComboboxOption) => React.ReactNode;
 }
-

@@ -10,8 +10,7 @@
     "noEmit": false,
     "paths": {
       "@my-project/shared": ["../shared/dist"],
-      "@my-project/shared/*": ["../shared/dist/*"],
-      "@/*": ["../../apps/server/src/*"]
+      "@my-project/shared/*": ["../shared/dist/*"]
     }
   },
   "include": ["src/**/*"],

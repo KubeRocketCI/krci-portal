@@ -7,7 +7,7 @@ export const TooltipWithLinkList = ({ urls, size }: { urls: string[]; size?: "me
   return (
     <Tooltip
       title={
-        <div className="bg-card rounded shadow-lg p-0 max-h-[40vh] overflow-y-auto">
+        <div className="bg-card max-h-[40vh] overflow-y-auto rounded p-0 shadow-lg">
           <div className="flex flex-col">
             {urls.map((el) => (
               <a
@@ -15,7 +15,7 @@ export const TooltipWithLinkList = ({ urls, size }: { urls: string[]; size?: "me
                 href={el}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="whitespace-normal break-words px-2 py-1.5 text-sm hover:bg-accent rounded-sm"
+                className="hover:bg-accent rounded-sm px-2 py-1.5 text-sm break-words whitespace-normal"
               >
                 {el}
               </a>

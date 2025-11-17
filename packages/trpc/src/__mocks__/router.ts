@@ -1,7 +1,8 @@
 // This router is used to test the protected and public procedures in isolation.
 // It is not used in the app itself.
 
-import { t, protectedProcedure } from "../trpc";
+import { t } from "../trpc";
+import { protectedProcedure } from "../procedures/protected";
 
 export const testRouter = t.router({
   testProtected: protectedProcedure.query(() => {

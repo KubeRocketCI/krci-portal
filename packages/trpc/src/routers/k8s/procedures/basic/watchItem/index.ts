@@ -1,6 +1,5 @@
 import { Watch } from "@kubernetes/client-node";
 import { z } from "zod";
-import { observable } from "@trpc/server/observable";
 import { handleK8sError } from "../../../utils/handleK8sError";
 import { protectedProcedure } from "../../../../../procedures/protected";
 import { TRPCError } from "@trpc/server";
@@ -19,54 +18,108 @@ export const k8sWatchItemProcedure = protectedProcedure
       name: z.string(),
     })
   )
-  .subscription(({ input, ctx }) => {
-    return observable<{ type: string; data: KubeObjectBase }>((emit) => {
-      try {
-        const k8sClient = new K8sClient(ctx.session);
+  .subscription(async function* ({ input, ctx, signal }) {
+    const k8sClient = new K8sClient(ctx.session);
 
-        if (!k8sClient.KubeConfig) {
-          throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
+    if (!k8sClient.KubeConfig) {
+      throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
+    }
+
+    const watch = new Watch(k8sClient.KubeConfig);
+    const { namespace, resourceVersion, name, resourceConfig } = input;
+
+    const watchUrl = createCustomResourceURL({
+      resourceConfig,
+      namespace,
+    });
+
+    // Create a queue to bridge callbacks to async generator
+    const eventQueue: Array<{ type: string; data: KubeObjectBase } | { error: unknown }> = [];
+    let resolveNext: (() => void) | null = null;
+    let controller: Awaited<ReturnType<typeof watch.watch>> | null = null;
+    let isAborted = false;
+
+    // Cleanup function
+    const cleanup = () => {
+      isAborted = true;
+      if (controller) {
+        controller.abort();
+        controller = null;
+      }
+    };
+
+    // Handle abort signal
+    if (signal) {
+      signal.addEventListener("abort", cleanup);
+    }
+
+    try {
+      // Start the watch
+      const watchPromise = watch.watch(
+        watchUrl,
+        { resourceVersion, fieldSelector: `metadata.name=${name}` },
+        (type, obj: KubeObjectBase) => {
+          if (!isAborted) {
+            eventQueue.push({ type, data: obj });
+            if (resolveNext) {
+              resolveNext();
+              resolveNext = null;
+            }
+          }
+        },
+        (err) => {
+          if (err && !isAborted) {
+            eventQueue.push({ error: err });
+            if (resolveNext) {
+              resolveNext();
+              resolveNext = null;
+            }
+          }
         }
+      );
 
-        const watch = new Watch(k8sClient.KubeConfig);
-
-        const { namespace, resourceVersion, name, resourceConfig } = input;
-
-        let controller: Awaited<ReturnType<typeof watch.watch>>;
-        let isActive = true;
-
-        const watchUrl = createCustomResourceURL({
-          resourceConfig,
-          namespace,
+      watchPromise
+        .then((c) => {
+          controller = c;
+        })
+        .catch((err) => {
+          if (!isAborted) {
+            eventQueue.push({ error: err });
+            if (resolveNext) {
+              resolveNext();
+              resolveNext = null;
+            }
+          }
         });
 
-        watch
-          .watch(
-            watchUrl,
-            { resourceVersion, fieldSelector: `metadata.name=${name}` },
-            (type, obj) => {
-              if (isActive) {
-                emit.next({ type, data: obj });
-              }
-            },
-            (err) => {
-              if (err) emit.error(err);
+      // Yield events as they come in
+      while (!isAborted && !signal?.aborted) {
+        // Wait for next event or abort
+        if (eventQueue.length === 0) {
+          await new Promise<void>((resolve) => {
+            resolveNext = resolve;
+            // Check if signal was aborted while waiting
+            if (signal?.aborted) {
+              resolve();
             }
-          )
-          .then((c) => {
-            controller = c;
-          })
-          .catch((err) => {
-            emit.error(err);
           });
+        }
 
-        return () => {
-          isActive = false;
-          controller?.abort();
-        };
-      } catch (error) {
-        emit.error(handleK8sError(error));
-        return () => {};
+        // Process all queued events
+        while (eventQueue.length > 0 && !signal?.aborted) {
+          const event = eventQueue.shift()!;
+          if ("error" in event) {
+            throw handleK8sError(event.error);
+          }
+          yield event;
+        }
       }
-    });
+    } catch (error) {
+      throw handleK8sError(error);
+    } finally {
+      cleanup();
+      if (signal) {
+        signal.removeEventListener("abort", cleanup);
+      }
+    }
   });

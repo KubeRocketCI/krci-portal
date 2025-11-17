@@ -104,7 +104,7 @@ export const Autocomplete = <
       if (multiple) {
         field.handleChange((Array.isArray(value) ? value : [value]) as never);
       } else {
-        field.handleChange((value as string) as never);
+        field.handleChange(value as string as never);
       }
     },
     [field, multiple]

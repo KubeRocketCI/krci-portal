@@ -105,7 +105,12 @@ export const Preview = () => {
               </div>
               <div className="col-span-2">
                 <p className="mb-2 text-base font-medium">Source</p>
-                <a href={template?.spec.source} target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">
+                <a
+                  href={template?.spec.source}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:no-underline"
+                >
                   {template?.spec.source}
                 </a>
               </div>

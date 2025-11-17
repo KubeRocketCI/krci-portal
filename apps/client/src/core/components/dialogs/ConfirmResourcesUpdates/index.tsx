@@ -1,7 +1,14 @@
 import { Button } from "@/core/components/ui/button";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
 import { FormTextField } from "@/core/providers/Form/components/FormTextField";
 import { DIALOG_NAME } from "./constants";
 import { ConfirmResourcesUpdatesDialogProps } from "./types";
@@ -10,7 +17,12 @@ import { k8sOperation } from "@my-project/shared";
 export const ConfirmResourcesUpdatesDialog: React.FC<ConfirmResourcesUpdatesDialogProps> = ({ props, state }) => {
   const { deleteCallback, text, resourcesArray } = props;
   const { closeDialog, open } = state;
-  const { control, watch, reset, formState: { errors } } = useForm();
+  const {
+    control,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm();
 
   const confirmFieldValue = watch("confirm");
   const isSubmitNotAllowed = confirmFieldValue !== "confirm";

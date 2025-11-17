@@ -1,4 +1,11 @@
-import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
 import { Button } from "@/core/components/ui/button";
 import React from "react";
 import { Form } from "./components/Form";
@@ -26,7 +33,7 @@ export const CreateCodebaseFromTemplateDialog: React.FC<CreateCodebaseFromTempla
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && closeDialog()} data-testid="dialog">
-      <DialogContent className="max-w-4xl w-full">
+      <DialogContent className="w-full max-w-4xl">
         <CurrentDialogContextProvider props={props} state={state}>
           <FormContextProvider
             formSettings={{
@@ -55,12 +62,7 @@ export const CreateCodebaseFromTemplateDialog: React.FC<CreateCodebaseFromTempla
                   <Button onClick={closeDialog} variant="ghost" size="sm">
                     Cancel
                   </Button>
-                  <Button
-                    type={"submit"}
-                    variant={"default"}
-                    size="sm"
-                    onClick={() => handleChange(1)}
-                  >
+                  <Button type={"submit"} variant={"default"} size="sm" onClick={() => handleChange(1)}>
                     Proceed
                   </Button>
                 </div>

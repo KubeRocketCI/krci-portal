@@ -260,7 +260,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-8">
         {pods.length > 1 && (
-          <div className="flex flex-col gap-1.5 min-w-[180px]">
+          <div className="flex min-w-[180px] flex-col gap-1.5">
             <Label htmlFor="pod-select">Pod</Label>
             <Select value={currentPod?.metadata?.name || ""} onValueChange={handlePodChange}>
               <SelectTrigger id="pod-select" className="h-9">
@@ -277,7 +277,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
           </div>
         )}
 
-        <div className="flex flex-col gap-1.5 min-w-[200px]">
+        <div className="flex min-w-[200px] flex-col gap-1.5">
           <Label htmlFor="container-select">Container</Label>
           <Select value={activeContainer} onValueChange={handleContainerChange}>
             <SelectTrigger id="container-select" className="h-9">
@@ -307,12 +307,16 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
 
         <div className="flex items-center gap-2">
           <Switch checked={logsFollow} onCheckedChange={setLogsFollow} id="follow-switch" />
-          <Label htmlFor="follow-switch" className="cursor-pointer">Follow</Label>
+          <Label htmlFor="follow-switch" className="cursor-pointer">
+            Follow
+          </Label>
         </div>
 
         <div className="flex items-center gap-2">
           <Switch checked={logsTimestamps} onCheckedChange={setLogsTimestamps} id="timestamps-switch" />
-          <Label htmlFor="timestamps-switch" className="cursor-pointer">Timestamps</Label>
+          <Label htmlFor="timestamps-switch" className="cursor-pointer">
+            Timestamps
+          </Label>
         </div>
 
         {/* Action Buttons */}
@@ -541,7 +545,7 @@ const SearchPopover: React.FC<SearchPopoverProps> = ({ open, onClose, terminalRe
   if (!open) return null;
 
   return (
-    <div className="absolute top-2 right-[15px] p-2 z-[1000] flex items-center gap-1 bg-[#f5f5f5] border border-[#e0e0e0] rounded shadow-[0_2px_8px_rgba(0,0,0,0.15)]">
+    <div className="absolute top-2 right-[15px] z-[1000] flex items-center gap-1 rounded border border-[#e0e0e0] bg-[#f5f5f5] p-2 shadow-[0_2px_8px_rgba(0,0,0,0.15)]">
       {/* Search Input */}
       <Input
         value={searchText}
@@ -549,7 +553,7 @@ const SearchPopover: React.FC<SearchPopoverProps> = ({ open, onClose, terminalRe
         onKeyDown={handleKeyDown}
         placeholder="Search logs..."
         autoFocus
-        className="w-[200px] bg-white border border-gray-300 rounded px-2 py-0.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+        className="focus:border-primary focus:ring-primary/20 w-[200px] rounded border border-gray-300 bg-white px-2 py-0.5 text-sm focus:ring-2 focus:outline-none"
       />
 
       {/* Search Options */}

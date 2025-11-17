@@ -6,4 +6,3 @@ export interface ConfigurationTabProps {
   setActiveTab: React.Dispatch<React.SetStateAction<ValueOf<typeof mainTabs>>>;
   baseDefaultValues: Partial<ManageCodebaseFormValues>;
 }
-

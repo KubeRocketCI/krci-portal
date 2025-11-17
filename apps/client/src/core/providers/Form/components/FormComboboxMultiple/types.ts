@@ -32,4 +32,3 @@ export interface FormComboboxMultipleProps<TFieldValues extends FieldValues = Fi
   disabled?: boolean;
   maxShownItems?: number; // Max badges shown before "+N more"
 }
-

@@ -37,7 +37,12 @@ export const authLoginCallbackProcedure = publicProcedure
 
     const response = {
       success: true,
-      userInfo,
+      userInfo: userInfo
+        ? {
+            ...userInfo,
+            issuerUrl: ctx.oidcConfig.issuerURL || undefined,
+          }
+        : undefined,
       clientSearch: ctx.session.login.clientSearch,
     };
 

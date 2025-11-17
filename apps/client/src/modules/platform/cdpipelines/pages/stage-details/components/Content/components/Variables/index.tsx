@@ -100,12 +100,7 @@ export const Variables = () => {
                         control={control}
                         errors={errors}
                       />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(index)}
-                        data-test="delete"
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(index)} data-test="delete">
                         <Trash size={16} />
                       </Button>
                     </div>
@@ -128,12 +123,7 @@ export const Variables = () => {
               </Button>
             </div>
             <div className="flex items-center justify-end gap-2">
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => reset()}
-                disabled={!isDirty}
-              >
+              <Button size="sm" variant="ghost" onClick={() => reset()} disabled={!isDirty}>
                 undo changes
               </Button>
               <Button

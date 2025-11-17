@@ -1,6 +1,13 @@
 import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
 import { Button } from "@/core/components/ui/button";
-import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
 import { FormTextField } from "@/core/providers/Form/components/FormTextField";
 import React from "react";
 import { useForm } from "react-hook-form";
@@ -24,7 +31,13 @@ export const DeleteKubeObjectDialog: React.FC<DeleteKubeObjectDialogProps> = (_p
 
   const [errorTemplate, setErrorTemplate] = React.useState<React.ReactNode | string>(null);
   const [loadingActive, setLoadingActive] = React.useState<boolean>(false);
-  const { control, handleSubmit, watch, reset, formState: { errors } } = useForm<{ name: string }>();
+  const {
+    control,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<{ name: string }>();
   const kubeObjectNameFieldValue = watch(NAMES.name);
 
   const handleClosePopup = React.useCallback(() => closeDialog(), [closeDialog]);

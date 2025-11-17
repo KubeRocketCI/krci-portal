@@ -33,7 +33,7 @@ const DeletionErrorMessage = ({ codebase, conflictedPipeline, clusterName }: Del
     <div className="flex flex-col gap-8 rounded-md border border-red-400/30 bg-red-50/30 p-10">
       <div className="flex items-center gap-6">
         <AlertCircle size={20} className="text-destructive shrink-0" />
-        <p className="text-sm text-[0.9375rem] font-semibold text-destructive">Cannot Delete Codebase</p>
+        <p className="text-destructive text-sm text-[0.9375rem] font-semibold">Cannot Delete Codebase</p>
       </div>
 
       <div className="flex flex-col gap-2 pl-18">
@@ -44,11 +44,7 @@ const DeletionErrorMessage = ({ codebase, conflictedPipeline, clusterName }: Del
         </p>
 
         <div className="bg-background border-border mt-4 rounded border p-6">
-          <Button
-            variant="ghost"
-            asChild
-            className="p-0 h-auto font-semibold"
-          >
+          <Button variant="ghost" asChild className="h-auto p-0 font-semibold">
             <Link
               to={PATH_CDPIPELINE_DETAILS_FULL}
               params={{
@@ -73,11 +69,7 @@ const DeletionErrorMessage = ({ codebase, conflictedPipeline, clusterName }: Del
   );
 };
 
-export const CodebaseActionsMenu = ({
-  backRoute,
-  variant,
-  data: { codebase },
-}: CodebaseActionsMenuProps) => {
+export const CodebaseActionsMenu = ({ backRoute, variant, data: { codebase } }: CodebaseActionsMenuProps) => {
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
 
   const codebasePermissions = useCodebasePermissions();
@@ -163,7 +155,6 @@ export const CodebaseActionsMenu = ({
     codebasePermissions.data.patch.reason,
     onBeforeSubmit,
     setDialog,
-    variant,
   ]);
 
   return variant === actionMenuType.inline ? (

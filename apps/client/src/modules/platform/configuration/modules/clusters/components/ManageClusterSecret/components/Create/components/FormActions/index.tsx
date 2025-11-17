@@ -78,12 +78,7 @@ export const FormActions = ({ activeClusterType }: { activeClusterType: ClusterT
         <div>
           <div className="flex items-center gap-4">
             <div>
-              <Button
-                onClick={() => reset({}, { keepDirty: false })}
-                size="sm"
-                variant="ghost"
-                disabled={!isDirty}
-              >
+              <Button onClick={() => reset({}, { keepDirty: false })} size="sm" variant="ghost" disabled={!isDirty}>
                 Undo Changes
               </Button>
             </div>

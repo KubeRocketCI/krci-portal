@@ -1,5 +1,12 @@
 import { Button } from "@/core/components/ui/button";
-import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
 import { ConfigurationPageContentProps } from "./types";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { Section } from "@/core/components/Section";
@@ -59,9 +66,7 @@ export const ConfigurationPageContent = ({
                 </Button>
               </div>
             </DialogHeader>
-            <DialogBody>
-              {creationForm.component}
-            </DialogBody>
+            <DialogBody>{creationForm.component}</DialogBody>
             <DialogFooter />
           </DialogContent>
         </Dialog>

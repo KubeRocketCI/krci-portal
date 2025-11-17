@@ -26,11 +26,7 @@ export const Tabs = ({ tabs, activeTabIdx, handleChangeTab }: TabsProps) => {
         ))}
       </TabsList>
       {tabs.map(({ component }, idx) => (
-        <TabsContent
-          key={`tab::${idx}`}
-          value={idx.toString()}
-          className="h-full flex flex-col relative"
-        >
+        <TabsContent key={`tab::${idx}`} value={idx.toString()} className="relative flex h-full flex-col">
           {component}
         </TabsContent>
       ))}

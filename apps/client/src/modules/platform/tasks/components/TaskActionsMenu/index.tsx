@@ -10,10 +10,7 @@ import { k8sOperation, Task } from "@my-project/shared";
 import EditorYAML from "@/core/components/EditorYAML";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 
-export const TaskActionsMenu: React.FC<TaskActionsMenuProps> = ({
-  variant,
-  data: { task },
-}) => {
+export const TaskActionsMenu: React.FC<TaskActionsMenuProps> = ({ variant, data: { task } }) => {
   const taskPermissions = useTaskPermissions();
   const { triggerPatchTask } = useTaskCRUD();
   const openEditorDialog = useDialogOpener(EditorYAML);
@@ -51,13 +48,7 @@ export const TaskActionsMenu: React.FC<TaskActionsMenuProps> = ({
         },
       }),
     ];
-  }, [
-    task,
-    taskPermissions.data.patch.allowed,
-    taskPermissions.data.patch.reason,
-    openEditorDialog,
-    triggerPatchTask,
-  ]);
+  }, [task, taskPermissions.data.patch.allowed, taskPermissions.data.patch.reason, openEditorDialog, triggerPatchTask]);
 
   return (
     <>

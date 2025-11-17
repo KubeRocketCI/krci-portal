@@ -1,4 +1,11 @@
-import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
 import { useResourceCRUDMutation } from "@/k8s/api/hooks/useResourceCRUDMutation";
 import { Button } from "@/core/components/ui/button";
 import { Input } from "@/core/components/ui/input";
@@ -87,16 +94,13 @@ export const DeletionDialog = ({
         <DialogBody>
           <div className="flex flex-col gap-2">
             <Label htmlFor="confirm-delete">{`Enter "${CONFIRM_TEXT_VALUE}" to start deletion`}</Label>
-            <Input
-              id="confirm-delete"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              className="w-full"
-            />
+            <Input id="confirm-delete" value={value} onChange={(e) => setValue(e.target.value)} className="w-full" />
           </div>
         </DialogBody>
         <DialogFooter>
-          <Button onClick={handleClose} variant="ghost">Cancel</Button>
+          <Button onClick={handleClose} variant="ghost">
+            Cancel
+          </Button>
           <Button onClick={handleDelete} disabled={deletionDisabled}>
             Delete
           </Button>

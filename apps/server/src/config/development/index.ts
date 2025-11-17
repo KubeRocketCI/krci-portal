@@ -15,7 +15,6 @@ import {
 } from "@trpc/server/adapters/fastify";
 import Fastify, { FastifyInstance, FastifyRequest } from "fastify";
 import { IncomingMessage } from "http";
-import "../../config";
 
 export class LocalFastifyServer {
   fastify: FastifyInstance;

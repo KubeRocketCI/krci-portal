@@ -31,6 +31,7 @@ const BadgeRoot = React.forwardRef<
 });
 BadgeRoot.displayName = "BadgeRoot";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { BadgeRoot, badgeVariants };
 
 export interface BadgeProps extends Omit<React.ComponentProps<"span">, "children"> {

@@ -5,6 +5,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { CustomSession } from "../context/types";
 import { vi } from "vitest";
 import { ISessionStore } from "@my-project/shared";
+import type { OIDCConfig } from "../clients/oidc";
 
 export function createMockedDBSessionStore(mockSession: CustomSession): ISessionStore {
   return {
@@ -28,6 +29,7 @@ interface MockedContext {
   K8sClient: MockK8sClient;
   oidcClient: ReturnType<typeof createMockedOIDCClient>;
   sessionStore: ReturnType<typeof createMockedDBSessionStore>;
+  oidcConfig: OIDCConfig;
 }
 
 export function createMockedContext(): MockedContext {
@@ -38,6 +40,14 @@ export function createMockedContext(): MockedContext {
 
   const mockSessionStore = createMockedDBSessionStore(mockSession as unknown as CustomSession);
 
+  const mockOidcConfig: OIDCConfig = {
+    issuerURL: "https://mock-issuer.example.com",
+    clientID: "mock-client-id",
+    clientSecret: "mock-client-secret",
+    scope: "openid profile email",
+    codeChallengeMethod: "S256",
+  };
+
   return {
     req: {} as FastifyRequest,
     res: {} as FastifyReply,
@@ -45,5 +55,6 @@ export function createMockedContext(): MockedContext {
     K8sClient: mockK8sClient,
     oidcClient: mockOIDCClient,
     sessionStore: mockSessionStore,
+    oidcConfig: mockOidcConfig,
   };
 }

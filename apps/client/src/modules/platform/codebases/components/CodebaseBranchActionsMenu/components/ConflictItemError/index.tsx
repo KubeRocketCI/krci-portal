@@ -6,7 +6,6 @@ import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 
 export const ConflictItemError = ({ conflictedCDPipeline, name }: ConflictItemErrorProps) => {
-
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
 
   return (

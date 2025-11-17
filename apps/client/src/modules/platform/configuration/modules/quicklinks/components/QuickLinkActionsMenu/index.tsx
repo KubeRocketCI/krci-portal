@@ -12,11 +12,7 @@ import React from "react";
 import { ActionsInlineList } from "@/core/components/ActionsInlineList";
 import { ActionsMenuList } from "@/core/components/ActionsMenuList";
 
-export const QuickLinkActionsMenu = ({
-  backRoute,
-  variant,
-  data: { quickLink },
-}: QuickLinkActionsMenuProps) => {
+export const QuickLinkActionsMenu = ({ backRoute, variant, data: { quickLink } }: QuickLinkActionsMenuProps) => {
   const openManageQuickLinkDialog = useDialogOpener(ManageQuickLinkDialog);
   const openDeleteKubeObjectDialog = useDialogOpener(DeleteKubeObjectDialog);
   const quickLinkPermissions = useQuickLinkPermissions();
@@ -83,7 +79,6 @@ export const QuickLinkActionsMenu = ({
     quickLinkPermissions.data.patch.reason,
     quickLinkPermissions.data.delete.allowed,
     quickLinkPermissions.data.delete.reason,
-    variant,
     openManageQuickLinkDialog,
     openDeleteKubeObjectDialog,
     backRoute,

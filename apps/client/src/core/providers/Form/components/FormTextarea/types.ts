@@ -30,4 +30,3 @@ export interface FormTextareaProps<TFieldValues extends FieldValues = FieldValue
   rows?: number;
   textareaProps?: Partial<Omit<TextareaProps, "invalid">>; // Exclude invalid as it's derived from error state
 }
-

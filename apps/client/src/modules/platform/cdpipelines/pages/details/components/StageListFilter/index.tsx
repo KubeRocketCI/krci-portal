@@ -104,10 +104,7 @@ export const StageListFilter = () => {
               onClick={() => handleChangeViewMode(VIEW_MODES.COMPACT)}
               className={viewMode === VIEW_MODES.COMPACT ? "text-primary" : "text-muted-foreground"}
             >
-              <Rows2
-                className={viewMode === VIEW_MODES.COMPACT ? "text-primary" : "text-muted-foreground"}
-                size={16}
-              />
+              <Rows2 className={viewMode === VIEW_MODES.COMPACT ? "text-primary" : "text-muted-foreground"} size={16} />
             </Button>
           </Tooltip>
           <Tooltip title={"View More Details"}>

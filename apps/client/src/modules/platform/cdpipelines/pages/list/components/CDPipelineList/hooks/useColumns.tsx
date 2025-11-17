@@ -151,7 +151,7 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                   }}
                   renderTooltip={(chipsToHide) => {
                     return (
-                      <div className="py-1.5 px-2.5">
+                      <div className="px-2.5 py-1.5">
                         <div className="flex flex-wrap gap-6 font-normal">
                           {chipsToHide.map((label) => (
                             <Badge

@@ -6,6 +6,8 @@ import {
   loginOutputSchema,
   logoutOutputSchema,
   meOutputSchema,
+  loginWithTokenInputSchema,
+  loginWithTokenOutputSchema,
 } from "./schema";
 
 export type LoginInput = z.infer<typeof loginInputSchema>;
@@ -19,3 +21,7 @@ export type LoginOutput = z.infer<typeof loginOutputSchema>;
 export type LogoutnOutput = z.infer<typeof logoutOutputSchema>;
 
 export type MeOutput = z.infer<typeof meOutputSchema>;
+
+export type LoginWithTokenInput = z.infer<typeof loginWithTokenInputSchema>;
+
+export type LoginWithTokenOutput = z.infer<typeof loginWithTokenOutputSchema>;

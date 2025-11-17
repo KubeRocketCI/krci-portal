@@ -59,7 +59,7 @@ export const PipelineRunFilter = ({
           <form.Field name="pipelineType">
             {(field) => <Select field={field} label="Type" options={pipelineTypeOptions} placeholder="Select type" />}
           </form.Field>
-          <p className="text-muted-foreground text-xs mt-1">
+          <p className="text-muted-foreground mt-1 text-xs">
             {pipelineRunTypes.slice(0, 5).map(capitalizeFirstLetter).join(" / ")}
             {pipelineRunTypes.length > 5 ? "..." : ""}
           </p>
@@ -71,7 +71,7 @@ export const PipelineRunFilter = ({
           <form.Field name="status">
             {(field) => <Select field={field} label="Status" options={statusOptions} placeholder="Select status" />}
           </form.Field>
-          <p className="text-muted-foreground text-xs mt-1">Success / Failure / Unknown</p>
+          <p className="text-muted-foreground mt-1 text-xs">Success / Failure / Unknown</p>
         </div>
       )}
 

@@ -20,6 +20,6 @@ export const configRouter = t.router({
       return {
         clusterName,
         defaultNamespace,
-      };  
+      };
     }),
 });

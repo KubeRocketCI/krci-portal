@@ -17,7 +17,7 @@ export const ManageQuickLinkDialog: React.FC<ManageQuickLinkDialogProps> = (prop
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && closeDialog()} data-testid="dialog">
-      <DialogContent className="max-w-4xl w-full">
+      <DialogContent className="w-full max-w-4xl">
         <CurrentDialogContextProvider {...props}>
           {mode === FORM_MODES.CREATE ? <Create /> : mode === FORM_MODES.EDIT ? <Edit /> : null}
         </CurrentDialogContextProvider>

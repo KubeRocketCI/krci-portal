@@ -1,4 +1,11 @@
-import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
 import { Button } from "@/core/components/ui/button";
 import React from "react";
 import { useForm } from "react-hook-form";
@@ -31,7 +38,7 @@ export const CommentDialog: React.FC<CommentDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && closeDialog()}>
-      <DialogContent className="max-w-2xl w-full">
+      <DialogContent className="w-full max-w-2xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
@@ -49,8 +56,12 @@ export const CommentDialog: React.FC<CommentDialogProps> = ({
           </form>
         </DialogBody>
         <DialogFooter>
-          <Button variant="ghost" onClick={closeDialog}>Cancel</Button>
-          <Button variant="default" onClick={handleSubmit(onSubmit)}>Confirm</Button>
+          <Button variant="ghost" onClick={closeDialog}>
+            Cancel
+          </Button>
+          <Button variant="default" onClick={handleSubmit(onSubmit)}>
+            Confirm
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -5,8 +5,10 @@ import {
   AuthCallbackLoginOutput,
   AuthContext,
   AuthLoginOutput,
+  AuthLoginWithTokenOutput,
   AuthLogoutOutput,
   LoginMutationInput,
+  LoginWithTokenMutationInput,
 } from "./context";
 import { trpc } from "@/core/clients/trpc";
 import { LoadingProgressBar } from "@/core/components/ui/LoadingProgressBar";
@@ -106,6 +108,29 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
     },
   });
 
+  const loginWithTokenMutation = useMutation<AuthLoginWithTokenOutput, Error, LoginWithTokenMutationInput>({
+    mutationKey: ["auth.loginWithToken"],
+    mutationFn: ({ token, redirectSearchParam }) => {
+      return trpc.auth.loginWithToken.mutate({
+        token,
+        redirectSearchParam,
+      });
+    },
+    onSuccess: ({ success, userInfo, clientSearch }) => {
+      if (success && userInfo) {
+        queryClient.setQueryData(["auth.me"], userInfo);
+
+        const clientSearchParams = new URLSearchParams(clientSearch || "");
+        const redirect = clientSearchParams.get("redirect") || routeHome.fullPath;
+
+        router.navigate({ to: redirect, replace: true });
+      }
+    },
+    onError: () => {
+      // Error handled in component
+    },
+  });
+
   const logoutMutation = useMutation<AuthLogoutOutput, Error, void>({
     mutationKey: ["auth.logout"],
     mutationFn: () => {
@@ -130,6 +155,7 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
     () => ({
       loginMutation,
       loginCallbackMutation,
+      loginWithTokenMutation,
       logoutMutation,
       user: meQuery.data,
       isLoading: meQuery.isLoading,
@@ -141,6 +167,7 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
       isAuthenticated,
       loginCallbackMutation,
       loginMutation,
+      loginWithTokenMutation,
       logoutMutation,
       meQuery.data,
       meQuery.isLoading,

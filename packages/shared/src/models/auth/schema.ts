@@ -8,7 +8,9 @@ export const loginCallbackInputSchema = z.string();
 export const loginCallbackOutputSchema = z
   .object({
     success: z.boolean(),
-    userInfo: OIDCUserSchema.optional(),
+    userInfo: OIDCUserSchema.extend({
+      issuerUrl: z.string().optional(),
+    }).optional(),
     clientSearch: z.string().optional(),
   })
   .strict();
@@ -24,3 +26,20 @@ export const logoutOutputSchema = z.object({
 });
 
 export const meOutputSchema = OIDCUserSchema.optional();
+
+export const loginWithTokenInputSchema = z
+  .object({
+    token: z.string().min(1, "Token is required"),
+    redirectSearchParam: z.string().optional(),
+  })
+  .strict();
+
+export const loginWithTokenOutputSchema = z
+  .object({
+    success: z.boolean(),
+    userInfo: OIDCUserSchema.extend({
+      issuerUrl: z.string().optional(),
+    }).optional(),
+    clientSearch: z.string().optional(),
+  })
+  .strict();

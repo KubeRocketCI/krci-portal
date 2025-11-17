@@ -1,3 +1,5 @@
+import "./config";
+
 import { LocalFastifyServer } from "./config/development";
 import { ProductionFastifyServer } from "./config/production";
 

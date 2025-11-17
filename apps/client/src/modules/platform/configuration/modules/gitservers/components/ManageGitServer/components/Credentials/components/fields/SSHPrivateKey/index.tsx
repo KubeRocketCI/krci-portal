@@ -26,7 +26,9 @@ export const SSHPrivateKey = () => {
       control={credentialsForm.form.control}
       errors={credentialsForm.form.formState.errors}
       rows={6}
-      helperText={gitServerSecretOwnerReference ? `This field value is managed by ${gitServerSecretOwnerReference}` : undefined}
+      helperText={
+        gitServerSecretOwnerReference ? `This field value is managed by ${gitServerSecretOwnerReference}` : undefined
+      }
       disabled={credentialsForm.mode === FORM_MODES.EDIT && !!gitServerSecretOwnerReference}
     />
   );
