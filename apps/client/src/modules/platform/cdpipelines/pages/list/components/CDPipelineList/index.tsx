@@ -1,19 +1,18 @@
 import { EmptyList } from "@/core/components/EmptyList";
 import { DataTable } from "@/core/components/Table";
-import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { useCDPipelinePermissions, useCDPipelineWatchList } from "@/k8s/api/groups/KRCI/CDPipeline";
 import { TABLE } from "@/k8s/constants/tables";
-import { ManageCDPipelineDialog } from "@/modules/platform/cdpipelines/dialogs/ManageCDPipeline";
 import React from "react";
 import { CDPipelineFilter } from "../CDPipelineFilter";
 import { useCDPipelineFilter } from "../CDPipelineFilter/hooks/useCDPipelineFilter";
 import { useColumns } from "./hooks/useColumns";
 import { CDPipelineListProps } from "./types";
+import { routeCDPipelineCreate } from "../../../create/route";
+import { routeCDPipelineList } from "../../route";
 
 export const CDPipelineList = ({ blockerComponent }: CDPipelineListProps) => {
   const columns = useColumns();
-
-  const openManageCDPipelineDialog = useDialogOpener(ManageCDPipelineDialog);
+  const { clusterName } = routeCDPipelineList.useParams();
 
   const cdPipelinePermissions = useCDPipelinePermissions();
   const cdPipelineListWatch = useCDPipelineWatchList();
@@ -27,10 +26,10 @@ export const CDPipelineList = ({ blockerComponent }: CDPipelineListProps) => {
       return (
         <EmptyList
           missingItemName={"Deployment Flows"}
-          handleClick={() => {
-            openManageCDPipelineDialog({
-              CDPipeline: undefined,
-            });
+          linkText={"Click here to create a new Deployment Flow"}
+          route={{
+            to: routeCDPipelineCreate.fullPath,
+            params: { clusterName },
           }}
           description={"Take the first step towards managing your Deployment Flow by adding a new environment here."}
         />
@@ -42,7 +41,7 @@ export const CDPipelineList = ({ blockerComponent }: CDPipelineListProps) => {
     cdPipelinePermissions.isFetched,
     cdPipelinePermissions.data.create.allowed,
     cdPipelinePermissions.data.create.reason,
-    openManageCDPipelineDialog,
+    clusterName,
   ]);
 
   const tableSlots = React.useMemo(

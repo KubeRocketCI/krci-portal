@@ -4,7 +4,6 @@ import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { QuickLink } from "@/core/components/QuickLink";
 import { Section } from "@/core/components/Section";
-import { K8sRelatedIconsSVGSprite } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { useQuickLinkWatchList } from "@/k8s/api/groups/KRCI/QuickLink";
 import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
 import { getQuickLinkURLsFromList } from "@/k8s/api/groups/KRCI/QuickLink/utils/getURLsFromList";
@@ -60,7 +59,6 @@ export default function CodebaseDetailsPageContent() {
 
     return (
       <LoadingWrapper isLoading={codebaseWatch.query.isLoading}>
-        <K8sRelatedIconsSVGSprite />
         <Tabs tabs={tabs} activeTabIdx={activeTab} handleChangeTab={handleChangeTab} />
       </LoadingWrapper>
     );

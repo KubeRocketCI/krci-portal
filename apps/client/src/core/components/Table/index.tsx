@@ -167,8 +167,6 @@ export const DataTable = <DataType,>({
       selectionSettings.handleSelectAll?.(event, paginatedData.items);
   }, [selectionSettings, filteredData, paginatedData.items]);
 
-  const colGroupRef = React.useRef<HTMLTableColElement | null>(null);
-
   const shouldShowSelectionColumn = React.useMemo(() => {
     // Only show selection column when we have actual data rows to display
     // Don't show it for empty states, loading, or errors
@@ -195,53 +193,44 @@ export const DataTable = <DataType,>({
   ]);
 
   const renderHeader = React.useCallback(() => {
-    if (slots?.header || tableSettings.show || (selectionSettings.renderSelectionInfo && validSelected)) {
+    if (slots?.header || tableSettings.show || (selectionSettings.renderSelectionInfo && validSelected.length > 0)) {
       return (
-        <div className="flex flex-col gap-4 p-5">
+        <div className="flex flex-col gap-4 px-5 py-4">
           {slots?.header || tableSettings.show ? (
             <div className="flex flex-row items-center gap-4">
               <div className="grow">{slots?.header && slots.header}</div>
-              <div className="pl-5">
-                {columns && tableSettings.show && (
-                  <TableSettings
-                    id={id}
-                    name={name}
-                    originalColumns={_columns}
-                    columns={columns}
-                    setColumns={setColumns}
-                    hasSelection={!!selectionSettings.handleSelectRow}
-                  />
-                )}
-              </div>
             </div>
           ) : null}
-          {selectionSettings.renderSelectionInfo && validSelected && (
-            <div className="pl-3">{selectionSettings.renderSelectionInfo(validSelected.length)}</div>
-          )}
         </div>
       );
     }
-  }, [_columns, columns, id, name, selectionSettings, slots?.header, tableSettings.show, validSelected]);
+  }, [selectionSettings, slots?.header, tableSettings.show, validSelected]);
 
   return (
     <div className={`w-full bg-transparent ${outlined ? "rounded-md border" : ""}`}>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
         {renderHeader()}
-        <div className="w-full overflow-hidden rounded">
+        <div className="border-border w-full overflow-hidden border-t border-b py-1">
+          <div className="flex items-center justify-between px-5">
+            {selectionSettings.renderSelectionInfo && validSelected.length > 0 && (
+              <div className="py-4">{selectionSettings.renderSelectionInfo(validSelected.length)}</div>
+            )}
+            <div className="ml-auto">
+              {columns && tableSettings.show && (
+                <TableSettings id={id} name={name} columns={columns} setColumns={setColumns} />
+              )}
+            </div>
+          </div>
           <TableUI>
-            <colgroup ref={colGroupRef}>
+            <colgroup>
               {shouldShowSelectionColumn && <col key={"select-checkbox"} width={`${TABLE_CELL_DEFAULTS.WIDTH}%`} />}
               {columns.map(
-                (column) =>
-                  column.cell.show !== false && (
-                    <col key={column.id} data-id={column.id} width={`${column.cell.width || 100}%`} />
-                  )
+                (column) => column.cell.show !== false && <col key={column.id} width={`${column.cell.baseWidth}%`} />
               )}
             </colgroup>
+
             <TableHead
-              tableId={id}
               columns={columns}
-              colGroupRef={colGroupRef}
               sort={sortState}
               setSort={setSortState}
               rowCount={paginatedData?.count}
@@ -265,7 +254,7 @@ export const DataTable = <DataType,>({
             />
           </TableUI>
         </div>
-        <div className="m-0">
+        <div className="m-0 px-5 py-4">
           {paginationSettings.show && (
             <TablePagination
               dataCount={filteredData && filteredData.length}

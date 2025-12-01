@@ -40,7 +40,8 @@ export const useColumns = (): TableColumn<Template>[] => {
         },
         cell: {
           isFixed: true,
-          ...getSyncedColumnData(tableSettings, columnNames.ICON, 5),
+          baseWidth: 5,
+          ...getSyncedColumnData(tableSettings, columnNames.ICON),
         },
       },
       {
@@ -55,8 +56,8 @@ export const useColumns = (): TableColumn<Template>[] => {
           }) => <TextWithTooltip text={displayName} />,
         },
         cell: {
-          customizable: false,
-          ...getSyncedColumnData(tableSettings, columnNames.NAME, 20),
+          baseWidth: 20,
+          ...getSyncedColumnData(tableSettings, columnNames.NAME),
         },
       },
       {
@@ -70,7 +71,8 @@ export const useColumns = (): TableColumn<Template>[] => {
           }) => <TextWithTooltip text={description} maxLineAmount={3} />,
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.DESCRIPTION, 25),
+          baseWidth: 25,
+          ...getSyncedColumnData(tableSettings, columnNames.DESCRIPTION),
         },
       },
       {
@@ -85,7 +87,8 @@ export const useColumns = (): TableColumn<Template>[] => {
           }) => type,
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.TYPE, 5),
+          baseWidth: 5,
+          ...getSyncedColumnData(tableSettings, columnNames.TYPE),
         },
       },
       {
@@ -100,7 +103,8 @@ export const useColumns = (): TableColumn<Template>[] => {
           }) => category,
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.CATEGORY, 5),
+          baseWidth: 5,
+          ...getSyncedColumnData(tableSettings, columnNames.CATEGORY),
         },
       },
       {
@@ -130,7 +134,8 @@ export const useColumns = (): TableColumn<Template>[] => {
           },
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.LANGUAGE, 10),
+          baseWidth: 10,
+          ...getSyncedColumnData(tableSettings, columnNames.LANGUAGE),
         },
       },
       {
@@ -167,7 +172,8 @@ export const useColumns = (): TableColumn<Template>[] => {
           },
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.FRAMEWORK, 10),
+          baseWidth: 10,
+          ...getSyncedColumnData(tableSettings, columnNames.FRAMEWORK),
         },
       },
       {
@@ -198,7 +204,8 @@ export const useColumns = (): TableColumn<Template>[] => {
           },
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.BUILD_TOOL, 10),
+          baseWidth: 10,
+          ...getSyncedColumnData(tableSettings, columnNames.BUILD_TOOL),
         },
       },
       {
@@ -213,7 +220,8 @@ export const useColumns = (): TableColumn<Template>[] => {
           }) => maturity,
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.MATURITY, 5),
+          baseWidth: 5,
+          ...getSyncedColumnData(tableSettings, columnNames.MATURITY),
         },
       },
     ],

@@ -49,12 +49,11 @@ export const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
             )}
           </FormLabel>
         )}
-        <div className="group focus-within:ring-ring/50 inline-flex items-stretch rounded shadow-xs focus-within:ring-[3px]">
+        <div className="group focus-within:ring-ring/50 inline-flex items-stretch overflow-hidden rounded focus-within:ring-[3px]">
           {prefix && (
             <div
               className={cn(
-                "text-muted-foreground border-input flex items-stretch rounded-l border border-r-0 shadow-xs",
-                "*:rounded-none *:border-0 *:shadow-none",
+                "text-muted-foreground flex items-stretch",
                 "group-focus-within:border-ring",
                 hasError && "border-destructive group-focus-within:border-destructive"
               )}
@@ -65,10 +64,6 @@ export const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
           <div
             className={cn(
               "flex flex-1 items-center",
-              !prefix && !suffix && "border-input rounded border",
-              prefix && !suffix && "border-input rounded-r border-t border-r border-b",
-              !prefix && suffix && "border-input rounded-l border-t border-b border-l",
-              prefix && suffix && "border-input border-t border-b",
               "group-focus-within:border-ring",
               hasError && "border-destructive group-focus-within:border-destructive"
             )}
@@ -78,8 +73,7 @@ export const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
           {suffix && (
             <div
               className={cn(
-                "border-input flex items-stretch rounded-r border px-0",
-                "*:h-full *:rounded-none *:border-0 *:shadow-none",
+                "flex items-stretch",
                 "group-focus-within:border-ring",
                 hasError && "border-destructive group-focus-within:border-destructive"
               )}

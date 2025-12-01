@@ -10,7 +10,6 @@ import {
 } from "@/core/components/ui/dialog";
 import React from "react";
 import { DataTable } from "../..";
-import { TABLE_CELL_DEFAULTS, TABLE_DEFAULT_WIDTH, TABLE_DEFAULT_WIDTH_WITH_SELECTION } from "../../constants";
 import { TableColumn } from "../../types";
 import { useTableSettings } from "./hooks/useTableSettings";
 import { TableSettingColumn, TableSettingsColumns, TableSettingsProps } from "./types";
@@ -24,7 +23,7 @@ const getSettingsColumns = <DataType,>(columns: TableColumn<DataType>[]) => {
       id: cur.id,
       label: cur.label,
       show: true,
-      disabled: cur.cell?.customizable === false,
+      disabled: cur.cell?.isFixed === true,
     };
     return acc;
   }, {});
@@ -38,14 +37,7 @@ const NAMES = {
   selected: "selected",
 } as const;
 
-export const TableSettings = <DataType,>({
-  id,
-  name,
-  originalColumns,
-  columns,
-  setColumns,
-  hasSelection,
-}: TableSettingsProps<DataType>) => {
+export const TableSettings = <DataType,>({ id, name, columns, setColumns }: TableSettingsProps<DataType>) => {
   const {
     reset,
     setValue,
@@ -113,53 +105,15 @@ export const TableSettings = <DataType,>({
     const selected = values.selected;
 
     setColumns((prev) => {
-      const totalFixedVisibleWidth = prev.reduce(
-        (acc, column) =>
-          acc +
-          ((column.cell.isFixed &&
-            selected.includes(column.id) &&
-            originalColumns.find((origCol) => origCol.id === column.id)?.cell.baseWidth) ||
-            0),
-        hasSelection ? TABLE_CELL_DEFAULTS.WIDTH : 0
-      );
-
-      const totalProportionalVisibleWidth = prev.reduce(
-        (acc, column) =>
-          acc +
-          ((!column.cell.isFixed &&
-            selected.includes(column.id) &&
-            originalColumns.find((origCol) => origCol.id === column.id)?.cell.baseWidth) ||
-            0),
-        0
-      );
-
-      const availableProportionalWidth =
-        (hasSelection ? TABLE_DEFAULT_WIDTH : TABLE_DEFAULT_WIDTH_WITH_SELECTION) - totalFixedVisibleWidth;
-
-      const scalingFactor = availableProportionalWidth / totalProportionalVisibleWidth;
-
       const result = prev.reduce<{
         columns: TableColumn<DataType>[];
-        settings: Record<string, { id: string; show: boolean; width: number }>;
+        settings: Record<string, { id: string; show: boolean }>;
       }>(
         (accumulator, column) => {
-          const origColumn = originalColumns.find((origCol) => origCol.id === column.id);
-
-          if (!origColumn) return accumulator;
-
-          // Correctly assigning newWidth
-          const newWidth =
-            (column.cell.isFixed
-              ? column.cell.width // Use current width for fixed columns
-              : selected.includes(column.id)
-                ? Math.round(origColumn.cell.baseWidth * scalingFactor)
-                : column.cell.width) || 0;
-
           accumulator.columns.push({
             ...column,
             cell: {
               ...column.cell,
-              width: newWidth,
               show: selected.includes(column.id),
             },
           });
@@ -169,7 +123,6 @@ export const TableSettings = <DataType,>({
             [column.id]: {
               id: column.id,
               show: selected.includes(column.id),
-              width: newWidth, // Ensure width is stored for all columns
             },
           };
 
@@ -216,7 +169,7 @@ export const TableSettings = <DataType,>({
                       render: ({ data }) => data?.label || "",
                     },
                     cell: {
-                      baseWidth: 95,
+                      baseWidth: 100,
                     },
                   },
                 ]}

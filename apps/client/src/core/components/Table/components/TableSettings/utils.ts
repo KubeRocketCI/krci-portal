@@ -3,18 +3,13 @@ import { SavedTableSettings } from "./types";
 
 export const getSyncedColumnData = (
   settings: SavedTableSettings | undefined,
-  columnId: string,
-  baseWidth: number
+  columnId: string
 ): {
-  baseWidth: number;
-  width: number;
   show: boolean;
 } => {
   const tableSettings = settings?.[columnId];
 
   return {
-    baseWidth,
-    width: tableSettings?.width || baseWidth || TABLE_CELL_DEFAULTS.WIDTH,
     show: tableSettings?.show ?? TABLE_CELL_DEFAULTS.SHOW,
   };
 };

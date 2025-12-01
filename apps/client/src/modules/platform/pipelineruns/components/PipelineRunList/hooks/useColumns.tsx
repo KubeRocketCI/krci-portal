@@ -61,7 +61,8 @@ export const useColumns = ({
         },
         cell: {
           isFixed: true,
-          ...getSyncedColumnData(tableSettings, columnNames.STATUS, 5),
+          baseWidth: 5,
+          ...getSyncedColumnData(tableSettings, columnNames.STATUS),
         },
       },
       {
@@ -91,8 +92,8 @@ export const useColumns = ({
           },
         },
         cell: {
-          customizable: false,
-          ...getSyncedColumnData(tableSettings, columnNames.RUN, 20),
+          baseWidth: 20,
+          ...getSyncedColumnData(tableSettings, columnNames.RUN),
         },
       },
       {
@@ -129,7 +130,8 @@ export const useColumns = ({
           },
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.PIPELINE, 20),
+          baseWidth: 20,
+          ...getSyncedColumnData(tableSettings, columnNames.PIPELINE),
         },
       },
       {
@@ -156,7 +158,8 @@ export const useColumns = ({
           },
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.RESULTS, 15),
+          baseWidth: 15,
+          ...getSyncedColumnData(tableSettings, columnNames.RESULTS),
         },
       },
       {
@@ -181,8 +184,8 @@ export const useColumns = ({
           },
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.PULL_REQUEST, 10),
-
+          baseWidth: 10,
+          ...getSyncedColumnData(tableSettings, columnNames.PULL_REQUEST),
           props: {
             align: "center",
           },
@@ -228,7 +231,8 @@ export const useColumns = ({
           },
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.STARTED_AT, 10),
+          baseWidth: 10,
+          ...getSyncedColumnData(tableSettings, columnNames.STARTED_AT),
         },
       },
       {
@@ -287,7 +291,8 @@ export const useColumns = ({
           },
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.TIME, 5),
+          baseWidth: 5,
+          ...getSyncedColumnData(tableSettings, columnNames.TIME),
         },
       },
       {
@@ -315,7 +320,8 @@ export const useColumns = ({
         },
         cell: {
           isFixed: true,
-          ...getSyncedColumnData(tableSettings, columnNames.DIAGRAM, 5),
+          baseWidth: 5,
+          ...getSyncedColumnData(tableSettings, columnNames.DIAGRAM),
         },
       },
       {
@@ -326,8 +332,8 @@ export const useColumns = ({
         },
         cell: {
           isFixed: true,
-          customizable: false,
-          ...getSyncedColumnData(tableSettings, columnNames.ACTIONS, 5),
+          baseWidth: 5,
+          ...getSyncedColumnData(tableSettings, columnNames.ACTIONS),
         },
       },
     ],

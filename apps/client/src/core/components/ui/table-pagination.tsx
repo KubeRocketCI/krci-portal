@@ -57,7 +57,7 @@ export const TablePagination = ({
   };
 
   return (
-    <div className={cn("flex items-center justify-between px-2 py-4", className)}>
+    <div className={cn("flex items-center justify-between", className)}>
       <div className="flex items-center gap-2">
         <span className="text-muted-foreground text-sm">{labelRowsPerPage}</span>
         <Select value={String(rowsPerPage)} onValueChange={handleRowsPerPageChange}>

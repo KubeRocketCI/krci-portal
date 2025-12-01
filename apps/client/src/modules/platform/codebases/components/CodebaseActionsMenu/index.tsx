@@ -15,10 +15,10 @@ import { Link } from "@tanstack/react-router";
 import { AlertCircle, Pencil, Trash } from "lucide-react";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
-import { ManageCodebaseDialog } from "../../dialogs/ManageCodebase";
 import { useCodebaseDeletionConflictResourceQuery } from "./hooks/useDeletionConflictItem";
 import { CodebaseActionsMenuProps } from "./types";
 import { PATH_CDPIPELINE_DETAILS_FULL } from "@/modules/platform/cdpipelines/pages/details/route";
+import { EditCodebaseDialog } from "@/modules/platform/codebases/dialogs/EditCodebase";
 
 interface DeletionErrorMessageProps {
   codebase: Codebase;
@@ -122,7 +122,7 @@ export const CodebaseActionsMenu = ({ backRoute, variant, data: { codebase } }: 
           reason: codebasePermissions.data.patch.reason,
         },
         callback: (codebase) => {
-          setDialog(ManageCodebaseDialog, { codebase });
+          setDialog(EditCodebaseDialog, { codebase });
         },
       }),
       createResourceAction({

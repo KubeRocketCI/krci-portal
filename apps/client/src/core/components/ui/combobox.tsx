@@ -14,11 +14,19 @@ import {
 } from "@/core/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/core/components/ui/popover";
 import { cn } from "@/core/utils/classname";
+import { toElement } from "@/core/utils/toElement";
+
+// Helper to render an icon with proper wrapping (similar to radio group)
+const renderIcon = (icon: React.ReactNode, sizeClass = "size-4"): React.ReactNode => {
+  if (!icon) return null;
+  return <span className={cn("flex shrink-0 items-center justify-center", sizeClass)}>{toElement(icon)}</span>;
+};
 
 export interface ComboboxOption {
   value: string;
   label: string | React.ReactNode;
   disabled?: boolean;
+  icon?: React.ReactNode;
 }
 
 export interface ComboboxProps {
@@ -81,13 +89,16 @@ export const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(
           <Button
             ref={ref}
             id={id}
-            variant="outline"
             role="combobox"
             aria-expanded={open}
             disabled={disabled}
-            className={cn("bg-muted w-full justify-between border-transparent py-1 normal-case shadow-none", className)}
+            variant="dark"
+            className="w-full justify-between py-1 font-normal normal-case shadow-none"
           >
-            {selectedOption ? selectedOption.label : placeholder}
+            <div className="flex items-center gap-2">
+              {renderIcon(selectedOption?.icon)}
+              {selectedOption ? selectedOption.label : placeholder}
+            </div>
             <ChevronsUpDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -97,21 +108,28 @@ export const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(
             <CommandList>
               <CommandEmpty>{emptyText}</CommandEmpty>
               <CommandGroup>
-                {options.map((option) => (
-                  <CommandItem
-                    key={option.value}
-                    value={option.value}
-                    disabled={option.disabled}
-                    onSelect={(currentValue) => {
-                      const newValue = currentValue === singleValue ? "" : currentValue;
-                      onValueChange?.(newValue);
-                      setOpen(false);
-                    }}
-                  >
-                    <CheckIcon className={cn("size-4", singleValue === option.value ? "opacity-100" : "opacity-0")} />
-                    {option.label}
-                  </CommandItem>
-                ))}
+                {options.map((option) => {
+                  const isSelected = singleValue === option.value;
+                  return (
+                    <CommandItem
+                      key={option.value}
+                      value={option.value}
+                      disabled={option.disabled}
+                      onSelect={(currentValue) => {
+                        const newValue = currentValue === singleValue ? "" : currentValue;
+                        onValueChange?.(newValue);
+                        setOpen(false);
+                      }}
+                      className={cn(isSelected && "bg-accent")}
+                    >
+                      {renderIcon(option.icon)}
+                      {option.label}
+                      <CheckIcon
+                        className={cn("ml-auto size-4", isSelected ? "opacity-100" : "opacity-0")}
+                      />
+                    </CommandItem>
+                  );
+                })}
               </CommandGroup>
             </CommandList>
           </Command>
@@ -159,6 +177,7 @@ const ComboboxMultiple = React.forwardRef<HTMLButtonElement, ComboboxMultiplePro
     const toggleSelection = (optionValue: string) => {
       const newValue = value.includes(optionValue) ? value.filter((v) => v !== optionValue) : [...value, optionValue];
       onValueChange?.(newValue);
+      setOpen(false);
     };
 
     const removeSelection = (optionValue: string) => {
@@ -175,14 +194,11 @@ const ComboboxMultiple = React.forwardRef<HTMLButtonElement, ComboboxMultiplePro
           <Button
             ref={ref}
             id={id}
-            variant="outline"
             role="combobox"
             aria-expanded={open}
             disabled={disabled}
-            className={cn(
-              "bg-muted h-auto min-h-8 w-full justify-between border-transparent normal-case shadow-none hover:bg-transparent",
-              className
-            )}
+            variant="dark"
+            className={cn("w-full justify-between font-normal", className)}
           >
             <div className="flex flex-wrap items-center gap-1 pr-2.5">
               {value.length > 0 ? (
@@ -191,6 +207,7 @@ const ComboboxMultiple = React.forwardRef<HTMLButtonElement, ComboboxMultiplePro
                     const option = options.find((opt) => opt.value === val);
                     return option ? (
                       <Badge key={val} variant="default" className="normal-case">
+                        {renderIcon(option.icon, "mr-1 size-3")}
                         {option.label}
                         <Button
                           variant="ghost"
@@ -234,17 +251,22 @@ const ComboboxMultiple = React.forwardRef<HTMLButtonElement, ComboboxMultiplePro
             <CommandList>
               <CommandEmpty>{emptyText}</CommandEmpty>
               <CommandGroup>
-                {options.map((option) => (
-                  <CommandItem
-                    key={option.value}
-                    value={option.value}
-                    disabled={option.disabled}
-                    onSelect={() => toggleSelection(option.value)}
-                  >
-                    <span className="truncate">{option.label}</span>
-                    {value.includes(option.value) && <CheckIcon size={16} className="ml-auto" />}
-                  </CommandItem>
-                ))}
+                {options.map((option) => {
+                  const isSelected = value.includes(option.value);
+                  return (
+                    <CommandItem
+                      key={option.value}
+                      value={option.value}
+                      disabled={option.disabled}
+                      onSelect={() => toggleSelection(option.value)}
+                      className={cn(isSelected && "bg-accent")}
+                    >
+                      {renderIcon(option.icon)}
+                      <span className="truncate">{option.label}</span>
+                      {isSelected && <CheckIcon size={16} className="ml-auto" />}
+                    </CommandItem>
+                  );
+                })}
               </CommandGroup>
             </CommandList>
           </Command>

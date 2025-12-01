@@ -121,9 +121,11 @@ export const useCRUD = () => {
       }
 
       const { repositoryLogin, repositoryPasswordOrApiToken } = codebaseAuth;
+
       const {
         metadata: { name },
       } = codebase;
+      
       const codebaseSecretDraft = createCodebaseDraftSecretObject({
         codebaseName: name,
         username: repositoryLogin,

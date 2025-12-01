@@ -5,7 +5,6 @@ import { Tooltip } from "@/core/components/ui/tooltip";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { useViewModeContext } from "@/core/providers/ViewMode/hooks";
-import { K8sRelatedIconsSVGSprite } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { VIEW_MODES } from "@/core/providers/ViewMode/types";
 import { TemplateFilter } from "./components/Filter";
 import { TemplatesTable } from "./components/TemplatesTable";
@@ -33,7 +32,6 @@ export default function MarketplacePageContent() {
       >
         <div className="flex flex-grow flex-col gap-3">
           <>
-            <K8sRelatedIconsSVGSprite />
             {viewMode === VIEW_MODES.TABLE ? (
               <TemplatesTable />
             ) : (

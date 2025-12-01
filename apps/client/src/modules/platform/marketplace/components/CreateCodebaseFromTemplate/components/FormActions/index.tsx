@@ -66,14 +66,10 @@ export const FormActions = () => {
         framework: values.framework,
         lang: values.lang,
         private: values.private,
-        repository: {
-          url: values.repositoryUrl,
-        },
+        repositoryUrl: values.repositoryUrl || null,
         strategy: values.strategy,
-        versioning: {
-          type: values.versioningType,
-          startFrom: values.versioningStartFrom,
-        },
+        versioningType: values.versioningType,
+        versioningStartFrom: values.versioningStartFrom,
         ciTool: values.ciTool,
         labels: {
           [codebaseLabels.codebaseType]: values.type,

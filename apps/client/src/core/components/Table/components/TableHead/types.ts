@@ -2,9 +2,7 @@ import React from "react";
 import { SortState, TableColumn } from "../../types";
 
 export interface TableHeadProps<DataType> {
-  tableId: string;
   columns: TableColumn<DataType>[];
-  colGroupRef: React.MutableRefObject<HTMLTableColElement | null>;
   rowCount: number;
   sort: SortState<DataType>;
   setSort: React.Dispatch<React.SetStateAction<SortState<DataType>>>;

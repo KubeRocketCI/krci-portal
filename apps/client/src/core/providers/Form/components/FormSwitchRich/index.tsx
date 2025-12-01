@@ -15,6 +15,9 @@ const FormSwitchRichInner = React.forwardRef(
       errors,
       defaultValue = false,
       disabled,
+      icon,
+      variant = "card",
+      expandableContent,
       ...props
     }: FormSwitchProps<TFormValues>,
     ref: React.ForwardedRef<HTMLButtonElement>
@@ -30,44 +33,76 @@ const FormSwitchRichInner = React.forwardRef(
         render={({ field }) => {
           const { value, onChange, ...fieldProps } = field;
           const isChecked = !!value;
-          return (
-            <div
-              className={cn(
-                "border-input relative flex w-full items-start gap-2 rounded border p-4 shadow-xs outline-none",
-                isChecked && "border-primary/50",
-                hasError && "border-destructive",
-                disabled && "opacity-50"
-              )}
-            >
-              {(label || displayHelperText) && (
-                <div className="flex grow items-center gap-3">
-                  <div className="grid grow gap-2">
-                    {label && (
-                      <Label htmlFor={fieldId} className="cursor-pointer">
-                        {label}
-                      </Label>
-                    )}
+
+          if (variant === "list") {
+            return (
+              <div className="space-y-4">
+                <Label htmlFor={fieldId} className="flex w-full cursor-pointer items-center gap-4">
+                  <Switch
+                    {...fieldProps}
+                    ref={ref}
+                    checked={!!value}
+                    onCheckedChange={(checked) => onChange(checked)}
+                    disabled={disabled}
+                    id={fieldId}
+                    invalid={hasError}
+                    aria-describedby={displayHelperText ? `${fieldId}-description` : undefined}
+                  />
+                  <div className="flex flex-col gap-1">
+                    <span className="flex items-center gap-4">
+                      {icon && <div className="size-4">{icon}</div>}
+                      {label}
+                    </span>
                     {displayHelperText && (
                       <p
                         id={`${fieldId}-description`}
-                        className={cn("text-xs", hasError ? "text-destructive" : "text-muted-foreground")}
+                        className={cn("text-xs font-normal", hasError ? "text-destructive" : "text-muted-foreground")}
                       >
                         {displayHelperText}
                       </p>
                     )}
                   </div>
+                </Label>
+                {!!value && expandableContent && <div>{expandableContent}</div>}
+              </div>
+            );
+          }
+
+          return (
+            <div className={cn("rounded-md border outline-none", hasError && "border-destructive")}>
+              <div className="space-y-4 p-3">
+                <div className="flex w-full items-start gap-4">
+                  <Switch
+                    {...fieldProps}
+                    ref={ref}
+                    checked={isChecked}
+                    onCheckedChange={(checked) => onChange(checked)}
+                    disabled={disabled}
+                    id={fieldId}
+                    invalid={hasError}
+                    aria-describedby={displayHelperText ? `${fieldId}-description` : undefined}
+                  />
+                  <div className="flex grow items-center gap-3">
+                    {icon && <div className="size-5">{icon}</div>}
+                    <div className="flex flex-col gap-1">
+                      {label && (
+                        <Label htmlFor={fieldId} className="cursor-pointer">
+                          {label}
+                        </Label>
+                      )}
+                      {displayHelperText && (
+                        <p
+                          id={`${fieldId}-description`}
+                          className={cn("text-xs font-normal", hasError ? "text-destructive" : "text-muted-foreground")}
+                        >
+                          {displayHelperText}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              )}
-              <Switch
-                {...fieldProps}
-                ref={ref}
-                checked={!!value}
-                onCheckedChange={(checked) => onChange(checked)}
-                disabled={disabled}
-                id={fieldId}
-                invalid={hasError}
-                aria-describedby={displayHelperText ? `${fieldId}-description` : undefined}
-              />
+                {isChecked && expandableContent && <div>{expandableContent}</div>}
+              </div>
             </div>
           );
         }}

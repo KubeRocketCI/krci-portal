@@ -66,7 +66,8 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
           },
           cell: {
             isFixed: true,
-            ...getSyncedColumnData(tableSettings, columnNames.STATUS, 5),
+            baseWidth: 5,
+            ...getSyncedColumnData(tableSettings, columnNames.STATUS),
           },
         },
         {
@@ -97,8 +98,8 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
             customSortFn: (a, b) => sortByName(a.metadata.name, b.metadata.name),
           },
           cell: {
-            customizable: false,
-            ...getSyncedColumnData(tableSettings, columnNames.NAME, 15),
+            baseWidth: 15,
+            ...getSyncedColumnData(tableSettings, columnNames.NAME),
           },
         },
         {
@@ -109,7 +110,8 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
               spec?.description && <TextWithTooltip text={spec.description} maxLineAmount={3} />,
           },
           cell: {
-            ...getSyncedColumnData(tableSettings, columnNames.DESCRIPTION, 30),
+            baseWidth: 30,
+            ...getSyncedColumnData(tableSettings, columnNames.DESCRIPTION),
           },
         },
         {
@@ -184,7 +186,8 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
             },
           },
           cell: {
-            ...getSyncedColumnData(tableSettings, columnNames.APPLICATIONS, 45),
+            baseWidth: 45,
+            ...getSyncedColumnData(tableSettings, columnNames.APPLICATIONS),
           },
         },
         {
@@ -194,9 +197,9 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
             render: ({ data }) => <Actions resource={data} />,
           },
           cell: {
-            customizable: false,
             isFixed: true,
-            ...getSyncedColumnData(tableSettings, columnNames.ACTIONS, 5),
+            baseWidth: 5,
+            ...getSyncedColumnData(tableSettings, columnNames.ACTIONS),
           },
         },
       ] as TableColumn<CDPipeline>[],

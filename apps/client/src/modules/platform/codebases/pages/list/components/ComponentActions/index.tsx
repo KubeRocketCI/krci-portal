@@ -30,7 +30,7 @@ export const Actions = ({
         )}
       >
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label={"Options"} disabled={disabled?.boolean}>
+          <Button variant="ghost" size="icon-sm" aria-label={"Options"} disabled={disabled?.boolean}>
             <EllipsisVertical width={20} height={20} />
           </Button>
         </DropdownMenuTrigger>

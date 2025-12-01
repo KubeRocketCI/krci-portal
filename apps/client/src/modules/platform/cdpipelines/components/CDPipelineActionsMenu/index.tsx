@@ -7,13 +7,13 @@ import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter
 import { createResourceAction } from "@/core/utils/createResourceAction";
 import { Pencil, Trash } from "lucide-react";
 import { CDPipelineActionsMenuProps } from "./types";
-import { ManageCDPipelineDialog } from "../../dialogs/ManageCDPipeline";
 import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import { k8sCDPipelineConfig, k8sOperation } from "@my-project/shared";
 import React from "react";
+import { EditCDPipelineDialog } from "../../dialogs/EditCDPipeline";
 
 export const CDPipelineActionsMenu = ({ backRoute, variant, data: { CDPipeline } }: CDPipelineActionsMenuProps) => {
-  const openManageCDPipelineDialog = useDialogOpener(ManageCDPipelineDialog);
+  const openEditCDPipelineDialog = useDialogOpener(EditCDPipelineDialog);
   const openDeleteKubeObjectDialog = useDialogOpener(DeleteKubeObjectDialog);
   const cdPipelinePermissions = useCDPipelinePermissions();
 
@@ -33,7 +33,7 @@ export const CDPipelineActionsMenu = ({ backRoute, variant, data: { CDPipeline }
           reason: cdPipelinePermissions.data.patch.reason,
         },
         callback: () => {
-          openManageCDPipelineDialog({ CDPipeline });
+          openEditCDPipelineDialog({ CDPipeline });
         },
       }),
       createResourceAction({
@@ -73,7 +73,7 @@ export const CDPipelineActionsMenu = ({ backRoute, variant, data: { CDPipeline }
     cdPipelinePermissions.data.patch.reason,
     cdPipelinePermissions.data.delete.allowed,
     cdPipelinePermissions.data.delete.reason,
-    openManageCDPipelineDialog,
+    openEditCDPipelineDialog,
     openDeleteKubeObjectDialog,
     backRoute,
   ]);

@@ -5,14 +5,24 @@ import { getStageStatusIcon } from "@/k8s/api/groups/KRCI/Stage";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { stageTriggerType } from "@my-project/shared";
 import KubernetesIcon from "@/assets/icons/k8s/kubernetes.svg?react";
-import { CopyButton } from "@/core/components/CopyButton";
-import { Pipeline } from "@/modules/platform/pipelines/components/Pipeline";
+import { ScrollCopyText } from "@/core/components/ScrollCopyText";
+import { PipelinePreview } from "@/core/components/PipelinePreview";
+import { useDialogOpener } from "@/core/providers/Dialog/hooks";
+import { PipelineGraphDialog } from "@/modules/platform/pipelines/dialogs/PipelineGraph";
+import { STATUS_COLOR } from "@/k8s/constants/colors";
 
-export const useInfoColumns = () => {
+export interface GridItem {
+  label: string;
+  content: React.ReactNode;
+  colSpan?: number;
+}
+
+export const useInfoColumns = (): GridItem[] => {
   const stageWatch = useStageWatch();
+  const openPipelineGraphDialog = useDialogOpener(PipelineGraphDialog);
 
   return React.useMemo(() => {
-    if (stageWatch.query.isLoading || !stageWatch.query.data) {
+    if (stageWatch.query.isFetching || !stageWatch.query.data) {
       return [];
     }
 
@@ -21,83 +31,107 @@ export const useInfoColumns = () => {
     const stage = stageWatch.query.data;
 
     return [
-      [
-        {
-          label: "Status",
-          text: (
-            <div className="flex items-center gap-2">
-              <div>
-                <StatusIcon
-                  Icon={stageStatusIcon.component}
-                  color={stageStatusIcon.color}
-                  isSpinning={stageStatusIcon.isSpinning}
-                  width={20}
-                  Title={
-                    <>
-                      <p className="text-sm font-semibold">{`Status: ${stage.status?.status || "unknown"}`}</p>
-                      {!!stage.status?.detailed_message && (
-                        <p className="mt-3 text-sm font-medium">{stage.status?.detailed_message}</p>
-                      )}
-                    </>
-                  }
-                />
-              </div>
-              <div>
-                <p className="text-sm">{stage.status?.status || "unknown"}</p>
-              </div>
-            </div>
+      {
+        label: "Status",
+        content: (
+          <div className="flex items-center gap-1.5">
+            <StatusIcon
+              Icon={stageStatusIcon.component}
+              color={stageStatusIcon.color}
+              isSpinning={stageStatusIcon.isSpinning}
+              width={14}
+              Title={
+                <>
+                  <p className="text-sm font-semibold">{`Status: ${stage.status?.status || "unknown"}`}</p>
+                  {!!stage.status?.detailed_message && (
+                    <p className="mt-3 text-sm font-medium">{stage.status?.detailed_message}</p>
+                  )}
+                </>
+              }
+            />
+            <span className="text-foreground text-sm">{stage.status?.status || "unknown"}</span>
+          </div>
+        ),
+      },
+      {
+        label: "Trigger Type",
+        content:
+          stage.spec.triggerType === stageTriggerType.Manual ? (
+            <Badge
+              variant="outline"
+              className="h-6"
+              style={{ "--border-color": STATUS_COLOR.SUCCESS } as React.CSSProperties}
+            >
+              manual
+            </Badge>
+          ) : (
+            <Badge
+              variant="outline"
+              style={
+                {
+                  "--border-color": STATUS_COLOR.SUCCESS,
+                } as React.CSSProperties
+              }
+              className="h-6 border-(--border-color)"
+            >
+              auto
+            </Badge>
           ),
-        },
-        {
-          label: "Trigger Type",
-          text:
-            stage.spec.triggerType === stageTriggerType.Manual ? (
-              <Badge variant="default" className="h-6 bg-green-600 hover:bg-green-700">
-                manual
-              </Badge>
-            ) : (
-              <Badge variant="default" className="h-6 bg-green-600 hover:bg-green-700">
-                auto
-              </Badge>
-            ),
-        },
-        {
-          label: "Cluster",
-          text: (
-            <div className="flex items-center gap-2">
-              <div>
-                <KubernetesIcon width={20} height={20} />
-              </div>
-              <div>{stage.spec.clusterName}</div>
-            </div>
-          ),
-        },
-        {
-          label: "Namespace",
-          text: (
-            <div className="flex items-center">
-              {stage.spec.namespace} <CopyButton text={stage.spec.namespace} />
-            </div>
-          ),
-        },
-        {
-          label: "Deploy Pipeline",
-          text: stage.spec?.triggerTemplate && (
-            <Pipeline pipelineName={stage.spec.triggerTemplate} namespace={stage.metadata.namespace!} />
-          ),
-        },
-        {
-          label: "Clean Pipeline",
-          text: stage.spec?.cleanTemplate && (
-            <Pipeline pipelineName={stage.spec.cleanTemplate} namespace={stage.metadata.namespace!} />
-          ),
-        },
-        {
-          label: "Description",
-          text: stage.spec.description,
-          columnXs: 6,
-        },
-      ],
+      },
+      {
+        label: "Cluster",
+        content: (
+          <div className="flex items-center gap-1.5">
+            <KubernetesIcon width={14} height={14} className="text-muted-foreground" />
+            <span className="text-foreground text-sm">{stage.spec.clusterName}</span>
+          </div>
+        ),
+      },
+      {
+        label: "Namespace",
+        content: <ScrollCopyText text={stage.spec.namespace} />,
+      },
+      {
+        label: "Deploy Pipeline",
+        content: stage.spec?.triggerTemplate ? (
+          <PipelinePreview
+            pipelineName={stage.spec.triggerTemplate}
+            namespace={stage.metadata.namespace!}
+            onViewDiagram={(pipelineName, namespace) =>
+              openPipelineGraphDialog({
+                pipelineName,
+                namespace,
+              })
+            }
+          />
+        ) : (
+          <span className="text-muted-foreground text-sm">N/A</span>
+        ),
+        colSpan: 2,
+      },
+      {
+        label: "Clean Pipeline",
+        content: stage.spec?.cleanTemplate ? (
+          <PipelinePreview
+            pipelineName={stage.spec.cleanTemplate}
+            namespace={stage.metadata.namespace!}
+            onViewDiagram={(pipelineName, namespace) =>
+              openPipelineGraphDialog({
+                pipelineName,
+                namespace,
+              })
+            }
+          />
+        ) : (
+          <span className="text-muted-foreground text-sm">N/A</span>
+        ),
+        colSpan: 2,
+      },
+      {
+        label: "Description",
+        content: <span className="text-foreground text-sm">{stage.spec.description || "N/A"}</span>,
+        colSpan: 4,
+      },
     ];
-  }, [stageWatch.query.data, stageWatch.query.isLoading]);
+  }, [stageWatch.query.data, stageWatch.query.isFetching, openPipelineGraphDialog]);
 };

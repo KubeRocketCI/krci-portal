@@ -9,6 +9,15 @@ export interface InfoColumn {
 
 export type InfoRow = InfoColumn[];
 
+export interface GridItem {
+  label: string;
+  content: React.ReactNode;
+  colSpan?: number;
+}
+
 export interface InfoColumnsProps {
-  infoRows: InfoRow[];
+  infoRows?: InfoRow[];
+  gridItems?: GridItem[];
+  className?: string;
+  gridCols?: number;
 }

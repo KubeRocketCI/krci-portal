@@ -37,6 +37,7 @@ import NamespacesDialog from "@/core/components/Namespaces";
 import KubeConfigPreviewDialog from "@/core/components/KubeConfigPreview";
 import UserDetailsDialog from "@/core/components/UserDetails";
 import KubernetesDetailsDialog from "@/core/components/KubernetesDetails";
+import { PATH_CODEBASE_CREATE_FULL } from "@/modules/platform/codebases/pages/create/route";
 
 export default function HomePage() {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -74,7 +75,7 @@ export default function HomePage() {
       label: "Create Project",
       description: "Start a new codebase",
       icon: GitBranch,
-      to: PATH_COMPONENTS_FULL,
+      to: PATH_CODEBASE_CREATE_FULL,
       params: clusterParams,
     },
     {
@@ -273,6 +274,34 @@ export default function HomePage() {
         </div>
       </Card>
 
+      {/* Quick Actions - Compact Grid */}
+      <div>
+        <h3 className="mb-3 flex items-center gap-2 text-slate-900 dark:text-slate-100">
+          <Zap className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          Quick Actions
+        </h3>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          {quickActions.map((action, idx) => {
+            const Icon = action.icon;
+            return (
+              <Link key={idx} to={action.to} params={action.params}>
+                <Card className="group cursor-pointer p-4 hover:border-blue-300 hover:shadow-md dark:hover:border-blue-600">
+                  <div className="flex flex-col items-center gap-2 text-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 group-hover:bg-blue-100 dark:bg-blue-900/20 dark:group-hover:bg-blue-900/40">
+                      <Icon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <h4 className="mb-0.5 text-sm text-slate-900 dark:text-slate-100">{action.label}</h4>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">{action.description}</p>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Recent Activity */}
         <Card className="p-6">
@@ -348,34 +377,6 @@ export default function HomePage() {
             )}
           </div>
         </Card>
-      </div>
-
-      {/* Quick Actions - Compact Grid */}
-      <div>
-        <h3 className="mb-3 flex items-center gap-2 text-slate-900 dark:text-slate-100">
-          <Zap className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-          Quick Actions
-        </h3>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-          {quickActions.map((action, idx) => {
-            const Icon = action.icon;
-            return (
-              <Link key={idx} to={action.to} params={action.params}>
-                <Card className="group cursor-pointer p-4 hover:border-blue-300 hover:shadow-md dark:hover:border-blue-600">
-                  <div className="flex flex-col items-center gap-2 text-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 group-hover:bg-blue-100 dark:bg-blue-900/20 dark:group-hover:bg-blue-900/40">
-                      <Icon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div>
-                      <h4 className="mb-0.5 text-sm text-slate-900 dark:text-slate-100">{action.label}</h4>
-                      <p className="text-xs text-slate-600 dark:text-slate-400">{action.description}</p>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
       </div>
     </div>
   );

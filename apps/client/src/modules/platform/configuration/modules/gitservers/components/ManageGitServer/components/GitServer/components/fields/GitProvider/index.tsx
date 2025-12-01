@@ -2,7 +2,6 @@ import React from "react";
 import { useFormsContext } from "../../../../../hooks/useFormsContext";
 import { GIT_SERVER_FORM_NAMES } from "../../../../../names";
 import { GitProvider, gitProvider, gitUser } from "@my-project/shared";
-import { K8sRelatedIconsSVGSprite } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { FieldEvent, FORM_MODES } from "@/core/types/forms";
 import { FormRadioGroup } from "@/core/providers/Form/components/FormRadioGroup";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
@@ -46,7 +45,6 @@ export const GitProviderField = () => {
 
   return (
     <>
-      <K8sRelatedIconsSVGSprite />
       <FormRadioGroup
         {...gitServerForm.form.register(GIT_SERVER_FORM_NAMES.GIT_PROVIDER, {
           required: "Select your Git provider.",

@@ -59,7 +59,8 @@ export const useColumns = (): TableColumn<Pipeline>[] => {
         },
         cell: {
           isFixed: true,
-          ...getSyncedColumnData(tableSettings, "name", 40),
+          baseWidth: 40,
+          ...getSyncedColumnData(tableSettings, "name"),
         },
       },
       {
@@ -74,7 +75,8 @@ export const useColumns = (): TableColumn<Pipeline>[] => {
         },
         cell: {
           isFixed: false,
-          ...getSyncedColumnData(tableSettings, "description", 50),
+          baseWidth: 50,
+          ...getSyncedColumnData(tableSettings, "description"),
         },
       },
       {
@@ -102,7 +104,8 @@ export const useColumns = (): TableColumn<Pipeline>[] => {
         },
         cell: {
           isFixed: true,
-          ...getSyncedColumnData(tableSettings, "diagram", 5),
+          baseWidth: 5,
+          ...getSyncedColumnData(tableSettings, "diagram"),
         },
       },
       {
@@ -113,8 +116,8 @@ export const useColumns = (): TableColumn<Pipeline>[] => {
         },
         cell: {
           isFixed: true,
-          customizable: false,
-          ...getSyncedColumnData(tableSettings, "actions", 5),
+          baseWidth: 5,
+          ...getSyncedColumnData(tableSettings, "actions"),
         },
       },
     ],

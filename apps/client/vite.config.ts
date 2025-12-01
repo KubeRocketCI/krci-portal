@@ -15,7 +15,8 @@ export default defineConfig({
     svgr({
       svgrOptions: {
         // SVGR options
-        icon: true,
+        icon: false,
+        dimensions: false,
         svgo: true,
         svgoConfig: {
           plugins: [

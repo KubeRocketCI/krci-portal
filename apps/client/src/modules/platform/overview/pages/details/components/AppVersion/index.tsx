@@ -21,7 +21,6 @@ export const AppVersion = ({
   userWidgets: WidgetConfig[];
   setUserWidgets: (widgets: WidgetConfig[]) => void;
 }) => {
-  console.log("rerender");
   const applicationListWatch = useApplicationWatchList({
     labels: {
       [applicationLabels.appName]: widgetConfig.data.appName,

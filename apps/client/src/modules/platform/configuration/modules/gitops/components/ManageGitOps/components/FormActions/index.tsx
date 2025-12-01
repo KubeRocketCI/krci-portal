@@ -63,12 +63,10 @@ export const FormActions = () => {
         framework: values.framework,
         lang: values.lang,
         private: false,
-        repository: null,
+        repositoryUrl: null,
         strategy: values.strategy,
-        versioning: {
-          type: values.versioningType,
-          startFrom: values.versioningStartFrom,
-        },
+        versioningType: values.versioningType,
+        versioningStartFrom: values.versioningStartFrom,
         ciTool: values.ciTool,
         labels: {
           [codebaseLabels.systemType]: "gitops",
