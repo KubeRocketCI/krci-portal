@@ -29,7 +29,7 @@ const codebaseSpecSchema = z.object({
   ciTool: ciToolEnum,
   commitMessagePattern: z.string().nullable().optional(),
   defaultBranch: z.string(),
-  deploymentScript: codebaseDeploymentScriptEnum.default("helm-chart"),
+  deploymentScript: codebaseDeploymentScriptEnum,
   description: z.string().nullable().optional(),
   disablePutDeployTemplates: z.boolean().optional(),
   emptyProject: z.boolean(),
@@ -39,7 +39,7 @@ const codebaseSpecSchema = z.object({
   jiraIssueMetadataPayload: z.string().nullable().optional(),
   jiraServer: z.string().nullable().optional(),
   lang: z.string(),
-  private: z.boolean().default(true),
+  private: z.boolean(),
   repository: z
     .object({
       url: z.string(),

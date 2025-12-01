@@ -32,7 +32,8 @@ export const useColumns = (): TableColumn<QuickLink>[] => {
         },
         cell: {
           isFixed: true,
-          ...getSyncedColumnData(tableSettings, columnNames.ICON, 5),
+          baseWidth: 5,
+          ...getSyncedColumnData(tableSettings, columnNames.ICON),
         },
       },
       {
@@ -47,7 +48,8 @@ export const useColumns = (): TableColumn<QuickLink>[] => {
           }) => name,
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.NAME, 25),
+          baseWidth: 25,
+          ...getSyncedColumnData(tableSettings, columnNames.NAME),
         },
       },
       {
@@ -74,7 +76,8 @@ export const useColumns = (): TableColumn<QuickLink>[] => {
           },
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.URL, 60),
+          baseWidth: 60,
+          ...getSyncedColumnData(tableSettings, columnNames.URL),
         },
       },
       {
@@ -89,7 +92,8 @@ export const useColumns = (): TableColumn<QuickLink>[] => {
           }) => (visible ? <CheckCircle size={20} /> : <XCircle size={20} />),
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.VISIBLE, 5),
+          baseWidth: 5,
+          ...getSyncedColumnData(tableSettings, columnNames.VISIBLE),
         },
       },
       {
@@ -100,8 +104,8 @@ export const useColumns = (): TableColumn<QuickLink>[] => {
         },
         cell: {
           isFixed: true,
-          customizable: false,
-          ...getSyncedColumnData(tableSettings, columnNames.ACTIONS, 5),
+          baseWidth: 5,
+          ...getSyncedColumnData(tableSettings, columnNames.ACTIONS),
         },
       },
     ],

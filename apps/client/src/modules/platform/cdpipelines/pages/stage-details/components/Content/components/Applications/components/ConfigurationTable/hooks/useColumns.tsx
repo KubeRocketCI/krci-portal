@@ -34,10 +34,8 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
         render: () => null,
       },
       cell: {
-        customizable: false,
         show: true,
         baseWidth: 5,
-        width: 5,
       },
     },
     {
@@ -48,7 +46,8 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
       },
       cell: {
         isFixed: true,
-        ...getSyncedColumnData(tableSettings, columnNames.HEALTH, 5),
+        baseWidth: 5,
+        ...getSyncedColumnData(tableSettings, columnNames.HEALTH),
         props: {
           align: "center",
         },
@@ -62,7 +61,8 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
       },
       cell: {
         isFixed: true,
-        ...getSyncedColumnData(tableSettings, columnNames.SYNC, 5),
+        baseWidth: 5,
+        ...getSyncedColumnData(tableSettings, columnNames.SYNC),
         props: {
           align: "center",
         },
@@ -75,8 +75,8 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
         render: ({ data: { appCodebase } }) => <NameColumn appCodebase={appCodebase} />,
       },
       cell: {
-        customizable: false,
-        ...getSyncedColumnData(tableSettings, columnNames.NAME, 25),
+        baseWidth: 25,
+        ...getSyncedColumnData(tableSettings, columnNames.NAME),
       },
     },
     {
@@ -88,7 +88,8 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
         },
       },
       cell: {
-        ...getSyncedColumnData(tableSettings, columnNames.DEPLOYED_VERSION, 25),
+        baseWidth: 25,
+        ...getSyncedColumnData(tableSettings, columnNames.DEPLOYED_VERSION),
       },
     },
     {
@@ -100,7 +101,8 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
         ),
       },
       cell: {
-        ...getSyncedColumnData(tableSettings, columnNames.VALUES_OVERRIDE, 15),
+        baseWidth: 15,
+        ...getSyncedColumnData(tableSettings, columnNames.VALUES_OVERRIDE),
       },
     },
     ...(shouldShowPodsColumn
@@ -112,7 +114,8 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
               render: () => <PodsColumn />,
             },
             cell: {
-              ...getSyncedColumnData(tableSettings, columnNames.PODS, 10),
+              baseWidth: 10,
+              ...getSyncedColumnData(tableSettings, columnNames.PODS),
               props: {
                 align: "center",
               },
@@ -127,7 +130,8 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
         render: ({ data: { application } }) => <IngressColumn application={application!} />,
       },
       cell: {
-        ...getSyncedColumnData(tableSettings, columnNames.INGRESS, 10),
+        baseWidth: 10,
+        ...getSyncedColumnData(tableSettings, columnNames.INGRESS),
         props: {
           align: "center",
         },

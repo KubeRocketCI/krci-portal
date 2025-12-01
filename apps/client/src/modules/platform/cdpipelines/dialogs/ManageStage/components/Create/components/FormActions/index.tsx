@@ -58,7 +58,7 @@ export const FormActions = () => {
           to: routeStageDetails.fullPath,
           params: {
             namespace: stage.metadata.namespace || defaultNamespace,
-            stage: stage.metadata.name,
+            stage: stage.spec.name,
             cdPipeline: cdPipeline.metadata.name,
           },
         },

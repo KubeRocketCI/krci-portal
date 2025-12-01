@@ -1,4 +1,3 @@
-import { InfoRow } from "@/core/components/InfoColumns/types";
 import { Badge } from "@/core/components/ui/badge";
 import React from "react";
 import { usePipelineRunWatchWithPageParams } from "../../../hooks/data";
@@ -7,7 +6,13 @@ import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/ut
 import { getPipelineRunStatus } from "@my-project/shared";
 import { StatusIcon } from "@/core/components/StatusIcon";
 
-export const useInfoRows = (): InfoRow[] => {
+export interface GridItem {
+  label: string;
+  content: React.ReactNode;
+  colSpan?: number;
+}
+
+export const useInfoRows = (): GridItem[] => {
   const pipelineRunWatch = usePipelineRunWatchWithPageParams();
   const pipelineRun = pipelineRunWatch.query.data;
 
@@ -56,56 +61,54 @@ export const useInfoRows = (): InfoRow[] => {
     );
 
     return [
-      [
-        {
-          label: "Status",
-          text: (
-            <div className="flex items-start gap-1">
-              <StatusIcon
-                Icon={pipelineRunStatusIcon.component}
-                isSpinning={pipelineRunStatusIcon.isSpinning}
-                color={pipelineRunStatusIcon.color}
-              />
-              <span className="text-sm">{`${pipelineRunStatus.status}, ${pipelineRunStatus.reason}`}</span>
-            </div>
-          ),
-        },
-
-        {
-          label: "Started at",
-          text: startedAt,
-        },
-        {
-          label: "Duration",
-          text: activeDuration,
-        },
-        {
-          label: "Last updated",
-          text: updatedLast,
-        },
-      ],
-      [
-        {
-          label: "Message",
-          text: pipelineRunStatus.message,
-          columnXs: 12,
-        },
-      ],
-      [
-        {
-          label: "Labels",
-          text: (
-            <div className="flex flex-wrap gap-2">
-              {pipelineRunLabels.map((el) => (
-                <div key={el}>
-                  <Badge variant="secondary">{el}</Badge>
-                </div>
-              ))}
-            </div>
-          ),
-          columnXs: 12,
-        },
-      ],
+      {
+        label: "Status",
+        content: (
+          <div className="flex items-center gap-1.5">
+            <StatusIcon
+              Icon={pipelineRunStatusIcon.component}
+              isSpinning={pipelineRunStatusIcon.isSpinning}
+              color={pipelineRunStatusIcon.color}
+              width={14}
+            />
+            <span className="text-foreground text-sm">{`${pipelineRunStatus.status}, ${pipelineRunStatus.reason}`}</span>
+          </div>
+        ),
+      },
+      {
+        label: "Started at",
+        content: <span className="text-foreground text-sm">{startedAt}</span>,
+      },
+      {
+        label: "Duration",
+        content: <span className="text-foreground text-sm">{activeDuration}</span>,
+      },
+      {
+        label: "Last updated",
+        content: <span className="text-foreground text-sm">{updatedLast}</span>,
+      },
+      {
+        label: "Message",
+        content: <span className="text-foreground text-sm">{pipelineRunStatus.message}</span>,
+        colSpan: 4,
+      },
+      {
+        label: "Labels",
+        content: (
+          <div className="flex flex-wrap gap-2">
+            {pipelineRunLabels.length > 0 ? (
+              pipelineRunLabels.map((el) => (
+                <Badge key={el} variant="secondary">
+                  {el}
+                </Badge>
+              ))
+            ) : (
+              <span className="text-muted-foreground text-sm">No labels</span>
+            )}
+          </div>
+        ),
+        colSpan: 4,
+      },
     ];
   }, [pipelineRun, pipelineRunWatch.isLoading]);
 };

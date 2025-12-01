@@ -3,46 +3,22 @@ import { useTableSettings } from "@/core/components/Table/components/TableSettin
 import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
+import { Badge } from "@/core/components/ui/badge";
 import { Button } from "@/core/components/ui/button";
-import {
-  BUILD_TOOL_ICON_MAPPING,
-  FRAMEWORK_ICON_MAPPING,
-  LANGUAGE_ICON_MAPPING,
-  RESOURCE_ICON_NAMES,
-} from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
-import { MAIN_COLOR } from "@/k8s/constants/colors";
-import { CUSTOM_RESOURCE_STATUS } from "@/k8s/constants/statuses";
-import { TABLE } from "@/k8s/constants/tables";
+import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { getCodebaseMappingByType, getCodebaseStatusIcon } from "@/k8s/api/groups/KRCI/Codebase";
 import { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/mappings/types";
-import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
+import { CUSTOM_RESOURCE_STATUS } from "@/k8s/constants/statuses";
+import { TABLE } from "@/k8s/constants/tables";
 import { useClusterStore } from "@/k8s/store";
-import { useShallow } from "zustand/react/shallow";
-import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
-import { Badge } from "@/core/components/ui/badge";
 import { Codebase, codebaseType } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
+import { GitBranch } from "lucide-react";
 import React from "react";
+import { useShallow } from "zustand/react/shallow";
 import { routeComponentDetails } from "../../../../details/route";
 import { Actions } from "../../ComponentActions";
 import { columnNames } from "../constants";
-
-const getColorByType = (type: string) => {
-  switch (type) {
-    case codebaseType.system:
-      return MAIN_COLOR.GREY;
-    case codebaseType.infrastructure:
-      return MAIN_COLOR.DARK_PURPLE;
-    case codebaseType.application:
-      return MAIN_COLOR.GREEN;
-    case codebaseType.autotest:
-      return MAIN_COLOR.ORANGE;
-    case codebaseType.library:
-      return MAIN_COLOR.BLUE;
-    default:
-      return MAIN_COLOR.GREY;
-  }
-};
 
 export const useColumns = (): TableColumn<Codebase>[] => {
   const { loadSettings } = useTableSettings(TABLE.COMPONENT_LIST.id);
@@ -72,12 +48,13 @@ export const useColumns = (): TableColumn<Codebase>[] => {
               </>
             );
 
-            return <StatusIcon Icon={component} isSpinning={isSpinning} color={color} Title={title} />;
+            return <StatusIcon Icon={component} isSpinning={isSpinning} color={color} Title={title} width={16} />;
           },
         },
         cell: {
           isFixed: true,
-          ...getSyncedColumnData(tableSettings, columnNames.STATUS, 5),
+          baseWidth: 5,
+          ...getSyncedColumnData(tableSettings, columnNames.STATUS),
           props: {
             align: "left",
           },
@@ -94,17 +71,20 @@ export const useColumns = (): TableColumn<Codebase>[] => {
             },
           }) => {
             return (
-              <Button variant="link" asChild>
+              <Button variant="link" asChild className="p-0">
                 <Link to={routeComponentDetails.fullPath} params={{ clusterName, namespace: namespace!, name }}>
-                  <TextWithTooltip text={name} />
+                  <span className="flex items-center gap-2">
+                    <GitBranch className="text-muted-foreground/50" />
+                    <TextWithTooltip text={name} />
+                  </span>
                 </Link>
               </Button>
             );
           },
         },
         cell: {
-          customizable: false,
-          ...getSyncedColumnData(tableSettings, columnNames.NAME, 20),
+          baseWidth: 20,
+          ...getSyncedColumnData(tableSettings, columnNames.NAME),
         },
       },
       {
@@ -117,57 +97,18 @@ export const useColumns = (): TableColumn<Codebase>[] => {
               spec: { type },
             },
           }) => {
-            const backgroundColor = getColorByType(type);
-            return (
-              <Badge variant="outline" className="border-transparent text-white" style={{ backgroundColor }}>
-                {capitalizeFirstLetter(type)}
-              </Badge>
-            );
+            return <Badge variant="outline">{capitalizeFirstLetter(type)}</Badge>;
           },
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.TYPE, 20),
+          baseWidth: 20,
+          ...getSyncedColumnData(tableSettings, columnNames.TYPE),
         },
       },
       {
         id: columnNames.LANGUAGE,
-        label: "Language",
+        label: "Language / Framework",
         data: {
-          columnSortableValuePath: "spec.lang",
-          render: ({
-            data: {
-              spec: { lang: _lang, type },
-            },
-          }) => {
-            const codebaseMapping = getCodebaseMappingByType(type) as Record<string, CodebaseInterface>;
-            const lang = _lang.toLowerCase();
-            const codebaseMappingByLang = codebaseMapping?.[lang];
-
-            return (
-              <div className="flex flex-nowrap items-center gap-2">
-                <div>
-                  <UseSpriteSymbol
-                    name={
-                      LANGUAGE_ICON_MAPPING?.[lang as keyof typeof LANGUAGE_ICON_MAPPING] || RESOURCE_ICON_NAMES.OTHER
-                    }
-                    width={20}
-                    height={20}
-                  />
-                </div>
-                <div>{codebaseMappingByLang?.language?.name || capitalizeFirstLetter(_lang)}</div>
-              </div>
-            );
-          },
-        },
-        cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.LANGUAGE, 15),
-        },
-      },
-      {
-        id: columnNames.FRAMEWORK,
-        label: "Framework",
-        data: {
-          columnSortableValuePath: "spec.lang",
           render: ({
             data: {
               spec: { lang: _lang, framework: _framework, type },
@@ -179,18 +120,11 @@ export const useColumns = (): TableColumn<Codebase>[] => {
             const codebaseMappingByLang = codebaseMapping?.[lang];
 
             return (
-              <div className="flex flex-nowrap items-center gap-2">
-                <div>
-                  <UseSpriteSymbol
-                    name={
-                      FRAMEWORK_ICON_MAPPING?.[framework as keyof typeof FRAMEWORK_ICON_MAPPING] ||
-                      RESOURCE_ICON_NAMES.OTHER
-                    }
-                    width={20}
-                    height={20}
-                  />
+              <div className="flex flex-col flex-nowrap gap-0.5">
+                <div className="text-foreground text-sm">
+                  {codebaseMappingByLang?.language?.name || capitalizeFirstLetter(_lang)}
                 </div>
-                <div>
+                <div className="text-muted-foreground text-xs">
                   {framework
                     ? codebaseMappingByLang?.frameworks?.[framework]?.name ||
                       (_framework && capitalizeFirstLetter(_framework)) ||
@@ -202,14 +136,14 @@ export const useColumns = (): TableColumn<Codebase>[] => {
           },
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.FRAMEWORK, 15),
+          baseWidth: 15,
+          ...getSyncedColumnData(tableSettings, columnNames.LANGUAGE),
         },
       },
       {
         id: columnNames.BUILD_TOOL,
         label: "Build Tool",
         data: {
-          columnSortableValuePath: "spec.buildTool",
           render: ({
             data: {
               spec: { lang: _lang, buildTool: _buildTool, type },
@@ -221,24 +155,15 @@ export const useColumns = (): TableColumn<Codebase>[] => {
             const codebaseMappingByLang = codebaseMapping?.[lang];
 
             return (
-              <div className="flex flex-nowrap items-center gap-2">
-                <div>
-                  <UseSpriteSymbol
-                    name={
-                      BUILD_TOOL_ICON_MAPPING?.[buildTool as keyof typeof BUILD_TOOL_ICON_MAPPING] ||
-                      RESOURCE_ICON_NAMES.OTHER
-                    }
-                    width={20}
-                    height={20}
-                  />
-                </div>
-                <div>{codebaseMappingByLang?.buildTools?.[buildTool]?.name || capitalizeFirstLetter(_buildTool)}</div>
+              <div className="text-foreground text-sm">
+                {codebaseMappingByLang?.buildTools?.[buildTool]?.name || capitalizeFirstLetter(_buildTool)}
               </div>
             );
           },
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, columnNames.BUILD_TOOL, 15),
+          baseWidth: 15,
+          ...getSyncedColumnData(tableSettings, columnNames.BUILD_TOOL),
         },
       },
 
@@ -259,9 +184,9 @@ export const useColumns = (): TableColumn<Codebase>[] => {
           },
         },
         cell: {
-          customizable: false,
           isFixed: true,
-          ...getSyncedColumnData(tableSettings, columnNames.ACTIONS, 5),
+          baseWidth: 5,
+          ...getSyncedColumnData(tableSettings, columnNames.ACTIONS),
           props: {
             align: "center",
           },

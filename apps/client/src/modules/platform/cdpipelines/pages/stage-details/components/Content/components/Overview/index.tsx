@@ -1,23 +1,23 @@
-import { BorderedSection } from "@/core/components/BorderedSection";
-import { InfoColumns } from "@/core/components/InfoColumns";
 import { TabSection } from "@/core/components/TabSection";
 import { useInfoColumns } from "./hooks/useInfoColumns";
 import { useStageWatch } from "../../../../hooks";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
+import { Card } from "@/core/components/ui/card";
+import { InfoColumns } from "@/core/components/InfoColumns";
 
 export const Overview = () => {
-  const infoColumns = useInfoColumns();
+  const gridItems = useInfoColumns();
   const stageWatch = useStageWatch();
+
 
   return (
     <TabSection title="Overview">
-      <BorderedSection title="Stage Details">
-        <div>
-          <LoadingWrapper isLoading={stageWatch.query.isLoading}>
-            <InfoColumns infoRows={infoColumns} />
-          </LoadingWrapper>
-        </div>
-      </BorderedSection>
+      <Card className="p-6">
+        <h3 className="text-foreground mb-4 text-xl font-semibold">Stage Details</h3>
+        <LoadingWrapper isLoading={stageWatch.query.isFetching}>
+          <InfoColumns gridItems={gridItems} gridCols={4} />
+        </LoadingWrapper>
+      </Card>
     </TabSection>
   );
 };

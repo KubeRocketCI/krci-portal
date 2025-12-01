@@ -11,4 +11,7 @@ export interface FormSwitchProps<TFieldValues extends FieldValues = FieldValues>
   defaultValue?: boolean;
   disabled?: boolean;
   labelPlacement?: "start" | "end";
+  icon?: React.ReactNode;
+  variant?: "card" | "list";
+  expandableContent?: React.ReactNode;
 }

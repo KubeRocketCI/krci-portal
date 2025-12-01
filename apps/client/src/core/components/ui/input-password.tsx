@@ -39,7 +39,13 @@ export const InputPassword = React.forwardRef<HTMLInputElement, InputPasswordPro
     const toggleButton = showToggle ? (
       <TooltipRoot>
         <TooltipTrigger asChild>
-          <Button type="button" variant="ghost" size="icon" onClick={handleToggleVisibility} className="px-5">
+          <Button
+            type="button"
+            variant="dark"
+            size="icon"
+            onClick={handleToggleVisibility}
+            className="rounded-tl-none rounded-bl-none px-5"
+          >
             {isVisible ? <Eye size={16} /> : <EyeOff size={16} />}
           </Button>
         </TooltipTrigger>

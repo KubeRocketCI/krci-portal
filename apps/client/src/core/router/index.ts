@@ -3,6 +3,7 @@ import { LoadingProgressBar } from "../components/ui/LoadingProgressBar";
 import { RouterErrorComponent } from "./components/RouterErrorComponent";
 import { routeHome } from "../../modules/home/pages/home/route";
 import { routeComponentList } from "../../modules/platform/codebases/pages/list/route";
+import { routeCodebaseCreate } from "../../modules/platform/codebases/pages/create/route";
 import { routeAuthCallback } from "../auth/pages/callback/route";
 import { routeAuthLogin } from "../auth/pages/login/route";
 import ContentLayout from "../components/PageLayout";
@@ -10,6 +11,7 @@ import { rootRoute } from "./_root";
 import { routeComponentDetails } from "../../modules/platform/codebases/pages/details/route";
 import { authRoute, contentLayoutRoute, routeCluster, routeCICD, routeConfiguration } from "./routes";
 import { routeCDPipelineList } from "@/modules/platform/cdpipelines/pages/list/route";
+import { routeCDPipelineCreate } from "@/modules/platform/cdpipelines/pages/create/route";
 
 // Assign the ContentLayout component here to avoid circular dependency
 contentLayoutRoute.update({
@@ -45,11 +47,13 @@ const routeTree = rootRoute.addChildren([
   authRoute.addChildren([routeAuthLogin, routeAuthCallback]),
   contentLayoutRoute.addChildren([
     routeHome,
-    routeCluster.addChildren([
+      routeCluster.addChildren([
       routeOverviewDetails,
       routeComponentList,
+      routeCodebaseCreate,
       routeComponentDetails,
       routeCDPipelineList,
+      routeCDPipelineCreate,
       routeCDPipelineDetails,
       routeStageDetails,
       routeMarketplace,

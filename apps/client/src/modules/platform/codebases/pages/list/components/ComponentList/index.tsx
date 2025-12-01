@@ -1,22 +1,20 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { EmptyList } from "@/core/components/EmptyList";
-import { TABLE } from "@/k8s/constants/tables";
-import { K8sRelatedIconsSVGSprite } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { DataTable } from "@/core/components/Table";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { useCodebasePermissions, useCodebaseWatchListMultiple } from "@/k8s/api/groups/KRCI/Codebase";
 import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
-import { useDialogContext } from "@/core/providers/Dialog/hooks";
-import { ManageCodebaseDialog } from "@/modules/platform/codebases/dialogs/ManageCodebase";
-import { Tooltip } from "@/core/components/ui/tooltip";
+import { TABLE } from "@/k8s/constants/tables";
 import { codebaseType, type Codebase } from "@my-project/shared";
-import { Plus, Trash } from "lucide-react";
+import { Trash } from "lucide-react";
 import React, { Suspense } from "react";
+import { routeCodebaseCreate } from "../../../create/route";
 import { CodebaseFilter } from "../CodebaseFilter";
-import { useColumns } from "./hooks/useColumns";
-import { useSelection } from "./hooks/useSelection";
 import { useCodebaseFilter } from "../CodebaseFilter/hooks/useFilter";
 import { ComponentMultiDeletion } from "./components/ComponentMultiDeletion";
+import { useColumns } from "./hooks/useColumns";
+import { useSelection } from "./hooks/useSelection";
 
 export const ComponentList = () => {
   const columns = useColumns();
@@ -27,8 +25,6 @@ export const ComponentList = () => {
   const gitServerListWatch = useGitServerWatchList();
 
   const noGitServers = gitServerListWatch.isEmpty;
-
-  const { setDialog } = useDialogContext();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
@@ -55,10 +51,8 @@ export const ComponentList = () => {
       <EmptyList
         customText={"Let's kickstart the application onboarding!"}
         linkText={"Click here to add a new application and integrate with the platform."}
-        handleClick={() => {
-          setDialog(ManageCodebaseDialog, {
-            codebase: undefined,
-          });
+        route={{
+          to: routeCodebaseCreate.fullPath,
         }}
       />
     );
@@ -69,7 +63,6 @@ export const ComponentList = () => {
     codebasePermissions.isFetching,
     gitServerListWatch.isLoading,
     noGitServers,
-    setDialog,
   ]);
 
   const { selected, setSelected, handleSelectAllClick, handleSelectRowClick } = useSelection();
@@ -84,25 +77,8 @@ export const ComponentList = () => {
 
   return (
     <>
-      <K8sRelatedIconsSVGSprite />
       <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-end">
-          <ButtonWithPermission
-            ButtonProps={{
-              variant: "default",
-              disabled: noGitServers,
-              onClick: () =>
-                setDialog(ManageCodebaseDialog, {
-                  codebase: undefined,
-                }),
-            }}
-            allowed={codebasePermissions.data.create.allowed}
-            reason={codebasePermissions.data.create.reason}
-          >
-            <Plus />
-            Create Component
-          </ButtonWithPermission>
-        </div>
+        <div className="flex items-center justify-end"></div>
         <Suspense fallback={<div>Loading...</div>}>
           <DataTable<Codebase>
             id={TABLE.COMPONENT_LIST.id}

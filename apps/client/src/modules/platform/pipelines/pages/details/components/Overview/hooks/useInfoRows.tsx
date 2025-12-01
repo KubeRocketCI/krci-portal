@@ -1,9 +1,14 @@
-import { InfoRow } from "@/core/components/InfoColumns/types";
 import { Badge } from "@/core/components/ui/badge";
 import React from "react";
 import { usePipelineWatch } from "../../../hooks/data";
 
-export const useInfoRows = (): InfoRow[] => {
+export interface GridItem {
+  label: string;
+  content: React.ReactNode;
+  colSpan?: number;
+}
+
+export const useInfoRows = (): GridItem[] => {
   const pipelineWatch = usePipelineWatch();
   const pipeline = pipelineWatch.query.data;
 
@@ -25,45 +30,44 @@ export const useInfoRows = (): InfoRow[] => {
       : "Unknown";
 
     return [
-      [
-        {
-          label: "Name",
-          text: pipeline.metadata?.name || "Unknown",
-        },
-        {
-          label: "Namespace",
-          text: pipeline.metadata?.namespace || "Unknown",
-        },
-        {
-          label: "Created at",
-          text: createdAt,
-        },
-      ],
-      [
-        {
-          label: "Description",
-          text: pipeline.spec?.description || pipeline.spec?.displayName || "No description available",
-          columnXs: 12,
-        },
-      ],
-      [
-        {
-          label: "Labels",
-          text:
-            pipelineLabels.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {pipelineLabels.map((el) => (
-                  <div key={el}>
-                    <Badge variant="secondary">{el}</Badge>
-                  </div>
-                ))}
-              </div>
+      {
+        label: "Name",
+        content: <span className="text-foreground text-sm">{pipeline.metadata?.name || "Unknown"}</span>,
+      },
+      {
+        label: "Namespace",
+        content: <span className="text-foreground text-sm">{pipeline.metadata?.namespace || "Unknown"}</span>,
+      },
+      {
+        label: "Created at",
+        content: <span className="text-foreground text-sm">{createdAt}</span>,
+      },
+      {
+        label: "Description",
+        content: (
+          <span className="text-foreground text-sm">
+            {pipeline.spec?.description || pipeline.spec?.displayName || "No description available"}
+          </span>
+        ),
+        colSpan: 4,
+      },
+      {
+        label: "Labels",
+        content: (
+          <div className="flex flex-wrap gap-2">
+            {pipelineLabels.length > 0 ? (
+              pipelineLabels.map((el) => (
+                <Badge key={el} variant="secondary">
+                  {el}
+                </Badge>
+              ))
             ) : (
               <span className="text-muted-foreground text-sm">No labels</span>
-            ),
-          columnXs: 12,
-        },
-      ],
+            )}
+          </div>
+        ),
+        colSpan: 4,
+      },
     ];
   }, [pipeline, pipelineWatch.query.isLoading]);
 };

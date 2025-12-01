@@ -4,14 +4,10 @@ import React from "react";
 import { SORT_ORDERS, TABLE_CELL_DEFAULTS } from "../../constants";
 import { TableColumn } from "../../types";
 import { createCustomSortFunction, createSortFunction, getSortOrder, isAsc, isDesc } from "../../utils";
-import { useTableSettings } from "../TableSettings/hooks/useTableSettings";
-import { SavedTableSettings } from "../TableSettings/types";
 import { TableHeadProps } from "./types";
 
 export const TableHead = <DataType,>({
-  tableId,
   columns,
-  colGroupRef,
   sort,
   setSort,
   rowCount,
@@ -19,10 +15,6 @@ export const TableHead = <DataType,>({
   selected,
   handleSelectAllClick,
 }: TableHeadProps<DataType>) => {
-  const { loadSettings, saveSettings } = useTableSettings(tableId);
-
-  const tableSettings = loadSettings();
-
   const handleRequestSort = (column: TableColumn<DataType>) => {
     const _isDesc = isDesc(column.id, sort.sortBy, sort.order);
     const _isAsc = isAsc(column.id, sort.sortBy, sort.order);
@@ -39,117 +31,34 @@ export const TableHead = <DataType,>({
 
   const selectedLength = React.useMemo(() => selected?.length, [selected]);
 
-  const saveNewColumnsWidth = React.useCallback(() => {
-    if (!tableSettings) return;
-    const colGroup = colGroupRef.current;
-    const cols = (colGroup ? Array.from(colGroup.children) : []) as HTMLTableColElement[];
-
-    const newSettings = columns.reduce<SavedTableSettings>((acc, cur) => {
-      acc[cur.id] = {
-        ...tableSettings[cur.id],
-        width: parseFloat(cols.find((col) => col.dataset.id === cur.id)?.getAttribute("width") || ""),
-      };
-
-      return acc;
-    }, {});
-
-    saveSettings(newSettings);
-  }, [colGroupRef, columns, saveSettings, tableSettings]);
-
-  const handleMouseDown = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement, MouseEvent>, resizableColumnId: string) => {
-      event.preventDefault();
-
-      const resizerElement = event.target as HTMLElement;
-
-      if (!resizerElement) return;
-
-      resizerElement.style.backgroundColor = "rgba(0, 0, 0, 0.05)";
-      document.body.style.cursor = "col-resize";
-
-      const startX = event.clientX;
-      const colGroup = colGroupRef.current;
-      const cols = (colGroup ? Array.from(colGroup.children) : []) as HTMLTableColElement[];
-      const targetCol = cols.find((col) => col.dataset.id === resizableColumnId);
-
-      if (!targetCol) return;
-
-      let nextColIndex = cols.indexOf(targetCol) + 1;
-      let nextCol = null;
-      while (nextColIndex < cols.length) {
-        const potentialNextCol = cols[nextColIndex];
-        const nextColumnData = columns.find((col) => col.id === potentialNextCol.dataset.id);
-        if (nextColumnData && nextColumnData.cell.show !== false) {
-          nextCol = potentialNextCol;
-          break;
-        }
-        nextColIndex++;
-      }
-
-      if (!nextCol) return;
-
-      const originalWidth = targetCol.offsetWidth;
-      const nextOriginalWidth = nextCol.offsetWidth;
-      const tableWidth = colGroup?.parentElement?.offsetWidth;
-
-      const handleMouseMove = (moveEvent: Event | React.MouseEvent) => {
-        if (!tableWidth) {
-          return;
-        }
-
-        const deltaX = (moveEvent as React.MouseEvent).clientX - startX;
-
-        const column = columns.find((col) => col.id === resizableColumnId);
-        const nextColumn = columns.find((col) => col.id === nextCol.dataset.id);
-        if (!column || column.cell.isFixed || !nextColumn || nextColumn.cell.isFixed) return;
-
-        const newWidth = originalWidth + deltaX;
-        const newNextWidth = nextOriginalWidth - deltaX;
-
-        if (newWidth + newNextWidth <= tableWidth) {
-          const newTargetColWidth = `${((newWidth / tableWidth) * 100).toFixed(3)}%`;
-          const newNextColWidth = `${((newNextWidth / tableWidth) * 100).toFixed(3)}%`;
-
-          targetCol.setAttribute("width", newTargetColWidth);
-          nextCol.setAttribute("width", newNextColWidth);
-        }
-      };
-
-      const handleMouseUp = () => {
-        document.removeEventListener("mousemove", handleMouseMove);
-        document.removeEventListener("mouseup", handleMouseUp);
-
-        resizerElement.style = "";
-        document.body.style.cursor = "";
-        saveNewColumnsWidth();
-      };
-
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-    },
-    [colGroupRef, columns, saveNewColumnsWidth]
-  );
-
   const selectedAllIndeterminate = !!selectedLength && selectedLength > 0 && selectedLength < rowCount;
   const selectAllChecked = selectedLength === selectableRowCount || selectedLength === rowCount;
+
+  const handleCheckboxChange = React.useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (_checked: boolean) => {
+      if (typeof handleSelectAllClick === "function") {
+        const shouldSelectAll = !selectAllChecked;
+        handleSelectAllClick({ target: { checked: shouldSelectAll } } as React.ChangeEvent<HTMLInputElement>);
+      }
+    },
+    [handleSelectAllClick, selectAllChecked]
+  );
 
   return (
     <TableHeaderUI>
       <TableRowUI>
         {!!handleSelectAllClick && !!selectableRowCount && (
-          <TableHeadUI className="p-1 text-center align-bottom">
-            <Checkbox
-              checked={selectedAllIndeterminate ? "indeterminate" : selectAllChecked}
-              onCheckedChange={(checked) => {
-                if (typeof handleSelectAllClick === "function") {
-                  handleSelectAllClick({ target: { checked } } as React.ChangeEvent<HTMLInputElement>);
-                }
-              }}
-            />
+          <TableHeadUI className="relative p-1 align-bottom">
+            <div className="flex flex-row flex-nowrap items-center justify-center">
+              <Checkbox
+                checked={selectedAllIndeterminate ? "indeterminate" : selectAllChecked}
+                onCheckedChange={handleCheckboxChange}
+              />
+            </div>
           </TableHeadUI>
         )}
-        {columns.map((column, idx) => {
-          const isLast = idx === columns.length - 1;
+        {columns.map((column) => {
           const { id, label, data, cell } = column;
           const show = cell?.show ?? TABLE_CELL_DEFAULTS.SHOW;
           const props = {
@@ -185,14 +94,8 @@ export const TableHead = <DataType,>({
                     </svg>
                   </button>
                 )}
-                <span className="mt-1 text-sm font-semibold">{label}</span>
+                <span className="mt-1 text-sm">{label}</span>
               </div>
-              {!isLast && !column.cell.isFixed && !columns?.[idx + 1].cell.isFixed && (
-                <div
-                  className="absolute top-0 right-0 bottom-0 z-1 h-full w-px -translate-x-1/2 cursor-col-resize bg-transparent px-1 py-0 hover:bg-[hsl(var(--border)/0.05)]"
-                  onMouseDown={(e) => handleMouseDown(e, column.id)}
-                />
-              )}
             </TableHeadUI>
           ) : null;
         })}

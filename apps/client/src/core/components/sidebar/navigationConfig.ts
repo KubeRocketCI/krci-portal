@@ -1,8 +1,7 @@
-import { Bot, Layers, PanelsTopLeft, Rows2, Settings, ShoppingCart } from "lucide-react";
+import { Bot, Layers, PanelsTopLeft, Rows2, Settings } from "lucide-react";
 import { routeCICD, routeConfiguration } from "@/core/router";
 import { PATH_OVERVIEW_FULL } from "@/modules/platform/overview/pages/details/route";
 import { PATH_COMPONENTS_FULL } from "@/modules/platform/codebases/pages/list/route";
-import { PATH_MARKETPLACE_FULL } from "@/modules/platform/marketplace/route";
 import { PATH_CDPIPELINES_FULL } from "@/modules/platform/cdpipelines/pages/list/route";
 import { PATH_PIPELINERUNS_FULL } from "@/modules/platform/pipelineruns/pages/list/route";
 import { PATH_PIPELINES_FULL } from "@/modules/platform/pipelines/pages/list/route";
@@ -72,14 +71,6 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
           },
         },
       ],
-    },
-    {
-      title: "Marketplace",
-      icon: ShoppingCart,
-      route: {
-        to: PATH_MARKETPLACE_FULL,
-        params: clusterDefaultParams,
-      },
     },
     {
       title: "Components",

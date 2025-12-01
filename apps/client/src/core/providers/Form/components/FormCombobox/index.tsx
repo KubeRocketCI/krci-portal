@@ -41,6 +41,7 @@ const FormComboboxInner = React.forwardRef(
           value: option.value,
           label: option.label,
           disabled: option.disabled,
+          icon: option.icon,
         })),
       [options]
     );
@@ -81,14 +82,12 @@ const FormComboboxInner = React.forwardRef(
                   emptyText={emptyText}
                   disabled={disabled || loading}
                   invalid={hasError}
-                  className="rounded-none border-0"
                   renderOption={renderOption}
                 />
               </FormField>
             );
           }
 
-          // For non-freeSolo mode, use regular Combobox
           return (
             <FormField
               label={label}
@@ -98,7 +97,7 @@ const FormComboboxInner = React.forwardRef(
               id={fieldId}
               suffix={
                 loading ? (
-                  <div className="flex items-center px-2">
+                  <div className="bg-input flex items-center px-2">
                     <Loader2 className="text-muted-foreground size-4 animate-spin" />
                   </div>
                 ) : (
@@ -121,7 +120,6 @@ const FormComboboxInner = React.forwardRef(
                 emptyText={emptyText}
                 disabled={disabled || loading}
                 multiple={false}
-                className="rounded-none border-0 shadow-none"
               />
             </FormField>
           );

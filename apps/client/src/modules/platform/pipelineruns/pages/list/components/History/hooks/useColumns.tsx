@@ -43,8 +43,8 @@ export const useColumns = (): TableColumn<string>[] => {
           ),
         },
         cell: {
-          customizable: false,
-          ...getSyncedColumnData(tableSettings, "name", 20),
+          baseWidth: 20,
+          ...getSyncedColumnData(tableSettings, "name"),
         },
       },
     ],

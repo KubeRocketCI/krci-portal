@@ -51,8 +51,8 @@ export const useColumns = (): TableColumn<Task>[] => {
           ),
         },
         cell: {
-          customizable: false,
-          ...getSyncedColumnData(tableSettings, "name", 25),
+          baseWidth: 25,
+          ...getSyncedColumnData(tableSettings, "name"),
         },
       },
       {
@@ -62,7 +62,8 @@ export const useColumns = (): TableColumn<Task>[] => {
           render: ({ data: { spec } }) => <TextWithTooltip text={spec?.description || ""} maxLineAmount={3} />,
         },
         cell: {
-          ...getSyncedColumnData(tableSettings, "description", 50),
+          baseWidth: 50,
+          ...getSyncedColumnData(tableSettings, "description"),
         },
       },
       {
@@ -84,7 +85,8 @@ export const useColumns = (): TableColumn<Task>[] => {
         },
         cell: {
           isFixed: true,
-          ...getSyncedColumnData(tableSettings, "createdAt", 25),
+          baseWidth: 25,
+          ...getSyncedColumnData(tableSettings, "createdAt"),
         },
       },
       {
@@ -95,8 +97,8 @@ export const useColumns = (): TableColumn<Task>[] => {
         },
         cell: {
           isFixed: true,
-          customizable: false,
-          ...getSyncedColumnData(tableSettings, "actions", 5),
+          baseWidth: 5,
+          ...getSyncedColumnData(tableSettings, "actions"),
         },
       },
     ],

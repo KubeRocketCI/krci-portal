@@ -17,7 +17,7 @@ export const DeployedVersionHeadColumn = () => {
   const copyVersionsValue = React.useMemo(() => {
     if (
       stageAppCodebasesCombinedDataWatch.isLoading ||
-      stageWatch.query.isLoading ||
+      stageWatch.query.isFetching ||
       !stageAppCodebasesCombinedDataWatch.data
     ) {
       return "";
@@ -42,7 +42,7 @@ export const DeployedVersionHeadColumn = () => {
     stage.spec.namespace,
     stageAppCodebasesCombinedDataWatch.data,
     stageAppCodebasesCombinedDataWatch.isLoading,
-    stageWatch.query.isLoading,
+    stageWatch.query.isFetching,
   ]);
 
   return (

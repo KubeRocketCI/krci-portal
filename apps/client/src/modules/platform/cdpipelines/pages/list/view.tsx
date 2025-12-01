@@ -3,20 +3,21 @@ import { EmptyList } from "@/core/components/EmptyList";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
-import { ManageCDPipelineDialog } from "../../dialogs/ManageCDPipeline";
 import { Section } from "@/core/components/Section";
 import { useCDPipelinePermissions } from "@/k8s/api/groups/KRCI/CDPipeline";
 import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
-import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { routeGitopsConfiguration } from "@/modules/platform/configuration/modules/gitops/route";
 import { codebaseLabels, codebaseType } from "@my-project/shared";
 import { Plus } from "lucide-react";
 import { CDPipelineList } from "./components/CDPipelineList";
+import { Link } from "@tanstack/react-router";
+import { routeCDPipelineCreate } from "../create/route";
+import { routeCDPipelineList } from "./route";
 import React from "react";
 
 export default function CDPipelineListPage() {
   const cdPipelinePermissions = useCDPipelinePermissions();
-  const { setDialog } = useDialogContext();
+  const { clusterName } = routeCDPipelineList.useParams();
 
   const gitOpsCodebaseWatch = useCodebaseWatchList({
     labels: {
@@ -55,17 +56,16 @@ export default function CDPipelineListPage() {
             <ButtonWithPermission
               ButtonProps={{
                 variant: "default",
-                onClick: () =>
-                  setDialog(ManageCDPipelineDialog, {
-                    CDPipeline: undefined,
-                  }),
                 disabled: !gitOpsCodebase,
+                asChild: true,
               }}
               allowed={cdPipelinePermissions.data.create.allowed}
               reason={cdPipelinePermissions.data.create.reason}
             >
-              <Plus />
-              Create Deployment Flow
+              <Link to={routeCDPipelineCreate.fullPath} params={{ clusterName }} className="no-underline">
+                <Plus />
+                Create Deployment Flow
+              </Link>
             </ButtonWithPermission>
           </div>
           <CDPipelineList blockerComponent={renderBlockerIfNoGitOpsCodebase} />

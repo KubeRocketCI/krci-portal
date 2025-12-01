@@ -44,8 +44,6 @@ export const useColumns = (): TableColumn<Application>[] => {
           },
         },
         cell: {
-          customizable: false,
-          width: 30,
           baseWidth: 30,
           isFixed: true,
         },
@@ -82,8 +80,6 @@ export const useColumns = (): TableColumn<Application>[] => {
           },
         },
         cell: {
-          customizable: false,
-          width: 25,
           baseWidth: 25,
           isFixed: true,
         },
@@ -107,8 +103,6 @@ export const useColumns = (): TableColumn<Application>[] => {
           },
         },
         cell: {
-          customizable: false,
-          width: 45,
           baseWidth: 45,
           isFixed: true,
         },

@@ -28,12 +28,10 @@ export interface TableColumn<DataType> {
   };
   cell: {
     baseWidth: number;
-    width?: number;
     show?: boolean;
     isFixed?: boolean;
     colSpan?: number;
     props?: TableCellProps;
-    customizable?: boolean; // width
   };
 }
 

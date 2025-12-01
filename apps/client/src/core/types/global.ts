@@ -13,6 +13,10 @@ export interface ListItemAction {
   action: (e: React.SyntheticEvent) => void;
   Icon?: React.ReactNode;
   isTextButton?: boolean;
+  link?: {
+    to: string;
+    params?: Record<string, string>;
+  };
 }
 
 export type RequestError = TRPCClientError<AppRouter>;

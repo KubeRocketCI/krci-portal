@@ -83,10 +83,11 @@ export const ComboboxWithInput = React.forwardRef<HTMLInputElement, ComboboxWith
           <div className="relative flex w-full items-center" aria-hidden="true">
             <div
               className={cn(
-                "bg-muted flex h-9 w-full items-center gap-1 rounded-md border-transparent px-3 text-sm shadow-none",
+                "bg-input flex h-9 w-full items-center gap-1 rounded-md border-transparent px-3 text-sm shadow-none",
                 "focus-within:ring-ring/50 focus-within:ring-[3px]",
                 invalid && "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40",
                 disabled && "pointer-events-none opacity-50",
+                !disabled && "hover:bg-input/50",
                 className
               )}
               onClick={(e) => {
