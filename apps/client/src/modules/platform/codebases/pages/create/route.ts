@@ -11,4 +11,3 @@ export const routeCodebaseCreate = createRoute({
     meta: [{ title: "Create Component | KRCI" }],
   }),
 }).lazy(() => import("./route.lazy").then((res) => res.default));
-

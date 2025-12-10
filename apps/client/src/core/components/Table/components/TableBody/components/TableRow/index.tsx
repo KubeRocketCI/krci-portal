@@ -49,7 +49,7 @@ export const TableRow = <DataType,>({
   return (
     <TableRowUI {...selectableRowProps(item, !!isRowSelected)}>
       {!!handleSelectRowClick && (
-        <TableCellUI className="p-1 text-center">
+        <TableCellUI className="px-3 py-1 text-center">
           <Checkbox
             checked={isRowSelected}
             onCheckedChange={(checked) => {
@@ -72,7 +72,7 @@ export const TableRow = <DataType,>({
         };
 
         const alignClass = props?.align === "center" ? "text-center" : props?.align === "right" ? "text-right" : "";
-        const paddingClass = "p-1";
+        const paddingClass = "py-2 px-3";
         const sortablePaddingClass = getColumnPadding(!!data?.columnSortableValuePath, props?.align || "");
 
         return show ? (
@@ -81,7 +81,7 @@ export const TableRow = <DataType,>({
             className={`${paddingClass} ${alignClass} ${sortablePaddingClass} ${id === "description" ? "min-w-0" : ""}`}
           >
             <div
-              className={`flex items-center ${getJustifyClass(props?.align)} ${id === "description" ? "w-full min-w-0" : ""}`}
+              className={`flex items-center text-sm ${getJustifyClass(props?.align)} ${id === "description" ? "w-full min-w-0" : ""}`}
             >
               {data.render({ data: item })}
             </div>

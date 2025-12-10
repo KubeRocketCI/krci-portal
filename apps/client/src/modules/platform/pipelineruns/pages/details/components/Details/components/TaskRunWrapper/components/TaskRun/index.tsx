@@ -4,57 +4,100 @@ import { getTaskRunStatus, taskRunLabels } from "@my-project/shared";
 import { humanize } from "@/core/utils/date-humanize";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { Tabs } from "@/core/providers/Tabs/components/Tabs";
+import { Card } from "@/core/components/ui/card";
+import { StatusIcon } from "@/core/components/StatusIcon";
+import { getTaskRunStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun";
+import { Badge } from "@/core/components/ui/badge";
+import { Timer, Clock } from "lucide-react";
 
 export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
   const { taskRun, task } = pipelineRunTaskData;
   const taskRunName = taskRun?.metadata?.labels?.[taskRunLabels.pipelineTask];
   const taskRunStatus = getTaskRunStatus(taskRun);
+  const taskRunStatusIcon = getTaskRunStatusIcon(taskRun);
 
   const completionTime = taskRun?.status?.completionTime || "";
   const startTime = taskRun?.status?.startTime || "";
 
-  const duration = humanize(new Date(completionTime).getTime() - new Date(startTime).getTime(), {
-    language: "en-mini",
-    spacer: "",
-    delimiter: " ",
-    fallbacks: ["en"],
-    largest: 2,
-    round: true,
-    units: ["d", "h", "m", "s"],
-  });
+  const duration =
+    startTime && completionTime
+      ? humanize(new Date(completionTime).getTime() - new Date(startTime).getTime(), {
+          language: "en-mini",
+          spacer: "",
+          delimiter: " ",
+          fallbacks: ["en"],
+          largest: 2,
+          round: true,
+          units: ["d", "h", "m", "s"],
+        })
+      : startTime
+        ? humanize(new Date().getTime() - new Date(startTime).getTime(), {
+            language: "en-mini",
+            spacer: "",
+            delimiter: " ",
+            fallbacks: ["en"],
+            largest: 2,
+            round: true,
+            units: ["d", "h", "m", "s"],
+          })
+        : null;
+
+  const startedAt = startTime
+    ? new Date(startTime).toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+      })
+    : null;
 
   const tabs = useTabs({ taskRun, task });
-
   const taskDescription = pipelineRunTaskData.task?.spec?.description || "";
-
   const { activeTab, handleChangeTab } = useTabsContext();
 
   return (
-    <div className="bg-card rounded shadow">
-      <div className="p-6">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <h3 className="text-xl font-medium">{taskRunName}</h3>
-          </div>
+    <Card className="flex h-full flex-col">
+      {/* Task header */}
+      <div className="border-b px-6 py-4">
+        <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-foreground text-sm font-medium">
-              Status: <span className="text-muted-foreground text-sm">{taskRunStatus.reason}</span>
-            </span>
-            <span className="text-foreground text-sm font-medium">
-              Duration: <span className="text-muted-foreground text-sm">{duration}</span>
-            </span>
+            <StatusIcon
+              Icon={taskRunStatusIcon.component}
+              color={taskRunStatusIcon.color}
+              isSpinning={taskRunStatusIcon.isSpinning}
+              width={20}
+            />
+            <div>
+              <h3 className="text-foreground text-lg font-medium">Task: {taskRunName}</h3>
+              {taskDescription && <p className="text-muted-foreground mt-0.5 text-sm">{taskDescription}</p>}
+            </div>
           </div>
-          {taskDescription && (
-            <span className="text-foreground text-sm font-medium">
-              Description: <span className="text-muted-foreground text-sm">{taskDescription}</span>
-            </span>
+          <Badge variant="outline" className="text-sm">
+            {taskRunStatus.reason}
+          </Badge>
+        </div>
+
+        {/* Task metadata */}
+        <div className="flex items-center gap-6">
+          {startedAt && (
+            <div className="flex items-center gap-2">
+              <Clock className="text-muted-foreground size-3.5" />
+              <span className="text-muted-foreground text-sm">Started: {startedAt}</span>
+            </div>
+          )}
+          {duration && (
+            <div className="flex items-center gap-2">
+              <Timer className="text-muted-foreground size-3.5" />
+              <span className="text-muted-foreground text-sm">Duration: {duration}</span>
+            </div>
           )}
         </div>
       </div>
-      <hr className="border-border" />
-      <div className="px-6 pb-6">
+
+      {/* Tabs content */}
+      <div className="flex flex-1 flex-col p-6">
         <Tabs tabs={tabs} activeTabIdx={activeTab} handleChangeTab={handleChangeTab} />
       </div>
-    </div>
+    </Card>
   );
 };

@@ -125,7 +125,7 @@ export const useCRUD = () => {
       const {
         metadata: { name },
       } = codebase;
-      
+
       const codebaseSecretDraft = createCodebaseDraftSecretObject({
         codebaseName: name,
         username: repositoryLogin,

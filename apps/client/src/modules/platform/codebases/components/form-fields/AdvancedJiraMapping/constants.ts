@@ -19,4 +19,3 @@ export const advancedMappingBase: AdvancedMappingItem[] = [
 ];
 
 export const createAdvancedMappingRowName = (value: string): string => `mapping-row-${value}`;
-

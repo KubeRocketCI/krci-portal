@@ -11,6 +11,7 @@ const badgeVariants = cva(
       variant: {
         default: "border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90",
         secondary: "border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
+        dark: "bg-input hover:bg-input/50",
         destructive:
           "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline: "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground border",
@@ -35,7 +36,7 @@ BadgeRoot.displayName = "BadgeRoot";
 export { BadgeRoot, badgeVariants };
 
 export interface BadgeProps extends Omit<React.ComponentProps<"span">, "children"> {
-  variant?: "default" | "secondary" | "destructive" | "outline";
+  variant?: "default" | "secondary" | "destructive" | "outline" | "dark";
   children: React.ReactNode;
 }
 

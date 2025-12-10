@@ -5,82 +5,169 @@ import { checkHighlightedButtons } from "../../utils/checkHighlightedButtons";
 import { useTypedFormContext } from "../../hooks/useTypedFormContext";
 import React from "react";
 import { IMAGE_TAG_POSTFIX } from "@/modules/platform/cdpipelines/pages/stage-details/constants";
-import { useWatchStageAppCodebasesCombinedData } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
+import {
+  usePipelineAppCodebasesWatch,
+  useCodebaseImageStreamsWatch,
+  useCDPipelineWatch,
+  useStageWatch,
+  useStageListWatch,
+} from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
+import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
+import { CodebaseImageStream, Stage } from "@my-project/shared";
+
+// Helper functions for image stream lookups
+const findPreviousStage = (stages: Stage[], currentStageOrder: number): Stage | undefined => {
+  return stages.find(({ spec: { order: stageOrder } }) => stageOrder === currentStageOrder - 1);
+};
+
+const createDockerStreamSet = (inputDockerStreams: string[] = []): Set<string> => {
+  const normalizedNames = inputDockerStreams.map((el) => el.replaceAll(".", "-"));
+  return new Set<string>(normalizedNames);
+};
+
+const getLatestImageStream = (
+  imageStreams: CodebaseImageStream[],
+  codebaseName: string,
+  stageOrder: number,
+  inputDockerStreamsSet: Set<string>,
+  stages: Stage[],
+  cdPipelineName: string,
+  applicationsToPromote: string[] | null
+): CodebaseImageStream | undefined => {
+  const codebaseImageStreams = imageStreams.filter(({ spec: { codebase } }) => codebase === codebaseName);
+  const normalizedAppsToPromote = new Set(applicationsToPromote?.map((el) => el.replaceAll(".", "-")) || []);
+  const isPromote = normalizedAppsToPromote.has(codebaseName);
+
+  if (isPromote) {
+    if (stageOrder === 0) {
+      return codebaseImageStreams.find((el) => inputDockerStreamsSet.has(el.metadata.name));
+    }
+    const previousStage = findPreviousStage(stages, stageOrder);
+    if (!previousStage) return undefined;
+    return codebaseImageStreams.find(
+      ({ spec: { codebase }, metadata: { name } }) =>
+        name === `${cdPipelineName}-${previousStage.spec.name}-${codebase}-verified`
+    );
+  }
+
+  return codebaseImageStreams.find((el) => inputDockerStreamsSet.has(el.metadata.name));
+};
+
+const getVerifiedImageStream = (
+  imageStreams: CodebaseImageStream[],
+  cdPipelineName: string,
+  stageName: string,
+  codebaseName: string
+): CodebaseImageStream | undefined => {
+  return imageStreams.find(
+    ({ metadata: { name } }) => name === `${cdPipelineName}-${stageName}-${codebaseName}-verified`
+  );
+};
 
 export const DeployedVersionConfigurationHeadColumn = () => {
-  const stageAppCodebasesCombinedDataWatch = useWatchStageAppCodebasesCombinedData();
+  const params = routeStageDetails.useParams();
+  const cdPipelineWatch = useCDPipelineWatch();
+  const stageWatch = useStageWatch();
+  const stageListWatch = useStageListWatch();
+  const pipelineAppCodebasesWatch = usePipelineAppCodebasesWatch();
+  const imageStreamsWatch = useCodebaseImageStreamsWatch();
 
   const { watch, setValue, resetField } = useTypedFormContext();
   const values = watch();
   const buttonsHighlighted = checkHighlightedButtons(values);
 
+  const isLoading =
+    pipelineAppCodebasesWatch.isLoading ||
+    imageStreamsWatch.isLoading ||
+    cdPipelineWatch.isLoading ||
+    stageWatch.isLoading ||
+    stageListWatch.isLoading;
+
   const handleClickLatest = React.useCallback(() => {
-    if (stageAppCodebasesCombinedDataWatch.isLoading || !stageAppCodebasesCombinedDataWatch.data) {
+    if (isLoading || !cdPipelineWatch.data || !stageWatch.data) {
       return;
     }
 
-    const stageAppCodebasesCombinedData = stageAppCodebasesCombinedDataWatch.data?.stageAppCodebasesCombinedData;
+    const inputDockerStreamsSet = createDockerStreamSet(cdPipelineWatch.data.spec.inputDockerStreams);
 
-    for (const { appCodebase } of stageAppCodebasesCombinedData) {
+    for (const appCodebase of pipelineAppCodebasesWatch.data) {
       const appName = appCodebase.metadata.name;
       const selectFieldName = `${appName}${IMAGE_TAG_POSTFIX}` as const;
       resetField(selectFieldName);
 
-      const imageStreamBySelectedApplication =
-        stageAppCodebasesCombinedDataWatch.data.stageAppCodebasesCombinedDataByApplicationName.get(
-          appName
-        )?.appCodebaseImageStream;
+      const latestImageStream = getLatestImageStream(
+        imageStreamsWatch.data.array,
+        appName,
+        stageWatch.data.spec.order,
+        inputDockerStreamsSet,
+        stageListWatch.data.array,
+        params.cdPipeline,
+        cdPipelineWatch.data.spec.applicationsToPromote ?? null
+      );
 
-      if (!imageStreamBySelectedApplication || !imageStreamBySelectedApplication?.spec?.tags?.length) {
+      if (!latestImageStream?.spec?.tags?.length) {
         continue;
       }
 
-      const imageStreamTag = imageStreamBySelectedApplication.spec?.tags.at(-1)?.name;
-
-      if (!imageStreamTag) {
-        continue;
-      }
+      const imageStreamTag = latestImageStream.spec.tags.at(-1)?.name;
+      if (!imageStreamTag) continue;
 
       setValue(selectFieldName, `latest::${imageStreamTag}`, {
         shouldValidate: true,
         shouldDirty: true,
       });
     }
-  }, [resetField, setValue, stageAppCodebasesCombinedDataWatch.data, stageAppCodebasesCombinedDataWatch.isLoading]);
+  }, [
+    isLoading,
+    cdPipelineWatch.data,
+    stageWatch.data,
+    pipelineAppCodebasesWatch.data,
+    imageStreamsWatch.data.array,
+    stageListWatch.data.array,
+    params.cdPipeline,
+    resetField,
+    setValue,
+  ]);
 
   const handleClickStable = React.useCallback(() => {
-    if (stageAppCodebasesCombinedDataWatch.isLoading || !stageAppCodebasesCombinedDataWatch.data) {
+    if (isLoading || !stageWatch.data) {
       return;
     }
 
-    const stageAppCodebasesCombinedData = stageAppCodebasesCombinedDataWatch.data?.stageAppCodebasesCombinedData;
-
-    for (const { appCodebase } of stageAppCodebasesCombinedData) {
+    for (const appCodebase of pipelineAppCodebasesWatch.data) {
       const appName = appCodebase.metadata.name;
       const selectFieldName = `${appName}${IMAGE_TAG_POSTFIX}` as const;
       resetField(selectFieldName);
 
-      const imageStreamBySelectedApplication =
-        stageAppCodebasesCombinedDataWatch.data.stageAppCodebasesCombinedDataByApplicationName.get(
-          appName
-        )?.appCodebaseVerifiedImageStream;
+      const verifiedImageStream = getVerifiedImageStream(
+        imageStreamsWatch.data.array,
+        params.cdPipeline,
+        params.stage,
+        appName
+      );
 
-      if (!imageStreamBySelectedApplication || !imageStreamBySelectedApplication?.spec?.tags?.length) {
+      if (!verifiedImageStream?.spec?.tags?.length) {
         continue;
       }
 
-      const imageStreamTag = imageStreamBySelectedApplication.spec?.tags.at(-1)?.name;
-
-      if (!imageStreamTag) {
-        continue;
-      }
+      const imageStreamTag = verifiedImageStream.spec.tags.at(-1)?.name;
+      if (!imageStreamTag) continue;
 
       setValue(selectFieldName, `stable::${imageStreamTag}`, {
         shouldValidate: true,
         shouldDirty: true,
       });
     }
-  }, [resetField, setValue, stageAppCodebasesCombinedDataWatch.data, stageAppCodebasesCombinedDataWatch.isLoading]);
+  }, [
+    isLoading,
+    stageWatch.data,
+    pipelineAppCodebasesWatch.data,
+    imageStreamsWatch.data.array,
+    params.cdPipeline,
+    params.stage,
+    resetField,
+    setValue,
+  ]);
 
   return (
     <div className="flex flex-col gap-4">

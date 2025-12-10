@@ -39,7 +39,7 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({
                     );
                   })}
                 </div>
-                <div>{breadcrumbsExtraContent}</div>
+                <div className="ml-auto">{breadcrumbsExtraContent}</div>
               </div>
             </div>
             <div>{headerSlot}</div>

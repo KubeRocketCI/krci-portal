@@ -6,4 +6,3 @@ const CreateCodebaseRoute = createLazyRoute("/c/$clusterName/components/create")
 });
 
 export default CreateCodebaseRoute;
-

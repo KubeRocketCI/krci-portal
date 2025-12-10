@@ -9,7 +9,7 @@ import { VIEW_MODES } from "@/core/providers/ViewMode/types";
 import { TemplateFilter } from "./components/Filter";
 import { TemplatesTable } from "./components/TemplatesTable";
 import { TemplatesGrid } from "./components/TemplatesGrid";
-import { Grid3x2, Rows3 } from "lucide-react";
+import { Grid3x2, Rows3, Store } from "lucide-react";
 
 export default function MarketplacePageContent() {
   const { viewMode, handleChangeViewMode } = useViewModeContext();
@@ -21,14 +21,12 @@ export default function MarketplacePageContent() {
           label: "Marketplace",
         },
       ]}
+      headerSlot={<LearnMoreLink url={EDP_USER_GUIDE.MARKETPLACE_CREATE_APP.url} />}
     >
       <Section
-        description={
-          <>
-            Effortlessly scaffold applications using predefined templates crafted for various use cases.{" "}
-            <LearnMoreLink url={EDP_USER_GUIDE.MARKETPLACE_CREATE_APP.url} />
-          </>
-        }
+        icon={Store}
+        title="Marketplace"
+        description="Effortlessly scaffold applications using predefined templates crafted for various use cases."
       >
         <div className="flex flex-grow flex-col gap-3">
           <>

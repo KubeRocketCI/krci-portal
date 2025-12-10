@@ -8,7 +8,7 @@ import { useCDPipelinePermissions } from "@/k8s/api/groups/KRCI/CDPipeline";
 import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
 import { routeGitopsConfiguration } from "@/modules/platform/configuration/modules/gitops/route";
 import { codebaseLabels, codebaseType } from "@my-project/shared";
-import { Plus } from "lucide-react";
+import { CloudUpload, Plus } from "lucide-react";
 import { CDPipelineList } from "./components/CDPipelineList";
 import { Link } from "@tanstack/react-router";
 import { routeCDPipelineCreate } from "../create/route";
@@ -42,34 +42,32 @@ export default function CDPipelineListPage() {
   }, [gitOpsCodebaseWatch.query.isFetched, gitOpsCodebase]);
 
   return (
-    <PageWrapper breadcrumbs={[{ label: "Deployment Flows" }]}>
+    <PageWrapper
+      breadcrumbs={[{ label: "Deployment Flows" }]}
+      headerSlot={<LearnMoreLink url={EDP_USER_GUIDE.CD_PIPELINE_CREATE.anchors.CREATE_VIA_UI.url} />}
+    >
       <Section
-        description={
-          <>
-            Orchestrate and Monitor Your Deployment Flows.{" "}
-            <LearnMoreLink url={EDP_USER_GUIDE.CD_PIPELINE_CREATE.anchors.CREATE_VIA_UI.url} />
-          </>
+        icon={CloudUpload}
+        title="Deployment Flows"
+        description="Orchestrate and Monitor Your Deployment Flows."
+        actions={
+          <ButtonWithPermission
+            ButtonProps={{
+              variant: "default",
+              disabled: !gitOpsCodebase,
+              asChild: true,
+            }}
+            allowed={cdPipelinePermissions.data.create.allowed}
+            reason={cdPipelinePermissions.data.create.reason}
+          >
+            <Link to={routeCDPipelineCreate.fullPath} params={{ clusterName }} className="no-underline">
+              <Plus />
+              Create Deployment Flow
+            </Link>
+          </ButtonWithPermission>
         }
       >
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-row justify-end">
-            <ButtonWithPermission
-              ButtonProps={{
-                variant: "default",
-                disabled: !gitOpsCodebase,
-                asChild: true,
-              }}
-              allowed={cdPipelinePermissions.data.create.allowed}
-              reason={cdPipelinePermissions.data.create.reason}
-            >
-              <Link to={routeCDPipelineCreate.fullPath} params={{ clusterName }} className="no-underline">
-                <Plus />
-                Create Deployment Flow
-              </Link>
-            </ButtonWithPermission>
-          </div>
-          <CDPipelineList blockerComponent={renderBlockerIfNoGitOpsCodebase} />
-        </div>
+        <CDPipelineList blockerComponent={renderBlockerIfNoGitOpsCodebase} />
       </Section>
     </PageWrapper>
   );

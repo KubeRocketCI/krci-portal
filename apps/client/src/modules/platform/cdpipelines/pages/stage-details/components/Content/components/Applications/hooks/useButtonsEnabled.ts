@@ -9,7 +9,12 @@ import {
 import { getDeployedVersion, getPipelineRunStatus, pipelineRunReason } from "@my-project/shared";
 import { mapEvery } from "@/core/utils/mapEvery";
 import { useApplicationCRUD } from "@/k8s/api/groups/ArgoCD/Application";
-import { useWatchStageAppCodebasesCombinedData, usePipelineRunsWatch } from "../../../../../hooks";
+import {
+  usePipelineAppCodebasesWatch,
+  useApplicationsWatch,
+  usePipelineRunsWatch,
+  createArgoApplicationsByNameMap,
+} from "../../../../../hooks";
 
 export interface ButtonsMap {
   deploy: boolean;
@@ -17,14 +22,17 @@ export interface ButtonsMap {
 }
 
 export const useButtonsEnabledMap = () => {
-  const stageAppCodebasesCombinedDataWatch = useWatchStageAppCodebasesCombinedData();
+  const pipelineAppCodebasesWatch = usePipelineAppCodebasesWatch();
+  const applicationsWatch = useApplicationsWatch();
   const pipelineRunsWatch = usePipelineRunsWatch();
 
-  const stageAppCodebasesCombinedData = stageAppCodebasesCombinedDataWatch.data?.stageAppCodebasesCombinedData;
-  const stageAppCodebasesCombinedDataByApplicationName =
-    stageAppCodebasesCombinedDataWatch.data?.stageAppCodebasesCombinedDataByApplicationName;
+  const pipelineAppCodebases = pipelineAppCodebasesWatch.data;
 
-  const stageAppCodebases = stageAppCodebasesCombinedDataWatch.data?.appCodebaseList;
+  // Create map for quick lookup
+  const argoAppsByName = React.useMemo(
+    () => createArgoApplicationsByNameMap(applicationsWatch.data.array),
+    [applicationsWatch.data.array]
+  );
 
   const { watch } = useTypedFormContext();
 
@@ -49,19 +57,14 @@ export const useButtonsEnabledMap = () => {
   } = useApplicationCRUD();
 
   return React.useMemo(() => {
-    if (
-      !stageAppCodebases ||
-      !stageAppCodebases.length ||
-      !stageAppCodebasesCombinedDataByApplicationName ||
-      !stageAppCodebasesCombinedDataByApplicationName.size
-    ) {
+    if (!pipelineAppCodebases.length) {
       return {
         deploy: false,
         uninstall: false,
       };
     }
 
-    const applications = stageAppCodebases.map((appCodebase) => appCodebase.metadata.name);
+    const applications = pipelineAppCodebases.map((appCodebase) => appCodebase.metadata.name);
 
     const selectedImageTagsValues = Object.entries(values).filter(([key, value]) => {
       if (!key.includes(IMAGE_TAG_POSTFIX)) {
@@ -72,41 +75,35 @@ export const useButtonsEnabledMap = () => {
       return applications.includes(appName) && !!value;
     });
 
-    const allAppVersionsAreSelected = selectedImageTagsValues?.length === stageAppCodebasesCombinedData?.length;
+    const allAppVersionsAreSelected = selectedImageTagsValues?.length === pipelineAppCodebases.length;
 
     const uninstallIsInProgress = applicationDeleteMutation.isPending;
 
     const map = applications.reduce((acc, appName) => {
-      {
-        const application = stageAppCodebasesCombinedDataByApplicationName.get(appName)?.application;
-        const argoApplicationBySelectedApplication =
-          stageAppCodebasesCombinedDataByApplicationName.get(appName)?.application;
+      const argoApplication = argoAppsByName.get(appName);
 
-        if (!argoApplicationBySelectedApplication) {
-          acc.set(appName, {
-            deploy: allAppVersionsAreSelected && !latestDeployPipelineRunIsRunning && !uninstallIsInProgress,
-            uninstall: false,
-          });
-          return acc;
-        }
-
-        const isHelm =
-          application?.spec?.lang === CODEBASE_COMMON_LANGUAGES.HELM &&
-          application?.spec?.framework === CODEBASE_COMMON_FRAMEWORKS.HELM &&
-          application?.spec?.buildTool === CODEBASE_COMMON_BUILD_TOOLS.HELM;
-
-        const withValuesOverride = argoApplicationBySelectedApplication
-          ? Object.hasOwn(argoApplicationBySelectedApplication?.spec, "sources")
-          : false;
-
-        const deployedVersion = getDeployedVersion(withValuesOverride, isHelm, argoApplicationBySelectedApplication);
-
+      if (!argoApplication) {
         acc.set(appName, {
           deploy: allAppVersionsAreSelected && !latestDeployPipelineRunIsRunning && !uninstallIsInProgress,
-          uninstall: !!deployedVersion && !latestDeployPipelineRunIsRunning,
+          uninstall: false,
         });
         return acc;
       }
+
+      const isHelm =
+        argoApplication?.spec?.lang === CODEBASE_COMMON_LANGUAGES.HELM &&
+        argoApplication?.spec?.framework === CODEBASE_COMMON_FRAMEWORKS.HELM &&
+        argoApplication?.spec?.buildTool === CODEBASE_COMMON_BUILD_TOOLS.HELM;
+
+      const withValuesOverride = argoApplication ? Object.hasOwn(argoApplication?.spec, "sources") : false;
+
+      const deployedVersion = getDeployedVersion(withValuesOverride, isHelm, argoApplication);
+
+      acc.set(appName, {
+        deploy: allAppVersionsAreSelected && !latestDeployPipelineRunIsRunning && !uninstallIsInProgress,
+        uninstall: !!deployedVersion && !latestDeployPipelineRunIsRunning,
+      });
+      return acc;
     }, new Map<string, ButtonsMap>());
 
     const deployBoolean = mapEvery(map, (value) => value.deploy);
@@ -118,10 +115,9 @@ export const useButtonsEnabledMap = () => {
       uninstall: uninstallBoolean,
     };
   }, [
-    stageAppCodebases,
-    stageAppCodebasesCombinedDataByApplicationName,
+    pipelineAppCodebases,
+    argoAppsByName,
     values,
-    stageAppCodebasesCombinedData?.length,
     applicationDeleteMutation.isPending,
     latestDeployPipelineRunIsRunning,
   ]);

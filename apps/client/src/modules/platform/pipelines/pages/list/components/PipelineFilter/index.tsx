@@ -36,21 +36,21 @@ export const PipelineFilter = () => {
   }, [pipelines]);
 
   return (
-    <div className="flex items-start gap-4">
-      <div className="w-64">
+    <>
+      <div className="col-span-3">
         <form.Field name={PIPELINE_LIST_FILTER_NAMES.SEARCH}>
           {(field) => <TextField field={field} label="Search" placeholder="Search pipelines" />}
         </form.Field>
       </div>
 
-      <div className="w-64">
+      <div className="col-span-3">
         <form.Field name={PIPELINE_LIST_FILTER_NAMES.PIPELINE_TYPE}>
           {(field) => <Select field={field} label="Type" options={pipelineTypeOptions} placeholder="Select type" />}
         </form.Field>
       </div>
 
       {showNamespaceFilter && (
-        <div className="w-[400px]">
+        <div className="col-span-4">
           <form.Field name={PIPELINE_LIST_FILTER_NAMES.NAMESPACES}>
             {(field) => (
               <NamespaceAutocomplete
@@ -65,7 +65,7 @@ export const PipelineFilter = () => {
       )}
 
       {form.state.isDirty && (
-        <div className="flex flex-col gap-2">
+        <div className="col-span-1 flex flex-col gap-2">
           <Label> </Label>
           <Button variant="secondary" onClick={reset} size="sm" className="mt-0.5">
             <X size={16} />
@@ -73,6 +73,6 @@ export const PipelineFilter = () => {
           </Button>
         </div>
       )}
-    </div>
+    </>
   );
 };

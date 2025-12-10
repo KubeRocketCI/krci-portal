@@ -9,4 +9,3 @@ export interface AdvancedMappingItem {
   value: string;
   isUsed: boolean;
 }
-

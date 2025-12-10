@@ -207,4 +207,3 @@ export const CREATE_FORM_PARTS = {
     NAMES.ui_applicationsToPromoteAll,
   ],
 } as const;
-

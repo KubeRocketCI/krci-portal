@@ -9,9 +9,7 @@ interface JiraServerFieldProps {
   name?: string;
 }
 
-export const JiraServerField: React.FC<JiraServerFieldProps> = ({
-  name = CREATE_WIZARD_NAMES.jiraServer,
-}) => {
+export const JiraServerField: React.FC<JiraServerFieldProps> = ({ name = CREATE_WIZARD_NAMES.jiraServer }) => {
   const {
     register,
     control,

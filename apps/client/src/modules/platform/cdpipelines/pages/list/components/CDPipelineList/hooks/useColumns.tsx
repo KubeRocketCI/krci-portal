@@ -13,13 +13,18 @@ import { StatusIcon } from "@/core/components/StatusIcon";
 import { Link } from "@tanstack/react-router";
 import { routeCDPipelineDetails } from "../../../../details/route";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
-import { MAIN_COLOR } from "@/k8s/constants/colors";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { sortByName } from "@/core/utils/sortByName";
-import { ResponsiveChips } from "@/core/components/ResponsiveChips";
 import { routeComponentDetails } from "@/modules/platform/codebases/pages/details/route";
 import { Button } from "@/core/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/core/components/ui/dropdown-menu";
+import { Box, CloudUpload, Package } from "lucide-react";
 
 export const useColumns = (): TableColumn<CDPipeline>[] => {
   const { clusterName, defaultNamespace } = useClusterStore(
@@ -90,6 +95,7 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                       namespace: namespace || defaultNamespace,
                     }}
                   >
+                    <CloudUpload />
                     <TextWithTooltip text={name} />
                   </Link>
                 </Button>
@@ -125,63 +131,79 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
               },
             }) => {
               return (
-                <ResponsiveChips
-                  chipsData={applications}
-                  renderChip={(label, key) => {
-                    return (
-                      <Badge
-                        key={key}
-                        variant="default"
-                        className="text-white"
-                        style={{
-                          backgroundColor: MAIN_COLOR.GREEN,
-                        }}
-                      >
-                        <Link
-                          to={routeComponentDetails.fullPath}
-                          params={{
-                            clusterName,
-                            name: label,
-                            namespace: namespace!,
-                          }}
-                          className="text-white"
-                        >
-                          {label}
-                        </Link>
-                      </Badge>
-                    );
-                  }}
-                  renderTooltip={(chipsToHide) => {
-                    return (
-                      <div className="px-2.5 py-1.5">
-                        <div className="flex flex-wrap gap-6 font-normal">
-                          {chipsToHide.map((label) => (
-                            <Badge
-                              key={label}
-                              variant="default"
-                              className="text-white"
-                              style={{
-                                backgroundColor: MAIN_COLOR.GREEN,
+                <div className="flex gap-1.5">
+                  {applications.length <= 3 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {applications.map((app) => (
+                        <Badge key={app} variant="outline" className="text-xs">
+                          <Button variant="link" asChild className="h-auto py-1 text-xs">
+                            <Link
+                              to={routeComponentDetails.fullPath}
+                              params={{
+                                clusterName,
+                                name: app,
+                                namespace: namespace!,
                               }}
                             >
+                              <Box />
+                              {app}
+                            </Link>
+                          </Button>
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <>
+                      {applications.slice(0, 2).map((app) => (
+                        <Badge key={app} variant="outline" className="text-xs">
+                          <Button variant="link" asChild className="h-auto py-1 text-xs">
+                            <Link
+                              to={routeComponentDetails.fullPath}
+                              params={{
+                                clusterName,
+                                name: app,
+                                namespace: namespace!,
+                              }}
+                            >
+                              <Box />
+                              {app}
+                            </Link>
+                          </Button>
+                        </Badge>
+                      ))}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Badge
+                            variant="outline"
+                            className="bg-muted text-muted-foreground hover:bg-accent hover:border-primary/50 cursor-pointer py-1 text-xs [&>svg]:size-4"
+                          >
+                            <Package className="mr-1" />+{applications.length - 2} more
+                          </Badge>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="max-h-80 w-64 overflow-y-auto">
+                          <div className="border-border text-muted-foreground border-b px-2 py-1.5 text-xs font-medium">
+                            All Applications ({applications.length})
+                          </div>
+                          {applications.map((app) => (
+                            <DropdownMenuItem key={app} className="text-xs" asChild>
                               <Link
                                 to={routeComponentDetails.fullPath}
                                 params={{
-                                  name: label,
-                                  namespace: namespace!,
                                   clusterName,
+                                  name: app,
+                                  namespace: namespace!,
                                 }}
-                                className="text-white"
                               >
-                                {label}
+                                <Package className="text-muted-foreground mr-2" />
+                                {app}
                               </Link>
-                            </Badge>
+                            </DropdownMenuItem>
                           ))}
-                        </div>
-                      </div>
-                    );
-                  }}
-                />
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </>
+                  )}
+                </div>
               );
             },
           },

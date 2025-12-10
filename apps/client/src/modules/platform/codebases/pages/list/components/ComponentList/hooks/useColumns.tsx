@@ -13,7 +13,7 @@ import { TABLE } from "@/k8s/constants/tables";
 import { useClusterStore } from "@/k8s/store";
 import { Codebase, codebaseType } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
-import { GitBranch } from "lucide-react";
+import { Box } from "lucide-react";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { routeComponentDetails } from "../../../../details/route";
@@ -71,10 +71,10 @@ export const useColumns = (): TableColumn<Codebase>[] => {
             },
           }) => {
             return (
-              <Button variant="link" asChild className="p-0">
+              <Button variant="link" asChild className="px-4 py-0">
                 <Link to={routeComponentDetails.fullPath} params={{ clusterName, namespace: namespace!, name }}>
                   <span className="flex items-center gap-2">
-                    <GitBranch className="text-muted-foreground/50" />
+                    <Box />
                     <TextWithTooltip text={name} />
                   </span>
                 </Link>

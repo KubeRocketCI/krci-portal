@@ -61,4 +61,3 @@ export const CreationStrategyField: React.FC<CreationStrategyFieldProps> = ({ cr
     />
   );
 };
-

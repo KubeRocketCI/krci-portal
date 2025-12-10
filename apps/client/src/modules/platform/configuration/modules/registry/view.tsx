@@ -9,7 +9,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { ContainerRegistryType, containerRegistryTypeLabelMap, registrySecretName } from "@my-project/shared";
 import React from "react";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
-import { pageDescription } from "../gitops/constants";
+import { pageDescription } from "./constants";
 import { ManageRegistry } from "./components/ManageRegistry";
 
 export default function RegistryConfigurationPage() {

@@ -19,30 +19,28 @@ export const ConfigurationPageContent = ({
   children,
   pageDescription,
 }: ConfigurationPageContentProps) => {
-  const { label, description, docLink } = pageDescription;
+  const { label, description, docLink, icon } = pageDescription;
 
   return (
     <>
-      <PageWrapper breadcrumbs={[{ label }]}>
+      <PageWrapper breadcrumbs={[{ label }]} headerSlot={docLink ? <LearnMoreLink url={docLink} /> : undefined}>
         <Section
-          description={
-            <div className="flex items-center justify-between gap-1">
-              <div>
-                {description} {docLink && <LearnMoreLink url={docLink} />}
-              </div>
-              <ButtonWithPermission
-                ButtonProps={{
-                  variant: "default",
-                  onClick: creationForm.onOpen,
-                  disabled: creationForm.isDisabled,
-                }}
-                allowed={creationForm.permission.allowed}
-                reason={creationForm.permission.reason}
-              >
-                <Plus size={16} />
-                {creationForm.label || "Add"}
-              </ButtonWithPermission>
-            </div>
+          icon={icon}
+          title={label}
+          description={description}
+          actions={
+            <ButtonWithPermission
+              ButtonProps={{
+                variant: "default",
+                onClick: creationForm.onOpen,
+                disabled: creationForm.isDisabled,
+              }}
+              allowed={creationForm.permission.allowed}
+              reason={creationForm.permission.reason}
+            >
+              <Plus size={16} />
+              {creationForm.label || "Add"}
+            </ButtonWithPermission>
           }
         >
           {children}

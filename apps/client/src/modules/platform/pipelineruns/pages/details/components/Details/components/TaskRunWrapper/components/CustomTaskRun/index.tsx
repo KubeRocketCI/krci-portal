@@ -14,13 +14,17 @@ import {
   TaskRun,
   taskRunLabels,
 } from "@my-project/shared";
-import { CheckLine, MessageSquareMore, XCircle } from "lucide-react";
+import { CheckLine, MessageSquareMore, XCircle, Timer, Clock } from "lucide-react";
 import React from "react";
 import { ChoiceButtonGroup } from "./components/ChoiceButtonGroup";
 import { CommentDialog } from "./components/CommentDialog";
 import { useTabs } from "./hooks/useTabs";
 import { CustomTaskRunProps } from "./types";
 import { useAuth } from "@/core/auth/provider";
+import { Card } from "@/core/components/ui/card";
+import { Badge } from "@/core/components/ui/badge";
+import { StatusIcon } from "@/core/components/StatusIcon";
+import { getApprovalTaskStatusIcon } from "@/k8s/api/groups/KRCI/ApprovalTask";
 
 const updateApprovalTask = ({
   approvalTask,
@@ -71,20 +75,33 @@ export const CustomTaskRun = ({ pipelineRunTaskData }: CustomTaskRunProps) => {
     ? getTaskRunStatus(customTaskRun as TaskRun)
     : { status: "Unknown", reason: "Unknown" };
 
+  const approvalTaskStatusIcon = getApprovalTaskStatusIcon(approvalTask);
+
   const completionTime = customTaskRun?.status?.completionTime || "";
   const startTime = customTaskRun?.status?.startTime || "";
 
   const endTime = completionTime || new Date().toISOString();
 
-  const duration = humanize(new Date(endTime).getTime() - new Date(startTime).getTime(), {
-    language: "en-mini",
-    spacer: "",
-    delimiter: " ",
-    fallbacks: ["en"],
-    largest: 2,
-    round: true,
-    units: ["d", "h", "m", "s"],
-  });
+  const duration = startTime
+    ? humanize(new Date(endTime).getTime() - new Date(startTime).getTime(), {
+        language: "en-mini",
+        spacer: "",
+        delimiter: " ",
+        fallbacks: ["en"],
+        largest: 2,
+        round: true,
+        units: ["d", "h", "m", "s"],
+      })
+    : null;
+
+  const startedAt = startTime
+    ? new Date(startTime).toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+      })
+    : null;
 
   const tabs = useTabs({ taskRun: customTaskRun });
 
@@ -169,39 +186,56 @@ export const CustomTaskRun = ({ pipelineRunTaskData }: CustomTaskRunProps) => {
   const { activeTab, handleChangeTab } = useTabsContext();
 
   return (
-    <div className="bg-card rounded shadow">
-      <div className="p-6">
-        <div className="flex justify-between gap-2">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <h3 className="text-xl font-medium">{taskRunName}</h3>
+    <Card className="flex h-full flex-col">
+      {/* Task header */}
+      <div className="border-b px-6 py-4">
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <StatusIcon
+              Icon={approvalTaskStatusIcon.component}
+              color={approvalTaskStatusIcon.color}
+              isSpinning={approvalTaskStatusIcon.isSpinning}
+              width={20}
+            />
+            <div>
+              <h3 className="text-foreground text-lg font-medium">Task: {taskRunName}</h3>
+              {taskDescription && <p className="text-muted-foreground mt-0.5 text-sm">{taskDescription}</p>}
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-foreground text-sm font-medium">
-                Status: <span className="text-muted-foreground text-sm">{taskRunStatus?.reason}</span>
-              </span>
-              <span className="text-foreground text-sm font-medium">
-                Duration: <span className="text-muted-foreground text-sm">{duration}</span>
-              </span>
-            </div>
-            {taskDescription && (
-              <span className="text-foreground text-sm font-medium">
-                Description: <span className="text-muted-foreground text-sm">{taskDescription}</span>
-              </span>
-            )}
           </div>
-          {isPending && (
+          <div className="flex items-center gap-2">
+            {isPending && (
+              <>
+                <ChoiceButtonGroup options={approveOptions} type="accept" />
+                <ChoiceButtonGroup options={rejectOptions} type="reject" />
+              </>
+            )}
+            <Badge variant="outline" className="text-sm">
+              {taskRunStatus?.reason || approvalTask?.spec?.action}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Task metadata */}
+        <div className="flex items-center gap-6">
+          {startedAt && (
             <div className="flex items-center gap-2">
-              <ChoiceButtonGroup options={approveOptions} type="accept" />
-              <ChoiceButtonGroup options={rejectOptions} type="reject" />
+              <Clock className="text-muted-foreground size-3.5" />
+              <span className="text-muted-foreground text-sm">Started: {startedAt}</span>
+            </div>
+          )}
+          {duration && (
+            <div className="flex items-center gap-2">
+              <Timer className="text-muted-foreground size-3.5" />
+              <span className="text-muted-foreground text-sm">Duration: {duration}</span>
             </div>
           )}
         </div>
       </div>
-      <hr className="border-border" />
-      <div className="px-6 pb-6">
+
+      {/* Tabs content */}
+      <div className="flex flex-1 flex-col p-6">
         <Tabs tabs={tabs} activeTabIdx={activeTab} handleChangeTab={handleChangeTab} />
       </div>
-    </div>
+    </Card>
   );
 };

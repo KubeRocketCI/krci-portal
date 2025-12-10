@@ -21,7 +21,7 @@ export const BranchListItem = React.memo<BranchListItemProps>(({ codebaseBranch,
 
   return (
     <AccordionItem value={id}>
-      <AccordionTrigger className="cursor-default [&>svg]:h-4 [&>svg]:w-4">
+      <AccordionTrigger>
         <Summary codebaseBranch={codebaseBranch} latestBuildPipelineRun={pipelineRuns.latestBuildPipelineRun} />
       </AccordionTrigger>
       <AccordionContent>

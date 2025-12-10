@@ -4,8 +4,6 @@ import { routeCDPipelineDetails } from "../route";
 import { useStageWatchList } from "@/k8s/api/groups/KRCI/Stage";
 import { useApplicationWatchList } from "@/k8s/api/groups/ArgoCD/Application";
 import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
-import { combineStageWithApplications } from "@/k8s/api/groups/KRCI/Stage/utils/combineStageWithApplications";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useQuickLinkWatchURLs } from "@/k8s/api/groups/KRCI/QuickLink/hooks/useQuickLinksUrlListQuery";
 
 export const useQuickLinksUrlListWatch = () => {
@@ -23,58 +21,40 @@ export const useCDPipelineWatch = () => {
   });
 };
 
-export const useStagesWithItsApplicationsWatch = () => {
+export const useStageListWatch = () => {
   const params = routeCDPipelineDetails.useParams();
 
-  const cdPipelineWatch = useCDPipelineWatch();
-
-  const stageListWatch = useStageWatchList({
+  return useStageWatchList({
     labels: {
       [stageLabels.cdPipeline]: params.name,
     },
     namespace: params.namespace,
   });
+};
 
-  const appCodebaseListWatch = useCodebaseWatchList({
+export const useAppCodebaseListWatch = () => {
+  const params = routeCDPipelineDetails.useParams();
+
+  return useCodebaseWatchList({
     labels: {
       [codebaseLabels.codebaseType]: codebaseType.application,
     },
     namespace: params.namespace,
   });
+};
 
-  const applicationListWatch = useApplicationWatchList({
+/**
+ * Watch Argo applications for a specific stage.
+ * Filters by both pipeline name and stage name.
+ */
+export const useStageArgoApplicationListWatch = (stageName: string) => {
+  const params = routeCDPipelineDetails.useParams();
+
+  return useApplicationWatchList({
     labels: {
       [applicationLabels.pipeline]: params.name,
+      [applicationLabels.stage]: stageName,
     },
     namespace: params.namespace,
-  });
-
-  return useQuery({
-    queryKey: [
-      "stageListWithApplications",
-      cdPipelineWatch.resourceVersion,
-      stageListWatch.resourceVersion,
-      appCodebaseListWatch.resourceVersion,
-      applicationListWatch.resourceVersion,
-    ],
-    queryFn: () => {
-      const cdPipeline = cdPipelineWatch.query.data;
-      const stageAppCodebaseList = appCodebaseListWatch.data.array.filter((appCodebase) =>
-        cdPipeline?.spec.applications.some((cdPipelineApp) => cdPipelineApp === appCodebase.metadata.name)
-      );
-      const sortedStageList = stageListWatch.data.array.toSorted((a, b) => a.spec.order - b.spec.order);
-
-      return {
-        stages: sortedStageList,
-        stagesWithItsApplications: combineStageWithApplications(
-          applicationListWatch.data.array,
-          stageAppCodebaseList,
-          sortedStageList
-        ),
-      };
-    },
-    placeholderData: keepPreviousData,
-    enabled:
-      cdPipelineWatch.isReady && stageListWatch.isReady && appCodebaseListWatch.isReady && applicationListWatch.isReady,
   });
 };

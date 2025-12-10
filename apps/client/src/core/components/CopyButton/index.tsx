@@ -24,7 +24,12 @@ export const CopyButton = ({ text, size = "small" }: { text: string; size?: "med
 
   return (
     <div className="text-muted-foreground pt-[0.4%]">
-      <Button onClick={handleClickCopy} variant="ghost" size={shadcnSize} className="min-w-0 p-1">
+      <Button
+        onClick={handleClickCopy}
+        variant="ghost"
+        size={shadcnSize}
+        className="hover:bg-muted/80 min-w-0 shrink-0 p-0"
+      >
         {showCopied ? <CopyCheck size={iconSize} /> : <Copy size={iconSize} />}
       </Button>
     </div>

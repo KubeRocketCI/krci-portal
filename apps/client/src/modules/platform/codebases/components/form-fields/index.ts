@@ -11,4 +11,3 @@ export { LangField } from "./Lang";
 export { TestReportFrameworkField } from "./TestReportFramework";
 export { TicketNamePatternField } from "./TicketNamePattern";
 export * from "./names";
-

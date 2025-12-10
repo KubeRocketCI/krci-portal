@@ -98,7 +98,7 @@ export const ComponentList = () => {
                   <div className={selectionLength ? "visible" : "pointer-events-none invisible"}>
                     <div className="flex items-center gap-2">
                       <div className="min-w-38">
-                        <p className="text-base">{selectionLength} item(s) selected</p>
+                        <p>{selectionLength} item(s) selected</p>
                       </div>
                       <ConditionalWrapper
                         condition={codebasePermissions.data.delete.allowed}

@@ -10,6 +10,7 @@ interface ScrollCopyTextProps {
 
 export const ScrollCopyText = ({ text, className }: ScrollCopyTextProps) => {
   const [showCopied, setShowCopied] = React.useState<boolean>(false);
+  const [isActive, setIsActive] = React.useState<boolean>(false);
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const handleClickCopy = (e: React.MouseEvent) => {
@@ -26,13 +27,19 @@ export const ScrollCopyText = ({ text, className }: ScrollCopyTextProps) => {
     }, 2000);
   };
 
+  const shouldShowCopyButton = isActive || showCopied;
+
   return (
-    <div className="bg-muted flex items-center justify-between rounded border pl-2">
+    <div
+      className={cn("bg-muted flex items-center justify-between rounded pl-2", className)}
+      onMouseEnter={() => setIsActive(true)}
+      onMouseLeave={() => setIsActive(false)}
+      onFocus={() => setIsActive(true)}
+      onBlur={() => setIsActive(false)}
+      tabIndex={0}
+    >
       <div
-        className={cn(
-          "text-foreground relative overflow-x-auto overflow-y-hidden font-mono text-xs select-text",
-          className
-        )}
+        className="text-foreground relative overflow-x-auto overflow-y-hidden font-mono text-xs select-text"
         style={{
           scrollbarWidth: "none" as const,
           msOverflowStyle: "none",
@@ -40,12 +47,13 @@ export const ScrollCopyText = ({ text, className }: ScrollCopyTextProps) => {
       >
         <span className="block whitespace-nowrap">{text}</span>
       </div>
-      <div>
+      <div className={cn("transition-opacity duration-150", shouldShowCopyButton ? "opacity-100" : "opacity-0")}>
         <Button
           onClick={handleClickCopy}
           variant="ghost"
           size="sm"
           className="bg-muted hover:bg-muted/80 min-w-0 shrink-0 p-0"
+          tabIndex={-1}
         >
           {showCopied ? <CopyCheck size={12} /> : <Copy size={12} />}
         </Button>

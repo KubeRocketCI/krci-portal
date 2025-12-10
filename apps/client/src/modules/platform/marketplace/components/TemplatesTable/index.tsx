@@ -66,20 +66,18 @@ export const TemplatesTable = () => {
       slots={{
         header: (
           <>
-            <div className="flex items-center justify-between gap-0">
-              <TemplateFilter />
-              <div className="flex items-center">
-                <Tooltip title={"Block View"}>
-                  <Button variant="ghost" size="icon" onClick={() => handleChangeViewMode(VIEW_MODES.GRID)}>
-                    <Grid3x2 className="text-muted-foreground" />
-                  </Button>
-                </Tooltip>
-                <Tooltip title={"List View"}>
-                  <Button variant="ghost" size="icon" onClick={() => handleChangeViewMode(VIEW_MODES.TABLE)}>
-                    <Rows3 className="text-primary" />
-                  </Button>
-                </Tooltip>
-              </div>
+            <TemplateFilter />
+            <div className="col-span-5 flex items-center justify-end">
+              <Tooltip title={"Block View"}>
+                <Button variant="ghost" size="icon" onClick={() => handleChangeViewMode(VIEW_MODES.GRID)}>
+                  <Grid3x2 className="text-muted-foreground" />
+                </Button>
+              </Tooltip>
+              <Tooltip title={"List View"}>
+                <Button variant="ghost" size="icon" onClick={() => handleChangeViewMode(VIEW_MODES.TABLE)}>
+                  <Rows3 className="text-primary" />
+                </Button>
+              </Tooltip>
             </div>
           </>
         ),

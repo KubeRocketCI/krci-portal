@@ -2,14 +2,18 @@ import { PageWrapper } from "@/core/components/PageWrapper";
 import { PATH_CDPIPELINES_FULL } from "../list/route";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
-import { HeaderActions } from "./components/HeaderActions";
-import { StageList } from "./components/StageList";
-import { StageListFilter } from "./components/StageListFilter";
+import { HeaderActions, HeaderLinks } from "./components/HeaderActions";
 import { routeCDPipelineDetails } from "./route";
 import { Section } from "@/core/components/Section";
+import { CloudUpload } from "lucide-react";
+import { Tabs } from "@/core/providers/Tabs/components/Tabs";
+import { useTabsContext } from "@/core/providers/Tabs/hooks";
+import { useTabs } from "./hooks/useTabs";
 
 export default function CDPipelineDetailsPageContent() {
   const { name, clusterName } = routeCDPipelineDetails.useParams();
+  const { activeTab, handleChangeTab } = useTabsContext();
+  const tabs = useTabs();
 
   return (
     <PageWrapper
@@ -27,27 +31,17 @@ export default function CDPipelineDetailsPageContent() {
           label: name,
         },
       ]}
-      headerSlot={<HeaderActions />}
+      headerSlot={<LearnMoreLink url={EDP_USER_GUIDE.CD_PIPELINE_MANAGE.url} />}
     >
       <Section
+        icon={CloudUpload}
         title={name}
         enableCopyTitle
-        description={
-          <>
-            Defines the sequence and logic for promoting artifacts through various environments. It maps out an
-            artifact's progression path from development to production.{" "}
-            <LearnMoreLink url={EDP_USER_GUIDE.CD_PIPELINE_MANAGE.url} />
-          </>
-        }
+        description="Manage and monitor your deployment environments across clusters. Each environment represents a stage in your artifact's progression path from development to production."
+        actions={<HeaderActions />}
+        extraContent={<HeaderLinks />}
       >
-        <div className="flex grow flex-col gap-6">
-          <div>
-            <StageListFilter />
-          </div>
-          <div className="flex flex-1 flex-col">
-            <StageList />
-          </div>
-        </div>
+        <Tabs tabs={tabs} activeTabIdx={activeTab} handleChangeTab={handleChangeTab} />
       </Section>
     </PageWrapper>
   );

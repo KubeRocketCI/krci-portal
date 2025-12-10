@@ -39,6 +39,7 @@ import { routeQuicklinksConfiguration } from "@/modules/platform/configuration/m
 import { routeRegistryConfiguration } from "@/modules/platform/configuration/modules/registry/route";
 import { routeSonarConfiguration } from "@/modules/platform/configuration/modules/sonar/route";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
+import { routeStageCreate } from "@/modules/platform/cdpipelines/pages/stages/create/route";
 import { routeTaskList } from "@/modules/platform/tasks/pages/list/route";
 import { routeTaskDetails } from "@/modules/platform/tasks/pages/details/route";
 import { routeMarketplace } from "@/modules/platform/marketplace/route";
@@ -47,7 +48,7 @@ const routeTree = rootRoute.addChildren([
   authRoute.addChildren([routeAuthLogin, routeAuthCallback]),
   contentLayoutRoute.addChildren([
     routeHome,
-      routeCluster.addChildren([
+    routeCluster.addChildren([
       routeOverviewDetails,
       routeComponentList,
       routeCodebaseCreate,
@@ -56,6 +57,7 @@ const routeTree = rootRoute.addChildren([
       routeCDPipelineCreate,
       routeCDPipelineDetails,
       routeStageDetails,
+      routeStageCreate,
       routeMarketplace,
       routeCICD.addChildren([
         routePipelineList,

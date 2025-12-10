@@ -53,9 +53,9 @@ export const PipelineRunFilter = ({
   );
 
   return (
-    <div className="flex flex-row items-start gap-4">
+    <>
       {filterControls.includes(pipelineRunFilterControlNames.PIPELINE_TYPE) && (
-        <div className="w-64">
+        <div className="col-span-2">
           <form.Field name="pipelineType">
             {(field) => <Select field={field} label="Type" options={pipelineTypeOptions} placeholder="Select type" />}
           </form.Field>
@@ -67,7 +67,7 @@ export const PipelineRunFilter = ({
       )}
 
       {filterControls.includes(pipelineRunFilterControlNames.STATUS) && (
-        <div className="w-64">
+        <div className="col-span-2">
           <form.Field name="status">
             {(field) => <Select field={field} label="Status" options={statusOptions} placeholder="Select status" />}
           </form.Field>
@@ -76,7 +76,7 @@ export const PipelineRunFilter = ({
       )}
 
       {filterControls.includes(pipelineRunFilterControlNames.CODEBASES) && (
-        <div className="w-[480px]">
+        <div className="col-span-4">
           <form.Field name="codebases">
             {(field) => (
               <Autocomplete
@@ -94,7 +94,7 @@ export const PipelineRunFilter = ({
       )}
 
       {showNamespaceFilter && filterControls.includes(pipelineRunFilterControlNames.NAMESPACES) && (
-        <div className="w-96">
+        <div className="col-span-3">
           <form.Field name="namespaces">
             {(field) => (
               <NamespaceAutocomplete
@@ -109,7 +109,7 @@ export const PipelineRunFilter = ({
       )}
 
       {form.state.isDirty && (
-        <div className="flex flex-col gap-2">
+        <div className="col-span-1 flex flex-col gap-2">
           <Label> </Label>
           <Button variant="secondary" onClick={reset} size="sm" className="mt-0.5">
             <X size={16} />
@@ -117,6 +117,6 @@ export const PipelineRunFilter = ({
           </Button>
         </div>
       )}
-    </div>
+    </>
   );
 };

@@ -1,7 +1,9 @@
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { Section } from "@/core/components/Section";
+import { SubSection } from "@/core/components/SubSection";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
+import { PanelsTopLeft } from "lucide-react";
 import { AddNewWidgetCard } from "./components/AddNewWidget";
 import { CDPipelinesGraph } from "./components/CDPipelinesGraph";
 import { CodebaseBranchesGraph } from "./components/CodebaseBranchesGraph";
@@ -16,16 +18,13 @@ export default function OverviewDetailsPageContent() {
   const { userWidgets, setUserWidgets } = useUserWidgets();
 
   return (
-    <PageWrapper breadcrumbs={[{ label: "Overview" }]}>
+    <PageWrapper breadcrumbs={[{ label: "Overview" }]} headerSlot={<LearnMoreLink url={EDP_USER_GUIDE.OVERVIEW.url} />}>
       <div className="flex flex-col gap-12">
         <div>
           <Section
-            description={
-              <>
-                Gain essential information on your codebase insights. Organize your menu for faster and more convenient
-                access to different parts of the portal. <LearnMoreLink url={EDP_USER_GUIDE.OVERVIEW.url} />
-              </>
-            }
+            icon={PanelsTopLeft}
+            title="Overview"
+            description="Gain essential information on your codebase insights. Organize your menu for faster and more convenient access to different parts of the portal."
           >
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
               <div className="col-span-1 min-h-60">
@@ -57,12 +56,9 @@ export default function OverviewDetailsPageContent() {
           </Section>
         </div>
         <div>
-          <Section
-            title={<h2 className="text-foreground text-3xl font-semibold">Links</h2>}
-            description={"A set of icons with links that redirect you to corresponding tools."}
-          >
+          <SubSection title="Links" description="A set of icons with links that redirect you to corresponding tools.">
             <QuickLinkList />
-          </Section>
+          </SubSection>
         </div>
       </div>
     </PageWrapper>

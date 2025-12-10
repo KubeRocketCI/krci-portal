@@ -1,5 +1,5 @@
 import { useFilterContext } from "@/core/providers/Filter";
+import { Stage } from "@my-project/shared";
 import type { StageFilterValues } from "../types";
-import type { StageWithApplication } from "@/k8s/api/groups/KRCI/Stage/utils/combineStageWithApplications";
 
-export const useStageFilter = () => useFilterContext<StageWithApplication, StageFilterValues>();
+export const useStageFilter = () => useFilterContext<Stage, StageFilterValues>();
