@@ -22,10 +22,10 @@ import {
 } from "./types";
 import { createSortFunction } from "./utils";
 import { usePagination } from "./hooks/usePagination";
+import { cn } from "@/core/utils/classname";
 
 export const DataTable = <DataType,>({
   id,
-  name,
   data,
   columns: _columns,
   isLoading = false,
@@ -193,69 +193,65 @@ export const DataTable = <DataType,>({
   ]);
 
   const renderHeader = React.useCallback(() => {
-    if (slots?.header || tableSettings.show || (selectionSettings.renderSelectionInfo && validSelected.length > 0)) {
+    if (slots?.header || tableSettings.show) {
       return (
-        <div className="flex flex-col gap-4 px-5 py-4">
-          {slots?.header || tableSettings.show ? (
-            <div className="flex flex-row items-center gap-4">
-              <div className="grow">{slots?.header && slots.header}</div>
-            </div>
-          ) : null}
+        <div className="px-5 pt-5">
+          <div className="grid grid-cols-[1fr_auto] items-center gap-4">
+            <div className="grid grid-cols-12 gap-4">{slots?.header}</div>
+            {tableSettings.show && <TableSettings id={id} columns={columns} setColumns={setColumns} />}
+          </div>
         </div>
       );
     }
-  }, [selectionSettings, slots?.header, tableSettings.show, validSelected]);
+  }, [slots?.header, tableSettings.show, id, columns, setColumns]);
 
   return (
-    <div className={`w-full bg-transparent ${outlined ? "rounded-md border" : ""}`}>
+    <div className={`bg-background w-full text-sm ${outlined ? "rounded-md shadow-sm" : ""}`}>
       <div className="flex flex-col gap-2">
         {renderHeader()}
-        <div className="border-border w-full overflow-hidden border-t border-b py-1">
-          <div className="flex items-center justify-between px-5">
-            {selectionSettings.renderSelectionInfo && validSelected.length > 0 && (
+        <div className={cn(outlined ? "px-5" : "", "py-5")}>
+          {selectionSettings.renderSelectionInfo && validSelected.length > 0 && (
+            <div className="bg-muted flex items-center justify-between px-5">
               <div className="py-4">{selectionSettings.renderSelectionInfo(validSelected.length)}</div>
-            )}
-            <div className="ml-auto">
-              {columns && tableSettings.show && (
-                <TableSettings id={id} name={name} columns={columns} setColumns={setColumns} />
-              )}
             </div>
-          </div>
-          <TableUI>
-            <colgroup>
-              {shouldShowSelectionColumn && <col key={"select-checkbox"} width={`${TABLE_CELL_DEFAULTS.WIDTH}%`} />}
-              {columns.map(
-                (column) => column.cell.show !== false && <col key={column.id} width={`${column.cell.baseWidth}%`} />
-              )}
-            </colgroup>
+          )}
+          <div className="border-border w-full overflow-hidden rounded-md border">
+            <TableUI>
+              <colgroup>
+                {shouldShowSelectionColumn && <col key={"select-checkbox"} width={`${TABLE_CELL_DEFAULTS.WIDTH}%`} />}
+                {columns.map(
+                  (column) => column.cell.show !== false && <col key={column.id} width={`${column.cell.baseWidth}%`} />
+                )}
+              </colgroup>
 
-            <TableHead
-              columns={columns}
-              sort={sortState}
-              setSort={setSortState}
-              rowCount={paginatedData?.count}
-              selectableRowCount={selectableRowCount}
-              selected={validSelected}
-              handleSelectAllClick={_handleSelectAllClick}
-            />
-            <TableBody
-              columns={columns}
-              data={filteredData}
-              blockerError={blockerError}
-              errors={errors}
-              isLoading={isLoading}
-              selection={selectionSettings}
-              handleRowClick={handleRowClick}
-              emptyListComponent={emptyListComponent}
-              page={activePage}
-              rowsPerPage={_rowsPerPage}
-              isEmptyFilterResult={isEmptyFilterResult}
-              blockerComponent={blockerComponent}
-            />
-          </TableUI>
+              <TableHead
+                columns={columns}
+                sort={sortState}
+                setSort={setSortState}
+                rowCount={paginatedData?.count}
+                selectableRowCount={selectableRowCount}
+                selected={validSelected}
+                handleSelectAllClick={_handleSelectAllClick}
+              />
+              <TableBody
+                columns={columns}
+                data={filteredData}
+                blockerError={blockerError}
+                errors={errors}
+                isLoading={isLoading}
+                selection={selectionSettings}
+                handleRowClick={handleRowClick}
+                emptyListComponent={emptyListComponent}
+                page={activePage}
+                rowsPerPage={_rowsPerPage}
+                isEmptyFilterResult={isEmptyFilterResult}
+                blockerComponent={blockerComponent}
+              />
+            </TableUI>
+          </div>
         </div>
-        <div className="m-0 px-5 py-4">
-          {paginationSettings.show && (
+        {paginationSettings.show && (
+          <div className="m-0 px-5 pb-5">
             <TablePagination
               dataCount={filteredData && filteredData.length}
               page={activePage}
@@ -263,8 +259,8 @@ export const DataTable = <DataType,>({
               handleChangePage={handleChangePage}
               handleChangeRowsPerPage={handleChangeRowsPerPage}
             />
-          )}
-        </div>
+          </div>
+        )}
         {slots?.footer && slots.footer}
       </div>
     </div>

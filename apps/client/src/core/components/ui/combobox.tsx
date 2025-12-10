@@ -124,9 +124,7 @@ export const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(
                     >
                       {renderIcon(option.icon)}
                       {option.label}
-                      <CheckIcon
-                        className={cn("ml-auto size-4", isSelected ? "opacity-100" : "opacity-0")}
-                      />
+                      <CheckIcon className={cn("ml-auto size-4", isSelected ? "opacity-100" : "opacity-0")} />
                     </CommandItem>
                   );
                 })}

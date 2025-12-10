@@ -4,7 +4,7 @@ import { useApplicationPermissions } from "@/k8s/api/groups/ArgoCD/Application";
 import { TABLE } from "@/k8s/constants/tables";
 import {
   StageAppCodebaseCombinedData,
-  useWatchStageAppCodebasesCombinedData,
+  useStageAppCodebasesCombinedData,
 } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { useColumns } from "./hooks/useColumns";
@@ -13,7 +13,7 @@ import { Trash } from "lucide-react";
 import { useButtonsEnabledMap } from "../../hooks/useButtonsEnabled";
 
 export const PreviewTable = () => {
-  const stageAppCodebasesCombinedDataWatch = useWatchStageAppCodebasesCombinedData();
+  const stageAppCodebasesCombinedData = useStageAppCodebasesCombinedData();
 
   const applicationPermissions = useApplicationPermissions();
 
@@ -27,8 +27,8 @@ export const PreviewTable = () => {
       <DataTable<StageAppCodebaseCombinedData>
         id={TABLE.STAGE_APPLICATION_LIST_PREVIEW.id}
         name={TABLE.STAGE_APPLICATION_LIST_PREVIEW.name}
-        isLoading={!stageAppCodebasesCombinedDataWatch.isFetched}
-        data={stageAppCodebasesCombinedDataWatch.data?.stageAppCodebasesCombinedData ?? []}
+        isLoading={stageAppCodebasesCombinedData.isLoading}
+        data={stageAppCodebasesCombinedData.stageAppCodebasesCombinedData}
         columns={columns}
         selection={{
           selected,

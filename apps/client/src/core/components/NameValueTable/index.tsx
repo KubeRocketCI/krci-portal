@@ -12,7 +12,7 @@ export const NameValueTable = ({ rows }: { rows: NameValueRow[] }) => {
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border p-4">
       <TableUI>
         <TableHeaderUI>
           <TableRowUI>

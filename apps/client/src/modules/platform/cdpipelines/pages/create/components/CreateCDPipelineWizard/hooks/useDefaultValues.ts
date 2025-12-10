@@ -28,4 +28,3 @@ export const useDefaultValues = (): DeepPartial<CreateCDPipelineFormValues> => {
     };
   }, [preselectedApp]);
 };
-

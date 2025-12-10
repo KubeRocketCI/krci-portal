@@ -9,41 +9,41 @@ import { routeCDPipelineDetails } from "../../route";
 import { useCDPipelineWatch, useQuickLinksUrlListWatch } from "../../hooks/data";
 
 export const HeaderActions = () => {
+  const cdPipelineWatch = useCDPipelineWatch();
+  const cdPipeline = cdPipelineWatch.query.data;
+
+  return (
+    <CDPipelineActionsMenu
+      data={{
+        CDPipeline: cdPipeline!,
+      }}
+      backRoute={{
+        to: PATH_CDPIPELINES_FULL,
+      }}
+      variant="inline"
+    />
+  );
+};
+
+export const HeaderLinks = () => {
   const { name } = routeCDPipelineDetails.useParams();
   const quickLinksUrlListWatch = useQuickLinksUrlListWatch();
-  const cdPipelineWatch = useCDPipelineWatch();
-
-  const cdPipeline = cdPipelineWatch.query.data;
   const quickLinksURLs = quickLinksUrlListWatch.data?.quickLinkURLs;
 
   return (
     <div className="flex items-center gap-1">
-      <div>
-        <QuickLink
-          name={{
-            label: quickLinkUiNames[systemQuickLink.argocd],
-            value: systemQuickLink.argocd,
-          }}
-          externalLink={LinkCreationService.argocd.createPipelineLink(quickLinksURLs?.[systemQuickLink.argocd], name)}
-          configurationRoute={{
-            to: PATH_CONFIG_SONAR_FULL,
-          }}
-          isTextButton
-        />
-      </div>
-      <>
-        <div>
-          <CDPipelineActionsMenu
-            data={{
-              CDPipeline: cdPipeline!,
-            }}
-            backRoute={{
-              to: PATH_CDPIPELINES_FULL,
-            }}
-            variant="inline"
-          />
-        </div>
-      </>
+      <QuickLink
+        name={{
+          label: quickLinkUiNames[systemQuickLink.argocd],
+          value: systemQuickLink.argocd,
+        }}
+        externalLink={LinkCreationService.argocd.createPipelineLink(quickLinksURLs?.[systemQuickLink.argocd], name)}
+        configurationRoute={{
+          to: PATH_CONFIG_SONAR_FULL,
+        }}
+        isTextButton
+        variant="link"
+      />
     </div>
   );
 };

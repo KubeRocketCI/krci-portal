@@ -46,7 +46,7 @@ export const TableHead = <DataType,>({
   );
 
   return (
-    <TableHeaderUI>
+    <TableHeaderUI className="bg-muted">
       <TableRowUI>
         {!!handleSelectAllClick && !!selectableRowCount && (
           <TableHeadUI className="relative p-1 align-bottom">
@@ -73,29 +73,39 @@ export const TableHead = <DataType,>({
           const alignJustifyClass =
             props?.align === "center" ? "justify-center" : props?.align === "right" ? "justify-end" : "justify-start";
 
+          const isSortable = !!data?.columnSortableValuePath || !!data?.customSortFn;
+
+          const content = (
+            <>
+              {isSortable && (
+                <svg viewBox="0 0 18 18" width={16} height={16} className="block h-4 w-4 shrink-0">
+                  <path
+                    d="M5.25 6L9 2.25L12.75 6H5.25Z"
+                    className={isAscending ? "fill-foreground" : "fill-muted-foreground"}
+                  />
+                  <path
+                    d="M5.25 12L9 15.75L12.75 12H5.25Z"
+                    className={isDescending ? "fill-foreground" : "fill-muted-foreground"}
+                  />
+                </svg>
+              )}
+              <span className="text-muted-foreground text-sm font-normal">{label}</span>
+            </>
+          );
+
           return show ? (
-            <TableHeadUI key={id} className="relative p-1 align-bottom" {...props}>
-              <div className={`flex flex-row flex-nowrap items-center gap-0.5 ${alignJustifyClass}`}>
-                {(!!data?.columnSortableValuePath || !!data?.customSortFn) && (
-                  <button
-                    type="button"
-                    onClick={() => handleRequestSort(column)}
-                    className="focus-visible:ring-ring cursor-pointer border-none bg-transparent p-0 outline-none hover:opacity-70 focus-visible:ring-2"
-                  >
-                    <svg viewBox={"0 0 18 18"} width={16} height={16} className="block h-4 w-4">
-                      <path
-                        d="M5.25 6L9 2.25L12.75 6H5.25Z"
-                        className={isAscending ? "fill-foreground" : "fill-ring/50"}
-                      />
-                      <path
-                        d="M5.25 12L9 15.75L12.75 12H5.25Z"
-                        className={isDescending ? "fill-foreground" : "fill-ring/50"}
-                      />
-                    </svg>
-                  </button>
-                )}
-                <span className="mt-1 text-sm">{label}</span>
-              </div>
+            <TableHeadUI key={id} className="relative px-3 py-2 align-bottom" {...props}>
+              {isSortable ? (
+                <button
+                  type="button"
+                  onClick={() => handleRequestSort(column)}
+                  className={`focus-visible:ring-ring flex cursor-pointer flex-row flex-nowrap items-center gap-1 border-none bg-transparent p-0 outline-none hover:opacity-70 focus-visible:ring-2 ${alignJustifyClass}`}
+                >
+                  {content}
+                </button>
+              ) : (
+                <div className={`flex flex-row flex-nowrap items-center gap-1 ${alignJustifyClass}`}>{content}</div>
+              )}
             </TableHeadUI>
           ) : null;
         })}

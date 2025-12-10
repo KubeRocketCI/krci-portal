@@ -74,7 +74,6 @@ const WizardContent: React.FC = () => {
     async (values: CreateCodebaseFormValues) => {
       const isValid = await trigger();
 
-
       if (!isValid) {
         return;
       }

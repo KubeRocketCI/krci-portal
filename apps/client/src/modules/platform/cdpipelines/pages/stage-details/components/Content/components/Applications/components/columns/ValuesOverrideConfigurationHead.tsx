@@ -8,11 +8,11 @@ import { Tooltip } from "@/core/components/ui/tooltip";
 import { Info } from "lucide-react";
 import React from "react";
 import { useTypedFormContext } from "../../hooks/useTypedFormContext";
-import { useWatchStageAppCodebasesCombinedData } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
+import { usePipelineAppCodebasesWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 import { checkHighlightedButtons } from "../../utils/checkHighlightedButtons";
 
 export const ValuesOverrideConfigurationHeadColumn = () => {
-  const stageAppCodebasesCombinedDataWatch = useWatchStageAppCodebasesCombinedData();
+  const pipelineAppCodebasesWatch = usePipelineAppCodebasesWatch();
 
   const {
     register,
@@ -24,15 +24,13 @@ export const ValuesOverrideConfigurationHeadColumn = () => {
 
   const handleClickOverrideValuesAll = React.useCallback(
     (event: FieldEvent<boolean>) => {
-      if (stageAppCodebasesCombinedDataWatch.isLoading || !stageAppCodebasesCombinedDataWatch.data) {
+      if (pipelineAppCodebasesWatch.isLoading || !pipelineAppCodebasesWatch.data.length) {
         return;
       }
 
-      const appCodebases = stageAppCodebasesCombinedDataWatch.data?.appCodebaseList;
-
       const boolean = event?.target.value;
 
-      for (const appCodebase of appCodebases) {
+      for (const appCodebase of pipelineAppCodebasesWatch.data) {
         const selectFieldName = `${appCodebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}` as const;
 
         setValue(selectFieldName, boolean, {
@@ -41,7 +39,7 @@ export const ValuesOverrideConfigurationHeadColumn = () => {
         });
       }
     },
-    [setValue, stageAppCodebasesCombinedDataWatch.data, stageAppCodebasesCombinedDataWatch.isLoading]
+    [setValue, pipelineAppCodebasesWatch.data, pipelineAppCodebasesWatch.isLoading]
   );
 
   const values = watch();

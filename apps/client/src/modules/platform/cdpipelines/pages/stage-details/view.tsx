@@ -1,8 +1,9 @@
+import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { PageWrapper } from "@/core/components/PageWrapper";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { PATH_CDPIPELINE_DETAILS_FULL } from "../details/route";
 import { PATH_CDPIPELINES_FULL } from "../list/route";
 import { Content } from "./components/Content";
-import { HeaderActions } from "./components/HeaderActions";
 import { routeStageDetails } from "./route";
 
 export default function StageDetailsPageContent() {
@@ -26,7 +27,7 @@ export default function StageDetailsPageContent() {
           label: params.stage,
         },
       ]}
-      headerSlot={<HeaderActions />}
+      headerSlot={<LearnMoreLink url={EDP_USER_GUIDE.CD_PIPELINE_MANAGE.url} />}
     >
       <Content />
     </PageWrapper>

@@ -9,7 +9,6 @@ export const Overview = () => {
   const gridItems = useInfoColumns();
   const stageWatch = useStageWatch();
 
-
   return (
     <TabSection title="Overview">
       <Card className="p-6">

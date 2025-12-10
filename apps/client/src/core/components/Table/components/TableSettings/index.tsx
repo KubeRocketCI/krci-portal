@@ -1,207 +1,76 @@
-import { Button } from "@/core/components/ui/button";
-import { Tooltip } from "@/core/components/ui/tooltip";
-import {
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/core/components/ui/dialog";
 import React from "react";
-import { DataTable } from "../..";
-import { TableColumn } from "../../types";
+import { Button } from "@/core/components/ui/button";
+import { Badge } from "@/core/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/core/components/ui/dropdown-menu";
+import { Settings2 } from "lucide-react";
 import { useTableSettings } from "./hooks/useTableSettings";
-import { TableSettingColumn, TableSettingsColumns, TableSettingsProps } from "./types";
-import { useForm } from "react-hook-form";
-import { Settings } from "lucide-react";
-import { ValueOf } from "@/core/types/global";
+import { TableSettingsProps } from "./types";
 
-const getSettingsColumns = <DataType,>(columns: TableColumn<DataType>[]) => {
-  return columns.reduce<TableSettingsColumns<DataType>>((acc, cur) => {
-    acc[cur.id] = {
-      id: cur.id,
-      label: cur.label,
-      show: true,
-      disabled: cur.cell?.isFixed === true,
-    };
-    return acc;
-  }, {});
-};
-
-const getShownColumnIds = <DataType,>(columns: TableColumn<DataType>[]) => {
-  return columns.filter(({ cell: { show } }) => !!show).map(({ id }) => id);
-};
-
-const NAMES = {
-  selected: "selected",
-} as const;
-
-export const TableSettings = <DataType,>({ id, name, columns, setColumns }: TableSettingsProps<DataType>) => {
-  const {
-    reset,
-    setValue,
-    getValues,
-    watch,
-    formState: { isDirty },
-  } = useForm<Record<ValueOf<typeof NAMES>, string[]>>({
-    mode: "onChange",
-    defaultValues: {
-      [NAMES.selected]: getShownColumnIds(columns),
-    },
-  });
-
+export const TableSettings = <DataType,>({ id, columns, setColumns }: TableSettingsProps<DataType>) => {
   const { saveSettings } = useTableSettings(id);
 
-  const [open, setOpen] = React.useState(false);
+  const visibleColumnCount = React.useMemo(() => columns.filter((col) => col.cell.show !== false).length, [columns]);
 
-  const handleOpen = () => setOpen(true);
+  const handleToggleColumn = React.useCallback(
+    (columnId: string, checked: boolean) => {
+      setColumns((prev) => {
+        const updatedColumns = prev.map((column) =>
+          column.id === columnId ? { ...column, cell: { ...column.cell, show: checked } } : column
+        );
 
-  const handleClose = () => {
-    setOpen(false);
-
-    reset();
-  };
-
-  const handleSelectAllClick = React.useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>, items: TableSettingColumn<DataType>[]) => {
-      if (event.target.checked) {
-        const newSelected = items.map(({ id }) => id);
-        setValue(NAMES.selected, newSelected, { shouldDirty: true });
-        return;
-      }
-      const disabledItems = items.filter(({ disabled }) => disabled).map(({ id }) => id);
-
-      setValue(NAMES.selected, disabledItems, { shouldDirty: true });
-    },
-    [setValue]
-  );
-
-  const handleSelectRowClick = React.useCallback(
-    (_event: React.MouseEvent<unknown>, row: TableSettingColumn<DataType>) => {
-      const values = getValues();
-      const selected = values.selected;
-      const name = row.id;
-      const selectedIndex = selected.indexOf(name);
-      let newSelected: string[] = [];
-
-      if (selectedIndex === -1) {
-        newSelected = newSelected.concat(selected, name);
-      } else if (selectedIndex === 0) {
-        newSelected = newSelected.concat(selected.slice(1));
-      } else if (selectedIndex === selected.length - 1) {
-        newSelected = newSelected.concat(selected.slice(0, -1));
-      } else if (selectedIndex > 0) {
-        newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
-      }
-
-      setValue(NAMES.selected, newSelected, { shouldDirty: true });
-    },
-    [getValues, setValue]
-  );
-
-  const handleSave = () => {
-    const values = getValues();
-    const selected = values.selected;
-
-    setColumns((prev) => {
-      const result = prev.reduce<{
-        columns: TableColumn<DataType>[];
-        settings: Record<string, { id: string; show: boolean }>;
-      }>(
-        (accumulator, column) => {
-          accumulator.columns.push({
-            ...column,
-            cell: {
-              ...column.cell,
-              show: selected.includes(column.id),
-            },
-          });
-
-          accumulator.settings = {
-            ...accumulator.settings,
-            [column.id]: {
-              id: column.id,
-              show: selected.includes(column.id),
-            },
+        const settings = updatedColumns.reduce<Record<string, { id: string; show: boolean }>>((acc, column) => {
+          acc[column.id] = {
+            id: column.id,
+            show: column.cell.show !== false,
           };
+          return acc;
+        }, {});
 
-          return accumulator;
-        },
-        { columns: [], settings: {} }
-      );
+        saveSettings(settings);
 
-      saveSettings(result.settings);
-
-      return result.columns;
-    });
-
-    setOpen(false);
-    reset(values, { keepValues: true, keepDirty: false });
-  };
-
-  const selected = watch(NAMES.selected);
+        return updatedColumns;
+      });
+    },
+    [setColumns, saveSettings]
+  );
 
   return (
-    <>
-      <Tooltip title={"Table Settings"}>
-        <Button variant="ghost" size="icon" onClick={handleOpen}>
-          <Settings />
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="dark" className="gap-2">
+          <Settings2 className="h-4 w-4" />
+          Columns
+          <Badge variant="dark" className="bg-muted ml-1 px-1.5 py-0 text-xs">
+            {visibleColumnCount}
+          </Badge>
         </Button>
-      </Tooltip>
-      <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-        <DialogContent className="w-full max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{`Table "${name}" Settings`}</DialogTitle>
-          </DialogHeader>
-          <DialogBody>
-            <div className="flex flex-col gap-4">
-              <DataTable
-                id="tableSettings"
-                name="Table Settings"
-                isLoading={false}
-                data={Object.values(getSettingsColumns(columns))}
-                columns={[
-                  {
-                    id: "column",
-                    label: "Column Name",
-                    data: {
-                      render: ({ data }) => data?.label || "",
-                    },
-                    cell: {
-                      baseWidth: 100,
-                    },
-                  },
-                ]}
-                selection={{
-                  handleSelectAll: handleSelectAllClick,
-                  handleSelectRow: handleSelectRowClick,
-                  selected,
-                  isRowSelected: (row) => selected.includes(row.id),
-                  isRowSelectable: (row) => !row.disabled,
-                }}
-                settings={{
-                  show: false,
-                }}
-                pagination={{
-                  rowsPerPage: columns.length,
-                  show: false,
-                  initialPage: 0,
-                  reflectInURL: false,
-                }}
-              />
-            </div>
-          </DialogBody>
-          <DialogFooter>
-            <Button onClick={handleClose} variant="ghost">
-              Close
-            </Button>
-            <Button onClick={handleSave} disabled={!isDirty}>
-              Save
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {columns.map((column) => {
+          const isFixed = column.cell?.isFixed === true;
+          const isVisible = column.cell.show !== false;
+
+          return (
+            <DropdownMenuCheckboxItem
+              key={column.id}
+              checked={isVisible}
+              disabled={isFixed}
+              onCheckedChange={(checked) => handleToggleColumn(column.id, checked)}
+            >
+              {column.label}
+            </DropdownMenuCheckboxItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };

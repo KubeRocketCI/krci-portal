@@ -1,3 +1,4 @@
+import React from "react";
 import { useWatchGitOpsCodebase } from "@/k8s/api/groups/KRCI/Codebase/hooks/useWatchGitOpsCodebase";
 import { useQuickLinkWatchURLs } from "@/k8s/api/groups/KRCI/QuickLink/hooks/useQuickLinksUrlListQuery";
 import { useWatchStagePipelineRuns } from "@/k8s/api/groups/Tekton/PipelineRun";
@@ -146,6 +147,39 @@ export const useCodebaseImageStreamsWatch = () => {
   });
 };
 
+/**
+ * Returns app codebases filtered to only those in the current pipeline.
+ * Simpler hook that doesn't wait for all data sources.
+ */
+export const usePipelineAppCodebasesWatch = () => {
+  const cdPipelineWatch = useCDPipelineWatch();
+  const appCodebaseListWatch = useCodebasesWatch();
+
+  const pipelineAppCodebases = appCodebaseListWatch.data.array.filter((appCodebase) =>
+    cdPipelineWatch.data?.spec.applications.some((appName) => appName === appCodebase.metadata.name)
+  );
+
+  return {
+    data: pipelineAppCodebases,
+    isLoading: cdPipelineWatch.isLoading || appCodebaseListWatch.isLoading,
+    isReady: cdPipelineWatch.isReady && appCodebaseListWatch.isReady,
+  };
+};
+
+/**
+ * Creates a Map of Argo applications by app name for quick lookups.
+ */
+export const createArgoApplicationsByNameMap = (applications: Application[]): Map<string, Application> => {
+  const map = new Map<string, Application>();
+  for (const app of applications) {
+    const appName = app.metadata?.labels?.[applicationLabels.appName];
+    if (appName) {
+      map.set(appName, app);
+    }
+  }
+  return map;
+};
+
 export interface StageAppCodebaseCombinedData {
   appCodebase: Codebase;
   appCodebaseImageStream: CodebaseImageStream | undefined;
@@ -153,6 +187,14 @@ export interface StageAppCodebaseCombinedData {
   appCodebaseVerifiedImageStream: CodebaseImageStream | undefined;
   application: Application | undefined;
   toPromote: boolean;
+}
+
+export interface StageAppCodebasesCombinedDataResult {
+  appCodebaseList: Codebase[];
+  stageAppCodebasesCombinedData: StageAppCodebaseCombinedData[];
+  stageAppCodebasesCombinedDataByApplicationName: Map<string, StageAppCodebaseCombinedData>;
+  isLoading: boolean;
+  isReady: boolean;
 }
 
 const findPreviousStage = (stages: Stage[], currentStageOrder: number): Stage | undefined => {
@@ -275,7 +317,12 @@ const processAppCodebase = (
   };
 };
 
-export const useWatchStageAppCodebasesCombinedData = () => {
+/**
+ * Composes stage app codebases with their related data (image streams, argo apps) at render time.
+ * This hook does NOT use useQuery - it composes data immediately as each watch updates.
+ * This eliminates the flickering caused by waiting for all watches to complete.
+ */
+export const useStageAppCodebasesCombinedData = (): StageAppCodebasesCombinedDataResult => {
   const params = routeStageDetails.useParams();
 
   const cdPipelineWatch = useCDPipelineWatch();
@@ -285,56 +332,93 @@ export const useWatchStageAppCodebasesCombinedData = () => {
   const codebaseImageStreamListWatch = useCodebaseImageStreamsWatch();
   const argoApplicationListWatch = useApplicationsWatch();
 
-  return useQuery({
-    queryKey: [
-      "appCodebaseListWithImageStreamsAndArgoApps",
-      cdPipelineWatch.resourceVersion,
-      stageWatch.resourceVersion,
-      stageListWatch.resourceVersion,
-      appCodebaseListWatch.resourceVersion,
-      codebaseImageStreamListWatch.resourceVersion,
-      argoApplicationListWatch.resourceVersion,
-    ],
-    queryFn: () => {
-      const cdPipeline = cdPipelineWatch.query.data!;
-      const stageData = stageWatch.query.data!;
+  const isLoading =
+    cdPipelineWatch.isLoading ||
+    stageWatch.isLoading ||
+    stageListWatch.isLoading ||
+    appCodebaseListWatch.isLoading ||
+    codebaseImageStreamListWatch.isLoading ||
+    argoApplicationListWatch.isLoading;
 
-      const stageAppCodebaseList = appCodebaseListWatch.data.array.filter((appCodebase: Codebase) =>
-        cdPipeline.spec.applications.some((cdPipelineApp: string) => cdPipelineApp === appCodebase.metadata.name)
-      );
+  const isReady =
+    cdPipelineWatch.isReady &&
+    stageWatch.isReady &&
+    stageListWatch.isReady &&
+    appCodebaseListWatch.isReady &&
+    codebaseImageStreamListWatch.isReady &&
+    argoApplicationListWatch.isReady;
 
-      const cdPipelineApplicationToPromoteListSet = new Set<string>(cdPipeline.spec.applicationsToPromote);
-      const cdPipelineAppsToPromoteSet = createAppToPromoteSet(cdPipeline.spec.applicationsToPromote);
-      const cdPipelineInputDockerStreamsSet = createDockerStreamSet(cdPipeline.spec.inputDockerStreams);
+  // Compose data at render time using useMemo
+  const result = React.useMemo((): Omit<StageAppCodebasesCombinedDataResult, "isLoading" | "isReady"> => {
+    const cdPipeline = cdPipelineWatch.data;
+    const stageData = stageWatch.data;
 
-      const stageAppCodebasesCombinedData = stageAppCodebaseList.map((appCodebase: Codebase) =>
-        processAppCodebase(appCodebase, {
-          cdPipelineApplicationToPromoteListSet,
-          cdPipelineAppsToPromoteSet,
-          cdPipelineInputDockerStreamsSet,
-          imageStreams: codebaseImageStreamListWatch.data.array,
-          argoApplications: argoApplicationListWatch.data.array,
-          stages: stageListWatch.data.array,
-          stageOrder: stageData.spec.order,
-          cdPipelineName: params.cdPipeline,
-          stageName: params.stage,
-        })
-      );
-
+    // Return empty state if core data is not available
+    if (!cdPipeline || !stageData) {
       return {
-        appCodebaseList: stageAppCodebaseList,
-        stageAppCodebasesCombinedData,
-        stageAppCodebasesCombinedDataByApplicationName: new Map(
-          stageAppCodebasesCombinedData.map((el: StageAppCodebaseCombinedData) => [el.appCodebase.metadata.name, el])
-        ),
+        appCodebaseList: [],
+        stageAppCodebasesCombinedData: [],
+        stageAppCodebasesCombinedDataByApplicationName: new Map(),
       };
-    },
-    enabled:
-      cdPipelineWatch.query.isSuccess &&
-      stageWatch.query.isSuccess &&
-      stageListWatch.query.isSuccess &&
-      appCodebaseListWatch.query.isSuccess &&
-      codebaseImageStreamListWatch.query.isSuccess &&
-      argoApplicationListWatch.query.isSuccess,
-  });
+    }
+
+    const stageAppCodebaseList = appCodebaseListWatch.data.array.filter((appCodebase: Codebase) =>
+      cdPipeline.spec.applications.some((cdPipelineApp: string) => cdPipelineApp === appCodebase.metadata.name)
+    );
+
+    const cdPipelineApplicationToPromoteListSet = new Set<string>(cdPipeline.spec.applicationsToPromote ?? []);
+    const cdPipelineAppsToPromoteSet = createAppToPromoteSet(cdPipeline.spec.applicationsToPromote ?? null);
+    const cdPipelineInputDockerStreamsSet = createDockerStreamSet(cdPipeline.spec.inputDockerStreams);
+
+    const stageAppCodebasesCombinedData = stageAppCodebaseList.map((appCodebase: Codebase) =>
+      processAppCodebase(appCodebase, {
+        cdPipelineApplicationToPromoteListSet,
+        cdPipelineAppsToPromoteSet,
+        cdPipelineInputDockerStreamsSet,
+        imageStreams: codebaseImageStreamListWatch.data.array,
+        argoApplications: argoApplicationListWatch.data.array,
+        stages: stageListWatch.data.array,
+        stageOrder: stageData.spec.order,
+        cdPipelineName: params.cdPipeline,
+        stageName: params.stage,
+      })
+    );
+
+    return {
+      appCodebaseList: stageAppCodebaseList,
+      stageAppCodebasesCombinedData,
+      stageAppCodebasesCombinedDataByApplicationName: new Map(
+        stageAppCodebasesCombinedData.map((el: StageAppCodebaseCombinedData) => [el.appCodebase.metadata.name, el])
+      ),
+    };
+  }, [
+    cdPipelineWatch.data,
+    stageWatch.data,
+    stageListWatch.data.array,
+    appCodebaseListWatch.data.array,
+    codebaseImageStreamListWatch.data.array,
+    argoApplicationListWatch.data.array,
+    params.cdPipeline,
+    params.stage,
+  ]);
+
+  return {
+    ...result,
+    isLoading,
+    isReady,
+  };
+};
+
+/**
+ * @deprecated Use useStageAppCodebasesCombinedData instead. This hook is kept for backward compatibility.
+ */
+export const useWatchStageAppCodebasesCombinedData = () => {
+  const result = useStageAppCodebasesCombinedData();
+
+  // Provide backward compatible interface
+  return {
+    data: result.stageAppCodebasesCombinedData.length > 0 ? result : undefined,
+    isLoading: result.isLoading,
+    isFetched: result.isReady,
+  };
 };

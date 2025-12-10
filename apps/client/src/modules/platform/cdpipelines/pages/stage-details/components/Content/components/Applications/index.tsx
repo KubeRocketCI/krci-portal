@@ -8,7 +8,7 @@ import { getDeployedVersion } from "@my-project/shared";
 import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { ALL_VALUES_OVERRIDE_KEY, IMAGE_TAG_POSTFIX, VALUES_OVERRIDE_POSTFIX } from "../../../../constants";
-import { useWatchStageAppCodebasesCombinedData } from "../../../../hooks";
+import { usePipelineAppCodebasesWatch, useApplicationsWatch, createArgoApplicationsByNameMap } from "../../../../hooks";
 import { ConfigurationTable } from "./components/ConfigurationTable";
 import { ConfigurationTableActions } from "./components/ConfigurationTableActions";
 import { PreviewTable } from "./components/PreviewTable";
@@ -39,21 +39,25 @@ const MemoizedApplicationsInner = React.memo(
 );
 
 export const Applications = () => {
-  const stageAppCodebasesCombinedDataWatch = useWatchStageAppCodebasesCombinedData();
+  const pipelineAppCodebasesWatch = usePipelineAppCodebasesWatch();
+  const applicationsWatch = useApplicationsWatch();
+
+  // Create map for quick lookup
+  const argoAppsByName = React.useMemo(
+    () => createArgoApplicationsByNameMap(applicationsWatch.data.array),
+    [applicationsWatch.data.array]
+  );
 
   const baseDefaultValues = React.useMemo(
     () =>
-      (stageAppCodebasesCombinedDataWatch.data?.stageAppCodebasesCombinedData || []).reduce<
-        Record<string, boolean | string>
-      >(
-        (acc, cur) => {
+      pipelineAppCodebasesWatch.data.reduce<Record<string, boolean | string>>(
+        (acc, appCodebase) => {
           const {
-            appCodebase: {
-              spec: { lang, framework, buildTool },
-              metadata: { name },
-            },
-            application,
-          } = cur;
+            spec: { lang, framework, buildTool },
+            metadata: { name },
+          } = appCodebase;
+
+          const application = argoAppsByName.get(name);
 
           const isHelm =
             lang === CODEBASE_COMMON_LANGUAGES.HELM &&
@@ -78,7 +82,7 @@ export const Applications = () => {
           [ALL_VALUES_OVERRIDE_KEY]: false,
         }
       ),
-    [stageAppCodebasesCombinedDataWatch.data?.stageAppCodebasesCombinedData]
+    [pipelineAppCodebasesWatch.data, argoAppsByName]
   );
 
   const formState = useForm<ApplicationsFormValues>({
@@ -93,6 +97,8 @@ export const Applications = () => {
     );
   }, []);
 
+  const isLoading = pipelineAppCodebasesWatch.isLoading || applicationsWatch.isLoading;
+
   return (
     <FormProvider {...formState}>
       <TabSection
@@ -102,7 +108,7 @@ export const Applications = () => {
           </div>
         }
       >
-        <LoadingWrapper isLoading={stageAppCodebasesCombinedDataWatch.isLoading}>
+        <LoadingWrapper isLoading={isLoading}>
           <MemoizedApplicationsInner mode={mode} toggleMode={toggleMode} />
         </LoadingWrapper>
       </TabSection>

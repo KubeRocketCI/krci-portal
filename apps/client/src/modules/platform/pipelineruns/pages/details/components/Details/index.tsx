@@ -2,7 +2,7 @@ import React from "react";
 import { MenuAccordion } from "./components/MenuAccordion";
 import { TaskRunStepWrapper } from "./components/TaskRunStepWrapper";
 import { TaskRunWrapper } from "./components/TaskRunWrapper";
-import { routePipelineRunDetails } from "../../route";
+import { routePipelineRunDetails, routeSearchTabName, PATH_PIPELINERUN_DETAILS_FULL } from "../../route";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { useApprovalTaskWatchList } from "@/k8s/api/groups/KRCI/ApprovalTask";
 import { useTaskRunWatchList } from "@/k8s/api/groups/Tekton/TaskRun";
@@ -10,6 +10,8 @@ import { useTaskWatchList } from "@/k8s/api/groups/Tekton/Task";
 import { usePipelineRunWatchWithPageParams } from "../../hooks/data";
 import { approvalTaskLabels, PipelineTask, taskRunLabels } from "@my-project/shared";
 import { buildPipelineRunTasksByNameMap } from "../../hooks/utils";
+import { Card } from "@/core/components/ui/card";
+import { router } from "@/core/router";
 
 export const Details = () => {
   const params = routePipelineRunDetails.useParams();
@@ -63,6 +65,37 @@ export const Details = () => {
   const queryParamTaskRun = queryParams.taskRun;
   const queryParamStep = queryParams.step;
 
+  // Auto-select first task if none is selected
+  const firstTaskName = pipelineRunTasks.allTasks?.[0]?.name;
+  React.useEffect(() => {
+    if (!queryParamTaskRun && firstTaskName && !isLoading) {
+      router.navigate({
+        to: PATH_PIPELINERUN_DETAILS_FULL,
+        params: {
+          clusterName: params.clusterName,
+          namespace: params.namespace,
+          name: params.name,
+        },
+        search: {
+          taskRun: firstTaskName,
+          tab: routeSearchTabName.details,
+        },
+        replace: true,
+      });
+    }
+  }, [queryParamTaskRun, firstTaskName, isLoading, params.clusterName, params.namespace, params.name]);
+
+  const tasksCompletedCount = React.useMemo(() => {
+    let completed = 0;
+    pipelineRunTasksByNameMap.forEach((data) => {
+      const taskRun = data.taskRun;
+      if (taskRun?.status?.conditions?.[0]?.reason === "succeeded") {
+        completed++;
+      }
+    });
+    return completed;
+  }, [pipelineRunTasksByNameMap]);
+
   const renderDetails = React.useCallback(() => {
     const initialTaskRunName = pipelineRunTasks?.allTasks?.[0]?.name;
 
@@ -87,22 +120,35 @@ export const Details = () => {
 
   return (
     <LoadingWrapper isLoading={isLoading}>
-      <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-2">
-          <div className="flex flex-col">
-            {pipelineRunTasksByNameMap &&
-              pipelineRunTasks!.allTasks?.map(({ name: taskRunName }) =>
-                taskRunName ? (
-                  <MenuAccordion
-                    key={taskRunName}
-                    pipelineRunTasksByNameMap={pipelineRunTasksByNameMap}
-                    taskRunName={taskRunName}
-                  />
-                ) : null
-              )}
-          </div>
+      <div className="flex h-full gap-6">
+        {/* Sidebar - Tasks & Steps (30%) */}
+        <div className="w-[30%] flex-shrink-0">
+          <Card className="flex h-full flex-col">
+            <div className="border-b px-4 py-3">
+              <h3 className="text-foreground font-medium">Tasks & Steps</h3>
+              <p className="text-muted-foreground mt-1 text-xs">
+                {tasksCompletedCount} of {pipelineRunTasks.allTasks.length} tasks completed
+              </p>
+            </div>
+            <div className="flex-1 overflow-auto p-2">
+              <div className="flex flex-col gap-1">
+                {pipelineRunTasksByNameMap &&
+                  pipelineRunTasks.allTasks?.map(({ name: taskRunName }) =>
+                    taskRunName ? (
+                      <MenuAccordion
+                        key={taskRunName}
+                        pipelineRunTasksByNameMap={pipelineRunTasksByNameMap}
+                        taskRunName={taskRunName}
+                      />
+                    ) : null
+                  )}
+              </div>
+            </div>
+          </Card>
         </div>
-        <div className="col-span-10">{renderDetails()}</div>
+
+        {/* Main content - Task/Step Details (70%) */}
+        <div className="min-w-0 flex-1">{renderDetails()}</div>
       </div>
     </LoadingWrapper>
   );

@@ -42,7 +42,7 @@ export const APPLICATION_MAPPING: ApplicationMapping = {
         icon: FRAMEWORK_ICON_MAPPING[CODEBASE_COMMON_FRAMEWORKS.JAVA21],
       },
       [CODEBASE_COMMON_FRAMEWORKS.JAVA25]: {
-        name: "Java 21",
+        name: "Java 25",
         value: CODEBASE_COMMON_FRAMEWORKS.JAVA25,
         icon: FRAMEWORK_ICON_MAPPING[CODEBASE_COMMON_FRAMEWORKS.JAVA25],
       },

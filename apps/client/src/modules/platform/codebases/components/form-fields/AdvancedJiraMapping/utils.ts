@@ -46,9 +46,7 @@ export const jsonToMappingRowsArray = (
 };
 
 // Convert array format to JSON string
-export const getJiraIssueMetadataPayload = (
-  rows: Array<{ field: string; pattern: string }>
-): string | null => {
+export const getJiraIssueMetadataPayload = (rows: Array<{ field: string; pattern: string }>): string | null => {
   const buffer = rows.reduce<Record<string, string>>((acc, { field, pattern }) => {
     if (pattern.trim()) {
       acc[field] = pattern;
@@ -71,4 +69,3 @@ export const getAdvancedMappingOptions = (advancedMapping: AdvancedMappingItem[]
     return acc;
   }, []);
 };
-

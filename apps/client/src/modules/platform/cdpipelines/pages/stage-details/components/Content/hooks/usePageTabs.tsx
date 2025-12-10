@@ -5,36 +5,61 @@ import { Applications } from "../components/Applications";
 import { Variables } from "../components/Variables";
 import { Monitoring } from "../components/Monitoring";
 import { StagePipelineRuns } from "../components/StagePipelineRuns";
+import { router } from "@/core/router";
+import {
+  routeStageDetails,
+  RouteSearchTab,
+  routeSearchTabSchema,
+  PATH_CDPIPELINE_STAGE_DETAILS_FULL,
+} from "../../../route";
 
 export const usePageTabs = (): Tab[] => {
-  return React.useMemo(() => {
-    return [
+  const params = routeStageDetails.useParams();
+
+  const handleTabNavigate = React.useCallback(
+    (tab: RouteSearchTab) => {
+      router.navigate({
+        to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
+        params,
+        search: { tab },
+      });
+    },
+    [params]
+  );
+
+  return React.useMemo(
+    () => [
       {
         label: "Overview",
-        id: "overview",
+        id: routeSearchTabSchema.enum.overview,
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.overview),
         component: <Overview />,
       },
       {
         label: "Applications",
-        id: "applications",
+        id: routeSearchTabSchema.enum.applications,
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.applications),
         component: <Applications />,
       },
       {
         label: "Pipelines",
-        id: "pipelines",
+        id: routeSearchTabSchema.enum.pipelines,
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.pipelines),
         component: <StagePipelineRuns />,
-        // highlightNew: newPipelineRunAdded,
       },
       {
         label: "Variables",
-        id: "variables",
+        id: routeSearchTabSchema.enum.variables,
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.variables),
         component: <Variables />,
       },
       {
         label: "Monitoring",
-        id: "monitoring",
+        id: routeSearchTabSchema.enum.monitoring,
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.monitoring),
         component: <Monitoring />,
       },
-    ];
-  }, []);
+    ],
+    [handleTabNavigate]
+  );
 };

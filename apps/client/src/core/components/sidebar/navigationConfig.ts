@@ -1,4 +1,4 @@
-import { Bot, Layers, PanelsTopLeft, Rows2, Settings } from "lucide-react";
+import { Bot, Box, CloudUpload, PanelsTopLeft, Settings } from "lucide-react";
 import { routeCICD, routeConfiguration } from "@/core/router";
 import { PATH_OVERVIEW_FULL } from "@/modules/platform/overview/pages/details/route";
 import { PATH_COMPONENTS_FULL } from "@/modules/platform/codebases/pages/list/route";
@@ -74,7 +74,7 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
     },
     {
       title: "Components",
-      icon: Layers,
+      icon: Box,
       route: {
         to: PATH_COMPONENTS_FULL,
         params: clusterDefaultParams,
@@ -82,7 +82,7 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
     },
     {
       title: "Deployment Flows",
-      icon: Rows2,
+      icon: CloudUpload,
       route: {
         to: PATH_CDPIPELINES_FULL,
         params: clusterDefaultParams,

@@ -12,7 +12,7 @@ import {
   useDeployPipelineRunTemplateWatch,
   usePipelineRunsWatch,
   useStageWatch,
-  useWatchStageAppCodebasesCombinedData,
+  usePipelineAppCodebasesWatch,
 } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
@@ -52,18 +52,18 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
     }))
   );
 
-  const stageAppCodebasesCombinedDataWatch = useWatchStageAppCodebasesCombinedData();
+  const pipelineAppCodebasesWatch = usePipelineAppCodebasesWatch();
   const cdPipelineWatch = useCDPipelineWatch();
   const stageWatch = useStageWatch();
   const deployPipelineRunTemplateWatch = useDeployPipelineRunTemplateWatch();
   const pipelineRunsWatch = usePipelineRunsWatch();
   const pipelineRunPermissions = usePipelineRunPermissions();
 
-  const stageAppCodebasesCombinedData = stageAppCodebasesCombinedDataWatch.data?.stageAppCodebasesCombinedData;
+  const pipelineAppCodebases = pipelineAppCodebasesWatch.data;
   const deployPipelineRunTemplate = deployPipelineRunTemplateWatch.data;
 
-  const cdPipeline = cdPipelineWatch.query.data;
-  const stage = stageWatch.query.data;
+  const cdPipeline = cdPipelineWatch.data;
+  const stage = stageWatch.data;
 
   const { showRequestErrorMessage } = useRequestStatusMessages();
   const { triggerCreatePipelineRun } = usePipelineRunCRUD();
@@ -90,17 +90,11 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
     const valid = await trigger();
     const values = getValues();
 
-    if (
-      !valid ||
-      stageAppCodebasesCombinedDataWatch.isLoading ||
-      !stageAppCodebasesCombinedData ||
-      !cdPipeline ||
-      !stage
-    ) {
+    if (!valid || pipelineAppCodebasesWatch.isLoading || !pipelineAppCodebases.length || !cdPipeline || !stage) {
       return;
     }
 
-    const appPayload = stageAppCodebasesCombinedData.reduce<
+    const appPayload = pipelineAppCodebases.reduce<
       Record<
         string,
         {
@@ -108,8 +102,8 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
           customValues: boolean;
         }
       >
-    >((acc, cur) => {
-      const appName = cur.appCodebase.metadata.name;
+    >((acc, appCodebase) => {
+      const appName = appCodebase.metadata.name;
       const imageTagFieldValue = values[`${appName}${IMAGE_TAG_POSTFIX}`] as string;
       const valuesOverrideFieldValue = values[`${appName}${VALUES_OVERRIDE_POSTFIX}`];
 
@@ -156,8 +150,8 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
     setDeployBtnDisabled,
     showRequestErrorMessage,
     stage,
-    stageAppCodebasesCombinedData,
-    stageAppCodebasesCombinedDataWatch.isLoading,
+    pipelineAppCodebases,
+    pipelineAppCodebasesWatch.isLoading,
     toggleMode,
     trigger,
     triggerCreatePipelineRun,

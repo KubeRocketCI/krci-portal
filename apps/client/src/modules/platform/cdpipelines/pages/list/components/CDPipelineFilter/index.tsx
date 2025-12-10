@@ -29,55 +29,53 @@ export const CDPipelineFilter = () => {
   }, [cdPipelineListWatch.data.array]);
 
   return (
-    <div>
-      <div className="flex items-start gap-4">
-        <div className="w-64">
-          <form.Field name="search" listeners={{ onChangeDebounceMs: 300 }}>
-            {(field) => <TextField field={field} label="Search" placeholder="Search CD Pipelines" />}
-          </form.Field>
-        </div>
+    <>
+      <div className="col-span-3">
+        <form.Field name="search" listeners={{ onChangeDebounceMs: 300 }}>
+          {(field) => <TextField field={field} label="Search" placeholder="Search CD Pipelines" />}
+        </form.Field>
+      </div>
 
-        <div className="w-[400px]">
-          <form.Field name="codebases">
+      <div className="col-span-4">
+        <form.Field name="codebases">
+          {(field) => (
+            <Autocomplete
+              field={field}
+              multiple
+              options={cdPipelineCodebases}
+              freeSolo
+              label="Codebases"
+              placeholder="Select codebases"
+              ChipProps={{ size: "small", color: "primary" }}
+            />
+          )}
+        </form.Field>
+      </div>
+
+      {showNamespaceFilter && (
+        <div className="col-span-4">
+          <form.Field name="namespaces">
             {(field) => (
-              <Autocomplete
+              <NamespaceAutocomplete
                 field={field}
-                multiple
-                options={cdPipelineCodebases}
-                freeSolo
-                label="Codebases"
-                placeholder="Select codebases"
-                ChipProps={{ size: "small", color: "primary" }}
+                options={namespaceOptions}
+                label="Namespaces"
+                placeholder="Select namespaces"
               />
             )}
           </form.Field>
         </div>
+      )}
 
-        {showNamespaceFilter && (
-          <div className="w-[400px]">
-            <form.Field name="namespaces">
-              {(field) => (
-                <NamespaceAutocomplete
-                  field={field}
-                  options={namespaceOptions}
-                  label="Namespaces"
-                  placeholder="Select namespaces"
-                />
-              )}
-            </form.Field>
-          </div>
-        )}
-
-        {form.state.isDirty && (
-          <div className="flex flex-col gap-2">
-            <Label> </Label>
-            <Button variant="secondary" onClick={reset} size="sm" className="mt-0.5">
-              <X size={16} />
-              Clear
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
+      {form.state.isDirty && (
+        <div className="col-span-1 flex flex-col gap-2">
+          <Label> </Label>
+          <Button variant="secondary" onClick={reset} size="sm" className="mt-0.5">
+            <X size={16} />
+            Clear
+          </Button>
+        </div>
+      )}
+    </>
   );
 };

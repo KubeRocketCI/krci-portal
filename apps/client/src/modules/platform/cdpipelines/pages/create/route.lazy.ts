@@ -6,4 +6,3 @@ const CreateCDPipelineRoute = createLazyRoute("/c/$clusterName/cdpipelines/creat
 });
 
 export default CreateCDPipelineRoute;
-

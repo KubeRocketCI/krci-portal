@@ -1,6 +1,6 @@
 import { EmptyList } from "@/core/components/EmptyList";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
-import { Section } from "@/core/components/Section";
+import { SubSection } from "@/core/components/SubSection";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { ManageCodebaseBranchDialog } from "@/modules/platform/codebases/dialogs/ManageCodebaseBranch";
@@ -35,18 +35,14 @@ export const BranchList = () => {
   const pipelineNames = pipelineNamesWatch.data;
 
   return (
-    <Section
+    <SubSection
       title={
-        <div className="flex w-full items-center justify-between gap-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-medium">Branches</h1>
-            <LearnMoreLink url={EDP_USER_GUIDE.BRANCHES_MANAGE.url} />
-          </div>
-          <div className="ml-auto">
-            <BranchListActions />
-          </div>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-medium">Branches</h1>
+          <LearnMoreLink url={EDP_USER_GUIDE.BRANCHES_MANAGE.url} />
         </div>
       }
+      actions={<BranchListActions />}
     >
       <LoadingWrapper isLoading={!codebaseBranchListWatch.query.isFetched}>
         <>
@@ -80,6 +76,6 @@ export const BranchList = () => {
           )}
         </>
       </LoadingWrapper>
-    </Section>
+    </SubSection>
   );
 };

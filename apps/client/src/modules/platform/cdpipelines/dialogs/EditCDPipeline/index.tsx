@@ -1,4 +1,11 @@
-import { Dialog, DialogContent, DialogBody, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogBody,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
 import React from "react";
 import { FormContextProvider } from "@/core/providers/Form/provider";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
@@ -70,4 +77,3 @@ export const EditCDPipelineDialog: React.FC<EditCDPipelineDialogProps> = ({ prop
 };
 
 EditCDPipelineDialog.displayName = dialogName;
-

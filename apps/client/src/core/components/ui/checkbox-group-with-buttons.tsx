@@ -89,7 +89,7 @@ export const CheckboxGroupWithButtons = React.forwardRef<HTMLDivElement, Checkbo
 
     const handleToggle = (optionValue: string, checked: boolean) => {
       if (disabled) return;
-      
+
       const currentValue = value || [];
       if (checked) {
         onValueChange([...currentValue, optionValue]);
@@ -161,4 +161,3 @@ export const CheckboxGroupWithButtons = React.forwardRef<HTMLDivElement, Checkbo
 );
 
 CheckboxGroupWithButtons.displayName = "CheckboxGroupWithButtons";
-

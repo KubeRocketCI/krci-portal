@@ -44,7 +44,7 @@ export const LogsByTask = () => {
           </div>
         </div>
         <hr className="border-border" />
-        <div className="px-6 pb-6">
+        <div className="p-6">
           <Terminal
             content={(logs?.map?.[queryParamTaskRun] || []).join("")}
             height={600}

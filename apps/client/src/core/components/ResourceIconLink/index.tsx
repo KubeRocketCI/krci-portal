@@ -5,6 +5,7 @@ import { ResourceIconLinkProps } from "./types";
 import { SquareArrowOutUpRight } from "lucide-react";
 import type { VariantProps } from "class-variance-authority";
 import { buttonVariants } from "@/core/components/ui/button";
+import { cn } from "@/core/utils/classname";
 
 const stopPropagation = (e: React.SyntheticEvent) => e.stopPropagation();
 
@@ -35,14 +36,19 @@ const DisabledResourceIconLink = ({
   const iconSize = iconSizeByBtnSize(size);
 
   return isTextButton ? (
-    <Button variant={variant} disabled className={!withoutDisabledStyle ? "opacity-50" : ""} size={size}>
+    <Button variant={variant} disabled className={cn(!withoutDisabledStyle ? "opacity-50" : "", "text-xs")} size={size}>
       {name}
       <SquareArrowOutUpRight className="text-muted-foreground" size={iconSize} />
     </Button>
   ) : (
     <Tooltip title={<div>{tooltipTitle}</div>}>
       <div>
-        <Button variant="ghost" size="icon" disabled className={!withoutDisabledStyle ? "opacity-50" : ""}>
+        <Button
+          variant="ghost"
+          size="icon"
+          disabled
+          className={cn(!withoutDisabledStyle ? "opacity-50" : "", "text-xs")}
+        >
           {iconBase64 ? (
             <img src={`data:image/svg+xml;base64,${iconBase64}`} className="h-4 w-4" alt="" />
           ) : Icon ? (
@@ -71,7 +77,7 @@ const EnabledResourceIconLink = ({
       variant={variant}
       asChild
       size={size}
-      className="text-secondary-dark border-secondary-dark hover:bg-secondary-dark/10"
+      className="text-secondary-dark border-secondary-dark hover:bg-secondary-dark/10 text-xs"
     >
       <a href={link} target="_blank" rel="noopener noreferrer">
         {name}

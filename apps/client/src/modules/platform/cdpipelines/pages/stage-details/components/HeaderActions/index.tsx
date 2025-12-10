@@ -11,7 +11,6 @@ import { useQuickLinksUrlListWatch, useStageListWatch, useCDPipelineWatch, useSt
 
 export const HeaderActions = () => {
   const params = routeStageDetails.useParams();
-  const quickLinksUrlListWatch = useQuickLinksUrlListWatch();
   const stageWatch = useStageWatch();
   const stageListWatch = useStageListWatch();
   const cdPipelineWatch = useCDPipelineWatch();
@@ -20,6 +19,36 @@ export const HeaderActions = () => {
   const stages = stageListWatch.data.array;
   const cdPipeline = cdPipelineWatch.query.data;
 
+  return (
+    <LoadingWrapper
+      isLoading={stageWatch.query.isLoading && stageListWatch.query.isLoading && cdPipelineWatch.query.isLoading}
+    >
+      <StageActionsMenu
+        data={{
+          stages: stages!,
+          stage: stage!,
+          cdPipeline: cdPipeline!,
+        }}
+        backRoute={{
+          to: PATH_CDPIPELINE_DETAILS_FULL,
+          params: {
+            clusterName: params.clusterName,
+            name: params.cdPipeline,
+            namespace: params.namespace,
+          },
+        }}
+        variant="inline"
+      />
+    </LoadingWrapper>
+  );
+};
+
+export const HeaderLinks = () => {
+  const params = routeStageDetails.useParams();
+  const quickLinksUrlListWatch = useQuickLinksUrlListWatch();
+  const stageWatch = useStageWatch();
+
+  const stage = stageWatch.query.data;
   const quickLinksUrls = quickLinksUrlListWatch.data?.quickLinkURLs;
   const quickLinks = quickLinksUrlListWatch.data?.quickLinkList;
 
@@ -46,6 +75,7 @@ export const HeaderActions = () => {
           },
         }}
         isTextButton
+        variant="link"
       />
       <QuickLink
         name={{
@@ -61,6 +91,7 @@ export const HeaderActions = () => {
           clusterName: stage?.spec.clusterName,
         })}
         isTextButton
+        variant="link"
       />
       <QuickLink
         name={{
@@ -76,29 +107,8 @@ export const HeaderActions = () => {
           clusterName: stage?.spec.clusterName,
         })}
         isTextButton
+        variant="link"
       />
-      <div className="ml-5">
-        <LoadingWrapper
-          isLoading={stageWatch.query.isLoading && stageListWatch.query.isLoading && cdPipelineWatch.query.isLoading}
-        >
-          <StageActionsMenu
-            data={{
-              stages: stages!,
-              stage: stage!,
-              cdPipeline: cdPipeline!,
-            }}
-            backRoute={{
-              to: PATH_CDPIPELINE_DETAILS_FULL,
-              params: {
-                clusterName: params.clusterName,
-                name: params.cdPipeline,
-                namespace: params.namespace,
-              },
-            }}
-            variant="inline"
-          />
-        </LoadingWrapper>
-      </div>
     </div>
   );
 };

@@ -5,6 +5,11 @@ import { TaskRunStep } from "./components/TaskRunStep";
 import { useTabs } from "./hooks/useTabs";
 import { TaskRunStepProps } from "./types";
 import { TabsContextProvider } from "@/core/providers/Tabs/provider";
+import { Card } from "@/core/components/ui/card";
+import { StatusIcon } from "@/core/components/StatusIcon";
+import { getStepStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun/utils/getStepStatusIcon";
+import { Badge } from "@/core/components/ui/badge";
+import { Timer, Terminal, Clock, Circle } from "lucide-react";
 
 export const TaskRunStepWrapper = ({ pipelineRunTaskData, stepName }: TaskRunStepProps) => {
   const step = pipelineRunTaskData?.taskRun
@@ -12,6 +17,7 @@ export const TaskRunStepWrapper = ({ pipelineRunTaskData, stepName }: TaskRunSte
     : pipelineRunTaskData?.task?.spec?.steps?.find((step) => step?.name === stepName);
 
   const taskRunStepStatus = getTaskRunStepStatus(step);
+  const stepStatusIcon = step ? getStepStatusIcon(step) : { component: Circle, color: "#94a3b8", isSpinning: false };
 
   const completionTime = taskRunStepStatus.finishedAt;
   const startTime = taskRunStepStatus.startedAt;
@@ -27,7 +33,26 @@ export const TaskRunStepWrapper = ({ pipelineRunTaskData, stepName }: TaskRunSte
           round: true,
           units: ["d", "h", "m", "s"],
         })
-      : null;
+      : startTime
+        ? humanize(new Date().getTime() - new Date(startTime).getTime(), {
+            language: "en-mini",
+            spacer: "",
+            delimiter: " ",
+            fallbacks: ["en"],
+            largest: 2,
+            round: true,
+            units: ["d", "h", "m", "s"],
+          })
+        : null;
+
+  const startedAt = startTime
+    ? new Date(startTime).toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+      })
+    : null;
 
   const tabs = useTabs({
     taskRun: pipelineRunTaskData?.taskRun,
@@ -35,42 +60,64 @@ export const TaskRunStepWrapper = ({ pipelineRunTaskData, stepName }: TaskRunSte
     task: pipelineRunTaskData?.task,
   });
 
-  const taskDescription = pipelineRunTaskData?.task?.spec?.description || "";
+  const taskName = pipelineRunTaskData?.task?.metadata?.name || "";
+  const isPending = !taskRunStepStatus.startedAt;
+  const exitCode =
+    step && "terminated" in step ? (step as { terminated?: { exitCode?: number } }).terminated?.exitCode : undefined;
 
   return (
-    <div className="bg-card rounded shadow">
-      <div className="p-6">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <h3 className="text-xl font-medium">{step?.name}</h3>
-          </div>
+    <Card className="flex h-full flex-col">
+      {/* Step header */}
+      <div className="border-b px-6 py-4">
+        <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-foreground text-sm font-medium">
-              Status:{" "}
-              <span className="text-muted-foreground text-sm">
-                {capitalizeFirstLetter(taskRunStepStatus.reason || taskRunStepStatus.status || "unknown")}
-              </span>
-            </span>
-            <span className="text-foreground text-sm font-medium">
-              Duration:{" "}
-              <span className="text-muted-foreground text-sm">
-                {step && Object.hasOwn(step, "terminated") ? duration || "Not started" : "In progress"}
-              </span>
-            </span>
+            <StatusIcon
+              Icon={stepStatusIcon.component}
+              color={stepStatusIcon.color}
+              isSpinning={stepStatusIcon.isSpinning}
+              width={20}
+            />
+            <div>
+              <h3 className="text-foreground text-lg font-medium">{step?.name}</h3>
+              <span className="text-muted-foreground text-xs">Task: {taskName}</span>
+            </div>
           </div>
-          {taskDescription && (
-            <span className="text-foreground text-sm font-medium">
-              Description: <span className="text-muted-foreground text-sm">{taskDescription}</span>
-            </span>
-          )}
+          <Badge variant="outline" className="text-sm">
+            {capitalizeFirstLetter(taskRunStepStatus.reason || taskRunStepStatus.status || "unknown")}
+          </Badge>
         </div>
+
+        {/* Step metadata */}
+        {!isPending && (
+          <div className="flex items-center gap-6">
+            {startedAt && (
+              <div className="flex items-center gap-2">
+                <Clock className="text-muted-foreground size-3.5" />
+                <span className="text-muted-foreground text-sm">Started: {startedAt}</span>
+              </div>
+            )}
+            {duration && (
+              <div className="flex items-center gap-2">
+                <Timer className="text-muted-foreground size-3.5" />
+                <span className="text-muted-foreground text-sm">Duration: {duration}</span>
+              </div>
+            )}
+            {exitCode !== undefined && (
+              <div className="flex items-center gap-2">
+                <Terminal className="text-muted-foreground size-3.5" />
+                <span className="text-muted-foreground text-sm">Exit Code: {exitCode}</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-      <hr className="border-border" />
-      <div className="px-6 pb-6">
+
+      {/* Tabs content */}
+      <div className="flex flex-1 flex-col p-6">
         <TabsContextProvider id="pipeline-details-page-inner-taskrun-step">
           <TaskRunStep tabs={tabs} />
         </TabsContextProvider>
       </div>
-    </div>
+    </Card>
   );
 };

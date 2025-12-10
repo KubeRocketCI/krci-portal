@@ -3,46 +3,52 @@ import { CopyButton } from "@/core/components/CopyButton";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import {
   useStageWatch,
-  useWatchStageAppCodebasesCombinedData,
+  usePipelineAppCodebasesWatch,
+  useApplicationsWatch,
+  createArgoApplicationsByNameMap,
 } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 import React from "react";
 
 export const DeployedVersionHeadColumn = () => {
   const params = routeStageDetails.useParams();
-  const stageAppCodebasesCombinedDataWatch = useWatchStageAppCodebasesCombinedData();
   const stageWatch = useStageWatch();
+  const pipelineAppCodebasesWatch = usePipelineAppCodebasesWatch();
+  const applicationsWatch = useApplicationsWatch();
 
-  const stage = stageWatch.query.data!;
+  const stage = stageWatch.query.data;
+
+  // Create map for quick lookup
+  const argoAppsByName = React.useMemo(
+    () => createArgoApplicationsByNameMap(applicationsWatch.data.array),
+    [applicationsWatch.data.array]
+  );
 
   const copyVersionsValue = React.useMemo(() => {
     if (
-      stageAppCodebasesCombinedDataWatch.isLoading ||
+      pipelineAppCodebasesWatch.isLoading ||
       stageWatch.query.isFetching ||
-      !stageAppCodebasesCombinedDataWatch.data
+      !stage ||
+      !pipelineAppCodebasesWatch.data.length
     ) {
       return "";
     }
 
-    const copyTextVersions = stageAppCodebasesCombinedDataWatch.data?.stageAppCodebasesCombinedData.reduce(
-      (acc, cur) => {
-        const name = cur.appCodebase.metadata.name;
-        const deployedVersion = cur.application?.spec?.source?.targetRevision;
+    const copyTextVersions = pipelineAppCodebasesWatch.data.reduce((acc, appCodebase) => {
+      const name = appCodebase.metadata.name;
+      const argoApp = argoAppsByName.get(name);
+      const deployedVersion = argoApp?.spec?.source?.targetRevision;
 
-        return acc + `${name}:${deployedVersion}\n`;
-      },
-      ""
-    );
+      return acc + `${name}:${deployedVersion}\n`;
+    }, "");
 
-    return `flow: ${params.cdPipeline}, env: ${stage.spec.name}, ns: ${
-      stage.spec.namespace
-    }\n\n${copyTextVersions} \n\n`;
+    return `flow: ${params.cdPipeline}, env: ${stage.spec.name}, ns: ${stage.spec.namespace}\n\n${copyTextVersions} \n\n`;
   }, [
     params.cdPipeline,
-    stage.spec.name,
-    stage.spec.namespace,
-    stageAppCodebasesCombinedDataWatch.data,
-    stageAppCodebasesCombinedDataWatch.isLoading,
+    stage,
+    pipelineAppCodebasesWatch.data,
+    pipelineAppCodebasesWatch.isLoading,
     stageWatch.query.isFetching,
+    argoAppsByName,
   ]);
 
   return (
