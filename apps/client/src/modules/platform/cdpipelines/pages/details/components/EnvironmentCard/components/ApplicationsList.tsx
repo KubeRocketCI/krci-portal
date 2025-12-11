@@ -103,19 +103,15 @@ export const ApplicationsList = ({ stage }: ApplicationsListProps) => {
             ? getApplicationSyncStatusIcon(argoApplication)
             : { component: RefreshCw, color: "#94a3b8" };
           const version = argoApplication?.spec?.source?.targetRevision || "N/A";
-          // TODO: Remove mock data when real externalURLs are available
-          const externalURLs = argoApplication?.status?.summary?.externalURLs || [
-            `https://${appCodebase.metadata.name}.example.com`,
-            `https://${appCodebase.metadata.name}-api.example.com`,
-          ];
+          const externalURLs = argoApplication?.status?.summary?.externalURLs;
 
           const argoAppLink = argoApplication
             ? LinkCreationService.argocd.createApplicationLink(
-                argocdBaseURL,
-                argoApplication.metadata?.labels?.[applicationLabels.pipeline],
-                argoApplication.metadata?.labels?.[applicationLabels.stage],
-                argoApplication.metadata?.labels?.[applicationLabels.appName]
-              )
+              argocdBaseURL,
+              argoApplication.metadata?.labels?.[applicationLabels.pipeline],
+              argoApplication.metadata?.labels?.[applicationLabels.stage],
+              argoApplication.metadata?.labels?.[applicationLabels.appName]
+            )
             : undefined;
 
           return (
