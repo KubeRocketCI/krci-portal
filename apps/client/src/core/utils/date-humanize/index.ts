@@ -19,3 +19,6 @@ humanize.languages["en-mini"] = {
   s: () => "s",
   ms: () => "ms",
 };
+
+export { HUMANIZE_DURATION_OPTIONS } from "./constants";
+export { formatTimestamp, formatDuration } from "./utils";

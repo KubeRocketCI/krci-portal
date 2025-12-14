@@ -83,9 +83,11 @@ const PipelineRunDiagramDataWrapper: React.FC<{
     pipelineRunWatch.isLoading || tasksWatch.isLoading || taskRunsWatch.isLoading || approvalTasksWatch.isLoading;
 
   return (
-    <LoadingWrapper isLoading={isLoading}>
-      <PipelineRunDiagramView pipelineRun={pipelineRun!} pipelineRunTasksByNameMap={pipelineRunTasksByNameMap} />
-    </LoadingWrapper>
+    <div className="flex h-full w-full flex-1 flex-col">
+      <LoadingWrapper isLoading={isLoading}>
+        <PipelineRunDiagramView pipelineRun={pipelineRun!} pipelineRunTasksByNameMap={pipelineRunTasksByNameMap} />
+      </LoadingWrapper>
+    </div>
   );
 };
 
@@ -97,27 +99,46 @@ const PipelineRunDiagramView: React.FC<{
   const direction = viewMode === "horizontal" ? "LR" : "TB";
   const { nodes, edges } = usePipelineRunGraphData(pipelineRun, pipelineRunTasksByNameMap, direction);
   const { fitView } = useReactFlow();
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState(nodes);
   const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState(edges);
 
-  const [hasInitialized, setHasInitialized] = React.useState(false);
+  // Track visibility without causing re-renders
+  const hasVisibleSizeRef = React.useRef(false);
 
   // Update nodes and edges when they change
   React.useEffect(() => {
     setFlowNodes(nodes);
     setFlowEdges(edges);
+  }, [nodes, edges, setFlowNodes, setFlowEdges]);
 
-    // Only fit view on initial load, not on data updates
-    if (!hasInitialized && nodes.length > 0) {
-      const timer = setTimeout(() => {
-        fitView({ padding: 0.1, maxZoom: 1, duration: 200 });
-        setHasInitialized(true);
-      }, 50);
+  // Detect when container becomes visible (has non-zero dimensions) and fit view
+  // Using ResizeObserver - the standard Web API for detecting element size changes
+  React.useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
 
-      return () => clearTimeout(timer);
-    }
-  }, [nodes, edges, setFlowNodes, setFlowEdges, fitView, hasInitialized]);
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      const hasValidSize = entry && entry.contentRect.width > 0 && entry.contentRect.height > 0;
+
+      if (hasValidSize && !hasVisibleSizeRef.current) {
+        hasVisibleSizeRef.current = true;
+        // Small delay to ensure ReactFlow has processed the resize
+        // This is necessary because ReactFlow's internal resize handling is async
+        setTimeout(() => {
+          fitView({ padding: 0.1, maxZoom: 1, duration: 200 });
+        }, 50);
+      } else if (!hasValidSize) {
+        // Container became hidden (e.g., tab switch away) - reset for next visibility
+        hasVisibleSizeRef.current = false;
+      }
+    });
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [fitView]);
 
   // Apply edge colors based on target node status
   const coloredEdges = React.useMemo(() => {
@@ -158,7 +179,7 @@ const PipelineRunDiagramView: React.FC<{
   }, [flowEdges, flowNodes]);
 
   return (
-    <div className="relative h-full w-full">
+    <div ref={containerRef} className="relative h-full w-full flex-1">
       {/* Layout Controls */}
       <div
         className="bg-background absolute top-4 right-4 z-[1000] rounded-md p-4 shadow-md"

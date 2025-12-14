@@ -27,7 +27,7 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({
                       <React.Fragment key={key}>
                         {route ? (
                           <Button variant="link" asChild className="p-0">
-                            <Link to={route.to} params={route.params}>
+                            <Link to={route.to} params={route.params} search={route.search}>
                               {label}
                             </Link>
                           </Button>

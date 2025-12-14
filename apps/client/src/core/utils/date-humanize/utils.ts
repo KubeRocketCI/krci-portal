@@ -1,40 +1,52 @@
 import { humanize } from ".";
+import { HUMANIZE_DURATION_OPTIONS } from "./constants";
 
-export const humanizeDefault = (timeA: number, timeB: number) => {
-  if (!timeA || !timeB) {
-    console.error("Invalid time");
-    return "Invalid time";
+/**
+ * Default date format options for consistent timestamp display
+ */
+const DATE_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "numeric",
+} as const;
+
+/**
+ * Format a timestamp string to a localized date string
+ * @param timestamp - ISO 8601 timestamp string
+ * @returns Formatted date string or "N/A" if invalid
+ */
+export function formatTimestamp(timestamp?: string): string {
+  if (!timestamp) {
+    return "N/A";
   }
 
   try {
-    return humanize(timeA - timeB, {
-      language: "en-mini",
-      spacer: "",
-      delimiter: " ",
-      fallbacks: ["en"],
-      largest: 2,
-      round: false,
-      units: ["m", "s"],
-    });
-  } catch (e) {
-    console.error(e);
-    return "Error";
+    const date = new Date(timestamp);
+    return date.toLocaleString("en-US", DATE_FORMAT_OPTIONS);
+  } catch {
+    return "N/A";
   }
-};
+}
 
-export const formatFullYear = (date: Date) => {
-  if (!date || !(date instanceof Date)) {
-    console.error("Invalid date");
-    return "Invalid date";
+/**
+ * Calculate and format duration between two timestamps
+ * @param startTime - Start timestamp (ISO 8601)
+ * @param endTime - End timestamp (ISO 8601). If not provided, uses current time
+ * @returns Formatted duration string or "N/A" if invalid
+ */
+export function formatDuration(startTime?: string, endTime?: string): string {
+  if (!startTime) {
+    return "N/A";
   }
 
   try {
-    return new Intl.DateTimeFormat("en-US", {
-      dateStyle: "full",
-      timeStyle: "long",
-      timeZone: "UTC",
-    }).format(date);
-  } catch (e) {
-    console.error(e);
+    const start = new Date(startTime).getTime();
+    const end = endTime ? new Date(endTime).getTime() : Date.now();
+    const duration = end - start;
+
+    return humanize(duration, HUMANIZE_DURATION_OPTIONS);
+  } catch {
+    return "N/A";
   }
-};
+}

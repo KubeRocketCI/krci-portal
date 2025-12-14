@@ -24,6 +24,7 @@ import { routePipelineDetails } from "@/modules/platform/pipelines/pages/details
 import { routePipelineList } from "@/modules/platform/pipelines/pages/list/route";
 import { routePipelineRunList } from "@/modules/platform/pipelineruns/pages/list/route";
 import { routePipelineRunDetails } from "@/modules/platform/pipelineruns/pages/details/route";
+import { routeTektonResultPipelineRunDetails } from "@/modules/platform/pipelineruns/pages/tekton-result-details/route";
 import { routeOverviewDetails } from "@/modules/platform/overview/pages/details/route";
 import { routeArgocdConfiguration } from "@/modules/platform/configuration/modules/argocd/route";
 import { routeChatAssistantConfiguration } from "@/modules/platform/configuration/modules/chat-assistant/route";
@@ -66,6 +67,7 @@ const routeTree = rootRoute.addChildren([
         routeTaskDetails,
         routePipelineRunList,
         routePipelineRunDetails,
+        routeTektonResultPipelineRunDetails,
       ]),
       routeConfiguration.addChildren([
         routeArgocdConfiguration,

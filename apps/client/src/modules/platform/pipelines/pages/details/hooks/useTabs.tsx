@@ -68,7 +68,11 @@ export const useTabs = (): Tab[] => {
         id: routeSearchTabSchema.enum.diagram,
         label: "Diagram",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.diagram),
-        component: <Diagram />,
+        component: (
+          <div className="h-full pt-6">
+            <Diagram />
+          </div>
+        ),
       },
     ],
     [handleTabNavigate]
