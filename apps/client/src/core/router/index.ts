@@ -9,7 +9,7 @@ import { routeAuthLogin } from "../auth/pages/login/route";
 import ContentLayout from "../components/PageLayout";
 import { rootRoute } from "./_root";
 import { routeComponentDetails } from "../../modules/platform/codebases/pages/details/route";
-import { authRoute, contentLayoutRoute, routeCluster, routeCICD, routeConfiguration } from "./routes";
+import { authRoute, contentLayoutRoute, routeCluster, routeCICD, routeObservability, routeConfiguration } from "./routes";
 import { routeCDPipelineList } from "@/modules/platform/cdpipelines/pages/list/route";
 import { routeCDPipelineCreate } from "@/modules/platform/cdpipelines/pages/create/route";
 
@@ -18,12 +18,13 @@ contentLayoutRoute.update({
   component: ContentLayout,
 });
 
-export { authRoute, contentLayoutRoute, routeCluster, routeCICD, routeConfiguration };
+export { authRoute, contentLayoutRoute, routeCluster, routeCICD, routeObservability, routeConfiguration };
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
 import { routePipelineDetails } from "@/modules/platform/pipelines/pages/details/route";
 import { routePipelineList } from "@/modules/platform/pipelines/pages/list/route";
 import { routePipelineRunList } from "@/modules/platform/pipelineruns/pages/list/route";
 import { routePipelineRunDetails } from "@/modules/platform/pipelineruns/pages/details/route";
+import { routeTektonResultPipelineRunDetails } from "@/modules/platform/pipelineruns/pages/tekton-result-details/route";
 import { routeOverviewDetails } from "@/modules/platform/overview/pages/details/route";
 import { routeArgocdConfiguration } from "@/modules/platform/configuration/modules/argocd/route";
 import { routeChatAssistantConfiguration } from "@/modules/platform/configuration/modules/chat-assistant/route";
@@ -43,6 +44,7 @@ import { routeStageCreate } from "@/modules/platform/cdpipelines/pages/stages/cr
 import { routeTaskList } from "@/modules/platform/tasks/pages/list/route";
 import { routeTaskDetails } from "@/modules/platform/tasks/pages/details/route";
 import { routeMarketplace } from "@/modules/platform/marketplace/route";
+import { routePipelineMetrics } from "@/modules/platform/observability/pages/pipeline-metrics/route";
 
 const routeTree = rootRoute.addChildren([
   authRoute.addChildren([routeAuthLogin, routeAuthCallback]),
@@ -66,7 +68,9 @@ const routeTree = rootRoute.addChildren([
         routeTaskDetails,
         routePipelineRunList,
         routePipelineRunDetails,
+        routeTektonResultPipelineRunDetails,
       ]),
+      routeObservability.addChildren([routePipelineMetrics]),
       routeConfiguration.addChildren([
         routeArgocdConfiguration,
         routeChatAssistantConfiguration,

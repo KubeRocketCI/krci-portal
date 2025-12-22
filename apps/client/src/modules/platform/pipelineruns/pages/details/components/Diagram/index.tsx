@@ -5,11 +5,8 @@ import { Card } from "@/core/components/ui/card";
 export const Diagram = () => {
   const params = routePipelineRunDetails.useParams();
 
-  console.log(params);
-  console.log("DIAGRAMs");
-
   return (
-    <Card className="min-h-4xl h-4xl w-4xlbg-primary min-w-4xl">
+    <Card className="flex h-[var(--content-height)] w-full flex-col">
       <PipelineRunDiagram pipelineRunName={params.name} namespace={params.namespace} />
     </Card>
   );

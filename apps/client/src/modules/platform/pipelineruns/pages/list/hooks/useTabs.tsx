@@ -4,6 +4,7 @@ import { Tab } from "@/core/providers/Tabs/components/Tabs/types";
 import { router } from "@/core/router";
 import { Live } from "../components/Live";
 import { History } from "../components/History";
+import { TektonResultsHistory } from "../components/TektonResultsHistory";
 
 export const useTabs = (): Tab[] => {
   const params = routePipelineRunList.useParams();
@@ -38,6 +39,16 @@ export const useTabs = (): Tab[] => {
         component: (
           <div className="pt-6">
             <History />
+          </div>
+        ),
+      },
+      {
+        id: routeSearchTabSchema.enum["tekton-results"],
+        label: "Tekton Results",
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum["tekton-results"]),
+        component: (
+          <div className="pt-6">
+            <TektonResultsHistory />
           </div>
         ),
       },

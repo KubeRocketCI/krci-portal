@@ -1,6 +1,7 @@
-import { Bot, Box, CloudUpload, PanelsTopLeft, Settings } from "lucide-react";
-import { routeCICD, routeConfiguration } from "@/core/router";
+import { Activity, Bot, Box, CloudUpload, PanelsTopLeft, Settings } from "lucide-react";
+import { routeCICD, routeConfiguration, routeObservability } from "@/core/router";
 import { PATH_OVERVIEW_FULL } from "@/modules/platform/overview/pages/details/route";
+import { PATH_PIPELINE_METRICS_FULL } from "@/modules/platform/observability/pages/pipeline-metrics/route";
 import { PATH_COMPONENTS_FULL } from "@/modules/platform/codebases/pages/list/route";
 import { PATH_CDPIPELINES_FULL } from "@/modules/platform/cdpipelines/pages/list/route";
 import { PATH_PIPELINERUNS_FULL } from "@/modules/platform/pipelineruns/pages/list/route";
@@ -87,6 +88,24 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
         to: PATH_CDPIPELINES_FULL,
         params: clusterDefaultParams,
       },
+    },
+    {
+      title: "Observability",
+      icon: Activity,
+      defaultRoute: {
+        to: PATH_PIPELINE_METRICS_FULL,
+        params: clusterDefaultParams,
+      },
+      groupRoute: routeObservability,
+      children: [
+        {
+          title: "Pipeline Metrics",
+          route: {
+            to: PATH_PIPELINE_METRICS_FULL,
+            params: clusterDefaultParams,
+          },
+        },
+      ],
     },
     {
       title: "Configuration",

@@ -1,4 +1,5 @@
 import { Tabs as ShadcnTabs, TabsList, TabsTrigger, TabsContent } from "@/core/components/ui/tabs";
+import { cn } from "@/core/utils/classname";
 import { TabsProps } from "./types";
 
 export const Tabs = ({ tabs, activeTabIdx, handleChangeTab }: TabsProps) => {
@@ -9,7 +10,7 @@ export const Tabs = ({ tabs, activeTabIdx, handleChangeTab }: TabsProps) => {
         const newTabIdx = parseInt(value, 10);
         handleChangeTab({} as React.ChangeEvent<object>, newTabIdx);
       }}
-      className="rounded-[0.3125rem]"
+      className="flex min-h-0 flex-1 flex-col rounded-[0.3125rem]"
     >
       <TabsList>
         {tabs.map(({ label, icon, disabled = false, onClick }, idx) => (
@@ -25,11 +26,19 @@ export const Tabs = ({ tabs, activeTabIdx, handleChangeTab }: TabsProps) => {
           </TabsTrigger>
         ))}
       </TabsList>
-      {tabs.map(({ component }, idx) => (
-        <TabsContent key={`tab::${idx}`} value={idx.toString()} className="relative flex h-full flex-col">
-          {component}
-        </TabsContent>
-      ))}
+      {tabs.map(({ component }, idx) => {
+        const isActive = activeTabIdx === idx;
+        return (
+          <TabsContent
+            key={`tab::${idx}`}
+            value={idx.toString()}
+            forceMount
+            className={cn("relative flex h-full flex-col", !isActive && "hidden")}
+          >
+            {component}
+          </TabsContent>
+        );
+      })}
     </ShadcnTabs>
   );
 };

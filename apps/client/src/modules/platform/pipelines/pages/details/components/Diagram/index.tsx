@@ -1,8 +1,13 @@
 import { PipelineDiagram } from "@/modules/platform/pipelines/components/PipelineDiagram";
 import { routePipelineDetails } from "../../route";
+import { Card } from "@/core/components/ui/card";
 
 export const Diagram = () => {
   const params = routePipelineDetails.useParams();
 
-  return <PipelineDiagram pipelineName={params.name} namespace={params.namespace} />;
+  return (
+    <Card className="flex h-full w-full flex-col">
+      <PipelineDiagram pipelineName={params.name} namespace={params.namespace} />
+    </Card>
+  );
 };

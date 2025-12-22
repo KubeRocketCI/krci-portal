@@ -33,28 +33,49 @@ const PipelineDiagramInner: React.FC<PipelineDiagramProps> = ({ pipeline }) => {
   const direction = viewMode === "horizontal" ? "LR" : "TB";
   const { nodes, edges } = usePipelineGraphData(pipeline, direction);
   const { fitView } = useReactFlow();
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState(nodes);
   const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState(edges);
 
-  // Update nodes and edges when they change, and fit view
+  // Track visibility without causing re-renders
+  const hasVisibleSizeRef = React.useRef(false);
+
+  // Update nodes and edges when they change
   React.useEffect(() => {
     setFlowNodes(nodes);
     setFlowEdges(edges);
+  }, [nodes, edges, setFlowNodes, setFlowEdges]);
 
-    // Fit view when nodes/edges change (new pipeline loaded or viewMode changed)
-    const timer = setTimeout(() => {
-      fitView({
-        padding: 0.15,
-        duration: 300, // Smooth transition
-      });
-    }, 100);
+  // Detect when container becomes visible (has non-zero dimensions) and fit view
+  // Using ResizeObserver - the standard Web API for detecting element size changes
+  React.useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
 
-    return () => clearTimeout(timer);
-  }, [nodes, edges, setFlowNodes, setFlowEdges, fitView]);
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      const hasValidSize = entry && entry.contentRect.width > 0 && entry.contentRect.height > 0;
+
+      if (hasValidSize && !hasVisibleSizeRef.current) {
+        hasVisibleSizeRef.current = true;
+        // Small delay to ensure ReactFlow has processed the resize
+        // This is necessary because ReactFlow's internal resize handling is async
+        setTimeout(() => {
+          fitView({ padding: 0.15, maxZoom: 1, duration: 200 });
+        }, 50);
+      } else if (!hasValidSize) {
+        // Container became hidden (e.g., tab switch away) - reset for next visibility
+        hasVisibleSizeRef.current = false;
+      }
+    });
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [fitView]);
 
   return (
-    <div className="relative h-full w-full">
+    <div ref={containerRef} className="relative h-full w-full flex-1">
       {/* View Mode Toggle */}
       <div className="bg-background absolute top-4 right-4 z-50 rounded p-4 shadow-sm">
         <span className="mb-1 block text-xs">Layout</span>
@@ -134,9 +155,11 @@ export const PipelineDiagram: React.FC<{ pipelineName: string; namespace: string
 
   return (
     <ReactFlowProvider>
-      <LoadingWrapper isLoading={!pipelineWatch.isReady}>
-        <PipelineDiagramInner pipeline={pipeline!} />
-      </LoadingWrapper>
+      <div className="flex h-full w-full flex-1 flex-col">
+        <LoadingWrapper isLoading={!pipelineWatch.isReady}>
+          <PipelineDiagramInner pipeline={pipeline!} />
+        </LoadingWrapper>
+      </div>
     </ReactFlowProvider>
   );
 };

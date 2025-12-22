@@ -17,6 +17,8 @@ declare global {
 
       API_PREFIX: string;
 
+      TEKTON_RESULTS_URL: string;
+
       DEPLOY_CLIENT_DIST_DIR?: string;
     }
   }

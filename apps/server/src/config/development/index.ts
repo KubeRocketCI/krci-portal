@@ -30,6 +30,7 @@ export class LocalFastifyServer {
       "OIDC_CLIENT_SECRET",
       "OIDC_SCOPE",
       "OIDC_CODE_CHALLENGE_METHOD",
+      "TEKTON_RESULTS_URL",
     ]);
 
     this.fastify = Fastify({ logger: false });

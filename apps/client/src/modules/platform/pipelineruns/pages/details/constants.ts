@@ -4,6 +4,6 @@ export const tabNameToIndexMap: Record<RouteSearchTab, number> = {
   [routeSearchTabSchema.enum.overview]: 0,
   [routeSearchTabSchema.enum.details]: 1,
   [routeSearchTabSchema.enum.yaml]: 2,
-  [routeSearchTabSchema.enum.results]: 0,
-  [routeSearchTabSchema.enum.diagram]: 0,
+  [routeSearchTabSchema.enum.results]: 3,
+  [routeSearchTabSchema.enum.diagram]: 4,
 };
