@@ -4,6 +4,8 @@ import {
   TektonRecordsListResponse,
   TektonResultsQueryParams,
   TektonResultRecord,
+  TektonSummaryQueryParams,
+  TektonSummaryResponse,
 } from "@my-project/shared";
 
 // =============================================================================
@@ -224,5 +226,40 @@ export class TektonResultsClient {
     } finally {
       clearTimeout(timeoutId);
     }
+  }
+
+  /**
+   * Get aggregated summary statistics for records.
+   *
+   * @param params - Query parameters for summary aggregation
+   * @returns Aggregated summary data
+   *
+   * @example
+   * // Get overall stats for PipelineRuns
+   * const summary = await client.getSummary({
+   *   summary: "total,succeeded,failed,avg_duration",
+   *   filter: "data_type == 'PIPELINE_RUN'",
+   * });
+   *
+   * @example
+   * // Get daily breakdown
+   * const dailyStats = await client.getSummary({
+   *   summary: "total,succeeded,failed",
+   *   groupBy: "day",
+   *   filter: "data_type == 'PIPELINE_RUN'",
+   * });
+   */
+  async getSummary(params: TektonSummaryQueryParams = {}): Promise<TektonSummaryResponse> {
+    const { summary, groupBy, filter, orderBy } = params;
+
+    return this.fetchJson<TektonSummaryResponse>(
+      `/parents/${this.parent}/results/-/records/summary`,
+      {
+        summary,
+        group_by: groupBy,
+        filter,
+        order_by: orderBy,
+      }
+    );
   }
 }

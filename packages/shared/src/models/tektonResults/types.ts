@@ -156,3 +156,104 @@ export interface DecodedLogRecord {
     errorOnStoreMsg?: string;
   };
 }
+
+// =============================================================================
+// Summary API Types
+// Based on: https://github.com/tektoncd/results/blob/main/docs/api/summary-api.md
+// =============================================================================
+
+/**
+ * Single summary item from aggregation response
+ * Contains aggregated metrics for a group (or overall if no grouping)
+ */
+export interface TektonSummaryItem {
+  /** Total number of records */
+  total?: number;
+  /** Number of records with 'Succeeded' status */
+  succeeded?: number;
+  /** Number of records with 'Failed' status */
+  failed?: number;
+  /** Number of records with 'Cancelled' status */
+  cancelled?: number;
+  /** Number of records with 'Running' status */
+  running?: number;
+  /** Number of records with other statuses */
+  others?: number;
+  /** Average duration in HH:mm:SS.ms format */
+  avg_duration?: string;
+  /** Minimum duration in HH:mm:SS.ms format */
+  min_duration?: string;
+  /** Maximum duration in HH:mm:SS.ms format */
+  max_duration?: string;
+  /** Total duration in HH:mm:SS.ms format */
+  total_duration?: string;
+  /** Last runtime in Unix seconds */
+  last_runtime?: number;
+  /** Group value when using group_by parameter */
+  group_value?: string | number;
+}
+
+/**
+ * Summary API response
+ */
+export interface TektonSummaryResponse {
+  summary: TektonSummaryItem[];
+}
+
+/**
+ * Query parameters for Summary API endpoint
+ *
+ * @see https://github.com/tektoncd/results/blob/main/docs/api/summary-api.md
+ */
+export interface TektonSummaryQueryParams {
+  /**
+   * Comma-separated list of metrics to return.
+   * If not specified, only "total" is returned.
+   *
+   * Valid values: total, succeeded, failed, cancelled, running, others,
+   *               avg_duration, min_duration, max_duration, total_duration, last_runtime
+   *
+   * @example "total,succeeded,failed,avg_duration"
+   */
+  summary?: string;
+
+  /**
+   * Group results by time period or field.
+   *
+   * Time-based (returns group_value as Unix seconds):
+   * - minute, hour, day, week, month, year
+   *
+   * Field-based (returns group_value as string):
+   * - pipeline (format: "namespace/pipeline-name")
+   * - namespace
+   * - repository (format: "namespace/repository-name")
+   *
+   * Time-based groups can specify a time field:
+   * - "hour" (uses creationTimestamp, default)
+   * - "hour startTime" (uses status.startTime)
+   * - "day completionTime" (uses status.completionTime)
+   *
+   * @example "hour"
+   * @example "day startTime"
+   * @example "pipeline"
+   */
+  groupBy?: string;
+
+  /**
+   * CEL filter expression for records.
+   *
+   * @example "data_type == 'tekton.dev/v1.PipelineRun'"
+   * @example "data.status.startTime > timestamp('2024-01-01T00:00:00Z')"
+   */
+  filter?: string;
+
+  /**
+   * Order results by a summary field. Requires group_by to be set.
+   * Format: "field_name ASC|DESC"
+   * Field must be included in the summary parameter.
+   *
+   * @example "total DESC"
+   * @example "asc running"
+   */
+  orderBy?: string;
+}

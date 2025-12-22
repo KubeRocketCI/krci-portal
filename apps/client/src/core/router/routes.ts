@@ -6,6 +6,7 @@ import { useClusterStore } from "@/k8s/store";
 export const PATH_AUTH = "auth" as const;
 export const PATH_CLUSTER = "c/$clusterName" as const;
 export const PATH_CICD = "cicd" as const;
+export const PATH_OBSERVABILITY = "observability" as const;
 export const PATH_CONFIGURATION = "configuration" as const;
 
 export const authRoute = createRoute({
@@ -77,6 +78,11 @@ export const routeCluster = createRoute({
 export const routeCICD = createRoute({
   getParentRoute: () => routeCluster,
   path: PATH_CICD,
+});
+
+export const routeObservability = createRoute({
+  getParentRoute: () => routeCluster,
+  path: PATH_OBSERVABILITY,
 });
 
 export const routeConfiguration = createRoute({
