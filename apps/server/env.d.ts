@@ -19,6 +19,9 @@ declare global {
 
       TEKTON_RESULTS_URL: string;
 
+      DEPENDENCY_TRACK_URL: string;
+      DEPENDENCY_TRACK_API_KEY: string;
+
       DEPLOY_CLIENT_DIST_DIR?: string;
     }
   }

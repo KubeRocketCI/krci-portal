@@ -1,7 +1,9 @@
-import { Activity, Bot, Box, CloudUpload, PanelsTopLeft, Settings } from "lucide-react";
-import { routeCICD, routeConfiguration, routeObservability } from "@/core/router";
+import { Activity, Bot, Box, CloudUpload, PanelsTopLeft, Settings, Shield } from "lucide-react";
+import { routeCICD, routeConfiguration, routeObservability, routeSecurity } from "@/core/router";
 import { PATH_OVERVIEW_FULL } from "@/modules/platform/overview/pages/details/route";
 import { PATH_PIPELINE_METRICS_FULL } from "@/modules/platform/observability/pages/pipeline-metrics/route";
+import { PATH_SCA_FULL } from "@/modules/platform/security/pages/sca/route";
+import { PATH_SCA_PROJECTS_FULL } from "@/modules/platform/security/pages/sca-projects/route";
 import { PATH_COMPONENTS_FULL } from "@/modules/platform/codebases/pages/list/route";
 import { PATH_CDPIPELINES_FULL } from "@/modules/platform/cdpipelines/pages/list/route";
 import { PATH_PIPELINERUNS_FULL } from "@/modules/platform/pipelineruns/pages/list/route";
@@ -104,6 +106,36 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
             to: PATH_PIPELINE_METRICS_FULL,
             params: clusterDefaultParams,
           },
+        },
+      ],
+    },
+    {
+      title: "Security",
+      icon: Shield,
+      defaultRoute: {
+        to: PATH_SCA_FULL,
+        params: clusterDefaultParams,
+      },
+      groupRoute: routeSecurity,
+      children: [
+        {
+          title: "Software Composition Analysis (SCA)",
+          children: [
+            {
+              title: "Portfolio",
+              route: {
+                to: PATH_SCA_FULL,
+                params: clusterDefaultParams,
+              },
+            },
+            {
+              title: "Projects",
+              route: {
+                to: PATH_SCA_PROJECTS_FULL,
+                params: clusterDefaultParams,
+              },
+            },
+          ],
         },
       ],
     },

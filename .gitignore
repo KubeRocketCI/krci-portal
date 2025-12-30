@@ -31,3 +31,5 @@ deploy
 bin
 coverage
 .scannerwork
+
+.claude/settings.local.json
