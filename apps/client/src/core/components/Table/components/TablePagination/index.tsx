@@ -9,7 +9,7 @@ export const TablePagination = ({
   handleChangeRowsPerPage,
 }: TablePaginationProps) => {
   const rowsPerPageOptions = JSON.parse(localStorage.getItem("settings") || "{}")?.tableRowsPerPageOptions || [
-    10, 20, 50, 100,
+    10, 20, 25, 50, 100,
   ];
 
   return (

@@ -9,7 +9,15 @@ import { routeAuthLogin } from "../auth/pages/login/route";
 import ContentLayout from "../components/PageLayout";
 import { rootRoute } from "./_root";
 import { routeComponentDetails } from "../../modules/platform/codebases/pages/details/route";
-import { authRoute, contentLayoutRoute, routeCluster, routeCICD, routeObservability, routeConfiguration } from "./routes";
+import {
+  authRoute,
+  contentLayoutRoute,
+  routeCluster,
+  routeCICD,
+  routeObservability,
+  routeSecurity,
+  routeConfiguration,
+} from "./routes";
 import { routeCDPipelineList } from "@/modules/platform/cdpipelines/pages/list/route";
 import { routeCDPipelineCreate } from "@/modules/platform/cdpipelines/pages/create/route";
 
@@ -18,7 +26,15 @@ contentLayoutRoute.update({
   component: ContentLayout,
 });
 
-export { authRoute, contentLayoutRoute, routeCluster, routeCICD, routeObservability, routeConfiguration };
+export {
+  authRoute,
+  contentLayoutRoute,
+  routeCluster,
+  routeCICD,
+  routeObservability,
+  routeSecurity,
+  routeConfiguration,
+};
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
 import { routePipelineDetails } from "@/modules/platform/pipelines/pages/details/route";
 import { routePipelineList } from "@/modules/platform/pipelines/pages/list/route";
@@ -45,6 +61,9 @@ import { routeTaskList } from "@/modules/platform/tasks/pages/list/route";
 import { routeTaskDetails } from "@/modules/platform/tasks/pages/details/route";
 import { routeMarketplace } from "@/modules/platform/marketplace/route";
 import { routePipelineMetrics } from "@/modules/platform/observability/pages/pipeline-metrics/route";
+import { routeSCA } from "@/modules/platform/security/pages/sca/route";
+import { routeSCAProjects } from "@/modules/platform/security/pages/sca-projects/route";
+import { routeSCAProjectDetails } from "@/modules/platform/security/pages/sca-project-details/route";
 
 const routeTree = rootRoute.addChildren([
   authRoute.addChildren([routeAuthLogin, routeAuthCallback]),
@@ -71,6 +90,7 @@ const routeTree = rootRoute.addChildren([
         routeTektonResultPipelineRunDetails,
       ]),
       routeObservability.addChildren([routePipelineMetrics]),
+      routeSecurity.addChildren([routeSCA, routeSCAProjects, routeSCAProjectDetails]),
       routeConfiguration.addChildren([
         routeArgocdConfiguration,
         routeChatAssistantConfiguration,

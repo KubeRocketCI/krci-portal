@@ -21,4 +21,4 @@ humanize.languages["en-mini"] = {
 };
 
 export { HUMANIZE_DURATION_OPTIONS } from "./constants";
-export { formatTimestamp, formatDuration } from "./utils";
+export { formatTimestamp, formatUnixTimestamp, formatDuration } from "./utils";

@@ -55,4 +55,8 @@ export const TABLE = {
     id: "applicationList",
     name: "Application List",
   },
+  SCA_PROJECTS_LIST: {
+    id: "scaProjectsList",
+    name: "SCA Projects",
+  },
 } as const;
