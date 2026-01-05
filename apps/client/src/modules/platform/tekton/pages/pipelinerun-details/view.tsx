@@ -161,7 +161,7 @@ export default function PipelineRunDetailsPageContent() {
         <Tabs tabs={tabs} activeTabIdx={activeTab} handleChangeTab={handleChangeTab} />
       </LoadingWrapper>
     );
-  }, [pipelineRunWatch.query.isError, pipelineRunWatch.query.isLoading, tabs, activeTab, handleChangeTab]);
+  }, [pipelineRunWatch.query.isLoading, tabs, activeTab, handleChangeTab]);
 
   const renderHeaderSlot = (): React.ReactElement | undefined => {
     if (!pipelineRunWatch.isReady || !pipelineRun) {

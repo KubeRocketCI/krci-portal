@@ -15,9 +15,10 @@ const baseInput = {
   framework: "java11",
   lang: "Java",
   private: false,
-  repository: { url: "https://git.url/repo.git" },
+  repositoryUrl: "https://git.url/repo.git",
   strategy: "create",
-  versioning: { type: "edp", startFrom: "0.0.0-SNAPSHOT" },
+  versioningType: "edp",
+  versioningStartFrom: "0.0.0-SNAPSHOT",
   ciTool: "tekton",
   labels: {
     "app.edp.epam.com/codebaseType": codebaseType.application,

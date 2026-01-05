@@ -25,7 +25,7 @@
     "@fastify/session": "^11.1.0",
     "@kubernetes/client-node": "^1.4.0",
     "@my-project/shared": "workspace:*",
-    "@trpc/server": "^11.1.2",
+    "@trpc/server": "^11.8.0",
     "fastify": "^5.2.1",
     "jwt-decode": "^4.0.0",
     "node-fetch": "^3.3.2",
