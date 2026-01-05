@@ -1,4 +1,4 @@
-import { usePipelineMetrics } from "@/k8s/tektonResults/hooks/usePipelineMetrics";
+import { usePipelineMetrics } from "@/modules/platform/tekton/hooks/usePipelineMetrics";
 import { TimeRange, PIPELINE_TYPES } from "@my-project/shared";
 
 export interface UseMetricsDataOptions {

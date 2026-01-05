@@ -36,11 +36,11 @@ export {
   routeConfiguration,
 };
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
-import { routePipelineDetails } from "@/modules/platform/pipelines/pages/details/route";
-import { routePipelineList } from "@/modules/platform/pipelines/pages/list/route";
-import { routePipelineRunList } from "@/modules/platform/pipelineruns/pages/list/route";
-import { routePipelineRunDetails } from "@/modules/platform/pipelineruns/pages/details/route";
-import { routeTektonResultPipelineRunDetails } from "@/modules/platform/pipelineruns/pages/tekton-result-details/route";
+import { routePipelineDetails } from "@/modules/platform/tekton/pages/pipeline-details/route";
+import { routePipelineList } from "@/modules/platform/tekton/pages/pipeline-list/route";
+import { routePipelineRunList } from "@/modules/platform/tekton/pages/pipelinerun-list/route";
+import { routePipelineRunDetails } from "@/modules/platform/tekton/pages/pipelinerun-details/route";
+import { routeTektonResultPipelineRunDetails } from "@/modules/platform/tekton/pages/tekton-result-details/route";
 import { routeOverviewDetails } from "@/modules/platform/overview/pages/details/route";
 import { routeArgocdConfiguration } from "@/modules/platform/configuration/modules/argocd/route";
 import { routeChatAssistantConfiguration } from "@/modules/platform/configuration/modules/chat-assistant/route";

@@ -3,7 +3,7 @@ import { usePipelineWatchList } from "@/k8s/api/groups/Tekton/Pipeline";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { FormCombobox } from "@/core/providers/Form/components/FormCombobox";
 import { mapArrayToSelectOptions } from "@/core/utils/forms/mapToSelectOptions";
-import { PipelineGraphDialog } from "@/modules/platform/pipelines/dialogs/PipelineGraph";
+import { PipelineGraphDialog } from "@/modules/platform/tekton/dialogs/PipelineGraph";
 import { Button } from "@/core/components/ui/button";
 import { pipelineLabels, pipelineType } from "@my-project/shared";
 import { VectorSquare } from "lucide-react";

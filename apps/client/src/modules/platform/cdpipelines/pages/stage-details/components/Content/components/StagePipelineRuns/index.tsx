@@ -1,13 +1,13 @@
 import { usePipelineRunWatchList } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { TABLE } from "@/k8s/constants/tables";
-import { PipelineRunList } from "@/modules/platform/pipelineruns/components/PipelineRunList";
+import { PipelineRunList } from "@/modules/platform/tekton/components/PipelineRunList";
 import { pipelineRunLabels, pipelineType } from "@my-project/shared";
 import { routeStageDetails } from "../../../../route";
 import { FilterProvider } from "@/core/providers/Filter/provider";
 import {
   matchFunctions,
   pipelineRunFilterControlNames,
-} from "@/modules/platform/pipelineruns/components/PipelineRunList/components/Filter/constants";
+} from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
 
 export const StagePipelineRuns = () => {
   const params = routeStageDetails.useParams();

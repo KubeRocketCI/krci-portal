@@ -8,7 +8,7 @@ import KubernetesIcon from "@/assets/icons/k8s/kubernetes.svg?react";
 import { ScrollCopyText } from "@/core/components/ScrollCopyText";
 import { PipelinePreview } from "@/core/components/PipelinePreview";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
-import { PipelineGraphDialog } from "@/modules/platform/pipelines/dialogs/PipelineGraph";
+import { PipelineGraphDialog } from "@/modules/platform/tekton/dialogs/PipelineGraph";
 import { STATUS_COLOR } from "@/k8s/constants/colors";
 
 export interface GridItem {
