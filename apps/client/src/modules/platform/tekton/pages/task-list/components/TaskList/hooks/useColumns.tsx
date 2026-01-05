@@ -4,7 +4,7 @@ import { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { routeTaskDetails } from "@/modules/platform/tasks/pages/details/route";
+import { routeTaskDetails } from "@/modules/platform/tekton/pages/task-details/route";
 import { Link } from "@tanstack/react-router";
 import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";

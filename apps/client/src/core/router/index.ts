@@ -57,8 +57,8 @@ import { routeRegistryConfiguration } from "@/modules/platform/configuration/mod
 import { routeSonarConfiguration } from "@/modules/platform/configuration/modules/sonar/route";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import { routeStageCreate } from "@/modules/platform/cdpipelines/pages/stages/create/route";
-import { routeTaskList } from "@/modules/platform/tasks/pages/list/route";
-import { routeTaskDetails } from "@/modules/platform/tasks/pages/details/route";
+import { routeTaskList } from "@/modules/platform/tekton/pages/task-list/route";
+import { routeTaskDetails } from "@/modules/platform/tekton/pages/task-details/route";
 import { routeMarketplace } from "@/modules/platform/marketplace/route";
 import { routePipelineMetrics } from "@/modules/platform/observability/pages/pipeline-metrics/route";
 import { routeSCA } from "@/modules/platform/security/pages/sca/route";

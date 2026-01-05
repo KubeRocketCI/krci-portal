@@ -8,7 +8,7 @@ import { PATH_COMPONENTS_FULL } from "@/modules/platform/codebases/pages/list/ro
 import { PATH_CDPIPELINES_FULL } from "@/modules/platform/cdpipelines/pages/list/route";
 import { PATH_PIPELINERUNS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-list/route";
 import { PATH_PIPELINES_FULL } from "@/modules/platform/tekton/pages/pipeline-list/route";
-import { PATH_TASKS_FULL } from "@/modules/platform/tasks/pages/list/route";
+import { PATH_TASKS_FULL } from "@/modules/platform/tekton/pages/task-list/route";
 import { PATH_CONFIG_QUICKLINKS_FULL } from "@/modules/platform/configuration/modules/quicklinks/route";
 import { PATH_CONFIG_NEXUS_FULL } from "@/modules/platform/configuration/modules/nexus/route";
 import { PATH_CONFIG_REGISTRY_FULL } from "@/modules/platform/configuration/modules/registry/route";

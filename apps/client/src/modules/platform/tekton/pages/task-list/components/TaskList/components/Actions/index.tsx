@@ -1,4 +1,4 @@
-import { TaskActionsMenu } from "@/modules/platform/tasks/components/TaskActionsMenu";
+import { TaskActionsMenu } from "@/modules/platform/tekton/components/TaskActionsMenu";
 import { Button } from "@/core/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger } from "@/core/components/ui/dropdown-menu";
 import { Task } from "@my-project/shared";
