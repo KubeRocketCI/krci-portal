@@ -158,3 +158,74 @@ export const PipelineRunStatus: React.FC<Props> = ({ pipelineRun }) => {
 
 - Shared Dependencies: Place common dependencies in root `package.json`
 - Use TypeScript path mapping for clean imports
+
+## Import Patterns: Barrel Exports
+
+### When Barrel Exports Are Appropriate
+
+Barrel exports (`export * from` in `index.ts` files) are appropriate when the folder represents a **cohesive unit** that is consumed as a whole:
+
+#### ✅ Shared Packages
+
+Packages like `@my-project/shared` or `@my-project/trpc` define public APIs consumed by multiple apps:
+
+```typescript
+// packages/shared/src/index.ts - OK
+export * from "./models/k8s";
+export * from "./utils";
+```
+
+#### ✅ K8s API Resource Folders
+
+Each K8s resource folder (Codebase, CDPipeline, PipelineRun, etc.) is a cohesive unit with hooks and utilities that are often used together:
+
+```typescript
+// k8s/api/groups/KRCI/Codebase/index.ts - OK
+export * from "./hooks";  // useWatchItem, useWatchList, etc.
+export * from "./utils";  // getStatusIcon, etc.
+
+// Usage - consumers import the resource as a unit
+import { useCodebaseWatchList, getCodebaseStatusIcon } from "@/k8s/api/groups/KRCI/Codebase";
+```
+
+### When Barrel Exports Are NOT Appropriate
+
+#### ❌ Convenience Re-exports in Hook/Component Files
+
+Do not re-export unrelated modules from a hook or component file for "convenience":
+
+```typescript
+// ❌ DON'T: Re-export from a hook file
+// modules/platform/tekton/hooks/usePipelineMetrics/index.tsx
+export const usePipelineMetrics = () => { ... };
+export * from "./filters"; // Bad - mixing concerns
+
+// ✅ DO: Keep exports focused, consumers import separately
+// modules/platform/tekton/hooks/usePipelineMetrics/index.tsx
+export const usePipelineMetrics = () => { ... };
+
+// Consumer imports what they need directly:
+import { usePipelineMetrics } from "@/modules/platform/tekton/hooks/usePipelineMetrics";
+import { buildPipelineFilter } from "@/modules/platform/tekton/hooks/usePipelineMetrics/filters";
+```
+
+#### ❌ Deep Re-exports Across Module Boundaries
+
+Do not re-export from parent folders to create "shortcuts":
+
+```typescript
+// ❌ DON'T: modules/platform/tekton/index.ts
+export * from "./components";
+export * from "./hooks";
+export * from "./utils";
+```
+
+### Summary
+
+| Barrel Export Location | Appropriate? | Reason |
+| ---------------------- | ------------ | ------ |
+| `packages/shared/` | ✅ Yes | Public API for multiple consumers |
+| `packages/trpc/` | ✅ Yes | Public API for multiple consumers |
+| `k8s/api/groups/{Resource}/` | ✅ Yes | Resource is a cohesive unit |
+| Hook file re-exporting utilities | ❌ No | Mixing concerns, breaks tree-shaking |
+| Module root aggregating subfolders | ❌ No | Creates import shortcuts, hides origins |

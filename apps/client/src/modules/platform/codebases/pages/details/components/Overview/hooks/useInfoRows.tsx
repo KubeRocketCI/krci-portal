@@ -21,7 +21,7 @@ import { PipelinePreview } from "@/core/components/PipelinePreview";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { routeComponentDetails } from "../../../route";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
-import { PipelineGraphDialog } from "@/modules/platform/pipelines/dialogs/PipelineGraph";
+import { PipelineGraphDialog } from "@/modules/platform/tekton/dialogs/PipelineGraph";
 
 export interface GridItem {
   label: string;

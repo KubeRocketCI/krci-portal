@@ -3,7 +3,7 @@ import { usePipelineWatchItem } from "@/k8s/api/groups/Tekton/Pipeline";
 import { useTriggerTemplateWatchList } from "@/k8s/api/groups/Tekton/TriggerTemplate";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { FormSelect } from "@/core/providers/Form/components/FormSelect";
-import { PipelineGraphDialog } from "@/modules/platform/pipelines/dialogs/PipelineGraph";
+import { PipelineGraphDialog } from "@/modules/platform/tekton/dialogs/PipelineGraph";
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { pipelineType, triggerTemplateLabels } from "@my-project/shared";

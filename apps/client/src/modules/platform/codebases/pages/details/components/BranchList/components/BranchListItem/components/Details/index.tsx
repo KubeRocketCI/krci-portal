@@ -1,12 +1,12 @@
 import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
 import { FilterProvider } from "@/core/providers/Filter/provider";
 import { TABLE } from "@/k8s/constants/tables";
-import { PipelineRunList } from "@/modules/platform/pipelineruns/components/PipelineRunList";
+import { PipelineRunList } from "@/modules/platform/tekton/components/PipelineRunList";
 import {
   matchFunctions,
   pipelineRunFilterControlNames,
-} from "@/modules/platform/pipelineruns/components/PipelineRunList/components/Filter/constants";
-import { PipelineRunListFilterValues } from "@/modules/platform/pipelineruns/components/PipelineRunList/components/Filter/types";
+} from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
+import { PipelineRunListFilterValues } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/types";
 import { PipelineRun, pipelineType } from "@my-project/shared";
 import { DetailsProps } from "./types";
 

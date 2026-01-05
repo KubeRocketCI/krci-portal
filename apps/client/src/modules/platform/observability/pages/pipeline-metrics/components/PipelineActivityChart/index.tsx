@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
-import { usePipelineActivityChart, ChartDataPoint } from "@/k8s/tektonResults/hooks/usePipelineActivityChart";
+import { usePipelineActivityChart, ChartDataPoint } from "@/modules/platform/tekton/hooks/usePipelineActivityChart";
 import { TimeRange } from "@my-project/shared";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Loader2, TrendingUp } from "lucide-react";
