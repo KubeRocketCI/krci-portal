@@ -97,7 +97,7 @@ export const ServerSideTable = <DataType,>({
         <div className="px-5 pt-5">
           <div className="grid grid-cols-[1fr_auto] items-center gap-4">
             <div className="grid grid-cols-12 gap-4">{slots?.header}</div>
-            {tableSettings.show && <TableSettings id={id} columns={columns} setColumns={setColumns} />}
+            <div className="mt-6">{tableSettings.show && <TableSettings id={id} columns={columns} setColumns={setColumns} />}</div>
           </div>
         </div>
       );

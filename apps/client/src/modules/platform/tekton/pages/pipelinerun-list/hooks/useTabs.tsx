@@ -3,7 +3,6 @@ import { routePipelineRunList, RouteSearchTab, routeSearchTabSchema, PATH_PIPELI
 import { Tab } from "@/core/providers/Tabs/components/Tabs/types";
 import { router } from "@/core/router";
 import { Live } from "../components/Live";
-import { History } from "../components/History";
 import { TektonResultsHistory } from "../components/TektonResultsHistory";
 
 export const useTabs = (): Tab[] => {
@@ -29,16 +28,6 @@ export const useTabs = (): Tab[] => {
         component: (
           <div className="pt-6">
             <Live />
-          </div>
-        ),
-      },
-      {
-        id: routeSearchTabSchema.enum.history,
-        label: "History",
-        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.history),
-        component: (
-          <div className="pt-6">
-            <History />
           </div>
         ),
       },

@@ -136,69 +136,6 @@ export class KrakendClient {
     return values;
   }
 
-  async getPipelineRunLogs(namespace: string, name: string): Promise<unknown> {
-    const logsQuery = {
-      _source: ["log", "kubernetes.labels.tekton_dev/pipelineTask"],
-      query: {
-        bool: {
-          must: [
-            { match_phrase: { "kubernetes.namespace_name": namespace } },
-            {
-              match_phrase: {
-                "kubernetes.labels.tekton_dev/pipelineRun": name,
-              },
-            },
-            { range: { "@timestamp": { gte: "now-10d", lte: "now" } } },
-          ],
-        },
-      },
-      sort: [{ "@timestamp": { order: "asc" } }],
-      size: 5000,
-    };
-
-    return this.fetchJson(`/search/logs`, {
-      method: "POST",
-      body: JSON.stringify(logsQuery),
-    });
-  }
-
-  async getAllPipelineRunsLogs(namespace: string): Promise<unknown> {
-    const logsQuery = {
-      size: 0,
-      query: {
-        bool: {
-          filter: [
-            {
-              range: {
-                "@timestamp": {
-                  gte: "now-10d",
-                  lte: "now",
-                },
-              },
-            },
-            {
-              term: {
-                "kubernetes.namespace_name.keyword": namespace,
-              },
-            },
-          ],
-        },
-      },
-      aggs: {
-        unique_pipelineRuns: {
-          terms: {
-            field: "kubernetes.labels.tekton_dev/pipelineRun.keyword",
-            size: 100,
-          },
-        },
-      },
-    };
-    return this.fetchJson(`/search/logs`, {
-      method: "POST",
-      body: JSON.stringify(logsQuery),
-    });
-  }
-
   async getGitFusionRepositories(gitServer: string, owner: string): Promise<GitFusionRepositoryListResponse> {
     const params = new URLSearchParams({
       gitServer,

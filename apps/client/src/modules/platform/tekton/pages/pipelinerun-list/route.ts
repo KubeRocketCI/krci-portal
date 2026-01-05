@@ -5,7 +5,7 @@ import z from "zod";
 export const PATH_PIPELINERUNS = "pipelineruns" as const;
 export const PATH_PIPELINERUNS_FULL = "/c/$clusterName/cicd/pipelineruns" as const;
 
-export const routeSearchTabSchema = z.enum(["live", "history", "tekton-results"]);
+export const routeSearchTabSchema = z.enum(["live", "tekton-results"]);
 export const routeSearchTabName = routeSearchTabSchema.enum;
 
 export type RouteSearchTab = z.infer<typeof routeSearchTabSchema>;

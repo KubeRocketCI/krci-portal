@@ -1,8 +1,6 @@
 import { t } from "../../trpc.js";
 import {
-  getPipelineRunLogsProcedure,
   getDepTrackProjectDataProcedure,
-  getAllPipelineRunsLogsProcedure,
   getSonarQubeProjectDataProcedure,
   getRepositoryListProcedure,
   getOrganizationListProcedure,
@@ -12,8 +10,6 @@ import {
 } from "./procedures/index.js";
 
 export const krakendRouter = t.router({
-  getPipelineRunLogs: getPipelineRunLogsProcedure,
-  getAllPipelineRunsLogs: getAllPipelineRunsLogsProcedure,
   getDepTrackProject: getDepTrackProjectDataProcedure,
   getSonarQubeProject: getSonarQubeProjectDataProcedure,
   getRepositoryList: getRepositoryListProcedure,
