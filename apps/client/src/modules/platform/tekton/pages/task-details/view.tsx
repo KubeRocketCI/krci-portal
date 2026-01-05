@@ -5,7 +5,7 @@ import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { TriangleAlert } from "lucide-react";
 import React from "react";
 import { TaskActionsMenu } from "../../components/TaskActionsMenu";
-import { PATH_TASKS_FULL } from "../list/route";
+import { PATH_TASKS_FULL } from "../task-list/route";
 import { useTaskWatch } from "./hooks/data";
 import { useTabs } from "./hooks/useTabs";
 import { routeTaskDetails } from "./route";
