@@ -1,4 +1,3 @@
-export * from "./getPipelineRunLogs/index.js";
 export * from "./getDepTrackProjectData/index.js";
 export * from "./getSonarQubeProjectData/index.js";
 export * from "./getRepositoryList/index.js";

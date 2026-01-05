@@ -1,7 +1,6 @@
 import { usePipelineRunWatchItem } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { ApprovalTask, PipelineTask, Task, TaskRun } from "@my-project/shared";
 import { routePipelineRunDetails } from "../route";
-import { usePipelineRunLogsQuery } from "@/k8s/krakend/hooks/usePipelineRunLogs";
 
 export type PipelineRunTaskData = {
   pipelineRunTask: PipelineTask;
@@ -28,8 +27,4 @@ export const usePipelineRunWatchWithPageParams = () => {
   });
 };
 
-export const usePipelineRunLogsQueryWithPageParams = () => {
-  const params = routePipelineRunDetails.useParams();
 
-  return usePipelineRunLogsQuery(params.clusterName, params.namespace, params.name);
-};

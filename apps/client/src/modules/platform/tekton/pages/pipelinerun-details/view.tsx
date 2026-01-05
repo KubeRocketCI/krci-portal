@@ -13,7 +13,6 @@ import { Activity, Calendar, Clock, GitBranch, SquareArrowOutUpRight, Timer } fr
 import React from "react";
 import { PipelineRunActionsMenu } from "../../components/PipelineRunActionsMenu";
 import { PATH_PIPELINERUNS_FULL } from "../pipelinerun-list/route";
-import { ReserveLogs } from "./components/ReserveLogs";
 import { usePipelineRunWatchWithPageParams } from "./hooks/data";
 import { useTabs } from "./hooks/useTabs";
 import { routePipelineRunDetails } from "./route";
@@ -46,28 +45,28 @@ const HeaderMetadata = () => {
 
   const startedAt = pipelineRunStatus.startTime
     ? new Date(pipelineRunStatus.startTime).toLocaleString("en-US", {
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "numeric",
-      })
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+    })
     : null;
 
   const activeDuration = pipelineRunStatus.startTime
     ? humanize(
-        pipelineRunStatus.completionTime
-          ? new Date(pipelineRunStatus.completionTime).getTime() - new Date(pipelineRunStatus.startTime).getTime()
-          : new Date().getTime() - new Date(pipelineRunStatus.startTime).getTime(),
-        {
-          language: "en-mini",
-          spacer: "",
-          delimiter: " ",
-          fallbacks: ["en"],
-          largest: 2,
-          round: true,
-          units: ["d", "h", "m", "s"],
-        }
-      )
+      pipelineRunStatus.completionTime
+        ? new Date(pipelineRunStatus.completionTime).getTime() - new Date(pipelineRunStatus.startTime).getTime()
+        : new Date().getTime() - new Date(pipelineRunStatus.startTime).getTime(),
+      {
+        language: "en-mini",
+        spacer: "",
+        delimiter: " ",
+        fallbacks: ["en"],
+        largest: 2,
+        round: true,
+        units: ["d", "h", "m", "s"],
+      }
+    )
     : null;
 
   return (
@@ -157,10 +156,6 @@ export default function PipelineRunDetailsPageContent() {
   const { activeTab, handleChangeTab } = useTabsContext();
 
   const renderPageContent = React.useCallback(() => {
-    if (pipelineRunWatch.query.isError) {
-      return <ReserveLogs />;
-    }
-
     return (
       <LoadingWrapper isLoading={pipelineRunWatch.query.isLoading}>
         <Tabs tabs={tabs} activeTabIdx={activeTab} handleChangeTab={handleChangeTab} />
