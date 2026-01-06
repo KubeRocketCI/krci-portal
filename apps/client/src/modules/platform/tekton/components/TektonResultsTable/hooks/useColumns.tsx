@@ -5,12 +5,16 @@ import { TableColumn } from "@/core/components/Table/types";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { Button } from "@/core/components/ui/button";
-import { formatTimestamp } from "@/core/utils/date-humanize";
+import { Tooltip } from "@/core/components/ui/tooltip";
+import { formatTimestamp, humanize } from "@/core/utils/date-humanize";
 import { useClusterStore } from "@/k8s/store";
 import { PATH_TEKTON_RESULT_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/tekton/pages/tekton-result-details/route";
+import { PATH_PIPELINE_DETAILS_FULL } from "@/modules/platform/tekton/pages/pipeline-details/route";
+import { PATH_COMPONENT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { getTektonResultStatusIcon } from "@/modules/platform/tekton/utils/statusIcons";
 import { TektonResult, TektonResultStatus, parseRecordName, tektonResultAnnotations } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
+import { Clock } from "lucide-react";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { columnNames } from "../constants";
@@ -71,7 +75,7 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
         },
         cell: {
           isFixed: true,
-          baseWidth: 3,
+          baseWidth: 5,
           ...getSyncedColumnData(tableSettings, columnNames.STATUS),
         },
       },
@@ -93,7 +97,7 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
             }
 
             return (
-              <Button variant="link" asChild className="p-0">
+              <Button variant="link" asChild className="p-0 whitespace-normal w-full justify-start">
                 <Link
                   to={PATH_TEKTON_RESULT_PIPELINERUN_DETAILS_FULL}
                   params={{
@@ -110,7 +114,7 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
           },
         },
         cell: {
-          baseWidth: 25,
+          baseWidth: 20,
           ...getSyncedColumnData(tableSettings, columnNames.NAME),
         },
       },
@@ -120,7 +124,26 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
         data: {
           customSortFn: createAnnotationSortFn(tektonResultAnnotations.pipeline),
           render: ({ data }) => {
-            return <span className="text-muted-foreground text-sm">{getAnnotation(data, tektonResultAnnotations.pipeline) ?? "-"}</span>;
+            const pipelineName = getAnnotation(data, tektonResultAnnotations.pipeline);
+
+            if (!pipelineName) {
+              return <span className="text-muted-foreground text-sm">-</span>;
+            }
+
+            return (
+              <Button variant="link" asChild className="p-0 whitespace-normal w-full justify-start">
+                <Link
+                  to={PATH_PIPELINE_DETAILS_FULL}
+                  params={{
+                    clusterName,
+                    namespace: defaultNamespace,
+                    name: pipelineName,
+                  }}
+                >
+                  <TextWithTooltip text={pipelineName} />
+                </Link>
+              </Button>
+            );
           },
         },
         cell: {
@@ -134,11 +157,30 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
         data: {
           customSortFn: createAnnotationSortFn(tektonResultAnnotations.codebase),
           render: ({ data }) => {
-            return <span className="text-muted-foreground text-sm">{getAnnotation(data, tektonResultAnnotations.codebase) ?? "-"}</span>;
+            const codebaseName = getAnnotation(data, tektonResultAnnotations.codebase);
+
+            if (!codebaseName) {
+              return <span className="text-muted-foreground text-sm">-</span>;
+            }
+
+            return (
+              <Button variant="link" asChild className="p-0 whitespace-normal w-full justify-start">
+                <Link
+                  to={PATH_COMPONENT_DETAILS_FULL}
+                  params={{
+                    clusterName,
+                    namespace: defaultNamespace,
+                    name: codebaseName,
+                  }}
+                >
+                  <TextWithTooltip text={codebaseName} />
+                </Link>
+              </Button>
+            );
           },
         },
         cell: {
-          baseWidth: 13,
+          baseWidth: 14,
           ...getSyncedColumnData(tableSettings, columnNames.CODEBASE),
         },
       },
@@ -148,11 +190,16 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
         data: {
           customSortFn: createAnnotationSortFn(tektonResultAnnotations.gitBranch),
           render: ({ data }) => {
-            return <span className="text-muted-foreground text-sm">{getAnnotation(data, tektonResultAnnotations.gitBranch) ?? "-"}</span>;
+            const branchName = getAnnotation(data, tektonResultAnnotations.gitBranch) ?? "-";
+            return (
+              <div className="text-muted-foreground text-sm">
+                <TextWithTooltip text={branchName} />
+              </div>
+            );
           },
         },
         cell: {
-          baseWidth: 9,
+          baseWidth: 18,
           ...getSyncedColumnData(tableSettings, columnNames.GIT_BRANCH),
         },
       },
@@ -171,22 +218,23 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
 
             if (changeUrl) {
               return (
-                <a
-                  href={changeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline text-sm"
-                >
-                  #{changeNumber}
-                </a>
+                <Button variant="link" asChild className="p-0 whitespace-normal w-full justify-start">
+                  <a href={changeUrl} target="_blank" rel="noopener noreferrer">
+                    <TextWithTooltip text={`#${changeNumber}`} />
+                  </a>
+                </Button>
               );
             }
 
-            return <span className="text-muted-foreground text-sm">#{changeNumber}</span>;
+            return (
+              <div className="text-muted-foreground text-sm">
+                <TextWithTooltip text={`#${changeNumber}`} />
+              </div>
+            );
           },
         },
         cell: {
-          baseWidth: 5,
+          baseWidth: 8,
           ...getSyncedColumnData(tableSettings, columnNames.GIT_CHANGE_NUMBER),
         },
       },
@@ -217,54 +265,94 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
         data: {
           customSortFn: createAnnotationSortFn(tektonResultAnnotations.pipelineType),
           render: ({ data }) => {
-            return <span className="text-muted-foreground text-sm">{getAnnotation(data, tektonResultAnnotations.pipelineType) ?? "-"}</span>;
+            const pipelineType = getAnnotation(data, tektonResultAnnotations.pipelineType) ?? "-";
+            return (
+              <div className="text-muted-foreground text-sm">
+                <TextWithTooltip text={pipelineType} />
+              </div>
+            );
           },
         },
         cell: {
-          baseWidth: 6,
+          baseWidth: 7,
           ...getSyncedColumnData(tableSettings, columnNames.PIPELINE_TYPE),
         },
       },
       {
-        id: columnNames.CREATED,
-        label: "Created",
+        id: columnNames.TIME,
+        label: "Time",
         data: {
           customSortFn: (a, b) => {
-            const aTime = a.create_time;
-            const bTime = b.create_time;
+            const aStartTime = a?.summary?.start_time;
+            const aEndTime = a?.summary?.end_time;
+            const bStartTime = b?.summary?.start_time;
+            const bEndTime = b?.summary?.end_time;
 
-            if (!aTime || !bTime) return 0;
+            if (!aStartTime || !aEndTime || !bStartTime || !bEndTime) {
+              return 0;
+            }
 
-            return new Date(aTime).getTime() - new Date(bTime).getTime();
+            const aDuration = new Date(aEndTime).getTime() - new Date(aStartTime).getTime();
+            const bDuration = new Date(bEndTime).getTime() - new Date(bStartTime).getTime();
+
+            return aDuration - bDuration;
           },
           render: ({ data }) => {
-            return <span className="text-sm">{formatTimestamp(data.create_time)}</span>;
+            // Use summary.start_time if available, otherwise fallback to create_time
+            const startTime = data?.summary?.start_time || data?.create_time;
+            const endTime = data?.summary?.end_time;
+
+            // Fallback if no time data at all
+            if (!startTime) {
+              return <span className="text-muted-foreground text-sm">-</span>;
+            }
+
+            const durationTime = endTime
+              ? new Date(endTime).getTime() - new Date(startTime).getTime()
+              : new Date().getTime() - new Date(startTime).getTime();
+
+            const duration = humanize(durationTime, {
+              language: "en-mini",
+              spacer: "",
+              delimiter: " ",
+              fallbacks: ["en"],
+              largest: 2,
+              round: true,
+              units: ["d", "h", "m", "s"],
+            });
+
+            const tooltipContent = (
+              <div className="flex flex-col gap-1">
+                <div>
+                  <span className="font-medium">Started at: </span>
+                  <span>{formatTimestamp(startTime)}</span>
+                </div>
+                {endTime && (
+                  <div>
+                    <span className="font-medium">Finished at: </span>
+                    <span>{formatTimestamp(endTime)}</span>
+                  </div>
+                )}
+                <div>
+                  <span className="font-medium">Duration: </span>
+                  <span>{duration}</span>
+                </div>
+              </div>
+            );
+
+            return (
+              <Tooltip title={tooltipContent}>
+                <div className="flex items-center justify-between gap-1 w-full">
+                  <span className="text-sm">{duration}</span>
+                  <Clock className="text-muted-foreground size-3.5" />
+                </div>
+              </Tooltip>
+            );
           },
         },
         cell: {
-          baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, columnNames.CREATED),
-        },
-      },
-      {
-        id: columnNames.ENDED,
-        label: "Ended",
-        data: {
-          customSortFn: (a, b) => {
-            const aTime = a.summary?.end_time;
-            const bTime = b.summary?.end_time;
-
-            if (!aTime || !bTime) return 0;
-
-            return new Date(aTime).getTime() - new Date(bTime).getTime();
-          },
-          render: ({ data }) => {
-            return <span className="text-sm">{formatTimestamp(data.summary?.end_time)}</span>;
-          },
-        },
-        cell: {
-          baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, columnNames.ENDED),
+          baseWidth: 7,
+          ...getSyncedColumnData(tableSettings, columnNames.TIME),
         },
       },
     ],

@@ -231,11 +231,11 @@ const PipelineRunDiagramView: React.FC<{
         }}
         minZoom={0.1}
         maxZoom={2}
-        nodesDraggable={false}
+        // nodesDraggable={false}
         nodesConnectable={false}
-        elementsSelectable={false}
+        // elementsSelectable={false}
         selectNodesOnDrag={false}
-        onSelectionChange={() => {}}
+        onSelectionChange={() => { }}
         panOnDrag={true}
         proOptions={{ hideAttribution: true }}
       >

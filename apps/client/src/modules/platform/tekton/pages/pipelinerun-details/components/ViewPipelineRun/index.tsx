@@ -9,7 +9,7 @@ export const ViewPipelineRun = () => {
 
   return (
     <LoadingWrapper isLoading={pipelineRunWatch.isLoading}>
-      <Card>
+      <Card className="h-full overflow-hidden">
         <CodeEditor content={pipelineRun!} />
       </Card>
     </LoadingWrapper>

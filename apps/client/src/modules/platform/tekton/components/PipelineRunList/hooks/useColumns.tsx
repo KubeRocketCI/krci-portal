@@ -1,5 +1,5 @@
+import { AuthorAvatar } from "@/core/components/AuthorAvatar";
 import { CopyButton } from "@/core/components/CopyButton";
-import { ResourceIconLink } from "@/core/components/ResourceIconLink";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { SavedTableSettings } from "@/core/components/Table/components/TableSettings/types";
 import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
@@ -7,13 +7,14 @@ import { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
 import { useClusterStore } from "@/k8s/store";
-import { humanize } from "@/core/utils/date-humanize";
+import { humanize, formatTimestamp } from "@/core/utils/date-humanize";
 import { PATH_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-details/route";
+import { PATH_COMPONENT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
-import { getPipelineRunStatus, getPullRequestURL, PipelineRun } from "@my-project/shared";
+import { getPipelineRunStatus, PipelineRun, pipelineRunLabels, tektonResultAnnotations } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
-import { VectorSquare, ExternalLink } from "lucide-react";
+import { Clock, VectorSquare } from "lucide-react";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { PATH_PIPELINE_DETAILS_FULL } from "../../../pages/pipeline-details/route";
@@ -61,7 +62,7 @@ export const useColumns = ({
         },
         cell: {
           isFixed: true,
-          baseWidth: 5,
+          baseWidth: 4,
           ...getSyncedColumnData(tableSettings, columnNames.STATUS),
         },
       },
@@ -76,7 +77,7 @@ export const useColumns = ({
             } = data;
 
             return (
-              <Button variant="link" asChild className="p-0">
+              <Button variant="link" asChild className="p-0 whitespace-normal w-full justify-start">
                 <Link
                   to={PATH_PIPELINERUN_DETAILS_FULL}
                   params={{
@@ -92,7 +93,7 @@ export const useColumns = ({
           },
         },
         cell: {
-          baseWidth: 20,
+          baseWidth: 14,
           ...getSyncedColumnData(tableSettings, columnNames.RUN),
         },
       },
@@ -114,7 +115,7 @@ export const useColumns = ({
             }
 
             return (
-              <Button variant="link" asChild className="p-0">
+              <Button variant="link" asChild className="p-0 whitespace-normal w-full justify-start">
                 <Link
                   to={PATH_PIPELINE_DETAILS_FULL}
                   params={{
@@ -130,8 +131,69 @@ export const useColumns = ({
           },
         },
         cell: {
-          baseWidth: 20,
+          baseWidth: 14,
           ...getSyncedColumnData(tableSettings, columnNames.PIPELINE),
+        },
+      },
+      {
+        id: columnNames.CODEBASE,
+        label: "Codebase",
+        data: {
+          columnSortableValuePath: `metadata.labels.${pipelineRunLabels.codebase}`,
+          render: ({ data }) => {
+            const {
+              metadata: { namespace, labels },
+            } = data;
+
+            const codebaseName = labels?.[pipelineRunLabels.codebase];
+
+            if (!codebaseName) {
+              return null;
+            }
+
+            return (
+              <Button variant="link" asChild className="p-0 whitespace-normal w-full justify-start">
+                <Link
+                  to={PATH_COMPONENT_DETAILS_FULL}
+                  params={{
+                    name: codebaseName,
+                    namespace: namespace || defaultNamespace,
+                    clusterName,
+                  }}
+                >
+                  <TextWithTooltip text={codebaseName} />
+                </Link>
+              </Button>
+            );
+          },
+        },
+        cell: {
+          baseWidth: 11,
+          ...getSyncedColumnData(tableSettings, columnNames.CODEBASE),
+        },
+      },
+      {
+        id: columnNames.BRANCH,
+        label: "Branch",
+        data: {
+          columnSortableValuePath: `metadata.labels.${pipelineRunLabels.codebaseBranch}`,
+          render: ({ data }) => {
+            const branchName = data.metadata.labels?.[pipelineRunLabels.codebaseBranch];
+
+            if (!branchName) {
+              return null;
+            }
+
+            return (
+              <div className="text-muted-foreground text-sm">
+                <TextWithTooltip text={branchName} />
+              </div>
+            );
+          },
+        },
+        cell: {
+          baseWidth: 12,
+          ...getSyncedColumnData(tableSettings, columnNames.BRANCH),
         },
       },
       {
@@ -158,81 +220,86 @@ export const useColumns = ({
           },
         },
         cell: {
-          baseWidth: 15,
+          baseWidth: 9,
           ...getSyncedColumnData(tableSettings, columnNames.RESULTS),
         },
       },
       {
         id: columnNames.PULL_REQUEST,
-        label: "Pull Request",
+        label: "PR",
         data: {
           render: ({ data }) => {
-            const link = getPullRequestURL(data);
+            const changeNumber = data.metadata.annotations?.[tektonResultAnnotations.gitChangeNumber];
+            const changeUrl = data.metadata.annotations?.[tektonResultAnnotations.gitChangeUrl];
 
-            if (!link) {
-              return null;
+            if (!changeNumber) {
+              return <span className="text-muted-foreground text-sm">-</span>;
+            }
+
+            if (changeUrl) {
+              return (
+                <Button variant="link" asChild className="p-0 whitespace-normal w-full justify-start">
+                  <a href={changeUrl} target="_blank" rel="noopener noreferrer">
+                    <TextWithTooltip text={`#${changeNumber}`} />
+                  </a>
+                </Button>
+              );
             }
 
             return (
-              <ResourceIconLink
-                tooltipTitle={"Go to the Pull Request page"}
-                link={link}
-                Icon={<ExternalLink />}
-                name="pull request"
-              />
+              <div className="text-muted-foreground text-sm">
+                <TextWithTooltip text={`#${changeNumber}`} />
+              </div>
             );
           },
         },
         cell: {
-          baseWidth: 10,
+          baseWidth: 5,
           ...getSyncedColumnData(tableSettings, columnNames.PULL_REQUEST),
-          props: {
-            align: "center",
-          },
         },
       },
       {
-        id: columnNames.STARTED_AT,
-        label: "Started at",
+        id: columnNames.AUTHOR,
+        label: "Author",
         data: {
-          customSortFn: (a, b) => {
-            const aStartTime = a?.status?.startTime;
-            const bStartTime = b?.status?.startTime;
-
-            if (!aStartTime || !bStartTime) {
-              return 0;
-            }
-
-            const aStartTimeDate = new Date(aStartTime).getTime();
-            const bStartTimeDate = new Date(bStartTime).getTime();
-
-            if (aStartTimeDate < bStartTimeDate) {
-              return -1;
-            } else if (aStartTimeDate > bStartTimeDate) {
-              return 1;
-            }
-
-            return 0;
-          },
           render: ({ data }) => {
-            const startTime = data.status?.startTime;
-            if (!startTime) {
-              return null;
+            const author = data.metadata.annotations?.[tektonResultAnnotations.gitAuthor];
+            const avatarUrl = data.metadata.annotations?.[tektonResultAnnotations.gitAvatar];
+
+            if (!author) {
+              return <span className="text-muted-foreground text-sm">-</span>;
             }
 
-            const startedAt = new Date(startTime).toLocaleString("en-mini", {
-              month: "short",
-              day: "numeric",
-              hour: "numeric",
-              minute: "numeric",
-            });
-
-            return startedAt;
+            return <AuthorAvatar author={author} avatarUrl={avatarUrl} />;
           },
         },
         cell: {
-          baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, columnNames.STARTED_AT),
+          baseWidth: 5,
+          ...getSyncedColumnData(tableSettings, columnNames.AUTHOR),
+        },
+      },
+      {
+        id: columnNames.TYPE,
+        label: "Type",
+        data: {
+          columnSortableValuePath: `metadata.labels.${pipelineRunLabels.pipelineType}`,
+          render: ({ data }) => {
+            const pipelineType = data.metadata.labels?.[pipelineRunLabels.pipelineType];
+
+            if (!pipelineType) {
+              return null;
+            }
+
+            return (
+              <div className="text-muted-foreground text-sm">
+                <TextWithTooltip text={pipelineType} />
+              </div>
+            );
+          },
+        },
+        cell: {
+          baseWidth: 6,
+          ...getSyncedColumnData(tableSettings, columnNames.TYPE),
         },
       },
       {
@@ -269,7 +336,7 @@ export const useColumns = ({
             const completionTime = data?.status?.completionTime;
             const startTime = data?.status?.startTime;
 
-            if (!completionTime || !startTime) {
+            if (!startTime) {
               return null;
             }
 
@@ -287,11 +354,37 @@ export const useColumns = ({
               units: ["d", "h", "m", "s"],
             });
 
-            return activeDuration;
+            const tooltipContent = (
+              <div className="flex flex-col gap-1">
+                <div>
+                  <span className="font-medium">Started at: </span>
+                  <span>{formatTimestamp(startTime)}</span>
+                </div>
+                {completionTime && (
+                  <div>
+                    <span className="font-medium">Finished at: </span>
+                    <span>{formatTimestamp(completionTime)}</span>
+                  </div>
+                )}
+                <div>
+                  <span className="font-medium">Duration: </span>
+                  <span>{activeDuration}</span>
+                </div>
+              </div>
+            );
+
+            return (
+              <Tooltip title={tooltipContent}>
+                <div className="flex items-center justify-between gap-1 w-full">
+                  <span className="text-sm">{activeDuration}</span>
+                  <Clock className="text-muted-foreground size-3.5" />
+                </div>
+              </Tooltip>
+            );
           },
         },
         cell: {
-          baseWidth: 5,
+          baseWidth: 7,
           ...getSyncedColumnData(tableSettings, columnNames.TIME),
         },
       },

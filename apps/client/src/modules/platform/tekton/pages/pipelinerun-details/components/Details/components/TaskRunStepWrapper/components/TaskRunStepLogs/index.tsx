@@ -1,4 +1,6 @@
+import { EmptyList } from "@/core/components/EmptyList";
 import { PodLogsTerminal } from "@/core/components/PodLogsTerminal";
+import { Card } from "@/core/components/ui/card";
 import { usePodWatchList } from "@/k8s/api/groups/Core/Pod";
 import { routePipelineRunDetails } from "@/modules/platform/tekton/pages/pipelinerun-details/route";
 import { Pod } from "@my-project/shared";
@@ -35,6 +37,8 @@ export const TaskRunStepLogs = ({ stepName, taskRunName }: { stepName: string; t
       height={400}
     />
   ) : (
-    <div className="p-4 text-center text-[#666]">No pods available for this step</div>
+    <Card className="h-full overflow-hidden">
+      <EmptyList customText="No pods available for this step!" description="Pods are available only if the step is running." />
+    </Card>
   );
 };

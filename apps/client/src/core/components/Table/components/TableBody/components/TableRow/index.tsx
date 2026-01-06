@@ -49,7 +49,7 @@ export const TableRow = <DataType,>({
   return (
     <TableRowUI {...selectableRowProps(item, !!isRowSelected)}>
       {!!handleSelectRowClick && (
-        <TableCellUI className="px-3 py-1 text-center">
+        <TableCellUI className="px-1 py-2 text-center">
           <Checkbox
             checked={isRowSelected}
             onCheckedChange={(checked) => {

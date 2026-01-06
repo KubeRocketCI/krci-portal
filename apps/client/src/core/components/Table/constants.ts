@@ -27,7 +27,7 @@ const TABLE_CELL_DEFAULT_PROPS = {
 
 export const TABLE_CELL_DEFAULTS = {
   SHOW: true,
-  WIDTH: 5, // in percent
+  WIDTH: 3, // in percent
   IS_FIXED: false,
   PROPS: TABLE_CELL_DEFAULT_PROPS,
 } as const;

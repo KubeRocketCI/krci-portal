@@ -49,7 +49,7 @@ export const TableHead = <DataType,>({
     <TableHeaderUI className="bg-muted">
       <TableRowUI>
         {!!handleSelectAllClick && !!selectableRowCount && (
-          <TableHeadUI className="relative p-1 align-bottom">
+          <TableHeadUI className="relative px-1 py-2 align-bottom">
             <div className="flex flex-row flex-nowrap items-center justify-center">
               <Checkbox
                 checked={selectedAllIndeterminate ? "indeterminate" : selectAllChecked}

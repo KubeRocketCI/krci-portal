@@ -5,6 +5,8 @@ import { VALIDATED_PROTOCOL } from "@/k8s/constants/validatedProtocols";
 import { routePipelineRunDetails } from "../../route";
 import { Link } from "@tanstack/react-router";
 import { Card } from "@/core/components/ui/card";
+import React from "react";
+import { EmptyList } from "@/core/components/EmptyList";
 
 export const Results = () => {
   const params = routePipelineRunDetails.useParams();
@@ -16,10 +18,24 @@ export const Results = () => {
 
   const pipelineRun = pipelineRunWatch.query.data;
 
+  const results = React.useMemo(() => {
+    return pipelineRun?.status?.results || [];
+  }, [pipelineRun]);
+
+  const noResults = results.length === 0;
+
+  if (noResults) {
+    return (
+      <Card>
+        <EmptyList customText="No results found!" description="Results appear only if the pipeline produces them." />
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <NameValueTable
-        rows={(pipelineRun?.status?.results || []).map((el: Record<string, string>) => {
+        rows={results.map((el: Record<string, string>) => {
           const isLink = getValidURLPattern(VALIDATED_PROTOCOL.HTTP_OR_HTTPS).test(el.value);
 
           return {
