@@ -30,13 +30,12 @@ A Helm chart for Kubernetes
 | configEnv.DEFAULT_CLUSTER_NAME | string | `"core"` |  |
 | configEnv.DEFAULT_CLUSTER_NAMESPACE | string | `"krci"` |  |
 | configEnv.DEPENDENCY_TRACK_URL | string | `"https://deptrack.example.com"` |  |
-| configEnv.DEPLOY_CLIENT_DIST_DIR | string | `""` |  |
-| configEnv.LOCAL_CLIENT_ORIGIN | string | `"http://localhost:8000"` |  |
+| configEnv.DEPLOY_CLIENT_DIST_DIR | string | `"/app/static"` |  |
 | configEnv.OIDC_CLIENT_ID | string | `"portal"` |  |
 | configEnv.OIDC_CODE_CHALLENGE_METHOD | string | `"S256"` |  |
 | configEnv.OIDC_ISSUER_URL | string | `"https://keycloak.example.com/realms/shared"` |  |
 | configEnv.OIDC_SCOPE | string | `"openid profile email"` |  |
-| configEnv.SERVER_PORT | int | `3001` |  |
+| configEnv.SERVER_PORT | int | `3000` |  |
 | configEnv.SONAR_HOST_URL | string | `"https://sonar.example.com/"` |  |
 | configEnv.TEKTON_RESULTS_URL | string | `"https://tekton-results.example.com"` |  |
 | eso.aws | object | `{"region":"eu-central-1","roleArn":"arn:aws:iam::012345678910:role/AWSIRSA_Shared_ExternalSecretOperatorAccess"}` | AWS configuration (if provider is `aws`). |
