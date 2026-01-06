@@ -21,7 +21,7 @@
     "@fastify/websocket": "^11.0.2",
     "@my-project/shared": "workspace:*",
     "@my-project/trpc": "workspace:*",
-    "@trpc/server": "^11.1.2",
+    "@trpc/server": "^11.8.0",
     "better-sqlite3": "^11.9.1",
     "cookie": "^1.0.2",
     "dotenv": "^16.4.7",
