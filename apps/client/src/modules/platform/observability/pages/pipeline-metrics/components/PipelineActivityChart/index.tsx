@@ -37,7 +37,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   const total = succeeded + failed;
 
   return (
-    <div className="rounded-lg border bg-background p-3 shadow-md">
+    <div className="bg-background rounded-lg border p-3 shadow-md">
       <p className="mb-2 font-medium">{label}</p>
       <div className="space-y-1 text-sm">
         <div className="flex items-center justify-between gap-4">
@@ -49,14 +49,18 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
             <span className="size-2 rounded-full" style={{ backgroundColor: MAIN_COLOR.GREEN }} />
             Succeeded
           </span>
-          <span className="font-medium" style={{ color: MAIN_COLOR.GREEN }}>{succeeded}</span>
+          <span className="font-medium" style={{ color: MAIN_COLOR.GREEN }}>
+            {succeeded}
+          </span>
         </div>
         <div className="flex items-center justify-between gap-4">
           <span className="flex items-center gap-1.5">
             <span className="size-2 rounded-full" style={{ backgroundColor: MAIN_COLOR.RED }} />
             Failed
           </span>
-          <span className="font-medium" style={{ color: MAIN_COLOR.RED }}>{failed}</span>
+          <span className="font-medium" style={{ color: MAIN_COLOR.RED }}>
+            {failed}
+          </span>
         </div>
       </div>
     </div>
@@ -80,20 +84,12 @@ function ChartContent({ data, isLoading }: { data: ChartDataPoint[] | undefined;
     );
   }
 
-  const labelInterval = data.length > LABEL_DENSITY_THRESHOLD
-    ? Math.ceil(data.length / MAX_X_AXIS_LABELS) - 1
-    : 0;
+  const labelInterval = data.length > LABEL_DENSITY_THRESHOLD ? Math.ceil(data.length / MAX_X_AXIS_LABELS) - 1 : 0;
 
   return (
     <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
       <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-        <XAxis
-          dataKey="label"
-          tick={{ fontSize: 11 }}
-          tickLine={false}
-          axisLine={false}
-          interval={labelInterval}
-        />
+        <XAxis dataKey="label" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} interval={labelInterval} />
         <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
         <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.5 }} />
         <Bar dataKey="succeeded" stackId="activity" fill={MAIN_COLOR.GREEN} radius={[2, 2, 0, 0]} />

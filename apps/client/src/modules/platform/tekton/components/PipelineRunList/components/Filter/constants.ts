@@ -16,7 +16,9 @@ export const matchFunctions: MatchFunctions<PipelineRun, PipelineRunListFilterVa
     const pipelineRunType = item?.metadata?.labels?.[pipelineRunLabels.pipelineType];
 
     if (pipelineRunType === pipelineType.deploy || pipelineRunType === pipelineType.clean) {
-      const appPayload = item?.spec?.params?.find((param: { name: string; value?: string }) => param.name === "APPLICATIONS_PAYLOAD");
+      const appPayload = item?.spec?.params?.find(
+        (param: { name: string; value?: string }) => param.name === "APPLICATIONS_PAYLOAD"
+      );
 
       if (!appPayload) {
         return false;

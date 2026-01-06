@@ -97,7 +97,12 @@ export function parseRecordName(recordName: string): { resultUid: string; record
   const resultsIndex = parts.indexOf("results");
   const recordsIndex = parts.indexOf("records");
 
-  if (resultsIndex === -1 || recordsIndex === -1 || resultsIndex + 1 >= parts.length || recordsIndex + 1 >= parts.length) {
+  if (
+    resultsIndex === -1 ||
+    recordsIndex === -1 ||
+    resultsIndex + 1 >= parts.length ||
+    recordsIndex + 1 >= parts.length
+  ) {
     return null;
   }
 

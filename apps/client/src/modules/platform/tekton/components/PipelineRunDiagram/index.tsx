@@ -235,7 +235,7 @@ const PipelineRunDiagramView: React.FC<{
         nodesConnectable={false}
         // elementsSelectable={false}
         selectNodesOnDrag={false}
-        onSelectionChange={() => { }}
+        onSelectionChange={() => {}}
         panOnDrag={true}
         proOptions={{ hideAttribution: true }}
       >

@@ -25,9 +25,7 @@ export const useInfoRows = (): GridItem[] => {
     const condition = pipelineRun.status?.conditions?.[0];
     const statusConfig = getPipelineRunConditionStatusIcon(condition);
 
-    const labels = Object.entries(pipelineRun.metadata?.labels || {}).map(
-      ([key, value]) => `${key}:${value}`
-    );
+    const labels = Object.entries(pipelineRun.metadata?.labels || {}).map(([key, value]) => `${key}:${value}`);
 
     const startTime = pipelineRun.status?.startTime;
     const completionTime = pipelineRun.status?.completionTime;
@@ -39,9 +37,7 @@ export const useInfoRows = (): GridItem[] => {
 
     // Get pipeline name from labels or pipelineRef
     const pipelineName =
-      pipelineRun.metadata?.labels?.[pipelineRunLabels.pipeline] ||
-      pipelineRun.spec?.pipelineRef?.name ||
-      "N/A";
+      pipelineRun.metadata?.labels?.[pipelineRunLabels.pipeline] || pipelineRun.spec?.pipelineRef?.name || "N/A";
 
     // Get codebase info from EDP labels
     const codebase = pipelineRun.metadata?.labels?.[pipelineRunLabels.codebase] || "";
@@ -134,7 +130,7 @@ export const useInfoRows = (): GridItem[] => {
                   href={gitChangeUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary hover:underline text-sm"
+                  className="text-primary text-sm hover:underline"
                 >
                   #{gitChangeNumber}
                 </a>
@@ -146,11 +142,7 @@ export const useInfoRows = (): GridItem[] => {
         : []),
       {
         label: "Message",
-        content: (
-          <span className="text-foreground text-sm">
-            {condition?.message || "No message"}
-          </span>
-        ),
+        content: <span className="text-foreground text-sm">{condition?.message || "No message"}</span>,
         colSpan: 4,
       },
       {

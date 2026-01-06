@@ -31,10 +31,7 @@ export const createCodebaseDraftInputSchema = z.object({
   jiraServer: codebaseDraftSchema.shape.spec.shape.jiraServer,
   lang: codebaseDraftSchema.shape.spec.shape.lang,
   private: codebaseDraftSchema.shape.spec.shape.private,
-  repositoryUrl: codebaseDraftSchema.shape.spec.shape.repository
-    .unwrap()
-    .shape.url
-    .nullable(),
+  repositoryUrl: codebaseDraftSchema.shape.spec.shape.repository.unwrap().shape.url.nullable(),
   strategy: codebaseDraftSchema.shape.spec.shape.strategy,
   testReportFramework: codebaseDraftSchema.shape.spec.shape.testReportFramework,
   ticketNamePattern: codebaseDraftSchema.shape.spec.shape.ticketNamePattern,

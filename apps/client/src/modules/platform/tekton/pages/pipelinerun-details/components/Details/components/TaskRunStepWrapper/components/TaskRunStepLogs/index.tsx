@@ -38,7 +38,10 @@ export const TaskRunStepLogs = ({ stepName, taskRunName }: { stepName: string; t
     />
   ) : (
     <Card className="h-full overflow-hidden">
-      <EmptyList customText="No pods available for this step!" description="Pods are available only if the step is running." />
+      <EmptyList
+        customText="No pods available for this step!"
+        description="Pods are available only if the step is running."
+      />
     </Card>
   );
 };

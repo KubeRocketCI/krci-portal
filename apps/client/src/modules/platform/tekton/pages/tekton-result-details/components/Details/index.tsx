@@ -13,7 +13,9 @@ export const Details = () => {
     <TektonResultsLogViewer
       content={logsQuery.data?.logs || ""}
       isLoading={showLoading}
-      error={logsQuery.isError ? (logsQuery.error instanceof Error ? logsQuery.error.message : "Unknown error") : undefined}
+      error={
+        logsQuery.isError ? (logsQuery.error instanceof Error ? logsQuery.error.message : "Unknown error") : undefined
+      }
       downloadFilename={`${pipelineRunName}-log.txt`}
     />
   );

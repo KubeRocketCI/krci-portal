@@ -16,17 +16,14 @@ const timeRangeOptions: { value: TimeRange; label: string }[] = [
 
 export function TimeRangeSelector({ value, onChange }: TimeRangeSelectorProps) {
   return (
-    <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
+    <div className="bg-muted flex items-center gap-1 rounded-lg p-1">
       {timeRangeOptions.map((option) => (
         <Button
           key={option.value}
           variant={value === option.value ? "default" : "ghost"}
           size="sm"
           onClick={() => onChange(option.value)}
-          className={cn(
-            "h-7 px-3 text-xs",
-            value === option.value && "shadow-sm"
-          )}
+          className={cn("h-7 px-3 text-xs", value === option.value && "shadow-sm")}
         >
           {option.label}
         </Button>

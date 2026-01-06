@@ -48,17 +48,11 @@ export default function PipelineMetricsPageContent() {
           {isError && (
             <div className="rounded-lg border border-red-200 bg-red-50 p-4">
               <p className="text-sm font-medium text-red-800">Failed to load metrics</p>
-              <p className="mt-1 text-sm text-red-600">
-                {error instanceof Error ? error.message : "Unknown error"}
-              </p>
+              <p className="mt-1 text-sm text-red-600">{error instanceof Error ? error.message : "Unknown error"}</p>
             </div>
           )}
 
-          <MetricsOverview
-            summary={overall?.summary}
-            successRate={overall?.successRate}
-            isLoading={isLoading}
-          />
+          <MetricsOverview summary={overall?.summary} successRate={overall?.successRate} isLoading={isLoading} />
 
           <PipelineTypeBreakdown metrics={pipelineMetrics} isLoading={isLoading} />
 

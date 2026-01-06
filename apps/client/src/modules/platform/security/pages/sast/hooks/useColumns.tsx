@@ -89,7 +89,7 @@ export const useColumns = (): TableColumn<ProjectWithMetrics>[] => {
             const ratingLabel = getRatingLabel(rating);
             return (
               <div className="flex items-center gap-2">
-                <Bug className="h-4 w-4 text-muted-foreground" />
+                <Bug className="text-muted-foreground h-4 w-4" />
                 <span className="text-sm font-medium">{bugs || "0"}</span>
                 <Badge variant="outline" className={`text-xs ${getRatingColorClass(ratingLabel)}`}>
                   {ratingLabel || "-"}
@@ -114,7 +114,7 @@ export const useColumns = (): TableColumn<ProjectWithMetrics>[] => {
             const ratingLabel = getRatingLabel(rating);
             return (
               <div className="flex items-center gap-2">
-                <ShieldAlert className="h-4 w-4 text-muted-foreground" />
+                <ShieldAlert className="text-muted-foreground h-4 w-4" />
                 <span className="text-sm font-medium">{vulns || "0"}</span>
                 <Badge variant="outline" className={`text-xs ${getRatingColorClass(ratingLabel)}`}>
                   {ratingLabel || "-"}
@@ -139,7 +139,7 @@ export const useColumns = (): TableColumn<ProjectWithMetrics>[] => {
             const ratingLabel = getRatingLabel(rating);
             return (
               <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                <AlertTriangle className="text-muted-foreground h-4 w-4" />
                 <span className="text-sm font-medium">{smells || "0"}</span>
                 <Badge variant="outline" className={`text-xs ${getRatingColorClass(ratingLabel)}`}>
                   {ratingLabel || "-"}
@@ -162,7 +162,7 @@ export const useColumns = (): TableColumn<ProjectWithMetrics>[] => {
             const coverage = data.measures?.coverage;
             return (
               <div className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                <BarChart3 className="text-muted-foreground h-4 w-4" />
                 <span className="text-sm font-medium">{coverage ? `${coverage}%` : "-"}</span>
               </div>
             );
@@ -182,7 +182,7 @@ export const useColumns = (): TableColumn<ProjectWithMetrics>[] => {
             const duplications = data.measures?.duplicated_lines_density;
             return (
               <div className="flex items-center gap-2">
-                <Copy className="h-4 w-4 text-muted-foreground" />
+                <Copy className="text-muted-foreground h-4 w-4" />
                 <span className="text-sm font-medium">{duplications ? `${duplications}%` : "-"}</span>
               </div>
             );

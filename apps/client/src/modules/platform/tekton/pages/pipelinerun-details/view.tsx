@@ -44,28 +44,28 @@ const HeaderMetadata = () => {
 
   const startedAt = pipelineRunStatus.startTime
     ? new Date(pipelineRunStatus.startTime).toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-    })
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+      })
     : null;
 
   const activeDuration = pipelineRunStatus.startTime
     ? humanize(
-      pipelineRunStatus.completionTime
-        ? new Date(pipelineRunStatus.completionTime).getTime() - new Date(pipelineRunStatus.startTime).getTime()
-        : new Date().getTime() - new Date(pipelineRunStatus.startTime).getTime(),
-      {
-        language: "en-mini",
-        spacer: "",
-        delimiter: " ",
-        fallbacks: ["en"],
-        largest: 2,
-        round: true,
-        units: ["d", "h", "m", "s"],
-      }
-    )
+        pipelineRunStatus.completionTime
+          ? new Date(pipelineRunStatus.completionTime).getTime() - new Date(pipelineRunStatus.startTime).getTime()
+          : new Date().getTime() - new Date(pipelineRunStatus.startTime).getTime(),
+        {
+          language: "en-mini",
+          spacer: "",
+          delimiter: " ",
+          fallbacks: ["en"],
+          largest: 2,
+          round: true,
+          units: ["d", "h", "m", "s"],
+        }
+      )
     : null;
 
   return (
@@ -119,7 +119,7 @@ const HeaderMetadata = () => {
                 href={changeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:underline text-sm font-medium"
+                className="text-primary text-sm font-medium hover:underline"
               >
                 #{changeNumber}
               </a>

@@ -25,7 +25,7 @@ import {
  */
 export const buildTimeRangeFilter = (timeRange: TimeRange): string => {
   const startDateIso = getTimeRangeStartISO(timeRange);
-  return `data.status.startTime > timestamp('${startDateIso}')`
+  return `data.status.startTime > timestamp('${startDateIso}')`;
 };
 
 /**

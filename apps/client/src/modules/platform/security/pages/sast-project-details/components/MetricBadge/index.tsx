@@ -23,11 +23,7 @@ export function MetricBadge({ rating, value, label, type = "rating" }: MetricBad
       <div className="flex flex-col items-center gap-1">
         <div className="flex items-center gap-2">
           {/* Indicator dot */}
-          <div
-            className={`h-2 w-2 rounded-full ${
-              isGood ? INDICATOR_COLORS.GOOD : INDICATOR_COLORS.WARNING
-            }`}
-          />
+          <div className={`h-2 w-2 rounded-full ${isGood ? INDICATOR_COLORS.GOOD : INDICATOR_COLORS.WARNING}`} />
           <span
             className={`text-xl font-semibold ${
               label === "Coverage" ? getCoverageColorClass(numValue) : "text-foreground"
@@ -46,19 +42,13 @@ export function MetricBadge({ rating, value, label, type = "rating" }: MetricBad
       <div className="flex items-center gap-2">
         {/* Rating badge */}
         {rating && (
-          <div
-            className={`flex h-8 w-8 items-center justify-center rounded-full ${getRatingBgClass(
-              rating
-            )}`}
-          >
-            <span className={`text-sm font-semibold ${getRatingTextClass(rating)}`}>
-              {rating.toUpperCase()}
-            </span>
+          <div className={`flex h-8 w-8 items-center justify-center rounded-full ${getRatingBgClass(rating)}`}>
+            <span className={`text-sm font-semibold ${getRatingTextClass(rating)}`}>{rating.toUpperCase()}</span>
           </div>
         )}
 
         {/* Value */}
-        <span className="text-xl font-semibold text-foreground">{displayValue}</span>
+        <span className="text-foreground text-xl font-semibold">{displayValue}</span>
       </div>
 
       {/* Label */}
