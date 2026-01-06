@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { CheckCircle2, Shield } from "lucide-react";
+import { PolicyViolation } from "@my-project/shared";
 import { useViolationsByProject } from "../../hooks/useViolationsByProject";
 import { useViolationsColumns } from "../../hooks/useViolationsColumns";
 import { Switch } from "@/core/components/ui/switch";
@@ -27,11 +28,11 @@ export function ProjectPolicyViolations({ projectUuid }: ProjectPolicyViolations
     if (showSuppressed) {
       return violations;
     }
-    return violations.filter((v) => !v.analysis.isSuppressed);
+    return violations.filter((v: PolicyViolation) => !v.analysis.isSuppressed);
   }, [violations, showSuppressed]);
 
   const { suppressedCount, activeCount } = useMemo(() => {
-    const suppressed = violations.filter((v) => v.analysis.isSuppressed).length;
+    const suppressed = violations.filter((v: PolicyViolation) => v.analysis.isSuppressed).length;
     return { suppressedCount: suppressed, activeCount: violations.length - suppressed };
   }, [violations]);
 

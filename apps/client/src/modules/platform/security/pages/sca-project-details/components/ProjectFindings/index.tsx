@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/c
 import { CheckCircle2 } from "lucide-react";
 import { Switch } from "@/core/components/ui/switch";
 import { Label } from "@/core/components/ui/label";
+import { Finding } from "@my-project/shared";
 import { useFindingsByProject } from "../../hooks/useFindingsByProject";
 import { FindingRow } from "./components/FindingRow";
 
@@ -25,11 +26,11 @@ export function ProjectFindings({ projectUuid }: ProjectFindingsProps) {
     if (showSuppressed) {
       return findings;
     }
-    return findings.filter((f) => !f.analysis.isSuppressed);
+    return findings.filter((f: Finding) => !f.analysis.isSuppressed);
   }, [findings, showSuppressed]);
 
   const { suppressedCount, activeCount } = useMemo(() => {
-    const suppressed = findings.filter((f) => f.analysis.isSuppressed).length;
+    const suppressed = findings.filter((f: Finding) => f.analysis.isSuppressed).length;
     return { suppressedCount: suppressed, activeCount: findings.length - suppressed };
   }, [findings]);
 
@@ -105,7 +106,7 @@ export function ProjectFindings({ projectUuid }: ProjectFindingsProps) {
 
             {/* Findings List */}
             <div className="max-h-[600px] space-y-2 overflow-auto">
-              {displayedFindings.map((finding, index) => (
+              {displayedFindings.map((finding: Finding, index: number) => (
                 <FindingRow key={`${finding.matrix}-${index}`} finding={finding} />
               ))}
             </div>

@@ -15,7 +15,7 @@ export const useWatchCDPipelineByCodebaseBranch = (
 
   const cdPipelineName = React.useMemo(() => {
     const stage = stageListWatch.data.array.find((stage) => {
-      return stage.spec.qualityGates.some((qualityGate) => {
+      return stage.spec.qualityGates.some((qualityGate: { branchName?: string | null }) => {
         return qualityGate.branchName === codebaseBranchName;
       });
     });

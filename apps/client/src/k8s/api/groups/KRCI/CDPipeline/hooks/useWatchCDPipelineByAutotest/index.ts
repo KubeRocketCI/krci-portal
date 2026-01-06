@@ -12,7 +12,7 @@ export const useWatchCDPipelineByAutotest = (codebaseName: string | undefined, n
 
   const cdPipelineName = React.useMemo(() => {
     const stage = stageListWatch.data.array.find((stage) => {
-      return stage.spec.qualityGates.some((qualityGate) => {
+      return stage.spec.qualityGates.some((qualityGate: { autotestName?: string | null }) => {
         return qualityGate.autotestName === codebaseName;
       });
     });

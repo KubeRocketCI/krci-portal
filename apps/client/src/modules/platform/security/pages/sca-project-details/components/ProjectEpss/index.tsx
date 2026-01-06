@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { CheckCircle2, TrendingUp } from "lucide-react";
+import { Finding } from "@my-project/shared";
 import { useEpssFindings } from "../../hooks/useEpssFindings";
 import { useEpssColumns } from "../../hooks/useEpssColumns";
 import { Switch } from "@/core/components/ui/switch";
@@ -28,11 +29,11 @@ export function ProjectEpss({ projectUuid }: ProjectEpssProps) {
     if (showSuppressed) {
       return findings;
     }
-    return findings.filter((f) => !f.analysis.isSuppressed);
+    return findings.filter((f: Finding) => !f.analysis.isSuppressed);
   }, [findings, showSuppressed]);
 
   const { suppressedCount, activeCount } = useMemo(() => {
-    const suppressed = findings.filter((f) => f.analysis.isSuppressed).length;
+    const suppressed = findings.filter((f: Finding) => f.analysis.isSuppressed).length;
     return { suppressedCount: suppressed, activeCount: findings.length - suppressed };
   }, [findings]);
 

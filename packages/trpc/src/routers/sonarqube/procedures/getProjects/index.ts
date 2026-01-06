@@ -4,6 +4,7 @@ import { createSonarQubeClient } from "../../../../clients/sonarqube/index.js";
 import {
   sonarqubeProjectsQueryParamsSchema,
   ProjectWithMetrics,
+  SonarQubeProject,
   SONARQUBE_METRIC_KEYS,
 } from "@my-project/shared";
 
@@ -33,7 +34,7 @@ export const getProjects = protectedProcedure
     }
 
     // Step 2: Extract project keys for batch fetch
-    const projectKeys = projectsResponse.components.map((project) => project.key);
+    const projectKeys = projectsResponse.components.map((project: SonarQubeProject) => project.key);
 
     // Step 3: Batch fetch measures for ALL projects (1 API call)
     let measuresByComponent: Record<string, Record<string, string>> = {};
@@ -47,7 +48,7 @@ export const getProjects = protectedProcedure
     }
 
     // Step 4: Combine project data with measures
-    const projectsWithMetrics: ProjectWithMetrics[] = projectsResponse.components.map((project) => {
+    const projectsWithMetrics: ProjectWithMetrics[] = projectsResponse.components.map((project: SonarQubeProject) => {
       const measures = measuresByComponent[project.key];
 
       // Extract quality gate status from alert_status metric
