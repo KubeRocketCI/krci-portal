@@ -26,36 +26,36 @@ A Helm chart for Kubernetes
 | autoscaling.maxReplicas | int | `100` | Maximum number of replicas |
 | autoscaling.minReplicas | int | `1` | Minimum number of replicas |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` | Target CPU utilization percentage |
-| config | object | `{"apiPrefix":"/api","defaultClusterName":"","defaultClusterNamespace":"","deployClientDistDir":"/app/static","oidc":{"clientSecretName":"","enabled":false,"oidcClientId":"","oidcClientSecretKey":"","oidcCodeChallengeMethod":"S256","oidcIssuerUrl":"","oidcScope":"openid profile email"},"serverSecretKey":"","serverSecretName":""}` | Application configuration These values will be converted to environment variables in the deployment |
-| config.apiPrefix | string | `"/api"` | API prefix for backend routes (API_PREFIX env var) |
-| config.defaultClusterName | string | `""` | Key name for default cluster name in the secret |
-| config.defaultClusterNamespace | string | `""` | Default namespace (DEFAULT_CLUSTER_NAMESPACE env var) |
-| config.deployClientDistDir | string | `"/app/static"` | Directory where client static files are deployed (DEPLOY_CLIENT_DIST_DIR env var) |
-| config.oidc | object | `{"clientSecretName":"","enabled":false,"oidcClientId":"","oidcClientSecretKey":"","oidcCodeChallengeMethod":"S256","oidcIssuerUrl":"","oidcScope":"openid profile email"}` | OIDC configuration - variables will be taken from Kubernetes secret |
-| config.oidc.clientSecretName | string | `""` | Name of the Kubernetes secret containing OIDC configuration |
-| config.oidc.enabled | bool | `false` | Enable OIDC authentication |
-| config.oidc.oidcClientId | string | `""` | Key name for OIDC client ID in the secret |
-| config.oidc.oidcClientSecretKey | string | `""` | Key name for OIDC client secret in the secret |
-| config.oidc.oidcCodeChallengeMethod | string | `"S256"` | Key name for OIDC code challenge method in the secret (e.g., "S256") |
-| config.oidc.oidcIssuerUrl | string | `""` | Key name for OIDC issuer URL in the secret (e.g., https://idp.example.com/realms/broker) |
-| config.oidc.oidcScope | string | `"openid profile email"` | Key name for OIDC scopes in the secret (e.g., "openid profile email") |
-| config.serverSecretKey | string | `""` | Key name for secret containing server secret |
-| config.serverSecretName | string | `""` | Name of the Kubernetes secret containing server secret |
-| externalSecrets.enabled | bool | `false` | Configure External Secrets for KubeRocketCI platform. Deploy SecretStore. Default: false |
-| externalSecrets.manageKRCIPortalSecrets | bool | `true` |  |
-| externalSecrets.manageKRCIPortalSecretsName | string | `"/krci/deploy-secrets"` |  |
-| externalSecrets.secretProvider.aws.region | string | `"eu-central-1"` | AWS Region where secrets are stored, e.g. eu-central-1 |
-| externalSecrets.secretProvider.aws.role | string | `nil` | IAM Role to be used for Accessing AWS either Parameter Store or Secret Manager. Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME> |
-| externalSecrets.secretProvider.aws.service | string | `"ParameterStore"` | Use AWS as a Secret Provider. Can be ParameterStore or SecretsManager |
-| externalSecrets.secretProvider.generic.secretStore.name | string | `"example-secret-store"` | Defines SecretStore name. |
-| externalSecrets.secretProvider.generic.secretStore.providerConfig | object | `{}` | Defines SecretStore provider configuration. |
-| externalSecrets.type | string | `"aws"` | Defines provider type. One of `aws` or `generic`. |
+| configEnv.API_PREFIX | string | `"/api"` |  |
+| configEnv.DEFAULT_CLUSTER_NAME | string | `"core"` |  |
+| configEnv.DEFAULT_CLUSTER_NAMESPACE | string | `"krci"` |  |
+| configEnv.DEPENDENCY_TRACK_URL | string | `"https://deptrack.example.com"` |  |
+| configEnv.DEPLOY_CLIENT_DIST_DIR | string | `""` |  |
+| configEnv.LOCAL_CLIENT_ORIGIN | string | `"http://localhost:8000"` |  |
+| configEnv.OIDC_CLIENT_ID | string | `"portal"` |  |
+| configEnv.OIDC_CODE_CHALLENGE_METHOD | string | `"S256"` |  |
+| configEnv.OIDC_ISSUER_URL | string | `"https://keycloak.example.com/realms/shared"` |  |
+| configEnv.OIDC_SCOPE | string | `"openid profile email"` |  |
+| configEnv.SERVER_PORT | int | `3001` |  |
+| configEnv.SONAR_HOST_URL | string | `"https://sonar.example.com/"` |  |
+| configEnv.TEKTON_RESULTS_URL | string | `"https://tekton-results.example.com"` |  |
+| eso.aws | object | `{"region":"eu-central-1","roleArn":"arn:aws:iam::012345678910:role/AWSIRSA_Shared_ExternalSecretOperatorAccess"}` | AWS configuration (if provider is `aws`). |
+| eso.aws.region | string | `"eu-central-1"` | AWS region. |
+| eso.aws.roleArn | string | `"arn:aws:iam::012345678910:role/AWSIRSA_Shared_ExternalSecretOperatorAccess"` | AWS role ARN for the ExternalSecretOperator to assume. |
+| eso.enabled | bool | `false` | Install components of the ESO. |
+| eso.generic.secretStore.providerConfig | object | `{}` | Defines SecretStore provider configuration. |
+| eso.provider | string | `"aws"` | Defines provider type. One of `aws`, `generic`, or `vault`. |
+| eso.secretPath | string | `"/infra/core/addons/krci-portal"` | Defines the path to the secret in the provider. If provider is `vault`, this is the path must be prefixed with `secret/`. |
+| eso.vault | object | `{"mountPath":"core","role":"krci-portal","server":"http://vault.vault:8200"}` | Vault configuration (if provider is `vault`). |
+| eso.vault.mountPath | string | `"core"` | Mount path for the Kubernetes authentication method. |
+| eso.vault.role | string | `"krci-portal"` | Vault role for the Kubernetes authentication method. |
+| eso.vault.server | string | `"http://vault.vault:8200"` | Vault server URL. |
 | fullnameOverride | string | `""` | Override the full name of the chart |
 | image | object | `{"pullPolicy":"IfNotPresent","repository":"krci-portal","tag":""}` | Image configuration |
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | image.repository | string | `"krci-portal"` | Image repository |
 | image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
-| imagePullSecrets | list | `[{"name":"regcred"}]` | Image pull secrets for private registries |
+| imagePullSecrets | list | `[]` | Image pull secrets for private registries |
 | ingress | object | `{"annotations":{},"className":"","dnsWildcard":"","enabled":false,"hosts":[{"host":"edpDefault","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}],"tls":[]}` | Ingress configuration |
 | ingress.annotations | object | `{}` | Ingress annotations |
 | ingress.className | string | `""` | Ingress class name |

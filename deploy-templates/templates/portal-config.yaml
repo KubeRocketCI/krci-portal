@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: portal-config
+  labels:
+    {{- include "krci-portal.labels" . | nindent 4 }}
+data:
+{{- with .Values.configEnv }}
+{{- range $key, $value := . }}
+  {{ $key }}: {{ $value | quote }}
+{{- end }}
+{{- end }}
