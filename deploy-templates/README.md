@@ -38,6 +38,7 @@ A Helm chart for Kubernetes
 | configEnv.SERVER_PORT | int | `3000` |  |
 | configEnv.SONAR_HOST_URL | string | `"https://sonar.example.com/"` |  |
 | configEnv.TEKTON_RESULTS_URL | string | `"https://tekton-results.example.com"` |  |
+| eso.apiVersion | string | `"external-secrets.io/v1"` | Defines API version for the ExternalSecret resource. |
 | eso.aws | object | `{"region":"eu-central-1","roleArn":"arn:aws:iam::012345678910:role/AWSIRSA_Shared_ExternalSecretOperatorAccess"}` | AWS configuration (if provider is `aws`). |
 | eso.aws.region | string | `"eu-central-1"` | AWS region. |
 | eso.aws.roleArn | string | `"arn:aws:iam::012345678910:role/AWSIRSA_Shared_ExternalSecretOperatorAccess"` | AWS role ARN for the ExternalSecretOperator to assume. |

@@ -183,6 +183,8 @@ eso:
   enabled: false
   # -- Defines provider type. One of `aws`, `generic`, or `vault`.
   provider: "aws"
+  # -- Defines API version for the ExternalSecret resource.
+  apiVersion: "external-secrets.io/v1"
   # -- Defines the path to the secret in the provider. If provider is `vault`, this is the path must be prefixed with `secret/`.
   secretPath: "/infra/core/addons/krci-portal"
   # -- Vault configuration (if provider is `vault`).
