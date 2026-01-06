@@ -14,8 +14,8 @@ export const authMeProcedure = protectedProcedure
       return undefined;
     }
 
-  return {
-    ...userData,
-    issuerUrl: ctx.oidcConfig.issuerURL || undefined,
-  };
-});
+    return {
+      ...userData,
+      issuerUrl: ctx.oidcConfig.issuerURL || undefined,
+    };
+  });
