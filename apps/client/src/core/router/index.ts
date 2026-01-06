@@ -64,6 +64,8 @@ import { routePipelineMetrics } from "@/modules/platform/observability/pages/pip
 import { routeSCA } from "@/modules/platform/security/pages/sca/route";
 import { routeSCAProjects } from "@/modules/platform/security/pages/sca-projects/route";
 import { routeSCAProjectDetails } from "@/modules/platform/security/pages/sca-project-details/route";
+import { routeSAST } from "@/modules/platform/security/pages/sast/route";
+import { routeSASTProjectDetails } from "@/modules/platform/security/pages/sast-project-details/route";
 
 const routeTree = rootRoute.addChildren([
   authRoute.addChildren([routeAuthLogin, routeAuthCallback]),
@@ -90,7 +92,13 @@ const routeTree = rootRoute.addChildren([
         routeTektonResultPipelineRunDetails,
       ]),
       routeObservability.addChildren([routePipelineMetrics]),
-      routeSecurity.addChildren([routeSCA, routeSCAProjects, routeSCAProjectDetails]),
+      routeSecurity.addChildren([
+        routeSCA,
+        routeSCAProjects,
+        routeSCAProjectDetails,
+        routeSAST,
+        routeSASTProjectDetails,
+      ]),
       routeConfiguration.addChildren([
         routeArgocdConfiguration,
         routeChatAssistantConfiguration,
