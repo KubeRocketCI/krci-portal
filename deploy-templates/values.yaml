@@ -23,10 +23,9 @@ configEnv:
   API_PREFIX: /api
   DEFAULT_CLUSTER_NAME: core
   DEFAULT_CLUSTER_NAMESPACE: krci
-  DEPLOY_CLIENT_DIST_DIR: ""
+  DEPLOY_CLIENT_DIST_DIR: "/app/static"
   SONAR_HOST_URL: https://sonar.example.com/
-  LOCAL_CLIENT_ORIGIN: http://localhost:8000
-  SERVER_PORT: 3001
+  SERVER_PORT: 3000
   OIDC_ISSUER_URL: https://keycloak.example.com/realms/shared
   OIDC_CLIENT_ID: portal
   OIDC_SCOPE: openid profile email
