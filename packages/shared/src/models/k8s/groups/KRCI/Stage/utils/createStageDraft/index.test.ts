@@ -220,11 +220,9 @@ describe("K8sStage: createStageDraft", () => {
 
   it("should throw ZodError on missing required fields", () => {
     expect(() =>
-      createStageDraftObject(
-        {
-          name: "invalid",
-        } as any
-      )
+      createStageDraftObject({
+        name: "invalid",
+      } as any)
     ).toThrowError(ZodError);
   });
 

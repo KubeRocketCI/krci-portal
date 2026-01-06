@@ -78,12 +78,12 @@ export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
                 )}
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="text-muted-foreground flex items-center gap-2 text-sm">
                 <span>Key: {project.key}</span>
               </div>
 
               {project.lastAnalysisDate && (
-                <div className="text-sm text-muted-foreground">
+                <div className="text-muted-foreground text-sm">
                   Last analysis:{" "}
                   {new Date(project.lastAnalysisDate).toLocaleString("en-US", {
                     month: "short",
@@ -102,12 +102,7 @@ export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
             <MetricBadge rating={vulnerabilitiesRating} value={vulnerabilities} label="Vulnerabilities" />
             <MetricBadge rating={bugsRating} value={bugs} label="Bugs" />
             <MetricBadge rating={codeSmellsRating} value={codeSmells} label="Code Smells" />
-            <MetricBadge
-              rating={hotspotsRating}
-              value={hotspotsReviewed}
-              label="Hotspots Reviewed"
-              type="percentage"
-            />
+            <MetricBadge rating={hotspotsRating} value={hotspotsReviewed} label="Hotspots Reviewed" type="percentage" />
             <MetricBadge value={coverage} label="Coverage" type="percentage" />
             <MetricBadge value={duplications} label="Duplications" type="percentage" />
           </div>

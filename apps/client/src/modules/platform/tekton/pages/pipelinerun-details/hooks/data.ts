@@ -26,5 +26,3 @@ export const usePipelineRunWatchWithPageParams = () => {
     name: params.name,
   });
 };
-
-

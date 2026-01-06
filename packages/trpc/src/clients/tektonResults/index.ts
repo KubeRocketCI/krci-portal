@@ -107,10 +107,7 @@ export class TektonResultsClient {
     return `${this.apiBaseURL}/apis/results.tekton.dev/${TEKTON_RESULTS_API_VERSION}`;
   }
 
-  private async fetchJson<T>(
-    endpoint: string,
-    queryParams?: Record<string, string | undefined>
-  ): Promise<T> {
+  private async fetchJson<T>(endpoint: string, queryParams?: Record<string, string | undefined>): Promise<T> {
     const url = new URL(`${this.apiBase}${endpoint}`);
 
     if (queryParams) {
@@ -183,21 +180,16 @@ export class TektonResultsClient {
   ): Promise<TektonRecordsListResponse> {
     const { filter, pageSize, pageToken, orderBy } = params;
 
-    return this.fetchJson<TektonRecordsListResponse>(
-      `/parents/${this.parent}/results/${resultUid}/records`,
-      {
-        filter,
-        page_size: pageSize?.toString(),
-        page_token: pageToken,
-        order_by: orderBy,
-      }
-    );
+    return this.fetchJson<TektonRecordsListResponse>(`/parents/${this.parent}/results/${resultUid}/records`, {
+      filter,
+      page_size: pageSize?.toString(),
+      page_token: pageToken,
+      order_by: orderBy,
+    });
   }
 
   async getRecord(resultUid: string, recordUid: string): Promise<TektonResultRecord> {
-    return this.fetchJson<TektonResultRecord>(
-      `/parents/${this.parent}/results/${resultUid}/records/${recordUid}`
-    );
+    return this.fetchJson<TektonResultRecord>(`/parents/${this.parent}/results/${resultUid}/records/${recordUid}`);
   }
 
   async getLogContent(resultUid: string, logUid: string): Promise<string> {
@@ -252,14 +244,11 @@ export class TektonResultsClient {
   async getSummary(params: TektonSummaryQueryParams = {}): Promise<TektonSummaryResponse> {
     const { summary, groupBy, filter, orderBy } = params;
 
-    return this.fetchJson<TektonSummaryResponse>(
-      `/parents/${this.parent}/results/-/records/summary`,
-      {
-        summary,
-        group_by: groupBy,
-        filter,
-        order_by: orderBy,
-      }
-    );
+    return this.fetchJson<TektonSummaryResponse>(`/parents/${this.parent}/results/-/records/summary`, {
+      summary,
+      group_by: groupBy,
+      filter,
+      order_by: orderBy,
+    });
   }
 }

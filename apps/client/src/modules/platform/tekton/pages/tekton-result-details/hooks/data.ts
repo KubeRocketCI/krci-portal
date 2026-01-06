@@ -11,9 +11,7 @@ import { routeTektonResultPipelineRunDetails } from "../route";
 export const useTektonResultPipelineRunQuery = () => {
   const params = routeTektonResultPipelineRunDetails.useParams();
   const trpc = useTRPCClient();
-  const { clusterName } = useClusterStore(
-    useShallow((state) => ({ clusterName: state.clusterName }))
-  );
+  const { clusterName } = useClusterStore(useShallow((state) => ({ clusterName: state.clusterName })));
 
   return useQuery({
     queryKey: [
@@ -40,9 +38,7 @@ export const useTektonResultPipelineRunQuery = () => {
 export const useTektonResultPipelineRunLogsQuery = () => {
   const params = routeTektonResultPipelineRunDetails.useParams();
   const trpc = useTRPCClient();
-  const { clusterName } = useClusterStore(
-    useShallow((state) => ({ clusterName: state.clusterName }))
-  );
+  const { clusterName } = useClusterStore(useShallow((state) => ({ clusterName: state.clusterName })));
 
   return useQuery({
     queryKey: [

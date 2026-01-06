@@ -2,8 +2,10 @@ import { routeCICD } from "@/core/router/routes";
 import { createRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
-export const PATH_TEKTON_RESULT_PIPELINERUN_DETAILS = "pipelineruns/$namespace/tekton-results/$resultUid/$recordUid" as const;
-export const PATH_TEKTON_RESULT_PIPELINERUN_DETAILS_FULL = "/c/$clusterName/cicd/pipelineruns/$namespace/tekton-results/$resultUid/$recordUid" as const;
+export const PATH_TEKTON_RESULT_PIPELINERUN_DETAILS =
+  "pipelineruns/$namespace/tekton-results/$resultUid/$recordUid" as const;
+export const PATH_TEKTON_RESULT_PIPELINERUN_DETAILS_FULL =
+  "/c/$clusterName/cicd/pipelineruns/$namespace/tekton-results/$resultUid/$recordUid" as const;
 
 export const routeSearchTabSchema = z.enum(["overview", "details", "yaml"]);
 export const routeSearchTabName = routeSearchTabSchema.enum;

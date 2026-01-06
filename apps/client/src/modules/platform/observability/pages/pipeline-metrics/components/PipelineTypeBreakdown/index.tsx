@@ -52,8 +52,7 @@ function PipelineTypeCard({ type, metrics, isLoading }: PipelineTypeCardProps) {
   const failed = metrics?.failed ?? 0;
   const successRate = total > 0 ? Math.round((succeeded / total) * 100) : null;
 
-  const successRateColor =
-    successRate !== null && successRate < 100 ? MAIN_COLOR.ORANGE : MAIN_COLOR.GREEN;
+  const successRateColor = successRate !== null && successRate < 100 ? MAIN_COLOR.ORANGE : MAIN_COLOR.GREEN;
 
   return (
     <Card>
@@ -84,7 +83,9 @@ function PipelineTypeCard({ type, metrics, isLoading }: PipelineTypeCardProps) {
             </div>
             <div className="flex items-baseline justify-between">
               <span className="text-muted-foreground text-sm">Succeeded</span>
-              <span className="font-medium" style={{ color: MAIN_COLOR.GREEN }}>{succeeded}</span>
+              <span className="font-medium" style={{ color: MAIN_COLOR.GREEN }}>
+                {succeeded}
+              </span>
             </div>
             <div className="flex items-baseline justify-between">
               <span className="text-muted-foreground text-sm">Failed</span>

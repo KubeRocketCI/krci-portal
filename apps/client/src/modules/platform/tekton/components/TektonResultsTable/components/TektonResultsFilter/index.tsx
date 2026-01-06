@@ -13,11 +13,7 @@ import { cn } from "@/core/utils/classname";
 import { TektonResultStatus, tektonResultAnnotations } from "@my-project/shared";
 import { ChevronDown, RotateCw, X } from "lucide-react";
 import React from "react";
-import {
-  defaultFilterValues,
-  tektonResultsPipelineTypeOptions,
-  tektonResultStatusOptions,
-} from "../../constants";
+import { defaultFilterValues, tektonResultsPipelineTypeOptions, tektonResultStatusOptions } from "../../constants";
 import { TektonResultsFilterProps } from "../../types";
 
 export const TektonResultsFilter = ({

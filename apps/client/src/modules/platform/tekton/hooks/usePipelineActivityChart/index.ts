@@ -112,13 +112,15 @@ function fillGaps(
 
   for (let ts = startTimestamp; ts <= nowTimestamp; ts += secondsPerBucket) {
     const existing = buckets.get(ts);
-    result.push(existing ?? {
-      timestamp: ts,
-      label: formatLabel(ts, granularity),
-      succeeded: 0,
-      failed: 0,
-      total: 0,
-    });
+    result.push(
+      existing ?? {
+        timestamp: ts,
+        label: formatLabel(ts, granularity),
+        succeeded: 0,
+        failed: 0,
+        total: 0,
+      }
+    );
   }
 
   return result;
@@ -136,10 +138,7 @@ const QUERY_REFETCH_INTERVAL = 60_000;
  * @param options - Query options
  * @returns React Query result with ChartDataPoint array
  */
-export function usePipelineActivityChart(
-  namespace: string,
-  options: UsePipelineActivityChartOptions = {}
-) {
+export function usePipelineActivityChart(namespace: string, options: UsePipelineActivityChartOptions = {}) {
   const trpc = useTRPCClient();
   const clusterName = useClusterStore((state) => state.clusterName);
 

@@ -97,7 +97,7 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
             }
 
             return (
-              <Button variant="link" asChild className="p-0 whitespace-normal w-full justify-start">
+              <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal">
                 <Link
                   to={PATH_TEKTON_RESULT_PIPELINERUN_DETAILS_FULL}
                   params={{
@@ -131,7 +131,7 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
             }
 
             return (
-              <Button variant="link" asChild className="p-0 whitespace-normal w-full justify-start">
+              <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal">
                 <Link
                   to={PATH_PIPELINE_DETAILS_FULL}
                   params={{
@@ -164,7 +164,7 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
             }
 
             return (
-              <Button variant="link" asChild className="p-0 whitespace-normal w-full justify-start">
+              <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal">
                 <Link
                   to={PATH_COMPONENT_DETAILS_FULL}
                   params={{
@@ -218,7 +218,7 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
 
             if (changeUrl) {
               return (
-                <Button variant="link" asChild className="p-0 whitespace-normal w-full justify-start">
+                <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal">
                   <a href={changeUrl} target="_blank" rel="noopener noreferrer">
                     <TextWithTooltip text={`#${changeNumber}`} />
                   </a>
@@ -342,7 +342,7 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
 
             return (
               <Tooltip title={tooltipContent}>
-                <div className="flex items-center justify-between gap-1 w-full">
+                <div className="flex w-full items-center justify-between gap-1">
                   <span className="text-sm">{duration}</span>
                   <Clock className="text-muted-foreground size-3.5" />
                 </div>

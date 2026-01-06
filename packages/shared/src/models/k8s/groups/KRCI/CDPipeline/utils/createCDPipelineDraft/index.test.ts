@@ -85,11 +85,9 @@ describe("K8sCDPipeline: createCDPipelineDraft", () => {
 
   it("should throw ZodError on missing required fields", () => {
     expect(() =>
-      createCDPipelineDraftObject(
-        {
-          name: "invalid",
-        } as any
-      )
+      createCDPipelineDraftObject({
+        name: "invalid",
+      } as any)
     ).toThrowError(ZodError);
   });
 

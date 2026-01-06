@@ -16,7 +16,7 @@ describe("createImageStreamTags", () => {
     spec: {
       codebase: "test-codebase",
       imageName: "test-image",
-      tags: tags.map(name => ({
+      tags: tags.map((name) => ({
         name,
         created: "2023-07-31T14:32:28Z",
       })),
@@ -34,9 +34,7 @@ describe("createImageStreamTags", () => {
       "main-0.1.0-20230731-143228",
     ]);
 
-    const verifiedStream = createMockImageStream([
-      "main-0.1.0-20230731-143228",
-    ]);
+    const verifiedStream = createMockImageStream(["main-0.1.0-20230731-143228"]);
 
     const result = createImageStreamTags(appStream, verifiedStream);
 

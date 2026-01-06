@@ -34,12 +34,14 @@ function StatCard({ title, value, icon, valueClassName, valueStyle, subtitle, is
               </div>
             ) : (
               <>
-                <p className={cn("text-2xl font-bold", valueClassName)} style={valueStyle}>{value}</p>
+                <p className={cn("text-2xl font-bold", valueClassName)} style={valueStyle}>
+                  {value}
+                </p>
                 {subtitle && <p className="text-muted-foreground text-xs">{subtitle}</p>}
               </>
             )}
           </div>
-          <div className="rounded-full bg-muted p-3">{icon}</div>
+          <div className="bg-muted rounded-full p-3">{icon}</div>
         </div>
       </CardContent>
     </Card>
@@ -73,8 +75,7 @@ export function MetricsOverview({ summary, successRate, isLoading }: MetricsOver
   const avgDuration = formatDuration(summary?.avg_duration);
   const minDuration = formatDuration(summary?.min_duration);
   const maxDuration = formatDuration(summary?.max_duration);
-  const durationRange =
-    minDuration !== "-" && maxDuration !== "-" ? `${minDuration} — ${maxDuration}` : undefined;
+  const durationRange = minDuration !== "-" && maxDuration !== "-" ? `${minDuration} — ${maxDuration}` : undefined;
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">

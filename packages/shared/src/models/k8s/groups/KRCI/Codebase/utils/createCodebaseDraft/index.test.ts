@@ -66,11 +66,9 @@ describe("K8sCodebase: createCodebaseDraft", () => {
 
   it("should throw ZodError on missing required fields", () => {
     expect(() =>
-      createCodebaseDraftObject(
-        {
-          name: "bad",
-        } as any
-      )
+      createCodebaseDraftObject({
+        name: "bad",
+      } as any)
     ).toThrowError(ZodError);
   });
 

@@ -83,7 +83,7 @@ export const useColumns = ({
             } = data;
 
             return (
-              <Button variant="link" asChild className="p-0 whitespace-normal w-full justify-start">
+              <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal">
                 <Link
                   to={PATH_PIPELINERUN_DETAILS_FULL}
                   params={{
@@ -121,7 +121,7 @@ export const useColumns = ({
             }
 
             return (
-              <Button variant="link" asChild className="p-0 whitespace-normal w-full justify-start">
+              <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal">
                 <Link
                   to={PATH_PIPELINE_DETAILS_FULL}
                   params={{
@@ -158,7 +158,7 @@ export const useColumns = ({
             }
 
             return (
-              <Button variant="link" asChild className="p-0 whitespace-normal w-full justify-start">
+              <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal">
                 <Link
                   to={PATH_COMPONENT_DETAILS_FULL}
                   params={{
@@ -206,7 +206,9 @@ export const useColumns = ({
         label: "Results",
         data: {
           render: ({ data }) => {
-            const vcsTag = data?.status?.results?.find((el: { name: string; value?: string }) => el.name === "VCS_TAG")?.value;
+            const vcsTag = data?.status?.results?.find(
+              (el: { name: string; value?: string }) => el.name === "VCS_TAG"
+            )?.value;
 
             if (!vcsTag) {
               return null;
@@ -243,7 +245,7 @@ export const useColumns = ({
 
             if (changeUrl) {
               return (
-                <Button variant="link" asChild className="p-0 whitespace-normal w-full justify-start">
+                <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal">
                   <a href={changeUrl} target="_blank" rel="noopener noreferrer">
                     <TextWithTooltip text={`#${changeNumber}`} />
                   </a>
@@ -380,7 +382,7 @@ export const useColumns = ({
 
             return (
               <Tooltip title={tooltipContent}>
-                <div className="flex items-center justify-between gap-1 w-full">
+                <div className="flex w-full items-center justify-between gap-1">
                   <span className="text-sm">{activeDuration}</span>
                   <Clock className="text-muted-foreground size-3.5" />
                 </div>
