@@ -1,4 +1,4 @@
-import { get } from "lodash";
+import get from "lodash/get";
 import { ValueOf } from "@/core/types/global";
 import { SORT_ORDERS } from "./constants";
 

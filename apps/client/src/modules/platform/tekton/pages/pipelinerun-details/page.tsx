@@ -10,7 +10,7 @@ export const PipelineRunDetailsPage = () => {
 
   return (
     <TabsContextProvider id="pipeline-run-details-page" initialTabIdx={initialTabIdx}>
-      <PipelineRunDetailsPageContent />
+      <PipelineRunDetailsPageContent searchTabIdx={initialTabIdx} />
     </TabsContextProvider>
   );
 };

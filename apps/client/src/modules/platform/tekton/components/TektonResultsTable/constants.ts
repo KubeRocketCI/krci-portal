@@ -9,9 +9,10 @@ export const columnNames = {
   CODEBASE: "codebase",
   GIT_BRANCH: "gitBranch",
   GIT_CHANGE_NUMBER: "gitChangeNumber",
-  AUTHOR: "author",
   PIPELINE_TYPE: "pipelineType",
+  AUTHOR: "author",
   CREATED: "created",
+  TIME: "time",
   ENDED: "ended",
 } as const;
 

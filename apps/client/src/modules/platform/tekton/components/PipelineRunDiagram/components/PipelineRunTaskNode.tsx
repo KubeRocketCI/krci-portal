@@ -4,9 +4,12 @@ import { Badge } from "@/core/components/ui/badge";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { getTaskRunStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun/utils";
+import { getStepStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun/utils/getStepStatusIcon";
 import { getApprovalTaskStatusIcon } from "@/k8s/api/groups/KRCI/ApprovalTask/utils";
 import { humanize } from "@/core/utils/date-humanize";
 import { PipelineRunTaskNodeData } from "../hooks/usePipelineRunGraphData";
+import { getTaskRunStepStatus } from "@my-project/shared";
+import { ListOrdered, Timer } from "lucide-react";
 
 export const PipelineRunTaskNode: React.FC<{
   data: PipelineRunTaskNodeData;
@@ -14,7 +17,6 @@ export const PipelineRunTaskNode: React.FC<{
   targetPosition?: Position;
 }> = ({ data, sourcePosition, targetPosition }) => {
   const displayName = data.name;
-  const truncatedName = displayName.length > 20 ? `${displayName.slice(0, 17)}...` : displayName;
 
   // Get status icon and color
   const getStatusData = () => {
@@ -68,18 +70,71 @@ export const PipelineRunTaskNode: React.FC<{
   const statusText = getStatusText();
 
   const tooltipContent = (
-    <div>
-      <p className="text-sm font-semibold">{displayName}</p>
-      <p className="mt-1 text-sm">Status: {statusText}</p>
-      {duration && <p className="mt-1 text-sm">Duration: {duration}</p>}
-      {data.task?.spec?.description && <p className="mt-1 text-sm">{data.task.spec.description}</p>}
-      {data.taskRun?.status?.steps && data.taskRun.status.steps.length > 0 && (
-        <span className="mt-1 block text-xs">
-          Steps: {data.taskRun.status.steps.map((step) => step.name).join(", ")}
-        </span>
+    <div className="space-y-2">
+      {/* Task name + status in one row */}
+      <div className="my-2 mb-4 flex items-center gap-4">
+        <p className="break-all text-sm font-semibold">{displayName}</p>
+        <div className="flex items-center gap-2">
+          {statusData.component && (
+            <StatusIcon
+              Icon={statusData.component}
+              isSpinning={statusData.isSpinning}
+              color={statusData.color}
+              width={14}
+            />
+          )}
+          <span className="text-xs font-medium">{statusText}</span>
+        </div>
+      </div>
+
+      {data.task?.spec?.description && (
+        <div className="flex items-start gap-2 mb-4">
+          <span className="text-xs text-background/80">Description:</span>
+          <span className="text-xs">{data.task.spec.description}</span>
+        </div>
       )}
+
+      {duration && (
+        <div className="flex items-center gap-2">
+          <Timer className="text-muted-foreground size-3.5" />
+          <span className="text-xs text-background/80">Duration:</span>
+          <span className="text-xs font-medium">{duration}</span>
+        </div>
+      )}
+
+      {/* Steps with individual status icons */}
+      {data.taskRun?.status?.steps && data.taskRun.status.steps.length > 0 && (
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <ListOrdered className="text-muted-foreground size-3.5" />
+            <span className="text-xs text-background/80">Steps:</span>
+          </div>
+          <div className="space-y-0.5 pl-5">
+            {data.taskRun.status.steps.map((step) => {
+              const stepStatus = getTaskRunStepStatus(step);
+              const stepStatusIcon = getStepStatusIcon(step);
+
+              return (
+                <div key={step.name} className="flex items-center gap-1.5">
+                  <StatusIcon
+                    Icon={stepStatusIcon.component}
+                    color={stepStatusIcon.color}
+                    isSpinning={stepStatusIcon.isSpinning}
+                    width={12}
+                    Title={`Status: ${stepStatus.status}. Reason: ${stepStatus.reason}`}
+                  />
+                  <span className="text-[0.7rem]">{step.name}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {data.isFinally && (
-        <span className="mt-1 block text-xs italic">Finally task - runs after all main tasks complete</span>
+        <span className="text-muted-foreground mt-1 block text-[0.7rem] italic">
+          Finally task - runs after all main tasks complete
+        </span>
       )}
     </div>
   );
@@ -97,7 +152,7 @@ export const PipelineRunTaskNode: React.FC<{
 
       <Tooltip title={tooltipContent} placement="top">
         <div
-          className="bg-background relative flex h-[60px] w-[180px] cursor-default flex-col items-center justify-center rounded-md p-6"
+          className="bg-background relative flex h-16 w-48 cursor-default flex-col items-center justify-center rounded-md p-6"
           style={{
             border: `2px solid ${statusData.color}`,
             borderStyle: data.isFinally || data.isIsolated ? "dashed" : "solid",
@@ -121,9 +176,7 @@ export const PipelineRunTaskNode: React.FC<{
                 Title={statusText}
               />
             )}
-            <p className="text-foreground break-word text-center text-sm leading-tight font-semibold">
-              {truncatedName}
-            </p>
+            <p className="text-foreground break-all text-sm leading-tight font-semibold line-clamp-1"> {displayName}</p>
           </div>
 
           {/* Task reference */}

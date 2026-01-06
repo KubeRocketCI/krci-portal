@@ -20,33 +20,35 @@ export type UseWatchListMultipleParamsWithoutResourceConfig<I extends KubeObject
   "resourceConfig"
 >;
 
-export const createUsePermissionsHook = (k8sResourceConfig: K8sResourceConfig) => () =>
-  usePermissions({
-    group: k8sResourceConfig.group,
-    version: k8sResourceConfig.version,
-    resourcePlural: k8sResourceConfig.pluralName,
-  });
+// Functions are declared (not const assigned) to avoid TDZ issues when modules
+// participate in circular imports.
+export function createUsePermissionsHook(k8sResourceConfig: K8sResourceConfig) {
+  return () =>
+    usePermissions({
+      group: k8sResourceConfig.group,
+      version: k8sResourceConfig.version,
+      resourcePlural: k8sResourceConfig.pluralName,
+    });
+}
 
 /**
  * Creates a useWatchItem hook bound to a specific resource config
  */
-export const createUseWatchItemHook =
-  <I extends KubeObjectBase>(resourceConfig: K8sResourceConfig) =>
-  (params: UseWatchItemParamsWithoutResourceConfig<I>) =>
-    useWatchItem<I>({ resourceConfig, ...params });
+export function createUseWatchItemHook<I extends KubeObjectBase>(resourceConfig: K8sResourceConfig) {
+  return (params: UseWatchItemParamsWithoutResourceConfig<I>) => useWatchItem<I>({ resourceConfig, ...params });
+}
 
 /**
  * Creates a useWatchList hook bound to a specific resource config
  */
-export const createUseWatchListHook =
-  <I extends KubeObjectBase>(resourceConfig: K8sResourceConfig) =>
-  (params?: UseWatchListParamsWithoutResourceConfig<I>) =>
-    useWatchList<I>({ resourceConfig, ...params });
+export function createUseWatchListHook<I extends KubeObjectBase>(resourceConfig: K8sResourceConfig) {
+  return (params?: UseWatchListParamsWithoutResourceConfig<I>) => useWatchList<I>({ resourceConfig, ...params });
+}
 
 /**
  * Creates a useWatchListMultiple hook bound to a specific resource config
  */
-export const createUseWatchListMultipleHook =
-  <I extends KubeObjectBase>(resourceConfig: K8sResourceConfig) =>
-  (params?: UseWatchListMultipleParamsWithoutResourceConfig<I>) =>
+export function createUseWatchListMultipleHook<I extends KubeObjectBase>(resourceConfig: K8sResourceConfig) {
+  return (params?: UseWatchListMultipleParamsWithoutResourceConfig<I>) =>
     useWatchListMultiple<I>({ resourceConfig, ...params });
+}

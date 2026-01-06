@@ -1,6 +1,5 @@
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { ResourceIconLink } from "@/core/components/ResourceIconLink";
 import { Section } from "@/core/components/Section";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { Tabs } from "@/core/providers/Tabs/components/Tabs";
@@ -8,8 +7,8 @@ import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { humanize } from "@/core/utils/date-humanize";
 import { useCodebaseBranchWatchItem } from "@/k8s/api/groups/KRCI/CodebaseBranch";
 import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
-import { getPipelineRunStatus, getPullRequestURL, pipelineRunLabels } from "@my-project/shared";
-import { Activity, Calendar, Clock, GitBranch, SquareArrowOutUpRight, Timer } from "lucide-react";
+import { getPipelineRunStatus, pipelineRunLabels, tektonResultAnnotations } from "@my-project/shared";
+import { Activity, Calendar, Clock, GitBranch, GitPullRequest, Timer } from "lucide-react";
 import React from "react";
 import { PipelineRunActionsMenu } from "../../components/PipelineRunActionsMenu";
 import { PATH_PIPELINERUNS_FULL } from "../pipelinerun-list/route";
@@ -103,6 +102,34 @@ const HeaderMetadata = () => {
         </div>
       )}
 
+      {(() => {
+        const changeNumber = pipelineRun.metadata?.annotations?.[tektonResultAnnotations.gitChangeNumber];
+        const changeUrl = pipelineRun.metadata?.annotations?.[tektonResultAnnotations.gitChangeUrl];
+
+        if (!changeNumber) {
+          return null;
+        }
+
+        return (
+          <div className="flex items-center gap-2">
+            <GitPullRequest className="text-muted-foreground size-4" />
+            <span className="text-muted-foreground text-sm">PR:</span>
+            {changeUrl ? (
+              <a
+                href={changeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline text-sm font-medium"
+              >
+                #{changeNumber}
+              </a>
+            ) : (
+              <span className="text-foreground text-sm font-medium">#{changeNumber}</span>
+            )}
+          </div>
+        );
+      })()}
+
       {startedAt && (
         <div className="flex items-center gap-2">
           <Calendar className="text-muted-foreground size-4" />
@@ -147,45 +174,20 @@ const HeaderActions = () => {
   );
 };
 
-export default function PipelineRunDetailsPageContent() {
+export default function PipelineRunDetailsPageContent({ searchTabIdx }: { searchTabIdx: number }) {
   const params = routePipelineRunDetails.useParams();
   const pipelineRunWatch = usePipelineRunWatchWithPageParams();
-  const pipelineRun = pipelineRunWatch.query.data;
 
   const tabs = useTabs();
-  const { activeTab, handleChangeTab } = useTabsContext();
+  const { handleChangeTab } = useTabsContext();
 
   const renderPageContent = React.useCallback(() => {
     return (
       <LoadingWrapper isLoading={pipelineRunWatch.query.isLoading}>
-        <Tabs tabs={tabs} activeTabIdx={activeTab} handleChangeTab={handleChangeTab} />
+        <Tabs tabs={tabs} activeTabIdx={searchTabIdx} handleChangeTab={handleChangeTab} />
       </LoadingWrapper>
     );
-  }, [pipelineRunWatch.query.isLoading, tabs, activeTab, handleChangeTab]);
-
-  const renderHeaderSlot = (): React.ReactElement | undefined => {
-    if (!pipelineRunWatch.isReady || !pipelineRun) {
-      return undefined;
-    }
-
-    const pullRequestLink = getPullRequestURL(pipelineRun);
-
-    if (!pullRequestLink) {
-      return undefined;
-    }
-
-    return (
-      <ResourceIconLink
-        tooltipTitle={"Go to the Pull Request page"}
-        link={pullRequestLink}
-        Icon={<SquareArrowOutUpRight />}
-        name="pull request"
-        isTextButton
-        variant="outline"
-        size="sm"
-      />
-    );
-  };
+  }, [pipelineRunWatch.query.isLoading, tabs, searchTabIdx, handleChangeTab]);
 
   return (
     <PageWrapper
@@ -200,7 +202,6 @@ export default function PipelineRunDetailsPageContent() {
           label: params.name,
         },
       ]}
-      headerSlot={renderHeaderSlot()}
     >
       <Section
         icon={Activity}

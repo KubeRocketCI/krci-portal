@@ -71,6 +71,7 @@ export const MenuAccordion = ({
           step: taskRunStepName,
           tab: routeSearchTabName.details,
         },
+        resetScroll: false,
       });
     },
     [params.clusterName, params.name, params.namespace]
