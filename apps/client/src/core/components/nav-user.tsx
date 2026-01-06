@@ -52,7 +52,7 @@ export function NavUser() {
   const userNameInitials =
     user?.name
       ?.split(" ")
-      .map((name) => name.charAt(0).toUpperCase())
+      .map((name: string) => name.charAt(0).toUpperCase())
       .join("") ?? "CN";
 
   return (

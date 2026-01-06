@@ -63,7 +63,7 @@ export default function UserDetailsDialog({ state }: UserDetailsDialogProps) {
             text:
               userData.groups && userData.groups.length > 0 ? (
                 <div className="flex flex-wrap gap-1">
-                  {userData.groups.map((group, idx) => (
+                  {userData.groups.map((group: string, idx: number) => (
                     <span key={idx} className="rounded bg-slate-100 px-2 py-0.5 text-xs dark:bg-slate-800">
                       {group}
                     </span>

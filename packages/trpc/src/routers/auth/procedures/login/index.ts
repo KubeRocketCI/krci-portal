@@ -6,7 +6,7 @@ export const authLoginProcedure = publicProcedure
   .input(loginInputSchema)
   .output(loginOutputSchema)
   .mutation(async ({ input, ctx }) => {
-    const clientRedirectURI = new URL(input);
+    const clientRedirectURI = new URL(input as string);
     const oidcClient = new OIDCClient(ctx.oidcConfig);
 
     const config = await oidcClient.discover();

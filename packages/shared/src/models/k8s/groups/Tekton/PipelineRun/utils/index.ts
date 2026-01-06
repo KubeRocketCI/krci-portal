@@ -5,3 +5,4 @@ export * from "./createPipelineRunDraftFromPipeline/index.js";
 export * from "./createRerunPipelineRun/index.js";
 export * from "./getPipelineRunStatus/index.js";
 export * from "./getPullRequestURL/index.js";
+export * from "./getPipelineRunAnnotation/index.js";

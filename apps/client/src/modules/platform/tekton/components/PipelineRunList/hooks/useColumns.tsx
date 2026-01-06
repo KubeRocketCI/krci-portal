@@ -12,7 +12,13 @@ import { PATH_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/tekton/pages/p
 import { PATH_COMPONENT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
-import { getPipelineRunStatus, PipelineRun, pipelineRunLabels, tektonResultAnnotations } from "@my-project/shared";
+import {
+  getPipelineRunStatus,
+  PipelineRun,
+  pipelineRunLabels,
+  tektonResultAnnotations,
+  getPipelineRunAnnotation,
+} from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import { Clock, VectorSquare } from "lucide-react";
 import React from "react";
@@ -176,12 +182,11 @@ export const useColumns = ({
         id: columnNames.BRANCH,
         label: "Branch",
         data: {
-          columnSortableValuePath: `metadata.labels.${pipelineRunLabels.codebaseBranch}`,
           render: ({ data }) => {
-            const branchName = data.metadata.labels?.[pipelineRunLabels.codebaseBranch];
+            const branchName = getPipelineRunAnnotation(data, tektonResultAnnotations.gitBranch);
 
             if (!branchName) {
-              return null;
+              return <span className="text-muted-foreground text-sm">-</span>;
             }
 
             return (
@@ -201,7 +206,7 @@ export const useColumns = ({
         label: "Results",
         data: {
           render: ({ data }) => {
-            const vcsTag = data?.status?.results?.find((el) => el.name === "VCS_TAG")?.value;
+            const vcsTag = data?.status?.results?.find((el: { name: string; value?: string }) => el.name === "VCS_TAG")?.value;
 
             if (!vcsTag) {
               return null;
@@ -229,8 +234,8 @@ export const useColumns = ({
         label: "PR",
         data: {
           render: ({ data }) => {
-            const changeNumber = data.metadata.annotations?.[tektonResultAnnotations.gitChangeNumber];
-            const changeUrl = data.metadata.annotations?.[tektonResultAnnotations.gitChangeUrl];
+            const changeNumber = getPipelineRunAnnotation(data, tektonResultAnnotations.gitChangeNumber);
+            const changeUrl = getPipelineRunAnnotation(data, tektonResultAnnotations.gitChangeUrl);
 
             if (!changeNumber) {
               return <span className="text-muted-foreground text-sm">-</span>;
@@ -263,8 +268,8 @@ export const useColumns = ({
         label: "Author",
         data: {
           render: ({ data }) => {
-            const author = data.metadata.annotations?.[tektonResultAnnotations.gitAuthor];
-            const avatarUrl = data.metadata.annotations?.[tektonResultAnnotations.gitAvatar];
+            const author = getPipelineRunAnnotation(data, tektonResultAnnotations.gitAuthor);
+            const avatarUrl = getPipelineRunAnnotation(data, tektonResultAnnotations.gitAvatar);
 
             if (!author) {
               return <span className="text-muted-foreground text-sm">-</span>;

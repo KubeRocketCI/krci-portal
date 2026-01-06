@@ -56,7 +56,7 @@ export function FindingDetail({ finding }: FindingDetailProps) {
               <div className="flex gap-2">
                 <span className="text-muted-foreground w-20">CWE:</span>
                 <span className="text-xs">
-                  {finding.vulnerability.cwes.map((cwe) => `CWE-${cwe.cweId}`).join(", ")}
+                  {finding.vulnerability.cwes.map((cwe: { cweId: number; name: string }) => `CWE-${cwe.cweId}`).join(", ")}
                 </span>
               </div>
             )}
@@ -64,7 +64,7 @@ export function FindingDetail({ finding }: FindingDetailProps) {
               <div className="flex gap-2">
                 <span className="text-muted-foreground w-20">Aliases:</span>
                 <div className="space-y-1 text-xs">
-                  {finding.vulnerability.aliases.map((alias, i) => (
+                  {finding.vulnerability.aliases.map((alias: { source: string; vulnId: string }, i: number) => (
                     <div key={i}>
                       {alias.source}: {alias.vulnId}
                     </div>

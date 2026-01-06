@@ -134,7 +134,7 @@ export const usePodLogs = ({
             previous,
           },
           {
-            onData: (data) => {
+            onData: (data: { type: string; logs?: string }) => {
               setIsSubscriptionLoading(false);
               retryCount = 0; // Reset retry count on successful data
               if (data.type === "data" && data.logs) {
@@ -143,7 +143,7 @@ export const usePodLogs = ({
                 setIsSubscriptionLoading(false);
               }
             },
-            onError: (error) => {
+            onError: (error: unknown) => {
               setIsSubscriptionLoading(false);
               setSubscriptionError(error as Error);
 

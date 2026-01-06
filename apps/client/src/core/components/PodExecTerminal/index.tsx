@@ -50,7 +50,7 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
     // Add init containers
     if (activePod.spec?.initContainers) {
       containers.push(
-        ...activePod.spec.initContainers.map((container) => ({
+        ...activePod.spec.initContainers.map((container: { name: string }) => ({
           name: container.name,
           type: "init",
         }))
@@ -60,7 +60,7 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
     // Add main containers
     if (activePod.spec?.containers) {
       containers.push(
-        ...activePod.spec.containers.map((container) => ({
+        ...activePod.spec.containers.map((container: { name: string }) => ({
           name: container.name,
           type: "container",
         }))
@@ -70,7 +70,7 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
     // Add ephemeral containers
     if (activePod.spec?.ephemeralContainers) {
       containers.push(
-        ...activePod.spec.ephemeralContainers.map((container) => ({
+        ...activePod.spec.ephemeralContainers.map((container: { name: string }) => ({
           name: container.name,
           type: "ephemeral",
         }))

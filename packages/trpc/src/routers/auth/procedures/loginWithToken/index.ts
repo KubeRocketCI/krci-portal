@@ -7,7 +7,7 @@ export const authLoginWithTokenProcedure = publicProcedure
   .input(loginWithTokenInputSchema)
   .output(loginWithTokenOutputSchema)
   .mutation(async ({ input, ctx }) => {
-    const { token, redirectSearchParam } = input;
+    const { token, redirectSearchParam } = input as { token: string; redirectSearchParam?: string };
     const oidcClient = new OIDCClient(ctx.oidcConfig);
     const config = await oidcClient.discover();
 

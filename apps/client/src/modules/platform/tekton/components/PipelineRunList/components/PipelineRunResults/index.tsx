@@ -16,7 +16,7 @@ export const PipelineRunResults = ({ pipelineRun }: { pipelineRun: PipelineRun }
         <col className="w-[70%]" />
       </colgroup>
       <TableBodyUI>
-        {results.map((el, index) => (
+        {results.map((el: { name: string; value?: string }, index: number) => (
           <TableRowUI key={index}>
             <TableCellUI className="h-8 text-sm font-medium">{el.name}</TableCellUI>
             <TableCellUI className="h-8 text-sm">{el.value}</TableCellUI>

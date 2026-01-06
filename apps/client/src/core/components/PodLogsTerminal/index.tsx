@@ -92,7 +92,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
     // Add init containers
     if (currentPod.spec?.initContainers) {
       containers.push(
-        ...currentPod.spec.initContainers.map((container) => ({
+        ...currentPod.spec.initContainers.map((container: { name: string }) => ({
           name: container.name,
           type: "init",
         }))
@@ -102,7 +102,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
     // Add main containers
     if (currentPod.spec?.containers) {
       containers.push(
-        ...currentPod.spec.containers.map((container) => ({
+        ...currentPod.spec.containers.map((container: { name: string }) => ({
           name: container.name,
           type: "container",
         }))
@@ -112,7 +112,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
     // Add ephemeral containers
     if (currentPod.spec?.ephemeralContainers) {
       containers.push(
-        ...currentPod.spec.ephemeralContainers.map((container) => ({
+        ...currentPod.spec.ephemeralContainers.map((container: { name: string }) => ({
           name: container.name,
           type: "ephemeral",
         }))

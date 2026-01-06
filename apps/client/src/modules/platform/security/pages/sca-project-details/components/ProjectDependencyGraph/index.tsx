@@ -129,7 +129,7 @@ export function ProjectDependencyGraph({ projectUuid, projectName, projectVersio
 
           {/* Dependency tree */}
           <div className="max-h-[600px] overflow-auto">
-            {data.map((node, index) => (
+            {data.map((node: DependencyGraphNode, index: number) => (
               <TreeNode key={node.uuid || `${node.name}-${index}`} node={node} level={0} />
             ))}
           </div>

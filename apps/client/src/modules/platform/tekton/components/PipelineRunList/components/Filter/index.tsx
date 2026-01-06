@@ -47,7 +47,7 @@ export const PipelineRunFilter = ({
   const statusOptions = React.useMemo(
     () => [
       { label: "All", value: "all" },
-      ...Object.values(pipelineRunStatus).map((v) => ({ label: capitalizeFirstLetter(v), value: v })),
+      ...Object.values(pipelineRunStatus).map((v) => ({ label: capitalizeFirstLetter(String(v)), value: String(v) })),
     ],
     []
   );
