@@ -4,6 +4,7 @@ import { PATH_OVERVIEW_FULL } from "@/modules/platform/overview/pages/details/ro
 import { PATH_PIPELINE_METRICS_FULL } from "@/modules/platform/observability/pages/pipeline-metrics/route";
 import { PATH_SCA_FULL } from "@/modules/platform/security/pages/sca/route";
 import { PATH_SCA_PROJECTS_FULL } from "@/modules/platform/security/pages/sca-projects/route";
+import { PATH_SAST_FULL } from "@/modules/platform/security/pages/sast/route";
 import { PATH_COMPONENTS_FULL } from "@/modules/platform/codebases/pages/list/route";
 import { PATH_CDPIPELINES_FULL } from "@/modules/platform/cdpipelines/pages/list/route";
 import { PATH_PIPELINERUNS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-list/route";
@@ -132,6 +133,18 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
               title: "Projects",
               route: {
                 to: PATH_SCA_PROJECTS_FULL,
+                params: clusterDefaultParams,
+              },
+            },
+          ],
+        },
+        {
+          title: "Static Application Security Testing (SAST)",
+          children: [
+            {
+              title: "Projects",
+              route: {
+                to: PATH_SAST_FULL,
                 params: clusterDefaultParams,
               },
             },
