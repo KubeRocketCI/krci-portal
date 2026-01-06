@@ -13,10 +13,12 @@ spec:
       {{- include "krci-portal.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        checksum/config: {{ include (print $.Template.BasePath "/portal-config.yaml") . | sha256sum | trunc 63 }}
+        checksum/secret: {{ include (print $.Template.BasePath "/external-secrets/externalsecret-portal-secret.yaml") . | sha256sum | trunc 63 }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 6 }}
+        {{- end }}
       labels:
         {{- include "krci-portal.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
@@ -40,38 +42,10 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          env:
-            - name: DEPLOY_CLIENT_DIST_DIR
-              value: {{ .Values.config.deployClientDistDir | quote }}
-            - name: API_PREFIX
-              value: {{ .Values.config.apiPrefix | quote }}
-            - name: DEFAULT_CLUSTER_NAMESPACE
-              value: {{ .Values.config.defaultClusterNamespace | quote }}
-            - name: DEFAULT_CLUSTER_NAME
-              value: {{ .Values.config.defaultClusterName | quote }}
-            - name: SERVER_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.config.serverSecretName }}
-                  key: {{ .Values.config.serverSecretKey }}
-            - name: SERVER_PORT
-              value: {{ .Values.service.port | quote }}
-            {{- if .Values.config.oidc.enabled }}
-            - name: OIDC_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.config.oidc.clientSecretName }}
-                  key: {{ .Values.config.oidc.oidcClientSecretKey }}
-            - name: OIDC_ISSUER_URL
-              value: {{ .Values.config.oidc.oidcIssuerUrl | quote }}
-            - name: OIDC_CLIENT_ID
-              value: {{ .Values.config.oidc.oidcClientId | quote }}
-            - name: OIDC_SCOPE
-              value: {{ .Values.config.oidc.oidcScope | quote }}
-            - name: OIDC_CODE_CHALLENGE_METHOD
-              value: {{ .Values.config.oidc.oidcCodeChallengeMethod | quote }}
-            {{- end }}
-
+          {{- with .Values.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}

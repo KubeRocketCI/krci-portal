@@ -15,47 +15,39 @@ image:
   tag: ""
 
 # -- Image pull secrets for private registries
-imagePullSecrets:
+imagePullSecrets: []
 # Define secret to pull images. Secret can be provisioned by edp-install or manually.
-  - name: regcred
+  # - name: regcred
+
+configEnv:
+  API_PREFIX: /api
+  DEFAULT_CLUSTER_NAME: core
+  DEFAULT_CLUSTER_NAMESPACE: krci
+  DEPLOY_CLIENT_DIST_DIR: ""
+  SONAR_HOST_URL: https://sonar.example.com/
+  LOCAL_CLIENT_ORIGIN: http://localhost:8000
+  SERVER_PORT: 3001
+  OIDC_ISSUER_URL: https://keycloak.example.com/realms/shared
+  OIDC_CLIENT_ID: portal
+  OIDC_SCOPE: openid profile email
+  OIDC_CODE_CHALLENGE_METHOD: S256
+  TEKTON_RESULTS_URL: https://tekton-results.example.com
+  DEPENDENCY_TRACK_URL: https://deptrack.example.com
+
+# -- Extends envFrom for the Deployment definition.
+# we expect to deserialize key-value pairs from the secret, e.g
+# FOO: "BAR"
+# All sensitive data should be stored in the secret.
+# extraEnvFrom:
+#   - secretRef:
+#       name: portal-secret
+#   - configMapRef:
+#       name: portal-config
 
 # -- Override the name of the chart
 nameOverride: ""
 # -- Override the full name of the chart
 fullnameOverride: ""
-
-# -- Application configuration
-# These values will be converted to environment variables in the deployment
-config:
-  # -- Directory where client static files are deployed (DEPLOY_CLIENT_DIST_DIR env var)
-  deployClientDistDir: "/app/static"
-  # -- API prefix for backend routes (API_PREFIX env var)
-  apiPrefix: "/api"
-  # -- Default namespace (DEFAULT_CLUSTER_NAMESPACE env var)
-  defaultClusterNamespace: ""
-  # -- Key name for default cluster name in the secret
-  defaultClusterName: ""
-  # -- Name of the Kubernetes secret containing server secret
-  serverSecretName: ""
-  # -- Key name for secret containing server secret
-  serverSecretKey: ""
-
-  # -- OIDC configuration - variables will be taken from Kubernetes secret
-  oidc:
-    # -- Enable OIDC authentication
-    enabled: false
-    # -- Name of the Kubernetes secret containing OIDC configuration
-    clientSecretName: ""
-    # -- Key name for OIDC client secret in the secret
-    oidcClientSecretKey: ""
-    # -- Key name for OIDC client ID in the secret
-    oidcClientId: ""
-    # -- Key name for OIDC issuer URL in the secret (e.g., https://idp.example.com/realms/broker)
-    oidcIssuerUrl: ""
-    # -- Key name for OIDC code challenge method in the secret (e.g., "S256")
-    oidcCodeChallengeMethod: "S256"
-    # -- Key name for OIDC scopes in the secret (e.g., "openid profile email")
-    oidcScope: "openid profile email"
 
 # -- Service account configuration
 serviceAccount:
@@ -179,30 +171,38 @@ tolerations: []
 # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
 affinity: {}
 
-externalSecrets:
-  # -- Configure External Secrets for KubeRocketCI platform. Deploy SecretStore. Default: false
+# This section enables configuration for using External Secrets Operator (ESO) as the secret manager.
+# Prerequisite: Ensure that ESO is installed in the cluster.
+# Refer to the EDP cluster add-on for ESO installation and setup:
+# https://github.com/epam/edp-cluster-add-ons/tree/main/clusters/core/addons/external-secrets
+#
+# Ensure that you have created the necessary roles for ESO integration.
+# Follow the detailed instructions here:
+# https://docs.kuberocketci.io/docs/operator-guide/secrets-management/external-secrets-operator-integration#aws-parameter-store-scenario-in-kuberocketci
+eso:
+  # -- Install components of the ESO.
   enabled: false
-  # -- Defines provider type. One of `aws` or `generic`.
-  type: "aws"
-  secretProvider:
-    aws:
-      # -- Use AWS as a Secret Provider. Can be ParameterStore or SecretsManager
-      service: ParameterStore
-      # -- IAM Role to be used for Accessing AWS either Parameter Store or Secret Manager. Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME>
-      role:
-      # -- AWS Region where secrets are stored, e.g. eu-central-1
-      region: eu-central-1
-
-    generic:
-      # Defines Secret Store configuration. Used when externalSecrets.type is set to "generic".
-      secretStore:
-        # -- Defines SecretStore name.
-        name: "example-secret-store"
-        # -- Defines SecretStore provider configuration.
-        providerConfig: {}
-        #  gcpsm:
-        #    projectID: "alphabet-123"
-
-  manageKRCIPortalSecrets: true
-
-  manageKRCIPortalSecretsName: /krci/deploy-secrets
+  # -- Defines provider type. One of `aws`, `generic`, or `vault`.
+  provider: "aws"
+  # -- Defines the path to the secret in the provider. If provider is `vault`, this is the path must be prefixed with `secret/`.
+  secretPath: "/infra/core/addons/krci-portal"
+  # -- Vault configuration (if provider is `vault`).
+  vault:
+    # -- Vault server URL.
+    server: "http://vault.vault:8200"
+    # -- Mount path for the Kubernetes authentication method.
+    mountPath: "core"
+    # -- Vault role for the Kubernetes authentication method.
+    role: krci-portal
+  # -- AWS configuration (if provider is `aws`).
+  aws:
+    # -- AWS region.
+    region: "eu-central-1"
+    # -- AWS role ARN for the ExternalSecretOperator to assume.
+    roleArn: "arn:aws:iam::012345678910:role/AWSIRSA_Shared_ExternalSecretOperatorAccess"
+  generic:
+    secretStore:
+      # -- Defines SecretStore provider configuration.
+      providerConfig: {}
+      #  gcpsm:
+      #    projectID: "alphabet-123"
