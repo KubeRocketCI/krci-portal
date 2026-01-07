@@ -13,14 +13,6 @@ import { useSidebarMenu } from "../hooks/useSidebarMenu";
 import { createNavigationConfig } from "./sidebar/navigationConfig";
 import { SidebarMenuItemWithHover } from "./sidebar/SidebarMenuItemWithHover";
 
-const clusters = [
-  {
-    name: "eks-sandbox",
-    logo: Boxes,
-    plan: "Cluster",
-  },
-];
-
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 
 /**
@@ -36,6 +28,17 @@ export function AppSidebar() {
       clusterName: state.clusterName,
       defaultNamespace: state.defaultNamespace,
     }))
+  );
+
+  const clusters = useMemo(
+    () => [
+      {
+        name: clusterName,
+        logo: Boxes,
+        plan: "Cluster",
+      },
+    ],
+    [clusterName]
   );
 
   const nav = useMemo(() => createNavigationConfig(clusterName, defaultNamespace), [clusterName, defaultNamespace]);

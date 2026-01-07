@@ -11,7 +11,11 @@ import { Tooltip } from "@/core/components/ui/tooltip";
 import { SquareArrowOutUpRight, TriangleAlert } from "lucide-react";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import React from "react";
-import { useGitOpsCodebaseWatch, useGitServersWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
+import {
+  useGitOpsCodebaseWatch,
+  useGitServersWatch,
+  usePipelineAppCodebasesWatch,
+} from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 
 export const ValuesOverrideConfigurationColumn = ({
   application,
@@ -23,6 +27,7 @@ export const ValuesOverrideConfigurationColumn = ({
   const params = routeStageDetails.useParams();
   const gitOpsCodebaseWatch = useGitOpsCodebaseWatch();
   const gitServerListWatch = useGitServersWatch();
+  const pipelineAppCodebasesWatch = usePipelineAppCodebasesWatch();
 
   const gitOpsCodebase = gitOpsCodebaseWatch.data;
 
@@ -51,9 +56,12 @@ export const ValuesOverrideConfigurationColumn = ({
           <FormSwitch
             {...register(`${appCodebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}`, {
               onChange: () => {
-                const hasAtLeastOneFalse = Object.entries(getValues())
-                  .filter(([key]) => key.includes(VALUES_OVERRIDE_POSTFIX))
-                  .some(([, value]) => value === false);
+                // Check all codebases across all pages, not just currently visible ones
+                const hasAtLeastOneFalse = pipelineAppCodebasesWatch.data.some((codebase) => {
+                  const fieldName = `${codebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}` as const;
+                  const fieldValue = getValues(fieldName);
+                  return fieldValue === false;
+                });
 
                 setValue(ALL_VALUES_OVERRIDE_KEY, !hasAtLeastOneFalse);
               },
