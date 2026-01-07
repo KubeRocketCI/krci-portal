@@ -2,8 +2,7 @@ import { Card, CardContent } from "@/core/components/ui/card";
 import { Badge } from "@/core/components/ui/badge";
 import { Code } from "lucide-react";
 import { ProjectWithMetrics } from "@my-project/shared";
-import { MetricBadge } from "../MetricBadge";
-import { getRatingLabel, parsePercentage, parseCount } from "../../../sast/utils";
+import { SonarQubeMetricsList } from "../../../../components/sonarqube/SonarQubeMetricsList";
 
 interface ProjectHeaderProps {
   project: ProjectWithMetrics | undefined;
@@ -36,24 +35,6 @@ export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
       </Card>
     );
   }
-
-  const measures = project.measures || {};
-
-  // Extract and parse metrics
-  const vulnerabilities = parseCount(measures.vulnerabilities);
-  const vulnerabilitiesRating = getRatingLabel(measures.security_rating);
-
-  const bugs = parseCount(measures.bugs);
-  const bugsRating = getRatingLabel(measures.reliability_rating);
-
-  const codeSmells = parseCount(measures.code_smells);
-  const codeSmellsRating = getRatingLabel(measures.sqale_rating);
-
-  const hotspotsReviewed = parsePercentage(measures.security_hotspots_reviewed);
-  const hotspotsRating = getRatingLabel(measures.security_review_rating);
-
-  const coverage = parsePercentage(measures.coverage);
-  const duplications = parsePercentage(measures.duplicated_lines_density);
 
   return (
     <Card>
@@ -98,13 +79,8 @@ export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
           </div>
 
           {/* Right section: Metrics badges */}
-          <div className="hidden items-center gap-6 md:flex">
-            <MetricBadge rating={vulnerabilitiesRating} value={vulnerabilities} label="Vulnerabilities" />
-            <MetricBadge rating={bugsRating} value={bugs} label="Bugs" />
-            <MetricBadge rating={codeSmellsRating} value={codeSmells} label="Code Smells" />
-            <MetricBadge rating={hotspotsRating} value={hotspotsReviewed} label="Hotspots Reviewed" type="percentage" />
-            <MetricBadge value={coverage} label="Coverage" type="percentage" />
-            <MetricBadge value={duplications} label="Duplications" type="percentage" />
+          <div className="hidden md:block">
+            <SonarQubeMetricsList measures={project.measures} />
           </div>
         </div>
       </CardContent>

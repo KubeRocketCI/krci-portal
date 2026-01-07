@@ -11,7 +11,7 @@ import {
 } from "@/core/components/ui/dropdown-menu";
 import { useNavigate } from "@tanstack/react-router";
 import { DependencyTrackProject, DependencyTrackTag } from "@my-project/shared";
-import { SeverityPieChart } from "../SeverityPieChart";
+import { DependencyTrackMetricsList } from "../../../../components/dependencytrack/DependencyTrackMetricsList";
 import { routeSCAProjectDetails, PATH_SCA_PROJECT_DETAILS_FULL } from "../../route";
 
 interface ProjectHeaderProps {
@@ -156,13 +156,9 @@ export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
             </div>
           </div>
 
-          {/* Right section: Severity pie charts */}
-          <div className="hidden items-center gap-4 md:flex">
-            <SeverityPieChart value={metrics.critical || 0} severity="critical" label="Critical" />
-            <SeverityPieChart value={metrics.high || 0} severity="high" label="High" />
-            <SeverityPieChart value={metrics.medium || 0} severity="medium" label="Medium" />
-            <SeverityPieChart value={metrics.low || 0} severity="low" label="Low" />
-            <SeverityPieChart value={metrics.unassigned || 0} severity="unassigned" label="Unassigned" />
+          {/* Right section: Severity badges */}
+          <div className="hidden md:block">
+            <DependencyTrackMetricsList metrics={metrics} />
           </div>
         </div>
       </CardContent>
