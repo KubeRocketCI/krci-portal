@@ -1,6 +1,7 @@
 export { getPortfolioMetrics } from "./getPortfolioMetrics/index.js";
 export { getProjects } from "./getProjects/index.js";
 export { getProject } from "./getProject/index.js";
+export { getProjectByNameAndVersion } from "./getProjectByNameAndVersion/index.js";
 export { getProjectMetrics } from "./getProjectMetrics/index.js";
 export { getComponents } from "./getComponents/index.js";
 export { getServices } from "./getServices/index.js";

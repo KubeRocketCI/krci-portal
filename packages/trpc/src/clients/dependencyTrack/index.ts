@@ -283,6 +283,45 @@ export class DependencyTrackClient {
   }
 
   /**
+   * Get a specific project by its exact name and version (direct lookup)
+   *
+   * Uses the /v1/project/lookup endpoint for efficient exact-match queries.
+   * This is much more efficient than searching and filtering, and avoids
+   * pagination issues when a project has many versions.
+   *
+   * @param name - Exact project name
+   * @param version - Exact version/branch (e.g., "main", "develop")
+   * @returns Project with metrics, or null if not found (404 response)
+   *
+   * @example
+   * const client = createDependencyTrackClient();
+   * const project = await client.getProjectByNameAndVersion("my-service", "main");
+   * if (project) {
+   *   console.log(`Found project: ${project.name} v${project.version}`);
+   * } else {
+   *   console.log("Project not found");
+   * }
+   */
+  async getProjectByNameAndVersion(name: string, version: string): Promise<DependencyTrackProject | null> {
+    try {
+      const endpoint = this.buildEndpoint("/project/lookup", {
+        name,
+        version,
+      });
+
+      return await this.fetchJson<DependencyTrackProject>(endpoint);
+    } catch (error) {
+      // DependencyTrack returns 404 if project with exact name+version not found
+      // We handle this gracefully by returning null instead of throwing
+      if (error instanceof Error && error.message.includes("404")) {
+        return null;
+      }
+      // Re-throw other errors (network issues, 500s, etc.)
+      throw error;
+    }
+  }
+
+  /**
    * Get project metrics time series for the specified number of days
    *
    * @param uuid - Project UUID
