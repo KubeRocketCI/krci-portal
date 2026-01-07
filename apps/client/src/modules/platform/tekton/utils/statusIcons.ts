@@ -59,9 +59,7 @@ export const getTektonResultStatusIcon = (status: TektonResultStatus | undefined
  * Get status icon configuration based on decoded PipelineRun condition
  * Used in detail views showing full pipeline run status from Tekton Results
  */
-export const getPipelineRunConditionStatusIcon = (
-  condition?: DecodedPipelineRunCondition
-): StatusIconConfig => {
+export const getPipelineRunConditionStatusIcon = (condition?: DecodedPipelineRunCondition): StatusIconConfig => {
   if (!condition) {
     return { Icon: ShieldQuestion, color: STATUS_COLOR.UNKNOWN, title: "Unknown", isSpinning: false };
   }

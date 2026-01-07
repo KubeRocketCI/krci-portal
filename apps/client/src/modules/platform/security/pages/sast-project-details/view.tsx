@@ -32,9 +32,7 @@ export default function SASTProjectDetailsPageContent() {
             <CardTitle>Project Details</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">
-              Detailed metrics and analysis will be added here.
-            </p>
+            <p className="text-muted-foreground">Detailed metrics and analysis will be added here.</p>
           </CardContent>
         </Card>
       </div>

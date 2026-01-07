@@ -92,9 +92,7 @@ export const TektonResultsTable = ({
   );
 
   // Build empty list message
-  const emptyMessage = contextName
-    ? `No PipelineRuns found for "${contextName}"`
-    : "No PipelineRuns found";
+  const emptyMessage = contextName ? `No PipelineRuns found for "${contextName}"` : "No PipelineRuns found";
 
   return (
     <DataTable

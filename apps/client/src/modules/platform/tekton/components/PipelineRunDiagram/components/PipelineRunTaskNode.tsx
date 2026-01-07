@@ -73,7 +73,7 @@ export const PipelineRunTaskNode: React.FC<{
     <div className="space-y-2">
       {/* Task name + status in one row */}
       <div className="my-2 mb-4 flex items-center gap-4">
-        <p className="break-all text-sm font-semibold">{displayName}</p>
+        <p className="text-sm font-semibold break-all">{displayName}</p>
         <div className="flex items-center gap-2">
           {statusData.component && (
             <StatusIcon
@@ -88,8 +88,8 @@ export const PipelineRunTaskNode: React.FC<{
       </div>
 
       {data.task?.spec?.description && (
-        <div className="flex items-start gap-2 mb-4">
-          <span className="text-xs text-background/80">Description:</span>
+        <div className="mb-4 flex items-start gap-2">
+          <span className="text-background/80 text-xs">Description:</span>
           <span className="text-xs">{data.task.spec.description}</span>
         </div>
       )}
@@ -97,7 +97,7 @@ export const PipelineRunTaskNode: React.FC<{
       {duration && (
         <div className="flex items-center gap-2">
           <Timer className="text-muted-foreground size-3.5" />
-          <span className="text-xs text-background/80">Duration:</span>
+          <span className="text-background/80 text-xs">Duration:</span>
           <span className="text-xs font-medium">{duration}</span>
         </div>
       )}
@@ -107,7 +107,7 @@ export const PipelineRunTaskNode: React.FC<{
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <ListOrdered className="text-muted-foreground size-3.5" />
-            <span className="text-xs text-background/80">Steps:</span>
+            <span className="text-background/80 text-xs">Steps:</span>
           </div>
           <div className="space-y-0.5 pl-5">
             {data.taskRun.status.steps.map((step) => {
@@ -176,7 +176,7 @@ export const PipelineRunTaskNode: React.FC<{
                 Title={statusText}
               />
             )}
-            <p className="text-foreground break-all text-sm leading-tight font-semibold line-clamp-1"> {displayName}</p>
+            <p className="text-foreground line-clamp-1 text-sm leading-tight font-semibold break-all"> {displayName}</p>
           </div>
 
           {/* Task reference */}

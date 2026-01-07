@@ -6,7 +6,6 @@ import { useProjects } from "../../../sast/hooks/useProjects";
  * Leverages existing getProjects query and filters by key
  */
 export function useProject(projectKey: string) {
-
   // Use existing projects query - it's likely already cached
   const { data, isLoading, error } = useProjects({
     page: 1,

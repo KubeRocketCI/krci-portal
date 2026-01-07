@@ -45,14 +45,9 @@ const DEFAULT_ORDER_BY = "create_time desc";
  *   fetchNextPage();
  * }
  */
-export const useTektonResultsInfiniteQuery = (
-  namespace: string,
-  options?: UseTektonResultsOptions
-) => {
+export const useTektonResultsInfiniteQuery = (namespace: string, options?: UseTektonResultsOptions) => {
   const trpc = useTRPCClient();
-  const { clusterName } = useClusterStore(
-    useShallow((state) => ({ clusterName: state.clusterName }))
-  );
+  const { clusterName } = useClusterStore(useShallow((state) => ({ clusterName: state.clusterName })));
   const pageSize = options?.pageSize ?? DEFAULT_PAGE_SIZE;
   const orderBy = options?.orderBy ?? DEFAULT_ORDER_BY;
 

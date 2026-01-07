@@ -107,11 +107,11 @@ export const ApplicationsList = ({ stage }: ApplicationsListProps) => {
 
           const argoAppLink = argoApplication
             ? LinkCreationService.argocd.createApplicationLink(
-              argocdBaseURL,
-              argoApplication.metadata?.labels?.[applicationLabels.pipeline],
-              argoApplication.metadata?.labels?.[applicationLabels.stage],
-              argoApplication.metadata?.labels?.[applicationLabels.appName]
-            )
+                argocdBaseURL,
+                argoApplication.metadata?.labels?.[applicationLabels.pipeline],
+                argoApplication.metadata?.labels?.[applicationLabels.stage],
+                argoApplication.metadata?.labels?.[applicationLabels.appName]
+              )
             : undefined;
 
           return (

@@ -2,7 +2,12 @@ import React from "react";
 import { Overview } from "../components/Overview";
 import { Details } from "../components/Details";
 import { ViewPipelineRun } from "../components/ViewPipelineRun";
-import { routeTektonResultPipelineRunDetails, RouteSearchTab, routeSearchTabSchema, PATH_TEKTON_RESULT_PIPELINERUN_DETAILS_FULL } from "../route";
+import {
+  routeTektonResultPipelineRunDetails,
+  RouteSearchTab,
+  routeSearchTabSchema,
+  PATH_TEKTON_RESULT_PIPELINERUN_DETAILS_FULL,
+} from "../route";
 import { Tab } from "@/core/providers/Tabs/components/Tabs/types";
 import { router } from "@/core/router";
 

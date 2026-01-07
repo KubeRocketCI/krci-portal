@@ -27,8 +27,7 @@ const HeaderMetadata = () => {
   const statusConfig = getPipelineRunConditionStatusIcon(condition);
 
   const pipelineName =
-    pipelineRun.metadata?.labels?.[pipelineRunLabels.pipeline] ||
-    pipelineRun.spec?.pipelineRef?.name;
+    pipelineRun.metadata?.labels?.[pipelineRunLabels.pipeline] || pipelineRun.spec?.pipelineRef?.name;
 
   const codebase = pipelineRun.metadata?.labels?.[pipelineRunLabels.codebase];
   const codebaseBranch = pipelineRun.metadata?.labels?.[pipelineRunLabels.codebaseBranch];
