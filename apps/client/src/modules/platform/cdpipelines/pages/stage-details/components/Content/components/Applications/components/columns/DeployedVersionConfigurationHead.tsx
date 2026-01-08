@@ -15,55 +15,6 @@ import {
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import { CodebaseImageStream, Stage } from "@my-project/shared";
 
-// Helper functions for image stream lookups
-const findPreviousStage = (stages: Stage[], currentStageOrder: number): Stage | undefined => {
-  return stages.find(({ spec: { order: stageOrder } }) => stageOrder === currentStageOrder - 1);
-};
-
-const createDockerStreamSet = (inputDockerStreams: string[] = []): Set<string> => {
-  const normalizedNames = inputDockerStreams.map((el) => el.replaceAll(".", "-"));
-  return new Set<string>(normalizedNames);
-};
-
-const getLatestImageStream = (
-  imageStreams: CodebaseImageStream[],
-  codebaseName: string,
-  stageOrder: number,
-  inputDockerStreamsSet: Set<string>,
-  stages: Stage[],
-  cdPipelineName: string,
-  applicationsToPromote: string[] | null
-): CodebaseImageStream | undefined => {
-  const codebaseImageStreams = imageStreams.filter(({ spec: { codebase } }) => codebase === codebaseName);
-  const normalizedAppsToPromote = new Set(applicationsToPromote?.map((el) => el.replaceAll(".", "-")) || []);
-  const isPromote = normalizedAppsToPromote.has(codebaseName);
-
-  if (isPromote) {
-    if (stageOrder === 0) {
-      return codebaseImageStreams.find((el) => inputDockerStreamsSet.has(el.metadata.name));
-    }
-    const previousStage = findPreviousStage(stages, stageOrder);
-    if (!previousStage) return undefined;
-    return codebaseImageStreams.find(
-      ({ spec: { codebase }, metadata: { name } }) =>
-        name === `${cdPipelineName}-${previousStage.spec.name}-${codebase}-verified`
-    );
-  }
-
-  return codebaseImageStreams.find((el) => inputDockerStreamsSet.has(el.metadata.name));
-};
-
-const getVerifiedImageStream = (
-  imageStreams: CodebaseImageStream[],
-  cdPipelineName: string,
-  stageName: string,
-  codebaseName: string
-): CodebaseImageStream | undefined => {
-  return imageStreams.find(
-    ({ metadata: { name } }) => name === `${cdPipelineName}-${stageName}-${codebaseName}-verified`
-  );
-};
-
 export const DeployedVersionConfigurationHeadColumn = () => {
   const params = routeStageDetails.useParams();
   const cdPipelineWatch = useCDPipelineWatch();
@@ -72,8 +23,8 @@ export const DeployedVersionConfigurationHeadColumn = () => {
   const pipelineAppCodebasesWatch = usePipelineAppCodebasesWatch();
   const imageStreamsWatch = useCodebaseImageStreamsWatch();
 
-  const { watch, setValue, resetField } = useTypedFormContext();
-  const values = watch();
+  const form = useTypedFormContext();
+  const values = form.state.values;
   const buttonsHighlighted = checkHighlightedButtons(values);
 
   const isLoading =
@@ -82,6 +33,61 @@ export const DeployedVersionConfigurationHeadColumn = () => {
     cdPipelineWatch.isLoading ||
     stageWatch.isLoading ||
     stageListWatch.isLoading;
+
+  // Helper functions for image stream lookups wrapped in useCallback to prevent recreating on every render
+  const findPreviousStage = React.useCallback((stages: Stage[], currentStageOrder: number): Stage | undefined => {
+    return stages.find(({ spec: { order: stageOrder } }) => stageOrder === currentStageOrder - 1);
+  }, []);
+
+  const createDockerStreamSet = React.useCallback((inputDockerStreams: string[] = []): Set<string> => {
+    const normalizedNames = inputDockerStreams.map((el) => el.replaceAll(".", "-"));
+    return new Set<string>(normalizedNames);
+  }, []);
+
+  const getLatestImageStream = React.useCallback(
+    (
+      imageStreams: CodebaseImageStream[],
+      codebaseName: string,
+      stageOrder: number,
+      inputDockerStreamsSet: Set<string>,
+      stages: Stage[],
+      cdPipelineName: string,
+      applicationsToPromote: string[] | null
+    ): CodebaseImageStream | undefined => {
+      const codebaseImageStreams = imageStreams.filter(({ spec: { codebase } }) => codebase === codebaseName);
+      const normalizedAppsToPromote = new Set(applicationsToPromote?.map((el) => el.replaceAll(".", "-")) || []);
+      const isPromote = normalizedAppsToPromote.has(codebaseName);
+
+      if (isPromote) {
+        if (stageOrder === 0) {
+          return codebaseImageStreams.find((el) => inputDockerStreamsSet.has(el.metadata.name));
+        }
+        const previousStage = findPreviousStage(stages, stageOrder);
+        if (!previousStage) return undefined;
+        return codebaseImageStreams.find(
+          ({ spec: { codebase }, metadata: { name } }) =>
+            name === `${cdPipelineName}-${previousStage.spec.name}-${codebase}-verified`
+        );
+      }
+
+      return codebaseImageStreams.find((el) => inputDockerStreamsSet.has(el.metadata.name));
+    },
+    [findPreviousStage]
+  );
+
+  const getVerifiedImageStream = React.useCallback(
+    (
+      imageStreams: CodebaseImageStream[],
+      cdPipelineName: string,
+      stageName: string,
+      codebaseName: string
+    ): CodebaseImageStream | undefined => {
+      return imageStreams.find(
+        ({ metadata: { name } }) => name === `${cdPipelineName}-${stageName}-${codebaseName}-verified`
+      );
+    },
+    []
+  );
 
   const handleClickLatest = React.useCallback(() => {
     if (isLoading || !cdPipelineWatch.data || !stageWatch.data) {
@@ -93,7 +99,10 @@ export const DeployedVersionConfigurationHeadColumn = () => {
     for (const appCodebase of pipelineAppCodebasesWatch.data) {
       const appName = appCodebase.metadata.name;
       const selectFieldName = `${appName}${IMAGE_TAG_POSTFIX}` as const;
-      resetField(selectFieldName);
+      const defaultValue = form.options.defaultValues?.[selectFieldName];
+      if (defaultValue) {
+        form.setFieldValue(selectFieldName, defaultValue);
+      }
 
       const latestImageStream = getLatestImageStream(
         imageStreamsWatch.data.array,
@@ -112,10 +121,7 @@ export const DeployedVersionConfigurationHeadColumn = () => {
       const imageStreamTag = latestImageStream.spec.tags.at(-1)?.name;
       if (!imageStreamTag) continue;
 
-      setValue(selectFieldName, `latest::${imageStreamTag}`, {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
+      form.setFieldValue(selectFieldName, `latest::${imageStreamTag}`);
     }
   }, [
     isLoading,
@@ -125,8 +131,9 @@ export const DeployedVersionConfigurationHeadColumn = () => {
     imageStreamsWatch.data.array,
     stageListWatch.data.array,
     params.cdPipeline,
-    resetField,
-    setValue,
+    form,
+    createDockerStreamSet,
+    getLatestImageStream,
   ]);
 
   const handleClickStable = React.useCallback(() => {
@@ -137,7 +144,10 @@ export const DeployedVersionConfigurationHeadColumn = () => {
     for (const appCodebase of pipelineAppCodebasesWatch.data) {
       const appName = appCodebase.metadata.name;
       const selectFieldName = `${appName}${IMAGE_TAG_POSTFIX}` as const;
-      resetField(selectFieldName);
+      const defaultValue = form.options.defaultValues?.[selectFieldName];
+      if (defaultValue) {
+        form.setFieldValue(selectFieldName, defaultValue);
+      }
 
       const verifiedImageStream = getVerifiedImageStream(
         imageStreamsWatch.data.array,
@@ -153,10 +163,7 @@ export const DeployedVersionConfigurationHeadColumn = () => {
       const imageStreamTag = verifiedImageStream.spec.tags.at(-1)?.name;
       if (!imageStreamTag) continue;
 
-      setValue(selectFieldName, `stable::${imageStreamTag}`, {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
+      form.setFieldValue(selectFieldName, `stable::${imageStreamTag}`);
     }
   }, [
     isLoading,
@@ -165,8 +172,8 @@ export const DeployedVersionConfigurationHeadColumn = () => {
     imageStreamsWatch.data.array,
     params.cdPipeline,
     params.stage,
-    resetField,
-    setValue,
+    form,
+    getVerifiedImageStream,
   ]);
 
   return (

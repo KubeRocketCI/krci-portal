@@ -1,6 +1,5 @@
-import { useFormContext } from "react-hook-form";
-import { ApplicationsFormValues } from "../types";
+import { useApplicationsForm } from "../index";
 
 export const useTypedFormContext = () => {
-  return useFormContext<ApplicationsFormValues>();
+  return useApplicationsForm();
 };

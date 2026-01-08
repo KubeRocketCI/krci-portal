@@ -1,5 +1,4 @@
-import { FormSwitch } from "@/core/providers/Form/components/FormSwitch";
-import { FieldEvent } from "@/core/types/forms";
+import { Switch } from "@/core/components/ui/switch";
 import {
   ALL_VALUES_OVERRIDE_KEY,
   VALUES_OVERRIDE_POSTFIX,
@@ -11,56 +10,37 @@ import React from "react";
 import { applicationTableMode } from "../../constants";
 import { useTypedFormContext } from "../../hooks/useTypedFormContext";
 import { ApplicationsTableMode } from "../../types";
-import { checkHighlightedButtons } from "../../utils/checkHighlightedButtons";
 
 export const ValuesOverrideHeadColumn = ({ mode }: { mode: ApplicationsTableMode }) => {
   const pipelineAppCodebasesWatch = usePipelineAppCodebasesWatch();
-
-  const {
-    register,
-    control,
-    formState: { errors },
-    setValue,
-    watch,
-  } = useTypedFormContext();
-
-  const handleClickOverrideValuesAll = React.useCallback(
-    (event: FieldEvent<boolean>) => {
-      if (pipelineAppCodebasesWatch.isLoading || !pipelineAppCodebasesWatch.data.length) {
-        return;
-      }
-
-      const boolean = event?.target.value;
-
-      for (const appCodebase of pipelineAppCodebasesWatch.data) {
-        const selectFieldName = `${appCodebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}` as const;
-
-        setValue(selectFieldName, boolean, {
-          shouldValidate: true,
-          shouldDirty: true,
-        });
-      }
-    },
-    [setValue, pipelineAppCodebasesWatch.data, pipelineAppCodebasesWatch.isLoading]
-  );
-
-  const values = watch();
-
-  const buttonsHighlighted = checkHighlightedButtons(values);
+  const form = useTypedFormContext();
+  const fieldId = React.useId();
 
   return (
     <div className="flex flex-col gap-4">
       {mode === applicationTableMode.configuration && (
         <div className="flex flex-row items-center gap-2">
           <div>
-            <FormSwitch
-              {...register(ALL_VALUES_OVERRIDE_KEY, {
-                onChange: handleClickOverrideValuesAll,
-              })}
-              control={control}
-              errors={errors}
-              defaultValue={buttonsHighlighted.valuesOverride}
-            />
+            <form.Field name={ALL_VALUES_OVERRIDE_KEY}>
+              {(field) => {
+                const handleChange = (checked: boolean) => {
+                  if (pipelineAppCodebasesWatch.isLoading || !pipelineAppCodebasesWatch.data.length) {
+                    return;
+                  }
+
+                  // Update global switch value
+                  field.handleChange(checked);
+
+                  // Update all individual switches synchronously
+                  for (const appCodebase of pipelineAppCodebasesWatch.data) {
+                    const fieldName = `${appCodebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}` as const;
+                    form.setFieldValue(fieldName, checked);
+                  }
+                };
+
+                return <Switch checked={!!field.state.value} onCheckedChange={handleChange} id={fieldId} />;
+              }}
+            </form.Field>
           </div>
         </div>
       )}
