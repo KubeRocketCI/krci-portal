@@ -12,6 +12,7 @@ import { routeComponentDetails } from "../../modules/platform/codebases/pages/de
 import {
   authRoute,
   contentLayoutRoute,
+  indexRoute,
   routeCluster,
   routeCICD,
   routeObservability,
@@ -29,6 +30,7 @@ contentLayoutRoute.update({
 export {
   authRoute,
   contentLayoutRoute,
+  indexRoute,
   routeCluster,
   routeCICD,
   routeObservability,
@@ -70,6 +72,7 @@ import { routeSASTProjectDetails } from "@/modules/platform/security/pages/sast-
 const routeTree = rootRoute.addChildren([
   authRoute.addChildren([routeAuthLogin, routeAuthCallback]),
   contentLayoutRoute.addChildren([
+    indexRoute,
     routeHome,
     routeCluster.addChildren([
       routeOverviewDetails,

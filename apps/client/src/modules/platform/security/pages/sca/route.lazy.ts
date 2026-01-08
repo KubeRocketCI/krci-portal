@@ -1,7 +1,7 @@
 import { createLazyRoute } from "@tanstack/react-router";
-import { PATH_SCA_FULL } from "./route";
+import { ROUTE_ID_SCA } from "./route";
 import SCAPage from "./page";
 
-export default createLazyRoute(PATH_SCA_FULL)({
+export default createLazyRoute(ROUTE_ID_SCA)({
   component: SCAPage,
 });

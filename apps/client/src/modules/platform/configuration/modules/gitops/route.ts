@@ -3,6 +3,7 @@ import { createRoute } from "@tanstack/react-router";
 
 export const PATH_CONFIG_GITOPS = "gitops" as const;
 export const PATH_CONFIG_GITOPS_FULL = "/c/$clusterName/configuration/gitops" as const;
+export const ROUTE_ID_CONFIG_GITOPS = "/_layout/c/$clusterName/configuration/gitops" as const;
 
 export const routeGitopsConfiguration = createRoute({
   getParentRoute: () => routeConfiguration,

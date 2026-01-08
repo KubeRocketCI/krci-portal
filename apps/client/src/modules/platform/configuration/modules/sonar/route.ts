@@ -3,6 +3,7 @@ import { createRoute } from "@tanstack/react-router";
 
 export const PATH_CONFIG_SONAR = "sonar" as const;
 export const PATH_CONFIG_SONAR_FULL = "/c/$clusterName/configuration/sonar" as const;
+export const ROUTE_ID_CONFIG_SONAR = "/_layout/c/$clusterName/configuration/sonar" as const;
 
 export const routeSonarConfiguration = createRoute({
   getParentRoute: () => routeConfiguration,

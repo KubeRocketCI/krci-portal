@@ -3,6 +3,7 @@ import { createRoute } from "@tanstack/react-router";
 
 export const PATH_HOME = "home" as const;
 export const PATH_HOME_FULL = "/home" as const;
+export const ROUTE_HOME_ID = "/_layout/home" as const;
 
 export const routeHome = createRoute({
   getParentRoute: () => contentLayoutRoute,

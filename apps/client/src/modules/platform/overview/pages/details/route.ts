@@ -3,6 +3,7 @@ import { createRoute } from "@tanstack/react-router";
 
 export const PATH_OVERVIEW = "overview/$namespace" as const;
 export const PATH_OVERVIEW_FULL = "/c/$clusterName/overview/$namespace" as const;
+export const ROUTE_ID_OVERVIEW = "/_layout/c/$clusterName/overview/$namespace" as const;
 
 export const routeOverviewDetails = createRoute({
   getParentRoute: () => routeCluster,

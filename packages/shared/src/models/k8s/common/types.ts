@@ -27,8 +27,9 @@ export type KubeObjectListBase<T extends KubeObjectBase> = z.infer<typeof KubeOb
 
 export type ResourceLabels = Record<string, string> | undefined;
 
-export interface K8sResourceConfig<Labels extends ResourceLabels = ResourceLabels>
-  extends z.infer<typeof k8sResourceConfigSchema> {
+export interface K8sResourceConfig<Labels extends ResourceLabels = ResourceLabels> extends z.infer<
+  typeof k8sResourceConfigSchema
+> {
   labels?: Labels;
 }
 

@@ -4,6 +4,7 @@ import z from "zod";
 
 export const PATH_CDPIPELINE_DETAILS = "cdpipelines/$namespace/$name" as const;
 export const PATH_CDPIPELINE_DETAILS_FULL = "/c/$clusterName/cdpipelines/$namespace/$name" as const;
+export const ROUTE_ID_CDPIPELINE_DETAILS = "/_layout/c/$clusterName/cdpipelines/$namespace/$name" as const;
 
 export const routeSearchTabSchema = z.enum(["applications", "environments"]);
 export const routeSearchTabName = routeSearchTabSchema.enum;

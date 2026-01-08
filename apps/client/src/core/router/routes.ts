@@ -17,22 +17,17 @@ export const authRoute = createRoute({
 
 export const contentLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
+  id: "_layout",
+});
+
+// Index route to redirect "/" to "/home"
+export const indexRoute = createRoute({
+  getParentRoute: () => contentLayoutRoute,
   path: "/",
-  beforeLoad: ({ location }) => {
-    console.log("🔍 Content layout route beforeLoad debug:", {
-      pathname: location.pathname,
-      isRootPath: location.pathname === "/",
-      timestamp: new Date().toISOString(),
+  beforeLoad: () => {
+    throw redirect({
+      to: "/home",
     });
-
-    if (location.pathname === "/") {
-      console.log("🔄 Redirecting from root to home");
-      throw redirect({
-        to: "/home",
-      });
-    }
-
-    console.log("✅ Content layout route beforeLoad passed - no redirect needed");
   },
 });
 
@@ -42,28 +37,14 @@ export const routeCluster = createRoute({
   beforeLoad: ({ location, params }) => {
     const clusterName = useClusterStore.getState().clusterName || import.meta.env.VITE_K8S_DEFAULT_CLUSTER_NAME || "";
 
-    console.log("🔍 Cluster route beforeLoad debug:", {
-      pathname: location.pathname,
-      paramsClusterName: params.clusterName,
-      storeClusterName: clusterName,
-      envDefaultCluster: import.meta.env.VITE_K8S_DEFAULT_CLUSTER_NAME,
-      clusterMatch: params.clusterName === clusterName,
-      timestamp: new Date().toISOString(),
-    });
-
     if (params.clusterName !== clusterName) {
       // Load only known cluster
-      console.log("🔄 Redirecting to home (cluster name mismatch)", {
-        expected: clusterName,
-        actual: params.clusterName,
-      });
       throw redirect({
         to: "/home",
       });
     }
 
     if (location.pathname === `/c/${params.clusterName}` || location.pathname === `/c/${params.clusterName}/`) {
-      console.log("🔄 Redirecting to components (cluster root path)");
       throw redirect({
         to: "/c/$clusterName/components",
         params: {
@@ -71,8 +52,6 @@ export const routeCluster = createRoute({
         },
       });
     }
-
-    console.log("✅ Cluster route beforeLoad passed - no redirect needed");
   },
 });
 

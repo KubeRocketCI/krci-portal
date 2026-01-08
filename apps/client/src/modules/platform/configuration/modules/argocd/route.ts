@@ -3,6 +3,7 @@ import { createRoute } from "@tanstack/react-router";
 
 export const PATH_CONFIG_ARGOCD = "argocd" as const;
 export const PATH_CONFIG_ARGOCD_FULL = "/c/$clusterName/configuration/argocd" as const;
+export const ROUTE_ID_CONFIG_ARGOCD = "/_layout/c/$clusterName/configuration/argocd" as const;
 
 export const routeArgocdConfiguration = createRoute({
   getParentRoute: () => routeConfiguration,

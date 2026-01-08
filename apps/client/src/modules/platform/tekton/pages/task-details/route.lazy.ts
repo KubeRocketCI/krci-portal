@@ -1,7 +1,8 @@
 import { createLazyRoute } from "@tanstack/react-router";
+import { ROUTE_ID_TASK_DETAILS } from "./route";
 import TaskDetailsPage from "./page";
 
-const TaskDetailsRoute = createLazyRoute("/c/$clusterName/cicd/tasks/$namespace/$name")({
+const TaskDetailsRoute = createLazyRoute(ROUTE_ID_TASK_DETAILS)({
   component: TaskDetailsPage,
 });
 

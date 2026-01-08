@@ -35,26 +35,13 @@ export const rootRoute = createRootRouteWithContext<MyRouterContext>()({
     const isAuthenticated = queryClient.getQueryData(["auth.me"]);
     const isAuthCallbackPage = location.pathname === "/auth/callback";
 
-    console.log("🔍 Root route beforeLoad debug:", {
-      pathname: location.pathname,
-      isAuthPage,
-      isAuthCallbackPage,
-      isAuthenticated,
-      authData: queryClient.getQueryData(["auth.me"]),
-      timestamp: new Date().toISOString(),
-    });
-
     if (isAuthPage && isAuthenticated) {
-      console.log("🔄 Redirecting from auth page to home (already authenticated)");
       throw redirect({
         to: "/",
       });
     }
 
     if (!isAuthenticated && !isAuthPage && !isAuthCallbackPage) {
-      console.log("🔄 Redirecting to login (not authenticated)", {
-        redirectUrl: location.href,
-      });
       throw redirect({
         to: "/auth/login",
         search: {
@@ -62,7 +49,5 @@ export const rootRoute = createRootRouteWithContext<MyRouterContext>()({
         },
       });
     }
-
-    console.log("✅ Root route beforeLoad passed - no redirect needed");
   },
 });

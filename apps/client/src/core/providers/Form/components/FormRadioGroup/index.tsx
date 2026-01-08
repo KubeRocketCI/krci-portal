@@ -28,8 +28,9 @@ export interface FormRadioOption {
   disabledTooltip?: string;
 }
 
-export interface FormRadioGroupProps<TFieldValues extends FieldValues = FieldValues>
-  extends Partial<UseFormRegisterReturn<Path<TFieldValues>>> {
+export interface FormRadioGroupProps<TFieldValues extends FieldValues = FieldValues> extends Partial<
+  UseFormRegisterReturn<Path<TFieldValues>>
+> {
   // Controller props
   name: FieldPath<TFieldValues>;
   control: Control<TFieldValues>;

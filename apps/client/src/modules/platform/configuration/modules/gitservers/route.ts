@@ -3,6 +3,7 @@ import { createRoute } from "@tanstack/react-router";
 
 export const PATH_CONFIG_GITSERVERS = "gitservers" as const;
 export const PATH_CONFIG_GITSERVERS_FULL = "/c/$clusterName/configuration/gitservers" as const;
+export const ROUTE_ID_CONFIG_GITSERVERS = "/_layout/c/$clusterName/configuration/gitservers" as const;
 
 export const routeGitserversConfiguration = createRoute({
   getParentRoute: () => routeConfiguration,

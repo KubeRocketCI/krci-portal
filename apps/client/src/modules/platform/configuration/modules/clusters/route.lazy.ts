@@ -1,7 +1,8 @@
 import { createLazyRoute } from "@tanstack/react-router";
+import { ROUTE_ID_CONFIG_CLUSTERS } from "./route";
 import ClustersConfigurationPage from "./view";
 
-const ClustersConfigurationRoute = createLazyRoute("/c/$clusterName/configuration/clusters")({
+const ClustersConfigurationRoute = createLazyRoute(ROUTE_ID_CONFIG_CLUSTERS)({
   component: ClustersConfigurationPage,
 });
 

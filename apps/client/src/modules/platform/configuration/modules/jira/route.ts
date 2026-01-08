@@ -3,6 +3,7 @@ import { createRoute } from "@tanstack/react-router";
 
 export const PATH_CONFIG_JIRA = "jira" as const;
 export const PATH_CONFIG_JIRA_FULL = "/c/$clusterName/configuration/jira" as const;
+export const ROUTE_ID_CONFIG_JIRA = "/_layout/c/$clusterName/configuration/jira" as const;
 
 export const routeJiraConfiguration = createRoute({
   getParentRoute: () => routeConfiguration,
