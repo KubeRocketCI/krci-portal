@@ -3,14 +3,14 @@ import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { Application, applicationLabels } from "@my-project/shared";
-import { Link, useParams } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import React from "react";
-import { routeOverviewDetails } from "../../../route";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import { Button } from "@/core/components/ui/button";
+import { routeOverviewDetails } from "../../../route";
 
 export const useColumns = (): TableColumn<Application>[] => {
-  const { clusterName, namespace } = useParams({ from: routeOverviewDetails.fullPath });
+  const { clusterName, namespace } = routeOverviewDetails.useParams();
 
   return React.useMemo(
     () => [

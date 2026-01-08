@@ -3,6 +3,7 @@ import { createRoute } from "@tanstack/react-router";
 
 export const PATH_PIPELINES = "pipelines" as const;
 export const PATH_PIPELINES_FULL = "/c/$clusterName/cicd/pipelines" as const;
+export const ROUTE_ID_PIPELINES = "/_layout/c/$clusterName/cicd/pipelines" as const;
 
 export const routePipelineList = createRoute({
   getParentRoute: () => routeCICD,

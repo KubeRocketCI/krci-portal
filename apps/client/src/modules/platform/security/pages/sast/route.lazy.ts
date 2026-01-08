@@ -1,7 +1,7 @@
 import { createLazyRoute } from "@tanstack/react-router";
-import { PATH_SAST_FULL } from "./route";
+import { ROUTE_ID_SAST } from "./route";
 import SASTPage from "./page";
 
-export default createLazyRoute(PATH_SAST_FULL)({
+export default createLazyRoute(ROUTE_ID_SAST)({
   component: SASTPage,
 });

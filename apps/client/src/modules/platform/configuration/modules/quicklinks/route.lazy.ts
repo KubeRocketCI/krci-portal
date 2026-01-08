@@ -1,7 +1,8 @@
 import { createLazyRoute } from "@tanstack/react-router";
+import { ROUTE_ID_CONFIG_QUICKLINKS } from "./route";
 import Page from "./page";
 
-const QuicklinksConfigurationRoute = createLazyRoute("/c/$clusterName/configuration/quicklinks")({
+const QuicklinksConfigurationRoute = createLazyRoute(ROUTE_ID_CONFIG_QUICKLINKS)({
   component: Page,
 });
 

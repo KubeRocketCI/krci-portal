@@ -1,7 +1,7 @@
 import { createLazyRoute } from "@tanstack/react-router";
-import { PATH_SCA_PROJECTS_FULL } from "./route";
+import { ROUTE_ID_SCA_PROJECTS } from "./route";
 import SCAProjectsPage from "./page";
 
-export default createLazyRoute(PATH_SCA_PROJECTS_FULL)({
+export default createLazyRoute(ROUTE_ID_SCA_PROJECTS)({
   component: SCAProjectsPage,
 });

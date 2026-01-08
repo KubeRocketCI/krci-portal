@@ -3,6 +3,7 @@ import { createRoute } from "@tanstack/react-router";
 
 export const PATH_PIPELINE_METRICS = "pipeline-metrics/$namespace" as const;
 export const PATH_PIPELINE_METRICS_FULL = "/c/$clusterName/observability/pipeline-metrics/$namespace" as const;
+export const ROUTE_ID_PIPELINE_METRICS = "/_layout/c/$clusterName/observability/pipeline-metrics/$namespace" as const;
 
 export const routePipelineMetrics = createRoute({
   getParentRoute: () => routeObservability,

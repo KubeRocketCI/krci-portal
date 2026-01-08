@@ -12,7 +12,7 @@
     "test:coverage": "vitest run",
     "sonar:check-dev": "dotenv -e .env.development -- cross-env SONAR_TOKEN=$SONAR_TOKEN SONAR_HOST_URL=$SONAR_HOST_URL sonar-scanner -Dsonar.login=$SONAR_TOKEN -Dsonar.host.url=$SONAR_HOST_URL",
     "prepare:validate": "pnpm tsc:check && pnpm lint:check && pnpm test:coverage && pnpm format:check",
-    "clean:node_modules": "rimraf node_modules apps/client/node_modules apps/server/node_modules packages/shared/node_modules packages/trpc/node_modules",
+    "clean:node_modules": "find . -name 'node_modules' -type d -prune -exec rm -rf {} +",
     "deploy:clean": "rimraf deploy",
     "deploy:prepare": "pnpm deploy --filter=client --prod deploy/client && pnpm deploy --filter=server --prod deploy/server",
     "deploy:post": "shx mkdir -p deploy/server/db && shx touch deploy/server/db/sessions.sqlite",

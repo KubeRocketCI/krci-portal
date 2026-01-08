@@ -3,6 +3,8 @@ import { createRoute } from "@tanstack/react-router";
 
 export const PATH_SAST_PROJECT_DETAILS = "sast/projects/$namespace/$projectKey" as const;
 export const PATH_SAST_PROJECT_DETAILS_FULL = "/c/$clusterName/security/sast/projects/$namespace/$projectKey" as const;
+export const ROUTE_ID_SAST_PROJECT_DETAILS =
+  "/_layout/c/$clusterName/security/sast/projects/$namespace/$projectKey" as const;
 
 export const routeSASTProjectDetails = createRoute({
   getParentRoute: () => routeSecurity,

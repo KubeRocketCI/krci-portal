@@ -3,6 +3,7 @@ import { createRoute } from "@tanstack/react-router";
 
 export const PATH_CDPIPELINE_CREATE = "cdpipelines/create" as const;
 export const PATH_CDPIPELINE_CREATE_FULL = "/c/$clusterName/cdpipelines/create" as const;
+export const ROUTE_ID_CDPIPELINE_CREATE = "/_layout/c/$clusterName/cdpipelines/create" as const;
 
 export interface SearchParams {
   application?: string;

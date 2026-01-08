@@ -12,8 +12,9 @@ import { FormFieldProps } from "@/core/components/ui/form-field";
 import { ComboboxOption } from "@/core/components/ui/combobox";
 import React from "react";
 
-export interface FormComboboxMultipleFreeSoloProps<TFieldValues extends FieldValues = FieldValues>
-  extends Partial<UseFormRegisterReturn<Path<TFieldValues>>> {
+export interface FormComboboxMultipleFreeSoloProps<TFieldValues extends FieldValues = FieldValues> extends Partial<
+  UseFormRegisterReturn<Path<TFieldValues>>
+> {
   // Controller props
   name: FieldPath<TFieldValues>;
   control: Control<TFieldValues>;

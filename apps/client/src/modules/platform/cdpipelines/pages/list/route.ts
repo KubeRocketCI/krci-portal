@@ -3,6 +3,7 @@ import { createRoute } from "@tanstack/react-router";
 
 export const PATH_CDPIPELINES = "cdpipelines" as const;
 export const PATH_CDPIPELINES_FULL = "/c/$clusterName/cdpipelines" as const;
+export const ROUTE_ID_CDPIPELINES = "/_layout/c/$clusterName/cdpipelines" as const;
 
 export const routeCDPipelineList = createRoute({
   getParentRoute: () => routeCluster,

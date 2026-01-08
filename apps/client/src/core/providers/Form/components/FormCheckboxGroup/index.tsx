@@ -28,8 +28,9 @@ export interface FormCheckboxOption {
   disabledTooltip?: string;
 }
 
-export interface FormCheckboxGroupProps<TFieldValues extends FieldValues = FieldValues>
-  extends Partial<UseFormRegisterReturn<Path<TFieldValues>>> {
+export interface FormCheckboxGroupProps<TFieldValues extends FieldValues = FieldValues> extends Partial<
+  UseFormRegisterReturn<Path<TFieldValues>>
+> {
   // Controller props
   name: FieldPath<TFieldValues>;
   control: Control<TFieldValues>;

@@ -3,6 +3,8 @@ import { createRoute } from "@tanstack/react-router";
 
 export const PATH_STAGE_CREATE = "cdpipelines/$namespace/$cdPipeline/stages/create" as const;
 export const PATH_STAGE_CREATE_FULL = "/c/$clusterName/cdpipelines/$namespace/$cdPipeline/stages/create" as const;
+export const ROUTE_ID_STAGE_CREATE =
+  "/_layout/c/$clusterName/cdpipelines/$namespace/$cdPipeline/stages/create" as const;
 
 export const routeStageCreate = createRoute({
   getParentRoute: () => routeCluster,

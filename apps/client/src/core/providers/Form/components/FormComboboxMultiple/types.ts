@@ -10,8 +10,9 @@ import {
 import { SelectOption } from "../../types";
 import { FormFieldProps } from "@/core/components/ui/form-field";
 
-export interface FormComboboxMultipleProps<TFieldValues extends FieldValues = FieldValues>
-  extends Partial<UseFormRegisterReturn<Path<TFieldValues>>> {
+export interface FormComboboxMultipleProps<TFieldValues extends FieldValues = FieldValues> extends Partial<
+  UseFormRegisterReturn<Path<TFieldValues>>
+> {
   // Controller props
   name: FieldPath<TFieldValues>;
   control: Control<TFieldValues>;

@@ -3,6 +3,8 @@ import { createRoute } from "@tanstack/react-router";
 
 export const PATH_SCA_PROJECT_DETAILS = "sca/projects/$namespace/$projectUuid" as const;
 export const PATH_SCA_PROJECT_DETAILS_FULL = "/c/$clusterName/security/sca/projects/$namespace/$projectUuid" as const;
+export const ROUTE_ID_SCA_PROJECT_DETAILS =
+  "/_layout/c/$clusterName/security/sca/projects/$namespace/$projectUuid" as const;
 
 export const routeSCAProjectDetails = createRoute({
   getParentRoute: () => routeSecurity,
