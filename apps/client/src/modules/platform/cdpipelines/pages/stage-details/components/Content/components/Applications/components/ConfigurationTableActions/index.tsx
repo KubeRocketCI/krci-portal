@@ -68,9 +68,14 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
   const { showRequestErrorMessage } = useRequestStatusMessages();
   const { triggerCreatePipelineRun } = usePipelineRunCRUD();
 
-  const { trigger, reset, getValues, formState } = useTypedFormContext();
+  const form = useTypedFormContext();
 
-  const isDirty = Object.keys(formState.dirtyFields).length > 0;
+  // Check if form has been modified by comparing current values with default values
+  const isDirty = React.useMemo(() => {
+    const currentValues = form.state.values;
+    const defaultValues = form.options.defaultValues;
+    return JSON.stringify(currentValues) !== JSON.stringify(defaultValues);
+  }, [form.state.values, form.options.defaultValues]);
 
   const latestDeployPipelineRunIsRunning = React.useMemo(() => {
     const latestNewDeployPipelineRun = pipelineRunsWatch.data?.deploy?.[0];
@@ -87,8 +92,9 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
   }, [pipelineRunsWatch.data?.deploy]);
 
   const handleClickDeploy = React.useCallback(async () => {
-    const valid = await trigger();
-    const values = getValues();
+    await form.validateAllFields("submit");
+    const values = form.state.values;
+    const valid = form.state.isValid;
 
     if (!valid || pipelineAppCodebasesWatch.isLoading || !pipelineAppCodebases.length || !cdPipeline || !stage) {
       return;
@@ -146,14 +152,13 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
   }, [
     cdPipeline,
     deployPipelineRunTemplate,
-    getValues,
+    form,
     setDeployBtnDisabled,
     showRequestErrorMessage,
     stage,
     pipelineAppCodebases,
     pipelineAppCodebasesWatch.isLoading,
     toggleMode,
-    trigger,
     triggerCreatePipelineRun,
   ]);
 
@@ -165,7 +170,7 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
     <div className="flex flex-row items-center justify-end gap-6">
       <Tooltip title={"Reset selected image stream versions"}>
         <Button
-          onClick={() => reset()}
+          onClick={() => form.reset()}
           disabled={!isDirty}
           variant="ghost"
           className="text-secondary-dark hover:bg-secondary-dark/10"
@@ -175,7 +180,7 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
       </Tooltip>
       <Button
         onClick={() => {
-          reset();
+          form.reset();
           toggleMode();
         }}
         variant="outline"

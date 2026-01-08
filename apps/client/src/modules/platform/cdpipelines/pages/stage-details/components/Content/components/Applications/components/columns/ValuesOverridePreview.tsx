@@ -1,10 +1,7 @@
 import { ResourceIconLink } from "@/core/components/ResourceIconLink";
-import { FormSwitch } from "@/core/providers/Form/components/FormSwitch";
+import { SwitchField } from "@/core/components/form/SwitchField";
 import { LinkCreationService } from "@/k8s/services/link-creation";
-import {
-  ALL_VALUES_OVERRIDE_KEY,
-  VALUES_OVERRIDE_POSTFIX,
-} from "@/modules/platform/cdpipelines/pages/stage-details/constants";
+import { VALUES_OVERRIDE_POSTFIX } from "@/modules/platform/cdpipelines/pages/stage-details/constants";
 import { useGitOpsCodebaseWatch, useGitServersWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import React from "react";
@@ -19,13 +16,8 @@ export const ValuesOverridePreviewColumn = ({ appCodebase }: { appCodebase: Code
 
   const gitOpsCodebase = gitOpsCodebaseWatch.data;
 
-  const {
-    control,
-    formState: { errors },
-    register,
-    setValue,
-    getValues,
-  } = useTypedFormContext();
+  const form = useTypedFormContext();
+  const fieldName = `${appCodebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}` as const;
 
   const gitOpsGitServer = React.useMemo(() => {
     return gitServerListWatch.data.array?.find(
@@ -34,39 +26,30 @@ export const ValuesOverridePreviewColumn = ({ appCodebase }: { appCodebase: Code
   }, [gitOpsCodebase?.spec.gitServer, gitServerListWatch.data.array]);
 
   return (
-    <div className="flex flex-row items-center gap-2">
-      <div className="flex w-full flex-row items-center gap-2">
-        <div>
-          <FormSwitch
-            {...register(`${appCodebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}`, {
-              onChange: () => {
-                const hasAtLeastOneFalse = Object.entries(getValues())
-                  .filter(([key]) => key.includes(VALUES_OVERRIDE_POSTFIX))
-                  .some(([, value]) => value === false);
-
-                setValue(ALL_VALUES_OVERRIDE_KEY, !hasAtLeastOneFalse);
-              },
-            })}
-            control={control}
-            errors={errors}
-            disabled
-          />
-        </div>
-      </div>
-      {gitOpsCodebase?.status?.gitWebUrl && (
-        <ResourceIconLink
-          tooltipTitle={"Go to the Source Code"}
-          link={LinkCreationService.git.createGitOpsValuesYamlFileLink(
-            gitOpsCodebase?.status?.gitWebUrl,
-            params.cdPipeline,
-            params.stage,
-            appCodebase.metadata.name,
-            gitOpsGitServer?.spec.gitProvider as GitProvider
+    <form.Field name={fieldName}>
+      {(field) => (
+        <div className="flex flex-row items-center gap-2">
+          <div className="flex w-full flex-row items-center gap-2">
+            <div>
+              <SwitchField field={field} disabled />
+            </div>
+          </div>
+          {gitOpsCodebase?.status?.gitWebUrl && (
+            <ResourceIconLink
+              tooltipTitle={"Go to the Source Code"}
+              link={LinkCreationService.git.createGitOpsValuesYamlFileLink(
+                gitOpsCodebase?.status?.gitWebUrl,
+                params.cdPipeline,
+                params.stage,
+                appCodebase.metadata.name,
+                gitOpsGitServer?.spec.gitProvider as GitProvider
+              )}
+              Icon={<SquareArrowOutUpRight size={16} />}
+              name="source code"
+            />
           )}
-          Icon={<SquareArrowOutUpRight size={16} />}
-          name="source code"
-        />
+        </div>
       )}
-    </div>
+    </form.Field>
   );
 };

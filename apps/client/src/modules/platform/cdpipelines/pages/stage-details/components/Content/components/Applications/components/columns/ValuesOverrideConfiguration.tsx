@@ -1,21 +1,14 @@
 import { Application, Codebase, GitProvider } from "@my-project/shared";
 import { useTypedFormContext } from "../../hooks/useTypedFormContext";
 import { ResourceIconLink } from "@/core/components/ResourceIconLink";
-import { FormSwitch } from "@/core/providers/Form/components/FormSwitch";
+import { SwitchField } from "@/core/components/form/SwitchField";
 import { LinkCreationService } from "@/k8s/services/link-creation";
-import {
-  VALUES_OVERRIDE_POSTFIX,
-  ALL_VALUES_OVERRIDE_KEY,
-} from "@/modules/platform/cdpipelines/pages/stage-details/constants";
+import { VALUES_OVERRIDE_POSTFIX } from "@/modules/platform/cdpipelines/pages/stage-details/constants";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { SquareArrowOutUpRight, TriangleAlert } from "lucide-react";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import React from "react";
-import {
-  useGitOpsCodebaseWatch,
-  useGitServersWatch,
-  usePipelineAppCodebasesWatch,
-} from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
+import { useGitOpsCodebaseWatch, useGitServersWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 
 export const ValuesOverrideConfigurationColumn = ({
   application,
@@ -27,21 +20,13 @@ export const ValuesOverrideConfigurationColumn = ({
   const params = routeStageDetails.useParams();
   const gitOpsCodebaseWatch = useGitOpsCodebaseWatch();
   const gitServerListWatch = useGitServersWatch();
-  const pipelineAppCodebasesWatch = usePipelineAppCodebasesWatch();
 
   const gitOpsCodebase = gitOpsCodebaseWatch.data;
 
-  const {
-    control,
-    formState: { errors },
-    register,
-    setValue,
-    getValues,
-    watch,
-  } = useTypedFormContext();
-  const currentResourceValue = application ? Object.hasOwn(application?.spec, "sources") : false;
+  const form = useTypedFormContext();
+  const fieldName = `${appCodebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}` as const;
 
-  const thisFieldValue = watch(`${appCodebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}`);
+  const currentResourceValue = application ? Object.hasOwn(application?.spec, "sources") : false;
 
   const gitOpsGitServer = React.useMemo(() => {
     return gitServerListWatch.data.array?.find(
@@ -50,48 +35,37 @@ export const ValuesOverrideConfigurationColumn = ({
   }, [gitOpsCodebase?.spec.gitServer, gitServerListWatch.data.array]);
 
   return (
-    <div className="flex flex-row items-center gap-2">
-      <div className="flex w-full flex-row items-center gap-2">
-        <div>
-          <FormSwitch
-            {...register(`${appCodebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}`, {
-              onChange: () => {
-                // Check all codebases across all pages, not just currently visible ones
-                const hasAtLeastOneFalse = pipelineAppCodebasesWatch.data.some((codebase) => {
-                  const fieldName = `${codebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}` as const;
-                  const fieldValue = getValues(fieldName);
-                  return fieldValue === false;
-                });
-
-                setValue(ALL_VALUES_OVERRIDE_KEY, !hasAtLeastOneFalse);
-              },
-            })}
-            control={control}
-            errors={errors}
-          />
-        </div>
-        {thisFieldValue !== currentResourceValue && (
-          <div className="leading-none">
-            <Tooltip title="Warning: This action will mutate override values usage for this application deployment.">
-              <TriangleAlert size={16} />
-            </Tooltip>
+    <form.Field name={fieldName}>
+      {(field) => (
+        <div className="flex flex-row items-center gap-2">
+          <div className="flex w-full flex-row items-center gap-2">
+            <div>
+              <SwitchField field={field} />
+            </div>
+            {field.state.value !== currentResourceValue && (
+              <div className="leading-none">
+                <Tooltip title="Warning: This action will mutate override values usage for this application deployment.">
+                  <TriangleAlert size={16} />
+                </Tooltip>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      {gitOpsCodebase?.status?.gitWebUrl && (
-        <ResourceIconLink
-          tooltipTitle={"Go to the Source Code"}
-          link={LinkCreationService.git.createGitOpsValuesYamlFileLink(
-            gitOpsCodebase?.status?.gitWebUrl,
-            params.cdPipeline,
-            params.stage,
-            appCodebase.metadata.name,
-            gitOpsGitServer?.spec.gitProvider as GitProvider
+          {gitOpsCodebase?.status?.gitWebUrl && (
+            <ResourceIconLink
+              tooltipTitle={"Go to the Source Code"}
+              link={LinkCreationService.git.createGitOpsValuesYamlFileLink(
+                gitOpsCodebase?.status?.gitWebUrl,
+                params.cdPipeline,
+                params.stage,
+                appCodebase.metadata.name,
+                gitOpsGitServer?.spec.gitProvider as GitProvider
+              )}
+              Icon={<SquareArrowOutUpRight size={16} />}
+              name="source code"
+            />
           )}
-          Icon={<SquareArrowOutUpRight size={16} />}
-          name="source code"
-        />
+        </div>
       )}
-    </div>
+    </form.Field>
   );
 };

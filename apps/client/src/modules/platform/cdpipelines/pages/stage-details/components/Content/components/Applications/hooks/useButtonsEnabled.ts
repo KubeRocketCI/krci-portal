@@ -34,9 +34,9 @@ export const useButtonsEnabledMap = () => {
     [applicationsWatch.data.array]
   );
 
-  const { watch } = useTypedFormContext();
+  const form = useTypedFormContext();
 
-  const values = watch();
+  const values = form.state.values;
 
   const latestDeployPipelineRunIsRunning = React.useMemo(() => {
     const latestNewDeployPipelineRun = pipelineRunsWatch.data?.deploy?.[0];
