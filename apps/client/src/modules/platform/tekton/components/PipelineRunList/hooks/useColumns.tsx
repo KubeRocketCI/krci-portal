@@ -216,11 +216,13 @@ export const useColumns = ({
 
             return (
               <Tooltip title={<PipelineRunResults pipelineRun={data} />}>
-                <div className="flex items-center gap-0.5">
-                  <span className="border-muted max-w-[300px] overflow-hidden border-b border-dashed text-sm text-ellipsis whitespace-nowrap">
+                <div className="flex w-full items-center gap-0.5">
+                  <span className="border-muted min-w-0 flex-1 overflow-hidden border-b border-dashed text-sm text-ellipsis whitespace-nowrap">
                     {vcsTag}
                   </span>
-                  <CopyButton text={vcsTag} size="small" />
+                  <div className="flex-shrink-0">
+                    <CopyButton text={vcsTag} size="small" />
+                  </div>
                 </div>
               </Tooltip>
             );
