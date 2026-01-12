@@ -36,9 +36,9 @@ export default function RegistryConfigurationPage() {
 
   const isLoading =
     krciConfigMapWatch.isLoading ||
-    !pullAccountSecretWatch.isReady ||
-    !pushAccountSecretWatch.isReady ||
-    !tektonServiceAccountWatch.isReady;
+    pullAccountSecretWatch.query.isLoading ||
+    pushAccountSecretWatch.query.isLoading ||
+    tektonServiceAccountWatch.query.isLoading;
 
   const registryType = krciConfigMap?.data?.container_registry_type;
 
