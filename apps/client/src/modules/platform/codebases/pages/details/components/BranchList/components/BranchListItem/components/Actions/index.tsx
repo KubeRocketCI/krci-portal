@@ -30,12 +30,6 @@ export const Actions = ({ codebaseBranch }: ActionsProps) => {
 
   const [open, setOpen] = React.useState(false);
 
-  const resourcesAreLoaded =
-    codebaseWatch.query.isFetched &&
-    codebaseWatch.query.data &&
-    codebaseBranchListWatch.query.isFetched &&
-    pipelineNamesWatch.isFetched;
-
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
@@ -43,12 +37,12 @@ export const Actions = ({ codebaseBranch }: ActionsProps) => {
           <EllipsisVertical size={20} color={"grey"} />
         </Button>
       </DropdownMenuTrigger>
-      {resourcesAreLoaded && (
+      {codebase && (
         <CodebaseBranchActionsMenu
           variant="menu"
           data={{
             codebaseBranch,
-            codebase: codebase!,
+            codebase,
             codebaseBranches: codebaseBranchListWatch.data.array,
             defaultBranch,
             pipelines: {
