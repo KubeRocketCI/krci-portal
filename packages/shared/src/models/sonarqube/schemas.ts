@@ -45,6 +45,7 @@ export const sonarqubeProjectsQueryParamsSchema = z.object({
   page: z.number().int().min(1).optional().default(1),
   pageSize: z.number().int().min(1).max(500).optional().default(50),
   searchTerm: z.string().optional(),
+  projectKeys: z.string().optional(), // Comma-separated list of exact project keys
   analyzedBefore: z.string().optional(),
   onProvisionedOnly: z.boolean().optional(),
   qualifiers: z.string().optional(),
