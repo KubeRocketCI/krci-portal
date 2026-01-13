@@ -7,7 +7,6 @@ import {
 import { getDeployedVersion } from "@my-project/shared";
 import React from "react";
 import { useForm } from "@tanstack/react-form";
-import type { ReactFormExtendedApi, FormValidateOrFn, FormAsyncValidateOrFn } from "@tanstack/react-form";
 import { ALL_VALUES_OVERRIDE_KEY, IMAGE_TAG_POSTFIX, VALUES_OVERRIDE_POSTFIX } from "../../../../constants";
 import { usePipelineAppCodebasesWatch, useApplicationsWatch, createArgoApplicationsByNameMap } from "../../../../hooks";
 import { ConfigurationTable } from "./components/ConfigurationTable";
@@ -15,34 +14,9 @@ import { ConfigurationTableActions } from "./components/ConfigurationTableAction
 import { PreviewTable } from "./components/PreviewTable";
 import { PreviewTableActions } from "./components/PreviewTableActions";
 import { applicationTableMode } from "./constants";
+import { ApplicationsFormContext } from "./hooks/useApplicationsForm";
 import { ApplicationsFormValues, ApplicationsTableMode } from "./types";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-
-// Create context for Tanstack Form - properly typed with all validator parameters
-type ApplicationsFormApi = ReactFormExtendedApi<
-  ApplicationsFormValues, // TFormData
-  FormValidateOrFn<ApplicationsFormValues> | undefined, // TOnMount
-  FormValidateOrFn<ApplicationsFormValues> | undefined, // TOnChange
-  FormAsyncValidateOrFn<ApplicationsFormValues> | undefined, // TOnChangeAsync
-  FormValidateOrFn<ApplicationsFormValues> | undefined, // TOnBlur
-  FormAsyncValidateOrFn<ApplicationsFormValues> | undefined, // TOnBlurAsync
-  FormValidateOrFn<ApplicationsFormValues> | undefined, // TOnSubmit
-  FormAsyncValidateOrFn<ApplicationsFormValues> | undefined, // TOnSubmitAsync
-  FormValidateOrFn<ApplicationsFormValues> | undefined, // TOnDynamic
-  FormAsyncValidateOrFn<ApplicationsFormValues> | undefined, // TOnDynamicAsync
-  FormAsyncValidateOrFn<ApplicationsFormValues> | undefined, // TOnServer
-  unknown // TSubmitMeta
->;
-
-const ApplicationsFormContext = React.createContext<ApplicationsFormApi | null>(null);
-
-export const useApplicationsForm = (): ApplicationsFormApi => {
-  const context = React.useContext(ApplicationsFormContext);
-  if (!context) {
-    throw new Error("useApplicationsForm must be used within ApplicationsFormContext.Provider");
-  }
-  return context;
-};
 
 const MemoizedApplicationsInner = React.memo(
   ({ mode, toggleMode }: { mode: ApplicationsTableMode; toggleMode: () => void }) => {

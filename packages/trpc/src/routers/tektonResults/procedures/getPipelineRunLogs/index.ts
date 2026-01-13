@@ -4,34 +4,42 @@ import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createTektonResultsClient } from "../../../../clients/tektonResults/index.js";
 
 // ANSI escape codes for terminal styling (supported by xterm.js)
+// Using 256-color palette with darker colors for better contrast on white backgrounds
+// All colors are from the same intensity level for visual harmony
 const ANSI = {
   reset: "\x1b[0m",
   bold: "\x1b[1m",
   dim: "\x1b[2m",
-  cyan: "\x1b[36m",
-  yellow: "\x1b[33m",
-  red: "\x1b[31m",
-  gray: "\x1b[90m",
+  // Primary blue - darker shade visible on white background
+  primary: "\x1b[38;5;26m", // Dodger Blue 2
+  // Destructive red - darker shade for errors
+  destructive: "\x1b[38;5;160m", // Red 3
+  // Amber/orange for info messages - darker shade
+  amber: "\x1b[38;5;172m", // Orange 3
+  // Muted gray for secondary text
+  muted: "\x1b[38;5;238m", // Grey 27
+  // Border gray for separators
+  border: "\x1b[38;5;236m", // Grey 19
 };
 
 // Helper to create styled task headers
 const formatTaskHeader = (taskName: string, taskRunName: string, hasLogs: boolean) => {
   const icon = hasLogs ? "▶" : "○";
-  const headerLine = `${ANSI.cyan}${ANSI.bold}${icon} Task: ${taskName}${ANSI.reset}`;
-  const subLine = `${ANSI.gray}  └─ TaskRun: ${taskRunName}${ANSI.reset}`;
+  const headerLine = `${ANSI.primary}${ANSI.bold}${icon} Task: ${taskName}${ANSI.reset}`;
+  const subLine = `${ANSI.muted}  └─ TaskRun: ${taskRunName}${ANSI.reset}`;
   return `\n${headerLine}\n${subLine}\n`;
 };
 
 const formatTaskSeparator = () => {
-  return `${ANSI.dim}${"─".repeat(60)}${ANSI.reset}\n`;
+  return `${ANSI.border}${ANSI.dim}${"─".repeat(60)}${ANSI.reset}\n`;
 };
 
 const formatErrorMessage = (message: string) => {
-  return `${ANSI.red}  ✗ ${message}${ANSI.reset}\n`;
+  return `${ANSI.destructive}  ✗ ${message}${ANSI.reset}\n`;
 };
 
 const formatInfoMessage = (message: string) => {
-  return `${ANSI.yellow}  ℹ ${message}${ANSI.reset}\n`;
+  return `${ANSI.amber}  ℹ ${message}${ANSI.reset}\n`;
 };
 
 /**

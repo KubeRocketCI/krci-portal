@@ -1,9 +1,14 @@
 import { TektonResultsLogViewer } from "../TektonResultsLogViewer";
 import { useTektonResultPipelineRunLogsQuery, useTektonResultPipelineRunQuery } from "../../hooks/data";
+import { routeTektonResultPipelineRunDetails, routeSearchTabName, routeSearchLogViewName } from "../../route";
 
 export const Details = () => {
+  const queryParams = routeTektonResultPipelineRunDetails.useSearch();
+  const isAllLogsActive =
+    queryParams.tab === routeSearchTabName.logs && queryParams.logView === routeSearchLogViewName.all;
+
   const pipelineRunQuery = useTektonResultPipelineRunQuery();
-  const logsQuery = useTektonResultPipelineRunLogsQuery();
+  const logsQuery = useTektonResultPipelineRunLogsQuery(isAllLogsActive);
 
   const pipelineRunName = pipelineRunQuery.data?.pipelineRun?.metadata?.name || "pipelinerun";
   const hasLogs = !!logsQuery.data?.logs;

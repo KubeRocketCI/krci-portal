@@ -3,9 +3,10 @@ import { HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 import { SidebarProvider } from "../../components/ui/sidebar";
 import { K8sRelatedIconsSVGSprite } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
+import { LOCAL_STORAGE_SERVICE } from "@/core/services/local-storage";
 
 export default function Root() {
-  const localStorageDefaultOpen = JSON.parse(localStorage.getItem("sidebar_open") || "false");
+  const localStorageDefaultOpen = LOCAL_STORAGE_SERVICE.getItem("sidebar_open") ?? true;
 
   return (
     <DialogContextProvider>
