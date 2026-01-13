@@ -5,23 +5,25 @@ import { useShallow } from "zustand/react/shallow";
 import { routeTektonResultPipelineRunDetails } from "../route";
 
 /**
- * Hook to fetch a single PipelineRun from Tekton Results
- * Uses route params to get namespace, resultUid, and recordUid
+ * Common hook to get route params and cluster context for Tekton Result queries
  */
-export const useTektonResultPipelineRunQuery = () => {
+function useTektonResultContext() {
   const params = routeTektonResultPipelineRunDetails.useParams();
   const trpc = useTRPCClient();
   const { clusterName } = useClusterStore(useShallow((state) => ({ clusterName: state.clusterName })));
 
+  return { params, trpc, clusterName };
+}
+
+/**
+ * Hook to fetch a single PipelineRun from Tekton Results
+ * Uses route params to get namespace, resultUid, and recordUid
+ */
+export function useTektonResultPipelineRunQuery() {
+  const { params, trpc, clusterName } = useTektonResultContext();
+
   return useQuery({
-    queryKey: [
-      "tektonResults",
-      "pipelineRun",
-      clusterName, // Keep in queryKey for cache separation
-      params.namespace,
-      params.resultUid,
-      params.recordUid,
-    ],
+    queryKey: ["tektonResults", "pipelineRun", clusterName, params.namespace, params.resultUid, params.recordUid],
     queryFn: () =>
       trpc.tektonResults.getPipelineRun.query({
         namespace: params.namespace,
@@ -29,45 +31,34 @@ export const useTektonResultPipelineRunQuery = () => {
         recordUid: params.recordUid,
       }),
   });
-};
+}
 
 /**
  * Hook to fetch logs for a PipelineRun from Tekton Results
  * Returns formatted logs with [task-name] prefixes
  * @param enabled - Only fetch when true (e.g., when Details tab is active)
  */
-export const useTektonResultPipelineRunLogsQuery = (enabled: boolean = true) => {
-  const params = routeTektonResultPipelineRunDetails.useParams();
-  const trpc = useTRPCClient();
-  const { clusterName } = useClusterStore(useShallow((state) => ({ clusterName: state.clusterName })));
+export function useTektonResultPipelineRunLogsQuery(enabled = true) {
+  const { params, trpc, clusterName } = useTektonResultContext();
 
   return useQuery({
-    queryKey: [
-      "tektonResults",
-      "pipelineRunLogs",
-      clusterName, // Keep in queryKey for cache separation
-      params.namespace,
-      params.resultUid,
-      params.recordUid,
-    ],
+    queryKey: ["tektonResults", "pipelineRunLogs", clusterName, params.namespace, params.resultUid, params.recordUid],
     queryFn: () =>
       trpc.tektonResults.getPipelineRunLogs.query({
         namespace: params.namespace,
         resultUid: params.resultUid,
         recordUid: params.recordUid,
       }),
-    enabled, // Only fetch when enabled
+    enabled,
   });
-};
+}
 
 /**
  * Hook to fetch task list (metadata only, no logs) from a PipelineRun
  * Fast, lightweight query that returns just task names for the menu
  */
-export const useTektonResultTaskListQuery = () => {
-  const params = routeTektonResultPipelineRunDetails.useParams();
-  const trpc = useTRPCClient();
-  const { clusterName } = useClusterStore(useShallow((state) => ({ clusterName: state.clusterName })));
+export function useTektonResultTaskListQuery() {
+  const { params, trpc, clusterName } = useTektonResultContext();
 
   return useQuery({
     queryKey: ["tektonResults", "taskList", clusterName, params.namespace, params.resultUid, params.recordUid],
@@ -78,16 +69,14 @@ export const useTektonResultTaskListQuery = () => {
         recordUid: params.recordUid,
       }),
   });
-};
+}
 
 /**
  * Hook to fetch logs for a specific TaskRun (lazy-loaded)
- * Only fetches when taskRunName is provided and enabled
+ * Only fetches when taskRunName is provided
  */
-export const useTektonResultTaskRunLogsQuery = (taskRunName: string | undefined) => {
-  const params = routeTektonResultPipelineRunDetails.useParams();
-  const trpc = useTRPCClient();
-  const { clusterName } = useClusterStore(useShallow((state) => ({ clusterName: state.clusterName })));
+export function useTektonResultTaskRunLogsQuery(taskRunName: string | undefined) {
+  const { params, trpc, clusterName } = useTektonResultContext();
 
   return useQuery({
     queryKey: ["tektonResults", "taskRunLogs", clusterName, params.namespace, params.resultUid, taskRunName],
@@ -97,6 +86,6 @@ export const useTektonResultTaskRunLogsQuery = (taskRunName: string | undefined)
         resultUid: params.resultUid,
         taskRunName: taskRunName!,
       }),
-    enabled: !!taskRunName, // Only fetch when task is selected
+    enabled: !!taskRunName,
   });
-};
+}

@@ -3,6 +3,7 @@ import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { Copy, Download } from "lucide-react";
 import { LogViewer } from "@/core/components/LogViewer";
+import { downloadTextFile, ensureLogExtension, generateTimestampedLogFilename } from "@/core/utils/download";
 
 export interface TektonResultsLogViewerProps {
   /** Log content - passed directly, preserved as-is with ANSI colors */
@@ -37,25 +38,10 @@ export const TektonResultsLogViewer: React.FC<TektonResultsLogViewerProps> = ({
   };
 
   const handleDownload = () => {
-    let filename: string;
-
-    if (downloadFilename) {
-      filename =
-        downloadFilename.endsWith(".txt") || downloadFilename.endsWith(".log")
-          ? downloadFilename
-          : `${downloadFilename}.log`;
-    } else {
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-      filename = `tekton-logs-${timestamp}.log`;
-    }
-
-    const blob = new Blob([content], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
+    const filename = downloadFilename
+      ? ensureLogExtension(downloadFilename)
+      : generateTimestampedLogFilename("tekton-logs");
+    downloadTextFile(content, filename);
   };
 
   const renderControls = () => (
