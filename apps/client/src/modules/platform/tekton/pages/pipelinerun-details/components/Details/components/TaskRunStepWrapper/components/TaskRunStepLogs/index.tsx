@@ -29,7 +29,6 @@ export const TaskRunStepLogs = ({ stepName, taskRunName }: { stepName: string; t
 
   return pods.length > 0 ? (
     <PodLogsTerminal
-      key={defaultContainer}
       clusterName="default"
       namespace={pods[0]?.metadata?.namespace || "default"}
       pods={pods}
