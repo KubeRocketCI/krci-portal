@@ -11,6 +11,21 @@ import {
   PATH_TEKTON_RESULT_PIPELINERUN_DETAILS_FULL,
 } from "../../route";
 
+function getTaskRunForLogView(
+  logView: string,
+  currentTaskRun: string | undefined,
+  firstTaskRunName: string | undefined
+): string | undefined {
+  if (logView === "all") {
+    return undefined;
+  }
+  // When switching to tasks view without a selected task, select the first one
+  if (!currentTaskRun && firstTaskRunName) {
+    return firstTaskRunName;
+  }
+  return currentTaskRun;
+}
+
 export const Logs = () => {
   const params = routeTektonResultPipelineRunDetails.useParams();
   const queryParams = routeTektonResultPipelineRunDetails.useSearch();
@@ -18,25 +33,22 @@ export const Logs = () => {
 
   const activeLogView = queryParams.logView ?? routeSearchLogViewName.tasks;
   const tasks = taskListQuery.data?.tasks || [];
-  const firstTask = tasks[0];
+  const firstTaskRunName = tasks[0]?.taskRunName;
 
   const handleLogViewChange = React.useCallback(
     (logView: string) => {
-      // When switching to tasks view without a selected task, select the first one
-      const shouldSelectFirstTask = logView === "tasks" && !queryParams.taskRun && firstTask;
-
       router.navigate({
         to: PATH_TEKTON_RESULT_PIPELINERUN_DETAILS_FULL,
         params,
         search: {
           tab: routeSearchTabName.logs,
           logView: logView as "all" | "tasks",
-          taskRun: logView === "all" ? undefined : shouldSelectFirstTask ? firstTask.taskRunName : queryParams.taskRun,
+          taskRun: getTaskRunForLogView(logView, queryParams.taskRun, firstTaskRunName),
         },
         resetScroll: false,
       });
     },
-    [params, queryParams.taskRun, firstTask]
+    [params, queryParams.taskRun, firstTaskRunName]
   );
 
   return (

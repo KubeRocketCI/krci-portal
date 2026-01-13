@@ -5,17 +5,21 @@ interface TektonResultTaskLogsViewProps {
   taskRunName: string;
 }
 
+function getQueryErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return "Unknown error";
+}
+
 export const TektonResultTaskLogsView = ({ taskRunName }: TektonResultTaskLogsViewProps) => {
   const logsQuery = useTektonResultTaskRunLogsQuery(taskRunName);
 
   const hasLogs = !!logsQuery.data?.logs;
   const showLoading = logsQuery.isFetching && !hasLogs;
-
-  // Extract task name from logs data or display taskRunName as fallback
   const taskName = logsQuery.data?.taskName || taskRunName;
-
-  // Error is always present on response type (null when no error)
   const errorMessage = logsQuery.data?.error || undefined;
+  const queryError = logsQuery.isError ? getQueryErrorMessage(logsQuery.error) : undefined;
 
   return (
     <div className="flex h-full flex-col">
@@ -27,13 +31,7 @@ export const TektonResultTaskLogsView = ({ taskRunName }: TektonResultTaskLogsVi
         <TektonResultsLogViewer
           content={logsQuery.data?.logs || ""}
           isLoading={showLoading}
-          error={
-            logsQuery.isError
-              ? logsQuery.error instanceof Error
-                ? logsQuery.error.message
-                : "Unknown error"
-              : undefined
-          }
+          error={queryError}
           downloadFilename={`${taskRunName}-log.txt`}
         />
       </div>

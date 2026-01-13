@@ -6,6 +6,7 @@ import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { Copy, Download } from "lucide-react";
 import { LogViewer } from "@/core/components/LogViewer";
+import { downloadTextFile } from "@/core/utils/download";
 import { Pod } from "@my-project/shared";
 import { usePodLogs } from "./hooks/usePodLogs";
 
@@ -172,13 +173,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
   };
 
   const handleDownload = () => {
-    const blob = new Blob([formattedLogs], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = downloadFilename;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadTextFile(formattedLogs, downloadFilename);
   };
 
   // Early return if no pods
@@ -191,28 +186,32 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
   }
 
   // Determine loading state and error message
-  const getLoadingMessage = () => {
-    if (!podReadyForLogs && !error) {
-      let message = "Pod is getting ready...";
-      if (currentPod?.status?.phase === "Pending") {
-        message += " (Container is being scheduled)";
-      } else if (currentPod?.status?.phase === "ContainerCreating") {
-        message += " (Container is starting up)";
-      } else if (!currentPod?.status?.phase) {
-        message += " (Initializing)";
-      }
-      return message;
-    }
+  const getLoadingMessage = (): string => {
     if (isLoading && podReadyForLogs) {
       return `Loading logs from ${activeContainer} container...`;
     }
+
+    if (!podReadyForLogs && !error) {
+      const phase = currentPod?.status?.phase;
+      const phaseDetails =
+        phase === "Pending"
+          ? " (Container is being scheduled)"
+          : phase === "ContainerCreating"
+            ? " (Container is starting up)"
+            : !phase
+              ? " (Initializing)"
+              : "";
+      return `Pod is getting ready...${phaseDetails}`;
+    }
+
     return "Loading logs...";
   };
 
-  const getErrorMessage = () => {
-    if (!error) return undefined;
-    const errorText =
-      typeof error === "object" && error !== null && "message" in error ? (error as Error).message : String(error);
+  const getErrorMessage = (): string | undefined => {
+    if (!error) {
+      return undefined;
+    }
+    const errorText = error instanceof Error ? error.message : String(error);
     return `${errorText}. Will retry automatically when the container is ready.`;
   };
 
