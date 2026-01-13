@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
 import { Label } from "@/core/components/ui/label";
 import { Switch } from "@/core/components/ui/switch";
@@ -38,51 +38,59 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
   timestamps = true,
   previous = false,
 }) => {
-  // State management
-  const [activePod, setActivePod] = useState<Pod | undefined>(() => {
-    if (selectedPod) {
-      return pods.find((pod: Pod) => pod.metadata?.name === selectedPod) || pods[0];
-    }
-    return pods[0];
-  });
-
+  // State management for user-controllable values only
+  const [userSelectedPodName, setUserSelectedPodName] = useState<string | undefined>(selectedPod);
   const [activeContainer, setActiveContainer] = useState<string>(selectedContainer || "");
   const [logsTimestamps, setLogsTimestamps] = useState(timestamps);
 
-  const currentPod = activePod;
+  // Derive activePod from pods prop - this ensures it updates when pod watch updates
+  const activePod = useMemo(() => {
+    const podName = userSelectedPodName || selectedPod;
+    if (podName) {
+      return pods.find((pod: Pod) => pod.metadata?.name === podName) || pods[0];
+    }
+    return pods[0];
+  }, [pods, userSelectedPodName, selectedPod]);
+
+  // Sync activeContainer when selectedContainer prop changes (needed for initial container detection)
+  useEffect(() => {
+    if (selectedContainer) {
+      setActiveContainer(selectedContainer);
+    }
+  }, [selectedContainer]);
 
   // Check if pod is ready for log fetching
   const podReadyForLogs = useMemo(() => {
-    if (!currentPod?.metadata?.name || !activeContainer) return false;
+    if (!activePod?.metadata?.name || !activeContainer) return false;
 
-    const phase = currentPod.status?.phase;
+    const phase = activePod.status?.phase;
     // Pod is ready if it's running, succeeded, or failed (logs might be available)
     return phase === "Running" || phase === "Succeeded" || phase === "Failed";
-  }, [currentPod?.metadata?.name, currentPod?.status?.phase, activeContainer]);
+  }, [activePod?.metadata?.name, activePod?.status?.phase, activeContainer]);
 
   // Get logs using the hook
   const { logs, isLoading, error } = usePodLogs({
     clusterName,
     namespace,
-    podName: currentPod?.metadata?.name || "",
+    podName: activePod?.metadata?.name || "",
     container: activeContainer,
-    follow: follow,
-    tailLines: tailLines,
+    follow,
+    tailLines,
     timestamps: logsTimestamps,
-    previous: previous,
+    previous,
     enabled: podReadyForLogs,
   });
 
   // Available containers - memoized
   const availableContainers = useMemo(() => {
-    if (!currentPod) return [];
+    if (!activePod) return [];
 
     const containers: Array<{ name: string; type: string }> = [];
 
     // Add init containers
-    if (currentPod.spec?.initContainers) {
+    if (activePod.spec?.initContainers) {
       containers.push(
-        ...currentPod.spec.initContainers.map((container: { name: string }) => ({
+        ...activePod.spec.initContainers.map((container: { name: string }) => ({
           name: container.name,
           type: "init",
         }))
@@ -90,9 +98,9 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
     }
 
     // Add main containers
-    if (currentPod.spec?.containers) {
+    if (activePod.spec?.containers) {
       containers.push(
-        ...currentPod.spec.containers.map((container: { name: string }) => ({
+        ...activePod.spec.containers.map((container: { name: string }) => ({
           name: container.name,
           type: "container",
         }))
@@ -100,9 +108,9 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
     }
 
     // Add ephemeral containers
-    if (currentPod.spec?.ephemeralContainers) {
+    if (activePod.spec?.ephemeralContainers) {
       containers.push(
-        ...currentPod.spec.ephemeralContainers.map((container: { name: string }) => ({
+        ...activePod.spec.ephemeralContainers.map((container: { name: string }) => ({
           name: container.name,
           type: "ephemeral",
         }))
@@ -110,7 +118,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
     }
 
     return containers;
-  }, [currentPod]);
+  }, [activePod]);
 
   // Format logs
   const formattedLogs = useMemo(() => {
@@ -147,20 +155,18 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
   const downloadFilename = useMemo(() => {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const sanitizeName = (name: string) => name.replace(/[^a-zA-Z0-9\-_]/g, "_");
-    const podName = sanitizeName(currentPod?.metadata?.name || "pod");
+    const podName = sanitizeName(activePod?.metadata?.name || "pod");
     const containerName = sanitizeName(activeContainer);
     return `${podName}-${containerName}-${timestamp}.log`;
-  }, [currentPod?.metadata?.name, activeContainer]);
+  }, [activePod?.metadata?.name, activeContainer]);
 
   // Event handlers
   const handlePodChange = (value: string) => {
+    setUserSelectedPodName(value);
     const pod = pods.find((p: Pod) => p.metadata?.name === value);
-    if (pod) {
-      setActivePod(pod);
-      // Reset container selection
-      if (pod.spec?.containers?.length) {
-        setActiveContainer(pod.spec.containers[0].name);
-      }
+    // Reset container selection when pod changes
+    if (pod?.spec?.containers?.length) {
+      setActiveContainer(pod.spec.containers[0].name);
     }
   };
 
@@ -186,34 +192,39 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
   }
 
   // Determine loading state and error message
-  const getLoadingMessage = (): string => {
+  function getPhaseDetails(phase: string | undefined): string {
+    switch (phase) {
+      case "Pending":
+        return " (Container is being scheduled)";
+      case "ContainerCreating":
+        return " (Container is starting up)";
+      case undefined:
+        return " (Initializing)";
+      default:
+        return "";
+    }
+  }
+
+  function getLoadingMessage(): string {
     if (isLoading && podReadyForLogs) {
       return `Loading logs from ${activeContainer} container...`;
     }
 
     if (!podReadyForLogs && !error) {
-      const phase = currentPod?.status?.phase;
-      const phaseDetails =
-        phase === "Pending"
-          ? " (Container is being scheduled)"
-          : phase === "ContainerCreating"
-            ? " (Container is starting up)"
-            : !phase
-              ? " (Initializing)"
-              : "";
-      return `Pod is getting ready...${phaseDetails}`;
+      const phase = activePod?.status?.phase;
+      return `Pod is getting ready...${getPhaseDetails(phase)}`;
     }
 
     return "Loading logs...";
-  };
+  }
 
-  const getErrorMessage = (): string | undefined => {
+  function getErrorMessage(): string | undefined {
     if (!error) {
       return undefined;
     }
     const errorText = error instanceof Error ? error.message : String(error);
     return `${errorText}. Will retry automatically when the container is ready.`;
-  };
+  }
 
   const renderControls = () => (
     <div className="flex w-full items-end justify-between gap-4">
@@ -221,7 +232,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
         {pods.length > 1 && (
           <div className="flex min-w-[180px] flex-col gap-1.5">
             <Label htmlFor="pod-select">Pod</Label>
-            <Select value={currentPod?.metadata?.name || ""} onValueChange={handlePodChange}>
+            <Select value={activePod?.metadata?.name || ""} onValueChange={handlePodChange}>
               <SelectTrigger id="pod-select" className="h-9">
                 <SelectValue placeholder="Select pod" />
               </SelectTrigger>
