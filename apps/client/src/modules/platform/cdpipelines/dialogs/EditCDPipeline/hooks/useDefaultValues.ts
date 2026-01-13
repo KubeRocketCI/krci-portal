@@ -13,10 +13,7 @@ export const useDefaultValues = (cdPipeline: CDPipeline | undefined) => {
       [NAMES.ui_applicationsToPromoteAll]: !!cdPipeline?.spec.applicationsToPromote?.length,
       [NAMES.ui_applicationsFieldArray]: cdPipeline?.spec.applications.map((app, idx) => ({
         appName: app,
-        appBranch: {
-          label: cdPipeline?.spec.inputDockerStreams[idx],
-          value: cdPipeline?.spec.inputDockerStreams[idx],
-        },
+        appBranch: cdPipeline?.spec.inputDockerStreams[idx],
         appToPromote: (cdPipeline?.spec?.applicationsToPromote || []).includes(app),
       })),
     }),

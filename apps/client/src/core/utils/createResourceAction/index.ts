@@ -10,6 +10,7 @@ const getDisabledProtectedState = (protectedLabel: string): ProtectedState => {
   return actions.reduce<ProtectedState>(
     (acc, cur) => {
       switch (cur) {
+        case "update":
         case k8sOperation.patch:
           acc.patch = {
             status: true,

@@ -49,6 +49,8 @@ export const FormActions: React.FC<FormActionsProps> = ({ cdPipeline }) => {
       const updatedCDPipeline = editCDPipelineObject(cdPipeline, {
         description: values[NAMES.description] as string | undefined,
         applications: values[NAMES.applications] as string[],
+        inputDockerStreams: values[NAMES.inputDockerStreams] as string[],
+        applicationsToPromote: values[NAMES.applicationsToPromote] as string[],
       });
 
       await triggerEditCDPipeline({

@@ -114,7 +114,7 @@ export const CodebaseActionsMenu = ({ backRoute, variant, data: { codebase } }: 
     return [
       createResourceAction({
         type: k8sOperation.patch,
-        label: capitalizeFirstLetter(k8sOperation.patch),
+        label: "Edit",
         item: codebase,
         Icon: <Pencil size={16} />,
         disabled: {

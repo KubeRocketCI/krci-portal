@@ -48,4 +48,6 @@ export const createCDPipelineDraftInputSchema = z.object({
 export const editCDPipelineInputSchema = z.object({
   description: cdPipelineSpecSchema.shape.description,
   applications: cdPipelineSpecSchema.shape.applications,
+  inputDockerStreams: cdPipelineSpecSchema.shape.inputDockerStreams,
+  applicationsToPromote: cdPipelineSpecSchema.shape.applicationsToPromote,
 });
