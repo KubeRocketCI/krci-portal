@@ -25,12 +25,7 @@ import { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/mappin
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { getIconByPattern } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
-
-interface ApplicationFieldArrayItem {
-  appName: string;
-  appBranch: string;
-  appToPromote: boolean;
-}
+import { ApplicationFieldArrayItem, ApplicationFieldArrayItemWithId, EditCDPipelineFormValues } from "../../types";
 
 export const Applications: React.FC = () => {
   const applicationListWatch = useCodebaseWatchList({
@@ -48,7 +43,7 @@ export const Applications: React.FC = () => {
     control,
     getValues,
     setValue,
-  } = useFormContext();
+  } = useFormContext<EditCDPipelineFormValues>();
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -62,33 +57,56 @@ export const Applications: React.FC = () => {
   });
 
   const [open, setOpen] = React.useState(false);
-  const selectedApplications = (useWatch({
+  const watchedApplications = useWatch({
     control,
     name: NAMES.ui_applicationsToAddChooser,
-    defaultValue: [],
-  }) || []) as string[];
+    defaultValue: [] as string[],
+  });
+  const selectedApplications = React.useMemo(() => watchedApplications || [], [watchedApplications]);
 
-  const handleSelectApp = (appName: string) => {
-    const currentSelected = selectedApplications;
-    const isSelected = currentSelected.includes(appName);
-    const newSelected = isSelected ? currentSelected.filter((name) => name !== appName) : [...currentSelected, appName];
+  // Helper: Remove app's branch from Docker streams
+  const removeBranchFromDockerStreams = React.useCallback(
+    (branchName: string) => {
+      const currentStreams = getValues(NAMES.inputDockerStreams) || [];
+      const newStreams = currentStreams.filter((stream: string) => stream !== branchName);
+      setValue(NAMES.inputDockerStreams, newStreams, { shouldDirty: false });
+    },
+    [getValues, setValue]
+  );
 
-    // Update form value
-    setValue(NAMES.ui_applicationsToAddChooser, newSelected, { shouldDirty: true });
+  // Helper: Sync applications and applicationsToPromote fields
+  const syncApplicationFields = React.useCallback(
+    (selectedApps: string[]) => {
+      setValue(NAMES.applications, selectedApps, { shouldDirty: false });
 
-    // Get current field array value
-    const currentFieldArray = (getValues(NAMES.ui_applicationsFieldArray) || []) as ApplicationFieldArrayItem[];
+      const promoteAll = getValues(NAMES.ui_applicationsToPromoteAll);
+      setValue(NAMES.applicationsToPromote, promoteAll ? selectedApps : [], { shouldDirty: false });
+    },
+    [getValues, setValue]
+  );
 
-    if (isSelected) {
-      // When removing an application, also remove its branch from inputDockerStreams
+  // Helper: Add application to field array
+  const addApplicationToFieldArray = React.useCallback(
+    (appName: string) => {
+      const currentFieldArray = (getValues(NAMES.ui_applicationsFieldArray) || []) as ApplicationFieldArrayItem[];
+      const exists = currentFieldArray.some((app) => app.appName === appName);
+
+      if (!exists) {
+        append({ appName, appBranch: "", appToPromote: false });
+      }
+    },
+    [getValues, append]
+  );
+
+  // Helper: Remove application from field array
+  const removeApplicationFromFieldArray = React.useCallback(
+    (appName: string) => {
+      const currentFieldArray = (getValues(NAMES.ui_applicationsFieldArray) || []) as ApplicationFieldArrayItem[];
       const appToRemove = currentFieldArray.find((app) => app.appName === appName);
 
-      if (appToRemove && appToRemove.appBranch) {
-        const currentInputDockerStreams = getValues(NAMES.inputDockerStreams) || [];
-        const newInputDockerStreams = currentInputDockerStreams.filter(
-          (stream: string) => stream !== appToRemove.appBranch
-        );
-        setValue(NAMES.inputDockerStreams, newInputDockerStreams, { shouldDirty: false });
+      // Remove branch from Docker streams if it exists
+      if (appToRemove?.appBranch) {
+        removeBranchFromDockerStreams(appToRemove.appBranch);
       }
 
       // Remove from field array
@@ -96,27 +114,39 @@ export const Applications: React.FC = () => {
       if (indexToRemove >= 0) {
         remove(indexToRemove);
       }
-    } else {
-      // Add to field array
-      const exists = currentFieldArray.some((app) => app.appName === appName);
-      if (!exists) {
-        append({ appName, appBranch: "", appToPromote: false });
+    },
+    [getValues, remove, removeBranchFromDockerStreams]
+  );
+
+  const handleSelectApp = React.useCallback(
+    (appName: string) => {
+      const isSelected = selectedApplications.includes(appName);
+      const newSelected = isSelected
+        ? selectedApplications.filter((name) => name !== appName)
+        : [...selectedApplications, appName];
+
+      // Update selection
+      setValue(NAMES.ui_applicationsToAddChooser, newSelected, { shouldDirty: true });
+
+      // Update field array
+      if (isSelected) {
+        removeApplicationFromFieldArray(appName);
+      } else {
+        addApplicationToFieldArray(appName);
       }
-    }
 
-    // Sync applications field
-    setValue(NAMES.applications, newSelected, { shouldDirty: false });
+      // Sync related fields
+      syncApplicationFields(newSelected);
+    },
+    [selectedApplications, setValue, removeApplicationFromFieldArray, addApplicationToFieldArray, syncApplicationFields]
+  );
 
-    // Sync applicationsToPromote based on promote all switch
-    const applicationsToPromoteAllFieldValue = getValues(NAMES.ui_applicationsToPromoteAll);
-    setValue(NAMES.applicationsToPromote, applicationsToPromoteAllFieldValue ? newSelected : [], {
-      shouldDirty: false,
-    });
-  };
-
-  const handleRemoveApp = (appName: string) => {
-    handleSelectApp(appName);
-  };
+  const handleRemoveApp = React.useCallback(
+    (appName: string) => {
+      handleSelectApp(appName);
+    },
+    [handleSelectApp]
+  );
 
   const isSelected = (appName: string) => {
     return selectedApplications.includes(appName);
@@ -145,7 +175,7 @@ export const Applications: React.FC = () => {
                   },
                 }}
                 render={({ field }) => {
-                  const selectedApps = (field.value || []) as string[];
+                  const selectedApps = field.value || [];
 
                   return (
                     <Popover open={open} onOpenChange={setOpen}>
@@ -183,7 +213,7 @@ export const Applications: React.FC = () => {
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="z-[1300] w-(--radix-popper-anchor-width) max-w-2xl p-0" align="start">
+                      <PopoverContent className="w-(--radix-popper-anchor-width) max-w-2xl p-0" align="start">
                         <Command>
                           <CommandInput placeholder="Search applications..." />
                           <CommandList>
@@ -200,9 +230,12 @@ export const Applications: React.FC = () => {
                                 const langLower = lang?.toLowerCase() || "";
                                 const frameworkLower = framework ? framework.toLowerCase() : "N/A";
                                 const buildToolLower = buildTool?.toLowerCase() || "";
-                                const codebaseMappingByLang = codebaseMapping?.[
-                                  langLower as keyof typeof codebaseMapping
-                                ] as unknown as CodebaseInterface;
+                                // Safe dynamic access with runtime check - requires type assertion due to dynamic key access
+                                const codebaseMappingByLang = (
+                                  langLower && codebaseMapping
+                                    ? codebaseMapping[langLower as keyof typeof codebaseMapping]
+                                    : undefined
+                                ) as CodebaseInterface | undefined;
 
                                 const langName = codebaseMappingByLang?.language?.name || capitalizeFirstLetter(lang);
                                 const frameworkName =
@@ -298,7 +331,7 @@ export const Applications: React.FC = () => {
           {!!fields && !!fields.length && (
             <div className="grid grid-cols-1 gap-4">
               {fields.map((field, index) => {
-                const fieldData = field as unknown as ApplicationFieldArrayItem & { id: string };
+                const fieldData = field as ApplicationFieldArrayItemWithId;
                 const application = applications!.find((el) => el.metadata.name === fieldData.appName);
 
                 if (!application) {
@@ -311,33 +344,7 @@ export const Applications: React.FC = () => {
                     application={application}
                     field={fieldData}
                     index={index}
-                    removeRow={() => {
-                      const appName = fieldData.appName;
-
-                      // Remove the app's branch from inputDockerStreams if it exists
-                      if (fieldData.appBranch) {
-                        const currentInputDockerStreams = getValues(NAMES.inputDockerStreams) || [];
-                        const newInputDockerStreams = currentInputDockerStreams.filter(
-                          (stream: string) => stream !== fieldData.appBranch
-                        );
-                        setValue(NAMES.inputDockerStreams, newInputDockerStreams, { shouldDirty: false });
-                      }
-
-                      // Remove from field array
-                      remove(index);
-
-                      // Update selected applications
-                      const currentSelected = getValues(NAMES.ui_applicationsToAddChooser) || [];
-                      const newSelected = currentSelected.filter((name: string) => name !== appName);
-                      setValue(NAMES.ui_applicationsToAddChooser, newSelected, { shouldDirty: true });
-                      setValue(NAMES.applications, newSelected, { shouldDirty: false });
-
-                      // Sync applicationsToPromote based on promote all switch
-                      const applicationsToPromoteAllFieldValue = getValues(NAMES.ui_applicationsToPromoteAll);
-                      setValue(NAMES.applicationsToPromote, applicationsToPromoteAllFieldValue ? newSelected : [], {
-                        shouldDirty: false,
-                      });
-                    }}
+                    removeRow={() => handleRemoveApp(fieldData.appName)}
                   />
                 );
               })}

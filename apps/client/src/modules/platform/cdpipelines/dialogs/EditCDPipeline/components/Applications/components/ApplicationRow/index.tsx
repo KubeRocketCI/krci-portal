@@ -10,7 +10,6 @@ import { useCodebaseBranchWatchList } from "@/k8s/api/groups/KRCI/CodebaseBranch
 import { codebaseBranchLabels, sortKubeObjectByCreationTimestamp } from "@my-project/shared";
 import { X, Package, GitBranch, Server } from "lucide-react";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { FieldError } from "react-hook-form";
 import { Codebase } from "@my-project/shared";
 import { getCodebaseMappingByType } from "@/k8s/api/groups/KRCI/Codebase";
 import { getIconByPattern } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
@@ -18,17 +17,11 @@ import { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/mappin
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { cn } from "@/core/utils/classname";
-
-interface ApplicationFieldArrayItem {
-  id: string;
-  appName: string;
-  appBranch: string;
-  appToPromote: boolean;
-}
+import { ApplicationFieldArrayItemWithId, EditCDPipelineFormValues, getApplicationFieldError } from "../../../../types";
 
 interface ApplicationRowProps {
   application: Codebase;
-  field: ApplicationFieldArrayItem;
+  field: ApplicationFieldArrayItemWithId;
   index: number;
   removeRow: () => void;
 }
@@ -45,7 +38,7 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
     setValue,
     getValues,
     watch,
-  } = useFormContext();
+  } = useFormContext<EditCDPipelineFormValues>();
 
   const applicationBranchListWatch = useCodebaseBranchWatchList({
     labels: {
@@ -68,11 +61,11 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
   const hasInitializedRef = React.useRef(false);
 
   // Set default value once when branches are loaded
-  if (
-    !hasInitializedRef.current &&
-    !applicationBranchListWatch.query.isLoading &&
-    sortedApplicationBranchList.length > 0
-  ) {
+  React.useEffect(() => {
+    if (hasInitializedRef.current || sortedApplicationBranchList.length === 0) {
+      return;
+    }
+
     const currentBranchValue = getValues(rowAppBranchField);
 
     // Only set default if no value is set yet
@@ -96,29 +89,26 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
         if (!currentInputDockerStreams.includes(newBranchFieldValue)) {
           setValue(NAMES.inputDockerStreams, [...currentInputDockerStreams, newBranchFieldValue]);
         }
-
-        hasInitializedRef.current = true;
       }
-    } else {
-      // If there's already a value, mark as initialized
-      hasInitializedRef.current = true;
     }
-  }
+
+    // Mark as initialized regardless of whether we set a value
+    hasInitializedRef.current = true;
+  }, [sortedApplicationBranchList, rowAppBranchField, getValues, setValue]);
 
   const rowAppBranchFieldValue = watch(rowAppBranchField);
 
-  const appBranchError = (
-    errors?.[NAMES.ui_applicationsFieldArray] as Record<number, { appBranch: FieldError }> | undefined
-  )?.[index]?.appBranch;
+  const appBranchError = getApplicationFieldError(errors, index, "appBranch");
 
   // Get codebase mapping for display names
   const codebaseMapping = getCodebaseMappingByType(type);
   const langLower = lang?.toLowerCase() || "";
   const frameworkLower = framework ? framework.toLowerCase() : "N/A";
   const buildToolLower = buildTool?.toLowerCase() || "";
-  const codebaseMappingByLang = codebaseMapping?.[
-    langLower as keyof typeof codebaseMapping
-  ] as unknown as CodebaseInterface;
+  // Safe dynamic access with runtime check - requires type assertion due to dynamic key access
+  const codebaseMappingByLang = (
+    langLower && codebaseMapping ? codebaseMapping[langLower as keyof typeof codebaseMapping] : undefined
+  ) as CodebaseInterface | undefined;
 
   // Get branch options
   const branchOptions = sortedApplicationBranchList.map((el) => ({
@@ -243,9 +233,9 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
                           field.onChange(value);
                           const currentInputDockerStreamsValue = getValues(NAMES.inputDockerStreams) || [];
                           const newInputDockerStreamsValue = [
-                            ...currentInputDockerStreamsValue.filter((el: string) => el !== rowAppBranchFieldValue),
+                            ...currentInputDockerStreamsValue.filter((el) => el !== rowAppBranchFieldValue),
                             value,
-                          ] as string[];
+                          ];
                           setValue(NAMES.inputDockerStreams, newInputDockerStreamsValue);
                         }}
                       >
@@ -255,7 +245,7 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
                         >
                           <SelectValue placeholder="Select a branch" />
                         </SelectTrigger>
-                        <SelectContent className="fixed z-[1300]">
+                        <SelectContent className="fixed">
                           {branchOptions.map((branch) => (
                             <SelectItem key={branch.value} value={branch.value}>
                               <div className="flex items-center gap-2">

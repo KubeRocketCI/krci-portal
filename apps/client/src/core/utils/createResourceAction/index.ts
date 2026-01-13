@@ -9,8 +9,11 @@ const getDisabledProtectedState = (protectedLabel: string): ProtectedState => {
 
   return actions.reduce<ProtectedState>(
     (acc, cur) => {
-      switch (cur) {
-        case "update":
+      // Normalize RBAC verbs to K8s operations
+      // K8s RBAC uses "update" verb, but our portal abstracts this as "patch" operation
+      const normalizedAction = cur === "update" ? k8sOperation.patch : cur;
+
+      switch (normalizedAction) {
         case k8sOperation.patch:
           acc.patch = {
             status: true,

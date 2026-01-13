@@ -6,7 +6,7 @@ import { editCDPipelineObject } from "@my-project/shared";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { dialogName } from "../constants";
 import { CDPipeline } from "@my-project/shared";
-import { NAMES } from "../../../pages/create/components/CreateCDPipelineWizard/names";
+import { EditCDPipelineFormValues } from "../types";
 
 interface FormActionsProps {
   cdPipeline: CDPipeline;
@@ -18,7 +18,7 @@ export const FormActions: React.FC<FormActionsProps> = ({ cdPipeline }) => {
     reset,
     formState: { isDirty },
     handleSubmit,
-  } = useFormContext();
+  } = useFormContext<EditCDPipelineFormValues>();
 
   const handleResetFields = React.useCallback(() => {
     reset();
@@ -41,16 +41,16 @@ export const FormActions: React.FC<FormActionsProps> = ({ cdPipeline }) => {
   }, [handleClose]);
 
   const onSubmit = React.useCallback(
-    async (values: Record<string, unknown>) => {
+    async (values: EditCDPipelineFormValues) => {
       if (!cdPipeline) {
         return;
       }
 
       const updatedCDPipeline = editCDPipelineObject(cdPipeline, {
-        description: values[NAMES.description] as string | undefined,
-        applications: values[NAMES.applications] as string[],
-        inputDockerStreams: values[NAMES.inputDockerStreams] as string[],
-        applicationsToPromote: values[NAMES.applicationsToPromote] as string[],
+        description: values.description,
+        applications: values.applications,
+        inputDockerStreams: values.inputDockerStreams,
+        applicationsToPromote: values.applicationsToPromote,
       });
 
       await triggerEditCDPipeline({
