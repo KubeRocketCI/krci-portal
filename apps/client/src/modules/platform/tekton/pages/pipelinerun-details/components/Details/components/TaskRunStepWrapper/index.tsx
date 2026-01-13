@@ -113,7 +113,7 @@ export const TaskRunStepWrapper = ({ pipelineRunTaskData, stepName }: TaskRunSte
       </div>
 
       {/* Tabs content */}
-      <div className="flex flex-1 flex-col p-6">
+      <div className="flex flex-1 flex-col p-4">
         <TabsContextProvider id="pipeline-details-page-inner-taskrun-step">
           <TaskRunStep tabs={tabs} />
         </TabsContextProvider>

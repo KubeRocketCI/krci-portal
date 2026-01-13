@@ -1,4 +1,4 @@
-import { useApplicationsForm } from "../index";
+import { useApplicationsForm } from "./useApplicationsForm";
 
 export const useTypedFormContext = () => {
   return useApplicationsForm();

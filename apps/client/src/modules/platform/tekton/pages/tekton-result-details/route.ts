@@ -9,13 +9,19 @@ export const PATH_TEKTON_RESULT_PIPELINERUN_DETAILS_FULL =
 export const ROUTE_ID_TEKTON_RESULT_PIPELINERUN_DETAILS =
   "/_layout/c/$clusterName/cicd/pipelineruns/$namespace/tekton-results/$resultUid/$recordUid" as const;
 
-export const routeSearchTabSchema = z.enum(["overview", "details", "yaml"]);
+export const routeSearchTabSchema = z.enum(["overview", "logs", "yaml"]);
 export const routeSearchTabName = routeSearchTabSchema.enum;
 
+export const routeSearchLogViewSchema = z.enum(["all", "tasks"]);
+export const routeSearchLogViewName = routeSearchLogViewSchema.enum;
+
 export type RouteSearchTab = z.infer<typeof routeSearchTabSchema>;
+export type RouteSearchLogView = z.infer<typeof routeSearchLogViewSchema>;
 
 export interface Search {
   tab?: RouteSearchTab;
+  logView?: RouteSearchLogView;
+  taskRun?: string;
 }
 
 export const routeTektonResultPipelineRunDetails = createRoute({
@@ -25,11 +31,15 @@ export const routeTektonResultPipelineRunDetails = createRoute({
     const parsed = z
       .object({
         tab: routeSearchTabSchema.optional(),
+        logView: routeSearchLogViewSchema.optional(),
+        taskRun: z.string().optional(),
       })
       .parse(search);
 
     return {
       tab: parsed.tab ?? "overview",
+      logView: parsed.logView ?? "tasks",
+      taskRun: parsed.taskRun,
     };
   },
   head: ({ params }) => ({

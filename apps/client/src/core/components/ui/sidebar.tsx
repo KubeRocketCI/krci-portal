@@ -10,9 +10,9 @@ import { Skeleton } from "@/core/components/ui/skeleton";
 import { TooltipContent, TooltipProvider, TooltipTrigger, TooltipRoot } from "@/core/components/ui/tooltip";
 import { useIsMobile } from "@/core/hooks/use-mobile";
 import { cn } from "@/core/utils/classname";
+import { LOCAL_STORAGE_SERVICE } from "@/core/services/local-storage";
 
-const SIDEBAR_COOKIE_NAME = "sidebar_state";
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
+const SIDEBAR_STORAGE_KEY = "sidebar_open";
 const SIDEBAR_WIDTH = "16rem";
 // const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
@@ -68,8 +68,8 @@ function SidebarProvider({
         _setOpen(openState);
       }
 
-      // This sets the cookie to keep the sidebar state.
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+      // Save the sidebar state to localStorage
+      LOCAL_STORAGE_SERVICE.setItem(SIDEBAR_STORAGE_KEY, openState);
     },
     [setOpenProp, open]
   );

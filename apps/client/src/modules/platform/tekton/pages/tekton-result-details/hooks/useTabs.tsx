@@ -1,6 +1,6 @@
 import React from "react";
 import { Overview } from "../components/Overview";
-import { Details } from "../components/Details";
+import { Logs } from "../components/Logs/index";
 import { ViewPipelineRun } from "../components/ViewPipelineRun";
 import {
   routeTektonResultPipelineRunDetails,
@@ -32,18 +32,18 @@ export const useTabs = (): Tab[] => {
         label: "Overview",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.overview),
         component: (
-          <div className="pt-6">
+          <div className="h-full pt-6">
             <Overview />
           </div>
         ),
       },
       {
-        id: routeSearchTabSchema.enum.details,
-        label: "Details",
-        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.details),
+        id: routeSearchTabSchema.enum.logs,
+        label: "Logs",
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.logs),
         component: (
-          <div className="pt-6">
-            <Details />
+          <div className="h-full pt-6">
+            <Logs />
           </div>
         ),
       },
@@ -52,7 +52,7 @@ export const useTabs = (): Tab[] => {
         label: "View YAML",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.yaml),
         component: (
-          <div className="pt-6">
+          <div className="h-full pt-6">
             <ViewPipelineRun />
           </div>
         ),

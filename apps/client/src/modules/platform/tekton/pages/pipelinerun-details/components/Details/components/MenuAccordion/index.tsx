@@ -113,7 +113,7 @@ export const MenuAccordion = ({
       <button
         onClick={handleTaskClick}
         className={cn(
-          "flex w-full items-center gap-2 rounded-lg p-3 transition-colors",
+          "flex w-full items-center gap-2 rounded-lg p-3",
           isExpanded && isTaskActive && "bg-primary/10 border-primary/30 border-2",
           isExpanded && !isTaskActive && "bg-muted border-border border-2",
           !isExpanded && "bg-card border-border hover:bg-muted border"
@@ -155,7 +155,7 @@ export const MenuAccordion = ({
                 key={taskRunStepName}
                 onClick={() => handleNavigate(taskRunName, taskRunStepName)}
                 className={cn(
-                  "flex w-full items-center gap-2 rounded p-2 text-left transition-colors",
+                  "flex w-full items-center gap-2 rounded p-2 text-left",
                   isStepActive && "bg-primary/10 border-primary/30 border",
                   !isStepActive && "bg-muted/50 border-border hover:bg-muted border"
                 )}

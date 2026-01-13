@@ -257,3 +257,37 @@ export interface TektonSummaryQueryParams {
    */
   orderBy?: string;
 }
+
+// =============================================================================
+// Task-sliced viewing types
+// =============================================================================
+
+/**
+ * Task metadata from PipelineRun (without logs)
+ * Used for displaying task list in menu
+ */
+export interface TektonResultTask {
+  /** Friendly task name (e.g., "git-clone") */
+  taskName: string;
+  /** Full TaskRun name (e.g., "pipeline-run-git-clone-abc123") */
+  taskRunName: string;
+  /** Position in pipeline execution order */
+  order: number;
+}
+
+/**
+ * Task logs response for a single TaskRun
+ * Returned when user selects a specific task
+ */
+export interface TektonResultTaskLogs {
+  /** Friendly task name */
+  taskName: string;
+  /** Full TaskRun name */
+  taskRunName: string;
+  /** Full log content for this TaskRun */
+  logs: string;
+  /** Whether logs are available */
+  hasLogs: boolean;
+  /** Error message if log fetching failed; null when no error */
+  error: string | null;
+}

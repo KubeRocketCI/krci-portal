@@ -95,7 +95,7 @@ export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
       </div>
 
       {/* Tabs content */}
-      <div className="flex flex-1 flex-col p-6">
+      <div className="flex flex-1 flex-col p-4">
         <Tabs tabs={tabs} activeTabIdx={activeTab} handleChangeTab={handleChangeTab} />
       </div>
     </Card>
