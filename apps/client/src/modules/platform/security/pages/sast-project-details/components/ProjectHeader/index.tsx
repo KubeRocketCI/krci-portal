@@ -5,7 +5,7 @@ import { ProjectWithMetrics } from "@my-project/shared";
 import { SonarQubeMetricsList } from "../../../../components/sonarqube/SonarQubeMetricsList";
 
 interface ProjectHeaderProps {
-  project: ProjectWithMetrics | undefined;
+  project: ProjectWithMetrics | null | undefined;
   isLoading: boolean;
 }
 

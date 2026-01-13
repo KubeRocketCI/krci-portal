@@ -210,6 +210,7 @@ export class SonarQubeClient {
       p: params.page,
       ps: params.pageSize,
       q: params.searchTerm,
+      projects: params.projectKeys, // Exact key matching (comma-separated)
       analyzedBefore: params.analyzedBefore,
       onProvisionedOnly: params.onProvisionedOnly,
       qualifiers: params.qualifiers,

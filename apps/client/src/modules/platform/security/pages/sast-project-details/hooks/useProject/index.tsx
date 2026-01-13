@@ -1,26 +1,25 @@
-import { useMemo } from "react";
-import { useProjects } from "../../../sast/hooks/useProjects";
+import { useTRPCClient } from "@/core/providers/trpc";
+import { useQuery } from "@tanstack/react-query";
 
 /**
- * Hook to get a single project by key from the projects list
- * Leverages existing getProjects query and filters by key
+ * Hook to get a single project with full metadata and metrics
+ *
+ * Uses the direct getProject tRPC query which makes 2 targeted SonarQube API calls:
+ * 1. Search for the specific project (gets name, visibility, lastAnalysisDate, etc.)
+ * 2. Fetch measures for that project (gets all metrics)
+ *
+ * @param projectKey - SonarQube project/component key
+ * @returns Project with full metadata and measures, or null if not found
  */
 export function useProject(projectKey: string) {
-  // Use existing projects query - it's likely already cached
-  const { data, isLoading, error } = useProjects({
-    page: 1,
-    pageSize: 500,
-    searchTerm: "",
+  const trpc = useTRPCClient();
+
+  return useQuery({
+    queryKey: ["sonarqube", "project", projectKey],
+    queryFn: () =>
+      trpc.sonarqube.getProject.query({
+        componentKey: projectKey,
+      }),
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
-
-  const project = useMemo(() => {
-    if (!data?.projects) return undefined;
-    return data.projects.find((p) => p.key === projectKey);
-  }, [data?.projects, projectKey]);
-
-  return {
-    data: project,
-    isLoading,
-    error,
-  };
 }
