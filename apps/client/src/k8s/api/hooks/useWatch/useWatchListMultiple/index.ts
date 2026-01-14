@@ -2,6 +2,7 @@ import { useTRPCClient } from "@/core/providers/trpc";
 import { useAuth } from "@/core/auth/provider";
 import { useClusterStore } from "@/k8s/store";
 import { RequestError } from "@/core/types/global";
+import { sortByName } from "@/core/utils/sortByName";
 import { K8sResourceConfig, KubeObjectBase, ResourceLabels } from "@my-project/shared";
 import { useQueries, useQuery, useQueryClient, UseQueryOptions, UseQueryResult } from "@tanstack/react-query";
 import { useEffect, useEffectEvent, useMemo } from "react";
@@ -45,7 +46,7 @@ const getCombinedQueryKey = (
     "k8s-watch-list-multiple",
     clusterName,
     resourcePluralName,
-    namespaces.sort().join(","),
+    [...namespaces].sort(sortByName).join(","),
     labels ? JSON.stringify(labels) : undefined,
   ].filter(Boolean);
 };
