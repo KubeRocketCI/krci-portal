@@ -23,24 +23,89 @@ const ANSI = {
 };
 
 // Helper to create styled task headers
-const formatTaskHeader = (taskName: string, taskRunName: string, hasLogs: boolean) => {
+function formatTaskHeader(taskName: string, taskRunName: string, hasLogs: boolean): string {
   const icon = hasLogs ? "▶" : "○";
   const headerLine = `${ANSI.primary}${ANSI.bold}${icon} Task: ${taskName}${ANSI.reset}`;
   const subLine = `${ANSI.muted}  └─ TaskRun: ${taskRunName}${ANSI.reset}`;
   return `\n${headerLine}\n${subLine}\n`;
-};
+}
 
-const formatTaskSeparator = () => {
+function formatTaskSeparator(): string {
   return `${ANSI.border}${ANSI.dim}${"─".repeat(60)}${ANSI.reset}\n`;
-};
+}
 
-const formatErrorMessage = (message: string) => {
+function formatErrorMessage(message: string): string {
   return `${ANSI.destructive}  ✗ ${message}${ANSI.reset}\n`;
-};
+}
 
-const formatInfoMessage = (message: string) => {
+function formatInfoMessage(message: string): string {
   return `${ANSI.amber}  ℹ ${message}${ANSI.reset}\n`;
-};
+}
+
+/**
+ * Helper to format log content lines with task name prefix
+ */
+function formatLogContent(taskName: string, logContent: string): string[] {
+  const parts: string[] = [];
+  const lines = logContent.split("\n");
+
+  for (const line of lines) {
+    if (line.trim()) {
+      parts.push(`[${taskName}]  ${line}\n`);
+    } else {
+      parts.push("\n");
+    }
+  }
+
+  return parts;
+}
+
+/**
+ * Helper to process logs for a single TaskRun
+ * Fetches and formats all log records for the given TaskRun
+ */
+async function processTaskRunLogs(
+  client: ReturnType<typeof createTektonResultsClient>,
+  taskName: string,
+  taskRunName: string,
+  resultUid: string
+): Promise<string[]> {
+  const parts: string[] = [];
+
+  // List log records for this TaskRun
+  const logsResponse = await client.listRecords(resultUid, {
+    filter: `data_type == 'results.tekton.dev/v1alpha3.Log' && data.spec.resource.name == '${taskRunName}'`,
+    pageSize: 10,
+  });
+
+  if (logsResponse.records.length === 0) {
+    parts.push(formatTaskHeader(taskName, taskRunName, false));
+    parts.push(formatInfoMessage("No logs available"));
+    return parts;
+  }
+
+  for (const logRecord of logsResponse.records) {
+    const decoded = decodeTektonRecordData<DecodedLogRecord>(logRecord.data.value);
+    const status = decoded.status || {};
+
+    if (!status.isStored || status.size === 0) {
+      parts.push(formatTaskHeader(taskName, taskRunName, false));
+      parts.push(formatInfoMessage(status.errorOnStoreMsg || "Log content not stored"));
+      continue;
+    }
+
+    const parsed = parseRecordName(logRecord.name);
+    if (!parsed) continue;
+
+    const logContent = await client.getLogContent(parsed.resultUid, parsed.recordUid);
+
+    parts.push(formatTaskHeader(taskName, taskRunName, true));
+    parts.push(formatTaskSeparator());
+    parts.push(...formatLogContent(taskName, logContent));
+  }
+
+  return parts;
+}
 
 /**
  * Get formatted logs for a PipelineRun from Tekton Results
@@ -54,7 +119,7 @@ export const getPipelineRunLogsProcedure = protectedProcedure
       recordUid: z.string(),
     })
   )
-  .query(async ({ input }) => {
+  .query(async ({ input }): Promise<{ logs: string }> => {
     const { namespace, resultUid, recordUid } = input;
     const client = createTektonResultsClient(namespace);
 
@@ -67,56 +132,12 @@ export const getPipelineRunLogsProcedure = protectedProcedure
 
     // Fetch logs for each TaskRun
     for (const childRef of childRefs) {
-      const taskRunName = childRef.name;
-      const taskName = childRef.pipelineTaskName;
-
       try {
-        // List log records for this TaskRun
-        const logsResponse = await client.listRecords(resultUid, {
-          filter: `data_type == 'results.tekton.dev/v1alpha3.Log' && data.spec.resource.name == '${taskRunName}'`,
-          pageSize: 10,
-        });
-
-        if (logsResponse.records.length === 0) {
-          logParts.push(formatTaskHeader(taskName, taskRunName, false));
-          logParts.push(formatInfoMessage("No logs available"));
-          continue;
-        }
-
-        for (const logRecord of logsResponse.records) {
-          const decoded = decodeTektonRecordData<DecodedLogRecord>(logRecord.data.value);
-          const status = decoded.status || {};
-
-          if (!status.isStored || status.size === 0) {
-            logParts.push(formatTaskHeader(taskName, taskRunName, false));
-            logParts.push(formatInfoMessage(status.errorOnStoreMsg || "Log content not stored"));
-            continue;
-          }
-
-          // Parse record name to get log_uid
-          const parsed = parseRecordName(logRecord.name);
-          if (!parsed) continue;
-
-          // Fetch actual log content
-          const logContent = await client.getLogContent(parsed.resultUid, parsed.recordUid);
-
-          // Add task header
-          logParts.push(formatTaskHeader(taskName, taskRunName, true));
-          logParts.push(formatTaskSeparator());
-
-          // Add log content with [task-name] prefix on each line
-          const lines = logContent.split("\n");
-          for (const line of lines) {
-            if (line.trim()) {
-              logParts.push(`[${taskName}]  ${line}\n`);
-            } else {
-              logParts.push("\n");
-            }
-          }
-        }
+        const taskLogs = await processTaskRunLogs(client, childRef.pipelineTaskName, childRef.name, resultUid);
+        logParts.push(...taskLogs);
       } catch (error) {
         // Handle errors for individual TaskRuns
-        logParts.push(formatTaskHeader(taskName, taskRunName, false));
+        logParts.push(formatTaskHeader(childRef.pipelineTaskName, childRef.name, false));
         logParts.push(formatErrorMessage(error instanceof Error ? error.message : "Unknown error"));
       }
     }
