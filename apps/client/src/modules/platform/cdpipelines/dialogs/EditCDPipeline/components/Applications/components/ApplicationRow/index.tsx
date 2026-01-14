@@ -37,7 +37,6 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
     formState: { errors },
     setValue,
     getValues,
-    watch,
   } = useFormContext<EditCDPipelineFormValues>();
 
   const applicationBranchListWatch = useCodebaseBranchWatchList({
@@ -68,13 +67,18 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
 
     const currentBranchValue = getValues(rowAppBranchField);
 
-    // Only set default if no value is set yet
-    if (!currentBranchValue) {
-      const availableBranches = sortedApplicationBranchList.map((el) => ({
-        specBranchName: el.spec.branchName,
-        metadataBranchName: el.metadata.name,
-      }));
+    const availableBranches = sortedApplicationBranchList.map((el) => ({
+      specBranchName: el.spec.branchName,
+      metadataBranchName: el.metadata.name,
+    }));
 
+    const availableBranchNames = new Set(availableBranches.map((b) => b.metadataBranchName));
+
+    // Check if current value is valid for this application
+    const isCurrentValueValid = currentBranchValue && availableBranchNames.has(currentBranchValue);
+
+    // Set default if no value is set or if current value is invalid for this application
+    if (!isCurrentValueValid) {
       let newBranchFieldValue = "";
 
       // Use first available branch
@@ -85,18 +89,17 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
       if (newBranchFieldValue) {
         setValue(rowAppBranchField, newBranchFieldValue);
 
+        // Maintain index alignment: set the branch at the same index as the application
         const currentInputDockerStreams = getValues(NAMES.inputDockerStreams) || [];
-        if (!currentInputDockerStreams.includes(newBranchFieldValue)) {
-          setValue(NAMES.inputDockerStreams, [...currentInputDockerStreams, newBranchFieldValue]);
-        }
+        const newInputDockerStreams = [...currentInputDockerStreams];
+        newInputDockerStreams[index] = newBranchFieldValue;
+        setValue(NAMES.inputDockerStreams, newInputDockerStreams);
       }
     }
 
     // Mark as initialized regardless of whether we set a value
     hasInitializedRef.current = true;
-  }, [sortedApplicationBranchList, rowAppBranchField, getValues, setValue]);
-
-  const rowAppBranchFieldValue = watch(rowAppBranchField);
+  }, [sortedApplicationBranchList, rowAppBranchField, getValues, setValue, index]);
 
   const appBranchError = getApplicationFieldError(errors, index, "appBranch");
 
@@ -231,11 +234,10 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
                         value={field.value || ""}
                         onValueChange={(value) => {
                           field.onChange(value);
+                          // Maintain index alignment: update the branch at the same index as the application
                           const currentInputDockerStreamsValue = getValues(NAMES.inputDockerStreams) || [];
-                          const newInputDockerStreamsValue = [
-                            ...currentInputDockerStreamsValue.filter((el) => el !== rowAppBranchFieldValue),
-                            value,
-                          ];
+                          const newInputDockerStreamsValue = [...currentInputDockerStreamsValue];
+                          newInputDockerStreamsValue[index] = value;
                           setValue(NAMES.inputDockerStreams, newInputDockerStreamsValue);
                         }}
                       >
