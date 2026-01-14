@@ -196,6 +196,94 @@ const validateMethodStep = (data: FormData, ctx: z.RefinementCtx) => {
 };
 
 /**
+ * Step 2 Helpers: Gerrit-specific validation
+ */
+const validateGerritGitUrlPath = (data: FormData, ctx: z.RefinementCtx) => {
+  if (isEmptyStr(data.gitUrlPath) || (data.gitUrlPath && data.gitUrlPath.length < 3)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["gitUrlPath"],
+      message: "Repository name has to be at least 3 characters long.",
+    });
+  } else if (data.gitUrlPath && !validationRules.GIT_URL_PATH.every((rule) => rule.pattern.test(data.gitUrlPath))) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["gitUrlPath"],
+      message: "Invalid git URL path format",
+    });
+  }
+};
+
+/**
+ * Step 2 Helpers: Non-Gerrit repository validation
+ */
+const validateNonGerritRepository = (data: FormData, ctx: z.RefinementCtx) => {
+  if (isEmptyStr(data.ui_repositoryOwner)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["ui_repositoryOwner"],
+      message: "Select owner",
+    });
+  }
+
+  if (isEmptyStr(data.ui_repositoryName)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["ui_repositoryName"],
+      message: "Enter the repository name",
+    });
+  } else if (data.ui_repositoryName && data.ui_repositoryName.length < 3) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["ui_repositoryName"],
+      message: "Repository name must be at least 3 characters long",
+    });
+  } else if (
+    data.ui_repositoryName &&
+    !validationRules.REPOSITORY_NAME.every((rule) => rule.pattern.test(data.ui_repositoryName!))
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["ui_repositoryName"],
+      message: "Invalid repository name format",
+    });
+  }
+};
+
+/**
+ * Step 2 Helpers: Repository authentication validation
+ */
+const validateRepositoryAuth = (data: FormData, ctx: z.RefinementCtx) => {
+  if (isEmptyStr(data.ui_repositoryLogin)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["ui_repositoryLogin"],
+      message: "Enter repository login",
+    });
+  } else if (data.ui_repositoryLogin && !/\w/.test(data.ui_repositoryLogin)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["ui_repositoryLogin"],
+      message: "Enter valid repository login",
+    });
+  }
+
+  if (isEmptyStr(data.ui_repositoryPasswordOrApiToken)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["ui_repositoryPasswordOrApiToken"],
+      message: "Enter the repository password or access token",
+    });
+  } else if (data.ui_repositoryPasswordOrApiToken && !/\w/.test(data.ui_repositoryPasswordOrApiToken)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["ui_repositoryPasswordOrApiToken"],
+      message: "Enter valid repository password or api token",
+    });
+  }
+};
+
+/**
  * Step 2: GIT_SETUP validation
  */
 const validateGitSetupStep = (data: FormData, ctx: z.RefinementCtx) => {
@@ -210,58 +298,9 @@ const validateGitSetupStep = (data: FormData, ctx: z.RefinementCtx) => {
 
   // Git URL configuration (Gerrit vs Others)
   if (isGerrit(data.gitServer)) {
-    // Gerrit: validate gitUrlPath
-    if (isEmptyStr(data.gitUrlPath)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["gitUrlPath"],
-        message: "Repository name has to be at least 3 characters long.",
-      });
-    } else if (data.gitUrlPath && data.gitUrlPath.length < 3) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["gitUrlPath"],
-        message: "Repository name has to be at least 3 characters long.",
-      });
-    } else if (data.gitUrlPath && !validationRules.GIT_URL_PATH.every((rule) => rule.pattern.test(data.gitUrlPath!))) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["gitUrlPath"],
-        message: "Invalid git URL path format",
-      });
-    }
+    validateGerritGitUrlPath(data, ctx);
   } else {
-    // Non-Gerrit: validate owner and repository name
-    if (isEmptyStr(data.ui_repositoryOwner)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["ui_repositoryOwner"],
-        message: "Select owner",
-      });
-    }
-
-    if (isEmptyStr(data.ui_repositoryName)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["ui_repositoryName"],
-        message: "Enter the repository name",
-      });
-    } else if (data.ui_repositoryName && data.ui_repositoryName.length < 3) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["ui_repositoryName"],
-        message: "Repository name must be at least 3 characters long",
-      });
-    } else if (
-      data.ui_repositoryName &&
-      !validationRules.REPOSITORY_NAME.every((rule) => rule.pattern.test(data.ui_repositoryName!))
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["ui_repositoryName"],
-        message: "Invalid repository name format",
-      });
-    }
+    validateNonGerritRepository(data, ctx);
   }
 
   // Description validation
@@ -274,35 +313,9 @@ const validateGitSetupStep = (data: FormData, ctx: z.RefinementCtx) => {
     });
   }
 
-  // Repository authentication (only for clone strategy and not from template)
+  // Repository authentication (only for clone strategy)
   if (data.ui_hasCodebaseAuth && isCloneStrategy(data.strategy)) {
-    if (isEmptyStr(data.ui_repositoryLogin)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["ui_repositoryLogin"],
-        message: "Enter repository login",
-      });
-    } else if (data.ui_repositoryLogin && !/\w/.test(data.ui_repositoryLogin)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["ui_repositoryLogin"],
-        message: "Enter valid repository login",
-      });
-    }
-
-    if (isEmptyStr(data.ui_repositoryPasswordOrApiToken)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["ui_repositoryPasswordOrApiToken"],
-        message: "Enter the repository password or access token",
-      });
-    } else if (data.ui_repositoryPasswordOrApiToken && !/\w/.test(data.ui_repositoryPasswordOrApiToken)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["ui_repositoryPasswordOrApiToken"],
-        message: "Enter valid repository password or api token",
-      });
-    }
+    validateRepositoryAuth(data, ctx);
   }
 };
 
