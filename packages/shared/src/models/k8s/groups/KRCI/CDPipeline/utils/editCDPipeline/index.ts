@@ -4,7 +4,7 @@ import { editCDPipelineInputSchema, cdPipelineSchema } from "../../schema.js";
 
 /**
  * Updates a CDPipeline resource with editable fields
- * Only allows editing: description, applications
+ * Only allows editing: description, applications, inputDockerStreams, applicationsToPromote
  */
 export const editCDPipelineObject = (originalCDPipeline: CDPipeline, input: EditCDPipelineInput): CDPipeline => {
   const parsedInput = editCDPipelineInputSchema.safeParse(input);
@@ -20,8 +20,8 @@ export const editCDPipelineObject = (originalCDPipeline: CDPipeline, input: Edit
       ...originalCDPipeline.spec,
       description: input.description,
       applications: input.applications,
-      // inputDockerStreams must match applications
-      inputDockerStreams: input.applications,
+      inputDockerStreams: input.inputDockerStreams,
+      applicationsToPromote: input.applicationsToPromote,
     },
   };
 

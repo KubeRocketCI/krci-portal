@@ -39,7 +39,7 @@ export const EditCDPipelineDialog: React.FC<EditCDPipelineDialogProps> = ({ prop
   if (cdPipelineWatch.query.error) {
     return (
       <Dialog open={open} onOpenChange={(open) => !open && closeDialog()} data-testid="dialog">
-        <DialogContent className="w-full max-w-4xl">
+        <DialogContent className="w-full max-w-6xl">
           <ErrorContent error={cdPipelineWatch.query.error} />
         </DialogContent>
       </Dialog>
@@ -48,7 +48,7 @@ export const EditCDPipelineDialog: React.FC<EditCDPipelineDialogProps> = ({ prop
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && closeDialog()} data-testid="dialog">
-      <DialogContent className="w-full max-w-4xl">
+      <DialogContent className="w-full max-w-6xl">
         <LoadingWrapper isLoading={cdPipelineWatch.query.isLoading}>
           <FormContextProvider
             formSettings={{

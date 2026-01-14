@@ -103,7 +103,7 @@ export const StageActionsMenu = ({
       createResourceAction({
         item: stage,
         type: k8sOperation.patch,
-        label: capitalizeFirstLetter(k8sOperation.patch),
+        label: "Edit",
         Icon: <Pencil size={16} />,
         disabled: {
           status: !stagePermissions.data.patch.allowed,

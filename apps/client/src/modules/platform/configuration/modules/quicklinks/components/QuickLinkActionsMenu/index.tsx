@@ -27,7 +27,7 @@ export const QuickLinkActionsMenu = ({ backRoute, variant, data: { quickLink } }
     return [
       createResourceAction({
         type: k8sOperation.patch,
-        label: capitalizeFirstLetter(k8sOperation.patch),
+        label: "Edit",
         item: quickLink,
         Icon: <Pencil size={16} />,
         disabled: {

@@ -50,7 +50,7 @@ export const CodebaseBranchActionsMenu = ({
     return [
       createResourceAction({
         type: k8sOperation.patch,
-        label: capitalizeFirstLetter(k8sOperation.patch),
+        label: "Edit",
         item: codebaseBranch,
         Icon: <Pencil size={16} />,
         disabled: {

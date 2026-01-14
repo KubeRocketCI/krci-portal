@@ -25,7 +25,7 @@ export const CDPipelineActionsMenu = ({ backRoute, variant, data: { CDPipeline }
     return [
       createResourceAction({
         type: k8sOperation.patch,
-        label: capitalizeFirstLetter(k8sOperation.patch),
+        label: "Edit",
         item: CDPipeline,
         Icon: <Pencil size={16} />,
         disabled: {
