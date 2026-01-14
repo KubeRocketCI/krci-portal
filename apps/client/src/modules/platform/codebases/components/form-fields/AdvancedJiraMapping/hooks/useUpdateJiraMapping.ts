@@ -10,11 +10,21 @@ interface UseUpdateJiraMapping {
   jiraIssueMetadataPayloadName: string;
 }
 
-export const useUpdateJiraMapping = ({
+function updateMappingWithUsageStatus(
+  prevAdvancedMapping: AdvancedMappingItem[],
+  newRows: AdvancedMappingRow[]
+): AdvancedMappingItem[] {
+  return prevAdvancedMapping.map((item) => ({
+    ...item,
+    isUsed: newRows.some((row) => row.value === item.value),
+  }));
+}
+
+export function useUpdateJiraMapping({
   setAdvancedMapping,
   setAdvancedMappingRows,
   jiraIssueMetadataPayloadName,
-}: UseUpdateJiraMapping) => {
+}: UseUpdateJiraMapping): void {
   const { watch, setValue } = useFormContext();
 
   const jiraIssueMetadataPayloadFieldValue = watch(jiraIssueMetadataPayloadName);
@@ -28,15 +38,7 @@ export const useUpdateJiraMapping = ({
       setValue(createAdvancedMappingRowName(value), jiraPattern, { shouldDirty: false });
     }
 
-    setAdvancedMapping((prevAdvancedMapping) => {
-      return prevAdvancedMapping.map((el) => {
-        const [fitItem] = newRows.filter((innerEl) => innerEl.value === el.value);
-        return {
-          ...el,
-          isUsed: !!fitItem,
-        };
-      });
-    });
+    setAdvancedMapping((prev) => updateMappingWithUsageStatus(prev, newRows));
     setAdvancedMappingRows(newRows);
   }, [
     jiraIssueMetadataPayloadFieldValue,
@@ -45,4 +47,4 @@ export const useUpdateJiraMapping = ({
     setValue,
     jiraIssueMetadataPayloadName,
   ]);
-};
+}
