@@ -44,3 +44,18 @@ export type QualityGateStatusValue = (typeof QUALITY_GATE_STATUS)[keyof typeof Q
  */
 export const RATING_VALUES = ["1.0", "2.0", "3.0", "4.0", "5.0"] as const;
 export type RatingValue = (typeof RATING_VALUES)[number];
+
+/**
+ * Issue severity levels (descending order of priority)
+ */
+export const ISSUE_SEVERITIES = ["BLOCKER", "CRITICAL", "MAJOR", "MINOR", "INFO"] as const;
+
+/**
+ * Issue types
+ */
+export const ISSUE_TYPES = ["BUG", "VULNERABILITY", "CODE_SMELL"] as const;
+
+/**
+ * Issue statuses
+ */
+export const ISSUE_STATUSES = ["OPEN", "CONFIRMED", "REOPENED", "RESOLVED", "CLOSED"] as const;

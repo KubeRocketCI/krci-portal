@@ -1,8 +1,11 @@
 import { Card, CardContent } from "@/core/components/ui/card";
 import { Badge } from "@/core/components/ui/badge";
-import { Code } from "lucide-react";
+import { Button } from "@/core/components/ui/button";
+import { Code, ExternalLink } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { ProjectWithMetrics } from "@my-project/shared";
 import { SonarQubeMetricsList } from "../../../../components/sonarqube/SonarQubeMetricsList";
+import { useSonarQubeUrl } from "../../hooks/useSonarQubeUrl";
 
 interface ProjectHeaderProps {
   project: ProjectWithMetrics | null | undefined;
@@ -10,6 +13,8 @@ interface ProjectHeaderProps {
 }
 
 export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
+  const { getProjectUrl } = useSonarQubeUrl();
+
   if (isLoading) {
     return (
       <Card>
@@ -57,6 +62,19 @@ export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
                     {project.visibility.toUpperCase()}
                   </Badge>
                 )}
+
+                {/* External link to SonarQube */}
+                <Button variant="outline" size="sm" asChild>
+                  <Link
+                    to={getProjectUrl(project.key)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    View in SonarQube
+                  </Link>
+                </Button>
               </div>
 
               <div className="text-muted-foreground flex items-center gap-2 text-sm">

@@ -2,15 +2,6 @@ import { create } from "zustand";
 import { K8S_DEFAULT_CLUSTER_NAME, K8S_DEFAULT_CLUSTER_NAMESPACE } from "../constants";
 import { LOCAL_STORAGE_SERVICE } from "../../core/services/local-storage";
 
-interface ClusterStore {
-  clusterName: string;
-  setClusterName: (newClusterName: string) => void;
-  defaultNamespace: string;
-  setDefaultNamespace: (newDefaultNamespace: string) => void;
-  allowedNamespaces: string[];
-  setAllowedNamespaces: (newAllowedNamespaces: string[]) => void;
-}
-
 interface ClusterSettings {
   [clusterName: string]: {
     default_namespace: string;
@@ -21,12 +12,14 @@ interface ClusterSettings {
 interface ClusterStore {
   clusterName: string;
   setClusterName: (newClusterName: string) => void;
-
   defaultNamespace: string;
   setDefaultNamespace: (newDefaultNamespace: string) => void;
-
   allowedNamespaces: string[];
   setAllowedNamespaces: (newAllowedNamespaces: string[]) => void;
+  sonarHostUrl: string;
+  setSonarHostUrl: (newSonarHostUrl: string) => void;
+  dependencyTrackUrl: string;
+  setDependencyTrackUrl: (newDependencyTrackUrl: string) => void;
 }
 
 const LOCAL_STORAGE_KEY = "cluster_settings";
@@ -92,6 +85,16 @@ export const useClusterStore = create<ClusterStore>((set, get) => {
       };
       saveSettingsToStorage(settings);
       set({ allowedNamespaces: newAllowedNamespaces });
+    },
+
+    sonarHostUrl: "",
+    setSonarHostUrl: (newSonarHostUrl) => {
+      set({ sonarHostUrl: newSonarHostUrl });
+    },
+
+    dependencyTrackUrl: "",
+    setDependencyTrackUrl: (newDependencyTrackUrl) => {
+      set({ dependencyTrackUrl: newDependencyTrackUrl });
     },
   };
 });

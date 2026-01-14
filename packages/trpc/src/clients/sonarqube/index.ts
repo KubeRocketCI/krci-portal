@@ -8,6 +8,8 @@ import {
   QualityGateStatusResponse,
   NormalizedMeasures,
   BatchMeasuresResponse,
+  IssuesQueryParams,
+  IssuesSearchResponse,
 } from "@my-project/shared";
 
 // =============================================================================
@@ -284,6 +286,53 @@ export class SonarQubeClient {
     });
 
     return this.fetchJson<QualityGateStatusResponse>(endpoint);
+  }
+
+  /**
+   * Get quality gate details with all conditions
+   * (Alias for getQualityGateStatus for better semantic clarity)
+   *
+   * @param projectKey - The project key
+   * @returns Quality gate status with all conditions
+   *
+   * @example
+   * const client = createSonarQubeClient();
+   * const details = await client.getQualityGateDetails("my-project");
+   */
+  async getQualityGateDetails(projectKey: string): Promise<QualityGateStatusResponse> {
+    return this.getQualityGateStatus(projectKey);
+  }
+
+  /**
+   * Search issues for a project
+   *
+   * @param params - Query parameters for filtering and pagination
+   * @returns Issues search response with pagination
+   *
+   * @example
+   * const client = createSonarQubeClient();
+   * const issues = await client.getIssues({
+   *   componentKeys: "my-project",
+   *   types: "BUG,VULNERABILITY",
+   *   severities: "BLOCKER,CRITICAL",
+   *   p: 1,
+   *   ps: 25
+   * });
+   */
+  async getIssues(params: IssuesQueryParams): Promise<IssuesSearchResponse> {
+    const endpoint = this.buildEndpoint("/api/issues/search", {
+      componentKeys: params.componentKeys,
+      resolved: params.resolved,
+      types: params.types,
+      severities: params.severities,
+      statuses: params.statuses,
+      p: params.p,
+      ps: params.ps,
+      s: params.s,
+      asc: params.asc,
+    });
+
+    return this.fetchJson<IssuesSearchResponse>(endpoint);
   }
 
   /**

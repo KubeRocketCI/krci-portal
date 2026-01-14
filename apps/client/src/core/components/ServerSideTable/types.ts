@@ -1,5 +1,10 @@
 import React from "react";
-import { TableColumn, TableSettings as TableSettingsType, TableSort } from "@/core/components/Table/types";
+import {
+  TableColumn,
+  TableSettings as TableSettingsType,
+  TableSort,
+  TableExpandable,
+} from "@/core/components/Table/types";
 
 export interface ServerSideTablePagination {
   show?: boolean;
@@ -24,6 +29,7 @@ export interface ServerSideTableProps<DataType = unknown> {
   blockerError?: Error | null;
   errors?: Error[] | null;
   handleRowClick?: (event: React.MouseEvent<HTMLTableRowElement>, row: DataType) => void;
+  expandable?: TableExpandable<DataType>;
   slots?: {
     header?: React.ReactElement;
     footer?: React.ReactElement;

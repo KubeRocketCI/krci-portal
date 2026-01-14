@@ -20,6 +20,14 @@ import {
   qualityGateStatusResponseSchema,
   projectWithMetricsSchema,
   projectsWithMetricsResponseSchema,
+  issueSeveritySchema,
+  issueTypeSchema,
+  issueStatusSchema,
+  sonarQubeIssueSchema,
+  issueComponentSchema,
+  issueRuleSchema,
+  issuesSearchResponseSchema,
+  issuesQueryParamsSchema,
 } from "./schemas.js";
 
 // =============================================================================
@@ -61,3 +69,16 @@ export type QualityGateStatusResponse = z.infer<typeof qualityGateStatusResponse
 
 export type ProjectWithMetrics = z.infer<typeof projectWithMetricsSchema>;
 export type ProjectsWithMetricsResponse = z.infer<typeof projectsWithMetricsResponseSchema>;
+
+// =============================================================================
+// Issues
+// =============================================================================
+
+export type IssueSeverity = z.infer<typeof issueSeveritySchema>;
+export type IssueType = z.infer<typeof issueTypeSchema>;
+export type IssueStatus = z.infer<typeof issueStatusSchema>;
+export type SonarQubeIssue = z.infer<typeof sonarQubeIssueSchema>;
+export type IssueComponent = z.infer<typeof issueComponentSchema>;
+export type IssueRule = z.infer<typeof issueRuleSchema>;
+export type IssuesSearchResponse = z.infer<typeof issuesSearchResponseSchema>;
+export type IssuesQueryParams = z.infer<typeof issuesQueryParamsSchema>;

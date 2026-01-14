@@ -17,6 +17,7 @@ export const TableBody = <DataType,>({
   data,
   handleRowClick,
   selection,
+  expandable,
   emptyListComponent,
   page,
   rowsPerPage,
@@ -74,6 +75,10 @@ export const TableBody = <DataType,>({
             const _isSelected = selection?.isRowSelected ? isSelectedRow(selection.isRowSelected, row) : false;
             const _isSelectable = selection?.isRowSelectable ? selection?.isRowSelectable(row) : true;
 
+            const rowId = expandable?.getRowId(row);
+            const isExpanded = rowId !== undefined && expandable?.expandedRowIds?.has(rowId);
+            const expandedContent = expandable?.expandedRowRender(row);
+
             return (
               <TableRow
                 key={`table-row-${idx}`}
@@ -83,6 +88,20 @@ export const TableBody = <DataType,>({
                 isRowSelectable={_isSelectable}
                 handleRowClick={handleRowClick}
                 handleSelectRowClick={selection?.handleSelectRow}
+                isExpandable={!!expandable}
+                isExpanded={isExpanded}
+                onToggleExpand={() => {
+                  if (!expandable || rowId === undefined) return;
+
+                  const newExpandedIds = new Set<string | number>(expandable.expandedRowIds || new Set());
+                  if (newExpandedIds.has(rowId)) {
+                    newExpandedIds.delete(rowId);
+                  } else {
+                    newExpandedIds.add(rowId);
+                  }
+                  expandable.onExpandedRowsChange?.(newExpandedIds);
+                }}
+                expandedContent={expandedContent}
               />
             );
           })}
@@ -120,6 +139,7 @@ export const TableBody = <DataType,>({
     rowsPerPage,
     selection,
     handleRowClick,
+    expandable,
   ]);
 
   return <TableBodyUI>{renderTableBody()}</TableBodyUI>;
