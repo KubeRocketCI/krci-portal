@@ -178,7 +178,7 @@ export const Applications: React.FC = () => {
                   const selectedApps = field.value || [];
 
                   return (
-                    <Popover open={open} onOpenChange={setOpen}>
+                    <Popover open={open} onOpenChange={setOpen} modal={false}>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
@@ -213,10 +213,13 @@ export const Applications: React.FC = () => {
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-(--radix-popper-anchor-width) max-w-2xl p-0" align="start">
+                      <PopoverContent
+                        className="z-[1400] w-[var(--radix-popper-anchor-width)] max-w-2xl p-0"
+                        align="start"
+                      >
                         <Command>
                           <CommandInput placeholder="Search applications..." />
-                          <CommandList>
+                          <CommandList onWheel={(e) => e.stopPropagation()}>
                             <CommandEmpty>No applications found.</CommandEmpty>
                             <CommandGroup>
                               {applications?.map((app) => {
