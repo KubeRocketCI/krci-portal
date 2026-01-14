@@ -65,6 +65,13 @@ export interface TablePagination {
 export interface TableSettings {
   show: boolean;
 }
+export interface TableExpandable<DataType> {
+  expandedRowRender: (row: DataType) => React.ReactNode;
+  expandedRowIds?: Set<string | number>;
+  onExpandedRowsChange?: (expandedIds: Set<string | number>) => void;
+  getRowId: (row: DataType) => string | number;
+}
+
 export interface TableProps<DataType = unknown> {
   id: string;
   data: DataType[];
@@ -81,6 +88,7 @@ export interface TableProps<DataType = unknown> {
   errors?: Error[] | null;
   filterFunction?: (el: DataType) => boolean;
   handleRowClick?: (event: React.MouseEvent<HTMLTableRowElement>, row: DataType) => void;
+  expandable?: TableExpandable<DataType>;
   slots?: {
     header?: React.ReactElement;
     footer?: React.ReactElement;

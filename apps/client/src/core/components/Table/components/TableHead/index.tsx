@@ -14,6 +14,7 @@ export const TableHead = <DataType,>({
   selectableRowCount,
   selected,
   handleSelectAllClick,
+  showExpandColumn,
 }: TableHeadProps<DataType>) => {
   const handleRequestSort = (column: TableColumn<DataType>) => {
     const _isDesc = isDesc(column.id, sort.sortBy, sort.order);
@@ -48,6 +49,11 @@ export const TableHead = <DataType,>({
   return (
     <TableHeaderUI className="bg-muted">
       <TableRowUI>
+        {showExpandColumn && (
+          <TableHeadUI className="relative w-10 px-1 py-2 align-bottom">
+            {/* Empty header for expand column */}
+          </TableHeadUI>
+        )}
         {!!handleSelectAllClick && !!selectableRowCount && (
           <TableHeadUI className="relative px-1 py-2 align-bottom">
             <div className="flex flex-row flex-nowrap items-center justify-center">

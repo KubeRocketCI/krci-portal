@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/core/components/ui/card";
 import { Badge } from "@/core/components/ui/badge";
-import { Network, ChevronDown } from "lucide-react";
+import { Button } from "@/core/components/ui/button";
+import { Network, ChevronDown, ExternalLink } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,10 +10,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/core/components/ui/dropdown-menu";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { DependencyTrackProject, DependencyTrackTag } from "@my-project/shared";
 import { DependencyTrackMetricsList } from "../../../../components/dependencytrack/DependencyTrackMetricsList";
 import { routeSCAProjectDetails, PATH_SCA_PROJECT_DETAILS_FULL } from "../../route";
+import { useDependencyTrackUrl } from "../../hooks/useDependencyTrackUrl";
 
 interface ProjectHeaderProps {
   project: DependencyTrackProject | undefined;
@@ -23,6 +25,7 @@ export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
   const navigate = useNavigate();
   const params = routeSCAProjectDetails.useParams();
   const projectUuid = params.projectUuid;
+  const { getProjectUrl } = useDependencyTrackUrl();
 
   const versions = (project?.versions || []) as DependencyTrackProject[];
   const activeVersions = versions.filter((v) => v.active);
@@ -138,6 +141,19 @@ export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
                 {!project.active && <Badge variant="destructive">INACTIVE</Badge>}
 
                 {project.isLatest && <Badge variant="default">LATEST VERSION</Badge>}
+
+                {/* External link to Dependency Track */}
+                <Button variant="outline" size="sm" asChild>
+                  <Link
+                    to={getProjectUrl(project.uuid)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    View in Dependency Track
+                  </Link>
+                </Button>
               </div>
 
               {project.description && (

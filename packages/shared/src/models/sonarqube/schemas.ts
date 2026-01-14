@@ -166,3 +166,95 @@ export const projectsWithMetricsResponseSchema = z.object({
   projects: z.array(projectWithMetricsSchema),
   paging: pagingSchema,
 });
+
+// =============================================================================
+// Issues
+// =============================================================================
+
+/**
+ * Issue severity levels
+ */
+export const issueSeveritySchema = z.enum(["BLOCKER", "CRITICAL", "MAJOR", "MINOR", "INFO"]);
+
+/**
+ * Issue types
+ */
+export const issueTypeSchema = z.enum(["BUG", "VULNERABILITY", "CODE_SMELL"]);
+
+/**
+ * Issue status
+ */
+export const issueStatusSchema = z.enum(["OPEN", "CONFIRMED", "REOPENED", "RESOLVED", "CLOSED"]);
+
+/**
+ * Single issue from /api/issues/search
+ */
+export const sonarQubeIssueSchema = z.object({
+  key: z.string(),
+  component: z.string(), // File path
+  componentLongName: z.string().optional(),
+  project: z.string(),
+  rule: z.string(),
+  message: z.string(),
+  line: z.number().optional(),
+  severity: issueSeveritySchema,
+  type: issueTypeSchema,
+  status: issueStatusSchema,
+  effort: z.string().optional(), // e.g., "5min"
+  debt: z.string().optional(), // Technical debt
+  creationDate: z.string(),
+  updateDate: z.string().optional(),
+  flows: z.array(z.any()).optional(), // Issue flows
+  tags: z.array(z.string()).optional(),
+});
+
+/**
+ * Component metadata from issues search response
+ */
+export const issueComponentSchema = z.object({
+  key: z.string(),
+  enabled: z.boolean().optional(),
+  qualifier: z.string().optional(),
+  name: z.string().optional(),
+  longName: z.string().optional(),
+  path: z.string().optional(),
+});
+
+/**
+ * Rule metadata from issues search response
+ */
+export const issueRuleSchema = z.object({
+  key: z.string(),
+  name: z.string().optional(),
+  lang: z.string().optional(),
+  status: z.string().optional(),
+  langName: z.string().optional(),
+});
+
+/**
+ * Issues search response from /api/issues/search
+ */
+export const issuesSearchResponseSchema = z.object({
+  total: z.number(),
+  p: z.number(), // Current page
+  ps: z.number(), // Page size
+  paging: pagingSchema,
+  issues: z.array(sonarQubeIssueSchema),
+  components: z.array(issueComponentSchema).optional(),
+  rules: z.array(issueRuleSchema).optional(),
+});
+
+/**
+ * Issues query parameters for /api/issues/search
+ */
+export const issuesQueryParamsSchema = z.object({
+  componentKeys: z.string(), // Project key
+  resolved: z.enum(["true", "false"]).optional().default("false"),
+  types: z.string().optional(), // Comma-separated: BUG,VULNERABILITY,CODE_SMELL
+  severities: z.string().optional(), // Comma-separated: BLOCKER,CRITICAL,MAJOR,MINOR,INFO
+  statuses: z.string().optional(),
+  p: z.number().int().min(1).optional().default(1),
+  ps: z.number().int().min(1).max(500).optional().default(25),
+  s: z.string().optional(), // Sort field
+  asc: z.enum(["true", "false"]).optional(),
+});

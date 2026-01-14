@@ -1,5 +1,5 @@
 import React from "react";
-import { TableColumn, TableSelection } from "../../types";
+import { TableColumn, TableSelection, TableExpandable } from "../../types";
 
 export interface TableBodyProps<DataType = unknown> {
   data: DataType[] | null;
@@ -11,6 +11,7 @@ export interface TableBodyProps<DataType = unknown> {
   emptyListComponent?: React.ReactNode;
   handleRowClick?: (event: React.MouseEvent<HTMLTableRowElement>, row: DataType) => void;
   selection?: TableSelection<DataType>;
+  expandable?: TableExpandable<DataType>;
   isEmptyFilterResult: boolean;
   page: number;
   rowsPerPage: number;

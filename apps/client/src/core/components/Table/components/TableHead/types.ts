@@ -9,4 +9,5 @@ export interface TableHeadProps<DataType> {
   selectableRowCount?: number;
   selected?: string[];
   handleSelectAllClick?: ((event: React.ChangeEvent<HTMLInputElement>) => void | undefined) | null;
+  showExpandColumn?: boolean;
 }

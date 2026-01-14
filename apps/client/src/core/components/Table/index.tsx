@@ -37,6 +37,7 @@ export const DataTable = <DataType,>({
   emptyListComponent,
   filterFunction,
   handleRowClick,
+  expandable,
   blockerComponent,
   slots,
   settings,
@@ -220,6 +221,7 @@ export const DataTable = <DataType,>({
           <div className="border-border w-full overflow-hidden rounded-md border">
             <TableUI>
               <colgroup>
+                {expandable && <col key={"expand-chevron"} width="40px" />}
                 {shouldShowSelectionColumn && <col key={"select-checkbox"} width={`${TABLE_CELL_DEFAULTS.WIDTH}%`} />}
                 {columns.map(
                   (column) => column.cell.show !== false && <col key={column.id} width={`${column.cell.baseWidth}%`} />
@@ -234,6 +236,7 @@ export const DataTable = <DataType,>({
                 selectableRowCount={selectableRowCount}
                 selected={validSelected}
                 handleSelectAllClick={_handleSelectAllClick}
+                showExpandColumn={!!expandable}
               />
               <TableBody
                 columns={columns}
@@ -242,6 +245,7 @@ export const DataTable = <DataType,>({
                 errors={errors}
                 isLoading={isLoading}
                 selection={selectionSettings}
+                expandable={expandable}
                 handleRowClick={handleRowClick}
                 emptyListComponent={emptyListComponent}
                 page={activePage}

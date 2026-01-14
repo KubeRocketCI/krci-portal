@@ -120,7 +120,7 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
       groupRoute: routeSecurity,
       children: [
         {
-          title: "Software Composition Analysis (SCA)",
+          title: "SCA",
           children: [
             {
               title: "Portfolio",
@@ -139,7 +139,7 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
           ],
         },
         {
-          title: "Static Application Security Testing (SAST)",
+          title: "SAST",
           children: [
             {
               title: "Projects",

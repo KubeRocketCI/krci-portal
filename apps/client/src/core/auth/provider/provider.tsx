@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import {
   AuthCallbackLoginInput,
   AuthCallbackLoginOutput,
@@ -27,8 +27,15 @@ const getLoginOriginURL = (redirectSearchParam?: string) =>
 
 export const AuthProvider = ({ children }: React.PropsWithChildren) => {
   const queryClient = useQueryClient();
-  const clusterStore = useClusterStore();
   const trpc = trpcHttpClient;
+
+  // Get stable setter functions from the store
+  const clusterName = useClusterStore((state) => state.clusterName);
+  const setClusterName = useClusterStore((state) => state.setClusterName);
+  const setDefaultNamespace = useClusterStore((state) => state.setDefaultNamespace);
+  const setAllowedNamespaces = useClusterStore((state) => state.setAllowedNamespaces);
+  const setSonarHostUrl = useClusterStore((state) => state.setSonarHostUrl);
+  const setDependencyTrackUrl = useClusterStore((state) => state.setDependencyTrackUrl);
 
   // Fetch server configuration at startup
   const configQuery = useQuery({
@@ -40,23 +47,35 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
   });
 
   // Initialize cluster store with server config when available
-  useMemo(() => {
+  useEffect(() => {
     if (configQuery.data) {
-      const { clusterName, defaultNamespace } = configQuery.data;
+      const { clusterName: serverClusterName, defaultNamespace, sonarHostUrl, dependencyTrackUrl } = configQuery.data;
 
       // Only initialize if not already set
-      if (!clusterStore.clusterName) {
-        clusterStore.setClusterName(clusterName);
+      if (!clusterName) {
+        setClusterName(serverClusterName);
 
         // Check if user has custom namespace settings in localStorage
         const settings = localStorage.getItem("cluster_settings");
-        if (!settings || !JSON.parse(settings)[clusterName]) {
-          clusterStore.setDefaultNamespace(defaultNamespace);
-          clusterStore.setAllowedNamespaces([defaultNamespace]);
+        if (!settings || !JSON.parse(settings)[serverClusterName]) {
+          setDefaultNamespace(defaultNamespace);
+          setAllowedNamespaces([defaultNamespace]);
         }
       }
+
+      // Always update security tool URLs from server config
+      setSonarHostUrl(sonarHostUrl);
+      setDependencyTrackUrl(dependencyTrackUrl);
     }
-  }, [configQuery.data, clusterStore]);
+  }, [
+    configQuery.data,
+    clusterName,
+    setClusterName,
+    setDefaultNamespace,
+    setAllowedNamespaces,
+    setSonarHostUrl,
+    setDependencyTrackUrl,
+  ]);
 
   const meQuery = useQuery({
     queryKey: ["auth.me"],

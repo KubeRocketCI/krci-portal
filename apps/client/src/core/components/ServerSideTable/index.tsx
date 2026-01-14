@@ -50,6 +50,7 @@ export const ServerSideTable = <DataType,>({
   pagination,
   emptyListComponent,
   handleRowClick,
+  expandable,
   blockerComponent,
   slots,
   settings,
@@ -132,6 +133,7 @@ export const ServerSideTable = <DataType,>({
           <div className="border-border w-full overflow-hidden rounded-md border">
             <TableUI>
               <colgroup>
+                {expandable && <col key={"expand-chevron"} width="40px" />}
                 {columns.map(
                   (column) => column.cell.show !== false && <col key={column.id} width={`${column.cell.baseWidth}%`} />
                 )}
@@ -145,6 +147,7 @@ export const ServerSideTable = <DataType,>({
                 selectableRowCount={0}
                 selected={[]}
                 handleSelectAllClick={null}
+                showExpandColumn={!!expandable}
               />
               <TableBody
                 columns={columns}
@@ -156,6 +159,7 @@ export const ServerSideTable = <DataType,>({
                   selected: [],
                   isRowSelectable: () => false,
                 }}
+                expandable={expandable}
                 handleRowClick={handleRowClick}
                 emptyListComponent={emptyListComponent}
                 page={0} // Server-side: always show from start of current page data
