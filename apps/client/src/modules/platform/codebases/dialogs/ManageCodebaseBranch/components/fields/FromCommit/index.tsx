@@ -62,7 +62,7 @@ export const FromCommit = () => {
   const query = useQuery({
     queryKey: ["branchList", codebaseGitServer, codebaseOwner, codebaseRepoName],
     queryFn: () =>
-      trpc.krakend.getBranchList.query({
+      trpc.gitfusion.getBranchList.query({
         gitServer: codebaseGitServer,
         owner: codebaseOwner,
         repoName: codebaseRepoName,

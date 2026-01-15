@@ -39,7 +39,7 @@ export const RepositoryField: React.FC = () => {
   const query = useQuery({
     queryKey: ["gitServerRepoList", gitServerFieldValue, ownerFieldValue],
     queryFn: () =>
-      trpc.krakend.getRepositoryList.query({
+      trpc.gitfusion.getRepositoryList.query({
         gitServer: gitServerFieldValue,
         owner: ownerFieldValue,
         namespace: defaultNamespace,
