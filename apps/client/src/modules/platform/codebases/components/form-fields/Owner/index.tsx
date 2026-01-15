@@ -32,7 +32,7 @@ export const OwnerField: React.FC = () => {
   const query = useQuery({
     queryKey: ["gitServerOrgList", gitServerFieldValue],
     queryFn: () =>
-      trpc.krakend.getOrganizationList.query({
+      trpc.gitfusion.getOrganizationList.query({
         gitServer: gitServerFieldValue,
         namespace: defaultNamespace,
         clusterName,

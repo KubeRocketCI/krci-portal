@@ -37,7 +37,7 @@ export const useGitLabPipelineTrigger = (
   const mutation = useMutation<GitLabPipelineResponse, Error, TriggerGitLabPipelineParams>({
     mutationKey: ["triggerGitLabPipeline"],
     mutationFn: async ({ gitServer, project, ref, variables }) => {
-      return await trpc.krakend.triggerGitLabPipeline.mutate({
+      return await trpc.gitfusion.triggerGitLabPipeline.mutate({
         clusterName,
         namespace,
         gitServer,

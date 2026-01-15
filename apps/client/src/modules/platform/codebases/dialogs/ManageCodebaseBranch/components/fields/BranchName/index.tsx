@@ -54,7 +54,7 @@ export const BranchName = ({ defaultBranchVersion }: BranchNameProps) => {
   const query = useQuery({
     queryKey: ["branchList", codebaseGitServer, codebaseOwner, codebaseRepoName],
     queryFn: () =>
-      trpc.krakend.getBranchList.query({
+      trpc.gitfusion.getBranchList.query({
         gitServer: codebaseGitServer,
         owner: codebaseOwner,
         repoName: codebaseRepoName,
@@ -67,7 +67,7 @@ export const BranchName = ({ defaultBranchVersion }: BranchNameProps) => {
   const invalidateBranchListCacheMutation = useMutation({
     mutationKey: ["invalidateBranchListCacheMutation", defaultNamespace],
     mutationFn: () =>
-      trpc.krakend.invalidateBranchListCache.mutate({
+      trpc.gitfusion.invalidateBranchListCache.mutate({
         namespace: defaultNamespace,
         clusterName,
       }),
