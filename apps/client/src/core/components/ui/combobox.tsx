@@ -84,7 +84,7 @@ export const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(
     }
 
     return (
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={setOpen} modal={false}>
         <PopoverTrigger asChild>
           <Button
             ref={ref}
@@ -102,10 +102,10 @@ export const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(
             <ChevronsUpDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-(--radix-popper-anchor-width) p-0" align="start" sideOffset={4}>
+        <PopoverContent className="z-[1400] w-[var(--radix-popper-anchor-width)] p-0" align="start" sideOffset={4}>
           <Command>
             <CommandInput placeholder={searchPlaceholder} />
-            <CommandList>
+            <CommandList onWheel={(e) => e.stopPropagation()}>
               <CommandEmpty>{emptyText}</CommandEmpty>
               <CommandGroup>
                 {options.map((option) => {
@@ -187,7 +187,7 @@ const ComboboxMultiple = React.forwardRef<HTMLButtonElement, ComboboxMultiplePro
     const hiddenCount = value.length - visibleItems.length;
 
     return (
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={setOpen} modal={false}>
         <PopoverTrigger asChild>
           <Button
             ref={ref}
@@ -243,10 +243,10 @@ const ComboboxMultiple = React.forwardRef<HTMLButtonElement, ComboboxMultiplePro
             <ChevronsUpDownIcon size={16} className="text-muted-foreground/80 shrink-0" aria-hidden="true" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-(--radix-popper-anchor-width) p-0" align="start" sideOffset={4}>
+        <PopoverContent className="z-[1400] w-[var(--radix-popper-anchor-width)] p-0" align="start" sideOffset={4}>
           <Command>
             <CommandInput placeholder={searchPlaceholder} />
-            <CommandList>
+            <CommandList onWheel={(e) => e.stopPropagation()}>
               <CommandEmpty>{emptyText}</CommandEmpty>
               <CommandGroup>
                 {options.map((option) => {
