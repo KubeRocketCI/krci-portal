@@ -31,6 +31,7 @@ A Helm chart for Kubernetes
 | configEnv.DEFAULT_CLUSTER_NAMESPACE | string | `"krci"` |  |
 | configEnv.DEPENDENCY_TRACK_URL | string | `"https://deptrack.example.com"` |  |
 | configEnv.DEPLOY_CLIENT_DIST_DIR | string | `"/app/static"` |  |
+| configEnv.GITFUSION_URL | string | `"http://gitfusion.krci:8080"` |  |
 | configEnv.OIDC_CLIENT_ID | string | `"portal"` |  |
 | configEnv.OIDC_CODE_CHALLENGE_METHOD | string | `"S256"` |  |
 | configEnv.OIDC_ISSUER_URL | string | `"https://keycloak.example.com/realms/shared"` |  |
