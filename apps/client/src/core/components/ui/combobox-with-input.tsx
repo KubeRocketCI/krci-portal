@@ -78,7 +78,7 @@ export const ComboboxWithInput = React.forwardRef<HTMLInputElement, ComboboxWith
     }, [options, inputValue]);
 
     return (
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={setOpen} modal={false}>
         <PopoverTrigger asChild>
           <div className="relative flex w-full items-center" aria-hidden="true">
             <div
@@ -113,9 +113,9 @@ export const ComboboxWithInput = React.forwardRef<HTMLInputElement, ComboboxWith
             </div>
           </div>
         </PopoverTrigger>
-        <PopoverContent className="w-(--radix-popper-anchor-width) p-0" align="start" sideOffset={4}>
+        <PopoverContent className="z-[1400] w-[var(--radix-popper-anchor-width)] p-0" align="start" sideOffset={4}>
           <Command shouldFilter={false}>
-            <CommandList>
+            <CommandList onWheel={(e) => e.stopPropagation()}>
               <CommandEmpty>{emptyText}</CommandEmpty>
               <CommandGroup>
                 {availableOptions.map((option) => {
