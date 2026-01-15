@@ -32,6 +32,7 @@ configEnv:
   OIDC_CODE_CHALLENGE_METHOD: S256
   TEKTON_RESULTS_URL: https://tekton-results.example.com
   DEPENDENCY_TRACK_URL: https://deptrack.example.com
+  GITFUSION_URL: http://gitfusion.krci:8080
 
 # -- Extends envFrom for the Deployment definition.
 # we expect to deserialize key-value pairs from the secret, e.g
