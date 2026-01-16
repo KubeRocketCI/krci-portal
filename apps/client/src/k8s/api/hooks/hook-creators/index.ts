@@ -10,6 +10,8 @@ export type UseWatchItemParamsWithoutResourceConfig<I extends KubeObjectBase> = 
   "resourceConfig"
 >;
 
+//test
+
 export type UseWatchListParamsWithoutResourceConfig<I extends KubeObjectBase> = Omit<
   UseWatchListParams<I>,
   "resourceConfig"
