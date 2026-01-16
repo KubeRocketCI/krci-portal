@@ -113,7 +113,10 @@ describe("testing createCleanPipelineRunDraft", () => {
         labels: {
           "app.edp.epam.com/cdpipeline": "test-pipe-very-long-long-long-long-long-long-name",
           "app.edp.epam.com/cdstage": "test-pipe-very-long-long-long-long-long-long-name-sit",
+          "app.edp.epam.com/codebase": "$(tt.params.CODEBASE)",
+          "app.edp.epam.com/codebasebranch": "$(tt.params.CDPIPELINE)-$(tt.params.CDSTAGE)",
           "app.edp.epam.com/pipelinetype": "clean",
+          "app.edp.epam.com/stage": "test-pipe-very-long-long-long-long-long-long-name-sit",
         },
       },
       spec: {

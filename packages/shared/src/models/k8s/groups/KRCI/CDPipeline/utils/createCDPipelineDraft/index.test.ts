@@ -17,8 +17,7 @@ describe("K8sCDPipeline: createCDPipelineDraft", () => {
 
     expect(result).toMatchObject({
       apiVersion: "v2.edp.epam.com/v1",
-      // NOTE: This appears to be a bug - should be "CDPipeline" not "Stage"
-      kind: "Stage",
+      kind: "CDPipeline",
       metadata: {
         name: "test-pipeline",
       },
@@ -33,13 +32,11 @@ describe("K8sCDPipeline: createCDPipelineDraft", () => {
     });
   });
 
-  it("should use default name when name is not provided", () => {
+  it("should throw ZodError when name is not provided", () => {
     const inputWithoutName = { ...baseInput };
     delete (inputWithoutName as any).name;
 
-    const result = createCDPipelineDraftObject(inputWithoutName);
-
-    expect(result.metadata.name).toBe("your cd pipeline name");
+    expect(() => createCDPipelineDraftObject(inputWithoutName)).toThrowError(ZodError);
   });
 
   it("should use default deployment type when not specified", () => {

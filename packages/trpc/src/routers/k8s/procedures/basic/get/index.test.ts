@@ -1,14 +1,35 @@
 import { createMockedContext } from "../../../../../__mocks__/context.js";
 import { createCaller } from "../../../../../routers/index.js";
 import { inferProcedureInput } from "@trpc/server";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from "vitest";
 import { k8sGetProcedure } from "./index.js";
+import { K8sClient } from "../../../../../clients/k8s/index.js";
+
+// Mock K8sClient at module level
+vi.mock("../../../../../clients/k8s/index.js", () => {
+  return {
+    K8sClient: vi.fn(),
+  };
+});
 
 describe("k8sGetProcedure", () => {
   let mockContext: ReturnType<typeof createMockedContext>;
+  let mockK8sClientInstance: {
+    KubeConfig: {};
+    getResource: Mock;
+  };
 
   beforeEach(() => {
     mockContext = createMockedContext();
+
+    // Create mock K8sClient instance
+    mockK8sClientInstance = {
+      KubeConfig: {},
+      getResource: vi.fn(),
+    };
+
+    // Mock K8sClient constructor
+    (K8sClient as unknown as Mock).mockImplementation(() => mockK8sClientInstance);
   });
 
   afterEach(() => {
@@ -34,12 +55,12 @@ describe("k8sGetProcedure", () => {
       metadata: { name: "test-resource" },
     };
 
-    mockContext.K8sClient.getResource.mockResolvedValueOnce(mockResponse);
+    mockK8sClientInstance.getResource.mockResolvedValueOnce(mockResponse);
 
     const caller = createCaller(mockContext);
     const result = await caller.k8s.get(input);
 
-    expect(mockContext.K8sClient.getResource).toHaveBeenCalledWith(input.resourceConfig, input.name, input.namespace);
+    expect(mockK8sClientInstance.getResource).toHaveBeenCalledWith(input.resourceConfig, input.name, input.namespace);
     expect(result).toEqual(mockResponse);
   });
 
@@ -73,7 +94,7 @@ describe("k8sGetProcedure", () => {
 
     const errorResponse = new Error("Forbidden: User lacks permission");
 
-    mockContext.K8sClient.getResource.mockRejectedValueOnce(errorResponse);
+    mockK8sClientInstance.getResource.mockRejectedValueOnce(errorResponse);
 
     const caller = createCaller(mockContext);
 

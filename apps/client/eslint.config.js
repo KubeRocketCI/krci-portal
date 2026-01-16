@@ -1,3 +1,6 @@
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from "eslint-plugin-storybook";
+
 import js from "@eslint/js";
 import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
@@ -10,11 +13,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  { ignores: ["dist", ".storybook/**"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
-    ignores: ["*.config.ts"],
+    ignores: ["*.config.ts", ".storybook/**"],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -43,5 +46,6 @@ export default tseslint.config(
         tsconfigRootDir: __dirname,
       },
     },
-  }
+  },
+  storybook.configs["flat/recommended"]
 );

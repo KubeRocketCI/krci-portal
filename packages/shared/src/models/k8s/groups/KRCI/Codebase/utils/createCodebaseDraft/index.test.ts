@@ -37,7 +37,7 @@ describe("K8sCodebase: createCodebaseDraft", () => {
       kind: "Codebase",
       metadata: {
         name: "test",
-        labels: { "app.edp.epam.com/git-server": "gerrit" },
+        labels: { "app.edp.epam.com/codebaseType": "application" },
       },
       spec: {
         gitUrlPath: "/my-repo", // normalized

@@ -18,7 +18,7 @@ export const checkHighlightedButtons = (values: Record<string, string | boolean>
 
   const allVersionsAreLatest = imageTagsValues.every(([, value]) => (value as string)?.includes("latest::"));
   const allVersionsAreStable = imageTagsValues.every(([, value]) => (value as string)?.includes("stable::"));
-  const allAppsHasValuesOverride = valuesOverrides.every(([, value]) => value === true);
+  const allAppsHasValuesOverride = valuesOverrides.length > 0 && valuesOverrides.every(([, value]) => value === true);
 
   return {
     latest: allVersionsAreLatest,

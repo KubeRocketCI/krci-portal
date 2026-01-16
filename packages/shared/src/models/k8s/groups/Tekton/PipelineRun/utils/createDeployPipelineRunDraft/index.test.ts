@@ -129,8 +129,11 @@ describe("testing createDeployPipelineRunDraft", () => {
         name: `deploy-test-pipe-very-long-long-long-long-long-long-name-s-${MOCKED_UUID}`,
         labels: {
           "app.edp.epam.com/cdpipeline": "test-pipe-very-long-long-long-long-long-long-name",
-          "app.edp.epam.com/cdstage": "test-pipe-very-long-long-long-long-long-long-name-sit",
+          "app.edp.epam.com/cdstage": "test-namespace",
+          "app.edp.epam.com/codebase": "$(tt.params.CODEBASE)",
+          "app.edp.epam.com/codebasebranch": "$(tt.params.CDPIPELINE)-$(tt.params.CDSTAGE)",
           "app.edp.epam.com/pipelinetype": "deploy",
+          "app.edp.epam.com/stage": "test-pipe-very-long-long-long-long-long-long-name-sit",
         },
       },
       spec: {

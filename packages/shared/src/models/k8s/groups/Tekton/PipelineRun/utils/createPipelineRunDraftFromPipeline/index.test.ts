@@ -6,6 +6,7 @@ import { createPipelineRunDraftFromPipeline } from "./index.js";
 
 vi.mock("../../../../../../../utils", () => ({
   createRandomString: vi.fn(),
+  truncateName: vi.fn((name: string) => name),
 }));
 
 describe("testing createPipelineRunDraftFromPipeline", () => {
@@ -20,6 +21,9 @@ describe("testing createPipelineRunDraftFromPipeline", () => {
       metadata: {
         name: "example-pipeline",
         namespace: "example-namespace",
+        labels: {
+          "app.edp.epam.com/pipelinetype": "build",
+        },
       },
       spec: {
         params: [
@@ -41,6 +45,10 @@ describe("testing createPipelineRunDraftFromPipeline", () => {
       metadata: {
         name: "run-example-pipeline-rand123",
         namespace: "example-namespace",
+        labels: {
+          "app.edp.epam.com/pipelinetype": "build",
+          "tekton.dev/pipeline": "example-pipeline",
+        },
       },
       spec: {
         pipelineRef: {

@@ -1,6 +1,6 @@
 import { STATUS_COLOR } from "@/k8s/constants/colors";
 import { K8sResourceStatusIcon } from "@/k8s/types";
-import { ApprovalTask, approvalTaskAction } from "@my-project/shared";
+import { ApprovalTask } from "@my-project/shared";
 import { CircleCheck, CircleSlash, CircleX, Clock, ShieldQuestion } from "lucide-react";
 
 export const getStatusIcon = (resource: ApprovalTask): K8sResourceStatusIcon => {
@@ -16,25 +16,25 @@ export const getStatusIcon = (resource: ApprovalTask): K8sResourceStatusIcon => 
   const _status = status.toLowerCase();
 
   switch (_status) {
-    case approvalTaskAction.Pending:
+    case "pending":
       return {
         component: Clock,
         color: STATUS_COLOR.IN_PROGRESS,
       };
 
-    case approvalTaskAction.Approved:
+    case "approved":
       return {
         component: CircleCheck,
         color: STATUS_COLOR.SUCCESS,
       };
 
-    case approvalTaskAction.Rejected:
+    case "rejected":
       return {
         component: CircleX,
         color: STATUS_COLOR.ERROR,
       };
 
-    case approvalTaskAction.Canceled:
+    case "canceled":
       return {
         component: CircleSlash,
         color: STATUS_COLOR.SUSPENDED,

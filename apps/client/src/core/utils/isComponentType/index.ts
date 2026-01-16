@@ -12,14 +12,13 @@ export const isComponentType = <TProps = Record<string, unknown>>(
   }
   // Check for forwardRef components or other component-like objects
   // These are objects that can be rendered as JSX but aren't valid elements
+  // They must have the $$typeof property that React uses for special components
   if (
     typeof value === "object" &&
     value !== null &&
     !React.isValidElement(value) &&
     !Array.isArray(value) &&
-    typeof value !== "string" &&
-    typeof value !== "number" &&
-    typeof value !== "boolean"
+    "$$typeof" in value
   ) {
     return true;
   }

@@ -21,6 +21,10 @@ export const systemQuickLinksEnum = z.enum([
 
 export const quickLinkTypeEnum = z.enum(["default", "system"]);
 
+// Export the enum values for use in code
+export const systemQuickLink = systemQuickLinksEnum.enum;
+export const quickLinkType = quickLinkTypeEnum.enum;
+
 const quickLinkSpecSchema = z.object({
   icon: z.string(),
   type: quickLinkTypeEnum,
