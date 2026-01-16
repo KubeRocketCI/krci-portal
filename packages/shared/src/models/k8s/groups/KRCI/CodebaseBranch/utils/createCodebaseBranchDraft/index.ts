@@ -27,9 +27,9 @@ export const createCodebaseBranchDraftObject = (input: CreateCodebaseBranchDraft
         .replaceAll("_", "-") // Replace underscores with a dash
         .replace(/[^a-z0-9-]/g, "") // Replace any character that is NOT alphanumeric or dash
         .trim() // Trim white spaces at the start and end
-        .replace(/--+/g, "-") // Replace multiple consecutive dashes with a single dash
-        .replace(/^-+/g, "") // Custom handling without regex below
-        .replace(/-+$/g, "")
+        .replace(/-{2,}/g, "-") // Replace multiple consecutive dashes with a single dash
+        .replace(/^-/, "") // Remove leading dash (only one possible after collapse)
+        .replace(/-$/, "") // Remove trailing dash (only one possible after collapse)
     : "";
 
   const codebaseBranchName = `${input.codebase}-${transformedBranchName}`;
