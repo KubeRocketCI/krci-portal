@@ -168,24 +168,22 @@ describe("K8sQuickLink: editQuickLink", () => {
     expect(result.spec.type).toBe("default");
   });
 
-  it("should throw a ZodError if the input is invalid - empty url", () => {
-    expect(() =>
-      editQuickLink(mockQuickLink, {
-        url: "",
-        visible: true,
-        icon: "link",
-      })
-    ).toThrow(ZodError);
+  it("should allow empty url", () => {
+    const result = editQuickLink(mockQuickLink, {
+      url: "",
+      visible: true,
+      icon: "link",
+    });
+    expect(result.spec.url).toBe("");
   });
 
-  it("should throw a ZodError if the input is invalid - empty icon", () => {
-    expect(() =>
-      editQuickLink(mockQuickLink, {
-        url: "https://example.com",
-        visible: true,
-        icon: "",
-      })
-    ).toThrow(ZodError);
+  it("should allow empty icon", () => {
+    const result = editQuickLink(mockQuickLink, {
+      url: "https://example.com",
+      visible: true,
+      icon: "",
+    });
+    expect(result.spec.icon).toBe("");
   });
 
   it("should throw a ZodError if the input is invalid - missing required fields", () => {

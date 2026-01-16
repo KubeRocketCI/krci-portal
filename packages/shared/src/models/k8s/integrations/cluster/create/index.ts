@@ -2,12 +2,10 @@ import z, { ZodError } from "zod";
 import { Secret, SecretDraft, secretDraftSchema } from "../../../groups/Core/index.js";
 import { SECRET_LABEL_CLUSTER_TYPE, SECRET_LABEL_SECRET_TYPE } from "../../constants.js";
 import { safeDecode, safeEncode, parseConfigJson } from "../../../../../utils/index.js";
+import { clusterType, clusterTypeEnum, ClusterType } from "../types.js";
 
-export const clusterTypeEnum = z.enum(["bearer", "irsa"]);
-
-export const clusterType = clusterTypeEnum.enum;
-
-export type ClusterType = z.infer<typeof clusterTypeEnum>;
+export { clusterType, clusterTypeEnum };
+export type { ClusterType };
 
 const createClusterSecretDraftSchema = z.discriminatedUnion("clusterType", [
   z.object({
@@ -144,7 +142,7 @@ export const getClusterName = (secret: Secret): string => {
   const config = parseConfigJson(secret.data?.config || "");
 
   if (_clusterType === clusterType.bearer) {
-    return config?.clusters[0]?.name;
+    return config?.clusters?.[0]?.name;
   }
 
   return safeDecode(secret.data?.name || "") || "";

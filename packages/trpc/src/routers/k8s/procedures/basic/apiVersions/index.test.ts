@@ -1,13 +1,24 @@
 import { createCaller } from "../../../../../routers/index.js";
 import { ApisApi } from "@kubernetes/client-node";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from "vitest";
 import { defaultK8sApiVersion } from "./index.js";
 import { createMockedContext } from "../../../../../__mocks__/context.js";
+import { K8sClient } from "../../../../../clients/k8s/index.js";
+
+// Mock K8sClient at module level
+vi.mock("../../../../../clients/k8s/index.js", () => {
+  return {
+    K8sClient: vi.fn(),
+  };
+});
 
 describe("k8sGetApiVersions", () => {
   let mockContext: ReturnType<typeof createMockedContext>;
 
   let mockClientApisApi: { getAPIVersions: ReturnType<typeof vi.fn> };
+  let mockKubeConfig: {
+    makeApiClient: Mock;
+  };
 
   beforeEach(() => {
     mockContext = createMockedContext();
@@ -17,8 +28,15 @@ describe("k8sGetApiVersions", () => {
       getAPIVersions: vi.fn(),
     };
 
-    // Configure makeApiClient to return the mock ApisApi
-    mockContext.K8sClient.KubeConfig.makeApiClient.mockReturnValue(mockClientApisApi);
+    // Create mock KubeConfig
+    mockKubeConfig = {
+      makeApiClient: vi.fn().mockReturnValue(mockClientApisApi),
+    };
+
+    // Mock K8sClient constructor to return an object with KubeConfig
+    (K8sClient as unknown as Mock).mockImplementation(() => ({
+      KubeConfig: mockKubeConfig,
+    }));
   });
 
   afterEach(() => {
@@ -46,7 +64,7 @@ describe("k8sGetApiVersions", () => {
 
     const result = await caller.k8s.apiVersions();
 
-    expect(mockContext.K8sClient.KubeConfig.makeApiClient).toHaveBeenCalledWith(ApisApi);
+    expect(mockKubeConfig.makeApiClient).toHaveBeenCalledWith(ApisApi);
     expect(mockClientApisApi.getAPIVersions).toHaveBeenCalled();
     expect(result).toEqual(defaultK8sApiVersion);
   });
@@ -72,7 +90,7 @@ describe("k8sGetApiVersions", () => {
 
     const result = await caller.k8s.apiVersions();
 
-    expect(mockContext.K8sClient.KubeConfig.makeApiClient).toHaveBeenCalled();
+    expect(mockKubeConfig.makeApiClient).toHaveBeenCalled();
     expect(mockClientApisApi.getAPIVersions).toHaveBeenCalled();
     expect(result).toEqual(defaultK8sApiVersion);
   });

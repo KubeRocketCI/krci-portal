@@ -1,5 +1,4 @@
 import { K8sResourceConfig } from "../../../common/index.js";
-import { quickLinkTypeEnum, systemQuickLinksEnum } from "./schema.js";
 
 export const k8sQuickLinkConfig = {
   apiVersion: "v2.edp.epam.com/v1",
@@ -9,7 +8,3 @@ export const k8sQuickLinkConfig = {
   singularName: "quicklink",
   pluralName: "quicklinks",
 } as const satisfies K8sResourceConfig;
-
-export const quickLinkType = quickLinkTypeEnum.enum;
-
-export const systemQuickLink = systemQuickLinksEnum.enum;

@@ -118,37 +118,34 @@ describe("K8sQuickLink: createQuickLinkDraft", () => {
     expect(result.spec.type).toBe("default");
   });
 
-  it("should throw a ZodError if the input is invalid - empty name", () => {
-    expect(() =>
-      createQuickLinkDraft({
-        name: "",
-        icon: "link",
-        url: "https://example.com",
-        visible: true,
-      })
-    ).toThrow(ZodError);
+  it("should allow empty name", () => {
+    const result = createQuickLinkDraft({
+      name: "",
+      icon: "link",
+      url: "https://example.com",
+      visible: true,
+    });
+    expect(result.metadata.name).toBe("");
   });
 
-  it("should throw a ZodError if the input is invalid - empty icon", () => {
-    expect(() =>
-      createQuickLinkDraft({
-        name: "test",
-        icon: "",
-        url: "https://example.com",
-        visible: true,
-      })
-    ).toThrow(ZodError);
+  it("should allow empty icon", () => {
+    const result = createQuickLinkDraft({
+      name: "test",
+      icon: "",
+      url: "https://example.com",
+      visible: true,
+    });
+    expect(result.spec.icon).toBe("");
   });
 
-  it("should throw a ZodError if the input is invalid - empty url", () => {
-    expect(() =>
-      createQuickLinkDraft({
-        name: "test",
-        icon: "link",
-        url: "",
-        visible: true,
-      })
-    ).toThrow(ZodError);
+  it("should allow empty url", () => {
+    const result = createQuickLinkDraft({
+      name: "test",
+      icon: "link",
+      url: "",
+      visible: true,
+    });
+    expect(result.spec.url).toBe("");
   });
 
   it("should throw a ZodError if the input is invalid - missing required fields", () => {

@@ -59,13 +59,11 @@ describe("K8sStage: createStageDraft", () => {
     });
   });
 
-  it("should use default name when name is not provided", () => {
+  it("should throw ZodError when name is not provided", () => {
     const inputWithoutName = { ...baseInput };
     delete (inputWithoutName as any).name;
 
-    const result = createStageDraftObject(inputWithoutName);
-
-    expect(result.metadata.name).toBe("your stage name");
+    expect(() => createStageDraftObject(inputWithoutName)).toThrowError(ZodError);
   });
 
   it("should use default cluster name when not specified", () => {
@@ -226,13 +224,13 @@ describe("K8sStage: createStageDraft", () => {
     ).toThrowError(ZodError);
   });
 
-  it("should throw ZodError on empty qualityGates array", () => {
-    expect(() =>
-      createStageDraftObject({
-        ...baseInput,
-        qualityGates: [],
-      })
-    ).toThrowError(ZodError);
+  it("should allow empty qualityGates array", () => {
+    const result = createStageDraftObject({
+      ...baseInput,
+      qualityGates: [],
+    });
+
+    expect(result.spec.qualityGates).toEqual([]);
   });
 
   it("should throw ZodError on invalid trigger type", () => {

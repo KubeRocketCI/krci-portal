@@ -4,12 +4,24 @@ import { defaultPermissionsToCheck } from "@my-project/shared";
 import { inferProcedureInput } from "@trpc/server";
 import { afterEach, beforeEach, describe, expect, it, Mock, vi } from "vitest";
 import { k8sGetResourcePermissions } from "./index.js";
+import { K8sClient } from "../../../../clients/k8s/index.js";
+
+// Mock K8sClient at module level
+vi.mock("../../../../clients/k8s/index.js", () => {
+  return {
+    K8sClient: vi.fn(),
+  };
+});
 
 describe("k8sGetResourcePermissions", () => {
   let mockContext: ReturnType<typeof createMockedContext>;
 
   let mockAuthApi: {
     createSelfSubjectAccessReview: Mock;
+  };
+
+  let mockKubeConfig: {
+    makeApiClient: Mock;
   };
 
   beforeEach(() => {
@@ -20,8 +32,15 @@ describe("k8sGetResourcePermissions", () => {
       createSelfSubjectAccessReview: vi.fn(),
     };
 
-    // Configure makeApiClient to return the mock AuthApi
-    mockContext.K8sClient.KubeConfig.makeApiClient.mockReturnValue(mockAuthApi);
+    // Create mock KubeConfig
+    mockKubeConfig = {
+      makeApiClient: vi.fn().mockReturnValue(mockAuthApi),
+    };
+
+    // Mock K8sClient constructor to return an object with KubeConfig
+    (K8sClient as unknown as Mock).mockImplementation(() => ({
+      KubeConfig: mockKubeConfig,
+    }));
   });
 
   afterEach(() => {

@@ -27,7 +27,7 @@ export const getStatusIcon = (resource: TaskRun): K8sResourceStatusIcon => {
         };
       }
 
-      if (status.reason === taskRunStatusReason.TaskRunCancelled) {
+      if (status.reason === taskRunStatusReason.TaskRunCancelled.toLowerCase()) {
         return {
           component: CircleX,
           color: STATUS_COLOR.SUSPENDED,

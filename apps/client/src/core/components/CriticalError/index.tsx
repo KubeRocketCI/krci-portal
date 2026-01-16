@@ -1,6 +1,7 @@
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 import { Button } from "../ui/button";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { ScrollCopyText } from "../ScrollCopyText";
 
 export interface CriticalErrorProps {
   title?: string;
@@ -62,9 +63,7 @@ export function CriticalError({
               <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100">
                 Technical Details
               </summary>
-              <pre className="mt-2 max-h-60 overflow-auto rounded-md bg-gray-100 p-4 text-xs text-gray-800 dark:bg-gray-800 dark:text-gray-200">
-                {error.stack}
-              </pre>
+              <ScrollCopyText text={error.stack} />
             </details>
           )}
 

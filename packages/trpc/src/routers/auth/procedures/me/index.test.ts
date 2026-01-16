@@ -23,7 +23,10 @@ describe("authMeProcedure", () => {
   it("should successfully return user data", async () => {
     const result = await caller.auth.me();
 
-    expect(result).toEqual(mockSession.user.data);
+    expect(result).toEqual({
+      ...mockSession.user.data,
+      issuerUrl: "https://mock-issuer.example.com",
+    });
   });
 
   it("should throw error if session is not found", async () => {
