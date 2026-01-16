@@ -10,7 +10,9 @@
     "dev": "vite",
     "build": "vite build",
     "test": "vitest",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@hookform/error-message": "^2.0.1",
@@ -72,7 +74,14 @@
     "zustand": "^5.0.4"
   },
   "devDependencies": {
+    "@storybook/addon-a11y": "^10.1.11",
+    "@storybook/addon-docs": "^10.1.11",
+    "@storybook/addon-onboarding": "^10.1.11",
+    "@storybook/react-vite": "^10.1.11",
     "@tanstack/router-devtools": "^1.114.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
+    "@testing-library/user-event": "^14.6.1",
     "@types/humanize-duration": "^3.27.4",
     "@types/js-yaml": "^4.0.9",
     "@types/lodash": "^4.17.16",
@@ -82,9 +91,11 @@
     "@vitejs/plugin-react": "^4.3.4",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.18",
+    "eslint-plugin-storybook": "^10.1.11",
     "globals": "^15.14.0",
     "jsdom": "^26.1.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
+    "storybook": "^10.1.11",
     "vite": "^6.1.0",
     "vite-plugin-svgr": "^4.3.0"
   },

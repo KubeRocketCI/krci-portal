@@ -3,7 +3,7 @@ import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 import { cn } from "@/core/utils/classname";
-import { Button } from "./button";
+import { Button } from "../button";
 
 function Accordion({ className, ...props }: React.ComponentProps<typeof AccordionPrimitive.Root>) {
   return <AccordionPrimitive.Root data-slot="accordion" className={cn("flex flex-col gap-4", className)} {...props} />;
