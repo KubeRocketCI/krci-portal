@@ -1,20 +1,22 @@
 import { Actions } from "./components/Actions";
 import { QuickLinkForm } from "./components/QuickLink";
 import { SecretForm } from "./components/Secret";
-import { useQuickLinkEditForm } from "./hooks/useQuickLinkEditForm";
+import { useQuickLinkEditForm } from "@/core/hooks/useQuickLinkEditForm";
 import { useSecretCreateForm } from "./hooks/useSecretCreateForm";
 import { useSecretEditForm } from "./hooks/useSecretEditForm";
 import { DataContextProvider } from "./providers/Data";
-import { FormNames, ManageNexusCIProps } from "./types";
+import { FormNames, ManageNexusCIProps, QuickLinkFormValues } from "./types";
 import { MultiFormContextProvider } from "@/core/providers/MultiForm/provider";
+import { QUICK_LINK_FORM_NAMES } from "./constants";
 
 export const ManageNexus = ({ quickLink, secret, mode, ownerReference, handleClosePanel }: ManageNexusCIProps) => {
   const secretCreateForm = useSecretCreateForm({ handleClosePanel });
 
   const secretEditForm = useSecretEditForm({ handleClosePanel, secret });
 
-  const quickLinkEditForm = useQuickLinkEditForm({
+  const quickLinkEditForm = useQuickLinkEditForm<QuickLinkFormValues>({
     quickLink,
+    formFieldName: QUICK_LINK_FORM_NAMES.EXTERNAL_URL,
   });
 
   const secretForm = secret ? secretEditForm : secretCreateForm;

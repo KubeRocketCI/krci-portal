@@ -1,12 +1,13 @@
 import { Actions } from "./components/Actions";
 import { QuickLinkForm } from "./components/QuickLink";
 import { SecretForm } from "./components/Secret";
-import { useQuickLinkEditForm } from "./hooks/useQuickLinkEditForm";
+import { useQuickLinkEditForm } from "@/core/hooks/useQuickLinkEditForm";
 import { useSecretCreateForm } from "./hooks/useSecretCreateForm";
 import { useSecretEditForm } from "./hooks/useSecretEditForm";
 import { DataContextProvider } from "./providers/Data";
-import { FormNames, ManageChatAssistantProps } from "./types";
+import { FormNames, ManageChatAssistantProps, QuickLinkFormValues } from "./types";
 import { MultiFormContextProvider } from "@/core/providers/MultiForm/provider";
+import { QUICK_LINK_FORM_NAMES } from "./constants";
 
 export const ManageChatAssistant = ({
   quickLink,
@@ -19,8 +20,9 @@ export const ManageChatAssistant = ({
 
   const secretEditForm = useSecretEditForm({ handleClosePanel, secret });
 
-  const quickLinkEditForm = useQuickLinkEditForm({
+  const quickLinkEditForm = useQuickLinkEditForm<QuickLinkFormValues>({
     quickLink,
+    formFieldName: QUICK_LINK_FORM_NAMES.EXTERNAL_URL,
   });
 
   const secretForm = secret ? secretEditForm : secretCreateForm;

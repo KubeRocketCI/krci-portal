@@ -6,14 +6,16 @@ import { useCodemieCreateForm } from "./hooks/useCodemieCreateForm";
 import { useCodemieEditForm } from "./hooks/useCodemieEditForm";
 import { useCodemieSecretCreateForm } from "./hooks/useCodemieSecretCreateForm";
 import { useCodemieSecretEditForm } from "./hooks/useCodemieSecretEditForm";
-import { useQuickLinkEditForm } from "./hooks/useQuickLinkEditForm";
+import { useQuickLinkEditForm } from "@/core/hooks/useQuickLinkEditForm";
 import { DataContextProvider } from "./providers/Data";
-import { FormNames, ManageCodeMieProps } from "./types";
+import { FormNames, ManageCodeMieProps, QuickLinkFormValues } from "./types";
 import { MultiFormContextProvider } from "@/core/providers/MultiForm/provider";
+import { QUICK_LINK_FORM_NAMES } from "./constants";
 
 export const ManageCodeMie = ({ quickLink, codemie, codemieSecret, handleClosePanel }: ManageCodeMieProps) => {
-  const quickLinkEditForm = useQuickLinkEditForm({
+  const quickLinkEditForm = useQuickLinkEditForm<QuickLinkFormValues>({
     quickLink,
+    formFieldName: QUICK_LINK_FORM_NAMES.EXTERNAL_URL,
   });
 
   const codemieCreateForm = useCodemieCreateForm({ handleClosePanel });
