@@ -10,8 +10,8 @@
 | Metric | Count | Status |
 |--------|-------|--------|
 | **Total Files Requiring Tests** | 280 | Tracked in coverage |
-| **Files With Tests** | 29 | ✅ 10.3% |
-| **Files Without Tests** | 251 | ⚠️ 89.6% |
+| **Files With Tests** | 31 | ✅ 11.1% |
+| **Files Without Tests** | 249 | ⚠️ 88.9% |
 
 
 ### Coverage by Category
@@ -43,53 +43,53 @@
 ### Utils with Logic in index.ts (33 files)
 These are utility functions in dedicated folders that should have tests alongside them.
 
-- [ ] `core/utils/classname/index.ts`
-- [ ] `core/utils/date-humanize/index.ts`
-- [ ] `core/utils/download/index.ts`
-- [ ] `core/utils/isComponentType/index.ts`
-- [ ] `core/utils/toElement/index.ts`
-- [ ] `k8s/api/groups/ArgoCD/Application/utils/getStatusIcon/index.ts`
-- [ ] `k8s/api/groups/ArgoCD/Application/utils/getSyncStatusIcon/index.ts`
-- [ ] `k8s/api/groups/KRCI/ApprovalTask/utils/getStatusIcon/index.ts`
-- [ ] `k8s/api/groups/KRCI/CDPipeline/utils/getStatusIcon/index.ts`
-- [ ] `k8s/api/groups/KRCI/Codebase/utils/getMappingByType/index.ts`
-- [ ] `k8s/api/groups/KRCI/Codebase/utils/getStatusIcon/index.ts`
-- [ ] `k8s/api/groups/KRCI/CodebaseBranch/utils/getStatusIcon/index.ts`
-- [ ] `k8s/api/groups/KRCI/CodebaseBranch/utils/sort/index.ts`
-- [ ] `k8s/api/groups/KRCI/Codemie/utils/getStatusIcon/index.ts`
-- [ ] `k8s/api/groups/KRCI/CodemieApplication/utils/getStatusIcon/index.ts`
-- [ ] `k8s/api/groups/KRCI/CodemieProjectSettings/utils/getStatusIcon/index.ts`
-- [ ] `k8s/api/groups/KRCI/GitServer/utils/getStatusIcon/index.ts`
-- [ ] `k8s/api/groups/KRCI/JiraServer/utils/getStatusIcon/index.ts`
-- [ ] `k8s/api/groups/KRCI/QuickLink/utils/getURLsFromList/index.ts`
-- [ ] `k8s/api/groups/KRCI/QuickLink/utils/isSystemQuickLink/index.ts`
-- [ ] `k8s/api/groups/KRCI/Stage/utils/combineStageWithApplications/index.ts`
-- [ ] `k8s/api/groups/KRCI/Stage/utils/getStatusIcon/index.ts`
-- [ ] `k8s/api/groups/Tekton/Pipeline/utils/getURLsFromList/index.ts`
-- [ ] `k8s/api/groups/Tekton/PipelineRun/utils/getStatusIcon/index.ts`
-- [ ] `k8s/api/groups/Tekton/TaskRun/utils/getStatusIcon/index.ts`
-- [ ] `k8s/api/groups/Tekton/TaskRun/utils/getStepStatusIcon/index.ts`
-- [ ] `k8s/integrations/secret/utils/getStatusIcon/index.ts`
-- [ ] `modules/platform/cdpipelines/pages/stage-details/components/Content/components/Applications/utils/checkHighlightedButtons/index.ts`
-- [ ] `packages/trpc/src/routers/k8s/utils/createCustomResourceURL/index.ts`
-- [ ] `packages/trpc/src/routers/k8s/utils/createEventQueue/index.ts`
-- [ ] `packages/trpc/src/routers/k8s/utils/createK8sWatchSubscription/index.ts`
-- [ ] `packages/trpc/src/routers/k8s/utils/createLabelSelectorString/index.ts`
-- [ ] `packages/trpc/src/routers/k8s/utils/handleK8sError/index.ts`
+- [x] `core/utils/classname/index.ts`
+- [x] `core/utils/date-humanize/index.ts`
+- [x] `core/utils/download/index.ts`
+- [x] `core/utils/isComponentType/index.ts`
+- [x] `core/utils/toElement/index.ts`
+- [x] `k8s/api/groups/ArgoCD/Application/utils/getStatusIcon/index.ts`
+- [x] `k8s/api/groups/ArgoCD/Application/utils/getSyncStatusIcon/index.ts`
+- [x] `k8s/api/groups/KRCI/ApprovalTask/utils/getStatusIcon/index.ts`
+- [x] `k8s/api/groups/KRCI/CDPipeline/utils/getStatusIcon/index.ts`
+- [x] `k8s/api/groups/KRCI/Codebase/utils/getMappingByType/index.ts`
+- [x] `k8s/api/groups/KRCI/Codebase/utils/getStatusIcon/index.ts`
+- [x] `k8s/api/groups/KRCI/CodebaseBranch/utils/getStatusIcon/index.ts`
+- [x] `k8s/api/groups/KRCI/CodebaseBranch/utils/sort/index.ts`
+- [x] `k8s/api/groups/KRCI/Codemie/utils/getStatusIcon/index.ts`
+- [x] `k8s/api/groups/KRCI/CodemieApplication/utils/getStatusIcon/index.ts`
+- [x] `k8s/api/groups/KRCI/CodemieProjectSettings/utils/getStatusIcon/index.ts`
+- [x] `k8s/api/groups/KRCI/GitServer/utils/getStatusIcon/index.ts`
+- [x] `k8s/api/groups/KRCI/JiraServer/utils/getStatusIcon/index.ts`
+- [x] `k8s/api/groups/KRCI/QuickLink/utils/getURLsFromList/index.ts`
+- [x] `k8s/api/groups/KRCI/QuickLink/utils/isSystemQuickLink/index.ts`
+- [x] `k8s/api/groups/KRCI/Stage/utils/combineStageWithApplications/index.ts`
+- [x] `k8s/api/groups/KRCI/Stage/utils/getStatusIcon/index.ts`
+- [x] `k8s/api/groups/Tekton/Pipeline/utils/getURLsFromList/index.ts`
+- [x] `k8s/api/groups/Tekton/PipelineRun/utils/getStatusIcon/index.ts`
+- [x] `k8s/api/groups/Tekton/TaskRun/utils/getStatusIcon/index.ts`
+- [x] `k8s/api/groups/Tekton/TaskRun/utils/getStepStatusIcon/index.ts`
+- [x] `k8s/integrations/secret/utils/getStatusIcon/index.ts`
+- [x] `modules/platform/cdpipelines/pages/stage-details/components/Content/components/Applications/utils/checkHighlightedButtons/index.ts`
+- [x] `packages/trpc/src/routers/k8s/utils/createCustomResourceURL/index.ts`
+- [x] `packages/trpc/src/routers/k8s/utils/createEventQueue/index.ts`
+- [x] `packages/trpc/src/routers/k8s/utils/createK8sWatchSubscription/index.ts`
+- [x] `packages/trpc/src/routers/k8s/utils/createLabelSelectorString/index.ts`
+- [x] `packages/trpc/src/routers/k8s/utils/handleK8sError/index.ts`
 
 ### Other Utility Files (11 files)
 
-- [ ] `core/components/ResourceQuotas/utils/convertToNumber.ts`
-- [ ] `core/components/ResourceQuotas/utils/parseResourceQuota.ts`
-- [ ] `core/utils/date-humanize/utils.ts`
-- [ ] `core/utils/forms/getUsedValues.ts`
-- [ ] `core/utils/forms/mapToSelectOptions.ts`
-- [ ] `k8s/api/utils/get-forbidden-error.ts`
-- [ ] `modules/platform/security/pages/sast-project-details/utils/formatters.ts`
-- [ ] `modules/platform/security/pages/sca/utils/cvss.ts`
-- [ ] `modules/platform/tekton/components/PipelineDiagram/utils/layoutUtils.ts`
-- [ ] `modules/platform/tekton/utils/celFilters.ts`
-- [ ] `modules/platform/tekton/utils/statusIcons.ts`
+- [x] `core/components/ResourceQuotas/utils/convertToNumber.ts`
+- [x] `core/components/ResourceQuotas/utils/parseResourceQuota.ts`
+- [x] `core/utils/date-humanize/utils.ts`
+- [x] `core/utils/forms/getUsedValues.ts`
+- [x] `core/utils/forms/mapToSelectOptions.ts`
+- [x] `k8s/api/utils/get-forbidden-error.ts`
+- [x] `modules/platform/security/pages/sast-project-details/utils/formatters.ts`
+- [x] `modules/platform/security/pages/sca/utils/cvss.ts`
+- [x] `modules/platform/tekton/components/PipelineDiagram/utils/layoutUtils.ts`
+- [x] `modules/platform/tekton/utils/celFilters.ts`
+- [x] `modules/platform/tekton/utils/statusIcons.ts`
 
 ---
 
@@ -205,6 +205,67 @@ React components with business logic (not simple UI components).
 **Note:** Components should primarily be tested with React Testing Library or Storybook.
 Only unit test complex component logic if it's isolated into testable functions.
 
+### ✅ UI Components (45 files) - **Storybook Stories Created (2026-01-16)**
+
+All UI components now have comprehensive Storybook stories with:
+- Multiple variant examples
+- Interactive state management (form components)
+- Proper Tailwind CSS styling
+- TypeScript error-free
+
+- [x] `core/components/ui/LoadingProgressBar.tsx` ✅ Storybook
+- [x] `core/components/ui/LoadingSpinner.tsx` ✅ Storybook
+- [x] `core/components/ui/accordion.tsx` ✅ Storybook
+- [x] `core/components/ui/alert.tsx` ✅ Storybook
+- [x] `core/components/ui/avatar.tsx` ✅ Storybook
+- [x] `core/components/ui/badge.tsx` ✅ Storybook
+- [x] `core/components/ui/breadcrumb.tsx` ✅ Storybook
+- [x] `core/components/ui/button.tsx` ✅ Storybook
+- [x] `core/components/ui/card.tsx` ✅ Storybook
+- [x] `core/components/ui/checkbox-group-with-buttons.tsx` ✅ Storybook
+- [x] `core/components/ui/checkbox.tsx` ✅ Storybook
+- [x] `core/components/ui/chip.tsx` ✅ Storybook
+- [x] `core/components/ui/collapsible.tsx` ✅ Storybook
+- [x] `core/components/ui/combobox-multiple-with-input.tsx` ✅ Storybook
+- [x] `core/components/ui/combobox-with-input.tsx` ✅ Storybook
+- [x] `core/components/ui/combobox.tsx` ✅ Storybook
+- [x] `core/components/ui/command.tsx` ✅ Storybook
+- [x] `core/components/ui/dialog.tsx` ✅ Storybook
+- [x] `core/components/ui/dropdown-menu.tsx` ✅ Storybook
+- [x] `core/components/ui/form-field-group.tsx` ✅ Storybook
+- [x] `core/components/ui/form-field.tsx` ✅ Storybook
+- [x] `core/components/ui/input-editable.tsx` ✅ Storybook
+- [x] `core/components/ui/input-password.tsx` ✅ Storybook
+- [x] `core/components/ui/input.tsx` ✅ Storybook
+- [x] `core/components/ui/label.tsx` ✅ Storybook
+- [x] `core/components/ui/popover.tsx` ✅ Storybook
+- [x] `core/components/ui/progress.tsx` ✅ Storybook
+- [x] `core/components/ui/radio-group-with-buttons.tsx` ✅ Storybook
+- [x] `core/components/ui/radio-group.tsx` ✅ Storybook
+- [x] `core/components/ui/select.tsx` ✅ Storybook
+- [x] `core/components/ui/separator.tsx` ✅ Storybook
+- [x] `core/components/ui/sheet.tsx` ✅ Storybook
+- [x] `core/components/ui/sidebar.tsx` ✅ Storybook
+- [x] `core/components/ui/skeleton.tsx` ✅ Storybook
+- [x] `core/components/ui/stepper.tsx` ✅ Storybook
+- [x] `core/components/ui/switch.tsx` ✅ Storybook
+- [x] `core/components/ui/table-pagination.tsx` ✅ Storybook
+- [x] `core/components/ui/table.tsx` ✅ Storybook
+- [x] `core/components/ui/tabs.tsx` ✅ Storybook
+- [x] `core/components/ui/textarea-password.tsx` ✅ Storybook
+- [x] `core/components/ui/textarea.tsx` ✅ Storybook
+- [x] `core/components/ui/tile-radio-group.tsx` ✅ Storybook
+- [x] `core/components/ui/title-status.tsx` ✅ Storybook
+- [x] `core/components/ui/toggle-button-group.tsx` ✅ Storybook
+- [x] `core/components/ui/tooltip.tsx` ✅ Storybook
+
+### 🔄 Other Core Components (20 files)
+
+#### Form Components - **React Testing Library Tests Created (2026-01-16)**
+- [x] `core/components/form/TextField.tsx` ✅ RTL Tests (13 tests)
+- [x] `core/components/form/SwitchField.tsx` ✅ RTL Tests (12 tests)
+
+#### Other Components
 - [ ] `App.tsx`
 - [ ] `core/auth/pages/login/components/TokenLoginDialog.tsx`
 - [ ] `core/components/app-sidebar.tsx`
@@ -213,8 +274,6 @@ Only unit test complex component logic if it's isolated into testable functions.
 - [ ] `core/components/form/NamespaceAutocomplete.tsx`
 - [ ] `core/components/form/Select.tsx`
 - [ ] `core/components/form/SelectField.tsx`
-- [ ] `core/components/form/SwitchField.tsx`
-- [ ] `core/components/form/TextField.tsx`
 - [ ] `core/components/misc/LoadingWrapper.tsx`
 - [ ] `core/components/nav-main.tsx`
 - [ ] `core/components/nav-user.tsx`
@@ -222,57 +281,11 @@ Only unit test complex component logic if it's isolated into testable functions.
 - [ ] `core/components/sidebar/SidebarMenuItem.tsx`
 - [ ] `core/components/sidebar/SidebarMenuItemWithHover.tsx`
 - [ ] `core/components/sidebar/SidebarSubGroupMenuItem.tsx`
-- [ ] `core/components/ui/LoadingProgressBar.tsx`
-- [ ] `core/components/ui/LoadingSpinner.tsx`
-- [ ] `core/components/ui/accordion.tsx`
 
-_... and 87 more components_
+_... and 45 more platform components_
 
 <details>
-<summary>View all components</summary>
-
-- [ ] `core/components/ui/alert.tsx`
-- [ ] `core/components/ui/avatar.tsx`
-- [ ] `core/components/ui/badge.tsx`
-- [ ] `core/components/ui/breadcrumb.tsx`
-- [ ] `core/components/ui/button.tsx`
-- [ ] `core/components/ui/card.tsx`
-- [ ] `core/components/ui/checkbox-group-with-buttons.tsx`
-- [ ] `core/components/ui/checkbox.tsx`
-- [ ] `core/components/ui/chip.tsx`
-- [ ] `core/components/ui/collapsible.tsx`
-- [ ] `core/components/ui/combobox-multiple-with-input.tsx`
-- [ ] `core/components/ui/combobox-with-input.tsx`
-- [ ] `core/components/ui/combobox.tsx`
-- [ ] `core/components/ui/command.tsx`
-- [ ] `core/components/ui/dialog.tsx`
-- [ ] `core/components/ui/dropdown-menu.tsx`
-- [ ] `core/components/ui/form-field-group.tsx`
-- [ ] `core/components/ui/form-field.tsx`
-- [ ] `core/components/ui/input-editable.tsx`
-- [ ] `core/components/ui/input-password.tsx`
-- [ ] `core/components/ui/input.tsx`
-- [ ] `core/components/ui/label.tsx`
-- [ ] `core/components/ui/popover.tsx`
-- [ ] `core/components/ui/progress.tsx`
-- [ ] `core/components/ui/radio-group-with-buttons.tsx`
-- [ ] `core/components/ui/radio-group.tsx`
-- [ ] `core/components/ui/select.tsx`
-- [ ] `core/components/ui/separator.tsx`
-- [ ] `core/components/ui/sheet.tsx`
-- [ ] `core/components/ui/sidebar.tsx`
-- [ ] `core/components/ui/skeleton.tsx`
-- [ ] `core/components/ui/stepper.tsx`
-- [ ] `core/components/ui/switch.tsx`
-- [ ] `core/components/ui/table-pagination.tsx`
-- [ ] `core/components/ui/table.tsx`
-- [ ] `core/components/ui/tabs.tsx`
-- [ ] `core/components/ui/textarea-password.tsx`
-- [ ] `core/components/ui/textarea.tsx`
-- [ ] `core/components/ui/tile-radio-group.tsx`
-- [ ] `core/components/ui/title-status.tsx`
-- [ ] `core/components/ui/toggle-button-group.tsx`
-- [ ] `core/components/ui/tooltip.tsx`
+<summary>View all platform components</summary>
 - [ ] `core/router/components/AppRouter.tsx`
 - [ ] `core/router/components/RouterErrorComponent.tsx`
 - [ ] `core/router/components/root.tsx`
