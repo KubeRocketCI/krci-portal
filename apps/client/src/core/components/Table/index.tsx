@@ -21,7 +21,7 @@ import {
   TableSort,
 } from "./types";
 import { createSortFunction } from "./utils";
-import { usePagination } from "./hooks/usePagination";
+import { usePagination } from "@/core/hooks/usePagination";
 import { cn } from "@/core/utils/classname";
 
 export const DataTable = <DataType,>({
@@ -95,7 +95,7 @@ export const DataTable = <DataType,>({
     handleChangePage,
   } = usePagination({
     initialPage: paginationSettings.initialPage!,
-    rowsPerPage: paginationSettings.rowsPerPage!,
+    initialRowsPerPage: paginationSettings.rowsPerPage!,
   });
 
   const [sortState, setSortState] = React.useState<SortState<DataType>>({

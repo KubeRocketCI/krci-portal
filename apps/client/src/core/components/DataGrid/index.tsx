@@ -6,7 +6,7 @@ import { ErrorContent } from "../ErrorContent";
 import { Pagination } from "./components/Pagination";
 import { useReadyData } from "./hooks/useReadyData";
 import { DataGridProps } from "./types";
-import { usePagination } from "./hooks/usePagination";
+import { usePagination } from "@/core/hooks/usePagination";
 import { KubeObjectBase } from "@my-project/shared";
 
 export const DataGrid = <DataType = KubeObjectBase,>({
@@ -29,7 +29,7 @@ export const DataGrid = <DataType = KubeObjectBase,>({
     handleChangePage,
   } = usePagination({
     initialPage,
-    rowsPerPage,
+    initialRowsPerPage: rowsPerPage,
   });
 
   const readyData = useReadyData<DataType>({
