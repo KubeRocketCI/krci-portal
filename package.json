@@ -10,7 +10,7 @@
     "format:check": "pnpm --recursive run format:check",
     "format:fix": "pnpm --recursive run format",
     "test:coverage": "vitest run",
-    "sonar:check-dev": "dotenv -e .env.development -- cross-env SONAR_TOKEN=$SONAR_TOKEN SONAR_HOST_URL=$SONAR_HOST_URL sonar-scanner -Dsonar.login=$SONAR_TOKEN -Dsonar.host.url=$SONAR_HOST_URL",
+    "sonar:check-dev": "dotenv -e .env -- sh -c 'sonar-scanner -Dsonar.host.url=\"$SONAR_HOST_URL\" -Dsonar.token=\"$SONAR_TOKEN\" -X'",
     "prepare:validate": "pnpm tsc:check && pnpm lint:check && pnpm test:coverage && pnpm format:check",
     "clean:node_modules": "find . -name 'node_modules' -type d -prune -exec rm -rf {} +",
     "deploy:clean": "rimraf deploy",
