@@ -8,7 +8,12 @@ export const checkHighlightedButtons = (values: Record<string, string | boolean>
   const imageTagsValues = valuesArray.filter(([key]) => key && key.includes(IMAGE_TAG_POSTFIX));
   const valuesOverrides = valuesArray.filter(([key]) => key && key.includes(VALUES_OVERRIDE_POSTFIX));
 
-  if (!imageTagsValues.length) {
+  // Filter out undefined/null/empty values - only check defined image tag values
+  const definedImageTagsValues = imageTagsValues.filter(
+    ([, value]) => value !== undefined && value !== null && value !== ""
+  );
+
+  if (!definedImageTagsValues.length) {
     return {
       latest: false,
       stable: false,
@@ -16,8 +21,15 @@ export const checkHighlightedButtons = (values: Record<string, string | boolean>
     };
   }
 
-  const allVersionsAreLatest = imageTagsValues.every(([, value]) => (value as string)?.includes("latest::"));
-  const allVersionsAreStable = imageTagsValues.every(([, value]) => (value as string)?.includes("stable::"));
+  // Only check defined values - all defined values must be latest/stable
+  const allVersionsAreLatest = definedImageTagsValues.every(([, value]) => {
+    const stringValue = value as string;
+    return stringValue && stringValue.includes("latest::");
+  });
+  const allVersionsAreStable = definedImageTagsValues.every(([, value]) => {
+    const stringValue = value as string;
+    return stringValue && stringValue.includes("stable::");
+  });
   const allAppsHasValuesOverride = valuesOverrides.length > 0 && valuesOverrides.every(([, value]) => value === true);
 
   return {

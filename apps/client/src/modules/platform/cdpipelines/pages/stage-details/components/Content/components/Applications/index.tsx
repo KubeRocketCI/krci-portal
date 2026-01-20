@@ -69,9 +69,9 @@ export const Applications = () => {
 
       acc[`${name}${VALUES_OVERRIDE_POSTFIX}`] = withValuesOverride;
 
-      if (deployedVersion !== "NaN") {
-        acc[`${name}${IMAGE_TAG_POSTFIX}`] = deployedVersion;
-      }
+      // Always set image tag field - use undefined if deployedVersion is "NaN" or no value exists
+      acc[`${name}${IMAGE_TAG_POSTFIX}` as keyof ApplicationsFormValues] =
+        deployedVersion !== "NaN" ? deployedVersion : (undefined as unknown as string);
 
       return acc;
     }, {});
@@ -89,6 +89,46 @@ export const Applications = () => {
 
   const form = useForm({
     defaultValues: baseDefaultValues as ApplicationsFormValues,
+    listeners: {
+      onChange: ({ formApi }) => {
+        // Get all individual switch field names from both state.values and defaultValues
+        const stateKeys = Object.keys(formApi.state.values).filter(
+          (key) => key.endsWith(VALUES_OVERRIDE_POSTFIX) && key !== ALL_VALUES_OVERRIDE_KEY
+        );
+        const defaultKeys = Object.keys(formApi.options.defaultValues as ApplicationsFormValues).filter(
+          (key) => key.endsWith(VALUES_OVERRIDE_POSTFIX) && key !== ALL_VALUES_OVERRIDE_KEY
+        );
+        const independentSwitches = Array.from(new Set([...stateKeys, ...defaultKeys]));
+
+        if (independentSwitches.length === 0) {
+          return;
+        }
+
+        // Get values for all switches (from state.values or defaultValues)
+        const switchValues = independentSwitches.map((key) => {
+          const stateValue = formApi.state.values[key as keyof ApplicationsFormValues];
+          return stateValue !== undefined
+            ? stateValue
+            : (formApi.options.defaultValues as ApplicationsFormValues)?.[key as keyof ApplicationsFormValues];
+        });
+
+        const allIndependentSwitchesAreTrue = switchValues.every((value) => value === true);
+        const calculatedGlobalValue = allIndependentSwitchesAreTrue;
+
+        const currentGlobalValue =
+          formApi.state.values[ALL_VALUES_OVERRIDE_KEY] ??
+          (formApi.options.defaultValues as ApplicationsFormValues)?.[ALL_VALUES_OVERRIDE_KEY] ??
+          false;
+
+        if (currentGlobalValue !== calculatedGlobalValue) {
+          formApi.setFieldValue(ALL_VALUES_OVERRIDE_KEY, calculatedGlobalValue, {
+            dontRunListeners: true,
+            dontValidate: true,
+            dontUpdateMeta: true,
+          });
+        }
+      },
+    },
   });
 
   const [mode, setMode] = React.useState<ApplicationsTableMode>(applicationTableMode.preview);

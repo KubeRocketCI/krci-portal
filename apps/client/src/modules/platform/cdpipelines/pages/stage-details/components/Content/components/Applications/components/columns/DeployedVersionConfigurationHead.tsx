@@ -3,6 +3,7 @@ import { Tooltip } from "@/core/components/ui/tooltip";
 import { Info } from "lucide-react";
 import { checkHighlightedButtons } from "../../utils/checkHighlightedButtons";
 import { useTypedFormContext } from "../../hooks/useTypedFormContext";
+import { useStore } from "@tanstack/react-form";
 import React from "react";
 import { IMAGE_TAG_POSTFIX } from "@/modules/platform/cdpipelines/pages/stage-details/constants";
 import {
@@ -24,7 +25,16 @@ export const DeployedVersionConfigurationHeadColumn = () => {
   const imageStreamsWatch = useCodebaseImageStreamsWatch();
 
   const form = useTypedFormContext();
-  const values = form.state.values;
+
+  // Subscribe to form state changes using useStore to ensure re-renders when values change
+  const stateValues = useStore(form.store, (state) => state.values);
+  const defaultValues = form.options.defaultValues || {};
+
+  // Merge state.values and defaultValues to handle pagination (fields not yet rendered)
+  const values = React.useMemo(() => {
+    return { ...defaultValues, ...stateValues };
+  }, [stateValues, defaultValues]);
+
   const buttonsHighlighted = checkHighlightedButtons(values);
 
   const isLoading =
@@ -96,13 +106,15 @@ export const DeployedVersionConfigurationHeadColumn = () => {
 
     const inputDockerStreamsSet = createDockerStreamSet(cdPipelineWatch.data.spec.inputDockerStreams);
 
-    for (const appCodebase of pipelineAppCodebasesWatch.data) {
-      const appName = appCodebase.metadata.name;
-      const selectFieldName = `${appName}${IMAGE_TAG_POSTFIX}` as const;
-      const defaultValue = form.options.defaultValues?.[selectFieldName];
-      if (defaultValue) {
-        form.setFieldValue(selectFieldName, defaultValue);
-      }
+    // Get all image tag field names from both state.values and defaultValues
+    const stateKeys = Object.keys(form.state.values).filter((key) => key.includes(IMAGE_TAG_POSTFIX));
+    const defaultKeys = Object.keys(form.options.defaultValues || {}).filter((key) => key.includes(IMAGE_TAG_POSTFIX));
+    const allImageTagFields = Array.from(new Set([...stateKeys, ...defaultKeys]));
+
+    // Process all image tag fields to set their latest values
+    for (const fieldName of allImageTagFields) {
+      // Extract app name from field name (remove IMAGE_TAG_POSTFIX)
+      const appName = fieldName.replace(IMAGE_TAG_POSTFIX, "");
 
       const latestImageStream = getLatestImageStream(
         imageStreamsWatch.data.array,
@@ -121,13 +133,18 @@ export const DeployedVersionConfigurationHeadColumn = () => {
       const imageStreamTag = latestImageStream.spec.tags.at(-1)?.name;
       if (!imageStreamTag) continue;
 
-      form.setFieldValue(selectFieldName, `latest::${imageStreamTag}`);
+      const newValue = `latest::${imageStreamTag}`;
+
+      // Set field value with dontRunListeners to prevent form-level onChange conflicts
+      form.setFieldValue(fieldName as keyof typeof form.state.values, newValue, {
+        dontRunListeners: true,
+        dontValidate: true,
+      });
     }
   }, [
     isLoading,
     cdPipelineWatch.data,
     stageWatch.data,
-    pipelineAppCodebasesWatch.data,
     imageStreamsWatch.data.array,
     stageListWatch.data.array,
     params.cdPipeline,
@@ -141,13 +158,15 @@ export const DeployedVersionConfigurationHeadColumn = () => {
       return;
     }
 
-    for (const appCodebase of pipelineAppCodebasesWatch.data) {
-      const appName = appCodebase.metadata.name;
-      const selectFieldName = `${appName}${IMAGE_TAG_POSTFIX}` as const;
-      const defaultValue = form.options.defaultValues?.[selectFieldName];
-      if (defaultValue) {
-        form.setFieldValue(selectFieldName, defaultValue);
-      }
+    // Get all image tag field names from both state.values and defaultValues
+    const stateKeys = Object.keys(form.state.values).filter((key) => key.includes(IMAGE_TAG_POSTFIX));
+    const defaultKeys = Object.keys(form.options.defaultValues || {}).filter((key) => key.includes(IMAGE_TAG_POSTFIX));
+    const allImageTagFields = Array.from(new Set([...stateKeys, ...defaultKeys]));
+
+    // Process all image tag fields to set their stable values
+    for (const fieldName of allImageTagFields) {
+      // Extract app name from field name (remove IMAGE_TAG_POSTFIX)
+      const appName = fieldName.replace(IMAGE_TAG_POSTFIX, "");
 
       const verifiedImageStream = getVerifiedImageStream(
         imageStreamsWatch.data.array,
@@ -156,19 +175,34 @@ export const DeployedVersionConfigurationHeadColumn = () => {
         appName
       );
 
+      // If no stable version available, set to undefined
       if (!verifiedImageStream?.spec?.tags?.length) {
+        form.setFieldValue(fieldName as keyof typeof form.state.values, undefined as unknown as string, {
+          dontRunListeners: true,
+          dontValidate: true,
+        });
         continue;
       }
 
       const imageStreamTag = verifiedImageStream.spec.tags.at(-1)?.name;
-      if (!imageStreamTag) continue;
+      if (!imageStreamTag) {
+        // If no tag name, set to undefined
+        form.setFieldValue(fieldName as keyof typeof form.state.values, undefined as unknown as string, {
+          dontRunListeners: true,
+          dontValidate: true,
+        });
+        continue;
+      }
 
-      form.setFieldValue(selectFieldName, `stable::${imageStreamTag}`);
+      // Set field value with dontRunListeners to prevent form-level onChange conflicts
+      form.setFieldValue(fieldName as keyof typeof form.state.values, `stable::${imageStreamTag}`, {
+        dontRunListeners: true,
+        dontValidate: true,
+      });
     }
   }, [
     isLoading,
     stageWatch.data,
-    pipelineAppCodebasesWatch.data,
     imageStreamsWatch.data.array,
     params.cdPipeline,
     params.stage,

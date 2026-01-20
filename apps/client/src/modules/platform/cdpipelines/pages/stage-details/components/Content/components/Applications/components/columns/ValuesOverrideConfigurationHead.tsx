@@ -1,16 +1,15 @@
 import { Switch } from "@/core/components/ui/switch";
 import {
-  VALUES_OVERRIDE_POSTFIX,
   ALL_VALUES_OVERRIDE_KEY,
+  VALUES_OVERRIDE_POSTFIX,
 } from "@/modules/platform/cdpipelines/pages/stage-details/constants";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { Info } from "lucide-react";
 import React from "react";
 import { useTypedFormContext } from "../../hooks/useTypedFormContext";
-import { usePipelineAppCodebasesWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
+import { ApplicationsFormValues } from "../../types";
 
 export const ValuesOverrideConfigurationHeadColumn = () => {
-  const pipelineAppCodebasesWatch = usePipelineAppCodebasesWatch();
   const form = useTypedFormContext();
   const fieldId = React.useId();
 
@@ -20,16 +19,35 @@ export const ValuesOverrideConfigurationHeadColumn = () => {
         <div>
           <form.Field name={ALL_VALUES_OVERRIDE_KEY}>
             {(field) => {
-              const handleChange = (checked: boolean) => {
-                field.handleChange(checked);
+              const handleSwitchChange = (checked: boolean) => {
+                // First, manually set the global switch value with dontRunListeners to prevent form-level onChange
+                form.setFieldValue(ALL_VALUES_OVERRIDE_KEY, checked, {
+                  dontRunListeners: true,
+                  dontValidate: true,
+                  dontUpdateMeta: true,
+                });
 
-                for (const appCodebase of pipelineAppCodebasesWatch.data) {
-                  const fieldName = `${appCodebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}` as const;
-                  form.setFieldValue(fieldName, checked);
+                // Get all individual switch field names from both state.values and defaultValues
+                const stateKeys = Object.keys(form.state.values).filter(
+                  (key) => key.endsWith(VALUES_OVERRIDE_POSTFIX) && key !== ALL_VALUES_OVERRIDE_KEY
+                );
+                const defaultKeys = Object.keys(form.options.defaultValues as ApplicationsFormValues).filter(
+                  (key) => key.endsWith(VALUES_OVERRIDE_POSTFIX) && key !== ALL_VALUES_OVERRIDE_KEY
+                );
+                const independentSwitches = Array.from(new Set([...stateKeys, ...defaultKeys]));
+
+                // Set all individual switches to match global switch
+                // Use dontRunListeners to prevent form-level onChange from firing
+                for (const key of independentSwitches) {
+                  form.setFieldValue(key as keyof ApplicationsFormValues, checked, {
+                    dontRunListeners: true,
+                    dontValidate: true,
+                    dontUpdateMeta: true,
+                  });
                 }
               };
 
-              return <Switch checked={!!field.state.value} onCheckedChange={handleChange} id={fieldId} />;
+              return <Switch checked={!!field.state.value} onCheckedChange={handleSwitchChange} id={fieldId} />;
             }}
           </form.Field>
         </div>

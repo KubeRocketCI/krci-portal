@@ -5,6 +5,8 @@ import React from "react";
 import { useTypedFormContext } from "../../hooks/useTypedFormContext";
 import { createImageStreamTags } from "../../utils/createImageStreamTags";
 import { StageAppCodebaseCombinedData } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
+import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
+import { Tooltip } from "@/core/components/ui/tooltip";
 
 export const DeployedVersionConfigurationColumn = ({
   stageAppCodebasesCombinedData,
@@ -33,6 +35,9 @@ export const DeployedVersionConfigurationColumn = ({
       ? "Select image tag"
       : "No image tags available";
 
+  const hasImageTags = imageTagsLength > 0;
+  const helperText = hasImageTags ? "" : "Run at least one build pipeline to produce the necessary artifacts.";
+
   return (
     <form.Field name={fieldName}>
       {(field) => {
@@ -55,17 +60,21 @@ export const DeployedVersionConfigurationColumn = ({
               }}
             />
             <div className="grow">
-              <SelectField
-                field={field}
-                label={label}
-                options={imageStreamTagsOptions}
-                disabled={!imageStreamTagsOptions.length}
-                helperText={
-                  imageStreamTagsOptions.length
-                    ? ""
-                    : "Run at least one build pipeline to produce the necessary artifacts."
-                }
-              />
+              <ConditionalWrapper
+                condition={!hasImageTags}
+                wrapper={(children) => (
+                  <Tooltip title={helperText}>
+                    <div>{children}</div>
+                  </Tooltip>
+                )}
+              >
+                <SelectField
+                  field={field}
+                  placeholder={label}
+                  options={imageStreamTagsOptions}
+                  disabled={!imageStreamTagsOptions.length}
+                />
+              </ConditionalWrapper>
             </div>
           </div>
         );
