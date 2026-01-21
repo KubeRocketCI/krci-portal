@@ -1,6 +1,5 @@
 import React from "react";
 import { Details } from "../components/Details";
-import { Overview } from "../components/Overview";
 import { ViewPipelineRun } from "../components/ViewPipelineRun";
 import { routePipelineRunDetails, RouteSearchTab, routeSearchTabSchema, PATH_PIPELINERUN_DETAILS_FULL } from "../route";
 import { Tab } from "@/core/providers/Tabs/components/Tabs/types";
@@ -24,16 +23,6 @@ export const useTabs = (): Tab[] => {
 
   return React.useMemo(
     () => [
-      {
-        id: routeSearchTabSchema.enum.overview,
-        label: "Overview",
-        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.overview),
-        component: (
-          <div className="pt-6">
-            <Overview />
-          </div>
-        ),
-      },
       {
         id: routeSearchTabSchema.enum.details,
         label: "Details",

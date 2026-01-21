@@ -69,8 +69,8 @@ export const TaskRunStepWrapper = ({ pipelineRunTaskData, stepName }: TaskRunSte
     <Card className="flex h-full flex-col">
       {/* Step header */}
       <div className="border-b px-6 py-4">
-        <div className="mb-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="mb-3 flex items-start justify-between">
+          <div className="flex gap-3">
             <StatusIcon
               Icon={stepStatusIcon.component}
               color={stepStatusIcon.color}

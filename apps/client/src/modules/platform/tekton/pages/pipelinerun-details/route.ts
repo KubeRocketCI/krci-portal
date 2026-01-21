@@ -6,7 +6,7 @@ export const PATH_PIPELINERUN_DETAILS = "pipelineruns/$namespace/$name" as const
 export const PATH_PIPELINERUN_DETAILS_FULL = "/c/$clusterName/cicd/pipelineruns/$namespace/$name" as const;
 export const ROUTE_ID_PIPELINERUN_DETAILS = "/_layout/c/$clusterName/cicd/pipelineruns/$namespace/$name" as const;
 
-export const routeSearchTabSchema = z.enum(["overview", "details", "yaml", "results", "diagram"]);
+export const routeSearchTabSchema = z.enum(["details", "yaml", "results", "diagram"]);
 export const routeSearchTabName = routeSearchTabSchema.enum;
 
 export type RouteSearchTab = z.infer<typeof routeSearchTabSchema>;
@@ -30,7 +30,7 @@ export const routePipelineRunDetails = createRoute({
       .parse(search);
 
     return {
-      tab: parsed.tab ?? "overview",
+      tab: parsed.tab ?? routeSearchTabName.details,
       taskRun: parsed.taskRun,
       step: parsed.step,
     };

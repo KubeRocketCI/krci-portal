@@ -46,19 +46,22 @@ export interface TooltipProps {
   children: React.ReactElement;
   placement?: "top" | "right" | "bottom" | "left";
   className?: string;
+  delayDuration?: number;
 }
 
 export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
-  ({ title, children, placement = "top", className }) => {
+  ({ title, children, placement = "top", className, delayDuration = 0 }) => {
     const side = placement;
 
     return (
-      <TooltipRoot>
-        <TooltipTrigger asChild>{children}</TooltipTrigger>
-        <TooltipContent side={side} sideOffset={5} className={className}>
-          {typeof title === "string" ? <p>{title}</p> : title}
-        </TooltipContent>
-      </TooltipRoot>
+      <TooltipProvider delayDuration={delayDuration}>
+        <TooltipPrimitive.Root data-slot="tooltip">
+          <TooltipTrigger asChild>{children}</TooltipTrigger>
+          <TooltipContent side={side} sideOffset={5} className={className}>
+            {typeof title === "string" ? <p>{title}</p> : title}
+          </TooltipContent>
+        </TooltipPrimitive.Root>
+      </TooltipProvider>
     );
   }
 );

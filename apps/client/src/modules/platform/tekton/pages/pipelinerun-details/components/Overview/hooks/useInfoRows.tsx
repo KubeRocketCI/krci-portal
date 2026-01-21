@@ -3,8 +3,9 @@ import React from "react";
 import { usePipelineRunWatchWithPageParams } from "../../../hooks/data";
 import { humanize } from "@/core/utils/date-humanize";
 import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
-import { getPipelineRunStatus } from "@my-project/shared";
+import { getPipelineRunStatus, tektonResultAnnotations, getPipelineRunAnnotation } from "@my-project/shared";
 import { StatusIcon } from "@/core/components/StatusIcon";
+import { AuthorAvatar } from "@/core/components/AuthorAvatar";
 
 export interface GridItem {
   label: string;
@@ -17,7 +18,7 @@ export const useInfoRows = (): GridItem[] => {
   const pipelineRun = pipelineRunWatch.query.data;
 
   return React.useMemo(() => {
-    if (pipelineRunWatch.isLoading) {
+    if (pipelineRunWatch.isLoading || !pipelineRun) {
       return [];
     }
 
@@ -60,6 +61,12 @@ export const useInfoRows = (): GridItem[] => {
       }
     );
 
+    // Get git info from annotations
+    const gitChangeNumber = getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitChangeNumber);
+    const gitChangeUrl = getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitChangeUrl);
+    const gitAuthor = getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitAuthor);
+    const gitAvatar = getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitAvatar);
+
     return [
       {
         label: "Status",
@@ -87,6 +94,33 @@ export const useInfoRows = (): GridItem[] => {
         label: "Last updated",
         content: <span className="text-foreground text-sm">{updatedLast}</span>,
       },
+      ...(gitAuthor
+        ? [
+            {
+              label: "Author",
+              content: <AuthorAvatar author={gitAuthor} avatarUrl={gitAvatar} size="md" />,
+            },
+          ]
+        : []),
+      ...(gitChangeNumber
+        ? [
+            {
+              label: "Pull Request",
+              content: gitChangeUrl ? (
+                <a
+                  href={gitChangeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary text-sm hover:underline"
+                >
+                  #{gitChangeNumber}
+                </a>
+              ) : (
+                <span className="text-foreground text-sm">#{gitChangeNumber}</span>
+              ),
+            },
+          ]
+        : []),
       {
         label: "Message",
         content: <span className="text-foreground text-sm">{pipelineRunStatus.message}</span>,

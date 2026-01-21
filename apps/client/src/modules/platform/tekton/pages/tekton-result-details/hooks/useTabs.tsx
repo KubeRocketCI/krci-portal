@@ -1,5 +1,4 @@
 import React from "react";
-import { Overview } from "../components/Overview";
 import { Logs } from "../components/Logs/index";
 import { ViewPipelineRun } from "../components/ViewPipelineRun";
 import {
@@ -27,16 +26,6 @@ export const useTabs = (): Tab[] => {
 
   return React.useMemo(
     () => [
-      {
-        id: routeSearchTabSchema.enum.overview,
-        label: "Overview",
-        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.overview),
-        component: (
-          <div className="h-full pt-6">
-            <Overview />
-          </div>
-        ),
-      },
       {
         id: routeSearchTabSchema.enum.logs,
         label: "Logs",

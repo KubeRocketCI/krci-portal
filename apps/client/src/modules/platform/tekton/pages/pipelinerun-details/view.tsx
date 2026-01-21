@@ -7,19 +7,36 @@ import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { humanize } from "@/core/utils/date-humanize";
 import { useCodebaseBranchWatchItem } from "@/k8s/api/groups/KRCI/CodebaseBranch";
 import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
-import { getPipelineRunStatus, pipelineRunLabels, tektonResultAnnotations } from "@my-project/shared";
-import { Activity, Calendar, Clock, GitBranch, GitPullRequest, Timer } from "lucide-react";
+import {
+  getPipelineRunStatus,
+  pipelineRunLabels,
+  tektonResultAnnotations,
+  getPipelineRunAnnotation,
+} from "@my-project/shared";
+import { Activity, Calendar, Clock, GitBranch, GitPullRequest, Timer, User, Code } from "lucide-react";
 import React from "react";
 import { PipelineRunActionsMenu } from "../../components/PipelineRunActionsMenu";
 import { PATH_PIPELINERUNS_FULL } from "../pipelinerun-list/route";
 import { usePipelineRunWatchWithPageParams } from "./hooks/data";
 import { useTabs } from "./hooks/useTabs";
 import { routePipelineRunDetails } from "./route";
+import { Link } from "@tanstack/react-router";
+import { PATH_PIPELINE_DETAILS_FULL } from "../pipeline-details/route";
+import { PATH_COMPONENT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
+import { AuthorAvatar } from "@/core/components/AuthorAvatar";
+import { useClusterStore } from "@/k8s/store";
+import { useShallow } from "zustand/react/shallow";
 
 const HeaderMetadata = () => {
   const params = routePipelineRunDetails.useParams();
   const pipelineRunWatch = usePipelineRunWatchWithPageParams();
   const pipelineRun = pipelineRunWatch.query.data;
+  const { namespace: defaultNamespace, clusterName } = useClusterStore(
+    useShallow((state) => ({
+      namespace: state.defaultNamespace,
+      clusterName: state.clusterName,
+    }))
+  );
 
   const codebaseBranchMetadataName = pipelineRun?.metadata?.labels?.[pipelineRunLabels.codebaseBranch];
 
@@ -38,8 +55,14 @@ const HeaderMetadata = () => {
   const pipelineRunStatus = getPipelineRunStatus(pipelineRun);
   const pipelineRunStatusIcon = getPipelineRunStatusIcon(pipelineRun);
 
-  const codebaseBranchName = codebaseBranchWatch.query.data?.spec?.branchName;
-  const codebase = pipelineRun.metadata?.labels?.[pipelineRunLabels.codebase];
+  // Get codebase from annotations first, then fallback to labels
+  const codebaseFromAnnotation = getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.codebase);
+  const codebase = codebaseFromAnnotation || pipelineRun.metadata?.labels?.[pipelineRunLabels.codebase];
+
+  // Get branch name from annotations first, then fallback to codebaseBranch spec
+  const gitBranch = getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitBranch);
+  const branchName = gitBranch || codebaseBranchWatch.query.data?.spec?.branchName;
+
   const pipelineName = pipelineRun.metadata?.labels?.[pipelineRunLabels.pipeline];
 
   const startedAt = pipelineRunStatus.startTime
@@ -80,7 +103,7 @@ const HeaderMetadata = () => {
             color={pipelineRunStatusIcon.color}
             width={14}
           />
-          <span className="text-foreground text-sm font-medium">{pipelineRunStatus.reason}</span>
+          <span className="text-foreground text-sm">{pipelineRunStatus.reason}</span>
         </div>
       </div>
 
@@ -88,17 +111,43 @@ const HeaderMetadata = () => {
         <div className="flex items-center gap-2">
           <Activity className="text-muted-foreground size-4" />
           <span className="text-muted-foreground text-sm">Pipeline:</span>
-          <span className="text-foreground text-sm font-medium">{pipelineName}</span>
+          <Link
+            to={PATH_PIPELINE_DETAILS_FULL}
+            params={{
+              clusterName,
+              namespace: pipelineRun.metadata.namespace || defaultNamespace,
+              name: pipelineName,
+            }}
+            className="text-sm font-medium hover:underline"
+          >
+            {pipelineName}
+          </Link>
         </div>
       )}
 
-      {(codebase || codebaseBranchName) && (
+      {codebase && (
+        <div className="flex items-center gap-2">
+          <Code className="text-muted-foreground size-4" />
+          <span className="text-muted-foreground text-sm">Codebase:</span>
+          <Link
+            to={PATH_COMPONENT_DETAILS_FULL}
+            params={{
+              clusterName,
+              namespace: pipelineRun.metadata.namespace || defaultNamespace,
+              name: codebase,
+            }}
+            className="text-sm font-medium hover:underline"
+          >
+            {codebase}
+          </Link>
+        </div>
+      )}
+
+      {branchName && (
         <div className="flex items-center gap-2">
           <GitBranch className="text-muted-foreground size-4" />
           <span className="text-muted-foreground text-sm">Branch:</span>
-          <span className="text-foreground text-sm font-medium">
-            {codebase && codebaseBranchName ? `${codebase}/${codebaseBranchName}` : codebaseBranchName || codebase}
-          </span>
+          <span className="text-foreground text-sm">{branchName}</span>
         </div>
       )}
 
@@ -124,8 +173,25 @@ const HeaderMetadata = () => {
                 #{changeNumber}
               </a>
             ) : (
-              <span className="text-foreground text-sm font-medium">#{changeNumber}</span>
+              <span className="text-foreground text-sm">#{changeNumber}</span>
             )}
+          </div>
+        );
+      })()}
+
+      {(() => {
+        const gitAuthor = getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitAuthor);
+        const gitAvatar = getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitAvatar);
+
+        if (!gitAuthor) {
+          return null;
+        }
+
+        return (
+          <div className="flex items-center gap-2">
+            <User className="text-muted-foreground size-4" />
+            <span className="text-muted-foreground text-sm">Author:</span>
+            <AuthorAvatar author={gitAuthor} avatarUrl={gitAvatar} size="sm" />
           </div>
         );
       })()}
@@ -134,7 +200,7 @@ const HeaderMetadata = () => {
         <div className="flex items-center gap-2">
           <Calendar className="text-muted-foreground size-4" />
           <span className="text-muted-foreground text-sm">Started:</span>
-          <span className="text-foreground text-sm font-medium">{startedAt}</span>
+          <span className="text-foreground text-sm">{startedAt}</span>
         </div>
       )}
 
@@ -142,7 +208,7 @@ const HeaderMetadata = () => {
         <div className="flex items-center gap-2">
           <Timer className="text-muted-foreground size-4" />
           <span className="text-muted-foreground text-sm">Duration:</span>
-          <span className="text-foreground text-sm font-medium">{activeDuration}</span>
+          <span className="text-foreground text-sm">{activeDuration}</span>
         </div>
       )}
     </div>
