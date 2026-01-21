@@ -55,6 +55,7 @@ export const FormActions = () => {
         pipelines: {
           build: formValues.buildPipeline,
           review: formValues.reviewPipeline,
+          ...(formValues.securityPipeline && { security: formValues.securityPipeline }),
         },
         version: formValues.version,
       });

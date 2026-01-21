@@ -4,7 +4,7 @@ import { PipelineRun } from "../../types.js";
 import { pipelineRunLabels } from "../../labels.js";
 import { pipelineType } from "../../../Pipeline/constants.js";
 
-export const createBuildPipelineRunDraft = ({
+export function createSecurityPipelineRunDraft({
   codebase,
   codebaseBranch,
   pipelineRunTemplate,
@@ -14,10 +14,10 @@ export const createBuildPipelineRunDraft = ({
   codebaseBranch: CodebaseBranch;
   pipelineRunTemplate: PipelineRun;
   gitServer: GitServer;
-}): PipelineRun => {
+}): PipelineRun {
   const {
     metadata: { name: codebaseName },
-    spec: { gitUrlPath: codebaseGitUrlPath, buildTool: codebaseBuildTool, gitServer: codebaseGitServer },
+    spec: { gitUrlPath: codebaseGitUrlPath, gitServer: codebaseGitServer },
   } = codebase;
 
   const {
@@ -31,7 +31,7 @@ export const createBuildPipelineRunDraft = ({
 
   const base = structuredClone(pipelineRunTemplate);
 
-  const namePrefix = `build-`;
+  const namePrefix = `security-scan-`;
   const namePostfix = `-${createRandomString(4)}`;
 
   const truncatedName = truncateName(codebaseBranchMetadataName, namePrefix.length + namePostfix.length);
@@ -45,21 +45,11 @@ export const createBuildPipelineRunDraft = ({
   base.metadata.labels = base.metadata.labels || {};
   base.metadata.labels[pipelineRunLabels.codebase] = codebaseName;
   base.metadata.labels[pipelineRunLabels.codebaseBranch] = codebaseBranchMetadataName;
-  base.metadata.labels[pipelineRunLabels.pipelineType] = pipelineType.build;
+  base.metadata.labels[pipelineRunLabels.pipelineType] = pipelineType.security;
 
   if (base.spec.pipelineRef) {
-    base.spec.pipelineRef.name = codebaseBranch.spec?.pipelines?.build;
+    base.spec.pipelineRef.name = codebaseBranch.spec?.pipelines?.security;
   }
-
-  base.spec.workspaces = [
-    ...(base.spec.workspaces || []),
-    {
-      name: "settings",
-      configMap: {
-        name: `custom-${codebaseBuildTool}-settings`,
-      },
-    } as any,
-  ];
 
   const gitUrlPathWithoutSlashAtStart = stripLeadingSlash(codebaseGitUrlPath);
 
@@ -77,37 +67,10 @@ export const createBuildPipelineRunDraft = ({
       case "CODEBASE_NAME":
         param.value = codebaseName;
         break;
-      case "CODEBASEBRANCH_NAME":
-        param.value = codebaseBranchMetadataName;
-        break;
-      case "changeNumber":
-        param.value = "1";
-        break;
-      case "patchsetNumber":
-        param.value = "1";
-        break;
-      case "TICKET_NAME_PATTERN":
-        param.value = codebase.spec.ticketNamePattern ?? "";
-        break;
-      case "COMMIT_MESSAGE_PATTERN":
-        param.value = codebase.spec.commitMessagePattern ?? "";
-        break;
-      case "JIRA_ISSUE_METADATA_PAYLOAD":
-        param.value = codebase.spec.jiraIssueMetadataPayload ?? "";
-        break;
-      case "COMMIT_MESSAGE":
-        param.value = "";
-        break;
-      case "JIRA_SERVER":
-        param.value = codebase.spec.jiraServer ?? "";
-        break;
-      case "gitfullrepositoryname":
-        param.value = gitUrlPathWithoutSlashAtStart;
-        break;
       default:
         break;
     }
   }
 
   return base;
-};
+}

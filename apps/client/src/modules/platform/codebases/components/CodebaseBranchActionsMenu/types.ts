@@ -10,6 +10,7 @@ export interface CodebaseBranchActionsProps {
     pipelines: {
       review: string;
       build: string;
+      security: string;
     };
   };
   backRoute?: string;

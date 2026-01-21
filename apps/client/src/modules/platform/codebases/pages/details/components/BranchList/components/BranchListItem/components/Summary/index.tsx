@@ -18,10 +18,10 @@ import {
 import { ExternalLink } from "lucide-react";
 import React from "react";
 import { Actions } from "../Actions";
-import { BuildGroup } from "../BuildGroup";
+import { PipelineActionsGroup } from "../PipelineActionsGroup";
 import { SummaryProps } from "./types";
 
-export const Summary = ({ codebaseBranch, latestBuildPipelineRun }: SummaryProps) => {
+export function Summary({ codebaseBranch, latestBuildPipelineRun, latestSecurityPipelineRun }: SummaryProps) {
   const codebaseWatchQuery = useCodebaseWatch();
   const codebase = codebaseWatchQuery.query.data;
 
@@ -153,7 +153,11 @@ export const Summary = ({ codebaseBranch, latestBuildPipelineRun }: SummaryProps
               />
             </div>
             <div>
-              <BuildGroup codebaseBranch={codebaseBranch} latestBuildPipelineRun={latestBuildPipelineRun} />
+              <PipelineActionsGroup
+                codebaseBranch={codebaseBranch}
+                latestBuildPipelineRun={latestBuildPipelineRun}
+                latestSecurityPipelineRun={latestSecurityPipelineRun}
+              />
             </div>
 
             <div>
@@ -166,4 +170,4 @@ export const Summary = ({ codebaseBranch, latestBuildPipelineRun }: SummaryProps
       </div>
     </>
   );
-};
+}

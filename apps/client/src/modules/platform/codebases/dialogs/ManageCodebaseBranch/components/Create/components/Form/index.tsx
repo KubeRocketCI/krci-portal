@@ -12,6 +12,7 @@ import {
   ReleaseBranch,
   ReleaseBranchName,
   ReviewPipeline,
+  SecurityPipeline,
 } from "../../../fields";
 
 export const Form = () => {
@@ -77,6 +78,9 @@ export const Form = () => {
         </div>
         <div>
           <BuildPipeline />
+        </div>
+        <div>
+          <SecurityPipeline />
         </div>
       </div>
     </>

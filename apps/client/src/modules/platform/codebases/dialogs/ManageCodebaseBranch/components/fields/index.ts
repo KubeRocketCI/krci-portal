@@ -6,3 +6,4 @@ export * from "./ReleaseBranch";
 export * from "./ReleaseBranchName";
 export * from "./ReviewPipeline";
 export * from "./BuildPipeline";
+export * from "./SecurityPipeline";

@@ -10,6 +10,7 @@ export const NAMES = {
   CODEBASE_NAME_LABEL: "codebaseNameLabel",
   BUILD_PIPELINE: "buildPipeline",
   REVIEW_PIPELINE: "reviewPipeline",
+  SECURITY_PIPELINE: "securityPipeline",
 
   // NON RELEASE RELATED FIELDS
   BRANCH_NAME: "branchName",
@@ -61,6 +62,10 @@ export const CODEBASE_BRANCH_FORM_NAMES = {
   [NAMES.REVIEW_PIPELINE]: {
     name: NAMES.REVIEW_PIPELINE,
     path: ["spec", "pipelines", "review"],
+  },
+  [NAMES.SECURITY_PIPELINE]: {
+    name: NAMES.SECURITY_PIPELINE,
+    path: ["spec", "pipelines", "security"],
   },
   [NAMES.CODEBASE_NAME_LABEL]: {
     name: NAMES.CODEBASE_NAME_LABEL,

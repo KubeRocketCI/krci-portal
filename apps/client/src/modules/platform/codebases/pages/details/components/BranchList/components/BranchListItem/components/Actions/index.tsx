@@ -48,6 +48,7 @@ export const Actions = ({ codebaseBranch }: ActionsProps) => {
             pipelines: {
               review: pipelineNames?.reviewPipelineName || "",
               build: pipelineNames?.buildPipelineName || "",
+              security: pipelineNames?.securityPipelineName || "",
             },
           }}
         />

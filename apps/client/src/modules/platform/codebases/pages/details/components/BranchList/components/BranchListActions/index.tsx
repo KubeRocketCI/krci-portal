@@ -40,6 +40,7 @@ export const BranchListActions = () => {
             pipelines: {
               review: pipelineNames?.reviewPipelineName || "",
               build: pipelineNames?.buildPipelineName || "",
+              security: pipelineNames?.securityPipelineName || "",
             },
           });
         },
