@@ -59,8 +59,8 @@ export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
     <Card className="flex h-full flex-col">
       {/* Task header */}
       <div className="border-b px-6 py-4">
-        <div className="mb-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="mb-3 flex items-start justify-between">
+          <div className="flex gap-3">
             <StatusIcon
               Icon={taskRunStatusIcon.component}
               color={taskRunStatusIcon.color}
@@ -68,7 +68,7 @@ export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
               width={20}
             />
             <div>
-              <h3 className="text-foreground text-lg font-medium">Task: {taskRunName}</h3>
+              <h3 className="text-foreground text-lg font-medium">{taskRunName}</h3>
               {taskDescription && <p className="text-muted-foreground mt-0.5 text-sm">{taskDescription}</p>}
             </div>
           </div>

@@ -215,7 +215,7 @@ export const useColumns = ({
             }
 
             return (
-              <Tooltip title={<PipelineRunResults pipelineRun={data} />}>
+              <Tooltip title={<PipelineRunResults pipelineRun={data} />} delayDuration={500}>
                 <div className="flex w-full items-center gap-0.5">
                   <span className="border-muted min-w-0 flex-1 overflow-hidden border-b border-dashed text-sm text-ellipsis whitespace-nowrap">
                     {vcsTag}
@@ -383,7 +383,7 @@ export const useColumns = ({
             );
 
             return (
-              <Tooltip title={tooltipContent}>
+              <Tooltip title={tooltipContent} delayDuration={500}>
                 <div className="flex w-full items-center justify-between gap-1">
                   <span className="text-sm">{activeDuration}</span>
                   <Clock className="text-muted-foreground size-3.5" />
@@ -403,7 +403,7 @@ export const useColumns = ({
         data: {
           render: ({ data }) => {
             return (
-              <Tooltip title="View Pipeline Run Diagram">
+              <Tooltip title="View Pipeline Run Diagram" delayDuration={500}>
                 <Button
                   variant="ghost"
                   size="icon"
