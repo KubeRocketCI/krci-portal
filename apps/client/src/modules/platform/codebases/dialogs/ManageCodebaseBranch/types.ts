@@ -9,6 +9,7 @@ export type ManageCodebaseBranchDialogProps = DialogProps<{
   pipelines: {
     review: string;
     build: string;
+    security: string;
   };
   codebaseBranch?: CodebaseBranch;
 }>;
@@ -22,6 +23,7 @@ export type ManageCodebaseBranchFormValues = {
   [NAMES.CODEBASE_NAME_LABEL]: string;
   [NAMES.BUILD_PIPELINE]: string;
   [NAMES.REVIEW_PIPELINE]: string;
+  [NAMES.SECURITY_PIPELINE]: string;
   [NAMES.BRANCH_NAME]: string;
   [NAMES.RELEASE_BRANCH_NAME]: string;
   [NAMES.RELEASE_BRANCH_VERSION_START]: string;

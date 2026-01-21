@@ -9,6 +9,7 @@ import {
   codebaseBranchLabels,
   createBuildPipelineRef,
   createReviewPipelineRef,
+  createSecurityPipelineRef,
   pipelineRunLabels,
 } from "@my-project/shared";
 import { routeComponentDetails } from "../route";
@@ -92,6 +93,21 @@ export const useBuildTriggerTemplateWatch = () => {
   });
 };
 
+export const useSecurityTriggerTemplateWatch = () => {
+  const params = routeComponentDetails.useParams();
+
+  const gitServerByCodebaseWatch = useGitServerWatch();
+  const gitServerByCodebase = gitServerByCodebaseWatch.query.data;
+
+  return useTriggerTemplateWatchItem({
+    name: `${gitServerByCodebase?.spec?.gitProvider}-security-template`,
+    namespace: params.namespace,
+    queryOptions: {
+      enabled: !!gitServerByCodebase?.spec?.gitProvider,
+    },
+  });
+};
+
 export const useQuickLinkListWatch = () => {
   const params = routeComponentDetails.useParams();
 
@@ -130,9 +146,16 @@ export const usePipelineNamesWatch = () => {
         defaultBranch: defaultBranch,
       });
 
+      const securityPipelineName = createSecurityPipelineRef({
+        gitServer: gitServerByCodebase!,
+        codebase: codebase!,
+        defaultBranch: defaultBranch,
+      });
+
       return {
         reviewPipelineName,
         buildPipelineName,
+        securityPipelineName,
       };
     },
     enabled: Boolean(codebase && gitServerByCodebase && defaultBranch),

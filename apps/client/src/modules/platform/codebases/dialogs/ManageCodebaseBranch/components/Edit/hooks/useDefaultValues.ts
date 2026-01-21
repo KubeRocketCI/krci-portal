@@ -11,6 +11,7 @@ export const useDefaultValues = () => {
     () => ({
       [CODEBASE_BRANCH_FORM_NAMES.buildPipeline.name]: codebaseBranch?.spec?.pipelines?.build,
       [CODEBASE_BRANCH_FORM_NAMES.reviewPipeline.name]: codebaseBranch?.spec?.pipelines?.review,
+      [CODEBASE_BRANCH_FORM_NAMES.securityPipeline.name]: codebaseBranch?.spec?.pipelines?.security,
     }),
     [codebaseBranch]
   );

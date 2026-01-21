@@ -18,6 +18,7 @@ export const useDefaultValues = () => {
       [CODEBASE_BRANCH_FORM_NAMES.release.name]: false,
       [CODEBASE_BRANCH_FORM_NAMES.reviewPipeline.name]: pipelines?.review,
       [CODEBASE_BRANCH_FORM_NAMES.buildPipeline.name]: pipelines?.build,
+      [CODEBASE_BRANCH_FORM_NAMES.securityPipeline.name]: pipelines?.security,
     };
 
     if (!defaultBranchVersion) {
@@ -38,5 +39,5 @@ export const useDefaultValues = () => {
     };
 
     return base;
-  }, [pipelines?.review, pipelines?.build, defaultBranchVersion, versioningType]);
+  }, [pipelines?.review, pipelines?.build, pipelines?.security, defaultBranchVersion, versioningType]);
 };

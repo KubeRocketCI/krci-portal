@@ -66,6 +66,7 @@ export const CodebaseBranchActionsMenu = ({
             pipelines: {
               review: pipelines?.review,
               build: pipelines?.build,
+              security: pipelines?.security,
             },
           });
         },
@@ -105,6 +106,7 @@ export const CodebaseBranchActionsMenu = ({
     onBeforeSubmit,
     pipelines?.build,
     pipelines?.review,
+    pipelines?.security,
     setNewDialog,
   ]);
 

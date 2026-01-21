@@ -21,6 +21,7 @@ export const CurrentDialogContext = React.createContext<CurrentDialogContextProv
     pipelines: {
       review: "",
       build: "",
+      security: "",
     },
   },
   state: dialogInitialState,

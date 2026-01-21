@@ -44,6 +44,7 @@ export const FormActions = () => {
         pipelines: {
           build: values.buildPipeline,
           review: values.reviewPipeline,
+          ...(values.securityPipeline && { security: values.securityPipeline }),
         },
       });
 

@@ -16,13 +16,20 @@ export const BranchListItem = React.memo<BranchListItemProps>(({ codebaseBranch,
       latestBuildPipelineRun: allItems.find(
         (el) => el.metadata.labels?.[pipelineRunLabels.pipelineType] === pipelineType.build
       ),
+      latestSecurityPipelineRun: allItems.find(
+        (el) => el.metadata.labels?.[pipelineRunLabels.pipelineType] === pipelineType.security
+      ),
     };
   }, [pipelineRunListWatch.data.array]);
 
   return (
     <AccordionItem value={id}>
       <AccordionTrigger>
-        <Summary codebaseBranch={codebaseBranch} latestBuildPipelineRun={pipelineRuns.latestBuildPipelineRun} />
+        <Summary
+          codebaseBranch={codebaseBranch}
+          latestBuildPipelineRun={pipelineRuns.latestBuildPipelineRun}
+          latestSecurityPipelineRun={pipelineRuns.latestSecurityPipelineRun}
+        />
       </AccordionTrigger>
       <AccordionContent>
         <Details pipelineRuns={pipelineRuns.all} />

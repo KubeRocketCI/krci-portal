@@ -1,6 +1,6 @@
-import { BuildPipeline, ReviewPipeline } from "../../../fields";
+import { BuildPipeline, ReviewPipeline, SecurityPipeline } from "../../../fields";
 
-export const Form = () => {
+export function Form() {
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -9,6 +9,9 @@ export const Form = () => {
       <div>
         <BuildPipeline />
       </div>
+      <div>
+        <SecurityPipeline />
+      </div>
     </div>
   );
-};
+}
