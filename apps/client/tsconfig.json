@@ -16,12 +16,13 @@
     "moduleResolution": "bundler",
     "paths": {
       "@/*": ["apps/client/src/*"],
+      "@sb/*": ["apps/client/.storybook/*"],
       "@my-project/trpc": ["packages/trpc/dist"],
       "@my-project/trpc/*": ["packages/trpc/dist/*"],
       "@my-project/shared": ["packages/shared/dist"],
       "@my-project/shared/*": ["packages/shared/dist/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", ".storybook/**/*.ts", ".storybook/**/*.tsx"],
   "exclude": ["node_modules", "dist"]
 }

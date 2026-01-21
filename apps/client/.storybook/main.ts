@@ -1,8 +1,10 @@
 import type { StorybookConfig } from "@storybook/react-vite";
 
-import { dirname } from "path";
+import { dirname, resolve } from "path";
 
 import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
  * This function is used to resolve the absolute path of a package.
@@ -19,5 +21,24 @@ const config: StorybookConfig = {
     getAbsolutePath("@storybook/addon-onboarding"),
   ],
   framework: getAbsolutePath("@storybook/react-vite"),
+  viteFinal: async (config) => {
+    // Set default environment variables for storybook
+    config.define = {
+      ...config.define,
+      "import.meta.env.VITE_K8S_DEFAULT_CLUSTER_NAME": JSON.stringify("in-cluster"),
+      "import.meta.env.VITE_K8S_DEFAULT_CLUSTER_NAMESPACE": JSON.stringify("default"),
+    };
+
+    // Add path alias for storybook utilities
+    config.resolve = {
+      ...config.resolve,
+      alias: {
+        ...config.resolve?.alias,
+        "@sb": resolve(__dirname, "./"),
+      },
+    };
+
+    return config;
+  },
 };
 export default config;

@@ -28,7 +28,7 @@ export const DeployedVersionConfigurationHeadColumn = () => {
 
   // Subscribe to form state changes using useStore to ensure re-renders when values change
   const stateValues = useStore(form.store, (state) => state.values);
-  const defaultValues = form.options.defaultValues || {};
+  const defaultValues = React.useMemo(() => form.options.defaultValues || {}, [form.options.defaultValues]);
 
   // Merge state.values and defaultValues to handle pagination (fields not yet rendered)
   const values = React.useMemo(() => {

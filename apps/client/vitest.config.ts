@@ -7,7 +7,7 @@ export default defineProject({
     name: "client",
     environment: "jsdom",
     include: ["src/**/*.test.{ts,tsx}"],
-    exclude: ["*/**/node_modules/*", "*/**/dist/*", "../../packages/shared/*"],
+    exclude: ["*/**/node_modules/*", "*/**/dist/*", "../../packages/shared/*", "**/.storybook/**"],
     setupFiles: ["./src/test/setup.ts"],
   },
 });
