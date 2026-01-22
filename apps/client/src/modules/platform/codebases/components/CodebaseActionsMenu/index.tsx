@@ -3,7 +3,7 @@ import { ActionsMenuList } from "@/core/components/ActionsMenuList";
 import { DeleteKubeObjectDialog } from "@/core/components/DeleteKubeObject";
 import { DIALOG_NAME_DELETE_KUBE_OBJECT } from "@/core/components/DeleteKubeObject/constants";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
-import { createResourceAction } from "@/core/utils/createResourceAction";
+import { createResourceAction, getResourceProtection, getDisabledState } from "@/core/utils/createResourceAction";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { useCodebasePermissions } from "@/k8s/api/groups/KRCI/Codebase";
 import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
@@ -12,7 +12,7 @@ import { Button } from "@/core/components/ui/button";
 import type { CDPipeline, Codebase } from "@my-project/shared";
 import { k8sCodebaseConfig, k8sOperation } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
-import { AlertCircle, Pencil, Trash } from "lucide-react";
+import { AlertCircle, Settings, Trash } from "lucide-react";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useCodebaseDeletionConflictResourceQuery } from "./hooks/useDeletionConflictItem";
@@ -106,6 +106,10 @@ export const CodebaseActionsMenu = ({ backRoute, variant, data: { codebase } }: 
     [conflictedCDPipelineQuery, ErrorMessage]
   );
 
+  // Check if the codebase is protected from updates (allows viewing but not saving)
+  const patchProtection = getResourceProtection(codebase, k8sOperation.patch);
+  const deleteProtection = getResourceProtection(codebase, k8sOperation.delete);
+
   const actions = React.useMemo(() => {
     if (!codebase) {
       return [];
@@ -114,15 +118,15 @@ export const CodebaseActionsMenu = ({ backRoute, variant, data: { codebase } }: 
     return [
       createResourceAction({
         type: k8sOperation.patch,
-        label: "Edit",
+        label: "Configure",
         item: codebase,
-        Icon: <Pencil size={16} />,
+        Icon: <Settings size={16} />,
         disabled: {
           status: !codebasePermissions.data.patch.allowed,
           reason: codebasePermissions.data.patch.reason,
         },
         callback: (codebase) => {
-          setDialog(EditCodebaseDialog, { codebase });
+          setDialog(EditCodebaseDialog, { codebase, isProtected: patchProtection.isProtected });
         },
       }),
       createResourceAction({
@@ -130,10 +134,7 @@ export const CodebaseActionsMenu = ({ backRoute, variant, data: { codebase } }: 
         label: capitalizeFirstLetter(k8sOperation.delete),
         item: codebase,
         Icon: <Trash size={16} />,
-        disabled: {
-          status: !codebasePermissions.data.delete.allowed,
-          reason: codebasePermissions.data.delete.reason,
-        },
+        disabled: getDisabledState(deleteProtection, codebasePermissions.data.delete),
         callback: (codebase) => {
           setDialog(DeleteKubeObjectDialog, {
             objectName: codebase?.metadata?.name,
@@ -149,10 +150,11 @@ export const CodebaseActionsMenu = ({ backRoute, variant, data: { codebase } }: 
   }, [
     backRoute,
     codebase,
-    codebasePermissions.data.delete.allowed,
-    codebasePermissions.data.delete.reason,
+    codebasePermissions.data.delete,
     codebasePermissions.data.patch.allowed,
     codebasePermissions.data.patch.reason,
+    deleteProtection,
+    patchProtection.isProtected,
     onBeforeSubmit,
     setDialog,
   ]);

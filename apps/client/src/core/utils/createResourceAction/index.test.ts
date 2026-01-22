@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { createResourceAction } from "./index";
+import { createResourceAction, getResourceProtection } from "./index";
 import { k8sOperation, krciCommonLabels } from "@my-project/shared";
 
 describe("createResourceAction", () => {
@@ -23,10 +23,17 @@ describe("createResourceAction", () => {
       }) as const;
 
     it("should handle 'patch' protection label (K8s operation)", () => {
+      const item = mockItem("patch");
+      const protection = getResourceProtection(item, k8sOperation.patch);
+
+      expect(protection.isProtected).toBe(true);
+      expect(protection.reason).toBe("This resource is protected from updates.");
+
       const action = createResourceAction({
-        item: mockItem("patch"),
+        item,
         type: k8sOperation.patch,
         label: "Edit",
+        disabled: { status: protection.isProtected, reason: protection.reason },
       });
 
       expect(action.disabled?.status).toBe(true);
@@ -34,10 +41,17 @@ describe("createResourceAction", () => {
     });
 
     it("should handle 'update' protection label (RBAC verb) and normalize to patch", () => {
+      const item = mockItem("update");
+      const protection = getResourceProtection(item, k8sOperation.patch);
+
+      expect(protection.isProtected).toBe(true);
+      expect(protection.reason).toBe("This resource is protected from updates.");
+
       const action = createResourceAction({
-        item: mockItem("update"),
+        item,
         type: k8sOperation.patch,
         label: "Edit",
+        disabled: { status: protection.isProtected, reason: protection.reason },
       });
 
       expect(action.disabled?.status).toBe(true);
@@ -45,16 +59,22 @@ describe("createResourceAction", () => {
     });
 
     it("should handle combined 'update-delete' protection label", () => {
+      const item = mockItem("update-delete");
+      const patchProtection = getResourceProtection(item, k8sOperation.patch);
+      const deleteProtection = getResourceProtection(item, k8sOperation.delete);
+
       const patchAction = createResourceAction({
-        item: mockItem("update-delete"),
+        item,
         type: k8sOperation.patch,
         label: "Edit",
+        disabled: { status: patchProtection.isProtected, reason: patchProtection.reason },
       });
 
       const deleteAction = createResourceAction({
-        item: mockItem("update-delete"),
+        item,
         type: k8sOperation.delete,
         label: "Delete",
+        disabled: { status: deleteProtection.isProtected, reason: deleteProtection.reason },
       });
 
       expect(patchAction.disabled?.status).toBe(true);
@@ -65,16 +85,22 @@ describe("createResourceAction", () => {
     });
 
     it("should handle combined 'patch-delete' protection label", () => {
+      const item = mockItem("patch-delete");
+      const patchProtection = getResourceProtection(item, k8sOperation.patch);
+      const deleteProtection = getResourceProtection(item, k8sOperation.delete);
+
       const patchAction = createResourceAction({
-        item: mockItem("patch-delete"),
+        item,
         type: k8sOperation.patch,
         label: "Edit",
+        disabled: { status: patchProtection.isProtected, reason: patchProtection.reason },
       });
 
       const deleteAction = createResourceAction({
-        item: mockItem("patch-delete"),
+        item,
         type: k8sOperation.delete,
         label: "Delete",
+        disabled: { status: deleteProtection.isProtected, reason: deleteProtection.reason },
       });
 
       expect(patchAction.disabled?.status).toBe(true);
@@ -85,20 +111,29 @@ describe("createResourceAction", () => {
     });
 
     it("should handle 'delete' protection label only", () => {
+      const item = mockItem("delete");
+      const patchProtection = getResourceProtection(item, k8sOperation.patch);
+      const deleteProtection = getResourceProtection(item, k8sOperation.delete);
+
+      // Patch should not be protected when only delete is protected
+      expect(patchProtection.isProtected).toBe(false);
+      expect(deleteProtection.isProtected).toBe(true);
+
       const patchAction = createResourceAction({
-        item: mockItem("delete"),
+        item,
         type: k8sOperation.patch,
         label: "Edit",
         disabled: {
-          status: false,
+          status: patchProtection.isProtected,
           reason: "Custom reason",
         },
       });
 
       const deleteAction = createResourceAction({
-        item: mockItem("delete"),
+        item,
         type: k8sOperation.delete,
         label: "Delete",
+        disabled: { status: deleteProtection.isProtected, reason: deleteProtection.reason },
       });
 
       // Patch should not be disabled when only delete is protected

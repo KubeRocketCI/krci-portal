@@ -2,9 +2,8 @@ import { ListItemAction } from "@/core/types/global";
 import { krciCommonLabels, k8sOperation, K8sOperation, KubeObjectBase, ProtectedOperation } from "@my-project/shared";
 
 type ProtectedState = Record<ProtectedOperation, { status: boolean; reason: string } | false>;
-type DisabledValue = { status: boolean; reason: string };
 
-const getDisabledProtectedState = (protectedLabel: string): ProtectedState => {
+const getProtectedState = (protectedLabel: string): ProtectedState => {
   const actions = protectedLabel.split("-");
 
   return actions.reduce<ProtectedState>(
@@ -37,21 +36,54 @@ const getDisabledProtectedState = (protectedLabel: string): ProtectedState => {
   );
 };
 
-const getDisabledState = (item: KubeObjectBase, disabledDefaultValue: DisabledValue, actionType: K8sOperation) => {
-  const isProtected = item?.metadata?.labels?.[krciCommonLabels.editProtection];
+/**
+ * Check if a resource is protected from a specific operation based on its edit-protection label.
+ * Use this to explicitly check protection status when needed.
+ */
+export function getResourceProtection(
+  item: KubeObjectBase | undefined,
+  actionType: K8sOperation
+): { isProtected: boolean; reason: string } {
+  const protectedLabel = item?.metadata?.labels?.[krciCommonLabels.editProtection];
 
-  if (!isProtected) {
-    return {
-      status: disabledDefaultValue.status,
-      reason: disabledDefaultValue.status ? disabledDefaultValue.reason : undefined,
-    };
+  if (!protectedLabel) {
+    return { isProtected: false, reason: "" };
   }
 
-  const protectedDisabledState = getDisabledProtectedState(isProtected);
+  const protectedState = getProtectedState(protectedLabel);
+  const operationState = protectedState[actionType as ProtectedOperation];
 
-  return (protectedDisabledState[actionType as ProtectedOperation] || disabledDefaultValue) as DisabledValue;
-};
+  if (operationState) {
+    return { isProtected: true, reason: operationState.reason };
+  }
 
+  return { isProtected: false, reason: "" };
+}
+
+interface PermissionCheck {
+  allowed: boolean;
+  reason: string;
+}
+
+/**
+ * Combines resource protection status with permission check to create a unified disabled state.
+ * Protection takes precedence over permission (if protected, use protection reason).
+ */
+export function getDisabledState(
+  protection: { isProtected: boolean; reason: string },
+  permission: PermissionCheck
+): { status: boolean; reason: string } {
+  const isDisabled = protection.isProtected || !permission.allowed;
+  return {
+    status: isDisabled,
+    reason: protection.isProtected ? protection.reason : permission.reason,
+  };
+}
+
+/**
+ * Create a resource action for use in action menus.
+ * The caller is responsible for determining the disabled state (including protection checks if needed).
+ */
 export const createResourceAction = <Item extends KubeObjectBase>({
   item,
   type,
@@ -68,7 +100,7 @@ export const createResourceAction = <Item extends KubeObjectBase>({
   type: K8sOperation;
   label: string;
   callback?: (item: Item) => void;
-  disabled?: DisabledValue;
+  disabled?: { status: boolean; reason: string };
   Icon?: React.ReactNode;
   isTextButton?: boolean;
 }): ListItemAction => {
@@ -76,7 +108,10 @@ export const createResourceAction = <Item extends KubeObjectBase>({
     name: type,
     label,
     Icon,
-    disabled: getDisabledState(item, disabled, type),
+    disabled: {
+      status: disabled.status,
+      reason: disabled.status ? disabled.reason : undefined,
+    },
     action: (e) => {
       e.stopPropagation();
       if (callback) {

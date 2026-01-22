@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { useFormContext } from "react-hook-form";
 import { useCodebaseCRUD } from "@/k8s/api/groups/KRCI/Codebase";
 import { editCodebaseObject } from "@my-project/shared";
@@ -10,9 +11,10 @@ import { Codebase } from "@my-project/shared";
 
 interface FormActionsProps {
   codebase: Codebase;
+  isProtected?: boolean;
 }
 
-export const FormActions: React.FC<FormActionsProps> = ({ codebase }) => {
+export const FormActions: React.FC<FormActionsProps> = ({ codebase, isProtected }) => {
   const { closeDialog } = useDialogContext();
   const {
     reset,
@@ -24,10 +26,6 @@ export const FormActions: React.FC<FormActionsProps> = ({ codebase }) => {
   const hasJiraServerIntegration = (watch as (name: string) => boolean)(
     EDIT_FORM_NAMES[NAMES.HAS_JIRA_SERVER_INTEGRATION].name
   );
-
-  const handleResetFields = React.useCallback(() => {
-    reset();
-  }, [reset]);
 
   const handleClose = React.useCallback(() => {
     closeDialog(dialogName);
@@ -82,19 +80,31 @@ export const FormActions: React.FC<FormActionsProps> = ({ codebase }) => {
     [codebase, hasJiraServerIntegration, triggerPatchCodebase, onSuccess]
   );
 
+  const isApplyDisabled = isProtected || !isDirty || isPending;
+
+  const applyButton = (
+    <Button onClick={handleSubmit(onSubmit)} variant="default" size="sm" disabled={isApplyDisabled}>
+      Apply
+    </Button>
+  );
+
   return (
     <div className="flex w-full justify-between gap-2">
       <div className="flex gap-1">
         <Button onClick={handleClose} variant="ghost" size="sm">
           Cancel
         </Button>
-        <Button onClick={handleResetFields} variant="ghost" size="sm" disabled={!isDirty}>
+        <Button onClick={() => reset()} variant="ghost" size="sm" disabled={!isDirty || isProtected}>
           Undo Changes
         </Button>
       </div>
-      <Button variant="default" size="sm" disabled={!isDirty || isPending} onClick={handleSubmit(onSubmit)}>
-        Apply
-      </Button>
+      {isProtected ? (
+        <Tooltip title="This resource is protected from updates.">
+          <div>{applyButton}</div>
+        </Tooltip>
+      ) : (
+        applyButton
+      )}
     </div>
   );
 };
