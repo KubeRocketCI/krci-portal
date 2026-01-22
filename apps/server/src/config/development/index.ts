@@ -15,6 +15,7 @@ import {
 } from "@trpc/server/adapters/fastify";
 import Fastify, { FastifyInstance, FastifyRequest } from "fastify";
 import { IncomingMessage } from "http";
+import { maskEnvValue } from "../env-utils";
 
 export class LocalFastifyServer {
   fastify: FastifyInstance;
@@ -38,7 +39,9 @@ export class LocalFastifyServer {
 
   static validateRequiredEnv(keys: string[]) {
     for (const key of keys) {
-      if (!process.env[key]) {
+      const value = process.env[key];
+      console.log(`${key}: ${maskEnvValue(key, value)}`);
+      if (!value) {
         throw new Error(`Missing required ${key} environment variable`);
       }
     }
