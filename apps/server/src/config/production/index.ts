@@ -16,6 +16,7 @@ import {
 import Fastify, { FastifyInstance, FastifyRequest } from "fastify";
 import { IncomingMessage } from "http";
 import { fromMonorepoRoot } from "@/paths";
+import { maskEnvValue } from "../env-utils";
 
 export class ProductionFastifyServer {
   fastify: FastifyInstance;
@@ -38,8 +39,9 @@ export class ProductionFastifyServer {
 
   static validateRequiredEnv(keys: string[]) {
     for (const key of keys) {
-      console.log(`Checking ${key}...`, process.env[key]);
-      if (!process.env[key]) {
+      const value = process.env[key];
+      console.log(`${key}: ${maskEnvValue(key, value)}`);
+      if (!value) {
         console.error(`Missing required ${key} environment variable`);
       }
     }
