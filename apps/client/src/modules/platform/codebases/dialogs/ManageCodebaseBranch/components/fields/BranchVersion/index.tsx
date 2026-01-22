@@ -1,81 +1,67 @@
 import React from "react";
-import { useTypedFormContext } from "../../../hooks/useFormContext";
+import { useCodebaseBranchForm } from "../../../providers/form/hooks";
 import { CODEBASE_BRANCH_FORM_NAMES } from "../../../names";
-import { FieldEvent } from "@/core/types/forms";
 import {
   createReleaseNameString,
   createVersioningString,
   getMajorMinorPatchOfVersion,
   getVersionAndPostfixFromVersioningString,
 } from "@my-project/shared";
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
 
 export const BranchVersion = () => {
-  const {
-    register,
-    control,
-    formState: { errors },
-    setValue,
-    getValues,
-  } = useTypedFormContext();
+  const form = useCodebaseBranchForm();
 
-  const onBranchVersionStartFieldValueChange = React.useCallback(
-    ({ target: { value } }: FieldEvent<string>): void => {
-      const { release, releaseBranchVersionPostfix } = getValues();
-      const branchVersion = createVersioningString(value, releaseBranchVersionPostfix);
+  const onBranchVersionStartFieldBlur = React.useCallback((): void => {
+    const values = form.store.state.values;
+    const { release, releaseBranchVersionPostfix, releaseBranchVersionStart } = values;
+    const branchVersion = createVersioningString(releaseBranchVersionStart, releaseBranchVersionPostfix);
 
-      setValue(CODEBASE_BRANCH_FORM_NAMES.version.name, branchVersion);
+    form.setFieldValue("version", branchVersion);
 
-      if (!release) {
-        return;
-      }
+    if (!release) {
+      return;
+    }
 
-      const { version } = getVersionAndPostfixFromVersioningString(branchVersion);
-      const { major, minor, patch } = getMajorMinorPatchOfVersion(version);
-      const newDefaultBranchMinor = minor + 1;
-      const defaultBranchNewVersion = [major, newDefaultBranchMinor, patch].join(".");
-      setValue(CODEBASE_BRANCH_FORM_NAMES.releaseBranchName.name, createReleaseNameString(major, minor));
-      setValue(CODEBASE_BRANCH_FORM_NAMES.defaultBranchVersionStart.name, defaultBranchNewVersion);
-    },
-    [getValues, setValue]
-  );
+    const { version } = getVersionAndPostfixFromVersioningString(branchVersion);
+    const { major, minor, patch } = getMajorMinorPatchOfVersion(version);
+    const newDefaultBranchMinor = minor + 1;
+    const defaultBranchNewVersion = [major, newDefaultBranchMinor, patch].join(".");
+    form.setFieldValue("releaseBranchName", createReleaseNameString(major, minor));
+    form.setFieldValue("defaultBranchVersionStart", defaultBranchNewVersion);
+  }, [form]);
 
-  const onBranchVersionPostfixFieldValueChange = React.useCallback(
-    ({ target: { value } }: FieldEvent<string>): void => {
-      const { releaseBranchVersionStart } = getValues();
+  const onBranchVersionPostfixFieldBlur = React.useCallback((): void => {
+    const values = form.store.state.values;
+    const { releaseBranchVersionStart, releaseBranchVersionPostfix } = values;
 
-      const branchVersion = createVersioningString(releaseBranchVersionStart, value);
-      setValue(CODEBASE_BRANCH_FORM_NAMES.version.name, branchVersion);
-    },
-    [getValues, setValue]
-  );
+    const branchVersion = createVersioningString(releaseBranchVersionStart, releaseBranchVersionPostfix);
+    form.setFieldValue("version", branchVersion);
+  }, [form]);
 
   return (
     <div className="grid grid-cols-2 gap-4">
-      <FormTextField
-        {...register(CODEBASE_BRANCH_FORM_NAMES.releaseBranchVersionStart.name, {
-          required: "Branch version",
-          onBlur: onBranchVersionStartFieldValueChange,
-          pattern: {
-            value: /^([0-9]+)\.([0-9]+)\.([0-9]+)?$/,
-            message: "Enter valid semantic versioning format",
-          },
-        })}
-        label={"Branch version"}
-        tooltipText={"Valid identifiers are in the set [A-Za-z0-9]"}
-        placeholder={"0.0.0"}
-        control={control}
-        errors={errors}
-      />
-      <FormTextField
-        {...register(CODEBASE_BRANCH_FORM_NAMES.releaseBranchVersionPostfix.name, {
-          onBlur: onBranchVersionPostfixFieldValueChange,
-        })}
-        label=" "
-        placeholder={"SNAPSHOT"}
-        control={control}
-        errors={errors}
-      />
+      <form.AppField
+        name={CODEBASE_BRANCH_FORM_NAMES.releaseBranchVersionStart.name as "releaseBranchVersionStart"}
+        listeners={{
+          onBlur: onBranchVersionStartFieldBlur,
+        }}
+      >
+        {(field) => (
+          <field.FormTextField
+            label="Branch version"
+            tooltipText="Valid identifiers are in the set [A-Za-z0-9]"
+            placeholder="0.0.0"
+          />
+        )}
+      </form.AppField>
+      <form.AppField
+        name={CODEBASE_BRANCH_FORM_NAMES.releaseBranchVersionPostfix.name as "releaseBranchVersionPostfix"}
+        listeners={{
+          onBlur: onBranchVersionPostfixFieldBlur,
+        }}
+      >
+        {(field) => <field.FormTextField label=" " placeholder="SNAPSHOT" />}
+      </form.AppField>
     </div>
   );
 };

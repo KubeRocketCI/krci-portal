@@ -24,13 +24,42 @@ export const TableBody = <DataType,>({
   isEmptyFilterResult,
   blockerComponent,
 }: TableBodyProps<DataType>) => {
-  const renderTableBody = React.useCallback(() => {
-    const columnsLength = columns.length;
+  // Calculate total column span including selection and expandable columns
+  const totalColumnSpan = React.useMemo(() => {
+    // Count only visible columns (where cell.show !== false)
+    const visibleColumnsCount = columns.filter((column) => column.cell.show !== false).length;
+    let span = visibleColumnsCount;
 
+    // Add 1 for expandable column if present
+    if (expandable) {
+      span += 1;
+    }
+
+    // Add 1 for selection column if it should be shown
+    // Selection column is shown when:
+    // - handleSelectRow exists
+    // - data exists and has length
+    // - not loading
+    // - no blocker error/component
+    if (
+      selection?.handleSelectRow &&
+      data !== null &&
+      data.length > 0 &&
+      !isLoading &&
+      !blockerError &&
+      !blockerComponent
+    ) {
+      span += 1;
+    }
+
+    return span;
+  }, [columns, expandable, selection?.handleSelectRow, data, isLoading, blockerError, blockerComponent]);
+
+  const renderTableBody = React.useCallback(() => {
     if (blockerError) {
       return (
         <TableRowUI>
-          <TableCellUI colSpan={columnsLength} className="border-b-0 px-0 pb-0 text-center">
+          <TableCellUI colSpan={totalColumnSpan} className="border-b-0 px-0 pb-0 text-center">
             {/* <ErrorContent error={blockerError} /> */}
           </TableCellUI>
         </TableRowUI>
@@ -40,7 +69,7 @@ export const TableBody = <DataType,>({
     if (blockerComponent) {
       return (
         <TableRowUI>
-          <TableCellUI colSpan={columnsLength} className="border-b-0 px-0 pb-0 text-center">
+          <TableCellUI colSpan={totalColumnSpan} className="border-b-0 px-0 pb-0 text-center">
             {blockerComponent}
           </TableCellUI>
         </TableRowUI>
@@ -50,7 +79,7 @@ export const TableBody = <DataType,>({
     if (isLoading) {
       return (
         <TableRowUI>
-          <TableCellUI colSpan={columnsLength} className="border-b-0 px-0 pb-0 text-center">
+          <TableCellUI colSpan={totalColumnSpan} className="border-b-0 px-0 pb-0 text-center">
             <LoadingSpinner />
           </TableCellUI>
         </TableRowUI>
@@ -62,7 +91,7 @@ export const TableBody = <DataType,>({
         <>
           {errors && !!errors.length && (
             <TableRowUI>
-              <TableCellUI colSpan={columnsLength} className="border-b-0 px-0 pb-0 text-center">
+              <TableCellUI colSpan={totalColumnSpan} className="border-b-0 px-0 pb-0 text-center">
                 <Alert variant="default">
                   {errors.map((error, index) => (
                     <div key={index}>{error?.message || error?.toString()}</div>
@@ -112,7 +141,7 @@ export const TableBody = <DataType,>({
     if (isEmptyFilterResult) {
       return (
         <TableRowUI>
-          <TableCellUI colSpan={columnsLength} className="border-b-0 px-0 pb-0 text-center">
+          <TableCellUI colSpan={totalColumnSpan} className="border-b-0 px-0 pb-0 text-center">
             <EmptyList customText={"No results found!"} isSearch />
           </TableCellUI>
         </TableRowUI>
@@ -121,13 +150,14 @@ export const TableBody = <DataType,>({
 
     return (
       <TableRowUI>
-        <TableCellUI colSpan={columnsLength} className="border-b-0 px-0 pb-0 text-center">
+        <TableCellUI colSpan={totalColumnSpan} className="border-b-0 px-0 pb-0 text-center">
           <>{emptyListComponent}</>
         </TableCellUI>
       </TableRowUI>
     );
   }, [
     columns,
+    totalColumnSpan,
     blockerError,
     blockerComponent,
     isLoading,

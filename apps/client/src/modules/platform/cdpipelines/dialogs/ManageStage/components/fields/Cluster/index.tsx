@@ -1,4 +1,3 @@
-import { FormSelect } from "@/core/providers/Form/components/FormSelect";
 import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWatchKRCIConfig";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { useClusterStore } from "@/k8s/store";
@@ -7,8 +6,8 @@ import { inClusterName } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
-import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { STAGE_FORM_NAMES } from "../../../names";
+import { useStageForm } from "../../../providers/form/hooks";
 
 const defaultClusterOption = {
   label: inClusterName,
@@ -17,12 +16,7 @@ const defaultClusterOption = {
 
 export const Cluster = () => {
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
-
-  const {
-    register,
-    control,
-    formState: { errors },
-  } = useTypedFormContext();
+  const form = useStageForm();
 
   const krciConfigMapWatch = useWatchKRCIConfig();
   const krciConfigMap = krciConfigMapWatch.data;
@@ -43,33 +37,40 @@ export const Cluster = () => {
   }, [krciConfigMapWatch.isLoading, krciConfigMap?.data?.available_clusters]);
 
   return (
-    <FormSelect
-      {...register(STAGE_FORM_NAMES.cluster.name, {
-        required: "Select cluster",
-      })}
-      label={"Cluster"}
-      tooltipText={
-        <>
-          Select the Kubernetes cluster for the environment deployment. Make sure it matches the deployment needs. To
-          manage clusters, visit the section in the{" "}
-          <Link
-            to={routeClustersConfiguration.fullPath}
-            params={{
-              clusterName,
-            }}
-          >
-            Configuration tab.
-          </Link>
-          <br />
-          <Link to={EDP_USER_GUIDE.CLUSTER_CREATE.url} target={"_blank"}>
-            More details
-          </Link>
-          .
-        </>
-      }
-      control={control}
-      errors={errors}
-      options={clusterOptions}
-    />
+    <form.AppField
+      name={STAGE_FORM_NAMES.cluster.name}
+      validators={{
+        onChange: ({ value }) => {
+          if (!value) return "Select cluster";
+          return undefined;
+        },
+      }}
+    >
+      {(field) => (
+        <field.FormSelect
+          label="Cluster"
+          tooltipText={
+            <>
+              Select the Kubernetes cluster for the environment deployment. Make sure it matches the deployment needs.
+              To manage clusters, visit the section in the{" "}
+              <Link
+                to={routeClustersConfiguration.fullPath}
+                params={{
+                  clusterName,
+                }}
+              >
+                Configuration tab.
+              </Link>
+              <br />
+              <Link to={EDP_USER_GUIDE.CLUSTER_CREATE.url} target="_blank">
+                More details
+              </Link>
+              .
+            </>
+          }
+          options={clusterOptions}
+        />
+      )}
+    </form.AppField>
   );
 };

@@ -38,14 +38,19 @@ export default function GitserversConfigurationPage() {
     }
 
     if (!gitServers?.length && !isLoading && !gitServerError) {
+      const hasPermission = secretPermissions.data.create.allowed && gitServerPermissions.data.create.allowed;
+      const permissionReason = secretPermissions.data.create.reason || gitServerPermissions.data.create.reason;
+
+      if (!hasPermission) {
+        return <EmptyList customText={"No GitServers found."} beforeLinkText={permissionReason} />;
+      }
+
       return (
-        <>
-          <EmptyList
-            customText={"No GitServers found."}
-            linkText={"Click here to add GitServer."}
-            handleClick={handleOpenCreateDialog}
-          />
-        </>
+        <EmptyList
+          customText={"No GitServers found."}
+          linkText={"Click here to add GitServer."}
+          handleClick={handleOpenCreateDialog}
+        />
       );
     }
 
@@ -113,6 +118,7 @@ export default function GitserversConfigurationPage() {
         </Accordion>
       </LoadingWrapper>
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- permission fields omitted to avoid unnecessary callback recreation
   }, [gitServerWatch.query.error, gitServerWatch.query.isLoading, gitServers, expandedPanel, handleChange]);
 
   return (

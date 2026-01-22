@@ -33,6 +33,8 @@ export const useDefaultValues = (): DeepPartial<CreateCodebaseFormValues> => {
       [NAMES.ui_hasCodemieIntegration]: false,
       [NAMES.ui_versioningStartFromVersion]: defaultEDPVersioningVersion,
       [NAMES.ui_versioningStartFromSnapshot]: defaultEDPVersioningVersionPostfix,
+      [NAMES.ui_advancedMappingFieldName]: [],
+      [NAMES.ui_advancedMappingRows]: [],
     };
   }, [gitServersWatch.data.array, gitServersWatch.query.isLoading]);
 };

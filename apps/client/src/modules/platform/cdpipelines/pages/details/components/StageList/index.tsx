@@ -1,6 +1,7 @@
 import { EmptyList } from "@/core/components/EmptyList";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { ManageStageDialog } from "@/modules/platform/cdpipelines/dialogs/ManageStage";
+import { useStagePermissions } from "@/k8s/api/groups/KRCI/Stage";
 import { Server } from "lucide-react";
 import React from "react";
 import { useCDPipelineWatch, useStageListWatch } from "../../hooks/data";
@@ -12,6 +13,7 @@ export const StageList = () => {
   const cdPipelineWatch = useCDPipelineWatch();
   const stageListWatch = useStageListWatch();
   const { filterFunction } = useStageFilter();
+  const stagePermissions = useStagePermissions();
 
   const [expandedEnvs, setExpandedEnvs] = React.useState<Set<string>>(new Set());
 
@@ -46,6 +48,16 @@ export const StageList = () => {
   }
 
   if (sortedStages.length === 0) {
+    if (!stagePermissions.data.create.allowed) {
+      return (
+        <EmptyList
+          missingItemName="Environments"
+          icon={<Server size={128} />}
+          beforeLinkText={stagePermissions.data.create.reason}
+        />
+      );
+    }
+
     return (
       <EmptyList
         missingItemName="Environments"

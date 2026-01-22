@@ -1,20 +1,23 @@
 import React from "react";
-import { useFormContext } from "react-hook-form";
-import { EDIT_FORM_NAMES, NAMES } from "@/modules/platform/codebases/components/form-fields";
-import {
-  CommitMessagePatternField,
-  JiraServerIntegrationField,
-  JiraServerField,
-  TicketNamePatternField,
-  AdvancedJiraMappingField,
-} from "@/modules/platform/codebases/components/form-fields";
+import { useStore } from "@tanstack/react-form";
 import { useJiraServerWatchList } from "@/k8s/api/groups/KRCI/JiraServer";
+import { useEditCodebaseForm } from "../providers/form/hooks";
+import { EDIT_CODEBASE_FORM_NAMES } from "../types";
+import {
+  CommitMessagePattern,
+  JiraServerIntegration,
+  JiraServer,
+  TicketNamePattern,
+  AdvancedJiraMapping,
+} from "./fields";
 
 export const FormContent: React.FC = () => {
-  const { watch } = useFormContext();
+  const form = useEditCodebaseForm();
 
-  const hasJiraServerIntegration = (watch as (name: string) => boolean)(
-    EDIT_FORM_NAMES[NAMES.HAS_JIRA_SERVER_INTEGRATION].name
+  // Subscribe to hasJiraServerIntegration field value (replaces watch)
+  const hasJiraServerIntegration = useStore(
+    form.store,
+    (state) => state.values[EDIT_CODEBASE_FORM_NAMES.hasJiraServerIntegration]
   );
 
   const jiraServerListWatch = useJiraServerWatchList();
@@ -24,25 +27,22 @@ export const FormContent: React.FC = () => {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <CommitMessagePatternField name={EDIT_FORM_NAMES[NAMES.COMMIT_MESSAGE_PATTERN].name} />
+        <CommitMessagePattern />
       </div>
       <div>
-        <JiraServerIntegrationField name={EDIT_FORM_NAMES[NAMES.HAS_JIRA_SERVER_INTEGRATION].name} />
+        <JiraServerIntegration />
       </div>
 
       {jiraServerNames.length && hasJiraServerIntegration ? (
         <>
           <div>
-            <JiraServerField name={EDIT_FORM_NAMES[NAMES.JIRA_SERVER].name} />
+            <JiraServer />
           </div>
           <div>
-            <TicketNamePatternField name={EDIT_FORM_NAMES[NAMES.TICKET_NAME_PATTERN].name} />
+            <TicketNamePattern />
           </div>
           <div>
-            <AdvancedJiraMappingField
-              name={EDIT_FORM_NAMES[NAMES.ADVANCED_MAPPING_FIELD_NAME].name}
-              advancedMappingPatternName={EDIT_FORM_NAMES[NAMES.ADVANCED_MAPPING_JIRA_PATTERN].name}
-            />
+            <AdvancedJiraMapping />
           </div>
         </>
       ) : null}

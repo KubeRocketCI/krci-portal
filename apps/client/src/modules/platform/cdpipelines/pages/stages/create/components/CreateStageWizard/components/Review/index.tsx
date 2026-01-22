@@ -1,11 +1,12 @@
 import React from "react";
-import { useFormContext } from "react-hook-form";
-import { NAMES, CreateStageFormValues } from "../../names";
+import { NAMES } from "../../names";
 import { Card } from "@/core/components/ui/card";
 import { Badge } from "@/core/components/ui/badge";
 import { Check, Settings, Server, Shield, Workflow, Globe } from "lucide-react";
 import { InfoColumns } from "@/core/components/InfoColumns";
 import { GridItem } from "@/core/components/InfoColumns/types";
+import { useCreateStageForm } from "../../providers/form/hooks";
+import { useStore } from "@tanstack/react-form";
 
 const renderIconWithText = (
   icon: React.ComponentType<{ className?: string }> | null,
@@ -22,16 +23,17 @@ const renderIconWithText = (
 };
 
 export const Review: React.FC = () => {
-  const { watch } = useFormContext<CreateStageFormValues>();
+  const form = useCreateStageForm();
 
-  const name = watch(NAMES.name);
-  const description = watch(NAMES.description);
-  const cluster = watch(NAMES.cluster);
-  const deployNamespace = watch(NAMES.deployNamespace);
-  const triggerType = watch(NAMES.triggerType);
-  const triggerTemplate = watch(NAMES.triggerTemplate);
-  const cleanTemplate = watch(NAMES.cleanTemplate);
-  const qualityGates = watch(NAMES.qualityGates);
+  // Subscribe to form values
+  const name = useStore(form.store, (state: typeof form.store.state) => state.values[NAMES.name]);
+  const description = useStore(form.store, (state: typeof form.store.state) => state.values[NAMES.description]);
+  const cluster = useStore(form.store, (state: typeof form.store.state) => state.values[NAMES.cluster]);
+  const deployNamespace = useStore(form.store, (state: typeof form.store.state) => state.values[NAMES.deployNamespace]);
+  const triggerType = useStore(form.store, (state: typeof form.store.state) => state.values[NAMES.triggerType]);
+  const triggerTemplate = useStore(form.store, (state: typeof form.store.state) => state.values[NAMES.triggerTemplate]);
+  const cleanTemplate = useStore(form.store, (state: typeof form.store.state) => state.values[NAMES.cleanTemplate]);
+  const qualityGates = useStore(form.store, (state: typeof form.store.state) => state.values[NAMES.qualityGates]);
 
   // Basic Configuration Items
   const basicConfigurationItems: GridItem[] = React.useMemo(() => {
@@ -131,7 +133,7 @@ export const Review: React.FC = () => {
           </div>
           {qualityGates && qualityGates.length > 0 ? (
             <div className="space-y-2">
-              {qualityGates.map((gate, index) => (
+              {qualityGates.map((gate: (typeof qualityGates)[0], index: number) => (
                 <div
                   key={gate.id || index}
                   className="bg-muted/50 border-border hover:bg-muted/70 flex items-center justify-between rounded-lg p-3"

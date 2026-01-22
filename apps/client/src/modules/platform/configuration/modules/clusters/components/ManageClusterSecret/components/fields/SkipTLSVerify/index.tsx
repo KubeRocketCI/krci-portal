@@ -1,28 +1,22 @@
-import { useFormContext as useReactHookFormContext } from "react-hook-form";
 import { CLUSTER_FORM_NAMES } from "../../../names";
-import { ManageClusterSecretDataContext } from "../../../types";
-import { useFormContext } from "@/core/providers/Form/hooks";
-import { FormSwitchRich } from "@/core/providers/Form/components/FormSwitchRich";
+import { useClusterSecretForm } from "../../../providers/form/hooks";
+import { useClusterSecretData } from "../../../providers/data/hooks";
 import { FORM_MODES } from "@/core/types/forms";
 
 export const SkipTLSVerify = () => {
-  const {
-    register,
-    control,
-    formState: { errors },
-  } = useReactHookFormContext();
-
-  const {
-    formData: { mode, ownerReference },
-  } = useFormContext<ManageClusterSecretDataContext>();
+  const form = useClusterSecretForm();
+  const { mode, ownerReference } = useClusterSecretData();
 
   return (
-    <FormSwitchRich
-      {...register(CLUSTER_FORM_NAMES.SKIP_TLS_VERIFY)}
-      label="Skip TLS verification"
-      control={control}
-      errors={errors}
-      disabled={mode === FORM_MODES.EDIT && !!ownerReference}
-    />
+    <form.AppField name={CLUSTER_FORM_NAMES.SKIP_TLS_VERIFY}>
+      {(field) => (
+        <field.FormSwitch
+          label="Skip TLS verification"
+          rich
+          variant="card"
+          disabled={mode === FORM_MODES.EDIT && !!ownerReference}
+        />
+      )}
+    </form.AppField>
   );
 };

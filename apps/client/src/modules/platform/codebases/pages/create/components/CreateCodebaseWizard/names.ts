@@ -346,19 +346,22 @@ const validateBuildConfigStep = (data: FormData, ctx: z.RefinementCtx) => {
 // MAIN FORM SCHEMA
 // ============================================================================
 
-export const createCodebaseFormSchema = tempDiscriminatedSchema
-  .superRefine((data, ctx) => {
-    // Run all validations independently to prevent cascading issues
-    validateMethodStep(data, ctx);
-    validateGitSetupStep(data, ctx);
-    validateBuildConfigStep(data, ctx);
-  })
-  .transform((data) => {
-    return {
-      ...data,
-      name: typeof data.name === "string" ? data.name.trim() : data.name,
-    };
-  });
+// Validation-only schema for use with TanStack Form
+// NOTE: Do NOT use .transform() here as it breaks Standard Schema integration
+export const createCodebaseFormSchema = tempDiscriminatedSchema.superRefine((data, ctx) => {
+  // Run all validations independently to prevent cascading issues
+  validateMethodStep(data, ctx);
+  validateGitSetupStep(data, ctx);
+  validateBuildConfigStep(data, ctx);
+});
+
+// Schema with transformations for final submission
+export const createCodebaseSubmitSchema = createCodebaseFormSchema.transform((data) => {
+  return {
+    ...data,
+    name: typeof data.name === "string" ? data.name.trim() : data.name,
+  };
+});
 
 // ============================================================================
 // FORM PARTS CONFIGURATION

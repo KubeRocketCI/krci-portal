@@ -1,10 +1,10 @@
 import { cdPipelineDeploymentType } from "@my-project/shared";
 import React from "react";
-import { CreateCDPipelineFormValues, NAMES } from "../names";
-import { DeepPartial } from "react-hook-form";
+import { NAMES } from "../names";
+import { CreateCDPipelineFormValues } from "../types";
 import { routeCDPipelineCreate } from "../../../route";
 
-export const useDefaultValues = (): DeepPartial<CreateCDPipelineFormValues> => {
+export const useDefaultValues = (): Partial<CreateCDPipelineFormValues> => {
   const searchParams = routeCDPipelineCreate.useSearch();
   const preselectedApp = React.useMemo(() => {
     const search = searchParams as Record<string, unknown>;

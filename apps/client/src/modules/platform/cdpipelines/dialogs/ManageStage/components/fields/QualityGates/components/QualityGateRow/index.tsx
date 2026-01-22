@@ -1,15 +1,9 @@
 import React from "react";
-import { useTypedFormContext } from "../../../../../hooks/useFormContext";
+import { useStore } from "@tanstack/react-form";
 import { STAGE_FORM_NAMES } from "../../../../../names";
-import {
-  createQualityGateAutotestFieldName,
-  createQualityGateStepNameFieldName,
-  createQualityGateTypeAutotestsBranchFieldName,
-  createQualityGateTypeFieldName,
-} from "../../utils";
 import { QualityGateRowProps } from "./types";
 import { FormStageQualityGate } from "../../../../../types";
-import { FieldEvent, SelectOption } from "@/core/types/forms";
+import { SelectOption } from "@/core/types/forms";
 import { mapArrayToSelectOptions } from "@/core/utils/forms/mapToSelectOptions";
 import {
   StageQualityGateType,
@@ -19,10 +13,13 @@ import {
   codebaseLabels,
   codebaseType,
 } from "@my-project/shared";
-import { FormSelect } from "@/core/providers/Form/components/FormSelect";
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
+import { Input } from "@/core/components/ui/input";
 import { useCodebaseBranchWatchList } from "@/k8s/api/groups/KRCI/CodebaseBranch";
 import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
+import { useStageForm } from "../../../../../providers/form/hooks";
+import { Tooltip } from "@/core/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 const getAvailableAutotests = (autotests: Codebase[]) => {
   return autotests.map((autotest) => {
@@ -83,19 +80,23 @@ const getAvailableQualityGateTypeSelectOptions = (autotests: Codebase[]) => {
 };
 
 export const QualityGateRow = ({ namespace, currentQualityGate }: QualityGateRowProps) => {
-  const {
-    register,
-    control,
-    formState: { errors },
-    watch,
-    resetField,
-    setValue,
-  } = useTypedFormContext();
+  const form = useStageForm();
 
-  const qualityGatesFieldValue = watch(STAGE_FORM_NAMES.qualityGates.name);
+  // Subscribe to quality gates array
+  const qualityGatesFieldValue = useStore(
+    form.store,
+    (state) => state.values[STAGE_FORM_NAMES.qualityGates.name] || []
+  );
 
-  const currentQualityGateTypeFieldValue = watch(createQualityGateTypeFieldName(currentQualityGate.id));
-  const currentQualityGateAutotestFieldValue = watch(createQualityGateAutotestFieldName(currentQualityGate.id));
+  // Find the current quality gate in the array to get its current values
+  const currentGate = React.useMemo(
+    () =>
+      qualityGatesFieldValue.find((qg: FormStageQualityGate) => qg.id === currentQualityGate.id) || currentQualityGate,
+    [qualityGatesFieldValue, currentQualityGate]
+  );
+
+  const currentQualityGateTypeFieldValue = currentGate.qualityGateType;
+  const currentQualityGateAutotestFieldValue = currentGate.autotestName;
 
   const autotestsWatch = useCodebaseWatchList({
     namespace,
@@ -107,7 +108,7 @@ export const QualityGateRow = ({ namespace, currentQualityGate }: QualityGateRow
   const branchesWatch = useCodebaseBranchWatchList({
     namespace,
     labels: {
-      [codebaseBranchLabels.codebase]: currentQualityGateAutotestFieldValue,
+      [codebaseBranchLabels.codebase]: currentQualityGateAutotestFieldValue || "",
     },
     queryOptions: {
       enabled: !!currentQualityGateAutotestFieldValue && !!namespace,
@@ -131,102 +132,65 @@ export const QualityGateRow = ({ namespace, currentQualityGate }: QualityGateRow
   const availableAutotestBranches = getAvailableAutotestBranches(
     currentQualityGateBranchesOptions,
     qualityGatesFieldValue,
-    currentQualityGateAutotestFieldValue
+    currentQualityGateAutotestFieldValue || ""
+  );
+
+  const updateQualityGate = React.useCallback(
+    (updates: Partial<FormStageQualityGate>) => {
+      const currentGates = form.getFieldValue(STAGE_FORM_NAMES.qualityGates.name) || [];
+      const newGates = currentGates.map((qualityGate: FormStageQualityGate) => {
+        if (qualityGate.id !== currentQualityGate.id) {
+          return qualityGate;
+        }
+        return {
+          ...qualityGate,
+          ...updates,
+        };
+      });
+      form.setFieldValue(STAGE_FORM_NAMES.qualityGates.name, newGates);
+    },
+    [form, currentQualityGate.id]
   );
 
   const handleChangeQualityGateType = React.useCallback(
-    (event: FieldEvent<StageQualityGateType>) => {
-      const chosenQualityGateType = event.target.value;
-
+    (chosenQualityGateType: StageQualityGateType) => {
       if (chosenQualityGateType === stageQualityGateType.manual) {
-        resetField(createQualityGateAutotestFieldName(currentQualityGate.id));
-        resetField(createQualityGateTypeAutotestsBranchFieldName(currentQualityGate.id));
-      }
-
-      const newQualityGates = qualityGatesFieldValue.map((qualityGate: FormStageQualityGate) => {
-        if (qualityGate.id !== currentQualityGate.id) {
-          return qualityGate;
-        }
-
-        if (chosenQualityGateType === stageQualityGateType.manual) {
-          return {
-            ...qualityGate,
-            autotestName: null,
-            branchName: null,
-            qualityGateType: chosenQualityGateType,
-          };
-        }
-
-        return {
-          ...qualityGate,
+        updateQualityGate({
           qualityGateType: chosenQualityGateType,
-        };
-      });
-
-      setValue(STAGE_FORM_NAMES.qualityGates.name, newQualityGates);
+          autotestName: null,
+          branchName: null,
+        });
+      } else {
+        updateQualityGate({
+          qualityGateType: chosenQualityGateType,
+        });
+      }
     },
-    [currentQualityGate.id, qualityGatesFieldValue, resetField, setValue]
+    [updateQualityGate]
   );
 
   const handleChangeQualityGateStepName = React.useCallback(
-    (event: FieldEvent<string>) => {
-      const chosenQualityGateStepName = event.target.value;
-
-      const newQualityGates = qualityGatesFieldValue.map((qualityGate: FormStageQualityGate) => {
-        if (qualityGate.id !== currentQualityGate.id) {
-          return qualityGate;
-        }
-
-        return {
-          ...qualityGate,
-          stepName: chosenQualityGateStepName,
-        };
-      });
-
-      setValue(STAGE_FORM_NAMES.qualityGates.name, newQualityGates);
+    (chosenQualityGateStepName: string) => {
+      updateQualityGate({ stepName: chosenQualityGateStepName });
     },
-    [currentQualityGate.id, qualityGatesFieldValue, setValue]
+    [updateQualityGate]
   );
 
   const handleChangeQualityGateAutotestName = React.useCallback(
-    (event: FieldEvent<string>) => {
-      const chosenQualityGateAutotest = event.target.value;
-      resetField(createQualityGateTypeAutotestsBranchFieldName(currentQualityGate.id));
-
-      const newQualityGates = qualityGatesFieldValue.map((qualityGate: FormStageQualityGate) => {
-        if (qualityGate.id !== currentQualityGate.id) {
-          return qualityGate;
-        }
-
-        return {
-          ...qualityGate,
-          autotestName: chosenQualityGateAutotest,
-        };
+    (chosenQualityGateAutotest: string) => {
+      updateQualityGate({
+        autotestName: chosenQualityGateAutotest,
+        branchName: null, // Reset branch when autotest changes
       });
-
-      setValue(STAGE_FORM_NAMES.qualityGates.name, newQualityGates);
     },
-    [currentQualityGate.id, qualityGatesFieldValue, resetField, setValue]
+    [updateQualityGate]
   );
 
   const handleChangeQualityGateAutotestBranchName = React.useCallback(
-    (event: FieldEvent<string>) => {
-      const chosenQualityGateAutotestsBranch = event.target.value;
-
-      const newQualityGates = qualityGatesFieldValue.map((qualityGate: FormStageQualityGate) => {
-        if (qualityGate.id !== currentQualityGate.id) {
-          return qualityGate;
-        }
-
-        return {
-          ...qualityGate,
-          branchName: chosenQualityGateAutotestsBranch,
-        };
-      });
-
-      setValue(STAGE_FORM_NAMES.qualityGates.name, newQualityGates);
+    (chosenQualityGateAutotestsBranch: string) => {
+      updateQualityGate({ branchName: chosenQualityGateAutotestsBranch });
     },
-    [currentQualityGate.id, qualityGatesFieldValue, setValue]
+    [updateQualityGate]
   );
 
   return (
@@ -234,64 +198,93 @@ export const QualityGateRow = ({ namespace, currentQualityGate }: QualityGateRow
       <div>
         <div className="grid grid-cols-12 gap-2">
           <div className="col-span-3">
-            <FormSelect
-              {...register(createQualityGateTypeFieldName(currentQualityGate.id), {
-                onChange: handleChangeQualityGateType,
-              })}
-              tooltipText={
-                "Quality gates can be either manual approvals or autotests. To select autotest, create the corresponding codebase beforehand."
-              }
-              control={control}
-              errors={errors}
-              defaultValue={currentQualityGate.qualityGateType}
-              options={availableQualityGateTypeSelectOptions}
-            />
+            <div className="relative">
+              <Select value={currentQualityGateTypeFieldValue} onValueChange={handleChangeQualityGateType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select quality gate type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableQualityGateTypeSelectOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value} disabled={option.disabled}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="pointer-events-none absolute top-2 right-2">
+                <Tooltip title="Quality gates can be either manual approvals or autotests. To select autotest, create the corresponding codebase beforehand.">
+                  <Info size={16} className="text-muted-foreground" />
+                </Tooltip>
+              </div>
+            </div>
           </div>
           {currentQualityGateTypeFieldValue && currentQualityGateTypeFieldValue !== stageQualityGateType.manual && (
             <div className="col-span-3">
-              <FormTextField
-                {...register(createQualityGateStepNameFieldName(currentQualityGate.id), {
-                  required: "Enter step name.",
-                  onChange: handleChangeQualityGateStepName,
-                })}
-                tooltipText={
-                  "Name the deployment step within the stage to distinguish different phases of the deployment process."
-                }
-                placeholder={"Enter step name"}
-                control={control}
-                errors={errors}
-              />
+              <div className="relative">
+                <Input
+                  value={currentGate.stepName || ""}
+                  onChange={(e) => handleChangeQualityGateStepName(e.target.value)}
+                  placeholder="Enter step name"
+                />
+                <div className="pointer-events-none absolute top-2 right-2">
+                  <Tooltip title="Name the deployment step within the stage to distinguish different phases of the deployment process.">
+                    <Info size={16} className="text-muted-foreground" />
+                  </Tooltip>
+                </div>
+              </div>
             </div>
           )}
 
           {!!autotests.length && currentQualityGateTypeFieldValue === stageQualityGateType.autotests ? (
             <>
               <div className="col-span-3">
-                <FormSelect
-                  {...register(createQualityGateAutotestFieldName(currentQualityGate.id), {
-                    onChange: handleChangeQualityGateAutotestName,
-                  })}
-                  tooltipText={"Specify an automated test to associate with this stage."}
-                  control={control}
-                  errors={errors}
-                  options={availableAutotests.map(({ name, disabled }) => ({
-                    label: name,
-                    value: name,
-                    disabled,
-                  }))}
-                />
+                <div className="relative">
+                  <Select
+                    value={currentQualityGateAutotestFieldValue || ""}
+                    onValueChange={handleChangeQualityGateAutotestName}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select autotest" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableAutotests.map(({ name, disabled }) => (
+                        <SelectItem key={name} value={name} disabled={disabled}>
+                          {name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="pointer-events-none absolute top-2 right-2">
+                    <Tooltip title="Specify an automated test to associate with this stage.">
+                      <Info size={16} className="text-muted-foreground" />
+                    </Tooltip>
+                  </div>
+                </div>
               </div>
               <div className="col-span-3">
-                <FormSelect
-                  {...register(createQualityGateTypeAutotestsBranchFieldName(currentQualityGate.id), {
-                    onChange: handleChangeQualityGateAutotestBranchName,
-                  })}
-                  tooltipText={"Specify the branch for the automated tests."}
-                  control={control}
-                  errors={errors}
-                  disabled={!currentQualityGateBranchesOptions.length}
-                  options={availableAutotestBranches}
-                />
+                <div className="relative">
+                  <Select
+                    value={currentGate.branchName || ""}
+                    onValueChange={handleChangeQualityGateAutotestBranchName}
+                    disabled={!currentQualityGateBranchesOptions.length}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select branch" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableAutotestBranches.map((option) => (
+                        <SelectItem key={option.value} value={option.value} disabled={option.disabled}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="pointer-events-none absolute top-2 right-2">
+                    <Tooltip title="Specify the branch for the automated tests.">
+                      <Info size={16} className="text-muted-foreground" />
+                    </Tooltip>
+                  </div>
+                </div>
               </div>
             </>
           ) : null}

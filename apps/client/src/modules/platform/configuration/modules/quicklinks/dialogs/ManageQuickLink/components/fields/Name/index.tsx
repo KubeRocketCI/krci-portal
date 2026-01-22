@@ -1,30 +1,32 @@
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
-import { useTypedFormContext } from "../../../hooks/useFormContext";
-import { QUICK_LINK_FORM_NAMES } from "../../../names";
+import { useQuickLinkForm } from "../../../providers/form/hooks";
+import { NAMES } from "../../../names";
 import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
 
 export const Name = () => {
-  const {
-    register,
-    control,
-    formState: { errors },
-  } = useTypedFormContext();
+  const form = useQuickLinkForm();
 
   const {
     props: { isSystem },
   } = useCurrentDialog();
 
   return (
-    <FormTextField
-      {...register(QUICK_LINK_FORM_NAMES.name.name, {
-        required: "Enter a component name.",
-      })}
-      label={"Name"}
-      tooltipText="Enter a service name for the link. This name will be displayed on the overview page. Ensure the name is in lowercase."
-      placeholder={"My component name"}
-      control={control}
-      errors={errors}
-      disabled={isSystem}
-    />
+    <form.AppField
+      name={NAMES.NAME}
+      validators={{
+        onChange: ({ value }) => {
+          if (!value) return "Enter a component name.";
+          return undefined;
+        },
+      }}
+    >
+      {(field) => (
+        <field.FormTextField
+          label="Name"
+          tooltipText="Enter a service name for the link. This name will be displayed on the overview page. Ensure the name is in lowercase."
+          placeholder="My component name"
+          disabled={isSystem}
+        />
+      )}
+    </form.AppField>
   );
 };

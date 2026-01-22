@@ -10,7 +10,6 @@ import {
   Settings,
   Zap,
   FolderGit2,
-  ShoppingBag,
   Package,
   Shield,
   ChevronRight,
@@ -27,7 +26,6 @@ import { PATH_OVERVIEW_FULL } from "@/modules/platform/overview/pages/details/ro
 import { PATH_COMPONENTS_FULL } from "@/modules/platform/codebases/pages/list/route";
 import { PATH_CDPIPELINES_FULL } from "@/modules/platform/cdpipelines/pages/list/route";
 import { PATH_PIPELINERUNS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-list/route";
-import { PATH_MARKETPLACE_FULL } from "@/modules/platform/marketplace/route";
 import { PATH_CONFIG_QUICKLINKS_FULL } from "@/modules/platform/configuration/modules/quicklinks/route";
 import { PATH_CONFIG_GITSERVERS_FULL } from "@/modules/platform/configuration/modules/gitservers/route";
 import { PATH_PIPELINES_FULL } from "@/modules/platform/tekton/pages/pipeline-list/route";
@@ -104,13 +102,6 @@ export default function HomePage() {
       description: "Deployment workflows",
       icon: Rocket,
       to: PATH_CDPIPELINES_FULL,
-      params: clusterParams,
-    },
-    {
-      label: "Marketplace",
-      description: "Templates & integrations",
-      icon: ShoppingBag,
-      to: PATH_MARKETPLACE_FULL,
       params: clusterParams,
     },
   ];

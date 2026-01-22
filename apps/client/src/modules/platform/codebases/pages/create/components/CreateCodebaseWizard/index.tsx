@@ -1,62 +1,24 @@
 import { Card } from "@/core/components/ui/card";
 import { useCodebaseCRUD } from "@/k8s/api/groups/KRCI/Codebase";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { codebaseLabels, createCodebaseDraftObject } from "@my-project/shared";
 import React from "react";
-import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { useShallow } from "zustand/react/shallow";
+import { showToast } from "@/core/components/Snackbar";
+import { useClusterStore } from "@/k8s/store";
 import { InitialSelection } from "./components/InitialSelection";
 import { Review } from "./components/Review";
 import { Success } from "./components/Success";
 import { WizardStepper } from "./components/WizardStepper";
-import { useDefaultValues } from "./hooks/useDefaultValues";
-import { createCodebaseFormSchema, CreateCodebaseFormValues } from "./names";
+import { CreateCodebaseFormValues } from "./names";
 import { useWizardStore } from "./store";
 import { WizardNavigation } from "./components/WizardNavigation";
 import { GitAndProjectInfo } from "./components/GitAndProjectInfo";
 import { BuildConfig } from "./components/BuildConfig";
+import { CreateCodebaseFormProvider } from "./providers/form/provider";
+import { useCreateCodebaseForm } from "./providers/form/hooks";
+import { routeComponentList } from "../../../list/route";
 
 export const CreateCodebaseWizard: React.FC = () => {
-  const baseDefaultValues = useDefaultValues();
-
-  const form = useForm<CreateCodebaseFormValues>({
-    mode: "onChange",
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(createCodebaseFormSchema) as any,
-    defaultValues: {
-      ...baseDefaultValues,
-    },
-  });
-
-  React.useEffect(() => {
-    form.reset(baseDefaultValues);
-  }, [baseDefaultValues, form]);
-
-  React.useEffect(() => {
-    useWizardStore.getState().reset();
-  }, []);
-
-  return (
-    <FormProvider {...form}>
-      <WizardContent />
-    </FormProvider>
-  );
-};
-
-const WizardContent: React.FC = () => {
-  const { currentStepIdx, goToNextStep, goToPreviousStep, getCurrentFormPart } = useWizardStore(
-    useShallow((state) => ({
-      currentStepIdx: state.currentStepIdx,
-      goToNextStep: state.goToNextStep,
-      goToPreviousStep: state.goToPreviousStep,
-      getCurrentFormPart: state.getCurrentFormPart,
-    }))
-  );
-
-  const currentFormPart = getCurrentFormPart();
-
-  const { trigger, handleSubmit: formHandleSubmit, formState } = useFormContext<CreateCodebaseFormValues>();
-
   const {
     triggerCreateCodebase,
     mutations: { codebaseCreateMutation, codebaseSecretCreateMutation, codebaseSecretDeleteMutation },
@@ -72,12 +34,6 @@ const WizardContent: React.FC = () => {
 
   const onSubmit = React.useCallback(
     async (values: CreateCodebaseFormValues) => {
-      const isValid = await trigger();
-
-      if (!isValid) {
-        return;
-      }
-
       const newCodebaseDraft = createCodebaseDraftObject({
         name: values.name,
         labels: {
@@ -123,6 +79,7 @@ const WizardContent: React.FC = () => {
         },
         callbacks: {
           onSuccess: () => {
+            const currentFormPart = useWizardStore.getState().getCurrentFormPart();
             if (currentFormPart) {
               useWizardStore.getState().markStepAsValidated(currentFormPart);
             }
@@ -131,16 +88,55 @@ const WizardContent: React.FC = () => {
         },
       });
     },
-    [trigger, triggerCreateCodebase, currentFormPart]
+    [triggerCreateCodebase]
   );
 
-  const handleSubmit = formHandleSubmit(onSubmit, (errors) => {
-    console.log("Form validation errors:", errors);
-    console.log("Form state errors:", formState.errors);
-  });
+  const onSubmitError = React.useCallback((error: unknown) => {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    showToast("Failed to create component", "error", {
+      description: errorMessage,
+      duration: 10000,
+    });
+  }, []);
+
+  React.useEffect(() => {
+    useWizardStore.getState().reset();
+  }, []);
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col gap-4">
+    <CreateCodebaseFormProvider onSubmit={onSubmit} onSubmitError={onSubmitError}>
+      <WizardContent isPending={isPending} />
+    </CreateCodebaseFormProvider>
+  );
+};
+
+interface WizardContentProps {
+  isPending: boolean;
+}
+
+const WizardContent: React.FC<WizardContentProps> = ({ isPending }) => {
+  const form = useCreateCodebaseForm();
+  const clusterName = useClusterStore(useShallow((state) => state.clusterName));
+
+  const { currentStepIdx, goToNextStep, goToPreviousStep } = useWizardStore(
+    useShallow((state) => ({
+      currentStepIdx: state.currentStepIdx,
+      goToNextStep: state.goToNextStep,
+      goToPreviousStep: state.goToPreviousStep,
+    }))
+  );
+
+  const handleSubmit = React.useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      form.handleSubmit();
+    },
+    [form]
+  );
+
+  return (
+    <form onSubmit={handleSubmit} className="flex h-full min-h-0 flex-1 flex-col gap-4">
       <div className="flex min-h-0 flex-1 flex-col gap-4">
         {currentStepIdx !== 5 && (
           <div className="shrink-0">
@@ -163,12 +159,15 @@ const WizardContent: React.FC = () => {
             <WizardNavigation
               onBack={goToPreviousStep}
               onNext={goToNextStep}
-              onSubmit={handleSubmit}
               isSubmitting={isPending}
+              backRoute={{
+                to: routeComponentList.fullPath,
+                params: { clusterName },
+              }}
             />
           </div>
         )}
       </div>
-    </div>
+    </form>
   );
 };

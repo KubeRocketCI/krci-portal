@@ -1,17 +1,18 @@
 import React from "react";
-import { useFormContext } from "react-hook-form";
+import { useStore } from "@tanstack/react-form";
 import { Button } from "@/core/components/ui/button";
 import { PartyPopper, Check, ArrowRight, FolderOpen, ExternalLink, Sparkles } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { NAMES, CreateCDPipelineFormValues } from "../../names";
+import { NAMES } from "../../names";
 import { routeCDPipelineList } from "../../../../../list/route";
 import { routeCDPipelineDetails } from "../../../../../details/route";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { useWizardStore } from "../../store";
+import { useCreateCDPipelineFormContext } from "../../providers/form/hooks";
 
 export const Success: React.FC = () => {
-  const { watch } = useFormContext<CreateCDPipelineFormValues>();
+  const form = useCreateCDPipelineFormContext();
   const { clusterName, defaultNamespace } = useClusterStore(
     useShallow((state) => ({
       clusterName: state.clusterName,
@@ -19,7 +20,7 @@ export const Success: React.FC = () => {
     }))
   );
 
-  const name = watch(NAMES.name);
+  const name = useStore(form.store, (state) => state.values[NAMES.name]);
 
   const handleCreateAnother = () => {
     useWizardStore.getState().reset();
