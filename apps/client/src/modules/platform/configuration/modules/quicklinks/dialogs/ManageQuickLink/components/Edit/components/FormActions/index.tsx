@@ -1,62 +1,35 @@
 import { Button } from "@/core/components/ui/button";
 import React from "react";
-import { useTypedFormContext } from "../../../../hooks/useFormContext";
+import { useQuickLinkForm } from "../../../../providers/form/hooks";
 import { useCurrentDialog } from "../../../../providers/CurrentDialog/hooks";
-import { ManageQuickLinkFormValues } from "../../../../types";
 import { useQuickLinkCRUD } from "@/k8s/api/groups/KRCI/QuickLink";
-import { editQuickLink } from "@my-project/shared";
+import { useStore } from "@tanstack/react-form";
 
 export const FormActions = () => {
   const {
-    props: { quickLink },
     state: { closeDialog },
   } = useCurrentDialog();
 
-  const {
-    reset,
-    formState: { isDirty },
-    handleSubmit,
-  } = useTypedFormContext();
+  const form = useQuickLinkForm();
 
-  const handleClose = React.useCallback(() => {
-    closeDialog();
-    reset();
-  }, [closeDialog, reset]);
-
-  const handleResetFields = React.useCallback(() => {
-    reset();
-  }, [reset]);
+  const isDirty = useStore(form.store, (state) => state.isDirty);
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const canSubmit = useStore(form.store, (state) => state.canSubmit);
 
   const {
-    triggerPatchQuickLink,
     mutations: { quickLinkPatchMutation },
   } = useQuickLinkCRUD();
 
-  const isLoading = quickLinkPatchMutation.isPending;
+  const isLoading = quickLinkPatchMutation.isPending || isSubmitting;
 
-  const onSubmit = React.useCallback(
-    async (values: ManageQuickLinkFormValues) => {
-      if (!quickLink) {
-        return;
-      }
+  const handleClose = React.useCallback(() => {
+    closeDialog();
+    form.reset();
+  }, [closeDialog, form]);
 
-      const editedQuickLink = editQuickLink(quickLink, {
-        visible: values.visible,
-        url: values.url,
-        icon: values.icon,
-      });
-
-      await triggerPatchQuickLink({
-        data: {
-          quickLink: editedQuickLink,
-        },
-        callbacks: {
-          onSuccess: handleClose,
-        },
-      });
-    },
-    [handleClose, quickLink, triggerPatchQuickLink]
-  );
+  const handleResetFields = React.useCallback(() => {
+    form.reset();
+  }, [form]);
 
   return (
     <div className="flex w-full justify-between gap-2">
@@ -68,7 +41,12 @@ export const FormActions = () => {
           Undo Changes
         </Button>
       </div>
-      <Button onClick={handleSubmit(onSubmit)} variant={"default"} size="sm" disabled={!isDirty || isLoading}>
+      <Button
+        onClick={() => form.handleSubmit()}
+        variant="default"
+        size="sm"
+        disabled={!isDirty || isLoading || !canSubmit}
+      >
         Apply
       </Button>
     </div>

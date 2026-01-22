@@ -9,6 +9,7 @@ import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { TabSection } from "@/core/components/TabSection";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { NameValueTable } from "@/core/components/NameValueTable";
+import { useConfigMapPermissions } from "@/k8s/api/groups/Core/ConfigMap";
 
 export const Variables = () => {
   // const params = routeStageDetails.useParams();
@@ -18,6 +19,7 @@ export const Variables = () => {
   // } = useConfigMapCRUD({});
 
   const variablesConfigMapWatch = useVariablesConfigMapWatch();
+  const configMapPermissions = useConfigMapPermissions();
 
   const variablesConfigMap = variablesConfigMapWatch.query.data;
 
@@ -141,6 +143,10 @@ export const Variables = () => {
     }
 
     if (!dataEntries?.length) {
+      if (!configMapPermissions.data.patch.allowed) {
+        return <EmptyList customText="No variables found." beforeLinkText={configMapPermissions.data.patch.reason} />;
+      }
+
       return (
         <EmptyList
           customText="No variables found."
@@ -149,6 +155,7 @@ export const Variables = () => {
         />
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- permission fields omitted to avoid unnecessary callback recreation
   }, [
     appendNewRow,
     control,

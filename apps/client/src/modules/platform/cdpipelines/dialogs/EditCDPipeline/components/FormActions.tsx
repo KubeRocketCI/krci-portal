@@ -1,69 +1,34 @@
 import React from "react";
 import { Button } from "@/core/components/ui/button";
-import { useFormContext } from "react-hook-form";
 import { useCDPipelineCRUD } from "@/k8s/api/groups/KRCI/CDPipeline";
-import { editCDPipelineObject } from "@my-project/shared";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
+import { useStore } from "@tanstack/react-form";
 import { dialogName } from "../constants";
-import { CDPipeline } from "@my-project/shared";
-import { EditCDPipelineFormValues } from "../types";
+import { useEditCDPipelineForm } from "../providers/form/hooks";
 
-interface FormActionsProps {
-  cdPipeline: CDPipeline;
-}
-
-export const FormActions: React.FC<FormActionsProps> = ({ cdPipeline }) => {
+export const FormActions: React.FC = () => {
   const { closeDialog } = useDialogContext();
-  const {
-    reset,
-    formState: { isDirty },
-    handleSubmit,
-  } = useFormContext<EditCDPipelineFormValues>();
+  const form = useEditCDPipelineForm();
 
-  const handleResetFields = React.useCallback(() => {
-    reset();
-  }, [reset]);
-
-  const handleClose = React.useCallback(() => {
-    closeDialog(dialogName);
-    reset();
-  }, [closeDialog, reset]);
+  // Type-safe selectors using the properly typed form
+  const isDirty = useStore(form.store, (state) => state.isDirty);
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const canSubmit = useStore(form.store, (state) => state.canSubmit);
 
   const {
-    triggerEditCDPipeline,
     mutations: { cdPipelineEditMutation },
   } = useCDPipelineCRUD();
 
-  const isPending = cdPipelineEditMutation.isPending;
+  const isPending = cdPipelineEditMutation.isPending || isSubmitting;
 
-  const onSuccess = React.useCallback(() => {
-    handleClose();
-  }, [handleClose]);
+  const handleResetFields = React.useCallback(() => {
+    form.reset();
+  }, [form]);
 
-  const onSubmit = React.useCallback(
-    async (values: EditCDPipelineFormValues) => {
-      if (!cdPipeline) {
-        return;
-      }
-
-      const updatedCDPipeline = editCDPipelineObject(cdPipeline, {
-        description: values.description,
-        applications: values.applications,
-        inputDockerStreams: values.inputDockerStreams,
-        applicationsToPromote: values.applicationsToPromote,
-      });
-
-      await triggerEditCDPipeline({
-        data: {
-          cdPipeline: updatedCDPipeline,
-        },
-        callbacks: {
-          onSuccess,
-        },
-      });
-    },
-    [cdPipeline, triggerEditCDPipeline, onSuccess]
-  );
+  const handleClose = React.useCallback(() => {
+    closeDialog(dialogName);
+    form.reset();
+  }, [closeDialog, form]);
 
   return (
     <div className="flex w-full justify-between gap-2">
@@ -75,7 +40,12 @@ export const FormActions: React.FC<FormActionsProps> = ({ cdPipeline }) => {
           Undo Changes
         </Button>
       </div>
-      <Button variant="default" size="sm" disabled={!isDirty || isPending} onClick={handleSubmit(onSubmit)}>
+      <Button
+        variant="default"
+        size="sm"
+        disabled={!isDirty || !canSubmit || isPending}
+        onClick={() => form.handleSubmit()}
+      >
         Apply
       </Button>
     </div>

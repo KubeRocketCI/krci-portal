@@ -4,6 +4,8 @@ import { useWatchItem, UseWatchItemParams } from "../useWatch/useWatchItem";
 import { useWatchList, UseWatchListParams } from "../useWatch/useWatchList";
 import { useWatchListMultiple, UseWatchListMultipleParams } from "../useWatch/useWatchListMultiple";
 
+export type { UsePermissionsResult } from "./types";
+
 // Omit resourceConfig from params since it's provided by the factory
 export type UseWatchItemParamsWithoutResourceConfig<I extends KubeObjectBase> = Omit<
   UseWatchItemParams<I>,

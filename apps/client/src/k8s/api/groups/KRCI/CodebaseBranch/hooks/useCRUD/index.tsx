@@ -7,6 +7,7 @@ export const useCRUD = () => {
     "codebaseBranchCreateMutation",
     k8sOperation.create,
     {
+      showMessages: false, // Disable toasts - errors are shown in dialog
       createCustomMessages: () => ({
         loading: {
           message: "Creating CodebaseBranch",
@@ -28,6 +29,7 @@ export const useCRUD = () => {
     "codebaseBranchEditMutation",
     k8sOperation.patch,
     {
+      showMessages: false, // Disable toasts - errors are shown in dialog
       createCustomMessages: () => ({
         loading: {
           message: "Patching CodebaseBranch",

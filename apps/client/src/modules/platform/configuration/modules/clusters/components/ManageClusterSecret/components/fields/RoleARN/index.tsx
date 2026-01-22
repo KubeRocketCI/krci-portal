@@ -1,32 +1,31 @@
-import { useFormContext as useReactHookFormContext } from "react-hook-form";
 import { CLUSTER_FORM_NAMES } from "../../../names";
-import { ManageClusterSecretDataContext, ManageClusterSecretValues } from "../../../types";
-import { useFormContext } from "@/core/providers/Form/hooks";
-import { FormTextFieldPassword } from "@/core/providers/Form/components/FormTextFieldPassword";
+import { useClusterSecretForm } from "../../../providers/form/hooks";
+import { useClusterSecretData } from "../../../providers/data/hooks";
 import { FORM_MODES } from "@/core/types/forms";
 
 export const RoleARN = () => {
-  const {
-    register,
-    control,
-    formState: { errors },
-  } = useReactHookFormContext<ManageClusterSecretValues>();
-
-  const {
-    formData: { mode, ownerReference },
-  } = useFormContext<ManageClusterSecretDataContext>();
+  const form = useClusterSecretForm();
+  const { mode, ownerReference } = useClusterSecretData();
 
   return (
-    <FormTextFieldPassword
-      {...register(CLUSTER_FORM_NAMES.ROLE_ARN, {
-        required: "Enter Role ARN.",
-      })}
-      label={"Role ARN"}
-      placeholder={"Enter Role ARN."}
-      control={control}
-      errors={errors}
-      disabled={mode === FORM_MODES.EDIT && !!ownerReference}
-      helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
-    />
+    <form.AppField
+      name={CLUSTER_FORM_NAMES.ROLE_ARN}
+      validators={{
+        onChange: ({ value }) => {
+          if (!value) return "Enter Role ARN.";
+          return undefined;
+        },
+      }}
+    >
+      {(field) => (
+        <field.FormTextField
+          label="Role ARN"
+          type="password"
+          placeholder="Enter Role ARN."
+          disabled={mode === FORM_MODES.EDIT && !!ownerReference}
+          helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
+        />
+      )}
+    </form.AppField>
   );
 };

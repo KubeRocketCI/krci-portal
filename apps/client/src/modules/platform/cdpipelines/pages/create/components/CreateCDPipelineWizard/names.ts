@@ -155,18 +155,21 @@ const validatePipelineConfigurationStep = (data: FormData, ctx: z.RefinementCtx)
 // MAIN FORM SCHEMA
 // ============================================================================
 
-export const createCDPipelineFormSchema = tempSchema
-  .superRefine((data, ctx) => {
-    // Run all validations independently to prevent cascading issues
-    validateApplicationsStep(data, ctx);
-    validatePipelineConfigurationStep(data, ctx);
-  })
-  .transform((data) => {
-    return {
-      ...data,
-      name: typeof data.name === "string" ? data.name.trim() : data.name,
-    };
-  });
+// Validation-only schema for use with TanStack Form
+// NOTE: Do NOT use .transform() here as it breaks Standard Schema integration
+export const createCDPipelineFormSchema = tempSchema.superRefine((data, ctx) => {
+  // Run all validations independently to prevent cascading issues
+  validateApplicationsStep(data, ctx);
+  validatePipelineConfigurationStep(data, ctx);
+});
+
+// Schema with transformations for final submission
+export const createCDPipelineSubmitSchema = createCDPipelineFormSchema.transform((data) => {
+  return {
+    ...data,
+    name: typeof data.name === "string" ? data.name.trim() : data.name,
+  };
+});
 
 // ============================================================================
 // FORM PARTS CONFIGURATION
@@ -182,8 +185,6 @@ function createNamesObject<T extends Record<string, unknown>>(obj: T): { [K in k
 
 const baseSchemaForNames = z.object(baseCommonFields);
 export const NAMES = createNamesObject(baseSchemaForNames.shape);
-
-export type CreateCDPipelineFormValues = z.infer<typeof createCDPipelineFormSchema>;
 
 export const FORM_PARTS = {
   APPLICATIONS: "applications",

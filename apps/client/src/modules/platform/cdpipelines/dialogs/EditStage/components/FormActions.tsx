@@ -1,65 +1,33 @@
 import { useStageCRUD } from "@/k8s/api/groups/KRCI/Stage";
 import { Button } from "@/core/components/ui/button";
 import React from "react";
-import { useFormContext } from "react-hook-form";
-import { NAMES, CreateStageFormValues } from "../../../pages/stages/create/components/CreateStageWizard/names";
-import { editStageObject, Stage } from "@my-project/shared";
+import { useEditStageForm } from "../providers/form/hooks";
+import { useEditStageData } from "../providers/data/hooks";
+import { useStore } from "@tanstack/react-form";
 
-interface FormActionsProps {
-  stage: Stage | undefined;
-  closeDialog: () => void;
-}
+export const FormActions: React.FC = () => {
+  const form = useEditStageForm();
+  const { closeDialog } = useEditStageData();
 
-export const FormActions: React.FC<FormActionsProps> = ({ stage, closeDialog }) => {
-  const {
-    reset,
-    formState: { isDirty },
-    handleSubmit,
-  } = useFormContext<CreateStageFormValues>();
-
-  const handleClose = React.useCallback(() => {
-    closeDialog();
-    reset();
-  }, [closeDialog, reset]);
-
-  const handleResetFields = React.useCallback(() => {
-    reset();
-  }, [reset]);
+  // Type-safe selectors using the properly typed form
+  const isDirty = useStore(form.store, (state) => state.isDirty);
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const canSubmit = useStore(form.store, (state) => state.canSubmit);
 
   const {
-    triggerEditStage,
     mutations: { stageEditMutation },
   } = useStageCRUD();
 
-  const isPending = stageEditMutation.isPending;
+  const isPending = stageEditMutation.isPending || isSubmitting;
 
-  const onSuccess = React.useCallback(() => {
-    handleClose();
-  }, [handleClose]);
+  const handleResetFields = React.useCallback(() => {
+    form.reset();
+  }, [form]);
 
-  const onSubmit = React.useCallback(
-    async (values: CreateStageFormValues) => {
-      if (!stage) {
-        return;
-      }
-
-      const updatedStage = editStageObject(stage, {
-        triggerType: values[NAMES.triggerType] as "Auto" | "Manual" | "Auto-stable",
-        triggerTemplate: values[NAMES.triggerTemplate],
-        cleanTemplate: values[NAMES.cleanTemplate],
-      });
-
-      await triggerEditStage({
-        data: {
-          stage: updatedStage,
-        },
-        callbacks: {
-          onSuccess,
-        },
-      });
-    },
-    [stage, triggerEditStage, onSuccess]
-  );
+  const handleClose = React.useCallback(() => {
+    closeDialog();
+    form.reset();
+  }, [closeDialog, form]);
 
   return (
     <div className="flex w-full flex-row justify-between gap-4">
@@ -71,7 +39,12 @@ export const FormActions: React.FC<FormActionsProps> = ({ stage, closeDialog }) 
           Undo Changes
         </Button>
       </div>
-      <Button onClick={handleSubmit(onSubmit)} variant="default" size="sm" disabled={!isDirty || isPending}>
+      <Button
+        onClick={() => form.handleSubmit()}
+        variant="default"
+        size="sm"
+        disabled={!isDirty || !canSubmit || isPending}
+      >
         Apply
       </Button>
     </div>

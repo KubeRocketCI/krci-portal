@@ -1,67 +1,35 @@
 import { useStageCRUD } from "@/k8s/api/groups/KRCI/Stage";
 import { Button } from "@/core/components/ui/button";
 import React from "react";
-import { useTypedFormContext } from "../../../../hooks/useFormContext";
+import { useStore } from "@tanstack/react-form";
 import { useCurrentDialog } from "../../../../providers/CurrentDialog/hooks";
-import { STAGE_FORM_NAMES } from "../../../../names";
-import { ManageStageFormValues } from "../../../../types";
-import { editStageObject } from "@my-project/shared";
+import { useStageForm } from "../../../../providers/form/hooks";
 
 export const FormActions = () => {
   const {
-    props: { stage },
     state: { closeDialog },
   } = useCurrentDialog();
 
-  const {
-    reset,
-    formState: { isDirty },
-    handleSubmit,
-  } = useTypedFormContext();
+  const form = useStageForm();
+
+  const isDirty = useStore(form.store, (state) => state.isDirty);
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const canSubmit = useStore(form.store, (state) => state.canSubmit);
 
   const handleClose = React.useCallback(() => {
     closeDialog();
-    reset();
-  }, [closeDialog, reset]);
+    form.reset();
+  }, [closeDialog, form]);
 
   const handleResetFields = React.useCallback(() => {
-    reset();
-  }, [reset]);
+    form.reset();
+  }, [form]);
 
   const {
-    triggerEditStage,
     mutations: { stageEditMutation },
   } = useStageCRUD();
 
-  const isPending = stageEditMutation.isPending;
-
-  const onSuccess = React.useCallback(() => {
-    handleClose();
-  }, [handleClose]);
-
-  const onSubmit = React.useCallback(
-    async (values: ManageStageFormValues) => {
-      if (!stage) {
-        return;
-      }
-
-      const updatedStage = editStageObject(stage, {
-        triggerType: values[STAGE_FORM_NAMES.triggerType.name],
-        triggerTemplate: values[STAGE_FORM_NAMES.triggerTemplate.name],
-        cleanTemplate: values[STAGE_FORM_NAMES.cleanTemplate.name],
-      });
-
-      await triggerEditStage({
-        data: {
-          stage: updatedStage,
-        },
-        callbacks: {
-          onSuccess,
-        },
-      });
-    },
-    [stage, triggerEditStage, onSuccess]
-  );
+  const isPending = stageEditMutation.isPending || isSubmitting;
 
   return (
     <div className="flex w-full flex-row justify-between gap-4">
@@ -73,7 +41,12 @@ export const FormActions = () => {
           Undo Changes
         </Button>
       </div>
-      <Button onClick={handleSubmit(onSubmit)} variant="default" size="sm" disabled={!isDirty || isPending}>
+      <Button
+        onClick={() => form.handleSubmit()}
+        variant="default"
+        size="sm"
+        disabled={!isDirty || isPending || !canSubmit}
+      >
         Apply
       </Button>
     </div>

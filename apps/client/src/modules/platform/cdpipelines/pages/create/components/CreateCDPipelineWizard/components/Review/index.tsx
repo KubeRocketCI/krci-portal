@@ -1,6 +1,8 @@
 import React from "react";
-import { useFormContext } from "react-hook-form";
-import { NAMES, CreateCDPipelineFormValues } from "../../names";
+import { useStore } from "@tanstack/react-form";
+import { NAMES } from "../../names";
+import { ApplicationFieldArrayItem } from "../../types";
+import { useCreateCDPipelineFormContext } from "../../providers/form/hooks";
 import { Card } from "@/core/components/ui/card";
 import { Badge } from "@/core/components/ui/badge";
 import { Check, Settings, Package, GitBranch, ArrowUpCircle } from "lucide-react";
@@ -62,13 +64,13 @@ const ApplicationItem: React.FC<ApplicationItemProps> = ({ appName, appBranch, a
 };
 
 export const Review: React.FC = () => {
-  const { watch } = useFormContext();
+  const form = useCreateCDPipelineFormContext();
 
-  const name = watch(NAMES.name);
-  const description = watch(NAMES.description);
-  const deploymentType = watch(NAMES.deploymentType);
-  const applications = watch(NAMES.applications);
-  const ui_applicationsFieldArray = watch(NAMES.ui_applicationsFieldArray);
+  const name = useStore(form.store, (state) => state.values[NAMES.name]);
+  const description = useStore(form.store, (state) => state.values[NAMES.description]);
+  const deploymentType = useStore(form.store, (state) => state.values[NAMES.deploymentType]);
+  const applications = useStore(form.store, (state) => state.values[NAMES.applications]);
+  const ui_applicationsFieldArray = useStore(form.store, (state) => state.values[NAMES.ui_applicationsFieldArray]);
 
   const deploymentTypeLabel = React.useMemo(() => {
     if (deploymentType === cdPipelineDeploymentType.container) return "Container";
@@ -122,9 +124,7 @@ export const Review: React.FC = () => {
           {applications && applications.length > 0 && ui_applicationsFieldArray ? (
             <div className="space-y-2">
               {applications.map((app: string) => {
-                const appRow = ui_applicationsFieldArray.find(
-                  (row: CreateCDPipelineFormValues["ui_applicationsFieldArray"][number]) => row.appName === app
-                );
+                const appRow = ui_applicationsFieldArray.find((row: ApplicationFieldArrayItem) => row.appName === app);
                 return (
                   <ApplicationItem
                     key={app}

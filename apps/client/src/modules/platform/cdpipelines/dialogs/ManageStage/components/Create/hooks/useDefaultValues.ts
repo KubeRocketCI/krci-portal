@@ -4,8 +4,9 @@ import React from "react";
 import { STAGE_FORM_NAMES } from "../../../names";
 import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
 import { defaultQualityGate } from "../../fields/QualityGates/constants";
+import { ManageStageFormValues } from "../../../types";
 
-export const useDefaultValues = () => {
+export const useDefaultValues = (): Partial<ManageStageFormValues> => {
   const {
     props: { cdPipeline, otherStages },
   } = useCurrentDialog();

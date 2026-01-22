@@ -1,85 +1,40 @@
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import React from "react";
-import { useFormContext as useReactHookFormContext } from "react-hook-form";
-import { ManageClusterSecretDataContext, ManageClusterSecretValues } from "../../../../types";
+import { useClusterSecretForm } from "../../../../providers/form/hooks";
+import { useClusterSecretData } from "../../../../providers/data/hooks";
 import { ClusterCDPipelineConflictError } from "./components/ClusterCDPipelineConflictError";
 import { useConflictedStageWatch } from "./hooks/useConflictedStage";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
-import { useFormContext } from "@/core/providers/Form/hooks";
 import { useSecretCRUD, useSecretPermissions } from "@/k8s/api/groups/Core/Secret";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { Trash } from "lucide-react";
-import { editClusterSecret, k8sSecretConfig } from "@my-project/shared";
+import { k8sSecretConfig } from "@my-project/shared";
 import { DeleteKubeObjectDialog } from "@/core/components/DeleteKubeObject";
+import { useStore } from "@tanstack/react-form";
 
 export const FormActions = () => {
   const openDeleteKubeObjectDialog = useDialogOpener(DeleteKubeObjectDialog);
 
-  const {
-    formData: { currentElement, ownerReference },
-  } = useFormContext<ManageClusterSecretDataContext>();
+  const formData = useClusterSecretData();
+  const { currentElement, ownerReference } = formData;
+  const form = useClusterSecretForm();
+
+  const isDirty = useStore(form.store, (state) => state.isDirty);
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const canSubmit = useStore(form.store, (state) => state.canSubmit);
 
   const {
-    reset,
-    formState: { isDirty },
-    handleSubmit,
-    getValues,
-  } = useReactHookFormContext<ManageClusterSecretValues>();
-
-  const onSuccess = React.useCallback(() => {
-    const values = getValues();
-    reset(values);
-  }, [getValues, reset]);
-
-  const {
-    triggerEditSecret,
     mutations: { secretEditMutation },
   } = useSecretCRUD();
 
   const secretPermissions = useSecretPermissions();
 
-  const isLoading = React.useMemo(() => secretEditMutation.isPending, [secretEditMutation.isPending]);
+  const isLoading = secretEditMutation.isPending || isSubmitting;
 
-  const onSubmit = React.useCallback(
-    async (values: ManageClusterSecretValues) => {
-      if (!secretPermissions.data.patch.allowed || !currentElement) {
-        return false;
-      }
-
-      const {
-        clusterName,
-        clusterType,
-        clusterHost,
-        clusterToken,
-        clusterCertificate,
-        skipTLSVerify,
-        roleARN,
-        caData,
-      } = values;
-
-      const newSecretDraft = editClusterSecret(currentElement, {
-        clusterType,
-        clusterName,
-        clusterHost,
-        clusterToken,
-        clusterCertificate,
-        skipTLSVerify,
-        roleARN,
-        caData,
-      });
-
-      await triggerEditSecret({
-        data: {
-          resource: newSecretDraft,
-        },
-        callbacks: {
-          onSuccess: onSuccess,
-        },
-      });
-    },
-    [currentElement, onSuccess, secretPermissions.data.patch.allowed, triggerEditSecret]
-  );
+  const handleReset = React.useCallback(() => {
+    form.reset();
+  }, [form]);
 
   const clusterName = currentElement?.metadata.name;
 
@@ -143,58 +98,50 @@ export const FormActions = () => {
   }, [ownerReference, secretPermissions.data.delete.allowed, secretPermissions.data.delete.reason]);
 
   return (
-    <>
-      <div className="flex justify-between gap-4">
-        <div>
-          <ConditionalWrapper
-            condition={!secretPermissions.data.delete.allowed || !!ownerReference}
-            wrapper={(children) => (
-              <Tooltip title={deleteButtonTooltip}>
-                <div>{children}</div>
-              </Tooltip>
-            )}
+    <div className="flex justify-between gap-4">
+      <div>
+        <ConditionalWrapper
+          condition={!secretPermissions.data.delete.allowed || !!ownerReference}
+          wrapper={(children) => (
+            <Tooltip title={deleteButtonTooltip}>
+              <div>{children}</div>
+            </Tooltip>
+          )}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleClickDelete}
+            disabled={!secretPermissions.data.delete.allowed || !!ownerReference}
+            data-test-id="delete_button"
           >
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleClickDelete}
-              disabled={!secretPermissions.data.delete.allowed || !!ownerReference}
-              data-test-id="delete_button"
-            >
-              <Trash size={20} />
-            </Button>
-          </ConditionalWrapper>
-        </div>
-        <div>
-          <div className="flex items-center gap-4">
-            <div>
-              <Button onClick={() => reset()} size="sm" variant="ghost" disabled={!isDirty}>
-                Undo Changes
-              </Button>
-            </div>
-            <div>
-              <ConditionalWrapper
-                condition={!secretPermissions.data.patch.allowed || !!ownerReference}
-                wrapper={(children) => (
-                  <Tooltip title={saveButtonTooltip}>
-                    <div>{children}</div>
-                  </Tooltip>
-                )}
-              >
-                <Button
-                  type={"button"}
-                  size={"sm"}
-                  variant={"default"}
-                  disabled={isLoading || !isDirty || !secretPermissions.data.patch.allowed}
-                  onClick={handleSubmit(onSubmit)}
-                >
-                  Save
-                </Button>
-              </ConditionalWrapper>
-            </div>
-          </div>
-        </div>
+            <Trash size={20} />
+          </Button>
+        </ConditionalWrapper>
       </div>
-    </>
+      <div className="flex items-center gap-4">
+        <Button onClick={handleReset} size="sm" variant="ghost" disabled={!isDirty}>
+          Undo Changes
+        </Button>
+        <ConditionalWrapper
+          condition={!secretPermissions.data.patch.allowed || !!ownerReference}
+          wrapper={(children) => (
+            <Tooltip title={saveButtonTooltip}>
+              <div>{children}</div>
+            </Tooltip>
+          )}
+        >
+          <Button
+            type="button"
+            size="sm"
+            variant="default"
+            disabled={isLoading || !isDirty || !secretPermissions.data.patch.allowed || !canSubmit}
+            onClick={() => form.handleSubmit()}
+          >
+            Save
+          </Button>
+        </ConditionalWrapper>
+      </div>
+    </div>
   );
 };

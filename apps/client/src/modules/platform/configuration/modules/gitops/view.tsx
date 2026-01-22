@@ -65,14 +65,21 @@ export default function GitopsConfigurationPage() {
     }
 
     if (!isLoading && !gitOpsCodebase && !error) {
-      return (
-        <>
+      if (!codebasePermissions.data.create.allowed) {
+        return (
           <EmptyList
             customText={"No GitOps repositories found."}
-            linkText={"Click here to add GitOps repository."}
-            handleClick={handleOpenCreateDialog}
+            beforeLinkText={codebasePermissions.data.create.reason}
           />
-        </>
+        );
+      }
+
+      return (
+        <EmptyList
+          customText={"No GitOps repositories found."}
+          linkText={"Click here to add GitOps repository."}
+          handleClick={handleOpenCreateDialog}
+        />
       );
     }
 

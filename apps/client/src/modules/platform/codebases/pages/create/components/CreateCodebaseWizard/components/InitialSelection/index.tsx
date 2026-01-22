@@ -1,22 +1,33 @@
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { FormSelect } from "@/core/providers/Form/components/FormSelect";
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
 import { useTemplateWatchList } from "@/k8s/api/groups/KRCI/Template";
-import { CodebaseTypeField } from "@/modules/platform/codebases/components/form-fields/CodebaseType";
-import { CreationMethodField } from "@/modules/platform/codebases/components/form-fields/CreationMethod";
-import { CreationStrategyField } from "@/modules/platform/codebases/components/form-fields/CreationStrategy";
 import React from "react";
-import { useForm, useFormContext } from "react-hook-form";
 import { NAMES } from "../../names";
-import { FormRadioGroup } from "@/core/providers/Form/components/FormRadioGroup";
-import { FieldEvent } from "@/core/types/forms";
-import { useTypedFormContext } from "../../hooks/useTypedFormContext";
-import { CodebaseType, CodebaseCreationStrategy, codebaseCreationStrategy, Template } from "@my-project/shared";
+import {
+  CodebaseType,
+  CodebaseCreationStrategy,
+  codebaseCreationStrategy,
+  codebaseType,
+  Template,
+} from "@my-project/shared";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { getCodebaseMappingByType } from "@/k8s/api/groups/KRCI/Codebase";
 import { getIconByPattern } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
 import { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/mappings/types";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
+import { useCreateCodebaseForm } from "../../providers/form/hooks";
+import { useAppForm } from "@/core/form-temp";
+import z from "zod";
+import {
+  Package,
+  Settings,
+  LayoutGrid,
+  FlaskConical,
+  SquareLibrary,
+  CloudCog,
+  FileCode,
+  CopyPlus,
+  CloudDownload,
+} from "lucide-react";
 
 const useTemplateOptions = (filteredTemplates: Template[]) => {
   return React.useMemo(
@@ -84,17 +95,15 @@ const TemplateSelection = () => {
   const templatesWatch = useTemplateWatchList();
   const templates = templatesWatch.data.array;
 
-  const filterForm = useForm<{
-    search: string;
-    category: string;
-  }>({
+  // Local form for filtering templates (separate from wizard form)
+  const filterForm = useAppForm({
     defaultValues: {
       search: "",
       category: "all",
     },
   });
 
-  const wizardForm = useTypedFormContext();
+  const wizardForm = useCreateCodebaseForm();
 
   const categories = React.useMemo(() => {
     const uniqueCategories = Array.from(new Set(templates.map((template) => template.spec.category)));
@@ -110,8 +119,18 @@ const TemplateSelection = () => {
     ];
   }, [categories]);
 
-  const searchFieldValue = filterForm.watch("search");
-  const categoryFieldValue = filterForm.watch("category");
+  const [searchFieldValue, setSearchFieldValue] = React.useState("");
+  const [categoryFieldValue, setCategoryFieldValue] = React.useState("all");
+
+  // Subscribe to filter form changes
+  React.useEffect(() => {
+    const unsubscribe = filterForm.store.subscribe(() => {
+      const state = filterForm.state;
+      setSearchFieldValue(state.values.search ?? "");
+      setCategoryFieldValue(state.values.category ?? "all");
+    });
+    return unsubscribe;
+  }, [filterForm]);
 
   const filteredTemplates = React.useMemo(() => {
     return templates.filter((template) => {
@@ -127,70 +146,203 @@ const TemplateSelection = () => {
     <div className="space-y-2">
       <div className="mb-2 grid grid-cols-2 gap-2">
         <div className="relative">
-          <FormTextField
-            {...filterForm.register("search")}
-            label="Search"
-            placeholder="Search templates..."
-            control={filterForm.control}
-            errors={filterForm.formState.errors}
+          <filterForm.AppField
+            name="search"
+            children={(field) => <field.FormTextField label="Search" placeholder="Search templates..." />}
           />
         </div>
-        <FormSelect
-          {...filterForm.register("category")}
-          label="Category"
-          placeholder="Select category"
-          control={filterForm.control}
-          errors={filterForm.formState.errors}
-          options={categoriesOptions}
+        <filterForm.AppField
+          name="category"
+          children={(field) => (
+            <field.FormSelect label="Category" placeholder="Select category" options={categoriesOptions} />
+          )}
         />
       </div>
       <LoadingWrapper isLoading={templatesWatch.query.isFetching}>
-        <FormRadioGroup
-          {...wizardForm.register("ui_creationTemplate", {
-            required: "Select a template",
-            onChange: (event: FieldEvent<string>) => {
-              const template = templates.find((template) => template.metadata.name === event.target.value);
+        <wizardForm.AppField
+          name={NAMES.ui_creationTemplate}
+          validators={{
+            onChange: z.string().min(1, "Select a template"),
+          }}
+          listeners={{
+            onChange: ({ value }) => {
+              const template = templates.find((template) => template.metadata.name === value);
 
               if (template) {
-                wizardForm.setValue(NAMES.lang, template.spec.language);
-                wizardForm.setValue(NAMES.framework, template.spec.framework);
-                wizardForm.setValue(NAMES.buildTool, template.spec.buildTool);
-                wizardForm.setValue(NAMES.type, template.spec.type as CodebaseType);
-                wizardForm.setValue(NAMES.strategy, codebaseCreationStrategy.clone as CodebaseCreationStrategy);
-                wizardForm.setValue(NAMES.repositoryUrl, template.spec.source);
+                wizardForm.setFieldValue(NAMES.lang, template.spec.language);
+                wizardForm.setFieldValue(NAMES.framework, template.spec.framework);
+                wizardForm.setFieldValue(NAMES.buildTool, template.spec.buildTool);
+                wizardForm.setFieldValue(NAMES.type, template.spec.type as CodebaseType);
+                wizardForm.setFieldValue(NAMES.strategy, codebaseCreationStrategy.clone as CodebaseCreationStrategy);
+                wizardForm.setFieldValue(NAMES.repositoryUrl, template.spec.source);
               }
             },
-          })}
-          label="Select Template"
-          control={wizardForm.control}
-          errors={wizardForm.formState.errors}
-          options={templateOptions}
-          variant="horizontal"
-          className="grid-cols-4"
-          disabled={templatesWatch.query.isLoading}
+          }}
+          children={(field) => (
+            <field.FormRadioGroup
+              label="Select Template"
+              options={templateOptions}
+              variant="horizontal"
+              className="grid-cols-4"
+              disabled={templatesWatch.query.isLoading}
+            />
+          )}
         />
       </LoadingWrapper>
     </div>
   );
 };
 
-export const InitialSelection: React.FC = () => {
-  const { watch } = useFormContext();
+const creationMethodOptions = [
+  {
+    value: "template",
+    label: "Select Ready Template",
+    description: "Start with a pre-configured template including best practices, dependencies, and CI/CD pipelines",
+    icon: Package,
+  },
+  {
+    value: "custom",
+    label: "Custom Configuration",
+    description: "Configure your component manually by selecting type and creation strategy",
+    icon: Settings,
+  },
+];
 
-  const creationMethodFieldValue = watch(NAMES.ui_creationMethod);
-  const typeFieldValue = watch(NAMES.type);
+const typeOptions = [
+  {
+    value: codebaseType.application,
+    label: "Application",
+    description:
+      "Deploys services and includes configuration files, deployment scripts, and other resources needed to create and manage the application's infrastructure.",
+    icon: LayoutGrid,
+  },
+  {
+    value: codebaseType.autotest,
+    label: "Autotest",
+    description: "Onboard and start defining Quality Gate for deployment pipelines here.",
+    icon: FlaskConical,
+  },
+  {
+    value: codebaseType.library,
+    label: "Library",
+    description:
+      "Provides reusable code that can be incorporated into services. It includes additional functions, modules that might be shared across services.",
+    icon: SquareLibrary,
+  },
+  {
+    value: codebaseType.infrastructure,
+    label: "Infrastructure",
+    description:
+      "Deploys and manages the infrastructure components in cloud environments using Infrastructure as Code (IaC) approach. Manage, Version and Promote your IaC environments here.",
+    icon: CloudCog,
+  },
+];
+
+const strategyOptions = [
+  {
+    value: codebaseCreationStrategy.create,
+    label: "Create",
+    description: "Create an empty project and configure everything manually for maximum flexibility",
+    icon: FileCode,
+  },
+  {
+    value: codebaseCreationStrategy.clone,
+    label: "Clone",
+    description: "Clone code from third-party VCS providers",
+    icon: CopyPlus,
+  },
+  {
+    value: codebaseCreationStrategy.import,
+    label: "Import",
+    description: "Onboard your existing code to the KubeRocketCI platform",
+    icon: CloudDownload,
+  },
+];
+
+export const InitialSelection: React.FC = () => {
+  const form = useCreateCodebaseForm();
+
+  const [creationMethodFieldValue, setCreationMethodFieldValue] = React.useState<string | null>(null);
+  const [typeFieldValue, setTypeFieldValue] = React.useState<string | null>(null);
+
+  // Subscribe to form field changes
+  React.useEffect(() => {
+    const unsubscribe = form.store.subscribe(() => {
+      const state = form.state;
+      setCreationMethodFieldValue(state.values[NAMES.ui_creationMethod] ?? null);
+      setTypeFieldValue(state.values[NAMES.type] ?? null);
+    });
+    return unsubscribe;
+  }, [form]);
 
   return (
     <div className="flex min-w-0 flex-1 flex-col">
       <div className="flex-1 space-y-6">
-        <CreationMethodField />
+        {/* Creation Method Field */}
+        <form.AppField
+          name={NAMES.ui_creationMethod}
+          validators={{
+            onChange: z.string().min(1, "Select creation method"),
+          }}
+          listeners={{
+            onChange: ({ value }) => {
+              if (value === "template") {
+                form.setFieldValue(NAMES.type, "" as CodebaseType);
+                form.setFieldValue(NAMES.strategy, "" as CodebaseCreationStrategy);
+              } else if (value === "custom") {
+                form.setFieldValue(NAMES.repositoryUrl, "");
+              }
+            },
+          }}
+          children={(field) => (
+            <field.FormRadioGroup label="Creation Method" options={creationMethodOptions} variant="vertical" />
+          )}
+        />
 
         {creationMethodFieldValue === "template" && <TemplateSelection />}
 
-        {creationMethodFieldValue === "custom" && <CodebaseTypeField />}
+        {creationMethodFieldValue === "custom" && (
+          <>
+            {/* Codebase Type Field */}
+            <form.AppField
+              name={NAMES.type}
+              validators={{
+                onChange: ({ value }: { value: string }) => {
+                  if (!value) return "Select codebase type";
+                  return undefined;
+                },
+              }}
+              children={(field) => <field.FormRadioGroup label="Codebase Type" options={typeOptions} />}
+            />
 
-        {creationMethodFieldValue === "custom" && typeFieldValue && (
-          <CreationStrategyField creationMethodValue={creationMethodFieldValue} />
+            {typeFieldValue && (
+              /* Creation Strategy Field */
+              <form.AppField
+                name={NAMES.strategy}
+                validators={{
+                  onChange: ({ value }: { value: string }) => {
+                    if (!value) return "Select creation strategy";
+                    return undefined;
+                  },
+                }}
+                listeners={{
+                  onChange: () => {
+                    if (creationMethodFieldValue === "custom") {
+                      form.setFieldValue(NAMES.repositoryUrl, "");
+                    }
+                  },
+                }}
+                children={(field) => (
+                  <field.FormRadioGroup
+                    label="Creation Strategy"
+                    options={strategyOptions}
+                    variant="vertical"
+                    className="grid-cols-3"
+                  />
+                )}
+              />
+            )}
+          </>
         )}
       </div>
     </div>

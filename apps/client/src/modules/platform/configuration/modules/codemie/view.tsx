@@ -66,6 +66,7 @@ export default function CodemieConfigurationPage() {
           <CodemieSection
             handleOpenCreateDialog={handleOpenCreateDialog}
             handleCloseCreateDialog={handleCloseCreateDialog}
+            secretPermissions={secretPermissions}
           />
         </div>
         <div>

@@ -23,7 +23,7 @@ export interface RadioGroupButtonOption {
   disabled?: boolean;
 }
 
-export type RadioGroupVariant = "horizontal" | "vertical";
+export type RadioGroupVariant = "horizontal" | "vertical" | "tile";
 
 export interface RadioGroupWithButtonsProps extends Omit<React.ComponentProps<typeof RadioGroup>, "children"> {
   options: RadioGroupButtonOption[];

@@ -47,14 +47,19 @@ export default function SonarConfigurationPage() {
     }
 
     if (!sonarSecret && !isLoading && !sonarSecretError && !sonarQuickLinkError) {
+      const hasPermission = secretPermissions.data.create.allowed && quickLinkPermissions.data.patch.allowed;
+      const permissionReason = secretPermissions.data.create.reason || quickLinkPermissions.data.patch.reason;
+
+      if (!hasPermission) {
+        return <EmptyList customText={"No SonarQube integration secrets found."} beforeLinkText={permissionReason} />;
+      }
+
       return (
-        <>
-          <EmptyList
-            customText={"No SonarQube integration secrets found."}
-            linkText={"Click here to add integration."}
-            handleClick={handleOpenCreateDialog}
-          />
-        </>
+        <EmptyList
+          customText={"No SonarQube integration secrets found."}
+          linkText={"Click here to add integration."}
+          handleClick={handleOpenCreateDialog}
+        />
       );
     }
 
@@ -108,6 +113,7 @@ export default function SonarConfigurationPage() {
         </Accordion>
       </LoadingWrapper>
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- permission fields omitted to avoid unnecessary callback recreation
   }, [
     sonarSecretWatch.query.error,
     sonarSecretWatch.query.isLoading,

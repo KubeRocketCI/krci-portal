@@ -47,14 +47,19 @@ export default function NexusConfigurationPage() {
     }
 
     if (!nexusSecret && !isLoading && !nexusSecretError && !nexusQuickLinkError) {
+      const hasPermission = secretPermissions.data.create.allowed && quickLinkPermissions.data.patch.allowed;
+      const permissionReason = secretPermissions.data.create.reason || quickLinkPermissions.data.patch.reason;
+
+      if (!hasPermission) {
+        return <EmptyList customText={"No Nexus integration secrets found."} beforeLinkText={permissionReason} />;
+      }
+
       return (
-        <>
-          <EmptyList
-            customText={"No Nexus integration secrets found."}
-            linkText={"Click here to add integration."}
-            handleClick={handleOpenCreateDialog}
-          />
-        </>
+        <EmptyList
+          customText={"No Nexus integration secrets found."}
+          linkText={"Click here to add integration."}
+          handleClick={handleOpenCreateDialog}
+        />
       );
     }
 
@@ -108,6 +113,7 @@ export default function NexusConfigurationPage() {
         </Accordion>
       </LoadingWrapper>
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- permission fields omitted to avoid unnecessary callback recreation
   }, [
     nexusSecretWatch.query.error,
     nexusSecretWatch.query.isLoading,

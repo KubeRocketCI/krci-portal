@@ -1,6 +1,7 @@
 import React from "react";
-import { useFormContext } from "react-hook-form";
+import { useStore } from "@tanstack/react-form";
 import { NAMES } from "../../names";
+import { useCreateCodebaseForm } from "../../providers/form/hooks";
 import { Card } from "@/core/components/ui/card";
 import { codebaseVersioning, gitProvider } from "@my-project/shared";
 import { InfoColumns } from "@/core/components/InfoColumns";
@@ -53,45 +54,55 @@ const renderIconWithText = (
 };
 
 export const Review: React.FC = () => {
-  const { watch } = useFormContext();
+  const form = useCreateCodebaseForm();
 
+  // Subscribe to form values using useStore (replaces watch)
   // METHOD fields
-  const ui_creationTemplate = watch(NAMES.ui_creationTemplate);
-  const type = watch(NAMES.type);
-  const strategy = watch(NAMES.strategy);
+  const ui_creationTemplate = useStore(form.store, (state) => state.values[NAMES.ui_creationTemplate]);
+  const type = useStore(form.store, (state) => state.values[NAMES.type]);
+  const strategy = useStore(form.store, (state) => state.values[NAMES.strategy]);
 
   // GIT_SETUP fields
-  const name = watch(NAMES.name);
-  const description = watch(NAMES.description);
-  const gitServer = watch(NAMES.gitServer);
-  const repositoryUrl = watch(NAMES.repositoryUrl);
-  const gitUrlPath = watch(NAMES.gitUrlPath);
-  const repositoryOwner = watch(NAMES.ui_repositoryOwner);
-  const repositoryName = watch(NAMES.ui_repositoryName);
-  const defaultBranch = watch(NAMES.defaultBranch);
-  const privateRepo = watch(NAMES.private);
-  const ui_hasCodebaseAuth = watch(NAMES.ui_hasCodebaseAuth);
-  const ui_repositoryLogin = watch(NAMES.ui_repositoryLogin);
-  const ui_repositoryPasswordOrApiToken = watch(NAMES.ui_repositoryPasswordOrApiToken);
-  const emptyProject = watch(NAMES.emptyProject);
+  const name = useStore(form.store, (state) => state.values[NAMES.name]);
+  const description = useStore(form.store, (state) => state.values[NAMES.description]);
+  const gitServer = useStore(form.store, (state) => state.values[NAMES.gitServer]);
+  const repositoryUrl = useStore(form.store, (state) => state.values[NAMES.repositoryUrl]);
+  const gitUrlPath = useStore(form.store, (state) => state.values[NAMES.gitUrlPath]);
+  const repositoryOwner = useStore(form.store, (state) => state.values[NAMES.ui_repositoryOwner]);
+  const repositoryName = useStore(form.store, (state) => state.values[NAMES.ui_repositoryName]);
+  const defaultBranch = useStore(form.store, (state) => state.values[NAMES.defaultBranch]);
+  const privateRepo = useStore(form.store, (state) => state.values[NAMES.private]);
+  const ui_hasCodebaseAuth = useStore(form.store, (state) => state.values[NAMES.ui_hasCodebaseAuth]);
+  const ui_repositoryLogin = useStore(form.store, (state) => state.values[NAMES.ui_repositoryLogin]);
+  const ui_repositoryPasswordOrApiToken = useStore(
+    form.store,
+    (state) => state.values[NAMES.ui_repositoryPasswordOrApiToken]
+  );
+  const emptyProject = useStore(form.store, (state) => state.values[NAMES.emptyProject]);
 
   // BUILD_CONFIG fields
-  const lang = watch(NAMES.lang);
-  const framework = watch(NAMES.framework);
-  const buildTool = watch(NAMES.buildTool);
-  const ciTool = watch(NAMES.ciTool);
-  const testReportFramework = watch(NAMES.testReportFramework);
-  const deploymentScript = watch(NAMES.deploymentScript);
-  const versioningType = watch(NAMES.versioningType);
-  const versioningStartFrom = watch(NAMES.versioningStartFrom);
-  const ui_versioningStartFromVersion = watch(NAMES.ui_versioningStartFromVersion);
-  const ui_versioningStartFromSnapshot = watch(NAMES.ui_versioningStartFromSnapshot);
-  const commitMessagePattern = watch(NAMES.commitMessagePattern);
-  const ui_hasJiraServerIntegration = watch(NAMES.ui_hasJiraServerIntegration);
-  const jiraServer = watch(NAMES.jiraServer);
-  const ticketNamePattern = watch(NAMES.ticketNamePattern);
-  const ui_advancedMappingRows = watch(NAMES.ui_advancedMappingRows);
-  const ui_hasCodemieIntegration = watch(NAMES.ui_hasCodemieIntegration);
+  const lang = useStore(form.store, (state) => state.values[NAMES.lang]);
+  const framework = useStore(form.store, (state) => state.values[NAMES.framework]);
+  const buildTool = useStore(form.store, (state) => state.values[NAMES.buildTool]);
+  const ciTool = useStore(form.store, (state) => state.values[NAMES.ciTool]);
+  const testReportFramework = useStore(form.store, (state) => state.values[NAMES.testReportFramework]);
+  const deploymentScript = useStore(form.store, (state) => state.values[NAMES.deploymentScript]);
+  const versioningType = useStore(form.store, (state) => state.values[NAMES.versioningType]);
+  const versioningStartFrom = useStore(form.store, (state) => state.values[NAMES.versioningStartFrom]);
+  const ui_versioningStartFromVersion = useStore(
+    form.store,
+    (state) => state.values[NAMES.ui_versioningStartFromVersion]
+  );
+  const ui_versioningStartFromSnapshot = useStore(
+    form.store,
+    (state) => state.values[NAMES.ui_versioningStartFromSnapshot]
+  );
+  const commitMessagePattern = useStore(form.store, (state) => state.values[NAMES.commitMessagePattern]);
+  const ui_hasJiraServerIntegration = useStore(form.store, (state) => state.values[NAMES.ui_hasJiraServerIntegration]);
+  const jiraServer = useStore(form.store, (state) => state.values[NAMES.jiraServer]);
+  const ticketNamePattern = useStore(form.store, (state) => state.values[NAMES.ticketNamePattern]);
+  const ui_advancedMappingRows = useStore(form.store, (state) => state.values[NAMES.ui_advancedMappingRows]);
+  const ui_hasCodemieIntegration = useStore(form.store, (state) => state.values[NAMES.ui_hasCodemieIntegration]);
 
   // Get git server data for URL preview
   const gitServersWatch = useGitServerWatchItem({

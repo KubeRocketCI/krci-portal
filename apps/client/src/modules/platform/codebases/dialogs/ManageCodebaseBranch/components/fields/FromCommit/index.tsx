@@ -1,18 +1,13 @@
 import { useTRPCClient } from "@/core/providers/trpc";
-import { validationRules } from "@/core/constants/validation";
-import { FormCombobox } from "@/core/providers/Form/components/FormCombobox";
-import { FormSelect } from "@/core/providers/Form/components/FormSelect";
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
-import { FieldEvent } from "@/core/types/forms";
-import { validateField } from "@/core/utils/forms/validation";
 import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWatchKRCIConfig";
 import { useClusterStore } from "@/k8s/store";
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
-import { useTypedFormContext } from "../../../hooks/useFormContext";
+import { useCodebaseBranchForm } from "../../../providers/form/hooks";
 import { CODEBASE_BRANCH_FORM_NAMES } from "../../../names";
 import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
+import { useStore } from "@tanstack/react-form";
 
 const FROM_TYPE_OPTIONS = [
   {
@@ -27,17 +22,10 @@ const FROM_TYPE_OPTIONS = [
 
 export const FromCommit = () => {
   const trpc = useTRPCClient();
-  const {
-    register,
-    control,
-    watch,
-    resetField,
-    unregister,
-    formState: { errors },
-  } = useTypedFormContext();
+  const form = useCodebaseBranchForm();
 
-  const releaseValue = watch(CODEBASE_BRANCH_FORM_NAMES.release.name);
-  const fromType = watch(CODEBASE_BRANCH_FORM_NAMES.fromType.name) || "branch";
+  const releaseValue = useStore(form.store, (state) => state.values.release);
+  const fromType = useStore(form.store, (state) => state.values.fromType) || "branch";
 
   const {
     props: { codebase, defaultBranch },
@@ -110,63 +98,6 @@ export const FromCommit = () => {
     return " ";
   }, [apiBaseUrl, query.isError]);
 
-  const renderInputField = () => {
-    if (releaseValue || fromType === "branch") {
-      return (
-        <FormCombobox
-          key="branch"
-          {...register(CODEBASE_BRANCH_FORM_NAMES.fromCommit.name, {
-            validate: (value) => {
-              if (!value || value === "") {
-                return true;
-              }
-              if (validationRules.BRANCH_NAME && typeof value === "string") {
-                const validationResult = validateField(value, validationRules.BRANCH_NAME);
-                if (validationResult !== true) {
-                  return validationResult;
-                }
-              }
-              return true;
-            },
-          })}
-          label="Branch name"
-          placeholder="Select branch name"
-          tooltipText="The new branch will be created starting from the selected branch. If this field is empty, the Default branch will be used."
-          control={control}
-          errors={errors}
-          options={branchesOptions}
-          disabled={query.isLoading}
-          helperText={helperText}
-          loading={!!apiBaseUrl && query.isLoading}
-          freeSolo={true}
-        />
-      );
-    } else {
-      return (
-        <FormTextField
-          key="commitHash"
-          {...register(CODEBASE_BRANCH_FORM_NAMES.fromCommit.name, {
-            pattern: {
-              value: /^[a-fA-F0-9]{40}$/,
-              message: "Commit hash must be a full Git commit hash (40 hexadecimal characters)",
-            },
-            validate: (value) => {
-              if (!value || value.trim() === "") {
-                return true;
-              }
-              return true;
-            },
-          })}
-          label="Commit hash"
-          placeholder="Enter commit hash"
-          tooltipText="The new branch will be created starting from the selected commit hash. If this field is empty, the Default branch will be used."
-          control={control}
-          errors={errors}
-        />
-      );
-    }
-  };
-
   const fromTypeOptions = React.useMemo(() => {
     return FROM_TYPE_OPTIONS.map((option) => ({
       ...option,
@@ -174,32 +105,57 @@ export const FromCommit = () => {
     }));
   }, [releaseValue]);
 
+  const handleFromTypeChange = React.useCallback(() => {
+    // Reset fromCommit when type changes
+    form.setFieldValue("fromCommit", "");
+  }, [form]);
+
   return (
     <div className="grid grid-cols-2 items-start gap-4">
       <div>
-        <FormSelect
-          {...register(CODEBASE_BRANCH_FORM_NAMES.fromType.name, {
-            onChange: ({ target: { value } }: FieldEvent) => {
-              unregister(CODEBASE_BRANCH_FORM_NAMES.fromCommit.name);
-
-              if (value === "commit") {
-                resetField(CODEBASE_BRANCH_FORM_NAMES.fromCommit.name, {
-                  defaultValue: "",
-                });
-              } else {
-                resetField(CODEBASE_BRANCH_FORM_NAMES.fromCommit.name);
-              }
-            },
-          })}
-          control={control}
-          errors={errors}
-          label="From"
-          tooltipText="Choose whether to create the branch from an existing branch or a specific commit hash"
-          options={fromTypeOptions}
-          defaultValue="branch"
-        />
+        <form.AppField
+          name={CODEBASE_BRANCH_FORM_NAMES.fromType.name as "fromType"}
+          listeners={{
+            onChange: handleFromTypeChange,
+          }}
+        >
+          {(field) => (
+            <field.FormSelect
+              label="From"
+              tooltipText="Choose whether to create the branch from an existing branch or a specific commit hash"
+              options={fromTypeOptions}
+            />
+          )}
+        </form.AppField>
       </div>
-      <div>{renderInputField()}</div>
+      <div>
+        {releaseValue || fromType === "branch" ? (
+          <form.AppField name={CODEBASE_BRANCH_FORM_NAMES.fromCommit.name as "fromCommit"}>
+            {(field) => (
+              <field.FormCombobox
+                label="Branch name"
+                placeholder="Select branch name"
+                tooltipText="The new branch will be created starting from the selected branch. If this field is empty, the Default branch will be used."
+                options={branchesOptions}
+                disabled={query.isLoading}
+                helperText={helperText}
+                loading={!!apiBaseUrl && query.isLoading}
+                freeSolo={true}
+              />
+            )}
+          </form.AppField>
+        ) : (
+          <form.AppField name={CODEBASE_BRANCH_FORM_NAMES.fromCommit.name as "fromCommit"}>
+            {(field) => (
+              <field.FormTextField
+                label="Commit hash"
+                placeholder="Enter commit hash"
+                tooltipText="The new branch will be created starting from the selected commit hash. If this field is empty, the Default branch will be used."
+              />
+            )}
+          </form.AppField>
+        )}
+      </div>
     </div>
   );
 };

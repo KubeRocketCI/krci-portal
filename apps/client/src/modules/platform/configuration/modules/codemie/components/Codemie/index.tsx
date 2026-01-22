@@ -16,15 +16,18 @@ import { useQuickLinkWatchItem } from "@/k8s/api/groups/KRCI/QuickLink";
 import { useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
 import { getCodemieStatusIcon } from "@/k8s/api/groups/KRCI/Codemie/utils/getStatusIcon";
 import { ShieldX } from "lucide-react";
+import type { UsePermissionsResult } from "@/k8s/api/hooks/hook-creators/types";
 
 const extraInfoLink = EDP_USER_GUIDE.ADD_AI_ASSISTANT.url;
 
 export const CodemieSection = ({
   handleOpenCreateDialog,
   handleCloseCreateDialog,
+  secretPermissions,
 }: {
   handleOpenCreateDialog: () => void;
   handleCloseCreateDialog: () => void;
+  secretPermissions: UsePermissionsResult;
 }) => {
   const { namespace } = useClusterStore(
     useShallow((state) => ({
@@ -73,14 +76,18 @@ export const CodemieSection = ({
   }
 
   if (!codemieWatch.isReady && !codemieSecretWatch.isReady && !codemieProjectWatch.isReady) {
+    if (!secretPermissions.data.create.allowed) {
+      return (
+        <EmptyList customText={"No CodeMie integration found."} beforeLinkText={secretPermissions.data.create.reason} />
+      );
+    }
+
     return (
-      <>
-        <EmptyList
-          customText={"No CodeMie integration found."}
-          linkText={"Click here to add integration."}
-          handleClick={handleOpenCreateDialog}
-        />
-      </>
+      <EmptyList
+        customText={"No CodeMie integration found."}
+        linkText={"Click here to add integration."}
+        handleClick={handleOpenCreateDialog}
+      />
     );
   }
 

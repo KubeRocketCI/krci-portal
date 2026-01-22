@@ -1,13 +1,13 @@
-import { useFormContext } from "react-hook-form";
 import { CODEBASE_FORM_NAMES } from "../../names";
-import { ManageGitOpsValues } from "../../types";
 import { CiTool, GitRepoPath, GitServer, Name } from "../fields";
 import { FolderPlus, CloudDownload } from "lucide-react";
 import { useGitServerWatchItem } from "@/k8s/api/groups/KRCI/GitServer";
 import { gitProvider } from "@my-project/shared";
-import { TileRadioGroup } from "@/core/providers/Form/components/MainRadioGroup";
+import { useGitOpsForm } from "../../providers/form/hooks";
+import { useStore } from "@tanstack/react-form";
+import type { FormRadioOption } from "@/core/form-temp";
 
-const codebaseCreationStrategies = [
+const codebaseCreationStrategies: FormRadioOption[] = [
   {
     value: "create",
     label: "Create",
@@ -23,33 +23,25 @@ const codebaseCreationStrategies = [
     checkedIcon: <CloudDownload size={24} color="#002446" />,
   },
 ];
+
 export const Create = () => {
-  const { watch } = useFormContext<ManageGitOpsValues>();
-  const gitServerFieldValue = watch(CODEBASE_FORM_NAMES.GIT_SERVER);
+  const form = useGitOpsForm();
+
+  // Subscribe to gitServer field value (replaces watch)
+  const gitServerFieldValue = useStore(form.store, (state) => state.values[CODEBASE_FORM_NAMES.GIT_SERVER]);
 
   const gitServerWatch = useGitServerWatchItem({
     name: gitServerFieldValue,
   });
 
   const gitServer = gitServerWatch.query.data;
-
   const gitServerProvider = gitServer?.spec.gitProvider;
-
-  const {
-    register,
-    control,
-    formState: { errors },
-  } = useFormContext();
 
   return (
     <div className="flex flex-col gap-2">
-      <TileRadioGroup
-        {...register(CODEBASE_FORM_NAMES.STRATEGY)}
-        control={control}
-        errors={errors}
-        options={codebaseCreationStrategies}
-        gridCols={3}
-      />
+      <form.AppField name={CODEBASE_FORM_NAMES.STRATEGY}>
+        {(field) => <field.FormRadioGroup options={codebaseCreationStrategies} variant="tile" />}
+      </form.AppField>
 
       <div className="p-6 px-2">
         <div className="grid grid-cols-2 gap-4">

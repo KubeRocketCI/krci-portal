@@ -1,34 +1,31 @@
 import React from "react";
 import { NAMES } from "../../../pages/create/components/CreateCDPipelineWizard/names";
-import { Controller, useFormContext } from "react-hook-form";
-import { FormTextarea } from "@/core/providers/Form/components/FormTextarea";
 import { Applications } from "./Applications";
 import { Switch } from "@/core/components/ui/switch";
 import { Label } from "@/core/components/ui/label";
 import { Info } from "lucide-react";
+import { useEditCDPipelineForm } from "../providers/form/hooks";
 
 export const FormContent: React.FC = () => {
-  const {
-    register,
-    control,
-    formState: { errors },
-    getValues,
-    setValue,
-  } = useFormContext();
+  const form = useEditCDPipelineForm();
 
   return (
     <div className="flex flex-col gap-4">
-      <FormTextarea
-        {...register(NAMES.description, {
-          required: "Description is required",
-        })}
-        label={"Description"}
-        tooltipText={"Add a brief description highlighting key features or functionality."}
-        placeholder={"Enter description"}
-        control={control}
-        errors={errors}
-        helperText="Help others understand what this deployment flow does."
-      />
+      <form.AppField
+        name={NAMES.description as "description"}
+        validators={{
+          onChange: ({ value }) => (!value ? "Description is required" : undefined),
+        }}
+      >
+        {(field) => (
+          <field.FormTextarea
+            label="Description"
+            tooltipText="Add a brief description highlighting key features or functionality."
+            placeholder="Enter description"
+            helperText="Help others understand what this deployment flow does."
+          />
+        )}
+      </form.AppField>
 
       {/* Promote Applications Switch */}
       <div className="flex items-center justify-between rounded-lg border p-4">
@@ -44,21 +41,22 @@ export const FormContent: React.FC = () => {
             gates.
           </p>
         </div>
-        <Controller
-          name={NAMES.ui_applicationsToPromoteAll}
-          control={control}
-          render={({ field }) => (
+        <form.AppField name={NAMES.ui_applicationsToPromoteAll as "ui_applicationsToPromoteAll"}>
+          {(field) => (
             <Switch
               id="promote-applications"
-              checked={field.value}
+              checked={field.state.value}
               onCheckedChange={(checked) => {
-                field.onChange(checked);
-                const values = getValues();
-                setValue(NAMES.applicationsToPromote, checked ? values.ui_applicationsToAddChooser : []);
+                field.handleChange(checked);
+                const values = form.store.state.values;
+                form.setFieldValue(
+                  NAMES.applicationsToPromote as "applicationsToPromote",
+                  checked ? values.ui_applicationsToAddChooser : []
+                );
               }}
             />
           )}
-        />
+        </form.AppField>
       </div>
 
       <Applications />

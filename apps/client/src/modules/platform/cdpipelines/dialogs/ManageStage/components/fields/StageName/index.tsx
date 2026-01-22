@@ -1,19 +1,13 @@
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
-import { useTypedFormContext } from "../../../hooks/useFormContext";
+import React from "react";
 import { STAGE_FORM_NAMES } from "../../../names";
 import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
 import { StageNameProps } from "./types";
-import { FieldEvent } from "@/core/types/forms";
+import { useStageForm } from "../../../providers/form/hooks";
 
 const nameRequirementLabel = `Name must be not less than two characters long. It must contain only lowercase letters, numbers, and dashes. It cannot start or end with a dash, and cannot have whitespaces`;
 
 export const StageName = ({ otherStagesNames }: StageNameProps) => {
-  const {
-    register,
-    control,
-    formState: { errors },
-    setValue,
-  } = useTypedFormContext();
+  const form = useStageForm();
 
   const {
     props: { cdPipeline },
@@ -22,31 +16,42 @@ export const StageName = ({ otherStagesNames }: StageNameProps) => {
   const namespace = cdPipeline?.metadata.namespace;
   const CDPipelineName = cdPipeline?.metadata.name;
 
+  const handleNameChange = React.useCallback(
+    (value: string) => {
+      form.setFieldValue(STAGE_FORM_NAMES.deployNamespace.name, `${namespace}-${CDPipelineName}-${value}`);
+    },
+    [form, namespace, CDPipelineName]
+  );
+
   return (
-    <FormTextField
-      {...register(STAGE_FORM_NAMES.name.name, {
-        required: `Enter an Environment name. `,
-        pattern: {
-          value: /^[a-z](?!.*--[^-])[a-z0-9-]*[a-z0-9]$/,
-          message: nameRequirementLabel,
-        },
-        onChange: ({ target: { value } }: FieldEvent) => {
-          setValue(STAGE_FORM_NAMES.deployNamespace.name, `${namespace}-${CDPipelineName}-${value}`);
-        },
-        validate: (name) => {
-          if (otherStagesNames.includes(name)) {
-            return `"${name}" has been already added to the Environments that will be created`;
+    <form.AppField
+      name={STAGE_FORM_NAMES.name.name}
+      validators={{
+        onChange: ({ value }) => {
+          if (!value) return "Enter an Environment name.";
+          if (!/^[a-z](?!.*--[^-])[a-z0-9-]*[a-z0-9]$/.test(value)) {
+            return nameRequirementLabel;
           }
+          if (value.length > 10) {
+            return "Name must be not more than 10 characters long";
+          }
+          if (otherStagesNames.includes(value)) {
+            return `"${value}" has been already added to the Environments that will be created`;
+          }
+          return undefined;
         },
-        maxLength: { value: 10, message: "Name must be not more than 10 characters long" },
-      })}
-      label={"Environment name"}
-      tooltipText={
-        "Specify an environment name. This name identifies the specific environment within your Deployment Flow."
-      }
-      placeholder={"Enter an Environment name"}
-      control={control}
-      errors={errors}
-    />
+      }}
+      listeners={{
+        onChange: ({ value }) => handleNameChange(value as string),
+      }}
+    >
+      {(field) => (
+        <field.FormTextField
+          label="Environment name"
+          tooltipText="Specify an environment name. This name identifies the specific environment within your Deployment Flow."
+          placeholder="Enter an Environment name"
+        />
+      )}
+    </form.AppField>
   );
 };
