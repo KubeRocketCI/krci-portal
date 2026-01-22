@@ -3,6 +3,7 @@ import { Codebase, GitServer, CodebaseBranch, gitProvider } from "../../../../KR
 import { PipelineRun } from "../../types.js";
 import { pipelineRunLabels } from "../../labels.js";
 import { pipelineType } from "../../../Pipeline/constants.js";
+import { RESULT_ANNOTATIONS_KEY, createResultAnnotations } from "../resultAnnotations/index.js";
 
 export const createBuildPipelineRunDraft = ({
   codebase,
@@ -62,6 +63,12 @@ export const createBuildPipelineRunDraft = ({
   ];
 
   const gitUrlPathWithoutSlashAtStart = stripLeadingSlash(codebaseGitUrlPath);
+
+  // Set result annotations with actual values (overwriting template's $(tt.params.*) placeholders)
+  base.metadata.annotations = base.metadata.annotations || {};
+  base.metadata.annotations[RESULT_ANNOTATIONS_KEY] = JSON.stringify(
+    createResultAnnotations(codebaseBranchName, gitUrlPathWithoutSlashAtStart)
+  );
 
   for (const param of base.spec.params || []) {
     switch (param.name) {
