@@ -122,6 +122,15 @@ export const DataTable = <DataType,>({
     return !!data?.length && !filteredData?.length;
   }, [data, isLoading, isFilteredDataLoading, filteredData]);
 
+  // Check if current page is beyond total pages
+  const isPageOutOfBounds = React.useMemo(() => {
+    if (!filteredData || filteredData.length === 0) {
+      return false;
+    }
+    const totalPages = Math.ceil(filteredData.length / _rowsPerPage);
+    return page >= totalPages;
+  }, [filteredData, page, _rowsPerPage]);
+
   const activePage = filteredData !== null && filteredData.length < _rowsPerPage ? 0 : page;
 
   const paginatedData = React.useMemo(() => {
@@ -240,14 +249,23 @@ export const DataTable = <DataType,>({
               />
               <TableBody
                 columns={columns}
-                data={filteredData}
+                data={isPageOutOfBounds ? [] : filteredData}
                 blockerError={blockerError}
                 errors={errors}
                 isLoading={isLoading}
                 selection={selectionSettings}
                 expandable={expandable}
                 handleRowClick={handleRowClick}
-                emptyListComponent={emptyListComponent}
+                emptyListComponent={
+                  isPageOutOfBounds ? (
+                    <div className="text-muted-foreground py-8 text-center">
+                      <p className="mb-2 text-lg font-medium">Page not found</p>
+                      <p className="text-sm">The requested page does not exist. Please navigate to a valid page.</p>
+                    </div>
+                  ) : (
+                    emptyListComponent
+                  )
+                }
                 page={activePage}
                 rowsPerPage={_rowsPerPage}
                 isEmptyFilterResult={isEmptyFilterResult}

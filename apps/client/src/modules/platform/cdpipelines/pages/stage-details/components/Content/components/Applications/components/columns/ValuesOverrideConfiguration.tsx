@@ -60,7 +60,7 @@ export const ValuesOverrideConfigurationColumn = ({
                 appCodebase.metadata.name,
                 gitOpsGitServer?.spec.gitProvider as GitProvider
               )}
-              Icon={<SquareArrowOutUpRight size={16} />}
+              Icon={<SquareArrowOutUpRight className="text-muted-foreground/70" size={16} />}
               name="source code"
             />
           )}

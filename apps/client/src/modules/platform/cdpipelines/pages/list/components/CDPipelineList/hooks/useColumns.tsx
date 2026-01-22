@@ -95,7 +95,7 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                       namespace: namespace || defaultNamespace,
                     }}
                   >
-                    <CloudUpload />
+                    <CloudUpload className="text-muted-foreground/70" />
                     <TextWithTooltip text={name} />
                   </Link>
                 </Button>
@@ -145,7 +145,7 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                                 namespace: namespace!,
                               }}
                             >
-                              <Box />
+                              <Box className="text-muted-foreground/70" />
                               {app}
                             </Link>
                           </Button>
@@ -165,7 +165,7 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                                 namespace: namespace!,
                               }}
                             >
-                              <Box />
+                              <Box className="text-muted-foreground/70" />
                               {app}
                             </Link>
                           </Button>
@@ -194,7 +194,7 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                                   namespace: namespace!,
                                 }}
                               >
-                                <Package className="text-muted-foreground mr-2" />
+                                <Package className="text-muted-foreground/70 mr-2" />
                                 {app}
                               </Link>
                             </DropdownMenuItem>

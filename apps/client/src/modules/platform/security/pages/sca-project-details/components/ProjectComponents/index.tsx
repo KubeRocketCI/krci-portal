@@ -1,18 +1,30 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { ServerSideTable } from "@/core/components/ServerSideTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { Label } from "@/core/components/ui/label";
 import { Switch } from "@/core/components/ui/switch";
 import { useComponents } from "../../hooks/useComponents";
 import { useComponentsColumns } from "../../hooks/useComponentsColumns";
+import { routeSCAProjectDetails } from "../../route";
+import { router } from "@/core/router";
+import { PATH_SCA_PROJECT_DETAILS_FULL } from "../../route";
 
 interface ProjectComponentsProps {
   projectUuid: string;
 }
 
 export function ProjectComponents({ projectUuid }: ProjectComponentsProps) {
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(25);
+  const params = routeSCAProjectDetails.useParams();
+  const search = routeSCAProjectDetails.useSearch();
+
+  // Convert from 1-indexed URL page to 0-indexed table page
+  const urlPage = search.page;
+  const page = urlPage !== undefined ? urlPage - 1 : 0;
+
+  // Get default rowsPerPage from localStorage settings or use 25
+  const defaultRowsPerPage = JSON.parse(localStorage.getItem("settings") || "{}")?.tableDefaultRowsPerPage || 25;
+  const pageSize = search.rowsPerPage ?? defaultRowsPerPage;
+
   const [onlyOutdated, setOnlyOutdated] = useState(false);
   const [onlyDirect, setOnlyDirect] = useState(false);
 
@@ -29,6 +41,36 @@ export function ProjectComponents({ projectUuid }: ProjectComponentsProps) {
   const components = data?.components || [];
   const totalCount = data?.totalCount || 0;
 
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      // Convert from 0-indexed table page to 1-indexed URL page
+      const urlPage = newPage + 1;
+      router.navigate({
+        to: PATH_SCA_PROJECT_DETAILS_FULL,
+        params,
+        search: (prev) => ({ ...prev, page: urlPage }),
+      });
+    },
+    [params]
+  );
+
+  const handlePageSizeChange = useCallback(
+    (newPageSize: number) => {
+      // Update localStorage only on user interaction
+      const settings = JSON.parse(localStorage.getItem("settings") || "{}");
+      settings.tableDefaultRowsPerPage = newPageSize;
+      localStorage.setItem("settings", JSON.stringify(settings));
+
+      // Update URL - reset to page 1 (1-indexed)
+      router.navigate({
+        to: PATH_SCA_PROJECT_DETAILS_FULL,
+        params,
+        search: (prev) => ({ ...prev, rowsPerPage: newPageSize, page: 1 }),
+      });
+    },
+    [params]
+  );
+
   return (
     <div className="space-y-4">
       <Card>
@@ -42,7 +84,7 @@ export function ProjectComponents({ projectUuid }: ProjectComponentsProps) {
                   checked={onlyOutdated}
                   onCheckedChange={(checked) => {
                     setOnlyOutdated(checked);
-                    setPage(0);
+                    handlePageChange(0);
                   }}
                 />
                 <Label htmlFor="only-outdated" className="cursor-pointer text-sm">
@@ -55,7 +97,7 @@ export function ProjectComponents({ projectUuid }: ProjectComponentsProps) {
                   checked={onlyDirect}
                   onCheckedChange={(checked) => {
                     setOnlyDirect(checked);
-                    setPage(0);
+                    handlePageChange(0);
                   }}
                 />
                 <Label htmlFor="only-direct" className="cursor-pointer text-sm">
@@ -87,11 +129,8 @@ export function ProjectComponents({ projectUuid }: ProjectComponentsProps) {
               page,
               rowsPerPage: pageSize,
               totalCount,
-              onPageChange: setPage,
-              onRowsPerPageChange: (size) => {
-                setPageSize(size);
-                setPage(0);
-              },
+              onPageChange: handlePageChange,
+              onRowsPerPageChange: handlePageSizeChange,
             }}
           />
         </CardContent>

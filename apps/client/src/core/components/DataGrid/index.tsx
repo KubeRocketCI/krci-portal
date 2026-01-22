@@ -49,6 +49,15 @@ export const DataGrid = <DataType = KubeObjectBase,>({
     return !!data?.length && !readyData?.length;
   }, [data, isLoading, isReadyDataLoading, readyData]);
 
+  // Check if current page is beyond total pages
+  const isPageOutOfBounds = React.useMemo(() => {
+    if (!readyData || readyData.length === 0) {
+      return false;
+    }
+    const totalPages = Math.ceil(readyData.length / _rowsPerPage);
+    return page >= totalPages;
+  }, [readyData, page, _rowsPerPage]);
+
   const renderGrid = React.useCallback(() => {
     if (blockerError) {
       return (
@@ -93,12 +102,22 @@ export const DataGrid = <DataType = KubeObjectBase,>({
       return <EmptyList customText={"No results found!"} isSearch />;
     }
 
+    if (isPageOutOfBounds) {
+      return (
+        <div className="text-muted-foreground py-8 text-center">
+          <p className="mb-2 text-lg font-medium">Page not found</p>
+          <p className="text-sm">The requested page does not exist. Please navigate to a valid page.</p>
+        </div>
+      );
+    }
+
     return <>{emptyListComponent}</>;
   }, [
     blockerError,
     isLoading,
     readyData,
     hasEmptyResult,
+    isPageOutOfBounds,
     emptyListComponent,
     spacing,
     page,

@@ -27,7 +27,7 @@ export const TooltipWithLinkList = ({ urls, size }: { urls: string[]; size?: "me
     >
       <div className="mx-8 leading-none">
         <div className="flex flex-row items-center">
-          <SquareArrowOutUpRight size={iconSize} />
+          <SquareArrowOutUpRight className="text-muted-foreground/70" size={iconSize} />
           <ChevronDown size={iconSize} />
         </div>
       </div>

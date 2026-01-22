@@ -79,6 +79,15 @@ export const ServerSideTable = <DataType,>({
     sortBy: sortSettings.sortBy,
   });
 
+  // Check if current page is beyond total pages
+  const isPageOutOfBounds = React.useMemo(() => {
+    if (!pagination.show || pagination.totalCount === 0) {
+      return false;
+    }
+    const totalPages = Math.ceil(pagination.totalCount / pagination.rowsPerPage);
+    return pagination.page >= totalPages;
+  }, [pagination]);
+
   // Sort data client-side (sorting current page only)
   const sortedData = React.useMemo(() => {
     if (!data || isLoading) {
@@ -89,8 +98,13 @@ export const ServerSideTable = <DataType,>({
       return null;
     }
 
+    // If page is out of bounds, return empty array to show empty state
+    if (isPageOutOfBounds) {
+      return [];
+    }
+
     return [...data].sort(sortState.sortFn);
-  }, [data, isLoading, blockerError, sortState.sortFn]);
+  }, [data, isLoading, blockerError, sortState.sortFn, isPageOutOfBounds]);
 
   const renderHeader = React.useCallback(() => {
     if (slots?.header || tableSettings.show) {
@@ -161,7 +175,16 @@ export const ServerSideTable = <DataType,>({
                 }}
                 expandable={expandable}
                 handleRowClick={handleRowClick}
-                emptyListComponent={emptyListComponent}
+                emptyListComponent={
+                  isPageOutOfBounds ? (
+                    <div className="text-muted-foreground py-8 text-center">
+                      <p className="mb-2 text-lg font-medium">Page not found</p>
+                      <p className="text-sm">The requested page does not exist. Please navigate to a valid page.</p>
+                    </div>
+                  ) : (
+                    emptyListComponent
+                  )
+                }
                 page={0} // Server-side: always show from start of current page data
                 rowsPerPage={data?.length || 0}
                 isEmptyFilterResult={false}

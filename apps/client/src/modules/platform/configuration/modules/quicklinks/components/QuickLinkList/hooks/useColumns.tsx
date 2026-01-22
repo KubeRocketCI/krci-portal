@@ -25,8 +25,8 @@ export const useColumns = (): TableColumn<QuickLink>[] => {
               spec: { icon },
             },
           }) => (
-            <span className="block px-5">
-              <img className="w-12 shrink-0" src={`data:image/svg+xml;base64,${icon}`} alt="" />
+            <span className="block shrink-0 px-5">
+              <img className="size-8 shrink-0" src={`data:image/svg+xml;base64,${icon}`} alt="" />
             </span>
           ),
         },
@@ -68,7 +68,7 @@ export const useColumns = (): TableColumn<QuickLink>[] => {
                 <Link to={_url} target="_blank" rel="noopener noreferrer">
                   <div className="flex items-center gap-1">
                     <span>{_url} </span>
-                    <SquareArrowOutUpRight size={15} />
+                    <SquareArrowOutUpRight className="text-muted-foreground/70" size={15} />
                   </div>
                 </Link>
               </Button>

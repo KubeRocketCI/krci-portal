@@ -14,7 +14,7 @@ export const IngressColumn = ({ application }: { application: Application }) => 
   if (externalURLs.length === 0) {
     return (
       <Badge variant="outline" className="bg-muted text-muted-foreground py-1 text-xs [&>svg]:size-4">
-        <SquareArrowOutUpRight className="mr-1" />0 Ingresses
+        <SquareArrowOutUpRight className="text-muted-foreground/70 mr-1" />0 Ingresses
       </Badge>
     );
   }
@@ -26,7 +26,7 @@ export const IngressColumn = ({ application }: { application: Application }) => 
           variant="outline"
           className="bg-muted text-muted-foreground hover:bg-accent hover:border-primary/50 cursor-pointer py-1 text-xs [&>svg]:size-4"
         >
-          <SquareArrowOutUpRight className="mr-1" />
+          <SquareArrowOutUpRight className="text-muted-foreground/70 mr-1" />
           {externalURLs.length} {externalURLs.length === 1 ? "Ingress" : "Ingresses"}
         </Badge>
       </DropdownMenuTrigger>
@@ -37,7 +37,7 @@ export const IngressColumn = ({ application }: { application: Application }) => 
         {externalURLs.map((url: string) => (
           <DropdownMenuItem key={url} className="text-xs" asChild>
             <a href={url} target="_blank" rel="noopener noreferrer">
-              <SquareArrowOutUpRight className="text-muted-foreground mr-2" />
+              <SquareArrowOutUpRight className="text-muted-foreground/70 mr-2" />
               <span className="truncate">{url}</span>
             </a>
           </DropdownMenuItem>
