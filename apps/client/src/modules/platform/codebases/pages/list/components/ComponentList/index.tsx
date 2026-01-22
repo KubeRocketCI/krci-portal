@@ -4,11 +4,13 @@ import { EmptyList } from "@/core/components/EmptyList";
 import { DataTable } from "@/core/components/Table";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { useCodebasePermissions, useCodebaseWatchListMultiple } from "@/k8s/api/groups/KRCI/Codebase";
-import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
+import { useGitServerPermissions, useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
+import { getK8sErrorMessage } from "@/k8s/api/utils/getK8sErrorMessage";
 import { TABLE } from "@/k8s/constants/tables";
 import { codebaseType, type Codebase } from "@my-project/shared";
 import { Trash } from "lucide-react";
 import React, { Suspense } from "react";
+import { routeGitserversConfiguration } from "../../../../../configuration/modules/gitservers/route";
 import { routeCodebaseCreate } from "../../../create/route";
 import { CodebaseFilter } from "../CodebaseFilter";
 import { useCodebaseFilter } from "../CodebaseFilter/hooks/useFilter";
@@ -18,18 +20,34 @@ import { useSelection } from "./hooks/useSelection";
 
 export const ComponentList = () => {
   const columns = useColumns();
-  const codebaseListWatch = useCodebaseWatchListMultiple();
+  const { form, filterFunction } = useCodebaseFilter();
+
+  // Only fetch from filtered namespaces if they're specified
+  const namespacesToWatch = React.useMemo(() => {
+    const namespaces = form.state.values.namespaces;
+    return namespaces && namespaces.length > 0 ? namespaces : undefined;
+  }, [form.state.values.namespaces]);
+
+  const codebaseListWatch = useCodebaseWatchListMultiple({
+    namespaces: namespacesToWatch,
+  });
 
   const codebasePermissions = useCodebasePermissions();
 
   const gitServerListWatch = useGitServerWatchList();
+  const gitServerPermissions = useGitServerPermissions();
 
   const noGitServers = gitServerListWatch.isEmpty;
 
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
   const emptyListComponent = React.useMemo(() => {
-    if (codebaseListWatch.isLoading || gitServerListWatch.isLoading || codebasePermissions.isFetching) {
+    if (
+      codebaseListWatch.isLoading ||
+      gitServerListWatch.isLoading ||
+      codebasePermissions.isFetching ||
+      gitServerPermissions.isFetching
+    ) {
       return null;
     }
 
@@ -38,11 +56,22 @@ export const ComponentList = () => {
     }
 
     if (noGitServers) {
+      if (!gitServerPermissions.data.create.allowed) {
+        return (
+          <EmptyList
+            customText={"No Git Servers Connected."}
+            beforeLinkText={gitServerPermissions.data.create.reason}
+          />
+        );
+      }
+
       return (
         <EmptyList
           customText={"No Git Servers Connected."}
           linkText={"Click here to add a Git Server."}
-          // handleClick={() => history.push(gitServersConfigurationPageRoute)}
+          route={{
+            to: routeGitserversConfiguration.fullPath,
+          }}
         />
       );
     }
@@ -62,11 +91,13 @@ export const ComponentList = () => {
     codebasePermissions.data.create.reason,
     codebasePermissions.isFetching,
     gitServerListWatch.isLoading,
+    gitServerPermissions.data.create.allowed,
+    gitServerPermissions.data.create.reason,
+    gitServerPermissions.isFetching,
     noGitServers,
   ]);
 
   const { selected, setSelected, handleSelectAllClick, handleSelectRowClick } = useSelection();
-  const { filterFunction } = useCodebaseFilter();
 
   const tableSlots = React.useMemo(
     () => ({
@@ -74,6 +105,18 @@ export const ComponentList = () => {
     }),
     []
   );
+
+  const formattedErrors = React.useMemo(() => {
+    if (!codebaseListWatch.errors || codebaseListWatch.errors.length === 0) {
+      return undefined;
+    }
+
+    return codebaseListWatch.errors.map((error) => {
+      const errorMessage = getK8sErrorMessage(error);
+      const formattedError = new Error(errorMessage);
+      return formattedError;
+    });
+  }, [codebaseListWatch.errors]);
 
   return (
     <>
@@ -85,7 +128,7 @@ export const ComponentList = () => {
             name={TABLE.COMPONENT_LIST.name}
             data={codebaseListWatch.data.array}
             isLoading={codebaseListWatch.isLoading}
-            errors={codebaseListWatch.errors}
+            errors={formattedErrors}
             columns={columns}
             selection={{
               selected,

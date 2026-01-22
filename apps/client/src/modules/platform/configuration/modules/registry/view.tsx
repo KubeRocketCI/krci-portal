@@ -57,14 +57,21 @@ export default function RegistryConfigurationPage() {
     }
 
     if (!registryType && !isLoading && !error) {
-      return (
-        <>
+      if (!secretPermissions.data.create.allowed) {
+        return (
           <EmptyList
             customText={"No registry integration found."}
-            linkText={"Click here to add integration."}
-            handleClick={handleOpenCreateDialog}
+            beforeLinkText={secretPermissions.data.create.reason}
           />
-        </>
+        );
+      }
+
+      return (
+        <EmptyList
+          customText={"No registry integration found."}
+          linkText={"Click here to add integration."}
+          handleClick={handleOpenCreateDialog}
+        />
       );
     }
 
@@ -94,6 +101,7 @@ export default function RegistryConfigurationPage() {
         </Accordion>
       </LoadingWrapper>
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- permission fields omitted to avoid unnecessary callback recreation
   }, [
     error,
     isLoading,

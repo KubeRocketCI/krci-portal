@@ -1,29 +1,36 @@
 import React from "react";
 import { Codebase } from "@my-project/shared";
-import { EDIT_FORM_NAMES, NAMES, CREATE_WIZARD_NAMES } from "@/modules/platform/codebases/components/form-fields/names";
-import { k8sCodebaseConfig } from "@my-project/shared";
-import { getJiraIssueMetadataPayloadDefaultValue } from "../../../components/form-fields/AdvancedJiraMapping/utils";
+import { EDIT_CODEBASE_FORM_NAMES, EditCodebaseFormValues, MappingRow } from "../types";
 
-export const useDefaultValues = (codebase: Codebase | undefined) => {
+// Convert JSON string to array format for mapping rows
+const getJiraIssueMetadataPayloadDefaultValue = (jsonFieldValue: string | undefined | null): MappingRow[] => {
+  if (!jsonFieldValue) {
+    return [];
+  }
+
+  try {
+    const fieldValues: { [key: string]: string } = JSON.parse(jsonFieldValue);
+    return Object.entries(fieldValues).map(([field, pattern]) => ({
+      field,
+      pattern,
+    }));
+  } catch {
+    return [];
+  }
+};
+
+export const useDefaultValues = (codebase: Codebase | undefined): EditCodebaseFormValues => {
   const mappingRows = getJiraIssueMetadataPayloadDefaultValue(codebase?.spec.jiraIssueMetadataPayload);
 
   return React.useMemo(
-    () => ({
-      [EDIT_FORM_NAMES[NAMES.HAS_JIRA_SERVER_INTEGRATION].name]: !!codebase?.spec.jiraServer,
-      [EDIT_FORM_NAMES[NAMES.JIRA_SERVER].name]: codebase?.spec.jiraServer,
-      [EDIT_FORM_NAMES[NAMES.COMMIT_MESSAGE_PATTERN].name]: codebase?.spec.commitMessagePattern,
-      [EDIT_FORM_NAMES[NAMES.TICKET_NAME_PATTERN].name]: codebase?.spec.ticketNamePattern,
-      [EDIT_FORM_NAMES[NAMES.CODEMIE_INTEGRATION_LABEL].name]:
-        codebase?.metadata.labels?.[k8sCodebaseConfig.labels.integration],
-      [EDIT_FORM_NAMES[NAMES.HAS_CODEMIE_INTEGRATION].name]:
-        !!codebase?.metadata.labels?.[k8sCodebaseConfig.labels.integration],
-      [EDIT_FORM_NAMES[NAMES.JIRA_ISSUE_METADATA_PAYLOAD].name]: codebase?.spec.jiraIssueMetadataPayload,
-      // Advanced mapping rows - convert to array format used by create wizard
-      [CREATE_WIZARD_NAMES.ui_advancedMappingRows]: mappingRows.map(({ value, jiraPattern }) => ({
-        field: value,
-        pattern: jiraPattern,
-      })),
-      [CREATE_WIZARD_NAMES.ui_advancedMappingFieldName]: mappingRows.map(({ value }) => value),
+    (): EditCodebaseFormValues => ({
+      [EDIT_CODEBASE_FORM_NAMES.commitMessagePattern]: codebase?.spec.commitMessagePattern || "",
+      [EDIT_CODEBASE_FORM_NAMES.hasJiraServerIntegration]: !!codebase?.spec.jiraServer,
+      [EDIT_CODEBASE_FORM_NAMES.jiraServer]: codebase?.spec.jiraServer || null,
+      [EDIT_CODEBASE_FORM_NAMES.ticketNamePattern]: codebase?.spec.ticketNamePattern || null,
+      [EDIT_CODEBASE_FORM_NAMES.jiraIssueMetadataPayload]: codebase?.spec.jiraIssueMetadataPayload || null,
+      [EDIT_CODEBASE_FORM_NAMES.advancedMappingRows]: mappingRows,
+      [EDIT_CODEBASE_FORM_NAMES.advancedMappingFieldName]: mappingRows.map(({ field }) => field),
     }),
     [codebase, mappingRows]
   );

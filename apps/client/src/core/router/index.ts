@@ -61,7 +61,6 @@ import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-de
 import { routeStageCreate } from "@/modules/platform/cdpipelines/pages/stages/create/route";
 import { routeTaskList } from "@/modules/platform/tekton/pages/task-list/route";
 import { routeTaskDetails } from "@/modules/platform/tekton/pages/task-details/route";
-import { routeMarketplace } from "@/modules/platform/marketplace/route";
 import { routePipelineMetrics } from "@/modules/platform/observability/pages/pipeline-metrics/route";
 import { routeSCA } from "@/modules/platform/security/pages/sca/route";
 import { routeSCAProjects } from "@/modules/platform/security/pages/sca-projects/route";
@@ -84,7 +83,6 @@ const routeTree = rootRoute.addChildren([
       routeCDPipelineDetails,
       routeStageDetails,
       routeStageCreate,
-      routeMarketplace,
       routeCICD.addChildren([
         routePipelineList,
         routePipelineDetails,

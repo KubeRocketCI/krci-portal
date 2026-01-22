@@ -1,76 +1,32 @@
 import { Card } from "@/core/components/ui/card";
 import { useCDPipelineCRUD } from "@/k8s/api/groups/KRCI/CDPipeline";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { createCDPipelineDraftObject } from "@my-project/shared";
 import React from "react";
-import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { useShallow } from "zustand/react/shallow";
+import { showToast } from "@/core/components/Snackbar";
 import { Review } from "./components/Review";
 import { Success } from "./components/Success";
 import { WizardStepper } from "./components/WizardStepper";
 import { useDefaultValues } from "./hooks/useDefaultValues";
-import { createCDPipelineFormSchema, CreateCDPipelineFormValues } from "./names";
 import { useWizardStore } from "./store";
 import { WizardNavigation } from "./components/WizardNavigation";
-import { Applications } from "./components/Applications";
 import { PipelineConfiguration } from "./components/PipelineConfiguration";
+import { CreateCDPipelineFormProvider } from "./providers/form/provider";
+import { CreateCDPipelineFormValues } from "./types";
+import { Applications } from "./components/Applications";
+import { routeCDPipelineList } from "../../../list/route";
+import { useClusterStore } from "@/k8s/store";
 
 export const CreateCDPipelineWizard: React.FC = () => {
   const baseDefaultValues = useDefaultValues();
-
-  const form = useForm<CreateCDPipelineFormValues>({
-    mode: "onChange",
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(createCDPipelineFormSchema) as any,
-    defaultValues: {
-      ...baseDefaultValues,
-    },
-  });
-
-  React.useEffect(() => {
-    form.reset(baseDefaultValues);
-  }, [baseDefaultValues, form]);
-
-  React.useEffect(() => {
-    useWizardStore.getState().reset();
-  }, []);
-
-  return (
-    <FormProvider {...form}>
-      <WizardContent />
-    </FormProvider>
-  );
-};
-
-const WizardContent: React.FC = () => {
-  const { currentStepIdx, goToNextStep, goToPreviousStep, getCurrentFormPart } = useWizardStore(
-    useShallow((state) => ({
-      currentStepIdx: state.currentStepIdx,
-      goToNextStep: state.goToNextStep,
-      goToPreviousStep: state.goToPreviousStep,
-      getCurrentFormPart: state.getCurrentFormPart,
-    }))
-  );
-
-  const currentFormPart = getCurrentFormPart();
-
-  const { trigger, handleSubmit: formHandleSubmit, formState } = useFormContext<CreateCDPipelineFormValues>();
 
   const {
     triggerCreateCDPipeline,
     mutations: { cdPipelineCreateMutation },
   } = useCDPipelineCRUD();
 
-  const isPending = React.useMemo(() => cdPipelineCreateMutation.isPending, [cdPipelineCreateMutation.isPending]);
-
-  const onSubmit = React.useCallback(
+  const handleSubmit = React.useCallback(
     async (values: CreateCDPipelineFormValues) => {
-      const isValid = await trigger();
-
-      if (!isValid) {
-        return;
-      }
-
       const newCDPipeline = createCDPipelineDraftObject({
         name: values.name,
         applications: values.applications,
@@ -80,12 +36,13 @@ const WizardContent: React.FC = () => {
         description: values.description,
       });
 
-      triggerCreateCDPipeline({
+      await triggerCreateCDPipeline({
         data: {
           cdPipeline: newCDPipeline,
         },
         callbacks: {
           onSuccess: () => {
+            const currentFormPart = useWizardStore.getState().getCurrentFormPart();
             if (currentFormPart) {
               useWizardStore.getState().markStepAsValidated(currentFormPart);
             }
@@ -94,13 +51,46 @@ const WizardContent: React.FC = () => {
         },
       });
     },
-    [trigger, triggerCreateCDPipeline, currentFormPart]
+    [triggerCreateCDPipeline]
   );
 
-  const handleSubmit = formHandleSubmit(onSubmit, (errors) => {
-    console.log("Form validation errors:", errors);
-    console.log("Form state errors:", formState.errors);
-  });
+  const onSubmitError = React.useCallback((error: unknown) => {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    showToast("Failed to create deployment flow", "error", {
+      description: errorMessage,
+      duration: 10000,
+    });
+  }, []);
+
+  React.useEffect(() => {
+    useWizardStore.getState().reset();
+  }, []);
+
+  return (
+    <CreateCDPipelineFormProvider
+      defaultValues={baseDefaultValues}
+      onSubmit={handleSubmit}
+      onSubmitError={onSubmitError}
+    >
+      <WizardContent isPending={cdPipelineCreateMutation.isPending} />
+    </CreateCDPipelineFormProvider>
+  );
+};
+
+interface WizardContentProps {
+  isPending: boolean;
+}
+
+const WizardContent: React.FC<WizardContentProps> = ({ isPending }) => {
+  const clusterName = useClusterStore(useShallow((state) => state.clusterName));
+
+  const { currentStepIdx, goToNextStep, goToPreviousStep } = useWizardStore(
+    useShallow((state) => ({
+      currentStepIdx: state.currentStepIdx,
+      goToNextStep: state.goToNextStep,
+      goToPreviousStep: state.goToPreviousStep,
+    }))
+  );
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col gap-4">
@@ -125,8 +115,11 @@ const WizardContent: React.FC = () => {
             <WizardNavigation
               onBack={goToPreviousStep}
               onNext={goToNextStep}
-              onSubmit={handleSubmit}
               isSubmitting={isPending}
+              backRoute={{
+                to: routeCDPipelineList.fullPath,
+                params: { clusterName },
+              }}
             />
           </div>
         )}

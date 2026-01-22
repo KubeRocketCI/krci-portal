@@ -1,24 +1,26 @@
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
-import { useTypedFormContext } from "../../../hooks/useFormContext";
 import { STAGE_FORM_NAMES } from "../../../names";
+import { useStageForm } from "../../../providers/form/hooks";
 
 export const Description = () => {
-  const {
-    register,
-    control,
-    formState: { errors },
-  } = useTypedFormContext();
+  const form = useStageForm();
 
   return (
-    <FormTextField
-      {...register(STAGE_FORM_NAMES.description.name, {
-        required: `Enter description.`,
-      })}
-      label={"Description"}
-      tooltipText={"Provide a brief description of the environment to convey its purpose and characteristics."}
-      placeholder={"Enter description"}
-      control={control}
-      errors={errors}
-    />
+    <form.AppField
+      name={STAGE_FORM_NAMES.description.name}
+      validators={{
+        onChange: ({ value }) => {
+          if (!value) return "Enter description.";
+          return undefined;
+        },
+      }}
+    >
+      {(field) => (
+        <field.FormTextField
+          label="Description"
+          tooltipText="Provide a brief description of the environment to convey its purpose and characteristics."
+          placeholder="Enter description"
+        />
+      )}
+    </form.AppField>
   );
 };

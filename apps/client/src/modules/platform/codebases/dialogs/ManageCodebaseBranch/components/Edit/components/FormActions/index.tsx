@@ -1,62 +1,36 @@
 import { useCodebaseBranchCRUD } from "@/k8s/api/groups/KRCI/CodebaseBranch";
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
-import { editCodebaseBranchObject } from "@my-project/shared";
 import React from "react";
-import { useTypedFormContext } from "../../../../hooks/useFormContext";
+import { useCodebaseBranchForm } from "../../../../providers/form/hooks";
 import { useCurrentDialog } from "../../../../providers/CurrentDialog/hooks";
-import { ManageCodebaseBranchFormValues } from "../../../../types";
+import { useStore } from "@tanstack/react-form";
 
 export const FormActions = () => {
   const {
-    props: { codebaseBranch, isProtected },
+    props: { isProtected },
     state: { closeDialog },
   } = useCurrentDialog();
 
-  const {
-    reset,
-    formState: { isDirty },
-    handleSubmit,
-  } = useTypedFormContext();
+  const form = useCodebaseBranchForm();
+  const isDirty = useStore(form.store, (state) => state.isDirty);
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
 
   const handleClose = React.useCallback(() => {
     closeDialog();
-    reset();
-  }, [closeDialog, reset]);
+    form.reset();
+  }, [closeDialog, form]);
 
   const {
-    triggerEditCodebaseBranch,
     mutations: { codebaseBranchEditMutation },
   } = useCodebaseBranchCRUD();
 
-  const isPending = codebaseBranchEditMutation.isPending;
-
-  const onSubmit = React.useCallback(
-    async (values: ManageCodebaseBranchFormValues) => {
-      if (!codebaseBranch) {
-        return;
-      }
-
-      const newCodebaseBranch = editCodebaseBranchObject(codebaseBranch, {
-        pipelines: {
-          build: values.buildPipeline,
-          review: values.reviewPipeline,
-          ...(values.securityPipeline && { security: values.securityPipeline }),
-        },
-      });
-
-      await triggerEditCodebaseBranch({
-        data: { codebaseBranch: newCodebaseBranch },
-        callbacks: { onSuccess: handleClose },
-      });
-    },
-    [codebaseBranch, handleClose, triggerEditCodebaseBranch]
-  );
+  const isPending = codebaseBranchEditMutation.isPending || isSubmitting;
 
   const isApplyDisabled = isProtected || !isDirty || isPending;
 
   const applyButton = (
-    <Button onClick={handleSubmit(onSubmit)} variant="default" size="sm" disabled={isApplyDisabled}>
+    <Button onClick={() => form.handleSubmit()} variant="default" size="sm" disabled={isApplyDisabled}>
       Apply
     </Button>
   );
@@ -67,7 +41,7 @@ export const FormActions = () => {
         <Button onClick={handleClose} variant="ghost" size="sm">
           Cancel
         </Button>
-        <Button onClick={() => reset()} variant="ghost" size="sm" disabled={!isDirty || isProtected}>
+        <Button onClick={() => form.reset()} variant="ghost" size="sm" disabled={!isDirty || isProtected}>
           Undo Changes
         </Button>
       </div>

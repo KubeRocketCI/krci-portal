@@ -48,14 +48,19 @@ export default function JiraConfigurationPage() {
     }
 
     if (!jiraServerSecret && !isLoading && !jiraServerError && !jiraServerSecretError) {
+      const hasPermission = secretPermissions.data.create.allowed && jiraServerPermissions.data.create.allowed;
+      const permissionReason = secretPermissions.data.create.reason || jiraServerPermissions.data.create.reason;
+
+      if (!hasPermission) {
+        return <EmptyList customText={"No Jira integration secrets found."} beforeLinkText={permissionReason} />;
+      }
+
       return (
-        <>
-          <EmptyList
-            customText={"No Jira integration secrets found."}
-            linkText={"Click here to add integration."}
-            handleClick={handleOpenCreateDialog}
-          />
-        </>
+        <EmptyList
+          customText={"No Jira integration secrets found."}
+          linkText={"Click here to add integration."}
+          handleClick={handleOpenCreateDialog}
+        />
       );
     }
 
@@ -110,6 +115,7 @@ export default function JiraConfigurationPage() {
         </Accordion>
       </LoadingWrapper>
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- permission fields omitted to avoid unnecessary callback recreation
   }, [
     jiraServerWatch.query.error,
     jiraServerWatch.query.isLoading,

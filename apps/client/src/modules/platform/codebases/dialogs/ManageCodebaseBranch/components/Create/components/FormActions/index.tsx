@@ -1,88 +1,83 @@
 import { useCodebaseBranchCRUD } from "@/k8s/api/groups/KRCI/CodebaseBranch";
 import { Button } from "@/core/components/ui/button";
-import {
-  createCodebaseBranchDraftObject,
-  createVersioningString,
-  editDefaultCodebaseBranchObject,
-} from "@my-project/shared";
 import React from "react";
-import { useTypedFormContext } from "../../../../hooks/useFormContext";
+import { useCodebaseBranchForm } from "../../../../providers/form/hooks";
 import { useCurrentDialog } from "../../../../providers/CurrentDialog/hooks";
-import { ManageCodebaseBranchFormValues } from "../../../../types";
+import { useStore } from "@tanstack/react-form";
+import { NAMES } from "../../../../names";
 
 export const FormActions = () => {
   const {
-    props: { codebase, defaultBranch },
     state: { closeDialog },
   } = useCurrentDialog();
 
-  const {
-    reset,
-    formState: { isDirty },
-    handleSubmit,
-  } = useTypedFormContext();
+  const form = useCodebaseBranchForm();
+  const isDirty = useStore(form.store, (state) => state.isDirty);
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
 
   const handleResetFields = React.useCallback(() => {
-    reset();
-  }, [reset]);
+    form.reset();
+  }, [form]);
 
   const handleClose = React.useCallback(() => {
     closeDialog();
   }, [closeDialog]);
 
   const {
-    triggerCreateCodebaseBranch,
     mutations: { codebaseBranchCreateMutation, codebaseBranchEditMutation },
   } = useCodebaseBranchCRUD();
 
   const isPending = React.useMemo(
-    () => codebaseBranchCreateMutation.isPending || codebaseBranchEditMutation.isPending,
-    [codebaseBranchCreateMutation.isPending, codebaseBranchEditMutation.isPending]
+    () => codebaseBranchCreateMutation.isPending || codebaseBranchEditMutation.isPending || isSubmitting,
+    [codebaseBranchCreateMutation.isPending, codebaseBranchEditMutation.isPending, isSubmitting]
   );
 
-  const onSubmit = React.useCallback(
-    async (formValues: ManageCodebaseBranchFormValues) => {
-      const newDefaultBranchVersion = createVersioningString(
-        formValues.defaultBranchVersionStart,
-        formValues.defaultBranchVersionPostfix
-      );
+  const handleSubmit = React.useCallback(async () => {
+    // Get all field names from the schema
+    const allFieldNames = [
+      NAMES.NAME,
+      NAMES.CODEBASE_NAME_LABEL,
+      NAMES.CODEBASE_NAME,
+      NAMES.FROM_TYPE,
+      NAMES.FROM_COMMIT,
+      NAMES.RELEASE,
+      NAMES.VERSION,
+      NAMES.RELEASE_BRANCH_VERSION_START,
+      NAMES.RELEASE_BRANCH_VERSION_POSTFIX,
+      NAMES.DEFAULT_BRANCH_VERSION_START,
+      NAMES.DEFAULT_BRANCH_VERSION_POSTFIX,
+      NAMES.BUILD_PIPELINE,
+      NAMES.REVIEW_PIPELINE,
+      NAMES.SECURITY_PIPELINE,
+      NAMES.BRANCH_NAME,
+      NAMES.RELEASE_BRANCH_NAME,
+    ];
 
-      const newCodebaseBranch = createCodebaseBranchDraftObject({
-        branchName: formValues.branchName,
-        fromCommit: formValues.fromCommit,
-        release: formValues.release,
-        codebase: codebase.metadata.name,
-        pipelines: {
-          build: formValues.buildPipeline,
-          review: formValues.reviewPipeline,
-          ...(formValues.securityPipeline && { security: formValues.securityPipeline }),
-        },
-        version: formValues.version,
-      });
+    // Mark all fields as touched to ensure errors are displayed
+    for (const fieldName of allFieldNames) {
+      form.setFieldMeta(fieldName, (prev) => ({ ...prev, isTouched: true }));
+    }
 
-      if (formValues.release) {
-        const newDefaultCodebaseBranch = editDefaultCodebaseBranchObject(defaultBranch, {
-          version: newDefaultBranchVersion,
-        });
+    // Validate all fields
+    await form.validate("change");
 
-        await triggerCreateCodebaseBranch({
-          data: {
-            codebaseBranch: newCodebaseBranch,
-            defaultCodebaseBranch: newDefaultCodebaseBranch,
-          },
-        });
-      } else {
-        await triggerCreateCodebaseBranch({
-          data: {
-            codebaseBranch: newCodebaseBranch,
-          },
-        });
+    // Check if there are any errors
+    let hasErrors = false;
+    for (const fieldName of allFieldNames) {
+      const fieldMeta = form.getFieldMeta(fieldName);
+      const fieldErrors = fieldMeta?.errors || [];
+
+      if (fieldErrors.length > 0) {
+        hasErrors = true;
+        break;
       }
-      reset();
-      handleClose();
-    },
-    [codebase.metadata.name, reset, handleClose, defaultBranch, triggerCreateCodebaseBranch]
-  );
+    }
+
+    // Only submit if there are no errors
+    if (!hasErrors) {
+      form.handleSubmit();
+    }
+  }, [form]);
 
   return (
     <div className="flex w-full justify-between">
@@ -94,7 +89,7 @@ export const FormActions = () => {
           Undo Changes
         </Button>
       </div>
-      <Button onClick={handleSubmit(onSubmit)} variant="default" size="sm" disabled={!isDirty || isPending}>
+      <Button onClick={handleSubmit} variant="default" size="sm" disabled={isPending}>
         Create
       </Button>
     </div>

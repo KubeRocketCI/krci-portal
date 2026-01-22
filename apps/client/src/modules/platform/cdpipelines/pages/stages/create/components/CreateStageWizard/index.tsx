@@ -2,11 +2,13 @@ import { Card } from "@/core/components/ui/card";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { ErrorContent } from "@/core/components/ErrorContent";
 import { useStageCRUD } from "@/k8s/api/groups/KRCI/Stage";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { createStageDraftObject } from "@my-project/shared";
 import React from "react";
-import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { useShallow } from "zustand/react/shallow";
+import { showToast } from "@/core/components/Snackbar";
+import { useClusterStore } from "@/k8s/store";
+import { routeStageCreate } from "../../route";
+import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
 import { BasicConfiguration } from "./components/BasicConfiguration";
 import { PipelineConfiguration } from "./components/PipelineConfiguration";
 import { QualityGates } from "./components/QualityGates";
@@ -14,69 +16,14 @@ import { Review } from "./components/Review";
 import { Success } from "./components/Success";
 import { WizardStepper } from "./components/WizardStepper";
 import { WizardNavigation } from "./components/WizardNavigation";
-import { useDefaultValues, useCDPipelineData } from "./hooks/useDefaultValues";
-import { createStageFormSchema, CreateStageFormValues, CreateStageFormInput } from "./names";
+import { useCDPipelineData } from "./hooks/useDefaultValues";
+import { CreateStageFormValues } from "./names";
 import { useWizardStore } from "./store";
+import { CreateStageFormProvider } from "./providers/form/provider";
+import { useCreateStageForm } from "./providers/form/hooks";
 
 export const CreateStageWizard: React.FC = () => {
   const { cdPipelineIsLoading, cdPipelineError, otherStagesIsLoading } = useCDPipelineData();
-  const baseDefaultValues = useDefaultValues();
-
-  const form = useForm<CreateStageFormInput, unknown, CreateStageFormValues>({
-    mode: "onChange",
-    resolver: zodResolver(createStageFormSchema),
-    defaultValues: {
-      ...baseDefaultValues,
-    },
-  });
-
-  React.useEffect(() => {
-    form.reset(baseDefaultValues);
-  }, [baseDefaultValues, form]);
-
-  React.useEffect(() => {
-    useWizardStore.getState().reset();
-  }, []);
-
-  if (cdPipelineError) {
-    return <ErrorContent error={cdPipelineError} />;
-  }
-
-  if (cdPipelineIsLoading || otherStagesIsLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <LoadingWrapper isLoading={true}>
-          <div />
-        </LoadingWrapper>
-      </div>
-    );
-  }
-
-  return (
-    <FormProvider {...form}>
-      <WizardContent />
-    </FormProvider>
-  );
-};
-
-const WizardContent: React.FC = () => {
-  const { currentStepIdx, goToNextStep, goToPreviousStep, getCurrentFormPart } = useWizardStore(
-    useShallow((state) => ({
-      currentStepIdx: state.currentStepIdx,
-      goToNextStep: state.goToNextStep,
-      goToPreviousStep: state.goToPreviousStep,
-      getCurrentFormPart: state.getCurrentFormPart,
-    }))
-  );
-
-  const currentFormPart = getCurrentFormPart();
-
-  const { trigger, handleSubmit: formHandleSubmit } = useFormContext<
-    CreateStageFormInput,
-    unknown,
-    CreateStageFormValues
-  >();
-
   const {
     triggerCreateStage,
     mutations: { stageCreateMutation },
@@ -86,12 +33,6 @@ const WizardContent: React.FC = () => {
 
   const onSubmit = React.useCallback(
     async (values: CreateStageFormValues) => {
-      const isValid = await trigger();
-
-      if (!isValid) {
-        return;
-      }
-
       const newStage = createStageDraftObject({
         name: values.name,
         description: values.description,
@@ -123,6 +64,7 @@ const WizardContent: React.FC = () => {
         },
         callbacks: {
           onSuccess: () => {
+            const currentFormPart = useWizardStore.getState().getCurrentFormPart();
             if (currentFormPart) {
               useWizardStore.getState().markStepAsValidated(currentFormPart);
             }
@@ -131,13 +73,70 @@ const WizardContent: React.FC = () => {
         },
       });
     },
-    [trigger, triggerCreateStage, currentFormPart]
+    [triggerCreateStage]
   );
 
-  const handleSubmit = formHandleSubmit(onSubmit);
+  const onSubmitError = React.useCallback((error: unknown) => {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    showToast("Failed to create environment", "error", {
+      description: errorMessage,
+      duration: 10000,
+    });
+  }, []);
+
+  React.useEffect(() => {
+    useWizardStore.getState().reset();
+  }, []);
+
+  if (cdPipelineError) {
+    return <ErrorContent error={cdPipelineError} />;
+  }
+
+  if (cdPipelineIsLoading || otherStagesIsLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <LoadingWrapper isLoading={true}>
+          <div />
+        </LoadingWrapper>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col gap-4">
+    <CreateStageFormProvider onSubmit={onSubmit} onSubmitError={onSubmitError}>
+      <WizardContent isPending={isPending} />
+    </CreateStageFormProvider>
+  );
+};
+
+interface WizardContentProps {
+  isPending: boolean;
+}
+
+const WizardContent: React.FC<WizardContentProps> = ({ isPending }) => {
+  const form = useCreateStageForm();
+  const clusterName = useClusterStore(useShallow((state) => state.clusterName));
+  const { namespace, cdPipeline } = routeStageCreate.useParams();
+
+  const { currentStepIdx, goToNextStep, goToPreviousStep } = useWizardStore(
+    useShallow((state) => ({
+      currentStepIdx: state.currentStepIdx,
+      goToNextStep: state.goToNextStep,
+      goToPreviousStep: state.goToPreviousStep,
+    }))
+  );
+
+  const handleSubmit = React.useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      form.handleSubmit();
+    },
+    [form]
+  );
+
+  return (
+    <form onSubmit={handleSubmit} className="flex h-full min-h-0 flex-1 flex-col gap-4">
       <div className="flex min-h-0 flex-1 flex-col gap-4">
         {currentStepIdx !== 5 && (
           <div className="shrink-0">
@@ -160,12 +159,15 @@ const WizardContent: React.FC = () => {
             <WizardNavigation
               onBack={goToPreviousStep}
               onNext={goToNextStep}
-              onSubmit={handleSubmit}
               isSubmitting={isPending}
+              backRoute={{
+                to: routeCDPipelineDetails.fullPath,
+                params: { clusterName, namespace, name: cdPipeline },
+              }}
             />
           </div>
         )}
       </div>
-    </div>
+    </form>
   );
 };

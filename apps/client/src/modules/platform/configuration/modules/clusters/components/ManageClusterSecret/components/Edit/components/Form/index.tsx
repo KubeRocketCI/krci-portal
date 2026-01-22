@@ -1,7 +1,7 @@
 import React from "react";
-import { useFormContext as useReactHookFormContext } from "react-hook-form";
 import { CLUSTER_FORM_NAMES } from "../../../../names";
-import { ManageClusterSecretDataContext } from "../../../../types";
+import { useClusterSecretForm } from "../../../../providers/form/hooks";
+import { useClusterSecretData } from "../../../../providers/data/hooks";
 import {
   CaData,
   ClusterCertificate,
@@ -13,12 +13,12 @@ import {
   SkipTLSVerify,
 } from "../../../fields";
 import { SECRET_LABEL_CLUSTER_TYPE, clusterType, ClusterType } from "@my-project/shared";
-import { useFormContext } from "@/core/providers/Form/hooks";
 import { FieldEvent } from "@/core/types/forms";
+import { useStore } from "@tanstack/react-form";
 
 export const Form = () => {
-  const { watch } = useReactHookFormContext();
-  const { formData } = useFormContext<ManageClusterSecretDataContext>();
+  const form = useClusterSecretForm();
+  const formData = useClusterSecretData();
 
   const initialClusterType = React.useMemo(() => {
     if (formData.currentElement && typeof formData.currentElement !== "string") {
@@ -29,7 +29,8 @@ export const Form = () => {
 
   const [activeClusterType, setActiveClusterType] = React.useState<ClusterType>(initialClusterType as ClusterType);
 
-  const skipTLSVerify = watch(CLUSTER_FORM_NAMES.SKIP_TLS_VERIFY);
+  // Subscribe to skipTLSVerify field value (replaces watch)
+  const skipTLSVerify = useStore(form.store, (state) => state.values[CLUSTER_FORM_NAMES.SKIP_TLS_VERIFY]);
 
   const renderBearerFormPart = React.useCallback(() => {
     return (

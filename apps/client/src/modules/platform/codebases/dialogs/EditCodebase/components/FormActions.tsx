@@ -1,89 +1,43 @@
 import React from "react";
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
-import { useFormContext } from "react-hook-form";
+import { useStore } from "@tanstack/react-form";
 import { useCodebaseCRUD } from "@/k8s/api/groups/KRCI/Codebase";
-import { editCodebaseObject } from "@my-project/shared";
-import { EDIT_FORM_NAMES, NAMES } from "@/modules/platform/codebases/components/form-fields";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { dialogName } from "../constants";
-import { Codebase } from "@my-project/shared";
+import { useEditCodebaseForm } from "../providers/form/hooks";
 
 interface FormActionsProps {
-  codebase: Codebase;
   isProtected?: boolean;
 }
 
-export const FormActions: React.FC<FormActionsProps> = ({ codebase, isProtected }) => {
+export const FormActions: React.FC<FormActionsProps> = ({ isProtected }) => {
   const { closeDialog } = useDialogContext();
-  const {
-    reset,
-    formState: { isDirty },
-    handleSubmit,
-    watch,
-  } = useFormContext();
+  const form = useEditCodebaseForm();
 
-  const hasJiraServerIntegration = (watch as (name: string) => boolean)(
-    EDIT_FORM_NAMES[NAMES.HAS_JIRA_SERVER_INTEGRATION].name
-  );
+  const isDirty = useStore(form.store, (state) => state.isDirty);
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const canSubmit = useStore(form.store, (state) => state.canSubmit);
 
   const handleClose = React.useCallback(() => {
     closeDialog(dialogName);
-    reset();
-  }, [closeDialog, reset]);
+    form.reset();
+  }, [closeDialog, form]);
 
   const {
-    triggerPatchCodebase,
     mutations: { codebasePatchMutation },
   } = useCodebaseCRUD();
 
-  const isPending = codebasePatchMutation.isPending;
+  const isPending = codebasePatchMutation.isPending || isSubmitting;
 
-  const onSuccess = React.useCallback(() => {
-    handleClose();
-  }, [handleClose]);
+  const handleReset = React.useCallback(() => {
+    form.reset();
+  }, [form]);
 
-  const onSubmit = React.useCallback(
-    async (values: Record<string, unknown>) => {
-      if (!codebase) {
-        return;
-      }
-
-      // Access form values using the create wizard field names
-      const commitMessagePattern = values[EDIT_FORM_NAMES[NAMES.COMMIT_MESSAGE_PATTERN].name] as string | undefined;
-      const jiraServer = hasJiraServerIntegration
-        ? (values[EDIT_FORM_NAMES[NAMES.JIRA_SERVER].name] as string | undefined)
-        : null;
-      const ticketNamePattern = hasJiraServerIntegration
-        ? (values[EDIT_FORM_NAMES[NAMES.TICKET_NAME_PATTERN].name] as string | undefined)
-        : null;
-      const jiraIssueMetadataPayload = hasJiraServerIntegration
-        ? (values[EDIT_FORM_NAMES[NAMES.JIRA_ISSUE_METADATA_PAYLOAD].name] as string | undefined)
-        : null;
-
-      const updatedCodebase = editCodebaseObject(codebase, {
-        jiraServer,
-        commitMessagePattern,
-        ticketNamePattern,
-        jiraIssueMetadataPayload,
-      });
-
-      await triggerPatchCodebase({
-        data: {
-          codebase: updatedCodebase,
-        },
-        callbacks: {
-          onSuccess,
-        },
-      });
-    },
-    [codebase, hasJiraServerIntegration, triggerPatchCodebase, onSuccess]
-  );
-
-  const isApplyDisabled = isProtected || !isDirty || isPending;
+  const isApplyDisabled = isProtected || !isDirty || isPending || !canSubmit;
 
   const applyButton = (
-    <Button onClick={handleSubmit(onSubmit)} variant="default" size="sm" disabled={isApplyDisabled}>
+    <Button onClick={() => form.handleSubmit()} variant="default" size="sm" disabled={isApplyDisabled}>
       Apply
     </Button>
   );
@@ -94,7 +48,7 @@ export const FormActions: React.FC<FormActionsProps> = ({ codebase, isProtected 
         <Button onClick={handleClose} variant="ghost" size="sm">
           Cancel
         </Button>
-        <Button onClick={() => reset()} variant="ghost" size="sm" disabled={!isDirty || isProtected}>
+        <Button onClick={handleReset} variant="ghost" size="sm" disabled={!isDirty || isProtected}>
           Undo Changes
         </Button>
       </div>

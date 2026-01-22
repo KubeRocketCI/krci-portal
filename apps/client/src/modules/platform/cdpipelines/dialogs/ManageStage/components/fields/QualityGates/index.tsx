@@ -3,21 +3,16 @@ import { Alert } from "@/core/components/ui/alert";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import React from "react";
 import { v4 as uuidv4 } from "uuid";
-import { useTypedFormContext } from "../../../hooks/useFormContext";
+import { useStore } from "@tanstack/react-form";
 import { STAGE_FORM_NAMES } from "../../../names";
 import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
+import { useStageForm } from "../../../providers/form/hooks";
 import { Info, Plus, Trash } from "lucide-react";
 import { QualityGateRow } from "./components/QualityGateRow";
 import { defaultQualityGate } from "./constants";
-import {
-  createQualityGateAutotestFieldName,
-  createQualityGateStepNameFieldName,
-  createQualityGateTypeAutotestsBranchFieldName,
-  createQualityGateTypeFieldName,
-} from "./utils";
 
 export const QualityGates = () => {
-  const { resetField, watch, setValue } = useTypedFormContext();
+  const form = useStageForm();
 
   const {
     props: { cdPipeline },
@@ -25,39 +20,39 @@ export const QualityGates = () => {
 
   const namespace = cdPipeline?.metadata.namespace;
 
-  const qualityGatesFieldValue = watch(STAGE_FORM_NAMES.qualityGates.name);
+  // Subscribe to quality gates field value
+  const qualityGatesFieldValue = useStore(
+    form.store,
+    (state) => state.values[STAGE_FORM_NAMES.qualityGates.name] || []
+  );
 
   const handleAddApplicationRow = React.useCallback(() => {
-    setValue(STAGE_FORM_NAMES.qualityGates.name, [
-      ...qualityGatesFieldValue,
+    const currentGates = form.getFieldValue(STAGE_FORM_NAMES.qualityGates.name) || [];
+    form.setFieldValue(STAGE_FORM_NAMES.qualityGates.name, [
+      ...currentGates,
       {
         ...defaultQualityGate,
         id: uuidv4(),
       },
     ]);
-  }, [qualityGatesFieldValue, setValue]);
+  }, [form]);
 
   const handleRemoveApplicationRow = React.useCallback(
     (id: string) => {
-      setValue(
+      const currentGates = form.getFieldValue(STAGE_FORM_NAMES.qualityGates.name) || [];
+      form.setFieldValue(
         STAGE_FORM_NAMES.qualityGates.name,
-        qualityGatesFieldValue.filter((el) => {
-          return el.id !== id;
-        })
+        currentGates.filter((el) => el.id !== id)
       );
-      resetField(createQualityGateTypeFieldName(id));
-      resetField(createQualityGateStepNameFieldName(id));
-      resetField(createQualityGateAutotestFieldName(id));
-      resetField(createQualityGateTypeAutotestsBranchFieldName(id));
     },
-    [qualityGatesFieldValue, resetField, setValue]
+    [form]
   );
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-row flex-nowrap items-center gap-2">
         <h6 className="text-base font-medium">Quality gates</h6>
-        <Tooltip title={"Define quality gates before promoting applications to the next environment."}>
+        <Tooltip title="Define quality gates before promoting applications to the next environment.">
           <Info size={16} />
         </Tooltip>
       </div>
@@ -77,8 +72,8 @@ export const QualityGates = () => {
                   <div className="flex flex-row items-center gap-2">
                     {!isOnly && (
                       <Button
-                        type={"button"}
-                        size={"sm"}
+                        type="button"
+                        size="sm"
                         variant="ghost"
                         className="min-w-0"
                         onClick={() => handleRemoveApplicationRow(el.id)}
@@ -89,8 +84,8 @@ export const QualityGates = () => {
                     {!isOnly && isLast && <div className="bg-border h-7 w-px" />}
                     {isLast && (
                       <Button
-                        type={"button"}
-                        size={"sm"}
+                        type="button"
+                        size="sm"
                         variant="ghost"
                         className="min-w-0"
                         onClick={handleAddApplicationRow}

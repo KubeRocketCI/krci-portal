@@ -4,8 +4,6 @@ import { Badge } from "@/core/components/ui/badge";
 import { Label } from "@/core/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
 import React from "react";
-import { useFormContext, Controller } from "react-hook-form";
-import { NAMES } from "../../../../../../pages/create/components/CreateCDPipelineWizard/names";
 import { useCodebaseBranchWatchList } from "@/k8s/api/groups/KRCI/CodebaseBranch/hooks";
 import { codebaseBranchLabels, sortKubeObjectByCreationTimestamp } from "@my-project/shared";
 import { X, Package, GitBranch, Server } from "lucide-react";
@@ -17,11 +15,13 @@ import { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/mappin
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { cn } from "@/core/utils/classname";
-import { ApplicationFieldArrayItemWithId, EditCDPipelineFormValues, getApplicationFieldError } from "../../../../types";
+import { useStore } from "@tanstack/react-form";
+import { useEditCDPipelineForm } from "../../../../providers/form/hooks";
+import type { ApplicationFieldArrayItem, EditCDPipelineFormValues } from "../../../../types";
 
 interface ApplicationRowProps {
   application: Codebase;
-  field: ApplicationFieldArrayItemWithId;
+  field: ApplicationFieldArrayItem;
   index: number;
   removeRow: () => void;
 }
@@ -32,12 +32,15 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
     spec: { lang, framework, buildTool, ciTool, type, description, gitServer, gitUrlPath, defaultBranch },
   } = application;
 
-  const {
-    control,
-    formState: { errors },
-    setValue,
-    getValues,
-  } = useFormContext<EditCDPipelineFormValues>();
+  const form = useEditCDPipelineForm();
+
+  // Subscribe to the specific field's value with proper typing
+  const fieldArray = useStore(
+    form.store,
+    (state: { values: EditCDPipelineFormValues }) => state.values.ui_applicationsFieldArray || []
+  );
+  const currentFieldValue = fieldArray[index];
+  const appBranchValue = currentFieldValue?.appBranch || "";
 
   const applicationBranchListWatch = useCodebaseBranchWatchList({
     labels: {
@@ -50,11 +53,28 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
     return [...applicationBranchListWatch.data.array].sort(sortKubeObjectByCreationTimestamp);
   }, [applicationBranchListWatch.data.array]);
 
-  const rowAppBranchField = `${NAMES.ui_applicationsFieldArray}.${index}.appBranch` as const;
-
   const handleDeleteApplicationRow = React.useCallback(() => {
     removeRow();
   }, [removeRow]);
+
+  // Helper to update field array item
+  const updateAppBranch = React.useCallback(
+    (newBranchValue: string) => {
+      const currentArray = form.store.state.values.ui_applicationsFieldArray || [];
+      const newArray = [...currentArray];
+      if (newArray[index]) {
+        newArray[index] = { ...newArray[index], appBranch: newBranchValue };
+        form.setFieldValue("ui_applicationsFieldArray", newArray);
+      }
+
+      // Maintain index alignment: set the branch at the same index as the application
+      const currentInputDockerStreams = form.store.state.values.inputDockerStreams || [];
+      const newInputDockerStreams = [...currentInputDockerStreams];
+      newInputDockerStreams[index] = newBranchValue;
+      form.setFieldValue("inputDockerStreams", newInputDockerStreams);
+    },
+    [form, index]
+  );
 
   // Track if we've initialized the default value to prevent re-setting
   const hasInitializedRef = React.useRef(false);
@@ -65,8 +85,6 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
       return;
     }
 
-    const currentBranchValue = getValues(rowAppBranchField);
-
     const availableBranches = sortedApplicationBranchList.map((el) => ({
       specBranchName: el.spec.branchName,
       metadataBranchName: el.metadata.name,
@@ -75,33 +93,24 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
     const availableBranchNames = new Set(availableBranches.map((b) => b.metadataBranchName));
 
     // Check if current value is valid for this application
-    const isCurrentValueValid = currentBranchValue && availableBranchNames.has(currentBranchValue);
+    const isCurrentValueValid = appBranchValue && availableBranchNames.has(appBranchValue);
 
     // Set default if no value is set or if current value is invalid for this application
     if (!isCurrentValueValid) {
-      let newBranchFieldValue = "";
-
       // Use first available branch
       if (availableBranches.length > 0) {
-        newBranchFieldValue = availableBranches[0].metadataBranchName;
-      }
-
-      if (newBranchFieldValue) {
-        setValue(rowAppBranchField, newBranchFieldValue);
-
-        // Maintain index alignment: set the branch at the same index as the application
-        const currentInputDockerStreams = getValues(NAMES.inputDockerStreams) || [];
-        const newInputDockerStreams = [...currentInputDockerStreams];
-        newInputDockerStreams[index] = newBranchFieldValue;
-        setValue(NAMES.inputDockerStreams, newInputDockerStreams);
+        const newBranchFieldValue = availableBranches[0].metadataBranchName;
+        updateAppBranch(newBranchFieldValue);
       }
     }
 
     // Mark as initialized regardless of whether we set a value
     hasInitializedRef.current = true;
-  }, [sortedApplicationBranchList, rowAppBranchField, getValues, setValue, index]);
+  }, [sortedApplicationBranchList, appBranchValue, updateAppBranch]);
 
-  const appBranchError = getApplicationFieldError(errors, index, "appBranch");
+  // Check for errors using TanStack Form's API
+  const appBranchFieldMeta = form.getFieldMeta(`ui_applicationsFieldArray[${index}].appBranch`);
+  const appBranchError = appBranchFieldMeta?.errors?.length ? String(appBranchFieldMeta.errors[0]) : undefined;
 
   // Get codebase mapping for display names
   const codebaseMapping = getCodebaseMappingByType(type);
@@ -222,51 +231,35 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
                   <GitBranch className="text-muted-foreground h-4 w-4" />
                   <span className="text-sm font-medium">Select Branch for Deployment</span>
                 </Label>
-                <Controller
-                  name={rowAppBranchField}
-                  control={control}
-                  rules={{
-                    required: "Select branch",
+                <Select
+                  value={appBranchValue}
+                  onValueChange={(value) => {
+                    updateAppBranch(value);
                   }}
-                  render={({ field }) => (
-                    <>
-                      <Select
-                        value={field.value || ""}
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          // Maintain index alignment: update the branch at the same index as the application
-                          const currentInputDockerStreamsValue = getValues(NAMES.inputDockerStreams) || [];
-                          const newInputDockerStreamsValue = [...currentInputDockerStreamsValue];
-                          newInputDockerStreamsValue[index] = value;
-                          setValue(NAMES.inputDockerStreams, newInputDockerStreamsValue);
-                        }}
-                      >
-                        <SelectTrigger
-                          id={`branch-select-${index}`}
-                          className={cn("w-full", appBranchError && "border-destructive")}
-                        >
-                          <SelectValue placeholder="Select a branch" />
-                        </SelectTrigger>
-                        <SelectContent className="fixed">
-                          {branchOptions.map((branch) => (
-                            <SelectItem key={branch.value} value={branch.value}>
-                              <div className="flex items-center gap-2">
-                                <GitBranch className="text-muted-foreground h-3.5 w-3.5" />
-                                {branch.branchName}
-                                {branch.branchName === defaultBranch && (
-                                  <Badge variant="outline" className="ml-1 text-xs">
-                                    default
-                                  </Badge>
-                                )}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {appBranchError && <p className="text-destructive mt-1 text-xs">{appBranchError.message}</p>}
-                    </>
-                  )}
-                />
+                >
+                  <SelectTrigger
+                    id={`branch-select-${index}`}
+                    className={cn("w-full", appBranchError && "border-destructive")}
+                  >
+                    <SelectValue placeholder="Select a branch" />
+                  </SelectTrigger>
+                  <SelectContent className="fixed">
+                    {branchOptions.map((branch) => (
+                      <SelectItem key={branch.value} value={branch.value}>
+                        <div className="flex items-center gap-2">
+                          <GitBranch className="text-muted-foreground h-3.5 w-3.5" />
+                          {branch.branchName}
+                          {branch.branchName === defaultBranch && (
+                            <Badge variant="outline" className="ml-1 text-xs">
+                              default
+                            </Badge>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {appBranchError && <p className="text-destructive mt-1 text-xs">{appBranchError}</p>}
               </div>
             </div>
           </div>

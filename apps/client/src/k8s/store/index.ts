@@ -63,28 +63,63 @@ export const useClusterStore = create<ClusterStore>((set, get) => {
 
     defaultNamespace: clusterSettings.default_namespace,
     setDefaultNamespace: (newDefaultNamespace) => {
-      const { clusterName } = get();
+      const { clusterName, allowedNamespaces, defaultNamespace } = get();
       const settings = getSettingsFromStorage();
+      const currentAllowedNamespaces = settings[clusterName]?.allowed_namespaces || allowedNamespaces;
+      const currentDefaultNamespace = settings[clusterName]?.default_namespace || defaultNamespace;
+
+      // Replace old default namespace with new one in allowed namespaces array
+      const updatedAllowedNamespaces = currentAllowedNamespaces.map((ns) =>
+        ns === currentDefaultNamespace ? newDefaultNamespace : ns
+      );
+
+      // If the old default wasn't in the array, just add the new one
+      if (!currentAllowedNamespaces.includes(currentDefaultNamespace)) {
+        updatedAllowedNamespaces.push(newDefaultNamespace);
+      }
+
       settings[clusterName] = {
         ...(settings[clusterName] || {}),
         default_namespace: newDefaultNamespace,
-        allowed_namespaces: settings[clusterName]?.allowed_namespaces || [newDefaultNamespace],
+        allowed_namespaces: updatedAllowedNamespaces,
       };
       saveSettingsToStorage(settings);
-      set({ defaultNamespace: newDefaultNamespace });
+      set({
+        defaultNamespace: newDefaultNamespace,
+        allowedNamespaces: updatedAllowedNamespaces,
+      });
     },
 
     allowedNamespaces: clusterSettings.allowed_namespaces,
     setAllowedNamespaces: (newAllowedNamespaces) => {
       const { clusterName } = get();
       const settings = getSettingsFromStorage();
+
+      // Check if there's a stored default namespace in localStorage
+      const hasStoredDefault = settings[clusterName]?.default_namespace !== undefined;
+      const storedDefault = settings[clusterName]?.default_namespace;
+
+      // Only update default namespace if there's no stored default in localStorage
+      // If there's a stored default, preserve it even if not in new allowed list
+      const updatedDefaultNamespace = hasStoredDefault ? storedDefault : newAllowedNamespaces[0];
+
       settings[clusterName] = {
         ...(settings[clusterName] || {}),
         allowed_namespaces: newAllowedNamespaces,
-        default_namespace: settings[clusterName]?.default_namespace || newAllowedNamespaces[0],
+        default_namespace: updatedDefaultNamespace,
       };
       saveSettingsToStorage(settings);
-      set({ allowedNamespaces: newAllowedNamespaces });
+
+      // Update state - only change defaultNamespace if there was no stored default
+      const stateUpdate: Partial<ClusterStore> = {
+        allowedNamespaces: newAllowedNamespaces,
+      };
+
+      if (!hasStoredDefault) {
+        stateUpdate.defaultNamespace = updatedDefaultNamespace;
+      }
+
+      set(stateUpdate);
     },
 
     sonarHostUrl: "",

@@ -1,9 +1,9 @@
 import React from "react";
-import { useFormContext } from "react-hook-form";
+import { useStore } from "@tanstack/react-form";
 import { Button } from "@/core/components/ui/button";
 import { PartyPopper, Check, ArrowRight, FolderGit2, FolderOpen, ExternalLink, Sparkles, Globe } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { NAMES, CreateCodebaseFormValues } from "../../names";
+import { NAMES } from "../../names";
 import { routeComponentList } from "../../../../../list/route";
 import { routeComponentDetails } from "../../../../../details/route";
 import { routeCDPipelineCreate } from "@/modules/platform/cdpipelines/pages/create/route";
@@ -11,9 +11,10 @@ import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { useWizardStore } from "../../store";
 import { gitProvider } from "@my-project/shared";
+import { useCreateCodebaseForm } from "../../providers/form/hooks";
 
 export const Success: React.FC = () => {
-  const { watch } = useFormContext<CreateCodebaseFormValues>();
+  const form = useCreateCodebaseForm();
   const { clusterName, defaultNamespace } = useClusterStore(
     useShallow((state) => ({
       clusterName: state.clusterName,
@@ -21,11 +22,11 @@ export const Success: React.FC = () => {
     }))
   );
 
-  const name = watch(NAMES.name);
-  const gitServer = watch(NAMES.gitServer);
-  const repositoryOwner = watch(NAMES.ui_repositoryOwner);
-  const repositoryName = watch(NAMES.ui_repositoryName);
-  const gitUrlPath = watch(NAMES.gitUrlPath);
+  const name = useStore(form.store, (state) => state.values[NAMES.name]);
+  const gitServer = useStore(form.store, (state) => state.values[NAMES.gitServer]);
+  const repositoryOwner = useStore(form.store, (state) => state.values[NAMES.ui_repositoryOwner]);
+  const repositoryName = useStore(form.store, (state) => state.values[NAMES.ui_repositoryName]);
+  const gitUrlPath = useStore(form.store, (state) => state.values[NAMES.gitUrlPath]);
 
   const repositoryPath = React.useMemo(() => {
     if (repositoryOwner && repositoryName) {

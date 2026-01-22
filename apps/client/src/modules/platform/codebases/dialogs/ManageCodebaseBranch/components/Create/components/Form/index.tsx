@@ -1,7 +1,6 @@
 import { codebaseBranchStatus, codebaseVersioning, krciCommonLabels } from "@my-project/shared";
 import React from "react";
-import { useTypedFormContext } from "../../../../hooks/useFormContext";
-import { CODEBASE_BRANCH_FORM_NAMES } from "../../../../names";
+import { useCodebaseBranchForm } from "../../../../providers/form/hooks";
 import { useCurrentDialog } from "../../../../providers/CurrentDialog/hooks";
 import {
   BranchName,
@@ -14,13 +13,14 @@ import {
   ReviewPipeline,
   SecurityPipeline,
 } from "../../../fields";
+import { useStore } from "@tanstack/react-form";
 
 export const Form = () => {
   const {
     props: { codebase, defaultBranch },
   } = useCurrentDialog();
 
-  const { watch } = useTypedFormContext();
+  const form = useCodebaseBranchForm();
 
   const defaultBranchVersion = defaultBranch?.spec.version;
 
@@ -32,7 +32,7 @@ export const Form = () => {
     [codebase.spec.versioning.type, defaultBranch]
   );
 
-  const releaseFieldValue = watch(CODEBASE_BRANCH_FORM_NAMES.release.name);
+  const releaseFieldValue = useStore(form.store, (state) => state.values.release);
 
   const isDefaultBranchProtected = React.useMemo(() => {
     return !!defaultBranch?.metadata?.labels?.[krciCommonLabels.editProtection];

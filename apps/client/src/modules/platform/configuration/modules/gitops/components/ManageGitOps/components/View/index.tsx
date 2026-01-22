@@ -1,21 +1,21 @@
-import { useFormContext } from "react-hook-form";
 import { CODEBASE_FORM_NAMES } from "../../names";
-import { ManageGitOpsValues } from "../../types";
 import { GitRepoPath, GitServer, Name } from "../fields";
 import { gitProvider } from "@my-project/shared";
 import { useGitServerWatchItem } from "@/k8s/api/groups/KRCI/GitServer";
+import { useGitOpsForm } from "../../providers/form/hooks";
+import { useStore } from "@tanstack/react-form";
 
 export const View = () => {
-  const { watch } = useFormContext<ManageGitOpsValues>();
+  const form = useGitOpsForm();
 
-  const gitServerFieldValue = watch(CODEBASE_FORM_NAMES.GIT_SERVER);
+  // Subscribe to gitServer field value (replaces watch)
+  const gitServerFieldValue = useStore(form.store, (state) => state.values[CODEBASE_FORM_NAMES.GIT_SERVER]);
 
   const gitServerWatch = useGitServerWatchItem({
     name: gitServerFieldValue,
   });
 
   const gitServer = gitServerWatch.query.data;
-
   const gitServerProvider = gitServer?.spec.gitProvider;
 
   return (

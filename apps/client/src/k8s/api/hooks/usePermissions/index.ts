@@ -32,11 +32,16 @@ export const usePermissions = ({
       let apiVersion = cachedApiVersion || "v1"; // default apiVersion
 
       if (!cachedApiVersion) {
-        apiVersion = await trpc.k8s.apiVersions.query();
-        queryClient.setQueryData(k8sAPIQueryCacheKey, apiVersion);
+        try {
+          apiVersion = await trpc.k8s.apiVersions.query();
+          queryClient.setQueryData(k8sAPIQueryCacheKey, apiVersion);
+        } catch {
+          // Fall back to default "v1" if query fails
+          apiVersion = "v1";
+        }
       }
 
-      const res = trpc.k8s.itemPermissions.mutate({
+      const res = await trpc.k8s.itemPermissions.mutate({
         apiVersion,
         clusterName,
         group,

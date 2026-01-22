@@ -50,14 +50,19 @@ export default function ClustersConfigurationPage() {
     }
 
     if (!clusterSecrets?.length && !isLoading && !clusterSecretsError) {
+      const hasPermission = secretPermissions.data.create.allowed && applicationPermissions.data.create.allowed;
+      const permissionReason = secretPermissions.data.create.reason || applicationPermissions.data.create.reason;
+
+      if (!hasPermission) {
+        return <EmptyList customText={"No cluster secrets found."} beforeLinkText={permissionReason} />;
+      }
+
       return (
-        <>
-          <EmptyList
-            customText={"No cluster secrets found."}
-            linkText={"Click here to add cluster."}
-            handleClick={handleOpenCreateDialog}
-          />
-        </>
+        <EmptyList
+          customText={"No cluster secrets found."}
+          linkText={"Click here to add cluster."}
+          handleClick={handleOpenCreateDialog}
+        />
       );
     }
 
@@ -134,6 +139,7 @@ export default function ClustersConfigurationPage() {
         </Accordion>
       </LoadingWrapper>
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- permission fields omitted to avoid unnecessary callback recreation
   }, [
     clusterSecretsWatch.query.error,
     clusterSecretsWatch.query.isLoading,

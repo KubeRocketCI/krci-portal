@@ -133,18 +133,21 @@ const validateQualityGatesStep = (data: FormData, ctx: z.RefinementCtx) => {
   }
 };
 
-export const createStageFormSchema = tempSchema
-  .superRefine((data, ctx) => {
-    validateBasicConfigurationStep(data, ctx);
-    validatePipelineConfigurationStep(data, ctx);
-    validateQualityGatesStep(data, ctx);
-  })
-  .transform((data) => {
-    return {
-      ...data,
-      name: typeof data.name === "string" ? data.name.trim() : data.name,
-    };
-  });
+// Validation-only schema for use with TanStack Form
+// NOTE: Do NOT use .transform() here as it breaks Standard Schema integration
+export const createStageFormSchema = tempSchema.superRefine((data, ctx) => {
+  validateBasicConfigurationStep(data, ctx);
+  validatePipelineConfigurationStep(data, ctx);
+  validateQualityGatesStep(data, ctx);
+});
+
+// Schema with transformations for final submission
+export const createStageSubmitSchema = createStageFormSchema.transform((data) => {
+  return {
+    ...data,
+    name: typeof data.name === "string" ? data.name.trim() : data.name,
+  };
+});
 
 function createNamesObject<T extends Record<string, unknown>>(obj: T): { [K in keyof T]: K } {
   const result = {} as { [K in keyof T]: K };

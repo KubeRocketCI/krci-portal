@@ -1,17 +1,19 @@
 import React from "react";
-import { QUICK_LINK_FORM_NAMES } from "../../../names";
+import { NAMES } from "../../../names";
 import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
+import type { ManageQuickLinkFormValues } from "../../../types";
 
-export const useDefaultValues = () => {
+export const useDefaultValues = (): ManageQuickLinkFormValues => {
   const {
     props: { quickLink },
   } = useCurrentDialog();
 
   return React.useMemo(
     () => ({
-      [QUICK_LINK_FORM_NAMES.icon.name]: quickLink?.spec.icon,
-      [QUICK_LINK_FORM_NAMES.url.name]: quickLink?.spec.url,
-      [QUICK_LINK_FORM_NAMES.visible.name]: quickLink?.spec.visible,
+      [NAMES.ICON]: quickLink?.spec.icon ?? "",
+      [NAMES.NAME]: quickLink?.metadata.name ?? "",
+      [NAMES.URL]: quickLink?.spec.url ?? "",
+      [NAMES.VISIBLE]: quickLink?.spec.visible ?? true,
     }),
     [quickLink]
   );

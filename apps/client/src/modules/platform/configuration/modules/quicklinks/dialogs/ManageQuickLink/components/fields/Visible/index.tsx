@@ -1,21 +1,19 @@
-import { FormSwitchRich } from "@/core/providers/Form/components/FormSwitchRich";
-import { useTypedFormContext } from "../../../hooks/useFormContext";
-import { QUICK_LINK_FORM_NAMES } from "../../../names";
+import { useQuickLinkForm } from "../../../providers/form/hooks";
+import { NAMES } from "../../../names";
 
 export const Visible = () => {
-  const {
-    register,
-    control,
-    formState: { errors },
-  } = useTypedFormContext();
+  const form = useQuickLinkForm();
 
   return (
-    <FormSwitchRich
-      {...register(QUICK_LINK_FORM_NAMES.visible.name)}
-      label="Show on Overview Page"
-      helperText="Display this component in the Overview page for quick access."
-      control={control}
-      errors={errors}
-    />
+    <form.AppField name={NAMES.VISIBLE}>
+      {(field) => (
+        <field.FormSwitch
+          label="Show on Overview Page"
+          helperText="Display this component in the Overview page for quick access."
+          rich
+          variant="card"
+        />
+      )}
+    </form.AppField>
   );
 };
