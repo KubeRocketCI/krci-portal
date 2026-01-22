@@ -23,7 +23,7 @@ import { codebaseType } from "@my-project/shared";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 
 export const EditCodebaseDialog: React.FC<EditCodebaseDialogProps> = ({ props, state }) => {
-  const { codebase: codebaseProp } = props;
+  const { codebase: codebaseProp, isProtected } = props;
   const { open, closeDialog } = state;
 
   const { defaultNamespace } = useClusterStore(useShallow((state) => ({ defaultNamespace: state.defaultNamespace })));
@@ -86,7 +86,7 @@ export const EditCodebaseDialog: React.FC<EditCodebaseDialogProps> = ({ props, s
               <FormContent />
             </DialogBody>
             <DialogFooter>
-              <FormActions codebase={codebase} />
+              <FormActions codebase={codebase} isProtected={isProtected} />
             </DialogFooter>
           </FormContextProvider>
         </LoadingWrapper>

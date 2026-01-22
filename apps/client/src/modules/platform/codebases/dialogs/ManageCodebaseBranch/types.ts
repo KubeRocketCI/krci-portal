@@ -12,6 +12,7 @@ export type ManageCodebaseBranchDialogProps = DialogProps<{
     security: string;
   };
   codebaseBranch?: CodebaseBranch;
+  isProtected?: boolean;
 }>;
 
 export type ManageCodebaseBranchFormValues = {

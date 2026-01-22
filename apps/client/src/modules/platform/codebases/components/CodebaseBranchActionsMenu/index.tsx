@@ -4,10 +4,10 @@ import { DeleteKubeObjectDialog } from "@/core/components/DeleteKubeObject";
 import { useCodebaseBranchPermissions } from "@/k8s/api/groups/KRCI/CodebaseBranch";
 import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
-import { createResourceAction } from "@/core/utils/createResourceAction";
+import { createResourceAction, getResourceProtection, getDisabledState } from "@/core/utils/createResourceAction";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { checkIsDefaultBranch, k8sCodebaseBranchConfig, k8sOperation } from "@my-project/shared";
-import { Pencil, Trash } from "lucide-react";
+import { Settings, Trash } from "lucide-react";
 import React from "react";
 import { ManageCodebaseBranchDialog } from "../../dialogs/ManageCodebaseBranch";
 import { ConflictItemError } from "./components/ConflictItemError";
@@ -42,17 +42,26 @@ export const CodebaseBranchActionsMenu = ({
 
   const isDefaultBranch = checkIsDefaultBranch(codebase, codebaseBranch);
 
+  // Check if the branch is protected from updates (allows viewing but not saving)
+  const patchProtection = getResourceProtection(codebaseBranch, k8sOperation.patch);
+  const deleteProtection = getResourceProtection(codebaseBranch, k8sOperation.delete);
+
   const actions = React.useMemo(() => {
     if (!codebaseBranch) {
       return [];
     }
 
+    // Default branch cannot be deleted - this takes precedence over other checks
+    const deleteDisabled = isDefaultBranch
+      ? { status: true, reason: "You cannot delete the default branch" }
+      : getDisabledState(deleteProtection, codebaseBranchPermissions.data.delete);
+
     return [
       createResourceAction({
         type: k8sOperation.patch,
-        label: "Edit",
+        label: "Configure",
         item: codebaseBranch,
-        Icon: <Pencil size={16} />,
+        Icon: <Settings size={16} />,
         disabled: {
           status: !codebaseBranchPermissions.data.patch.allowed,
           reason: codebaseBranchPermissions.data.patch.reason,
@@ -68,6 +77,7 @@ export const CodebaseBranchActionsMenu = ({
               build: pipelines?.build,
               security: pipelines?.security,
             },
+            isProtected: patchProtection.isProtected,
           });
         },
       }),
@@ -76,12 +86,7 @@ export const CodebaseBranchActionsMenu = ({
         label: capitalizeFirstLetter(k8sOperation.delete),
         item: codebaseBranch,
         Icon: <Trash size={16} />,
-        disabled: {
-          status: isDefaultBranch ? true : !codebaseBranchPermissions.data.delete.allowed,
-          reason: isDefaultBranch
-            ? "You cannot delete the default branch"
-            : codebaseBranchPermissions.data.delete.reason,
-        },
+        disabled: deleteDisabled,
         callback: (codebaseBranch) => {
           setNewDialog(DeleteKubeObjectDialog, {
             objectName: codebaseBranch?.spec?.branchName,
@@ -96,13 +101,14 @@ export const CodebaseBranchActionsMenu = ({
   }, [
     codebase,
     codebaseBranch,
-    codebaseBranchPermissions.data.delete.allowed,
-    codebaseBranchPermissions.data.delete.reason,
+    codebaseBranchPermissions.data.delete,
     codebaseBranchPermissions.data.patch.allowed,
     codebaseBranchPermissions.data.patch.reason,
     codebaseBranches,
     defaultBranch,
+    deleteProtection,
     isDefaultBranch,
+    patchProtection.isProtected,
     onBeforeSubmit,
     pipelines?.build,
     pipelines?.review,

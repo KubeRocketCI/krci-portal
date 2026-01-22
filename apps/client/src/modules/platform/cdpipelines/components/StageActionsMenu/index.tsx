@@ -6,10 +6,9 @@ import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { ManageStageDialog } from "@/modules/platform/cdpipelines/dialogs/ManageStage";
 import { ListItemAction } from "@/core/types/global";
-import { createResourceAction } from "@/core/utils/createResourceAction";
+import { createResourceAction, getResourceProtection, getDisabledState } from "@/core/utils/createResourceAction";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { DefaultPermissionListCheckResult, k8sOperation, k8sStageConfig, Stage } from "@my-project/shared";
-import { krciCommonLabels } from "@my-project/shared/models/k8s/groups/KRCI/common/labels";
 import { Pencil, Trash } from "lucide-react";
 import React from "react";
 import { StageActionsMenuProps } from "./types";
@@ -32,7 +31,7 @@ export const createDeleteAction = ({
     return;
   }
 
-  const isProtected = currentStage?.metadata?.labels?.[krciCommonLabels.editProtection] === "true";
+  const deleteProtection = getResourceProtection(currentStage, k8sOperation.delete);
 
   // CD pipeline could publish artifacts without any stage
   // so, in case it doesn't have any stage
@@ -56,23 +55,13 @@ export const createDeleteAction = ({
   const otherStages = allStages.filter((el) => el.metadata.name !== currentStage.metadata.name);
   const highestOtherStagesOrder = Math.max(...otherStages.map(getStageOrder));
 
-  const deleteActionDisabled = isProtected
-    ? {
-        status: true,
-        reason: "This resource is protected from deletion.",
-      }
-    : {
-        status: !permissions.delete.allowed,
-        reason: permissions.delete.reason,
-      };
-
   if (currentStageOrder > highestOtherStagesOrder) {
     return createResourceAction({
       type: k8sOperation.delete,
       label: capitalizeFirstLetter(k8sOperation.delete),
       item: currentStage,
       Icon: <Trash size={16} />,
-      disabled: deleteActionDisabled,
+      disabled: getDisabledState(deleteProtection, permissions.delete),
       callback: (stage) => action(stage),
     });
   }
@@ -98,6 +87,8 @@ export const StageActionsMenu = ({
   const openDeleteKubeObjectDialog = useDialogOpener(DeleteKubeObjectDialog);
   const stagePermissions = useStagePermissions();
 
+  const patchProtection = getResourceProtection(stage, k8sOperation.patch);
+
   const actions = React.useMemo(() => {
     return [
       createResourceAction({
@@ -105,10 +96,7 @@ export const StageActionsMenu = ({
         type: k8sOperation.patch,
         label: "Edit",
         Icon: <Pencil size={16} />,
-        disabled: {
-          status: !stagePermissions.data.patch.allowed,
-          reason: stagePermissions.data.patch.reason,
-        },
+        disabled: getDisabledState(patchProtection, stagePermissions.data.patch),
         callback: (stage) => {
           openManageStageDialog({
             stage,
@@ -132,7 +120,16 @@ export const StageActionsMenu = ({
         },
       }),
     ].filter((action): action is ListItemAction => action !== undefined);
-  }, [stage, stagePermissions.data, stages, openManageStageDialog, cdPipeline, openDeleteKubeObjectDialog, backRoute]);
+  }, [
+    stage,
+    stagePermissions.data,
+    stages,
+    openManageStageDialog,
+    cdPipeline,
+    openDeleteKubeObjectDialog,
+    backRoute,
+    patchProtection,
+  ]);
 
   return variant === actionMenuType.inline ? (
     <ActionsInlineList actions={actions} />

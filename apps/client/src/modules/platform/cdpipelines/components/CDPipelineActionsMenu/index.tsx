@@ -4,7 +4,7 @@ import { DeleteKubeObjectDialog } from "@/core/components/DeleteKubeObject";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { useCDPipelinePermissions } from "@/k8s/api/groups/KRCI/CDPipeline";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
-import { createResourceAction } from "@/core/utils/createResourceAction";
+import { createResourceAction, getResourceProtection, getDisabledState } from "@/core/utils/createResourceAction";
 import { Pencil, Trash } from "lucide-react";
 import { CDPipelineActionsMenuProps } from "./types";
 import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
@@ -17,6 +17,9 @@ export const CDPipelineActionsMenu = ({ backRoute, variant, data: { CDPipeline }
   const openDeleteKubeObjectDialog = useDialogOpener(DeleteKubeObjectDialog);
   const cdPipelinePermissions = useCDPipelinePermissions();
 
+  const patchProtection = getResourceProtection(CDPipeline, k8sOperation.patch);
+  const deleteProtection = getResourceProtection(CDPipeline, k8sOperation.delete);
+
   const actions = React.useMemo(() => {
     if (!CDPipeline) {
       return [];
@@ -28,10 +31,7 @@ export const CDPipelineActionsMenu = ({ backRoute, variant, data: { CDPipeline }
         label: "Edit",
         item: CDPipeline,
         Icon: <Pencil size={16} />,
-        disabled: {
-          status: !cdPipelinePermissions.data.patch.allowed,
-          reason: cdPipelinePermissions.data.patch.reason,
-        },
+        disabled: getDisabledState(patchProtection, cdPipelinePermissions.data.patch),
         callback: () => {
           openEditCDPipelineDialog({ CDPipeline });
         },
@@ -41,10 +41,7 @@ export const CDPipelineActionsMenu = ({ backRoute, variant, data: { CDPipeline }
         label: capitalizeFirstLetter(k8sOperation.delete),
         item: CDPipeline,
         Icon: <Trash size={16} />,
-        disabled: {
-          status: !cdPipelinePermissions.data.delete.allowed,
-          reason: cdPipelinePermissions.data.delete.reason,
-        },
+        disabled: getDisabledState(deleteProtection, cdPipelinePermissions.data.delete),
         callback: () => {
           openDeleteKubeObjectDialog({
             objectName: CDPipeline?.metadata.name,
@@ -69,12 +66,12 @@ export const CDPipelineActionsMenu = ({ backRoute, variant, data: { CDPipeline }
     ];
   }, [
     CDPipeline,
-    cdPipelinePermissions.data.patch.allowed,
-    cdPipelinePermissions.data.patch.reason,
-    cdPipelinePermissions.data.delete.allowed,
-    cdPipelinePermissions.data.delete.reason,
+    cdPipelinePermissions.data.patch,
+    cdPipelinePermissions.data.delete,
+    deleteProtection,
     openEditCDPipelineDialog,
     openDeleteKubeObjectDialog,
+    patchProtection,
     backRoute,
   ]);
 
