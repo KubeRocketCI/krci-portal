@@ -156,6 +156,16 @@ describe("testing createBuildPipelineRunDraft", () => {
       metadata: {
         annotations: {
           "argocd.argoproj.io/compare-options": "IgnoreExtraneous",
+          "results.tekton.dev/resultAnnotations": JSON.stringify({
+            "app.edp.epam.com/git-commit-sha": "test-codebase-branch-name",
+            "app.edp.epam.com/git-branch": "test-codebase-branch-name",
+            "app.edp.epam.com/git-target-branch": "test-codebase-branch-name",
+            "app.edp.epam.com/git-change-number": "",
+            "app.edp.epam.com/git-repository": "test-git-url-path",
+            "app.edp.epam.com/git-author": "",
+            "app.edp.epam.com/git-avatar": "",
+            "app.edp.epam.com/git-change-url": "",
+          }),
         },
         name: `build-test-codebase-name-test-codebase-branch-name-very-lo-${MOCKED_UUID}`,
         labels: {
@@ -231,6 +241,16 @@ describe("testing createBuildPipelineRunDraft", () => {
       metadata: {
         annotations: {
           "argocd.argoproj.io/compare-options": "IgnoreExtraneous",
+          "results.tekton.dev/resultAnnotations": JSON.stringify({
+            "app.edp.epam.com/git-commit-sha": "test-codebase-branch-name",
+            "app.edp.epam.com/git-branch": "test-codebase-branch-name",
+            "app.edp.epam.com/git-target-branch": "test-codebase-branch-name",
+            "app.edp.epam.com/git-change-number": "",
+            "app.edp.epam.com/git-repository": "test-git-url-path",
+            "app.edp.epam.com/git-author": "",
+            "app.edp.epam.com/git-avatar": "",
+            "app.edp.epam.com/git-change-url": "",
+          }),
         },
         labels: {
           "app.edp.epam.com/codebase": "test-codebase-name",
@@ -306,6 +326,16 @@ describe("testing createBuildPipelineRunDraft", () => {
       metadata: {
         annotations: {
           "argocd.argoproj.io/compare-options": "IgnoreExtraneous",
+          "results.tekton.dev/resultAnnotations": JSON.stringify({
+            "app.edp.epam.com/git-commit-sha": "test-codebase-branch-name",
+            "app.edp.epam.com/git-branch": "test-codebase-branch-name",
+            "app.edp.epam.com/git-target-branch": "test-codebase-branch-name",
+            "app.edp.epam.com/git-change-number": "",
+            "app.edp.epam.com/git-repository": "test-git-url-path",
+            "app.edp.epam.com/git-author": "",
+            "app.edp.epam.com/git-avatar": "",
+            "app.edp.epam.com/git-change-url": "",
+          }),
         },
         labels: {
           "app.edp.epam.com/codebase": "test-codebase-name",
@@ -381,6 +411,16 @@ describe("testing createBuildPipelineRunDraft", () => {
       metadata: {
         annotations: {
           "argocd.argoproj.io/compare-options": "IgnoreExtraneous",
+          "results.tekton.dev/resultAnnotations": JSON.stringify({
+            "app.edp.epam.com/git-commit-sha": "test-codebase-branch-name",
+            "app.edp.epam.com/git-branch": "test-codebase-branch-name",
+            "app.edp.epam.com/git-target-branch": "test-codebase-branch-name",
+            "app.edp.epam.com/git-change-number": "",
+            "app.edp.epam.com/git-repository": "test-git-url-path",
+            "app.edp.epam.com/git-author": "",
+            "app.edp.epam.com/git-avatar": "",
+            "app.edp.epam.com/git-change-url": "",
+          }),
         },
         labels: {
           "app.edp.epam.com/codebase": "test-codebase-name",

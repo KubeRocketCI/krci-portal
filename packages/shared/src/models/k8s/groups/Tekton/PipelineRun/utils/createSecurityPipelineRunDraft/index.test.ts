@@ -199,4 +199,28 @@ describe("createSecurityPipelineRunDraft", () => {
 
     expect(mockPipelineRunTemplate).toEqual(originalTemplate);
   });
+
+  it("should set result annotations with actual values", () => {
+    const result = createSecurityPipelineRunDraft({
+      codebase: mockCodebase,
+      codebaseBranch: mockCodebaseBranch,
+      pipelineRunTemplate: mockPipelineRunTemplate,
+      gitServer: mockGitServer,
+    });
+
+    const resultAnnotations = result.metadata.annotations?.["results.tekton.dev/resultAnnotations"];
+    expect(resultAnnotations).toBeDefined();
+
+    const parsed = JSON.parse(resultAnnotations as string);
+    expect(parsed).toEqual({
+      "app.edp.epam.com/git-commit-sha": "main",
+      "app.edp.epam.com/git-branch": "main",
+      "app.edp.epam.com/git-target-branch": "main",
+      "app.edp.epam.com/git-change-number": "",
+      "app.edp.epam.com/git-repository": "test-repo",
+      "app.edp.epam.com/git-author": "",
+      "app.edp.epam.com/git-avatar": "",
+      "app.edp.epam.com/git-change-url": "",
+    });
+  });
 });
