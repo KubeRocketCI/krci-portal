@@ -1,16 +1,27 @@
-import { useState } from "react";
+import { useCallback } from "react";
 import { ServerSideTable } from "@/core/components/ServerSideTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { useServices } from "../../hooks/useServices";
 import { useServicesColumns } from "../../hooks/useServicesColumns";
+import { routeSCAProjectDetails } from "../../route";
+import { router } from "@/core/router";
+import { PATH_SCA_PROJECT_DETAILS_FULL } from "../../route";
 
 interface ProjectServicesProps {
   projectUuid: string;
 }
 
 export function ProjectServices({ projectUuid }: ProjectServicesProps) {
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(25);
+  const params = routeSCAProjectDetails.useParams();
+  const search = routeSCAProjectDetails.useSearch();
+
+  // Convert from 1-indexed URL page to 0-indexed table page
+  const urlPage = search.page;
+  const page = urlPage !== undefined ? urlPage - 1 : 0;
+
+  // Get default rowsPerPage from localStorage settings or use 25
+  const defaultRowsPerPage = JSON.parse(localStorage.getItem("settings") || "{}")?.tableDefaultRowsPerPage || 25;
+  const pageSize = search.rowsPerPage ?? defaultRowsPerPage;
 
   const columns = useServicesColumns();
 
@@ -22,6 +33,36 @@ export function ProjectServices({ projectUuid }: ProjectServicesProps) {
 
   const services = data?.services || [];
   const totalCount = data?.totalCount || 0;
+
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      // Convert from 0-indexed table page to 1-indexed URL page
+      const urlPage = newPage + 1;
+      router.navigate({
+        to: PATH_SCA_PROJECT_DETAILS_FULL,
+        params,
+        search: (prev) => ({ ...prev, page: urlPage }),
+      });
+    },
+    [params]
+  );
+
+  const handlePageSizeChange = useCallback(
+    (newPageSize: number) => {
+      // Update localStorage only on user interaction
+      const settings = JSON.parse(localStorage.getItem("settings") || "{}");
+      settings.tableDefaultRowsPerPage = newPageSize;
+      localStorage.setItem("settings", JSON.stringify(settings));
+
+      // Update URL - reset to page 1 (1-indexed)
+      router.navigate({
+        to: PATH_SCA_PROJECT_DETAILS_FULL,
+        params,
+        search: (prev) => ({ ...prev, rowsPerPage: newPageSize, page: 1 }),
+      });
+    },
+    [params]
+  );
 
   return (
     <div className="space-y-4">
@@ -51,11 +92,8 @@ export function ProjectServices({ projectUuid }: ProjectServicesProps) {
               page,
               rowsPerPage: pageSize,
               totalCount,
-              onPageChange: setPage,
-              onRowsPerPageChange: (size) => {
-                setPageSize(size);
-                setPage(0);
-              },
+              onPageChange: handlePageChange,
+              onRowsPerPageChange: handlePageSizeChange,
             }}
           />
         </CardContent>

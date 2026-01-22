@@ -13,21 +13,21 @@ export type RouteSearchTab = z.infer<typeof routeSearchTabSchema>;
 
 export interface Search {
   tab?: RouteSearchTab;
+  page?: number;
+  rowsPerPage?: number;
 }
 
 export const routeCDPipelineDetails = createRoute({
   getParentRoute: () => routeCluster,
   path: PATH_CDPIPELINE_DETAILS,
   validateSearch: (search: Record<string, unknown>): Search => {
-    const parsed = z
+    return z
       .object({
         tab: routeSearchTabSchema.optional(),
+        page: z.number().optional(),
+        rowsPerPage: z.number().optional(),
       })
       .parse(search);
-
-    return {
-      tab: parsed.tab ?? "environments",
-    };
   },
   head: ({ params }) => ({
     meta: [{ title: `${params.name} [${params.namespace}] — Deployment Flows | KRCI` }],

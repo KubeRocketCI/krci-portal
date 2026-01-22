@@ -74,7 +74,7 @@ export const useColumns = (): TableColumn<Codebase>[] => {
               <Button variant="link" asChild className="px-4 py-0">
                 <Link to={routeComponentDetails.fullPath} params={{ clusterName, namespace: namespace!, name }}>
                   <span className="flex items-center gap-2">
-                    <Box />
+                    <Box className="text-muted-foreground/70" />
                     <TextWithTooltip text={name} />
                   </span>
                 </Link>

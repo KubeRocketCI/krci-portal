@@ -34,7 +34,7 @@ const useColumns = (clusterName: string, namespace: string): TableColumn<Codebas
                   namespace: data.metadata.namespace || namespace,
                 }}
               >
-                <Box className="size-4 shrink-0" />
+                <Box className="text-muted-foreground/70 size-4 shrink-0" />
                 {data.metadata.name}
               </Link>
             </Button>

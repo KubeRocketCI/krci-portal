@@ -50,7 +50,7 @@ export const DeployedVersionPreviewColumn = ({
           <div>Open in {quickLinkUiNames[systemQuickLink.argocd]}</div>
           <span> </span>
           <div>
-            <SquareArrowOutUpRight size={16} />
+            <SquareArrowOutUpRight className="text-muted-foreground/70" size={16} />
           </div>
         </div>
       }

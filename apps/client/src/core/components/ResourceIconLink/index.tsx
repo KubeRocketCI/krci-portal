@@ -38,7 +38,7 @@ const DisabledResourceIconLink = ({
   return isTextButton ? (
     <Button variant={variant} disabled className={cn(!withoutDisabledStyle ? "opacity-50" : "", "text-xs")} size={size}>
       {name}
-      <SquareArrowOutUpRight className="text-muted-foreground" size={iconSize} />
+      <SquareArrowOutUpRight className="text-muted-foreground/70" size={iconSize} />
     </Button>
   ) : (
     <Tooltip title={<div>{tooltipTitle}</div>}>
@@ -81,7 +81,7 @@ const EnabledResourceIconLink = ({
     >
       <a href={link} target="_blank" rel="noopener noreferrer">
         {name}
-        <SquareArrowOutUpRight size={iconSize} />
+        <SquareArrowOutUpRight className="text-muted-foreground/70" size={iconSize} />
       </a>
     </Button>
   ) : (
@@ -91,7 +91,7 @@ const EnabledResourceIconLink = ({
           <div>{tooltipTitle}</div>
           <span> </span>
           <div>
-            <SquareArrowOutUpRight size={iconSize} />
+            <SquareArrowOutUpRight className="text-muted-foreground/70" size={iconSize} />
           </div>
         </div>
       }
