@@ -63,4 +63,12 @@ export const TABLE = {
     id: "sastProjectsList",
     name: "SAST Projects",
   },
+  TRIVY_VULNERABILITY_REPORTS_LIST: {
+    id: "trivyVulnerabilityReportsList",
+    name: "Trivy Vulnerability Reports",
+  },
+  TRIVY_VULNERABILITIES_LIST: {
+    id: "trivyVulnerabilitiesList",
+    name: "Trivy Vulnerabilities",
+  },
 } as const;
