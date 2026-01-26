@@ -1,5 +1,8 @@
-import { Badge } from "@/core/components/ui/badge";
-import { getSeverityColor } from "../../../../sca/constants/colors";
+/**
+ * Re-export shared SeverityBadge component
+ * Use the "solid" variant for white text on colored background
+ */
+import { SeverityBadge as SharedSeverityBadge } from "@/modules/platform/security/components/shared/SeverityBadge";
 
 interface SeverityBadgeProps {
   severity: string | undefined;
@@ -7,20 +10,8 @@ interface SeverityBadgeProps {
 
 /**
  * Badge component displaying vulnerability severity with appropriate color
+ * Wraps the shared SeverityBadge with "solid" variant for backward compatibility
  */
 export function SeverityBadge({ severity }: SeverityBadgeProps) {
-  const color = getSeverityColor(severity);
-  const displaySeverity = severity || "UNASSIGNED";
-
-  return (
-    <Badge
-      className="font-semibold text-white"
-      style={{
-        backgroundColor: color,
-        borderColor: color,
-      }}
-    >
-      {displaySeverity}
-    </Badge>
-  );
+  return <SharedSeverityBadge severity={severity || "UNKNOWN"} variant="solid" />;
 }

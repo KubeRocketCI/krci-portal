@@ -1,4 +1,4 @@
-import { SEVERITY_COLORS } from "@/modules/platform/security/pages/sca/constants/colors";
+import { SEVERITY_COLORS } from "@/modules/platform/security/constants/severity";
 
 interface SeverityBadgeProps {
   value: number;

@@ -31,6 +31,7 @@ export const SidebarSubGroupMenuItem = ({ subGroup, parentGroupId, onNavigate }:
               to={childItem.route.to}
               params={childItem.route.params}
               onClick={handleClick}
+              activeOptions={{ exact: true, includeSearch: false }}
               activeProps={{
                 className: "bg-accent text-accent-foreground",
               }}

@@ -5,6 +5,8 @@ import { PATH_PIPELINE_METRICS_FULL } from "@/modules/platform/observability/pag
 import { PATH_SCA_FULL } from "@/modules/platform/security/pages/sca/route";
 import { PATH_SCA_PROJECTS_FULL } from "@/modules/platform/security/pages/sca-projects/route";
 import { PATH_SAST_FULL } from "@/modules/platform/security/pages/sast/route";
+import { PATH_TRIVY_VULNERABILITIES_FULL } from "@/modules/platform/security/pages/trivy-vulnerabilities/route";
+import { PATH_TRIVY_OVERVIEW_FULL } from "@/modules/platform/security/pages/trivy-overview/route";
 import { PATH_COMPONENTS_FULL } from "@/modules/platform/codebases/pages/list/route";
 import { PATH_CDPIPELINES_FULL } from "@/modules/platform/cdpipelines/pages/list/route";
 import { PATH_PIPELINERUNS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-list/route";
@@ -145,6 +147,25 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
               title: "Projects",
               route: {
                 to: PATH_SAST_FULL,
+                params: clusterDefaultParams,
+              },
+            },
+          ],
+        },
+        {
+          title: "Container Scanning",
+          children: [
+            {
+              title: "Overview",
+              route: {
+                to: PATH_TRIVY_OVERVIEW_FULL,
+                params: clusterDefaultParams,
+              },
+            },
+            {
+              title: "Vulnerability Reports",
+              route: {
+                to: PATH_TRIVY_VULNERABILITIES_FULL,
                 params: clusterDefaultParams,
               },
             },

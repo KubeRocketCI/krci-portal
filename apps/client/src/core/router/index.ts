@@ -68,6 +68,9 @@ import { routeSCAProjects } from "@/modules/platform/security/pages/sca-projects
 import { routeSCAProjectDetails } from "@/modules/platform/security/pages/sca-project-details/route";
 import { routeSAST } from "@/modules/platform/security/pages/sast/route";
 import { routeSASTProjectDetails } from "@/modules/platform/security/pages/sast-project-details/route";
+import { routeTrivyVulnerabilities } from "@/modules/platform/security/pages/trivy-vulnerabilities/route";
+import { routeTrivyVulnerabilityDetails } from "@/modules/platform/security/pages/trivy-vulnerability-details/route";
+import { routeTrivyOverview } from "@/modules/platform/security/pages/trivy-overview/route";
 
 const routeTree = rootRoute.addChildren([
   authRoute.addChildren([routeAuthLogin, routeAuthCallback]),
@@ -101,6 +104,9 @@ const routeTree = rootRoute.addChildren([
         routeSCAProjectDetails,
         routeSAST,
         routeSASTProjectDetails,
+        routeTrivyOverview,
+        routeTrivyVulnerabilities,
+        routeTrivyVulnerabilityDetails,
       ]),
       routeConfiguration.addChildren([
         routeArgocdConfiguration,

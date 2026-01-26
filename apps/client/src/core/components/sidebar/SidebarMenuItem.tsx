@@ -24,6 +24,7 @@ export const SidebarMenuItem = ({ item, parentGroupId, onNavigate }: SidebarMenu
           to={item.route.to}
           params={item.route.params}
           onClick={handleClick}
+          activeOptions={{ exact: true, includeSearch: false }}
           activeProps={{
             className: "bg-accent text-accent-foreground",
           }}
