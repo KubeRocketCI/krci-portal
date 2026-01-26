@@ -211,7 +211,7 @@ export const usePodLogs = ({
   useEffect(() => {
     setAccumulatedLogs("");
     setSubscriptionError(null);
-  }, [namespace, podName, container, clusterName]);
+  }, [namespace, podName, container, clusterName, timestamps]);
 
   // Determine which logs to return
   const logs = follow ? accumulatedLogs : queryData?.logs || "";
