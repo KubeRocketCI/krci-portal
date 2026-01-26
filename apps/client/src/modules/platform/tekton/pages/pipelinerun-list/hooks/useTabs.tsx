@@ -33,7 +33,7 @@ export const useTabs = (): Tab[] => {
       },
       {
         id: routeSearchTabSchema.enum["tekton-results"],
-        label: "Tekton Results",
+        label: "Pipelines History",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum["tekton-results"]),
         component: (
           <div className="pt-6">
