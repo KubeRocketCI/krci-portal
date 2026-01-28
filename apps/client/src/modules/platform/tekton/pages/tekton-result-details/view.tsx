@@ -5,7 +5,11 @@ import { StatusIcon } from "@/core/components/StatusIcon";
 import { Tabs } from "@/core/providers/Tabs/components/Tabs";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { formatTimestamp, formatDuration } from "@/core/utils/date-humanize";
-import { pipelineRunLabels, tektonResultAnnotations } from "@my-project/shared";
+import {
+  pipelineRunLabels,
+  tektonResultAnnotations,
+  getPipelineRunAnnotation,
+} from "@my-project/shared";
 import { Activity, Calendar, Clock, GitBranch, GitPullRequest, Timer, User, Code } from "lucide-react";
 import React from "react";
 import { PATH_PIPELINERUNS_FULL } from "../pipelinerun-list/route";
@@ -41,12 +45,16 @@ const HeaderMetadata = () => {
   const pipelineName =
     pipelineRun.metadata?.labels?.[pipelineRunLabels.pipeline] || pipelineRun.spec?.pipelineRef?.name;
 
-  // Get codebase from annotations first, then fallback to labels
-  const codebaseFromAnnotation = pipelineRun.metadata?.annotations?.[tektonResultAnnotations.codebase];
+  // Get codebase from annotations first (resultAnnotations JSON or flat), then fallback to labels
+  const codebaseFromAnnotation =
+    getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.codebase) ??
+    pipelineRun.metadata?.annotations?.[tektonResultAnnotations.codebase];
   const codebase = codebaseFromAnnotation || pipelineRun.metadata?.labels?.[pipelineRunLabels.codebase];
 
-  // Get branch name from annotations first, then fallback to labels
-  const gitBranch = pipelineRun.metadata?.annotations?.[tektonResultAnnotations.gitBranch];
+  // Get branch name from annotations first (resultAnnotations JSON or flat), then fallback to labels
+  const gitBranch =
+    getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitBranch) ??
+    pipelineRun.metadata?.annotations?.[tektonResultAnnotations.gitBranch];
   const branchName = gitBranch || pipelineRun.metadata?.labels?.[pipelineRunLabels.codebaseBranch];
 
   const startTime = pipelineRun.status?.startTime;
@@ -116,8 +124,12 @@ const HeaderMetadata = () => {
       )}
 
       {(() => {
-        const changeNumber = pipelineRun.metadata?.annotations?.[tektonResultAnnotations.gitChangeNumber];
-        const changeUrl = pipelineRun.metadata?.annotations?.[tektonResultAnnotations.gitChangeUrl];
+        const changeNumber =
+          getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitChangeNumber) ??
+          pipelineRun.metadata?.annotations?.[tektonResultAnnotations.gitChangeNumber];
+        const changeUrl =
+          getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitChangeUrl) ??
+          pipelineRun.metadata?.annotations?.[tektonResultAnnotations.gitChangeUrl];
 
         if (!changeNumber) {
           return null;
@@ -132,7 +144,7 @@ const HeaderMetadata = () => {
                 href={changeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary text-sm font-medium hover:underline"
+                className="text-sm font-medium hover:underline"
               >
                 #{changeNumber}
               </a>
@@ -144,8 +156,12 @@ const HeaderMetadata = () => {
       })()}
 
       {(() => {
-        const gitAuthor = pipelineRun.metadata?.annotations?.[tektonResultAnnotations.gitAuthor];
-        const gitAvatar = pipelineRun.metadata?.annotations?.[tektonResultAnnotations.gitAvatar];
+        const gitAuthor =
+          getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitAuthor) ??
+          pipelineRun.metadata?.annotations?.[tektonResultAnnotations.gitAuthor];
+        const gitAvatar =
+          getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitAvatar) ??
+          pipelineRun.metadata?.annotations?.[tektonResultAnnotations.gitAvatar];
 
         if (!gitAuthor) {
           return null;

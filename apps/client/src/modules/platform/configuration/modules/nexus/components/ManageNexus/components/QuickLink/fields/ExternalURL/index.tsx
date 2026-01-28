@@ -1,49 +1,29 @@
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
-import { FORM_MODES } from "@/core/types/forms";
-import { getValidURLPattern } from "@/core/utils/getValidURLPattern";
-import { VALIDATED_PROTOCOL } from "@/k8s/constants/validatedProtocols";
-import { QUICK_LINK_FORM_NAMES, INTEGRATION_SECRET_FORM_NAMES } from "../../../../constants";
-import { useFormsContext } from "../../../../hooks/useFormsContext";
+import { NAMES } from "../../../../names";
 import { useDataContext } from "../../../../providers/Data/hooks";
+import { useManageNexusForm } from "../../../../providers/form/hooks";
+import { FORM_MODES } from "@/core/types/forms";
 
 export const ExternalURL = () => {
-  const {
-    forms: {
-      secret,
-      quickLink: {
-        form: {
-          register,
-          control,
-          formState: { errors },
-        },
-      },
-    },
-  } = useFormsContext();
-
+  const form = useManageNexusForm();
   const { quickLink, mode } = useDataContext();
 
   return (
-    <FormTextField
-      {...register(QUICK_LINK_FORM_NAMES.EXTERNAL_URL, {
-        required: "Enter the external Nexus URL.",
-        pattern: {
-          value: getValidURLPattern(VALIDATED_PROTOCOL.STRICT_HTTPS),
-          message: "Enter a valid URL with HTTPS protocol.",
+    <form.AppField
+      name={NAMES.EXTERNAL_URL}
+      listeners={{
+        onChange: ({ value }) => {
+          if (mode === FORM_MODES.CREATE) form.setFieldValue(NAMES.URL, value);
         },
-        onChange: ({ target: { value } }) => {
-          if (mode === FORM_MODES.EDIT) {
-            return;
-          }
-
-          secret.form.setValue(INTEGRATION_SECRET_FORM_NAMES.URL, value);
-        },
-      })}
-      label={"Quick Link URL"}
-      tooltipText={"Enter the external URL of your Nexus instance."}
-      placeholder={"Enter URL"}
-      control={control}
-      errors={errors}
-      disabled={!quickLink}
-    />
+      }}
+    >
+      {(field) => (
+        <field.FormTextField
+          label="Quick Link URL"
+          tooltipText="Enter the external URL of your Nexus instance."
+          placeholder="Enter URL"
+          disabled={!quickLink}
+        />
+      )}
+    </form.AppField>
   );
 };

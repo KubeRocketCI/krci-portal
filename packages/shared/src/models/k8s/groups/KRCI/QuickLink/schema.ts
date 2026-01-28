@@ -10,13 +10,13 @@ import { quickLinkLabels } from "./labels.js";
 
 export const systemQuickLinksEnum = z.enum([
   "argocd",
+  "chat-assistant",
   "defectdojo",
   "dependency-track",
   "monitoring",
   "logging",
   "nexus",
   "sonar",
-  "codemie",
 ]);
 
 export const quickLinkTypeEnum = z.enum(["default", "system"]);

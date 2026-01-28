@@ -6,7 +6,7 @@ export const integrationSecretName = {
   SONAR: "ci-sonarqube",
   SSO: "keycloak",
   ARGO_CD: "ci-argocd",
-  CODEMIE: "ci-codemie",
+  CHAT_ASSISTANT: "chat-assistant",
 } as const;
 
 export const SECRET_LABEL_SECRET_TYPE = "app.edp.epam.com/secret-type";

@@ -9,10 +9,12 @@ import {
   UserName,
   WebHookURL,
 } from "./components/fields";
+import { SyncGitProviderDefaults } from "./components/SyncGitProviderDefaults";
 
 export const GitServerForm = () => {
   return (
     <>
+      <SyncGitProviderDefaults />
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-6 mt-4">
           <Name />

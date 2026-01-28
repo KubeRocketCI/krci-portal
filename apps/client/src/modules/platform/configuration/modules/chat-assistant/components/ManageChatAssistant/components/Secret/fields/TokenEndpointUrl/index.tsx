@@ -1,36 +1,24 @@
-import { FormTextFieldPassword } from "@/core/providers/Form/components/FormTextFieldPassword";
-import { FORM_MODES } from "@/core/types/forms";
-import { useFormsContext } from "../../../../hooks/useFormsContext";
-import { INTEGRATION_SECRET_FORM_NAMES } from "../../../../constants";
+import { NAMES } from "../../../../names";
 import { useDataContext } from "../../../../providers/Data/hooks";
+import { useManageChatAssistantForm } from "../../../../providers/form/hooks";
+import { FORM_MODES } from "@/core/types/forms";
 
 export const Token = () => {
-  const {
-    forms: {
-      secret: {
-        form: {
-          register,
-          control,
-          formState: { errors },
-        },
-      },
-    },
-  } = useFormsContext();
-
+  const form = useManageChatAssistantForm();
   const { mode, ownerReference } = useDataContext();
 
   return (
-    <FormTextFieldPassword
-      {...register(INTEGRATION_SECRET_FORM_NAMES.TOKEN, {
-        required: "Enter token",
-      })}
-      label={"Token"}
-      tooltipText={"Enter authentication token"}
-      placeholder={"Enter token"}
-      control={control}
-      errors={errors}
-      disabled={mode === FORM_MODES.EDIT && !!ownerReference}
-      helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
-    />
+    <form.AppField name={NAMES.TOKEN}>
+      {(field) => (
+        <field.FormTextField
+          type="password"
+          label="Token"
+          tooltipText="Enter authentication token"
+          placeholder="Enter token"
+          disabled={mode === FORM_MODES.EDIT && !!ownerReference}
+          helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
+        />
+      )}
+    </form.AppField>
   );
 };

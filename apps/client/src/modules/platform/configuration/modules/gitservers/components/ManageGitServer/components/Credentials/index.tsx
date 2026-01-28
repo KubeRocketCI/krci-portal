@@ -1,29 +1,21 @@
 import { Tooltip } from "@/core/components/ui/tooltip";
 import React from "react";
-import { useFormsContext } from "../../hooks/useFormsContext";
-import { GIT_SERVER_FORM_NAMES } from "../../names";
+import { useStore } from "@tanstack/react-form";
+import { NAMES } from "../../names";
+import { useManageGitServerForm } from "../../providers/form/hooks";
 import { SSHPrivateKey, SSHPublicKey, Token } from "./components/fields";
-import { createGitServerSecretName, GitProvider, gitProvider } from "@my-project/shared";
+import { gitProvider } from "@my-project/shared";
 import { ShieldX } from "lucide-react";
-import { useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
+import { useDataContext } from "../../providers/Data/hooks";
 
 export const CredentialsForm = () => {
-  const { sharedForm } = useFormsContext();
-
-  const gitProviderSharedValue = sharedForm.watch(GIT_SERVER_FORM_NAMES.GIT_PROVIDER);
-
-  const gitServerSecretWatch = useSecretWatchItem({
-    name: createGitServerSecretName((gitProviderSharedValue as GitProvider) || ""),
-  });
-
-  const gitServerSecret = gitServerSecretWatch.query.data;
-
+  const form = useManageGitServerForm();
+  const gitProviderValue = useStore(form.store, (state) => state.values[NAMES.GIT_PROVIDER]);
+  const { gitServerSecret } = useDataContext();
   const gitServerSecretOwnerReference = gitServerSecret?.metadata?.ownerReferences?.[0].kind;
 
-  const sharedGitProviderValue = sharedForm.watch(GIT_SERVER_FORM_NAMES.GIT_PROVIDER);
-
   const secretFieldsRenderer = React.useCallback(() => {
-    switch (sharedGitProviderValue) {
+    switch (gitProviderValue) {
       case gitProvider.gerrit:
         return (
           <>
@@ -36,27 +28,7 @@ export const CredentialsForm = () => {
           </>
         );
       case gitProvider.github:
-        return (
-          <>
-            <div>
-              <SSHPrivateKey />
-            </div>
-            <div>
-              <Token />
-            </div>
-          </>
-        );
       case gitProvider.gitlab:
-        return (
-          <>
-            <div>
-              <SSHPrivateKey />
-            </div>
-            <div>
-              <Token />
-            </div>
-          </>
-        );
       case gitProvider.bitbucket:
         return (
           <>
@@ -68,8 +40,10 @@ export const CredentialsForm = () => {
             </div>
           </>
         );
+      default:
+        return null;
     }
-  }, [sharedGitProviderValue]);
+  }, [gitProviderValue]);
 
   return (
     <div className="flex flex-col gap-4">

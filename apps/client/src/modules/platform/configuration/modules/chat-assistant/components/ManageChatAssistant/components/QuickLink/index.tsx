@@ -10,7 +10,7 @@ export const QuickLinkForm = () => {
       {!quickLink && (
         <div>
           <Alert variant="default">
-            CodeMie QuickLink has not been found. Please, create it first in order to manage the integration.
+            Chat Assistant QuickLink has not been found. Please, create it first in order to manage the integration.
           </Alert>
         </div>
       )}

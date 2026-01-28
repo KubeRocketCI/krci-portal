@@ -56,9 +56,6 @@ These are utility functions in dedicated folders that should have tests alongsid
 - [x] `k8s/api/groups/KRCI/Codebase/utils/getStatusIcon/index.ts`
 - [x] `k8s/api/groups/KRCI/CodebaseBranch/utils/getStatusIcon/index.ts`
 - [x] `k8s/api/groups/KRCI/CodebaseBranch/utils/sort/index.ts`
-- [x] `k8s/api/groups/KRCI/Codemie/utils/getStatusIcon/index.ts`
-- [x] `k8s/api/groups/KRCI/CodemieApplication/utils/getStatusIcon/index.ts`
-- [x] `k8s/api/groups/KRCI/CodemieProjectSettings/utils/getStatusIcon/index.ts`
 - [x] `k8s/api/groups/KRCI/GitServer/utils/getStatusIcon/index.ts`
 - [x] `k8s/api/groups/KRCI/JiraServer/utils/getStatusIcon/index.ts`
 - [x] `k8s/api/groups/KRCI/QuickLink/utils/getURLsFromList/index.ts`
@@ -180,10 +177,7 @@ Business logic hooks that manage state, data fetching, and complex operations.
 - [ ] `modules/platform/configuration/modules/chat-assistant/components/ManageChatAssistant/hooks/useSecretEditForm.ts`
 - [ ] `modules/platform/configuration/modules/clusters/components/ManageClusterSecret/components/Edit/components/FormActions/hooks/useConflictedStage.ts`
 - [ ] `modules/platform/configuration/modules/clusters/components/ManageClusterSecret/components/Edit/hooks/useDefaultValues.ts`
-- [ ] `modules/platform/configuration/modules/codemie/components/ManageCodeMie/hooks/useCodemieCreateForm.ts`
-- [ ] `modules/platform/configuration/modules/codemie/components/ManageCodeMie/hooks/useCodemieEditForm.ts`
-
-_... and 91 more platform hooks_
+_... and 93 more platform hooks_
 
 ---
 

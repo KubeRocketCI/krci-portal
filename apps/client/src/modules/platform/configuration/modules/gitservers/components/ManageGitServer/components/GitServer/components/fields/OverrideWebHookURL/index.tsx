@@ -1,19 +1,17 @@
-import { FormSwitchRich } from "@/core/providers/Form/components/FormSwitchRich";
-import { useFormsContext } from "../../../../../hooks/useFormsContext";
-import { GIT_SERVER_FORM_NAMES } from "../../../../../names";
+import { NAMES } from "../../../../../names";
+import { useManageGitServerForm } from "../../../../../providers/form/hooks";
 
 export const OverrideWebhookURL = () => {
-  const {
-    forms: { gitServer: gitServerForm },
-  } = useFormsContext();
+  const form = useManageGitServerForm();
 
   return (
-    <FormSwitchRich
-      {...gitServerForm.form.register(GIT_SERVER_FORM_NAMES.OVERRIDE_WEBHOOK_URL)}
-      label="Override Webhook URL"
-      helperText="If enabled, the override Webhook URL will be used instead of the default one."
-      control={gitServerForm.form.control}
-      errors={gitServerForm.form.formState.errors}
-    />
+    <form.AppField name={NAMES.OVERRIDE_WEBHOOK_URL}>
+      {(field) => (
+        <field.FormSwitch
+          label="Override Webhook URL"
+          helperText="If enabled, the override Webhook URL will be used instead of the default one."
+        />
+      )}
+    </form.AppField>
   );
 };

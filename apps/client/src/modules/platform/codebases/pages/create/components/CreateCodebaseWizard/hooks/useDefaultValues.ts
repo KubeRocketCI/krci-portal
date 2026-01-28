@@ -30,7 +30,6 @@ export const useDefaultValues = (): DeepPartial<CreateCodebaseFormValues> => {
       [NAMES.ui_creationMethod]: "template",
       [NAMES.ui_hasCodebaseAuth]: false,
       [NAMES.ui_hasJiraServerIntegration]: false,
-      [NAMES.ui_hasCodemieIntegration]: false,
       [NAMES.ui_versioningStartFromVersion]: defaultEDPVersioningVersion,
       [NAMES.ui_versioningStartFromSnapshot]: defaultEDPVersioningVersionPostfix,
       [NAMES.ui_advancedMappingFieldName]: [],

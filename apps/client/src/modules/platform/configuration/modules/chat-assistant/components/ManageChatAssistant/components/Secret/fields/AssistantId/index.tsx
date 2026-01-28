@@ -1,36 +1,23 @@
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
-import { FORM_MODES } from "@/core/types/forms";
-import { useFormsContext } from "../../../../hooks/useFormsContext";
-import { INTEGRATION_SECRET_FORM_NAMES } from "../../../../constants";
+import { NAMES } from "../../../../names";
 import { useDataContext } from "../../../../providers/Data/hooks";
+import { useManageChatAssistantForm } from "../../../../providers/form/hooks";
+import { FORM_MODES } from "@/core/types/forms";
 
 export const AssistantId = () => {
-  const {
-    forms: {
-      secret: {
-        form: {
-          register,
-          control,
-          formState: { errors },
-        },
-      },
-    },
-  } = useFormsContext();
-
+  const form = useManageChatAssistantForm();
   const { mode, ownerReference } = useDataContext();
 
   return (
-    <FormTextField
-      {...register(INTEGRATION_SECRET_FORM_NAMES.ASSISTANT_ID, {
-        required: "Enter Assistant ID.",
-      })}
-      label={"Assistant ID"}
-      tooltipText={"Enter the Assistant ID for your Chat Assistant instance."}
-      placeholder={"Enter Assistant ID"}
-      control={control}
-      errors={errors}
-      disabled={mode === FORM_MODES.EDIT && !!ownerReference}
-      helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
-    />
+    <form.AppField name={NAMES.ASSISTANT_ID}>
+      {(field) => (
+        <field.FormTextField
+          label="Assistant ID"
+          tooltipText="Enter the Assistant ID for your Chat Assistant instance."
+          placeholder="Enter Assistant ID"
+          disabled={mode === FORM_MODES.EDIT && !!ownerReference}
+          helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
+        />
+      )}
+    </form.AppField>
   );
 };

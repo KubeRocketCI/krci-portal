@@ -10,6 +10,5 @@ export * from "./jira/index.js";
 export * from "./sonarqube/index.js";
 export * from "./sso/index.js";
 export * from "./registry/index.js";
-export * from "./codemie/index.js";
 export * from "./gitserver/index.js";
 export * from "./gitfusion/index.js";

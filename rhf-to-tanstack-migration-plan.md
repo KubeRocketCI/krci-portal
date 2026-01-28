@@ -42,9 +42,11 @@ This document outlines the migration strategy from React Hook Form (RHF) to TanS
 
 ## Migration Progress Summary
 
-**Last Updated:** 2026-01-23
+**Last Updated:** 2026-01-28
 
-### Overall Progress: 100% Complete (11 of 11 major standalone forms migrated, MultiForm pending)
+### Overall Progress
+- 11 of 11 standalone forms migrated (TanStack Form).
+- MultiForm → backend composite: 8 of 9 integration forms migrated (client single-form + composite endpoint). CodeMie removed; Jira client migrated; Registry not started.
 
 #### ✅ Completed Features (11 forms/wizards)
 
@@ -126,51 +128,28 @@ This document outlines the migration strategy from React Hook Form (RHF) to TanS
     - ✅ Uses useStore to read form values
   - ✅ **Success step** (Step 5) - Already exists, no migration needed
 
-### Detailed Remaining Work Breakdown
+### Integration forms (QuickLink + Secret → composite)
 
-#### ⏳ Remaining (1 major item)
+**Approach:** Backend composite tRPC procedures (fail-fast, no rollback). Client: single TanStack form, one mutation call, dirty-field tracking.
 
-**1. MultiForm Provider + Integration Forms** - Not started
-- ⏳ MultiForm provider infrastructure (coordinate multiple forms)
-- ⏳ 10 integration configuration forms (all use MultiForm):
-  - ManageGitServer (GitServer + Secret forms)
-  - ManageRegistry (Registry + PushAccount forms)
-  - ManageJiraServer (QuickLink + Secret forms)
-  - ManageSonar (QuickLink + Secret forms)
-  - ManageNexus (QuickLink + Secret forms)
-  - ManageDefectDojo (QuickLink + Secret forms)
-  - ManageArgoCD (QuickLink + Secret forms)
-  - ManageChatAssistant (QuickLink + Secret forms)
-  - ManageCodeMie (QuickLink + Secret forms)
-  - ManageDependencyTrack (QuickLink + Secret forms)
-- **Complexity:** High (provider-level changes affect all 10 forms)
-- **Note:** Migration plan suggests simplifying (multi-form logic may move to backend)
+| Module              | Backend | Client | Notes                          |
+|---------------------|---------|--------|--------------------------------|
+| ManageArgoCD        | ✅      | ✅     | Reference implementation       |
+| ManageDependencyTrack | ✅    | ✅     |                                |
+| ManageSonar         | ✅      | ✅     |                                |
+| ManageDefectDojo    | ✅      | ✅     |                                |
+| ManageNexus         | ✅      | ✅     |                                |
+| ManageChatAssistant | ✅      | ✅     |                                |
+| ManageJiraServer    | ✅      | ✅     | Uses JiraServer, no QuickLink in system |
+| ManageRegistry      | ⏳      | ⏳     | 4 resources                    |
+| ManageGitServer     | ✅      | ✅     | GitServer + Secret             |
+
+**Tests:** 7 composite endpoints have tests (9 cases each, ArgoCD-style). ManageGitServer procedure has no tests yet.
 
 ### Statistics
 
-- **Total Major Forms/Wizards:** 12 (11 standalone + 1 MultiForm category)
-- **Completed:** 11 forms/wizards fully migrated
-- **In Progress:** 0 forms
-- **Not Started:** 1 category (MultiForm provider + 10 integration forms)
-- **Overall Completion:** 92% (11 of 12 major form categories)
-
-**Breakdown by Module:**
-- **CD Pipelines:** 4/4 complete (100%) ✅
-  - EditCDPipeline, EditStage, ManageStage (Create), CreateCDPipelineWizard, CreateStageWizard
-- **Overview:** 1/1 complete (100%) ✅
-  - AddNewWidget/AppVersionWidgetForm
-- **Codebases:** 3/3 complete (100%) ✅
-  - EditCodebase ✅, ManageCodebaseBranch ✅, CreateCodebaseWizard ✅
-- **Configuration:** 3/13 complete (23%)
-  - ManageQuickLink ✅, ManageClusterSecret ✅, ManageGitOps ✅
-  - MultiForm-based forms: 0/10 (ManageGitServer, ManageRegistry, ManageJira, ManageSonar, ManageNexus, ManageDefectDojo, ManageArgoCD, ManageChatAssistant, ManageCodeMie, ManageDependencyTrack)
-
-**Field Migration Progress:**
-- **CreateCodebaseWizard:** 24+ fields complete (100%) ✅
-  - Step 1 (InitialSelection): 3/3 fields ✅ + TemplateSelection ✅
-  - Step 2 (GitAndProjectInfo): 10/10 fields ✅
-  - Step 3 (BuildConfig): 11+/11 fields ✅
-  - Step 4 (Review): Complete ✅
+- Standalone forms: 11/11 migrated.
+- Integration forms (composite): 8/9 client-migrated; 1 not started (Registry).
 
 ---
 
@@ -181,6 +160,15 @@ This document outlines the migration strategy from React Hook Form (RHF) to TanS
 **Forms Completed:** 2.4 forms (CreateStageWizard + CreateCodebaseWizard 100%)
 **Overall Progress:** 83% → 92% (+9%)
 **Lines of Code:** ~1,200+ lines TypeScript/React
+
+---
+
+## Current Status (2026-01-28)
+
+- **CodeMie:** Removed from app (module, router, trpc procedure, k8s API, shared models, QuickLink enum, CreateCodebaseWizard fields, docs). Chat Assistant now uses `systemQuickLink["chat-assistant"]` and `integrationSecretName.CHAT_ASSISTANT`.
+- **Build fixes:** manageArgoCDIntegration and manageGitServerIntegration TS errors fixed (Secret/QuickLink casts; GitServer secret input → discriminated union, gitProvider enum, webhookUrl, name).
+- **ManageGitServer client:** Migrated to single TanStack form + composite endpoint. New: names.ts (schema + NAMES), providers/form/, index.tsx (useAppForm, trpc.k8s.manageGitServerIntegration.mutate), all fields use form.AppField, Actions use form store, SyncGitProviderDefaults for gitUser/nameSshKeySecret. Removed: MultiFormContextProvider, useFormsContext, useSharedForm, useGitServerCreateForm/EditForm, useCredentialsCreateForm/EditForm.
+- **Integration forms:** 8/9 client-migrated (ArgoCD, DependencyTrack, Sonar, DefectDojo, Nexus, ChatAssistant, GitServer, Jira). Remaining: Registry (not started). ManageGitServer backend has no tests yet.
 
 ### Quick Status Table
 
@@ -303,7 +291,7 @@ This document outlines the migration strategy from React Hook Form (RHF) to TanS
   - Affects: 10 integration configuration forms
 - Migrate 10 forms (all follow same pattern: QuickLink + Secret)
   - ManageGitServer, ManageRegistry, ManageJira, ManageSonar, ManageNexus
-  - ManageDefectDojo, ManageArgoCD, ManageChatAssistant, ManageCodeMie, ManageDependencyTrack
+  - ManageDefectDojo, ManageArgoCD, ManageChatAssistant, ManageDependencyTrack
 - **Note:** Migration plan suggests this may be simplified in future (backend refactor)
 
 **Recommendation:** Option A (Complete CreateCodebaseWizard)
@@ -685,6 +673,167 @@ const form = useAppForm({
 ### Existing Wizard Schemas
 
 The existing zod schemas (e.g., `createCodebaseFormSchema` in `CreateCodebaseWizard/names.ts`) can be reused directly with the zod adapter. The discriminated unions and superRefine patterns work with TanStack Form.
+
+---
+
+## Multi-Forms Backend Refactor
+
+### Background
+
+Previously, forms that needed to manage multiple K8s resources (e.g., QuickLink + Secret, ConfigMap + Secret + ServiceAccount) used `MultiFormContextProvider` on the client. This provider coordinated multiple react-hook-form instances, validated all forms, and submitted them sequentially.
+
+### New Approach
+
+**Move multi-resource logic to backend** using composite tRPC procedures with **fail-fast sequential operations** (NO rollback).
+
+### Architecture Decision: No Rollback
+
+**Why no rollback?**
+1. **K8s doesn't have transactions** - Resources are independent, operators typically don't rollback
+2. **Partial success is visible** - User sees what succeeded in K8s, knows to retry
+3. **Retry is idempotent** - If Secret already has correct values, updating again is safe
+4. **Simpler code** - No tracking, no compensating transactions, less complexity
+5. **Follows K8s patterns** - Most controllers are eventually consistent, not transactional
+
+**Behavior:**
+```
+User clicks "Save"
+→ Secret updates successfully
+→ QuickLink update fails (network issue, permissions, etc.)
+→ Error shown: "Failed to update QuickLink. Secret was updated successfully."
+→ User clicks "Save" again (retry)
+→ Secret update is no-op (values already correct)
+→ QuickLink update succeeds
+→ Done
+```
+
+**Backend (tRPC):**
+- Location: `/packages/trpc/src/routers/k8s/procedures/composite/`
+- Pattern: Each composite procedure handles multiple K8s resources **sequentially**
+- Fail-fast: Stop on first error, return detailed error message
+- No rollback: Changes that succeeded remain (user retries as needed)
+
+**Client (TanStack Form):**
+- Pattern: Single unified form (NOT multiple forms with MultiFormContextProvider)
+- Use `useAppForm` from `@/core/form-temp` (TanStack Form, NOT react-hook-form)
+- Track dirty fields to know which resources to update
+- Single API call to backend composite endpoint
+- Show clear error messages with what succeeded/failed
+
+### Example: ManageArgoCD (QuickLink + Secret)
+
+**Backend Endpoint:** `k8s.manageArgoCDIntegration`
+```typescript
+// Input
+{
+  mode: "create" | "edit",
+  dirtyFields: { quickLink: boolean, secret: boolean },
+  quickLink?: { name, externalUrl, currentResource? },
+  secret: { token, url, currentResource? }
+}
+
+// Implementation (simplified, no rollback)
+try {
+  let updatedSecret;
+  let updatedQuickLink;
+
+  if (dirtyFields.secret) {
+    if (mode === "create") {
+      updatedSecret = await k8sClient.createResource(secretConfig, namespace, secretDraft);
+    } else {
+      updatedSecret = await k8sClient.replaceResource(secretConfig, name, namespace, editedSecret);
+    }
+  }
+
+  if (dirtyFields.quickLink && mode === "edit" && quickLink) {
+    updatedQuickLink = await k8sClient.replaceResource(quickLinkConfig, name, namespace, editedQuickLink);
+  }
+
+  return { success: true, data: { secret: updatedSecret, quickLink: updatedQuickLink } };
+} catch (error) {
+  // Just throw - no rollback
+  throw handleK8sError(error);
+}
+```
+
+**Client Form:**
+```tsx
+// Use TanStack Form pattern (like CreateCodebaseWizard)
+const form = useAppForm({
+  defaultValues: { externalUrl: '', token: '', url: '' },
+  validators: { onChange: schema },
+  onSubmit: async ({ value }) => {
+    try {
+      await trpc.k8s.manageArgoCDIntegration.mutate({
+        mode: isEdit ? 'edit' : 'create',
+        dirtyFields: {
+          quickLink: form.state.dirtyFields.externalUrl,
+          secret: form.state.dirtyFields.token || form.state.dirtyFields.url,
+        },
+        // ... data
+      });
+      toast.success("ArgoCD integration saved successfully");
+    } catch (error) {
+      toast.error(error.message); // Show what failed
+    }
+  },
+});
+
+// Single form with all fields
+<form.AppField name="externalUrl">
+  {(field) => <field.FormTextField label="External URL" />}
+</form.AppField>
+<form.AppField name="token">
+  {(field) => <field.FormTextField label="Token" type="password" />}
+</form.AppField>
+```
+
+### Migration Pattern
+
+For each multi-form (10 forms total):
+
+1. **Backend:**
+   - Create composite procedure in `procedures/composite/manage[Integration]/`
+   - Sequential operations: try each in order, stop on first error
+   - Handle create/edit modes
+   - Accept dirty fields indicator
+   - **NO rollback logic** - fail-fast approach
+
+2. **Client:**
+   - Remove `MultiFormContextProvider` usage
+   - Replace multiple `useXXXForm` hooks with single `useAppForm`
+   - Consolidate field definitions into one form schema
+   - Track dirty fields using TanStack Form's `form.state.dirtyFields`
+   - Update Actions component to call composite endpoint
+   - Show clear error messages (what succeeded/failed)
+
+3. **Testing:**
+   - Test create mode (all resources)
+   - Test edit mode (only dirty resources)
+   - Test validation failures
+   - Test partial success scenarios (first succeeds, second fails)
+   - **NO rollback tests** - simpler test suite
+
+### Implementation Status
+
+| Module | Backend | Client | Tests | Status |
+|--------|---------|--------|-------|--------|
+| ManageArgoCD | ✅ Done | ✅ Done | ✅ 9 tests | 100% ✅ |
+| ManageRegistry | ⏳ | ⏳ | ⏳ | 0% |
+| ManageGitServer | ✅ Done | ✅ Done | ⏳ (no tests) | Client migrated 2026-01-28 |
+| ManageJiraServer | ✅ Done | ✅ (uses JiraServer not QuickLink) | ✅ 9 tests | Client migrated |
+| ManageSonar | ✅ Done | ✅ Done | ✅ 9 tests | 100% ✅ |
+| ManageNexus | ✅ Done | ✅ Done | ✅ 9 tests | 100% ✅ |
+| ManageDefectDojo | ✅ Done | ✅ Done | ✅ 9 tests | 100% ✅ |
+| ManageChatAssistant | ✅ Done | ✅ Done | ✅ 9 tests | 100% ✅ |
+| ManageDependencyTrack | ✅ Done | ✅ Done | ✅ 9 tests | 100% ✅ |
+
+### Key files
+- Backend: `packages/trpc/src/routers/k8s/procedures/composite/manage*Integration/`
+- Client pattern: `argocd/components/ManageArgoCD/` (names.ts, providers/form/, single useAppForm, composite mutate)
+
+### Rules
+- Use TanStack Form (`useAppForm`, `form.AppField`), Zod, composite endpoint. Do not use RHF or MultiFormContextProvider for these integrations.
 
 ---
 

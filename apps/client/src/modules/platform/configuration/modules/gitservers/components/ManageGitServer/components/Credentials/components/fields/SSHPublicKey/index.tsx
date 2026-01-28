@@ -1,34 +1,28 @@
-import { FormTextFieldPassword } from "@/core/providers/Form/components/FormTextFieldPassword";
-import { FORM_MODES } from "@/core/types/forms";
-import { useFormsContext } from "../../../../../hooks/useFormsContext";
-import { CREDENTIALS_FORM_NAMES } from "../../../../../names";
-import { useDataContext } from "../../../../../providers/Data/hooks";
+import { NAMES } from "@/modules/platform/configuration/modules/gitservers/components/ManageGitServer/names";
+import { useManageGitServerForm } from "@/modules/platform/configuration/modules/gitservers/components/ManageGitServer/providers/form/hooks";
+import { useDataContext } from "@/modules/platform/configuration/modules/gitservers/components/ManageGitServer/providers/Data/hooks";
 
 export const SSHPublicKey = () => {
+  const form = useManageGitServerForm();
   const { gitServerSecret } = useDataContext();
-
-  const {
-    forms: { credentials: credentialsForm },
-  } = useFormsContext();
-
   const gitServerSecretOwnerReference = gitServerSecret?.metadata?.ownerReferences?.[0].kind;
 
   return (
-    <FormTextFieldPassword
-      {...credentialsForm.form.register(CREDENTIALS_FORM_NAMES.SSH_PUBLIC_KEY, {
-        required: "Paste your public SSH key.",
-      })}
-      label={"Public SSH key"}
-      tooltipText={
-        "Paste your public SSH key corresponding to the private key provided. Register this key on your Git server."
-      }
-      placeholder={"ssh-rsa PUBLIC KEY"}
-      control={credentialsForm.form.control}
-      errors={credentialsForm.form.formState.errors}
-      helperText={
-        gitServerSecretOwnerReference ? `This field value is managed by ${gitServerSecretOwnerReference}` : undefined
-      }
-      disabled={credentialsForm.mode === FORM_MODES.EDIT && !!gitServerSecretOwnerReference}
-    />
+    <form.AppField name={NAMES.SSH_PUBLIC_KEY}>
+      {(field) => (
+        <field.FormTextareaPassword
+          label="Public SSH key"
+          tooltipText="Paste your public SSH key for Gerrit."
+          placeholder="ssh-rsa AAAA..."
+          rows={4}
+          helperText={
+            gitServerSecretOwnerReference
+              ? `This field value is managed by ${gitServerSecretOwnerReference}`
+              : undefined
+          }
+          disabled={!!gitServerSecretOwnerReference}
+        />
+      )}
+    </form.AppField>
   );
 };

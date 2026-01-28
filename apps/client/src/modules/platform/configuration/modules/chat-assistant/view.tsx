@@ -23,7 +23,7 @@ export default function ChatAssistantConfigurationPage() {
   const chatAssistantSecret = chatAssistantSecretWatch.query.data;
 
   const chatAssistantQuickLinkWatch = useQuickLinkWatchItem({
-    name: systemQuickLink.codemie,
+    name: systemQuickLink["chat-assistant"],
   });
   const chatAssistantQuickLink = chatAssistantQuickLinkWatch.query.data;
 

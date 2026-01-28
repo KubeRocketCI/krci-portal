@@ -77,7 +77,6 @@ const uiOnlyFields = {
   ui_repositoryLogin: z.string().optional(),
   ui_repositoryPasswordOrApiToken: z.string().optional(),
   ui_hasJiraServerIntegration: z.boolean(),
-  ui_hasCodemieIntegration: z.boolean(),
   ui_versioningStartFromVersion: z.string().nullable().optional(),
   ui_versioningStartFromSnapshot: z.string().nullable().optional(),
   ui_advancedMappingFieldName: z.array(z.string()).optional().default([]),
@@ -425,6 +424,5 @@ export const CREATE_FORM_PARTS = {
     NAMES.ui_advancedMappingRows,
     NAMES.jiraIssueMetadataPayload,
     NAMES.emptyProject,
-    NAMES.ui_hasCodemieIntegration,
   ],
 } as const;

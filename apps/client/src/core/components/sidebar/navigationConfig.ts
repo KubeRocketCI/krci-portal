@@ -304,13 +304,6 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
         //         params: clusterDefaultParams,
         //       },
         //     },
-        //     {
-        //       title: "Codemie",
-        //       route: {
-        //         to: routeCodemieConfiguration.to,
-        //         params: clusterDefaultParams,
-        //       },
-        //     },
         //   ],
         // },
       ],

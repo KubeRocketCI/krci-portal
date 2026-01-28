@@ -10,7 +10,7 @@ describe("editChatAssistantIntegrationSecret", () => {
     apiVersion: "v1",
     kind: "Secret",
     metadata: {
-      name: integrationSecretName.CODEMIE,
+      name: integrationSecretName.CHAT_ASSISTANT,
       namespace: "default",
       labels: {
         [SECRET_LABEL_SECRET_TYPE]: "chat-assistant",
@@ -154,7 +154,7 @@ describe("editChatAssistantIntegrationSecret", () => {
       apiVersion: "v1",
       kind: "Secret",
       metadata: {
-        name: integrationSecretName.CODEMIE,
+        name: integrationSecretName.CHAT_ASSISTANT,
       } as unknown as KubeMetadata,
       type: "Opaque",
     };

@@ -13,8 +13,6 @@ export const NAMES = {
   ADVANCED_MAPPING_FIELD_NAME: "ADVANCED_MAPPING_FIELD_NAME",
   ADVANCED_MAPPING_JIRA_PATTERN: "ADVANCED_MAPPING_JIRA_PATTERN",
   JIRA_ISSUE_METADATA_PAYLOAD: "JIRA_ISSUE_METADATA_PAYLOAD",
-  HAS_CODEMIE_INTEGRATION: "HAS_CODEMIE_INTEGRATION",
-  CODEMIE_INTEGRATION_LABEL: "CODEMIE_INTEGRATION_LABEL",
 } as const;
 
 // Edit form names - only fields that can be edited
@@ -40,11 +38,5 @@ export const EDIT_FORM_NAMES = {
   },
   [NAMES.JIRA_ISSUE_METADATA_PAYLOAD]: {
     name: CREATE_WIZARD_NAMES.jiraIssueMetadataPayload,
-  },
-  [NAMES.HAS_CODEMIE_INTEGRATION]: {
-    name: CREATE_WIZARD_NAMES.ui_hasCodemieIntegration,
-  },
-  [NAMES.CODEMIE_INTEGRATION_LABEL]: {
-    name: "codemieIntegrationLabel", // Special case - stored in metadata.labels
   },
 } as const;
