@@ -1,32 +1,40 @@
 import { ResourceLabels } from "@my-project/shared";
 
-export const getK8sAPIQueryCacheKey = () => ["k8s:api"];
+const CLUSTER_SCOPE_KEY = "__cluster__";
 
-export const getK8sItemPermissionsQueryCacheKey = (clusterName: string, namespace: string, resourcePlural: string) => [
-  "k8s:itemPermissions",
-  clusterName,
-  namespace,
-  resourcePlural,
-];
+export function getK8sAPIQueryCacheKey(): string[] {
+  return ["k8s:api"];
+}
 
-export const getK8sWatchListQueryCacheKey = (
+export function getK8sItemPermissionsQueryCacheKey(
   clusterName: string,
   namespace: string,
+  resourcePlural: string
+): string[] {
+  return ["k8s:itemPermissions", clusterName, namespace, resourcePlural];
+}
+
+export function getK8sWatchListQueryCacheKey(
+  clusterName: string,
+  namespace: string | undefined,
   resourcePlural: string,
   labels?: ResourceLabels
-) => {
-  const hasLabels = !!labels && Object.keys(labels).length > 0;
+): (string | undefined)[] {
+  const nsKey = namespace ?? CLUSTER_SCOPE_KEY;
+  const hasLabels = labels && Object.keys(labels).length > 0;
 
   if (hasLabels) {
-    return ["k8s:watchList", clusterName, namespace, resourcePlural, Object.entries(labels).toString()];
+    return ["k8s:watchList", clusterName, nsKey, resourcePlural, Object.entries(labels).toString()];
   }
 
-  return ["k8s:watchList", clusterName, namespace, resourcePlural];
-};
+  return ["k8s:watchList", clusterName, nsKey, resourcePlural];
+}
 
-export const getK8sWatchItemQueryCacheKey = (
+export function getK8sWatchItemQueryCacheKey(
   clusterName: string,
-  namespace: string,
+  namespace: string | undefined,
   resourcePlural: string,
   name: string | undefined
-) => ["k8s:watchItem", clusterName, namespace, resourcePlural, name];
+): (string | undefined)[] {
+  return ["k8s:watchItem", clusterName, namespace ?? CLUSTER_SCOPE_KEY, resourcePlural, name];
+}

@@ -42,7 +42,9 @@ export const useWatchList = <I extends KubeObjectBase>({
       defaultNamespace: state.defaultNamespace,
     }))
   );
-  const _namespace = namespace ?? storedNamespace;
+  // For cluster-scoped resources, don't use any namespace
+  // Otherwise, use provided namespace or fallback to stored namespace
+  const _namespace = resourceConfig.clusterScoped ? undefined : (namespace ?? storedNamespace);
   const queryClient = useQueryClient();
 
   const queryKey = React.useMemo(

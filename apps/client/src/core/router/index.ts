@@ -70,6 +70,10 @@ import { routeSASTProjectDetails } from "@/modules/platform/security/pages/sast-
 import { routeTrivyVulnerabilities } from "@/modules/platform/security/pages/trivy-vulnerabilities/route";
 import { routeTrivyVulnerabilityDetails } from "@/modules/platform/security/pages/trivy-vulnerability-details/route";
 import { routeTrivyOverview } from "@/modules/platform/security/pages/trivy-overview/route";
+import { routeTrivyConfigAudits } from "@/modules/platform/security/pages/trivy-config-audits/route";
+import { routeTrivyConfigAuditDetails } from "@/modules/platform/security/pages/trivy-config-audit-details/route";
+import { routeTrivyCompliance } from "@/modules/platform/security/pages/trivy-compliance/route";
+import { routeTrivyComplianceDetails } from "@/modules/platform/security/pages/trivy-compliance-details/route";
 
 const routeTree = rootRoute.addChildren([
   authRoute.addChildren([routeAuthLogin, routeAuthCallback]),
@@ -105,6 +109,10 @@ const routeTree = rootRoute.addChildren([
         routeTrivyOverview,
         routeTrivyVulnerabilities,
         routeTrivyVulnerabilityDetails,
+        routeTrivyConfigAudits,
+        routeTrivyConfigAuditDetails,
+        routeTrivyCompliance,
+        routeTrivyComplianceDetails,
       ]),
       routeConfiguration.addChildren([
         routeArgocdConfiguration,

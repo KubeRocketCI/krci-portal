@@ -125,6 +125,40 @@ export const SEVERITY_BADGE_CLASSES = {
 export type SeverityLevel = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN" | "UNASSIGNED" | "INFO";
 
 /**
+ * Severity order for sorting (higher value = more severe)
+ * Used for consistent severity-based sorting across tables
+ */
+export const SEVERITY_ORDER: Record<string, number> = {
+  CRITICAL: 5,
+  HIGH: 4,
+  MEDIUM: 3,
+  LOW: 2,
+  UNKNOWN: 1,
+} as const;
+
+/**
+ * Compare function for sorting items by severity level
+ * Handles case-insensitive comparison
+ *
+ * @param severityA - First severity level
+ * @param severityB - Second severity level
+ * @returns Negative if A < B, positive if A > B, zero if equal
+ *
+ * @example
+ * // Sort ascending (least severe first)
+ * items.sort((a, b) => compareBySeverity(a.severity, b.severity));
+ *
+ * @example
+ * // Sort descending (most severe first)
+ * items.sort((a, b) => compareBySeverity(b.severity, a.severity));
+ */
+export function compareBySeverity(severityA: string | undefined, severityB: string | undefined): number {
+  const orderA = SEVERITY_ORDER[severityA?.toUpperCase() ?? ""] ?? 0;
+  const orderB = SEVERITY_ORDER[severityB?.toUpperCase() ?? ""] ?? 0;
+  return orderA - orderB;
+}
+
+/**
  * Shared severity configuration for charts and tables.
  * Use this to ensure consistent ordering and labeling across components.
  */

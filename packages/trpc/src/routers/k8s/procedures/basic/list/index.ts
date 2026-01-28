@@ -11,7 +11,7 @@ export const k8sListProcedure = protectedProcedure
   .input(
     z.object({
       clusterName: z.string(),
-      namespace: z.string(),
+      namespace: z.string().optional(),
       resourceConfig: k8sResourceConfigSchema,
       labels: z.record(z.string()).optional().default({}),
     })

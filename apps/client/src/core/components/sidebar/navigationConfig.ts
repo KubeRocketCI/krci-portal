@@ -7,6 +7,8 @@ import { PATH_SCA_PROJECTS_FULL } from "@/modules/platform/security/pages/sca-pr
 import { PATH_SAST_FULL } from "@/modules/platform/security/pages/sast/route";
 import { PATH_TRIVY_VULNERABILITIES_FULL } from "@/modules/platform/security/pages/trivy-vulnerabilities/route";
 import { PATH_TRIVY_OVERVIEW_FULL } from "@/modules/platform/security/pages/trivy-overview/route";
+import { PATH_TRIVY_CONFIG_AUDITS_FULL } from "@/modules/platform/security/pages/trivy-config-audits/route";
+import { PATH_TRIVY_COMPLIANCE_FULL } from "@/modules/platform/security/pages/trivy-compliance/route";
 import { PATH_COMPONENTS_FULL } from "@/modules/platform/codebases/pages/list/route";
 import { PATH_CDPIPELINES_FULL } from "@/modules/platform/cdpipelines/pages/list/route";
 import { PATH_PIPELINERUNS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-list/route";
@@ -171,6 +173,30 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
             },
           ],
         },
+        {
+          title: "Namespace Security",
+          children: [
+            {
+              title: "Configuration Audits",
+              route: {
+                to: PATH_TRIVY_CONFIG_AUDITS_FULL,
+                params: clusterDefaultParams,
+              },
+            },
+          ],
+        },
+        {
+          title: "Cluster Security",
+          children: [
+            {
+              title: "Compliance",
+              route: {
+                to: PATH_TRIVY_COMPLIANCE_FULL,
+                params: clusterDefaultParams,
+              },
+            },
+          ],
+        },
       ],
     },
     {
@@ -294,25 +320,6 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
             },
           ],
         },
-        // {
-        //   title: "Gen AI",
-        //   children: [
-        //     {
-        //       title: "Chat Assistant",
-        //       route: {
-        //         to: routeChatAssistantConfiguration.to,
-        //         params: clusterDefaultParams,
-        //       },
-        //     },
-        //     {
-        //       title: "Codemie",
-        //       route: {
-        //         to: routeCodemieConfiguration.to,
-        //         params: clusterDefaultParams,
-        //       },
-        //     },
-        //   ],
-        // },
       ],
     },
   ] as const satisfies NavItem[];

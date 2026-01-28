@@ -7,7 +7,7 @@ import { WatchEvent } from "@/k8s/api/hooks/useWatch/types";
 
 type WatchListParams = {
   clusterName: string;
-  namespace: string;
+  namespace?: string;
   resourceConfig: K8sResourceConfig;
   labels?: Record<string, string>;
 };
@@ -152,7 +152,7 @@ export { WatchListRegistry };
 
 type WatchItemParams = {
   clusterName: string;
-  namespace: string;
+  namespace?: string;
   resourceConfig: K8sResourceConfig;
   name: string;
 };
