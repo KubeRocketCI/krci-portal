@@ -3,7 +3,7 @@ import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { SubSection } from "@/core/components/SubSection";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
-import { ManageCodebaseBranchDialog } from "@/modules/platform/codebases/dialogs/ManageCodebaseBranch";
+import { CreateCodebaseBranchDialog } from "@/modules/platform/codebases/components/CreateCodebaseBranchDialog";
 import { CodebaseBranch } from "@my-project/shared";
 import React from "react";
 import { useCodebaseBranchListWatch, useCodebaseWatch, usePipelineNamesWatch } from "../../hooks/data";
@@ -62,7 +62,7 @@ export const BranchList = () => {
             <EmptyList
               missingItemName={"branches"}
               handleClick={() =>
-                setDialog(ManageCodebaseBranchDialog, {
+                setDialog(CreateCodebaseBranchDialog, {
                   codebaseBranches: codebaseBranchListWatch.data.array,
                   codebase: codebase!,
                   defaultBranch: defaultBranch!,

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect, userEvent } from "storybook/test";
 import { useForm } from "@tanstack/react-form";
 import { SwitchField } from "./index";
 
@@ -30,6 +31,13 @@ export const Default: Story = {
       </div>
     );
   },
+  play: async ({ canvas }) => {
+    const switchElement = canvas.getByRole("switch");
+    await expect(switchElement).not.toBeChecked();
+
+    await userEvent.click(switchElement);
+    await expect(switchElement).toBeChecked();
+  },
 };
 
 export const Checked: Story = {
@@ -48,6 +56,9 @@ export const Checked: Story = {
       </div>
     );
   },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("switch")).toBeChecked();
+  },
 };
 
 export const Disabled: Story = {
@@ -65,6 +76,9 @@ export const Disabled: Story = {
         <label className="text-muted-foreground text-sm">Disabled switch (cannot be toggled)</label>
       </div>
     );
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("switch")).toBeDisabled();
   },
 };
 
@@ -103,6 +117,19 @@ export const WithValidation: Story = {
         </form.Field>
       </div>
     );
+  },
+  play: async ({ canvas }) => {
+    const switchElement = canvas.getByRole("switch");
+
+    // Click on → valid, no error
+    await userEvent.click(switchElement);
+    await expect(switchElement).toBeChecked();
+
+    // Click off → invalid, error appears
+    await userEvent.click(switchElement);
+    await expect(switchElement).not.toBeChecked();
+    await expect(switchElement).toHaveAttribute("aria-invalid", "true");
+    await expect(canvas.getByText("You must accept the terms and conditions")).toBeInTheDocument();
   },
 };
 

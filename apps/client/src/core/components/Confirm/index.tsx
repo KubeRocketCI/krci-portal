@@ -1,6 +1,5 @@
 import { Button } from "@/core/components/ui/button";
 import React from "react";
-import { useForm } from "react-hook-form";
 import {
   Dialog,
   DialogBody,
@@ -9,7 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/core/components/ui/dialog";
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
+import { Input } from "@/core/components/ui/input";
+import { Label } from "@/core/components/ui/label";
 import { DIALOG_NAME } from "./constants";
 import { ConfirmDialogProps } from "./types";
 
@@ -17,23 +17,19 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   props: { actionCallback, text },
   state: { open, closeDialog },
 }) => {
-  const {
-    control,
-    watch,
-    reset,
-    formState: { errors },
-  } = useForm();
+  const [confirmValue, setConfirmValue] = React.useState("");
 
-  const confirmFieldValue = watch("confirm");
-  const isSubmitNotAllowed = confirmFieldValue !== "confirm";
+  const isSubmitNotAllowed = confirmValue !== "confirm";
 
-  const handleClosePopup = React.useCallback(() => closeDialog(), [closeDialog]);
+  const handleClosePopup = React.useCallback(() => {
+    closeDialog();
+    setConfirmValue("");
+  }, [closeDialog]);
 
   const onSubmit = React.useCallback(async () => {
     await actionCallback();
     handleClosePopup();
-    reset();
-  }, [actionCallback, handleClosePopup, reset]);
+  }, [actionCallback, handleClosePopup]);
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClosePopup()} data-testid="dialog">
@@ -48,13 +44,15 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                 <p className="text-lg">{text}</p>
               </div>
             )}
-            <FormTextField
-              name="confirm"
-              control={control}
-              errors={errors}
-              label={'Enter "confirm" to confirm action'}
-              rules={{ required: true }}
-            />
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="confirm-input">Enter "confirm" to confirm action</Label>
+              <Input
+                id="confirm-input"
+                value={confirmValue}
+                onChange={(e) => setConfirmValue(e.target.value)}
+                placeholder=""
+              />
+            </div>
           </div>
         </DialogBody>
         <DialogFooter>

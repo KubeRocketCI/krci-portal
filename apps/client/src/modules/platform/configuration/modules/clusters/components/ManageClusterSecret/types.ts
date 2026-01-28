@@ -1,7 +1,9 @@
 import { FormMode } from "@/core/types/forms";
 import { Secret } from "@my-project/shared";
-import { CLUSTER_FORM_NAMES } from "./names";
 import { ClusterType } from "@my-project/shared";
+import { CLUSTER_FORM_NAMES } from "./constants";
+
+export { CLUSTER_FORM_NAMES } from "./constants";
 
 export interface ManageClusterSecretDataContext {
   handleClosePlaceholder?: () => void;

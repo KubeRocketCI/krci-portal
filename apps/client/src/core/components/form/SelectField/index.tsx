@@ -12,7 +12,7 @@ import React from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
 import { FormField } from "@/core/components/ui/form-field";
 import { cn } from "@/core/utils/classname";
-import type { SelectOption } from "@/core/providers/Form/types";
+import type { SelectOption } from "@/core/types/forms";
 
 export interface SelectFieldProps<
   Values extends Record<string, unknown> = Record<string, unknown>,
@@ -46,7 +46,7 @@ export interface SelectFieldProps<
   label?: string;
   tooltipText?: string;
   helperText?: string;
-  options?: SelectOption[];
+  options?: SelectOption<string>[];
   disabled?: boolean;
   placeholder?: string;
   suffix?: React.ReactNode;

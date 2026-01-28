@@ -6,7 +6,9 @@ import {
   CodebaseVersioning,
   CodebaseType,
 } from "@my-project/shared";
-import { CODEBASE_FORM_NAMES } from "./names";
+import { CODEBASE_FORM_NAMES } from "./constants";
+
+export { CODEBASE_FORM_NAMES } from "./constants";
 
 export interface ManageGitOpsDataContext {
   currentElement: Codebase | "placeholder";

@@ -9,7 +9,7 @@ import { InitialSelection } from "./components/InitialSelection";
 import { Review } from "./components/Review";
 import { Success } from "./components/Success";
 import { WizardStepper } from "./components/WizardStepper";
-import { CreateCodebaseFormValues } from "./names";
+import type { CreateCodebaseFormValues } from "./types";
 import { useWizardStore } from "./store";
 import { WizardNavigation } from "./components/WizardNavigation";
 import { GitAndProjectInfo } from "./components/GitAndProjectInfo";

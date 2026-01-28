@@ -8,32 +8,33 @@ import {
 } from "@/core/components/ui/dialog";
 import { Button } from "@/core/components/ui/button";
 import React from "react";
-import { useForm } from "react-hook-form";
+import { useAppForm } from "@/core/form-temp";
 import { DIALOG_NAME } from "./constants";
 import { CommentDialogProps } from "./types";
-import { ValueOf } from "@/core/types/global";
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
-
-const names = {
-  COMMENT: "comment",
-};
-
-type FormValues = Record<ValueOf<typeof names>, string>;
 
 export const CommentDialog: React.FC<CommentDialogProps> = ({
   props: { onFormSubmit, title },
   state: { open, closeDialog },
 }) => {
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<FormValues>();
+  const form = useAppForm({
+    defaultValues: { comment: "" },
+    validators: {
+      onChange: ({ value }: { value: { comment: string } }) => {
+        if (!value.comment?.trim()) {
+          return "Enter a comment.";
+        }
+        return undefined;
+      },
+    },
+    onSubmit: async ({ value }) => {
+      onFormSubmit(value.comment);
+      closeDialog();
+    },
+  });
 
-  const onSubmit = (values: FormValues) => {
-    onFormSubmit(values.comment);
-    closeDialog();
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    void form.handleSubmit();
   };
 
   return (
@@ -43,23 +44,17 @@ export const CommentDialog: React.FC<CommentDialogProps> = ({
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <DialogBody>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <FormTextField
-              {...register(names.COMMENT, {
-                required: "Enter a comment.",
-              })}
-              placeholder={"Enter a comment"}
-              label={"Comment"}
-              control={control}
-              errors={errors}
-            />
+          <form onSubmit={handleSubmit}>
+            <form.AppField name="comment">
+              {(field) => <field.FormTextField placeholder="Enter a comment" label="Comment" />}
+            </form.AppField>
           </form>
         </DialogBody>
         <DialogFooter>
-          <Button variant="ghost" onClick={closeDialog}>
+          <Button type="button" variant="ghost" onClick={closeDialog}>
             Cancel
           </Button>
-          <Button variant="default" onClick={handleSubmit(onSubmit)}>
+          <Button type="submit" variant="default">
             Confirm
           </Button>
         </DialogFooter>

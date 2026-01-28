@@ -1,6 +1,5 @@
 import { createCDPipelineDraftInputSchema } from "@my-project/shared";
 import z from "zod";
-import { ValueOf } from "@/core/types/global";
 
 // ============================================================================
 // UTILITY FUNCTIONS
@@ -171,40 +170,4 @@ export const createCDPipelineSubmitSchema = createCDPipelineFormSchema.transform
   };
 });
 
-// ============================================================================
-// FORM PARTS CONFIGURATION
-// ============================================================================
-
-function createNamesObject<T extends Record<string, unknown>>(obj: T): { [K in keyof T]: K } {
-  const result = {} as { [K in keyof T]: K };
-  for (const key in obj) {
-    result[key] = key;
-  }
-  return result;
-}
-
-const baseSchemaForNames = z.object(baseCommonFields);
-export const NAMES = createNamesObject(baseSchemaForNames.shape);
-
-export const FORM_PARTS = {
-  APPLICATIONS: "applications",
-  PIPELINE_CONFIGURATION: "pipelineConfiguration",
-} as const;
-
-export type FormPart = ValueOf<typeof FORM_PARTS>;
-
-export const CREATE_FORM_PARTS = {
-  [FORM_PARTS.APPLICATIONS]: [
-    NAMES.applications,
-    NAMES.ui_applicationsToAddChooser,
-    NAMES.ui_applicationsFieldArray,
-    NAMES.inputDockerStreams,
-  ],
-  [FORM_PARTS.PIPELINE_CONFIGURATION]: [
-    NAMES.name,
-    NAMES.description,
-    NAMES.deploymentType,
-    NAMES.applicationsToPromote,
-    NAMES.ui_applicationsToPromoteAll,
-  ],
-} as const;
+export { CREATE_FORM_PARTS, FORM_PARTS, NAMES, type FormPart } from "./constants";

@@ -1,25 +1,21 @@
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
-import { useFormsContext } from "../../../../../hooks/useFormsContext";
-import { GIT_SERVER_FORM_NAMES } from "../../../../../names";
+import { NAMES } from "../../../../../names";
+import { useManageGitServerForm } from "../../../../../providers/form/hooks";
+import { useStore } from "@tanstack/react-form";
 
 export const WebHookURL = () => {
-  const {
-    forms: { gitServer: gitServerForm },
-  } = useFormsContext();
-
-  const overrideWebhookURLFieldValue = gitServerForm.form.watch(GIT_SERVER_FORM_NAMES.OVERRIDE_WEBHOOK_URL);
+  const form = useManageGitServerForm();
+  const overrideWebhookURL = useStore(form.store, (state) => state.values[NAMES.OVERRIDE_WEBHOOK_URL]);
 
   return (
-    <FormTextField
-      {...gitServerForm.form.register(GIT_SERVER_FORM_NAMES.WEBHOOK_URL, {
-        required: overrideWebhookURLFieldValue ? "Enter the WebHook URL for repository event notifications." : false,
-      })}
-      label={"Webhook URL"}
-      tooltipText={`URL for Git server event notifications like push operations. Must be accessible from the Git Server's network.`}
-      placeholder={"https://example.com"}
-      control={gitServerForm.form.control}
-      errors={gitServerForm.form.formState.errors}
-      disabled={!overrideWebhookURLFieldValue}
-    />
+    <form.AppField name={NAMES.WEBHOOK_URL}>
+      {(field) => (
+        <field.FormTextField
+          label="Webhook URL"
+          tooltipText="URL for Git server event notifications like push operations. Must be accessible from the Git Server's network."
+          placeholder="https://example.com"
+          disabled={!overrideWebhookURL}
+        />
+      )}
+    </form.AppField>
   );
 };

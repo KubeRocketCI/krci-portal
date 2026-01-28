@@ -1,11 +1,11 @@
-import { SelectOption } from "@/core/providers/Form/types";
+import { SelectOption } from "@/core/types/forms";
 import { CodebaseImageStream } from "@my-project/shared";
 
 export const createImageStreamTags = (
   applicationImageStream: CodebaseImageStream,
   applicationVerifiedImageStream: CodebaseImageStream
 ) => {
-  let base: SelectOption[] =
+  let base: SelectOption<string>[] =
     applicationImageStream && applicationImageStream?.spec?.tags
       ? applicationImageStream?.spec?.tags
           .map(({ name }) => ({

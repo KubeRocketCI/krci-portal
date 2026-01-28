@@ -1,4 +1,4 @@
-import { CLUSTER_FORM_NAMES } from "../../names";
+import { CLUSTER_FORM_NAMES } from "../../constants";
 import { clusterType } from "@my-project/shared";
 import type { ManageClusterSecretValues } from "../../types";
 

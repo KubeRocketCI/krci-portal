@@ -1,9 +1,9 @@
 import { useClusterSecretData } from "../../../providers/data/hooks";
 import { FieldEvent, FORM_MODES } from "@/core/types/forms";
 import { clusterType, ClusterType } from "@my-project/shared";
-import type { FormRadioOption } from "@/core/form-temp";
 import { Boxes, Key } from "lucide-react";
 import React from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
 
 interface ClusterTypeProps {
   onChange?: (event: FieldEvent<ClusterType>) => void;
@@ -16,25 +16,23 @@ interface ClusterTypeProps {
 export const ClusterTypeField = ({ onChange, value }: ClusterTypeProps) => {
   const { mode } = useClusterSecretData();
 
-  const options: FormRadioOption[] = React.useMemo(
+  const options = React.useMemo(
     () => [
       {
         value: clusterType.bearer,
         label: "Bearer",
-        icon: <Boxes />,
-        checkedIcon: <Boxes />,
+        icon: <Boxes className="h-4 w-4" />,
       },
       {
         value: clusterType.irsa,
         label: "IRSA",
-        icon: <Key />,
-        checkedIcon: <Key />,
+        icon: <Key className="h-4 w-4" />,
       },
     ],
     []
   );
 
-  const handleChange = React.useCallback(
+  const handleValueChange = React.useCallback(
     (newValue: string) => {
       if (onChange) {
         onChange({
@@ -49,28 +47,24 @@ export const ClusterTypeField = ({ onChange, value }: ClusterTypeProps) => {
   );
 
   // This component is controlled externally, not part of the TanStack form
-  // Using a simple radio group instead of form-connected one
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">Cluster Type</label>
-      <div className="flex gap-4">
-        {options.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            onClick={() => handleChange(option.value)}
-            disabled={mode === FORM_MODES.EDIT}
-            className={`flex items-center gap-2 rounded-md border px-4 py-2 transition-colors ${
-              value === option.value
-                ? "border-primary bg-primary/10 text-primary"
-                : "border-border hover:border-primary/50"
-            } ${mode === FORM_MODES.EDIT ? "cursor-not-allowed opacity-50" : ""}`}
-          >
-            {typeof option.icon === "function" ? <option.icon /> : (option.icon as React.ReactNode)}
-            <span>{option.label}</span>
-          </button>
-        ))}
-      </div>
+      <Select value={value} onValueChange={handleValueChange} disabled={mode === FORM_MODES.EDIT}>
+        <SelectTrigger>
+          <SelectValue placeholder="Select cluster type" />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              <div className="flex items-center gap-2">
+                {option.icon}
+                <span>{option.label}</span>
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 };

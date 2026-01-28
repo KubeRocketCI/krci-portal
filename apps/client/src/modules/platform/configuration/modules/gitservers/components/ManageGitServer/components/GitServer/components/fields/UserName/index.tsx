@@ -1,29 +1,27 @@
-import { FormTextFieldEditable } from "@/core/providers/Form/components/FormTextFieldEditable";
-import { FORM_MODES } from "@/core/types/forms";
-import { useFormsContext } from "../../../../../hooks/useFormsContext";
-import { GIT_SERVER_FORM_NAMES } from "../../../../../names";
+import { NAMES } from "../../../../../names";
+import { useManageGitServerForm } from "../../../../../providers/form/hooks";
 import { useDataContext } from "../../../../../providers/Data/hooks";
 
 export const UserName = () => {
+  const form = useManageGitServerForm();
   const { gitServerSecret } = useDataContext();
-
-  const {
-    forms: { gitServer: gitServerForm },
-  } = useFormsContext();
-
   const gitServerSecretOwnerReference = gitServerSecret?.metadata?.ownerReferences?.[0].kind;
 
   return (
-    <FormTextFieldEditable
-      {...gitServerForm.form.register(GIT_SERVER_FORM_NAMES.GIT_USER, {
-        required: "Enter the username associated with your Git account.",
-      })}
-      label={"User"}
-      tooltipText={"Provide the username associated with your Git account."}
-      placeholder={"git"}
-      control={gitServerForm.form.control}
-      errors={gitServerForm.form.formState.errors}
-      disabled={gitServerForm.mode === FORM_MODES.EDIT && !!gitServerSecretOwnerReference}
-    />
+    <form.AppField name={NAMES.GIT_USER}>
+      {(field) => (
+        <field.FormTextField
+          label="User"
+          tooltipText="Provide the username associated with your Git account."
+          placeholder="git"
+          disabled={!!gitServerSecretOwnerReference}
+          helperText={
+            gitServerSecretOwnerReference
+              ? `This field value is managed by ${gitServerSecretOwnerReference}`
+              : undefined
+          }
+        />
+      )}
+    </form.AppField>
   );
 };

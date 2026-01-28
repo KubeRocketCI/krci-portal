@@ -10,15 +10,11 @@ import {
 import { GitLabPipelineVariable } from "@my-project/shared";
 import { LoaderCircle, Play, Plus, Trash2 } from "lucide-react";
 import React from "react";
-import { Control, useFieldArray, useForm } from "react-hook-form";
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
+import { Input } from "@/core/components/ui/input";
+import { Label } from "@/core/components/ui/label";
 import { DialogProps } from "@/core/providers/Dialog/types";
 
 export const DIALOG_NAME = "GitLabBuildWithParams";
-
-interface FormValues {
-  variables: GitLabPipelineVariable[];
-}
 
 export type GitLabBuildWithParamsDialogProps = DialogProps<{
   triggerData: {
@@ -34,46 +30,39 @@ export const GitLabBuildWithParamsDialog: React.FC<GitLabBuildWithParamsDialogPr
   const { triggerData, onSubmit, isLoading = false } = props;
   const { open, closeDialog } = state;
 
-  const { control, handleSubmit, reset, register } = useForm<FormValues>({
-    defaultValues: {
-      variables: [],
-    },
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "variables" as const,
-  });
+  const [variables, setVariables] = React.useState<GitLabPipelineVariable[]>([]);
 
   const handleAddVariable = React.useCallback(() => {
-    append({ key: "", value: "" } as GitLabPipelineVariable);
-  }, [append]);
+    setVariables((prev) => [...prev, { key: "", value: "" }]);
+  }, []);
 
-  const handleDeleteVariable = React.useCallback(
-    (index: number) => {
-      remove(index);
-    },
-    [remove]
-  );
+  const handleDeleteVariable = React.useCallback((index: number) => {
+    setVariables((prev) => prev.filter((_, i) => i !== index));
+  }, []);
 
-  const onFormSubmit = React.useCallback(
-    (values: FormValues) => {
-      // Filter out empty variables
-      const validVariables = values.variables.filter((v) => v.key.trim() !== "");
+  const handleKeyChange = React.useCallback((index: number, newKey: string) => {
+    setVariables((prev) => prev.map((v, i) => (i === index ? { ...v, key: newKey } : v)));
+  }, []);
 
-      onSubmit(validVariables);
+  const handleValueChange = React.useCallback((index: number, newValue: string) => {
+    setVariables((prev) => prev.map((v, i) => (i === index ? { ...v, value: newValue } : v)));
+  }, []);
 
-      // Reset form after submit
-      reset();
-      closeDialog();
-    },
-    [onSubmit, reset, closeDialog]
-  );
+  const onFormSubmit = React.useCallback(() => {
+    // Filter out empty variables
+    const validVariables = variables.filter((v) => v.key.trim() !== "");
+
+    onSubmit(validVariables);
+
+    // Reset form after submit
+    setVariables([]);
+    closeDialog();
+  }, [onSubmit, variables, closeDialog]);
 
   const handleClose = React.useCallback(() => {
-    reset();
+    setVariables([]);
     closeDialog();
-  }, [closeDialog, reset]);
+  }, [closeDialog]);
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
@@ -91,7 +80,7 @@ export const GitLabBuildWithParamsDialog: React.FC<GitLabBuildWithParamsDialogPr
           </DialogTitle>
         </DialogHeader>
         <DialogBody>
-          <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4">
             <div>
               <p className="text-muted-foreground mb-2 text-sm">
                 <strong>Git Server:</strong> {triggerData.gitServer}
@@ -111,29 +100,27 @@ export const GitLabBuildWithParamsDialog: React.FC<GitLabBuildWithParamsDialogPr
               </p>
             </div>
 
-            {fields.length > 0 && (
+            {variables.length > 0 && (
               <div>
                 <div className="flex flex-col gap-2">
-                  {fields.map((field, index) => (
-                    <div className="grid grid-cols-12 items-start gap-4" key={field.id}>
-                      <div className="col-span-5">
-                        <FormTextField
-                          {...register(`variables.${index}.key`, {
-                            required: "Key is required",
-                          })}
-                          label="Key"
+                  {variables.map((variable, index) => (
+                    <div className="grid grid-cols-12 items-start gap-4" key={index}>
+                      <div className="col-span-5 flex flex-col gap-2">
+                        <Label htmlFor={`key-${index}`}>Key</Label>
+                        <Input
+                          id={`key-${index}`}
+                          value={variable.key}
+                          onChange={(e) => handleKeyChange(index, e.target.value)}
                           placeholder="e.g. BUILD_TYPE"
-                          control={control as unknown as Control}
-                          errors={{}}
                         />
                       </div>
-                      <div className="col-span-6">
-                        <FormTextField
-                          {...register(`variables.${index}.value`)}
-                          label="Value"
+                      <div className="col-span-6 flex flex-col gap-2">
+                        <Label htmlFor={`value-${index}`}>Value</Label>
+                        <Input
+                          id={`value-${index}`}
+                          value={variable.value}
+                          onChange={(e) => handleValueChange(index, e.target.value)}
                           placeholder="e.g. release"
-                          control={control as unknown as Control}
-                          errors={{}}
                         />
                       </div>
                       <div className="col-span-1">
@@ -141,7 +128,7 @@ export const GitLabBuildWithParamsDialog: React.FC<GitLabBuildWithParamsDialogPr
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDeleteVariable(index)}
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10 mt-1"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10 mt-7"
                         >
                           <Trash2 size={20} />
                         </Button>
@@ -158,13 +145,13 @@ export const GitLabBuildWithParamsDialog: React.FC<GitLabBuildWithParamsDialogPr
                 Add Variable
               </Button>
             </div>
-          </form>
+          </div>
         </DialogBody>
         <DialogFooter>
           <Button type="button" onClick={handleClose} variant="ghost" disabled={isLoading}>
             Cancel
           </Button>
-          <Button type="button" variant="default" disabled={isLoading} onClick={handleSubmit(onFormSubmit)}>
+          <Button type="button" variant="default" disabled={isLoading} onClick={onFormSubmit}>
             {isLoading ? <LoaderCircle size={20} /> : <Play size={20} />}
             {isLoading ? "Triggering..." : "Trigger Pipeline"}
           </Button>

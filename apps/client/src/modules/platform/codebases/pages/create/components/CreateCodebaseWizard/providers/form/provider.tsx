@@ -3,7 +3,7 @@ import React from "react";
 import type { FormValidateOrFn } from "@tanstack/react-form";
 import { CreateCodebaseFormContext } from "./context";
 import type { CreateCodebaseFormProviderProps } from "./types";
-import { createCodebaseFormSchema, CreateCodebaseFormValues } from "../../names";
+import { createCodebaseFormSchema, CreateCodebaseFormValues } from "../../schema";
 import { useDefaultValues } from "../../hooks/useDefaultValues";
 
 export const CreateCodebaseFormProvider: React.FC<CreateCodebaseFormProviderProps> = ({

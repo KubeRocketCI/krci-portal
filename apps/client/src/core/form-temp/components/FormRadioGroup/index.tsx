@@ -5,6 +5,7 @@ import {
   RadioGroupWithButtons,
   RadioGroupButtonIcon,
   RadioGroupVariant,
+  RadioGroupWithButtonsProps,
 } from "@/core/components/ui/radio-group-with-buttons";
 import { FormFieldGroup } from "@/core/components/ui/form-field-group";
 
@@ -25,7 +26,7 @@ export interface FormRadioGroupProps {
   options: FormRadioOption[];
   disabled?: boolean;
   variant?: RadioGroupVariant;
-  className?: string;
+  classNames?: RadioGroupWithButtonsProps["classNames"];
 }
 
 export const FormRadioGroup: React.FC<FormRadioGroupProps> = ({
@@ -35,7 +36,7 @@ export const FormRadioGroup: React.FC<FormRadioGroupProps> = ({
   options,
   disabled = false,
   variant = "horizontal",
-  className,
+  classNames,
 }) => {
   // Access field from context - fully typed!
   const field = useFieldContext<string>();
@@ -63,7 +64,7 @@ export const FormRadioGroup: React.FC<FormRadioGroupProps> = ({
         onBlur={field.handleBlur}
         disabled={disabled}
         options={options}
-        className={className}
+        classNames={classNames}
         variant={variant}
       />
     </FormFieldGroup>

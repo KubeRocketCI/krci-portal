@@ -1,42 +1,34 @@
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
-import { FieldEvent } from "@/core/types/forms";
-import { useRegistryFormsContext } from "../../../../hooks/useRegistryFormsContext";
-import { PULL_ACCOUNT_FORM_NAMES, PUSH_ACCOUNT_FORM_NAMES, SHARED_FORM_NAMES } from "../../../../names";
 import { useDataContext } from "../../../../providers/Data/hooks";
+import { useManageRegistryForm } from "../../../../providers/form/hooks";
+import { NAMES } from "../../../../schema";
 
 export const PushAccountUser = () => {
-  const {
-    forms: { pushAccount, pullAccount },
-    sharedForm,
-  } = useRegistryFormsContext();
-
+  const form = useManageRegistryForm();
   const { pushAccountSecret } = useDataContext();
-
-  const useSameAccountFieldValue = sharedForm.watch(SHARED_FORM_NAMES.USE_SAME_ACCOUNT);
 
   const ownerReference = pushAccountSecret?.metadata?.ownerReferences?.[0].kind;
 
   return (
-    <FormTextField
-      {...pushAccount.form.register(PUSH_ACCOUNT_FORM_NAMES.PUSH_ACCOUNT_USER, {
-        required: "Enter user name",
-        onChange: ({ target: { value } }: FieldEvent) => {
-          if (!useSameAccountFieldValue) {
-            return;
+    <form.AppField
+      name={NAMES.PUSH_ACCOUNT_USER}
+      listeners={{
+        onChange: ({ value }) => {
+          const useSameAccount = form.store.state.values[NAMES.USE_SAME_ACCOUNT];
+          if (useSameAccount) {
+            form.setFieldValue(NAMES.PULL_ACCOUNT_USER, value as string);
           }
-
-          pullAccount.form.setValue(PULL_ACCOUNT_FORM_NAMES.PULL_ACCOUNT_USER, value, {
-            shouldDirty: true,
-          });
         },
-      })}
-      label={`User`}
-      tooltipText={"Provide the unique identifier linked to your user account on the container registry."}
-      placeholder={"Enter user name"}
-      control={pushAccount.form.control}
-      errors={pushAccount.form.formState.errors}
-      helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
-      disabled={!!ownerReference}
-    />
+      }}
+    >
+      {(field) => (
+        <field.FormTextField
+          label="User"
+          tooltipText="Provide the unique identifier linked to your user account on the container registry."
+          placeholder="Enter user name"
+          helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
+          disabled={!!ownerReference}
+        />
+      )}
+    </form.AppField>
   );
 };

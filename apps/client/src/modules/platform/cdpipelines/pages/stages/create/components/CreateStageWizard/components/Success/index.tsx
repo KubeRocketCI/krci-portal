@@ -1,9 +1,9 @@
 import React from "react";
-import { useFormContext } from "react-hook-form";
+import { useStore } from "@tanstack/react-form";
 import { Button } from "@/core/components/ui/button";
 import { PartyPopper, Check, ArrowRight, FolderOpen, ExternalLink, Sparkles } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { NAMES, CreateStageFormValues } from "../../names";
+import { NAMES } from "../../names";
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import { routeStageCreate, PATH_STAGE_CREATE_FULL } from "../../../../route";
@@ -11,9 +11,11 @@ import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { useWizardStore } from "../../store";
 import { router } from "@/core/router";
+import { useCreateStageForm } from "../../providers/form/hooks";
 
 export const Success: React.FC = () => {
-  const { watch } = useFormContext<CreateStageFormValues>();
+  const form = useCreateStageForm();
+  const name = useStore(form.store, (state) => state.values[NAMES.name]);
   const { namespace, cdPipeline } = routeStageCreate.useParams();
 
   const { clusterName } = useClusterStore(
@@ -21,8 +23,6 @@ export const Success: React.FC = () => {
       clusterName: state.clusterName,
     }))
   );
-
-  const name = watch(NAMES.name);
 
   const handleCreateAnother = React.useCallback(() => {
     useWizardStore.getState().reset();

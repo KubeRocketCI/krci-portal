@@ -11,11 +11,13 @@ export { useFieldContext, useFormContext, fieldContext, formContext } from "./fo
 
 // Import all field components (these use useFieldContext internally)
 import { FormTextField } from "./components/FormTextField";
+import { FormTextFieldPassword } from "./components/FormTextFieldPassword";
 import { FormSelect } from "./components/FormSelect";
 import { FormCombobox } from "./components/FormCombobox";
 import { FormCheckbox } from "./components/FormCheckbox";
 import { FormCheckboxGroup } from "./components/FormCheckboxGroup";
 import { FormSwitch } from "./components/FormSwitch";
+import { FormSwitchRich } from "./components/FormSwitchRich";
 import { FormRadioGroup } from "./components/FormRadioGroup";
 import { FormTextarea } from "./components/FormTextarea";
 import { FormTextareaPassword } from "./components/FormTextareaPassword";
@@ -31,11 +33,13 @@ export type { SelectOption } from "./types";
 
 // Re-export all component types
 export type { FormTextFieldProps } from "./components/FormTextField";
+export type { FormTextFieldPasswordProps } from "./components/FormTextFieldPassword";
 export type { FormSelectProps } from "./components/FormSelect";
 export type { FormComboboxProps } from "./components/FormCombobox";
 export type { FormCheckboxProps } from "./components/FormCheckbox";
 export type { FormCheckboxGroupProps, FormCheckboxOption } from "./components/FormCheckboxGroup";
 export type { FormSwitchProps } from "./components/FormSwitch";
+export type { FormSwitchRichProps } from "./components/FormSwitchRich";
 export type { FormRadioGroupProps, FormRadioOption } from "./components/FormRadioGroup";
 export type { FormTextareaProps } from "./components/FormTextarea";
 export type { FormTextareaPasswordProps } from "./components/FormTextareaPassword";
@@ -47,11 +51,13 @@ export type { FormResetButtonProps } from "./components/FormResetButton";
 // Re-export components for direct import if needed
 export {
   FormTextField,
+  FormTextFieldPassword,
   FormSelect,
   FormCombobox,
   FormCheckbox,
   FormCheckboxGroup,
   FormSwitch,
+  FormSwitchRich,
   FormRadioGroup,
   FormTextarea,
   FormTextareaPassword,
@@ -67,11 +73,13 @@ export {
 // that creates multiple fields, not a single field component
 const fieldComponents = {
   FormTextField,
+  FormTextFieldPassword,
   FormSelect,
   FormCombobox,
   FormCheckbox,
   FormCheckboxGroup,
   FormSwitch,
+  FormSwitchRich,
   FormRadioGroup,
   FormTextarea,
   FormTextareaPassword,

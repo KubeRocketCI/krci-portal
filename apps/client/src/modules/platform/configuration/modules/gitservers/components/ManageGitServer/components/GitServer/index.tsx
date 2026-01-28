@@ -7,18 +7,19 @@ import {
   SkipWebHookSSL,
   SSHPort,
   UserName,
-  WebHookURL,
 } from "./components/fields";
+import { SyncGitProviderDefaults } from "./components/SyncGitProviderDefaults";
 
 export const GitServerForm = () => {
   return (
     <>
+      <SyncGitProviderDefaults />
       <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-6 mt-4">
-          <Name />
-        </div>
         <div className="col-span-6">
           <GitProviderField />
+        </div>
+        <div className="col-span-6">
+          <Name />
         </div>
         <div className="col-span-12">
           <div className="grid grid-cols-12 gap-4">
@@ -41,21 +42,10 @@ export const GitServerForm = () => {
           </div>
         </div>
         <div className="col-span-12">
-          <div className="grid grid-cols-12 items-center gap-4">
-            <div className="col-span-6 mt-4">
-              <OverrideWebhookURL />
-            </div>
-            <div className="col-span-6">
-              <WebHookURL />
-            </div>
-          </div>
+          <OverrideWebhookURL />
         </div>
         <div className="col-span-12">
-          <div className="grid grid-cols-12 gap-4">
-            <div className="col-span-6">
-              <SkipWebHookSSL />
-            </div>
-          </div>
+          <SkipWebHookSSL />
         </div>
       </div>
     </>

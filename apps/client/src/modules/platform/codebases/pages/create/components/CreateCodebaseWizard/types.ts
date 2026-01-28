@@ -1,4 +1,4 @@
-import { CreateCodebaseFormValues } from "./names";
+import type { CreateCodebaseFormValues } from "./schema";
+import "./constants"; // Form names are declared in constants
 
-// Re-export form values type for convenience
 export type { CreateCodebaseFormValues };

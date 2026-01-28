@@ -18,7 +18,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useCodebaseDeletionConflictResourceQuery } from "./hooks/useDeletionConflictItem";
 import { CodebaseActionsMenuProps } from "./types";
 import { PATH_CDPIPELINE_DETAILS_FULL } from "@/modules/platform/cdpipelines/pages/details/route";
-import { EditCodebaseDialog } from "@/modules/platform/codebases/dialogs/EditCodebase";
+import { EditCodebaseDialog } from "@/modules/platform/codebases/components/EditCodebaseDialog";
 
 interface DeletionErrorMessageProps {
   codebase: Codebase;

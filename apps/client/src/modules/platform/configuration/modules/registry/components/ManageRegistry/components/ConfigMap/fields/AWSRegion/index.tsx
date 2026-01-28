@@ -1,19 +1,12 @@
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
-import { useRegistryFormsContext } from "../../../../hooks/useRegistryFormsContext";
-import { CONFIG_MAP_FORM_NAMES } from "../../../../names";
+import { useManageRegistryForm } from "../../../../providers/form/hooks";
+import { NAMES } from "../../../../schema";
 
 export const AWSRegion = () => {
-  const {
-    forms: { configMap },
-  } = useRegistryFormsContext();
+  const form = useManageRegistryForm();
 
   return (
-    <FormTextField
-      {...configMap.form.register(CONFIG_MAP_FORM_NAMES.AWS_REGION)}
-      label={`AWS Region`}
-      placeholder={"Enter AWS region"}
-      control={configMap.form.control}
-      errors={configMap.form.formState.errors}
-    />
+    <form.AppField name={NAMES.AWS_REGION}>
+      {(field) => <field.FormTextField label="AWS Region" placeholder="Enter AWS region" />}
+    </form.AppField>
   );
 };

@@ -1,6 +1,5 @@
+import { useStore } from "@tanstack/react-form";
 import { Tooltip } from "@/core/components/ui/tooltip";
-import { useRegistryFormsContext } from "../../hooks/useRegistryFormsContext";
-import { SHARED_FORM_NAMES } from "../../names";
 import { useDataContext } from "../../providers/Data/hooks";
 import { PullAccountPassword, PullAccountUser } from "./fields";
 import {
@@ -10,12 +9,14 @@ import {
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { getIntegrationSecretStatusIcon } from "@/k8s/integrations/secret/utils/getStatusIcon";
 import { ShieldX } from "lucide-react";
+import { useManageRegistryForm } from "../../providers/form/hooks";
+import { NAMES } from "../../schema";
 
 export const PullAccountForm = () => {
-  const { sharedForm } = useRegistryFormsContext();
+  const form = useManageRegistryForm();
   const { pullAccountSecret } = useDataContext();
 
-  const useSameAccountFieldValue = sharedForm.watch(SHARED_FORM_NAMES.USE_SAME_ACCOUNT);
+  const useSameAccountFieldValue = useStore(form.store, (state) => state.values[NAMES.USE_SAME_ACCOUNT]);
 
   const pullAccountOwnerReference = pullAccountSecret?.metadata?.ownerReferences?.[0].kind;
 

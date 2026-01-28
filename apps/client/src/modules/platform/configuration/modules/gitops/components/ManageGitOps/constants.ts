@@ -1,1 +1,22 @@
 export const GIT_OPS_CODEBASE_NAME = "krci-gitops";
+
+export const CODEBASE_FORM_NAMES = {
+  TYPE: "type",
+  STRATEGY: "strategy",
+  GIT_SERVER: "gitServer",
+  GIT_URL_PATH: "gitUrlPath",
+  EMPTY_PROJECT: "emptyProject",
+  NAME: "name",
+  NAMESPACE: "namespace",
+  DESCRIPTION: "description",
+  DEFAULT_BRANCH: "defaultBranch",
+  LANG: "lang",
+  FRAMEWORK: "framework",
+  BUILD_TOOL: "buildTool",
+  VERSIONING_TYPE: "versioningType",
+  VERSIONING_START_FROM: "versioningStartFrom",
+  DEPLOYMENT_SCRIPT: "deploymentScript",
+  CI_TOOL: "ciTool",
+  GIT_REPO_PATH: "gitRepoPath",
+  SYSTEM_TYPE_LABEL: "systemTypeLabel",
+} as const;

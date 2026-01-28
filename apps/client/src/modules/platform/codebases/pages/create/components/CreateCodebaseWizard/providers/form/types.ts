@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CreateCodebaseFormValues } from "../../names";
+import type { CreateCodebaseFormValues } from "../../schema";
 
 export interface CreateCodebaseFormProviderProps {
   children: ReactNode;

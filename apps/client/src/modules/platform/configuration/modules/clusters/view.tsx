@@ -73,7 +73,7 @@ export default function ClustersConfigurationPage() {
         <Accordion
           type="single"
           collapsible
-          value={singleItem ? clusterSecrets?.[0]?.metadata.name : expandedPanel}
+          value={singleItem ? clusterSecrets?.[0]?.metadata.name : (expandedPanel ?? "")}
           onValueChange={singleItem ? undefined : handleChange}
         >
           <div className="flex flex-col gap-2">
@@ -85,7 +85,6 @@ export default function ClustersConfigurationPage() {
               const statusIcon = getClusterSecretStatusIcon(clusterSecret);
 
               const clusterName = clusterSecret.metadata.name;
-              const isExpanded = singleItem || expandedPanel === clusterName;
               const ownerReference = clusterSecret?.metadata?.ownerReferences?.[0]?.kind;
 
               return (
@@ -120,16 +119,14 @@ export default function ClustersConfigurationPage() {
                       </h6>
                     </AccordionTrigger>
                     <AccordionContent>
-                      {isExpanded && (
-                        <ManageClusterSecret
-                          formData={{
-                            currentElement: clusterSecret,
-                            ownerReference: ownerReference,
-                            mode: FORM_MODES.EDIT,
-                            handleClosePlaceholder: handleCloseCreateDialog,
-                          }}
-                        />
-                      )}
+                      <ManageClusterSecret
+                        formData={{
+                          currentElement: clusterSecret,
+                          ownerReference: ownerReference,
+                          mode: FORM_MODES.EDIT,
+                          handleClosePlaceholder: handleCloseCreateDialog,
+                        }}
+                      />
                     </AccordionContent>
                   </AccordionItem>
                 </div>
