@@ -22,7 +22,7 @@ export const createChatAssistantIntegrationSecretDraft = (
     apiVersion: "v1",
     kind: "Secret",
     metadata: {
-      name: integrationSecretName.CODEMIE,
+      name: integrationSecretName.CHAT_ASSISTANT,
       labels: {
         [SECRET_LABEL_SECRET_TYPE]: "chat-assistant",
         [SECRET_LABEL_INTEGRATION_SECRET]: "true",

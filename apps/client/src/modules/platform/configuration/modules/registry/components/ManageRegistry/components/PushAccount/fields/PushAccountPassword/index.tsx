@@ -1,42 +1,34 @@
-import { FormTextFieldPassword } from "@/core/providers/Form/components/FormTextFieldPassword";
-import { FieldEvent } from "@/core/types/forms";
-import { useRegistryFormsContext } from "../../../../hooks/useRegistryFormsContext";
-import { PULL_ACCOUNT_FORM_NAMES, PUSH_ACCOUNT_FORM_NAMES, SHARED_FORM_NAMES } from "../../../../names";
 import { useDataContext } from "../../../../providers/Data/hooks";
+import { useManageRegistryForm } from "../../../../providers/form/hooks";
+import { NAMES } from "../../../../schema";
 
 export const PushAccountPassword = () => {
-  const {
-    forms: { pushAccount, pullAccount },
-    sharedForm,
-  } = useRegistryFormsContext();
-
+  const form = useManageRegistryForm();
   const { pushAccountSecret } = useDataContext();
-
-  const useSameAccountFieldValue = sharedForm.watch(SHARED_FORM_NAMES.USE_SAME_ACCOUNT);
 
   const ownerReference = pushAccountSecret?.metadata?.ownerReferences?.[0].kind;
 
   return (
-    <FormTextFieldPassword
-      {...pushAccount.form.register(PUSH_ACCOUNT_FORM_NAMES.PUSH_ACCOUNT_PASSWORD, {
-        required: "Enter password or token",
-        onChange: ({ target: { value } }: FieldEvent) => {
-          if (!useSameAccountFieldValue) {
-            return;
+    <form.AppField
+      name={NAMES.PUSH_ACCOUNT_PASSWORD}
+      listeners={{
+        onChange: ({ value }) => {
+          const useSameAccount = form.store.state.values[NAMES.USE_SAME_ACCOUNT];
+          if (useSameAccount) {
+            form.setFieldValue(NAMES.PULL_ACCOUNT_PASSWORD, value as string);
           }
-
-          pullAccount.form.setValue(PULL_ACCOUNT_FORM_NAMES.PULL_ACCOUNT_PASSWORD, value, {
-            shouldDirty: true,
-          });
         },
-      })}
-      label={`Password / Token`}
-      tooltipText={"Enter the confidential combination used for authenticating your access to the container registry."}
-      placeholder={"Enter password or token"}
-      control={pushAccount.form.control}
-      errors={pushAccount.form.formState.errors}
-      helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
-      disabled={!!ownerReference}
-    />
+      }}
+    >
+      {(field) => (
+        <field.FormTextFieldPassword
+          label="Password / Token"
+          tooltipText="Enter the confidential combination used for authenticating your access to the container registry."
+          placeholder="Enter password or token"
+          helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
+          disabled={!!ownerReference}
+        />
+      )}
+    </form.AppField>
   );
 };

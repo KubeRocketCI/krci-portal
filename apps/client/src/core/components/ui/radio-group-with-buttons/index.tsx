@@ -28,7 +28,15 @@ export type RadioGroupVariant = "horizontal" | "vertical" | "tile";
 export interface RadioGroupWithButtonsProps extends Omit<React.ComponentProps<typeof RadioGroup>, "children"> {
   options: RadioGroupButtonOption[];
   variant?: RadioGroupVariant;
-  className?: string;
+  classNames?: {
+    container?: string;
+    item?: string;
+    itemLabel?: string;
+    itemDescription?: string;
+    itemIcon?: string;
+    itemIconContainer?: string;
+    itemCheckedIcon?: string;
+  };
   disabled?: boolean;
 }
 
@@ -52,52 +60,61 @@ const isIconConfig = (
 // Helper to render an icon with icon-specific styling (className)
 const renderIcon = (
   icon: React.ReactNode | React.ComponentType<{ className?: string }>,
-  className = "h-4 w-4"
+  className: string = "h-4 w-4"
 ): React.ReactNode => {
   return toElement(icon, { className });
 };
 
 // Helper to get display icon with proper wrapping
-const getDisplayIcon = (icon: RadioGroupButtonIcon | undefined, isChecked: boolean): React.ReactNode => {
+const getDisplayIcon = (
+  icon: RadioGroupButtonIcon | undefined,
+  isChecked: boolean,
+  classNames?: { itemIconContainer?: string; itemIcon?: string }
+): React.ReactNode => {
   if (!icon) return null;
 
   if (isIconConfig(icon)) {
     // Custom icon config - use as-is without wrapping
     const iconToRender = isChecked ? icon.checked : icon.default;
-    return renderIcon(iconToRender);
+    return renderIcon(iconToRender, classNames?.itemIcon);
   }
 
   // Simple icon - wrap with default wrappers
   return (
     <div
       className={cn(
-        "flex h-9 w-9 items-center justify-center rounded-lg",
-        isChecked ? "bg-primary text-white" : "bg-card/50 text-secondary-foreground"
+        "flex h-4 w-4 items-center justify-center rounded-lg",
+        isChecked ? "bg-primary text-white" : "bg-card/50 text-secondary-foreground",
+        classNames?.itemIconContainer
       )}
     >
-      {renderIcon(icon)}
+      {renderIcon(icon, classNames?.itemIcon)}
     </div>
   );
 };
 
 export const RadioGroupWithButtons = React.forwardRef<HTMLDivElement, RadioGroupWithButtonsProps>(
-  ({ options, variant = "horizontal", className, disabled, value, ...props }, ref) => {
+  ({ options, variant = "horizontal", classNames, disabled, value, ...props }, ref) => {
     const id = useId();
 
     return (
-      <RadioGroup ref={ref} className={cn("grid grid-cols-2 gap-2", className)} value={value} {...props}>
+      <RadioGroup ref={ref} className={cn("grid grid-cols-2 gap-2", classNames?.container)} value={value} {...props}>
         {options.map((item) => {
           const isChecked = value === item.value;
-          const displayIcon = getDisplayIcon(item.icon, isChecked);
+          const displayIcon = getDisplayIcon(item.icon, isChecked, {
+            itemIconContainer: classNames?.itemIconContainer,
+            itemIcon: classNames?.itemIcon,
+          });
 
           return (
             <label
               key={`${id}-${item.value}`}
               className={cn(
-                "bg-input relative cursor-pointer rounded-lg border-2 p-3",
+                "bg-input relative cursor-pointer rounded-lg border-2 p-[5px]",
                 isChecked ? "bg-accent border-primary/50" : "border-transparent",
                 disabled || item.disabled ? "pointer-events-none cursor-not-allowed opacity-50" : "",
-                !isChecked && !disabled && "hover:bg-input/50"
+                !isChecked && !disabled && "hover:bg-input/50",
+                classNames?.item
               )}
             >
               <RadioGroupItem
@@ -111,26 +128,36 @@ export const RadioGroupWithButtons = React.forwardRef<HTMLDivElement, RadioGroup
                 <div className="flex items-start gap-3">
                   {displayIcon && <span className="shrink-0">{displayIcon}</span>}
                   <div className="min-w-0 flex-1">
-                    <h4 className="text-foreground mb-0.5 text-sm font-medium">{item.label}</h4>
-                    {item.description && <p className="text-muted-foreground text-xs">{item.description}</p>}
+                    <h4 className={cn("text-foreground mb-0.5 text-sm font-medium", classNames?.itemLabel)}>
+                      {item.label}
+                    </h4>
+                    {item.description && (
+                      <p className={cn("text-muted-foreground text-xs", classNames?.itemDescription)}>
+                        {item.description}
+                      </p>
+                    )}
                   </div>
                   <div className="flex h-5 w-5 shrink-0 items-center justify-center">
                     {isChecked && (
                       <div className="bg-primary flex h-5 w-5 items-center justify-center rounded-full">
-                        <Check className="h-3 w-3 text-white" />
+                        <Check className={cn("h-3 w-3 text-white", classNames?.itemCheckedIcon)} />
                       </div>
                     )}
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-2 text-center">
-                  {displayIcon && <span>{displayIcon}</span>}
-                  <h4 className="text-foreground text-sm font-medium">{item.label}</h4>
-                  {item.description && <p className="text-muted-foreground text-xs">{item.description}</p>}
+                  {displayIcon && <span className="shrink-0">{displayIcon}</span>}
+                  <h4 className={cn("text-foreground text-sm font-medium", classNames?.itemLabel)}>{item.label}</h4>
+                  {item.description && (
+                    <p className={cn("text-muted-foreground text-xs", classNames?.itemDescription)}>
+                      {item.description}
+                    </p>
+                  )}
                   <div className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center">
                     {isChecked && (
                       <div className="bg-primary flex h-5 w-5 items-center justify-center rounded-full">
-                        <Check className="h-3 w-3 text-white" />
+                        <Check className={cn("h-3 w-3 text-white", classNames?.itemCheckedIcon)} />
                       </div>
                     )}
                   </div>

@@ -3,7 +3,6 @@ import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 import { cn } from "@/core/utils/classname";
-import { Button } from "../button";
 
 function Accordion({ className, ...props }: React.ComponentProps<typeof AccordionPrimitive.Root>) {
   return <AccordionPrimitive.Root data-slot="accordion" className={cn("flex flex-col gap-4", className)} {...props} />;
@@ -37,12 +36,14 @@ function AccordionTrigger({
   ...props
 }: AccordionTriggerProps) {
   const chevron = !hideChevron && (
-    <Button variant="outline" size="sm" className="size-10 shrink-0 p-1" data-slot="accordion-chevron" asChild>
-      <span>
-        <ChevronRight className="text-muted-foreground size-5 transition-transform duration-200 group-data-[state=open]:hidden" />
-        <ChevronDown className="text-muted-foreground hidden size-5 transition-transform duration-200 group-data-[state=open]:block" />
-      </span>
-    </Button>
+    <span
+      className="text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded-md border p-1"
+      data-slot="accordion-chevron"
+      aria-hidden
+    >
+      <ChevronRight className="size-5 transition-transform duration-200 group-data-[state=open]:hidden" />
+      <ChevronDown className="hidden size-5 transition-transform duration-200 group-data-[state=open]:block" />
+    </span>
   );
 
   return (

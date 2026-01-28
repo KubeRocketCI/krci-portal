@@ -1,6 +1,7 @@
 import React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useForm } from "@tanstack/react-form";
+import { expect, userEvent } from "storybook/test";
+import { useAppForm } from "@/core/form-temp";
 import { TextField } from "./index";
 
 const meta = {
@@ -18,7 +19,7 @@ type Story = StoryObj<typeof meta>;
 export const Default = {
   args: {} as Story["args"],
   render: () => {
-    const form = useForm({
+    const form = useAppForm({
       defaultValues: {
         name: "",
       },
@@ -33,12 +34,16 @@ export const Default = {
       </div>
     );
   },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByLabelText("Name")).toBeInTheDocument();
+    await expect(canvas.getByPlaceholderText("Enter your name")).toBeInTheDocument();
+  },
 } satisfies Story;
 
 export const WithValue = {
   args: {} as Story["args"],
   render: () => {
-    const form = useForm({
+    const form = useAppForm({
       defaultValues: {
         email: "user@example.com",
       },
@@ -53,12 +58,15 @@ export const WithValue = {
       </div>
     );
   },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("textbox")).toHaveValue("user@example.com");
+  },
 } satisfies Story;
 
 export const WithTooltip = {
   args: {} as Story["args"],
   render: () => {
-    const form = useForm({
+    const form = useAppForm({
       defaultValues: {
         username: "",
       },
@@ -85,7 +93,7 @@ export const WithTooltip = {
 export const Disabled = {
   args: {} as Story["args"],
   render: () => {
-    const form = useForm({
+    const form = useAppForm({
       defaultValues: {
         readonly: "This field is disabled",
       },
@@ -105,7 +113,7 @@ export const Disabled = {
 export const WithValidation = {
   args: {} as Story["args"],
   render: () => {
-    const form = useForm({
+    const form = useAppForm({
       defaultValues: {
         email: "",
       },
@@ -131,12 +139,28 @@ export const WithValidation = {
       </div>
     );
   },
+  play: async ({ canvas }) => {
+    const input = canvas.getByLabelText("Email");
+
+    // Type invalid email → format error
+    await userEvent.type(input, "not-an-email");
+    await expect(canvas.getByText("Please enter a valid email address")).toBeInTheDocument();
+    await expect(input).toHaveAttribute("aria-invalid", "true");
+
+    const ariaDescribedBy = input.getAttribute("aria-describedby");
+    await expect(ariaDescribedBy).toBeTruthy();
+    await expect(ariaDescribedBy).toContain("-helper");
+
+    // Clear → required error (only first error shown)
+    await userEvent.clear(input);
+    await expect(canvas.getByText("Email is required")).toBeInTheDocument();
+  },
 } satisfies Story;
 
 export const MultipleFields = {
   args: {} as Story["args"],
   render: () => {
-    const form = useForm({
+    const form = useAppForm({
       defaultValues: {
         firstName: "",
         lastName: "",

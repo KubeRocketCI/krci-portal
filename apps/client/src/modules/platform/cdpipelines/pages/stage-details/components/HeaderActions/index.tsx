@@ -17,7 +17,6 @@ export const HeaderActions = () => {
 
   const stage = stageWatch.query.data;
   const stages = stageListWatch.data.array;
-  const cdPipeline = cdPipelineWatch.query.data;
 
   return (
     <LoadingWrapper
@@ -27,7 +26,6 @@ export const HeaderActions = () => {
         data={{
           stages: stages!,
           stage: stage!,
-          cdPipeline: cdPipeline!,
         }}
         backRoute={{
           to: PATH_CDPIPELINE_DETAILS_FULL,

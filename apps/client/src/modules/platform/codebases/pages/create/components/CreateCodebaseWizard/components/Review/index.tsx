@@ -102,8 +102,6 @@ export const Review: React.FC = () => {
   const jiraServer = useStore(form.store, (state) => state.values[NAMES.jiraServer]);
   const ticketNamePattern = useStore(form.store, (state) => state.values[NAMES.ticketNamePattern]);
   const ui_advancedMappingRows = useStore(form.store, (state) => state.values[NAMES.ui_advancedMappingRows]);
-  const ui_hasCodemieIntegration = useStore(form.store, (state) => state.values[NAMES.ui_hasCodemieIntegration]);
-
   // Get git server data for URL preview
   const gitServersWatch = useGitServerWatchItem({
     name: gitServer,
@@ -400,12 +398,6 @@ export const Review: React.FC = () => {
         colSpan: 2,
       });
     }
-    if (ui_hasCodemieIntegration) {
-      items.push({
-        label: "Codemie Integration",
-        content: <span className="text-foreground text-sm">Enabled</span>,
-      });
-    }
     return items;
   }, [
     lang,
@@ -422,7 +414,6 @@ export const Review: React.FC = () => {
     ticketNamePattern,
     hasAdvancedJiraMapping,
     ui_advancedMappingRows,
-    ui_hasCodemieIntegration,
     languageIcon,
     frameworkIcon,
     buildToolIcon,

@@ -8,18 +8,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/core/components/ui/dialog";
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
+import { Input } from "@/core/components/ui/input";
+import { Label } from "@/core/components/ui/label";
 import React from "react";
-import { useForm } from "react-hook-form";
 import { DIALOG_NAME_DELETE_KUBE_OBJECT } from "./constants";
 import { DeleteKubeObjectDialogProps } from "./types";
 import { useResourceCRUDMutation } from "@/k8s/api/hooks/useResourceCRUDMutation";
 import { k8sOperation, KubeObjectBase } from "@my-project/shared";
 import { router } from "@/core/router";
-
-const NAMES = {
-  name: "name",
-} as const;
 
 const getDialogTitle = (errorTemplate: React.ReactNode, objectName: string): string =>
   !errorTemplate ? `Confirm deletion of "${objectName}"` : `Cannot start deleting "${objectName}"`;
@@ -31,16 +27,12 @@ export const DeleteKubeObjectDialog: React.FC<DeleteKubeObjectDialogProps> = (_p
 
   const [errorTemplate, setErrorTemplate] = React.useState<React.ReactNode | string>(null);
   const [loadingActive, setLoadingActive] = React.useState<boolean>(false);
-  const {
-    control,
-    handleSubmit,
-    watch,
-    reset,
-    formState: { errors },
-  } = useForm<{ name: string }>();
-  const kubeObjectNameFieldValue = watch(NAMES.name);
+  const [nameValue, setNameValue] = React.useState("");
 
-  const handleClosePopup = React.useCallback(() => closeDialog(), [closeDialog]);
+  const handleClosePopup = React.useCallback(() => {
+    closeDialog();
+    setNameValue("");
+  }, [closeDialog]);
 
   const resourceDeleteMutation = useResourceCRUDMutation<KubeObjectBase, typeof k8sOperation.delete>(
     "resourceDeleteMutation",
@@ -50,26 +42,31 @@ export const DeleteKubeObjectDialog: React.FC<DeleteKubeObjectDialogProps> = (_p
     }
   );
 
-  const onSubmit = React.useCallback(
-    async ({ name }: { name: string }) => {
-      if (errorTemplate || objectName !== name) {
-        return;
-      }
+  const onSubmit = React.useCallback(async () => {
+    if (errorTemplate || objectName !== nameValue) {
+      return;
+    }
 
-      handleClosePopup();
+    handleClosePopup();
 
-      await resourceDeleteMutation.mutate({
-        resource,
-        resourceConfig,
-      });
-      reset();
+    await resourceDeleteMutation.mutate({
+      resource,
+      resourceConfig,
+    });
 
-      if (backRoute) {
-        router.navigate(backRoute);
-      }
-    },
-    [errorTemplate, objectName, handleClosePopup, resourceDeleteMutation, resource, resourceConfig, reset, backRoute]
-  );
+    if (backRoute) {
+      router.navigate(backRoute);
+    }
+  }, [
+    errorTemplate,
+    objectName,
+    nameValue,
+    handleClosePopup,
+    resourceDeleteMutation,
+    resource,
+    resourceConfig,
+    backRoute,
+  ]);
 
   React.useEffect(() => {
     (async () => {
@@ -83,7 +80,7 @@ export const DeleteKubeObjectDialog: React.FC<DeleteKubeObjectDialogProps> = (_p
     })();
   }, [onBeforeSubmit, open]);
 
-  const isSubmitNotAllowed = kubeObjectNameFieldValue !== objectName || !!errorTemplate;
+  const isSubmitNotAllowed = nameValue !== objectName || !!errorTemplate;
   const dialogTitle = React.useMemo(() => getDialogTitle(errorTemplate, objectName || ""), [errorTemplate, objectName]);
 
   return (
@@ -99,7 +96,7 @@ export const DeleteKubeObjectDialog: React.FC<DeleteKubeObjectDialogProps> = (_p
                 <p>{description}</p>
               </div>
             )}
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2">
               {!!loadingActive && (
                 <div className="flex justify-center">
                   <div>
@@ -109,22 +106,24 @@ export const DeleteKubeObjectDialog: React.FC<DeleteKubeObjectDialogProps> = (_p
               )}
               {!!errorTemplate && !loadingActive && <div>{errorTemplate}</div>}
               {!loadingActive && !errorTemplate && (
-                <FormTextField
-                  name={NAMES.name}
-                  control={control}
-                  errors={errors}
-                  label={`Enter "${objectName}" to delete`}
-                  rules={{ required: true }}
-                />
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="delete-confirm-input">Enter &quot;{objectName}&quot; to delete</Label>
+                  <Input
+                    id="delete-confirm-input"
+                    value={nameValue}
+                    onChange={(e) => setNameValue(e.target.value)}
+                    placeholder=""
+                  />
+                </div>
               )}
-            </form>
+            </div>
           </div>
         </DialogBody>
         <DialogFooter>
           <Button type="button" variant="ghost" onClick={handleClosePopup}>
             Cancel
           </Button>
-          <Button type="button" variant="default" onClick={handleSubmit(onSubmit)} disabled={isSubmitNotAllowed}>
+          <Button type="button" variant="default" onClick={onSubmit} disabled={isSubmitNotAllowed}>
             Confirm
           </Button>
         </DialogFooter>

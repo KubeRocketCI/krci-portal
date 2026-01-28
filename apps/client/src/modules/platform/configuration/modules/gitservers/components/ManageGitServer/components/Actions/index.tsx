@@ -1,7 +1,7 @@
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import React from "react";
-import { useFormsContext } from "../../hooks/useFormsContext";
+import { useManageGitServerForm } from "../../providers/form/hooks";
 import { useDataContext } from "../../providers/Data/hooks";
 import { FORM_MODES } from "@/core/types/forms";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
@@ -10,12 +10,14 @@ import { DeletionDialog } from "../DeletionDialog";
 import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
 import { codebaseLabels } from "@my-project/shared";
 import { useGitServerPermissions } from "@/k8s/api/groups/KRCI/GitServer";
+import { useStore } from "@tanstack/react-form";
 
 export const Actions = () => {
-  const { forms, resetAll, submitAll, isAnyFormDirty, isAnyFormSubmitting, isAnyFormForbiddenToSubmit } =
-    useFormsContext();
-
+  const form = useManageGitServerForm();
   const { gitServer, gitServerSecret, handleClosePanel } = useDataContext();
+
+  const isDirty = useStore(form.store, (state) => state.isDirty);
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
 
   const codebasesByGitServerWatch = useCodebaseWatchList({
     labels: {
@@ -25,16 +27,12 @@ export const Actions = () => {
 
   const gitServerPermissions = useGitServerPermissions();
 
-  const submitDisabledTooltip = isAnyFormForbiddenToSubmit
-    ? Object.values(forms).find((form) => !form.allowedToSubmit.isAllowed)?.allowedToSubmit.reason
-    : "";
-
   const mode = gitServer ? FORM_MODES.EDIT : FORM_MODES.CREATE;
 
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
   const deletedDisabledState = React.useMemo(() => {
-    if (gitServerSecret?.metadata?.ownerReferences) {
+    if (gitServerSecret?.metadata?.ownerReferences?.length) {
       return {
         status: true,
         reason: `You cannot delete this Git Server because its Secret is managed by ${gitServerSecret.metadata.ownerReferences[0].kind}.`,
@@ -57,7 +55,7 @@ export const Actions = () => {
 
     return {
       status: false,
-      reason: null,
+      reason: null as string | null,
     };
   }, [
     codebasesByGitServerWatch.data.array?.length,
@@ -67,12 +65,14 @@ export const Actions = () => {
   ]);
 
   const handleDelete = React.useCallback(() => {
-    if (!deletedDisabledState) {
-      return;
-    }
-
     setDeleteDialogOpen(true);
-  }, [deletedDisabledState]);
+  }, []);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    form.handleSubmit();
+  };
 
   return (
     <>
@@ -86,7 +86,13 @@ export const Actions = () => {
               </Tooltip>
             )}
           >
-            <Button variant="ghost" size="icon" onClick={handleDelete} disabled={deletedDisabledState.status}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleDelete}
+              disabled={deletedDisabledState.status}
+              aria-label="Delete"
+            >
               <Trash size={20} />
             </Button>
           </ConditionalWrapper>
@@ -96,27 +102,13 @@ export const Actions = () => {
           </Button>
         )}
 
-        <Button onClick={resetAll} size="sm" variant="ghost" disabled={!isAnyFormDirty} className="ml-auto">
+        <Button onClick={() => form.reset()} size="sm" variant="ghost" disabled={!isDirty} className="ml-auto">
           Undo Changes
         </Button>
 
-        <ConditionalWrapper
-          condition={isAnyFormForbiddenToSubmit}
-          wrapper={(children) => (
-            <Tooltip title={submitDisabledTooltip}>
-              <div>{children}</div>
-            </Tooltip>
-          )}
-        >
-          <Button
-            onClick={() => submitAll(true)}
-            size={"sm"}
-            variant={"default"}
-            disabled={!isAnyFormDirty || isAnyFormSubmitting || isAnyFormForbiddenToSubmit}
-          >
-            Save
-          </Button>
-        </ConditionalWrapper>
+        <Button onClick={handleSubmit} size="sm" variant="default" disabled={!isDirty || isSubmitting}>
+          Save
+        </Button>
       </div>
       <DeletionDialog
         gitServer={gitServer}

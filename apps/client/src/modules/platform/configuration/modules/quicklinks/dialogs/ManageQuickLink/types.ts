@@ -1,12 +1,14 @@
 import { DialogProps } from "@/core/providers/Dialog/types";
 import { QuickLink } from "@my-project/shared";
-import { NAMES } from "./names";
+import { NAMES } from "./constants";
 
 export type ManageQuickLinkDialogProps = DialogProps<{
   quickLink?: QuickLink;
   isSystem?: boolean;
   handleApply?: ({ quickLinkData }: { quickLinkData: QuickLink }) => void;
 }>;
+
+export { NAMES } from "./constants";
 
 export type ManageQuickLinkFormValues = {
   [NAMES.ICON]: string;

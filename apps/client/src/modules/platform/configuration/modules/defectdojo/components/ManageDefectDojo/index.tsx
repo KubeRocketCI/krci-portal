@@ -1,12 +1,17 @@
+import React from "react";
 import { Actions } from "./components/Actions";
 import { QuickLinkForm } from "./components/QuickLink";
 import { SecretForm } from "./components/Secret";
-import { useQuickLinkEditForm } from "./hooks/useQuickLinkEditForm";
-import { useSecretCreateForm } from "./hooks/useSecretCreateForm";
-import { useSecretEditForm } from "./hooks/useSecretEditForm";
 import { DataContextProvider } from "./providers/Data";
-import { FormNames, ManageDefectDojoCIProps } from "./types";
-import { MultiFormContextProvider } from "@/core/providers/MultiForm/provider";
+import { ManageDefectDojoFormProvider } from "./providers/form/provider";
+import { ManageDefectDojoCIProps } from "./types";
+import { ManageDefectDojoFormValues, NAMES } from "./names";
+import { useTRPCClient } from "@/core/providers/trpc";
+import { useClusterStore } from "@/k8s/store";
+import { useShallow } from "zustand/react/shallow";
+import { safeDecode } from "@my-project/shared";
+import { FORM_MODES } from "@/core/types/forms";
+import { toast } from "sonner";
 
 export const ManageDefectDojo = ({
   quickLink,
@@ -15,15 +20,53 @@ export const ManageDefectDojo = ({
   ownerReference,
   handleClosePanel,
 }: ManageDefectDojoCIProps) => {
-  const secretCreateForm = useSecretCreateForm({ handleClosePanel });
+  const trpc = useTRPCClient();
+  const { clusterName, defaultNamespace } = useClusterStore(
+    useShallow((state) => ({ clusterName: state.clusterName, defaultNamespace: state.defaultNamespace }))
+  );
 
-  const secretEditForm = useSecretEditForm({ handleClosePanel, secret });
+  const defaultValues = React.useMemo<Partial<ManageDefectDojoFormValues>>(
+    () => ({
+      [NAMES.EXTERNAL_URL]: quickLink?.spec?.url || "",
+      [NAMES.TOKEN]: safeDecode(secret?.data?.token || "", ""),
+      [NAMES.URL]: safeDecode(secret?.data?.url || "", ""),
+    }),
+    [quickLink, secret]
+  );
 
-  const quickLinkEditForm = useQuickLinkEditForm({
-    quickLink,
-  });
+  const handleSubmit = React.useCallback(
+    async (values: ManageDefectDojoFormValues) => {
+      try {
+        await trpc.k8s.manageDefectDojoIntegration.mutate({
+          clusterName,
+          namespace: defaultNamespace,
+          mode: mode === FORM_MODES.CREATE ? "create" : "edit",
+          dirtyFields: {
+            quickLink: mode === FORM_MODES.CREATE || values.externalUrl !== quickLink?.spec?.url,
+            secret:
+              mode === FORM_MODES.CREATE ||
+              values.token !== safeDecode(secret?.data?.token || "", "") ||
+              values.url !== safeDecode(secret?.data?.url || "", ""),
+          },
+          quickLink: quickLink
+            ? { name: quickLink.metadata.name, externalUrl: values.externalUrl, currentResource: quickLink }
+            : undefined,
+          secret: { token: values.token, url: values.url, currentResource: secret },
+        });
+        toast.success("DefectDojo integration saved successfully");
+        handleClosePanel?.();
+      } catch (error) {
+        console.error("Failed to save DefectDojo integration:", error);
+        toast.error(error instanceof Error ? error.message : "Failed to save DefectDojo integration");
+        throw error;
+      }
+    },
+    [clusterName, defaultNamespace, mode, quickLink, secret, trpc, handleClosePanel]
+  );
 
-  const secretForm = secret ? secretEditForm : secretCreateForm;
+  const handleSubmitError = React.useCallback((error: unknown) => {
+    console.error("Form submission error:", error);
+  }, []);
 
   return (
     <div data-testid="form">
@@ -34,11 +77,10 @@ export const ManageDefectDojo = ({
         ownerReference={ownerReference}
         handleClosePanel={handleClosePanel}
       >
-        <MultiFormContextProvider<FormNames>
-          forms={{
-            quickLink: quickLinkEditForm,
-            secret: secretForm,
-          }}
+        <ManageDefectDojoFormProvider
+          defaultValues={defaultValues}
+          onSubmit={handleSubmit}
+          onSubmitError={handleSubmitError}
         >
           <div className="flex flex-col gap-6">
             <div>
@@ -51,7 +93,7 @@ export const ManageDefectDojo = ({
               <Actions />
             </div>
           </div>
-        </MultiFormContextProvider>
+        </ManageDefectDojoFormProvider>
       </DataContextProvider>
     </div>
   );

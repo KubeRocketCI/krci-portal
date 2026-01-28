@@ -15,8 +15,6 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@hookform/error-message": "^2.0.1",
-    "@hookform/resolvers": "^5.2.2",
     "@melloware/react-logviewer": "^6.3.4",
     "@monaco-editor/react": "^4.7.0",
     "@my-project/shared": "workspace:*",
@@ -64,7 +62,6 @@
     "radix-ui": "^1.4.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-hook-form": "^7.56.1",
     "recharts": "^3.0.2",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",

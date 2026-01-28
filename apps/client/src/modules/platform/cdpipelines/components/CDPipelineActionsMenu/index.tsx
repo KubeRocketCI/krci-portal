@@ -10,7 +10,7 @@ import { CDPipelineActionsMenuProps } from "./types";
 import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import { k8sCDPipelineConfig, k8sOperation } from "@my-project/shared";
 import React from "react";
-import { EditCDPipelineDialog } from "../../dialogs/EditCDPipeline";
+import { EditCDPipelineDialog } from "../EditCDPipelineDialog";
 
 export const CDPipelineActionsMenu = ({ backRoute, variant, data: { CDPipeline } }: CDPipelineActionsMenuProps) => {
   const openEditCDPipelineDialog = useDialogOpener(EditCDPipelineDialog);

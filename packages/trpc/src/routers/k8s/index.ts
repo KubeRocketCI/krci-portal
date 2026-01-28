@@ -11,6 +11,15 @@ import { k8sWatchListProcedure } from "./procedures/basic/watchList/index.js";
 import { k8sPodLogsProcedure, k8sWatchPodLogsProcedure } from "./procedures/basic/logs/index.js";
 import { k8sPodExecProcedure, k8sPodAttachProcedure } from "./procedures/basic/exec/index.js";
 import { k8sGetClusterDetails } from "./procedures/clusterDetails/index.js";
+import { k8sManageArgoCDIntegrationProcedure } from "./procedures/composite/manageArgoCDIntegration/index.js";
+import { k8sManageRegistryIntegrationProcedure } from "./procedures/composite/manageRegistryIntegration/index.js";
+import { k8sManageGitServerIntegrationProcedure } from "./procedures/composite/manageGitServerIntegration/index.js";
+import { k8sManageJiraIntegrationProcedure } from "./procedures/composite/manageJiraIntegration/index.js";
+import { k8sManageSonarIntegrationProcedure } from "./procedures/composite/manageSonarIntegration/index.js";
+import { k8sManageNexusIntegrationProcedure } from "./procedures/composite/manageNexusIntegration/index.js";
+import { k8sManageDefectDojoIntegrationProcedure } from "./procedures/composite/manageDefectDojoIntegration/index.js";
+import { k8sManageChatAssistantIntegrationProcedure } from "./procedures/composite/manageChatAssistantIntegration/index.js";
+import { k8sManageDependencyTrackIntegrationProcedure } from "./procedures/composite/manageDependencyTrackIntegration/index.js";
 import { t } from "../../trpc.js";
 
 export const k8sRouter = t.router({
@@ -29,4 +38,14 @@ export const k8sRouter = t.router({
   watchPodLogs: k8sWatchPodLogsProcedure,
   podExec: k8sPodExecProcedure,
   podAttach: k8sPodAttachProcedure,
+  // Composite operations
+  manageArgoCDIntegration: k8sManageArgoCDIntegrationProcedure,
+  manageRegistryIntegration: k8sManageRegistryIntegrationProcedure,
+  manageGitServerIntegration: k8sManageGitServerIntegrationProcedure,
+  manageJiraIntegration: k8sManageJiraIntegrationProcedure,
+  manageSonarIntegration: k8sManageSonarIntegrationProcedure,
+  manageNexusIntegration: k8sManageNexusIntegrationProcedure,
+  manageDefectDojoIntegration: k8sManageDefectDojoIntegrationProcedure,
+  manageChatAssistantIntegration: k8sManageChatAssistantIntegrationProcedure,
+  manageDependencyTrackIntegration: k8sManageDependencyTrackIntegrationProcedure,
 });

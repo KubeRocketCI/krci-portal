@@ -1,5 +1,5 @@
 import { SelectField } from "@/core/components/form/SelectField";
-import { SelectOption } from "@/core/providers/Form/types";
+import { SelectOption } from "@/core/types/forms";
 import { IMAGE_TAG_POSTFIX } from "@/modules/platform/cdpipelines/pages/stage-details/constants";
 import React from "react";
 import { useTypedFormContext } from "../../hooks/useTypedFormContext";
@@ -18,7 +18,7 @@ export const DeployedVersionConfigurationColumn = ({
   const form = useTypedFormContext();
   const fieldName = `${appCodebase.metadata.name}${IMAGE_TAG_POSTFIX}` as const;
 
-  const imageStreamTagsOptions: SelectOption[] = React.useMemo(
+  const imageStreamTagsOptions: SelectOption<string>[] = React.useMemo(
     () =>
       appCodebaseImageStream && appCodebaseVerifiedImageStream
         ? createImageStreamTags(appCodebaseImageStream, appCodebaseVerifiedImageStream)

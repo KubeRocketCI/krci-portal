@@ -1,18 +1,7 @@
 import { ValueOf } from "@/core/types/global";
 import { QuickLink, Secret } from "@my-project/shared";
 import { FORM_MODES } from "@/core/types/forms";
-import { FORM_NAMES, INTEGRATION_SECRET_FORM_NAMES, QUICK_LINK_FORM_NAMES } from "./constants";
-
-export type FormNames = ValueOf<typeof FORM_NAMES>;
-
-export type QuickLinkFormValues = {
-  [QUICK_LINK_FORM_NAMES.EXTERNAL_URL]: string;
-};
-
-export type IntegrationSecretFormValues = {
-  [INTEGRATION_SECRET_FORM_NAMES.TOKEN]: string;
-  [INTEGRATION_SECRET_FORM_NAMES.URL]: string;
-};
+export { NAMES } from "./constants";
 
 export interface ManageDependencyTrackCIProps {
   secret: Secret | undefined;
@@ -21,3 +10,5 @@ export interface ManageDependencyTrackCIProps {
   ownerReference: string | undefined;
   handleClosePanel?: () => void;
 }
+
+export type { ManageDependencyTrackFormValues } from "./names";

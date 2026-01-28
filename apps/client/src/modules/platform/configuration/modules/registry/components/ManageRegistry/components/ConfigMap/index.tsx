@@ -1,12 +1,13 @@
-import { useRegistryFormsContext } from "../../hooks/useRegistryFormsContext";
-import { SHARED_FORM_NAMES } from "../../names";
+import { useStore } from "@tanstack/react-form";
 import { AWSRegion, RegistryEndpoint, RegistrySpace, Type } from "./fields";
 import { containerRegistryType } from "@my-project/shared";
+import { useManageRegistryForm } from "../../providers/form/hooks";
+import { NAMES } from "../../schema";
 
 export const ConfigMapForm = () => {
-  const { sharedForm } = useRegistryFormsContext();
+  const form = useManageRegistryForm();
 
-  const registryTypeFieldValue = sharedForm.watch(SHARED_FORM_NAMES.REGISTRY_TYPE);
+  const registryTypeFieldValue = useStore(form.store, (state) => state.values[NAMES.REGISTRY_TYPE]);
 
   return (
     <div className="flex flex-col gap-6">

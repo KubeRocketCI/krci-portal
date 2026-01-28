@@ -1,7 +1,6 @@
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import React from "react";
-import { useFormsContext } from "../../hooks/useFormsContext";
 import { useDataContext } from "../../providers/Data/hooks";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { DeleteKubeObjectDialog } from "@/core/components/DeleteKubeObject";
@@ -10,26 +9,24 @@ import { k8sSecretConfig } from "@my-project/shared";
 import { FORM_MODES } from "@/core/types/forms";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { Trash } from "lucide-react";
+import { useManageDependencyTrackForm } from "../../providers/form/hooks";
+import { useStore } from "@tanstack/react-form";
 
 export const Actions = () => {
-  const { forms, resetAll, submitAll, isAnyFormDirty, isAnyFormSubmitting, isAnyFormForbiddenToSubmit } =
-    useFormsContext();
-
+  const form = useManageDependencyTrackForm();
   const { secret, ownerReference, handleClosePanel } = useDataContext();
 
   const openDeleteKubeObjectDialog = useDialogOpener(DeleteKubeObjectDialog);
-
   const secretPermissions = useSecretPermissions();
+
+  const isDirty = useStore(form.store, (state) => state.isDirty);
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
 
   const canDelete = !ownerReference && secretPermissions.data.delete.allowed;
 
   const deleteDisabledTooltip = ownerReference
     ? "You cannot delete this integration because the secret has owner references."
     : secretPermissions.data.delete.reason;
-
-  const submitDisabledTooltip = isAnyFormForbiddenToSubmit
-    ? Object.values(forms).find((form) => !form.allowedToSubmit.isAllowed)?.allowedToSubmit.reason
-    : "";
 
   const handleDelete = React.useCallback(() => {
     if (!canDelete || !secret) {
@@ -42,23 +39,23 @@ export const Actions = () => {
       resource: secret,
       description: `Confirm the deletion of the integration.`,
       createCustomMessages: (item) => ({
-        loading: {
-          message: `${item.metadata.name} has been marked for deletion`,
-        },
-        error: {
-          message: `Failed to initiate ${item.metadata.name}'s deletion`,
-        },
-        success: {
-          message: "The deletion process has been started",
-        },
+        loading: { message: `${item.metadata.name} has been marked for deletion` },
+        error: { message: `Failed to initiate ${item.metadata.name}'s deletion` },
+        success: { message: "The deletion process has been started" },
       }),
     });
   }, [canDelete, openDeleteKubeObjectDialog, secret]);
 
   const mode = secret ? FORM_MODES.EDIT : FORM_MODES.CREATE;
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    form.handleSubmit();
+  };
+
   return (
-    <div className="flex items-center justify-between gap-2">
+    <div className="flex flex-row items-center justify-between gap-4">
       {mode === FORM_MODES.EDIT ? (
         <ConditionalWrapper
           condition={!canDelete}
@@ -68,7 +65,7 @@ export const Actions = () => {
             </Tooltip>
           )}
         >
-          <Button variant="ghost" size="icon" onClick={handleDelete} disabled={!canDelete}>
+          <Button variant="ghost" size="icon" onClick={handleDelete} disabled={!canDelete} aria-label="Delete">
             <Trash size={20} />
           </Button>
         </ConditionalWrapper>
@@ -78,26 +75,12 @@ export const Actions = () => {
         </Button>
       )}
 
-      <Button onClick={resetAll} size="sm" variant="ghost" disabled={!isAnyFormDirty} className="ml-auto">
+      <Button onClick={() => form.reset()} size="sm" variant="ghost" disabled={!isDirty} className="ml-auto">
         Undo Changes
       </Button>
-      <ConditionalWrapper
-        condition={isAnyFormForbiddenToSubmit}
-        wrapper={(children) => (
-          <Tooltip title={submitDisabledTooltip}>
-            <div>{children}</div>
-          </Tooltip>
-        )}
-      >
-        <Button
-          onClick={() => submitAll(true)}
-          size={"sm"}
-          variant={"default"}
-          disabled={!isAnyFormDirty || isAnyFormSubmitting || isAnyFormForbiddenToSubmit}
-        >
-          Save
-        </Button>
-      </ConditionalWrapper>
+      <Button onClick={handleSubmit} size="sm" variant="default" disabled={!isDirty || isSubmitting}>
+        Save
+      </Button>
     </div>
   );
 };

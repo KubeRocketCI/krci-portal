@@ -1,8 +1,14 @@
 import { ciTool, codebaseDeploymentScript, codebaseVersioning } from "@my-project/shared";
 import React from "react";
 import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
-import { CreateCodebaseFormValues, NAMES } from "../names";
-import { DeepPartial } from "react-hook-form";
+import type { CreateCodebaseFormValues } from "../schema";
+import { NAMES } from "../names";
+// DeepPartial type - makes all nested properties optional
+type DeepPartial<T> = T extends object
+  ? {
+      [P in keyof T]?: DeepPartial<T[P]>;
+    }
+  : T;
 
 const defaultEDPVersioningValue = "0.1.0-SNAPSHOT";
 const [defaultEDPVersioningVersion, defaultEDPVersioningVersionPostfix] = defaultEDPVersioningValue.split("-");
@@ -30,7 +36,6 @@ export const useDefaultValues = (): DeepPartial<CreateCodebaseFormValues> => {
       [NAMES.ui_creationMethod]: "template",
       [NAMES.ui_hasCodebaseAuth]: false,
       [NAMES.ui_hasJiraServerIntegration]: false,
-      [NAMES.ui_hasCodemieIntegration]: false,
       [NAMES.ui_versioningStartFromVersion]: defaultEDPVersioningVersion,
       [NAMES.ui_versioningStartFromSnapshot]: defaultEDPVersioningVersionPostfix,
       [NAMES.ui_advancedMappingFieldName]: [],

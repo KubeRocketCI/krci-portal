@@ -1,8 +1,6 @@
 import React from "react";
-import { CLUSTER_FORM_NAMES } from "../../../../names";
 import {
   CaData,
-  ClusterCertificate,
   ClusterHost,
   ClusterName,
   ClusterToken,
@@ -12,8 +10,6 @@ import {
 } from "../../../fields";
 import { FieldEvent } from "@/core/types/forms";
 import { clusterType, ClusterType } from "@my-project/shared";
-import { useClusterSecretForm } from "../../../../providers/form/hooks";
-import { useStore } from "@tanstack/react-form";
 
 export const Form = ({
   activeClusterType,
@@ -22,11 +18,6 @@ export const Form = ({
   activeClusterType: ClusterType;
   setActiveClusterType: React.Dispatch<React.SetStateAction<ClusterType>>;
 }) => {
-  const form = useClusterSecretForm();
-
-  // Subscribe to skipTLSVerify field value (replaces watch)
-  const skipTLSVerify = useStore(form.store, (state) => state.values[CLUSTER_FORM_NAMES.SKIP_TLS_VERIFY]);
-
   const renderBearerFormPart = React.useCallback(() => {
     return (
       <>
@@ -34,20 +25,11 @@ export const Form = ({
           <ClusterToken />
         </div>
         <div className="mt-5">
-          <div className="grid grid-cols-12 items-end gap-4">
-            <div className="col-span-6">
-              <SkipTLSVerify />
-            </div>
-            {!skipTLSVerify && (
-              <div className="col-span-6">
-                <ClusterCertificate />
-              </div>
-            )}
-          </div>
+          <SkipTLSVerify />
         </div>
       </>
     );
-  }, [skipTLSVerify]);
+  }, []);
 
   const renderIRSAFormPart = React.useCallback(() => {
     return (

@@ -4,7 +4,7 @@ import { DeleteKubeObjectDialog } from "@/core/components/DeleteKubeObject";
 import { useStagePermissions } from "@/k8s/api/groups/KRCI/Stage";
 import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
-import { ManageStageDialog } from "@/modules/platform/cdpipelines/dialogs/ManageStage";
+import { EditStageDialog } from "../EditStageDialog";
 import { ListItemAction } from "@/core/types/global";
 import { createResourceAction, getResourceProtection, getDisabledState } from "@/core/utils/createResourceAction";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
@@ -78,12 +78,8 @@ export const createDeleteAction = ({
   });
 };
 
-export const StageActionsMenu = ({
-  data: { stage, stages, cdPipeline },
-  backRoute,
-  variant,
-}: StageActionsMenuProps) => {
-  const openManageStageDialog = useDialogOpener(ManageStageDialog);
+export const StageActionsMenu = ({ data: { stage, stages }, backRoute, variant }: StageActionsMenuProps) => {
+  const openEditStageDialog = useDialogOpener(EditStageDialog);
   const openDeleteKubeObjectDialog = useDialogOpener(DeleteKubeObjectDialog);
   const stagePermissions = useStagePermissions();
 
@@ -98,11 +94,7 @@ export const StageActionsMenu = ({
         Icon: <Pencil size={16} />,
         disabled: getDisabledState(patchProtection, stagePermissions.data.patch),
         callback: (stage) => {
-          openManageStageDialog({
-            stage,
-            otherStages: stages,
-            cdPipeline,
-          });
+          openEditStageDialog({ stage });
         },
       }),
       createDeleteAction({
@@ -124,8 +116,7 @@ export const StageActionsMenu = ({
     stage,
     stagePermissions.data,
     stages,
-    openManageStageDialog,
-    cdPipeline,
+    openEditStageDialog,
     openDeleteKubeObjectDialog,
     backRoute,
     patchProtection,

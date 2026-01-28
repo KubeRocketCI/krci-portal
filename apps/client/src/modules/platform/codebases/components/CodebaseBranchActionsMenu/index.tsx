@@ -9,13 +9,13 @@ import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter
 import { checkIsDefaultBranch, k8sCodebaseBranchConfig, k8sOperation } from "@my-project/shared";
 import { Settings, Trash } from "lucide-react";
 import React from "react";
-import { ManageCodebaseBranchDialog } from "../../dialogs/ManageCodebaseBranch";
+import { EditCodebaseBranchDialog } from "../EditCodebaseBranchDialog";
 import { ConflictItemError } from "./components/ConflictItemError";
 import { useDeletionConflictItem } from "./hooks/useDeletionConflictItem";
 import { CodebaseBranchActionsProps } from "./types";
 
 export const CodebaseBranchActionsMenu = ({
-  data: { codebase, codebaseBranch, codebaseBranches, defaultBranch, pipelines },
+  data: { codebase, codebaseBranch },
   variant,
 }: CodebaseBranchActionsProps) => {
   const { setDialog: setNewDialog } = useDialogContext();
@@ -67,16 +67,8 @@ export const CodebaseBranchActionsMenu = ({
           reason: codebaseBranchPermissions.data.patch.reason,
         },
         callback: (codebaseBranch) => {
-          setNewDialog(ManageCodebaseBranchDialog, {
-            codebaseBranches,
-            codebase,
-            defaultBranch,
+          setNewDialog(EditCodebaseBranchDialog, {
             codebaseBranch,
-            pipelines: {
-              review: pipelines?.review,
-              build: pipelines?.build,
-              security: pipelines?.security,
-            },
             isProtected: patchProtection.isProtected,
           });
         },
@@ -99,20 +91,14 @@ export const CodebaseBranchActionsMenu = ({
       }),
     ];
   }, [
-    codebase,
     codebaseBranch,
     codebaseBranchPermissions.data.delete,
     codebaseBranchPermissions.data.patch.allowed,
     codebaseBranchPermissions.data.patch.reason,
-    codebaseBranches,
-    defaultBranch,
     deleteProtection,
     isDefaultBranch,
     patchProtection.isProtected,
     onBeforeSubmit,
-    pipelines?.build,
-    pipelines?.review,
-    pipelines?.security,
     setNewDialog,
   ]);
 

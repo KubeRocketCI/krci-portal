@@ -1,27 +1,28 @@
-import { FormTextFieldPassword } from "@/core/providers/Form/components/FormTextFieldPassword";
-import { FORM_MODES } from "@/core/types/forms";
-import { useFormsContext } from "../../../../../hooks/useFormsContext";
-import { CREDENTIALS_FORM_NAMES } from "../../../../../names";
-import { useDataContext } from "../../../../../providers/Data/hooks";
+import { NAMES } from "@/modules/platform/configuration/modules/gitservers/components/ManageGitServer/names";
+import { useManageGitServerForm } from "@/modules/platform/configuration/modules/gitservers/components/ManageGitServer/providers/form/hooks";
+import { useDataContext } from "@/modules/platform/configuration/modules/gitservers/components/ManageGitServer/providers/Data/hooks";
 
 export const Token = () => {
+  const form = useManageGitServerForm();
   const { gitServerSecret } = useDataContext();
-
-  const {
-    forms: { credentials: credentialsForm },
-  } = useFormsContext();
-
   const gitServerSecretOwnerReference = gitServerSecret?.metadata?.ownerReferences?.[0].kind;
 
   return (
-    <FormTextFieldPassword
-      {...credentialsForm.form.register(CREDENTIALS_FORM_NAMES.TOKEN, {
-        required: "Enter your access token",
-      })}
-      label={"Access token"}
-      control={credentialsForm.form.control}
-      errors={credentialsForm.form.formState.errors}
-      disabled={credentialsForm.mode === FORM_MODES.EDIT && !!gitServerSecretOwnerReference}
-    />
+    <form.AppField name={NAMES.TOKEN}>
+      {(field) => (
+        <field.FormTextField
+          type="password"
+          label="Token"
+          tooltipText="Provide the token for Git server authentication."
+          placeholder="Enter token"
+          helperText={
+            gitServerSecretOwnerReference
+              ? `This field value is managed by ${gitServerSecretOwnerReference}`
+              : undefined
+          }
+          disabled={!!gitServerSecretOwnerReference}
+        />
+      )}
+    </form.AppField>
   );
 };

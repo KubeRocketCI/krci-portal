@@ -1,13 +1,22 @@
 import { ConfigMap, ContainerRegistryType, Secret, ServiceAccount } from "@my-project/shared";
 import { ValueOf } from "@my-project/shared";
-import { FORM_NAMES } from "./constants";
 import {
   CONFIG_MAP_FORM_NAMES,
+  FORM_NAMES,
   PULL_ACCOUNT_FORM_NAMES,
   PUSH_ACCOUNT_FORM_NAMES,
   SERVICE_ACCOUNT_FORM_NAMES,
   SHARED_FORM_NAMES,
-} from "./names";
+} from "./constants";
+
+export {
+  CONFIG_MAP_FORM_NAMES,
+  FORM_NAMES,
+  PULL_ACCOUNT_FORM_NAMES,
+  PUSH_ACCOUNT_FORM_NAMES,
+  SERVICE_ACCOUNT_FORM_NAMES,
+  SHARED_FORM_NAMES,
+} from "./constants";
 
 export type FormNames = Exclude<ValueOf<typeof FORM_NAMES>, typeof FORM_NAMES.SHARED>;
 

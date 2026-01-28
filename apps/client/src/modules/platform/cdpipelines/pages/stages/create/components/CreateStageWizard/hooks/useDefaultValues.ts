@@ -25,7 +25,14 @@ const defaultQualityGate = {
 };
 
 export const useDefaultValues = () => {
-  const { namespace, cdPipeline: cdPipelineName } = routeStageCreate.useParams();
+  // Safely get route params - fallback to empty object if route is not active (e.g., in Storybook)
+  let routeParams: { namespace?: string; cdPipeline?: string } = {};
+  try {
+    routeParams = routeStageCreate.useParams();
+  } catch {
+    // Route not active - use empty params
+  }
+  const { namespace, cdPipeline: cdPipelineName } = routeParams;
 
   const { defaultNamespace } = useClusterStore(
     useShallow((state) => ({
@@ -38,7 +45,7 @@ export const useDefaultValues = () => {
   const stagesWatch = useStageWatchList({
     namespace: effectiveNamespace,
     labels: {
-      [stageLabels.cdPipeline]: cdPipelineName,
+      [stageLabels.cdPipeline]: cdPipelineName ?? "",
     },
     queryOptions: {
       enabled: !!cdPipelineName && !!effectiveNamespace,
@@ -79,7 +86,14 @@ export const useDefaultValues = () => {
 };
 
 export const useCDPipelineData = () => {
-  const { namespace, cdPipeline: cdPipelineName } = routeStageCreate.useParams();
+  // Safely get route params - fallback to empty object if route is not active (e.g., in Storybook)
+  let routeParams: { namespace?: string; cdPipeline?: string } = {};
+  try {
+    routeParams = routeStageCreate.useParams();
+  } catch {
+    // Route not active - use empty params
+  }
+  const { namespace, cdPipeline: cdPipelineName } = routeParams;
 
   const { defaultNamespace } = useClusterStore(
     useShallow((state) => ({
@@ -100,7 +114,7 @@ export const useCDPipelineData = () => {
   const stagesWatch = useStageWatchList({
     namespace: effectiveNamespace,
     labels: {
-      [stageLabels.cdPipeline]: cdPipelineName,
+      [stageLabels.cdPipeline]: cdPipelineName ?? "",
     },
     queryOptions: {
       enabled: !!cdPipelineName && !!effectiveNamespace,

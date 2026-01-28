@@ -1,7 +1,7 @@
 import { useAppForm } from "@/core/form-temp";
 import React from "react";
 import type { FormValidateOrFn } from "@tanstack/react-form";
-import { createCodebaseFormSchema, CreateCodebaseFormValues } from "../../names";
+import { createCodebaseFormSchema, CreateCodebaseFormValues } from "../../schema";
 
 // Internal hook to create the form with proper typing
 // This captures the return type for TypeScript inference

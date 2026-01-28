@@ -1,9 +1,7 @@
 import React from "react";
-import { useRegistryFormsContext } from "../../../../hooks/useRegistryFormsContext";
-import { CONFIG_MAP_FORM_NAMES, PUSH_ACCOUNT_FORM_NAMES, SHARED_FORM_NAMES } from "../../../../names";
+import { useStore } from "@tanstack/react-form";
 import { useDataContext } from "../../../../providers/Data/hooks";
-import { FormRadioGroup } from "@/core/providers/Form/components/FormRadioGroup";
-import { FieldEvent, FORM_MODES } from "@/core/types/forms";
+import { FORM_MODES } from "@/core/types/forms";
 import { REGISTRY_TYPE_ICON_MAPPING } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
 import { RESOURCE_ICON_NAMES } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
@@ -15,6 +13,8 @@ import {
   DOCKER_HUB_DEFAULT_REGISTRY_ENDPOINT,
   GHCR_DEFAULT_REGISTRY_ENDPOINT,
 } from "@my-project/shared";
+import { useManageRegistryForm } from "../../../../providers/form/hooks";
+import { NAMES } from "../../../../schema";
 
 const createRegistryTypeOptions = (platformName: ContainerRegistryPlatform) => {
   if (!platformName || !containerRegistryTypeByPlatform?.[platformName]) {
@@ -28,88 +28,68 @@ const createRegistryTypeOptions = (platformName: ContainerRegistryPlatform) => {
 };
 
 export const Type = () => {
-  const {
-    forms: { configMap, pushAccount },
-    sharedForm,
-  } = useRegistryFormsContext();
-
+  const form = useManageRegistryForm();
   const { EDPConfigMap } = useDataContext();
 
   const platform = EDPConfigMap?.data?.platform;
 
-  const registryTypeOptions = React.useMemo(
-    () => createRegistryTypeOptions(platform as ContainerRegistryPlatform),
+  const registryType = useStore(form.store, (state) => state.values[NAMES.REGISTRY_TYPE]);
+  const mode = registryType ? FORM_MODES.EDIT : FORM_MODES.CREATE;
+
+  const options = React.useMemo(
+    () =>
+      createRegistryTypeOptions(platform as ContainerRegistryPlatform).map(({ label, value }) => ({
+        value,
+        label,
+        icon: (
+          <UseSpriteSymbol
+            name={REGISTRY_TYPE_ICON_MAPPING?.[value] || RESOURCE_ICON_NAMES.OTHER}
+            width={20}
+            height={20}
+          />
+        ),
+      })),
     [platform]
   );
 
   return (
-    <>
-      <FormRadioGroup
-        {...configMap.form.register(CONFIG_MAP_FORM_NAMES.REGISTRY_TYPE, {
-          required: "Select a registry type you would like to create.",
-          onChange: ({ target: { value } }: FieldEvent) => {
-            sharedForm.setValue(SHARED_FORM_NAMES.REGISTRY_TYPE, value, {
-              shouldDirty: false,
-            });
-
-            switch (value) {
-              case containerRegistryType.dockerhub:
-                configMap.form.setValue(CONFIG_MAP_FORM_NAMES.REGISTRY_ENDPOINT, DOCKER_HUB_DEFAULT_REGISTRY_ENDPOINT, {
-                  shouldDirty: false,
-                });
-                sharedForm.setValue(SHARED_FORM_NAMES.REGISTRY_ENDPOINT, DOCKER_HUB_DEFAULT_REGISTRY_ENDPOINT, {
-                  shouldDirty: false,
-                });
-                break;
-              case containerRegistryType.ghcr:
-                configMap.form.setValue(CONFIG_MAP_FORM_NAMES.REGISTRY_ENDPOINT, GHCR_DEFAULT_REGISTRY_ENDPOINT, {
-                  shouldDirty: false,
-                });
-                sharedForm.setValue(SHARED_FORM_NAMES.REGISTRY_ENDPOINT, GHCR_DEFAULT_REGISTRY_ENDPOINT, {
-                  shouldDirty: false,
-                });
-                break;
-              case containerRegistryType.ecr:
-                pushAccount.form.setValue(PUSH_ACCOUNT_FORM_NAMES.PUSH_ACCOUNT_PASSWORD, "", {
-                  shouldDirty: true,
-                });
-                break;
-              default:
-                configMap.form.resetField(CONFIG_MAP_FORM_NAMES.REGISTRY_ENDPOINT, {
-                  keepDirty: false,
-                });
-                sharedForm.resetField(SHARED_FORM_NAMES.REGISTRY_ENDPOINT, {
-                  keepDirty: false,
-                });
-            }
-          },
-        })}
-        control={configMap.form.control}
-        errors={configMap.form.formState.errors}
-        label={"Registry Provider"}
-        tooltipText={"Select a registry type you would like to create"}
-        options={registryTypeOptions.map(({ label, value }) => {
-          return {
-            value,
-            label,
-            icon: (
-              <UseSpriteSymbol
-                name={REGISTRY_TYPE_ICON_MAPPING?.[value] || RESOURCE_ICON_NAMES.OTHER}
-                width={20}
-                height={20}
-              />
-            ),
-            checkedIcon: (
-              <UseSpriteSymbol
-                name={REGISTRY_TYPE_ICON_MAPPING?.[value] || RESOURCE_ICON_NAMES.OTHER}
-                width={20}
-                height={20}
-              />
-            ),
-          };
-        })}
-        disabled={configMap.mode === FORM_MODES.EDIT}
-      />
-    </>
+    <form.AppField
+      name={NAMES.REGISTRY_TYPE}
+      listeners={{
+        onChange: ({ value }) => {
+          switch (value) {
+            case containerRegistryType.dockerhub:
+              form.setFieldValue(NAMES.REGISTRY_ENDPOINT, DOCKER_HUB_DEFAULT_REGISTRY_ENDPOINT, {
+                dontUpdateMeta: true,
+              });
+              break;
+            case containerRegistryType.ghcr:
+              form.setFieldValue(NAMES.REGISTRY_ENDPOINT, GHCR_DEFAULT_REGISTRY_ENDPOINT, {
+                dontUpdateMeta: true,
+              });
+              break;
+            case containerRegistryType.ecr:
+              form.setFieldValue(NAMES.PUSH_ACCOUNT_PASSWORD, "", {
+                dontUpdateMeta: true,
+              });
+              break;
+            default:
+              form.setFieldValue(NAMES.REGISTRY_ENDPOINT, "", {
+                dontUpdateMeta: true,
+              });
+          }
+        },
+      }}
+    >
+      {(field) => (
+        <field.FormSelect
+          label="Registry Provider"
+          tooltipText="Select a registry type you would like to create"
+          placeholder="Select registry provider"
+          options={options}
+          disabled={mode === FORM_MODES.EDIT}
+        />
+      )}
+    </form.AppField>
   );
 };

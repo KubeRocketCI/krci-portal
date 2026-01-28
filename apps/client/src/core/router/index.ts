@@ -45,9 +45,7 @@ import { routePipelineRunDetails } from "@/modules/platform/tekton/pages/pipelin
 import { routeTektonResultPipelineRunDetails } from "@/modules/platform/tekton/pages/tekton-result-details/route";
 import { routeOverviewDetails } from "@/modules/platform/overview/pages/details/route";
 import { routeArgocdConfiguration } from "@/modules/platform/configuration/modules/argocd/route";
-import { routeChatAssistantConfiguration } from "@/modules/platform/configuration/modules/chat-assistant/route";
 import { routeClustersConfiguration } from "@/modules/platform/configuration/modules/clusters/route";
-import { routeCodemieConfiguration } from "@/modules/platform/configuration/modules/codemie/route";
 import { routeDefectdojoConfiguration } from "@/modules/platform/configuration/modules/defectdojo/route";
 import { routeDependencyTrackConfiguration } from "@/modules/platform/configuration/modules/dependency-track/route";
 import { routeGitopsConfiguration } from "@/modules/platform/configuration/modules/gitops/route";
@@ -144,9 +142,7 @@ const routeTree = rootRoute.addChildren([
       ]),
       routeConfiguration.addChildren([
         routeArgocdConfiguration,
-        routeChatAssistantConfiguration,
         routeClustersConfiguration,
-        routeCodemieConfiguration,
         routeDefectdojoConfiguration,
         routeDependencyTrackConfiguration,
         routeGitopsConfiguration,

@@ -20,7 +20,8 @@ import {
 } from "@/core/components/ui/stepper";
 import { Check } from "lucide-react";
 import React from "react";
-import { useForm } from "react-hook-form";
+import { useStore } from "@tanstack/react-form";
+import { useAppForm } from "@/core/form-temp";
 import { STEPPER, STEPPER_STEPS } from "../../constants";
 import { useCurrentDialog } from "../../providers/CurrentDialog/hooks";
 import { WidgetType } from "../../types";
@@ -28,19 +29,27 @@ import { Configuration } from "./Configuration";
 import { Selection } from "./Selection";
 import { useStepperContext } from "@/core/providers/Stepper/hooks";
 
+export type AddNewWidgetFormValues = { widgetType: string };
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function useCreateAddNewWidgetForm() {
+  return useAppForm({ defaultValues: { widgetType: "" } as AddNewWidgetFormValues });
+}
+export type AddNewWidgetFormInstance = ReturnType<typeof useCreateAddNewWidgetForm>;
+
 export const DialogInner = () => {
   const { activeStep, nextStep, prevStep } = useStepperContext();
   const {
     state: { open, closeDialog },
   } = useCurrentDialog();
 
-  const form = useForm<Record<"widgetType", string>>({
+  const form = useAppForm({
     defaultValues: {
-      widgetType: undefined,
+      widgetType: "",
     },
   });
 
-  const widgetType = form.watch("widgetType");
+  const widgetType = useStore(form.store, (state) => state.values.widgetType);
 
   const addButtonContainerRef = React.useRef<HTMLDivElement>(null);
 

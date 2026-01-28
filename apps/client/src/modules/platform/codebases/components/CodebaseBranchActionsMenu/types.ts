@@ -5,13 +5,6 @@ export interface CodebaseBranchActionsProps {
   data: {
     codebase: Codebase;
     codebaseBranch: CodebaseBranch;
-    codebaseBranches: CodebaseBranch[];
-    defaultBranch: CodebaseBranch;
-    pipelines: {
-      review: string;
-      build: string;
-      security: string;
-    };
   };
   backRoute?: string;
   variant?: ActionMenuType;

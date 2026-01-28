@@ -153,8 +153,12 @@ const HeaderMetadata = () => {
       )}
 
       {(() => {
-        const changeNumber = pipelineRun.metadata?.annotations?.[tektonResultAnnotations.gitChangeNumber];
-        const changeUrl = pipelineRun.metadata?.annotations?.[tektonResultAnnotations.gitChangeUrl];
+        const changeNumber =
+          getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitChangeNumber) ??
+          pipelineRun.metadata?.annotations?.[tektonResultAnnotations.gitChangeNumber];
+        const changeUrl =
+          getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitChangeUrl) ??
+          pipelineRun.metadata?.annotations?.[tektonResultAnnotations.gitChangeUrl];
 
         if (!changeNumber) {
           return null;
@@ -169,7 +173,7 @@ const HeaderMetadata = () => {
                 href={changeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary text-sm font-medium hover:underline"
+                className="text-sm font-medium hover:underline"
               >
                 #{changeNumber}
               </a>

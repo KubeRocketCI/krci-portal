@@ -1,6 +1,5 @@
+import { useStore } from "@tanstack/react-form";
 import { Tooltip } from "@/core/components/ui/tooltip";
-import { useRegistryFormsContext } from "../../hooks/useRegistryFormsContext";
-import { SHARED_FORM_NAMES } from "../../names";
 import { useDataContext } from "../../providers/Data/hooks";
 import { PushAccountPassword, PushAccountUser } from "./fields";
 import {
@@ -11,13 +10,14 @@ import {
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { ShieldX } from "lucide-react";
 import { getIntegrationSecretStatusIcon } from "@/k8s/integrations/secret/utils/getStatusIcon";
+import { useManageRegistryForm } from "../../providers/form/hooks";
+import { NAMES } from "../../schema";
 
 export const PushAccountForm = () => {
+  const form = useManageRegistryForm();
   const { pushAccountSecret } = useDataContext();
 
-  const { sharedForm } = useRegistryFormsContext();
-
-  const registryTypeFieldValue = sharedForm.watch(SHARED_FORM_NAMES.REGISTRY_TYPE);
+  const registryTypeFieldValue = useStore(form.store, (state) => state.values[NAMES.REGISTRY_TYPE]);
   const pushAccountOwnerReference = pushAccountSecret?.metadata?.ownerReferences?.[0].kind;
 
   const pushAccountConnected =

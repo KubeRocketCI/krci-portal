@@ -1,9 +1,10 @@
 import { EmptyList } from "@/core/components/EmptyList";
-import { useDialogOpener } from "@/core/providers/Dialog/hooks";
-import { ManageStageDialog } from "@/modules/platform/cdpipelines/dialogs/ManageStage";
 import { useStagePermissions } from "@/k8s/api/groups/KRCI/Stage";
 import { Server } from "lucide-react";
 import React from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { routeCDPipelineDetails } from "../../route";
+import { routeStageCreate } from "../../../stages/create/route";
 import { useCDPipelineWatch, useStageListWatch } from "../../hooks/data";
 import { EnvironmentCard } from "../EnvironmentCard";
 import { EnvironmentFlowArrow } from "../EnvironmentFlowArrow";
@@ -15,9 +16,10 @@ export const StageList = () => {
   const { filterFunction } = useStageFilter();
   const stagePermissions = useStagePermissions();
 
-  const [expandedEnvs, setExpandedEnvs] = React.useState<Set<string>>(new Set());
+  const navigate = useNavigate();
+  const { clusterName, namespace, name } = routeCDPipelineDetails.useParams();
 
-  const openManageStageDialog = useDialogOpener(ManageStageDialog);
+  const [expandedEnvs, setExpandedEnvs] = React.useState<Set<string>>(new Set());
 
   const toggleEnvExpanded = React.useCallback((envId: string) => {
     setExpandedEnvs((prev) => {
@@ -65,9 +67,9 @@ export const StageList = () => {
         linkText={"by adding a new one here."}
         beforeLinkText="Take the first step towards managing your Environment"
         handleClick={() => {
-          openManageStageDialog({
-            cdPipeline: cdPipelineWatch.data!,
-            otherStages: sortedStages,
+          navigate({
+            to: routeStageCreate.fullPath,
+            params: { clusterName, namespace, cdPipeline: name },
           });
         }}
       />

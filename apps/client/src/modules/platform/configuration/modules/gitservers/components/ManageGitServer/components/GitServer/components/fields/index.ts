@@ -6,4 +6,3 @@ export * from "./OverrideWebHookURL";
 export * from "./SkipWebhookSSL";
 export * from "./SSHPort";
 export * from "./UserName";
-export * from "./WebHookURL";

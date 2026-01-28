@@ -1,28 +1,24 @@
-import { TileRadioGroup } from "@/core/providers/Form/components/MainRadioGroup";
-import { UseFormReturn } from "react-hook-form";
 import { WIDGET_TYPE } from "../../../constants";
 import { Table } from "lucide-react";
+import type { AddNewWidgetFormInstance } from "../index";
 
-export const Selection = ({
-  form,
-}: {
-  form: UseFormReturn<Record<"widgetType", string>, unknown, Record<"widgetType", string>>;
-}) => {
+export const Selection = ({ form }: { form: AddNewWidgetFormInstance }) => {
   return (
-    <TileRadioGroup
-      {...form.register("widgetType")}
-      control={form.control}
-      errors={form.formState.errors}
-      options={[
-        {
-          value: WIDGET_TYPE.APP_VERSION,
-          label: "Application Deployed Versions",
-          description: "Displays the deployed versions of the application found in all the Environments.",
-          icon: <Table size={24} color="#002446" />,
-          checkedIcon: <Table size={24} color="#002446" />,
-        },
-      ]}
-      gridCols={1}
-    />
+    <form.AppField name="widgetType">
+      {(field) => (
+        <field.FormRadioGroup
+          variant="tile"
+          options={[
+            {
+              value: WIDGET_TYPE.APP_VERSION,
+              label: "Application Deployed Versions",
+              description: "Displays the deployed versions of the application found in all the Environments.",
+              icon: <Table size={24} color="#002446" />,
+              checkedIcon: <Table size={24} color="#002446" />,
+            },
+          ]}
+        />
+      )}
+    </form.AppField>
   );
 };

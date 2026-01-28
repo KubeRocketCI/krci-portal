@@ -1,6 +1,5 @@
 import { Button } from "@/core/components/ui/button";
 import React from "react";
-import { useForm } from "react-hook-form";
 import {
   Dialog,
   DialogBody,
@@ -9,7 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/core/components/ui/dialog";
-import { FormTextField } from "@/core/providers/Form/components/FormTextField";
+import { Input } from "@/core/components/ui/input";
+import { Label } from "@/core/components/ui/label";
 import { DIALOG_NAME } from "./constants";
 import { ConfirmResourcesUpdatesDialogProps } from "./types";
 import { k8sOperation } from "@my-project/shared";
@@ -17,23 +17,19 @@ import { k8sOperation } from "@my-project/shared";
 export const ConfirmResourcesUpdatesDialog: React.FC<ConfirmResourcesUpdatesDialogProps> = ({ props, state }) => {
   const { deleteCallback, text, resourcesArray } = props;
   const { closeDialog, open } = state;
-  const {
-    control,
-    watch,
-    reset,
-    formState: { errors },
-  } = useForm();
+  const [confirmValue, setConfirmValue] = React.useState("");
 
-  const confirmFieldValue = watch("confirm");
-  const isSubmitNotAllowed = confirmFieldValue !== "confirm";
+  const isSubmitNotAllowed = confirmValue !== "confirm";
 
-  const handleClosePopup = React.useCallback(() => closeDialog(), [closeDialog]);
+  const handleClosePopup = React.useCallback(() => {
+    closeDialog();
+    setConfirmValue("");
+  }, [closeDialog]);
 
   const onSubmit = React.useCallback(async () => {
     await deleteCallback();
     handleClosePopup();
-    reset();
-  }, [deleteCallback, handleClosePopup, reset]);
+  }, [deleteCallback, handleClosePopup]);
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClosePopup()} data-testid="dialog">
@@ -61,9 +57,9 @@ export const ConfirmResourcesUpdatesDialog: React.FC<ConfirmResourcesUpdatesDial
                               will be{" "}
                               {actionType === k8sOperation.patch
                                 ? "updated"
-                                : k8sOperation.delete
+                                : actionType === k8sOperation.delete
                                   ? "deleted"
-                                  : k8sOperation.create
+                                  : actionType === k8sOperation.create
                                     ? "created"
                                     : ""}
                             </span>
@@ -74,17 +70,19 @@ export const ConfirmResourcesUpdatesDialog: React.FC<ConfirmResourcesUpdatesDial
                 </div>
               </div>
             )}
-            <FormTextField
-              name="confirm"
-              control={control}
-              errors={errors}
-              label={'Enter "confirm" to confirm action'}
-              rules={{ required: true }}
-            />
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="confirm-input">Enter &quot;confirm&quot; to confirm action</Label>
+              <Input
+                id="confirm-input"
+                value={confirmValue}
+                onChange={(e) => setConfirmValue(e.target.value)}
+                placeholder=""
+              />
+            </div>
           </div>
         </DialogBody>
         <DialogFooter>
-          <Button type={"button"} onClick={handleClosePopup} variant="ghost">
+          <Button type="button" onClick={handleClosePopup} variant="ghost">
             Cancel
           </Button>
           <Button onClick={onSubmit} disabled={isSubmitNotAllowed}>
