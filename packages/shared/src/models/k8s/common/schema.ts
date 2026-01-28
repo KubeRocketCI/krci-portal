@@ -25,6 +25,8 @@ export const k8sResourceConfigSchema = z.object({
   singularName: z.string(),
   pluralName: z.string(),
   labels: stringDictSchema.optional(),
+  /** Indicates whether this resource is cluster-scoped (no namespace) */
+  clusterScoped: z.boolean().optional(),
 });
 
 const kubeOwnerReferenceSchema = z.object({

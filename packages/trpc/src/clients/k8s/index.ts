@@ -5,17 +5,9 @@ import fetch from "node-fetch";
 import https from "https";
 import fs from "fs";
 import { K8sApiError } from "./K8sApiError.js";
+import { CLUSTER_SCOPED_CORE_RESOURCES, isCoreKubernetesResource } from "../../routers/k8s/constants/index.js";
 
-export const isCoreKubernetesResource = (resourceConfig: K8sResourceConfig) => resourceConfig.group === "";
-
-// Cluster-scoped core resources (no namespace in URL)
-const CLUSTER_SCOPED_CORE_RESOURCES = new Set([
-  "Node",
-  "PersistentVolume",
-  "ClusterRole",
-  "ClusterRoleBinding",
-  "Namespace",
-]);
+export { isCoreKubernetesResource };
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -93,7 +85,7 @@ export class K8sClient {
    */
   async listResource(
     resourceConfig: K8sResourceConfig,
-    namespace: string,
+    namespace?: string,
     labelSelector?: string
   ): Promise<KubeObjectListBase<KubeObjectBase>> {
     if (!this.KubeConfig) {
@@ -115,7 +107,7 @@ export class K8sClient {
   /**
    * Get a specific resource by name
    */
-  async getResource(resourceConfig: K8sResourceConfig, name: string, namespace: string): Promise<KubeObjectBase> {
+  async getResource(resourceConfig: K8sResourceConfig, name: string, namespace?: string): Promise<KubeObjectBase> {
     if (!this.KubeConfig) {
       throw new Error("KubeConfig is not initialized");
     }
@@ -127,7 +119,7 @@ export class K8sClient {
   /**
    * Delete a specific resource by name
    */
-  async deleteResource(resourceConfig: K8sResourceConfig, name: string, namespace: string): Promise<KubeObjectBase> {
+  async deleteResource(resourceConfig: K8sResourceConfig, name: string, namespace?: string): Promise<KubeObjectBase> {
     if (!this.KubeConfig) {
       throw new Error("KubeConfig is not initialized");
     }
@@ -139,7 +131,11 @@ export class K8sClient {
   /**
    * Create a new resource
    */
-  async createResource(resourceConfig: K8sResourceConfig, namespace: string, body: object): Promise<KubeObjectBase> {
+  async createResource(
+    resourceConfig: K8sResourceConfig,
+    namespace: string | undefined,
+    body: object
+  ): Promise<KubeObjectBase> {
     if (!this.KubeConfig) {
       throw new Error("KubeConfig is not initialized");
     }
@@ -154,7 +150,7 @@ export class K8sClient {
   async replaceResource(
     resourceConfig: K8sResourceConfig,
     name: string,
-    namespace: string,
+    namespace: string | undefined,
     body: object
   ): Promise<KubeObjectBase> {
     if (!this.KubeConfig) {
@@ -171,7 +167,7 @@ export class K8sClient {
   async patchResource(
     resourceConfig: K8sResourceConfig,
     name: string,
-    namespace: string,
+    namespace: string | undefined,
     body: object
   ): Promise<KubeObjectBase> {
     if (!this.KubeConfig) {
@@ -194,7 +190,10 @@ export class K8sClient {
     const { server } = cluster;
     const { namespace, name } = options;
 
-    const isNamespaced = !CLUSTER_SCOPED_CORE_RESOURCES.has(resourceConfig.kind) && resourceConfig.kind !== "Namespace";
+    const isNamespaced =
+      !resourceConfig.clusterScoped &&
+      !CLUSTER_SCOPED_CORE_RESOURCES.has(resourceConfig.kind) &&
+      resourceConfig.kind !== "Namespace";
 
     let basePath: string;
     let resourcePath: string;

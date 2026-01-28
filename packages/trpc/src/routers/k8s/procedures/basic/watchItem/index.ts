@@ -13,7 +13,7 @@ export const k8sWatchItemProcedure = protectedProcedure
     z.object({
       resourceConfig: k8sResourceConfigSchema,
       clusterName: z.string(),
-      namespace: z.string(),
+      namespace: z.string().optional(),
       resourceVersion: z.string(),
       name: z.string(),
     })

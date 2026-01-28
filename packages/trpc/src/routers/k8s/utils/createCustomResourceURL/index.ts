@@ -1,16 +1,6 @@
 import { K8sResourceConfig } from "@my-project/shared";
+import { CLUSTER_SCOPED_CORE_RESOURCES, isCoreKubernetesResource } from "../../constants/index.js";
 import { createLabelSelectorString } from "../createLabelSelectorString/index.js";
-
-const isCoreKubernetesResource = (resourceConfig: K8sResourceConfig) => resourceConfig.group === "";
-
-// Cluster-scoped core resources (no namespace in URL)
-const CLUSTER_SCOPED_CORE_RESOURCES = new Set([
-  "Node",
-  "PersistentVolume",
-  "ClusterRole",
-  "ClusterRoleBinding",
-  "Namespace",
-]);
 
 export const createCustomResourceURL = ({
   resourceConfig,
@@ -19,14 +9,15 @@ export const createCustomResourceURL = ({
   name,
 }: {
   resourceConfig: K8sResourceConfig;
-  namespace: string;
+  namespace?: string;
   labels?: Record<string, string>;
   name?: string;
 }): string => {
   const { pluralName, kind } = resourceConfig;
   const labelSelectorString = createLabelSelectorString(labels);
 
-  const isNamespaced = !CLUSTER_SCOPED_CORE_RESOURCES.has(kind) && kind !== "Namespace";
+  const isNamespaced =
+    !resourceConfig.clusterScoped && !CLUSTER_SCOPED_CORE_RESOURCES.has(kind) && kind !== "Namespace";
 
   // Extract version from either version field or apiVersion field
   const version = resourceConfig.version || resourceConfig.apiVersion?.split("/").pop() || "v1";

@@ -71,4 +71,20 @@ export const TABLE = {
     id: "trivyVulnerabilitiesList",
     name: "Trivy Vulnerabilities",
   },
+  TRIVY_CONFIG_AUDIT_REPORTS_LIST: {
+    id: "trivyConfigAuditReportsList",
+    name: "Trivy Config Audit Reports",
+  },
+  TRIVY_CONFIG_AUDIT_CHECKS_LIST: {
+    id: "trivyConfigAuditChecksList",
+    name: "Trivy Config Audit Checks",
+  },
+  TRIVY_COMPLIANCE_REPORTS_LIST: {
+    id: "trivyComplianceReportsList",
+    name: "Trivy Compliance Reports",
+  },
+  TRIVY_COMPLIANCE_CONTROLS_LIST: {
+    id: "trivyComplianceControlsList",
+    name: "Trivy Compliance Controls",
+  },
 } as const;
