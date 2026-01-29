@@ -13,11 +13,12 @@ import {
   tektonResultAnnotations,
   getPipelineRunAnnotation,
 } from "@my-project/shared";
-import { Activity, Calendar, Clock, GitBranch, GitPullRequest, Timer, User, Code } from "lucide-react";
+import { Activity, Calendar, Clock, GitBranch, GitPullRequest, SearchX, Timer, User, Code } from "lucide-react";
 import React from "react";
 import { PipelineRunActionsMenu } from "../../components/PipelineRunActionsMenu";
 import { PATH_PIPELINERUNS_FULL } from "../pipelinerun-list/route";
 import { usePipelineRunWatchWithPageParams } from "./hooks/data";
+import { usePipelineRunFallbackRedirect } from "./hooks/usePipelineRunFallbackRedirect";
 import { useTabs } from "./hooks/useTabs";
 import { routePipelineRunDetails } from "./route";
 import { Link } from "@tanstack/react-router";
@@ -247,13 +248,34 @@ export default function PipelineRunDetailsPageContent({ searchTabIdx }: { search
   const tabs = useTabs();
   const { handleChangeTab } = useTabsContext();
 
+  // When the live PipelineRun is not found (404), attempt to redirect to Tekton Results history
+  const { isRedirecting, notFoundAnywhere } = usePipelineRunFallbackRedirect(
+    pipelineRunWatch.query.error,
+    pipelineRunWatch.query.isLoading
+  );
+
   const renderPageContent = React.useCallback(() => {
+    if (isRedirecting) {
+      return <LoadingWrapper isLoading>{null}</LoadingWrapper>;
+    }
+
+    if (notFoundAnywhere) {
+      return (
+        <div className="flex items-center justify-center gap-2 py-8">
+          <SearchX className="text-muted-foreground" size={48} />
+          <span className="text-muted-foreground text-sm">
+            Sorry. The requested PipelineRun was not found in the cluster or in Tekton Results history.
+          </span>
+        </div>
+      );
+    }
+
     return (
       <LoadingWrapper isLoading={pipelineRunWatch.query.isLoading}>
         <Tabs tabs={tabs} activeTabIdx={searchTabIdx} handleChangeTab={handleChangeTab} />
       </LoadingWrapper>
     );
-  }, [pipelineRunWatch.query.isLoading, tabs, searchTabIdx, handleChangeTab]);
+  }, [pipelineRunWatch.query.isLoading, isRedirecting, notFoundAnywhere, tabs, searchTabIdx, handleChangeTab]);
 
   return (
     <PageWrapper
