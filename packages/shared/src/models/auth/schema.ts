@@ -23,6 +23,7 @@ export const loginOutputSchema = z
 
 export const logoutOutputSchema = z.object({
   success: z.boolean(),
+  endSessionUrl: z.string().optional(),
 });
 
 export const meOutputSchema = OIDCUserSchema.optional();

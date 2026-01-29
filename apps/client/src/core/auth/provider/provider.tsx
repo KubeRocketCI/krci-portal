@@ -158,10 +158,15 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
 
       return trpc.auth.logout.mutate();
     },
-    onSuccess: () => {
+    onSuccess: ({ endSessionUrl }) => {
       queryClient.setQueryData(["auth.me"], false);
-      router.navigate({ to: routeAuthLogin.fullPath, replace: true });
       queryClient.setQueryData([authLogoutInProgressKey], false);
+
+      if (endSessionUrl) {
+        window.location.href = endSessionUrl;
+      } else {
+        router.navigate({ to: routeAuthLogin.fullPath, replace: true });
+      }
     },
     onError: () => {
       queryClient.setQueryData([authLogoutInProgressKey], false);

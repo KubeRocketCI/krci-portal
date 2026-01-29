@@ -129,7 +129,7 @@ export default function LoginPage() {
                     disabled={loginWithTokenMutation?.isPending}
                     spellCheck={false}
                   />
-                  <p className="text-muted-foreground text-xs">Enter your Keycloak access token to sign in.</p>
+                  <p className="text-muted-foreground text-xs">Enter your OIDC access token to sign in.</p>
                 </div>
                 {loginWithTokenMutation?.isError && (
                   <Alert variant="destructive" title="Error">

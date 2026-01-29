@@ -18,7 +18,7 @@ export type LoginCallbackOutput = z.infer<typeof loginCallbackOutputSchema>;
 
 export type LoginOutput = z.infer<typeof loginOutputSchema>;
 
-export type LogoutnOutput = z.infer<typeof logoutOutputSchema>;
+export type LogoutOutput = z.infer<typeof logoutOutputSchema>;
 
 export type MeOutput = z.infer<typeof meOutputSchema>;
 

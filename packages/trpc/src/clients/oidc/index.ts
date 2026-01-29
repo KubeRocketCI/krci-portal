@@ -13,7 +13,7 @@ import {
 } from "openid-client";
 import { TRPCError } from "@trpc/server";
 import { getTokenExpirationTime } from "../../utils/getTokenExpirationTime/index.js";
-import type { OIDCUser } from "@my-project/shared";
+import { type OIDCUser, OIDCUserSchema } from "@my-project/shared";
 import { jwtDecode } from "jwt-decode";
 
 export interface OIDCConfig {
@@ -88,12 +88,23 @@ export class OIDCClient {
     accessTokenExpiresAt: number; // ms
     refreshToken: string;
   } {
+    const accessToken = tokenResponse.access_token;
+    const idToken = tokenResponse.id_token || accessToken;
+    const refreshToken = tokenResponse.refresh_token || "";
+
+    if (!accessToken) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "OIDC token response missing access_token",
+      });
+    }
+
     return {
-      idToken: tokenResponse.id_token!,
-      idTokenExpiresAt: getTokenExpirationTime(tokenResponse.id_token!), // ms
-      accessToken: tokenResponse.access_token!,
-      accessTokenExpiresAt: getTokenExpirationTime(tokenResponse.access_token!), // ms
-      refreshToken: tokenResponse.refresh_token!,
+      idToken,
+      idTokenExpiresAt: getTokenExpirationTime(idToken),
+      accessToken,
+      accessTokenExpiresAt: getTokenExpirationTime(accessToken),
+      refreshToken,
     };
   }
 
@@ -112,17 +123,63 @@ export class OIDCClient {
   }
 
   async fetchUserInfo(oidcConfig: Configuration, accessToken: string): Promise<OIDCUser> {
-    const userInfoRequest = await fetchProtectedResource(
-      oidcConfig,
-      accessToken,
-      new URL(`${this.config.issuerURL}/protocol/openid-connect/userinfo`),
-      "GET"
-    );
-    return userInfoRequest.json();
+    const userinfoEndpoint = oidcConfig.serverMetadata().userinfo_endpoint;
+
+    if (!userinfoEndpoint) {
+      throw new Error("OIDC provider does not advertise a userinfo endpoint");
+    }
+
+    const response = await fetchProtectedResource(oidcConfig, accessToken, new URL(userinfoEndpoint), "GET");
+
+    const responseText = await response.text();
+
+    if (!response.ok) {
+      const statusMessages: Record<number, string> = {
+        401: "Token is invalid or expired",
+        403: "Token does not have sufficient permissions",
+      };
+
+      const statusMessage = statusMessages[response.status] || `Unexpected response (HTTP ${response.status})`;
+
+      throw new Error(statusMessage);
+    }
+
+    if (!responseText) {
+      throw new Error("Empty response from userinfo endpoint");
+    }
+
+    try {
+      return JSON.parse(responseText) as OIDCUser;
+    } catch {
+      throw new Error("Invalid response from userinfo endpoint");
+    }
   }
 
   async getUserInfo(oidcConfig: Configuration, accessToken: string): Promise<OIDCUser> {
     return this.fetchUserInfo(oidcConfig, accessToken);
+  }
+
+  buildEndSessionUrl(
+    oidcConfig: Configuration,
+    idTokenHint?: string,
+    postLogoutRedirectUri?: string
+  ): string | undefined {
+    const endSessionEndpoint = oidcConfig.serverMetadata().end_session_endpoint;
+
+    if (!endSessionEndpoint) {
+      return undefined;
+    }
+
+    const url = new URL(endSessionEndpoint);
+
+    if (idTokenHint) {
+      url.searchParams.set("id_token_hint", idTokenHint);
+    }
+    if (postLogoutRedirectUri) {
+      url.searchParams.set("post_logout_redirect_uri", postLogoutRedirectUri);
+    }
+
+    return url.toString();
   }
 
   generateState(): string {
@@ -137,29 +194,54 @@ export class OIDCClient {
     return randomPKCECodeVerifier();
   }
 
+  /**
+   * Validates the token and retrieves user information.
+   *
+   * Strategy:
+   * 1. If the token is a JWT, decode it and check expiration.
+   * 2. Try to extract user claims directly from the JWT payload
+   *    (works for ID tokens, which contain user claims inline).
+   * 3. If JWT claims are insufficient, fall back to the userinfo
+   *    endpoint (works for access tokens).
+   */
   async validateTokenAndGetUserInfo(oidcConfig: Configuration, token: string): Promise<OIDCUser> {
     const isJWT = token.split(".").length === 3;
 
     if (isJWT) {
+      let decoded: Record<string, unknown>;
+
       try {
-        const decoded = jwtDecode<{ exp?: number; sub?: string; iss?: string; aud?: string }>(token);
+        decoded = jwtDecode<Record<string, unknown>>(token);
+      } catch {
+        // Not a valid JWT — skip to userinfo endpoint
+        return this.fetchUserInfoOrThrow(oidcConfig, token);
+      }
 
-        if (decoded.exp) {
-          const expiresAt = decoded.exp * 1000;
-          const now = Date.now();
+      // Check expiration
+      if (typeof decoded.exp === "number") {
+        const expiresAt = decoded.exp * 1000;
 
-          if (now >= expiresAt) {
-            throw new TRPCError({
-              code: "UNAUTHORIZED",
-              message: `Token expired at ${new Date(expiresAt).toISOString()}. Current time: ${new Date(now).toISOString()}`,
-            });
-          }
+        if (Date.now() >= expiresAt) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: `Token expired at ${new Date(expiresAt).toISOString()}. Current time: ${new Date(Date.now()).toISOString()}`,
+          });
         }
-      } catch (decodeError) {
-        // If decode fails, continue to try fetching user info
+      }
+
+      // Try to extract user claims directly from the JWT payload (ID tokens)
+      const parsed = OIDCUserSchema.safeParse(decoded);
+
+      if (parsed.success) {
+        return parsed.data;
       }
     }
 
+    // Fall back to userinfo endpoint (access tokens)
+    return this.fetchUserInfoOrThrow(oidcConfig, token);
+  }
+
+  private async fetchUserInfoOrThrow(oidcConfig: Configuration, token: string): Promise<OIDCUser> {
     try {
       return await this.fetchUserInfo(oidcConfig, token);
     } catch (error) {
@@ -171,6 +253,14 @@ export class OIDCClient {
     }
   }
 
+  /**
+   * Extracts token metadata for token-based login (no authorization code flow).
+   *
+   * In token-based login the user provides a single token (typically an access token
+   * obtained via kubectl or another OIDC client). Since we only have one token,
+   * it is stored in both idToken and accessToken session fields. No refresh token
+   * is available in this flow, so sessions expire when the token does.
+   */
   validateTokenAndGetTokenInfo(token: string): {
     idToken: string;
     idTokenExpiresAt: number;
@@ -178,44 +268,23 @@ export class OIDCClient {
     accessTokenExpiresAt: number;
     refreshToken?: string;
   } {
+    const DEFAULT_EXPIRATION_MS = 5 * 60 * 1000; // 5 minutes
+
+    let expiresAt: number;
+
     try {
-      // Try to decode as JWT first
-      const decoded = jwtDecode<{ exp?: number; iat?: number }>(token);
-
-      if (decoded.exp) {
-        // It's a JWT token, extract expiration
-        const expiresAt = decoded.exp * 1000; // Convert to milliseconds
-
-        return {
-          idToken: token,
-          idTokenExpiresAt: expiresAt,
-          accessToken: token, // Use same token for both if it's an ID token
-          accessTokenExpiresAt: expiresAt,
-          refreshToken: undefined, // Refresh tokens not available in token-based login
-        };
-      }
-    } catch (error) {
-      // Not a JWT or failed to decode, treat as opaque access token
-      // Use default expiration (5 minutes from now) as we can't determine actual expiration
-      const defaultExpiration = Date.now() + 5 * 60 * 1000; // 5 minutes
-
-      return {
-        idToken: token,
-        idTokenExpiresAt: defaultExpiration,
-        accessToken: token,
-        accessTokenExpiresAt: defaultExpiration,
-        refreshToken: undefined,
-      };
+      const decoded = jwtDecode<{ exp?: number }>(token);
+      expiresAt = decoded.exp ? decoded.exp * 1000 : Date.now() + DEFAULT_EXPIRATION_MS;
+    } catch {
+      // Opaque token — cannot determine expiration, use default
+      expiresAt = Date.now() + DEFAULT_EXPIRATION_MS;
     }
-
-    // Fallback: if JWT doesn't have exp claim, use default expiration
-    const defaultExpiration = Date.now() + 5 * 60 * 1000; // 5 minutes
 
     return {
       idToken: token,
-      idTokenExpiresAt: defaultExpiration,
+      idTokenExpiresAt: expiresAt,
       accessToken: token,
-      accessTokenExpiresAt: defaultExpiration,
+      accessTokenExpiresAt: expiresAt,
       refreshToken: undefined,
     };
   }
