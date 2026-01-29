@@ -61,9 +61,7 @@ export function TokenLoginDialog({
                   className="font-mono text-sm"
                   disabled={isLoading}
                 />
-                <p className="text-muted-foreground text-sm">
-                  Enter your Keycloak access token or ID token to sign in.
-                </p>
+                <p className="text-muted-foreground text-sm">Enter your OIDC access token or ID token to sign in.</p>
               </div>
               {error && (
                 <Alert variant="destructive" title="Error">

@@ -4,7 +4,7 @@ import {
   LoginCallbackInput,
   LoginCallbackOutput,
   LoginWithTokenOutput,
-  LogoutnOutput,
+  LogoutOutput,
 } from "@my-project/shared";
 import { UseMutationResult } from "@tanstack/react-query";
 import React from "react";
@@ -13,7 +13,7 @@ export type AuthLoginOutput = LoginOutput;
 export type AuthCallbackLoginInput = LoginCallbackInput;
 export type AuthCallbackLoginOutput = LoginCallbackOutput;
 export type AuthLoginWithTokenOutput = LoginWithTokenOutput;
-export type AuthLogoutOutput = LogoutnOutput;
+export type AuthLogoutOutput = LogoutOutput;
 
 export interface LoginMutationInput {
   redirectSearchParam: string | undefined;
