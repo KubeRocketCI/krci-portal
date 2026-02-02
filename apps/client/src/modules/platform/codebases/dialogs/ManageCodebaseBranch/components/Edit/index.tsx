@@ -5,7 +5,7 @@ import { Form } from "./components/Form";
 import { FormActions } from "./components/FormActions";
 import { useDefaultValues } from "./hooks/useDefaultValues";
 import { CodebaseBranchFormProvider } from "../../providers/form/provider";
-import type { ManageCodebaseBranchFormValues } from "../../types";
+import { editCodebaseBranchFormSchema, type EditCodebaseBranchFormValues } from "../../schema";
 import { useCodebaseBranchCRUD } from "@/k8s/api/groups/KRCI/CodebaseBranch";
 import { editCodebaseBranchObject } from "@my-project/shared";
 import { useCurrentDialog } from "../../providers/CurrentDialog/hooks";
@@ -14,14 +14,14 @@ import { showToast } from "@/core/components/Snackbar";
 export const Edit = () => {
   const baseDefaultValues = useDefaultValues();
   const {
-    props: { codebaseBranch, codebaseBranches },
+    props: { codebaseBranch },
     state: { closeDialog },
   } = useCurrentDialog();
 
   const { triggerEditCodebaseBranch } = useCodebaseBranchCRUD();
 
   const handleSubmit = React.useCallback(
-    async (values: ManageCodebaseBranchFormValues) => {
+    async (values: EditCodebaseBranchFormValues) => {
       if (!codebaseBranch) {
         return;
       }
@@ -50,20 +50,10 @@ export const Edit = () => {
     });
   }, []);
 
-  const validationContext = React.useMemo(
-    () => ({
-      // Exclude current branch from existing names check (when editing)
-      existingBranchNames: codebaseBranches
-        .filter((branch) => branch.spec.branchName !== codebaseBranch?.spec.branchName)
-        .map((branch) => branch.spec.branchName),
-    }),
-    [codebaseBranches, codebaseBranch]
-  );
-
   return (
     <CodebaseBranchFormProvider
       defaultValues={baseDefaultValues}
-      validationContext={validationContext}
+      formSchema={editCodebaseBranchFormSchema}
       onSubmit={handleSubmit}
       onSubmitError={handleSubmitError}
     >

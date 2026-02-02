@@ -16,6 +16,7 @@ import { useCurrentDialog } from "../../providers/CurrentDialog/hooks";
 import { Alert } from "@/core/components/ui/alert";
 import type { RequestError } from "@/core/types/global";
 import { getK8sErrorMessage } from "@/k8s/api/utils/getK8sErrorMessage";
+import { createManageCodebaseBranchSchema } from "../../schema";
 
 export const Create = () => {
   const baseDefaultValues = useDefaultValues();
@@ -98,13 +99,15 @@ export const Create = () => {
     [codebaseBranches]
   );
 
+  const formSchema = React.useMemo(() => createManageCodebaseBranchSchema(validationContext), [validationContext]);
+
   // Get request error from mutations - check both create and edit mutations since edit might be called for release branches
   const requestError = (codebaseBranchCreateMutation.error || codebaseBranchEditMutation.error) as RequestError | null;
 
   return (
     <CodebaseBranchFormProvider
       defaultValues={baseDefaultValues}
-      validationContext={validationContext}
+      formSchema={formSchema}
       onSubmit={handleSubmit}
       onSubmitError={handleSubmitError}
     >

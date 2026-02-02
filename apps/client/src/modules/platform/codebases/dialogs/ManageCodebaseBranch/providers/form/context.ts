@@ -3,6 +3,7 @@ import { useAppForm } from "@/core/form-temp";
 import type { FormValidateOrFn } from "@tanstack/react-form";
 import type { ManageCodebaseBranchFormValues } from "../../types";
 import { createManageCodebaseBranchSchema, type ManageCodebaseBranchValidationContext } from "../../schema";
+import type { ZodSchema } from "zod";
 
 // Internal hook to create the form with proper typing
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -58,5 +59,5 @@ export const CodebaseBranchFormContext = React.createContext<CodebaseBranchFormI
 
 // Validation context to share schema with field components
 export const ValidationContext = React.createContext<{
-  formSchema: ReturnType<typeof createManageCodebaseBranchSchema>;
+  formSchema: ZodSchema;
 } | null>(null);

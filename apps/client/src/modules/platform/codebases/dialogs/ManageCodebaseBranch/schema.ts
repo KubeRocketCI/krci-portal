@@ -175,6 +175,18 @@ export const createManageCodebaseBranchSchema = (context: ManageCodebaseBranchVa
   });
 };
 
+// ============================================================================
+// EDIT SCHEMA (pipelines only)
+// ============================================================================
+
+export const editCodebaseBranchFormSchema = z.object({
+  [NAMES.BUILD_PIPELINE]: z.string().min(1, "Select Build pipeline"),
+  [NAMES.REVIEW_PIPELINE]: z.string().min(1, "Select Review pipeline"),
+  [NAMES.SECURITY_PIPELINE]: z.string().default(""),
+});
+
+export type EditCodebaseBranchFormValues = z.infer<typeof editCodebaseBranchFormSchema>;
+
 // Export the schema type factory
 export type ManageCodebaseBranchFormSchema = ReturnType<typeof createManageCodebaseBranchSchema>;
 

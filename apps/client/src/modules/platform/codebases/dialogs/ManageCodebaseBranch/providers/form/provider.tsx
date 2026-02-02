@@ -1,26 +1,29 @@
-import React from "react";
 import { useAppForm } from "@/core/form-temp";
 import type { FormValidateOrFn } from "@tanstack/react-form";
 import { CodebaseBranchFormContext, ValidationContext } from "./context";
 import type { CodebaseBranchFormProviderProps } from "./types";
 import type { ManageCodebaseBranchFormValues } from "../../types";
-import { createManageCodebaseBranchSchema } from "../../schema";
 
 /**
  * Form provider for ManageCodebaseBranch.
  * Creates and manages the TanStack Form instance.
+ *
+ * Generic over T so callers can provide mode-specific validation:
+ * - Create mode: full schema with branch name, release, version validation
+ * - Edit mode: focused schema validating only pipeline fields
  */
-export const CodebaseBranchFormProvider: React.FC<CodebaseBranchFormProviderProps> = ({
+export function CodebaseBranchFormProvider<T extends Record<string, unknown>>({
   defaultValues,
-  validationContext,
+  formSchema,
   onSubmit,
   onSubmitError,
   children,
-}) => {
-  const formSchema = React.useMemo(() => createManageCodebaseBranchSchema(validationContext), [validationContext]);
-
+}: CodebaseBranchFormProviderProps<T>) {
   const form = useAppForm({
-    defaultValues: defaultValues as ManageCodebaseBranchFormValues,
+    // Type assertion: TanStack Form's internal type is always ManageCodebaseBranchFormValues
+    // (derived from the unused useCreateCodebaseBranchForm in context.ts), but the actual
+    // runtime values and validation are governed by the formSchema prop.
+    defaultValues: defaultValues as unknown as ManageCodebaseBranchFormValues,
     validators: {
       // TanStack Form has built-in support for Standard Schema (which Zod implements)
       // Type assertion needed: Zod schemas with .default() create input/output type mismatch
@@ -46,7 +49,8 @@ export const CodebaseBranchFormProvider: React.FC<CodebaseBranchFormProviderProp
       }
 
       try {
-        await onSubmit(value);
+        // Safe cast: Zod safeParse succeeded, so value conforms to T
+        await onSubmit(value as unknown as T);
       } catch (error) {
         onSubmitError(error);
       }
@@ -58,4 +62,4 @@ export const CodebaseBranchFormProvider: React.FC<CodebaseBranchFormProviderProp
       <CodebaseBranchFormContext.Provider value={form}>{children}</CodebaseBranchFormContext.Provider>
     </ValidationContext.Provider>
   );
-};
+}
