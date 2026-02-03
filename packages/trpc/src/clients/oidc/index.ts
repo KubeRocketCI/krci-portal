@@ -99,13 +99,37 @@ export class OIDCClient {
       });
     }
 
+    // Access tokens may be opaque (e.g. Azure AD) and cannot be JWT-decoded.
+    // Use expires_in from the token response, fall back to JWT decode for
+    // providers that return JWT access tokens (e.g. Keycloak).
+    const accessTokenExpiresAt = this.getTokenExpiresAt(accessToken, tokenResponse.expires_in);
+
     return {
       idToken,
       idTokenExpiresAt: getTokenExpirationTime(idToken),
       accessToken,
-      accessTokenExpiresAt: getTokenExpirationTime(accessToken),
+      accessTokenExpiresAt,
       refreshToken,
     };
+  }
+
+  private getTokenExpiresAt(token: string, expiresIn?: number): number {
+    if (token.split(".").length === 3) {
+      try {
+        return getTokenExpirationTime(token);
+      } catch {
+        // Token looks like a JWT but failed to decode, fall through
+      }
+    }
+
+    if (expiresIn) {
+      return Date.now() + expiresIn * 1000;
+    }
+
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Unable to determine access token expiration",
+    });
   }
 
   async getNewTokens(oidcConfig: Configuration, refreshToken: string) {
