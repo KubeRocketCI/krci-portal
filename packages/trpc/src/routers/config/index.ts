@@ -11,21 +11,21 @@ export const configRouter = t.router({
       z.object({
         clusterName: z.string(),
         defaultNamespace: z.string(),
-        sonarHostUrl: z.string(),
-        dependencyTrackUrl: z.string(),
+        sonarWebUrl: z.string(),
+        dependencyTrackWebUrl: z.string(),
       })
     )
     .query(() => {
       const clusterName = process.env.DEFAULT_CLUSTER_NAME || "";
       const defaultNamespace = process.env.DEFAULT_CLUSTER_NAMESPACE || "";
-      const sonarHostUrl = process.env.SONAR_HOST_URL || "";
-      const dependencyTrackUrl = process.env.DEPENDENCY_TRACK_URL || "";
+      const sonarWebUrl = process.env.SONAR_WEB_URL || process.env.SONAR_HOST_URL || "";
+      const dependencyTrackWebUrl = process.env.DEPENDENCY_TRACK_WEB_URL || process.env.DEPENDENCY_TRACK_URL || "";
 
       return {
         clusterName,
         defaultNamespace,
-        sonarHostUrl,
-        dependencyTrackUrl,
+        sonarWebUrl,
+        dependencyTrackWebUrl,
       };
     }),
 });

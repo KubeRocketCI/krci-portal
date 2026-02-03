@@ -34,8 +34,8 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
   const setClusterName = useClusterStore((state) => state.setClusterName);
   const setDefaultNamespace = useClusterStore((state) => state.setDefaultNamespace);
   const setAllowedNamespaces = useClusterStore((state) => state.setAllowedNamespaces);
-  const setSonarHostUrl = useClusterStore((state) => state.setSonarHostUrl);
-  const setDependencyTrackUrl = useClusterStore((state) => state.setDependencyTrackUrl);
+  const setSonarWebUrl = useClusterStore((state) => state.setSonarWebUrl);
+  const setDependencyTrackWebUrl = useClusterStore((state) => state.setDependencyTrackWebUrl);
 
   // Fetch server configuration at startup
   const configQuery = useQuery({
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
   // Initialize cluster store with server config when available
   useEffect(() => {
     if (configQuery.data) {
-      const { clusterName: serverClusterName, defaultNamespace, sonarHostUrl, dependencyTrackUrl } = configQuery.data;
+      const { clusterName: serverClusterName, defaultNamespace, sonarWebUrl, dependencyTrackWebUrl } = configQuery.data;
 
       // Only initialize if not already set
       if (!clusterName) {
@@ -64,8 +64,8 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
       }
 
       // Always update security tool URLs from server config
-      setSonarHostUrl(sonarHostUrl);
-      setDependencyTrackUrl(dependencyTrackUrl);
+      setSonarWebUrl(sonarWebUrl);
+      setDependencyTrackWebUrl(dependencyTrackWebUrl);
     }
   }, [
     configQuery.data,
@@ -73,8 +73,8 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
     setClusterName,
     setDefaultNamespace,
     setAllowedNamespaces,
-    setSonarHostUrl,
-    setDependencyTrackUrl,
+    setSonarWebUrl,
+    setDependencyTrackWebUrl,
   ]);
 
   const meQuery = useQuery({

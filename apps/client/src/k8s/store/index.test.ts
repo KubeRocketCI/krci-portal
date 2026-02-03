@@ -29,8 +29,8 @@ describe("useClusterStore", () => {
       clusterName: MOCK_DEFAULT_CLUSTER_NAME,
       defaultNamespace: MOCK_DEFAULT_NAMESPACE,
       allowedNamespaces: [MOCK_DEFAULT_NAMESPACE],
-      sonarHostUrl: "",
-      dependencyTrackUrl: "",
+      sonarWebUrl: "",
+      dependencyTrackWebUrl: "",
     });
   });
 
@@ -53,14 +53,14 @@ describe("useClusterStore", () => {
       expect(store.allowedNamespaces.length).toBeGreaterThan(0);
     });
 
-    it("should initialize sonarHostUrl as empty string", () => {
-      const sonarHostUrl = useClusterStore.getState().sonarHostUrl;
-      expect(sonarHostUrl).toBe("");
+    it("should initialize sonarWebUrl as empty string", () => {
+      const sonarWebUrl = useClusterStore.getState().sonarWebUrl;
+      expect(sonarWebUrl).toBe("");
     });
 
-    it("should initialize dependencyTrackUrl as empty string", () => {
-      const dependencyTrackUrl = useClusterStore.getState().dependencyTrackUrl;
-      expect(dependencyTrackUrl).toBe("");
+    it("should initialize dependencyTrackWebUrl as empty string", () => {
+      const dependencyTrackWebUrl = useClusterStore.getState().dependencyTrackWebUrl;
+      expect(dependencyTrackWebUrl).toBe("");
     });
   });
 
@@ -295,61 +295,61 @@ describe("useClusterStore", () => {
     });
   });
 
-  describe("setSonarHostUrl", () => {
-    it("should update sonarHostUrl", () => {
+  describe("setSonarWebUrl", () => {
+    it("should update sonarWebUrl", () => {
       const newUrl = "https://sonar.example.com";
 
-      useClusterStore.getState().setSonarHostUrl(newUrl);
+      useClusterStore.getState().setSonarWebUrl(newUrl);
 
       const state = useClusterStore.getState();
-      expect(state.sonarHostUrl).toBe(newUrl);
+      expect(state.sonarWebUrl).toBe(newUrl);
     });
 
-    it("should update sonarHostUrl multiple times", () => {
+    it("should update sonarWebUrl multiple times", () => {
       const url1 = "https://sonar1.example.com";
       const url2 = "https://sonar2.example.com";
 
-      useClusterStore.getState().setSonarHostUrl(url1);
-      expect(useClusterStore.getState().sonarHostUrl).toBe(url1);
+      useClusterStore.getState().setSonarWebUrl(url1);
+      expect(useClusterStore.getState().sonarWebUrl).toBe(url1);
 
-      useClusterStore.getState().setSonarHostUrl(url2);
-      expect(useClusterStore.getState().sonarHostUrl).toBe(url2);
+      useClusterStore.getState().setSonarWebUrl(url2);
+      expect(useClusterStore.getState().sonarWebUrl).toBe(url2);
     });
 
     it("should handle empty string", () => {
-      useClusterStore.getState().setSonarHostUrl("");
+      useClusterStore.getState().setSonarWebUrl("");
 
       const state = useClusterStore.getState();
-      expect(state.sonarHostUrl).toBe("");
+      expect(state.sonarWebUrl).toBe("");
     });
   });
 
-  describe("setDependencyTrackUrl", () => {
-    it("should update dependencyTrackUrl", () => {
+  describe("setDependencyTrackWebUrl", () => {
+    it("should update dependencyTrackWebUrl", () => {
       const newUrl = "https://dependency-track.example.com";
 
-      useClusterStore.getState().setDependencyTrackUrl(newUrl);
+      useClusterStore.getState().setDependencyTrackWebUrl(newUrl);
 
       const state = useClusterStore.getState();
-      expect(state.dependencyTrackUrl).toBe(newUrl);
+      expect(state.dependencyTrackWebUrl).toBe(newUrl);
     });
 
-    it("should update dependencyTrackUrl multiple times", () => {
+    it("should update dependencyTrackWebUrl multiple times", () => {
       const url1 = "https://dt1.example.com";
       const url2 = "https://dt2.example.com";
 
-      useClusterStore.getState().setDependencyTrackUrl(url1);
-      expect(useClusterStore.getState().dependencyTrackUrl).toBe(url1);
+      useClusterStore.getState().setDependencyTrackWebUrl(url1);
+      expect(useClusterStore.getState().dependencyTrackWebUrl).toBe(url1);
 
-      useClusterStore.getState().setDependencyTrackUrl(url2);
-      expect(useClusterStore.getState().dependencyTrackUrl).toBe(url2);
+      useClusterStore.getState().setDependencyTrackWebUrl(url2);
+      expect(useClusterStore.getState().dependencyTrackWebUrl).toBe(url2);
     });
 
     it("should handle empty string", () => {
-      useClusterStore.getState().setDependencyTrackUrl("");
+      useClusterStore.getState().setDependencyTrackWebUrl("");
 
       const state = useClusterStore.getState();
-      expect(state.dependencyTrackUrl).toBe("");
+      expect(state.dependencyTrackWebUrl).toBe("");
     });
   });
 
@@ -455,8 +455,8 @@ describe("useClusterStore", () => {
     });
 
     it("should maintain separate URL settings across cluster switches", () => {
-      useClusterStore.getState().setSonarHostUrl("https://sonar.example.com");
-      useClusterStore.getState().setDependencyTrackUrl("https://dt.example.com");
+      useClusterStore.getState().setSonarWebUrl("https://sonar.example.com");
+      useClusterStore.getState().setDependencyTrackWebUrl("https://dt.example.com");
 
       const clusterSettings = {
         newCluster: {
@@ -469,8 +469,8 @@ describe("useClusterStore", () => {
       useClusterStore.getState().setClusterName("newCluster");
 
       // URLs should persist across cluster switches (they're not cluster-specific)
-      expect(useClusterStore.getState().sonarHostUrl).toBe("https://sonar.example.com");
-      expect(useClusterStore.getState().dependencyTrackUrl).toBe("https://dt.example.com");
+      expect(useClusterStore.getState().sonarWebUrl).toBe("https://sonar.example.com");
+      expect(useClusterStore.getState().dependencyTrackWebUrl).toBe("https://dt.example.com");
     });
   });
 });

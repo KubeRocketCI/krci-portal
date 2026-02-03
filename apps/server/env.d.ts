@@ -19,8 +19,13 @@ declare global {
 
       TEKTON_RESULTS_URL: string;
 
+      SONAR_HOST_URL: string;
+      SONAR_TOKEN: string;
+      SONAR_WEB_URL?: string;
+
       DEPENDENCY_TRACK_URL: string;
       DEPENDENCY_TRACK_API_KEY: string;
+      DEPENDENCY_TRACK_WEB_URL?: string;
 
       GITFUSION_URL: string;
 
