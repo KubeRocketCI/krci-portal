@@ -15,7 +15,7 @@ export function useDependencyTrackUrl(): {
   getComponentUrl: (componentUuid: string) => string;
   getVulnerabilityUrl: (vulnerabilityId: string) => string;
 } {
-  const baseUrl = useClusterStore((state) => state.dependencyTrackUrl);
+  const baseUrl = useClusterStore((state) => state.dependencyTrackWebUrl);
 
   function getProjectUrl(projectUuid: string): string {
     if (!baseUrl) return "#";

@@ -24,14 +24,24 @@ configEnv:
   DEFAULT_CLUSTER_NAME: core
   DEFAULT_CLUSTER_NAMESPACE: krci
   DEPLOY_CLIENT_DIST_DIR: "/app/static"
+  # SONAR_HOST_URL is used by the backend API client to communicate with SonarQube.
+  # SONAR_WEB_URL is an optional override for browser-facing links. When the internal API
+  # endpoint differs from the public URL (e.g. internal DNS vs external ingress), set
+  # SONAR_WEB_URL to the public URL. If not set, SONAR_HOST_URL is used for both.
   SONAR_HOST_URL: https://sonar.example.com/
+  # SONAR_WEB_URL: https://sonar-public.example.com/
   SERVER_PORT: 3000
   OIDC_ISSUER_URL: https://keycloak.example.com/realms/shared
   OIDC_CLIENT_ID: portal
   OIDC_SCOPE: openid profile email
   OIDC_CODE_CHALLENGE_METHOD: S256
   TEKTON_RESULTS_URL: https://tekton-results.example.com
+  # DEPENDENCY_TRACK_URL is used by the backend API client to communicate with Dependency Track.
+  # DEPENDENCY_TRACK_WEB_URL is an optional override for browser-facing links. When the internal
+  # API endpoint differs from the public URL, set DEPENDENCY_TRACK_WEB_URL to the public URL.
+  # If not set, DEPENDENCY_TRACK_URL is used for both.
   DEPENDENCY_TRACK_URL: https://deptrack.example.com
+  # DEPENDENCY_TRACK_WEB_URL: https://deptrack-public.example.com
   GITFUSION_URL: http://gitfusion.krci:8080
 
 # -- Extends envFrom for the Deployment definition.

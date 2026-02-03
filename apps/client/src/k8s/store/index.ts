@@ -16,10 +16,10 @@ interface ClusterStore {
   setDefaultNamespace: (newDefaultNamespace: string) => void;
   allowedNamespaces: string[];
   setAllowedNamespaces: (newAllowedNamespaces: string[]) => void;
-  sonarHostUrl: string;
-  setSonarHostUrl: (newSonarHostUrl: string) => void;
-  dependencyTrackUrl: string;
-  setDependencyTrackUrl: (newDependencyTrackUrl: string) => void;
+  sonarWebUrl: string;
+  setSonarWebUrl: (newSonarWebUrl: string) => void;
+  dependencyTrackWebUrl: string;
+  setDependencyTrackWebUrl: (newDependencyTrackWebUrl: string) => void;
 }
 
 const LOCAL_STORAGE_KEY = "cluster_settings";
@@ -122,14 +122,14 @@ export const useClusterStore = create<ClusterStore>((set, get) => {
       set(stateUpdate);
     },
 
-    sonarHostUrl: "",
-    setSonarHostUrl: (newSonarHostUrl) => {
-      set({ sonarHostUrl: newSonarHostUrl });
+    sonarWebUrl: "",
+    setSonarWebUrl: (newSonarWebUrl) => {
+      set({ sonarWebUrl: newSonarWebUrl });
     },
 
-    dependencyTrackUrl: "",
-    setDependencyTrackUrl: (newDependencyTrackUrl) => {
-      set({ dependencyTrackUrl: newDependencyTrackUrl });
+    dependencyTrackWebUrl: "",
+    setDependencyTrackWebUrl: (newDependencyTrackWebUrl) => {
+      set({ dependencyTrackWebUrl: newDependencyTrackWebUrl });
     },
   };
 });

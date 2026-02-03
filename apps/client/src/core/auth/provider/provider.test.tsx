@@ -14,8 +14,8 @@ const {
   mockSetClusterName,
   mockSetDefaultNamespace,
   mockSetAllowedNamespaces,
-  mockSetSonarHostUrl,
-  mockSetDependencyTrackUrl,
+  mockSetSonarWebUrl,
+  mockSetDependencyTrackWebUrl,
   mockClusterStore,
 } = vi.hoisted(() => {
   const mockNavigate = vi.fn();
@@ -25,15 +25,15 @@ const {
   const mockSetClusterName = vi.fn();
   const mockSetDefaultNamespace = vi.fn();
   const mockSetAllowedNamespaces = vi.fn();
-  const mockSetSonarHostUrl = vi.fn();
-  const mockSetDependencyTrackUrl = vi.fn();
+  const mockSetSonarWebUrl = vi.fn();
+  const mockSetDependencyTrackWebUrl = vi.fn();
   const mockClusterStore = {
     clusterName: null as string | null,
     setClusterName: mockSetClusterName,
     setDefaultNamespace: mockSetDefaultNamespace,
     setAllowedNamespaces: mockSetAllowedNamespaces,
-    setSonarHostUrl: mockSetSonarHostUrl,
-    setDependencyTrackUrl: mockSetDependencyTrackUrl,
+    setSonarWebUrl: mockSetSonarWebUrl,
+    setDependencyTrackWebUrl: mockSetDependencyTrackWebUrl,
   };
   const mockTrpcClient = {
     config: {
@@ -66,8 +66,8 @@ const {
     mockSetClusterName,
     mockSetDefaultNamespace,
     mockSetAllowedNamespaces,
-    mockSetSonarHostUrl,
-    mockSetDependencyTrackUrl,
+    mockSetSonarWebUrl,
+    mockSetDependencyTrackWebUrl,
     mockClusterStore,
   };
 });
@@ -200,8 +200,8 @@ describe("AuthProvider", () => {
       mockTrpcClient.config.get.query.mockResolvedValue({
         clusterName: "test-cluster",
         defaultNamespace: "default",
-        sonarHostUrl: "https://sonar.example.com",
-        dependencyTrackUrl: "https://dependency-track.example.com",
+        sonarWebUrl: "https://sonar.example.com",
+        dependencyTrackWebUrl: "https://dependency-track.example.com",
       });
       mockTrpcClient.auth.me.query.mockImplementation(() => new Promise(() => {})); // Never resolves
 
@@ -222,8 +222,8 @@ describe("AuthProvider", () => {
       const mockConfig = {
         clusterName: "test-cluster",
         defaultNamespace: "default",
-        sonarHostUrl: "https://sonar.example.com",
-        dependencyTrackUrl: "https://dependency-track.example.com",
+        sonarWebUrl: "https://sonar.example.com",
+        dependencyTrackWebUrl: "https://dependency-track.example.com",
       };
 
       mockTrpcClient.config.get.query.mockResolvedValue(mockConfig);
@@ -239,8 +239,8 @@ describe("AuthProvider", () => {
         expect(mockSetClusterName).toHaveBeenCalledWith("test-cluster");
         expect(mockSetDefaultNamespace).toHaveBeenCalledWith("default");
         expect(mockSetAllowedNamespaces).toHaveBeenCalledWith(["default"]);
-        expect(mockSetSonarHostUrl).toHaveBeenCalledWith("https://sonar.example.com");
-        expect(mockSetDependencyTrackUrl).toHaveBeenCalledWith("https://dependency-track.example.com");
+        expect(mockSetSonarWebUrl).toHaveBeenCalledWith("https://sonar.example.com");
+        expect(mockSetDependencyTrackWebUrl).toHaveBeenCalledWith("https://dependency-track.example.com");
       });
     });
 
@@ -250,8 +250,8 @@ describe("AuthProvider", () => {
       const mockConfig = {
         clusterName: "test-cluster",
         defaultNamespace: "default",
-        sonarHostUrl: "https://sonar.example.com",
-        dependencyTrackUrl: "https://dependency-track.example.com",
+        sonarWebUrl: "https://sonar.example.com",
+        dependencyTrackWebUrl: "https://dependency-track.example.com",
       };
 
       mockTrpcClient.config.get.query.mockResolvedValue(mockConfig);
@@ -280,8 +280,8 @@ describe("AuthProvider", () => {
       const mockConfig = {
         clusterName: "test-cluster",
         defaultNamespace: "default",
-        sonarHostUrl: "https://sonar.example.com",
-        dependencyTrackUrl: "https://dependency-track.example.com",
+        sonarWebUrl: "https://sonar.example.com",
+        dependencyTrackWebUrl: "https://dependency-track.example.com",
       };
 
       mockTrpcClient.config.get.query.mockResolvedValue(mockConfig);
@@ -361,8 +361,8 @@ describe("AuthProvider", () => {
       mockTrpcClient.config.get.query.mockResolvedValue({
         clusterName: "test-cluster",
         defaultNamespace: "default",
-        sonarHostUrl: "https://sonar.example.com",
-        dependencyTrackUrl: "https://dependency-track.example.com",
+        sonarWebUrl: "https://sonar.example.com",
+        dependencyTrackWebUrl: "https://dependency-track.example.com",
       });
       mockTrpcClient.auth.me.query.mockResolvedValue(mockUser);
 
@@ -382,8 +382,8 @@ describe("AuthProvider", () => {
       mockTrpcClient.config.get.query.mockResolvedValue({
         clusterName: "test-cluster",
         defaultNamespace: "default",
-        sonarHostUrl: "https://sonar.example.com",
-        dependencyTrackUrl: "https://dependency-track.example.com",
+        sonarWebUrl: "https://sonar.example.com",
+        dependencyTrackWebUrl: "https://dependency-track.example.com",
       });
       mockTrpcClient.auth.me.query.mockResolvedValue(null);
 
@@ -405,8 +405,8 @@ describe("AuthProvider", () => {
       mockTrpcClient.config.get.query.mockResolvedValue({
         clusterName: "test-cluster",
         defaultNamespace: "default",
-        sonarHostUrl: "https://sonar.example.com",
-        dependencyTrackUrl: "https://dependency-track.example.com",
+        sonarWebUrl: "https://sonar.example.com",
+        dependencyTrackWebUrl: "https://dependency-track.example.com",
       });
 
       renderWithProviders(
@@ -428,8 +428,8 @@ describe("AuthProvider", () => {
       mockTrpcClient.config.get.query.mockResolvedValue({
         clusterName: "test-cluster",
         defaultNamespace: "default",
-        sonarHostUrl: "https://sonar.example.com",
-        dependencyTrackUrl: "https://dependency-track.example.com",
+        sonarWebUrl: "https://sonar.example.com",
+        dependencyTrackWebUrl: "https://dependency-track.example.com",
       });
       mockTrpcClient.auth.me.query.mockResolvedValue(null);
       mockTrpcClient.auth.login.mutate.mockResolvedValue({ authUrl: mockAuthUrl });
@@ -457,8 +457,8 @@ describe("AuthProvider", () => {
       mockTrpcClient.config.get.query.mockResolvedValue({
         clusterName: "test-cluster",
         defaultNamespace: "default",
-        sonarHostUrl: "https://sonar.example.com",
-        dependencyTrackUrl: "https://dependency-track.example.com",
+        sonarWebUrl: "https://sonar.example.com",
+        dependencyTrackWebUrl: "https://dependency-track.example.com",
       });
       mockTrpcClient.auth.me.query.mockResolvedValue(null);
       mockTrpcClient.auth.login.mutate.mockRejectedValue(new Error("Login failed"));
@@ -493,8 +493,8 @@ describe("AuthProvider", () => {
       mockTrpcClient.config.get.query.mockResolvedValue({
         clusterName: "test-cluster",
         defaultNamespace: "default",
-        sonarHostUrl: "https://sonar.example.com",
-        dependencyTrackUrl: "https://dependency-track.example.com",
+        sonarWebUrl: "https://sonar.example.com",
+        dependencyTrackWebUrl: "https://dependency-track.example.com",
       });
       mockTrpcClient.auth.me.query.mockResolvedValue(null);
       mockTrpcClient.auth.loginCallback.mutate.mockResolvedValue({
@@ -522,8 +522,8 @@ describe("AuthProvider", () => {
       mockTrpcClient.config.get.query.mockResolvedValue({
         clusterName: "test-cluster",
         defaultNamespace: "default",
-        sonarHostUrl: "https://sonar.example.com",
-        dependencyTrackUrl: "https://dependency-track.example.com",
+        sonarWebUrl: "https://sonar.example.com",
+        dependencyTrackWebUrl: "https://dependency-track.example.com",
       });
       mockTrpcClient.auth.me.query.mockResolvedValue(null);
       mockTrpcClient.auth.loginCallback.mutate.mockRejectedValue(new Error("Callback failed"));
@@ -555,8 +555,8 @@ describe("AuthProvider", () => {
       mockTrpcClient.config.get.query.mockResolvedValue({
         clusterName: "test-cluster",
         defaultNamespace: "default",
-        sonarHostUrl: "https://sonar.example.com",
-        dependencyTrackUrl: "https://dependency-track.example.com",
+        sonarWebUrl: "https://sonar.example.com",
+        dependencyTrackWebUrl: "https://dependency-track.example.com",
       });
       mockTrpcClient.auth.me.query.mockResolvedValue(null);
       mockTrpcClient.auth.loginWithToken.mutate.mockResolvedValue({
@@ -589,8 +589,8 @@ describe("AuthProvider", () => {
       mockTrpcClient.config.get.query.mockResolvedValue({
         clusterName: "test-cluster",
         defaultNamespace: "default",
-        sonarHostUrl: "https://sonar.example.com",
-        dependencyTrackUrl: "https://dependency-track.example.com",
+        sonarWebUrl: "https://sonar.example.com",
+        dependencyTrackWebUrl: "https://dependency-track.example.com",
       });
       mockTrpcClient.auth.me.query.mockResolvedValue(mockUser);
       mockTrpcClient.auth.logout.mutate.mockResolvedValue({ success: true });
@@ -629,8 +629,8 @@ describe("AuthProvider", () => {
       mockTrpcClient.config.get.query.mockResolvedValue({
         clusterName: "test-cluster",
         defaultNamespace: "default",
-        sonarHostUrl: "https://sonar.example.com",
-        dependencyTrackUrl: "https://dependency-track.example.com",
+        sonarWebUrl: "https://sonar.example.com",
+        dependencyTrackWebUrl: "https://dependency-track.example.com",
       });
       mockTrpcClient.auth.me.query.mockResolvedValue(mockUser);
       mockTrpcClient.auth.logout.mutate.mockRejectedValue(new Error("Logout failed"));
@@ -661,8 +661,8 @@ describe("AuthProvider", () => {
       mockTrpcClient.config.get.query.mockResolvedValue({
         clusterName: "test-cluster",
         defaultNamespace: "default",
-        sonarHostUrl: "https://sonar.example.com",
-        dependencyTrackUrl: "https://dependency-track.example.com",
+        sonarWebUrl: "https://sonar.example.com",
+        dependencyTrackWebUrl: "https://dependency-track.example.com",
       });
       mockTrpcClient.auth.me.query.mockResolvedValue(null);
 
@@ -683,8 +683,8 @@ describe("AuthProvider", () => {
       mockTrpcClient.config.get.query.mockResolvedValue({
         clusterName: "test-cluster",
         defaultNamespace: "default",
-        sonarHostUrl: "https://sonar.example.com",
-        dependencyTrackUrl: "https://dependency-track.example.com",
+        sonarWebUrl: "https://sonar.example.com",
+        dependencyTrackWebUrl: "https://dependency-track.example.com",
       });
       mockTrpcClient.auth.me.query.mockResolvedValue(null);
 
@@ -707,8 +707,8 @@ describe("AuthProvider", () => {
       mockTrpcClient.config.get.query.mockResolvedValue({
         clusterName: "test-cluster",
         defaultNamespace: "default",
-        sonarHostUrl: "https://sonar.example.com",
-        dependencyTrackUrl: "https://dependency-track.example.com",
+        sonarWebUrl: "https://sonar.example.com",
+        dependencyTrackWebUrl: "https://dependency-track.example.com",
       });
       mockTrpcClient.auth.me.query.mockResolvedValue(null);
 

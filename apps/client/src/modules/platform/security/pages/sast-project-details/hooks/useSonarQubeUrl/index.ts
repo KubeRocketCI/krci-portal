@@ -15,7 +15,7 @@ export function useSonarQubeUrl(): {
   getProjectUrl: (projectKey: string) => string;
   getIssueUrl: (projectKey: string, issueKey: string) => string;
 } {
-  const baseUrl = useClusterStore((state) => state.sonarHostUrl);
+  const baseUrl = useClusterStore((state) => state.sonarWebUrl);
 
   function getProjectUrl(projectKey: string): string {
     if (!baseUrl) return "#";
