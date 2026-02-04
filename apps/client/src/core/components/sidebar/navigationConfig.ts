@@ -9,6 +9,13 @@ import { PATH_TRIVY_VULNERABILITIES_FULL } from "@/modules/platform/security/pag
 import { PATH_TRIVY_OVERVIEW_FULL } from "@/modules/platform/security/pages/trivy-overview/route";
 import { PATH_TRIVY_CONFIG_AUDITS_FULL } from "@/modules/platform/security/pages/trivy-config-audits/route";
 import { PATH_TRIVY_COMPLIANCE_FULL } from "@/modules/platform/security/pages/trivy-compliance/route";
+import { PATH_TRIVY_EXPOSED_SECRETS_FULL } from "@/modules/platform/security/pages/trivy-exposed-secrets/route";
+import { PATH_TRIVY_RBAC_ASSESSMENTS_FULL } from "@/modules/platform/security/pages/trivy-rbac-assessments/route";
+import { PATH_TRIVY_CLUSTER_RBAC_ASSESSMENTS_FULL } from "@/modules/platform/security/pages/trivy-cluster-rbac-assessments/route";
+import { PATH_TRIVY_INFRA_ASSESSMENTS_FULL } from "@/modules/platform/security/pages/trivy-infra-assessments/route";
+import { PATH_TRIVY_CLUSTER_INFRA_ASSESSMENTS_FULL } from "@/modules/platform/security/pages/trivy-cluster-infra-assessments/route";
+import { PATH_TRIVY_CLUSTER_CONFIG_AUDITS_FULL } from "@/modules/platform/security/pages/trivy-cluster-config-audits/route";
+import { PATH_TRIVY_CLUSTER_VULNERABILITIES_FULL } from "@/modules/platform/security/pages/trivy-cluster-vulnerabilities/route";
 import { PATH_COMPONENTS_FULL } from "@/modules/platform/codebases/pages/list/route";
 import { PATH_CDPIPELINES_FULL } from "@/modules/platform/cdpipelines/pages/list/route";
 import { PATH_PIPELINERUNS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-list/route";
@@ -127,7 +134,7 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
           title: "SCA",
           children: [
             {
-              title: "Portfolio",
+              title: "Overview",
               route: {
                 to: PATH_SCA_FULL,
                 params: clusterDefaultParams,
@@ -171,6 +178,13 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
                 params: clusterDefaultParams,
               },
             },
+            {
+              title: "Exposed Secrets",
+              route: {
+                to: PATH_TRIVY_EXPOSED_SECRETS_FULL,
+                params: clusterDefaultParams,
+              },
+            },
           ],
         },
         {
@@ -183,6 +197,20 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
                 params: clusterDefaultParams,
               },
             },
+            {
+              title: "RBAC Assessments",
+              route: {
+                to: PATH_TRIVY_RBAC_ASSESSMENTS_FULL,
+                params: clusterDefaultParams,
+              },
+            },
+            {
+              title: "Infrastructure Assessments",
+              route: {
+                to: PATH_TRIVY_INFRA_ASSESSMENTS_FULL,
+                params: clusterDefaultParams,
+              },
+            },
           ],
         },
         {
@@ -192,6 +220,34 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
               title: "Compliance",
               route: {
                 to: PATH_TRIVY_COMPLIANCE_FULL,
+                params: clusterDefaultParams,
+              },
+            },
+            {
+              title: "Configuration Audits",
+              route: {
+                to: PATH_TRIVY_CLUSTER_CONFIG_AUDITS_FULL,
+                params: clusterDefaultParams,
+              },
+            },
+            {
+              title: "RBAC Assessments",
+              route: {
+                to: PATH_TRIVY_CLUSTER_RBAC_ASSESSMENTS_FULL,
+                params: clusterDefaultParams,
+              },
+            },
+            {
+              title: "Infrastructure Assessments",
+              route: {
+                to: PATH_TRIVY_CLUSTER_INFRA_ASSESSMENTS_FULL,
+                params: clusterDefaultParams,
+              },
+            },
+            {
+              title: "Vulnerability Reports",
+              route: {
+                to: PATH_TRIVY_CLUSTER_VULNERABILITIES_FULL,
                 params: clusterDefaultParams,
               },
             },

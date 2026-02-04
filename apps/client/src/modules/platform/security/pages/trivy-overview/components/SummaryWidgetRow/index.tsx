@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader } from "@/core/components/ui/card";
 import { Skeleton } from "@/core/components/ui/skeleton";
-import { AlertTriangle, Shield, Image, Wrench } from "lucide-react";
+import { AlertTriangle, Shield, Box, Wrench } from "lucide-react";
 import type { TrivyOverviewData } from "../../types";
 import { SEVERITY_COLORS, STATUS_COLORS } from "@/modules/platform/security/constants/severity";
 
@@ -80,7 +80,7 @@ export function SummaryWidgetRow({ data, isLoading }: SummaryWidgetRowProps) {
       <WidgetCard
         title="Images Scanned"
         value={imagesScanned}
-        icon={<Image className="size-5" style={{ color: STATUS_COLORS.INFO }} />}
+        icon={<Box className="size-5" style={{ color: STATUS_COLORS.INFO }} />}
         color={STATUS_COLORS.INFO}
         isLoading={isLoading}
       />

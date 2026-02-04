@@ -1,0 +1,67 @@
+import { PageWrapper } from "@/core/components/PageWrapper";
+import { routeTrivyInfraAssessmentDetails } from "./route";
+import { PATH_TRIVY_INFRA_ASSESSMENTS_FULL } from "../trivy-infra-assessments/route";
+import { InfraHeader } from "./components/InfraHeader";
+import { ChecksList } from "../trivy-config-audit-details/components/ChecksList";
+import { useInfraAssessmentReportWatchItem } from "@/k8s/api/groups/Trivy/InfraAssessmentReport";
+
+export default function TrivyInfraAssessmentDetailsPageContent() {
+  const { namespace, name, clusterName } = routeTrivyInfraAssessmentDetails.useParams();
+
+  const {
+    data: report,
+    isLoading,
+    query,
+  } = useInfraAssessmentReportWatchItem({
+    namespace,
+    name,
+  });
+
+  if (query.error) {
+    return (
+      <PageWrapper
+        breadcrumbs={[
+          { label: "Security" },
+          { label: "Namespace Security" },
+          {
+            label: "Infrastructure Assessments",
+            route: {
+              to: PATH_TRIVY_INFRA_ASSESSMENTS_FULL,
+              params: { clusterName },
+            },
+          },
+          { label: name },
+        ]}
+      >
+        <div className="flex items-center justify-center p-8">
+          <div className="text-center">
+            <h2 className="text-lg font-semibold text-red-600">Error Loading Report</h2>
+            <p className="text-muted-foreground mt-2">{query.error.message}</p>
+          </div>
+        </div>
+      </PageWrapper>
+    );
+  }
+
+  return (
+    <PageWrapper
+      breadcrumbs={[
+        { label: "Security" },
+        { label: "Namespace Security" },
+        {
+          label: "Infrastructure Assessments",
+          route: {
+            to: PATH_TRIVY_INFRA_ASSESSMENTS_FULL,
+            params: { clusterName },
+          },
+        },
+        { label: "Assessment Details" },
+      ]}
+    >
+      <div className="space-y-4">
+        <InfraHeader report={report} isLoading={isLoading} />
+        <ChecksList report={report} isLoading={isLoading} />
+      </div>
+    </PageWrapper>
+  );
+}
