@@ -13,8 +13,41 @@ import {
 } from "openid-client";
 import { TRPCError } from "@trpc/server";
 import { getTokenExpirationTime } from "../../utils/getTokenExpirationTime/index.js";
-import { type OIDCUser, OIDCUserSchema } from "@my-project/shared";
+import { type OIDCUser, OIDCUserSchema, tryParseJsonArray } from "@my-project/shared";
 import { jwtDecode } from "jwt-decode";
+
+/**
+ * Normalize the groups claim from OIDC providers.
+ * Some providers (e.g., AzureAD) may return groups as:
+ * - A JSON-encoded string: '["group1","group2"]'
+ * - An array with a single JSON-encoded string element: ['["group1","group2"]']
+ * This function ensures groups is always a proper string array.
+ */
+function normalizeGroups(groups: unknown): string[] | undefined {
+  if (!groups) return undefined;
+
+  if (Array.isArray(groups)) {
+    // Check if the array contains a single JSON-encoded array string
+    if (groups.length === 1 && typeof groups[0] === "string") {
+      const parsed = tryParseJsonArray(groups[0]);
+      if (parsed) return parsed;
+    }
+    return groups.map(String);
+  }
+
+  if (typeof groups === "string") {
+    return tryParseJsonArray(groups) ?? [groups];
+  }
+
+  return undefined;
+}
+
+function normalizeUserGroups(user: OIDCUser): OIDCUser {
+  return {
+    ...user,
+    groups: normalizeGroups(user.groups),
+  };
+}
 
 export interface OIDCConfig {
   issuerURL: string;
@@ -173,7 +206,8 @@ export class OIDCClient {
     }
 
     try {
-      return JSON.parse(responseText) as OIDCUser;
+      const user = JSON.parse(responseText) as OIDCUser;
+      return normalizeUserGroups(user);
     } catch {
       throw new Error("Invalid response from userinfo endpoint");
     }
@@ -257,7 +291,7 @@ export class OIDCClient {
       const parsed = OIDCUserSchema.safeParse(decoded);
 
       if (parsed.success) {
-        return parsed.data;
+        return normalizeUserGroups(parsed.data);
       }
     }
 
