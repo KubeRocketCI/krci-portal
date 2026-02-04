@@ -6,3 +6,4 @@ export * from "./types.js";
 export * from "./truncateName.js";
 export * from "./versioning.js";
 export * from "./stripLeadingSlash.js";
+export * from "./tryParseJsonArray.js";
