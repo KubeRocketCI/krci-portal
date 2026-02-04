@@ -36,6 +36,7 @@ A Helm chart for Kubernetes
 | configEnv.OIDC_CODE_CHALLENGE_METHOD | string | `"S256"` |  |
 | configEnv.OIDC_ISSUER_URL | string | `"https://keycloak.example.com/realms/shared"` |  |
 | configEnv.OIDC_SCOPE | string | `"openid profile email"` |  |
+| configEnv.PORTAL_URL | string | `"https://portal.example.com"` |  |
 | configEnv.SERVER_PORT | int | `3000` |  |
 | configEnv.SONAR_HOST_URL | string | `"https://sonar.example.com/"` |  |
 | configEnv.TEKTON_RESULTS_URL | string | `"https://tekton-results.example.com"` |  |

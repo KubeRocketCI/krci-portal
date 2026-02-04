@@ -31,6 +31,7 @@ export class ProductionFastifyServer {
       "OIDC_CLIENT_SECRET",
       "OIDC_SCOPE",
       "OIDC_CODE_CHALLENGE_METHOD",
+      "PORTAL_URL",
       "TEKTON_RESULTS_URL",
     ]);
 
@@ -127,6 +128,7 @@ export class ProductionFastifyServer {
                 scope: process.env.OIDC_SCOPE!,
                 codeChallengeMethod: process.env.OIDC_CODE_CHALLENGE_METHOD!,
               },
+              portalUrl: process.env.PORTAL_URL!,
             });
           },
         } satisfies FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],

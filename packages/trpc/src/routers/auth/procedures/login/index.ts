@@ -6,7 +6,7 @@ export const authLoginProcedure = publicProcedure
   .input(loginInputSchema)
   .output(loginOutputSchema)
   .mutation(async ({ input, ctx }) => {
-    const clientRedirectURI = new URL(input as string);
+    const redirectURI = new URL(input, ctx.portalUrl);
     const oidcClient = new OIDCClient(ctx.oidcConfig);
 
     const config = await oidcClient.discover();
@@ -24,12 +24,12 @@ export const authLoginProcedure = publicProcedure
       };
     }
 
-    ctx.session.login.clientSearch = clientRedirectURI.search;
+    ctx.session.login.clientSearch = redirectURI.search;
     ctx.session.login.openId = { state, codeVerifier };
 
-    clientRedirectURI.search = "";
+    redirectURI.search = "";
 
-    const authUrl = oidcClient.generateAuthUrl(clientRedirectURI, config, state, codeChallenge);
+    const authUrl = oidcClient.generateAuthUrl(redirectURI, config, state, codeChallenge);
 
     return { authUrl: authUrl.href };
   });

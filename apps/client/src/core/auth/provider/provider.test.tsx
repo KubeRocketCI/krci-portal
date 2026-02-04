@@ -448,7 +448,7 @@ describe("AuthProvider", () => {
       loginButton.click();
 
       await waitFor(() => {
-        expect(mockTrpcClient.auth.login.mutate).toHaveBeenCalledWith("http://localhost:3000/auth/callback?redirect=/");
+        expect(mockTrpcClient.auth.login.mutate).toHaveBeenCalledWith("/auth/callback?redirect=/");
         expect(mockLocation.href).toBe(mockAuthUrl);
       });
     });

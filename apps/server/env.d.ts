@@ -7,7 +7,7 @@ declare global {
       SERVER_PORT: string;
       SERVER_SECRET: string;
 
-      LOCAL_CLIENT_ORIGIN: string;
+      PORTAL_URL: string;
 
       OIDC_ISSUER_URL: string;
       OIDC_CLIENT_ID: string;
