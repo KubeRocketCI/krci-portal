@@ -22,7 +22,6 @@ export class LocalFastifyServer {
 
   constructor() {
     LocalFastifyServer.validateRequiredEnv([
-      "LOCAL_CLIENT_ORIGIN",
       "API_PREFIX",
       "SERVER_SECRET",
       "SERVER_PORT",
@@ -31,6 +30,7 @@ export class LocalFastifyServer {
       "OIDC_CLIENT_SECRET",
       "OIDC_SCOPE",
       "OIDC_CODE_CHALLENGE_METHOD",
+      "PORTAL_URL",
       "TEKTON_RESULTS_URL",
     ]);
 
@@ -56,7 +56,7 @@ export class LocalFastifyServer {
     }
 
     this.fastify.register(FastifyCors, {
-      origin: process.env.LOCAL_CLIENT_ORIGIN,
+      origin: process.env.PORTAL_URL,
       credentials: true,
     });
 
@@ -78,61 +78,6 @@ export class LocalFastifyServer {
       },
       saveUninitialized: false,
     });
-
-    // const publicPath =
-    //   process.env.DEPLOY_CLIENT_DIST_DIR! || fromMonorepoRoot("/apps/client/dist");
-    // console.log("Serving static files from:", publicPath);
-
-    // // Verify publicPath exists
-    // if (!existsSync(publicPath)) {
-    //   throw new Error(`Static directory not found: ${publicPath}`);
-    // }
-    // if (!existsSync(path.join(publicPath, "index.html"))) {
-    //   throw new Error(`index.html not found in ${publicPath}`);
-    // }
-    // // Verify publicPath exists
-    // if (!existsSync(publicPath)) {
-    //   throw new Error(`Static directory not found: ${publicPath}`);
-    // }
-    // if (!existsSync(path.join(publicPath, "index.html"))) {
-    //   throw new Error(`index.html not found in ${publicPath}`);
-    // }
-
-    // this.fastify.register(FastifyStatic, {
-    //   root: publicPath,
-    //   prefix: "/",
-    //   index: "index.html",
-    //   wildcard: false, // Avoid interfering with API routes
-    //   setHeaders: (res) => {
-    //     res.setHeader("Cache-Control", "public, max-age=0");
-    //   },
-    // });
-    // this.fastify.register(FastifyStatic, {
-    //   root: publicPath,
-    //   prefix: "/",
-    //   index: "index.html",
-    //   wildcard: false, // Avoid interfering with API routes
-    //   setHeaders: (res) => {
-    //     res.setHeader("Cache-Control", "public, max-age=0");
-    //   },
-    // });
-
-    // // Fallback for SPA routes: Serve index.html for non-API routes
-    // this.fastify.get("/*", (req, reply) => {
-    //   if (!req.url.startsWith(process.env.API_PREFIX!)) {
-    //     reply.sendFile("index.html", publicPath);
-    //   } else {
-    //     reply.status(404).send({ error: "Not Found" });
-    //   }
-    // });
-    // // Fallback for SPA routes: Serve index.html for non-API routes
-    // this.fastify.get("/*", (req, reply) => {
-    //   if (!req.url.startsWith(process.env.API_PREFIX!)) {
-    //     reply.sendFile("index.html", publicPath);
-    //   } else {
-    //     reply.status(404).send({ error: "Not Found" });
-    //   }
-    // });
 
     this.fastify.register((trpcScope) => {
       const REQS = new WeakMap<
@@ -168,6 +113,7 @@ export class LocalFastifyServer {
                 scope: process.env.OIDC_SCOPE!,
                 codeChallengeMethod: process.env.OIDC_CODE_CHALLENGE_METHOD!,
               },
+              portalUrl: process.env.PORTAL_URL!,
             });
           },
         } satisfies FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],

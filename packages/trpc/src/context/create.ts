@@ -9,12 +9,14 @@ export function createContext({
   session,
   sessionStore,
   oidcConfig,
+  portalUrl,
 }: {
   req: FastifyRequest;
   res: FastifyReply;
   session: CustomSession;
   sessionStore: ISessionStore;
   oidcConfig: OIDCConfig;
+  portalUrl: string;
 }): TRPCContext {
   return {
     req,
@@ -22,5 +24,6 @@ export function createContext({
     session,
     sessionStore,
     oidcConfig,
+    portalUrl,
   };
 }

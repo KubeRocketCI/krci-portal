@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { OIDCUserSchema } from "../user/schema.js";
 
-export const loginInputSchema = z.string();
+export const loginInputSchema = z.string().startsWith("/");
 
 export const loginCallbackInputSchema = z.string();
 

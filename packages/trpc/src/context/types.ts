@@ -34,4 +34,5 @@ export interface TRPCContext {
   session: CustomSession;
   sessionStore: ISessionStore;
   oidcConfig: OIDCConfig;
+  portalUrl: string;
 }

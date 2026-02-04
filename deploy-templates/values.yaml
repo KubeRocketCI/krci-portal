@@ -31,6 +31,10 @@ configEnv:
   SONAR_HOST_URL: https://sonar.example.com/
   # SONAR_WEB_URL: https://sonar-public.example.com/
   SERVER_PORT: 3000
+  # PORTAL_URL is the public-facing origin of the portal (scheme + host).
+  # Used for OIDC redirect URIs (login redirect_uri and post-logout redirect).
+  # Must match a registered redirect URI in the OIDC provider client configuration.
+  PORTAL_URL: https://portal.example.com
   OIDC_ISSUER_URL: https://keycloak.example.com/realms/shared
   OIDC_CLIENT_ID: portal
   OIDC_SCOPE: openid profile email

@@ -22,8 +22,8 @@ import { useClusterStore } from "@/k8s/store";
 export const authInProgressKey = "authInProgress";
 export const authLogoutInProgressKey = "authLogoutInProgress";
 
-const getLoginOriginURL = (redirectSearchParam?: string) =>
-  `${location.origin}${routeAuthCallback.fullPath}?redirect=${redirectSearchParam || routeHome.fullPath}`;
+const getLoginCallbackPath = (redirectSearchParam?: string) =>
+  `${routeAuthCallback.fullPath}?redirect=${redirectSearchParam || routeHome.fullPath}`;
 
 export const AuthProvider = ({ children }: React.PropsWithChildren) => {
   const queryClient = useQueryClient();
@@ -94,7 +94,7 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
   const loginMutation = useMutation<AuthLoginOutput, Error, LoginMutationInput>({
     mutationKey: ["auth.login"],
     mutationFn: ({ redirectSearchParam }) => {
-      return trpc.auth.login.mutate(getLoginOriginURL(redirectSearchParam));
+      return trpc.auth.login.mutate(getLoginCallbackPath(redirectSearchParam));
     },
     onSuccess: ({ authUrl }) => {
       queryClient.setQueryData([authInProgressKey], true);

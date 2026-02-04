@@ -10,8 +10,7 @@ export const authLogoutProcedure = publicProcedure.output(logoutOutputSchema).mu
     const oidcClient = new OIDCClient(ctx.oidcConfig);
     const config = await oidcClient.discover();
 
-    const postLogoutRedirectUri = `${ctx.req.protocol}://${ctx.req.hostname}`;
-    endSessionUrl = oidcClient.buildEndSessionUrl(config, idToken, postLogoutRedirectUri);
+    endSessionUrl = oidcClient.buildEndSessionUrl(config, idToken, ctx.portalUrl);
   } catch {
     // If OIDC discovery fails, proceed with local-only logout
   }

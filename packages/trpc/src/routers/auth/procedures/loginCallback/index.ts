@@ -7,7 +7,7 @@ export const authLoginCallbackProcedure = publicProcedure
   .output(loginCallbackOutputSchema)
   .mutation(async ({ input, ctx }) => {
     const oidcClient = new OIDCClient(ctx.oidcConfig);
-    const url = new URL(input as string);
+    const url = new URL(input);
     const params: URLSearchParams = url.searchParams;
     const stateFromParams = params.get("state");
 

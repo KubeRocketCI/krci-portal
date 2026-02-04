@@ -30,6 +30,7 @@ interface MockedContext {
   oidcClient: ReturnType<typeof createMockedOIDCClient>;
   sessionStore: ReturnType<typeof createMockedDBSessionStore>;
   oidcConfig: OIDCConfig;
+  portalUrl: string;
 }
 
 export function createMockedContext(): MockedContext {
@@ -56,5 +57,6 @@ export function createMockedContext(): MockedContext {
     oidcClient: mockOIDCClient,
     sessionStore: mockSessionStore,
     oidcConfig: mockOidcConfig,
+    portalUrl: "http://localhost:8000",
   };
 }
