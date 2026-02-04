@@ -87,4 +87,60 @@ export const TABLE = {
     id: "trivyComplianceControlsList",
     name: "Trivy Compliance Controls",
   },
+  TRIVY_EXPOSED_SECRET_REPORTS_LIST: {
+    id: "trivyExposedSecretReportsList",
+    name: "Trivy Exposed Secret Reports",
+  },
+  TRIVY_EXPOSED_SECRETS_LIST: {
+    id: "trivyExposedSecretsList",
+    name: "Trivy Exposed Secrets",
+  },
+  TRIVY_RBAC_ASSESSMENT_REPORTS_LIST: {
+    id: "trivyRbacAssessmentReportsList",
+    name: "Trivy RBAC Assessment Reports",
+  },
+  TRIVY_RBAC_ASSESSMENT_CHECKS_LIST: {
+    id: "trivyRbacAssessmentChecksList",
+    name: "Trivy RBAC Assessment Checks",
+  },
+  TRIVY_CLUSTER_RBAC_ASSESSMENT_REPORTS_LIST: {
+    id: "trivyClusterRbacAssessmentReportsList",
+    name: "Trivy Cluster RBAC Assessment Reports",
+  },
+  TRIVY_CLUSTER_RBAC_ASSESSMENT_CHECKS_LIST: {
+    id: "trivyClusterRbacAssessmentChecksList",
+    name: "Trivy Cluster RBAC Assessment Checks",
+  },
+  TRIVY_INFRA_ASSESSMENT_REPORTS_LIST: {
+    id: "trivyInfraAssessmentReportsList",
+    name: "Trivy Infrastructure Assessment Reports",
+  },
+  TRIVY_INFRA_ASSESSMENT_CHECKS_LIST: {
+    id: "trivyInfraAssessmentChecksList",
+    name: "Trivy Infrastructure Assessment Checks",
+  },
+  TRIVY_CLUSTER_INFRA_ASSESSMENT_REPORTS_LIST: {
+    id: "trivyClusterInfraAssessmentReportsList",
+    name: "Trivy Cluster Infrastructure Assessment Reports",
+  },
+  TRIVY_CLUSTER_INFRA_ASSESSMENT_CHECKS_LIST: {
+    id: "trivyClusterInfraAssessmentChecksList",
+    name: "Trivy Cluster Infrastructure Assessment Checks",
+  },
+  TRIVY_CLUSTER_CONFIG_AUDIT_REPORTS_LIST: {
+    id: "trivyClusterConfigAuditReportsList",
+    name: "Trivy Cluster Config Audit Reports",
+  },
+  TRIVY_CLUSTER_CONFIG_AUDIT_CHECKS_LIST: {
+    id: "trivyClusterConfigAuditChecksList",
+    name: "Trivy Cluster Config Audit Checks",
+  },
+  TRIVY_CLUSTER_VULNERABILITY_REPORTS_LIST: {
+    id: "trivyClusterVulnerabilityReportsList",
+    name: "Trivy Cluster Vulnerability Reports",
+  },
+  TRIVY_CLUSTER_VULNERABILITIES_LIST: {
+    id: "trivyClusterVulnerabilitiesList",
+    name: "Trivy Cluster Vulnerabilities",
+  },
 } as const;

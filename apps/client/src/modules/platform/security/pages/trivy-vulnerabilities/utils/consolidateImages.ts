@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { VulnerabilityReport, vulnerabilityReportLabels } from "@my-project/shared";
 import { getImageKey, groupReportsByImage } from "@/modules/platform/security/components/trivy";
 import { ConsolidatedVulnerabilityImage, ImageResource } from "../types";
@@ -55,23 +54,21 @@ function compareBySeverity(a: ConsolidatedVulnerabilityImage, b: ConsolidatedVul
 }
 
 /**
- * Hook that consolidates VulnerabilityReports by unique image.
+ * Consolidates VulnerabilityReports by unique image.
  * Groups reports scanning the same image (by digest + namespace) and aggregates:
  * - Severity counts from the most recent scan
  * - List of resources where the image is used
  */
-export function useConsolidatedImages(reports: VulnerabilityReport[]): ConsolidatedVulnerabilityImage[] {
-  return useMemo(() => {
-    if (!reports?.length) return [];
+export function consolidateImages(reports: VulnerabilityReport[]): ConsolidatedVulnerabilityImage[] {
+  if (!reports?.length) return [];
 
-    const { groups, deduplicated } = groupReportsByImage(reports);
+  const { groups, deduplicated } = groupReportsByImage(reports);
 
-    const consolidated = deduplicated.map((latestReport) => {
-      const imageKey = getImageKey(latestReport);
-      const allReports = groups.get(imageKey) || [latestReport];
-      return createConsolidatedImage(imageKey, latestReport, allReports);
-    });
+  const consolidated = deduplicated.map((latestReport) => {
+    const imageKey = getImageKey(latestReport);
+    const allReports = groups.get(imageKey) || [latestReport];
+    return createConsolidatedImage(imageKey, latestReport, allReports);
+  });
 
-    return consolidated.sort(compareBySeverity);
-  }, [reports]);
+  return consolidated.sort(compareBySeverity);
 }

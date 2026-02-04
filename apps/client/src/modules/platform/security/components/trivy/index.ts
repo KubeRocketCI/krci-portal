@@ -1,3 +1,3 @@
 export * from "./NamespaceSelector";
-export * from "./utils/deduplicateReports";
+export * from "./utils/groupReportsByImage";
 export * from "./utils/getValidNamespace";

@@ -74,6 +74,20 @@ import { routeTrivyConfigAudits } from "@/modules/platform/security/pages/trivy-
 import { routeTrivyConfigAuditDetails } from "@/modules/platform/security/pages/trivy-config-audit-details/route";
 import { routeTrivyCompliance } from "@/modules/platform/security/pages/trivy-compliance/route";
 import { routeTrivyComplianceDetails } from "@/modules/platform/security/pages/trivy-compliance-details/route";
+import { routeTrivyExposedSecrets } from "@/modules/platform/security/pages/trivy-exposed-secrets/route";
+import { routeTrivyExposedSecretDetails } from "@/modules/platform/security/pages/trivy-exposed-secret-details/route";
+import { routeTrivyRbacAssessments } from "@/modules/platform/security/pages/trivy-rbac-assessments/route";
+import { routeTrivyRbacAssessmentDetails } from "@/modules/platform/security/pages/trivy-rbac-assessment-details/route";
+import { routeTrivyClusterRbacAssessments } from "@/modules/platform/security/pages/trivy-cluster-rbac-assessments/route";
+import { routeTrivyClusterRbacAssessmentDetails } from "@/modules/platform/security/pages/trivy-cluster-rbac-assessment-details/route";
+import { routeTrivyInfraAssessments } from "@/modules/platform/security/pages/trivy-infra-assessments/route";
+import { routeTrivyInfraAssessmentDetails } from "@/modules/platform/security/pages/trivy-infra-assessment-details/route";
+import { routeTrivyClusterInfraAssessments } from "@/modules/platform/security/pages/trivy-cluster-infra-assessments/route";
+import { routeTrivyClusterInfraAssessmentDetails } from "@/modules/platform/security/pages/trivy-cluster-infra-assessment-details/route";
+import { routeTrivyClusterConfigAudits } from "@/modules/platform/security/pages/trivy-cluster-config-audits/route";
+import { routeTrivyClusterConfigAuditDetails } from "@/modules/platform/security/pages/trivy-cluster-config-audit-details/route";
+import { routeTrivyClusterVulnerabilities } from "@/modules/platform/security/pages/trivy-cluster-vulnerabilities/route";
+import { routeTrivyClusterVulnerabilityDetails } from "@/modules/platform/security/pages/trivy-cluster-vulnerability-details/route";
 
 const routeTree = rootRoute.addChildren([
   authRoute.addChildren([routeAuthLogin, routeAuthCallback]),
@@ -113,6 +127,20 @@ const routeTree = rootRoute.addChildren([
         routeTrivyConfigAuditDetails,
         routeTrivyCompliance,
         routeTrivyComplianceDetails,
+        routeTrivyExposedSecrets,
+        routeTrivyExposedSecretDetails,
+        routeTrivyRbacAssessments,
+        routeTrivyRbacAssessmentDetails,
+        routeTrivyClusterRbacAssessments,
+        routeTrivyClusterRbacAssessmentDetails,
+        routeTrivyInfraAssessments,
+        routeTrivyInfraAssessmentDetails,
+        routeTrivyClusterInfraAssessments,
+        routeTrivyClusterInfraAssessmentDetails,
+        routeTrivyClusterConfigAudits,
+        routeTrivyClusterConfigAuditDetails,
+        routeTrivyClusterVulnerabilities,
+        routeTrivyClusterVulnerabilityDetails,
       ]),
       routeConfiguration.addChildren([
         routeArgocdConfiguration,

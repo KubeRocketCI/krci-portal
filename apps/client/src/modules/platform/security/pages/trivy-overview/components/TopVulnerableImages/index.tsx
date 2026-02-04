@@ -74,9 +74,6 @@ export function TopVulnerableImages({ data, isLoading }: TopVulnerableImagesProp
               </thead>
               <tbody>
                 {topImages.map((image, index) => {
-                  // Truncate image name for display
-                  const displayName = image.name.length > 40 ? `...${image.name.slice(-37)}` : image.name;
-
                   return (
                     <tr key={`${image.name}-${index}`} className="hover:bg-muted/30 border-b last:border-b-0">
                       <td className="py-2">
@@ -87,10 +84,10 @@ export function TopVulnerableImages({ data, isLoading }: TopVulnerableImagesProp
                             namespace: image.namespace,
                             name: image.reportName,
                           }}
-                          className="hover:text-primary max-w-[200px] truncate text-sm font-medium hover:underline"
+                          className="hover:text-primary text-sm font-medium break-all hover:underline"
                           title={image.name}
                         >
-                          {displayName}
+                          {image.name}
                         </Link>
                         <p className="text-muted-foreground text-xs">{image.namespace}</p>
                       </td>
