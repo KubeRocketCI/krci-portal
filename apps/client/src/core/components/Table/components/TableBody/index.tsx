@@ -1,10 +1,14 @@
+import React from "react";
+
+import { EmptyList } from "@/core/components/EmptyList";
+import { ErrorContent } from "@/core/components/ErrorContent";
 import { Alert } from "@/core/components/ui/alert";
 import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
-import React from "react";
 import { TableBodyUI, TableCellUI, TableRowUI } from "@/core/components/ui/table";
+import { RequestError } from "@/core/types/global";
+
 import { TableRow } from "./components/TableRow";
 import { TableBodyProps } from "./types";
-import { EmptyList } from "@/core/components/EmptyList";
 
 const isSelectedRow = <DataType,>(isSelected: (row: DataType) => boolean, row: DataType) =>
   isSelected ? isSelected(row) : false;
@@ -60,7 +64,7 @@ export const TableBody = <DataType,>({
       return (
         <TableRowUI>
           <TableCellUI colSpan={totalColumnSpan} className="border-b-0 px-0 pb-0 text-center">
-            {/* <ErrorContent error={blockerError} /> */}
+            <ErrorContent error={blockerError as RequestError} />
           </TableCellUI>
         </TableRowUI>
       );

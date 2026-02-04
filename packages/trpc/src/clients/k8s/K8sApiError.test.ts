@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { K8sApiError } from "./K8sApiError.js";
+import { K8sApiError } from "@my-project/shared";
 
 describe("K8sApiError", () => {
   test("creates error with all properties", () => {
