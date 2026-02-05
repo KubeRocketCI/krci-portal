@@ -18,8 +18,8 @@ export const useColumns = (): TableColumn<Application>[] => {
         id: "deploymentFlow",
         label: (
           <>
-            <Tooltip title="The Deployment Flow used to deploy this version.">
-              <div>Deployment Flow</div>
+            <Tooltip title="The Deployment used to deploy this version.">
+              <div>Deployment</div>
             </Tooltip>
           </>
         ),

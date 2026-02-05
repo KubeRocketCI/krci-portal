@@ -46,7 +46,7 @@ export const createDeleteAction = ({
       Icon: <Trash size={16} />,
       disabled: {
         status: true,
-        reason: "Deployment Flow should have at least one Environment",
+        reason: "Deployment should have at least one Environment",
       },
     });
   }

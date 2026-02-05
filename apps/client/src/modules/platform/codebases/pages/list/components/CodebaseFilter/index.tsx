@@ -29,14 +29,14 @@ export const CodebaseFilter = () => {
     <>
       <div className="col-span-3">
         <form.Field name={CODEBASE_LIST_FILTER_NAMES.SEARCH}>
-          {(field) => <TextField field={field} label="Search" placeholder="Search components" />}
+          {(field) => <TextField field={field} label="Search" placeholder="Search projects" />}
         </form.Field>
       </div>
 
       <div className="col-span-3">
         <form.Field name={CODEBASE_LIST_FILTER_NAMES.CODEBASE_TYPE}>
           {(field) => (
-            <Select field={field} label="Codebase Type" options={codebaseTypeOptions} placeholder="Select type" />
+            <Select field={field} label="Project Type" options={codebaseTypeOptions} placeholder="Select type" />
           )}
         </form.Field>
       </div>

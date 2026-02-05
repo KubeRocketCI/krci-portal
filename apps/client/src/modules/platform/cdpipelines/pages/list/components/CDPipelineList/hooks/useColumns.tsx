@@ -77,7 +77,7 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
         },
         {
           id: columnNames.NAME,
-          label: "Deployment Flow",
+          label: "Deployment",
           data: {
             columnSortableValuePath: "metadata.name",
             render: ({

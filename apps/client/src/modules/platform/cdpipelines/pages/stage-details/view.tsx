@@ -12,7 +12,7 @@ export default function StageDetailsPageContent() {
   return (
     <PageWrapper
       breadcrumbs={[
-        { label: "Deployment Flows", route: { to: PATH_CDPIPELINES_FULL } },
+        { label: "Deployments", route: { to: PATH_CDPIPELINES_FULL } },
         {
           label: params.cdPipeline,
           route: {

@@ -146,7 +146,7 @@ export const ComponentList = () => {
                       <ConditionalWrapper
                         condition={codebasePermissions.data.delete.allowed}
                         wrapper={(children) => (
-                          <Tooltip title={"Delete selected components"}>
+                          <Tooltip title={"Delete selected projects"}>
                             <div>{children}</div>
                           </Tooltip>
                         )}

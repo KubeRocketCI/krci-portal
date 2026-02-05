@@ -23,6 +23,6 @@ export const routeCDPipelineList = createRoute({
       .parse(search);
   },
   head: () => ({
-    meta: [{ title: "Deployment Flows | KRCI" }],
+    meta: [{ title: "Deployments | KRCI" }],
   }),
 }).lazy(() => import("./route.lazy").then((res) => res.default));

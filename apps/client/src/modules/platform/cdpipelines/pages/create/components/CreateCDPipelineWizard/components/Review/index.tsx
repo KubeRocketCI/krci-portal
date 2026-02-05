@@ -156,7 +156,7 @@ export const Review: React.FC = () => {
           <div>
             <h4 className="text-foreground mb-1 text-sm font-medium">Ready to Create</h4>
             <p className="text-muted-foreground text-sm">
-              Your Deployment Flow will be created with the configuration above. You'll be able to add environments and
+              Your Deployment will be created with the configuration above. You'll be able to add environments and
               configure deployment stages.
             </p>
           </div>

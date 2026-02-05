@@ -9,6 +9,6 @@ export const routeCodebaseCreate = createRoute({
   getParentRoute: () => routeCluster,
   path: PATH_CODEBASE_CREATE,
   head: () => ({
-    meta: [{ title: "Create Component | KRCI" }],
+    meta: [{ title: "Create Project | KRCI" }],
   }),
 }).lazy(() => import("./route.lazy").then((res) => res.default));

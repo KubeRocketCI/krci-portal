@@ -47,7 +47,7 @@ export const CDPipelineActionsMenu = ({ backRoute, variant, data: { CDPipeline }
             objectName: CDPipeline?.metadata.name,
             resourceConfig: k8sCDPipelineConfig,
             resource: CDPipeline,
-            description: `Confirm the deletion of the Deployment Flow with all its environments.`,
+            description: `Confirm the deletion of the Deployment with all its environments.`,
             backRoute,
             createCustomMessages: (item) => ({
               loading: {

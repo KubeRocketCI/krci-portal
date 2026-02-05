@@ -69,7 +69,7 @@ export default function CodebaseDetailsPageContent() {
     <PageWrapper
       breadcrumbs={[
         {
-          label: "Components",
+          label: "Projects",
           route: {
             to: routeComponentList.fullPath,
           },
@@ -84,7 +84,7 @@ export default function CodebaseDetailsPageContent() {
         icon={Box}
         title={params.name}
         enableCopyTitle
-        description={`Review ${codebase?.spec.type || "codebase"}, monitor its status, and execute build pipelines.`}
+        description={`Review ${codebase?.spec.type || "project"}, monitor its status, and execute build pipelines.`}
         actions={
           codebaseIsLoaded &&
           !isSystem(codebase!) && (

@@ -10,7 +10,7 @@ export default function CreateStagePageContent() {
     <PageWrapper
       breadcrumbs={[
         {
-          label: "Deployment Flows",
+          label: "Deployments",
           route: {
             to: routeCDPipelineDetails.fullPath,
           },

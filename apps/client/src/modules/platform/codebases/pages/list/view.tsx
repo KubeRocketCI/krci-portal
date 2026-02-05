@@ -21,13 +21,13 @@ export default function ComponentListPageContent() {
   const noGitServers = gitServerListWatch.isEmpty;
   return (
     <PageWrapper
-      breadcrumbs={[{ label: "Components" }]}
+      breadcrumbs={[{ label: "Projects" }]}
       headerSlot={<LearnMoreLink url={EDP_USER_GUIDE.APPLICATION_CREATE.url} />}
     >
       <Section
         icon={Box}
-        title="Components"
-        description="Create, view, and manage diverse codebases, encompassing applications, libraries, autotests, and Terraform infrastructure code."
+        title="Projects"
+        description="Create, view, and manage your projects, encompassing applications, libraries, autotests, and Terraform infrastructure code."
         actions={
           <ButtonWithPermission
             ButtonProps={{
@@ -40,7 +40,7 @@ export default function ComponentListPageContent() {
           >
             <Link to={routeCodebaseCreate.fullPath} params={{ clusterName: clusterName }} className="no-underline">
               <Plus />
-              Create Component
+              Create Project
             </Link>
           </ButtonWithPermission>
         }

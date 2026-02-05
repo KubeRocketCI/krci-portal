@@ -10,12 +10,12 @@ export const Description: React.FC = () => {
       name={NAMES.description}
       validators={{
         onChange: ({ value }) => {
-          if (!value || value.trim().length === 0) return "Enter component description";
+          if (!value || value.trim().length === 0) return "Enter project description";
           return undefined;
         },
       }}
     >
-      {(field) => <field.FormTextarea label="Description" placeholder="Enter component description" rows={3} />}
+      {(field) => <field.FormTextarea label="Description" placeholder="Enter project description" rows={3} />}
     </form.AppField>
   );
 };

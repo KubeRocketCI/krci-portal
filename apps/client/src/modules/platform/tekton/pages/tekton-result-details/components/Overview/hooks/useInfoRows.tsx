@@ -100,7 +100,7 @@ export const useInfoRows = (): GridItem[] => {
       ...(codebase
         ? [
             {
-              label: "Codebase",
+              label: "Project",
               content: <span className="text-foreground text-sm">{codebase}</span>,
             },
           ]

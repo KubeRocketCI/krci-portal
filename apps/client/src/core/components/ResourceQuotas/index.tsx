@@ -190,11 +190,11 @@ export const ResourceQuotas = () => {
             )}
           </div>
 
-          {/* Deployment Flows Resource Usage Section */}
+          {/* Deployments Resource Usage Section */}
           <div className="space-y-3">
             <div className="flex items-center gap-2 border-b pb-2">
               <Activity className="text-primary h-4 w-4" />
-              <h3 className="text-sm font-semibold">Deployment Flows Resource Usage</h3>
+              <h3 className="text-sm font-semibold">Deployments Resource Usage</h3>
             </div>
             {stageRQsWatch.isLoading ? (
               <div className="flex items-center justify-center py-8">
