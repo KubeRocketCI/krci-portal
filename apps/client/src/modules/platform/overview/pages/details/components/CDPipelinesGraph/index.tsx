@@ -32,7 +32,7 @@ export const CDPipelinesGraph = () => {
           fill: CHART_STATUS_COLOR.UNKNOWN,
         },
       ]}
-      title={`Deployment Flows (${graphData.total || 0})`}
+      title={`Deployments (${graphData.total || 0})`}
       legend={
         <div className="flex flex-col gap-1">
           {!!graphData.ok && <LegendListItem color={CHART_STATUS_COLOR.SUCCESS} number={graphData.ok} label="Ok" />}

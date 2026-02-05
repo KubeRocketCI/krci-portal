@@ -177,7 +177,7 @@ export const useColumns = (): TableColumn<Codebase>[] => {
                 resource={data}
                 disabled={{
                   boolean: data.spec.type === codebaseType.system,
-                  reason: "System components cannot be managed",
+                  reason: "System projects cannot be managed",
                 }}
               />
             );

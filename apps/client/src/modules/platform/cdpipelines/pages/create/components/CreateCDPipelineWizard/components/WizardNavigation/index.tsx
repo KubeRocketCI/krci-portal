@@ -104,7 +104,7 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
           ) : (
             <Button onClick={() => form.handleSubmit()} disabled={isSubmitting} size="sm" type="button">
               <Rocket className="mr-2 h-4 w-4" />
-              Create Deployment Flow
+              Create Deployment
             </Button>
           )}
         </div>

@@ -56,7 +56,7 @@ export const QuickLinkActionsMenu = ({ backRoute, variant, data: { quickLink } }
             objectName: quickLink?.metadata.name,
             resourceConfig: k8sQuickLinkConfig,
             resource: quickLink,
-            description: `Confirm the deletion of the Deployment Flow with all its environments.`,
+            description: `Confirm the deletion of the QuickLink.`,
             backRoute,
             createCustomMessages: (item) => ({
               loading: {

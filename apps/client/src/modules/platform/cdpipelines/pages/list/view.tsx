@@ -43,13 +43,13 @@ export default function CDPipelineListPage() {
 
   return (
     <PageWrapper
-      breadcrumbs={[{ label: "Deployment Flows" }]}
+      breadcrumbs={[{ label: "Deployments" }]}
       headerSlot={<LearnMoreLink url={EDP_USER_GUIDE.CD_PIPELINE_CREATE.anchors.CREATE_VIA_UI.url} />}
     >
       <Section
         icon={CloudUpload}
-        title="Deployment Flows"
-        description="Orchestrate and Monitor Your Deployment Flows."
+        title="Deployments"
+        description="Orchestrate and Monitor Your Deployments."
         actions={
           <ButtonWithPermission
             ButtonProps={{
@@ -62,7 +62,7 @@ export default function CDPipelineListPage() {
           >
             <Link to={routeCDPipelineCreate.fullPath} params={{ clusterName }} className="no-underline">
               <Plus />
-              Create Deployment Flow
+              Create Deployment
             </Link>
           </ButtonWithPermission>
         }

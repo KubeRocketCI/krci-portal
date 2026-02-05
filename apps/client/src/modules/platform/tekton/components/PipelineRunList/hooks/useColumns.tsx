@@ -143,7 +143,7 @@ export const useColumns = ({
       },
       {
         id: columnNames.CODEBASE,
-        label: "Codebase",
+        label: "Project",
         data: {
           columnSortableValuePath: `metadata.labels.${pipelineRunLabels.codebase}`,
           render: ({ data }) => {

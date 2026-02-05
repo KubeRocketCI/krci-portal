@@ -36,10 +36,10 @@ export const Success: React.FC = () => {
         </div>
 
         <div>
-          <h1 className="text-foreground mb-2 text-xl font-semibold">Deployment Flow Created Successfully!</h1>
+          <h1 className="text-foreground mb-2 text-xl font-semibold">Deployment Created Successfully!</h1>
           <p className="text-muted-foreground text-sm">
-            Your Deployment Flow <span className="text-foreground font-medium">{name || "pipeline"}</span> has been
-            created and is ready to use
+            Your Deployment <span className="text-foreground font-medium">{name || "pipeline"}</span> has been created
+            and is ready to use
           </p>
         </div>
 
@@ -50,8 +50,8 @@ export const Success: React.FC = () => {
               <Link to={routeCDPipelineList.fullPath} params={{ clusterName }}>
                 <FolderOpen className="text-muted-foreground h-4 w-4" />
                 <div className="flex flex-col">
-                  <span className="text-xs">View All Deployment Flows</span>
-                  <span className="text-muted-foreground text-[10px]">Go back to deployment flows list</span>
+                  <span className="text-xs">View All Deployments</span>
+                  <span className="text-muted-foreground text-[10px]">Go back to deployments list</span>
                 </div>
               </Link>
             </Button>
@@ -67,8 +67,8 @@ export const Success: React.FC = () => {
               >
                 <ExternalLink className="h-4 w-4" />
                 <div className="flex flex-col">
-                  <span className="text-xs">Open Deployment Flow</span>
-                  <span className="text-[10px] opacity-80">View deployment flow details</span>
+                  <span className="text-xs">Open Deployment</span>
+                  <span className="text-[10px] opacity-80">View deployment details</span>
                 </div>
               </Link>
             </Button>
@@ -83,7 +83,7 @@ export const Success: React.FC = () => {
             >
               <Sparkles className="text-muted-foreground h-4 w-4" />
               <div className="flex flex-col">
-                <span className="text-xs">Create Another Deployment Flow</span>
+                <span className="text-xs">Create Another Deployment</span>
                 <span className="text-muted-foreground text-[10px]">Start new wizard</span>
               </div>
             </Button>
@@ -95,7 +95,7 @@ export const Success: React.FC = () => {
           <ul className="text-muted-foreground space-y-1.5 text-left text-sm">
             <li className="flex items-start gap-2">
               <Check className="text-primary mt-0.5 h-4 w-4 shrink-0" />
-              <span>Deployment Flow has been created</span>
+              <span>Deployment has been created</span>
             </li>
             <li className="flex items-start gap-2">
               <Check className="text-primary mt-0.5 h-4 w-4 shrink-0" />

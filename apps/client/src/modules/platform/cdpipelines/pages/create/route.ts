@@ -18,6 +18,6 @@ export const routeCDPipelineCreate = createRoute({
     };
   },
   head: () => ({
-    meta: [{ title: "Create Deployment Flow | KRCI" }],
+    meta: [{ title: "Create Deployment | KRCI" }],
   }),
 }).lazy(() => import("./route.lazy").then((res) => res.default));

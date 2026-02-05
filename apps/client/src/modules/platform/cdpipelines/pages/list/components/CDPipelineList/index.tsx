@@ -25,13 +25,13 @@ export const CDPipelineList = ({ blockerComponent }: CDPipelineListProps) => {
     if (cdPipelinePermissions.data.create.allowed) {
       return (
         <EmptyList
-          missingItemName={"Deployment Flows"}
-          linkText={"Click here to create a new Deployment Flow"}
+          missingItemName={"Deployments"}
+          linkText={"Click here to create a new Deployment"}
           route={{
             to: routeCDPipelineCreate.fullPath,
             params: { clusterName },
           }}
-          description={"Take the first step towards managing your Deployment Flow by adding a new environment here."}
+          description={"Take the first step towards managing your Deployment by adding a new environment here."}
         />
       );
     } else {

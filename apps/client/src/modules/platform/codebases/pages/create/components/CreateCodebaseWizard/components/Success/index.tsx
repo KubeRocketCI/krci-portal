@@ -60,10 +60,10 @@ export const Success: React.FC = () => {
         </div>
 
         <div>
-          <h1 className="text-foreground mb-2 text-xl font-semibold">Component Created Successfully!</h1>
+          <h1 className="text-foreground mb-2 text-xl font-semibold">Project Created Successfully!</h1>
           <p className="text-muted-foreground text-sm">
-            Your component <span className="text-foreground font-medium">{name || "component"}</span> has been created
-            and is ready to use
+            Your project <span className="text-foreground font-medium">{name || "project"}</span> has been created and
+            is ready to use
           </p>
         </div>
 
@@ -84,8 +84,8 @@ export const Success: React.FC = () => {
               <Link to={routeComponentList.fullPath} params={{ clusterName }}>
                 <FolderOpen className="text-muted-foreground h-4 w-4" />
                 <div className="flex flex-col">
-                  <span className="text-xs">View All Components</span>
-                  <span className="text-muted-foreground text-[10px]">Go back to components list</span>
+                  <span className="text-xs">View All Projects</span>
+                  <span className="text-muted-foreground text-[10px]">Go back to projects list</span>
                 </div>
               </Link>
             </Button>
@@ -101,8 +101,8 @@ export const Success: React.FC = () => {
               >
                 <ExternalLink className="h-4 w-4" />
                 <div className="flex flex-col">
-                  <span className="text-xs">Open Component</span>
-                  <span className="text-[10px] opacity-80">View component details</span>
+                  <span className="text-xs">Open Project</span>
+                  <span className="text-[10px] opacity-80">View project details</span>
                 </div>
               </Link>
             </Button>
@@ -117,8 +117,8 @@ export const Success: React.FC = () => {
             >
               <Sparkles className="text-muted-foreground h-4 w-4" />
               <div className="flex flex-col">
-                <span className="text-xs">Create Another Component</span>
-                <span className="text-muted-foreground text-[10px]">Start new component wizard</span>
+                <span className="text-xs">Create Another Project</span>
+                <span className="text-muted-foreground text-[10px]">Start new project wizard</span>
               </div>
             </Button>
 
@@ -126,8 +126,8 @@ export const Success: React.FC = () => {
               <Link to={routeCDPipelineCreate.fullPath} params={{ clusterName }} search={{ application: name || "" }}>
                 <Globe className="text-muted-foreground h-4 w-4" />
                 <div className="flex flex-col">
-                  <span className="text-xs">Create Deployment Flow</span>
-                  <span className="text-muted-foreground text-[10px]">Create deployment flow for this component</span>
+                  <span className="text-xs">Create Deployment</span>
+                  <span className="text-muted-foreground text-[10px]">Create deployment for this project</span>
                 </div>
               </Link>
             </Button>

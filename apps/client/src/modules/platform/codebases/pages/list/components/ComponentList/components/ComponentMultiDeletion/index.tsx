@@ -54,7 +54,7 @@ export const ComponentMultiDeletion = ({
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="w-full max-w-xl">
         <DialogHeader>
-          <DialogTitle>Are you sure you want to delete {selected.length} selected component(s)?</DialogTitle>
+          <DialogTitle>Are you sure you want to delete {selected.length} selected project(s)?</DialogTitle>
         </DialogHeader>
         <DialogBody>
           <div className="flex flex-col gap-2">

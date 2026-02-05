@@ -7,13 +7,13 @@ export default function CreateCDPipelinePageContent() {
     <PageWrapper
       breadcrumbs={[
         {
-          label: "Deployment Flows",
+          label: "Deployments",
           route: {
             to: routeCDPipelineList.fullPath,
           },
         },
         {
-          label: "Create New Deployment Flow",
+          label: "Create New Deployment",
         },
       ]}
     >

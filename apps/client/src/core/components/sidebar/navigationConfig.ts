@@ -88,7 +88,7 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
       ],
     },
     {
-      title: "Components",
+      title: "Projects",
       icon: Box,
       route: {
         to: PATH_COMPONENTS_FULL,
@@ -96,7 +96,7 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
       },
     },
     {
-      title: "Deployment Flows",
+      title: "Deployments",
       icon: CloudUpload,
       route: {
         to: PATH_CDPIPELINES_FULL,

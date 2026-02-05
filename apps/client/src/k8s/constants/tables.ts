@@ -17,7 +17,7 @@ export const TABLE = {
   },
   COMPONENT_LIST: {
     id: "componentList",
-    name: "Component List",
+    name: "Project List",
   },
   TEMPLATE_LIST: {
     id: "templateList",
@@ -41,7 +41,7 @@ export const TABLE = {
   },
   CDPIPELINE_LIST: {
     id: "cdPipelineList",
-    name: "Deployment Flow List",
+    name: "Deployments",
   },
   PIPELINE_LIST: {
     id: "pipelineList",

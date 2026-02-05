@@ -54,8 +54,8 @@ export const Success: React.FC = () => {
               <Link to={routeCDPipelineDetails.fullPath} params={{ clusterName, namespace, name: cdPipeline }}>
                 <FolderOpen className="text-muted-foreground h-4 w-4" />
                 <div className="flex flex-col">
-                  <span className="text-xs">Back to Deployment Flow</span>
-                  <span className="text-muted-foreground text-[10px]">View deployment flow details</span>
+                  <span className="text-xs">Back to Deployment</span>
+                  <span className="text-muted-foreground text-[10px]">View deployment details</span>
                 </div>
               </Link>
             </Button>

@@ -153,7 +153,7 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
       },
       {
         id: columnNames.CODEBASE,
-        label: "Codebase",
+        label: "Project",
         data: {
           customSortFn: createAnnotationSortFn(tektonResultAnnotations.codebase),
           render: ({ data }) => {

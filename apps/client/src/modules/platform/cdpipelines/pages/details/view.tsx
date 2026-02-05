@@ -19,7 +19,7 @@ export default function CDPipelineDetailsPageContent() {
     <PageWrapper
       breadcrumbs={[
         {
-          label: "Deployment Flows",
+          label: "Deployments",
           route: {
             to: PATH_CDPIPELINES_FULL,
             params: {

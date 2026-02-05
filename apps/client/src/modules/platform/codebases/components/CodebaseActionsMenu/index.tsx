@@ -33,14 +33,14 @@ const DeletionErrorMessage = ({ codebase, conflictedPipeline, clusterName }: Del
     <div className="flex flex-col gap-8 rounded-md border border-red-400/30 bg-red-50/30 p-10">
       <div className="flex items-center gap-6">
         <AlertCircle size={20} className="text-destructive shrink-0" />
-        <p className="text-destructive text-sm text-[0.9375rem] font-semibold">Cannot Delete Codebase</p>
+        <p className="text-destructive text-sm text-[0.9375rem] font-semibold">Cannot Delete Project</p>
       </div>
 
       <div className="flex flex-col gap-2 pl-18">
         <p className="text-foreground text-sm leading-relaxed">
           {capitalizeFirstLetter(codebase.spec.type)}{" "}
           <span className="text-foreground font-semibold">{codebase.metadata.name}</span> is currently being used in the
-          following Deployment Flow:
+          following Deployment:
         </p>
 
         <div className="bg-background border-border mt-4 rounded border p-6">
@@ -62,7 +62,7 @@ const DeletionErrorMessage = ({ codebase, conflictedPipeline, clusterName }: Del
         </div>
 
         <p className="text-muted-foreground mt-4 text-sm">
-          Please remove this codebase from the Deployment Flow before deleting it.
+          Please remove this project from the Deployment before deleting it.
         </p>
       </div>
     </div>
@@ -140,7 +140,7 @@ export const CodebaseActionsMenu = ({ backRoute, variant, data: { codebase } }: 
             objectName: codebase?.metadata?.name,
             resource: codebase,
             resourceConfig: k8sCodebaseConfig,
-            description: "Confirm the deletion of the codebase with all its components",
+            description: "Confirm the deletion of the project",
             onBeforeSubmit,
             backRoute,
           });

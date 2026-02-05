@@ -23,7 +23,7 @@ export const ConflictItemError = ({ conflictedCDPipeline, name }: ConflictItemEr
           {conflictedCDPipeline.metadata.name}
         </Link>
       </div>
-      <span> Deployment Flow</span>
+      <span> Deployment</span>
     </div>
   );
 };

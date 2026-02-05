@@ -30,6 +30,6 @@ export const routeCDPipelineDetails = createRoute({
       .parse(search);
   },
   head: ({ params }) => ({
-    meta: [{ title: `${params.name} [${params.namespace}] — Deployment Flows | KRCI` }],
+    meta: [{ title: `${params.name} [${params.namespace}] — Deployments | KRCI` }],
   }),
 }).lazy(() => import("./route.lazy").then((res) => res.default));

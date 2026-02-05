@@ -36,11 +36,11 @@ const repositoryUrlSchema = createCodebaseDraftInputSchema.shape.repositoryUrl.r
 );
 
 const nameSchema = createCodebaseDraftInputSchema.shape.name
-  .min(2, "Component name must be not less than two characters long.")
-  .max(30, "Component name must be less than 30 characters long.")
+  .min(2, "Project name must be not less than two characters long.")
+  .max(30, "Project name must be less than 30 characters long.")
   .regex(/^[a-z](?!.*--[^-])[a-z0-9-]*[a-z0-9]$/, {
     message:
-      "Component name must be not less than two characters long. It must contain only lowercase letters, numbers, and dashes. It cannot start or end with a dash, and cannot have whitespaces",
+      "Project name must be not less than two characters long. It must contain only lowercase letters, numbers, and dashes. It cannot start or end with a dash, and cannot have whitespaces",
   });
 
 const defaultBranchSchema = createCodebaseDraftInputSchema.shape.defaultBranch
@@ -231,7 +231,7 @@ const validateGitSetupStep = (data: FormData, ctx: z.RefinementCtx) => {
     validateNonGerritRepository(data, ctx);
   }
   if (!data.description) {
-    const typeLabel = data.type || "component";
+    const typeLabel = data.type || "project";
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["description"],

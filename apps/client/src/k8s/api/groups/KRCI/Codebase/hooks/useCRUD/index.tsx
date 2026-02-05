@@ -27,13 +27,13 @@ export const useCRUD = () => {
     {
       createCustomMessages: (codebase) => ({
         loading: {
-          message: "Creating Codebase",
+          message: "Creating Project",
         },
         error: {
-          message: "Failed to create Codebase",
+          message: "Failed to create Project",
         },
         success: {
-          message: "Codebase has been created",
+          message: "Project has been created",
           options: {
             duration: 8000,
             route: {
@@ -66,13 +66,13 @@ export const useCRUD = () => {
     {
       createCustomMessages: (codebase) => ({
         loading: {
-          message: "Patching Codebase",
+          message: "Updating Project",
         },
         error: {
-          message: "Failed to patch Codebase",
+          message: "Failed to update Project",
         },
         success: {
-          message: "Codebase has been patched",
+          message: "Project has been updated",
           options: {
             duration: 8000,
             route: {

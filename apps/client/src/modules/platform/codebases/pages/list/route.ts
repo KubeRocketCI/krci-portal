@@ -23,6 +23,6 @@ export const routeComponentList = createRoute({
       .parse(search);
   },
   head: () => ({
-    meta: [{ title: "Components | KRCI" }],
+    meta: [{ title: "Projects | KRCI" }],
   }),
 }).lazy(() => import("./route.lazy").then((res) => res.default));

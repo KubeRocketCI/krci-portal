@@ -7,13 +7,13 @@ export default function CreateCodebasePageContent() {
     <PageWrapper
       breadcrumbs={[
         {
-          label: "Components",
+          label: "Projects",
           route: {
             to: routeComponentList.fullPath,
           },
         },
         {
-          label: "Create New Component",
+          label: "Create New Project",
         },
       ]}
     >
