@@ -3,6 +3,7 @@ import { NAMES } from "../../../names";
 import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
 import { SvgBase64Icon } from "@/core/components/SvgBase64Icon";
 import { useStore } from "@tanstack/react-form";
+import { validateSvgBase64 } from "@/core/utils/sanitizeSvg";
 
 export const Icon = () => {
   const form = useQuickLinkForm();
@@ -23,6 +24,13 @@ export const Icon = () => {
           validators={{
             onChange: ({ value }) => {
               if (!value) return "Paste the SVG code for the icon, encoded in base64 format.";
+
+              // Validate SVG for security issues
+              const validationError = validateSvgBase64(value);
+              if (validationError) {
+                return validationError;
+              }
+
               return undefined;
             },
           }}
@@ -30,7 +38,7 @@ export const Icon = () => {
           {(field) => (
             <field.FormTextarea
               label="Icon(svg in base64)"
-              tooltipText="Paste the SVG code for your desired icon, encoded in base64 format. Ensure the SVG is simple, clear, and recognizable even in a small size."
+              tooltipText="Paste the SVG code for your desired icon, encoded in base64 format. Ensure the SVG is simple, clear, and recognizable even in a small size. Script tags and event handlers are not allowed for security reasons."
               placeholder="svg in base64"
               rows={5}
               disabled={isSystem}

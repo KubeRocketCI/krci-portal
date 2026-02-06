@@ -6,6 +6,7 @@ import { SquareArrowOutUpRight } from "lucide-react";
 import type { VariantProps } from "class-variance-authority";
 import { buttonVariants } from "@/core/components/ui/button";
 import { cn } from "@/core/utils/classname";
+import { sanitizeSvgBase64 } from "@/core/utils/sanitizeSvg";
 
 const stopPropagation = (e: React.SyntheticEvent) => e.stopPropagation();
 
@@ -34,6 +35,7 @@ const DisabledResourceIconLink = ({
   size,
 }: ResourceIconLinkProps) => {
   const iconSize = iconSizeByBtnSize(size);
+  const sanitizedIcon = sanitizeSvgBase64(iconBase64);
 
   return isTextButton ? (
     <Button variant={variant} disabled className={cn(!withoutDisabledStyle ? "opacity-50" : "", "text-xs")} size={size}>
@@ -50,7 +52,7 @@ const DisabledResourceIconLink = ({
           className={cn(!withoutDisabledStyle ? "opacity-50" : "", "text-xs")}
         >
           {iconBase64 ? (
-            <img src={`data:image/svg+xml;base64,${iconBase64}`} className="h-4 w-4" alt="" />
+            <img src={`data:image/svg+xml;base64,${sanitizedIcon}`} className="h-4 w-4" alt="" />
           ) : Icon ? (
             Icon
           ) : null}
@@ -71,6 +73,7 @@ const EnabledResourceIconLink = ({
   size,
 }: ResourceIconLinkProps) => {
   const iconSize = iconSizeByBtnSize(size);
+  const sanitizedIcon = sanitizeSvgBase64(iconBase64);
 
   return isTextButton ? (
     <Button
@@ -100,7 +103,7 @@ const EnabledResourceIconLink = ({
         <Button variant="ghost" size="icon" asChild>
           <a href={link} target="_blank" rel="noopener noreferrer">
             {iconBase64 ? (
-              <img src={`data:image/svg+xml;base64,${iconBase64}`} className="h-4 w-4" alt="" />
+              <img src={`data:image/svg+xml;base64,${sanitizedIcon}`} className="h-4 w-4" alt="" />
             ) : Icon ? (
               Icon
             ) : null}
