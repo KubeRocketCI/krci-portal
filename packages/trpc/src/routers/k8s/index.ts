@@ -20,6 +20,7 @@ import { k8sManageNexusIntegrationProcedure } from "./procedures/composite/manag
 import { k8sManageDefectDojoIntegrationProcedure } from "./procedures/composite/manageDefectDojoIntegration/index.js";
 import { k8sManageChatAssistantIntegrationProcedure } from "./procedures/composite/manageChatAssistantIntegration/index.js";
 import { k8sManageDependencyTrackIntegrationProcedure } from "./procedures/composite/manageDependencyTrackIntegration/index.js";
+import { k8sTestIntegrationConnectionProcedure } from "./procedures/composite/testIntegrationConnection/index.js";
 import { t } from "../../trpc.js";
 
 export const k8sRouter = t.router({
@@ -48,4 +49,5 @@ export const k8sRouter = t.router({
   manageDefectDojoIntegration: k8sManageDefectDojoIntegrationProcedure,
   manageChatAssistantIntegration: k8sManageChatAssistantIntegrationProcedure,
   manageDependencyTrackIntegration: k8sManageDependencyTrackIntegrationProcedure,
+  testIntegrationConnection: k8sTestIntegrationConnectionProcedure,
 });

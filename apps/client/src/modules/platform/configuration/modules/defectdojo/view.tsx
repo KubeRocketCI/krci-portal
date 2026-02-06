@@ -1,18 +1,13 @@
 import { EmptyList } from "@/core/components/EmptyList";
 import { ErrorContent } from "@/core/components/ErrorContent";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { StatusIcon } from "@/core/components/StatusIcon";
 import { FORM_MODES } from "@/core/types/forms";
 import { useSecretPermissions, useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
 import { useQuickLinkPermissions, useQuickLinkWatchItem } from "@/k8s/api/groups/KRCI/QuickLink";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/core/components/ui/accordion";
-import { Tooltip } from "@/core/components/ui/tooltip";
-import { getIntegrationSecretStatus, integrationSecretName, systemQuickLink } from "@my-project/shared";
+import { integrationSecretName, systemQuickLink } from "@my-project/shared";
 import React from "react";
 import { ManageDefectDojo } from "./components/ManageDefectDojo";
-import { getIntegrationSecretStatusIcon } from "@/k8s/integrations/secret/utils/getStatusIcon";
-import { ShieldX } from "lucide-react";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
 import { pageDescription } from "./constants";
 
@@ -67,52 +62,15 @@ export default function DefectdojoConfigurationPage() {
 
     const ownerReference = defectDojoSecret?.metadata?.ownerReferences?.[0]?.kind;
 
-    const status = getIntegrationSecretStatus(defectDojoSecret!);
-    const statusIcon = getIntegrationSecretStatusIcon(defectDojoSecret!);
-
     return (
       <LoadingWrapper isLoading={isLoading}>
-        <Accordion type="single" collapsible defaultValue="item-1">
-          <AccordionItem value="item-1">
-            <AccordionTrigger className="cursor-default">
-              <h6 className="text-base font-medium">
-                <div className="flex items-center gap-2">
-                  <div className="mr-1">
-                    <StatusIcon
-                      Icon={statusIcon.component}
-                      color={statusIcon.color}
-                      Title={
-                        <>
-                          <p className="text-sm font-semibold">
-                            {`Connected: ${status.connected === undefined ? "Unknown" : status.connected}`}
-                          </p>
-                          {!!status.statusError && <p className="mt-3 text-sm font-medium">{status.statusError}</p>}
-                        </>
-                      }
-                    />
-                  </div>
-                  <div>{defectDojoSecret?.metadata.name}</div>
-                  {!!ownerReference && (
-                    <div>
-                      <Tooltip title={`Managed by ${ownerReference}`}>
-                        <ShieldX size={20} />
-                      </Tooltip>
-                    </div>
-                  )}
-                </div>
-              </h6>
-            </AccordionTrigger>
-            <AccordionContent>
-              <ManageDefectDojo
-                secret={defectDojoSecret}
-                quickLink={defectDojoQuickLink}
-                mode={mode}
-                ownerReference={ownerReference}
-                handleClosePanel={handleCloseCreateDialog}
-              />
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+        <ManageDefectDojo
+          secret={defectDojoSecret}
+          quickLink={defectDojoQuickLink}
+          mode={mode}
+          ownerReference={ownerReference}
+          handleClosePanel={handleCloseCreateDialog}
+        />
       </LoadingWrapper>
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- permission fields omitted to avoid unnecessary callback recreation
