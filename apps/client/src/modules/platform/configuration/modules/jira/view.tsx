@@ -1,18 +1,10 @@
 import { EmptyList } from "@/core/components/EmptyList";
 import { ErrorContent } from "@/core/components/ErrorContent";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { StatusIcon } from "@/core/components/StatusIcon";
 import { useSecretPermissions, useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
-import {
-  getJiraServerStatusIcon,
-  useJiraServerPermissions,
-  useJiraServerWatchItem,
-} from "@/k8s/api/groups/KRCI/JiraServer";
+import { useJiraServerPermissions, useJiraServerWatchItem } from "@/k8s/api/groups/KRCI/JiraServer";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/core/components/ui/accordion";
-import { Tooltip } from "@/core/components/ui/tooltip";
 import { integrationSecretName } from "@my-project/shared";
-import { ShieldX } from "lucide-react";
 import React from "react";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
 import { ManageJiraServer } from "./components/ManageJiraServer";
@@ -66,53 +58,14 @@ export default function JiraConfigurationPage() {
 
     const ownerReference = jiraServerSecret?.metadata?.ownerReferences?.[0]?.kind;
 
-    const status = jiraServer?.status?.status;
-    const errorMessage = jiraServer?.status?.detailed_message;
-
-    const statusIcon = getJiraServerStatusIcon(jiraServer);
-
     return (
       <LoadingWrapper isLoading={isLoading}>
-        <Accordion type="single" collapsible defaultValue="item-1">
-          <AccordionItem value="item-1">
-            <AccordionTrigger className="cursor-default">
-              <h6 className="text-base font-medium">
-                <div className="flex items-center gap-2">
-                  <div className="mr-1">
-                    <StatusIcon
-                      Icon={statusIcon.component}
-                      color={statusIcon.color}
-                      Title={
-                        <>
-                          <p className="text-sm font-semibold">
-                            {`Status: ${status === undefined ? "Unknown" : status}`}
-                          </p>
-                          {!!errorMessage && <p className="mt-3 text-sm font-medium">{errorMessage}</p>}
-                        </>
-                      }
-                    />
-                  </div>
-                  <div>{jiraServerSecret?.metadata.name}</div>
-                  {!!ownerReference && (
-                    <div>
-                      <Tooltip title={`Managed by ${ownerReference}`}>
-                        <ShieldX size={20} />
-                      </Tooltip>
-                    </div>
-                  )}
-                </div>
-              </h6>
-            </AccordionTrigger>
-            <AccordionContent>
-              <ManageJiraServer
-                secret={jiraServerSecret}
-                jiraServer={jiraServer}
-                ownerReference={ownerReference}
-                handleClosePanel={handleCloseCreateDialog}
-              />
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+        <ManageJiraServer
+          secret={jiraServerSecret}
+          jiraServer={jiraServer}
+          ownerReference={ownerReference}
+          handleClosePanel={handleCloseCreateDialog}
+        />
       </LoadingWrapper>
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- permission fields omitted to avoid unnecessary callback recreation
