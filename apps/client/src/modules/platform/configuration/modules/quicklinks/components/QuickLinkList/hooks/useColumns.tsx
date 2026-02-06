@@ -9,6 +9,7 @@ import { CheckCircle, SquareArrowOutUpRight, XCircle } from "lucide-react";
 import { Actions } from "../components/Actions";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/core/components/ui/button";
+import { sanitizeSvgBase64 } from "@/core/utils/sanitizeSvg";
 
 export const useColumns = (): TableColumn<QuickLink>[] => {
   const { loadSettings } = useTableSettings(TABLE.QUICKLINK_LIST.id);
@@ -24,11 +25,14 @@ export const useColumns = (): TableColumn<QuickLink>[] => {
             data: {
               spec: { icon },
             },
-          }) => (
-            <span className="block shrink-0 px-5">
-              <img className="size-8 shrink-0" src={`data:image/svg+xml;base64,${icon}`} alt="" />
-            </span>
-          ),
+          }) => {
+            const sanitizedIcon = sanitizeSvgBase64(icon);
+            return (
+              <span className="block shrink-0 px-5">
+                <img className="size-8 shrink-0" src={`data:image/svg+xml;base64,${sanitizedIcon}`} alt="" />
+              </span>
+            );
+          },
         },
         cell: {
           isFixed: true,

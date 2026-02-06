@@ -93,7 +93,7 @@ importers:
         version: 4.7.0(monaco-editor@0.55.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@my-project/shared':
         specifier: workspace:*
-        version: file:packages/shared
+        version: link:../../packages/shared
       '@radix-ui/react-accordion':
         specifier: ^1.2.12
         version: 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -169,6 +169,9 @@ importers:
       '@types/dagre':
         specifier: ^0.7.53
         version: 0.7.53
+      '@types/dompurify':
+        specifier: ^3.2.0
+        version: 3.2.0
       '@xterm/addon-fit':
         specifier: ^0.10.0
         version: 0.10.0(@xterm/xterm@5.5.0)
@@ -196,6 +199,9 @@ importers:
       dagre:
         specifier: ^0.8.5
         version: 0.8.5
+      dompurify:
+        specifier: ^3.3.1
+        version: 3.3.1
       dotenv:
         specifier: ^16.4.7
         version: 16.6.1
@@ -1018,18 +1024,6 @@ packages:
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
-
-  '@hookform/error-message@2.0.1':
-    resolution: {integrity: sha512-U410sAr92xgxT1idlu9WWOVjndxLdgPUHEB8Schr27C9eh7/xUnITWpCMF93s+lGiG++D4JnbSnrb5A21AdSNg==}
-    peerDependencies:
-      react: '>=16.8.0'
-      react-dom: '>=16.8.0'
-      react-hook-form: ^7.0.0
-
-  '@hookform/resolvers@5.2.2':
-    resolution: {integrity: sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA==}
-    peerDependencies:
-      react-hook-form: ^7.55.0
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -2548,6 +2542,10 @@ packages:
   '@types/doctrine@0.0.9':
     resolution: {integrity: sha512-eOIHzCUSH7SMfonMG1LsC2f8vxBFtho6NGBznK41R84YzPuvSBzrhEps33IsQiOW9+VL6NQ9DbjQJznk/S4uRA==}
 
+  '@types/dompurify@3.2.0':
+    resolution: {integrity: sha512-Fgg31wv9QbLDA0SpTOXO3MaxySc4DKGLi8sna4/Utjo4r3ZRPdCt4UQee8BWr+Q5z21yifghREPJGYaEOEIACg==}
+    deprecated: This is a stub types definition. dompurify provides its own type definitions, so you do not need this installed.
+
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
@@ -3233,6 +3231,9 @@ packages:
 
   dompurify@3.2.7:
     resolution: {integrity: sha512-WhL/YuveyGXJaerVlMYGWhvQswa7myDG17P7Vu65EWC05o8vfeNbvNf4d/BOvH99+ZW+LlQsc1GDKMa1vNK6dw==}
+
+  dompurify@3.3.1:
+    resolution: {integrity: sha512-qkdCKzLNtrgPFP1Vo+98FRzJnBRGe4ffyCea9IwHB1fyxPOeNTHpLKYGd4Uk9xvNoH0ZoOjwZxNptyMwqrId1Q==}
 
   dot-case@3.0.4:
     resolution: {integrity: sha512-Kv5nKlh6yRrdrGvxeJ2e5y2eRUpkUosIW4A2AS38zwSz27zu7ufDwQPi5Jhs3XAlGNetl3bmnGhQsMtkKJnj3w==}
@@ -4485,12 +4486,6 @@ packages:
     peerDependencies:
       react: ^19.2.3
 
-  react-hook-form@7.70.0:
-    resolution: {integrity: sha512-COOMajS4FI3Wuwrs3GPpi/Jeef/5W1DRR84Yl5/ShlT3dKVFUfoGiEZ/QE6Uw8P4T2/CLJdcTVYKvWBMQTEpvw==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      react: ^16.8.0 || ^17 || ^18 || ^19
-
   react-is@17.0.2:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
 
@@ -5473,7 +5468,7 @@ snapshots:
       '@babel/types': 7.28.5
       '@jridgewell/remapping': 2.3.5
       convert-source-map: 2.0.0
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -5557,7 +5552,7 @@ snapshots:
       '@babel/parser': 7.28.5
       '@babel/template': 7.27.2
       '@babel/types': 7.28.5
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -5758,7 +5753,7 @@ snapshots:
   '@eslint/config-array@0.21.1':
     dependencies:
       '@eslint/object-schema': 2.1.7
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
@@ -5774,7 +5769,7 @@ snapshots:
   '@eslint/eslintrc@3.3.3':
     dependencies:
       ajv: 6.12.6
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
       espree: 10.4.0
       globals: 14.0.0
       ignore: 5.3.2
@@ -5876,17 +5871,6 @@ snapshots:
       react-dom: 19.2.3(react@19.2.3)
 
   '@floating-ui/utils@0.2.10': {}
-
-  '@hookform/error-message@2.0.1(react-dom@19.2.3(react@19.2.3))(react-hook-form@7.70.0(react@19.2.3))(react@19.2.3)':
-    dependencies:
-      react: 19.2.3
-      react-dom: 19.2.3(react@19.2.3)
-      react-hook-form: 7.70.0(react@19.2.3)
-
-  '@hookform/resolvers@5.2.2(react-hook-form@7.70.0(react@19.2.3))':
-    dependencies:
-      '@standard-schema/utils': 0.3.0
-      react-hook-form: 7.70.0(react@19.2.3)
 
   '@humanfs/core@0.19.1': {}
 
@@ -6018,8 +6002,6 @@ snapshots:
 
   '@my-project/client@file:apps/client(@trpc/server@11.8.1(typescript@5.9.3))(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(monaco-editor@0.55.1)(react-is@19.2.3)(solid-js@1.9.10)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))(vite@6.4.1(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
-      '@hookform/error-message': 2.0.1(react-dom@19.2.3(react@19.2.3))(react-hook-form@7.70.0(react@19.2.3))(react@19.2.3)
-      '@hookform/resolvers': 5.2.2(react-hook-form@7.70.0(react@19.2.3))
       '@melloware/react-logviewer': 6.3.4(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(solid-js@1.9.10)
       '@monaco-editor/react': 4.7.0(monaco-editor@0.55.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@my-project/shared': file:packages/shared
@@ -6044,6 +6026,7 @@ snapshots:
       '@tanstack/react-form': 1.27.7(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@tanstack/react-query': 5.67.2(react@19.2.3)
       '@tanstack/react-router': 1.145.11(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@tanstack/zod-form-adapter': 0.42.1(zod@3.25.76)
       '@trpc/client': 11.8.1(@trpc/server@11.8.1(typescript@5.9.3))(typescript@5.9.3)
       '@trpc/react-query': 11.8.1(@tanstack/react-query@5.67.2(react@19.2.3))(@trpc/client@11.8.1(@trpc/server@11.8.1(typescript@5.9.3))(typescript@5.9.3))(@trpc/server@11.8.1(typescript@5.9.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)
       '@types/dagre': 0.7.53
@@ -6066,7 +6049,6 @@ snapshots:
       radix-ui: 1.4.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
-      react-hook-form: 7.70.0(react@19.2.3)
       recharts: 3.6.0(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react-is@19.2.3)(react@19.2.3)(redux@5.0.1)
       sonner: 2.0.7(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       tailwind-merge: 3.4.0
@@ -6922,7 +6904,7 @@ snapshots:
 
   '@radix-ui/rect@1.1.1': {}
 
-  '@reduxjs/toolkit@2.11.2(react-redux@9.2.0(@types/react@19.2.7)(react@19.2.3)(redux@5.0.1))(react@19.2.3)':
+  '@reduxjs/toolkit@2.11.2(react-redux@9.2.0(@types/react@19.2.7)(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@standard-schema/spec': 1.1.0
       '@standard-schema/utils': 0.3.0
@@ -7504,6 +7486,10 @@ snapshots:
 
   '@types/doctrine@0.0.9': {}
 
+  '@types/dompurify@3.2.0':
+    dependencies:
+      dompurify: 3.3.1
+
   '@types/estree@1.0.8': {}
 
   '@types/humanize-duration@3.27.4': {}
@@ -7576,7 +7562,7 @@ snapshots:
       '@typescript-eslint/types': 8.52.0
       '@typescript-eslint/typescript-estree': 8.52.0(typescript@5.9.3)
       '@typescript-eslint/visitor-keys': 8.52.0
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
       eslint: 9.39.2(jiti@2.6.1)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -7586,7 +7572,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/tsconfig-utils': 8.52.0(typescript@5.9.3)
       '@typescript-eslint/types': 8.52.0
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
@@ -7620,7 +7606,7 @@ snapshots:
       '@typescript-eslint/tsconfig-utils': 8.52.0(typescript@5.9.3)
       '@typescript-eslint/types': 8.52.0
       '@typescript-eslint/visitor-keys': 8.52.0
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
       minimatch: 9.0.5
       semver: 7.7.3
       tinyglobby: 0.2.15
@@ -8176,10 +8162,6 @@ snapshots:
       whatwg-mimetype: 4.0.0
       whatwg-url: 14.2.0
 
-  debug@4.4.3:
-    dependencies:
-      ms: 2.1.3
-
   debug@4.4.3(supports-color@5.5.0):
     dependencies:
       ms: 2.1.3
@@ -8230,6 +8212,10 @@ snapshots:
   dom-accessibility-api@0.6.3: {}
 
   dompurify@3.2.7:
+    optionalDependencies:
+      '@types/trusted-types': 2.0.7
+
+  dompurify@3.3.1:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
@@ -8424,7 +8410,7 @@ snapshots:
       ajv: 6.12.6
       chalk: 4.1.2
       cross-spawn: 7.0.6
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
       escape-string-regexp: 4.0.0
       eslint-scope: 8.4.0
       eslint-visitor-keys: 4.2.1
@@ -8751,14 +8737,14 @@ snapshots:
   http-proxy-agent@7.0.2:
     dependencies:
       agent-base: 7.1.4
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
   https-proxy-agent@7.0.6:
     dependencies:
       agent-base: 7.1.4
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -9529,10 +9515,6 @@ snapshots:
       react: 19.2.3
       scheduler: 0.27.0
 
-  react-hook-form@7.70.0(react@19.2.3):
-    dependencies:
-      react: 19.2.3
-
   react-is@17.0.2: {}
 
   react-is@19.2.3: {}
@@ -9601,7 +9583,7 @@ snapshots:
 
   recharts@3.6.0(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react-is@19.2.3)(react@19.2.3)(redux@5.0.1):
     dependencies:
-      '@reduxjs/toolkit': 2.11.2(react-redux@9.2.0(@types/react@19.2.7)(react@19.2.3)(redux@5.0.1))(react@19.2.3)
+      '@reduxjs/toolkit': 2.11.2(react-redux@9.2.0(@types/react@19.2.7)(react@19.2.3))(react@19.2.3)
       clsx: 2.1.1
       decimal.js-light: 2.5.1
       es-toolkit: 1.43.0
