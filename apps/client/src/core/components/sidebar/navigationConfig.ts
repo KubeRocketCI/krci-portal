@@ -34,13 +34,7 @@ import { PATH_CONFIG_GITSERVERS_FULL } from "@/modules/platform/configuration/mo
 import { PATH_CONFIG_JIRA_FULL } from "@/modules/platform/configuration/modules/jira/route";
 import type { NavItem } from "./types";
 
-/**
- * Creates the navigation configuration for the sidebar
- * @param clusterName - The current cluster name
- * @param namespace - The current namespace
- * @returns Array of navigation items
- */
-export const createNavigationConfig = (clusterName: string, namespace: string): NavItem[] => {
+export function createNavigationConfig(clusterName: string, namespace: string): NavItem[] {
   const clusterDefaultParams = {
     clusterName,
     namespace,
@@ -379,4 +373,4 @@ export const createNavigationConfig = (clusterName: string, namespace: string): 
       ],
     },
   ] as const satisfies NavItem[];
-};
+}

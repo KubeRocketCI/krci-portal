@@ -3,7 +3,7 @@ import { PATH_CDPIPELINES_FULL } from "../list/route";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { HeaderActions, HeaderLinks } from "./components/HeaderActions";
-import { routeCDPipelineDetails } from "./route";
+import { routeCDPipelineDetails, PATH_CDPIPELINE_DETAILS_FULL } from "./route";
 import { Section } from "@/core/components/Section";
 import { CloudUpload } from "lucide-react";
 import { Tabs } from "@/core/providers/Tabs/components/Tabs";
@@ -11,7 +11,7 @@ import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { useTabs } from "./hooks/useTabs";
 
 export default function CDPipelineDetailsPageContent() {
-  const { name, clusterName } = routeCDPipelineDetails.useParams();
+  const { name, namespace, clusterName } = routeCDPipelineDetails.useParams();
   const { activeTab, handleChangeTab } = useTabsContext();
   const tabs = useTabs();
 
@@ -37,6 +37,15 @@ export default function CDPipelineDetailsPageContent() {
         icon={CloudUpload}
         title={name}
         enableCopyTitle
+        pinConfig={{
+          key: `deployment:${namespace}/${name}`,
+          label: name,
+          type: "deployment",
+          route: {
+            to: PATH_CDPIPELINE_DETAILS_FULL,
+            params: { clusterName, namespace, name },
+          },
+        }}
         description="Manage and monitor your deployment environments across clusters. Each environment represents a stage in your artifact's progression path from development to production."
         actions={<HeaderActions />}
         extraContent={<HeaderLinks />}

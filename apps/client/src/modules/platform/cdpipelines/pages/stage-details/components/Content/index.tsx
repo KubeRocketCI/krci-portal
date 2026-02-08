@@ -1,7 +1,7 @@
 import React from "react";
 import { Section } from "@/core/components/Section";
 import { Tabs } from "@/core/providers/Tabs/components/Tabs";
-import { routeStageDetails } from "../../route";
+import { routeStageDetails, PATH_CDPIPELINE_STAGE_DETAILS_FULL } from "../../route";
 import { usePageTabs } from "./hooks/usePageTabs";
 import { Layers } from "lucide-react";
 import { HeaderActions, HeaderLinks } from "../HeaderActions";
@@ -32,6 +32,20 @@ export const Content = () => {
       icon={Layers}
       title={params.stage}
       enableCopyTitle
+      pinConfig={{
+        key: `stage:${params.namespace}/${params.cdPipeline}/${params.stage}`,
+        label: params.stage,
+        type: "stage",
+        route: {
+          to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
+          params: {
+            clusterName: params.clusterName,
+            namespace: params.namespace,
+            cdPipeline: params.cdPipeline,
+            stage: params.stage,
+          },
+        },
+      }}
       description="Manage, deploy, test, and troubleshoot your applications across distinct Environments."
       actions={<HeaderActions />}
       extraContent={<HeaderLinks />}

@@ -18,7 +18,7 @@ import { CodebaseActionsMenu } from "../../components/CodebaseActionsMenu";
 import { routeComponentList } from "../list/route";
 import { useCodebaseWatch } from "./hooks/data";
 import { usePageTabs } from "./hooks/usePageTabs";
-import { routeComponentDetails } from "./route";
+import { routeComponentDetails, PATH_COMPONENT_DETAILS_FULL } from "./route";
 
 const docLinkByCodebaseType = (type: CodebaseType | undefined) => {
   switch (type) {
@@ -84,6 +84,15 @@ export default function CodebaseDetailsPageContent() {
         icon={Box}
         title={params.name}
         enableCopyTitle
+        pinConfig={{
+          key: `project:${params.namespace}/${params.name}`,
+          label: params.name,
+          type: "project",
+          route: {
+            to: PATH_COMPONENT_DETAILS_FULL,
+            params: { clusterName: params.clusterName, namespace: params.namespace, name: params.name },
+          },
+        }}
         description={`Review ${codebase?.spec.type || "project"}, monitor its status, and execute build pipelines.`}
         actions={
           codebaseIsLoaded &&

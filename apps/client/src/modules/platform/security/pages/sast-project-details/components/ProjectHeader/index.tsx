@@ -1,11 +1,13 @@
 import { Card, CardContent } from "@/core/components/ui/card";
 import { Badge } from "@/core/components/ui/badge";
 import { Button } from "@/core/components/ui/button";
-import { Code, ExternalLink } from "lucide-react";
+import { ExternalLink, Shield } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { ProjectWithMetrics } from "@my-project/shared";
 import { SonarQubeMetricsList } from "../../../../components/sonarqube/SonarQubeMetricsList";
 import { useSonarQubeUrl } from "../../hooks/useSonarQubeUrl";
+import { PinButton } from "@/core/components/PinButton";
+import { routeSASTProjectDetails, PATH_SAST_PROJECT_DETAILS_FULL } from "../../route";
 
 interface ProjectHeaderProps {
   project: ProjectWithMetrics | null | undefined;
@@ -13,6 +15,7 @@ interface ProjectHeaderProps {
 }
 
 export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
+  const params = routeSASTProjectDetails.useParams();
   const { getProjectUrl } = useSonarQubeUrl();
 
   if (isLoading) {
@@ -49,7 +52,7 @@ export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
           <div className="flex flex-1 items-start gap-4">
             {/* Project Icon */}
             <div className="bg-primary flex h-12 w-12 items-center justify-center rounded p-3">
-              <Code className="text-primary-foreground h-6 w-6" />
+              <Shield className="text-primary-foreground h-6 w-6" />
             </div>
 
             {/* Project Details */}
@@ -75,6 +78,22 @@ export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
                     View in SonarQube
                   </Link>
                 </Button>
+
+                <PinButton
+                  pinConfig={{
+                    key: `sast-project:${params.namespace}/${params.projectKey}`,
+                    label: project.name,
+                    type: "sast-project",
+                    route: {
+                      to: PATH_SAST_PROJECT_DETAILS_FULL,
+                      params: {
+                        clusterName: params.clusterName,
+                        namespace: params.namespace,
+                        projectKey: params.projectKey,
+                      },
+                    },
+                  }}
+                />
               </div>
 
               <div className="text-muted-foreground flex items-center gap-2 text-sm">
