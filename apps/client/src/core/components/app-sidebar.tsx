@@ -12,6 +12,7 @@ import { useClusterStore } from "../../k8s/store";
 import { useSidebarMenu } from "../hooks/useSidebarMenu";
 import { createNavigationConfig } from "./sidebar/navigationConfig";
 import { SidebarMenuItemWithHover } from "./sidebar/SidebarMenuItemWithHover";
+import { SidebarPinnedSection } from "./sidebar/SidebarPinnedSection";
 
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 
@@ -75,6 +76,7 @@ export function AppSidebar() {
                 "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden"
               )}
             >
+              <SidebarPinnedSection />
               <SidebarGroup>
                 <SidebarGroupLabel>Platform</SidebarGroupLabel>
                 <SidebarMenu>
@@ -139,6 +141,7 @@ export function AppSidebar() {
               "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden"
             )}
           >
+            <SidebarPinnedSection />
             <SidebarGroup>
               <SidebarGroupLabel>Platform</SidebarGroupLabel>
               <SidebarMenu>

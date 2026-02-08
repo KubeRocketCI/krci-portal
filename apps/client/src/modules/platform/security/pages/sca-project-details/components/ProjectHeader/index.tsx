@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/core/components/ui/card";
 import { Badge } from "@/core/components/ui/badge";
 import { Button } from "@/core/components/ui/button";
-import { Network, ChevronDown, ExternalLink } from "lucide-react";
+import { ChevronDown, ExternalLink, Shield } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +15,7 @@ import { DependencyTrackProject, DependencyTrackTag } from "@my-project/shared";
 import { DependencyTrackMetricsList } from "../../../../components/dependencytrack/DependencyTrackMetricsList";
 import { routeSCAProjectDetails, PATH_SCA_PROJECT_DETAILS_FULL } from "../../route";
 import { useDependencyTrackUrl } from "../../hooks/useDependencyTrackUrl";
+import { PinButton } from "@/core/components/PinButton";
 
 interface ProjectHeaderProps {
   project: DependencyTrackProject | undefined;
@@ -78,7 +79,7 @@ export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
           <div className="flex flex-1 items-start gap-4">
             {/* Project Icon */}
             <div className="bg-primary flex h-12 w-12 items-center justify-center rounded p-3">
-              <Network className="text-primary-foreground h-6 w-6" />
+              <Shield className="text-primary-foreground h-6 w-6" />
             </div>
 
             {/* Project Details */}
@@ -154,6 +155,22 @@ export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
                     View in Dependency Track
                   </Link>
                 </Button>
+
+                <PinButton
+                  pinConfig={{
+                    key: `sca-project:${params.namespace}/${params.projectUuid}`,
+                    label: project.name,
+                    type: "sca-project",
+                    route: {
+                      to: PATH_SCA_PROJECT_DETAILS_FULL,
+                      params: {
+                        clusterName: params.clusterName,
+                        namespace: params.namespace,
+                        projectUuid: params.projectUuid,
+                      },
+                    },
+                  }}
+                />
               </div>
 
               {project.description && (

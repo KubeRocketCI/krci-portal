@@ -2,6 +2,7 @@ import { Tooltip } from "@/core/components/ui/tooltip";
 import React from "react";
 import { SectionProps } from "./types";
 import { CopyButton } from "../CopyButton";
+import { PinButton } from "../PinButton";
 import { Info } from "lucide-react";
 
 export const Section: React.FC<SectionProps> = ({
@@ -9,6 +10,7 @@ export const Section: React.FC<SectionProps> = ({
   title,
   titleTooltip,
   enableCopyTitle,
+  pinConfig,
   description,
   actions,
   extraContent,
@@ -39,6 +41,7 @@ export const Section: React.FC<SectionProps> = ({
                       </Tooltip>
                     )}
                     {enableCopyTitle && typeof title === "string" && <CopyButton text={title} />}
+                    {pinConfig && <PinButton pinConfig={pinConfig} />}
                   </div>
                 )}
                 {description && <p className="text-muted-foreground">{description}</p>}
