@@ -1,10 +1,12 @@
 import React from "react";
 import { useStore } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
+import { gitProvider } from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWatchKRCIConfig";
+import { useGitServerWatchItem } from "@/k8s/api/groups/KRCI/GitServer";
 import { useCreateCodebaseForm } from "../../../providers/form/hooks";
 import { NAMES } from "../../../names";
 
@@ -12,6 +14,10 @@ export const Owner: React.FC = () => {
   const form = useCreateCodebaseForm();
   const trpc = useTRPCClient();
   const gitServerFieldValue = useStore(form.store, (s) => s.values[NAMES.gitServer]);
+
+  const gitServerWatch = useGitServerWatchItem({ name: gitServerFieldValue });
+  const gitServerProvider = gitServerWatch.data?.spec?.gitProvider;
+  const isGerrit = gitServerProvider?.includes(gitProvider.gerrit);
 
   const krciConfigMapWatch = useWatchKRCIConfig();
   const apiBaseUrl = krciConfigMapWatch.data?.data?.api_gateway_url;
@@ -47,6 +53,10 @@ export const Owner: React.FC = () => {
       name={NAMES.ui_repositoryOwner}
       validators={{
         onChange: ({ value }) => {
+          // Only validate if git server is NOT Gerrit
+          if (isGerrit) {
+            return undefined;
+          }
           if (!value || value.trim().length === 0) return "Select owner";
           return undefined;
         },

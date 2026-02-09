@@ -91,7 +91,7 @@ const coreFields = {
   lang: langSchema,
   repositoryUrl: repositoryUrlSchema,
   gitServer: createCodebaseDraftInputSchema.shape.gitServer,
-  gitUrlPath: createCodebaseDraftInputSchema.shape.gitUrlPath,
+  gitUrlPath: createCodebaseDraftInputSchema.shape.gitUrlPath.optional().nullable(),
   type: createCodebaseDraftInputSchema.shape.type,
   deploymentScript: createCodebaseDraftInputSchema.shape.deploymentScript,
   description: createCodebaseDraftInputSchema.shape.description,
@@ -167,7 +167,7 @@ const validateGerritGitUrlPath = (data: FormData, ctx: z.RefinementCtx) => {
       path: ["gitUrlPath"],
       message: "Repository name has to be at least 3 characters long.",
     });
-  } else if (data.gitUrlPath && !validationRules.GIT_URL_PATH.every((rule) => rule.pattern.test(data.gitUrlPath))) {
+  } else if (data.gitUrlPath && !validationRules.GIT_URL_PATH.every((rule) => rule.pattern.test(data.gitUrlPath!))) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["gitUrlPath"], message: "Invalid git URL path format" });
   }
 };
@@ -257,6 +257,24 @@ const validateBuildConfigStep = (data: FormData, ctx: z.RefinementCtx) => {
       path: ["deploymentScript"],
       message: "Select the deployment script",
     });
+  }
+
+  // Validate Jira integration fields if enabled
+  if (data.ui_hasJiraServerIntegration) {
+    if (!data.jiraServer) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["jiraServer"],
+        message: "Select Jira server that will be integrated with the codebase.",
+      });
+    }
+    if (!data.ticketNamePattern) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["ticketNamePattern"],
+        message: "Specify the pattern to find a Jira ticket number in a commit message.",
+      });
+    }
   }
 };
 

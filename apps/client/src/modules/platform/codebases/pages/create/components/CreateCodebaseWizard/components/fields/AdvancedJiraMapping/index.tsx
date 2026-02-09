@@ -29,6 +29,7 @@ export const AdvancedJiraMapping: React.FC = () => {
     (s) => (s.values[NAMES.ui_advancedMappingRows] as Array<{ field: string; pattern: string }>) || []
   );
   const selectedFields = useStore(form.store, (s) => (s.values[NAMES.ui_advancedMappingFieldName] as string[]) || []);
+  const hasJiraIntegration = useStore(form.store, (s) => s.values[NAMES.ui_hasJiraServerIntegration]);
 
   const updateJiraPayload = React.useCallback(
     (rows: Array<{ field: string; pattern: string }>) => {
@@ -131,7 +132,13 @@ export const AdvancedJiraMapping: React.FC = () => {
                       <form.AppField
                         name={`${NAMES.ui_advancedMappingRows}[${idx}].pattern` as "ui_advancedMappingRows"}
                         validators={{
-                          onChange: ({ value }) => (!value ? "Add at least one variable." : undefined),
+                          onChange: ({ value }) => {
+                            // Only validate if Jira integration is enabled
+                            if (!hasJiraIntegration) {
+                              return undefined;
+                            }
+                            return !value ? "Add at least one variable." : undefined;
+                          },
                         }}
                         listeners={{ onBlur: handlePatternBlur }}
                       >

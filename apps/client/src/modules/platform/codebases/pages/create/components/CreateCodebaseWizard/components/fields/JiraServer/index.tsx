@@ -1,4 +1,5 @@
 import React from "react";
+import { useStore } from "@tanstack/react-form";
 import { mapArrayToSelectOptions } from "@/core/utils/forms/mapToSelectOptions";
 import { useJiraServerWatchList } from "@/k8s/api/groups/KRCI/JiraServer";
 import { useCreateCodebaseForm } from "../../../providers/form/hooks";
@@ -8,12 +9,17 @@ export const JiraServer: React.FC = () => {
   const form = useCreateCodebaseForm();
   const jiraServerListWatch = useJiraServerWatchList();
   const jiraServersNames = jiraServerListWatch.data.array.map((j) => j.metadata.name);
+  const hasJiraIntegration = useStore(form.store, (s) => s.values[NAMES.ui_hasJiraServerIntegration]);
 
   return (
     <form.AppField
       name={NAMES.jiraServer}
       validators={{
         onChange: ({ value }) => {
+          // Only validate if Jira integration is enabled
+          if (!hasJiraIntegration) {
+            return undefined;
+          }
           if (!value) return "Select Jira server that will be integrated with the codebase.";
           return undefined;
         },
