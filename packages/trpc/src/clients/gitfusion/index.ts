@@ -3,6 +3,7 @@ import {
   GitFusionRepositoryListResponse,
   GitFusionOrganizationListResponse,
   GitFusionBranchListResponse,
+  GitFusionPullRequestListResponse,
   GitLabPipelineResponse,
   GitLabPipelineVariable,
 } from "@my-project/shared";
@@ -240,6 +241,37 @@ export class GitFusionClient {
     });
 
     return this.fetchJson<GitFusionBranchListResponse>(endpoint);
+  }
+
+  /**
+   * Get pull/merge requests for a repository
+   *
+   * @param gitServer - Git server name (GitServer CRD name in K8s)
+   * @param owner - Repository owner/organization
+   * @param repoName - Repository name
+   * @param state - Filter by state (open, closed, merged, all)
+   * @param page - Page number
+   * @param perPage - Items per page
+   * @returns List of pull requests with pagination
+   */
+  async getPullRequests(
+    gitServer: string,
+    owner: string,
+    repoName: string,
+    state?: string,
+    page?: number,
+    perPage?: number
+  ): Promise<GitFusionPullRequestListResponse> {
+    const endpoint = this.buildEndpoint("/api/v1/pull-requests", {
+      gitServer,
+      owner,
+      repoName,
+      state,
+      page,
+      perPage,
+    });
+
+    return this.fetchJson<GitFusionPullRequestListResponse>(endpoint);
   }
 
   /**

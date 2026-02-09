@@ -27,6 +27,27 @@ export interface GitFusionOrganizationListResponse {
   data: GitFusionOrganization[];
 }
 
+export interface GitFusionPullRequest {
+  id: string;
+  number: number;
+  title: string;
+  state: "open" | "closed" | "merged";
+  author?: { id: string; name: string; avatar_url?: string };
+  source_branch: string;
+  target_branch: string;
+  url: string;
+  created_at: string;
+  updated_at: string;
+  description?: string;
+  draft?: boolean;
+  commit_sha?: string;
+}
+
+export interface GitFusionPullRequestListResponse {
+  data: GitFusionPullRequest[];
+  pagination: { page: number; per_page: number; total: number };
+}
+
 export interface GitLabPipelineVariable {
   key: string;
   value: string;

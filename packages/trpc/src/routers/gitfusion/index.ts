@@ -5,6 +5,7 @@ import {
   getBranchList,
   invalidateBranchListCache,
   triggerGitLabPipeline,
+  getPullRequestList,
 } from "./procedures/index.js";
 
 export const gitfusionRouter = t.router({
@@ -13,4 +14,5 @@ export const gitfusionRouter = t.router({
   getBranchList,
   invalidateBranchListCache,
   triggerGitLabPipeline,
+  getPullRequestList,
 });
