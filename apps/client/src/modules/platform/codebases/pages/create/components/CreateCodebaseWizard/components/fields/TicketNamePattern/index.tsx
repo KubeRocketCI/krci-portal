@@ -1,15 +1,21 @@
 import React from "react";
+import { useStore } from "@tanstack/react-form";
 import { useCreateCodebaseForm } from "../../../providers/form/hooks";
 import { NAMES } from "../../../names";
 
 export const TicketNamePattern: React.FC = () => {
   const form = useCreateCodebaseForm();
+  const hasJiraIntegration = useStore(form.store, (s) => s.values[NAMES.ui_hasJiraServerIntegration]);
 
   return (
     <form.AppField
       name={NAMES.ticketNamePattern}
       validators={{
         onChange: ({ value }) => {
+          // Only validate if Jira integration is enabled
+          if (!hasJiraIntegration) {
+            return undefined;
+          }
           if (!value) return "Specify the pattern to find a Jira ticket number in a commit message.";
           return undefined;
         },

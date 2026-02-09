@@ -76,21 +76,21 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
     <Card className="p-3 shadow-none">
       <div className="flex items-center justify-between">
         {currentStepIndex === 0 && backRoute ? (
-          <Button variant="outline" asChild size="sm">
+          <Button variant="outline" asChild size="sm" type="button">
             <Link to={backRoute.to} params={backRoute.params}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back
             </Link>
           </Button>
         ) : (
-          <Button variant="outline" onClick={onBack} disabled={currentStepIndex === 0} size="sm">
+          <Button variant="outline" onClick={onBack} disabled={currentStepIndex === 0} size="sm" type="button">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>
         )}
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" asChild size="sm">
+          <Button variant="ghost" asChild size="sm" type="button">
             <Link to={routeComponentList.fullPath} params={{ clusterName }}>
               Cancel
             </Link>
