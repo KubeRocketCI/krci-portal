@@ -16,7 +16,7 @@ import {
 } from "@/core/components/ui/command";
 import { Button } from "@/core/components/ui/button";
 import { Badge } from "@/core/components/ui/badge";
-import { Check, ChevronsUpDown, X } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2, X } from "lucide-react";
 import { cn } from "@/core/utils/classname";
 import type { SelectOption } from "../../types";
 
@@ -96,6 +96,19 @@ export const FormCombobox = <TData,>({
   const hasError = isTouched && errors.length > 0;
   const errorMessage = extractErrorMessage(errors);
 
+  const fieldSuffix = React.useMemo(
+    () =>
+      loading ? (
+        <div className="bg-muted flex items-center px-2">
+          <Loader2 className="text-muted-foreground size-4 shrink-0 animate-spin" aria-hidden />
+          {suffix}
+        </div>
+      ) : (
+        suffix
+      ),
+    [loading, suffix]
+  );
+
   // Handler to remove a selected value (for multiple mode)
   const handleRemove = React.useCallback(
     (valueToRemove: string) => {
@@ -159,7 +172,7 @@ export const FormCombobox = <TData,>({
         error={hasError ? errorMessage : undefined}
         helperText={helperText}
         id={fieldId}
-        suffix={suffix}
+        suffix={fieldSuffix}
       >
         <ComboboxMultipleWithInput
           id={fieldId}
@@ -231,7 +244,7 @@ export const FormCombobox = <TData,>({
           error={hasError ? errorMessage : undefined}
           helperText={helperText}
           id={fieldId}
-          suffix={suffix}
+          suffix={fieldSuffix}
         >
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
@@ -307,7 +320,7 @@ export const FormCombobox = <TData,>({
         error={hasError ? errorMessage : undefined}
         helperText={helperText}
         id={fieldId}
-        suffix={suffix}
+        suffix={fieldSuffix}
       >
         <Combobox
           id={fieldId}
@@ -356,7 +369,7 @@ export const FormCombobox = <TData,>({
         error={hasError ? errorMessage : undefined}
         helperText={helperText}
         id={fieldId}
-        suffix={suffix}
+        suffix={fieldSuffix}
       >
         <ComboboxWithInput
           id={fieldId}
@@ -384,7 +397,7 @@ export const FormCombobox = <TData,>({
       error={hasError ? errorMessage : undefined}
       helperText={helperText}
       id={fieldId}
-      suffix={suffix}
+      suffix={fieldSuffix}
     >
       <Combobox
         id={fieldId}

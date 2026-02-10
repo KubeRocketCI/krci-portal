@@ -34,7 +34,10 @@ export const CreationStrategy: React.FC = () => {
     <form.AppField
       name={NAMES.strategy}
       validators={{
-        onChange: ({ value }) => (!value ? "Select creation strategy" : undefined),
+        onChange: ({ value }) => {
+          const method = form.store.state.values[NAMES.ui_creationMethod];
+          return method === "custom" && !value ? "Select creation strategy" : undefined;
+        },
       }}
       listeners={{
         onChange: () => {

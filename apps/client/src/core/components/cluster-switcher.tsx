@@ -35,7 +35,7 @@ export function ClusterSwitcher({
   }
 
   return (
-    <SidebarMenu>
+    <SidebarMenu data-tour="cluster-nav">
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

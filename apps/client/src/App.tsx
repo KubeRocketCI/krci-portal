@@ -6,6 +6,7 @@ import { AuthProvider } from "./core/auth/provider";
 import { TRPCProvider } from "./core/providers/trpc";
 import { SubscriptionsProvider } from "./core/providers/subscriptions";
 import AppRouter from "./core/router/components/AppRouter";
+import { ToursProvider } from "./modules/tours";
 
 function App() {
   return (
@@ -15,7 +16,9 @@ function App() {
           <TRPCProvider>
             <SubscriptionsProvider>
               <BasicLayout>
-                <AppRouter />
+                <ToursProvider>
+                  <AppRouter />
+                </ToursProvider>
               </BasicLayout>
             </SubscriptionsProvider>
           </TRPCProvider>

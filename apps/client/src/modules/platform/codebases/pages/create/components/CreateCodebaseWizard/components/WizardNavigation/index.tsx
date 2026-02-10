@@ -59,7 +59,6 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
           }
         }
 
-        // Only proceed if no errors in current step
         if (!hasStepErrors) {
           onNext();
         }
@@ -67,7 +66,6 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
         onNext();
       }
     } else {
-      // For steps without form fields (like REVIEW), just proceed
       onNext();
     }
   }, [currentFormPart, onNext, form]);
