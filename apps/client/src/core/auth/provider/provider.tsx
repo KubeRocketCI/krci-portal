@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
     retry: false,
     refetchOnWindowFocus: true, // Ensure that user's session is still valid on page focus
     refetchOnReconnect: true, // Refetch if the app regains connection,
-    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+    refetchInterval: 60 * 1000, // Refetch every 1 minute to keep token fresh
     staleTime: Infinity, // Never consider the data stale - auth state should persist
     gcTime: Infinity, // Never garbage collect the data
   });

@@ -7,6 +7,7 @@ export const PATH_AUTH_LOGIN = "/login" as const;
 
 export interface Search {
   redirect?: RoutePath | undefined;
+  reason?: "session-expired" | undefined;
 }
 
 export const routeAuthLogin = createRoute({
@@ -15,6 +16,7 @@ export const routeAuthLogin = createRoute({
   validateSearch: (search: Record<string, string>): Search => {
     return {
       redirect: search?.redirect as RoutePath,
+      reason: search?.reason as "session-expired" | undefined,
     };
   },
   component: LoginPage,
