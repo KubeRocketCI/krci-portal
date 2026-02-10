@@ -11,7 +11,6 @@ import type { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/m
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { useCreateCodebaseForm } from "../../../providers/form/hooks";
 import { NAMES } from "../../../names";
-import z from "zod";
 import type { Template } from "@my-project/shared";
 
 const useTemplateOptions = (filteredTemplates: Template[]) => {
@@ -131,7 +130,12 @@ export const TemplateSelection: React.FC = () => {
       <LoadingWrapper isLoading={templatesWatch.query.isFetching}>
         <wizardForm.AppField
           name={NAMES.ui_creationTemplate}
-          validators={{ onChange: z.string().min(1, "Select a template") }}
+          validators={{
+            onChange: ({ value }) => {
+              const creationMethod = wizardForm.store.state.values[NAMES.ui_creationMethod];
+              return creationMethod === "template" && (!value || value.length === 0) ? "Select a template" : undefined;
+            },
+          }}
           listeners={{
             onChange: ({ value }) => {
               const template = templates.find((t) => t.metadata.name === value);

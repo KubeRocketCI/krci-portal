@@ -30,11 +30,10 @@ export const CreationMethod: React.FC = () => {
       }}
       listeners={{
         onChange: ({ value }) => {
-          if (value === "template") {
-            form.setFieldValue(NAMES.type, "" as CodebaseTypeValue);
-            form.setFieldValue(NAMES.strategy, "" as CodebaseCreationStrategy);
-          } else if (value === "custom") {
-            form.setFieldValue(NAMES.repositoryUrl, "");
+          form.setFieldValue(NAMES.type, "" as CodebaseTypeValue, { dontValidate: true });
+          form.setFieldValue(NAMES.strategy, "" as CodebaseCreationStrategy, { dontValidate: true });
+          if (value === "custom") {
+            form.setFieldValue(NAMES.repositoryUrl, "", { dontValidate: true });
           }
         },
       }}

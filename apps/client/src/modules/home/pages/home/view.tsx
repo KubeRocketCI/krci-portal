@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import {
   Activity,
   BookOpen,
@@ -36,11 +36,18 @@ import KubeConfigPreviewDialog from "@/core/components/KubeConfigPreview";
 import UserDetailsDialog from "@/core/components/UserDetails";
 import KubernetesDetailsDialog from "@/core/components/KubernetesDetails";
 import { PATH_CODEBASE_CREATE_FULL } from "@/modules/platform/codebases/pages/create/route";
+import { useAutoTour, getToursForRoute } from "@/modules/tours";
 
 export default function HomePage() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
   const defaultNamespace = useClusterStore(useShallow((state) => state.defaultNamespace));
+  const location = useLocation();
+
+  // Auto-start pinned items tour on home page
+  const tours = getToursForRoute(location.pathname);
+  const pinnedItemsTour = tours.find((t) => t.id === "pinned_items_intro");
+  useAutoTour(pinnedItemsTour || null);
 
   const openNamespacesDialog = useDialogOpener(NamespacesDialog);
   const openKubeConfigPreviewDialog = useDialogOpener(KubeConfigPreviewDialog);
@@ -180,7 +187,7 @@ export default function HomePage() {
             </div>
           </div>
           {/* Quick User Actions */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2" data-tour="quick-actions">
             <h3 className="mb-2 text-sm font-semibold text-slate-900 dark:text-slate-100">Quick Actions</h3>
             <div className="flex flex-col gap-2">
               <Button variant="outline" size="sm" className="justify-start" onClick={() => openNamespacesDialog({})}>
@@ -240,7 +247,7 @@ export default function HomePage() {
       </Card>
 
       {/* Getting Started Guide */}
-      <Card className="p-6">
+      <Card data-tour="getting-started" className="p-6">
         <h3 className="mb-4 flex items-center gap-2 text-slate-900 dark:text-slate-100">
           <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           Getting Started

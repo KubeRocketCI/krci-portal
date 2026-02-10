@@ -41,7 +41,10 @@ export const CodebaseType: React.FC = () => {
     <form.AppField
       name={NAMES.type}
       validators={{
-        onChange: ({ value }) => (!value ? "Select codebase type" : undefined),
+        onChange: ({ value }) => {
+          const creationMethod = form.store.state.values[NAMES.ui_creationMethod];
+          return creationMethod === "custom" && !value ? "Select codebase type" : undefined;
+        },
       }}
     >
       {(field) => (

@@ -30,7 +30,7 @@ export function SidebarPinnedSection() {
   const isEmpty = pinnedPages.length === 0;
 
   return (
-    <SidebarGroup className="pb-0">
+    <SidebarGroup className="pb-0" data-tour="pinned-section">
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger asChild>
           <SidebarGroupLabel className="hover:text-foreground cursor-pointer select-none">
@@ -40,7 +40,7 @@ export function SidebarPinnedSection() {
           </SidebarGroupLabel>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <SidebarMenu>
+          <SidebarMenu data-tour="sidebar-menu">
             {isEmpty && (
               <SidebarMenuItem>
                 <div className="text-muted-foreground px-2 py-1.5 text-xs">Pin items from detail pages</div>

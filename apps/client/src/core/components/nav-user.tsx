@@ -91,7 +91,7 @@ export function NavUser() {
       .join("") ?? "CN";
 
   return (
-    <SidebarMenu>
+    <SidebarMenu data-tour="user-nav">
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

@@ -134,6 +134,7 @@ export function AppSidebar() {
           <div data-slot="sidebar-header" data-sidebar="header" className={cn("flex flex-col gap-2 p-2")}>
             <ClusterSwitcher clusters={clusters} />
           </div>
+          <SidebarPinnedSection />
           <div
             data-slot="sidebar-content"
             data-sidebar="content"
@@ -141,7 +142,6 @@ export function AppSidebar() {
               "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden"
             )}
           >
-            <SidebarPinnedSection />
             <SidebarGroup>
               <SidebarGroupLabel>Platform</SidebarGroupLabel>
               <SidebarMenu>

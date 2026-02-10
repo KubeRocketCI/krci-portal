@@ -1,8 +1,11 @@
 import { Link } from "@tanstack/react-router";
+import { Settings } from "lucide-react";
 import { SidebarTrigger } from "../ui/sidebar";
 import { ResourceQuotas } from "../ResourceQuotas";
 import { ThemeSwitcher } from "../ThemeSwitcher";
+import { Button } from "../ui/button";
 import { PATH_HOME_FULL } from "@/modules/home/pages/home/route";
+import { PATH_SETTINGS_TOURS_FULL } from "@/modules/tours/pages/settings/route";
 
 function Header() {
   return (
@@ -12,6 +15,13 @@ function Header() {
         <img src="/krci-logo-with-text.svg" alt="kuberocket-ci-logo" className="h-full w-full cursor-pointer" />
       </Link>
       <div className="ml-auto flex items-center gap-2">
+        {import.meta.env.DEV && (
+          <Link to={PATH_SETTINGS_TOURS_FULL}>
+            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
+              <Settings className="h-5 w-5" />
+            </Button>
+          </Link>
+        )}
         <ThemeSwitcher />
         <ResourceQuotas />
       </div>

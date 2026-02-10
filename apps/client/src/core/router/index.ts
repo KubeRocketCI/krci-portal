@@ -55,6 +55,7 @@ import { routeNexusConfiguration } from "@/modules/platform/configuration/module
 import { routeQuicklinksConfiguration } from "@/modules/platform/configuration/modules/quicklinks/route";
 import { routeRegistryConfiguration } from "@/modules/platform/configuration/modules/registry/route";
 import { routeSonarConfiguration } from "@/modules/platform/configuration/modules/sonar/route";
+import { routeSettingsTours } from "@/modules/tours/pages/settings/route";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import { routeStageCreate } from "@/modules/platform/cdpipelines/pages/stages/create/route";
 import { routeTaskList } from "@/modules/platform/tekton/pages/task-list/route";
@@ -92,6 +93,7 @@ const routeTree = rootRoute.addChildren([
   contentLayoutRoute.addChildren([
     indexRoute,
     routeHome,
+    routeSettingsTours,
     routeCluster.addChildren([
       routeOverviewDetails,
       routeComponentList,

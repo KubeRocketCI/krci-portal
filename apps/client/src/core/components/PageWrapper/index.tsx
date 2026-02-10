@@ -16,7 +16,7 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({
       {hasBreadcrumbs ? (
         <div className="flex h-(--breadcrumbs-height) shrink-0 border-b px-4">
           <div className="flex w-full items-center justify-between gap-2">
-            <div>
+            <div className="w-full">
               <div className="flex items-center gap-4">
                 <div className="text-muted-foreground flex items-center gap-2 text-sm">
                   {breadcrumbs?.map(({ label, route }, index, array) => {
