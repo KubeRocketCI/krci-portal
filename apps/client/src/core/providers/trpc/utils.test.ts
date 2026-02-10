@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Use vi.hoisted to ensure mocks are set up before modules load
-const { mockNavigate, mockRouterState } = vi.hoisted(() => {
+const { mockNavigate, mockRouterState, mockShowToast } = vi.hoisted(() => {
   return {
     mockNavigate: vi.fn(),
     mockRouterState: {
@@ -9,6 +9,7 @@ const { mockNavigate, mockRouterState } = vi.hoisted(() => {
         pathname: "/some-page",
       },
     },
+    mockShowToast: vi.fn(),
   };
 });
 
@@ -33,6 +34,11 @@ vi.mock("../../auth/pages/callback/route", () => ({
   },
 }));
 
+// Mock the Snackbar component
+vi.mock("../../components/Snackbar", () => ({
+  showToast: mockShowToast,
+}));
+
 import { customFetch } from "./utils";
 
 describe("customFetch", () => {
@@ -41,6 +47,13 @@ describe("customFetch", () => {
     vi.clearAllMocks();
     // Reset the pathname to default
     mockRouterState.location.pathname = "/some-page";
+
+    // Mock window.location.href using Object.defineProperty
+    Object.defineProperty(window, "location", {
+      value: { href: "" },
+      writable: true,
+      configurable: true,
+    });
   });
 
   afterEach(async () => {
@@ -56,10 +69,10 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockNavigate).toHaveBeenCalledWith({
-        to: "/auth/login",
-        replace: true,
+      expect(mockShowToast).toHaveBeenCalledWith("Session expired. Please log in again.", "warning", {
+        duration: 4000,
       });
+      expect(window.location.href).toBe("/auth/login?redirect=%2Fsome-page&reason=session-expired");
     });
 
     it("should not redirect on 200 status with no errors", async () => {
@@ -70,7 +83,8 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockNavigate).not.toHaveBeenCalled();
+      expect(mockShowToast).not.toHaveBeenCalled();
+      expect(window.location.href).toBe("");
     });
   });
 
@@ -89,10 +103,10 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockNavigate).toHaveBeenCalledWith({
-        to: "/auth/login",
-        replace: true,
+      expect(mockShowToast).toHaveBeenCalledWith("Session expired. Please log in again.", "warning", {
+        duration: 4000,
       });
+      expect(window.location.href).toBe("/auth/login?redirect=%2Fsome-page&reason=session-expired");
     });
 
     it("should redirect on UNAUTHORIZED in error.data.code", async () => {
@@ -108,10 +122,10 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockNavigate).toHaveBeenCalledWith({
-        to: "/auth/login",
-        replace: true,
+      expect(mockShowToast).toHaveBeenCalledWith("Session expired. Please log in again.", "warning", {
+        duration: 4000,
       });
+      expect(window.location.href).toBe("/auth/login?redirect=%2Fsome-page&reason=session-expired");
     });
 
     it("should redirect on 401 httpStatus in error.data", async () => {
@@ -127,10 +141,10 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockNavigate).toHaveBeenCalledWith({
-        to: "/auth/login",
-        replace: true,
+      expect(mockShowToast).toHaveBeenCalledWith("Session expired. Please log in again.", "warning", {
+        duration: 4000,
       });
+      expect(window.location.href).toBe("/auth/login?redirect=%2Fsome-page&reason=session-expired");
     });
 
     it("should redirect on 403 httpStatus in error.data", async () => {
@@ -146,10 +160,10 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockNavigate).toHaveBeenCalledWith({
-        to: "/auth/login",
-        replace: true,
+      expect(mockShowToast).toHaveBeenCalledWith("Session expired. Please log in again.", "warning", {
+        duration: 4000,
       });
+      expect(window.location.href).toBe("/auth/login?redirect=%2Fsome-page&reason=session-expired");
     });
 
     it("should not redirect on other error codes", async () => {
@@ -166,7 +180,8 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockNavigate).not.toHaveBeenCalled();
+      expect(mockShowToast).not.toHaveBeenCalled();
+      expect(window.location.href).toBe("");
     });
   });
 
@@ -186,10 +201,10 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockNavigate).toHaveBeenCalledWith({
-        to: "/auth/login",
-        replace: true,
+      expect(mockShowToast).toHaveBeenCalledWith("Session expired. Please log in again.", "warning", {
+        duration: 4000,
       });
+      expect(window.location.href).toBe("/auth/login?redirect=%2Fsome-page&reason=session-expired");
     });
 
     it("should redirect when batch item has 401 httpStatus", async () => {
@@ -208,10 +223,10 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockNavigate).toHaveBeenCalledWith({
-        to: "/auth/login",
-        replace: true,
+      expect(mockShowToast).toHaveBeenCalledWith("Session expired. Please log in again.", "warning", {
+        duration: 4000,
       });
+      expect(window.location.href).toBe("/auth/login?redirect=%2Fsome-page&reason=session-expired");
     });
 
     it("should not redirect when batch has no auth errors", async () => {
@@ -229,7 +244,8 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockNavigate).not.toHaveBeenCalled();
+      expect(mockShowToast).not.toHaveBeenCalled();
+      expect(window.location.href).toBe("");
     });
 
     it("should handle empty batch response", async () => {
@@ -239,7 +255,8 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockNavigate).not.toHaveBeenCalled();
+      expect(mockShowToast).not.toHaveBeenCalled();
+      expect(window.location.href).toBe("");
     });
   });
 
@@ -250,7 +267,8 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockNavigate).not.toHaveBeenCalled();
+      expect(mockShowToast).not.toHaveBeenCalled();
+      expect(window.location.href).toBe("");
     });
 
     it("should handle malformed JSON gracefully", async () => {
@@ -259,7 +277,8 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockNavigate).not.toHaveBeenCalled();
+      expect(mockShowToast).not.toHaveBeenCalled();
+      expect(window.location.href).toBe("");
     });
 
     it("should handle empty response body", async () => {
@@ -268,7 +287,8 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockNavigate).not.toHaveBeenCalled();
+      expect(mockShowToast).not.toHaveBeenCalled();
+      expect(window.location.href).toBe("");
     });
 
     it("should return the original response", async () => {
@@ -293,7 +313,8 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockNavigate).not.toHaveBeenCalled();
+      expect(mockShowToast).not.toHaveBeenCalled();
+      expect(window.location.href).toBe("");
     });
 
     it("should not redirect when already on callback page", async () => {
@@ -305,7 +326,8 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockNavigate).not.toHaveBeenCalled();
+      expect(mockShowToast).not.toHaveBeenCalled();
+      expect(window.location.href).toBe("");
     });
 
     it("should prevent multiple redirects with debounce", async () => {
@@ -316,11 +338,16 @@ describe("customFetch", () => {
 
       // First call should redirect
       await customFetch("http://test.com/api", {});
-      expect(mockNavigate).toHaveBeenCalledTimes(1);
+      expect(mockShowToast).toHaveBeenCalledTimes(1);
+      expect(window.location.href).toBe("/auth/login?redirect=%2Fsome-page&reason=session-expired");
+
+      // Reset window.location for next test
+      window.location.href = "";
 
       // Second call immediately after should not redirect (debounced)
       await customFetch("http://test.com/api", {});
-      expect(mockNavigate).toHaveBeenCalledTimes(1);
+      expect(mockShowToast).toHaveBeenCalledTimes(1);
+      expect(window.location.href).toBe("");
 
       // After timeout, should allow redirect again
       await vi.advanceTimersByTimeAsync(1000);
@@ -329,7 +356,8 @@ describe("customFetch", () => {
       global.fetch = vi.fn().mockResolvedValue(mockResponse3);
 
       await customFetch("http://test.com/api", {});
-      expect(mockNavigate).toHaveBeenCalledTimes(2);
+      expect(mockShowToast).toHaveBeenCalledTimes(2);
+      expect(window.location.href).toBe("/auth/login?redirect=%2Fsome-page&reason=session-expired");
     });
   });
 
@@ -352,10 +380,10 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockNavigate).toHaveBeenCalledWith({
-        to: "/auth/login",
-        replace: true,
+      expect(mockShowToast).toHaveBeenCalledWith("Session expired. Please log in again.", "warning", {
+        duration: 4000,
       });
+      expect(window.location.href).toBe("/auth/login?redirect=%2Fsome-page&reason=session-expired");
     });
 
     it("should handle response without error property", async () => {
@@ -372,7 +400,8 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockNavigate).not.toHaveBeenCalled();
+      expect(mockShowToast).not.toHaveBeenCalled();
+      expect(window.location.href).toBe("");
     });
   });
 });

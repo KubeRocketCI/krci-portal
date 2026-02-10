@@ -1,6 +1,7 @@
 import { router } from "../../router";
 import { routeAuthLogin } from "../../auth/pages/login/route";
 import { routeAuthCallback } from "../../auth/pages/callback/route";
+import { showToast } from "../../components/Snackbar";
 
 // Track if we're already redirecting to prevent multiple redirects
 let isRedirecting = false;
@@ -18,7 +19,7 @@ interface TrpcResponseItem {
 }
 
 /**
- * Handles authentication errors by redirecting to login page
+ * Handles authentication errors by redirecting to login page with redirect param
  */
 function handleAuthError(): void {
   if (isRedirecting) return;
@@ -30,7 +31,20 @@ function handleAuthError(): void {
   if (isOnAuthPage) return;
 
   isRedirecting = true;
-  router.navigate({ to: routeAuthLogin.fullPath, replace: true });
+
+  // Show toast notification
+  showToast("Session expired. Please log in again.", "warning", {
+    duration: 4000,
+  });
+
+  // Navigate to login with current page as redirect param and reason
+  // Using window.location to preserve the full path including dynamic segments
+  const params = new URLSearchParams({
+    redirect: currentPath,
+    reason: "session-expired",
+  });
+  const loginUrl = `${routeAuthLogin.fullPath}?${params.toString()}`;
+  window.location.href = loginUrl;
 
   // Reset redirect flag after a delay to allow future redirects if needed
   setTimeout(() => {

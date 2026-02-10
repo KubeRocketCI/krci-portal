@@ -39,6 +39,8 @@ export default function LoginPage() {
   const [showTokenInput, setShowTokenInput] = useState(false);
   const [token, setToken] = useState("");
 
+  const isSessionExpired = search?.reason === "session-expired";
+
   const handleLogin = useCallback(
     () =>
       loginMutation!.mutate!({
@@ -78,6 +80,12 @@ export default function LoginPage() {
             <h1 className="text-foreground text-4xl font-medium">KubeRocketCI</h1>
             <p className="text-foreground text-lg font-bold">Your Kubernetes Experience</p>
           </div>
+
+          {isSessionExpired && (
+            <Alert variant="default" title="Session Expired">
+              Your session has expired. Please sign in again to continue.
+            </Alert>
+          )}
 
           <div className="w-full max-w-72">
             <div className="flex flex-col gap-4">
