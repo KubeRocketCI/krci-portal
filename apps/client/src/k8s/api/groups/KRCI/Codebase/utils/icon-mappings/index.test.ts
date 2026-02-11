@@ -28,6 +28,7 @@ describe("getIconByPattern", () => {
       expect(getIconByPattern("python-3.9")).toBe(RESOURCE_ICON_NAMES.PYTHON);
       expect(getIconByPattern("python-3.10")).toBe(RESOURCE_ICON_NAMES.PYTHON);
       expect(getIconByPattern("python-3.11")).toBe(RESOURCE_ICON_NAMES.PYTHON);
+      expect(getIconByPattern("python-3.13")).toBe(RESOURCE_ICON_NAMES.PYTHON);
     });
 
     test("should match groovy correctly", () => {
@@ -335,6 +336,7 @@ describe("getIconByPattern", () => {
       expect(getIconByPattern("python-3.9")).toBe(RESOURCE_ICON_NAMES.PYTHON);
       expect(getIconByPattern("python-3.10")).toBe(RESOURCE_ICON_NAMES.PYTHON);
       expect(getIconByPattern("python-3.11")).toBe(RESOURCE_ICON_NAMES.PYTHON);
+      expect(getIconByPattern("python-3.13")).toBe(RESOURCE_ICON_NAMES.PYTHON);
     });
   });
 });
