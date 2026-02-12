@@ -1,9 +1,9 @@
 import { createLazyRoute } from "@tanstack/react-router";
-import { ROUTE_ID_COMPONENTS } from "./route";
+import { ROUTE_ID_PROJECTS } from "./route";
 import ComponentListPage from "./page";
 
-const ComponentListRoute = createLazyRoute(ROUTE_ID_COMPONENTS)({
+const ProjectListRoute = createLazyRoute(ROUTE_ID_PROJECTS)({
   component: ComponentListPage,
 });
 
-export default ComponentListRoute;
+export default ProjectListRoute;

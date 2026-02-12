@@ -19,7 +19,7 @@ import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSpr
 import { ScrollCopyText } from "@/core/components/ScrollCopyText";
 import { PipelinePreview } from "@/core/components/PipelinePreview";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { routeComponentDetails } from "../../../route";
+import { routeProjectDetails } from "../../../route";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { PipelineGraphDialog } from "@/modules/platform/tekton/dialogs/PipelineGraph";
 
@@ -67,7 +67,7 @@ export const useInfoRows = () => {
 
   const pipelineNamesWatch = usePipelineNamesWatch();
   const pipelineNames = pipelineNamesWatch.data;
-  const params = routeComponentDetails.useParams();
+  const params = routeProjectDetails.useParams();
   const openPipelineGraphDialog = useDialogOpener(PipelineGraphDialog);
 
   return React.useMemo((): GridItem[] => {

@@ -14,7 +14,7 @@ const creationMethodOptions = [
   {
     value: "custom",
     label: "Custom Configuration",
-    description: "Configure your component manually by selecting type and creation strategy",
+    description: "Configure your project manually by selecting type and creation strategy",
     icon: Settings,
   },
 ];

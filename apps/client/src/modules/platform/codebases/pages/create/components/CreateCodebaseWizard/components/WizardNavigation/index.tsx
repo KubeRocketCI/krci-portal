@@ -5,7 +5,7 @@ import { Link, LinkProps } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, Rocket } from "lucide-react";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
-import { routeComponentList } from "../../../../../list/route";
+import { routeProjectList } from "../../../../../list/route";
 import { CREATE_FORM_PARTS } from "../../names";
 import { NAVIGABLE_STEP_IDXS, useWizardStore } from "../../store";
 import { useCreateCodebaseForm } from "../../providers/form/hooks";
@@ -46,7 +46,7 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
           form.setFieldMeta(fieldName, (prev) => ({ ...prev, isTouched: true }));
         }
 
-        await form.validate("change");
+        await form.validateAllFields("change");
 
         let hasStepErrors = false;
         for (const fieldName of stepFields) {
@@ -89,7 +89,7 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
 
         <div className="flex items-center gap-2">
           <Button variant="ghost" asChild size="sm" type="button">
-            <Link to={routeComponentList.fullPath} params={{ clusterName }}>
+            <Link to={routeProjectList.fullPath} params={{ clusterName }}>
               Cancel
             </Link>
           </Button>

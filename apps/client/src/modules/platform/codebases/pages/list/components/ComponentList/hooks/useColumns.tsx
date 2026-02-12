@@ -16,7 +16,7 @@ import { Link } from "@tanstack/react-router";
 import { Box } from "lucide-react";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
-import { routeComponentDetails } from "../../../../details/route";
+import { routeProjectDetails } from "../../../../details/route";
 import { Actions } from "../../ComponentActions";
 import { columnNames } from "../constants";
 
@@ -72,7 +72,7 @@ export const useColumns = (): TableColumn<Codebase>[] => {
           }) => {
             return (
               <Button variant="link" asChild className="px-4 py-0">
-                <Link to={routeComponentDetails.fullPath} params={{ clusterName, namespace: namespace!, name }}>
+                <Link to={routeProjectDetails.fullPath} params={{ clusterName, namespace: namespace!, name }}>
                   <span className="flex items-center gap-2">
                     <Box className="text-muted-foreground/70" />
                     <TextWithTooltip text={name} />

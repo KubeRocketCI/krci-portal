@@ -10,7 +10,7 @@ import { formatTimestamp, humanize } from "@/core/utils/date-humanize";
 import { useClusterStore } from "@/k8s/store";
 import { PATH_TEKTON_RESULT_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/tekton/pages/tekton-result-details/route";
 import { PATH_PIPELINE_DETAILS_FULL } from "@/modules/platform/tekton/pages/pipeline-details/route";
-import { PATH_COMPONENT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
+import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { getTektonResultStatusIcon } from "@/modules/platform/tekton/utils/statusIcons";
 import { TektonResult, TektonResultStatus, parseRecordName, tektonResultAnnotations } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
@@ -166,7 +166,7 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
             return (
               <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal">
                 <Link
-                  to={PATH_COMPONENT_DETAILS_FULL}
+                  to={PATH_PROJECT_DETAILS_FULL}
                   params={{
                     clusterName,
                     namespace: defaultNamespace,

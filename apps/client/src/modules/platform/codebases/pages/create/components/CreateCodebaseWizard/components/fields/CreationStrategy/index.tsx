@@ -1,6 +1,6 @@
 import React from "react";
 import { useStore } from "@tanstack/react-form";
-import { codebaseCreationStrategy } from "@my-project/shared";
+import { codebaseCreationStrategy, codebaseType } from "@my-project/shared";
 import { FileCode, CopyPlus, CloudDownload } from "lucide-react";
 import { useCreateCodebaseForm } from "../../../providers/form/hooks";
 import { NAMES } from "../../../names";
@@ -26,6 +26,34 @@ const strategyOptions = [
   },
 ];
 
+// Isolated component that subscribes to `type` so the parent AppField doesn't re-render
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const StrategyOptions: React.FC<{ field: any }> = ({ field }) => {
+  const form = useCreateCodebaseForm();
+  const type = useStore(form.store, (s) => s.values[NAMES.type]);
+  const isAutotest = type === codebaseType.autotest;
+
+  const options = React.useMemo(() => {
+    return strategyOptions.map((opt) => ({
+      ...opt,
+      disabled: opt.value === codebaseCreationStrategy.create && isAutotest,
+      disabledTooltip:
+        opt.value === codebaseCreationStrategy.create && isAutotest
+          ? "Create strategy is not available for autotests"
+          : undefined,
+    }));
+  }, [isAutotest]);
+
+  return (
+    <field.FormRadioGroup
+      label="Creation Strategy"
+      options={options}
+      variant="vertical"
+      classNames={{ container: "grid-cols-3", item: "p-3", itemIcon: "h-6 w-6", itemIconContainer: "h-8 w-8" }}
+    />
+  );
+};
+
 export const CreationStrategy: React.FC = () => {
   const form = useCreateCodebaseForm();
   const creationMethod = useStore(form.store, (s) => s.values[NAMES.ui_creationMethod]);
@@ -47,14 +75,7 @@ export const CreationStrategy: React.FC = () => {
         },
       }}
     >
-      {(field) => (
-        <field.FormRadioGroup
-          label="Creation Strategy"
-          options={strategyOptions}
-          variant="vertical"
-          classNames={{ container: "grid-cols-3", item: "p-3", itemIcon: "h-6 w-6", itemIconContainer: "h-8 w-8" }}
-        />
-      )}
+      {(field) => <StrategyOptions field={field} />}
     </form.AppField>
   );
 };

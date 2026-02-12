@@ -21,7 +21,7 @@ import {
 } from "@my-project/shared";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { PATH_COMPONENT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
+import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { routeCDPipelineDetails } from "../../../route";
 import {
   useQuickLinksUrlListWatch,
@@ -122,7 +122,7 @@ export const ApplicationsList = ({ stage }: ApplicationsListProps) => {
               <div className="flex items-center gap-2">
                 <Button variant="link" asChild className="text-foreground h-auto justify-start p-0 text-sm">
                   <Link
-                    to={PATH_COMPONENT_DETAILS_FULL}
+                    to={PATH_PROJECT_DETAILS_FULL}
                     params={{
                       clusterName,
                       name: appCodebase.metadata.name,

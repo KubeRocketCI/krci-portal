@@ -460,7 +460,7 @@ export const Review: React.FC = () => {
           <div>
             <h4 className="text-foreground mb-1 text-sm font-medium">Ready to Create</h4>
             <p className="text-muted-foreground text-sm">
-              Your component will be created with the configuration above. The repository will be initialized, CI/CD
+              Your project will be created with the configuration above. The repository will be initialized, CI/CD
               pipeline configured, and you'll be able to start developing immediately.
             </p>
           </div>

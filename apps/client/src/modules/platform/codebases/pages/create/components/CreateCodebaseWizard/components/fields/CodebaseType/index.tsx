@@ -1,5 +1,5 @@
 import React from "react";
-import { codebaseType } from "@my-project/shared";
+import { codebaseType, codebaseCreationStrategy } from "@my-project/shared";
 import { LayoutGrid, FlaskConical, SquareLibrary, CloudCog } from "lucide-react";
 import { useCreateCodebaseForm } from "../../../providers/form/hooks";
 import { NAMES } from "../../../names";
@@ -44,6 +44,19 @@ export const CodebaseType: React.FC = () => {
         onChange: ({ value }) => {
           const creationMethod = form.store.state.values[NAMES.ui_creationMethod];
           return creationMethod === "custom" && !value ? "Select codebase type" : undefined;
+        },
+      }}
+      listeners={{
+        onChange: ({ value }) => {
+          const currentStrategy = form.store.state.values[NAMES.strategy];
+          if (
+            value === codebaseType.autotest &&
+            (!currentStrategy || currentStrategy === codebaseCreationStrategy.create)
+          ) {
+            form.setFieldValue(NAMES.strategy, codebaseCreationStrategy.clone, { dontValidate: true });
+          } else if (value !== codebaseType.autotest) {
+            form.setFieldValue(NAMES.strategy, codebaseCreationStrategy.create, { dontValidate: true });
+          }
         },
       }}
     >

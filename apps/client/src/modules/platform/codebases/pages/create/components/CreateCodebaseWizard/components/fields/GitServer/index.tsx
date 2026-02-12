@@ -8,12 +8,6 @@ export const GitServer: React.FC = () => {
   const form = useCreateCodebaseForm();
   const gitServersWatch = useGitServerWatchList();
 
-  console.log("🔍 [GitServer] useGitServerWatchList result:", gitServersWatch);
-  console.log("🔍 [GitServer] data:", gitServersWatch.data);
-  console.log("🔍 [GitServer] data.array:", gitServersWatch.data.array);
-  console.log("🔍 [GitServer] isLoading:", gitServersWatch.isLoading);
-  console.log("🔍 [GitServer] isEmpty:", gitServersWatch.isEmpty);
-
   const gitServers = gitServersWatch.data.array;
 
   const options = React.useMemo(

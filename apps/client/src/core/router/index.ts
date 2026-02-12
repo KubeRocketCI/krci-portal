@@ -2,13 +2,13 @@ import { createRouter } from "@tanstack/react-router";
 import { LoadingProgressBar } from "../components/ui/LoadingProgressBar";
 import { RouterErrorComponent } from "./components/RouterErrorComponent";
 import { routeHome } from "../../modules/home/pages/home/route";
-import { routeComponentList } from "../../modules/platform/codebases/pages/list/route";
-import { routeCodebaseCreate } from "../../modules/platform/codebases/pages/create/route";
+import { routeProjectList } from "../../modules/platform/codebases/pages/list/route";
+import { routeProjectCreate } from "../../modules/platform/codebases/pages/create/route";
 import { routeAuthCallback } from "../auth/pages/callback/route";
 import { routeAuthLogin } from "../auth/pages/login/route";
 import ContentLayout from "../components/PageLayout";
 import { rootRoute } from "./_root";
-import { routeComponentDetails } from "../../modules/platform/codebases/pages/details/route";
+import { routeProjectDetails } from "../../modules/platform/codebases/pages/details/route";
 import {
   authRoute,
   contentLayoutRoute,
@@ -96,9 +96,9 @@ const routeTree = rootRoute.addChildren([
     routeSettingsTours,
     routeCluster.addChildren([
       routeOverviewDetails,
-      routeComponentList,
-      routeCodebaseCreate,
-      routeComponentDetails,
+      routeProjectList,
+      routeProjectCreate,
+      routeProjectDetails,
       routeCDPipelineList,
       routeCDPipelineCreate,
       routeCDPipelineDetails,

@@ -4,8 +4,8 @@ import { Button } from "@/core/components/ui/button";
 import { PartyPopper, Check, ArrowRight, FolderGit2, FolderOpen, ExternalLink, Sparkles, Globe } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { NAMES } from "../../names";
-import { routeComponentList } from "../../../../../list/route";
-import { routeComponentDetails } from "../../../../../details/route";
+import { routeProjectList } from "../../../../../list/route";
+import { routeProjectDetails } from "../../../../../details/route";
 import { routeCDPipelineCreate } from "@/modules/platform/cdpipelines/pages/create/route";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
@@ -49,7 +49,7 @@ export const Success: React.FC = () => {
   const handleCreateAnother = () => {
     useWizardStore.getState().reset();
     // Reload the page to reset the form
-    window.location.href = `/c/${clusterName}/components/create`;
+    window.location.href = `/c/${clusterName}/projects/create`;
   };
 
   return (
@@ -81,7 +81,7 @@ export const Success: React.FC = () => {
           <h3 className="text-foreground mb-4 text-base font-semibold">What would you like to do next?</h3>
           <div className="grid grid-cols-2 gap-3">
             <Button variant="outline" size="sm" className="flex h-auto flex-col items-center gap-1.5 py-3" asChild>
-              <Link to={routeComponentList.fullPath} params={{ clusterName }}>
+              <Link to={routeProjectList.fullPath} params={{ clusterName }}>
                 <FolderOpen className="text-muted-foreground h-4 w-4" />
                 <div className="flex flex-col">
                   <span className="text-xs">View All Projects</span>
@@ -92,7 +92,7 @@ export const Success: React.FC = () => {
 
             <Button size="sm" className="flex h-auto flex-col items-center gap-1.5 py-3" asChild>
               <Link
-                to={routeComponentDetails.fullPath}
+                to={routeProjectDetails.fullPath}
                 params={{
                   clusterName,
                   name: name || "",

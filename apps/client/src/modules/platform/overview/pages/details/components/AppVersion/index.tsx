@@ -1,7 +1,7 @@
 import { DataTable } from "@/core/components/Table";
 import { useApplicationWatchList } from "@/k8s/api/groups/ArgoCD/Application";
 import { useClusterStore } from "@/k8s/store";
-import { routeComponentDetails } from "@/modules/platform/codebases/pages/details/route";
+import { routeProjectDetails } from "@/modules/platform/codebases/pages/details/route";
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { applicationLabels } from "@my-project/shared";
@@ -56,7 +56,7 @@ export const AppVersion = ({
           <h6 className="text-foreground text-base font-medium">
             Deployed versions for:{" "}
             <Link
-              to={routeComponentDetails.fullPath}
+              to={routeProjectDetails.fullPath}
               params={{ clusterName: clusterName, name: widgetConfig.data.appName, namespace: defaultNamespace }}
             >
               {widgetConfig.data.appName}

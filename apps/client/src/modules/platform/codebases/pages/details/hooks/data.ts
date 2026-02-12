@@ -12,12 +12,12 @@ import {
   createSecurityPipelineRef,
   pipelineRunLabels,
 } from "@my-project/shared";
-import { routeComponentDetails } from "../route";
+import { routeProjectDetails } from "../route";
 import { useQuery } from "@tanstack/react-query";
 import { sortCodebaseBranchesMap } from "@/k8s/api/groups/KRCI/CodebaseBranch/utils/sort";
 
 export const useCodebaseWatch = () => {
-  const params = routeComponentDetails.useParams();
+  const params = routeProjectDetails.useParams();
 
   return useCodebaseWatchItem({
     name: params.name,
@@ -29,7 +29,7 @@ export const useCodebaseWatch = () => {
 };
 
 export const useCodebaseBranchListWatch = () => {
-  const params = routeComponentDetails.useParams();
+  const params = routeProjectDetails.useParams();
 
   const codebaseWatch = useCodebaseWatch();
   const codebase = codebaseWatch.query.data;
@@ -50,7 +50,7 @@ export const useCodebaseBranchListWatch = () => {
 };
 
 export const useGitServerWatch = () => {
-  const params = routeComponentDetails.useParams();
+  const params = routeProjectDetails.useParams();
 
   const codebaseWatch = useCodebaseWatch();
   const codebase = codebaseWatch.query.data;
@@ -65,7 +65,7 @@ export const useGitServerWatch = () => {
 };
 
 export const useCodebaseBranchPipelineRunListWatch = (codebaseBranch: CodebaseBranch) => {
-  const params = routeComponentDetails.useParams();
+  const params = routeProjectDetails.useParams();
 
   return usePipelineRunWatchList({
     namespace: params.namespace,
@@ -79,7 +79,7 @@ export const useCodebaseBranchPipelineRunListWatch = (codebaseBranch: CodebaseBr
 };
 
 export const useBuildTriggerTemplateWatch = () => {
-  const params = routeComponentDetails.useParams();
+  const params = routeProjectDetails.useParams();
 
   const gitServerByCodebaseWatch = useGitServerWatch();
   const gitServerByCodebase = gitServerByCodebaseWatch.query.data;
@@ -94,7 +94,7 @@ export const useBuildTriggerTemplateWatch = () => {
 };
 
 export const useSecurityTriggerTemplateWatch = () => {
-  const params = routeComponentDetails.useParams();
+  const params = routeProjectDetails.useParams();
 
   const gitServerByCodebaseWatch = useGitServerWatch();
   const gitServerByCodebase = gitServerByCodebaseWatch.query.data;
@@ -109,7 +109,7 @@ export const useSecurityTriggerTemplateWatch = () => {
 };
 
 export const useQuickLinkListWatch = () => {
-  const params = routeComponentDetails.useParams();
+  const params = routeProjectDetails.useParams();
 
   return useQuickLinkWatchList({
     namespace: params.namespace,

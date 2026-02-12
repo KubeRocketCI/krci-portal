@@ -11,7 +11,7 @@ import { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/mappin
 import { Codebase } from "@my-project/shared";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { PATH_COMPONENT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
+import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { useCDPipelineWatch, useAppCodebaseListWatch } from "../../hooks/data";
 import { routeCDPipelineDetails } from "../../route";
 
@@ -27,7 +27,7 @@ const useColumns = (clusterName: string, namespace: string): TableColumn<Codebas
           render: ({ data }) => (
             <Button variant="link" asChild className="text-foreground h-auto justify-start p-0 text-sm">
               <Link
-                to={PATH_COMPONENT_DETAILS_FULL}
+                to={PATH_PROJECT_DETAILS_FULL}
                 params={{
                   clusterName,
                   name: data.metadata.name,

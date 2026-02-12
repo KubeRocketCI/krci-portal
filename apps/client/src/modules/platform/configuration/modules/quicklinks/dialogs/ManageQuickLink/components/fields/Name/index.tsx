@@ -14,7 +14,7 @@ export const Name = () => {
       name={NAMES.NAME}
       validators={{
         onChange: ({ value }) => {
-          if (!value) return "Enter a component name.";
+          if (!value) return "Enter a quick link name.";
           return undefined;
         },
       }}
@@ -23,7 +23,7 @@ export const Name = () => {
         <field.FormTextField
           label="Name"
           tooltipText="Enter a service name for the link. This name will be displayed on the overview page. Ensure the name is in lowercase."
-          placeholder="My component name"
+          placeholder="My quick link name"
           disabled={isSystem}
         />
       )}

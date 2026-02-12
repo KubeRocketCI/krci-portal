@@ -9,7 +9,7 @@ import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/ut
 import { useClusterStore } from "@/k8s/store";
 import { humanize, formatTimestamp } from "@/core/utils/date-humanize";
 import { PATH_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-details/route";
-import { PATH_COMPONENT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
+import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import {
@@ -160,7 +160,7 @@ export const useColumns = ({
             return (
               <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal">
                 <Link
-                  to={PATH_COMPONENT_DETAILS_FULL}
+                  to={PATH_PROJECT_DETAILS_FULL}
                   params={{
                     name: codebaseName,
                     namespace: namespace || defaultNamespace,
