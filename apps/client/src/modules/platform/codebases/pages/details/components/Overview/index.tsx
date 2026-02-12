@@ -2,7 +2,7 @@ import { InfoColumns } from "@/core/components/InfoColumns";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { Card } from "@/core/components/ui/card";
 import { useCodebaseWatch } from "../../hooks/data";
-import { routeComponentDetails } from "../../route";
+import { routeProjectDetails } from "../../route";
 import { SonarQubeMetricsWidget } from "@/modules/platform/security/components/sonarqube/SonarQubeMetricsWidget";
 import { DependencyTrackMetricsWidget } from "@/modules/platform/security/components/dependencytrack/DependencyTrackMetricsWidget";
 import { useInfoRows } from "./hooks/useInfoRows";
@@ -11,7 +11,7 @@ export const Overview = () => {
   const codebaseWatch = useCodebaseWatch();
   const gridItems = useInfoRows();
 
-  const params = routeComponentDetails.useParams();
+  const params = routeProjectDetails.useParams();
 
   // Get default branch from codebase spec, fallback to "main"
   const codebase = codebaseWatch.query.data;

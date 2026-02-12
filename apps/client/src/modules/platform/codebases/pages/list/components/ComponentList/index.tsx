@@ -11,7 +11,7 @@ import { codebaseType, type Codebase } from "@my-project/shared";
 import { Trash } from "lucide-react";
 import React, { Suspense } from "react";
 import { routeGitserversConfiguration } from "../../../../../configuration/modules/gitservers/route";
-import { routeCodebaseCreate } from "../../../create/route";
+import { routeProjectCreate } from "../../../create/route";
 import { CodebaseFilter } from "../CodebaseFilter";
 import { useCodebaseFilter } from "../CodebaseFilter/hooks/useFilter";
 import { ComponentMultiDeletion } from "./components/ComponentMultiDeletion";
@@ -81,7 +81,7 @@ export const ComponentList = () => {
         customText={"Let's kickstart the application onboarding!"}
         linkText={"Click here to add a new application and integrate with the platform."}
         route={{
-          to: routeCodebaseCreate.fullPath,
+          to: routeProjectCreate.fullPath,
         }}
       />
     );

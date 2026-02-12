@@ -8,11 +8,11 @@ import { useCodebasePermissions } from "@/k8s/api/groups/KRCI/Codebase";
 import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { Box, Plus } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { routeCodebaseCreate } from "../create/route";
-import { routeComponentList } from "./route";
+import { routeProjectCreate } from "../create/route";
+import { routeProjectList } from "./route";
 
 export default function ComponentListPageContent() {
-  const { clusterName } = routeComponentList.useParams();
+  const { clusterName } = routeProjectList.useParams();
 
   const codebasePermissions = useCodebasePermissions();
 
@@ -38,7 +38,7 @@ export default function ComponentListPageContent() {
             allowed={codebasePermissions.data.create.allowed}
             reason={codebasePermissions.data.create.reason}
           >
-            <Link to={routeCodebaseCreate.fullPath} params={{ clusterName: clusterName }} className="no-underline">
+            <Link to={routeProjectCreate.fullPath} params={{ clusterName: clusterName }} className="no-underline">
               <Plus />
               Create Project
             </Link>

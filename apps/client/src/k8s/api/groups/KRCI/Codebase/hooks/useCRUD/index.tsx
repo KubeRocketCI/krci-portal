@@ -1,6 +1,6 @@
 import { useResourceCRUDMutation } from "@/k8s/api/hooks/useResourceCRUDMutation";
 import { useClusterStore } from "@/k8s/store";
-import { routeComponentDetails } from "@/modules/platform/codebases/pages/details/route";
+import { routeProjectDetails } from "@/modules/platform/codebases/pages/details/route";
 import {
   Codebase,
   CodebaseDraft,
@@ -37,7 +37,7 @@ export const useCRUD = () => {
           options: {
             duration: 8000,
             route: {
-              to: routeComponentDetails.fullPath,
+              to: routeProjectDetails.fullPath,
               params: {
                 clusterName,
                 namespace: codebase.metadata.namespace || defaultNamespace,
@@ -76,7 +76,7 @@ export const useCRUD = () => {
           options: {
             duration: 8000,
             route: {
-              to: routeComponentDetails.fullPath,
+              to: routeProjectDetails.fullPath,
               params: {
                 clusterName,
                 namespace: codebase.metadata.namespace || defaultNamespace,

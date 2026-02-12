@@ -16,7 +16,7 @@ import { GitAndProjectInfo } from "./components/GitAndProjectInfo";
 import { BuildConfig } from "./components/BuildConfig";
 import { CreateCodebaseFormProvider } from "./providers/form/provider";
 import { useCreateCodebaseForm } from "./providers/form/hooks";
-import { routeComponentList } from "../../../list/route";
+import { routeProjectList } from "../../../list/route";
 
 export const CreateCodebaseWizard: React.FC = () => {
   const {
@@ -161,7 +161,7 @@ const WizardContent: React.FC<WizardContentProps> = ({ isPending }) => {
               onNext={goToNextStep}
               isSubmitting={isPending}
               backRoute={{
-                to: routeComponentList.fullPath,
+                to: routeProjectList.fullPath,
                 params: { clusterName },
               }}
             />

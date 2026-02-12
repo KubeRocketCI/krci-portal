@@ -23,7 +23,7 @@ import { Card } from "@/core/components/ui/card";
 import { Badge } from "@/core/components/ui/badge";
 import { Button } from "@/core/components/ui/button";
 import { PATH_OVERVIEW_FULL } from "@/modules/platform/overview/pages/details/route";
-import { PATH_COMPONENTS_FULL } from "@/modules/platform/codebases/pages/list/route";
+import { PATH_PROJECTS_FULL } from "@/modules/platform/codebases/pages/list/route";
 import { PATH_CDPIPELINES_FULL } from "@/modules/platform/cdpipelines/pages/list/route";
 import { PATH_PIPELINERUNS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-list/route";
 import { PATH_CONFIG_QUICKLINKS_FULL } from "@/modules/platform/configuration/modules/quicklinks/route";
@@ -35,7 +35,7 @@ import NamespacesDialog from "@/core/components/Namespaces";
 import KubeConfigPreviewDialog from "@/core/components/KubeConfigPreview";
 import UserDetailsDialog from "@/core/components/UserDetails";
 import KubernetesDetailsDialog from "@/core/components/KubernetesDetails";
-import { PATH_CODEBASE_CREATE_FULL } from "@/modules/platform/codebases/pages/create/route";
+import { PATH_PROJECT_CREATE_FULL } from "@/modules/platform/codebases/pages/create/route";
 import { useAutoTour, getToursForRoute } from "@/modules/tours";
 
 export default function HomePage() {
@@ -80,14 +80,14 @@ export default function HomePage() {
       label: "Create Project",
       description: "Start a new codebase",
       icon: GitBranch,
-      to: PATH_CODEBASE_CREATE_FULL,
+      to: PATH_PROJECT_CREATE_FULL,
       params: clusterParams,
     },
     {
       label: "Browse Projects",
       description: "View all codebases",
       icon: FolderGit2,
-      to: PATH_COMPONENTS_FULL,
+      to: PATH_PROJECTS_FULL,
       params: clusterParams,
     },
     {
@@ -118,7 +118,7 @@ export default function HomePage() {
       title: "Import Your First Project",
       description: "Connect to Git and import existing codebases",
       icon: GitBranch,
-      to: PATH_COMPONENTS_FULL,
+      to: PATH_PROJECTS_FULL,
       params: clusterParams,
     },
     {

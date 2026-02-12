@@ -16,7 +16,7 @@ import { PATH_TRIVY_INFRA_ASSESSMENTS_FULL } from "@/modules/platform/security/p
 import { PATH_TRIVY_CLUSTER_INFRA_ASSESSMENTS_FULL } from "@/modules/platform/security/pages/trivy-cluster-infra-assessments/route";
 import { PATH_TRIVY_CLUSTER_CONFIG_AUDITS_FULL } from "@/modules/platform/security/pages/trivy-cluster-config-audits/route";
 import { PATH_TRIVY_CLUSTER_VULNERABILITIES_FULL } from "@/modules/platform/security/pages/trivy-cluster-vulnerabilities/route";
-import { PATH_COMPONENTS_FULL } from "@/modules/platform/codebases/pages/list/route";
+import { PATH_PROJECTS_FULL } from "@/modules/platform/codebases/pages/list/route";
 import { PATH_CDPIPELINES_FULL } from "@/modules/platform/cdpipelines/pages/list/route";
 import { PATH_PIPELINERUNS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-list/route";
 import { PATH_PIPELINES_FULL } from "@/modules/platform/tekton/pages/pipeline-list/route";
@@ -85,7 +85,7 @@ export function createNavigationConfig(clusterName: string, namespace: string): 
       title: "Projects",
       icon: Box,
       route: {
-        to: PATH_COMPONENTS_FULL,
+        to: PATH_PROJECTS_FULL,
         params: clusterDefaultParams,
       },
     },

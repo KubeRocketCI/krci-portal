@@ -17,7 +17,7 @@ import { getPipelineRunConditionStatusIcon } from "../../utils/statusIcons";
 import { Badge } from "@/core/components/ui/badge";
 import { Link } from "@tanstack/react-router";
 import { PATH_PIPELINE_DETAILS_FULL } from "../pipeline-details/route";
-import { PATH_COMPONENT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
+import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { AuthorAvatar } from "@/core/components/AuthorAvatar";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
@@ -100,7 +100,7 @@ const HeaderMetadata = () => {
           <Code className="text-muted-foreground size-4" />
           <span className="text-muted-foreground text-sm">Codebase:</span>
           <Link
-            to={PATH_COMPONENT_DETAILS_FULL}
+            to={PATH_PROJECT_DETAILS_FULL}
             params={{
               clusterName,
               namespace: pipelineRun.metadata.namespace || defaultNamespace,

@@ -15,7 +15,7 @@ export const JiraServer = () => {
       name={EDIT_CODEBASE_FORM_NAMES.jiraServer}
       validators={{
         onChange: ({ value }) => {
-          if (!value) return "Select Jira server that will be integrated with the codebase.";
+          if (!value) return "Select Jira server that will be integrated with the project.";
           return undefined;
         },
       }}
@@ -23,7 +23,7 @@ export const JiraServer = () => {
       {(field) => (
         <field.FormSelect
           label="Jira server"
-          tooltipText="Select the Jira server to link your component with relevant project tasks."
+          tooltipText="Select the Jira server to link your project with relevant project tasks."
           options={mapArrayToSelectOptions(jiraServersNames)}
         />
       )}

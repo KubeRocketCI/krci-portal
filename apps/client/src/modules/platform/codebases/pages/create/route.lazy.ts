@@ -1,9 +1,9 @@
 import { createLazyRoute } from "@tanstack/react-router";
-import { ROUTE_ID_CODEBASE_CREATE } from "./route";
+import { ROUTE_ID_PROJECT_CREATE } from "./route";
 import CreateCodebasePage from "./page";
 
-const CreateCodebaseRoute = createLazyRoute(ROUTE_ID_CODEBASE_CREATE)({
+const CreateProjectRoute = createLazyRoute(ROUTE_ID_PROJECT_CREATE)({
   component: CreateCodebasePage,
 });
 
-export default CreateCodebaseRoute;
+export default CreateProjectRoute;

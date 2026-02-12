@@ -15,10 +15,10 @@ import { CodebaseType, codebaseType, isSystem, systemQuickLink } from "@my-proje
 import { Box } from "lucide-react";
 import React from "react";
 import { CodebaseActionsMenu } from "../../components/CodebaseActionsMenu";
-import { routeComponentList } from "../list/route";
+import { routeProjectList } from "../list/route";
 import { useCodebaseWatch } from "./hooks/data";
 import { usePageTabs } from "./hooks/usePageTabs";
-import { routeComponentDetails, PATH_COMPONENT_DETAILS_FULL } from "./route";
+import { routeProjectDetails, PATH_PROJECT_DETAILS_FULL } from "./route";
 
 const docLinkByCodebaseType = (type: CodebaseType | undefined) => {
   switch (type) {
@@ -37,7 +37,7 @@ const docLinkByCodebaseType = (type: CodebaseType | undefined) => {
 };
 
 export default function CodebaseDetailsPageContent() {
-  const params = routeComponentDetails.useParams();
+  const params = routeProjectDetails.useParams();
 
   const codebaseWatch = useCodebaseWatch();
   const codebase = codebaseWatch.query.data;
@@ -71,7 +71,7 @@ export default function CodebaseDetailsPageContent() {
         {
           label: "Projects",
           route: {
-            to: routeComponentList.fullPath,
+            to: routeProjectList.fullPath,
           },
         },
         {
@@ -89,7 +89,7 @@ export default function CodebaseDetailsPageContent() {
           label: params.name,
           type: "project",
           route: {
-            to: PATH_COMPONENT_DETAILS_FULL,
+            to: PATH_PROJECT_DETAILS_FULL,
             params: { clusterName: params.clusterName, namespace: params.namespace, name: params.name },
           },
         }}
@@ -102,7 +102,7 @@ export default function CodebaseDetailsPageContent() {
                 codebase: codebase!,
               }}
               backRoute={{
-                to: routeComponentList.fullPath,
+                to: routeProjectList.fullPath,
                 params: {
                   clusterName: params.clusterName,
                 },

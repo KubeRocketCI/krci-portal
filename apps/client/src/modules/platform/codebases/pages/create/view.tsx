@@ -1,5 +1,5 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { routeComponentList } from "../list/route";
+import { routeProjectList } from "../list/route";
 import { CreateCodebaseWizard } from "./components/CreateCodebaseWizard";
 
 export default function CreateCodebasePageContent() {
@@ -9,7 +9,7 @@ export default function CreateCodebasePageContent() {
         {
           label: "Projects",
           route: {
-            to: routeComponentList.fullPath,
+            to: routeProjectList.fullPath,
           },
         },
         {

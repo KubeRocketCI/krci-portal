@@ -46,7 +46,7 @@ export const routeCluster = createRoute({
 
     if (location.pathname === `/c/${params.clusterName}` || location.pathname === `/c/${params.clusterName}/`) {
       throw redirect({
-        to: "/c/$clusterName/components",
+        to: "/c/$clusterName/projects",
         params: {
           clusterName: params.clusterName,
         },

@@ -16,7 +16,7 @@ import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { sortByName } from "@/core/utils/sortByName";
-import { routeComponentDetails } from "@/modules/platform/codebases/pages/details/route";
+import { routeProjectDetails } from "@/modules/platform/codebases/pages/details/route";
 import { Button } from "@/core/components/ui/button";
 import {
   DropdownMenu,
@@ -138,7 +138,7 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                         <Badge key={app} variant="outline" className="text-xs">
                           <Button variant="link" asChild className="h-auto py-1 text-xs">
                             <Link
-                              to={routeComponentDetails.fullPath}
+                              to={routeProjectDetails.fullPath}
                               params={{
                                 clusterName,
                                 name: app,
@@ -158,7 +158,7 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                         <Badge key={app} variant="outline" className="text-xs">
                           <Button variant="link" asChild className="h-auto py-1 text-xs">
                             <Link
-                              to={routeComponentDetails.fullPath}
+                              to={routeProjectDetails.fullPath}
                               params={{
                                 clusterName,
                                 name: app,
@@ -187,7 +187,7 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                           {applications.map((app) => (
                             <DropdownMenuItem key={app} className="text-xs" asChild>
                               <Link
-                                to={routeComponentDetails.fullPath}
+                                to={routeProjectDetails.fullPath}
                                 params={{
                                   clusterName,
                                   name: app,

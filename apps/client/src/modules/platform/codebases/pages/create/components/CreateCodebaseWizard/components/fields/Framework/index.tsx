@@ -63,7 +63,7 @@ export const Framework: React.FC<FrameworkProps> = ({ disabled, helperText }) =>
         {(field) => (
           <field.FormTextField
             label="Language version/framework"
-            tooltipText="Indicate the version of the programming language or framework your component relies on."
+            tooltipText="Indicate the version of the programming language or framework your project relies on."
             placeholder="Enter framework"
             disabled={disabled || !langFieldValue}
             helperText={helperText}
@@ -81,7 +81,7 @@ export const Framework: React.FC<FrameworkProps> = ({ disabled, helperText }) =>
       {(field) => (
         <field.FormCombobox
           label="Language version/framework"
-          tooltipText="Indicate the version of the programming language or framework your component relies on."
+          tooltipText="Indicate the version of the programming language or framework your project relies on."
           options={options}
           placeholder="Select or enter framework..."
           disabled={disabled || !langFieldValue}

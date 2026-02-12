@@ -28,7 +28,7 @@ export const JiraServer: React.FC = () => {
       {(field) => (
         <field.FormSelect
           label="Jira server"
-          tooltipText="Select the Jira server to link your component with relevant project tasks."
+          tooltipText="Select the Jira server to link your project with relevant project tasks."
           options={mapArrayToSelectOptions(jiraServersNames)}
         />
       )}
