@@ -10,7 +10,6 @@ export default defineConfig({
       "*/**/dist/*",
       // Exclude commented-out/WIP test files
       "src/clients/oidc/index.test.ts",
-      "src/routers/auth/procedures/loginCallback/index.test.ts",
     ],
   },
   resolve: {

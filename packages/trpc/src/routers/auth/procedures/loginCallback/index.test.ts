@@ -1,136 +1,110 @@
-// import { describe, it, expect, vi, beforeEach } from "vitest";
-// import { createMockedContext } from "@/__mocks__/context";
-// import { createCaller } from "@/trpc/routers";
-// import { authorizationCodeGrant, fetchProtectedResource } from "openid-client";
-// import { mockSession } from "@/__mocks__/session";
+import { createMockedContext } from "../../../../__mocks__/context.js";
+import { createCaller } from "../../../../routers/index.js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// describe("authLoginCallbackProcedure", () => {
-//   let mockContext: ReturnType<typeof createMockedContext>;
-//   let caller: ReturnType<typeof createCaller>;
+const mockDiscover = vi.fn();
+const mockExchangeCodeForTokens = vi.fn();
+const mockNormalizeTokenResponse = vi.fn();
+const mockFetchUserInfo = vi.fn();
 
-//   beforeEach(() => {
-//     // Create mocked context
-//     mockContext = createMockedContext();
+vi.mock("../../../../clients/oidc/index.js", () => ({
+  OIDCClient: vi.fn().mockImplementation(() => ({
+    discover: mockDiscover,
+    exchangeCodeForTokens: mockExchangeCodeForTokens,
+    normalizeTokenResponse: mockNormalizeTokenResponse,
+    fetchUserInfo: mockFetchUserInfo,
+  })),
+}));
 
-//     // Reset mocks
-//     vi.clearAllMocks();
+describe("authLoginCallbackProcedure", () => {
+  let mockContext: ReturnType<typeof createMockedContext>;
 
-//     // Create caller with mocked context
-//     caller = createCaller(mockContext);
+  const mockUserInfo = {
+    sub: "user-123",
+    email: "user@example.com",
+    name: "Test User",
+    preferred_username: "testuser",
+    email_verified: true,
+    groups: ["group-1"],
+    given_name: "Test",
+    family_name: "User",
+  };
 
-//     // Set up default session state
-//     mockContext.session.login = {
-//       openId: {
-//         state: "random-state",
-//         codeVerifier: "verifier123",
-//       },
-//       clientSearch: "?param=test",
-//     };
-//   });
+  const mockNormalizedTokens = {
+    idToken: "id-token",
+    idTokenExpiresAt: 1234567890,
+    accessToken: "access-token",
+    accessTokenExpiresAt: 1234567890,
+    refreshToken: "refresh-token",
+  };
 
-//   it("should process callback and return user info", async () => {
-//     const input = "https://redirect.com?code=abc123&state=random-state";
+  beforeEach(() => {
+    mockContext = createMockedContext();
+    mockContext.session.login = {
+      openId: {
+        state: "random-state",
+        codeVerifier: "verifier123",
+      },
+      clientSearch: "?redirect=/pipelines",
+    };
+    mockDiscover.mockResolvedValue({});
+    mockExchangeCodeForTokens.mockResolvedValue({ access_token: "access-token" });
+    mockNormalizeTokenResponse.mockReturnValue(mockNormalizedTokens);
+    mockFetchUserInfo.mockResolvedValue(mockUserInfo);
+  });
 
-//     // Call the procedure
-//     const result = await caller.auth.loginCallback(input);
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
 
-//     // Verify the result
-//     expect(result).toEqual({
-//       success: true,
-//       userInfo: mockSession.user.data,
-//       clientSearch: "?param=test",
-//     });
+  it("should process callback and return user info", async () => {
+    const caller = createCaller(mockContext);
+    const input = "https://redirect.com/auth/callback?code=abc123&state=random-state";
 
-//     // Verify session updates
-//     expect(mockContext.session.user).toEqual({
-//       data: mockSession.user.data,
-//       secret: {
-//         idToken: "id-token",
-//         idTokenExpiresAt: 1234567890,
-//         accessToken: "access-token",
-//         accessTokenExpiresAt: 1234567890,
-//         refreshToken: "refresh-token",
-//       },
-//     });
-//     expect(mockContext.session.login).toBeUndefined();
+    const result = await caller.auth.loginCallback(input);
 
-//     // Verify OIDC client interactions
-//     expect(authorizationCodeGrant).toHaveBeenCalledWith(
-//       expect.anything(),
-//       expect.any(URL),
-//       {
-//         pkceCodeVerifier: "verifier123",
-//         expectedState: "random-state",
-//       }
-//     );
-//     expect(fetchProtectedResource).toHaveBeenCalledWith(
-//       expect.anything(),
-//       "access-token",
-//       expect.any(URL),
-//       "GET"
-//     );
-//   });
+    expect(result.success).toBe(true);
+    expect(result.userInfo).toEqual(
+      expect.objectContaining({
+        ...mockUserInfo,
+        issuerUrl: mockContext.oidcConfig.issuerURL,
+      })
+    );
+    expect(result.clientSearch).toBe("?redirect=/pipelines");
+    expect(mockContext.session.user).toEqual({
+      data: mockUserInfo,
+      secret: mockNormalizedTokens,
+    });
+    expect(mockContext.session.login).toBeUndefined();
+    expect(mockExchangeCodeForTokens).toHaveBeenCalled();
+    expect(mockFetchUserInfo).toHaveBeenCalled();
+  });
 
-//   it("should throw error if session.login is undefined", async () => {
-//     mockContext.session.login = undefined;
-//     const input = "https://redirect.com?code=abc123&state=random-state";
+  it("should throw when session.login is undefined", async () => {
+    mockContext.session.login = undefined;
+    const caller = createCaller(mockContext);
+    const input = "https://redirect.com?code=abc123&state=random-state";
 
-//     // Expect the procedure to throw
-//     await expect(caller.auth.loginCallback(input)).rejects.toThrowError(
-//       "Session Auth is undefined"
-//     );
+    await expect(caller.auth.loginCallback(input)).rejects.toThrow("Session Auth is undefined");
+    expect(mockExchangeCodeForTokens).not.toHaveBeenCalled();
+  });
 
-//     // Verify no OIDC client interactions occurred
-//     expect(authorizationCodeGrant).not.toHaveBeenCalled();
-//     expect(fetchProtectedResource).not.toHaveBeenCalled();
-//   });
+  it("should throw when state is invalid", async () => {
+    const caller = createCaller(mockContext);
+    const input = "https://redirect.com?code=abc123&state=wrong-state";
 
-//   it("should throw error if state is invalid", async () => {
-//     const input = "https://redirect.com?code=abc123&state=wrong-state";
+    await expect(caller.auth.loginCallback(input)).rejects.toThrow("Invalid state");
+    expect(mockExchangeCodeForTokens).not.toHaveBeenCalled();
+  });
 
-//     // Expect the procedure to throw
-//     await expect(caller.auth.loginCallback(input)).rejects.toThrowError(
-//       "Invalid state"
-//     );
+  it("should throw when stored state or codeVerifier is missing", async () => {
+    mockContext.session.login = {
+      openId: { state: "random-state", codeVerifier: "" },
+      clientSearch: "",
+    };
+    const caller = createCaller(mockContext);
+    const input = "https://redirect.com?code=abc123&state=random-state";
 
-//     // Verify no OIDC client interactions occurred
-//     expect(authorizationCodeGrant).not.toHaveBeenCalled();
-//     expect(fetchProtectedResource).not.toHaveBeenCalled();
-//   });
-
-//   it("should handle token exchange failure", async () => {
-//     const input = "https://redirect.com?code=abc123&state=random-state";
-
-//     // Mock token exchange to throw an error
-//     vi.spyOn(authorizationCodeGrant, "authorizationCodeGrant").mockRejectedValueOnce(
-//       new Error("Token exchange failed")
-//     );
-
-//     // Expect the procedure to throw the token exchange error
-//     await expect(caller.auth.loginCallback(input)).rejects.toThrowError(
-//       "Token exchange failed"
-//     );
-
-//     // Verify token exchange was called but user info fetch was not
-//     expect(authorizationCodeGrant).toHaveBeenCalled();
-//     expect(fetchProtectedResource).not.toHaveBeenCalled();
-//   });
-
-//   it("should handle user info fetch failure", async () => {
-//     const input = "https://redirect.com?code=abc123&state=random-state";
-
-//     // Mock user info fetch to throw an error
-//     vi.spyOn(fetchProtectedResource, "fetchProtectedResource").mockRejectedValueOnce(
-//       new Error("User info fetch failed")
-//     );
-
-//     // Expect the procedure to throw the user info fetch error
-//     await expect(caller.auth.loginCallback(input)).rejects.toThrowError(
-//       "User info fetch failed"
-//     );
-
-//     // Verify both token exchange and user info fetch were called
-//     expect(openIdClient.authorizationCodeGrant).toHaveBeenCalled();
-//     expect(openIdClient.fetchProtectedResource).toHaveBeenCalled();
-//   });
-// });
+    await expect(caller.auth.loginCallback(input)).rejects.toThrow("Invalid state");
+  });
+});
