@@ -12,11 +12,20 @@ export default defineConfig({
         "**/node_modules/**",
         "**/dist/**",
         "**/coverage/**",
+        "**/.storybook/**",
+        "**/__mocks__/**",
+        "**/eslint.config.js",
+        "**/.eslintrc*",
 
         // ============================================
         // REACT COMPONENTS - Test with Storybook
         // ============================================
         "**/*.tsx",
+        // Storybook stories (exclude from coverage)
+        "**/*.stories.ts",
+        "**/*.stories.tsx",
+        "**/*.story.ts",
+        "**/*.story.tsx",
         // Note: .test.tsx files are handled separately by test.exclude
 
         // ============================================
@@ -40,6 +49,11 @@ export default defineConfig({
         // ============================================
         // STATIC CONFIGURATION & CONSTANTS
         // ============================================
+        "**/*.config.ts",
+        "**/config.ts",
+        "**/configs/**",
+        "**/*.schema.ts",
+        "**/schema.ts",
         "**/*.constants.ts",
         "**/constants.ts",
         "**/constants/**",
