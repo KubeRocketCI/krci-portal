@@ -50,6 +50,7 @@ export const CreateCodebaseBranchForm: React.FC<CreateCodebaseBranchFormProps> =
 
       const newCodebaseBranch = createCodebaseBranchDraftObject({
         branchName: formValues.branchName,
+        releaseBranchName: formValues.releaseBranchName,
         fromCommit: formValues.fromCommit,
         release: formValues.release,
         codebase: codebase.metadata.name,
