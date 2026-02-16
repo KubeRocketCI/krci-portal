@@ -204,7 +204,7 @@ export const Review: React.FC = () => {
     const items: GridItem[] = [];
     if (name) {
       items.push({
-        label: "Component Name",
+        label: "Project Name",
         content: <span className="text-foreground text-sm">{name}</span>,
       });
     }

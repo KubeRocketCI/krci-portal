@@ -57,7 +57,7 @@ export const Lang: React.FC<LangProps> = ({ disabled, helperText }) => {
       {(field) => (
         <field.FormCombobox
           label="Code language"
-          tooltipText="Specify the primary programming language used in your component."
+          tooltipText="Specify the primary programming language used in your project."
           options={options}
           placeholder="Select or enter language..."
           disabled={disabled}
