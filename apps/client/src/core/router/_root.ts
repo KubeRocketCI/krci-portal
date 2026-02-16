@@ -14,7 +14,7 @@ export const rootRoute = createRootRouteWithContext<MyRouterContext>()({
     meta: [
       {
         name: "description",
-        content: "KRCI Portal - Your comprehensive platform for managing CI/CD pipelines, components, and deployments",
+        content: "KRCI Portal - Your comprehensive platform for managing CI/CD pipelines, projects, and deployments",
       },
       {
         title: "KRCI Portal",

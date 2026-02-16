@@ -29,7 +29,7 @@ const typeOptions = [
     value: codebaseType.infrastructure,
     label: "Infrastructure",
     description:
-      "Deploys and manages the infrastructure components in cloud environments using Infrastructure as Code (IaC) approach. Manage, Version and Promote your IaC environments here.",
+      "Deploys and manages the infrastructure projects in cloud environments using Infrastructure as Code (IaC) approach. Manage, Version and Promote your IaC environments here.",
     icon: CloudCog,
   },
 ];

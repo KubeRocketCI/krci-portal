@@ -93,7 +93,7 @@ export const CreateCodebaseWizard: React.FC = () => {
 
   const onSubmitError = React.useCallback((error: unknown) => {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    showToast("Failed to create component", "error", {
+    showToast("Failed to create project", "error", {
       description: errorMessage,
       duration: 10000,
     });
