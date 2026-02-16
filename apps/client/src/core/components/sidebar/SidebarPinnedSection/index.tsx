@@ -10,6 +10,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarMenuAction,
+  useSidebar,
 } from "../../ui/sidebar";
 import { usePinnedItems } from "@/core/hooks/usePinnedItems";
 import type { PinnedPage, PinnedPageType } from "@/core/hooks/usePinnedItems";
@@ -25,9 +26,11 @@ import { cn } from "@/core/utils/classname";
 
 export function SidebarPinnedSection() {
   const [open, setOpen] = useState(true);
+  const { state: sidebarState } = useSidebar();
   const { pinnedPages, togglePin } = usePinnedItems();
 
   const isEmpty = pinnedPages.length === 0;
+  const isSidebarCollapsed = sidebarState === "collapsed";
 
   return (
     <SidebarGroup className="pb-0" data-tour="pinned-section">
@@ -41,7 +44,7 @@ export function SidebarPinnedSection() {
         </CollapsibleTrigger>
         <CollapsibleContent>
           <SidebarMenu data-tour="sidebar-menu">
-            {isEmpty && (
+            {isEmpty && !isSidebarCollapsed && (
               <SidebarMenuItem>
                 <div className="text-muted-foreground px-2 py-1.5 text-xs">Pin items from detail pages</div>
               </SidebarMenuItem>
@@ -75,7 +78,7 @@ function PinnedPageItem({ page, onUnpin }: PinnedPageItemProps) {
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild className="p-2">
+      <SidebarMenuButton asChild className="p-2" tooltip={page.label}>
         <Link
           to={page.route.to}
           params={page.route.params}
