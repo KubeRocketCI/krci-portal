@@ -49,6 +49,7 @@ export const CODEBASE_COMMON_BUILD_TOOLS = {
   GRADLE: "gradle",
   MAVEN: "maven",
   NPM: "npm",
+  PNPM: "pnpm",
   DOTNET: "dotnet",
   GO: "go",
   PYTHON: "python",
