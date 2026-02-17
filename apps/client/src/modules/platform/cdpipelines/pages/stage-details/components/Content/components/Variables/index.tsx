@@ -16,12 +16,6 @@ type Variable = {
 };
 
 export const Variables = () => {
-  // const params = routeStageDetails.useParams();
-  // const {
-  //   editConfigMap,
-  //   mutations: { configMapEditMutation },
-  // } = useConfigMapCRUD({});
-
   const variablesConfigMapWatch = useVariablesConfigMapWatch();
   const configMapPermissions = useConfigMapPermissions();
 
@@ -29,21 +23,24 @@ export const Variables = () => {
 
   const dataEntries = Object.entries<string>(variablesConfigMap?.data || {});
 
+  const configDataSnapshot = JSON.stringify(variablesConfigMap?.data ?? {});
+
   const initialVariables = React.useMemo(
     () =>
       dataEntries.map(([key, value]) => ({
         key,
         value,
       })),
-    [dataEntries]
+    [configDataSnapshot]
   );
 
   const [variables, setVariables] = React.useState<Variable[]>(initialVariables);
 
-  // Update variables when dataEntries changes
+  // Update variables when config map data changes (stable dependency to avoid infinite loop)
   React.useEffect(() => {
     setVariables(initialVariables);
-  }, [initialVariables]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- configDataSnapshot is stable dependency to avoid infinite loop
+  }, [configDataSnapshot]);
 
   const isDirty = React.useMemo(() => {
     if (variables.length !== dataEntries.length) return true;
@@ -51,6 +48,7 @@ export const Variables = () => {
       const [originalKey, originalValue] = dataEntries[index] || ["", ""];
       return v.key !== originalKey || v.value !== originalValue;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- dataEntries is stable dependency to avoid infinite loop
   }, [variables, dataEntries]);
 
   const handleDelete = React.useCallback((index: number) => {

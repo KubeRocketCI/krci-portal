@@ -143,4 +143,8 @@ export const TABLE = {
     id: "trivyClusterVulnerabilitiesList",
     name: "Trivy Cluster Vulnerabilities",
   },
+  CODEBASE_DEPLOYMENTS: {
+    id: "codebaseDeployments",
+    name: "Codebase Deployments",
+  },
 } as const;

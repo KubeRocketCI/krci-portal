@@ -11,6 +11,7 @@ import { Application, applicationLabels, Codebase, getDeployedVersion, systemQui
 import { Link } from "@tanstack/react-router";
 import { SquareArrowOutUpRight } from "lucide-react";
 import React from "react";
+import { Button } from "@/core/components/ui/button";
 
 export const DeployedVersionPreviewColumn = ({
   appCodebase,
@@ -46,19 +47,21 @@ export const DeployedVersionPreviewColumn = ({
   return application && deployedVersion !== "NaN" ? (
     <Tooltip
       title={
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <div>Open in {quickLinkUiNames[systemQuickLink.argocd]}</div>
           <span> </span>
           <div>
-            <SquareArrowOutUpRight className="text-muted-foreground/70" size={16} />
+            <SquareArrowOutUpRight size={12} />
           </div>
         </div>
       }
     >
       <div className="my-0.5">
-        <Link to={argoCDLink} target={"_blank"}>
-          {deployedVersion}
-        </Link>
+        <Button variant="link" asChild>
+          <Link to={argoCDLink} target={"_blank"}>
+            {deployedVersion}
+          </Link>
+        </Button>
       </div>
     </Tooltip>
   ) : (
