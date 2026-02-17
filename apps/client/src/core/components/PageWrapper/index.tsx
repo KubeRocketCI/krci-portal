@@ -2,6 +2,7 @@ import React from "react";
 import { PageWrapperProps } from "./types";
 import { Link } from "@tanstack/react-router";
 import { Button } from "../ui/button";
+import { ChevronRight } from "lucide-react";
 
 export const PageWrapper: React.FC<PageWrapperProps> = ({
   children,
@@ -34,7 +35,11 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({
                         ) : (
                           <span className={isLast ? "text-foreground" : ""}>{label}</span>
                         )}
-                        {!isLast && <span>/</span>}
+                        {!isLast && (
+                          <span>
+                            <ChevronRight className="size-4" />
+                          </span>
+                        )}
                       </React.Fragment>
                     );
                   })}

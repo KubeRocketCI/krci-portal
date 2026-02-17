@@ -1,4 +1,5 @@
 import React from "react";
+import { useStore } from "@tanstack/react-form";
 import { useTypedFormContext } from "./useTypedFormContext";
 import { IMAGE_TAG_POSTFIX } from "../../../../../constants";
 import {
@@ -36,7 +37,12 @@ export const useButtonsEnabledMap = () => {
 
   const form = useTypedFormContext();
 
-  const values = form.state.values;
+  // Subscribe to form store so we re-render when field values change (form.state.values is not reactive)
+  const stateValues = useStore(form.store, (state) => state.values);
+  const values = React.useMemo(
+    () => ({ ...(form.options.defaultValues ?? {}), ...stateValues }),
+    [stateValues, form.options.defaultValues]
+  );
 
   const latestDeployPipelineRunIsRunning = React.useMemo(() => {
     const latestNewDeployPipelineRun = pipelineRunsWatch.data?.deploy?.[0];

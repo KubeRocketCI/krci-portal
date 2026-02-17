@@ -13,7 +13,7 @@ export const NameValueTable = ({ rows }: { rows: NameValueRow[] }) => {
 
   return (
     <div className="rounded-md border p-4">
-      <TableUI>
+      <TableUI className="table-fixed">
         <TableHeaderUI>
           <TableRowUI>
             <TableHeadUI className="w-[45%]">Name</TableHeadUI>
@@ -23,8 +23,18 @@ export const NameValueTable = ({ rows }: { rows: NameValueRow[] }) => {
         <TableBodyUI>
           {rows.map((row, index) => (
             <TableRowUI key={index}>
-              <TableCellUI className="h-8 text-sm">{row.name}</TableCellUI>
-              <TableCellUI className="h-8 text-sm">{row.value}</TableCellUI>
+              <TableCellUI
+                className="h-8 min-w-0 truncate text-sm"
+                title={typeof row.name === "string" ? row.name : undefined}
+              >
+                {row.name}
+              </TableCellUI>
+              <TableCellUI
+                className="h-8 min-w-0 truncate text-sm"
+                title={typeof row.value === "string" ? row.value : undefined}
+              >
+                {row.value}
+              </TableCellUI>
             </TableRowUI>
           ))}
         </TableBodyUI>

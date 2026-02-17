@@ -31,7 +31,7 @@
   --chart-3: oklch(from var(--primary) calc(l - 0.14) calc(c + 0.03) h);
   --chart-4: oklch(from var(--primary) calc(l - 0.2) c h);
   --chart-5: var(--accent-foreground);
-  --radius: 0.5rem;
+  --radius: 0.75rem;
   --sidebar: oklch(0.9846 0.0017 247.8389);
   --sidebar-foreground: oklch(0.3211 0 0);
   --sidebar-primary: var(--primary);

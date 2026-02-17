@@ -1,14 +1,13 @@
 import { Badge } from "@/core/components/ui/badge";
 import React from "react";
 import { useStageWatch } from "../../../../../hooks/";
+import { routeStageDetails } from "../../../../../route";
 import { getStageStatusIcon } from "@/k8s/api/groups/KRCI/Stage";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { stageTriggerType } from "@my-project/shared";
 import KubernetesIcon from "@/assets/icons/k8s/kubernetes.svg?react";
 import { ScrollCopyText } from "@/core/components/ScrollCopyText";
 import { PipelinePreview } from "@/core/components/PipelinePreview";
-import { useDialogOpener } from "@/core/providers/Dialog/hooks";
-import { PipelineGraphDialog } from "@/modules/platform/tekton/dialogs/PipelineGraph";
 import { STATUS_COLOR } from "@/k8s/constants/colors";
 
 export interface GridItem {
@@ -19,7 +18,7 @@ export interface GridItem {
 
 export const useInfoColumns = (): GridItem[] => {
   const stageWatch = useStageWatch();
-  const openPipelineGraphDialog = useDialogOpener(PipelineGraphDialog);
+  const params = routeStageDetails.useParams();
 
   return React.useMemo(() => {
     if (stageWatch.query.isFetching || !stageWatch.query.data) {
@@ -97,17 +96,11 @@ export const useInfoColumns = (): GridItem[] => {
           <PipelinePreview
             pipelineName={stage.spec.triggerTemplate}
             namespace={stage.metadata.namespace!}
-            onViewDiagram={(pipelineName, namespace) =>
-              openPipelineGraphDialog({
-                pipelineName,
-                namespace,
-              })
-            }
+            clusterName={params.clusterName}
           />
         ) : (
           <span className="text-muted-foreground text-sm">N/A</span>
         ),
-        colSpan: 2,
       },
       {
         label: "Clean Pipeline",
@@ -115,23 +108,16 @@ export const useInfoColumns = (): GridItem[] => {
           <PipelinePreview
             pipelineName={stage.spec.cleanTemplate}
             namespace={stage.metadata.namespace!}
-            onViewDiagram={(pipelineName, namespace) =>
-              openPipelineGraphDialog({
-                pipelineName,
-                namespace,
-              })
-            }
+            clusterName={params.clusterName}
           />
         ) : (
           <span className="text-muted-foreground text-sm">N/A</span>
         ),
-        colSpan: 2,
       },
       {
         label: "Description",
         content: <span className="text-foreground text-sm">{stage.spec.description || "N/A"}</span>,
-        colSpan: 4,
       },
     ];
-  }, [stageWatch.query.data, stageWatch.query.isFetching, openPipelineGraphDialog]);
+  }, [stageWatch.query.data, stageWatch.query.isFetching, params.clusterName]);
 };

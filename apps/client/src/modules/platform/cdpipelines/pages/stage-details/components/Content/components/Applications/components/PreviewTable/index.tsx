@@ -1,6 +1,8 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
+import { ConfirmDialog } from "@/core/components/Confirm";
 import { DataTable } from "@/core/components/Table";
-import { useApplicationPermissions } from "@/k8s/api/groups/ArgoCD/Application";
+import { useDialogOpener } from "@/core/providers/Dialog/hooks";
+import { useApplicationPermissions, useApplicationCRUD } from "@/k8s/api/groups/ArgoCD/Application";
 import { TABLE } from "@/k8s/constants/tables";
 import {
   StageAppCodebaseCombinedData,
@@ -10,17 +12,40 @@ import { Tooltip } from "@/core/components/ui/tooltip";
 import { useColumns } from "./hooks/useColumns";
 import { useSelection } from "../../hooks/useSelection";
 import { Trash } from "lucide-react";
+import React from "react";
 import { useButtonsEnabledMap } from "../../hooks/useButtonsEnabled";
 
 export const PreviewTable = () => {
   const stageAppCodebasesCombinedData = useStageAppCodebasesCombinedData();
 
   const applicationPermissions = useApplicationPermissions();
+  const { triggerDeleteApplication } = useApplicationCRUD();
 
   const columns = useColumns();
 
-  const { selected, handleClickSelectAll, handleClickSelectRow } = useSelection();
+  const { selected, setSelected, handleClickSelectAll, handleClickSelectRow } = useSelection();
   const buttonsEnabledMap = useButtonsEnabledMap();
+  const openConfirmDialog = useDialogOpener(ConfirmDialog);
+
+  const handleClickDelete = React.useCallback(() => {
+    const toDelete = selected;
+    openConfirmDialog({
+      text:
+        toDelete.length === 1
+          ? "Are you sure you want to uninstall the selected application?"
+          : `Are you sure you want to uninstall ${toDelete.length} selected applications?`,
+      actionCallback: async () => {
+        const { stageAppCodebasesCombinedDataByApplicationName } = stageAppCodebasesCombinedData;
+        toDelete.forEach((appCodebaseName) => {
+          const row = stageAppCodebasesCombinedDataByApplicationName.get(appCodebaseName);
+          if (row?.application) {
+            triggerDeleteApplication({ data: { application: row.application } });
+          }
+        });
+        setSelected([]);
+      },
+    });
+  }, [openConfirmDialog, selected, stageAppCodebasesCombinedData, setSelected, triggerDeleteApplication]);
 
   return (
     <>
@@ -54,7 +79,7 @@ export const PreviewTable = () => {
                           ButtonProps={{
                             size: "sm",
                             variant: "outline",
-                            // onClick: () => setDeleteDialogOpen(true),
+                            onClick: handleClickDelete,
                             disabled: !selectionLength || !buttonsEnabledMap.uninstall,
                           }}
                           allowed={applicationPermissions.data?.delete.allowed}
@@ -71,7 +96,7 @@ export const PreviewTable = () => {
                         ButtonProps={{
                           size: "sm",
                           variant: "outline",
-                          // onClick: () => setDeleteDialogOpen(true),
+                          onClick: handleClickDelete,
                           disabled: !selectionLength || !buttonsEnabledMap.uninstall,
                         }}
                         allowed={applicationPermissions.data?.delete.allowed}
@@ -91,17 +116,6 @@ export const PreviewTable = () => {
           show: false,
         }}
       />
-      {/* <ApplicationsMultiDeletion
-        applications={allArgoApplications}
-        selected={selected}
-        open={deleteDialogOpen}
-        handleClose={() => setDeleteDialogOpen(false)}
-        onDelete={() => {
-          setSelected([]);
-          setDeleteDialogOpen(false);
-        }}
-        deleteArgoApplication={deleteArgoApplication}
-      /> */}
     </>
   );
 };

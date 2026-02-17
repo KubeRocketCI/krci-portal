@@ -1,11 +1,14 @@
+import { useApplicationWatchList } from "@/k8s/api/groups/ArgoCD/Application";
 import { useCodebaseWatchItem } from "@/k8s/api/groups/KRCI/Codebase";
 import { useCodebaseBranchWatchList } from "@/k8s/api/groups/KRCI/CodebaseBranch";
 import { useGitServerWatchItem } from "@/k8s/api/groups/KRCI/GitServer";
 import { useQuickLinkWatchList } from "@/k8s/api/groups/KRCI/QuickLink";
+import { useStageWatchList } from "@/k8s/api/groups/KRCI/Stage";
 import { usePipelineRunWatchList } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { useTriggerTemplateWatchItem } from "@/k8s/api/groups/Tekton/TriggerTemplate";
 import {
   CodebaseBranch,
+  applicationLabels,
   codebaseBranchLabels,
   createBuildPipelineRef,
   createReviewPipelineRef,
@@ -159,5 +162,24 @@ export const usePipelineNamesWatch = () => {
       };
     },
     enabled: Boolean(codebase && gitServerByCodebase && defaultBranch),
+  });
+};
+
+export const useCodebaseApplicationsWatch = () => {
+  const params = routeProjectDetails.useParams();
+
+  return useApplicationWatchList({
+    namespace: params.namespace,
+    labels: {
+      [applicationLabels.appName]: params.name,
+    },
+  });
+};
+
+export const useCodebaseStagesWatch = () => {
+  const params = routeProjectDetails.useParams();
+
+  return useStageWatchList({
+    namespace: params.namespace,
   });
 };

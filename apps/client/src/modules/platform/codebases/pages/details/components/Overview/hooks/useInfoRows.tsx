@@ -16,12 +16,9 @@ import React from "react";
 import { useCodebaseWatch, usePipelineNamesWatch } from "../../../hooks/data";
 import { Tag, GitFork, FileText, Server, LucideIcon } from "lucide-react";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
-import { ScrollCopyText } from "@/core/components/ScrollCopyText";
 import { PipelinePreview } from "@/core/components/PipelinePreview";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { routeProjectDetails } from "../../../route";
-import { useDialogOpener } from "@/core/providers/Dialog/hooks";
-import { PipelineGraphDialog } from "@/modules/platform/tekton/dialogs/PipelineGraph";
 
 export interface GridItem {
   label: string;
@@ -68,7 +65,6 @@ export const useInfoRows = () => {
   const pipelineNamesWatch = usePipelineNamesWatch();
   const pipelineNames = pipelineNamesWatch.data;
   const params = routeProjectDetails.useParams();
-  const openPipelineGraphDialog = useDialogOpener(PipelineGraphDialog);
 
   return React.useMemo((): GridItem[] => {
     if (!codebase) {
@@ -191,20 +187,13 @@ export const useInfoRows = () => {
         content: renderIconWithText(GitFork, strategy),
       },
       {
-        label: "Git URL",
-        content: codebase?.status?.gitWebUrl ? (
-          <ScrollCopyText text={codebase.status.gitWebUrl} />
-        ) : (
-          <span className="text-foreground text-sm">N/A</span>
-        ),
-      },
-      {
         label: "Deployment Script",
         content: renderIconWithText(FileText, deploymentScript),
       },
       {
         label: "Git Server",
         content: renderIconWithText(Server, gitServer),
+        colSpan: 2,
       },
       // Row 4 - Full width items
       {
@@ -214,16 +203,10 @@ export const useInfoRows = () => {
             <PipelinePreview
               pipelineName={pipelineNames.reviewPipelineName}
               namespace={params.namespace}
-              onViewDiagram={(pipelineName, namespace) =>
-                openPipelineGraphDialog({
-                  pipelineName,
-                  namespace,
-                })
-              }
+              clusterName={params.clusterName}
             />
           </LoadingWrapper>
         ) : null,
-        colSpan: 2,
       },
       {
         label: "Build Pipeline",
@@ -232,16 +215,10 @@ export const useInfoRows = () => {
             <PipelinePreview
               pipelineName={pipelineNames.buildPipelineName}
               namespace={params.namespace}
-              onViewDiagram={(pipelineName, namespace) =>
-                openPipelineGraphDialog({
-                  pipelineName,
-                  namespace,
-                })
-              }
+              clusterName={params.clusterName}
             />
           </LoadingWrapper>
         ) : null,
-        colSpan: 2,
       },
     ];
   }, [
@@ -250,6 +227,6 @@ export const useInfoRows = () => {
     pipelineNames?.reviewPipelineName,
     pipelineNamesWatch.isLoading,
     params.namespace,
-    openPipelineGraphDialog,
+    params.clusterName,
   ]);
 };
