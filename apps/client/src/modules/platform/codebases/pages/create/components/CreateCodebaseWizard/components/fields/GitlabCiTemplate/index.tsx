@@ -18,11 +18,18 @@ export const GitlabCiTemplate: React.FC = () => {
   const options = React.useMemo(() => {
     return (configMapListWatch.data?.array ?? []).map((cm) => {
       const isDefault = cm.metadata.name === gitlabCiDefaultTemplate;
-      const description = cm.data?.description?.trim() || cm.metadata.name;
+      const name = cm.metadata.name;
+      const description = cm.data?.description?.trim();
 
       return {
-        label: isDefault ? `${description} (Default)` : description,
-        value: cm.metadata.name,
+        label: (
+          <span className="flex min-w-0 flex-1 items-center gap-2">
+            <span className="shrink-0 text-sm font-medium">{name}</span>
+            {isDefault && <span className="text-muted-foreground shrink-0 text-xs">(Default)</span>}
+            {description && <span className="text-muted-foreground truncate text-xs">{description}</span>}
+          </span>
+        ),
+        value: name,
       };
     });
   }, [configMapListWatch.data?.array]);
@@ -30,7 +37,7 @@ export const GitlabCiTemplate: React.FC = () => {
   return (
     <form.AppField name={NAMES.ui_gitlabCiTemplate}>
       {(field) => (
-        <field.FormSelect
+        <field.FormCombobox
           label="GitLab CI Template"
           tooltipText="CI/CD pipeline template for this project."
           options={options}
