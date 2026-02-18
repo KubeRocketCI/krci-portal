@@ -12,6 +12,7 @@ const editGitServerSchema = z.object({
   httpsPort: z.number(),
   sshPort: z.number(),
   skipWebhookSSLVerification: z.boolean(),
+  tektonDisabled: z.boolean().optional(),
   webhookUrl: z.string().optional(),
 });
 
@@ -28,6 +29,12 @@ export const editGitServer = (existingGitServer: GitServer, input: z.infer<typeo
     draft.spec.httpsPort = validatedInput.httpsPort;
     draft.spec.sshPort = validatedInput.sshPort;
     draft.spec.skipWebhookSSLVerification = validatedInput.skipWebhookSSLVerification;
+
+    if (validatedInput.tektonDisabled !== undefined) {
+      draft.spec.tektonDisabled = validatedInput.tektonDisabled;
+    } else {
+      delete draft.spec.tektonDisabled;
+    }
 
     if (validatedInput.webhookUrl) {
       draft.spec.webhookUrl = validatedInput.webhookUrl;

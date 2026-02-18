@@ -69,6 +69,7 @@ const uiOnlyFields = {
   ui_repositoryLogin: z.string().optional(),
   ui_repositoryPasswordOrApiToken: z.string().optional(),
   ui_hasJiraServerIntegration: z.boolean(),
+  ui_gitlabCiTemplate: z.string().nullable().optional(),
   ui_versioningStartFromVersion: z.string().nullable().optional(),
   ui_versioningStartFromSnapshot: z.string().nullable().optional(),
   ui_advancedMappingFieldName: z.array(z.string()).optional().default([]),

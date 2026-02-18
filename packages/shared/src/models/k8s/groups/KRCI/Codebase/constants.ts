@@ -29,3 +29,8 @@ export const codebaseResult = codebaseResultEnum.enum;
 export const codebaseVersioning = codebaseVersioningEnum.enum;
 export const codebaseDeploymentScript = codebaseDeploymentScriptEnum.enum;
 export const codebaseTestReportFramework = codebaseTestReportFrameworkEnum.enum;
+
+export const gitlabCiDefaultTemplate = "gitlab-ci-default" as const;
+
+export const isDefaultGitlabCiTemplate = (value: string | null | undefined): boolean =>
+  !value || value === gitlabCiDefaultTemplate;

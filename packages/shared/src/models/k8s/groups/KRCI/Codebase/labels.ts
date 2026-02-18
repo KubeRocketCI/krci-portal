@@ -4,3 +4,7 @@ export const codebaseLabels = {
   integration: "app.edp.epam.com/integration",
   systemType: "app.edp.epam.com/systemType",
 } as const;
+
+export const ciTemplateLabels = {
+  ciTemplate: "app.edp.epam.com/ci-template",
+} as const;

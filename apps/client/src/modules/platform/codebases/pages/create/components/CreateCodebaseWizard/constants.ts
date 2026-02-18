@@ -49,6 +49,7 @@ export const CREATE_FORM_PARTS = {
     NAMES.ui_versioningStartFromVersion,
     NAMES.ui_versioningStartFromSnapshot,
     NAMES.ciTool,
+    NAMES.ui_gitlabCiTemplate,
     NAMES.commitMessagePattern,
     NAMES.ui_hasJiraServerIntegration,
     NAMES.jiraServer,

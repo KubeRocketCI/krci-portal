@@ -1,6 +1,11 @@
 import { Card } from "@/core/components/ui/card";
 import { useCodebaseCRUD } from "@/k8s/api/groups/KRCI/Codebase";
-import { codebaseLabels, createCodebaseDraftObject } from "@my-project/shared";
+import {
+  codebaseAnnotations,
+  codebaseLabels,
+  createCodebaseDraftObject,
+  isDefaultGitlabCiTemplate,
+} from "@my-project/shared";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { showToast } from "@/core/components/Snackbar";
@@ -34,11 +39,18 @@ export const CreateCodebaseWizard: React.FC = () => {
 
   const onSubmit = React.useCallback(
     async (values: CreateCodebaseFormValues) => {
+      const templateValue = values.ui_gitlabCiTemplate;
+      const annotations: Record<string, string> | undefined =
+        templateValue && !isDefaultGitlabCiTemplate(templateValue)
+          ? { [codebaseAnnotations.gitlabCiTemplate]: templateValue }
+          : undefined;
+
       const newCodebaseDraft = createCodebaseDraftObject({
         name: values.name,
         labels: {
           [codebaseLabels.codebaseType]: values.type,
         },
+        annotations,
         branchToCopyInDefaultBranch: values.branchToCopyInDefaultBranch,
         buildTool: values.buildTool,
         ciTool: values.ciTool,
