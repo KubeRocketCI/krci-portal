@@ -5,4 +5,5 @@ export * from "./Name";
 export * from "./OverrideWebHookURL";
 export * from "./SkipWebhookSSL";
 export * from "./SSHPort";
+export * from "./TektonDisabled";
 export * from "./UserName";

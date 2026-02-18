@@ -6,6 +6,7 @@ import {
   OverrideWebhookURL,
   SkipWebHookSSL,
   SSHPort,
+  TektonDisabled,
   UserName,
 } from "./components/fields";
 import { SyncGitProviderDefaults } from "./components/SyncGitProviderDefaults";
@@ -46,6 +47,9 @@ export const GitServerForm = () => {
         </div>
         <div className="col-span-12">
           <SkipWebHookSSL />
+        </div>
+        <div className="col-span-12">
+          <TektonDisabled />
         </div>
       </div>
     </>

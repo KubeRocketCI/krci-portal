@@ -15,6 +15,7 @@ const normalizePath = (path: string) => (path.startsWith("/") ? path : `/${path}
 export const createCodebaseDraftInputSchema = z.object({
   name: codebaseDraftSchema.shape.metadata.shape.name,
   labels: codebaseDraftSchema.shape.metadata.shape.labels,
+  annotations: z.record(z.string(), z.string()).optional(),
   branchToCopyInDefaultBranch: codebaseDraftSchema.shape.spec.shape.branchToCopyInDefaultBranch,
   buildTool: codebaseDraftSchema.shape.spec.shape.buildTool,
   ciTool: codebaseDraftSchema.shape.spec.shape.ciTool,
@@ -111,6 +112,7 @@ export const createCodebaseDraftObject = (input: z.infer<typeof createCodebaseDr
     metadata: {
       name: input.name,
       labels: input.labels,
+      ...(input.annotations && { annotations: input.annotations }),
     },
     spec,
   };

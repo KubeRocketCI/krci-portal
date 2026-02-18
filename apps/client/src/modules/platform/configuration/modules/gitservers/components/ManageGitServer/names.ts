@@ -21,6 +21,7 @@ const baseSchema = z.object({
   [NAMES.SSH_PORT]: z.coerce.number().int().min(1).max(65535),
   [NAMES.HTTPS_PORT]: z.coerce.number().int().min(1).max(65535),
   [NAMES.SKIP_WEBHOOK_SSL]: z.boolean(),
+  [NAMES.TEKTON_DISABLED]: z.boolean(),
   [NAMES.OVERRIDE_WEBHOOK_URL]: z.boolean(),
   [NAMES.WEBHOOK_URL]: z.string().optional(),
   [NAMES.SSH_PRIVATE_KEY]: z.string().min(1, "Paste your private SSH key for authentication."),

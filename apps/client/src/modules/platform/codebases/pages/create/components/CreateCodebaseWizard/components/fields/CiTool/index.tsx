@@ -1,5 +1,5 @@
 import React from "react";
-import { ciTool } from "@my-project/shared";
+import { ciTool, gitlabCiDefaultTemplate } from "@my-project/shared";
 import { useStore } from "@tanstack/react-form";
 import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { useCreateCodebaseForm } from "../../../providers/form/hooks";
@@ -23,7 +23,18 @@ export const CiToolField: React.FC = () => {
   );
 
   return (
-    <form.AppField name={NAMES.ciTool}>
+    <form.AppField
+      name={NAMES.ciTool}
+      listeners={{
+        onChange: ({ value }) => {
+          if (value === ciTool.gitlab) {
+            form.setFieldValue(NAMES.ui_gitlabCiTemplate, gitlabCiDefaultTemplate);
+          } else {
+            form.setFieldValue(NAMES.ui_gitlabCiTemplate, null);
+          }
+        },
+      }}
+    >
       {(field) => <field.FormSelect label="CI Pipelines" options={options} disabled={!isGitlabProvider} />}
     </form.AppField>
   );

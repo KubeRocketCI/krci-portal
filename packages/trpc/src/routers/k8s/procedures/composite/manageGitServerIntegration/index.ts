@@ -62,6 +62,7 @@ const manageGitServerIntegrationInputSchema = z.object({
     sshPort: z.number(),
     httpsPort: z.number(),
     skipWebhookSSLVerification: z.boolean(),
+    tektonDisabled: z.boolean().optional(),
     webhookUrl: z.string().optional(),
     currentResource: z.any().optional(), // Required for edit mode
   }),
@@ -148,6 +149,7 @@ export const k8sManageGitServerIntegrationProcedure = protectedProcedure
             sshPort: gitServer.sshPort,
             httpsPort: gitServer.httpsPort,
             skipWebhookSSLVerification: gitServer.skipWebhookSSLVerification,
+            tektonDisabled: gitServer.tektonDisabled,
             webhookUrl: gitServer.webhookUrl,
           });
 
@@ -170,6 +172,7 @@ export const k8sManageGitServerIntegrationProcedure = protectedProcedure
             sshPort: gitServer.sshPort,
             httpsPort: gitServer.httpsPort,
             skipWebhookSSLVerification: gitServer.skipWebhookSSLVerification,
+            tektonDisabled: gitServer.tektonDisabled,
             webhookUrl: gitServer.webhookUrl,
           });
 

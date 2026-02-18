@@ -13,6 +13,7 @@ export const NAMES = {
   SSH_PORT: "sshPort",
   HTTPS_PORT: "httpsPort",
   SKIP_WEBHOOK_SSL: "skipWebhookSSLVerification",
+  TEKTON_DISABLED: "tektonDisabled",
   OVERRIDE_WEBHOOK_URL: "overrideWebhookURL",
   WEBHOOK_URL: "webhookURL",
   SSH_PRIVATE_KEY: "sshPrivateKey",

@@ -13,6 +13,7 @@ const gitServerSpecSchema = z
     nameSshKeySecret: z.string(),
     skipWebhookSSLVerification: z.boolean().optional(),
     sshPort: z.number().int(),
+    tektonDisabled: z.boolean().optional(),
     webhookUrl: z.string().optional(),
   })
   .required({

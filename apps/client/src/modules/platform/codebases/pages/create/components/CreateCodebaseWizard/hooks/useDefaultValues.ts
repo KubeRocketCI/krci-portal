@@ -30,6 +30,7 @@ export const useDefaultValues = (): DeepPartial<CreateCodebaseFormValues> => {
       [NAMES.versioningType]: codebaseVersioning.semver,
       [NAMES.versioningStartFrom]: defaultEDPVersioningValue,
       [NAMES.ciTool]: ciTool.tekton,
+      [NAMES.ui_gitlabCiTemplate]: null,
       [NAMES.gitServer]: firstValidGitServer?.metadata.name || "",
       [NAMES.deploymentScript]: codebaseDeploymentScript["helm-chart"],
       [NAMES.repositoryUrl]: null,

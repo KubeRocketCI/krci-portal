@@ -15,6 +15,7 @@ const createGitServerDraftSchema = z.object({
   httpsPort: z.number(),
   sshPort: z.number(),
   skipWebhookSSLVerification: z.boolean(),
+  tektonDisabled: z.boolean().optional(),
   webhookUrl: z.string().optional(),
 });
 
@@ -39,6 +40,7 @@ export const createGitServerDraft = (input: z.infer<typeof createGitServerDraftS
       httpsPort: input.httpsPort,
       sshPort: input.sshPort,
       skipWebhookSSLVerification: input.skipWebhookSSLVerification,
+      tektonDisabled: input.tektonDisabled ?? false,
     },
   };
 

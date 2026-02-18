@@ -3,7 +3,7 @@ import { useStore } from "@tanstack/react-form";
 import { NAMES } from "../../names";
 import { useCreateCodebaseForm } from "../../providers/form/hooks";
 import { Card } from "@/core/components/ui/card";
-import { codebaseVersioning, gitProvider } from "@my-project/shared";
+import { ciTool as ciToolValues, codebaseVersioning, gitProvider, isDefaultGitlabCiTemplate } from "@my-project/shared";
 import { InfoColumns } from "@/core/components/InfoColumns";
 import { GridItem } from "@/core/components/InfoColumns/types";
 import { ScrollCopyText } from "@/core/components/ScrollCopyText";
@@ -85,6 +85,7 @@ export const Review: React.FC = () => {
   const framework = useStore(form.store, (state) => state.values[NAMES.framework]);
   const buildTool = useStore(form.store, (state) => state.values[NAMES.buildTool]);
   const ciTool = useStore(form.store, (state) => state.values[NAMES.ciTool]);
+  const ui_gitlabCiTemplate = useStore(form.store, (state) => state.values[NAMES.ui_gitlabCiTemplate]);
   const testReportFramework = useStore(form.store, (state) => state.values[NAMES.testReportFramework]);
   const deploymentScript = useStore(form.store, (state) => state.values[NAMES.deploymentScript]);
   const versioningType = useStore(form.store, (state) => state.values[NAMES.versioningType]);
@@ -334,6 +335,14 @@ export const Review: React.FC = () => {
         content: renderIconWithText(ciToolIcon, capitalizeFirstLetter(ciTool)),
       });
     }
+    if (ciTool === ciToolValues.gitlab) {
+      const templateDisplay = isDefaultGitlabCiTemplate(ui_gitlabCiTemplate) ? "Default" : ui_gitlabCiTemplate;
+
+      items.push({
+        label: "GitLab CI Template",
+        content: <span className="text-foreground text-sm">{templateDisplay}</span>,
+      });
+    }
     if (testReportFramework) {
       items.push({
         label: "Test Report Framework",
@@ -404,6 +413,7 @@ export const Review: React.FC = () => {
     framework,
     buildTool,
     ciTool,
+    ui_gitlabCiTemplate,
     testReportFramework,
     deploymentScript,
     versioningType,

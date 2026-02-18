@@ -31,6 +31,7 @@ export const ManageGitServer = ({ gitServer, webhookURL, handleClosePanel }: Man
     const base: Partial<ManageGitServerFormValues> = {
       [NAMES.GIT_PROVIDER]: "github",
       [NAMES.SKIP_WEBHOOK_SSL]: false,
+      [NAMES.TEKTON_DISABLED]: false,
       [NAMES.OVERRIDE_WEBHOOK_URL]: false,
       [NAMES.SSH_PORT]: 22,
       [NAMES.HTTPS_PORT]: 443,
@@ -45,6 +46,7 @@ export const ManageGitServer = ({ gitServer, webhookURL, handleClosePanel }: Man
       base[NAMES.SSH_PORT] = Number(gitServer.spec?.sshPort) || 22;
       base[NAMES.HTTPS_PORT] = Number(gitServer.spec?.httpsPort) || 443;
       base[NAMES.SKIP_WEBHOOK_SSL] = gitServer.spec?.skipWebhookSSLVerification ?? false;
+      base[NAMES.TEKTON_DISABLED] = gitServer.spec?.tektonDisabled ?? false;
       base[NAMES.OVERRIDE_WEBHOOK_URL] = !!gitServer.spec?.webhookUrl;
       base[NAMES.WEBHOOK_URL] = gitServer.spec?.webhookUrl || webhookURL || "";
     }
@@ -85,6 +87,7 @@ export const ManageGitServer = ({ gitServer, webhookURL, handleClosePanel }: Man
             sshPort: Number(gitServer.spec?.sshPort),
             httpsPort: Number(gitServer.spec?.httpsPort),
             skipWebhookSSLVerification: gitServer.spec?.skipWebhookSSLVerification ?? false,
+            tektonDisabled: gitServer.spec?.tektonDisabled ?? false,
             webhookUrl: gitServer.spec?.webhookUrl,
           }
         : null;
@@ -99,6 +102,7 @@ export const ManageGitServer = ({ gitServer, webhookURL, handleClosePanel }: Man
         initialGitServer.sshPort !== values[NAMES.SSH_PORT] ||
         initialGitServer.httpsPort !== values[NAMES.HTTPS_PORT] ||
         initialGitServer.skipWebhookSSLVerification !== values[NAMES.SKIP_WEBHOOK_SSL] ||
+        initialGitServer.tektonDisabled !== values[NAMES.TEKTON_DISABLED] ||
         (values[NAMES.OVERRIDE_WEBHOOK_URL]
           ? (initialGitServer.webhookUrl ?? "") !== (values[NAMES.WEBHOOK_URL] ?? "")
           : !!initialGitServer.webhookUrl);
@@ -126,6 +130,7 @@ export const ManageGitServer = ({ gitServer, webhookURL, handleClosePanel }: Man
             sshPort: values[NAMES.SSH_PORT],
             httpsPort: values[NAMES.HTTPS_PORT],
             skipWebhookSSLVerification: values[NAMES.SKIP_WEBHOOK_SSL],
+            tektonDisabled: values[NAMES.TEKTON_DISABLED],
             webhookUrl: values[NAMES.OVERRIDE_WEBHOOK_URL] ? (values[NAMES.WEBHOOK_URL] ?? "") : undefined,
             currentResource: gitServer,
           },
