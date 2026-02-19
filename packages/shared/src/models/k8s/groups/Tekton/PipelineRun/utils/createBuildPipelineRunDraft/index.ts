@@ -81,6 +81,9 @@ export const createBuildPipelineRunDraft = ({
       case "git-source-revision":
         param.value = codebaseBranchName;
         break;
+      case "targetBranch":
+        param.value = codebaseBranchName;
+        break;
       case "CODEBASE_NAME":
         param.value = codebaseName;
         break;

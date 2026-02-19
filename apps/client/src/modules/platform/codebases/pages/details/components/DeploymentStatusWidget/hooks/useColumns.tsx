@@ -2,12 +2,15 @@ import React from "react";
 import { Link } from "@tanstack/react-router";
 import { RefreshCw } from "lucide-react";
 import { StatusIcon } from "@/core/components/StatusIcon";
+import { Badge } from "@/core/components/ui/badge";
+import { Button } from "@/core/components/ui/button";
 import { TableColumn } from "@/core/components/Table/types";
 import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
 import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { TABLE } from "@/k8s/constants/tables";
 import { getApplicationStatusIcon, getApplicationSyncStatusIcon } from "@/k8s/api/groups/ArgoCD/Application";
 import { useClusterStore } from "@/k8s/store";
+import { PATH_CDPIPELINE_DETAILS_FULL } from "@/modules/platform/cdpipelines/pages/details/route";
 import { PATH_CDPIPELINE_STAGE_DETAILS_FULL } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import { Application, applicationLabels, getApplicationStatus, getApplicationSyncStatus } from "@my-project/shared";
 import { useShallow } from "zustand/react/shallow";
@@ -22,35 +25,70 @@ export const useColumns = (): TableColumn<Application>[] => {
   return React.useMemo(
     () => [
       {
+        id: columnNames.DEPLOYMENT,
+        label: "Deployment",
+        data: {
+          columnSortableValuePath: `metadata.labels.${applicationLabels.pipeline}`,
+          render: ({ data }) => {
+            const pipeline = data.metadata?.labels?.[applicationLabels.pipeline];
+
+            if (pipeline) {
+              return (
+                <Button variant="link" asChild className="h-auto p-0 text-sm font-medium">
+                  <Link
+                    to={PATH_CDPIPELINE_DETAILS_FULL}
+                    params={{
+                      clusterName,
+                      namespace: data.metadata.namespace!,
+                      name: pipeline,
+                    }}
+                  >
+                    {pipeline}
+                  </Link>
+                </Button>
+              );
+            }
+
+            return <span className="text-muted-foreground text-sm">—</span>;
+          },
+        },
+        cell: {
+          baseWidth: 20,
+          ...getSyncedColumnData(tableSettings, columnNames.DEPLOYMENT),
+        },
+      },
+      {
         id: columnNames.ENVIRONMENT,
         label: "Environment",
         data: {
+          columnSortableValuePath: `metadata.labels.${applicationLabels.stage}`,
           render: ({ data }) => {
             const pipeline = data.metadata?.labels?.[applicationLabels.pipeline];
             const stage = data.metadata?.labels?.[applicationLabels.stage];
 
             if (pipeline && stage) {
               return (
-                <Link
-                  to={PATH_CDPIPELINE_STAGE_DETAILS_FULL}
-                  params={{
-                    clusterName,
-                    namespace: data.metadata.namespace!,
-                    cdPipeline: pipeline,
-                    stage,
-                  }}
-                  className="text-primary hover:underline"
-                >
-                  {pipeline} - {stage}
-                </Link>
+                <Button variant="link" asChild className="h-auto p-0 text-sm font-medium">
+                  <Link
+                    to={PATH_CDPIPELINE_STAGE_DETAILS_FULL}
+                    params={{
+                      clusterName,
+                      namespace: data.metadata.namespace!,
+                      cdPipeline: pipeline,
+                      stage,
+                    }}
+                  >
+                    {stage}
+                  </Link>
+                </Button>
               );
             }
 
-            return <span className="text-muted-foreground">{data.metadata.name}</span>;
+            return <span className="text-muted-foreground text-sm">—</span>;
           },
         },
         cell: {
-          baseWidth: 40,
+          baseWidth: 20,
           ...getSyncedColumnData(tableSettings, columnNames.ENVIRONMENT),
         },
       },
@@ -66,10 +104,7 @@ export const useColumns = (): TableColumn<Application>[] => {
 
             return (
               <div className="flex items-center gap-2">
-                <div
-                  className="flex items-center gap-1 rounded px-2 py-0.5 text-xs"
-                  style={{ backgroundColor: `${healthStatusIcon.color}15`, color: healthStatusIcon.color }}
-                >
+                <Badge style={{ backgroundColor: `${healthStatusIcon.color}15`, color: healthStatusIcon.color }}>
                   <StatusIcon
                     Icon={healthStatusIcon.component}
                     color={healthStatusIcon.color}
@@ -77,14 +112,11 @@ export const useColumns = (): TableColumn<Application>[] => {
                     width={12}
                   />
                   <span className="capitalize">{healthStatus.status}</span>
-                </div>
-                <div
-                  className="flex items-center gap-1 rounded px-2 py-0.5 text-xs"
-                  style={{ backgroundColor: `${syncStatusIcon.color}15`, color: syncStatusIcon.color }}
-                >
+                </Badge>
+                <Badge style={{ backgroundColor: `${syncStatusIcon.color}15`, color: syncStatusIcon.color }}>
                   <RefreshCw className="size-3" />
                   <span className="capitalize">{syncStatus.status}</span>
-                </div>
+                </Badge>
               </div>
             );
           },

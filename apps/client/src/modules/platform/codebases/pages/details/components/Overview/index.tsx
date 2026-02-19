@@ -5,7 +5,6 @@ import { useCodebaseWatch } from "../../hooks/data";
 import { routeProjectDetails } from "../../route";
 import { SonarQubeMetricsWidget } from "@/modules/platform/security/components/sonarqube/SonarQubeMetricsWidget";
 import { DependencyTrackMetricsWidget } from "@/modules/platform/security/components/dependencytrack/DependencyTrackMetricsWidget";
-import { DeploymentStatusWidget } from "./components/DeploymentStatusWidget";
 import { useInfoRows } from "./hooks/useInfoRows";
 
 export const Overview = () => {
@@ -26,7 +25,6 @@ export const Overview = () => {
           <InfoColumns gridItems={gridItems} gridCols={4} />
         </LoadingWrapper>
       </Card>
-      <DeploymentStatusWidget />
       <SonarQubeMetricsWidget componentKey={params.name} />
       <DependencyTrackMetricsWidget projectName={params.name} defaultBranch={defaultBranch} />
     </div>

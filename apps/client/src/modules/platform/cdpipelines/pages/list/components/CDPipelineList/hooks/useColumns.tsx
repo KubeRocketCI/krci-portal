@@ -96,7 +96,7 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                     }}
                   >
                     <CloudUpload className="text-muted-foreground/70" />
-                    <TextWithTooltip text={name} />
+                    <TextWithTooltip text={name} className="font-medium" />
                   </Link>
                 </Button>
               );

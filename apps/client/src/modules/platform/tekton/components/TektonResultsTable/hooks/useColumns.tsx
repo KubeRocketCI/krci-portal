@@ -107,7 +107,7 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
                     recordUid: recordInfo.recordUid,
                   }}
                 >
-                  <TextWithTooltip text={displayName} />
+                  <TextWithTooltip text={displayName} className="font-medium" />
                 </Link>
               </Button>
             );

@@ -139,9 +139,9 @@ export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
                   )}
                 </h2>
 
-                {!project.active && <Badge variant="destructive">INACTIVE</Badge>}
+                {!project.active && <Badge variant="error">INACTIVE</Badge>}
 
-                {project.isLatest && <Badge variant="default">LATEST VERSION</Badge>}
+                {project.isLatest && <Badge variant="success">LATEST VERSION</Badge>}
 
                 {/* External link to Dependency Track */}
                 <Button variant="outline" size="sm" asChild>

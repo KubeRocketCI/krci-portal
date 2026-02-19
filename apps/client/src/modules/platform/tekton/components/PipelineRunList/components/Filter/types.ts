@@ -7,6 +7,7 @@ export type PipelineRunFilterNames = ValueOf<typeof pipelineRunFilterControlName
 
 export type PipelineRunListFilterValues = {
   [pipelineRunFilterControlNames.CODEBASES]: string[];
+  [pipelineRunFilterControlNames.CODEBASE_BRANCHES]: string[];
   [pipelineRunFilterControlNames.STATUS]: FilterTypeWithOptionAll<PipelineRunStatus>;
   [pipelineRunFilterControlNames.PIPELINE_TYPE]: FilterTypeWithOptionAll<PipelineType>;
   [pipelineRunFilterControlNames.NAMESPACES]: string[];

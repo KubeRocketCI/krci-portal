@@ -30,7 +30,7 @@ export const useColumns = (): TableColumn<ProjectsListData>[] => {
             <Link
               to={PATH_SCA_PROJECT_DETAILS_FULL}
               params={{ namespace: namespace || "", clusterName: clusterName || "", projectUuid: data.uuid }}
-              className="text-foreground hover:text-primary hover:underline"
+              className="text-foreground hover:text-primary font-medium hover:underline"
             >
               {data.name}
             </Link>
@@ -59,7 +59,7 @@ export const useColumns = (): TableColumn<ProjectsListData>[] => {
         label: "Latest",
         data: {
           columnSortableValuePath: "isLatest",
-          render: ({ data }) => (data.isLatest ? <Badge variant="default">Latest</Badge> : null),
+          render: ({ data }) => (data.isLatest ? <Badge variant="success">Latest</Badge> : null),
         },
         cell: {
           baseWidth: 10,
@@ -134,7 +134,7 @@ export const useColumns = (): TableColumn<ProjectsListData>[] => {
         data: {
           columnSortableValuePath: "active",
           render: ({ data }) => (
-            <Badge variant={data.active ? "default" : "secondary"}>{data.active ? "Active" : "Inactive"}</Badge>
+            <Badge variant={data.active ? "success" : "error"}>{data.active ? "Active" : "Inactive"}</Badge>
           ),
         },
         cell: {

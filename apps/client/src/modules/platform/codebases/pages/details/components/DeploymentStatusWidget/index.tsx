@@ -4,9 +4,10 @@ import { DataTable } from "@/core/components/Table";
 import { Button } from "@/core/components/ui/button";
 import { Card } from "@/core/components/ui/card";
 import { TABLE } from "@/k8s/constants/tables";
+import { useClusterStore } from "@/k8s/store";
 import { applicationLabels } from "@my-project/shared";
-import { useCodebaseApplicationsWatch, useCodebaseStagesWatch } from "../../../../hooks/data";
-import { routeProjectDetails } from "../../../../route";
+import { useCodebaseApplicationsWatch, useCodebaseStagesWatch } from "../../hooks/data";
+import { routeProjectDetails } from "../../route";
 import { useColumns } from "./hooks/useColumns";
 
 export const DeploymentStatusWidget = () => {
@@ -15,6 +16,7 @@ export const DeploymentStatusWidget = () => {
   const stagesWatch = useCodebaseStagesWatch();
   const columns = useColumns();
   const applications = applicationsWatch.data.array;
+  const clusterName = useClusterStore((state) => state.clusterName);
 
   const stageNamespaceMap = React.useMemo(() => {
     const map = new Map<string, string>();
@@ -35,15 +37,16 @@ export const DeploymentStatusWidget = () => {
         const version = app.spec?.source?.targetRevision ?? "N/A";
 
         return [
+          `cluster: ${clusterName}`,
           `deployment: ${pipeline}`,
           `environment: ${stage}`,
           `namespace: ${namespace}`,
-          `application: ${params.name}`,
-          `version: ${version}`,
+          "",
+          `${params.name}:${version}`,
         ].join("\n");
       })
       .join("\n======\n");
-  }, [applications, params.name, stageNamespaceMap]);
+  }, [applications, params.name, stageNamespaceMap, clusterName]);
 
   const [isCopied, setIsCopied] = React.useState(false);
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);

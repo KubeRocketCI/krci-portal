@@ -205,7 +205,7 @@ export const DataTable = <DataType,>({
   const renderHeader = React.useCallback(() => {
     if (slots?.header || tableSettings.show) {
       return (
-        <div className="px-5 pt-5">
+        <div className={cn(outlined ? "px-5" : "", "pt-5")}>
           <div className="grid grid-cols-[1fr_auto] items-center gap-4">
             <div className="grid grid-cols-12 gap-4">{slots?.header}</div>
             <div className="mt-6">
@@ -218,7 +218,7 @@ export const DataTable = <DataType,>({
   }, [slots?.header, tableSettings.show, id, columns, setColumns]);
 
   return (
-    <div className={`bg-background w-full text-sm ${outlined ? "rounded-md shadow-sm" : ""}`}>
+    <div className={`bg-card w-full text-sm ${outlined ? "rounded-md shadow-sm" : ""}`}>
       <div className="flex flex-col gap-2">
         {renderHeader()}
         <div className={cn(outlined ? "px-5" : "", "py-5")}>

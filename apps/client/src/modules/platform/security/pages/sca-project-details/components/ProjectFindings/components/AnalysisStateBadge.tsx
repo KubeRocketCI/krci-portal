@@ -1,32 +1,24 @@
-import { Badge, BadgeProps } from "@/core/components/ui/badge";
+import { Badge, type BadgeProps } from "@/core/components/ui/badge";
 
 interface AnalysisStateBadgeProps {
   state: string | undefined;
 }
+
+const stateVariants: Record<string, BadgeProps["variant"]> = {
+  EXPLOITABLE: "error",
+  IN_TRIAGE: "info",
+  FALSE_POSITIVE: "success",
+  NOT_AFFECTED: "success",
+  RESOLVED: "success",
+};
 
 /**
  * Badge component displaying finding analysis state
  */
 export function AnalysisStateBadge({ state }: AnalysisStateBadgeProps) {
   if (!state) {
-    return <Badge variant="secondary">NOT ANALYZED</Badge>;
+    return <Badge variant="neutral">NOT ANALYZED</Badge>;
   }
 
-  const getVariant = (): BadgeProps["variant"] => {
-    switch (state) {
-      case "EXPLOITABLE":
-        return "destructive";
-      case "IN_TRIAGE":
-        return "default";
-      case "FALSE_POSITIVE":
-      case "NOT_AFFECTED":
-        return "secondary";
-      case "RESOLVED":
-        return "outline";
-      default:
-        return "secondary";
-    }
-  };
-
-  return <Badge variant={getVariant()}>{state.replace(/_/g, " ")}</Badge>;
+  return <Badge variant={stateVariants[state] || "neutral"}>{state.replace(/_/g, " ")}</Badge>;
 }

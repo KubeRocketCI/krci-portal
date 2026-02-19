@@ -31,7 +31,7 @@
   --chart-3: oklch(from var(--primary) calc(l - 0.14) calc(c + 0.03) h);
   --chart-4: oklch(from var(--primary) calc(l - 0.2) c h);
   --chart-5: var(--accent-foreground);
-  --radius: 0.75rem;
+  --radius: 0.5rem;
   --sidebar: oklch(0.9846 0.0017 247.8389);
   --sidebar-foreground: oklch(0.3211 0 0);
   --sidebar-primary: var(--primary);
@@ -65,6 +65,13 @@
   --content-offset-y: 1rem;
   --breadcrumbs-height: 3rem;
   --content-height: calc(100svh - var(--header-height) - var(--breadcrumbs-height) - var(--content-offset-y) * 2);
+
+  --status-success: #18be94;
+  --status-error: #ff005c;
+  --status-in-progress: #0094ff;
+  --status-suspended: #766f94;
+  --status-missing: #ff8a00;
+  --status-unknown: #a2a7b7;
 }
 
 .dark {
@@ -159,6 +166,12 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-status-success: var(--status-success);
+  --color-status-error: var(--status-error);
+  --color-status-in-progress: var(--status-in-progress);
+  --color-status-suspended: var(--status-suspended);
+  --color-status-missing: var(--status-missing);
+  --color-status-unknown: var(--status-unknown);
   --font-sans: Inter, sans-serif;
   --font-mono: JetBrains Mono, monospace;
   --font-serif: Source Serif 4, serif;

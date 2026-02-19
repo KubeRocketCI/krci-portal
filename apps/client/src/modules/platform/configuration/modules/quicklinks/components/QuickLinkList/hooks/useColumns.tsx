@@ -71,7 +71,7 @@ export const useColumns = (): TableColumn<QuickLink>[] => {
               <Button asChild variant="link">
                 <Link to={_url} target="_blank" rel="noopener noreferrer">
                   <div className="flex items-center gap-1">
-                    <span>{_url} </span>
+                    <span className="font-medium">{_url} </span>
                     <SquareArrowOutUpRight className="text-muted-foreground/70" size={15} />
                   </div>
                 </Link>

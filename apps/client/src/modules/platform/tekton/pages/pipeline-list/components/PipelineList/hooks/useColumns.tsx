@@ -51,7 +51,7 @@ export const useColumns = (): TableColumn<Pipeline>[] => {
                     name,
                   }}
                 >
-                  <TextWithTooltip text={name} />
+                  <TextWithTooltip text={name} className="font-medium" />
                 </Link>
               </Button>
             );

@@ -1,13 +1,14 @@
 import { EmptyList } from "@/core/components/EmptyList";
 import { ServerSideTable } from "@/core/components/ServerSideTable";
 import { Button } from "@/core/components/ui/button";
+import { Card } from "@/core/components/ui/card";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { GitFusionPullRequest } from "@my-project/shared";
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
-import { useCodebaseWatch } from "../../../../hooks/data";
+import { useCodebaseWatch } from "../../hooks/data";
 import { TABLE_ID } from "./constants";
 import { useColumns } from "./hooks/useColumns";
 
@@ -70,55 +71,61 @@ export function PullRequestList() {
   const totalCount = query.data?.pagination?.total || 0;
 
   return (
-    <ServerSideTable
-      id={TABLE_ID}
-      data={pullRequests}
-      columns={columns}
-      isLoading={codebaseWatch.query.isLoading || query.isFetching}
-      blockerError={query.error ? (query.error as Error) : undefined}
-      emptyListComponent={<EmptyList missingItemName={`${state} pull requests`} />}
-      expandable={{
-        getRowId: (row) => row.id,
-        expandedRowIds,
-        onExpandedRowsChange: setExpandedRowIds,
-        expandedRowRender: (row) => (
-          <div className="space-y-2">
-            <span className="text-sm font-medium">Description</span>
-            <p className="text-muted-foreground text-sm whitespace-pre-wrap">
-              {row.description || "No description provided."}
-            </p>
-          </div>
-        ),
-      }}
-      slots={{
-        header: (
-          <div className="col-span-12 flex items-center gap-2">
-            {STATE_TABS.map((tab) => (
-              <Button
-                key={tab.value}
-                variant={state === tab.value ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleStateChange(tab.value)}
-              >
-                {tab.label}
-              </Button>
-            ))}
-          </div>
-        ),
-      }}
-      pagination={{
-        show: true,
-        page,
-        rowsPerPage: PER_PAGE,
-        totalCount,
-        onPageChange: setPage,
-        onRowsPerPageChange: () => {
-          // Fixed page size, no-op
-        },
-      }}
-      settings={{
-        show: true,
-      }}
-    />
+    <Card className="space-y-5 p-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-foreground text-xl font-semibold">Pull Requests</h3>
+      </div>
+      <ServerSideTable
+        id={TABLE_ID}
+        data={pullRequests}
+        columns={columns}
+        isLoading={codebaseWatch.query.isLoading || query.isFetching}
+        blockerError={query.error ? (query.error as Error) : undefined}
+        emptyListComponent={<EmptyList missingItemName={`${state} pull requests`} />}
+        expandable={{
+          getRowId: (row) => row.id,
+          expandedRowIds,
+          onExpandedRowsChange: setExpandedRowIds,
+          expandedRowRender: (row) => (
+            <div className="space-y-2">
+              <span className="text-sm font-medium">Description</span>
+              <p className="text-muted-foreground text-sm whitespace-pre-wrap">
+                {row.description || "No description provided."}
+              </p>
+            </div>
+          ),
+        }}
+        slots={{
+          header: (
+            <div className="col-span-12 flex items-center gap-2">
+              {STATE_TABS.map((tab) => (
+                <Button
+                  key={tab.value}
+                  variant={state === tab.value ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleStateChange(tab.value)}
+                >
+                  {tab.label}
+                </Button>
+              ))}
+            </div>
+          ),
+        }}
+        pagination={{
+          show: true,
+          page,
+          rowsPerPage: PER_PAGE,
+          totalCount,
+          onPageChange: setPage,
+          onRowsPerPageChange: () => {
+            // Fixed page size, no-op
+          },
+        }}
+        settings={{
+          show: true,
+        }}
+        outlined={false}
+      />
+    </Card>
   );
 }

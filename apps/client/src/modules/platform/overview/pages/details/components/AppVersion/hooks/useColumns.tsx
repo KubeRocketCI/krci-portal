@@ -37,7 +37,7 @@ export const useColumns = (): TableColumn<Application>[] => {
                     namespace,
                   }}
                 >
-                  <TextWithTooltip text={CDPipelineName || ""} />
+                  <TextWithTooltip text={CDPipelineName || ""} className="font-medium" />
                 </Link>
               </Button>
             );
@@ -73,7 +73,7 @@ export const useColumns = (): TableColumn<Application>[] => {
                     namespace,
                   }}
                 >
-                  <TextWithTooltip text={stageName || ""} />
+                  <TextWithTooltip text={stageName || ""} className="font-medium" />
                 </Link>
               </Button>
             );

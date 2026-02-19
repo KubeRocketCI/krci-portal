@@ -112,33 +112,31 @@ export default function CodebaseDetailsPageContent() {
           )
         }
         extraContent={
-          codebaseIsLoaded && (
-            <div className="flex items-center gap-2">
-              <QuickLink
-                name={{
-                  label: "Git",
-                  value: "git",
-                }}
-                enabledText="Open in GIT"
-                externalLink={codebase?.status?.gitWebUrl}
-                isTextButton
-                variant="link"
-              />
-              <QuickLink
-                name={{
-                  label: quickLinkUiNames[systemQuickLink.sonar],
-                  value: systemQuickLink.sonar,
-                }}
-                enabledText="Open the Quality Gates"
-                externalLink={LinkCreationService.sonar.createDashboardLink({
-                  baseURL: quickLinksURLs?.[systemQuickLink.sonar],
-                  codebaseName: params.name,
-                })}
-                isTextButton
-                variant="link"
-              />
-            </div>
-          )
+          <div className="flex items-center gap-2">
+            <QuickLink
+              name={{
+                label: "Git",
+                value: "git",
+              }}
+              enabledText="Open in GIT"
+              externalLink={codebase?.status?.gitWebUrl}
+              isTextButton
+              variant="link"
+            />
+            <QuickLink
+              name={{
+                label: quickLinkUiNames[systemQuickLink.sonar],
+                value: systemQuickLink.sonar,
+              }}
+              enabledText="Open the Quality Gates"
+              externalLink={LinkCreationService.sonar.createDashboardLink({
+                baseURL: quickLinksURLs?.[systemQuickLink.sonar],
+                codebaseName: params.name,
+              })}
+              isTextButton
+              variant="link"
+            />
+          </div>
         }
       >
         {renderPageContent()}

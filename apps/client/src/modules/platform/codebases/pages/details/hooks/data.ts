@@ -81,6 +81,21 @@ export const useCodebaseBranchPipelineRunListWatch = (codebaseBranch: CodebaseBr
   });
 };
 
+/** All pipeline runs for the current codebase (all branches). Use for Pipelines tab with branch filter. */
+export const useCodebasePipelineRunListWatch = () => {
+  const params = routeProjectDetails.useParams();
+
+  return usePipelineRunWatchList({
+    namespace: params.namespace,
+    labels: {
+      [pipelineRunLabels.codebase]: params.name,
+    },
+    queryOptions: {
+      enabled: !!params.name,
+    },
+  });
+};
+
 export const useBuildTriggerTemplateWatch = () => {
   const params = routeProjectDetails.useParams();
 

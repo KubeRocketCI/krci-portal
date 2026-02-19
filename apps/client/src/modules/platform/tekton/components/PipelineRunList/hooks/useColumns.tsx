@@ -92,7 +92,7 @@ export const useColumns = ({
                     name,
                   }}
                 >
-                  <TextWithTooltip text={name} />
+                  <TextWithTooltip text={name} className="font-medium" />
                 </Link>
               </Button>
             );

@@ -10,7 +10,7 @@ import {
 import { MAIN_COLOR } from "@/k8s/constants/colors";
 import { RESOURCE_ICON_NAMES } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
-import { Badge } from "@/core/components/ui/badge";
+import { Badge, type BadgeProps } from "@/core/components/ui/badge";
 import { codebaseType, codebaseVersioning } from "@my-project/shared";
 import React from "react";
 import { useCodebaseWatch, usePipelineNamesWatch } from "../../../hooks/data";
@@ -40,6 +40,22 @@ export const getColorByType = (type: string) => {
       return MAIN_COLOR.BLUE;
     default:
       return MAIN_COLOR.GREY;
+  }
+};
+
+const getTypeBadgeVariant = (type: string): BadgeProps["variant"] => {
+  switch (type) {
+    case codebaseType.application:
+      return "success";
+    case codebaseType.library:
+      return "info";
+    case codebaseType.autotest:
+      return "warning";
+    case codebaseType.infrastructure:
+      return "info";
+    case codebaseType.system:
+    default:
+      return "neutral";
   }
 };
 
@@ -131,11 +147,7 @@ export const useInfoRows = () => {
       },
       {
         label: "Type",
-        content: (
-          <Badge variant="outline" className="text-white" style={{ backgroundColor: getColorByType(type) }}>
-            {capitalizeFirstLetter(type)}
-          </Badge>
-        ),
+        content: <Badge variant={getTypeBadgeVariant(type)}>{capitalizeFirstLetter(type)}</Badge>,
       },
       {
         label: "Language",

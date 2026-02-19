@@ -122,6 +122,7 @@ export const PipelineRunList = ({
           ),
         }}
         slots={tableSlots}
+        outlined={false}
       />
       {deleteDialogOpen && (
         <DeletionDialog

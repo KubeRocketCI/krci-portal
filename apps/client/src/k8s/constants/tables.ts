@@ -7,6 +7,10 @@ export const TABLE = {
     id: "branchPipelineRunList",
     name: "Branch Pipeline Run List",
   },
+  CODEBASE_PIPELINE_RUN_LIST: {
+    id: "codebasePipelineRunList",
+    name: "Codebase Pipeline Run List",
+  },
   PIPELINE_PIPELINE_RUN_LIST: {
     id: "pipelinePipelineRunList",
     name: "Pipeline Pipeline Run List",
@@ -146,5 +150,9 @@ export const TABLE = {
   CODEBASE_DEPLOYMENTS: {
     id: "codebaseDeployments",
     name: "Codebase Deployments",
+  },
+  BRANCH_LIST: {
+    id: "branchList",
+    name: "Branch List",
   },
 } as const;
