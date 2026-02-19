@@ -43,7 +43,13 @@ export const TextareaPassword = React.forwardRef<HTMLTextAreaElement, TextareaPa
     const toggleButton = showToggle ? (
       <TooltipRoot>
         <TooltipTrigger asChild>
-          <Button type="button" variant="ghost" size="icon" onClick={handleToggleVisibility} className="px-5">
+          <Button
+            type="button"
+            variant="dark"
+            size="icon"
+            onClick={handleToggleVisibility}
+            className="h-full rounded-tl-none rounded-bl-none px-5"
+          >
             {isVisible ? <Eye size={16} /> : <EyeOff size={16} />}
           </Button>
         </TooltipTrigger>
@@ -52,10 +58,9 @@ export const TextareaPassword = React.forwardRef<HTMLTextAreaElement, TextareaPa
     ) : null;
 
     const hasError = !!error;
-    const displayValue = isVisible ? value : "•".repeat(Math.max(0, value.length));
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      if (isVisible && onChange) {
+      if (onChange) {
         onChange(e);
       }
     };
@@ -76,12 +81,17 @@ export const TextareaPassword = React.forwardRef<HTMLTextAreaElement, TextareaPa
         <Textarea
           ref={ref}
           id={finalId}
-          value={displayValue}
+          value={value}
           onChange={handleChange}
           disabled={disabled}
-          readOnly={!isVisible}
           invalid={hasError}
           className={cn("rounded-none border-0", textareaProps.className)}
+          style={
+            {
+              WebkitTextSecurity: isVisible ? "none" : "disc",
+              ...textareaProps.style,
+            } as React.CSSProperties
+          }
           {...textareaProps}
         />
       </FormField>

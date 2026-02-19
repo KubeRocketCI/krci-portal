@@ -443,7 +443,7 @@ describe("k8sManageGitServerIntegrationProcedure", () => {
   });
 
   describe("validation", () => {
-    it("should require currentResource for secret in edit mode", async () => {
+    it("should create secret when currentResource is missing in edit mode", async () => {
       const input = {
         clusterName: "test-cluster",
         namespace: "test-namespace",
@@ -467,14 +467,24 @@ describe("k8sManageGitServerIntegrationProcedure", () => {
           gitProvider: "github" as const,
           sshPrivateKey: "-----BEGIN OPENSSH PRIVATE KEY-----\ntest-key\n-----END OPENSSH PRIVATE KEY-----",
           token: "ghp_test_token_123",
-          // currentResource missing
+          // currentResource missing - should create new secret
         },
       };
 
       const caller = createCaller(mockContext);
 
-      await expect(caller.k8s.manageGitServerIntegration(input as any)).rejects.toThrow(
-        "currentResource is required for secret in edit mode"
+      const result = await caller.k8s.manageGitServerIntegration(input as any);
+
+      expect(result.success).toBe(true);
+      expect(mockK8sClientInstance.createResource).toHaveBeenCalledWith(
+        expect.objectContaining({ kind: "Secret" }),
+        "test-namespace",
+        expect.objectContaining({
+          kind: "Secret",
+          metadata: expect.objectContaining({
+            name: "github-access-token",
+          }),
+        })
       );
     });
 

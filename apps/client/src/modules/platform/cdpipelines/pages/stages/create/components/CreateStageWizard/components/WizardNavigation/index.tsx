@@ -99,12 +99,12 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
           </Button>
 
           {currentStepIndex < totalSteps - 1 ? (
-            <Button onClick={handleContinue} size="sm" type="button">
+            <Button key="continue" onClick={handleContinue} size="sm" type="button">
               Continue
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <Button disabled={isSubmitting} size="sm" type="submit">
+            <Button key="submit" disabled={isSubmitting} size="sm" type="submit">
               <Rocket className="mr-2 h-4 w-4" />
               Create Environment
             </Button>
