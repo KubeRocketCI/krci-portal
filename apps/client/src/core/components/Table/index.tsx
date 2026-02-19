@@ -215,7 +215,7 @@ export const DataTable = <DataType,>({
         </div>
       );
     }
-  }, [slots?.header, tableSettings.show, id, columns, setColumns]);
+  }, [slots?.header, tableSettings.show, id, columns, setColumns, outlined]);
 
   return (
     <div className={`bg-card w-full text-sm ${outlined ? "rounded-md shadow-sm" : ""}`}>

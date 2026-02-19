@@ -4,10 +4,6 @@ import { useShallow } from "zustand/react/shallow";
 
 const TABLE_ID = "pipelineruns-tekton-results-history";
 
-/**
- * TektonResultsHistory component for PipelineRuns list page
- * Shows all PipelineRun history from Tekton Results API
- */
 export const TektonResultsHistory = () => {
   const { namespace } = useClusterStore(
     useShallow((state) => ({
@@ -15,5 +11,7 @@ export const TektonResultsHistory = () => {
     }))
   );
 
-  return <TektonResultsTable namespace={namespace} tableId={TABLE_ID} />;
+  return (
+    <TektonResultsTable namespace={namespace} tableId={TABLE_ID} filter="data_type == 'tekton.dev/v1.PipelineRun'" />
+  );
 };

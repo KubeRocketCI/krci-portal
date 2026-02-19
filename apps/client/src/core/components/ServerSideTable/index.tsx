@@ -119,7 +119,7 @@ export const ServerSideTable = <DataType,>({
         </div>
       );
     }
-  }, [slots?.header, tableSettings.show, id, columns, setColumns]);
+  }, [slots?.header, tableSettings.show, id, columns, setColumns, outlined]);
 
   // Wrap pagination callbacks to convert types
   const handleChangePage = React.useCallback(
