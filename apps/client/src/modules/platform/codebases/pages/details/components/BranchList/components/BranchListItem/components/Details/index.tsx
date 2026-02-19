@@ -29,6 +29,7 @@ export const Details = ({ pipelineRuns }: DetailsProps) => {
               defaultValues={{
                 [pipelineRunFilterControlNames.NAMESPACES]: [],
                 [pipelineRunFilterControlNames.CODEBASES]: [],
+                [pipelineRunFilterControlNames.CODEBASE_BRANCHES]: [],
                 [pipelineRunFilterControlNames.STATUS]: "all",
                 [pipelineRunFilterControlNames.PIPELINE_TYPE]: "all",
               }}

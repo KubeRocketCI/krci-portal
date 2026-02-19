@@ -7,10 +7,12 @@ import { Button } from "@/core/components/ui/button";
 import { GitFusionPullRequest } from "@my-project/shared";
 import { TABLE_ID } from "../constants";
 
-const STATE_BADGE_VARIANT: Record<GitFusionPullRequest["state"], "default" | "secondary" | "destructive"> = {
-  open: "default",
-  closed: "destructive",
-  merged: "secondary",
+import type { BadgeProps } from "@/core/components/ui/badge";
+
+const STATE_BADGE_VARIANT: Record<GitFusionPullRequest["state"], BadgeProps["variant"]> = {
+  open: "success",
+  closed: "error",
+  merged: "info",
 };
 
 function formatDate(dateString: string): string {
@@ -34,7 +36,7 @@ export function useColumns(): TableColumn<GitFusionPullRequest>[] {
         data: {
           columnSortableValuePath: "number",
           render: ({ data }) => (
-            <Button variant="link" asChild className="h-auto p-0 font-mono text-sm">
+            <Button variant="link" asChild className="h-auto p-0 font-mono text-sm font-medium">
               <a href={data.url} target="_blank" rel="noopener noreferrer" aria-label={`Open PR #${data.number}`}>
                 {data.number}
               </a>

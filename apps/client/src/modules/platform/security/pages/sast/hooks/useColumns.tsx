@@ -35,7 +35,7 @@ export const useColumns = (): TableColumn<ProjectWithMetrics>[] => {
                 clusterName: clusterName || "",
                 projectKey: data.key,
               }}
-              className="text-foreground hover:text-primary hover:underline"
+              className="text-foreground hover:text-primary font-medium hover:underline"
             >
               {data.name}
             </Link>
@@ -67,9 +67,7 @@ export const useColumns = (): TableColumn<ProjectWithMetrics>[] => {
           render: ({ data }) => {
             if (!data.visibility) return <span className="text-muted-foreground text-sm">-</span>;
             return (
-              <Badge variant={data.visibility === "public" ? "secondary" : "default"}>
-                {data.visibility.toUpperCase()}
-              </Badge>
+              <Badge variant={data.visibility === "public" ? "success" : "info"}>{data.visibility.toUpperCase()}</Badge>
             );
           },
         },

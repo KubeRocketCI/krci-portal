@@ -168,6 +168,7 @@ const PipelineRunListContentWrapper = ({
       matchFunctions={matchFunctions}
       defaultValues={{
         [pipelineRunFilterControlNames.CODEBASES]: [],
+        [pipelineRunFilterControlNames.CODEBASE_BRANCHES]: [],
         [pipelineRunFilterControlNames.NAMESPACES]: [],
         [pipelineRunFilterControlNames.STATUS]: "all",
         [pipelineRunFilterControlNames.PIPELINE_TYPE]: "all",

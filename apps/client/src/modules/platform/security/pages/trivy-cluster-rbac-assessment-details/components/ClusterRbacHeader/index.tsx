@@ -29,11 +29,7 @@ export function ClusterRbacHeader({ report, isLoading }: ClusterRbacHeaderProps)
           <Badge variant="outline" className="text-xs">
             ClusterRole
           </Badge>
-          {totalIssues === 0 && summary && (
-            <Badge variant="default" className="bg-green-500">
-              No Issues
-            </Badge>
-          )}
+          {totalIssues === 0 && summary && <Badge variant="success">No Issues</Badge>}
         </>
       }
       metadata={

@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/core/utils/classname";
 
 const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive overflow-hidden",
+  "inline-flex items-center justify-center rounded px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive overflow-hidden",
   {
     variants: {
       variant: {
@@ -15,6 +15,11 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline: "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground border",
+        success: "bg-status-success/[0.15] text-status-success",
+        error: "bg-status-error/[0.15] text-status-error",
+        warning: "bg-status-missing/[0.15] text-status-missing",
+        info: "bg-status-in-progress/[0.15] text-status-in-progress",
+        neutral: "border border-border bg-muted text-muted-foreground",
       },
     },
     defaultVariants: {
@@ -36,7 +41,17 @@ BadgeRoot.displayName = "BadgeRoot";
 export { BadgeRoot, badgeVariants };
 
 export interface BadgeProps extends Omit<React.ComponentProps<"span">, "children"> {
-  variant?: "default" | "secondary" | "destructive" | "outline" | "dark";
+  variant?:
+    | "default"
+    | "secondary"
+    | "destructive"
+    | "outline"
+    | "dark"
+    | "success"
+    | "error"
+    | "warning"
+    | "info"
+    | "neutral";
   children: React.ReactNode;
 }
 

@@ -85,12 +85,12 @@ export function Summary({ codebaseBranch, latestBuildPipelineRun, latestSecurity
           </div>
 
           {codebase && checkIsDefaultBranch(codebase, codebaseBranch) && (
-            <Badge variant="default" className="h-6">
+            <Badge variant="info" className="h-6">
               default
             </Badge>
           )}
           {codebaseBranch.spec.release && (
-            <Badge variant="default" className="h-6 bg-green-600 hover:bg-green-700">
+            <Badge variant="success" className="h-6">
               release
             </Badge>
           )}

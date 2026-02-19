@@ -92,14 +92,14 @@ export function useCheckColumns(): TableColumn<AuditCheckWithId>[] {
           render: ({ data }) => {
             if (data.success) {
               return (
-                <Badge variant="outline" className="border-green-500 text-green-600 dark:text-green-400">
+                <Badge variant="success">
                   <CheckCircle className="mr-1 h-3 w-3" />
                   Pass
                 </Badge>
               );
             }
             return (
-              <Badge variant="outline" className="border-red-500 text-red-600 dark:text-red-400">
+              <Badge variant="error">
                 <XCircle className="mr-1 h-3 w-3" />
                 Fail
               </Badge>

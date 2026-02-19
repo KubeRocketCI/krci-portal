@@ -160,7 +160,7 @@ export const PipelineRunTaskNode: React.FC<{
         >
           {/* Task type indicators */}
           {data.isFinally && (
-            <Badge variant="secondary" className="absolute -top-2 -right-2 h-4 bg-gray-300 text-[0.6rem] text-gray-700">
+            <Badge variant="neutral" className="absolute -top-2 -right-2 h-4 rounded text-[0.6rem]">
               Finally
             </Badge>
           )}

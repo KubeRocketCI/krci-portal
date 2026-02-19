@@ -29,13 +29,7 @@ export function SecretHeader({ report, isLoading }: SecretHeaderProps) {
       isEmpty={!report}
       icon={KeyRound}
       title={imageName}
-      titleExtra={
-        totalIssues === 0 && summary ? (
-          <Badge variant="default" className="bg-green-500">
-            No Secrets Found
-          </Badge>
-        ) : undefined
-      }
+      titleExtra={totalIssues === 0 && summary ? <Badge variant="success">No Secrets Found</Badge> : undefined}
       metadata={
         <>
           {namespace && (

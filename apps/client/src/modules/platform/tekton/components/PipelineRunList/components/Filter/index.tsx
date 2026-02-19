@@ -3,7 +3,14 @@ import { ValueOf } from "@/core/types/global";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { FilterTypeWithOptionAll } from "@/k8s/types";
 import { Button } from "@/core/components/ui/button";
-import { PipelineRun, pipelineRunLabels, pipelineRunStatus, PipelineType } from "@my-project/shared";
+import {
+  PipelineRun,
+  pipelineRunLabels,
+  pipelineRunStatus,
+  PipelineType,
+  getPipelineRunAnnotation,
+  tektonResultAnnotations,
+} from "@my-project/shared";
 import React from "react";
 import { pipelineRunFilterControlNames } from "./constants";
 import { usePipelineRunFilter } from "./hooks/usePipelineRunFilter";
@@ -28,6 +35,15 @@ export const PipelineRunFilter = ({
       pipelineRuns?.map(({ metadata: { labels } }) => labels?.[pipelineRunLabels.codebase]).filter(Boolean)
     );
 
+    return Array.from(set);
+  }, [pipelineRuns]);
+
+  const codebaseBranchOptions = React.useMemo(() => {
+    const set = new Set(
+      pipelineRuns
+        ?.map((pipelineRun) => getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitBranch))
+        .filter(Boolean)
+    );
     return Array.from(set);
   }, [pipelineRuns]);
 
@@ -79,6 +95,24 @@ export const PipelineRunFilter = ({
                 label="Codebases"
                 placeholder="Select codebases"
                 options={codebaseOptions}
+                multiple
+                freeSolo
+                ChipProps={{ size: "small", color: "primary" }}
+              />
+            )}
+          </form.Field>
+        </div>
+      )}
+
+      {filterControls.includes(pipelineRunFilterControlNames.CODEBASE_BRANCHES) && (
+        <div className="col-span-4">
+          <form.Field name="codebaseBranches">
+            {(field) => (
+              <Autocomplete
+                field={field}
+                label="Branches"
+                placeholder="Select branches"
+                options={codebaseBranchOptions}
                 multiple
                 freeSolo
                 ChipProps={{ size: "small", color: "primary" }}

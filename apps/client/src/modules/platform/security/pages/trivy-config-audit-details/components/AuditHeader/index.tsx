@@ -33,11 +33,7 @@ export function AuditHeader({ report, isLoading }: AuditHeaderProps) {
               {resourceKind}
             </Badge>
           )}
-          {totalIssues === 0 && summary && (
-            <Badge variant="default" className="bg-green-500">
-              No Issues
-            </Badge>
-          )}
+          {totalIssues === 0 && summary && <Badge variant="success">No Issues</Badge>}
         </>
       }
       metadata={

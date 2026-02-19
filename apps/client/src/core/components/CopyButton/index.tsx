@@ -3,7 +3,7 @@ import { Copy, CopyCheck } from "lucide-react";
 import React from "react";
 
 export const CopyButton = ({ text, size = "small" }: { text: string; size?: "medium" | "small" }) => {
-  const iconSize = size === "medium" ? 20 : 15;
+  const iconSize = size === "medium" ? 16 : 12;
   const shadcnSize = size === "medium" ? "default" : "sm";
 
   const [showCopied, setShowCopied] = React.useState<boolean>(false);

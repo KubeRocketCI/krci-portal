@@ -1,9 +1,17 @@
 import { MatchFunctions } from "@/core/providers/Filter";
-import { PipelineRun, pipelineRunLabels, pipelineType, getPipelineRunStatus } from "@my-project/shared";
+import {
+  PipelineRun,
+  pipelineRunLabels,
+  pipelineType,
+  getPipelineRunStatus,
+  getPipelineRunAnnotation,
+  tektonResultAnnotations,
+} from "@my-project/shared";
 import { PipelineRunListFilterValues } from "./types";
 
 export const pipelineRunFilterControlNames = {
   CODEBASES: "codebases",
+  CODEBASE_BRANCHES: "codebaseBranches",
   STATUS: "status",
   PIPELINE_TYPE: "pipelineType",
   NAMESPACES: "namespaces",
@@ -36,6 +44,12 @@ export const matchFunctions: MatchFunctions<PipelineRun, PipelineRunListFilterVa
     }
 
     return value.includes(itemCodebase);
+  },
+  [pipelineRunFilterControlNames.CODEBASE_BRANCHES]: (item, value) => {
+    if (!value || value.length === 0) return true;
+    const itemBranch = getPipelineRunAnnotation(item, tektonResultAnnotations.gitBranch);
+    if (!itemBranch) return false;
+    return value.includes(itemBranch);
   },
   [pipelineRunFilterControlNames.STATUS]: (item, value) => {
     if (value === "all") {

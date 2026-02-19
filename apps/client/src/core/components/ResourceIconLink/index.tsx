@@ -39,7 +39,7 @@ const DisabledResourceIconLink = ({
 
   return isTextButton ? (
     <Button variant={variant} disabled className={cn(!withoutDisabledStyle ? "opacity-50" : "", "text-xs")} size={size}>
-      {name}
+      View in {name}
       <SquareArrowOutUpRight className="text-muted-foreground/70" size={iconSize} />
     </Button>
   ) : (
@@ -76,15 +76,10 @@ const EnabledResourceIconLink = ({
   const sanitizedIcon = sanitizeSvgBase64(iconBase64);
 
   return isTextButton ? (
-    <Button
-      variant={variant}
-      asChild
-      size={size}
-      className="text-secondary-dark border-secondary-dark hover:bg-secondary-dark/10 text-xs"
-    >
+    <Button variant={variant} asChild size={size} className="text-primary hover:text-primary/80 text-xs">
       <a href={link} target="_blank" rel="noopener noreferrer">
-        {name}
-        <SquareArrowOutUpRight className="text-muted-foreground/70" size={iconSize} />
+        View in {name}
+        <SquareArrowOutUpRight className="text-primary" size={iconSize} />
       </a>
     </Button>
   ) : (

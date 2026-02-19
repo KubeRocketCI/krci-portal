@@ -43,14 +43,16 @@ export const PreviewTableActions = ({ toggleMode }: PreviewTableActionsProps) =>
       const argoApp = argoAppsByName.get(name);
       const deployedVersion = argoApp?.spec?.source?.targetRevision ?? "N/A";
 
-      return `application: ${name}\nversion: ${deployedVersion}`;
+      return `${name}:${deployedVersion}`;
     });
 
     return [
+      `cluster: ${stage.spec.clusterName}`,
       `deployment: ${params.cdPipeline}`,
       `environment: ${stage.spec.name}`,
       `namespace: ${stage.spec.namespace}`,
-      appVersions.join("\n======\n"),
+      "",
+      ...appVersions,
     ].join("\n");
   }, [
     params.cdPipeline,
