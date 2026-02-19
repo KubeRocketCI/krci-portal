@@ -1,45 +1,32 @@
-import { usePipelineRunWatchList } from "@/k8s/api/groups/Tekton/PipelineRun";
-import { TABLE } from "@/k8s/constants/tables";
-import { PipelineRunList } from "@/modules/platform/tekton/components/PipelineRunList";
-import { pipelineRunLabels, pipelineType } from "@my-project/shared";
+import React from "react";
+import { Tabs } from "@/core/providers/Tabs/components/Tabs";
 import { routeStageDetails } from "../../../../route";
-import { FilterProvider } from "@/core/providers/Filter/provider";
-import {
-  matchFunctions,
-  pipelineRunFilterControlNames,
-} from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
+import { useTabs } from "./hooks/useTabs";
+import { Card } from "@/core/components/ui/card";
 
 export const StagePipelineRuns = () => {
-  const params = routeStageDetails.useParams();
+  const { pipelinesTab } = routeStageDetails.useSearch();
 
-  const pipelineRunsWatch = usePipelineRunWatchList({
-    labels: {
-      [pipelineRunLabels.stage]: `${params.cdPipeline}-${params.stage}`,
+  const tabs = useTabs();
+
+  const activeTabIdx = React.useMemo(() => {
+    const idx = tabs.findIndex((t) => t.id === pipelinesTab);
+    return idx >= 0 ? idx : 0;
+  }, [tabs, pipelinesTab]);
+
+  const handleChangeTab = React.useCallback(
+    (_event: React.ChangeEvent<object> | null, newActiveTabIdx: number) => {
+      const newTab = tabs[newActiveTabIdx];
+      if (newTab?.onClick) {
+        newTab.onClick();
+      }
     },
-  });
-
-  const pipelineRuns = pipelineRunsWatch.data.array;
+    [tabs]
+  );
 
   return (
-    <FilterProvider
-      matchFunctions={matchFunctions}
-      syncWithUrl
-      defaultValues={{
-        [pipelineRunFilterControlNames.CODEBASES]: [],
-        [pipelineRunFilterControlNames.CODEBASE_BRANCHES]: [],
-        [pipelineRunFilterControlNames.NAMESPACES]: [],
-        [pipelineRunFilterControlNames.STATUS]: "all",
-        [pipelineRunFilterControlNames.PIPELINE_TYPE]: "all",
-      }}
-    >
-      <PipelineRunList
-        tableId={TABLE.STAGE_PIPELINE_RUN_LIST.id}
-        tableName={TABLE.STAGE_PIPELINE_RUN_LIST.name}
-        pipelineRuns={pipelineRuns!}
-        isLoading={!pipelineRunsWatch.isReady}
-        pipelineRunTypes={[pipelineType.deploy, pipelineType.clean]}
-        filterControls={[pipelineRunFilterControlNames.PIPELINE_TYPE, pipelineRunFilterControlNames.STATUS]}
-      />
-    </FilterProvider>
+    <Card className="p-6">
+      <Tabs tabs={tabs} activeTabIdx={activeTabIdx} handleChangeTab={handleChangeTab} />
+    </Card>
   );
 };

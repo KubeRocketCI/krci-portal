@@ -1,6 +1,7 @@
 import { t } from "../../trpc.js";
 import {
   listTektonResultsProcedure,
+  listTektonRecordsProcedure,
   getTektonResultPipelineRunProcedure,
   getPipelineRunLogsProcedure,
   getSummaryProcedure,
@@ -10,6 +11,7 @@ import {
 
 export const tektonResultsRouter = t.router({
   listResults: listTektonResultsProcedure,
+  listRecords: listTektonRecordsProcedure,
   getPipelineRun: getTektonResultPipelineRunProcedure,
   getPipelineRunLogs: getPipelineRunLogsProcedure,
   getTaskList: getTaskListProcedure,

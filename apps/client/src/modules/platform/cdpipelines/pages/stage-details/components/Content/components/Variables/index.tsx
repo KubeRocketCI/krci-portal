@@ -21,7 +21,10 @@ export const Variables = () => {
 
   const variablesConfigMap = variablesConfigMapWatch.query.data;
 
-  const dataEntries = Object.entries<string>(variablesConfigMap?.data || {});
+  const dataEntries = React.useMemo(
+    () => Object.entries<string>(variablesConfigMap?.data || {}),
+    [variablesConfigMap?.data]
+  );
 
   const configDataSnapshot = JSON.stringify(variablesConfigMap?.data ?? {});
 
@@ -31,7 +34,7 @@ export const Variables = () => {
         key,
         value,
       })),
-    [configDataSnapshot]
+    [dataEntries]
   );
 
   const [variables, setVariables] = React.useState<Variable[]>(initialVariables);
@@ -48,7 +51,6 @@ export const Variables = () => {
       const [originalKey, originalValue] = dataEntries[index] || ["", ""];
       return v.key !== originalKey || v.value !== originalValue;
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- dataEntries is stable dependency to avoid infinite loop
   }, [variables, dataEntries]);
 
   const handleDelete = React.useCallback((index: number) => {

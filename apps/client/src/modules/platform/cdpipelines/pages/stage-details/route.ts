@@ -13,8 +13,14 @@ export const routeSearchTabName = routeSearchTabSchema.enum;
 
 export type RouteSearchTab = z.infer<typeof routeSearchTabSchema>;
 
+export const pipelinesTabSchema = z.enum(["live", "tekton-results"]);
+export const pipelinesTabName = pipelinesTabSchema.enum;
+
+export type PipelinesTab = z.infer<typeof pipelinesTabSchema>;
+
 export interface Search {
   tab?: RouteSearchTab;
+  pipelinesTab?: PipelinesTab;
   page?: number;
   rowsPerPage?: number;
 }
@@ -26,6 +32,7 @@ export const routeStageDetails = createRoute({
     return z
       .object({
         tab: routeSearchTabSchema.optional(),
+        pipelinesTab: pipelinesTabSchema.optional(),
         page: z.number().optional(),
         rowsPerPage: z.number().optional(),
       })
