@@ -68,13 +68,13 @@ export const ManageGitServer = ({ gitServer, webhookURL, handleClosePanel }: Man
               gitProvider: gitProviderValue as "gerrit",
               sshPrivateKey: values[NAMES.SSH_PRIVATE_KEY],
               sshPublicKey: (values[NAMES.SSH_PUBLIC_KEY] ?? "").trim(),
-              currentResource: mode === "edit" ? gitServerSecret : undefined,
+              currentResource: gitServerSecret,
             }
           : {
               gitProvider: gitProviderValue as "bitbucket" | "github" | "gitlab",
               sshPrivateKey: values[NAMES.SSH_PRIVATE_KEY],
               token: (values[NAMES.TOKEN] ?? "").trim(),
-              currentResource: mode === "edit" ? gitServerSecret : undefined,
+              currentResource: gitServerSecret,
             };
 
       const initialGitServer = gitServer

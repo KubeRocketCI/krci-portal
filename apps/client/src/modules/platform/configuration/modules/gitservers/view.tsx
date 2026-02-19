@@ -20,14 +20,17 @@ export default function GitserversConfigurationPage() {
   const gitServerPermissions = useGitServerPermissions();
 
   const [isCreateDialogOpen, setCreateDialogOpen] = React.useState<boolean>(false);
-  const [expandedPanel, setExpandedPanel] = React.useState<string | undefined>(undefined);
+  const [expandedPanel, setExpandedPanel] = React.useState<string>("");
 
   const handleOpenCreateDialog = () => setCreateDialogOpen(true);
   const handleCloseCreateDialog = () => setCreateDialogOpen(false);
 
-  const handleChange = React.useCallback((value: string) => {
-    setExpandedPanel(value === "" ? undefined : value);
-  }, []);
+  const handleChange = React.useCallback(
+    (value: string) => {
+      setExpandedPanel(value);
+    },
+    [expandedPanel]
+  );
 
   const renderPageContent = React.useCallback(() => {
     const gitServerError = gitServerWatch.query.error && getForbiddenError(gitServerWatch.query.error);
@@ -55,13 +58,14 @@ export default function GitserversConfigurationPage() {
     }
 
     const singleItem = gitServers?.length === 1;
+    const accordionValue = singleItem ? (gitServers?.[0]?.metadata.name ?? "") : expandedPanel;
 
     return (
       <LoadingWrapper isLoading={isLoading}>
         <Accordion
           type="single"
           collapsible
-          value={singleItem ? gitServers?.[0]?.metadata.name : expandedPanel}
+          value={accordionValue}
           onValueChange={singleItem ? undefined : handleChange}
         >
           <div className="flex flex-col gap-2">
@@ -72,7 +76,6 @@ export default function GitserversConfigurationPage() {
               const statusIcon = getGitServerStatusIcon(gitServer);
 
               const gitServerName = gitServer.metadata.name;
-              const isExpanded = singleItem || expandedPanel === gitServerName;
 
               // Get webhook URL from the GitServer spec or status
               const webhookURL = gitServer.spec?.gitHost ? `https://${gitServer.spec.gitHost}` : "";
@@ -102,13 +105,11 @@ export default function GitserversConfigurationPage() {
                       </h6>
                     </AccordionTrigger>
                     <AccordionContent>
-                      {isExpanded && (
-                        <ManageGitServer
-                          gitServer={gitServer}
-                          webhookURL={webhookURL}
-                          handleClosePanel={handleCloseCreateDialog}
-                        />
-                      )}
+                      <ManageGitServer
+                        gitServer={gitServer}
+                        webhookURL={webhookURL}
+                        handleClosePanel={handleCloseCreateDialog}
+                      />
                     </AccordionContent>
                   </AccordionItem>
                 </div>

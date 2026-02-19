@@ -11,16 +11,17 @@ export const PipelineConfiguration: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="space-y-4">
         <div>
           <TriggerType />
         </div>
-        <div />
-        <div>
-          <DeployTemplate />
-        </div>
-        <div>
-          <CleanTemplate />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <DeployTemplate />
+          </div>
+          <div>
+            <CleanTemplate />
+          </div>
         </div>
       </div>
     </div>

@@ -232,19 +232,13 @@ export const mockTemplates = {
  * Seeds the QueryClient cache with mock data for wizard testing
  */
 export const seedWizardMockData = (queryClient: QueryClient) => {
-  console.log("🎭 [MOCK] seedWizardMockData called");
-
   const clusterName = "in-cluster"; // Must match TEST_CLUSTER_NAME
   const namespace = "default";
 
   // Mock Git Servers list (stored as Map)
   const gitServersMap = new Map(Object.values(mockGitServers).map((server) => [server.metadata.name, server]));
 
-  console.log("🎭 [MOCK] Git Servers Map:", gitServersMap);
-  console.log("🎭 [MOCK] Git Servers Map size:", gitServersMap.size);
-
   const gitServersQueryKey = ["k8s:watchList", clusterName, namespace, "gitservers"];
-  console.log("🎭 [MOCK] Setting Git Servers with key:", gitServersQueryKey);
 
   queryClient.setQueryData(gitServersQueryKey, {
     apiVersion: "v2.krci.io/v1",
@@ -252,10 +246,6 @@ export const seedWizardMockData = (queryClient: QueryClient) => {
     metadata: {},
     items: gitServersMap,
   });
-
-  console.log("🎭 [MOCK] Git Servers data set. Verifying...");
-  const gitServersData = queryClient.getQueryData(gitServersQueryKey);
-  console.log("🎭 [MOCK] Retrieved Git Servers data:", gitServersData);
 
   // Mock individual Git Server watches
   Object.values(mockGitServers).forEach((gitServer) => {
@@ -268,11 +258,7 @@ export const seedWizardMockData = (queryClient: QueryClient) => {
   // Mock Jira Servers list (stored as Map)
   const jiraServersMap = new Map(Object.values(mockJiraServers).map((server) => [server.metadata.name, server]));
 
-  console.log("🎭 [MOCK] Jira Servers Map:", jiraServersMap);
-  console.log("🎭 [MOCK] Jira Servers Map size:", jiraServersMap.size);
-
   const jiraServersQueryKey = ["k8s:watchList", clusterName, namespace, "jiraservers"];
-  console.log("🎭 [MOCK] Setting Jira Servers with key:", jiraServersQueryKey);
 
   queryClient.setQueryData(jiraServersQueryKey, {
     apiVersion: "v2.krci.io/v1",
@@ -280,10 +266,6 @@ export const seedWizardMockData = (queryClient: QueryClient) => {
     metadata: {},
     items: jiraServersMap,
   });
-
-  console.log("🎭 [MOCK] Jira Servers data set. Verifying...");
-  const jiraServersData = queryClient.getQueryData(jiraServersQueryKey);
-  console.log("🎭 [MOCK] Retrieved Jira Servers data:", jiraServersData);
 
   // Mock individual Jira Server watches
   Object.values(mockJiraServers).forEach((jiraServer) => {
@@ -294,7 +276,6 @@ export const seedWizardMockData = (queryClient: QueryClient) => {
   });
 
   // Mock Git Organizations (for non-Gerrit servers) - TRPC query
-  console.log("🎭 [MOCK] Setting Git Organizations for github-main and gitlab-main");
   queryClient.setQueryData(["gitServerOrgList", "github-main"], {
     data: mockGitOrganizations,
   });
@@ -306,11 +287,7 @@ export const seedWizardMockData = (queryClient: QueryClient) => {
   // Mock Templates list (stored as Map)
   const templatesMap = new Map(Object.values(mockTemplates).map((template) => [template.metadata.name, template]));
 
-  console.log("🎭 [MOCK] Templates Map:", templatesMap);
-  console.log("🎭 [MOCK] Templates Map size:", templatesMap.size);
-
   const templatesQueryKey = ["k8s:watchList", clusterName, namespace, "templates"];
-  console.log("🎭 [MOCK] Setting Templates with key:", templatesQueryKey);
 
   queryClient.setQueryData(templatesQueryKey, {
     apiVersion: "v2.krci.io/v1",
@@ -319,29 +296,13 @@ export const seedWizardMockData = (queryClient: QueryClient) => {
     items: templatesMap,
   });
 
-  console.log("🎭 [MOCK] Templates data set. Verifying...");
-  const templatesData = queryClient.getQueryData(templatesQueryKey);
-  console.log("🎭 [MOCK] Retrieved Templates data:", templatesData);
-
   // Mock individual Template watches
   Object.values(mockTemplates).forEach((template) => {
     queryClient.setQueryData(["k8s:watchItem", clusterName, namespace, "templates", template.metadata.name], template);
   });
 
   // Mock KRCI Config
-  console.log("🎭 [MOCK] Setting KRCI Config");
   queryClient.setQueryData(["k8s:watchItem", clusterName, namespace, "configmaps", "krci-config"], mockKRCIConfig);
-
-  console.log("🎭 [MOCK] All query cache data seeded!");
-  console.log(
-    "🎭 [MOCK] Query cache keys:",
-    Array.from(
-      queryClient
-        .getQueryCache()
-        .getAll()
-        .map((q) => q.queryKey)
-    )
-  );
 };
 
 /**

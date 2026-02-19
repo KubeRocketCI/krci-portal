@@ -19,6 +19,11 @@ export const TriggerType = () => {
         value: stageTriggerType.Manual,
         description: "Require manual approval before deployment",
       },
+      {
+        label: stageTriggerType["Auto-stable"],
+        value: stageTriggerType["Auto-stable"],
+        description: "Automatically trigger deployment when changes are detected and the pipeline is stable",
+      },
     ],
     []
   );
@@ -34,7 +39,7 @@ export const TriggerType = () => {
           label="Trigger Type"
           options={triggerTypeOptions}
           variant="tile"
-          classNames={{ container: "grid-cols-2" }}
+          classNames={{ container: "grid-cols-4" }}
         />
       )}
     />

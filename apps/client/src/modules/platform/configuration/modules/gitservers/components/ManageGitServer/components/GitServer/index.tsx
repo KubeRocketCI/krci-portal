@@ -9,12 +9,10 @@ import {
   TektonDisabled,
   UserName,
 } from "./components/fields";
-import { SyncGitProviderDefaults } from "./components/SyncGitProviderDefaults";
 
 export const GitServerForm = () => {
   return (
     <>
-      <SyncGitProviderDefaults />
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-6">
           <GitProviderField />

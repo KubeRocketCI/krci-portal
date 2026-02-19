@@ -1,7 +1,7 @@
 import React from "react";
 import { NAMES } from "../../../../../names";
 import { useManageGitServerForm } from "../../../../../providers/form/hooks";
-import { GitProvider as GitProviderType, gitProvider } from "@my-project/shared";
+import { GitProvider as GitProviderType, gitProvider, gitUser, createGitServerSecretName } from "@my-project/shared";
 import { GIT_PROVIDER_ICON_MAPPING } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
 import { RESOURCE_ICON_NAMES } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
@@ -33,7 +33,27 @@ export const GitProviderField = () => {
   );
 
   return (
-    <form.AppField name={NAMES.GIT_PROVIDER}>
+    <form.AppField
+      name={NAMES.GIT_PROVIDER}
+      listeners={{
+        onChange: ({ value }) => {
+          // Only sync defaults in create mode when git provider changes
+          if (mode === FORM_MODES.CREATE && value) {
+            const user =
+              value === gitProvider.gerrit
+                ? gitUser.GERRIT
+                : value === gitProvider.github
+                  ? gitUser.GITHUB
+                  : value === gitProvider.gitlab
+                    ? gitUser.GITLAB
+                    : gitUser.BITBUCKET;
+
+            form.setFieldValue(NAMES.GIT_USER, user);
+            form.setFieldValue(NAMES.NAME_SSH_KEY_SECRET, createGitServerSecretName(value));
+          }
+        },
+      }}
+    >
       {(field) => (
         <field.FormSelect
           label="Git provider"

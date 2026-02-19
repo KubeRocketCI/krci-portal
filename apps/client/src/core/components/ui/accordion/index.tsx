@@ -37,7 +37,7 @@ function AccordionTrigger({
 }: AccordionTriggerProps) {
   const chevron = !hideChevron && (
     <span
-      className="text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded-md border p-1"
+      className="text-muted-foreground group-hover:bg-accent group-hover:text-accent-foreground flex size-10 shrink-0 items-center justify-center rounded-md border p-1 transition-colors"
       data-slot="accordion-chevron"
       aria-hidden
     >

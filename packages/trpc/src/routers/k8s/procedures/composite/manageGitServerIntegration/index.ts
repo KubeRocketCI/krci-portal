@@ -98,7 +98,9 @@ export const k8sManageGitServerIntegrationProcedure = protectedProcedure
 
       // Step 1: Handle Secret operations
       if (dirtyFields.secret) {
-        if (mode === "create") {
+        // Secret operation is independent of GitServer mode
+        // If currentResource doesn't exist, create new secret (even in overall edit mode)
+        if (!secret.currentResource) {
           // Create new secret (shape matches shared createGitServerSecretDraft discriminated union)
           const secretDraftInput =
             secret.gitProvider === "gerrit"
@@ -113,10 +115,6 @@ export const k8sManageGitServerIntegrationProcedure = protectedProcedure
           updatedSecret = (await k8sClient.createResource(k8sSecretConfig, namespace, secretDraft as Secret)) as Secret;
         } else {
           // Edit existing secret
-          if (!secret.currentResource) {
-            throw new Error("currentResource is required for secret in edit mode");
-          }
-
           const secretEditInput =
             secret.gitProvider === "gerrit"
               ? {
