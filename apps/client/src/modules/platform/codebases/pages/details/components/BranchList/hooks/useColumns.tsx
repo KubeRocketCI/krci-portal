@@ -96,14 +96,14 @@ export const useColumns = ({
                         href={gitLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:text-primary/80 inline-flex items-center gap-1 text-sm font-medium hover:underline"
+                        className="text-primary hover:text-primary/80 inline-flex items-center gap-1 text-sm hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <TextWithTooltip text={codebaseBranch.spec.branchName} />
                         <SquareArrowOutUpRight className="text-primary shrink-0" size={14} />
                       </a>
                     ) : (
-                      <TextWithTooltip text={codebaseBranch.spec.branchName} className="text-sm font-medium" />
+                      <TextWithTooltip text={codebaseBranch.spec.branchName} className="text-sm" />
                     )}
                   </div>
                   <CopyButton text={codebaseBranch.spec.branchName} size="small" />
@@ -205,7 +205,7 @@ export const useColumns = ({
                   />
                 </div>
                 <div className="min-w-0">
-                  <Button variant="link" asChild className="h-auto p-0 text-sm font-medium">
+                  <Button variant="link" asChild className="h-auto p-0 text-sm font-medium whitespace-normal">
                     <Link
                       to={PATH_PIPELINERUN_DETAILS_FULL}
                       params={{

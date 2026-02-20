@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
-import { Package, RefreshCw, Box, AlertTriangle, ScrollText, Terminal, SquareArrowOutUpRight } from "lucide-react";
+import { Package, RefreshCw, AlertTriangle, ScrollText, Terminal, SquareArrowOutUpRight } from "lucide-react";
+import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import { Button } from "@/core/components/ui/button";
 import { Badge } from "@/core/components/ui/badge";
 import {
@@ -129,7 +130,7 @@ export const ApplicationsList = ({ stage }: ApplicationsListProps) => {
                       namespace: appCodebase.metadata.namespace || params.namespace,
                     }}
                   >
-                    <Box className="text-muted-foreground/70 shrink-0" />
+                    <ENTITY_ICON.project className="text-muted-foreground/70 shrink-0" />
                     {appCodebase.metadata.name}
                   </Link>
                 </Button>

@@ -35,7 +35,7 @@ export const useColumns = (): TableColumn<ProjectWithMetrics>[] => {
                 clusterName: clusterName || "",
                 projectKey: data.key,
               }}
-              className="text-foreground hover:text-primary font-medium hover:underline"
+              className="text-foreground hover:text-primary hover:underline"
             >
               {data.name}
             </Link>

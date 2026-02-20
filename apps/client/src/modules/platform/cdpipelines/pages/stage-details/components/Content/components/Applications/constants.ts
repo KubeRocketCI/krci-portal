@@ -6,6 +6,7 @@ export const applicationTableMode = {
 export const columnNames = {
   HEALTH: "health",
   SYNC: "sync",
+  STATUS: "status",
   NAME: "name",
   DEPLOYED_VERSION: "deployedVersion",
   VALUES_OVERRIDE: "valuesOverride",

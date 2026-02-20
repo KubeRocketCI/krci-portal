@@ -39,7 +39,7 @@ export function useColumns(): TableColumn<ConsolidatedVulnerabilityImage>[] {
                 }}
                 className="text-foreground hover:text-primary hover:underline"
               >
-                <span className="font-medium">{imageDisplay}</span>
+                <span>{imageDisplay}</span>
               </Link>
             );
           },

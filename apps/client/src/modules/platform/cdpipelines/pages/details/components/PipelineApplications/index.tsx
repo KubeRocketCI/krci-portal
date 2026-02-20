@@ -1,13 +1,17 @@
 import React from "react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/core/components/ui/button";
+import { Badge } from "@/core/components/ui/badge";
 import { DataTable } from "@/core/components/Table";
 import { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
-import { Box } from "lucide-react";
+import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
-import { getCodebaseMappingByType } from "@/k8s/api/groups/KRCI/Codebase";
-import { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/mappings/types";
+import { getCodebaseStatusIcon } from "@/k8s/api/groups/KRCI/Codebase";
+import { ResourceStatusBadge } from "@/k8s/components/ResourceStatusBadge";
+import { CodebaseLanguageIcon } from "@/modules/platform/codebases/components/CodebaseLanguageIcon";
+import { CodebaseFrameworkIcon } from "@/modules/platform/codebases/components/CodebaseFrameworkIcon";
+import { CodebaseBuildToolIcon } from "@/modules/platform/codebases/components/CodebaseBuildToolIcon";
 import { Codebase } from "@my-project/shared";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
@@ -21,11 +25,12 @@ const useColumns = (clusterName: string, namespace: string): TableColumn<Codebas
   return React.useMemo(
     () => [
       {
-        id: "application",
-        label: "Application",
+        id: "name",
+        label: "Name",
         data: {
+          columnSortableValuePath: "metadata.name",
           render: ({ data }) => (
-            <Button variant="link" asChild className="text-foreground h-auto justify-start p-0 text-sm">
+            <Button variant="link" asChild className="px-4 py-0">
               <Link
                 to={PATH_PROJECT_DETAILS_FULL}
                 params={{
@@ -34,78 +39,76 @@ const useColumns = (clusterName: string, namespace: string): TableColumn<Codebas
                   namespace: data.metadata.namespace || namespace,
                 }}
               >
-                <Box className="text-muted-foreground/70 size-4 shrink-0" />
-                {data.metadata.name}
+                <span className="flex items-center gap-2">
+                  <ENTITY_ICON.project className="text-muted-foreground/70" />
+                  <TextWithTooltip text={data.metadata.name} />
+                </span>
               </Link>
             </Button>
           ),
-        },
-        cell: {
-          baseWidth: 25,
-        },
-      },
-      {
-        id: "language",
-        label: "Language / Framework",
-        data: {
-          render: ({ data }) => {
-            const type = data.spec.type;
-            const lang = data.spec.lang?.toLowerCase() || "";
-            const framework = data.spec.framework?.toLowerCase() || "";
-
-            const codebaseMapping = getCodebaseMappingByType(type) as Record<string, CodebaseInterface>;
-            const codebaseMappingByLang = codebaseMapping?.[lang];
-
-            return (
-              <div className="flex flex-col gap-0.5">
-                <div className="text-foreground text-sm">
-                  {codebaseMappingByLang?.language?.name || capitalizeFirstLetter(data.spec.lang || "")}
-                </div>
-                <div className="text-muted-foreground text-xs">
-                  {framework
-                    ? codebaseMappingByLang?.frameworks?.[framework]?.name || capitalizeFirstLetter(framework)
-                    : "N/A"}
-                </div>
-              </div>
-            );
-          },
         },
         cell: {
           baseWidth: 20,
         },
       },
       {
-        id: "buildTool",
-        label: "Build Tool",
+        id: "status",
+        label: "Status",
         data: {
+          columnSortableValuePath: "status.status",
           render: ({ data }) => {
-            const type = data.spec.type;
-            const lang = data.spec.lang?.toLowerCase() || "";
-            const buildTool = data.spec.buildTool?.toLowerCase() || "";
+            const status = data?.status?.status;
+            const detailedMessage = data?.status?.detailedMessage;
+            const statusIcon = getCodebaseStatusIcon(data);
 
-            const codebaseMapping = getCodebaseMappingByType(type) as Record<string, CodebaseInterface>;
-            const codebaseMappingByLang = codebaseMapping?.[lang];
-
-            return (
-              <div className="text-foreground text-sm">
-                {codebaseMappingByLang?.buildTools?.[buildTool]?.name ||
-                  capitalizeFirstLetter(data.spec.buildTool || "")}
-              </div>
-            );
+            return <ResourceStatusBadge status={status} detailedMessage={detailedMessage} statusIcon={statusIcon} />;
           },
         },
         cell: {
-          baseWidth: 15,
+          baseWidth: 10,
         },
       },
       {
-        id: "description",
-        label: "Description",
+        id: "type",
+        label: "Type",
         data: {
-          render: ({ data }) => <TextWithTooltip text={data.spec.description || "No description"} maxLineAmount={1} />,
+          columnSortableValuePath: "spec.type",
+          render: ({ data }) => {
+            return <Badge variant="outline">{capitalizeFirstLetter(data.spec.type)}</Badge>;
+          },
         },
         cell: {
-          baseWidth: 40,
+          baseWidth: 12,
+        },
+      },
+      {
+        id: "language",
+        label: "Language",
+        data: {
+          render: ({ data }) => <CodebaseLanguageIcon codebase={data} />,
+        },
+        cell: {
+          baseWidth: 12,
+        },
+      },
+      {
+        id: "framework",
+        label: "Framework",
+        data: {
+          render: ({ data }) => <CodebaseFrameworkIcon codebase={data} />,
+        },
+        cell: {
+          baseWidth: 12,
+        },
+      },
+      {
+        id: "buildTool",
+        label: "Build Tool",
+        data: {
+          render: ({ data }) => <CodebaseBuildToolIcon codebase={data} />,
+        },
+        cell: {
+          baseWidth: 12,
         },
       },
     ],

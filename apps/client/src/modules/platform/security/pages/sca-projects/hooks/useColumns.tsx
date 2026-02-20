@@ -30,7 +30,7 @@ export const useColumns = (): TableColumn<ProjectsListData>[] => {
             <Link
               to={PATH_SCA_PROJECT_DETAILS_FULL}
               params={{ namespace: namespace || "", clusterName: clusterName || "", projectUuid: data.uuid }}
-              className="text-foreground hover:text-primary font-medium hover:underline"
+              className="text-foreground hover:text-primary hover:underline"
             >
               {data.name}
             </Link>

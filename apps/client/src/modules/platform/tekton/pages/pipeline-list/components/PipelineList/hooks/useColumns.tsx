@@ -7,6 +7,7 @@ import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { PipelineGraphDialog } from "@/modules/platform/tekton/dialogs/PipelineGraph";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { VectorSquare } from "lucide-react";
+import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
 import { TABLE } from "@/k8s/constants/tables";
 import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
@@ -51,7 +52,8 @@ export const useColumns = (): TableColumn<Pipeline>[] => {
                     name,
                   }}
                 >
-                  <TextWithTooltip text={name} className="font-medium" />
+                  <ENTITY_ICON.pipeline className="text-muted-foreground/70" />
+                  <TextWithTooltip text={name} />
                 </Link>
               </Button>
             );

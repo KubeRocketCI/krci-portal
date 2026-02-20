@@ -1,7 +1,7 @@
-import { TabSection } from "@/core/components/TabSection";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { useQuickLinksUrlListWatch, useStageWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 import { quickLinkLabels, systemQuickLink } from "@my-project/shared";
+import { Card } from "@/core/components/ui/card";
 
 export const Monitoring = () => {
   const quickLinksUrlListWatch = useQuickLinksUrlListWatch();
@@ -19,7 +19,8 @@ export const Monitoring = () => {
   const clusterName = stage?.spec.clusterName;
 
   return (
-    <TabSection title="Monitoring">
+    <Card className="p-6">
+      <h3 className="text-foreground mb-4 text-xl font-semibold">Monitoring</h3>
       <iframe
         title="monitoring"
         frameBorder="0"
@@ -32,6 +33,6 @@ export const Monitoring = () => {
           clusterName,
         })}
       />
-    </TabSection>
+    </Card>
   );
 };

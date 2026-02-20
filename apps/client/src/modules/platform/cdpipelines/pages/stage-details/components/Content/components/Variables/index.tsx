@@ -4,11 +4,11 @@ import { useVariablesConfigMapWatch } from "../../../../hooks";
 import { Input } from "@/core/components/ui/input";
 import { EmptyList } from "@/core/components/EmptyList";
 import { Plus, Trash } from "lucide-react";
-import { LearnMoreLink } from "@/core/components/LearnMoreLink";
-import { TabSection } from "@/core/components/TabSection";
-import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { NameValueTable } from "@/core/components/NameValueTable";
 import { useConfigMapPermissions } from "@/k8s/api/groups/Core/ConfigMap";
+import { Card } from "@/core/components/ui/card";
+import { LearnMoreLink } from "@/core/components/LearnMoreLink";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 
 type Variable = {
   key: string;
@@ -172,15 +172,11 @@ export const Variables = () => {
   ]);
 
   return (
-    <TabSection
-      title={
-        <>
-          <span className="text-foreground text-3xl font-semibold">Variables</span>{" "}
-          <LearnMoreLink url={EDP_USER_GUIDE.VARIABLES_INJECTION.url} />
-        </>
-      }
-    >
+    <Card className="p-6">
+      <h3 className="text-foreground mb-4 text-xl font-semibold">
+        Variables <LearnMoreLink url={EDP_USER_GUIDE.VARIABLES_INJECTION.url} />
+      </h3>
       {renderContent()}
-    </TabSection>
+    </Card>
   );
 };

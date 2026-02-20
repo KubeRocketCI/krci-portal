@@ -2,7 +2,6 @@ import { AuthorAvatar } from "@/core/components/AuthorAvatar";
 import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
 import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { TableColumn } from "@/core/components/Table/types";
-import { StatusIcon } from "@/core/components/StatusIcon";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
@@ -11,14 +10,15 @@ import { useClusterStore } from "@/k8s/store";
 import { PATH_TEKTON_RESULT_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/tekton/pages/tekton-result-details/route";
 import { PATH_PIPELINE_DETAILS_FULL } from "@/modules/platform/tekton/pages/pipeline-details/route";
 import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
-import { getTektonResultStatusIcon } from "@/modules/platform/tekton/utils/statusIcons";
-import { TektonResult, TektonResultStatus, parseRecordName, tektonResultAnnotations } from "@my-project/shared";
+import { TektonResult, parseRecordName, tektonResultAnnotations } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import { Clock } from "lucide-react";
+import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { columnNames } from "../constants";
 import { ColumnName, UseColumnsOptions } from "../types";
+import { StatusColumn } from "../components/columns/Status";
 
 /**
  * Get annotation value from TektonResult, returns undefined if not present or empty
@@ -63,23 +63,6 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
   const allColumns: TableColumn<TektonResult>[] = React.useMemo(
     () => [
       {
-        id: columnNames.STATUS,
-        label: "Status",
-        data: {
-          render: ({ data }) => {
-            const status = data.summary?.status || "UNKNOWN";
-            const config = getTektonResultStatusIcon(status as TektonResultStatus);
-
-            return <StatusIcon Icon={config.Icon} color={config.color} width={20} Title={config.title} />;
-          },
-        },
-        cell: {
-          isFixed: true,
-          baseWidth: 5,
-          ...getSyncedColumnData(tableSettings, columnNames.STATUS),
-        },
-      },
-      {
         id: columnNames.NAME,
         label: "Name",
         data: {
@@ -107,7 +90,8 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
                     recordUid: recordInfo.recordUid,
                   }}
                 >
-                  <TextWithTooltip text={displayName} className="font-medium" />
+                  <ENTITY_ICON.pipelineRun className="text-muted-foreground/70" />
+                  <TextWithTooltip text={displayName} />
                 </Link>
               </Button>
             );
@@ -116,6 +100,17 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
         cell: {
           baseWidth: 20,
           ...getSyncedColumnData(tableSettings, columnNames.NAME),
+        },
+      },
+      {
+        id: columnNames.STATUS,
+        label: "Status",
+        data: {
+          render: ({ data }) => <StatusColumn tektonResult={data} />,
+        },
+        cell: {
+          baseWidth: 8,
+          ...getSyncedColumnData(tableSettings, columnNames.STATUS),
         },
       },
       {
@@ -140,6 +135,7 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
                     name: pipelineName,
                   }}
                 >
+                  <ENTITY_ICON.pipeline className="text-muted-foreground/70" />
                   <TextWithTooltip text={pipelineName} />
                 </Link>
               </Button>
@@ -173,6 +169,7 @@ export const useColumns = (options: UseColumnsOptions): TableColumn<TektonResult
                     name: codebaseName,
                   }}
                 >
+                  <ENTITY_ICON.project className="text-muted-foreground/70" />
                   <TextWithTooltip text={codebaseName} />
                 </Link>
               </Button>

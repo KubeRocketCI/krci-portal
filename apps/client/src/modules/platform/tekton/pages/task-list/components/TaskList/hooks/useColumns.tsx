@@ -45,7 +45,7 @@ export const useColumns = (): TableColumn<Task>[] => {
                   name,
                 }}
               >
-                <TextWithTooltip text={name} className="font-medium" />
+                <TextWithTooltip text={name} />
               </Link>
             </Button>
           ),

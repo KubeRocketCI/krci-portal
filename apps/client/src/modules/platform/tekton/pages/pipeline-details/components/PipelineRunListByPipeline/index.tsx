@@ -3,8 +3,11 @@ import { routePipelineDetails } from "../../route";
 import { pipelineRunLabels } from "@my-project/shared";
 import { PipelineRunList } from "@/modules/platform/tekton/components/PipelineRunList";
 import { TABLE } from "@/k8s/constants/tables";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
 import { FilterProvider } from "@/core/providers/Filter";
+import {
+  matchFunctions,
+  pipelineRunFilterControlNames,
+} from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
 
 export const PipelineRunListByPipeline = () => {
   const params = routePipelineDetails.useParams();
@@ -17,19 +20,24 @@ export const PipelineRunListByPipeline = () => {
 
   const pipelineRuns = pipelineRunListWatch.data.array;
 
-  const { loadSettings } = useTableSettings(TABLE.PIPELINE_PIPELINE_RUN_LIST.id);
-
-  const tableSettings = loadSettings();
-
   return (
-    <FilterProvider<Record<string, never>, Record<string, never>> defaultValues={{}} matchFunctions={{}}>
+    <FilterProvider
+      matchFunctions={matchFunctions}
+      syncWithUrl
+      defaultValues={{
+        [pipelineRunFilterControlNames.CODEBASES]: [],
+        [pipelineRunFilterControlNames.CODEBASE_BRANCHES]: [],
+        [pipelineRunFilterControlNames.NAMESPACES]: [],
+        [pipelineRunFilterControlNames.STATUS]: "all",
+        [pipelineRunFilterControlNames.PIPELINE_TYPE]: "all",
+      }}
+    >
       <PipelineRunList
         pipelineRuns={pipelineRuns!}
         isLoading={!pipelineRunListWatch.isReady}
         tableId={TABLE.PIPELINE_PIPELINE_RUN_LIST.id}
         tableName={TABLE.PIPELINE_PIPELINE_RUN_LIST.name}
-        tableSettings={tableSettings}
-        filterControls={[]}
+        filterControls={[pipelineRunFilterControlNames.STATUS]}
       />
     </FilterProvider>
   );

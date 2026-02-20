@@ -8,8 +8,7 @@ import { getSyncedColumnData } from "@/core/components/Table/components/TableSet
 import { CDPipeline } from "@my-project/shared";
 import { TableColumn } from "@/core/components/Table/types";
 import { Badge } from "@/core/components/ui/badge";
-import { CUSTOM_RESOURCE_STATUS } from "@/k8s/constants/statuses";
-import { StatusIcon } from "@/core/components/StatusIcon";
+import { ResourceStatusBadge } from "@/k8s/components/ResourceStatusBadge";
 import { Link } from "@tanstack/react-router";
 import { routeCDPipelineDetails } from "../../../../details/route";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
@@ -24,7 +23,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/core/components/ui/dropdown-menu";
-import { Box, CloudUpload, Package } from "lucide-react";
+import { Package } from "lucide-react";
+import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 
 export const useColumns = (): TableColumn<CDPipeline>[] => {
   const { clusterName, defaultNamespace } = useClusterStore(
@@ -39,42 +39,6 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
   return React.useMemo(
     () =>
       [
-        {
-          id: columnNames.STATUS,
-          label: "Status",
-          data: {
-            columnSortableValuePath: "status.status",
-            render: ({ data }) => {
-              const status = data?.status?.status;
-              const detailedMessage = data?.status?.detailed_message;
-
-              const cdPipelineStatusIcon = getCDPipelineStatusIcon(data);
-
-              const title = (
-                <>
-                  <p className="text-sm font-semibold">{`Status: ${status || "Unknown"}`}</p>
-                  {status === CUSTOM_RESOURCE_STATUS.FAILED && (
-                    <p className="mt-3 text-sm font-medium">{detailedMessage}</p>
-                  )}
-                </>
-              );
-
-              return (
-                <StatusIcon
-                  Icon={cdPipelineStatusIcon.component}
-                  color={cdPipelineStatusIcon.color}
-                  isSpinning={cdPipelineStatusIcon.isSpinning}
-                  Title={title}
-                />
-              );
-            },
-          },
-          cell: {
-            isFixed: true,
-            baseWidth: 5,
-            ...getSyncedColumnData(tableSettings, columnNames.STATUS),
-          },
-        },
         {
           id: columnNames.NAME,
           label: "Deployment",
@@ -95,8 +59,8 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                       namespace: namespace || defaultNamespace,
                     }}
                   >
-                    <CloudUpload className="text-muted-foreground/70" />
-                    <TextWithTooltip text={name} className="font-medium" />
+                    <ENTITY_ICON.deployment className="text-muted-foreground/70" />
+                    <TextWithTooltip text={name} />
                   </Link>
                 </Button>
               );
@@ -106,6 +70,24 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
           cell: {
             baseWidth: 15,
             ...getSyncedColumnData(tableSettings, columnNames.NAME),
+          },
+        },
+        {
+          id: columnNames.STATUS,
+          label: "Status",
+          data: {
+            columnSortableValuePath: "status.status",
+            render: ({ data }) => {
+              const status = data?.status?.status;
+              const detailedMessage = data?.status?.detailed_message;
+              const statusIcon = getCDPipelineStatusIcon(data);
+
+              return <ResourceStatusBadge status={status} detailedMessage={detailedMessage} statusIcon={statusIcon} />;
+            },
+          },
+          cell: {
+            baseWidth: 15,
+            ...getSyncedColumnData(tableSettings, columnNames.STATUS),
           },
         },
         {
@@ -145,7 +127,7 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                                 namespace: namespace!,
                               }}
                             >
-                              <Box className="text-muted-foreground/70" />
+                              <ENTITY_ICON.project className="text-muted-foreground/70" />
                               {app}
                             </Link>
                           </Button>
@@ -165,7 +147,7 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                                 namespace: namespace!,
                               }}
                             >
-                              <Box className="text-muted-foreground/70" />
+                              <ENTITY_ICON.project className="text-muted-foreground/70" />
                               {app}
                             </Link>
                           </Button>

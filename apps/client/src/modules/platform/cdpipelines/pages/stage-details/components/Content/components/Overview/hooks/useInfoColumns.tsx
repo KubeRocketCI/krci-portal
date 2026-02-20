@@ -3,7 +3,7 @@ import React from "react";
 import { useStageWatch } from "../../../../../hooks/";
 import { routeStageDetails } from "../../../../../route";
 import { getStageStatusIcon } from "@/k8s/api/groups/KRCI/Stage";
-import { StatusIcon } from "@/core/components/StatusIcon";
+import { ResourceStatusBadge } from "@/k8s/components/ResourceStatusBadge";
 import { stageTriggerType } from "@my-project/shared";
 import KubernetesIcon from "@/assets/icons/k8s/kubernetes.svg?react";
 import { ScrollCopyText } from "@/core/components/ScrollCopyText";
@@ -33,49 +33,24 @@ export const useInfoColumns = (): GridItem[] => {
       {
         label: "Status",
         content: (
-          <div className="flex items-center gap-1.5">
-            <StatusIcon
-              Icon={stageStatusIcon.component}
-              color={stageStatusIcon.color}
-              isSpinning={stageStatusIcon.isSpinning}
-              width={14}
-              Title={
-                <>
-                  <p className="text-sm font-semibold">{`Status: ${stage.status?.status || "unknown"}`}</p>
-                  {!!stage.status?.detailed_message && (
-                    <p className="mt-3 text-sm font-medium">{stage.status?.detailed_message}</p>
-                  )}
-                </>
-              }
-            />
-            <span className="text-foreground text-sm">{stage.status?.status || "unknown"}</span>
-          </div>
+          <ResourceStatusBadge
+            status={stage.status?.status}
+            detailedMessage={stage.status?.detailed_message}
+            statusIcon={stageStatusIcon}
+          />
         ),
       },
       {
         label: "Trigger Type",
-        content:
-          stage.spec.triggerType === stageTriggerType.Manual ? (
-            <Badge
-              variant="outline"
-              className="h-6"
-              style={{ "--border-color": STATUS_COLOR.SUCCESS } as React.CSSProperties}
-            >
-              manual
-            </Badge>
-          ) : (
-            <Badge
-              variant="outline"
-              style={
-                {
-                  "--border-color": STATUS_COLOR.SUCCESS,
-                } as React.CSSProperties
-              }
-              className="h-6 border-(--border-color)"
-            >
-              auto
-            </Badge>
-          ),
+        content: (
+          <Badge
+            variant="outline"
+            className="h-6"
+            style={{ "--border-color": STATUS_COLOR.SUCCESS } as React.CSSProperties}
+          >
+            {stage.spec.triggerType === stageTriggerType.Manual ? "manual" : "auto"}
+          </Badge>
+        ),
       },
       {
         label: "Cluster",

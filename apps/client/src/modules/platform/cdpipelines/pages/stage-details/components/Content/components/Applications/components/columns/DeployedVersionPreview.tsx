@@ -58,7 +58,7 @@ export const DeployedVersionPreviewColumn = ({
     >
       <div className="my-0.5">
         <Button variant="link" asChild>
-          <Link to={argoCDLink} target={"_blank"}>
+          <Link to={argoCDLink} target={"_blank"} className="!p-0">
             {deployedVersion}
           </Link>
         </Button>

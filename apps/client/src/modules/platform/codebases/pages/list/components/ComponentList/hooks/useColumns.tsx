@@ -1,4 +1,3 @@
-import { StatusIcon } from "@/core/components/StatusIcon";
 import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
 import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { TableColumn } from "@/core/components/Table/types";
@@ -6,14 +5,16 @@ import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { Badge } from "@/core/components/ui/badge";
 import { Button } from "@/core/components/ui/button";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
-import { getCodebaseMappingByType, getCodebaseStatusIcon } from "@/k8s/api/groups/KRCI/Codebase";
-import { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/mappings/types";
-import { CUSTOM_RESOURCE_STATUS } from "@/k8s/constants/statuses";
+import { getCodebaseStatusIcon } from "@/k8s/api/groups/KRCI/Codebase";
 import { TABLE } from "@/k8s/constants/tables";
 import { useClusterStore } from "@/k8s/store";
+import { ResourceStatusBadge } from "@/k8s/components/ResourceStatusBadge";
+import { CodebaseLanguageIcon } from "@/modules/platform/codebases/components/CodebaseLanguageIcon";
+import { CodebaseFrameworkIcon } from "@/modules/platform/codebases/components/CodebaseFrameworkIcon";
+import { CodebaseBuildToolIcon } from "@/modules/platform/codebases/components/CodebaseBuildToolIcon";
 import { Codebase, codebaseType } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
-import { Box } from "lucide-react";
+import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { routeProjectDetails } from "../../../../details/route";
@@ -29,38 +30,6 @@ export const useColumns = (): TableColumn<Codebase>[] => {
   return React.useMemo(
     () => [
       {
-        id: columnNames.STATUS,
-        label: "Status",
-        data: {
-          columnSortableValuePath: "status.status",
-          render: ({ data }) => {
-            const status = data?.status?.status;
-            const detailedMessage = data?.status?.detailedMessage;
-
-            const { component, color, isSpinning } = getCodebaseStatusIcon(data);
-
-            const title = (
-              <>
-                <p className="text-sm font-semibold">{`Status: ${status || "Unknown"}`}</p>
-                {status === CUSTOM_RESOURCE_STATUS.FAILED && (
-                  <p className="mt-3 text-sm font-medium">{detailedMessage}</p>
-                )}
-              </>
-            );
-
-            return <StatusIcon Icon={component} isSpinning={isSpinning} color={color} Title={title} width={16} />;
-          },
-        },
-        cell: {
-          isFixed: true,
-          baseWidth: 5,
-          ...getSyncedColumnData(tableSettings, columnNames.STATUS),
-          props: {
-            align: "left",
-          },
-        },
-      },
-      {
         id: columnNames.NAME,
         label: "Name",
         data: {
@@ -74,8 +43,8 @@ export const useColumns = (): TableColumn<Codebase>[] => {
               <Button variant="link" asChild className="px-4 py-0">
                 <Link to={routeProjectDetails.fullPath} params={{ clusterName, namespace: namespace!, name }}>
                   <span className="flex items-center gap-2">
-                    <Box className="text-muted-foreground/70" />
-                    <TextWithTooltip text={name} className="font-medium" />
+                    <ENTITY_ICON.project className="text-muted-foreground/70" />
+                    <TextWithTooltip text={name} />
                   </span>
                 </Link>
               </Button>
@@ -85,6 +54,24 @@ export const useColumns = (): TableColumn<Codebase>[] => {
         cell: {
           baseWidth: 20,
           ...getSyncedColumnData(tableSettings, columnNames.NAME),
+        },
+      },
+      {
+        id: columnNames.STATUS,
+        label: "Status",
+        data: {
+          columnSortableValuePath: "status.status",
+          render: ({ data }) => {
+            const status = data?.status?.status;
+            const detailedMessage = data?.status?.detailedMessage;
+            const statusIcon = getCodebaseStatusIcon(data);
+
+            return <ResourceStatusBadge status={status} detailedMessage={detailedMessage} statusIcon={statusIcon} />;
+          },
+        },
+        cell: {
+          baseWidth: 10,
+          ...getSyncedColumnData(tableSettings, columnNames.STATUS),
         },
       },
       {
@@ -101,68 +88,40 @@ export const useColumns = (): TableColumn<Codebase>[] => {
           },
         },
         cell: {
-          baseWidth: 20,
+          baseWidth: 12,
           ...getSyncedColumnData(tableSettings, columnNames.TYPE),
         },
       },
       {
         id: columnNames.LANGUAGE,
-        label: "Language / Framework",
+        label: "Language",
         data: {
-          render: ({
-            data: {
-              spec: { lang: _lang, framework: _framework, type },
-            },
-          }) => {
-            const codebaseMapping = getCodebaseMappingByType(type) as Record<string, CodebaseInterface>;
-            const lang = _lang.toLowerCase();
-            const framework = _framework ? _framework.toLowerCase() : "N/A";
-            const codebaseMappingByLang = codebaseMapping?.[lang];
-
-            return (
-              <div className="flex flex-col flex-nowrap gap-0.5">
-                <div className="text-foreground text-sm">
-                  {codebaseMappingByLang?.language?.name || capitalizeFirstLetter(_lang)}
-                </div>
-                <div className="text-muted-foreground text-xs">
-                  {framework
-                    ? codebaseMappingByLang?.frameworks?.[framework]?.name ||
-                      (_framework && capitalizeFirstLetter(_framework)) ||
-                      "N/A"
-                    : "N/A"}
-                </div>
-              </div>
-            );
-          },
+          render: ({ data }) => <CodebaseLanguageIcon codebase={data} />,
         },
         cell: {
-          baseWidth: 15,
+          baseWidth: 12,
           ...getSyncedColumnData(tableSettings, columnNames.LANGUAGE),
+        },
+      },
+      {
+        id: columnNames.FRAMEWORK,
+        label: "Framework",
+        data: {
+          render: ({ data }) => <CodebaseFrameworkIcon codebase={data} />,
+        },
+        cell: {
+          baseWidth: 12,
+          ...getSyncedColumnData(tableSettings, columnNames.FRAMEWORK),
         },
       },
       {
         id: columnNames.BUILD_TOOL,
         label: "Build Tool",
         data: {
-          render: ({
-            data: {
-              spec: { lang: _lang, buildTool: _buildTool, type },
-            },
-          }) => {
-            const codebaseMapping = getCodebaseMappingByType(type) as Record<string, CodebaseInterface>;
-            const lang = _lang.toLowerCase();
-            const buildTool = _buildTool.toLowerCase();
-            const codebaseMappingByLang = codebaseMapping?.[lang];
-
-            return (
-              <div className="text-foreground text-sm">
-                {codebaseMappingByLang?.buildTools?.[buildTool]?.name || capitalizeFirstLetter(_buildTool)}
-              </div>
-            );
-          },
+          render: ({ data }) => <CodebaseBuildToolIcon codebase={data} />,
         },
         cell: {
-          baseWidth: 15,
+          baseWidth: 12,
           ...getSyncedColumnData(tableSettings, columnNames.BUILD_TOOL),
         },
       },
