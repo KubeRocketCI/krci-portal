@@ -21,6 +21,7 @@ export const ConfigurationTable = () => {
       settings={{
         show: false,
       }}
+      outlined={false}
     />
   );
 };

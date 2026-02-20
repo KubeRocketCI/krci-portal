@@ -2,6 +2,7 @@ import { Button } from "@/core/components/ui/button";
 import { PATH_PIPELINE_DETAILS_FULL } from "@/modules/platform/tekton/pages/pipeline-details/route";
 import { Link } from "@tanstack/react-router";
 import { VectorSquare } from "lucide-react";
+import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { PipelineGraphDialog } from "@/modules/platform/tekton/dialogs/PipelineGraph";
 
@@ -16,7 +17,7 @@ export const PipelinePreview = ({ pipelineName, namespace, clusterName }: Pipeli
 
   return (
     <div className="flex items-center gap-1">
-      <Button variant="link" asChild className="h-auto p-0">
+      <Button variant="link" asChild className="h-auto !p-0">
         <Link
           to={PATH_PIPELINE_DETAILS_FULL}
           params={{
@@ -25,6 +26,7 @@ export const PipelinePreview = ({ pipelineName, namespace, clusterName }: Pipeli
             namespace,
           }}
         >
+          <ENTITY_ICON.pipeline className="text-muted-foreground/70" />
           {pipelineName}
         </Link>
       </Button>

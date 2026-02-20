@@ -25,12 +25,9 @@ export default function GitserversConfigurationPage() {
   const handleOpenCreateDialog = () => setCreateDialogOpen(true);
   const handleCloseCreateDialog = () => setCreateDialogOpen(false);
 
-  const handleChange = React.useCallback(
-    (value: string) => {
-      setExpandedPanel(value);
-    },
-    [expandedPanel]
-  );
+  const handleChange = React.useCallback((value: string) => {
+    setExpandedPanel(value);
+  }, []);
 
   const renderPageContent = React.useCallback(() => {
     const gitServerError = gitServerWatch.query.error && getForbiddenError(gitServerWatch.query.error);

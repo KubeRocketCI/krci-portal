@@ -30,20 +30,20 @@ const DeletionErrorMessage = ({ codebase, conflictedPipeline, clusterName }: Del
   const { closeDialog } = useDialogContext();
 
   return (
-    <div className="flex flex-col gap-8 rounded-md border border-red-400/30 bg-red-50/30 p-10">
-      <div className="flex items-center gap-6">
+    <div className="flex flex-col gap-4 rounded-md border border-red-400/30 bg-red-50/30 p-4">
+      <div className="flex items-center gap-2">
         <AlertCircle size={20} className="text-destructive shrink-0" />
-        <p className="text-destructive text-sm text-[0.9375rem] font-semibold">Cannot Delete Project</p>
+        <p className="text-destructive text-sm font-semibold">Cannot Delete Project</p>
       </div>
 
-      <div className="flex flex-col gap-2 pl-18">
+      <div className="flex flex-col gap-2 pl-7">
         <p className="text-foreground text-sm leading-relaxed">
           {capitalizeFirstLetter(codebase.spec.type)}{" "}
           <span className="text-foreground font-semibold">{codebase.metadata.name}</span> is currently being used in the
           following Deployment:
         </p>
 
-        <div className="bg-background border-border mt-4 rounded border p-6">
+        <div className="bg-background border-border mt-2 rounded border px-3 py-2">
           <Button variant="ghost" asChild className="h-auto p-0 font-semibold">
             <Link
               to={PATH_CDPIPELINE_DETAILS_FULL}
@@ -61,7 +61,7 @@ const DeletionErrorMessage = ({ codebase, conflictedPipeline, clusterName }: Del
           </Button>
         </div>
 
-        <p className="text-muted-foreground mt-4 text-sm">
+        <p className="text-muted-foreground mt-2 text-sm">
           Please remove this project from the Deployment before deleting it.
         </p>
       </div>

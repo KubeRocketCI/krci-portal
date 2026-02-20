@@ -7,7 +7,8 @@ import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { formatTimestamp, formatDuration } from "@/core/utils/date-humanize";
 import { pipelineRunLabels, tektonResultAnnotations, getPipelineRunAnnotation } from "@my-project/shared";
 import type { PipelineRun } from "@my-project/shared";
-import { Activity, Calendar, Clock, GitBranch, GitPullRequest, Timer, User, Code } from "lucide-react";
+import { Calendar, Clock, GitBranch, GitPullRequest, Timer, User } from "lucide-react";
+import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import React from "react";
 import { PATH_PIPELINERUNS_FULL } from "../pipelinerun-list/route";
 import { useTektonResultPipelineRunQuery } from "./hooks/data";
@@ -79,7 +80,7 @@ const HeaderMetadata = () => {
 
       {pipelineName && (
         <div className="flex items-center gap-2">
-          <Activity className="text-muted-foreground size-4" />
+          <ENTITY_ICON.pipeline className="text-muted-foreground size-4" />
           <span className="text-muted-foreground text-sm">Pipeline:</span>
           <Link
             to={PATH_PIPELINE_DETAILS_FULL}
@@ -97,7 +98,7 @@ const HeaderMetadata = () => {
 
       {codebase && (
         <div className="flex items-center gap-2">
-          <Code className="text-muted-foreground size-4" />
+          <ENTITY_ICON.project className="text-muted-foreground size-4" />
           <span className="text-muted-foreground text-sm">Codebase:</span>
           <Link
             to={PATH_PROJECT_DETAILS_FULL}
@@ -249,7 +250,7 @@ export default function TektonResultPipelineRunDetailsPageContent() {
       ]}
     >
       <Section
-        icon={Activity}
+        icon={ENTITY_ICON.pipelineRun}
         title={displayName}
         enableCopyTitle
         actions={<HeaderActions />}

@@ -1,4 +1,3 @@
-import { StatusIcon } from "@/core/components/StatusIcon";
 import { getCodebaseMappingByType, getCodebaseStatusIcon } from "@/k8s/api/groups/KRCI/Codebase";
 import { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/mappings/types";
 import {
@@ -11,6 +10,7 @@ import { MAIN_COLOR } from "@/k8s/constants/colors";
 import { RESOURCE_ICON_NAMES } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { Badge, type BadgeProps } from "@/core/components/ui/badge";
+import { ResourceStatusBadge } from "@/k8s/components/ResourceStatusBadge";
 import { codebaseType, codebaseVersioning } from "@my-project/shared";
 import React from "react";
 import { useCodebaseWatch, usePipelineNamesWatch } from "../../../hooks/data";
@@ -59,7 +59,7 @@ const getTypeBadgeVariant = (type: string): BadgeProps["variant"] => {
   }
 };
 
-const renderIconWithText = (icon: string | LucideIcon | null, text: string, iconSize: number = 14): React.ReactNode => {
+const renderIconWithText = (icon: string | LucideIcon | null, text: string, iconSize: number = 20): React.ReactNode => {
   const IconComponent = typeof icon === "function" ? icon : null;
   const spriteIconName = typeof icon === "string" ? icon : null;
 
@@ -124,25 +124,11 @@ export const useInfoRows = () => {
       {
         label: "Status",
         content: (
-          <div className="flex items-center gap-1.5">
-            {codebaseStatusIcon && (
-              <StatusIcon
-                Icon={codebaseStatusIcon.component}
-                color={codebaseStatusIcon.color}
-                isSpinning={codebaseStatusIcon.isSpinning}
-                width={14}
-                Title={
-                  <>
-                    <p className="text-sm font-semibold">{`Status: ${codebase?.status?.status || "unknown"}`}</p>
-                    {!!codebase?.status?.detailedMessage && (
-                      <p className="mt-3 text-sm font-medium">{codebase?.status?.detailedMessage}</p>
-                    )}
-                  </>
-                }
-              />
-            )}
-            <span className="text-foreground text-sm">{codebase?.status?.status || "unknown"}</span>
-          </div>
+          <ResourceStatusBadge
+            status={codebase?.status?.status}
+            detailedMessage={codebase?.status?.detailedMessage}
+            statusIcon={codebaseStatusIcon}
+          />
         ),
       },
       {

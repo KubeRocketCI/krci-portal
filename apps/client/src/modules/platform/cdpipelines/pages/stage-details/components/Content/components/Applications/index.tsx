@@ -1,4 +1,3 @@
-import { TabSection } from "@/core/components/TabSection";
 import {
   CODEBASE_COMMON_BUILD_TOOLS,
   CODEBASE_COMMON_FRAMEWORKS,
@@ -17,6 +16,7 @@ import { applicationTableMode } from "./constants";
 import { ApplicationsFormContext } from "./hooks/useApplicationsForm";
 import { ApplicationsFormValues, ApplicationsTableMode } from "./types";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
+import { Card } from "@/core/components/ui/card";
 
 const MemoizedApplicationsInner = React.memo(
   ({ mode, toggleMode }: { mode: ApplicationsTableMode; toggleMode: () => void }) => {
@@ -143,17 +143,12 @@ export const Applications = () => {
 
   return (
     <ApplicationsFormContext.Provider value={form}>
-      <TabSection
-        title={
-          <div className="flex flex-row items-center gap-2">
-            <h2 className="text-foreground text-3xl font-semibold">Applications</h2>
-          </div>
-        }
-      >
+      <Card className="p-6">
+        <h3 className="text-foreground mb-4 text-xl font-semibold">Applications</h3>
         <LoadingWrapper isLoading={isLoading}>
           <MemoizedApplicationsInner mode={mode} toggleMode={toggleMode} />
         </LoadingWrapper>
-      </TabSection>
+      </Card>
     </ApplicationsFormContext.Provider>
   );
 };

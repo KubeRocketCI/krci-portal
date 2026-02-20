@@ -7,6 +7,7 @@ import { Link } from "@tanstack/react-router";
 import React from "react";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import { Button } from "@/core/components/ui/button";
+import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import { routeOverviewDetails } from "../../../route";
 
 export const useColumns = (): TableColumn<Application>[] => {
@@ -37,7 +38,8 @@ export const useColumns = (): TableColumn<Application>[] => {
                     namespace,
                   }}
                 >
-                  <TextWithTooltip text={CDPipelineName || ""} className="font-medium" />
+                  <ENTITY_ICON.deployment className="text-muted-foreground/70" />
+                  <TextWithTooltip text={CDPipelineName || ""} />
                 </Link>
               </Button>
             );

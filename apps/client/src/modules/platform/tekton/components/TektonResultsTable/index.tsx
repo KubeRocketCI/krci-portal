@@ -86,6 +86,7 @@ export const TektonResultsTable = ({
         rowsPerPage: 20,
       }}
       slots={tableSlots}
+      outlined={false}
     />
   );
 };

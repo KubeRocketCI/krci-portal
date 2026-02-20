@@ -24,6 +24,9 @@ export default function StageDetailsPageContent() {
           },
         },
         {
+          label: "Environments",
+        },
+        {
           label: params.stage,
         },
       ]}

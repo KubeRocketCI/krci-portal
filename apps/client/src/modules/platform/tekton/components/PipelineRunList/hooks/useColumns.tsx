@@ -1,26 +1,19 @@
 import { AuthorAvatar } from "@/core/components/AuthorAvatar";
 import { CopyButton } from "@/core/components/CopyButton";
-import { StatusIcon } from "@/core/components/StatusIcon";
 import { SavedTableSettings } from "@/core/components/Table/components/TableSettings/types";
 import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
-import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
 import { useClusterStore } from "@/k8s/store";
 import { humanize, formatTimestamp } from "@/core/utils/date-humanize";
 import { PATH_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-details/route";
 import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
-import {
-  getPipelineRunStatus,
-  PipelineRun,
-  pipelineRunLabels,
-  tektonResultAnnotations,
-  getPipelineRunAnnotation,
-} from "@my-project/shared";
+import { PipelineRun, pipelineRunLabels, tektonResultAnnotations, getPipelineRunAnnotation } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import { Clock, VectorSquare } from "lucide-react";
+import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { PATH_PIPELINE_DETAILS_FULL } from "../../../pages/pipeline-details/route";
@@ -29,6 +22,7 @@ import { Actions } from "../components/Actions";
 import { columnNames } from "../constants";
 import { PipelineRunGraphDialog } from "../../../dialogs/PipelineRunGraph";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
+import { StatusColumn } from "../components/columns/Status";
 
 export const useColumns = ({
   tableSettings,
@@ -46,32 +40,6 @@ export const useColumns = ({
 
   return React.useMemo(
     () => [
-      {
-        id: columnNames.STATUS,
-        label: "Status",
-        data: {
-          columnSortableValuePath: "status.conditions[0].status",
-          render: ({ data }) => {
-            const statusIcon = getPipelineRunStatusIcon(data);
-            const status = getPipelineRunStatus(data);
-
-            return (
-              <StatusIcon
-                Icon={statusIcon.component}
-                color={statusIcon.color}
-                isSpinning={statusIcon.isSpinning}
-                width={25}
-                Title={`Status: ${status.status}. Reason: ${status.reason}`}
-              />
-            );
-          },
-        },
-        cell: {
-          isFixed: true,
-          baseWidth: 4,
-          ...getSyncedColumnData(tableSettings, columnNames.STATUS),
-        },
-      },
       {
         id: columnNames.RUN,
         label: "Run",
@@ -92,15 +60,28 @@ export const useColumns = ({
                     name,
                   }}
                 >
-                  <TextWithTooltip text={name} className="font-medium" />
+                  <ENTITY_ICON.pipelineRun className="text-muted-foreground/70" />
+                  <TextWithTooltip text={name} />
                 </Link>
               </Button>
             );
           },
         },
         cell: {
-          baseWidth: 14,
+          baseWidth: 20,
           ...getSyncedColumnData(tableSettings, columnNames.RUN),
+        },
+      },
+      {
+        id: columnNames.STATUS,
+        label: "Status",
+        data: {
+          columnSortableValuePath: "status.conditions[0].status",
+          render: ({ data }) => <StatusColumn pipelineRun={data} />,
+        },
+        cell: {
+          baseWidth: 8,
+          ...getSyncedColumnData(tableSettings, columnNames.STATUS),
         },
       },
       {
@@ -130,6 +111,7 @@ export const useColumns = ({
                     clusterName,
                   }}
                 >
+                  <ENTITY_ICON.pipeline className="text-muted-foreground/70" />
                   <TextWithTooltip text={pipelineRefName} />
                 </Link>
               </Button>
@@ -167,6 +149,7 @@ export const useColumns = ({
                     clusterName,
                   }}
                 >
+                  <ENTITY_ICON.project className="text-muted-foreground/70" />
                   <TextWithTooltip text={codebaseName} />
                 </Link>
               </Button>
@@ -197,7 +180,7 @@ export const useColumns = ({
           },
         },
         cell: {
-          baseWidth: 12,
+          baseWidth: 10,
           ...getSyncedColumnData(tableSettings, columnNames.BRANCH),
         },
       },

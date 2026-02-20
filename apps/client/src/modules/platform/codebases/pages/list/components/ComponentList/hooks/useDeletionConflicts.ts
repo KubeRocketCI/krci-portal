@@ -1,93 +1,76 @@
-// import React from 'react';
-// import { useQuery } from 'react-query';
-// import { CODEBASE_TYPE } from '../../../../../constants/codebaseTypes';
-// import { CDPipelineKubeObject } from '../../../../../k8s/groups/EDP/CDPipeline';
-// import { REQUEST_KEY_QUERY_CD_PIPELINE_LIST } from '../../../../../k8s/groups/EDP/CDPipeline/requestKeys';
-// import { CDPipelineKubeObjectInterface } from '../../../../../k8s/groups/EDP/CDPipeline/types';
-// import { CodebaseKubeObjectInterface } from '../../../../../k8s/groups/EDP/Codebase/types';
-// import { useCDPipelineStageListQuery } from '../../../../../k8s/groups/EDP/Stage/hooks/useCDPipelineStageListQuery';
-// import { KubeObjectListInterface } from '../../../../../types/k8s';
-// import { getDefaultNamespace } from '../../../../../utils/getDefaultNamespace';
-// import { ComponentsToDelete, ComponentsToDeleteConflicts } from '../types';
+import React from "react";
+import { useCDPipelineWatchList } from "@/k8s/api/groups/KRCI/CDPipeline";
+import { useStageWatchList } from "@/k8s/api/groups/KRCI/Stage";
+import { codebaseType, type Codebase } from "@my-project/shared";
+import type { ComponentsToDelete, ComponentsToDeleteConflicts } from "../types";
 
-// export const useDeletionConflicts = (
-//   selectedComponents: string[],
-//   componentsByNameMap: Map<string, CodebaseKubeObjectInterface> | null
-// ): {
-//   componentsToDelete: ComponentsToDelete | null;
-//   componentsToDeleteConflicts: ComponentsToDeleteConflicts | null;
-// } => {
-//   const namespace = getDefaultNamespace();
+export const useDeletionConflicts = (
+  selectedComponents: string[],
+  componentsByNameMap: Map<string, Codebase> | null
+): {
+  componentsToDelete: ComponentsToDelete | null;
+  componentsToDeleteConflicts: ComponentsToDeleteConflicts | null;
+  isLoading: boolean;
+} => {
+  const cdPipelineListWatch = useCDPipelineWatchList();
+  const stageListWatch = useStageWatchList();
 
-//   const CDPipelineListQuery = useQuery<
-//     KubeObjectListInterface<CDPipelineKubeObjectInterface>,
-//     Error
-//   >(REQUEST_KEY_QUERY_CD_PIPELINE_LIST, () => CDPipelineKubeObject.getList(namespace), {
-//     enabled: !!selectedComponents && selectedComponents.length > 0 && componentsByNameMap !== null,
-//   });
+  const isLoading = cdPipelineListWatch.query.isLoading || stageListWatch.query.isLoading;
 
-//   const CDPipelineStageListQuery = useCDPipelineStageListQuery({
-//     options: {
-//       enabled:
-//         !!selectedComponents && selectedComponents.length > 0 && componentsByNameMap !== null,
-//     },
-//   });
+  return React.useMemo(() => {
+    if (isLoading || componentsByNameMap === null) {
+      return {
+        componentsToDelete: null,
+        componentsToDeleteConflicts: null,
+        isLoading,
+      };
+    }
 
-//   return React.useMemo(() => {
-//     const componentsWithConflicts: ComponentsToDeleteConflicts = new Map();
-//     const componentsCanBeDeleted: Map<string, CodebaseKubeObjectInterface> = new Map();
+    const componentsWithConflicts: ComponentsToDeleteConflicts = new Map();
+    const componentsCanBeDeleted: ComponentsToDelete = new Map();
 
-//     if (
-//       CDPipelineListQuery.isLoading ||
-//       CDPipelineStageListQuery.isLoading ||
-//       componentsByNameMap === null
-//     ) {
-//       return {
-//         componentsToDelete: null,
-//         componentsToDeleteConflicts: null,
-//       };
-//     }
+    const cdPipelines = cdPipelineListWatch.data.array;
+    const stages = stageListWatch.data.array;
 
-//     const CDPipelines = CDPipelineListQuery.data?.items || [];
-//     const stages = CDPipelineStageListQuery.data?.items || [];
+    for (const componentName of selectedComponents) {
+      const componentObject = componentsByNameMap.get(componentName);
 
-//     for (const component of selectedComponents) {
-//       const componentObject = componentsByNameMap.get(component)!;
-//       const componentType = componentObject.spec?.type;
+      if (!componentObject) {
+        continue;
+      }
 
-//       if (componentType === CODEBASE_TYPE.SYSTEM) {
-//         continue;
-//       }
+      const componentTypeValue = componentObject.spec?.type;
 
-//       if (componentType !== CODEBASE_TYPE.APPLICATION && componentType !== CODEBASE_TYPE.AUTOTEST) {
-//         componentsCanBeDeleted.set(component, componentObject);
-//         continue;
-//       }
+      if (componentTypeValue === codebaseType.system) {
+        continue;
+      }
 
-//       const componentName = componentObject.metadata?.name;
+      if (componentTypeValue !== codebaseType.application && componentTypeValue !== codebaseType.autotest) {
+        componentsCanBeDeleted.set(componentName, componentObject);
+        continue;
+      }
 
-//       const pipelineConflicts = CDPipelines.filter((pipeline) => {
-//         return pipeline.spec.applications.includes(componentName);
-//       });
+      const pipelineConflicts = cdPipelines.filter((pipeline) => pipeline.spec.applications.includes(componentName));
 
-//       const stageConflicts = stages.filter((stage) =>
-//         stage.spec.qualityGates.some((qualityGate) => qualityGate.autotestName === componentName)
-//       );
+      const stageConflicts = stages.filter((stage) =>
+        stage.spec.qualityGates?.some((qualityGate) => qualityGate.autotestName === componentName)
+      );
 
-//       if (pipelineConflicts.length > 0 || stageConflicts.length > 0) {
-//         componentsWithConflicts.set(componentName, {
-//           component: componentObject,
-//           pipelines: pipelineConflicts,
-//           stages: stageConflicts,
-//         });
-//       } else {
-//         componentsCanBeDeleted.set(component, componentObject);
-//       }
-//     }
+      if (pipelineConflicts.length > 0 || stageConflicts.length > 0) {
+        componentsWithConflicts.set(componentName, {
+          component: componentObject,
+          pipelines: pipelineConflicts,
+          stages: stageConflicts,
+        });
+      } else {
+        componentsCanBeDeleted.set(componentName, componentObject);
+      }
+    }
 
-//     return {
-//       componentsToDelete: componentsCanBeDeleted,
-//       componentsToDeleteConflicts: componentsWithConflicts,
-//     };
-//   }, [CDPipelineListQuery, CDPipelineStageListQuery, componentsByNameMap, selectedComponents]);
-// };
+    return {
+      componentsToDelete: componentsCanBeDeleted,
+      componentsToDeleteConflicts: componentsWithConflicts,
+      isLoading: false,
+    };
+  }, [isLoading, componentsByNameMap, cdPipelineListWatch.data.array, stageListWatch.data.array, selectedComponents]);
+};

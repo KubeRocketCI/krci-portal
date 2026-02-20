@@ -33,7 +33,7 @@ export const Tabs = ({ tabs, activeTabIdx, handleChangeTab }: TabsProps) => {
             key={`tab::${idx}`}
             value={idx.toString()}
             forceMount
-            className={cn("relative flex h-full flex-col", !isActive && "hidden")}
+            className={cn("relative mt-6 flex h-full flex-col", !isActive && "hidden")}
           >
             {component}
           </TabsContent>

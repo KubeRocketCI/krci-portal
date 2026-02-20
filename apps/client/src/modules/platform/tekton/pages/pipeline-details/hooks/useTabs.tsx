@@ -1,12 +1,12 @@
 import React from "react";
 import { Overview } from "../components/Overview";
 import { ViewPipeline } from "../components/ViewPipeline";
-import { History } from "../components/History";
 import { Diagram } from "../components/Diagram";
 import { routePipelineDetails, RouteSearchTab, routeSearchTabSchema, PATH_PIPELINE_DETAILS_FULL } from "../route";
 import { Tab } from "@/core/providers/Tabs/components/Tabs/types";
 import { router } from "@/core/router";
-import { PipelineRunListByPipeline } from "../components/PipelineRunListByPipeline";
+import { PipelineRuns } from "../components/PipelineRuns";
+import { Card } from "@/core/components/ui/card";
 
 export const useTabs = (): Tab[] => {
   const params = routePipelineDetails.useParams();
@@ -39,29 +39,19 @@ export const useTabs = (): Tab[] => {
         label: "View YAML",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.yaml),
         component: (
-          <div className="pt-6">
+          <Card className="p-6">
             <ViewPipeline />
-          </div>
+          </Card>
         ),
       },
       {
-        id: routeSearchTabSchema.enum.pipelineRunList,
-        label: "PipelineRuns",
-        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.pipelineRunList),
+        id: routeSearchTabSchema.enum.pipelineRuns,
+        label: "Pipelines",
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.pipelineRuns),
         component: (
-          <div className="pt-6">
-            <PipelineRunListByPipeline />
-          </div>
-        ),
-      },
-      {
-        id: routeSearchTabSchema.enum.history,
-        label: "History",
-        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.history),
-        component: (
-          <div className="pt-6">
-            <History />
-          </div>
+          <Card className="p-6">
+            <PipelineRuns />
+          </Card>
         ),
       },
       {
@@ -69,9 +59,9 @@ export const useTabs = (): Tab[] => {
         label: "Diagram",
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.diagram),
         component: (
-          <div className="h-full pt-6">
+          <Card className="h-full p-6">
             <Diagram />
-          </div>
+          </Card>
         ),
       },
     ],

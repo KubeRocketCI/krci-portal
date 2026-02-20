@@ -115,6 +115,7 @@ export const PreviewTable = () => {
         settings={{
           show: false,
         }}
+        outlined={false}
       />
     </>
   );

@@ -36,7 +36,7 @@ export function useColumns(): TableColumn<RbacAssessmentReport>[] {
                 }}
                 className="text-foreground hover:text-primary hover:underline"
               >
-                <span className="font-medium">{resourceName}</span>
+                <span>{resourceName}</span>
               </Link>
             );
           },

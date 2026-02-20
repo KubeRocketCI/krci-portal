@@ -6,12 +6,11 @@ import { StageAppCodebaseCombinedData, useStageWatch } from "@/modules/platform/
 import { inClusterName } from "@my-project/shared";
 import { columnNames } from "../../../constants";
 import { DeployedVersionPreviewColumn } from "../../columns/DeployedVersionPreview";
-import { HealthColumn } from "../../columns/Health";
 import { IngressColumn } from "../../columns/Ingress";
 import { IngressHeadColumn } from "../../columns/IngressHead";
 import { NameColumn } from "../../columns/Name";
 import { PodsColumn } from "../../columns/Pods";
-import { SyncColumn } from "../../columns/Sync";
+import { StatusColumn } from "../../columns/Status";
 import { ValuesOverridePreviewColumn } from "../../columns/ValuesOverridePreview";
 import { ValuesOverridePreviewHeadColumn } from "../../columns/ValuesOverridePreviewHead";
 
@@ -27,36 +26,6 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
 
   return [
     {
-      id: columnNames.HEALTH,
-      label: "Health",
-      data: {
-        render: ({ data: { application } }) => <HealthColumn application={application!} />,
-      },
-      cell: {
-        isFixed: true,
-        baseWidth: 5,
-        ...getSyncedColumnData(tableSettings, columnNames.HEALTH),
-        props: {
-          align: "center",
-        },
-      },
-    },
-    {
-      id: columnNames.SYNC,
-      label: "Sync",
-      data: {
-        render: ({ data: { application } }) => <SyncColumn application={application!} />,
-      },
-      cell: {
-        isFixed: true,
-        baseWidth: 5,
-        ...getSyncedColumnData(tableSettings, columnNames.SYNC),
-        props: {
-          align: "center",
-        },
-      },
-    },
-    {
       id: columnNames.NAME,
       label: "Application",
       data: {
@@ -65,6 +34,17 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
       cell: {
         baseWidth: 25,
         ...getSyncedColumnData(tableSettings, columnNames.NAME),
+      },
+    },
+    {
+      id: columnNames.STATUS,
+      label: "Status",
+      data: {
+        render: ({ data: { application } }) => <StatusColumn application={application} />,
+      },
+      cell: {
+        baseWidth: 35,
+        ...getSyncedColumnData(tableSettings, columnNames.STATUS),
       },
     },
     {

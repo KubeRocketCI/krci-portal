@@ -40,7 +40,7 @@ export function useColumns(): TableColumn<ConfigAuditReport>[] {
                 }}
                 className="text-foreground hover:text-primary hover:underline"
               >
-                <span className="font-medium">{resourceName}</span>
+                <span>{resourceName}</span>
               </Link>
             );
           },

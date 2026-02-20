@@ -32,7 +32,7 @@ export function useColumns(): TableColumn<ClusterInfraAssessmentReport>[] {
                 }}
                 className="text-foreground hover:text-primary hover:underline"
               >
-                <span className="font-medium">{data.metadata?.name || "-"}</span>
+                <span>{data.metadata?.name || "-"}</span>
               </Link>
             );
           },

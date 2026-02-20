@@ -35,7 +35,7 @@ export function useColumns(): TableColumn<ConsolidatedComplianceReport>[] {
                 }}
                 className="text-foreground hover:text-primary hover:underline"
               >
-                <span className="font-medium">{data.title}</span>
+                <span>{data.title}</span>
               </Link>
             );
           },

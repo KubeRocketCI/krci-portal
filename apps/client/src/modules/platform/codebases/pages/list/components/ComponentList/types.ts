@@ -1,14 +1,12 @@
-// import { CDPipelineKubeObjectInterface } from '../../../../k8s/groups/EDP/CDPipeline/types';
-// import { CodebaseKubeObjectInterface } from '../../../../k8s/groups/EDP/Codebase/types';
-// import { StageKubeObjectInterface } from '../../../../k8s/groups/EDP/Stage/types';
+import type { CDPipeline, Codebase, Stage } from "@my-project/shared";
 
-// export type ComponentsToDeleteConflicts = Map<
-//   string,
-//   {
-//     component: CodebaseKubeObjectInterface;
-//     pipelines: CDPipelineKubeObjectInterface[];
-//     stages: StageKubeObjectInterface[];
-//   }
-// >;
+export type ComponentsToDeleteConflicts = Map<
+  string,
+  {
+    component: Codebase;
+    pipelines: CDPipeline[];
+    stages: Stage[];
+  }
+>;
 
-// export type ComponentsToDelete = Map<string, CodebaseKubeObjectInterface>;
+export type ComponentsToDelete = Map<string, Codebase>;
