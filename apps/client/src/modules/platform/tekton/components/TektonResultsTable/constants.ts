@@ -41,4 +41,5 @@ export const defaultFilterValues: TektonResultsFilterValues = {
   status: "all",
   pipelineType: "all",
   codebases: [],
+  codebaseBranches: [],
 };

@@ -1,53 +1,33 @@
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
+import React from "react";
+import { Tabs } from "@/core/providers/Tabs/components/Tabs";
+import { routeProjectDetails } from "../../route";
+import { useTabs } from "./hooks/useTabs";
 import { Card } from "@/core/components/ui/card";
-import { FilterProvider } from "@/core/providers/Filter/provider";
-import { TABLE } from "@/k8s/constants/tables";
-import { PipelineRunList } from "@/modules/platform/tekton/components/PipelineRunList";
-import {
-  matchFunctions,
-  pipelineRunFilterControlNames,
-} from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
-import { PipelineRunListFilterValues } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/types";
-import { PipelineRun, pipelineType, sortKubeObjectByCreationTimestamp } from "@my-project/shared";
-import { useCodebasePipelineRunListWatch } from "../../hooks/data";
 
 export const PipelineList = () => {
-  const pipelineRunListWatch = useCodebasePipelineRunListWatch();
-  const { loadSettings } = useTableSettings(TABLE.CODEBASE_PIPELINE_RUN_LIST.id);
-  const tableSettings = loadSettings();
+  const { pipelinesTab } = routeProjectDetails.useSearch();
 
-  const pipelineRuns = pipelineRunListWatch.data.array.slice().sort(sortKubeObjectByCreationTimestamp);
+  const tabs = useTabs();
+
+  const activeTabIdx = React.useMemo(() => {
+    const idx = tabs.findIndex((t) => t.id === pipelinesTab);
+    return idx >= 0 ? idx : 0;
+  }, [tabs, pipelinesTab]);
+
+  const handleChangeTab = React.useCallback(
+    (_event: React.ChangeEvent<object> | null, newActiveTabIdx: number) => {
+      const newTab = tabs[newActiveTabIdx];
+      if (newTab?.onClick) {
+        newTab.onClick();
+      }
+    },
+    [tabs]
+  );
 
   return (
-    <Card className="space-y-5 p-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-foreground text-xl font-semibold">Pipelines</h3>
-      </div>
-      <FilterProvider<PipelineRun, PipelineRunListFilterValues>
-        matchFunctions={matchFunctions}
-        syncWithUrl
-        defaultValues={{
-          [pipelineRunFilterControlNames.NAMESPACES]: [],
-          [pipelineRunFilterControlNames.CODEBASES]: [],
-          [pipelineRunFilterControlNames.CODEBASE_BRANCHES]: [],
-          [pipelineRunFilterControlNames.STATUS]: "all",
-          [pipelineRunFilterControlNames.PIPELINE_TYPE]: "all",
-        }}
-      >
-        <PipelineRunList
-          pipelineRuns={pipelineRuns}
-          isLoading={!pipelineRunListWatch.query.isFetched}
-          pipelineRunTypes={[pipelineType.review, pipelineType.build]}
-          filterControls={[
-            pipelineRunFilterControlNames.CODEBASE_BRANCHES,
-            pipelineRunFilterControlNames.PIPELINE_TYPE,
-            pipelineRunFilterControlNames.STATUS,
-          ]}
-          tableId={TABLE.CODEBASE_PIPELINE_RUN_LIST.id}
-          tableName={TABLE.CODEBASE_PIPELINE_RUN_LIST.name}
-          tableSettings={tableSettings}
-        />
-      </FilterProvider>
+    <Card className="p-6">
+      <h3 className="text-foreground mb-4 text-xl font-semibold">Pipeline Runs</h3>
+      <Tabs tabs={tabs} activeTabIdx={activeTabIdx} handleChangeTab={handleChangeTab} />
     </Card>
   );
 };

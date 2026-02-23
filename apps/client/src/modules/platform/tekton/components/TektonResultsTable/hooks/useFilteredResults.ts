@@ -30,6 +30,11 @@ export const useFilteredResults = ({ data }: UseFilteredResultsProps) => {
         const itemCodebase = String(item.annotations?.[tektonResultAnnotations.codebase] || "");
         if (!filterValues.codebases.includes(itemCodebase)) return false;
       }
+      // Codebase branches filter
+      if (filterValues.codebaseBranches.length > 0) {
+        const itemBranch = String(item.annotations?.[tektonResultAnnotations.codebaseBranch] || "");
+        if (!filterValues.codebaseBranches.includes(itemBranch)) return false;
+      }
       return true;
     });
   }, [data, filterValues]);

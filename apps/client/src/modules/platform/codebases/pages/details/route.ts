@@ -9,10 +9,14 @@ export const ROUTE_ID_PROJECT_DETAILS = "/_layout/c/$clusterName/projects/$names
 export const routeSearchTabSchema = z.enum(["overview", "branches", "pipelines", "code", "deployments"]);
 export const routeSearchTabName = routeSearchTabSchema.enum;
 
+export const pipelinesTabSchema = z.enum(["live", "tekton-results"]);
+
 export type RouteSearchTab = z.infer<typeof routeSearchTabSchema>;
+export type PipelinesTab = z.infer<typeof pipelinesTabSchema>;
 
 export interface Search {
   tab?: RouteSearchTab;
+  pipelinesTab?: PipelinesTab;
   page?: number;
   rowsPerPage?: number;
 }
@@ -24,6 +28,7 @@ export const routeProjectDetails = createRoute({
     return z
       .object({
         tab: routeSearchTabSchema.optional(),
+        pipelinesTab: pipelinesTabSchema.optional(),
         page: z.number().optional(),
         rowsPerPage: z.number().optional(),
       })

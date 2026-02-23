@@ -12,6 +12,11 @@ export const TektonResultsHistory = () => {
   );
 
   return (
-    <TektonResultsTable namespace={namespace} tableId={TABLE_ID} filter="data_type == 'tekton.dev/v1.PipelineRun'" />
+    <TektonResultsTable
+      namespace={namespace}
+      tableId={TABLE_ID}
+      filter="data_type == 'tekton.dev/v1.PipelineRun'"
+      filterControls={["status", "pipelineType", "codebases"]}
+    />
   );
 };

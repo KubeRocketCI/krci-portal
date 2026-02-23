@@ -15,6 +15,7 @@ export const TektonResultsTable = ({
   tableId,
   hiddenColumns = [],
   contextName,
+  filterControls = ["status", "pipelineType", "codebases", "codebaseBranches"],
 }: TektonResultsTableProps) => {
   const activeQuery = useTektonRecordsInfiniteQuery(namespace, { filter });
 
@@ -48,6 +49,7 @@ export const TektonResultsTable = ({
           isFetchingNextPage={activeQuery.isFetchingNextPage}
           onLoadMore={handleLoadMore}
           totalLoaded={activeQuery.data?.totalLoaded ?? 0}
+          filterControls={filterControls}
         />
       ),
     }),
@@ -61,6 +63,7 @@ export const TektonResultsTable = ({
       activeQuery.isRefetching,
       handleRefresh,
       handleLoadMore,
+      filterControls,
     ]
   );
 
