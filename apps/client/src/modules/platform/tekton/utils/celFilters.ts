@@ -11,3 +11,7 @@ export const buildPipelineRunNameFilter = (pipelineRunName: string): string => {
 export const buildStageFilter = (stageLabel: string): string => {
   return `data.metadata.labels['${tektonResultAnnotations.stage}'] == '${stageLabel}' && data_type == 'tekton.dev/v1.PipelineRun'`;
 };
+
+export const buildCodebaseFilter = (codebaseName: string): string => {
+  return `data.metadata.labels['${tektonResultAnnotations.codebase}'] == '${codebaseName}' && data_type == 'tekton.dev/v1.PipelineRun'`;
+};

@@ -9,7 +9,11 @@ export interface TektonResultsFilterValues {
   status: TektonResultStatus | "all";
   pipelineType: string;
   codebases: string[];
+  codebaseBranches: string[];
 }
+
+/** Filter controls to show in the table */
+export type TektonResultsFilterControl = "status" | "pipelineType" | "codebases" | "codebaseBranches";
 
 /** Props for TektonResultsTable component */
 export interface TektonResultsTableProps {
@@ -23,6 +27,8 @@ export interface TektonResultsTableProps {
   hiddenColumns?: ColumnName[];
   /** Context name shown in loading/empty states (e.g., pipeline name) */
   contextName?: string;
+  /** Filter controls to show (default: all) */
+  filterControls?: TektonResultsFilterControl[];
 }
 
 /** Props for TektonResultsFilter component (controlled) */
@@ -45,6 +51,8 @@ export interface TektonResultsFilterProps {
   onLoadMore: () => void;
   /** Total number of items currently loaded */
   totalLoaded: number;
+  /** Filter controls to show */
+  filterControls: TektonResultsFilterControl[];
 }
 
 /** Props for useColumns hook */

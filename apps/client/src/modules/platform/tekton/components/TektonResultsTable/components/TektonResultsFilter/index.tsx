@@ -26,14 +26,21 @@ export const TektonResultsFilter = ({
   isFetchingNextPage,
   onLoadMore,
   totalLoaded,
+  filterControls,
 }: TektonResultsFilterProps) => {
   const isLoading = isRefreshing || isFetchingNextPage;
+
+  const showStatus = filterControls.includes("status");
+  const showPipelineType = filterControls.includes("pipelineType");
+  const showCodebases = filterControls.includes("codebases");
+  const showCodebaseBranches = filterControls.includes("codebaseBranches");
 
   const isDirty = React.useMemo(() => {
     return (
       values.status !== defaultFilterValues.status ||
       values.pipelineType !== defaultFilterValues.pipelineType ||
-      values.codebases.length > 0
+      values.codebases.length > 0 ||
+      values.codebaseBranches.length > 0
     );
   }, [values]);
 
@@ -59,6 +66,14 @@ export const TektonResultsFilter = ({
     [values, onChange]
   );
 
+  const handleCodebaseBranchesChange = React.useCallback(
+    (value: string | string[]) => {
+      const newBranches = Array.isArray(value) ? value : [value];
+      onChange({ ...values, codebaseBranches: newBranches });
+    },
+    [values, onChange]
+  );
+
   const handleReset = React.useCallback(() => {
     onChange(defaultFilterValues);
   }, [onChange]);
@@ -72,58 +87,94 @@ export const TektonResultsFilter = ({
       .map((codebase) => ({ label: codebase, value: codebase }));
   }, [data]);
 
+  const codebaseBranchOptions = React.useMemo(() => {
+    const set = new Set(
+      data?.map((item) => String(item.annotations?.[tektonResultAnnotations.codebaseBranch] || "")).filter(Boolean)
+    );
+    return Array.from(set)
+      .sort()
+      .map((branch) => ({ label: branch, value: branch }));
+  }, [data]);
+
+  // Calculate column spans dynamically
+  const filterCount = [showStatus, showPipelineType, showCodebases, showCodebaseBranches].filter(Boolean).length;
+  const actionsColSpan = isDirty ? 12 - filterCount * 2 - 1 : 12 - filterCount * 2;
+
   return (
     <>
       {/* Status filter */}
-      <div className="col-span-2">
-        <FormField label="Status">
-          <SelectPrimitive value={values.status} onValueChange={handleStatusChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              {tektonResultStatusOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </SelectPrimitive>
-        </FormField>
-      </div>
+      {showStatus && (
+        <div className="col-span-2">
+          <FormField label="Status">
+            <SelectPrimitive value={values.status} onValueChange={handleStatusChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                {tektonResultStatusOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </SelectPrimitive>
+          </FormField>
+        </div>
+      )}
 
       {/* Pipeline Type filter */}
-      <div className="col-span-2">
-        <FormField label="Type">
-          <SelectPrimitive value={values.pipelineType} onValueChange={handlePipelineTypeChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select type" />
-            </SelectTrigger>
-            <SelectContent>
-              {tektonResultsPipelineTypeOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </SelectPrimitive>
-        </FormField>
-      </div>
+      {showPipelineType && (
+        <div className="col-span-2">
+          <FormField label="Type">
+            <SelectPrimitive value={values.pipelineType} onValueChange={handlePipelineTypeChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                {tektonResultsPipelineTypeOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </SelectPrimitive>
+          </FormField>
+        </div>
+      )}
 
       {/* Codebase filter */}
-      <div className="col-span-3">
-        <FormField label="Codebases">
-          <Combobox
-            options={codebaseOptions}
-            value={values.codebases}
-            onValueChange={handleCodebasesChange}
-            placeholder="Select codebases"
-            searchPlaceholder="Search codebases..."
-            emptyText="No codebases found"
-            multiple
-          />
-        </FormField>
-      </div>
+      {showCodebases && (
+        <div className="col-span-2">
+          <FormField label="Codebases">
+            <Combobox
+              options={codebaseOptions}
+              value={values.codebases}
+              onValueChange={handleCodebasesChange}
+              placeholder="Select codebases"
+              searchPlaceholder="Search codebases..."
+              emptyText="No codebases found"
+              multiple
+            />
+          </FormField>
+        </div>
+      )}
+
+      {/* Codebase Branch filter */}
+      {showCodebaseBranches && (
+        <div className="col-span-2">
+          <FormField label="Branches">
+            <Combobox
+              options={codebaseBranchOptions}
+              value={values.codebaseBranches}
+              onValueChange={handleCodebaseBranchesChange}
+              placeholder="Select branches"
+              searchPlaceholder="Search branches..."
+              emptyText="No branches found"
+              multiple
+            />
+          </FormField>
+        </div>
+      )}
 
       {/* Clear button - only show when form is dirty */}
       {isDirty && (
@@ -137,7 +188,7 @@ export const TektonResultsFilter = ({
       )}
 
       {/* Stats + Actions - right side */}
-      <div className={cn("flex flex-col gap-2", isDirty ? "col-span-4" : "col-span-5")}>
+      <div className={cn("flex flex-col gap-2", `col-span-${actionsColSpan}`)}>
         <Label>&nbsp;</Label>
         <div className="mt-0.5 flex items-center justify-end gap-2">
           <span className="text-muted-foreground text-sm">{totalLoaded} loaded</span>

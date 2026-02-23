@@ -15,7 +15,15 @@ export const usePageTabs = () => {
       router.navigate({
         to: PATH_PROJECT_DETAILS_FULL,
         params,
-        search: (prev) => ({ ...prev, tab }),
+        search: (prev) => {
+          // Only preserve pipelinesTab if we're navigating to the pipelines tab
+          if (tab === routeSearchTabSchema.enum.pipelines) {
+            return { ...prev, tab };
+          }
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { pipelinesTab, ...rest } = prev;
+          return { ...rest, tab };
+        },
       });
     },
     [params]
