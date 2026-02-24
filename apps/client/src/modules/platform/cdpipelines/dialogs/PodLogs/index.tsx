@@ -30,7 +30,7 @@ export const PodLogsDialog: React.FC<PodLogsDialogProps> = ({ props, state }) =>
         <DialogHeader>
           <DialogTitle>Logs - {appName}</DialogTitle>
         </DialogHeader>
-        <DialogBody className="flex flex-col overflow-hidden p-0">
+        <DialogBody className="flex flex-col overflow-hidden">
           <LoadingWrapper isLoading={isLoading}>
             {pods.length === 0 ? (
               <div className="flex h-full items-center justify-center">

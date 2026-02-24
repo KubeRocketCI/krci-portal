@@ -6,6 +6,7 @@ import type { CodebaseBranch } from "@my-project/shared";
 import { Form } from "./components/Form";
 import { FormActions } from "./components/FormActions";
 import { EditCodebaseBranchFormProvider } from "./providers/form/provider";
+import { FormGuideToggleButton, FormGuidePanel } from "@/core/components/FormGuide";
 import type { EditCodebaseBranchFormValues } from "./types";
 import { Alert } from "@/core/components/ui/alert";
 import type { RequestError } from "@/core/types/global";
@@ -77,16 +78,22 @@ export const EditCodebaseBranchForm: React.FC<EditCodebaseBranchFormProps> = ({
           <div className="flex flex-col gap-4">
             <DialogTitle className="text-xl font-medium">{`Edit ${codebaseBranch.spec.branchName}`}</DialogTitle>
           </div>
+          <FormGuideToggleButton />
         </div>
       </DialogHeader>
-      <DialogBody>
-        <div className="flex flex-col gap-4">
-          {requestError && (
-            <Alert variant="destructive" title="Failed to update codebase branch">
-              {getK8sErrorMessage(requestError)}
-            </Alert>
-          )}
-          <Form pipelines={pipelines} />
+      <DialogBody className="flex min-h-0 !overflow-hidden">
+        <div className="flex h-full flex-1 gap-4">
+          <div className="flex-1 overflow-y-auto">
+            <div className="flex flex-col gap-4">
+              {requestError && (
+                <Alert variant="destructive" title="Failed to update codebase branch">
+                  {getK8sErrorMessage(requestError)}
+                </Alert>
+              )}
+              <Form pipelines={pipelines} />
+            </div>
+          </div>
+          <FormGuidePanel />
         </div>
       </DialogBody>
       <DialogFooter>

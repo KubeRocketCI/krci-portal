@@ -4,6 +4,7 @@ import { DialogHeader as CustomDialogHeader } from "./components/DialogHeader";
 import { Form } from "./components/Form";
 import { FormActions } from "./components/FormActions";
 import { QuickLinkFormProvider } from "../../providers/form/provider";
+import { FormGuidePanel } from "@/core/components/FormGuide";
 import { createDefaultValues } from "../../providers/form/constants";
 import { useCurrentDialog } from "../../providers/CurrentDialog/hooks";
 import { useQuickLinkCRUD } from "@/k8s/api/groups/KRCI/QuickLink";
@@ -43,8 +44,13 @@ export const Create = () => {
       <DialogHeader>
         <CustomDialogHeader />
       </DialogHeader>
-      <DialogBody>
-        <Form />
+      <DialogBody className="flex min-h-0 !overflow-hidden">
+        <div className="flex h-full flex-1 gap-4">
+          <div className="flex-1 overflow-y-auto">
+            <Form />
+          </div>
+          <FormGuidePanel />
+        </div>
       </DialogBody>
       <DialogFooter>
         <FormActions />

@@ -1,5 +1,6 @@
 import { BackwardNameMapping } from "@/core/types/forms";
 import { codebaseBranchLabels } from "@my-project/shared";
+import type { FormGuideFieldDescription } from "@/core/providers/FormGuide/types";
 
 export const RELEASE_BRANCH_POSTFIX = "RC";
 
@@ -102,4 +103,47 @@ export const CODEBASE_BRANCH_BACKWARDS_FIELD_MAPPING: BackwardNameMapping = {
       },
     },
   },
+};
+
+export const FORM_GUIDE_CONFIG: Record<number, FormGuideFieldDescription[]> = {
+  0: [
+    {
+      fieldName: "release",
+      label: "Release Branch",
+      description: "Toggle on to create a release branch instead of a regular feature branch.",
+      notes: ["Release branches get a version number and update the default branch version automatically."],
+    },
+    {
+      fieldName: "branchName",
+      label: "Branch Name",
+      description: "Name for the new branch. Must be unique within this codebase.",
+      visibilityHint: "Shown for non-release branches",
+    },
+    {
+      fieldName: "releaseBranchName",
+      label: "Release Branch Name",
+      description: "Auto-generated name for the release branch based on the version.",
+      visibilityHint: "Shown for release branches",
+    },
+    {
+      fieldName: "fromCommit",
+      label: "From Commit",
+      description: "The commit hash to branch from. Defaults to the latest commit on the default branch.",
+    },
+    {
+      fieldName: "buildPipeline",
+      label: "Build Pipeline",
+      description: "The Tekton pipeline that builds this branch.",
+    },
+    {
+      fieldName: "reviewPipeline",
+      label: "Review Pipeline",
+      description: "The Tekton pipeline that runs code review checks for merge requests on this branch.",
+    },
+    {
+      fieldName: "securityPipeline",
+      label: "Security Pipeline",
+      description: "The Tekton pipeline that runs security scans for this branch.",
+    },
+  ],
 };

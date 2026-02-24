@@ -52,12 +52,14 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
     return pods[0];
   }, [pods, userSelectedPodName, selectedPod]);
 
-  // Sync activeContainer when selectedContainer prop changes (needed for initial container detection)
+  // Auto-select container when needed
   useEffect(() => {
     if (selectedContainer) {
       setActiveContainer(selectedContainer);
+    } else if (activePod?.spec?.containers?.length && !activeContainer) {
+      setActiveContainer(activePod.spec.containers[0].name);
     }
-  }, [selectedContainer]);
+  }, [selectedContainer, activePod, activeContainer]);
 
   // Check if pod is ready for log fetching
   const podReadyForLogs = useMemo(() => {

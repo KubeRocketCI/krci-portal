@@ -9,7 +9,7 @@ interface WizardStepperProps {
 
 export const WizardStepper: React.FC<WizardStepperProps> = ({ currentStepIdx }) => {
   return (
-    <Card className="p-3 shadow-none">
+    <Card className="p-3">
       <div className="flex items-center gap-4">
         {WIZARD_STEPS.slice(0, -1).map((step) => {
           const Icon = step.icon;

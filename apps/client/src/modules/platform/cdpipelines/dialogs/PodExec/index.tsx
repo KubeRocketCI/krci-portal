@@ -30,7 +30,7 @@ export const PodExecDialog: React.FC<PodExecDialogProps> = ({ props, state }) =>
         <DialogHeader>
           <DialogTitle>Terminal - {appName}</DialogTitle>
         </DialogHeader>
-        <DialogBody className="flex flex-col overflow-hidden p-0">
+        <DialogBody className="flex flex-col overflow-hidden">
           <LoadingWrapper isLoading={isLoading}>
             {pods.length === 0 ? (
               <div className="flex h-full items-center justify-center">

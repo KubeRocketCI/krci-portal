@@ -1,6 +1,7 @@
 import { stageQualityGateType } from "@my-project/shared";
 import z from "zod";
 import { ValueOf } from "@/core/types/global";
+import type { FormGuideFieldDescription, FormGuideStep } from "@/core/providers/FormGuide/types";
 
 const isEmptyStr = (val: string | null | undefined): boolean => {
   return !val || val.trim().length === 0;
@@ -176,3 +177,70 @@ export const CREATE_FORM_PARTS = {
   [FORM_PARTS.PIPELINE_CONFIGURATION]: [NAMES.triggerType, NAMES.triggerTemplate, NAMES.cleanTemplate],
   [FORM_PARTS.QUALITY_GATES]: [NAMES.qualityGates],
 } as const;
+
+export const WIZARD_GUIDE_STEPS: FormGuideStep[] = [
+  { id: 1, label: "Basic Configuration", sublabel: "Configure environment basics" },
+  { id: 2, label: "Pipeline Configuration", sublabel: "Configure pipeline settings" },
+  { id: 3, label: "Quality Gates", sublabel: "Add quality gates" },
+];
+
+export const HELP_CONFIG: Record<number, FormGuideFieldDescription[]> = {
+  1: [
+    {
+      fieldName: "cluster",
+      label: "Cluster",
+      description: "The Kubernetes cluster where this environment will be deployed.",
+    },
+    {
+      fieldName: "name",
+      label: "Environment Name",
+      description: "A short name for this environment (2–10 characters, lowercase letters, numbers, and dashes).",
+      notes: ["Used as part of the deploy namespace and pipeline names."],
+    },
+    {
+      fieldName: "deployNamespace",
+      label: "Namespace",
+      description:
+        "The Kubernetes namespace where workloads will run. Auto-generated from the CD Pipeline name and environment name.",
+    },
+    {
+      fieldName: "description",
+      label: "Description",
+      description: "A brief summary of what this environment is for (e.g. staging, QA, production).",
+    },
+  ],
+  2: [
+    {
+      fieldName: "triggerType",
+      label: "Trigger Type",
+      description: "How deployments to this environment are initiated.",
+      notes: [
+        "Auto — deploy automatically after the previous environment succeeds.",
+        "Manual — require a manual approval before deploying.",
+        "Auto-stable — deploy automatically only when all quality gates pass.",
+      ],
+    },
+    {
+      fieldName: "triggerTemplate",
+      label: "Deploy Pipeline Template",
+      description: "The pipeline template used to deploy applications to this environment.",
+    },
+    {
+      fieldName: "cleanTemplate",
+      label: "Clean Pipeline Template",
+      description: "The pipeline template used to tear down or clean this environment.",
+    },
+  ],
+  3: [
+    {
+      fieldName: "qualityGates",
+      label: "Quality Gates",
+      description: "Checks that must pass before a deployment is promoted to the next environment.",
+      notes: [
+        "Manual — requires a human to approve the deployment.",
+        "Autotests — runs an autotest suite; select the codebase and branch to run.",
+        "At least one quality gate is required.",
+      ],
+    },
+  ],
+};

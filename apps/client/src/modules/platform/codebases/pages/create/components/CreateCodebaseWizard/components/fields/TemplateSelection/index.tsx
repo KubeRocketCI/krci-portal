@@ -11,6 +11,7 @@ import type { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/m
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { useCreateCodebaseForm } from "../../../providers/form/hooks";
 import { NAMES } from "../../../names";
+import { useFormGuide } from "@/core/providers/FormGuide/hooks";
 import type { Template } from "@my-project/shared";
 
 const useTemplateOptions = (filteredTemplates: Template[]) => {
@@ -75,6 +76,7 @@ const useTemplateOptions = (filteredTemplates: Template[]) => {
 };
 
 export const TemplateSelection: React.FC = () => {
+  const { isOpen: isHelpOpen } = useFormGuide();
   const templatesWatch = useTemplateWatchList();
   const templates = templatesWatch.data.array;
 
@@ -158,7 +160,12 @@ export const TemplateSelection: React.FC = () => {
               label="Select Template"
               options={templateOptions}
               variant="horizontal"
-              classNames={{ container: "grid-cols-4", item: "p-3", itemIcon: "h-6 w-6", itemIconContainer: "h-8 w-8" }}
+              classNames={{
+                container: isHelpOpen ? "grid-cols-3" : "grid-cols-4",
+                item: "p-3",
+                itemIcon: "h-6 w-6",
+                itemIconContainer: "h-8 w-8",
+              }}
               disabled={templatesWatch.query.isLoading}
             />
           )}

@@ -1,4 +1,5 @@
 import { DialogTitle } from "@/core/components/ui/dialog";
+import { FormGuideToggleButton } from "@/core/components/FormGuide";
 import { useCurrentDialog } from "../../../../providers/CurrentDialog/hooks";
 
 export const DialogHeader = () => {
@@ -11,6 +12,7 @@ export const DialogHeader = () => {
       <div className="flex flex-col gap-2">
         <DialogTitle className="text-xl font-medium">{`Edit ${quickLink?.metadata.name}`}</DialogTitle>
       </div>
+      <FormGuideToggleButton />
     </div>
   );
 };

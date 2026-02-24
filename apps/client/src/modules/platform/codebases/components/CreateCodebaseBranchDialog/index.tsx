@@ -1,5 +1,9 @@
-import { Dialog, DialogContent } from "@/core/components/ui/dialog";
+import { Dialog } from "@/core/components/ui/dialog";
 import React from "react";
+import { FormGuideProvider } from "@/core/providers/FormGuide/provider";
+import { FormGuideDialogContent } from "@/core/components/FormGuide";
+import { FORM_GUIDE_CONFIG } from "../CreateCodebaseBranchForm/constants";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import type { CreateCodebaseBranchDialogProps } from "./types";
 import { CreateCodebaseBranchForm } from "../CreateCodebaseBranchForm";
 
@@ -11,15 +15,22 @@ export const CreateCodebaseBranchDialog: React.FC<CreateCodebaseBranchDialogProp
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && closeDialog()} data-testid="dialog">
-      <DialogContent className="w-full max-w-4xl">
-        <CreateCodebaseBranchForm
-          codebase={codebase}
-          codebaseBranches={codebaseBranches}
-          defaultBranch={defaultBranch}
-          pipelines={pipelines}
-          onClose={closeDialog}
-        />
-      </DialogContent>
+      <FormGuideProvider
+        config={FORM_GUIDE_CONFIG}
+        steps={[]}
+        currentStepIdx={0}
+        docUrl={EDP_USER_GUIDE.BRANCHES_MANAGE.anchors.ADD_BRANCH.url}
+      >
+        <FormGuideDialogContent>
+          <CreateCodebaseBranchForm
+            codebase={codebase}
+            codebaseBranches={codebaseBranches}
+            defaultBranch={defaultBranch}
+            pipelines={pipelines}
+            onClose={closeDialog}
+          />
+        </FormGuideDialogContent>
+      </FormGuideProvider>
     </Dialog>
   );
 };

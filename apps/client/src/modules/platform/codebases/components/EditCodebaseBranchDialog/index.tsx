@@ -5,6 +5,10 @@ import { ErrorContent } from "@/core/components/ErrorContent";
 import { useCodebaseBranchWatchItem } from "@/k8s/api/groups/KRCI/CodebaseBranch";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
+import { FormGuideProvider } from "@/core/providers/FormGuide/provider";
+import { FormGuideDialogContent } from "@/core/components/FormGuide";
+import { FORM_GUIDE_CONFIG } from "../EditCodebaseBranchForm/constants";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import type { EditCodebaseBranchDialogProps } from "./types";
 import { EditCodebaseBranchForm } from "../EditCodebaseBranchForm";
 
@@ -38,11 +42,18 @@ export const EditCodebaseBranchDialog: React.FC<EditCodebaseBranchDialogProps> =
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && closeDialog()} data-testid="dialog">
-      <DialogContent className="w-full max-w-4xl">
-        <LoadingWrapper isLoading={branchWatch.query.isLoading}>
-          <EditCodebaseBranchForm codebaseBranch={codebaseBranch} isProtected={isProtected} onClose={closeDialog} />
-        </LoadingWrapper>
-      </DialogContent>
+      <FormGuideProvider
+        config={FORM_GUIDE_CONFIG}
+        steps={[]}
+        currentStepIdx={0}
+        docUrl={EDP_USER_GUIDE.BRANCHES_MANAGE.url}
+      >
+        <FormGuideDialogContent>
+          <LoadingWrapper isLoading={branchWatch.query.isLoading}>
+            <EditCodebaseBranchForm codebaseBranch={codebaseBranch} isProtected={isProtected} onClose={closeDialog} />
+          </LoadingWrapper>
+        </FormGuideDialogContent>
+      </FormGuideProvider>
     </Dialog>
   );
 };
