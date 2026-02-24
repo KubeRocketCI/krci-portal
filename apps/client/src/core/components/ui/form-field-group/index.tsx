@@ -4,6 +4,7 @@ import * as React from "react";
 import { Info } from "lucide-react";
 import { FormLabel, FormHelperText } from "@/core/components/ui/form-field";
 import { TooltipRoot, TooltipTrigger, TooltipContent } from "@/core/components/ui/tooltip";
+import { useFormGuide } from "@/core/providers/FormGuide/hooks";
 import { cn } from "@/core/utils/classname";
 
 export interface FormFieldGroupProps {
@@ -20,6 +21,8 @@ export interface FormFieldGroupProps {
 
 export const FormFieldGroup = React.forwardRef<HTMLDivElement, FormFieldGroupProps>(
   ({ label, tooltipText, helperText, error, required, disabled, children, className, id }, ref) => {
+    const { isOpen: isFormGuideOpen } = useFormGuide();
+    const showTooltips = !isFormGuideOpen;
     const fieldId = React.useId();
     const finalId = id || fieldId;
     const hasError = !!error;
@@ -31,7 +34,7 @@ export const FormFieldGroup = React.forwardRef<HTMLDivElement, FormFieldGroupPro
         {label && (
           <FormLabel htmlFor={finalId} required={required} disabled={disabled}>
             {label}
-            {tooltipText && (
+            {tooltipText && showTooltips && (
               <TooltipRoot>
                 <TooltipTrigger asChild>
                   <button

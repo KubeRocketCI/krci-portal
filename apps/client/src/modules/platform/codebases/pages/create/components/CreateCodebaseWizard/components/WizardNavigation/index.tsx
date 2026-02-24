@@ -71,7 +71,7 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
   }, [currentFormPart, onNext, form]);
 
   return (
-    <Card className="p-3 shadow-none">
+    <Card className="p-3">
       <div className="flex items-center justify-between">
         {currentStepIndex === 0 && backRoute ? (
           <Button variant="outline" asChild size="sm" type="button">

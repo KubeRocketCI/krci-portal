@@ -9,7 +9,14 @@ import { k8sPatchItemProcedure } from "./procedures/basic/patch/index.js";
 import { k8sWatchItemProcedure } from "./procedures/basic/watchItem/index.js";
 import { k8sWatchListProcedure } from "./procedures/basic/watchList/index.js";
 import { k8sPodLogsProcedure, k8sWatchPodLogsProcedure } from "./procedures/basic/logs/index.js";
-import { k8sPodExecProcedure, k8sPodAttachProcedure } from "./procedures/basic/exec/index.js";
+import {
+  k8sPodExecProcedure,
+  k8sPodAttachProcedure,
+  k8sWatchPodExecProcedure,
+  k8sWatchPodAttachProcedure,
+  k8sPodExecSendInputProcedure,
+  k8sPodExecResizeProcedure,
+} from "./procedures/basic/exec/index.js";
 import { k8sGetClusterDetails } from "./procedures/clusterDetails/index.js";
 import { k8sManageArgoCDIntegrationProcedure } from "./procedures/composite/manageArgoCDIntegration/index.js";
 import { k8sManageRegistryIntegrationProcedure } from "./procedures/composite/manageRegistryIntegration/index.js";
@@ -39,6 +46,10 @@ export const k8sRouter = t.router({
   watchPodLogs: k8sWatchPodLogsProcedure,
   podExec: k8sPodExecProcedure,
   podAttach: k8sPodAttachProcedure,
+  watchPodExec: k8sWatchPodExecProcedure,
+  watchPodAttach: k8sWatchPodAttachProcedure,
+  podExecSendInput: k8sPodExecSendInputProcedure,
+  podExecResize: k8sPodExecResizeProcedure,
   // Composite operations
   manageArgoCDIntegration: k8sManageArgoCDIntegrationProcedure,
   manageRegistryIntegration: k8sManageRegistryIntegrationProcedure,

@@ -1,17 +1,9 @@
-import { Button } from "@/core/components/ui/button";
-import {
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/core/components/ui/dialog";
+import { Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
 import { ConfigurationPageContentProps } from "./types";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { Section } from "@/core/components/Section";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
-import { Plus, X } from "lucide-react";
+import { Plus } from "lucide-react";
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 
 export const ConfigurationPageContent = ({
@@ -59,13 +51,9 @@ export const ConfigurationPageContent = ({
             <DialogHeader>
               <div className="flex w-full items-center justify-between gap-2">
                 <DialogTitle>{creationForm.label}</DialogTitle>
-                <Button variant="ghost" size="icon" onClick={creationForm.onClose}>
-                  <X size={20} />
-                </Button>
               </div>
             </DialogHeader>
             <DialogBody>{creationForm.component}</DialogBody>
-            <DialogFooter />
           </DialogContent>
         </Dialog>
       )}

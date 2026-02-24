@@ -111,4 +111,28 @@ export const TOURS_CONFIG: Record<string, TourMetadata> = {
       },
     ],
   },
+  formGuide: {
+    id: "form_guide_intro",
+    title: "Form Guide",
+    description: "Learn about the Form Guide that helps you fill out forms",
+    showOnce: true,
+    trigger: "feature",
+    featureId: "form-guide",
+    steps: [
+      {
+        target: "[data-tour='form-guide-toggle']",
+        content: (
+          <div className="space-y-2">
+            <h3 className="font-semibold">Form Guide</h3>
+            <p>
+              Click this button to open the Form Guide panel. It provides helpful descriptions and tips for each field
+              in the form.
+            </p>
+          </div>
+        ),
+        placement: "bottom",
+        disableBeacon: true,
+      },
+    ],
+  },
 } as const;

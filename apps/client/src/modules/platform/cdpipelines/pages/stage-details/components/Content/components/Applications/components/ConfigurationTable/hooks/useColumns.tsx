@@ -91,7 +91,9 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
             id: columnNames.PODS,
             label: "Pods",
             data: {
-              render: () => <PodsColumn />,
+              render: ({ data: { appCodebase, application } }) => (
+                <PodsColumn appCodebase={appCodebase} application={application} />
+              ),
             },
             cell: {
               baseWidth: 10,

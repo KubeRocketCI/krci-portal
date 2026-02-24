@@ -5,6 +5,7 @@ import { Form } from "./components/Form";
 import { FormActions } from "./components/FormActions";
 import { useDefaultValues } from "./hooks/useDefaultValues";
 import { CreateCodebaseBranchFormProvider } from "./providers/form/provider";
+import { FormGuidePanel } from "@/core/components/FormGuide";
 import type { CreateCodebaseBranchFormValues } from "./types";
 import type { Codebase, CodebaseBranch } from "@my-project/shared";
 import { useCodebaseBranchCRUD } from "@/k8s/api/groups/KRCI/CodebaseBranch";
@@ -112,14 +113,19 @@ export const CreateCodebaseBranchForm: React.FC<CreateCodebaseBranchFormProps> =
       <DialogHeader>
         <CustomDialogHeader codebaseName={codebase.metadata.name} />
       </DialogHeader>
-      <DialogBody>
-        <div className="flex flex-col gap-4">
-          {requestError && (
-            <Alert variant="destructive" title="Failed to create codebase branch">
-              {getK8sErrorMessage(requestError)}
-            </Alert>
-          )}
-          <Form codebase={codebase} defaultBranch={defaultBranch} pipelines={pipelines} />
+      <DialogBody className="flex min-h-0 flex-col !overflow-hidden">
+        <div className="flex min-h-0 flex-1 gap-4">
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <div className="flex flex-col gap-4">
+              {requestError && (
+                <Alert variant="destructive" title="Failed to create codebase branch">
+                  {getK8sErrorMessage(requestError)}
+                </Alert>
+              )}
+              <Form codebase={codebase} defaultBranch={defaultBranch} pipelines={pipelines} />
+            </div>
+          </div>
+          <FormGuidePanel />
         </div>
       </DialogBody>
       <DialogFooter>

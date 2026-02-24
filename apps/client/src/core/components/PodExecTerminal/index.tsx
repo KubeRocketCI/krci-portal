@@ -1,11 +1,19 @@
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useRef, useMemo, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
 import { Label } from "@/core/components/ui/label";
+import { Terminal as XTerminal } from "@xterm/xterm";
 
 import { Terminal } from "@/core/components/Terminal";
 import { TerminalRef } from "@/core/components/Terminal/types";
 import { PodExecTerminalProps } from "./types";
 import { useTRPCClient } from "@/core/providers/trpc";
+
+// Event types from server subscriptions
+type ExecEvent =
+  | { type: "sessionId"; sessionId: string }
+  | { type: "data"; channel: number; data: string }
+  | { type: "exit"; exitCode: number }
+  | { type: "error"; message: string };
 
 export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
   namespace,
@@ -17,6 +25,7 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
   height = 400,
 }) => {
   const trpc = useTRPCClient();
+
   // State management
   const [activePod, setActivePod] = useState(() => {
     if (selectedPod) {
@@ -26,18 +35,16 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
   });
 
   const [selectedContainer, setSelectedContainer] = useState<string>(container || "");
-  const [shells] = useState({
-    available: ["bash", "/bin/bash", "sh", "/bin/sh", "powershell.exe", "cmd.exe"],
-    currentIdx: 0,
-  });
+  const [shellAttempts, setShellAttempts] = useState(0);
 
-  const [terminalState, setTerminalState] = useState({
-    connected: false,
-    reconnectOnEnter: false,
-  });
-
-  // Terminal ref
+  // Terminal ref and session state
   const terminalRef = useRef<TerminalRef>(null);
+  const subscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
+  const sessionIdRef = useRef<string | null>(null);
+  const isConnectedRef = useRef<boolean>(false);
+  const hasReceivedDataRef = useRef<boolean>(false);
+
+  const shells = ["bash", "/bin/bash", "sh", "/bin/sh", "powershell.exe", "cmd.exe"];
 
   const podName = activePod?.metadata?.name || "";
 
@@ -80,88 +87,138 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
     return containers;
   }, [activePod]);
 
-  // Terminal functions
-  const send = (channel: number, data: string) => {
-    console.log("Sending data:", { channel, data });
-  };
-
   const getCurrentShellCommand = () => {
-    return shells.available[shells.currentIdx];
+    return shells[shellAttempts % shells.length];
   };
 
-  const isLastShell = () => {
-    return shells.currentIdx === shells.available.length - 1;
-  };
+  // Create event handler for subscription
+  const createEventHandler = (terminal: XTerminal) => ({
+    onData: (event: ExecEvent) => {
+      if (event.type === "sessionId") {
+        sessionIdRef.current = event.sessionId;
+      } else if (event.type === "data") {
+        terminal.write(event.data);
+        isConnectedRef.current = true;
+        hasReceivedDataRef.current = true;
+      } else if (event.type === "exit") {
+        // Check if shell doesn't exist and try next one
+        if (!hasReceivedDataRef.current && shellAttempts < shells.length - 1) {
+          terminal.writeln(`Shell not found. Trying next shell...\r\n`);
+          setShellAttempts((prev) => prev + 1);
+        } else {
+          terminal.writeln(`\r\nProcess exited with code ${event.exitCode}\r\n`);
+        }
+        isConnectedRef.current = false;
+      }
+    },
+    onError: (error: Error) => {
+      terminal.writeln(`\r\nConnection failed: ${error.message}\r\n`);
 
-  const shellConnectFailed = () => {
+      if (shellAttempts < shells.length - 1) {
+        terminal.writeln(`Trying next shell...\r\n`);
+        setShellAttempts((prev) => prev + 1);
+      } else {
+        terminal.writeln(`All shells failed. Press Ctrl+C to close.\r\n`);
+      }
+    },
+  });
+
+  // Initialize terminal connection
+  const connectToExec = () => {
+    if (!selectedContainer || !podName) return;
+
     const terminal = terminalRef.current?.getTerminal();
     if (!terminal) return;
+
+    // Cleanup previous subscription
+    if (subscriptionRef.current) {
+      subscriptionRef.current.unsubscribe();
+      subscriptionRef.current = null;
+    }
+
+    terminal.clear();
+    sessionIdRef.current = null;
+    isConnectedRef.current = false;
+    hasReceivedDataRef.current = false;
 
     const command = getCurrentShellCommand();
 
-    if (isLastShell()) {
-      if (terminalState.connected) {
-        terminal.write(`Failed to run "${command}"…` + "\r\n");
-      } else {
-        terminal.clear();
-        terminal.write("Failed to connect…" + "\r\n");
-      }
-
-      terminal.write("\r\n" + "Press the enter key to reconnect." + "\r\n");
-      setTerminalState((prev) => ({ ...prev, reconnectOnEnter: true }));
+    if (isAttach) {
+      terminal.writeln(`Attaching to container ${selectedContainer}...\r\n`);
     } else {
-      terminal.write(`Failed to run "${command}"` + "\r\n");
-      // Try next shell - simplified approach
+      terminal.writeln(`Trying to run "${command}"...\r\n`);
     }
-  };
-
-  // Initialize terminal connection
-  const initializeConnection = async () => {
-    if (!selectedContainer) return;
-
-    const terminal = terminalRef.current?.getTerminal();
-    if (!terminal) return;
 
     try {
-      if (isAttach) {
-        terminal.writeln(`Trying to attach to the container ${selectedContainer}…` + "\n");
-        await trpc.k8s.podAttach.mutate({
-          clusterName,
-          namespace,
-          podName,
-          container: selectedContainer,
-        });
-      } else {
-        const command = getCurrentShellCommand();
-        terminal.writeln(`Trying to run "${command}"…` + "\n");
-        await trpc.k8s.podExec.mutate({
-          clusterName,
-          namespace,
-          podName,
-          container: selectedContainer,
-          command: [command],
-        });
-      }
+      const eventHandler = createEventHandler(terminal);
+      const subscription = isAttach
+        ? trpc.k8s.watchPodAttach.subscribe(
+            {
+              clusterName,
+              namespace,
+              podName,
+              container: selectedContainer,
+              tty: true,
+            },
+            eventHandler
+          )
+        : trpc.k8s.watchPodExec.subscribe(
+            {
+              clusterName,
+              namespace,
+              podName,
+              container: selectedContainer,
+              command: [command],
+              tty: true,
+            },
+            eventHandler
+          );
 
-      setTerminalState((prev) => ({ ...prev, connected: true }));
+      subscriptionRef.current = subscription;
     } catch (error) {
-      console.error(isAttach ? "Attach failed:" : "Exec failed:", error);
-      shellConnectFailed();
+      console.error("[PodExecTerminal] Failed to start exec session:", error);
+      terminal.writeln(`\r\nFailed to start session\r\n`);
     }
   };
 
   // Handle terminal data input
-  const handleTerminalData = (data: string) => {
-    send(0, data);
+  const handleTerminalData = async (data: string) => {
+    const currentSessionId = sessionIdRef.current;
+    const currentIsConnected = isConnectedRef.current;
+
+    if (!currentSessionId || !currentIsConnected) {
+      return;
+    }
+
+    try {
+      await trpc.k8s.podExecSendInput.mutate({
+        sessionId: currentSessionId,
+        data,
+      });
+    } catch (error) {
+      console.error("Failed to send terminal input:", error);
+    }
   };
 
   // Handle terminal resize
-  const handleTerminalResize = (size: { cols: number; rows: number }) => {
-    send(4, `{"Width":${size.cols},"Height":${size.rows}}`);
+  const handleTerminalResize = async (size: { cols: number; rows: number }) => {
+    const currentSessionId = sessionIdRef.current;
+    if (!currentSessionId) return;
+
+    try {
+      await trpc.k8s.podExecResize.mutate({
+        sessionId: currentSessionId,
+        cols: size.cols,
+        rows: size.rows,
+      });
+    } catch (error) {
+      console.error("Failed to resize terminal:", error);
+    }
   };
 
   // Handle terminal key events
   const handleTerminalKeyDown = (arg: KeyboardEvent) => {
+    // Allow copy/paste
     if (arg.ctrlKey && arg.type === "keydown") {
       if (arg.code === "KeyC") {
         const terminal = terminalRef.current?.getTerminal();
@@ -175,19 +232,11 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
       }
     }
 
-    if (!isAttach && arg.type === "keydown" && arg.code === "Enter") {
-      if (terminalState.reconnectOnEnter) {
-        setTerminalState((prev) => ({ ...prev, reconnectOnEnter: false }));
-        initializeConnection();
-        return false;
-      }
-    }
-
     return true;
   };
 
   // Auto-select container when needed
-  React.useEffect(() => {
+  useEffect(() => {
     if (container) {
       setSelectedContainer(container);
     } else if (activePod?.spec?.containers?.length && !selectedContainer) {
@@ -196,7 +245,7 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
   }, [container, activePod, selectedContainer]);
 
   // Update active pod when selectedPod prop changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedPod) {
       const pod = pods.find((p) => p.metadata?.name === selectedPod);
       if (pod) {
@@ -205,19 +254,28 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
     }
   }, [selectedPod, pods]);
 
-  // Initialize connection when container is selected
-  React.useEffect(() => {
+  // Connect when container is selected or shell attempt changes
+  useEffect(() => {
     if (selectedContainer && terminalRef.current?.getTerminal()) {
-      initializeConnection();
+      connectToExec();
     }
+
+    // Cleanup on unmount
+    return () => {
+      if (subscriptionRef.current) {
+        subscriptionRef.current.unsubscribe();
+        subscriptionRef.current = null;
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedContainer]);
+  }, [selectedContainer, shellAttempts]);
 
   // Event handlers
   const handlePodChange = (value: string) => {
     const pod = pods.find((p) => p.metadata?.name === value);
     if (pod) {
       setActivePod(pod);
+      setShellAttempts(0);
       // Reset container selection when pod changes
       if (pod.spec?.containers?.length) {
         setSelectedContainer(pod.spec.containers[0].name);
@@ -226,6 +284,7 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
   };
 
   const handleContainerChange = (value: string) => {
+    setShellAttempts(0);
     setSelectedContainer(value);
   };
 
@@ -269,7 +328,7 @@ export const PodExecTerminal: React.FC<PodExecTerminalProps> = ({
           </Select>
         </div>
 
-        <span className="text-muted-foreground text-xs">
+        <span className="text-muted-foreground mt-5 text-xs">
           {isAttach ? `Attach: ${podName}` : `Terminal: ${podName}`}
         </span>
       </div>

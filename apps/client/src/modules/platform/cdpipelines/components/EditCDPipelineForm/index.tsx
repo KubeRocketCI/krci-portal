@@ -7,6 +7,7 @@ import { FormContent } from "./components/FormContent";
 import { FormActions } from "./components/FormActions";
 import type { EditCDPipelineFormValues } from "./types";
 import { EditCDPipelineFormProvider } from "./providers/form/provider";
+import { FormGuideToggleButton, FormGuidePanel } from "@/core/components/FormGuide";
 import { EditCDPipelineDataProvider } from "./providers/data/provider";
 import { Alert } from "@/core/components/ui/alert";
 import type { RequestError } from "@/core/types/global";
@@ -53,16 +54,22 @@ export const EditCDPipelineForm: React.FC<EditCDPipelineFormProps> = ({ cdPipeli
             <div className="flex flex-col gap-4">
               <DialogTitle>{`Edit ${cdPipeline?.metadata.name}`}</DialogTitle>
             </div>
+            <FormGuideToggleButton />
           </div>
         </DialogHeader>
-        <DialogBody>
-          <div className="flex flex-col gap-4">
-            {requestError && (
-              <Alert variant="destructive" title="Failed to update deployment flow">
-                {getK8sErrorMessage(requestError)}
-              </Alert>
-            )}
-            <FormContent />
+        <DialogBody className="flex min-h-0 !overflow-hidden">
+          <div className="flex h-full flex-1 gap-4">
+            <div className="flex-1 overflow-y-auto">
+              <div className="flex flex-col gap-4">
+                {requestError && (
+                  <Alert variant="destructive" title="Failed to update deployment flow">
+                    {getK8sErrorMessage(requestError)}
+                  </Alert>
+                )}
+                <FormContent />
+              </div>
+            </div>
+            <FormGuidePanel />
           </div>
         </DialogBody>
         <DialogFooter>
