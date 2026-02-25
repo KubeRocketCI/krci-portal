@@ -1,343 +1,268 @@
-// import { describe, it, expect, vi, beforeEach } from "vitest";
-// import {
-//   Configuration,
-//   TokenEndpointResponse,
-//   TokenEndpointResponseHelpers,
-// } from "openid-client";
-// import { TRPCError } from "@trpc/server";
-// import { OIDCClient } from ".";
-// import { getTokenExpirationTime } from "@/utils/getTokenExpirationTime";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { TRPCError } from "@trpc/server";
+import { OIDCClient } from "./index.js";
+import type { Configuration } from "openid-client";
 
-// // Mock the getTokenExpirationTime utility
-// vi.mock("@/utils/getTokenExpirationTime", () => ({
-//   getTokenExpirationTime: vi.fn(),
-// }));
+// Mock jose
+const mockJwtVerify = vi.fn();
+const mockCreateRemoteJWKSet = vi.fn((..._args: any[]) => "mock-jwks-function");
+const { errors: joseErrors } = await vi.importActual<typeof import("jose")>("jose");
+vi.mock("jose", async () => {
+  const actual = await vi.importActual<typeof import("jose")>("jose");
+  return {
+    ...actual,
+    jwtVerify: (...args: any[]) => mockJwtVerify(...args),
+    createRemoteJWKSet: (...args: any[]) => mockCreateRemoteJWKSet(...args),
+  };
+});
 
-// // Mock openid-client
-// vi.mock("openid-client", async () => {
-//   const actual = await vi.importActual("openid-client");
-//   return {
-//     ...actual,
-//     discovery: vi.fn(),
-//     buildAuthorizationUrl: vi.fn(),
-//     authorizationCodeGrant: vi.fn(),
-//     refreshTokenGrant: vi.fn(),
-//     fetchProtectedResource: vi.fn(),
-//     randomState: vi.fn(),
-//     randomPKCECodeVerifier: vi.fn(),
-//     calculatePKCECodeChallenge: vi.fn(),
-//     allowInsecureRequests: vi.fn(),
-//   };
-// });
+// Mock openid-client (fetchProtectedResource used by fetchUserInfo)
+const mockFetchProtectedResource = vi.fn();
+vi.mock("openid-client", async () => {
+  const actual = await vi.importActual("openid-client");
+  return {
+    ...actual,
+    fetchProtectedResource: (...args: any[]) => mockFetchProtectedResource(...args),
+  };
+});
 
-// describe("OIDCClient", () => {
-//   const config = {
-//     issuerURL: "https://example.com",
-//     clientID: "client-id",
-//     clientSecret: "client-secret",
-//     scope: "openid profile",
-//     codeChallengeMethod: "S256",
-//   };
+const validConfig = {
+  issuerURL: "https://idp.example.com",
+  clientID: "my-client-id",
+  clientSecret: "my-client-secret",
+  scope: "openid profile email",
+  codeChallengeMethod: "S256",
+};
 
-//   let client: OIDCClient;
+const mockUserInfo = {
+  sub: "user-123",
+  email: "user@example.com",
+  name: "Test User",
+};
 
-//   beforeEach(() => {
-//     client = new OIDCClient(config);
-//     vi.clearAllMocks();
-//   });
+function createMockOIDCConfig(overrides?: {
+  jwks_uri?: string;
+  issuer?: string;
+  userinfo_endpoint?: string;
+}): Configuration {
+  const defaults = {
+    issuer: "https://idp.example.com",
+    jwks_uri: "https://idp.example.com/.well-known/jwks.json",
+    userinfo_endpoint: "https://idp.example.com/userinfo",
+  };
+  const merged = { ...defaults, ...overrides };
+  return {
+    serverMetadata: () => merged,
+  } as unknown as Configuration;
+}
 
-//   describe("constructor", () => {
-//     it("should initialize with valid config", () => {
-//       expect(client).toBeInstanceOf(OIDCClient);
-//     });
+const FAKE_JWT = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEyMyJ9.signature";
+const OPAQUE_TOKEN = "opaque-access-token-no-dots";
 
-//     it("should throw TRPCError if config is incomplete", () => {
-//       expect(() => new OIDCClient({ ...config, issuerURL: "" })).toThrowError(
-//         new TRPCError({
-//           code: "INTERNAL_SERVER_ERROR",
-//           message: "Server could not initialize OIDC client.",
-//         })
-//       );
-//     });
-//   });
+function mockResponse(body: unknown, ok = true, status = 200) {
+  return { ok, status, text: () => Promise.resolve(typeof body === "string" ? body : JSON.stringify(body)) };
+}
 
-//   describe("discover", () => {
-//     it("should call discovery with correct parameters in production", async () => {
-//       const mockConfig = { issuer: "https://example.com" };
-//       vi.spyOn(openIdClient, "discovery").mockResolvedValue(
-//         mockConfig as unknown as Configuration
-//       );
+describe("OIDCClient", () => {
+  let client: OIDCClient;
 
-//       const result = await client.discover();
+  beforeEach(() => {
+    client = new OIDCClient(validConfig);
+    vi.clearAllMocks();
+  });
 
-//       expect(openIdClient.discovery).toHaveBeenCalledWith(
-//         new URL(config.issuerURL),
-//         config.clientID,
-//         config.clientSecret,
-//         undefined,
-//         {}
-//       );
-//       expect(result).toBe(mockConfig);
-//     });
+  describe("constructor", () => {
+    it("should initialize with valid config", () => {
+      expect(client).toBeInstanceOf(OIDCClient);
+    });
 
-//     it("should use allowInsecureRequests in development", async () => {
-//       vi.stubEnv("NODE_ENV", "development");
-//       const mockConfig = { issuer: "https://example.com" };
-//       vi.spyOn(openIdClient, "discovery").mockResolvedValue(
-//         mockConfig as unknown as Configuration
-//       );
+    it("should throw TRPCError if issuerURL is missing", () => {
+      expect(() => new OIDCClient({ ...validConfig, issuerURL: "" })).toThrow(TRPCError);
+    });
 
-//       await client.discover();
+    it("should throw TRPCError if clientID is missing", () => {
+      expect(() => new OIDCClient({ ...validConfig, clientID: "" })).toThrow(TRPCError);
+    });
 
-//       expect(openIdClient.discovery).toHaveBeenCalledWith(
-//         new URL(config.issuerURL),
-//         config.clientID,
-//         config.clientSecret,
-//         undefined,
-//         { execute: [openIdClient.allowInsecureRequests] }
-//       );
-//       vi.unstubAllEnvs();
-//     });
+    it("should throw TRPCError if clientSecret is missing", () => {
+      expect(() => new OIDCClient({ ...validConfig, clientSecret: "" })).toThrow(TRPCError);
+    });
+  });
 
-//     it("should throw error on discovery failure", async () => {
-//       const error = new Error("Discovery failed");
-//       vi.spyOn(openIdClient, "discovery").mockRejectedValue(error);
+  describe("validateTokenAndGetUserInfo", () => {
+    it("should return verified claims when JWT has valid signature and sufficient claims", async () => {
+      const oidcConfig = createMockOIDCConfig();
+      mockJwtVerify.mockResolvedValue({ payload: mockUserInfo });
 
-//       await expect(client.discover()).rejects.toThrow(error);
-//     });
-//   });
+      const result = await client.validateTokenAndGetUserInfo(oidcConfig, FAKE_JWT);
 
-//   describe("generateAuthUrl", () => {
-//     it("should generate authorization URL with correct parameters", () => {
-//       const mockConfig = { issuer: "https://example.com" };
-//       const redirectURI = new URL("https://redirect.com");
-//       const state = "state123";
-//       const codeChallenge = "codeChallenge123";
-//       const mockAuthUrl = new URL("https://example.com/auth");
+      expect(mockJwtVerify).toHaveBeenCalledWith(FAKE_JWT, "mock-jwks-function", {
+        issuer: "https://idp.example.com",
+        audience: "my-client-id",
+        clockTolerance: 30,
+        algorithms: ["RS256", "RS384", "RS512", "ES256", "ES384", "ES512", "PS256", "PS384", "PS512"],
+      });
+      expect(result).toEqual(mockUserInfo);
+    });
 
-//       vi.spyOn(openIdClient, "buildAuthorizationUrl").mockReturnValue(
-//         mockAuthUrl
-//       );
+    it("should fall back to userinfo when JWT is valid but claims are insufficient", async () => {
+      const oidcConfig = createMockOIDCConfig();
+      mockJwtVerify.mockResolvedValue({ payload: { sub: "user-123" } });
+      mockFetchProtectedResource.mockResolvedValue(mockResponse(mockUserInfo));
 
-//       const result = client.generateAuthUrl(
-//         redirectURI,
-//         mockConfig as unknown as openIdClient.Configuration,
-//         state,
-//         codeChallenge
-//       );
+      const result = await client.validateTokenAndGetUserInfo(oidcConfig, FAKE_JWT);
 
-//       expect(openIdClient.buildAuthorizationUrl).toHaveBeenCalledWith(
-//         mockConfig,
-//         {
-//           scope: config.scope,
-//           state,
-//           code_challenge: codeChallenge,
-//           code_challenge_method: config.codeChallengeMethod,
-//           redirect_uri: redirectURI.href,
-//         }
-//       );
-//       expect(result).toBe(mockAuthUrl);
-//     });
-//   });
+      expect(mockJwtVerify).toHaveBeenCalled();
+      expect(mockFetchProtectedResource).toHaveBeenCalled();
+      expect(result).toEqual(mockUserInfo);
+    });
 
-//   describe("exchangeCodeForTokens", () => {
-//     it("should exchange code for tokens successfully", async () => {
-//       const mockConfig = { issuer: "https://example.com" };
-//       const url = new URL("https://example.com/callback?code=abc");
-//       const codeVerifier = "verifier123";
-//       const expectedState = "state123";
-//       const mockTokens = {
-//         id_token: "id-token",
-//         access_token: "access-token",
-//         refresh_token: "refresh-token",
-//       };
+    it("should hard-reject forged JWT (invalid signature) without falling back to userinfo", async () => {
+      const oidcConfig = createMockOIDCConfig();
+      mockJwtVerify.mockRejectedValue(new joseErrors.JWSSignatureVerificationFailed());
 
-//       vi.spyOn(openIdClient, "authorizationCodeGrant").mockResolvedValue(
-//         mockTokens as unknown as TokenEndpointResponse &
-//           TokenEndpointResponseHelpers
-//       );
+      await expect(client.validateTokenAndGetUserInfo(oidcConfig, FAKE_JWT)).rejects.toMatchObject({
+        code: "UNAUTHORIZED",
+        message: expect.stringContaining("JWT verification failed"),
+      });
+      expect(mockJwtVerify).toHaveBeenCalled();
+      expect(mockFetchProtectedResource).not.toHaveBeenCalled();
+    });
 
-//       const result = await client.exchangeCodeForTokens(
-//         mockConfig as unknown as openIdClient.Configuration,
-//         url,
-//         codeVerifier,
-//         expectedState
-//       );
+    it("should hard-reject expired JWT without falling back to userinfo", async () => {
+      const oidcConfig = createMockOIDCConfig();
+      mockJwtVerify.mockRejectedValue(new joseErrors.JWTExpired("token expired", { exp: 0 }, "exp"));
 
-//       expect(openIdClient.authorizationCodeGrant).toHaveBeenCalledWith(
-//         mockConfig,
-//         url,
-//         {
-//           pkceCodeVerifier: codeVerifier,
-//           expectedState,
-//         }
-//       );
-//       expect(result).toBe(mockTokens);
-//     });
+      await expect(client.validateTokenAndGetUserInfo(oidcConfig, FAKE_JWT)).rejects.toMatchObject({
+        code: "UNAUTHORIZED",
+        message: expect.stringContaining("JWT verification failed"),
+      });
+      expect(mockJwtVerify).toHaveBeenCalled();
+      expect(mockFetchProtectedResource).not.toHaveBeenCalled();
+    });
 
-//     it("should throw error on token exchange failure", async () => {
-//       const mockConfig = { issuer: "https://example.com" };
-//       const error = new Error("Token exchange failed");
-//       vi.spyOn(openIdClient, "authorizationCodeGrant").mockRejectedValue(error);
+    it("should use userinfo for opaque (non-JWT) tokens", async () => {
+      const oidcConfig = createMockOIDCConfig();
+      mockFetchProtectedResource.mockResolvedValue(mockResponse(mockUserInfo));
 
-//       await expect(
-//         client.exchangeCodeForTokens(
-//           mockConfig as unknown as openIdClient.Configuration,
-//           new URL("https://example.com/callback"),
-//           "verifier",
-//           "state"
-//         )
-//       ).rejects.toThrow(error);
-//     });
-//   });
+      const result = await client.validateTokenAndGetUserInfo(oidcConfig, OPAQUE_TOKEN);
 
-//   describe("normalizeTokenResponse", () => {
-//     it("should normalize token response correctly", () => {
-//       const mockTokens = {
-//         id_token: "id-token",
-//         access_token: "access-token",
-//         refresh_token: "refresh-token",
-//       };
-//       vi.mocked(getTokenExpirationTime)
-//         .mockReturnValueOnce(1234567890)
-//         .mockReturnValueOnce(1234567891);
+      expect(mockJwtVerify).not.toHaveBeenCalled();
+      expect(mockFetchProtectedResource).toHaveBeenCalled();
+      expect(result).toEqual(mockUserInfo);
+    });
 
-//       const result = client.normalizeTokenResponse(
-//         mockTokens as unknown as openIdClient.TokenEndpointResponse &
-//           openIdClient.TokenEndpointResponseHelpers
-//       );
+    it("should use userinfo when metadata has no jwks_uri", async () => {
+      const oidcConfig = createMockOIDCConfig({ jwks_uri: undefined });
+      mockFetchProtectedResource.mockResolvedValue(mockResponse(mockUserInfo));
 
-//       expect(result).toEqual({
-//         idToken: "id-token",
-//         idTokenExpiresAt: 1234567890,
-//         accessToken: "access-token",
-//         accessTokenExpiresAt: 1234567891,
-//         refreshToken: "refresh-token",
-//       });
-//       expect(getTokenExpirationTime).toHaveBeenCalledWith("id-token");
-//       expect(getTokenExpirationTime).toHaveBeenCalledWith("access-token");
-//     });
-//   });
+      const result = await client.validateTokenAndGetUserInfo(oidcConfig, FAKE_JWT);
 
-//   describe("getNewTokens", () => {
-//     it("should refresh tokens successfully", async () => {
-//       const mockConfig = { issuer: "https://example.com" };
-//       const refreshToken = "refresh-token";
-//       const mockTokens = {
-//         id_token: "new-id-token",
-//         access_token: "new-access-token",
-//         refresh_token: "new-refresh-token",
-//       };
-//       vi.spyOn(openIdClient, "refreshTokenGrant").mockResolvedValue(
-//         mockTokens as unknown as openIdClient.TokenEndpointResponse &
-//           openIdClient.TokenEndpointResponseHelpers
-//       );
-//       vi.mocked(getTokenExpirationTime).mockReturnValue(1234567890);
+      expect(mockJwtVerify).not.toHaveBeenCalled();
+      expect(mockFetchProtectedResource).toHaveBeenCalled();
+      expect(result).toEqual(mockUserInfo);
+    });
 
-//       const result = await client.getNewTokens(
-//         mockConfig as unknown as openIdClient.Configuration,
-//         refreshToken
-//       );
+    it("should fall back to userinfo when JWT has wrong audience", async () => {
+      const oidcConfig = createMockOIDCConfig();
+      mockJwtVerify.mockRejectedValue(
+        new joseErrors.JWTClaimValidationFailed('"aud" claim mismatch', {}, "aud", "check_failed")
+      );
+      mockFetchProtectedResource.mockResolvedValue(mockResponse(mockUserInfo));
 
-//       expect(openIdClient.refreshTokenGrant).toHaveBeenCalledWith(
-//         mockConfig,
-//         refreshToken
-//       );
-//       expect(result).toEqual({
-//         idToken: "new-id-token",
-//         idTokenExpiresAt: 1234567890,
-//         accessToken: "new-access-token",
-//         accessTokenExpiresAt: 1234567890,
-//         refreshToken: "new-refresh-token",
-//       });
-//     });
+      const result = await client.validateTokenAndGetUserInfo(oidcConfig, FAKE_JWT);
 
-//     it("should throw TRPCError on refresh failure", async () => {
-//       const mockConfig = { issuer: "https://example.com" };
-//       vi.spyOn(openIdClient, "refreshTokenGrant").mockRejectedValue(
-//         new Error("Refresh failed")
-//       );
+      expect(mockJwtVerify).toHaveBeenCalled();
+      expect(mockFetchProtectedResource).toHaveBeenCalled();
+      expect(result).toEqual(mockUserInfo);
+    });
 
-//       await expect(
-//         client.getNewTokens(
-//           mockConfig as unknown as openIdClient.Configuration,
-//           "refresh-token"
-//         )
-//       ).rejects.toThrowError(
-//         new TRPCError({
-//           code: "UNAUTHORIZED",
-//           message: "Session expired. Please log in again.",
-//         })
-//       );
-//     });
-//   });
+    it("should hard-reject JWT with wrong issuer without falling back to userinfo", async () => {
+      const oidcConfig = createMockOIDCConfig();
+      mockJwtVerify.mockRejectedValue(
+        new joseErrors.JWTClaimValidationFailed('"iss" claim mismatch', {}, "iss", "check_failed")
+      );
 
-//   describe("fetchUserInfo", () => {
-//     it("should fetch user info successfully", async () => {
-//       const mockConfig = { issuer: "https://example.com" };
-//       const accessToken = "access-token";
-//       const mockUserInfo = { sub: "123", name: "Test User" };
-//       const mockResponse = { json: vi.fn().mockResolvedValue(mockUserInfo) };
+      await expect(client.validateTokenAndGetUserInfo(oidcConfig, FAKE_JWT)).rejects.toMatchObject({
+        code: "UNAUTHORIZED",
+        message: expect.stringContaining("JWT verification failed"),
+      });
+      expect(mockJwtVerify).toHaveBeenCalled();
+      expect(mockFetchProtectedResource).not.toHaveBeenCalled();
+    });
 
-//       vi.spyOn(openIdClient, "fetchProtectedResource").mockResolvedValue(
-//         mockResponse as unknown as Response
-//       );
+    it("should hard-reject when jwtVerify throws a non-JOSE error (e.g., network failure)", async () => {
+      const oidcConfig = createMockOIDCConfig();
+      mockJwtVerify.mockRejectedValue(new TypeError("fetch failed"));
 
-//       const result = await client.fetchUserInfo(
-//         mockConfig as unknown as openIdClient.Configuration,
-//         accessToken
-//       );
+      await expect(client.validateTokenAndGetUserInfo(oidcConfig, FAKE_JWT)).rejects.toMatchObject({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Unable to verify token signature. Please try again later.",
+      });
+      expect(mockJwtVerify).toHaveBeenCalled();
+      expect(mockFetchProtectedResource).not.toHaveBeenCalled();
+    });
 
-//       expect(openIdClient.fetchProtectedResource).toHaveBeenCalledWith(
-//         mockConfig,
-//         accessToken,
-//         new URL(`${config.issuerURL}/protocol/openid-connect/userinfo`),
-//         "GET"
-//       );
-//       expect(result).toBe(mockUserInfo);
-//     });
-//   });
+    it("should hard-reject JWT with alg:none (algorithm not allowed)", async () => {
+      const oidcConfig = createMockOIDCConfig();
+      mockJwtVerify.mockRejectedValue(
+        new joseErrors.JOSEAlgNotAllowed('"alg" (Algorithm) Header Parameter value not allowed')
+      );
 
-//   describe("generateState", () => {
-//     it("should generate random state", () => {
-//       const mockState = "random-state";
-//       vi.spyOn(openIdClient, "randomState").mockReturnValue(mockState);
+      await expect(client.validateTokenAndGetUserInfo(oidcConfig, FAKE_JWT)).rejects.toMatchObject({
+        code: "UNAUTHORIZED",
+        message: expect.stringContaining("JWT verification failed"),
+      });
+      expect(mockFetchProtectedResource).not.toHaveBeenCalled();
+    });
 
-//       const result = client.generateState();
+    it("should normalize groups from verified JWT claims", async () => {
+      const oidcConfig = createMockOIDCConfig();
+      const userWithGroups = {
+        ...mockUserInfo,
+        groups: ['["admin","users"]'],
+      };
+      mockJwtVerify.mockResolvedValue({ payload: userWithGroups });
 
-//       expect(openIdClient.randomState).toHaveBeenCalled();
-//       expect(result).toBe(mockState);
-//     });
-//   });
+      const result = await client.validateTokenAndGetUserInfo(oidcConfig, FAKE_JWT);
 
-//   describe("generateCodeChallenge", () => {
-//     it("should generate code challenge", async () => {
-//       const codeVerifier = "verifier123";
-//       const mockChallenge = "challenge123";
-//       vi.spyOn(openIdClient, "calculatePKCECodeChallenge").mockResolvedValue(
-//         mockChallenge
-//       );
+      expect(result.groups).toEqual(["admin", "users"]);
+    });
 
-//       const result = await client.generateCodeChallenge(codeVerifier);
+    it("should cache JWKS per issuer", async () => {
+      const oidcConfig = createMockOIDCConfig();
+      mockJwtVerify.mockResolvedValue({ payload: mockUserInfo });
 
-//       expect(openIdClient.calculatePKCECodeChallenge).toHaveBeenCalledWith(
-//         codeVerifier
-//       );
-//       expect(result).toBe(mockChallenge);
-//     });
-//   });
+      await client.validateTokenAndGetUserInfo(oidcConfig, FAKE_JWT);
+      await client.validateTokenAndGetUserInfo(oidcConfig, FAKE_JWT);
 
-//   describe("generateCodeVerifier", () => {
-//     it("should generate random code verifier", () => {
-//       const mockVerifier = "verifier123";
-//       vi.spyOn(openIdClient, "randomPKCECodeVerifier").mockReturnValue(
-//         mockVerifier
-//       );
+      // createRemoteJWKSet should only be called once (cached)
+      expect(mockCreateRemoteJWKSet).toHaveBeenCalledTimes(1);
+    });
+  });
 
-//       const result = client.generateCodeVerifier();
+  describe("validateTokenAndGetTokenInfo", () => {
+    it("should extract exp from JWT", () => {
+      const payload = { exp: 1700000000 };
+      const encodedPayload = Buffer.from(JSON.stringify(payload)).toString("base64url");
+      const token = `eyJhbGciOiJSUzI1NiJ9.${encodedPayload}.signature`;
 
-//       expect(openIdClient.randomPKCECodeVerifier).toHaveBeenCalled();
-//       expect(result).toBe(mockVerifier);
-//     });
-//   });
-// });
+      const result = client.validateTokenAndGetTokenInfo(token);
+
+      expect(result.idToken).toBe(token);
+      expect(result.accessToken).toBe(token);
+      expect(result.idTokenExpiresAt).toBe(1700000000000);
+      expect(result.accessTokenExpiresAt).toBe(1700000000000);
+      expect(result.refreshToken).toBe("");
+    });
+
+    it("should use 5-minute default for opaque tokens", () => {
+      const now = Date.now();
+      const result = client.validateTokenAndGetTokenInfo(OPAQUE_TOKEN);
+
+      const fiveMinutes = 5 * 60 * 1000;
+      expect(result.idTokenExpiresAt).toBeGreaterThanOrEqual(now + fiveMinutes - 1000);
+      expect(result.idTokenExpiresAt).toBeLessThanOrEqual(now + fiveMinutes + 1000);
+    });
+  });
+});

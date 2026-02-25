@@ -12,9 +12,10 @@ import {
   refreshTokenGrant,
 } from "openid-client";
 import { TRPCError } from "@trpc/server";
-import { getTokenExpirationTime } from "../../utils/getTokenExpirationTime/index.js";
 import { type OIDCUser, OIDCUserSchema, tryParseJsonArray } from "@my-project/shared";
-import { jwtDecode } from "jwt-decode";
+import { createRemoteJWKSet, errors as joseErrors, jwtVerify } from "jose";
+
+import { getTokenExpirationTime } from "../../utils/getTokenExpirationTime/index.js";
 
 /**
  * Normalize the groups claim from OIDC providers.
@@ -49,6 +50,10 @@ function normalizeUserGroups(user: OIDCUser): OIDCUser {
   };
 }
 
+function looksLikeJWT(token: string): boolean {
+  return token.split(".").length === 3;
+}
+
 export interface OIDCConfig {
   issuerURL: string;
   clientID: string;
@@ -58,6 +63,8 @@ export interface OIDCConfig {
 }
 export class OIDCClient {
   private config: OIDCConfig;
+  private jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
+  private jwksCacheKey: string | null = null;
 
   constructor(config: OIDCConfig) {
     if (!config.issuerURL || !config.clientID || !config.clientSecret || !config.scope || !config.codeChallengeMethod) {
@@ -70,20 +77,37 @@ export class OIDCClient {
     this.config = config;
   }
 
+  private getJWKS(jwksUri: string, issuer: string): ReturnType<typeof createRemoteJWKSet> {
+    const cacheKey = `${issuer}::${jwksUri}`;
+    if (!this.jwks || this.jwksCacheKey !== cacheKey) {
+      this.jwks = createRemoteJWKSet(new URL(jwksUri));
+      this.jwksCacheKey = cacheKey;
+    }
+    return this.jwks;
+  }
+
   async discover(): Promise<Configuration> {
     const options = process.env.NODE_ENV === "development" ? { execute: [allowInsecureRequests] } : {};
 
+    return discovery(
+      new URL(this.config.issuerURL),
+      this.config.clientID,
+      this.config.clientSecret,
+      undefined,
+      options
+    );
+  }
+
+  async discoverOrThrow(): Promise<Configuration> {
     try {
-      return await discovery(
-        new URL(this.config.issuerURL),
-        this.config.clientID,
-        this.config.clientSecret,
-        undefined,
-        options
-      );
+      return await this.discover();
     } catch (err) {
-      console.error(err);
-      throw err;
+      if (err instanceof TRPCError) throw err;
+      console.error("[OIDC] Discovery failed", err);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to connect to the identity provider.",
+      });
     }
   }
 
@@ -103,15 +127,10 @@ export class OIDCClient {
     codeVerifier: string,
     expectedState: string
   ): Promise<TokenEndpointResponse> {
-    try {
-      return await authorizationCodeGrant(oidcConfig, url, {
-        pkceCodeVerifier: codeVerifier,
-        expectedState: expectedState,
-      });
-    } catch (err) {
-      console.error(err);
-      throw err;
-    }
+    return authorizationCodeGrant(oidcConfig, url, {
+      pkceCodeVerifier: codeVerifier,
+      expectedState,
+    });
   }
 
   normalizeTokenResponse(tokenResponse: TokenEndpointResponse): {
@@ -139,7 +158,7 @@ export class OIDCClient {
 
     return {
       idToken,
-      idTokenExpiresAt: getTokenExpirationTime(idToken),
+      idTokenExpiresAt: this.getTokenExpiresAt(idToken, tokenResponse.expires_in),
       accessToken,
       accessTokenExpiresAt,
       refreshToken,
@@ -147,7 +166,7 @@ export class OIDCClient {
   }
 
   private getTokenExpiresAt(token: string, expiresIn?: number): number {
-    if (token.split(".").length === 3) {
+    if (looksLikeJWT(token)) {
       try {
         return getTokenExpirationTime(token);
       } catch {
@@ -171,7 +190,7 @@ export class OIDCClient {
 
       return this.normalizeTokenResponse(newTokens);
     } catch (err) {
-      console.error("Failed to refresh token", err);
+      console.error("[OIDC] Failed to refresh token", err);
       throw new TRPCError({
         code: "UNAUTHORIZED",
         message: "Session expired. Please log in again.",
@@ -188,8 +207,6 @@ export class OIDCClient {
 
     const response = await fetchProtectedResource(oidcConfig, accessToken, new URL(userinfoEndpoint), "GET");
 
-    const responseText = await response.text();
-
     if (!response.ok) {
       const statusMessages: Record<number, string> = {
         401: "Token is invalid or expired",
@@ -201,20 +218,24 @@ export class OIDCClient {
       throw new Error(statusMessage);
     }
 
+    const responseText = await response.text();
+
     if (!responseText) {
       throw new Error("Empty response from userinfo endpoint");
     }
 
+    let raw: unknown;
     try {
-      const user = JSON.parse(responseText) as OIDCUser;
-      return normalizeUserGroups(user);
+      raw = JSON.parse(responseText);
     } catch {
       throw new Error("Invalid response from userinfo endpoint");
     }
-  }
 
-  async getUserInfo(oidcConfig: Configuration, accessToken: string): Promise<OIDCUser> {
-    return this.fetchUserInfo(oidcConfig, accessToken);
+    const parsed = OIDCUserSchema.safeParse(raw);
+    if (!parsed.success) {
+      throw new Error("Invalid user info response from userinfo endpoint");
+    }
+    return normalizeUserGroups(parsed.data);
   }
 
   buildEndSessionUrl(
@@ -256,50 +277,59 @@ export class OIDCClient {
    * Validates the token and retrieves user information.
    *
    * Strategy:
-   * 1. If the token is a JWT, decode it and check expiration.
-   * 2. Try to extract user claims directly from the JWT payload
-   *    (works for ID tokens, which contain user claims inline).
-   * 3. If JWT claims are insufficient, fall back to the userinfo
-   *    endpoint (works for access tokens).
+   * 1. If the token is a JWT and the provider exposes a JWKS endpoint,
+   *    verify the signature cryptographically using jose (per OIDC Core §3.1.3.7).
+   * 2. If the verified payload satisfies OIDCUserSchema, return claims directly.
+   * 3. Otherwise fall back to the userinfo endpoint (works for access tokens,
+   *    opaque tokens, or JWTs whose audience doesn't match this client).
    */
   async validateTokenAndGetUserInfo(oidcConfig: Configuration, token: string): Promise<OIDCUser> {
-    const isJWT = token.split(".").length === 3;
+    const isJWT = looksLikeJWT(token);
 
     if (isJWT) {
-      let decoded: Record<string, unknown>;
+      const metadata = oidcConfig.serverMetadata();
+      const jwksUri = metadata.jwks_uri;
 
-      try {
-        decoded = jwtDecode<Record<string, unknown>>(token);
-      } catch {
-        // Not a valid JWT — skip to userinfo endpoint
-        return this.fetchUserInfoOrThrow(oidcConfig, token);
-      }
-
-      // Check expiration
-      if (typeof decoded.exp === "number") {
-        const expiresAt = decoded.exp * 1000;
-
-        if (Date.now() >= expiresAt) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: `Token expired at ${new Date(expiresAt).toISOString()}. Current time: ${new Date(Date.now()).toISOString()}`,
+      if (jwksUri) {
+        try {
+          const jwks = this.getJWKS(jwksUri, metadata.issuer);
+          const { payload } = await jwtVerify(token, jwks, {
+            issuer: metadata.issuer,
+            audience: this.config.clientID,
+            clockTolerance: 30,
+            algorithms: ["RS256", "RS384", "RS512", "ES256", "ES384", "ES512", "PS256", "PS384", "PS512"],
           });
+
+          const parsed = OIDCUserSchema.safeParse(payload);
+          if (parsed.success) {
+            return normalizeUserGroups(parsed.data);
+          }
+        } catch (err) {
+          // Audience mismatch is expected for access tokens — fall back to userinfo
+          const isAudienceMismatch = err instanceof joseErrors.JWTClaimValidationFailed && err.claim === "aud";
+
+          if (isAudienceMismatch) {
+            console.warn("[OIDC] JWT audience mismatch, falling back to userinfo endpoint");
+          } else if (err instanceof joseErrors.JOSEError) {
+            throw new TRPCError({
+              code: "UNAUTHORIZED",
+              message: `JWT verification failed: ${err.message}`,
+            });
+          } else {
+            console.error("[OIDC] Unexpected error during JWT verification", err);
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Unable to verify token signature. Please try again later.",
+            });
+          }
         }
-      }
-
-      // Try to extract user claims directly from the JWT payload (ID tokens)
-      const parsed = OIDCUserSchema.safeParse(decoded);
-
-      if (parsed.success) {
-        return normalizeUserGroups(parsed.data);
       }
     }
 
-    // Fall back to userinfo endpoint (access tokens)
     return this.fetchUserInfoOrThrow(oidcConfig, token);
   }
 
-  private async fetchUserInfoOrThrow(oidcConfig: Configuration, token: string): Promise<OIDCUser> {
+  async fetchUserInfoOrThrow(oidcConfig: Configuration, token: string): Promise<OIDCUser> {
     try {
       return await this.fetchUserInfo(oidcConfig, token);
     } catch (error) {
@@ -324,26 +354,29 @@ export class OIDCClient {
     idTokenExpiresAt: number;
     accessToken: string;
     accessTokenExpiresAt: number;
-    refreshToken?: string;
+    refreshToken: string;
   } {
     const DEFAULT_EXPIRATION_MS = 5 * 60 * 1000; // 5 minutes
+    const MAX_SESSION_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
     let expiresAt: number;
 
     try {
-      const decoded = jwtDecode<{ exp?: number }>(token);
-      expiresAt = decoded.exp ? decoded.exp * 1000 : Date.now() + DEFAULT_EXPIRATION_MS;
+      expiresAt = getTokenExpirationTime(token);
     } catch {
-      // Opaque token — cannot determine expiration, use default
+      // Opaque token or missing exp — cannot determine expiration, use default
       expiresAt = Date.now() + DEFAULT_EXPIRATION_MS;
     }
+
+    // Cap expiration to prevent attacker-controlled far-future exp claims
+    expiresAt = Math.min(expiresAt, Date.now() + MAX_SESSION_DURATION_MS);
 
     return {
       idToken: token,
       idTokenExpiresAt: expiresAt,
       accessToken: token,
       accessTokenExpiresAt: expiresAt,
-      refreshToken: undefined,
+      refreshToken: "",
     };
   }
 }

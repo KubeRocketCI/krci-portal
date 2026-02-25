@@ -9,7 +9,7 @@ export const authLoginProcedure = publicProcedure
     const redirectURI = new URL(input, ctx.portalUrl);
     const oidcClient = new OIDCClient(ctx.oidcConfig);
 
-    const config = await oidcClient.discover();
+    const config = await oidcClient.discoverOrThrow();
     const state = oidcClient.generateState();
     const codeVerifier = oidcClient.generateCodeVerifier();
     const codeChallenge = await oidcClient.generateCodeChallenge(codeVerifier);

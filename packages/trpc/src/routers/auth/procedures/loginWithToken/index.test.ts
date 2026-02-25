@@ -1,5 +1,6 @@
 import { createMockedContext } from "../../../../__mocks__/context.js";
 import { createCaller } from "../../../../routers/index.js";
+import { TRPCError } from "@trpc/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockDiscover = vi.fn();
@@ -8,7 +9,7 @@ const mockValidateTokenAndGetTokenInfo = vi.fn();
 
 vi.mock("../../../../clients/oidc/index.js", () => ({
   OIDCClient: vi.fn().mockImplementation(() => ({
-    discover: mockDiscover,
+    discoverOrThrow: mockDiscover,
     validateTokenAndGetUserInfo: mockValidateTokenAndGetUserInfo,
     validateTokenAndGetTokenInfo: mockValidateTokenAndGetTokenInfo,
   })),
@@ -78,12 +79,39 @@ describe("authLoginWithTokenProcedure", () => {
   });
 
   it("should throw UNAUTHORIZED when token validation fails", async () => {
-    mockValidateTokenAndGetUserInfo.mockRejectedValueOnce(new Error("Invalid token"));
+    mockValidateTokenAndGetUserInfo.mockRejectedValueOnce(
+      new TRPCError({ code: "UNAUTHORIZED", message: "Token validation failed: Invalid token" })
+    );
     const caller = createCaller(mockContext);
 
     await expect(caller.auth.loginWithToken({ token: "invalid-token" })).rejects.toMatchObject({
       code: "UNAUTHORIZED",
       message: expect.stringContaining("Token validation failed"),
     });
+  });
+
+  it("should propagate discoverOrThrow() errors", async () => {
+    mockDiscover.mockRejectedValueOnce(
+      new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to connect to the identity provider." })
+    );
+    const caller = createCaller(mockContext);
+
+    await expect(caller.auth.loginWithToken({ token: "valid-jwt-token" })).rejects.toMatchObject({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to connect to the identity provider.",
+    });
+  });
+
+  it("should not set session.user when token validation is rejected (security regression)", async () => {
+    // Start with no session user to verify it stays unset on failure
+    mockContext.session.user = undefined as unknown as typeof mockContext.session.user;
+    mockValidateTokenAndGetUserInfo.mockRejectedValueOnce(
+      new TRPCError({ code: "UNAUTHORIZED", message: "JWT verification failed: signature verification failed" })
+    );
+    const caller = createCaller(mockContext);
+
+    await expect(caller.auth.loginWithToken({ token: "forged-jwt-token" })).rejects.toThrow();
+
+    expect(mockContext.session.user).toBeUndefined();
   });
 });
