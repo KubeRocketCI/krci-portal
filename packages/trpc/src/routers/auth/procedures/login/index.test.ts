@@ -1,7 +1,7 @@
 import { createMockedContext } from "../../../../__mocks__/context.js";
 import { createCaller } from "../../../../routers/index.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { buildAuthorizationUrl } from "openid-client";
+import { buildAuthorizationUrl, discovery } from "openid-client";
 
 describe("authLoginProcedure", () => {
   let mockContext: ReturnType<typeof createMockedContext>;
@@ -61,5 +61,14 @@ describe("authLoginProcedure", () => {
 
   it("should reject input without leading slash", async () => {
     await expect(caller.auth.login("auth/callback")).rejects.toThrow();
+  });
+
+  it("should wrap discover() errors with a safe message", async () => {
+    vi.mocked(discovery).mockRejectedValueOnce(new Error("getaddrinfo ENOTFOUND internal-idp.corp.local"));
+
+    await expect(caller.auth.login("/auth/callback")).rejects.toMatchObject({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to connect to the identity provider.",
+    });
   });
 });

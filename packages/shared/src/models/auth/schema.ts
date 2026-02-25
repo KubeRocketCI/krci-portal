@@ -31,7 +31,7 @@ export const meOutputSchema = OIDCUserSchema.optional();
 export const loginWithTokenInputSchema = z
   .object({
     token: z.string().min(1, "Token is required"),
-    redirectSearchParam: z.string().optional(),
+    redirectSearchParam: z.string().startsWith("/").optional(),
   })
   .strict();
 

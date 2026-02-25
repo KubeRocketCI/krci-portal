@@ -1,5 +1,6 @@
 import { createMockedContext } from "../../../../__mocks__/context.js";
 import { createCaller } from "../../../../routers/index.js";
+import { TRPCError } from "@trpc/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockDiscover = vi.fn();
@@ -9,10 +10,10 @@ const mockFetchUserInfo = vi.fn();
 
 vi.mock("../../../../clients/oidc/index.js", () => ({
   OIDCClient: vi.fn().mockImplementation(() => ({
-    discover: mockDiscover,
+    discoverOrThrow: mockDiscover,
     exchangeCodeForTokens: mockExchangeCodeForTokens,
     normalizeTokenResponse: mockNormalizeTokenResponse,
-    fetchUserInfo: mockFetchUserInfo,
+    fetchUserInfoOrThrow: mockFetchUserInfo,
   })),
 }));
 
@@ -38,6 +39,9 @@ describe("authLoginCallbackProcedure", () => {
     refreshToken: "refresh-token",
   };
 
+  // portalUrl in mock context is "http://localhost:8000"
+  const VALID_CALLBACK_URL = "http://localhost:8000/auth/callback?code=abc123&state=random-state";
+
   beforeEach(() => {
     mockContext = createMockedContext();
     mockContext.session.login = {
@@ -59,9 +63,8 @@ describe("authLoginCallbackProcedure", () => {
 
   it("should process callback and return user info", async () => {
     const caller = createCaller(mockContext);
-    const input = "https://redirect.com/auth/callback?code=abc123&state=random-state";
 
-    const result = await caller.auth.loginCallback(input);
+    const result = await caller.auth.loginCallback(VALID_CALLBACK_URL);
 
     expect(result.success).toBe(true);
     expect(result.userInfo).toEqual(
@@ -80,20 +83,36 @@ describe("authLoginCallbackProcedure", () => {
     expect(mockFetchUserInfo).toHaveBeenCalled();
   });
 
+  it("should reject callback URL with wrong origin", async () => {
+    const caller = createCaller(mockContext);
+    const input = "https://evil.com/auth/callback?code=abc123&state=random-state";
+
+    await expect(caller.auth.loginCallback(input)).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: "Invalid callback URL origin",
+    });
+    expect(mockExchangeCodeForTokens).not.toHaveBeenCalled();
+  });
+
   it("should throw when session.login is undefined", async () => {
     mockContext.session.login = undefined;
     const caller = createCaller(mockContext);
-    const input = "https://redirect.com?code=abc123&state=random-state";
 
-    await expect(caller.auth.loginCallback(input)).rejects.toThrow("Session Auth is undefined");
+    await expect(caller.auth.loginCallback(VALID_CALLBACK_URL)).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: "No pending login session",
+    });
     expect(mockExchangeCodeForTokens).not.toHaveBeenCalled();
   });
 
   it("should throw when state is invalid", async () => {
     const caller = createCaller(mockContext);
-    const input = "https://redirect.com?code=abc123&state=wrong-state";
+    const input = "http://localhost:8000/auth/callback?code=abc123&state=wrong-state";
 
-    await expect(caller.auth.loginCallback(input)).rejects.toThrow("Invalid state");
+    await expect(caller.auth.loginCallback(input)).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: "Invalid or mismatched state parameter",
+    });
     expect(mockExchangeCodeForTokens).not.toHaveBeenCalled();
   });
 
@@ -103,8 +122,33 @@ describe("authLoginCallbackProcedure", () => {
       clientSearch: "",
     };
     const caller = createCaller(mockContext);
-    const input = "https://redirect.com?code=abc123&state=random-state";
+    const input = "http://localhost:8000/auth/callback?code=abc123&state=random-state";
 
-    await expect(caller.auth.loginCallback(input)).rejects.toThrow("Invalid state");
+    await expect(caller.auth.loginCallback(input)).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: "Invalid or mismatched state parameter",
+    });
+  });
+
+  it("should clear session login state even when token exchange fails", async () => {
+    mockExchangeCodeForTokens.mockRejectedValueOnce(new Error("token exchange failed"));
+    const caller = createCaller(mockContext);
+
+    await expect(caller.auth.loginCallback(VALID_CALLBACK_URL)).rejects.toThrow();
+
+    // Login state should be cleared (single-use) even on failure
+    expect(mockContext.session.login).toBeUndefined();
+  });
+
+  it("should propagate discoverOrThrow() errors", async () => {
+    mockDiscover.mockRejectedValueOnce(
+      new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to connect to the identity provider." })
+    );
+    const caller = createCaller(mockContext);
+
+    await expect(caller.auth.loginCallback(VALID_CALLBACK_URL)).rejects.toMatchObject({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to connect to the identity provider.",
+    });
   });
 });
