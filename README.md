@@ -1,11 +1,11 @@
-# KRCI Portal
+# KubeRocketCI Portal
 
-[![Version](https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square)](https://github.com/KubeRocketCI/krci-portal)
+[![Version](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square)](https://github.com/KubeRocketCI/krci-portal)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.txt)
 
 > **KRCI Portal** is a modern web-based user interface for [KubeRocketCI](https://docs.kuberocketci.io/), providing a comprehensive platform for managing CI/CD pipelines, codebases, and deployment flows in Kubernetes environments.
 
-## 🚀 Overview
+## Overview
 
 KRCI Portal serves as the central management hub for the KubeRocketCI ecosystem, enabling developers and DevOps teams to:
 
@@ -14,38 +14,41 @@ KRCI Portal serves as the central management hub for the KubeRocketCI ecosystem,
 - **Deployment Flows**: Orchestrate application deployments across multiple environments
 - **GitOps Integration**: Seamless integration with Git servers and Argo CD for GitOps workflows
 - **Real-time Monitoring**: Track pipeline executions, deployment statuses, and resource health
+- **Third-party Integrations**: Integrate remote clusters, security scanners, artifact registries, etc.
 
-## ✨ Key Features
+## Core Features
 
-### 🏗️ Codebase Management
+The KRCI portal offers many features designed to streamline the process of building a robust CI/CD flow:
+
+### Codebase Management
 
 - **Multi-type Support**: Applications, Libraries, Autotests, Infrastructure, and System components
 - **Git Integration**: Support for GitHub, GitLab, Gerrit, and Bitbucket
 - **Branch Management**: Create and manage feature branches with automated pipelines
 - **Quality Gates**: Integrated SonarQube analysis and security scanning
 
-### 🔄 CI/CD Pipelines
+### CI/CD Pipelines
 
 - **Tekton Integration**: Native support for Tekton pipelines and tasks
 - **Build Automation**: Automated builds with multiple build tools (Maven, Gradle, npm, etc.)
 - **Testing**: Automated testing with quality gates and coverage reports
 - **Security Scanning**: SAST/SCA analysis with vulnerability reporting
 
-### 🚢 Deployment Management
+### Deployment Management
 
 - **Environment Management**: Create and manage deployment environments
 - **GitOps Workflows**: Argo CD integration for declarative deployments
 - **Progressive Delivery**: Support for blue-green and canary deployments
 - **Rollback Capabilities**: Easy rollback to previous versions
 
-### 🔧 Platform Features
+### Platform Features
 
 - **Multi-cluster Support**: Manage multiple Kubernetes clusters
 - **RBAC Integration**: Role-based access control with Keycloak/OIDC
 - **Real-time Updates**: WebSocket-based real-time status updates
 - **Extensible Architecture**: Plugin-based architecture for custom integrations
 
-## 🏛️ Architecture
+## Architecture
 
 KRCI Portal follows a modern monorepo architecture with clear separation of concerns:
 
@@ -84,79 +87,136 @@ krci-portal/
 - **Type Safety**: Full TypeScript coverage
 - **Monorepo**: pnpm workspaces
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
+Before installing KRCI Portal, ensure you have:
+
 - Node.js 18+ and pnpm 10+
-- Kubernetes cluster with KubeRocketCI installed
+- Kubernetes cluster
 - Access to the cluster with appropriate RBAC permissions
+- (Optional) KubeRocketCI and [operators](https://operatorhub.io/?keyword=edp) installed
 
 ### Development Setup
 
+To run the KubeRocketCI Portal, follow the steps below:
+
 1. **Clone the repository**
 
-   ```bash
-   git clone https://github.com/KubeRocketCI/krci-portal.git
-   cd krci-portal
-   ```
+  ```bash
+  git clone https://github.com/KubeRocketCI/krci-portal.git
+  cd krci-portal
+  ```
 
-2. **Install dependencies**
+2. **Configure environment**
 
-   ```bash
-   pnpm install
-   ```
+   For local development, copy `.env.example` to `.env` in the repository root and set at least the following:
 
-3. **Start development servers**
+   - **`PORTAL_URL`** — Public URL of the portal (e.g. `http://localhost:5173` for dev). Must match the OIDC redirect URI registered in your IdP.
+   - **`OIDC_ISSUER_URL`**, **`OIDC_CLIENT_ID`**, **`OIDC_CLIENT_SECRET`**, **`OIDC_SCOPE`** — OIDC provider settings (e.g. Keycloak); required for authentication.
+   - **`SERVER_SECRET`** — Session signing secret (minimum 32 characters).
+   - **`TEKTON_RESULTS_URL`** — Tekton Results API URL for pipeline run data.
+   - **`DEFAULT_CLUSTER_NAME`**, **`DEFAULT_CLUSTER_NAMESPACE`** — Target Kubernetes cluster and namespace when using cluster features.
 
-   ```bash
-   pnpm dev
-   ```
+   For production deployment, configure [deploy-templates/values.yaml](deploy-templates/values.yaml); see [deploy-templates/README.md](deploy-templates/README.md) for all options.
+
+3. **Install dependencies**
+
+  ```bash
+  pnpm install
+  ```
+
+4. **Start development servers**
+
+  ```bash
+  pnpm dev
+  ```
 
    This starts both the client (port 5173) and server (port 3000) in development mode.
 
-4. **Access the application**
+5. **Access the application**
    - Frontend: <http://localhost:5173>
    - Backend API: <http://localhost:3000>
 
 ### Production Deployment
 
-#### Using Helm (Recommended)
+KubeRocketCI Portal is a part of the edp-install chart. There are two options to install the chart:
 
-```bash
-helm repo add krci-portal https://kuberocketci.github.io/krci-portal
-helm install krci-portal krci-portal/krci-portal
-```
+Full install:
 
-#### Using Docker
+  ```bash
+  helm repo add krci-portal https://epam.github.io/edp-helm-charts/stable
+  helm install krci-portal krci-portal/edp-install
+  ```
 
-```bash
-docker build -t krci-portal .
-docker run -p 8080:8080 krci-portal
-```
+KRCI Portal standalone installation:
 
-## 📖 Documentation
+  ```bash
+  helm repo add krci-portal https://epam.github.io/edp-helm-charts/stable
+  helm install krci-portal krci-portal/krci-portal
+  ```
+
+## Documentation
+
+Please refer to the following materials to get more info about the KRCI portal usage and configuration:
 
 - **[User Guide](https://docs.kuberocketci.io/docs/user-guide)** - Complete user documentation
-- **[Development Guide](https://docs.kuberocketci.io/docs/developer-guide)** - Development setup and guidelines
+- **[Operator Guide](https://docs.kuberocketci.io/docs/operator-guide)** - Advanced configuration guidelines
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions from the community! Please read our [Contributing Guidelines](CONTRIBUTING.md) before submitting pull requests.
 
 ### Development Workflow
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes and add tests
-4. Run the test suite: `pnpm test:coverage`
-5. Run linting: `pnpm lint`
-6. Format code: `pnpm format:check`
-7. Commit your changes: `git commit -m 'Add amazing feature'`
-8. Push to the branch: `git push origin feature/amazing-feature`
-9. Open a Pull Request
+To start the development process, follow the steps below:
+
+1. Fork the repository.
+
+2. Create a feature branch:
+
+  ```bash
+  git checkout -b feature/amazing-feature
+  ```
+
+3. Make your changes and add tests.
+
+4. Run the test suite:
+
+  ```bash
+  pnpm test:coverage
+  ```
+
+5. Run linting:
+
+  ```bash
+  pnpm lint
+  ```
+
+6. Format code:
+
+  ```bash
+  pnpm format:check
+  ```
+
+7. Commit your changes:
+
+  ```bash
+  git commit -m 'Add amazing feature'
+  ```
+
+8. Push to the branch:
+
+  ```bash
+  git push origin feature/amazing-feature
+  ```
+
+9. Open a Pull Request.
 
 ### Code Quality
+
+Make sure your changes pass the review pipeline in the Pull Request. Additionally, take care of:
 
 - **Testing**: Vitest for unit and integration tests
 - **Linting**: ESLint with TypeScript support
@@ -164,7 +224,7 @@ We welcome contributions from the community! Please read our [Contributing Guide
 - **Type Checking**: Full TypeScript coverage
 - **Quality Gates**: SonarQube analysis on all PRs
 
-## 🔒 Security
+## Security
 
 Security is a top priority for KRCI Portal. Please review our [Security Policy](SECURITY.md) for:
 
@@ -172,25 +232,25 @@ Security is a top priority for KRCI Portal. Please review our [Security Policy](
 - Security best practices
 - Supported versions
 
-## 📄 License
+## License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE.txt) file for details.
 
-## 🌟 Community & Support
+## Community & Support
 
 - **Documentation**: [docs.kuberocketci.io](https://docs.kuberocketci.io/)
 - **GitHub Issues**: [Report bugs and request features](https://github.com/KubeRocketCI/krci-portal/issues)
 - **GitHub Discussions**: [Community discussions](https://github.com/orgs/KubeRocketCI/discussions/)
 - **Code of Conduct**: [Community guidelines](CODE_OF_CONDUCT.md)
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [KubeRocketCI Team](https://github.com/KubeRocketCI) for the amazing platform
 - [Tekton](https://tekton.dev/) for the CI/CD pipeline engine
 - [Argo CD](https://argoproj.github.io/cd/) for GitOps capabilities
 - All our [contributors](https://github.com/KubeRocketCI/krci-portal/graphs/contributors)
 
-## 📊 Project Status
+## Project Status
 
 - **Current Version**: 0.1.0-SNAPSHOT
 - **Development Status**: Active
