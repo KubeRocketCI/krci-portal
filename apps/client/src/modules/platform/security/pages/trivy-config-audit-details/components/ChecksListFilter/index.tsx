@@ -1,4 +1,3 @@
-import { Select } from "@/core/components/form";
 import { Button } from "@/core/components/ui/button";
 import { Label } from "@/core/components/ui/label";
 import { SEVERITY_FILTER_OPTIONS, STATUS_FILTER_OPTIONS } from "@/modules/platform/security/constants";
@@ -12,19 +11,17 @@ export function ChecksListFilter() {
   return (
     <>
       <div className="col-span-3">
-        <form.Field name={CHECKS_LIST_FILTER_NAMES.SEVERITY}>
+        <form.AppField name={CHECKS_LIST_FILTER_NAMES.SEVERITY}>
           {(field) => (
-            <Select field={field} label="Severity" options={SEVERITY_FILTER_OPTIONS} placeholder="All severities" />
+            <field.FormSelect label="Severity" options={SEVERITY_FILTER_OPTIONS} placeholder="All severities" />
           )}
-        </form.Field>
+        </form.AppField>
       </div>
 
       <div className="col-span-3">
-        <form.Field name={CHECKS_LIST_FILTER_NAMES.STATUS}>
-          {(field) => (
-            <Select field={field} label="Status" options={STATUS_FILTER_OPTIONS} placeholder="All statuses" />
-          )}
-        </form.Field>
+        <form.AppField name={CHECKS_LIST_FILTER_NAMES.STATUS}>
+          {(field) => <field.FormSelect label="Status" options={STATUS_FILTER_OPTIONS} placeholder="All statuses" />}
+        </form.AppField>
       </div>
 
       {form.state.isDirty && (

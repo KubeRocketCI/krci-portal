@@ -1,4 +1,3 @@
-import { NamespaceAutocomplete, Select, SelectOption, TextField } from "@/core/components/form";
 import { Button } from "@/core/components/ui/button";
 import { codebaseType } from "@my-project/shared";
 import { CODEBASE_LIST_FILTER_NAMES } from "./constants";
@@ -8,6 +7,7 @@ import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { Label } from "@/core/components/ui/label";
 import { X } from "lucide-react";
+import type { SelectOption } from "@/core/components/form";
 
 const codebaseTypeOptions: SelectOption[] = [
   { label: "All", value: "all" },
@@ -23,36 +23,37 @@ export const CodebaseFilter = () => {
   const allowedNamespaces = useClusterStore(useShallow((state) => state.allowedNamespaces));
   const showNamespaceFilter = allowedNamespaces.length > 1;
 
-  const namespaceOptions = React.useMemo(() => allowedNamespaces, [allowedNamespaces]);
+  const namespaceOptions = React.useMemo(
+    () => allowedNamespaces.map((value) => ({ label: value, value })),
+    [allowedNamespaces]
+  );
 
   return (
     <>
       <div className="col-span-3">
-        <form.Field name={CODEBASE_LIST_FILTER_NAMES.SEARCH}>
-          {(field) => <TextField field={field} label="Search" placeholder="Search projects" />}
-        </form.Field>
+        <form.AppField name={CODEBASE_LIST_FILTER_NAMES.SEARCH}>
+          {(field) => <field.FormTextField label="Search" placeholder="Search projects" />}
+        </form.AppField>
       </div>
 
       <div className="col-span-3">
-        <form.Field name={CODEBASE_LIST_FILTER_NAMES.CODEBASE_TYPE}>
-          {(field) => (
-            <Select field={field} label="Project Type" options={codebaseTypeOptions} placeholder="Select type" />
-          )}
-        </form.Field>
+        <form.AppField name={CODEBASE_LIST_FILTER_NAMES.CODEBASE_TYPE}>
+          {(field) => <field.FormSelect label="Project Type" options={codebaseTypeOptions} placeholder="Select type" />}
+        </form.AppField>
       </div>
 
       {showNamespaceFilter && (
         <div className="col-span-4">
-          <form.Field name={CODEBASE_LIST_FILTER_NAMES.NAMESPACES}>
+          <form.AppField name={CODEBASE_LIST_FILTER_NAMES.NAMESPACES}>
             {(field) => (
-              <NamespaceAutocomplete
-                field={field}
+              <field.FormCombobox
                 options={namespaceOptions}
                 label="Namespaces"
                 placeholder="Select namespaces"
+                multiple
               />
             )}
-          </form.Field>
+          </form.AppField>
         </div>
       )}
 

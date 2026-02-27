@@ -26,10 +26,15 @@ export const EditStageForm: React.FC<EditStageFormProps> = ({ stage, onClose }) 
     async (values: EditStageFormValues) => {
       if (!stage) return;
 
+      // Remove the 'id' field from qualityGates as it's only used for form state
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const qualityGatesForSubmit = values.qualityGates.map(({ id: _id, ...rest }) => rest);
+
       const updatedStage = editStageObject(stage, {
         triggerType: values.triggerType as "Auto" | "Manual" | "Auto-stable",
         triggerTemplate: values.triggerTemplate,
         cleanTemplate: values.cleanTemplate,
+        qualityGates: qualityGatesForSubmit,
       });
 
       await triggerEditStage({
@@ -56,9 +61,9 @@ export const EditStageForm: React.FC<EditStageFormProps> = ({ stage, onClose }) 
             <FormGuideToggleButton />
           </div>
         </DialogHeader>
-        <DialogBody className="flex min-h-0 !overflow-hidden">
-          <div className="flex h-full flex-1 gap-4">
-            <div className="flex-1 overflow-y-auto">
+        <DialogBody className="flex min-h-0">
+          <div className="flex min-h-0 flex-1 gap-4">
+            <div className="min-h-0flex-1 overflow-y-auto">
               <div className="flex flex-col gap-4">
                 {requestError && (
                   <Alert variant="destructive" title="Failed to update environment">

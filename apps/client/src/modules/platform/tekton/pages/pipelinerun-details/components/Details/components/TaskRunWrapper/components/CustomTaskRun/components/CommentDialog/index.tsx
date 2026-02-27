@@ -8,7 +8,7 @@ import {
 } from "@/core/components/ui/dialog";
 import { Button } from "@/core/components/ui/button";
 import React from "react";
-import { useAppForm } from "@/core/form-temp";
+import { useAppForm } from "@/core/components/form";
 import { DIALOG_NAME } from "./constants";
 import { CommentDialogProps } from "./types";
 

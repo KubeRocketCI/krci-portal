@@ -3,7 +3,7 @@ import { EditCDPipelineFormContext, EditCDPipelineFormInstance } from "./context
 import type { EditCDPipelineFormProviderProps } from "./types";
 import { useDefaultValues } from "../../hooks/useDefaultValues";
 import type { EditCDPipelineFormValues } from "../../types";
-import { useAppForm } from "@/core/form-temp";
+import { useAppForm } from "@/core/components/form";
 import type { FormValidateOrFn } from "@tanstack/react-form";
 import { editCDPipelineSchema } from "../../schema";
 

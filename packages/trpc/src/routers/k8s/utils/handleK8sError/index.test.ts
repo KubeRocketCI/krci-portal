@@ -16,11 +16,12 @@ describe("handleK8sError", () => {
       expect(result.cause).toHaveProperty("statusCode", 400);
     });
 
-    test("converts 401 to UNAUTHORIZED", () => {
+    test("converts 401 to FORBIDDEN (K8s auth errors should not trigger login redirect)", () => {
       const error = new K8sApiError(401, "Unauthorized", "");
       const result = handleK8sError(error);
 
-      expect(result.code).toBe("UNAUTHORIZED");
+      expect(result.code).toBe("FORBIDDEN");
+      expect(result.cause).toHaveProperty("source", "k8s");
     });
 
     test("converts 403 to FORBIDDEN", () => {
@@ -56,10 +57,23 @@ describe("handleK8sError", () => {
       const result = handleK8sError(error);
 
       expect(result.cause).toMatchObject({
+        source: "k8s",
         statusCode: 400,
         statusText: "Bad Request",
         responseBody: "Error body",
       });
+    });
+
+    test("adds source metadata to distinguish K8s errors from session errors", () => {
+      const error403 = new K8sApiError(403, "Forbidden", "");
+      const result403 = handleK8sError(error403);
+
+      expect(result403.cause).toHaveProperty("source", "k8s");
+
+      const error401 = new K8sApiError(401, "Unauthorized", "");
+      const result401 = handleK8sError(error401);
+
+      expect(result401.cause).toHaveProperty("source", "k8s");
     });
 
     test("defaults to INTERNAL_SERVER_ERROR for unknown status codes", () => {

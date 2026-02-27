@@ -1,4 +1,4 @@
-import { SelectField } from "@/core/components/form/SelectField";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
 import { SelectOption } from "@/core/types/forms";
 import { IMAGE_TAG_POSTFIX } from "@/modules/platform/cdpipelines/pages/stage-details/constants";
 import React from "react";
@@ -68,12 +68,25 @@ export const DeployedVersionConfigurationColumn = ({
                   </Tooltip>
                 )}
               >
-                <SelectField
-                  field={field}
-                  placeholder={label}
-                  options={imageStreamTagsOptions}
+                <Select
+                  value={(field.state.value ?? "") as string}
+                  onValueChange={(value) => {
+                    field.handleChange(value as never);
+                    setTimeout(() => field.handleBlur(), 0);
+                  }}
                   disabled={!imageStreamTagsOptions.length}
-                />
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={label} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {imageStreamTagsOptions.map(({ label: optionLabel, value }) => (
+                      <SelectItem key={value} value={value}>
+                        {optionLabel}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </ConditionalWrapper>
             </div>
           </div>

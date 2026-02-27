@@ -9,7 +9,6 @@ export const FormActions: React.FC = () => {
   const form = useEditStageForm();
   const { closeDialog } = useEditStageData();
 
-  // Type-safe selectors using the properly typed form
   const isDirty = useStore(form.store, (state) => state.isDirty);
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
   const canSubmit = useStore(form.store, (state) => state.canSubmit);

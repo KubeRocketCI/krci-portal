@@ -5,6 +5,7 @@ import { getLayoutedElements } from "../../PipelineDiagram/utils/layoutUtils";
 
 export interface PipelineRunTaskNodeData extends Record<string, unknown> {
   name: string;
+  namespace: string;
   pipelineRunName: string;
   taskRun?: TaskRun;
   approvalTask?: ApprovalTask;
@@ -27,6 +28,7 @@ export interface PipelineRunTaskCombinedData {
 export const usePipelineRunGraphData = (
   pipelineRun: PipelineRun | undefined,
   tasksByNameMap: Map<string, PipelineRunTaskCombinedData> | undefined,
+  namespace: string,
   direction: "TB" | "LR" = "TB"
 ): { nodes: MyNode[]; edges: MyEdge[] } => {
   return React.useMemo(() => {
@@ -90,6 +92,7 @@ export const usePipelineRunGraphData = (
           position: { x: 0, y: 0 },
           data: {
             name: taskName,
+            namespace,
             pipelineRunName: pipelineRun.metadata.name,
             taskRun: taskData?.taskRun,
             approvalTask: taskData?.approvalTask,
@@ -164,5 +167,5 @@ export const usePipelineRunGraphData = (
       nodes: nodes as MyNode[],
       edges: edges as MyEdge[],
     };
-  }, [pipelineRun, tasksByNameMap, direction]);
+  }, [pipelineRun, tasksByNameMap, namespace, direction]);
 };

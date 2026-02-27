@@ -5,7 +5,7 @@ import { useGitServerWatchItem } from "@/k8s/api/groups/KRCI/GitServer";
 import { gitProvider } from "@my-project/shared";
 import { useGitOpsForm } from "../../providers/form/hooks";
 import { useStore } from "@tanstack/react-form";
-import type { FormRadioOption } from "@/core/form-temp";
+import type { FormRadioOption } from "@/core/components/form";
 
 const codebaseCreationStrategies: FormRadioOption[] = [
   {

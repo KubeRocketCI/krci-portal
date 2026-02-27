@@ -1,4 +1,4 @@
-import { Autocomplete, NamespaceAutocomplete, Select } from "@/core/components/form";
+import type { SelectOption } from "@/core/components/form";
 import { ValueOf } from "@/core/types/global";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { FilterTypeWithOptionAll } from "@/k8s/types";
@@ -32,7 +32,7 @@ export const PipelineRunFilter = ({
 
   const codebaseOptions = React.useMemo(() => {
     const set = new Set(
-      pipelineRuns?.map(({ metadata: { labels } }) => labels?.[pipelineRunLabels.codebase]).filter(Boolean)
+      pipelineRuns?.map(({ metadata: { labels } }) => labels?.[pipelineRunLabels.codebase]).filter(Boolean) as string[]
     );
 
     return Array.from(set);
@@ -42,7 +42,7 @@ export const PipelineRunFilter = ({
     const set = new Set(
       pipelineRuns
         ?.map((pipelineRun) => getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitBranch))
-        .filter(Boolean)
+        .filter(Boolean) as string[]
     );
     return Array.from(set);
   }, [pipelineRuns]);
@@ -52,7 +52,7 @@ export const PipelineRunFilter = ({
 
   const namespaceOptions = React.useMemo(() => allowedNamespaces, [allowedNamespaces]);
 
-  const pipelineTypeOptions = React.useMemo(
+  const pipelineTypeOptions: SelectOption[] = React.useMemo(
     () => [
       { label: "All", value: "all" },
       ...pipelineRunTypes.map((value) => ({ label: capitalizeFirstLetter(value), value })),
@@ -60,7 +60,7 @@ export const PipelineRunFilter = ({
     [pipelineRunTypes]
   );
 
-  const statusOptions = React.useMemo(
+  const statusOptions: SelectOption[] = React.useMemo(
     () => [
       { label: "All", value: "all" },
       ...Object.values(pipelineRunStatus).map((v) => ({ label: capitalizeFirstLetter(String(v)), value: String(v) })),
@@ -68,72 +68,81 @@ export const PipelineRunFilter = ({
     []
   );
 
+  const codebaseComboboxOptions = React.useMemo(
+    () => codebaseOptions.map((value) => ({ label: value, value })),
+    [codebaseOptions]
+  );
+
+  const branchComboboxOptions = React.useMemo(
+    () => codebaseBranchOptions.map((value) => ({ label: value, value })),
+    [codebaseBranchOptions]
+  );
+
+  const namespaceComboboxOptions = React.useMemo(
+    () => namespaceOptions.map((value) => ({ label: value, value })),
+    [namespaceOptions]
+  );
+
   return (
     <>
       {filterControls.includes(pipelineRunFilterControlNames.PIPELINE_TYPE) && (
         <div className="col-span-2">
-          <form.Field name="pipelineType">
-            {(field) => <Select field={field} label="Type" options={pipelineTypeOptions} placeholder="Select type" />}
-          </form.Field>
+          <form.AppField name="pipelineType">
+            {(field) => <field.FormSelect label="Type" options={pipelineTypeOptions} placeholder="Select type" />}
+          </form.AppField>
         </div>
       )}
 
       {filterControls.includes(pipelineRunFilterControlNames.STATUS) && (
         <div className="col-span-2">
-          <form.Field name="status">
-            {(field) => <Select field={field} label="Status" options={statusOptions} placeholder="Select status" />}
-          </form.Field>
+          <form.AppField name="status">
+            {(field) => <field.FormSelect label="Status" options={statusOptions} placeholder="Select status" />}
+          </form.AppField>
         </div>
       )}
 
       {filterControls.includes(pipelineRunFilterControlNames.CODEBASES) && (
         <div className="col-span-4">
-          <form.Field name="codebases">
+          <form.AppField name="codebases">
             {(field) => (
-              <Autocomplete
-                field={field}
+              <field.FormCombobox
                 label="Codebases"
                 placeholder="Select codebases"
-                options={codebaseOptions}
+                options={codebaseComboboxOptions}
                 multiple
-                freeSolo
-                ChipProps={{ size: "small", color: "primary" }}
               />
             )}
-          </form.Field>
+          </form.AppField>
         </div>
       )}
 
       {filterControls.includes(pipelineRunFilterControlNames.CODEBASE_BRANCHES) && (
-        <div className="col-span-4">
-          <form.Field name="codebaseBranches">
+        <div className="col-span-2">
+          <form.AppField name="codebaseBranches">
             {(field) => (
-              <Autocomplete
-                field={field}
+              <field.FormCombobox
                 label="Branches"
                 placeholder="Select branches"
-                options={codebaseBranchOptions}
+                options={branchComboboxOptions}
                 multiple
-                freeSolo
-                ChipProps={{ size: "small", color: "primary" }}
               />
             )}
-          </form.Field>
+          </form.AppField>
         </div>
       )}
 
       {showNamespaceFilter && filterControls.includes(pipelineRunFilterControlNames.NAMESPACES) && (
-        <div className="col-span-3">
-          <form.Field name="namespaces">
+        <div className="col-span-2">
+          <form.AppField name="namespaces">
             {(field) => (
-              <NamespaceAutocomplete
-                field={field}
-                options={namespaceOptions}
+              <field.FormCombobox
+                options={namespaceComboboxOptions}
                 label="Namespaces"
                 placeholder="Select namespaces"
+                multiple
               />
             )}
-          </form.Field>
+          </form.AppField>
         </div>
       )}
 

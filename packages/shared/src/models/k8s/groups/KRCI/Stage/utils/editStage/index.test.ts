@@ -34,6 +34,7 @@ describe("editStageObject", () => {
       triggerType: "Auto" as const,
       triggerTemplate: "new-trigger-template",
       cleanTemplate: "new-clean",
+      qualityGates: [{ qualityGateType: "manual" as const, stepName: "approve", autotestName: null, branchName: null }],
     };
 
     const result = editStageObject(mockStage as any, input);
@@ -41,6 +42,9 @@ describe("editStageObject", () => {
     expect(result.spec.triggerType).toBe("Auto");
     expect(result.spec.triggerTemplate).toBe("new-trigger-template");
     expect(result.spec.cleanTemplate).toBe("new-clean");
+    expect(result.spec.qualityGates).toEqual([
+      { qualityGateType: "manual", stepName: "approve", autotestName: null, branchName: null },
+    ]);
   });
 
   it("should preserve non-editable fields", () => {
@@ -48,6 +52,7 @@ describe("editStageObject", () => {
       triggerType: "Manual" as const,
       triggerTemplate: "updated",
       cleanTemplate: "updated",
+      qualityGates: [{ qualityGateType: "manual" as const, stepName: "approve", autotestName: null, branchName: null }],
     };
 
     const result = editStageObject(mockStage as any, input);
@@ -66,6 +71,9 @@ describe("editStageObject", () => {
         triggerType: "InvalidType" as any,
         triggerTemplate: "template",
         cleanTemplate: "clean",
+        qualityGates: [
+          { qualityGateType: "manual" as const, stepName: "approve", autotestName: null, branchName: null },
+        ],
       })
     ).toThrow(ZodError);
   });

@@ -9,6 +9,7 @@ import KubernetesIcon from "@/assets/icons/k8s/kubernetes.svg?react";
 import { ScrollCopyText } from "@/core/components/ScrollCopyText";
 import { PipelinePreview } from "@/core/components/PipelinePreview";
 import { STATUS_COLOR } from "@/k8s/constants/colors";
+import { Shield } from "lucide-react";
 
 export interface GridItem {
   label: string;
@@ -88,6 +89,27 @@ export const useInfoColumns = (): GridItem[] => {
         ) : (
           <span className="text-muted-foreground text-sm">N/A</span>
         ),
+      },
+      {
+        label: "Quality Gates",
+        content:
+          stage.spec.qualityGates && stage.spec.qualityGates.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-1">
+              {stage.spec.qualityGates.map((gate, idx) => (
+                <Badge key={idx} variant="outline" className="flex items-center gap-1 text-xs">
+                  <Shield className="size-3" />
+                  <span className="capitalize">{gate.qualityGateType}</span>
+                  {gate.qualityGateType === "autotests" && gate.autotestName && (
+                    <span className="text-muted-foreground font-mono">
+                      ({gate.autotestName}/{gate.branchName})
+                    </span>
+                  )}
+                </Badge>
+              ))}
+            </div>
+          ) : (
+            <span className="text-muted-foreground text-sm">N/A</span>
+          ),
       },
       {
         label: "Description",

@@ -85,7 +85,11 @@ const PipelineRunDiagramDataWrapper: React.FC<{
   return (
     <div className="flex h-full w-full flex-1 flex-col">
       <LoadingWrapper isLoading={isLoading}>
-        <PipelineRunDiagramView pipelineRun={pipelineRun!} pipelineRunTasksByNameMap={pipelineRunTasksByNameMap} />
+        <PipelineRunDiagramView
+          pipelineRun={pipelineRun!}
+          pipelineRunTasksByNameMap={pipelineRunTasksByNameMap}
+          namespace={namespace}
+        />
       </LoadingWrapper>
     </div>
   );
@@ -94,10 +98,11 @@ const PipelineRunDiagramDataWrapper: React.FC<{
 const PipelineRunDiagramView: React.FC<{
   pipelineRun: PipelineRun;
   pipelineRunTasksByNameMap: Map<string, PipelineRunTaskCombinedData>;
-}> = ({ pipelineRun, pipelineRunTasksByNameMap }) => {
+  namespace: string;
+}> = ({ pipelineRun, pipelineRunTasksByNameMap, namespace }) => {
   const [viewMode, setViewMode] = React.useState<"vertical" | "horizontal">("horizontal");
   const direction = viewMode === "horizontal" ? "LR" : "TB";
-  const { nodes, edges } = usePipelineRunGraphData(pipelineRun, pipelineRunTasksByNameMap, direction);
+  const { nodes, edges } = usePipelineRunGraphData(pipelineRun, pipelineRunTasksByNameMap, namespace, direction);
   const { fitView } = useReactFlow();
   const containerRef = React.useRef<HTMLDivElement>(null);
 

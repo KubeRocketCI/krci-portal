@@ -2,7 +2,7 @@ import React from "react";
 import { useTemplateWatchList } from "@/k8s/api/groups/KRCI/Template";
 import { codebaseCreationStrategy } from "@my-project/shared";
 import type { CodebaseType as CodebaseTypeValue } from "@my-project/shared";
-import { useAppForm } from "@/core/form-temp";
+import { useAppForm } from "@/core/components/form";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { getCodebaseMappingByType } from "@/k8s/api/groups/KRCI/Codebase";
@@ -163,7 +163,7 @@ export const TemplateSelection: React.FC = () => {
               classNames={{
                 container: isHelpOpen ? "grid-cols-3" : "grid-cols-4",
                 item: "p-3",
-                itemIcon: "h-6 w-6",
+                itemIcon: "h-4 w-4",
                 itemIconContainer: "h-8 w-8",
               }}
               disabled={templatesWatch.query.isLoading}

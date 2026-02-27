@@ -2,9 +2,15 @@ import React from "react";
 import { Handle, Position } from "@xyflow/react";
 import { Badge } from "@/core/components/ui/badge";
 import { Tooltip } from "@/core/components/ui/tooltip";
+import { Link } from "@tanstack/react-router";
+import { Button } from "@/core/components/ui/button";
+import { routeTaskDetails } from "@/modules/platform/tekton/pages/task-details/route";
+import { useClusterStore } from "@/k8s/store";
+import { useShallow } from "zustand/react/shallow";
 
 export interface PipelineTaskNodeData {
   name: string;
+  namespace: string;
   description?: string;
   displayName?: string;
   taskRef?: {
@@ -19,14 +25,23 @@ export const PipelineTaskNode: React.FC<{
   sourcePosition?: Position;
   targetPosition?: Position;
 }> = ({ data, sourcePosition, targetPosition }) => {
+  const { clusterName } = useClusterStore(
+    useShallow((state) => ({
+      clusterName: state.clusterName,
+    }))
+  );
+
   const displayName = data.displayName || data.name;
   const truncatedName = displayName.length > 20 ? `${displayName.slice(0, 17)}...` : displayName;
+
+  const taskRefName = data.taskRef?.name;
+  const hasTaskRef = !!taskRefName;
 
   const tooltipContent = (
     <div>
       <p className="text-sm font-semibold">{displayName}</p>
       {data.description && <p className="mt-1 text-sm">{data.description}</p>}
-      {data.taskRef?.name && <span className="mt-1 block text-xs">Task: {data.taskRef.name}</span>}
+      {hasTaskRef && <span className="mt-1 block text-xs">Task: {taskRefName}</span>}
       {data.isFinally && (
         <span className="mt-1 block text-xs italic">Finally task - runs after all main tasks complete</span>
       )}
@@ -59,8 +74,20 @@ export const PipelineTaskNode: React.FC<{
 
           <p className="break-word text-foreground text-center text-sm leading-tight font-semibold">{truncatedName}</p>
 
-          {data.taskRef?.name && (
-            <span className="text-muted-foreground mt-1 text-center text-xs leading-none">{data.taskRef.name}</span>
+          {hasTaskRef && (
+            <Button variant="link" asChild className="h-auto p-0">
+              <Link
+                to={routeTaskDetails.fullPath}
+                params={{
+                  clusterName,
+                  namespace: data.namespace,
+                  name: taskRefName!,
+                }}
+                className="text-muted-foreground hover:text-primary mt-1 text-center text-xs leading-none"
+              >
+                {taskRefName}
+              </Link>
+            </Button>
           )}
         </div>
       </Tooltip>

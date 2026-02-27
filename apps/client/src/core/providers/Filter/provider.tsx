@@ -1,8 +1,8 @@
-import { FormAsyncValidateOrFn, FormValidateOrFn, useForm } from "@tanstack/react-form";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { FilterContext } from "./context";
 import { FilterContextValue, FilterProviderProps, FilterValueMap } from "./types";
+import { useAppForm } from "@/core/components/form";
 
 export const FilterProvider = <Item, Values extends FilterValueMap>({
   children,
@@ -60,69 +60,58 @@ export const FilterProvider = <Item, Values extends FilterValueMap>({
     createFilterFunction(initialValues)
   );
 
-  const form = useForm<
-    Values,
-    FormValidateOrFn<Values>,
-    FormValidateOrFn<Values>,
-    FormAsyncValidateOrFn<Values>,
-    FormValidateOrFn<Values>,
-    FormAsyncValidateOrFn<Values>,
-    FormValidateOrFn<Values>,
-    FormAsyncValidateOrFn<Values>,
-    FormValidateOrFn<Values>,
-    FormAsyncValidateOrFn<Values>,
-    FormAsyncValidateOrFn<Values>,
-    never
-  >({
+  const form = useAppForm({
     defaultValues: initialValues,
-    listeners: {
-      onChange: ({ formApi }) => {
-        const values = formApi.state.values;
+  });
 
-        // Update filterFunction based on current form values
-        setFilterFunction(() => createFilterFunction(values));
+  // Subscribe to form changes
+  useMemo(() => {
+    const unsubscribe = form.store.subscribe(() => {
+      const values = form.store.state.values;
 
-        // Sync with URL if enabled (skip during initialization)
-        if (syncWithUrl && !isInitializing.current) {
-          // Create a clean object with only non-default values
-          const urlParams: Record<string, unknown> = {};
+      // Update filterFunction based on current form values
+      setFilterFunction(() => createFilterFunction(values));
 
-          Object.keys(defaultValues).forEach((key) => {
-            const currentValue = values[key as keyof Values];
-            const defaultValue = defaultValues[key as keyof Values];
+      // Sync with URL if enabled (skip during initialization)
+      if (syncWithUrl && !isInitializing.current) {
+        // Create a clean object with only non-default values
+        const urlParams: Record<string, unknown> = {};
 
-            // Only include values that differ from defaults
-            if (Array.isArray(currentValue)) {
-              if (currentValue.length > 0) {
-                urlParams[key] = currentValue;
-              }
-            } else if (typeof currentValue === "string") {
-              if (currentValue !== "" && currentValue !== defaultValue) {
-                urlParams[key] = currentValue;
-              }
-            } else if (currentValue !== defaultValue) {
+        Object.keys(defaultValues).forEach((key) => {
+          const currentValue = values[key as keyof Values];
+          const defaultValue = defaultValues[key as keyof Values];
+
+          // Only include values that differ from defaults
+          if (Array.isArray(currentValue)) {
+            if (currentValue.length > 0) {
               urlParams[key] = currentValue;
             }
-          });
+          } else if (typeof currentValue === "string") {
+            if (currentValue !== "" && currentValue !== defaultValue) {
+              urlParams[key] = currentValue;
+            }
+          } else if (currentValue !== defaultValue) {
+            urlParams[key] = currentValue;
+          }
+        });
 
-          // Update URL without navigation (replace instead of push)
-          void navigate({
-            search: urlParams as never,
-            replace: true,
-          }).catch(() => {
-            // Ignore navigation errors
-          });
-        }
+        // Update URL without navigation (replace instead of push)
+        void navigate({
+          search: urlParams as never,
+          replace: true,
+        }).catch(() => {
+          // Ignore navigation errors
+        });
+      }
 
-        // Mark initialization as complete after first change
-        if (isInitializing.current) {
-          isInitializing.current = false;
-        }
-      },
-      // Debounce form-level onChange to avoid excessive re-renders during typing
-      onChangeDebounceMs: 300,
-    },
-  });
+      // Mark initialization as complete after first change
+      if (isInitializing.current) {
+        isInitializing.current = false;
+      }
+    });
+
+    return unsubscribe;
+  }, [form.store, createFilterFunction, syncWithUrl, defaultValues, navigate]);
 
   // Reset function
   const reset = useCallback(() => {
@@ -143,7 +132,7 @@ export const FilterProvider = <Item, Values extends FilterValueMap>({
     }
   }, [form, createFilterFunction, defaultValues, syncWithUrl, navigate]);
 
-  const contextValue = useMemo(
+  const contextValue: FilterContextValue<Item, Values> = useMemo(
     () => ({
       form,
       filterFunction,
@@ -153,7 +142,7 @@ export const FilterProvider = <Item, Values extends FilterValueMap>({
   );
 
   return (
-    <FilterContext.Provider value={contextValue as FilterContextValue<unknown, Record<string, unknown>>}>
+    <FilterContext.Provider value={contextValue as unknown as FilterContextValue<unknown, Record<string, unknown>>}>
       {children}
     </FilterContext.Provider>
   );

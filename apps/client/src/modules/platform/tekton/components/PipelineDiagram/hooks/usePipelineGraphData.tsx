@@ -9,6 +9,7 @@ export interface MyNode extends Node {
   position: { x: number; y: number };
   data: {
     name: string;
+    namespace: string;
     description?: string;
     displayName?: string;
     taskRef?: {
@@ -46,6 +47,7 @@ const STATUS_COLOR = {
 
 export const usePipelineGraphData = (
   pipeline: Pipeline,
+  namespace: string,
   direction: "TB" | "LR" = "TB"
 ): { nodes: Node[]; edges: Edge[] } => {
   const pipelineTasks = React.useMemo(() => {
@@ -114,6 +116,7 @@ export const usePipelineGraphData = (
         position: { x: 0, y: 0 }, // Will be set by layout
         data: {
           name,
+          namespace,
           description: task.description,
           displayName: task.displayName,
           taskRef: task.taskRef,
@@ -135,6 +138,7 @@ export const usePipelineGraphData = (
         position: { x: 0, y: 0 }, // Will be set by layout
         data: {
           name,
+          namespace,
           description: task.description,
           displayName: task.displayName,
           taskRef: task.taskRef,
@@ -149,7 +153,7 @@ export const usePipelineGraphData = (
     }
 
     return _nodes;
-  }, [MainPipelineTasksMap, FinallyPipelineTasksMap, noTasks]);
+  }, [MainPipelineTasksMap, FinallyPipelineTasksMap, noTasks, namespace]);
 
   const initialEdges = React.useMemo(() => {
     if (noTasks) {

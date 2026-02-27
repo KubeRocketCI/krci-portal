@@ -102,26 +102,6 @@ export const TektonResultsFilter = ({
 
   return (
     <>
-      {/* Status filter */}
-      {showStatus && (
-        <div className="col-span-2">
-          <FormField label="Status">
-            <SelectPrimitive value={values.status} onValueChange={handleStatusChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                {tektonResultStatusOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </SelectPrimitive>
-          </FormField>
-        </div>
-      )}
-
       {/* Pipeline Type filter */}
       {showPipelineType && (
         <div className="col-span-2">
@@ -132,6 +112,26 @@ export const TektonResultsFilter = ({
               </SelectTrigger>
               <SelectContent>
                 {tektonResultsPipelineTypeOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </SelectPrimitive>
+          </FormField>
+        </div>
+      )}
+
+      {/* Status filter */}
+      {showStatus && (
+        <div className="col-span-2">
+          <FormField label="Status">
+            <SelectPrimitive value={values.status} onValueChange={handleStatusChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                {tektonResultStatusOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>

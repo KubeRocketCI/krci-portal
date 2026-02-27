@@ -43,7 +43,7 @@ export const CreationMethod: React.FC = () => {
           label="Creation Method"
           options={creationMethodOptions}
           variant="vertical"
-          classNames={{ item: "p-3", itemIcon: "h-6 w-6", itemIconContainer: "h-8 w-8" }}
+          classNames={{ item: "p-3", itemIcon: "h-4 w-4", itemIconContainer: "h-8 w-8" }}
         />
       )}
     </form.AppField>
