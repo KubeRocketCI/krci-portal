@@ -11,6 +11,7 @@ interface TrpcErrorData {
   data?: {
     code?: string;
     httpStatus?: number;
+    source?: string;
   };
 }
 
@@ -53,13 +54,29 @@ function handleAuthError(): void {
 }
 
 /**
- * Checks if error data indicates an authentication error
+ * Checks if error data indicates a SESSION authentication error (not K8s permission errors)
+ * Only UNAUTHORIZED errors should trigger login redirect
+ * FORBIDDEN errors (including K8s API 401/403) should NOT redirect
  */
 function isAuthError(errorData: TrpcErrorData): boolean {
-  if (errorData.code === "UNAUTHORIZED") return true;
-  if (errorData.data?.code === "UNAUTHORIZED") return true;
-  if (errorData.data?.httpStatus === 401) return true;
-  if (errorData.data?.httpStatus === 403) return true;
+  // Exclude K8s API errors - these are permission issues, not session expiration
+  if (errorData.data?.source === "k8s") {
+    return false;
+  }
+
+  // Exclude FORBIDDEN - these are permission issues, not session expiration
+  if (errorData.code === "FORBIDDEN") {
+    return false;
+  }
+
+  // Only UNAUTHORIZED indicates session expiration
+  if (errorData.code === "UNAUTHORIZED") {
+    return true;
+  }
+  if (errorData.data?.code === "UNAUTHORIZED") {
+    return true;
+  }
+
   return false;
 }
 
@@ -102,10 +119,13 @@ async function checkResponseForAuthErrors(res: Response): Promise<void> {
 export async function customFetch(url: URL | RequestInfo, options: RequestInit): Promise<Response> {
   const res = await fetch(url, options);
 
+  // HTTP 401 at this level means session middleware rejected the request
+  // This is different from K8s API 401 which is wrapped in tRPC response
   if (res.status === 401) {
     handleAuthError();
   }
 
+  // Check tRPC response payload for auth errors
   if (res.ok) {
     await checkResponseForAuthErrors(res);
   }

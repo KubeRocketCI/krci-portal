@@ -56,5 +56,10 @@ export const usePermissions = ({
     gcTime: Infinity,
   });
 
-  return permissionsQuery as DefinedUseQueryResult<DefaultPermissionListCheckResult, Error>;
+  // Ensure data is always defined, even on error (use defaultPermissions as fallback)
+  // This prevents crashes when K8s API returns 403 (cluster mismatch, token issues, etc.)
+  return {
+    ...permissionsQuery,
+    data: permissionsQuery.data ?? defaultPermissions,
+  } as DefinedUseQueryResult<DefaultPermissionListCheckResult, Error>;
 };

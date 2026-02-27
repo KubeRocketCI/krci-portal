@@ -9,7 +9,7 @@ import { mapArrayToSelectOptions } from "@/core/utils/forms/mapToSelectOptions";
 import { ErrorContent } from "@/core/components/ErrorContent";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { RefPortal } from "@/core/components/RefPortal";
-import { useAppForm } from "@/core/form-temp";
+import { useAppForm } from "@/core/components/form";
 import { useStore } from "@tanstack/react-form";
 
 interface AppVersionWidgetFormValues {

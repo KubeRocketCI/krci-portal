@@ -1,5 +1,5 @@
 import { ResourceIconLink } from "@/core/components/ResourceIconLink";
-import { SwitchField } from "@/core/components/form/SwitchField";
+import { Switch } from "@/core/components/ui/switch";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { VALUES_OVERRIDE_POSTFIX } from "@/modules/platform/cdpipelines/pages/stage-details/constants";
 import { useGitOpsCodebaseWatch, useGitServersWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
@@ -31,7 +31,7 @@ export const ValuesOverridePreviewColumn = ({ appCodebase }: { appCodebase: Code
         <div className="flex flex-row items-center gap-2">
           <div className="flex w-full flex-row items-center gap-2">
             <div>
-              <SwitchField field={field} disabled />
+              <Switch checked={field.state.value as boolean} disabled />
             </div>
           </div>
           {gitOpsCodebase?.status?.gitWebUrl && (

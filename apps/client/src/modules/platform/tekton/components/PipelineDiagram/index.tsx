@@ -22,16 +22,17 @@ import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 
 export interface PipelineDiagramProps {
   pipeline: Pipeline;
+  namespace: string;
 }
 
 const nodeTypes = {
   taskNode: PipelineTaskNode,
 };
 
-const PipelineDiagramInner: React.FC<PipelineDiagramProps> = ({ pipeline }) => {
+const PipelineDiagramInner: React.FC<PipelineDiagramProps> = ({ pipeline, namespace }) => {
   const [viewMode, setViewMode] = React.useState<"vertical" | "horizontal">("horizontal"); // Default to horizontal
   const direction = viewMode === "horizontal" ? "LR" : "TB";
-  const { nodes, edges } = usePipelineGraphData(pipeline, direction);
+  const { nodes, edges } = usePipelineGraphData(pipeline, namespace, direction);
   const { fitView } = useReactFlow();
   const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -157,7 +158,7 @@ export const PipelineDiagram: React.FC<{ pipelineName: string; namespace: string
     <ReactFlowProvider>
       <div className="flex h-full w-full flex-1 flex-col">
         <LoadingWrapper isLoading={!pipelineWatch.isReady}>
-          <PipelineDiagramInner pipeline={pipeline!} />
+          <PipelineDiagramInner pipeline={pipeline!} namespace={namespace} />
         </LoadingWrapper>
       </div>
     </ReactFlowProvider>

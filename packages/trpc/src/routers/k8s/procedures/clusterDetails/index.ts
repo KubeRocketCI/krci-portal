@@ -30,7 +30,9 @@ export const k8sGetClusterDetails = protectedProcedure
       throw new Error("No current cluster found");
     }
 
-    const clusterName = process.env.DEFAULT_CLUSTER_NAME || currentCluster.name || currentContext || "unknown";
+    // Use actual cluster name from kubeconfig first, fallback to env var
+    // This ensures the cluster name matches the actual K8s cluster being accessed
+    const clusterName = currentCluster.name || process.env.DEFAULT_CLUSTER_NAME || currentContext || "unknown";
     const defaultNamespace = process.env.DEFAULT_CLUSTER_NAMESPACE || "default";
     const apiServerUrl = currentCluster.server || "unknown";
 

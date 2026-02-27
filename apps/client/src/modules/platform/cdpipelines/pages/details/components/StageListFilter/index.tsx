@@ -1,4 +1,3 @@
-import { Autocomplete as FormAutocomplete } from "@/core/components/form/Autocomplete";
 import React from "react";
 import { useStageListWatch } from "../../hooks/data";
 import { useStageFilter } from "./hooks/useStageFilter";
@@ -10,25 +9,20 @@ export const StageListFilter = () => {
   const { form } = useStageFilter();
 
   const stageSelectOptions = React.useMemo(() => {
-    return stageListWatch.data.array.map((stage) => stage.spec.name);
+    return stageListWatch.data.array.map((stage) => ({
+      label: stage.spec.name,
+      value: stage.spec.name,
+    }));
   }, [stageListWatch.data.array]);
 
   return (
     <div className="grid grid-cols-12 items-center gap-4">
       <div className="col-span-3">
-        <form.Field name={stagesFilterControlNames.STAGES}>
+        <form.AppField name={stagesFilterControlNames.STAGES}>
           {(field) => (
-            <FormAutocomplete
-              field={field}
-              multiple
-              options={stageSelectOptions}
-              label="Environments"
-              placeholder="Environments"
-              getOptionLabel={(option) => option as string}
-              ChipProps={{ size: "small", color: "primary" }}
-            />
+            <field.FormCombobox multiple options={stageSelectOptions} label="Environments" placeholder="Environments" />
           )}
-        </form.Field>
+        </form.AppField>
       </div>
     </div>
   );

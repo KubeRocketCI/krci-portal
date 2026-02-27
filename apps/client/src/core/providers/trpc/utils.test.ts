@@ -128,12 +128,10 @@ describe("customFetch", () => {
       expect(window.location.href).toBe("/auth/login?redirect=%2Fsome-page&reason=session-expired");
     });
 
-    it("should redirect on 401 httpStatus in error.data", async () => {
+    it("should NOT redirect on FORBIDDEN error code", async () => {
       const errorResponse = {
         error: {
-          data: {
-            httpStatus: 401,
-          },
+          code: "FORBIDDEN",
         },
       };
       const mockResponse = new Response(JSON.stringify(errorResponse), { status: 200 });
@@ -141,17 +139,17 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockShowToast).toHaveBeenCalledWith("Session expired. Please log in again.", "warning", {
-        duration: 4000,
-      });
-      expect(window.location.href).toBe("/auth/login?redirect=%2Fsome-page&reason=session-expired");
+      expect(mockShowToast).not.toHaveBeenCalled();
+      expect(window.location.href).toBe("");
     });
 
-    it("should redirect on 403 httpStatus in error.data", async () => {
+    it("should NOT redirect on K8s API errors (source: k8s)", async () => {
       const errorResponse = {
         error: {
+          code: "FORBIDDEN",
           data: {
-            httpStatus: 403,
+            source: "k8s",
+            statusCode: 401,
           },
         },
       };
@@ -160,10 +158,8 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockShowToast).toHaveBeenCalledWith("Session expired. Please log in again.", "warning", {
-        duration: 4000,
-      });
-      expect(window.location.href).toBe("/auth/login?redirect=%2Fsome-page&reason=session-expired");
+      expect(mockShowToast).not.toHaveBeenCalled();
+      expect(window.location.href).toBe("");
     });
 
     it("should not redirect on other error codes", async () => {
@@ -207,13 +203,15 @@ describe("customFetch", () => {
       expect(window.location.href).toBe("/auth/login?redirect=%2Fsome-page&reason=session-expired");
     });
 
-    it("should redirect when batch item has 401 httpStatus", async () => {
+    it("should NOT redirect when batch has K8s errors", async () => {
       const batchResponse = [
         { result: { data: "success" } },
         {
           error: {
+            code: "FORBIDDEN",
             data: {
-              httpStatus: 401,
+              source: "k8s",
+              statusCode: 401,
             },
           },
         },
@@ -223,10 +221,8 @@ describe("customFetch", () => {
 
       await customFetch("http://test.com/api", {});
 
-      expect(mockShowToast).toHaveBeenCalledWith("Session expired. Please log in again.", "warning", {
-        duration: 4000,
-      });
-      expect(window.location.href).toBe("/auth/login?redirect=%2Fsome-page&reason=session-expired");
+      expect(mockShowToast).not.toHaveBeenCalled();
+      expect(window.location.href).toBe("");
     });
 
     it("should not redirect when batch has no auth errors", async () => {

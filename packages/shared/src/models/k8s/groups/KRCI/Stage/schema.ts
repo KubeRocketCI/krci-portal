@@ -100,4 +100,5 @@ export const editStageInputSchema = z.object({
   triggerType: stageSpecSchema.shape.triggerType,
   triggerTemplate: stageSpecSchema.shape.triggerTemplate,
   cleanTemplate: stageSpecSchema.shape.cleanTemplate,
+  qualityGates: stageSpecSchema.shape.qualityGates,
 });

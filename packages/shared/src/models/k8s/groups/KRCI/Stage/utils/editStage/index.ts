@@ -4,7 +4,7 @@ import { editStageInputSchema, stageSchema } from "../../schema.js";
 
 /**
  * Updates a Stage resource with editable fields
- * Only allows editing: triggerType, triggerTemplate, cleanTemplate
+ * Only allows editing: triggerType, triggerTemplate, cleanTemplate, qualityGates
  */
 export const editStageObject = (originalStage: Stage, input: EditStageInput): Stage => {
   const parsedInput = editStageInputSchema.safeParse(input);
@@ -21,6 +21,7 @@ export const editStageObject = (originalStage: Stage, input: EditStageInput): St
       triggerType: input.triggerType,
       triggerTemplate: input.triggerTemplate,
       cleanTemplate: input.cleanTemplate,
+      qualityGates: input.qualityGates,
     },
   };
 

@@ -1,6 +1,5 @@
 import React from "react";
-import { useAppForm } from "@/core/form-temp";
-import type { FormValidateOrFn } from "@tanstack/react-form";
+import { useAppForm } from "@/core/components/form";
 import { EditStageFormContext, EditStageFormInstance } from "./context";
 import type { EditStageFormProviderProps } from "./types";
 import { useDefaultValues } from "../../hooks/useDefaultValues";
@@ -21,16 +20,18 @@ export const EditStageFormProvider: React.FC<EditStageFormProviderProps> = ({
 
   const form = useAppForm({
     defaultValues: defaultValues as EditStageFormValues,
-    validators: {
-      onChange: editStageSchema as unknown as FormValidateOrFn<EditStageFormValues>,
-    },
     onSubmit: async ({ value, formApi }) => {
       const validationResult = editStageSchema.safeParse(value);
 
       if (!validationResult.success) {
         validationResult.error.errors.forEach((error) => {
           const fieldPath = error.path.join(".");
-          formApi.setFieldMeta(fieldPath as never, (prev) => ({ ...prev, isTouched: true }));
+          formApi.setFieldMeta(fieldPath as never, (prev) => ({
+            ...prev,
+            isTouched: true,
+            errors: [error.message],
+            errorMap: { onSubmit: error.message },
+          }));
         });
         return;
       }

@@ -1,348 +1,230 @@
 import React from "react";
+import { useStore } from "@tanstack/react-form";
+import { Button } from "@/core/components/ui/button";
+import { Card } from "@/core/components/ui/card";
+import { Badge } from "@/core/components/ui/badge";
+import { Alert } from "@/core/components/ui/alert";
+import { Shield, Plus, Pencil, Trash2, CheckCircle, TestTube2, GitBranch, Workflow } from "lucide-react";
+import { v4 as uuidv4 } from "uuid";
+import { stageQualityGateType } from "@my-project/shared";
 import { useCDPipelineData } from "../../hooks/useDefaultValues";
 import { useCreateStageForm } from "../../providers/form/hooks";
 import { NAMES } from "../../names";
-import { Button } from "@/core/components/ui/button";
-import { Alert } from "@/core/components/ui/alert";
-import { Tooltip } from "@/core/components/ui/tooltip";
-import { Info, Plus, Trash } from "lucide-react";
-import { v4 as uuidv4 } from "uuid";
-import { stageQualityGateType, codebaseBranchLabels, codebaseLabels, codebaseType } from "@my-project/shared";
-import { useStore } from "@tanstack/react-form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
-import { Input } from "@/core/components/ui/input";
-import { Label } from "@/core/components/ui/label";
-import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
-import { useCodebaseBranchWatchList } from "@/k8s/api/groups/KRCI/CodebaseBranch";
+import { QualityGateInlineForm, type QualityGateFormValues } from "./QualityGateFormFields";
 
-const defaultQualityGate = {
-  id: uuidv4(),
+type QualityGate = {
+  id: string;
+} & QualityGateFormValues;
+
+const defaultManualGate: QualityGateFormValues = {
   qualityGateType: stageQualityGateType.manual,
   stepName: "approve",
   autotestName: null,
   branchName: null,
 };
 
-type QualityGate = {
-  id: string;
-  qualityGateType: "manual" | "autotests";
-  stepName: string;
-  autotestName: string | null;
-  branchName: string | null;
-};
-
-interface QualityGateRowProps {
-  namespace: string;
-  qualityGate: QualityGate;
-  allQualityGates: QualityGate[];
-  onUpdate: (id: string, updates: Partial<QualityGate>) => void;
-  index: number;
-}
-
-const QualityGateRow: React.FC<QualityGateRowProps> = ({
-  namespace,
-  qualityGate,
-  allQualityGates,
-  onUpdate,
-  index,
-}) => {
-  const form = useCreateStageForm();
-  // Fetch autotests (codebases with type autotest)
-  const codebasesWatch = useCodebaseWatchList({
-    namespace,
-    labels: {
-      [codebaseLabels.codebaseType]: codebaseType.autotest,
-    },
-    queryOptions: {
-      enabled: !!namespace,
-    },
-  });
-
-  const autotests = codebasesWatch.data.array;
-
-  // Fetch branches for selected autotest
-  const branchesWatch = useCodebaseBranchWatchList({
-    namespace,
-    labels: qualityGate.autotestName
-      ? {
-          [codebaseBranchLabels.codebase]: qualityGate.autotestName,
-        }
-      : {},
-    queryOptions: {
-      enabled: !!namespace && !!qualityGate.autotestName,
-    },
-  });
-
-  const branches = React.useMemo(
-    () => branchesWatch.data.array.map((branch) => branch.spec.branchName),
-    [branchesWatch.data.array]
-  );
-
-  // Get already selected branches for the current autotest
-  const alreadySelectedBranches = React.useMemo(() => {
-    return allQualityGates
-      .filter((qg) => qg.autotestName === qualityGate.autotestName && qg.id !== qualityGate.id)
-      .map((qg) => qg.branchName)
-      .filter(Boolean);
-  }, [allQualityGates, qualityGate.autotestName, qualityGate.id]);
-
-  const handleTypeChange = (value: string) => {
-    onUpdate(qualityGate.id, {
-      qualityGateType: value as "manual" | "autotests",
-      stepName: value === stageQualityGateType.manual ? "approve" : "",
-      autotestName: null,
-      branchName: null,
-    });
-  };
-
-  const handleStepNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onUpdate(qualityGate.id, { stepName: e.target.value });
-  };
-
-  const handleAutotestChange = (value: string) => {
-    onUpdate(qualityGate.id, {
-      autotestName: value,
-      branchName: null, // Reset branch when autotest changes
-    });
-  };
-
-  const handleBranchChange = (value: string) => {
-    onUpdate(qualityGate.id, { branchName: value });
-  };
-
-  const hasAutotests = autotests.length > 0;
-  const isAutotestType = qualityGate.qualityGateType === stageQualityGateType.autotests;
-
-  // Get field errors for stepName
-  const stepNameFieldPath = `${NAMES.qualityGates}.${index}.stepName`;
-  // Type assertion needed: fieldPath is constructed dynamically for nested array field
-  // TanStack Form's getFieldMeta expects a statically-known field name
-  const stepNameFieldMeta = form.getFieldMeta(stepNameFieldPath as never);
-  const stepNameIsTouched = stepNameFieldMeta?.isTouched;
-  const stepNameErrors = stepNameFieldMeta?.errors || [];
-  const stepNameHasError = stepNameIsTouched && stepNameErrors.length > 0;
-
-  // Extract error message - errors can be strings or objects with message property (from Zod)
-  const stepNameErrorMessage = stepNameErrors[0]
-    ? typeof stepNameErrors[0] === "string"
-      ? stepNameErrors[0]
-      : (stepNameErrors[0] as { message?: string })?.message
-    : undefined;
-
-  return (
-    <div className="grid grid-cols-12 gap-2">
-      <div className="col-span-3">
-        <Label htmlFor={`quality-gate-type-${qualityGate.id}`}>Type</Label>
-        <Select value={qualityGate.qualityGateType} onValueChange={handleTypeChange}>
-          <SelectTrigger id={`quality-gate-type-${qualityGate.id}`}>
-            <SelectValue placeholder="Select type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={stageQualityGateType.manual}>Manual</SelectItem>
-            <SelectItem value={stageQualityGateType.autotests} disabled={!hasAutotests}>
-              Autotests {!hasAutotests && "(No autotests available)"}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="col-span-3">
-        <Label htmlFor={`step-name-${qualityGate.id}`}>Step Name</Label>
-        <Input
-          id={`step-name-${qualityGate.id}`}
-          value={qualityGate.stepName}
-          onChange={handleStepNameChange}
-          placeholder="Enter step name"
-          className={stepNameHasError ? "border-destructive" : ""}
-        />
-        {stepNameHasError && <div className="text-destructive mt-1 text-sm">{stepNameErrorMessage}</div>}
-      </div>
-
-      {isAutotestType && (
-        <>
-          <div className="col-span-3">
-            <Label htmlFor={`autotest-${qualityGate.id}`}>Autotest</Label>
-            <Select
-              value={qualityGate.autotestName || ""}
-              onValueChange={handleAutotestChange}
-              disabled={!hasAutotests}
-            >
-              <SelectTrigger id={`autotest-${qualityGate.id}`}>
-                <SelectValue placeholder="Select autotest" />
-              </SelectTrigger>
-              <SelectContent>
-                {autotests.map((autotest) => (
-                  <SelectItem key={autotest.metadata.name} value={autotest.metadata.name}>
-                    {autotest.metadata.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="col-span-3">
-            <Label htmlFor={`branch-${qualityGate.id}`}>Branch</Label>
-            <Select
-              value={qualityGate.branchName || ""}
-              onValueChange={handleBranchChange}
-              disabled={!qualityGate.autotestName || branchesWatch.query.isLoading}
-            >
-              <SelectTrigger id={`branch-${qualityGate.id}`}>
-                <SelectValue placeholder="Select branch" />
-              </SelectTrigger>
-              <SelectContent>
-                {branches.map((branch) => {
-                  const isDisabled = alreadySelectedBranches.includes(branch);
-                  return (
-                    <SelectItem key={branch} value={branch} disabled={isDisabled}>
-                      {branch} {isDisabled && "(already selected)"}
-                    </SelectItem>
-                  );
-                })}
-                {branches.length === 0 && !branchesWatch.query.isLoading && (
-                  <div className="text-muted-foreground px-2 py-1.5 text-sm">No branches available</div>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
-
 export const QualityGates: React.FC = () => {
   const { namespace } = useCDPipelineData();
   const form = useCreateStageForm();
 
-  // Subscribe to quality gates field value
   const qualityGatesFieldValue = useStore(
     form.store,
     (state: typeof form.store.state) => state.values[NAMES.qualityGates] || []
   );
 
-  // Get field errors for quality gates
-  const qualityGatesFieldMeta = form.getFieldMeta(NAMES.qualityGates);
+  // Get field errors for quality gates array-level validation
+  // Use useStore to subscribe to field metadata changes for reactivity
+  const qualityGatesFieldMeta = useStore(form.store, (state) => {
+    return state.fieldMeta[NAMES.qualityGates];
+  });
+
   const isTouched = qualityGatesFieldMeta?.isTouched;
   const errors = qualityGatesFieldMeta?.errors || [];
   const hasError = isTouched && errors.length > 0;
 
-  const handleAddQualityGate = React.useCallback(() => {
-    const currentGates = form.getFieldValue(NAMES.qualityGates) || [];
-    form.setFieldValue(NAMES.qualityGates, [
-      ...currentGates,
-      {
-        ...defaultQualityGate,
-        id: uuidv4(),
-      },
-    ]);
-  }, [form]);
+  const errorMessage =
+    hasError && errors.length > 0
+      ? typeof errors[0] === "string"
+        ? errors[0]
+        : (errors[0] as { message?: string })?.message
+      : undefined;
 
-  const handleRemoveQualityGate = React.useCallback(
-    (id: string) => {
-      const currentGates = form.getFieldValue(NAMES.qualityGates) || [];
-      form.setFieldValue(
-        NAMES.qualityGates,
-        currentGates.filter((el: (typeof currentGates)[0]) => el.id !== id)
-      );
-    },
-    [form]
-  );
+  const [showGateForm, setShowGateForm] = React.useState(false);
+  const [editingGateIndex, setEditingGateIndex] = React.useState<number | null>(null);
 
-  const handleUpdateQualityGate = React.useCallback(
-    (id: string, updates: Partial<(typeof qualityGatesFieldValue)[0]>) => {
-      const currentGates = form.getFieldValue(NAMES.qualityGates) || [];
-      form.setFieldValue(
-        NAMES.qualityGates,
-        currentGates.map((gate: (typeof currentGates)[0]) => (gate.id === id ? { ...gate, ...updates } : gate))
+  const startAddingGate = () => {
+    setEditingGateIndex(null);
+    setShowGateForm(true);
+  };
+
+  const startEditingGate = (index: number) => {
+    setEditingGateIndex(index);
+    setShowGateForm(true);
+  };
+
+  const handleCancel = () => {
+    setShowGateForm(false);
+    setEditingGateIndex(null);
+  };
+
+  const handleSave = (values: QualityGateFormValues) => {
+    if (editingGateIndex !== null) {
+      // Update existing gate
+      const updated = qualityGatesFieldValue.map((gate, idx) =>
+        idx === editingGateIndex ? { ...gate, ...values } : gate
       );
-    },
-    [form]
-  );
+      form.setFieldValue(NAMES.qualityGates, updated);
+    } else {
+      // Add new gate
+      const newGate: QualityGate = { id: uuidv4(), ...values };
+      form.setFieldValue(NAMES.qualityGates, [...qualityGatesFieldValue, newGate]);
+    }
+    setShowGateForm(false);
+    setEditingGateIndex(null);
+  };
+
+  const handleDeleteGate = (index: number) => {
+    form.setFieldValue(
+      NAMES.qualityGates,
+      qualityGatesFieldValue.filter((_, idx) => idx !== index)
+    );
+  };
+
+  const editingGateValues: QualityGateFormValues | null =
+    editingGateIndex !== null
+      ? {
+          qualityGateType: qualityGatesFieldValue[editingGateIndex]?.qualityGateType ?? "manual",
+          stepName: qualityGatesFieldValue[editingGateIndex]?.stepName ?? "",
+          autotestName: qualityGatesFieldValue[editingGateIndex]?.autotestName ?? null,
+          branchName: qualityGatesFieldValue[editingGateIndex]?.branchName ?? null,
+        }
+      : null;
+
+  const editingGateId = editingGateIndex !== null ? qualityGatesFieldValue[editingGateIndex]?.id : null;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-foreground mb-2 text-lg font-semibold">Quality Gates</h2>
-        <p className="text-muted-foreground text-sm">
-          Define quality gates that must pass before applications can be promoted to the next environment. You can
-          configure manual approvals or automated tests.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-foreground mb-1 text-lg">Quality Gates</h3>
+          <p className="text-muted-foreground text-sm">Configure quality gate validations for deployments</p>
+        </div>
+        {!showGateForm && (
+          <Button onClick={startAddingGate} size="sm" type="button">
+            <Plus className="mr-2 h-4 w-4" />
+            Add Quality Gate
+          </Button>
+        )}
       </div>
 
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-row flex-nowrap items-center gap-2">
-          <h6 className="text-base font-medium">Quality gates</h6>
-          <Tooltip title="Define quality gates before promoting applications to the next environment.">
-            <Info size={16} />
-          </Tooltip>
-        </div>
+      {/* Inline Form (add/edit) */}
+      {showGateForm && (
+        <QualityGateInlineForm
+          namespace={namespace}
+          defaultValues={editingGateValues ?? defaultManualGate}
+          onSave={handleSave}
+          onCancel={handleCancel}
+          isEditing={editingGateIndex !== null}
+          existingQualityGates={qualityGatesFieldValue}
+          editingGateId={editingGateId}
+        />
+      )}
 
-        <div className="flex flex-col gap-4">
-          {qualityGatesFieldValue.map((qualityGate: (typeof qualityGatesFieldValue)[0], idx: number) => {
-            const key = `quality-gate-row::${qualityGate.id}`;
-            const isLast = idx === qualityGatesFieldValue.length - 1;
-            const isOnly = qualityGatesFieldValue.length === 1;
-
-            return (
-              <div key={key}>
-                <div className="grid grid-cols-12 items-center gap-2">
-                  <div className="col-span-10">
-                    <QualityGateRow
-                      namespace={namespace}
-                      qualityGate={qualityGate}
-                      allQualityGates={qualityGatesFieldValue}
-                      onUpdate={handleUpdateQualityGate}
-                      index={idx}
-                    />
+      {/* Quality Gates List */}
+      {qualityGatesFieldValue.length === 0 && !showGateForm ? (
+        <Card className="border-border border-2 border-dashed p-12 text-center">
+          <Shield className="text-muted-foreground mx-auto mb-3 h-12 w-12" />
+          <h4 className="text-foreground mb-2">No Quality Gates Configured</h4>
+          <p className="text-muted-foreground mb-4 text-sm">
+            Add quality gates to validate deployments before they go live
+          </p>
+          <Button onClick={startAddingGate} variant="outline" type="button">
+            <Plus className="mr-2 h-4 w-4" />
+            Add Your First Quality Gate
+          </Button>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {qualityGatesFieldValue.map((gate, index) => (
+            <Card key={gate.id} className="p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-1 items-start gap-3">
+                  <div className="bg-primary/10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full">
+                    {gate.qualityGateType === "manual" ? (
+                      <CheckCircle className="text-primary h-4 w-4" />
+                    ) : (
+                      <TestTube2 className="text-primary h-4 w-4" />
+                    )}
                   </div>
-                  <div className="col-span-2 mt-6">
-                    <div className="flex flex-row items-center gap-2">
-                      {!isOnly && (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          className="min-w-0"
-                          onClick={() => handleRemoveQualityGate(qualityGate.id)}
-                        >
-                          <Trash size={20} />
-                        </Button>
-                      )}
-                      {!isOnly && isLast && <div className="bg-border h-7 w-px" />}
-                      {isLast && (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          className="min-w-0"
-                          onClick={handleAddQualityGate}
-                        >
-                          <Plus size={20} />
-                        </Button>
-                      )}
+                  <div className="flex-1">
+                    <div className="mb-1 flex items-center gap-2">
+                      <span className="text-foreground">Quality Gate #{index + 1}</span>
+                      <Badge variant="outline" className="capitalize">
+                        {gate.qualityGateType}
+                      </Badge>
                     </div>
+                    {gate.qualityGateType === "autotests" && (
+                      <div className="text-muted-foreground space-y-1 text-sm">
+                        <div className="flex items-center gap-2">
+                          <TestTube2 className="text-muted-foreground h-3 w-3" />
+                          <span className="text-xs">Codebase:</span>
+                          <span className="font-mono text-xs">{gate.autotestName}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <GitBranch className="text-muted-foreground h-3 w-3" />
+                          <span className="text-xs">Branch:</span>
+                          <span className="font-mono text-xs">{gate.branchName}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Workflow className="text-muted-foreground h-3 w-3" />
+                          <span className="text-xs">Step:</span>
+                          <span className="font-mono text-xs">{gate.stepName}</span>
+                        </div>
+                      </div>
+                    )}
+                    {gate.qualityGateType === "manual" && (
+                      <div className="text-muted-foreground space-y-1 text-sm">
+                        <p>Manual approval required before deployment</p>
+                        <div className="flex items-center gap-2">
+                          <Workflow className="text-muted-foreground h-3 w-3" />
+                          <span className="text-xs">Step:</span>
+                          <span className="font-mono text-xs">{gate.stepName}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => startEditingGate(index)}
+                    disabled={showGateForm}
+                    type="button"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteGate(index)}
+                    disabled={showGateForm || qualityGatesFieldValue.length === 1}
+                    type="button"
+                  >
+                    <Trash2 className="text-destructive h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            );
-          })}
+            </Card>
+          ))}
         </div>
+      )}
 
-        {(!qualityGatesFieldValue || !qualityGatesFieldValue.length) && (
-          <Alert variant="default">Add at least one quality gate</Alert>
-        )}
-
-        {hasError && errors.length > 0 && (
-          <div className="text-destructive text-sm">
-            {errors.map((error, errorIndex) => {
-              // Extract error message - errors can be strings or objects with message property (from Zod)
-              const errorMessage = typeof error === "string" ? error : (error as { message?: string })?.message;
-              return <div key={errorIndex}>{errorMessage}</div>;
-            })}
-          </div>
-        )}
-      </div>
+      {errorMessage && (
+        <Alert variant="destructive" className="mt-2">
+          {errorMessage}
+        </Alert>
+      )}
     </div>
   );
 };

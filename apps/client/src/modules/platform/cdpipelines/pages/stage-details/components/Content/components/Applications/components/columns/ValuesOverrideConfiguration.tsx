@@ -1,7 +1,7 @@
 import { Application, Codebase, GitProvider } from "@my-project/shared";
 import { useTypedFormContext } from "../../hooks/useTypedFormContext";
 import { ResourceIconLink } from "@/core/components/ResourceIconLink";
-import { SwitchField } from "@/core/components/form/SwitchField";
+import { Switch } from "@/core/components/ui/switch";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { VALUES_OVERRIDE_POSTFIX } from "@/modules/platform/cdpipelines/pages/stage-details/constants";
 import { Tooltip } from "@/core/components/ui/tooltip";
@@ -40,7 +40,10 @@ export const ValuesOverrideConfigurationColumn = ({
         <div className="flex flex-row items-center gap-2">
           <div className="flex w-full flex-row items-center gap-2">
             <div>
-              <SwitchField field={field} />
+              <Switch
+                checked={field.state.value as boolean}
+                onCheckedChange={(checked) => field.handleChange(checked as never)}
+              />
             </div>
             {field.state.value !== currentResourceValue && (
               <div className="leading-none">

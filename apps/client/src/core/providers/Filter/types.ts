@@ -1,5 +1,5 @@
-import type { FormAsyncValidateOrFn, FormValidateOrFn, ReactFormExtendedApi } from "@tanstack/react-form";
 import { ReactNode } from "react";
+import { useAppForm } from "@/core/components/form";
 
 export type FilterValueMap = Record<string, unknown>;
 
@@ -16,22 +16,17 @@ export interface FilterProviderProps<Item, Values extends FilterValueMap> {
   syncWithUrl?: boolean;
 }
 
-// Type for the form instance returned by useForm (includes Field component and all methods)
-// All validator generics can be undefined since we don't use validation in filters
-export type FilterFormApi<Values> = ReactFormExtendedApi<
-  Values,
-  FormValidateOrFn<Values> | undefined,
-  FormValidateOrFn<Values> | undefined,
-  FormAsyncValidateOrFn<Values> | undefined,
-  FormValidateOrFn<Values> | undefined,
-  FormAsyncValidateOrFn<Values> | undefined,
-  FormValidateOrFn<Values> | undefined,
-  FormAsyncValidateOrFn<Values> | undefined,
-  FormValidateOrFn<Values> | undefined,
-  FormAsyncValidateOrFn<Values> | undefined,
-  FormAsyncValidateOrFn<Values> | undefined,
-  never
->;
+// Internal helper to capture the form type
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function useFilterFormInternal<Values extends FilterValueMap>(defaultValues: Values) {
+  const form = useAppForm({
+    defaultValues,
+  });
+  return form;
+}
+
+// Type for the form instance returned by useAppForm
+export type FilterFormApi<Values extends FilterValueMap> = ReturnType<typeof useFilterFormInternal<Values>>;
 
 export interface FilterContextValue<Item, Values extends FilterValueMap> {
   form: FilterFormApi<Values>;

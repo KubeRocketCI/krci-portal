@@ -1,4 +1,3 @@
-import { NamespaceAutocomplete, Select, TextField } from "@/core/components/form";
 import { Button } from "@/core/components/ui/button";
 import { PIPELINE_LIST_FILTER_NAMES } from "./constants";
 import { usePipelineFilter } from "./hooks/useFilter";
@@ -20,7 +19,10 @@ export const PipelineFilter = () => {
   const allowedNamespaces = useClusterStore(useShallow((state) => state.allowedNamespaces));
   const showNamespaceFilter = allowedNamespaces.length > 1;
 
-  const namespaceOptions = React.useMemo(() => allowedNamespaces, [allowedNamespaces]);
+  const namespaceComboboxOptions = React.useMemo(
+    () => allowedNamespaces.map((value) => ({ label: value, value })),
+    [allowedNamespaces]
+  );
 
   const pipelineTypeOptions = React.useMemo(() => {
     const pipelineTypes = new Set(
@@ -38,29 +40,29 @@ export const PipelineFilter = () => {
   return (
     <>
       <div className="col-span-3">
-        <form.Field name={PIPELINE_LIST_FILTER_NAMES.SEARCH}>
-          {(field) => <TextField field={field} label="Search" placeholder="Search pipelines" />}
-        </form.Field>
+        <form.AppField name={PIPELINE_LIST_FILTER_NAMES.SEARCH}>
+          {(field) => <field.FormTextField label="Search" placeholder="Search pipelines" />}
+        </form.AppField>
       </div>
 
       <div className="col-span-3">
-        <form.Field name={PIPELINE_LIST_FILTER_NAMES.PIPELINE_TYPE}>
-          {(field) => <Select field={field} label="Type" options={pipelineTypeOptions} placeholder="Select type" />}
-        </form.Field>
+        <form.AppField name={PIPELINE_LIST_FILTER_NAMES.PIPELINE_TYPE}>
+          {(field) => <field.FormSelect label="Type" options={pipelineTypeOptions} placeholder="Select type" />}
+        </form.AppField>
       </div>
 
       {showNamespaceFilter && (
         <div className="col-span-4">
-          <form.Field name={PIPELINE_LIST_FILTER_NAMES.NAMESPACES}>
+          <form.AppField name={PIPELINE_LIST_FILTER_NAMES.NAMESPACES}>
             {(field) => (
-              <NamespaceAutocomplete
-                field={field}
-                options={namespaceOptions}
+              <field.FormCombobox
+                options={namespaceComboboxOptions}
                 label="Namespaces"
                 placeholder="Select namespaces"
+                multiple
               />
             )}
-          </form.Field>
+          </form.AppField>
         </div>
       )}
 

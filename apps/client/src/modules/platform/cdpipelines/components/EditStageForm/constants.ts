@@ -4,6 +4,7 @@ export const EDIT_STAGE_FORM_NAMES = {
   triggerType: "triggerType",
   triggerTemplate: "triggerTemplate",
   cleanTemplate: "cleanTemplate",
+  qualityGates: "qualityGates",
 } as const;
 
 export const FORM_GUIDE_CONFIG: Record<number, FormGuideFieldDescription[]> = {
@@ -27,6 +28,16 @@ export const FORM_GUIDE_CONFIG: Record<number, FormGuideFieldDescription[]> = {
       fieldName: "cleanTemplate",
       label: "Clean Pipeline Template",
       description: "The pipeline template used to tear down or clean this environment.",
+    },
+    {
+      fieldName: "qualityGates",
+      label: "Quality Gates",
+      description: "Checks that must pass before a deployment is promoted to the next environment.",
+      notes: [
+        "Manual — requires a human to approve the deployment.",
+        "Autotests — runs an autotest suite; select the codebase and branch to run.",
+        "At least one quality gate is required.",
+      ],
     },
   ],
 };

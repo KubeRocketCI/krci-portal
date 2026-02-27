@@ -21,7 +21,7 @@ import {
 import { Check } from "lucide-react";
 import React from "react";
 import { useStore } from "@tanstack/react-form";
-import { useAppForm } from "@/core/form-temp";
+import { useAppForm } from "@/core/components/form";
 import { STEPPER, STEPPER_STEPS } from "../../constants";
 import { useCurrentDialog } from "../../providers/CurrentDialog/hooks";
 import { WidgetType } from "../../types";

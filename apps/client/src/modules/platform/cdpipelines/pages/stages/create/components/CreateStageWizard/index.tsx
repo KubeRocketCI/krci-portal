@@ -130,6 +130,15 @@ const WizardContent: React.FC<WizardContentProps> = ({ isPending }) => {
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       e.stopPropagation();
+      console.log("[WizardContent] handleSubmit called");
+      console.log("[WizardContent] form state:", {
+        isValid: form.state.isValid,
+        canSubmit: form.state.canSubmit,
+        isSubmitting: form.state.isSubmitting,
+        errors: form.state.errors,
+        fieldErrors: Object.fromEntries(Object.entries(form.state.fieldMeta).map(([k, v]) => [k, v?.errors])),
+        values: form.state.values,
+      });
       form.handleSubmit();
     },
     [form]

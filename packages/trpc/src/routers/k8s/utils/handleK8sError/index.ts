@@ -18,9 +18,11 @@ type TRPCCode =
   | "INTERNAL_SERVER_ERROR";
 
 // Map HTTP status codes to TRPC error codes
+// Note: K8s API 401/403 errors are mapped to FORBIDDEN to distinguish them from
+// session expiration errors (UNAUTHORIZED), preventing infinite login redirects
 const HTTP_STATUS_TO_TRPC_CODE: Record<number, TRPCCode> = {
   400: "BAD_REQUEST",
-  401: "UNAUTHORIZED",
+  401: "FORBIDDEN", // K8s API auth errors should NOT trigger login redirect
   403: "FORBIDDEN",
   404: "NOT_FOUND",
   405: "METHOD_NOT_SUPPORTED",
@@ -58,6 +60,7 @@ export function handleK8sError(error: unknown): TRPCError {
       message: error.message,
       code: trpcCode,
       cause: {
+        source: "k8s", // Mark as K8s error to prevent login redirect
         statusCode: error.statusCode,
         statusText: error.statusText,
         responseBody: error.responseBody,
@@ -92,7 +95,10 @@ export function handleK8sError(error: unknown): TRPCError {
     return new TRPCError({
       message: errorBody.message || error.message || "Kubernetes API error",
       code: trpcCode,
-      cause: errorBody,
+      cause: {
+        ...errorBody,
+        source: "k8s", // Mark as K8s error to prevent login redirect
+      },
     });
   }
 

@@ -49,7 +49,7 @@ const StrategyOptions: React.FC<{ field: any }> = ({ field }) => {
       label="Creation Strategy"
       options={options}
       variant="vertical"
-      classNames={{ container: "grid-cols-3", item: "p-3", itemIcon: "h-6 w-6", itemIconContainer: "h-8 w-8" }}
+      classNames={{ container: "grid-cols-3", item: "p-3", itemIcon: "h-4 w-4", itemIconContainer: "h-8 w-8" }}
     />
   );
 };

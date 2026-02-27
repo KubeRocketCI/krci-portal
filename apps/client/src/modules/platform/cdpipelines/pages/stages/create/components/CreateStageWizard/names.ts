@@ -25,15 +25,61 @@ const deployNamespaceSchema = z
       "Namespace must contain only lowercase letters, numbers, and dashes. It cannot start or end with a dash, and cannot have whitespaces",
   });
 
-const qualityGateSchema = z.object({
-  id: z.string(),
-  qualityGateType: z.nativeEnum(stageQualityGateType),
-  stepName: z.string(),
-  autotestName: z.string().nullable(),
-  branchName: z.string().nullable(),
-});
+const qualityGateSchema = z
+  .object({
+    id: z.string(),
+    qualityGateType: z.nativeEnum(stageQualityGateType),
+    stepName: z.string(),
+    autotestName: z.string().nullable(),
+    branchName: z.string().nullable(),
+  })
+  .refine(
+    (data) => {
+      if (data.qualityGateType === stageQualityGateType.autotests) {
+        return !!(data.autotestName && data.autotestName.trim().length > 0);
+      }
+      return true;
+    },
+    {
+      message: "Autotest codebase is required for autotest quality gates",
+      path: ["autotestName"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.qualityGateType === stageQualityGateType.autotests) {
+        return !!(data.branchName && data.branchName.trim().length > 0);
+      }
+      return true;
+    },
+    {
+      message: "Branch is required for autotest quality gates",
+      path: ["branchName"],
+    }
+  )
+  .refine(
+    (data) => {
+      return !!(data.stepName && data.stepName.trim().length > 0);
+    },
+    {
+      message: "Step name is required",
+      path: ["stepName"],
+    }
+  );
 
-const qualityGatesSchema = z.array(qualityGateSchema).min(1, "At least one quality gate is required.");
+const qualityGatesSchema = z
+  .array(qualityGateSchema)
+  .min(1, "At least one quality gate is required.")
+  .refine(
+    (gates) => {
+      const stepNames = gates.map((gate) => gate.stepName.trim()).filter((name) => name.length > 0);
+      const uniqueStepNames = new Set(stepNames);
+      return stepNames.length === uniqueStepNames.size;
+    },
+    {
+      message: "Quality gate step names must be unique",
+    }
+  );
 
 const uiOnlyFields = {
   ui_qualityGatesTypeAddChooser: z.string().optional(),

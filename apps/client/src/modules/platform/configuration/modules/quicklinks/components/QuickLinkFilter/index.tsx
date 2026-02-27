@@ -1,4 +1,3 @@
-import { TextField } from "@/core/components/form";
 import { Button } from "@/core/components/ui/button";
 import { QUICKLINK_LIST_FILTER_NAMES } from "./constants";
 import { useQuickLinkFilter } from "./hooks/useFilter";
@@ -11,9 +10,9 @@ export const QuickLinkFilter = () => {
   return (
     <>
       <div className="col-span-3">
-        <form.Field name={QUICKLINK_LIST_FILTER_NAMES.SEARCH}>
-          {(field) => <TextField field={field} label="Search" placeholder="Search quick links" />}
-        </form.Field>
+        <form.AppField name={QUICKLINK_LIST_FILTER_NAMES.SEARCH}>
+          {(field) => <field.FormTextField label="Search" placeholder="Search quick links" />}
+        </form.AppField>
       </div>
 
       {form.state.isDirty && (

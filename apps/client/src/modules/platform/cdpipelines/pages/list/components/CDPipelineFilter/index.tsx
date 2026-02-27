@@ -1,6 +1,5 @@
 import { useCDPipelineWatchList } from "@/k8s/api/groups/KRCI/CDPipeline";
 import { useCDPipelineFilter } from "./hooks/useCDPipelineFilter";
-import { Autocomplete, NamespaceAutocomplete, TextField } from "@/core/components/form";
 import { Button } from "@/core/components/ui/button";
 import React from "react";
 import { useClusterStore } from "@/k8s/store";
@@ -28,42 +27,44 @@ export const CDPipelineFilter = () => {
     );
   }, [cdPipelineListWatch.data.array]);
 
+  const codebaseOptions = React.useMemo(
+    () => cdPipelineCodebases.map((value) => ({ label: value, value })),
+    [cdPipelineCodebases]
+  );
+
+  const namespaceComboboxOptions = React.useMemo(
+    () => namespaceOptions.map((value) => ({ label: value, value })),
+    [namespaceOptions]
+  );
+
   return (
     <>
       <div className="col-span-3">
-        <form.Field name="search" listeners={{ onChangeDebounceMs: 300 }}>
-          {(field) => <TextField field={field} label="Search" placeholder="Search CD Pipelines" />}
-        </form.Field>
+        <form.AppField name="search">
+          {(field) => <field.FormTextField label="Search" placeholder="Search CD Pipelines" />}
+        </form.AppField>
       </div>
 
       <div className="col-span-4">
-        <form.Field name="codebases">
+        <form.AppField name="codebases">
           {(field) => (
-            <Autocomplete
-              field={field}
-              multiple
-              options={cdPipelineCodebases}
-              freeSolo
-              label="Codebases"
-              placeholder="Select codebases"
-              ChipProps={{ size: "small", color: "primary" }}
-            />
+            <field.FormCombobox multiple options={codebaseOptions} label="Codebases" placeholder="Select codebases" />
           )}
-        </form.Field>
+        </form.AppField>
       </div>
 
       {showNamespaceFilter && (
         <div className="col-span-4">
-          <form.Field name="namespaces">
+          <form.AppField name="namespaces">
             {(field) => (
-              <NamespaceAutocomplete
-                field={field}
-                options={namespaceOptions}
+              <field.FormCombobox
+                options={namespaceComboboxOptions}
                 label="Namespaces"
                 placeholder="Select namespaces"
+                multiple
               />
             )}
-          </form.Field>
+          </form.AppField>
         </div>
       )}
 

@@ -64,7 +64,7 @@ export const CodebaseType: React.FC = () => {
         <field.FormRadioGroup
           label="Codebase Type"
           options={typeOptions}
-          classNames={{ item: "p-3", itemIcon: "h-6 w-6", itemIconContainer: "h-8 w-8" }}
+          classNames={{ item: "p-3", itemIcon: "h-4 w-4", itemIconContainer: "h-8 w-8" }}
         />
       )}
     </form.AppField>

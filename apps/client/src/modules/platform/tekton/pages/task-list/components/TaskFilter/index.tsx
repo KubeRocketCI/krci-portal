@@ -1,4 +1,3 @@
-import { NamespaceAutocomplete, TextField } from "@/core/components/form";
 import { Button } from "@/core/components/ui/button";
 import { TASK_LIST_FILTER_NAMES } from "./constants";
 import { useTaskFilter } from "./hooks/useFilter";
@@ -14,28 +13,31 @@ export const TaskFilter = () => {
   const allowedNamespaces = useClusterStore(useShallow((state) => state.allowedNamespaces));
   const showNamespaceFilter = allowedNamespaces.length > 1;
 
-  const namespaceOptions = React.useMemo(() => allowedNamespaces, [allowedNamespaces]);
+  const namespaceOptions = React.useMemo(
+    () => allowedNamespaces.map((value) => ({ label: value, value })),
+    [allowedNamespaces]
+  );
 
   return (
     <>
       <div className="col-span-3">
-        <form.Field name={TASK_LIST_FILTER_NAMES.SEARCH}>
-          {(field) => <TextField field={field} label="Search" placeholder="Search tasks" />}
-        </form.Field>
+        <form.AppField name={TASK_LIST_FILTER_NAMES.SEARCH}>
+          {(field) => <field.FormTextField label="Search" placeholder="Search tasks" />}
+        </form.AppField>
       </div>
 
       {showNamespaceFilter && (
         <div className="col-span-4">
-          <form.Field name={TASK_LIST_FILTER_NAMES.NAMESPACES}>
+          <form.AppField name={TASK_LIST_FILTER_NAMES.NAMESPACES}>
             {(field) => (
-              <NamespaceAutocomplete
-                field={field}
+              <field.FormCombobox
                 options={namespaceOptions}
                 label="Namespaces"
                 placeholder="Select namespaces"
+                multiple
               />
             )}
-          </form.Field>
+          </form.AppField>
         </div>
       )}
 

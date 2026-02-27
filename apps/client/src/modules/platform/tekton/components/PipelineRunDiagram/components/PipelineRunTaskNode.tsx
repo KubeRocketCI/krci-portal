@@ -10,13 +10,25 @@ import { humanize } from "@/core/utils/date-humanize";
 import { PipelineRunTaskNodeData } from "../hooks/usePipelineRunGraphData";
 import { getTaskRunStepStatus } from "@my-project/shared";
 import { ListOrdered, Timer } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Button } from "@/core/components/ui/button";
+import { routePipelineRunDetails } from "@/modules/platform/tekton/pages/pipelinerun-details/route";
+import { useClusterStore } from "@/k8s/store";
+import { useShallow } from "zustand/react/shallow";
 
 export const PipelineRunTaskNode: React.FC<{
   data: PipelineRunTaskNodeData;
   sourcePosition?: Position;
   targetPosition?: Position;
 }> = ({ data, sourcePosition, targetPosition }) => {
+  const { clusterName } = useClusterStore(
+    useShallow((state) => ({
+      clusterName: state.clusterName,
+    }))
+  );
+
   const displayName = data.name;
+  const hasTaskRun = !!data.taskRun;
 
   // Get status icon and color
   const getStatusData = () => {
@@ -176,7 +188,28 @@ export const PipelineRunTaskNode: React.FC<{
                 Title={statusText}
               />
             )}
-            <p className="text-foreground line-clamp-1 text-sm leading-tight font-semibold break-all"> {displayName}</p>
+            {hasTaskRun ? (
+              <Button variant="link" asChild className="h-auto p-0">
+                <Link
+                  to={routePipelineRunDetails.fullPath}
+                  params={{
+                    clusterName,
+                    namespace: data.namespace,
+                    name: data.pipelineRunName,
+                  }}
+                  search={{
+                    taskRun: data.name,
+                  }}
+                  className="text-foreground hover:text-primary line-clamp-1 text-sm leading-tight font-semibold break-all"
+                >
+                  {displayName}
+                </Link>
+              </Button>
+            ) : (
+              <p className="text-foreground line-clamp-1 text-sm leading-tight font-semibold break-all">
+                {displayName}
+              </p>
+            )}
           </div>
 
           {/* Task reference */}

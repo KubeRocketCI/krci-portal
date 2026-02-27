@@ -1,5 +1,5 @@
 import React from "react";
-import { useAppForm } from "@/core/form-temp";
+import { useAppForm } from "@/core/components/form";
 import type { ManageNexusFormValues } from "../../names";
 
 // Internal hook to create the form with proper typing

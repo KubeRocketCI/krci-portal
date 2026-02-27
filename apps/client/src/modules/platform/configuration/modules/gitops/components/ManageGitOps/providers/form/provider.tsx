@@ -1,5 +1,5 @@
 import React from "react";
-import { useAppForm } from "@/core/form-temp";
+import { useAppForm } from "@/core/components/form";
 import { GitOpsFormContext } from "./context";
 import type { GitOpsFormProviderProps } from "./types";
 
