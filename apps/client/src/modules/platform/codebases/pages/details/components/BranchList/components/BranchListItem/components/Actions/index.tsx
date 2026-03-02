@@ -15,7 +15,7 @@ export const Actions = ({ codebaseBranch }: ActionsProps) => {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={"Options"}>
+        <Button variant="ghost" size="icon" aria-label={"Options"} data-tour="branch-actions">
           <EllipsisVertical size={20} color={"grey"} />
         </Button>
       </DropdownMenuTrigger>

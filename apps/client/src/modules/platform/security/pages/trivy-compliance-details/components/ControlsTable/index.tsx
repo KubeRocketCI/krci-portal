@@ -31,7 +31,9 @@ export function ControlsTable({ controls, isLoading }: ControlsTableProps) {
 
   const tableSlots = useMemo(
     () => ({
-      header: <ControlsTableFilter />,
+      header: {
+        component: <ControlsTableFilter />,
+      },
     }),
     []
   );

@@ -42,6 +42,7 @@ export const DataTable = <DataType,>({
   slots,
   settings,
   outlined = true,
+  containerProps,
 }: TableProps<DataType>) => {
   const [columns, setColumns] = React.useState(_columns);
   const paginationSettings: TablePaginationType = React.useMemo(
@@ -207,7 +208,12 @@ export const DataTable = <DataType,>({
       return (
         <div className={cn(outlined ? "px-5" : "", "pt-5")}>
           <div className="grid grid-cols-[1fr_auto] items-center gap-4">
-            <div className="grid grid-cols-12 gap-4">{slots?.header}</div>
+            <div
+              {...slots?.header?.slotProps}
+              className={cn("grid grid-cols-12 gap-4", slots?.header?.slotProps?.className)}
+            >
+              {slots?.header?.component}
+            </div>
             <div className="mt-6">
               {tableSettings.show && <TableSettings id={id} columns={columns} setColumns={setColumns} />}
             </div>
@@ -218,7 +224,10 @@ export const DataTable = <DataType,>({
   }, [slots?.header, tableSettings.show, id, columns, setColumns, outlined]);
 
   return (
-    <div className={`bg-card w-full text-sm ${outlined ? "rounded-md shadow-sm" : ""}`}>
+    <div
+      {...containerProps}
+      className={cn(`bg-card w-full text-sm ${outlined ? "rounded-md shadow-sm" : ""}`, containerProps?.className)}
+    >
       <div className="flex flex-col gap-2">
         {renderHeader()}
         <div className={cn(outlined ? "px-5" : "", "py-5")}>
@@ -285,7 +294,7 @@ export const DataTable = <DataType,>({
             />
           </div>
         )}
-        {slots?.footer && slots.footer}
+        {slots?.footer && slots.footer.component}
       </div>
     </div>
   );

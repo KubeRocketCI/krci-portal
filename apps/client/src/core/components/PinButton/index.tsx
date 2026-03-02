@@ -18,11 +18,11 @@ export function PinButton({ pinConfig }: PinButtonProps) {
         <Button
           onClick={() => togglePin(pinConfig)}
           variant="ghost"
-          size="sm"
-          className="hover:bg-muted/80 min-w-0 shrink-0 p-0"
+          size="icon-xs"
+          className="hover:bg-muted/80 min-w-0 shrink-0 items-center p-0"
           aria-label={pinned ? "Unpin from sidebar" : "Pin to sidebar"}
         >
-          <Pin size={15} className={pinned ? "text-primary fill-current" : ""} />
+          <Pin width={8} height={8} className={pinned ? "text-primary fill-current" : ""} />
         </Button>
       </Tooltip>
     </div>

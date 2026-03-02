@@ -32,7 +32,9 @@ export const QuickLinkList = () => {
 
   const tableSlots = React.useMemo(
     () => ({
-      header: <QuickLinkFilter />,
+      header: {
+        component: <QuickLinkFilter />,
+      },
     }),
     []
   );

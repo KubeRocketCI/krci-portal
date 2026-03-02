@@ -19,14 +19,18 @@ export const Overview = () => {
 
   return (
     <div className="flex flex-col gap-3">
-      <Card className="p-6">
+      <Card className="p-6" data-tour="overview-info">
         <h3 className="text-foreground mb-4 text-xl font-semibold">Project Details</h3>
         <LoadingWrapper isLoading={codebaseWatch.isLoading}>
           <InfoColumns gridItems={gridItems} gridCols={4} />
         </LoadingWrapper>
       </Card>
-      <SonarQubeMetricsWidget componentKey={params.name} />
-      <DependencyTrackMetricsWidget projectName={params.name} defaultBranch={defaultBranch} />
+      <div data-tour="code-quality-widget">
+        <SonarQubeMetricsWidget componentKey={params.name} />
+      </div>
+      <div data-tour="dependencies-widget">
+        <DependencyTrackMetricsWidget projectName={params.name} defaultBranch={defaultBranch} />
+      </div>
     </div>
   );
 };

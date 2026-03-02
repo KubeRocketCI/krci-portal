@@ -96,7 +96,9 @@ export function ChecksList({ report, isLoading }: ChecksListProps) {
 
   const tableSlots = useMemo(
     () => ({
-      header: <ChecksListFilter />,
+      header: {
+        component: <ChecksListFilter />,
+      },
     }),
     []
   );

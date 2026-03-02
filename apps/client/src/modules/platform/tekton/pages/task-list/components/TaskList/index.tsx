@@ -24,7 +24,9 @@ export const TaskList = () => {
 
   const tableSlots = React.useMemo(
     () => ({
-      header: <TaskFilter />,
+      header: {
+        component: <TaskFilter />,
+      },
     }),
     []
   );

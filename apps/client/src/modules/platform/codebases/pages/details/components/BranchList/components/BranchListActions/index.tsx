@@ -29,28 +29,30 @@ export const BranchListActions = () => {
   const permissions = useCodebaseBranchPermissions();
 
   return (
-    <ButtonWithPermission
-      ButtonProps={{
-        variant: "default",
-        onClick: () => {
-          setDialog(CreateCodebaseBranchDialog, {
-            codebaseBranches: codebaseBranchListWatch.data.array,
-            codebase: codebase!,
-            defaultBranch,
-            pipelines: {
-              review: pipelineNames?.reviewPipelineName || "",
-              build: pipelineNames?.buildPipelineName || "",
-              security: pipelineNames?.securityPipelineName || "",
-            },
-          });
-        },
-        // disabled: !pipelineNamesWatch.isFetched || !codebaseWatch.query.isFetched,
-      }}
-      allowed={permissions.data.create.allowed}
-      reason={permissions.data.create.reason}
-    >
-      <Plus size={16} />
-      Create Branch
-    </ButtonWithPermission>
+    <div data-tour="create-branch-button">
+      <ButtonWithPermission
+        ButtonProps={{
+          variant: "default",
+          onClick: () => {
+            setDialog(CreateCodebaseBranchDialog, {
+              codebaseBranches: codebaseBranchListWatch.data.array,
+              codebase: codebase!,
+              defaultBranch,
+              pipelines: {
+                review: pipelineNames?.reviewPipelineName || "",
+                build: pipelineNames?.buildPipelineName || "",
+                security: pipelineNames?.securityPipelineName || "",
+              },
+            });
+          },
+          // disabled: !pipelineNamesWatch.isFetched || !codebaseWatch.query.isFetched,
+        }}
+        allowed={permissions.data.create.allowed}
+        reason={permissions.data.create.reason}
+      >
+        <Plus size={16} />
+        Create Branch
+      </ButtonWithPermission>
+    </div>
   );
 };

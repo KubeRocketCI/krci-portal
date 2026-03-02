@@ -128,6 +128,7 @@ export const CodebaseActionsMenu = ({ backRoute, variant, data: { codebase } }: 
         callback: (codebase) => {
           setDialog(EditCodebaseDialog, { codebase, isProtected: patchProtection.isProtected });
         },
+        isTextButton: true,
       }),
       createResourceAction({
         type: k8sOperation.delete,
@@ -145,6 +146,7 @@ export const CodebaseActionsMenu = ({ backRoute, variant, data: { codebase } }: 
             backRoute,
           });
         },
+        isTextButton: true,
       }),
     ];
   }, [

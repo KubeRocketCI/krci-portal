@@ -101,7 +101,10 @@ export const ComponentList = () => {
 
   const tableSlots = React.useMemo(
     () => ({
-      header: <CodebaseFilter />,
+      header: {
+        component: <CodebaseFilter />,
+        slotProps: { "data-tour": "projects-filter" },
+      },
     }),
     []
   );
@@ -130,6 +133,7 @@ export const ComponentList = () => {
             isLoading={codebaseListWatch.isLoading}
             errors={formattedErrors}
             columns={columns}
+            containerProps={{ "data-tour": "projects-table" }}
             selection={{
               selected,
               handleSelectAll: handleSelectAllClick,

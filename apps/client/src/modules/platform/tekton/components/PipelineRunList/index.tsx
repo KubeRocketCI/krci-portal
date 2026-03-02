@@ -60,13 +60,15 @@ export const PipelineRunList = ({
 
   const tableSlots = React.useMemo(() => {
     return {
-      header: (
-        <PipelineRunFilter
-          pipelineRuns={pipelineRuns}
-          pipelineRunTypes={pipelineRunTypes}
-          filterControls={filterControls}
-        />
-      ),
+      header: {
+        component: (
+          <PipelineRunFilter
+            pipelineRuns={pipelineRuns}
+            pipelineRunTypes={pipelineRunTypes}
+            filterControls={filterControls}
+          />
+        ),
+      },
     };
   }, [pipelineRuns, pipelineRunTypes, filterControls]);
 

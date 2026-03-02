@@ -10,7 +10,7 @@ export default function CodebaseDetailsPage() {
 
   return (
     <TabsContextProvider id="codebase-details-page" initialTabIdx={initialTabIdx}>
-      <CodebaseDetailsPageContent />
+      <CodebaseDetailsPageContent searchTabIdx={initialTabIdx} />
     </TabsContextProvider>
   );
 }

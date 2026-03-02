@@ -59,7 +59,7 @@ export const DeploymentStatusWidget = () => {
   };
 
   return (
-    <Card className="p-6">
+    <Card className="p-6" data-tour="deployments-table">
       <div className="flex items-center justify-between">
         <h3 className="text-foreground text-xl font-semibold">Deployments</h3>
         {applications.length > 0 && (
