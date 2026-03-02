@@ -38,20 +38,22 @@ export const TektonResultsTable = ({
 
   const tableSlots = React.useMemo(
     () => ({
-      header: (
-        <TektonResultsFilter
-          values={filterValues}
-          onChange={setFilterValues}
-          data={activeQuery.data?.items || []}
-          onRefresh={handleRefresh}
-          isRefreshing={activeQuery.isRefetching}
-          hasNextPage={activeQuery.hasNextPage}
-          isFetchingNextPage={activeQuery.isFetchingNextPage}
-          onLoadMore={handleLoadMore}
-          totalLoaded={activeQuery.data?.totalLoaded ?? 0}
-          filterControls={filterControls}
-        />
-      ),
+      header: {
+        component: (
+          <TektonResultsFilter
+            values={filterValues}
+            onChange={setFilterValues}
+            data={activeQuery.data?.items || []}
+            onRefresh={handleRefresh}
+            isRefreshing={activeQuery.isRefetching}
+            hasNextPage={activeQuery.hasNextPage}
+            isFetchingNextPage={activeQuery.isFetchingNextPage}
+            onLoadMore={handleLoadMore}
+            totalLoaded={activeQuery.data?.totalLoaded ?? 0}
+            filterControls={filterControls}
+          />
+        ),
+      },
     }),
     [
       filterValues,

@@ -18,7 +18,7 @@ export const ActionsInlineList = ({ actions }: ActionsInlineListProps) => {
             className="text-secondary-dark border-secondary-dark hover:bg-secondary-dark/10"
           >
             {Icon}
-            {name}
+            {label}
           </Button>
         ) : (
           <Button variant="ghost" size="icon" disabled={disabled?.status} onClick={action}>

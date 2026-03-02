@@ -71,7 +71,7 @@ export function PullRequestList() {
   const totalCount = query.data?.pagination?.total || 0;
 
   return (
-    <Card className="space-y-5 p-6">
+    <Card className="space-y-5 p-6" data-tour="pull-requests-table">
       <div className="flex items-center justify-between">
         <h3 className="text-foreground text-xl font-semibold">Pull Requests</h3>
       </div>

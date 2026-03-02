@@ -38,7 +38,12 @@ const DisabledResourceIconLink = ({
   const sanitizedIcon = sanitizeSvgBase64(iconBase64);
 
   return isTextButton ? (
-    <Button variant={variant} disabled className={cn(!withoutDisabledStyle ? "opacity-50" : "", "text-xs")} size={size}>
+    <Button
+      variant={variant}
+      disabled
+      className={cn(!withoutDisabledStyle ? "opacity-50" : "", "!p-0 text-xs")}
+      size={size}
+    >
       View in {name}
       <SquareArrowOutUpRight className="text-muted-foreground/70" size={iconSize} />
     </Button>
@@ -49,7 +54,7 @@ const DisabledResourceIconLink = ({
           variant="ghost"
           size="icon"
           disabled
-          className={cn(!withoutDisabledStyle ? "opacity-50" : "", "text-xs")}
+          className={cn(!withoutDisabledStyle ? "opacity-50" : "", "!p-0 text-xs")}
         >
           {iconBase64 ? (
             <img src={`data:image/svg+xml;base64,${sanitizedIcon}`} className="h-4 w-4" alt="" />
@@ -76,7 +81,7 @@ const EnabledResourceIconLink = ({
   const sanitizedIcon = sanitizeSvgBase64(iconBase64);
 
   return isTextButton ? (
-    <Button variant={variant} asChild size={size} className="text-primary hover:text-primary/80 text-xs">
+    <Button variant={variant} asChild size={size} className="text-primary hover:text-primary/80 !p-0 text-xs">
       <a href={link} target="_blank" rel="noopener noreferrer">
         View in {name}
         <SquareArrowOutUpRight className="text-primary" size={iconSize} />
@@ -95,7 +100,7 @@ const EnabledResourceIconLink = ({
       }
     >
       <span>
-        <Button variant="ghost" size="icon" asChild>
+        <Button variant="ghost" size="icon" asChild className="!p-0">
           <a href={link} target="_blank" rel="noopener noreferrer">
             {iconBase64 ? (
               <img src={`data:image/svg+xml;base64,${sanitizedIcon}`} className="h-4 w-4" alt="" />

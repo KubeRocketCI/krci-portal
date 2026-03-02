@@ -2,6 +2,11 @@ import React from "react";
 import { ValueOf } from "@/core/types/global";
 import { SORT_ORDERS } from "./constants";
 
+// Helper type to allow data-* attributes
+export type PropsWithHTMLDataAttrs = React.HTMLAttributes<HTMLDivElement> & {
+  [key: `data-${string}`]: string | undefined;
+};
+
 // Custom type to replace MUI TableCellProps
 export type TableCellProps = React.HTMLAttributes<HTMLTableCellElement> & {
   align?: "left" | "center" | "right" | "justify";
@@ -90,8 +95,18 @@ export interface TableProps<DataType = unknown> {
   handleRowClick?: (event: React.MouseEvent<HTMLTableRowElement>, row: DataType) => void;
   expandable?: TableExpandable<DataType>;
   slots?: {
-    header?: React.ReactElement;
-    footer?: React.ReactElement;
+    header?: {
+      component: React.ReactElement;
+      /** HTML attributes to pass to the header wrapper element (e.g., data-tour for PageGuide) */
+      slotProps?: PropsWithHTMLDataAttrs;
+    };
+    footer?: {
+      component: React.ReactElement;
+      /** HTML attributes to pass to the footer wrapper element (e.g., data-tour for PageGuide) */
+      slotProps?: PropsWithHTMLDataAttrs;
+    };
   };
   outlined?: boolean;
+  /** HTML attributes to pass to the root container element (e.g., data-tour for PageGuide) */
+  containerProps?: PropsWithHTMLDataAttrs;
 }

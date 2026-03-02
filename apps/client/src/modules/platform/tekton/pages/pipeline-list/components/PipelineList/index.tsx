@@ -25,7 +25,9 @@ export const PipelineList = () => {
 
   const tableSlots = React.useMemo(
     () => ({
-      header: <PipelineFilter />,
+      header: {
+        component: <PipelineFilter />,
+      },
     }),
     []
   );

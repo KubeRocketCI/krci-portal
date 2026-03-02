@@ -25,9 +25,11 @@ export const PipelineList = () => {
   );
 
   return (
-    <Card className="p-6">
+    <Card className="p-6" data-tour="pipelines-table">
       <h3 className="text-foreground mb-4 text-xl font-semibold">Pipeline Runs</h3>
-      <Tabs tabs={tabs} activeTabIdx={activeTabIdx} handleChangeTab={handleChangeTab} />
+      <div data-tour="pipeline-history">
+        <Tabs tabs={tabs} activeTabIdx={activeTabIdx} handleChangeTab={handleChangeTab} />
+      </div>
     </Card>
   );
 };

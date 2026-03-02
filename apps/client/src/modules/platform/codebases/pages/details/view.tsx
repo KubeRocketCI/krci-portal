@@ -1,17 +1,16 @@
 import { ErrorContent } from "@/core/components/ErrorContent";
-import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { PageWrapper } from "@/core/components/PageWrapper";
+import { PageGuideButton } from "@/core/components/PageGuide";
 import { QuickLink } from "@/core/components/QuickLink";
 import { Section } from "@/core/components/Section";
 import { useQuickLinkWatchList } from "@/k8s/api/groups/KRCI/QuickLink";
 import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
 import { getQuickLinkURLsFromList } from "@/k8s/api/groups/KRCI/QuickLink/utils/getURLsFromList";
-import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { Tabs } from "@/core/providers/Tabs/components/Tabs";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { LinkCreationService } from "@/k8s/services/link-creation";
-import { CodebaseType, codebaseType, isSystem, systemQuickLink } from "@my-project/shared";
+import { isSystem, systemQuickLink } from "@my-project/shared";
 import { Box } from "lucide-react";
 import React from "react";
 import { CodebaseActionsMenu } from "../../components/CodebaseActionsMenu";
@@ -20,23 +19,7 @@ import { useCodebaseWatch } from "./hooks/data";
 import { usePageTabs } from "./hooks/usePageTabs";
 import { routeProjectDetails, PATH_PROJECT_DETAILS_FULL } from "./route";
 
-const docLinkByCodebaseType = (type: CodebaseType | undefined) => {
-  switch (type) {
-    case codebaseType.application:
-      return EDP_USER_GUIDE.APPLICATION_MANAGE.url;
-    case codebaseType.autotest:
-      return EDP_USER_GUIDE.AUTOTEST_MANAGE.url;
-    case codebaseType.library:
-      return EDP_USER_GUIDE.LIBRARY_MANAGE.url;
-    case codebaseType.infrastructure:
-      return EDP_USER_GUIDE.INFRASTRUCTURE_MANAGE.url;
-
-    default:
-      return EDP_USER_GUIDE.APPLICATION_MANAGE.url;
-  }
-};
-
-export default function CodebaseDetailsPageContent() {
+export default function CodebaseDetailsPageContent({ searchTabIdx }: { searchTabIdx: number }) {
   const params = routeProjectDetails.useParams();
 
   const codebaseWatch = useCodebaseWatch();
@@ -49,7 +32,7 @@ export default function CodebaseDetailsPageContent() {
 
   const tabs = usePageTabs();
 
-  const { activeTab, handleChangeTab } = useTabsContext();
+  const { handleChangeTab } = useTabsContext();
 
   const codebaseIsLoaded = codebaseWatch.query.isFetched && !codebaseWatch.query.error;
 
@@ -60,10 +43,10 @@ export default function CodebaseDetailsPageContent() {
 
     return (
       <LoadingWrapper isLoading={codebaseWatch.query.isLoading}>
-        <Tabs tabs={tabs} activeTabIdx={activeTab} handleChangeTab={handleChangeTab} />
+        <Tabs tabs={tabs} activeTabIdx={searchTabIdx} handleChangeTab={handleChangeTab} />
       </LoadingWrapper>
     );
-  }, [activeTab, codebaseWatch.query.error, codebaseWatch.query.isLoading, handleChangeTab, tabs]);
+  }, [codebaseWatch.query.error, codebaseWatch.query.isLoading, handleChangeTab, tabs, searchTabIdx]);
 
   return (
     <PageWrapper
@@ -78,7 +61,11 @@ export default function CodebaseDetailsPageContent() {
           label: params.name,
         },
       ]}
-      headerSlot={<LearnMoreLink url={docLinkByCodebaseType(codebase?.spec.type)} />}
+      headerSlot={
+        <>
+          <PageGuideButton tourId="projectDetailsTour" />
+        </>
+      }
     >
       <Section
         icon={Box}

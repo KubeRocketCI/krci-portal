@@ -5,7 +5,7 @@ import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { useCDPipelinePermissions } from "@/k8s/api/groups/KRCI/CDPipeline";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { createResourceAction, getResourceProtection, getDisabledState } from "@/core/utils/createResourceAction";
-import { Pencil, Trash } from "lucide-react";
+import { Settings, Trash } from "lucide-react";
 import { CDPipelineActionsMenuProps } from "./types";
 import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import { k8sCDPipelineConfig, k8sOperation } from "@my-project/shared";
@@ -28,13 +28,14 @@ export const CDPipelineActionsMenu = ({ backRoute, variant, data: { CDPipeline }
     return [
       createResourceAction({
         type: k8sOperation.patch,
-        label: "Edit",
+        label: "Configure",
         item: CDPipeline,
-        Icon: <Pencil size={16} />,
+        Icon: <Settings size={16} />,
         disabled: getDisabledState(patchProtection, cdPipelinePermissions.data.patch),
         callback: () => {
           openEditCDPipelineDialog({ CDPipeline });
         },
+        isTextButton: true,
       }),
       createResourceAction({
         type: k8sOperation.delete,
@@ -62,6 +63,7 @@ export const CDPipelineActionsMenu = ({ backRoute, variant, data: { CDPipeline }
             }),
           });
         },
+        isTextButton: true,
       }),
     ];
   }, [

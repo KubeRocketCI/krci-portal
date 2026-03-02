@@ -1,14 +1,17 @@
 import { useAuth } from "@/core/auth/provider";
 import type { TourMetadata } from "./types";
+import { CODEBASES_TOURS } from "@/modules/platform/codebases/tours";
 
 function WelcomeStepContent() {
   const { user } = useAuth();
   const firstName = user?.name?.split(" ")[0] || "";
 
   return (
-    <div className="space-y-3 text-center">
-      <img src="/krci-logo.svg" alt="KubeRocketCI" className="mx-auto h-10 w-10" />
-      <h3 className="text-base font-semibold">Welcome{firstName ? `, ${firstName}` : ""}!</h3>
+    <div className="space-y-3">
+      <div className="flex items-center gap-3">
+        <img src="/krci-logo.svg" alt="KubeRocketCI" className="h-10 w-10" />
+        <h3 className="text-base font-semibold">Welcome{firstName ? `, ${firstName}` : ""}!</h3>
+      </div>
       <p>
         Let us show you around the KubeRocketCI platform. This quick tour will walk you through the key areas of the
         interface.
@@ -18,16 +21,20 @@ function WelcomeStepContent() {
 }
 
 /**
- * Tour configuration for all available tours in the application.
- * Each tour demonstrates a specific feature or workflow.
+ * Global tour configurations that apply across the entire application.
+ * Module-specific tours are imported from their respective modules.
  */
-export const TOURS_CONFIG: Record<string, TourMetadata> = {
+const GLOBAL_TOURS: Record<string, TourMetadata> = {
   welcome: {
     id: "welcome_tour",
     title: "Welcome Tour",
     description: "Get familiar with the KubeRocketCI platform interface and key areas",
+    type: "tour",
     showOnce: true,
     trigger: "onMount",
+    prerequisite: {
+      routePattern: "/home",
+    },
     steps: [
       {
         target: "body",
@@ -92,6 +99,7 @@ export const TOURS_CONFIG: Record<string, TourMetadata> = {
     id: "pinned_items_intro",
     title: "Pinned Items",
     description: "Learn about pinning your favorite pages for quick access",
+    type: "popup",
     showOnce: true,
     trigger: "onMount",
     steps: [
@@ -106,7 +114,6 @@ export const TOURS_CONFIG: Record<string, TourMetadata> = {
             </p>
           </div>
         ),
-        placement: "right",
         disableBeacon: true,
       },
     ],
@@ -115,6 +122,7 @@ export const TOURS_CONFIG: Record<string, TourMetadata> = {
     id: "form_guide_intro",
     title: "Form Guide",
     description: "Learn about the Form Guide that helps you fill out forms",
+    type: "popup",
     showOnce: true,
     trigger: "feature",
     featureId: "form-guide",
@@ -135,4 +143,38 @@ export const TOURS_CONFIG: Record<string, TourMetadata> = {
       },
     ],
   },
+  pageGuideIntro: {
+    id: "page_guide_intro",
+    title: "Page Guide",
+    description: "Learn about the Page Guide feature",
+    type: "popup",
+    showOnce: true,
+    trigger: "feature",
+    featureId: "page-guide",
+    steps: [
+      {
+        target: "[data-tour='page-guide-button']",
+        content: (
+          <div className="space-y-2">
+            <h3 className="font-semibold">Discover Page Tours</h3>
+            <p>
+              Click the Page Guide button to start an interactive tour of the current page. Each page tour will walk you
+              through its key features and capabilities.
+            </p>
+          </div>
+        ),
+        placement: "bottom",
+        disableBeacon: true,
+      },
+    ],
+  },
+} as const;
+
+/**
+ * Combined tour configuration with global and module-specific tours.
+ * This is the main export that should be used throughout the application.
+ */
+export const TOURS_CONFIG: Record<string, TourMetadata> = {
+  ...GLOBAL_TOURS,
+  ...CODEBASES_TOURS,
 } as const;

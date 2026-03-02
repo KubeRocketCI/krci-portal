@@ -1,9 +1,8 @@
 import { ComponentList } from "./components/ComponentList";
-import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { Section } from "@/core/components/Section";
-import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
+import { PageGuideButton } from "@/core/components/PageGuide";
 import { useCodebasePermissions } from "@/k8s/api/groups/KRCI/Codebase";
 import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { Box, Plus } from "lucide-react";
@@ -22,27 +21,33 @@ export default function ComponentListPageContent() {
   return (
     <PageWrapper
       breadcrumbs={[{ label: "Projects" }]}
-      headerSlot={<LearnMoreLink url={EDP_USER_GUIDE.APPLICATION_CREATE.url} />}
+      headerSlot={
+        <>
+          <PageGuideButton tourId="projectsListTour" />
+        </>
+      }
     >
       <Section
         icon={Box}
         title="Projects"
         description="Create, view, and manage your projects, encompassing applications, libraries, autotests, and Terraform infrastructure code."
         actions={
-          <ButtonWithPermission
-            ButtonProps={{
-              variant: "default",
-              disabled: noGitServers,
-              asChild: true,
-            }}
-            allowed={codebasePermissions.data.create.allowed}
-            reason={codebasePermissions.data.create.reason}
-          >
-            <Link to={routeProjectCreate.fullPath} params={{ clusterName: clusterName }} className="no-underline">
-              <Plus />
-              Create Project
-            </Link>
-          </ButtonWithPermission>
+          <div data-tour="create-project-button">
+            <ButtonWithPermission
+              ButtonProps={{
+                variant: "default",
+                disabled: noGitServers,
+                asChild: true,
+              }}
+              allowed={codebasePermissions.data.create.allowed}
+              reason={codebasePermissions.data.create.reason}
+            >
+              <Link to={routeProjectCreate.fullPath} params={{ clusterName: clusterName }} className="no-underline">
+                <Plus />
+                Create Project
+              </Link>
+            </ButtonWithPermission>
+          </div>
         }
       >
         <ComponentList />

@@ -26,6 +26,30 @@ vi.mock("@/k8s/store", () => ({
   })),
 }));
 
+vi.mock("@/core/auth/provider", () => ({
+  useAuth: vi.fn(() => ({
+    isAuthenticated: true,
+    isLoading: false,
+    user: { id: "test-user" },
+  })),
+}));
+
+vi.mock("@tanstack/react-router", () => ({
+  useParams: vi.fn(() => ({})),
+}));
+
+vi.mock("@/core/router", () => ({
+  router: {
+    state: {
+      location: {
+        pathname: "/",
+        search: {},
+      },
+    },
+    navigate: vi.fn(),
+  },
+}));
+
 describe("Tours Provider Hooks", () => {
   beforeEach(() => {
     vi.clearAllMocks();

@@ -46,7 +46,9 @@ export const CDPipelineList = ({ blockerComponent }: CDPipelineListProps) => {
 
   const tableSlots = React.useMemo(
     () => ({
-      header: <CDPipelineFilter />,
+      header: {
+        component: <CDPipelineFilter />,
+      },
     }),
     []
   );
