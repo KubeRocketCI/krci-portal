@@ -173,7 +173,7 @@ export const useColumns = ({
             }
 
             return (
-              <div className="text-muted-foreground text-sm">
+              <div className="text-muted-foreground overflow-hidden text-sm">
                 <TextWithTooltip text={branchName} />
               </div>
             );
