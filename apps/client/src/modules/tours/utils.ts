@@ -1,5 +1,18 @@
 import type { TourActivationContext, TourMetadata } from "./types";
 import { TOURS_CONFIG } from "./config";
+import { router } from "@/core/router";
+
+/**
+ * Build a TourActivationContext from the current route state
+ */
+export function buildActivationContext(routeParams: Record<string, string>): TourActivationContext {
+  const location = router.state.location;
+  return {
+    path: location.pathname,
+    params: routeParams,
+    search: location.search as Record<string, unknown>,
+  };
+}
 
 /**
  * Get tour by ID

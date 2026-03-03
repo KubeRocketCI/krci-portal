@@ -1,5 +1,6 @@
 import { useAuth } from "@/core/auth/provider";
 import type { TourMetadata } from "./types";
+import { TourStepContent } from "./components/TourStepContent";
 import { CODEBASES_TOURS } from "@/modules/platform/codebases/tours";
 
 function WelcomeStepContent() {
@@ -24,7 +25,7 @@ function WelcomeStepContent() {
  * Global tour configurations that apply across the entire application.
  * Module-specific tours are imported from their respective modules.
  */
-const GLOBAL_TOURS: Record<string, TourMetadata> = {
+const GLOBAL_TOURS = {
   welcome: {
     id: "welcome_tour",
     title: "Welcome Tour",
@@ -45,51 +46,47 @@ const GLOBAL_TOURS: Record<string, TourMetadata> = {
       {
         target: "[data-tour='user-nav']",
         content: (
-          <div className="space-y-2 text-left">
-            <h3 className="font-semibold">User Menu</h3>
+          <TourStepContent title="User Menu">
             <p>
               Access your profile, group memberships, documentation, and sign out from here. You can also find links to
               community discussions and support.
             </p>
-          </div>
+          </TourStepContent>
         ),
         placement: "top",
       },
       {
         target: "[data-tour='cluster-nav']",
         content: (
-          <div className="space-y-2 text-left">
-            <h3 className="font-semibold">Cluster Navigation</h3>
+          <TourStepContent title="Cluster Navigation">
             <p>
               Manage your cluster settings from here. You can switch namespaces and download your kubeconfig for CLI
               access.
             </p>
-          </div>
+          </TourStepContent>
         ),
         placement: "right",
       },
       {
         target: "[data-tour='quick-actions']",
         content: (
-          <div className="space-y-2 text-left">
-            <h3 className="font-semibold">Quick Actions</h3>
+          <TourStepContent title="Quick Actions">
             <p>
               Use the quick action buttons to manage namespaces, download kubeconfig, view user details, or check
               Kubernetes cluster information.
             </p>
-          </div>
+          </TourStepContent>
         ),
         placement: "bottom",
       },
       {
         target: "[data-tour='getting-started']",
         content: (
-          <div className="space-y-2 text-left">
-            <h3 className="font-semibold">Getting Started</h3>
+          <TourStepContent title="Getting Started">
             <p>
               Start here to import your first project, explore the documentation, and get up to speed with the platform.
             </p>
-          </div>
+          </TourStepContent>
         ),
         placement: "top",
       },
@@ -106,13 +103,12 @@ const GLOBAL_TOURS: Record<string, TourMetadata> = {
       {
         target: "[data-tour='pinned-section']",
         content: (
-          <div className="space-y-2">
-            <h3 className="font-semibold">Quick Access with Pinned Items</h3>
+          <TourStepContent title="Quick Access with Pinned Items">
             <p>
               Pin your frequently used projects, deployments, and stages here for quick access. Look for the pin icon on
               detail pages to add items to this section.
             </p>
-          </div>
+          </TourStepContent>
         ),
         disableBeacon: true,
       },
@@ -130,13 +126,12 @@ const GLOBAL_TOURS: Record<string, TourMetadata> = {
       {
         target: "[data-tour='form-guide-toggle']",
         content: (
-          <div className="space-y-2">
-            <h3 className="font-semibold">Form Guide</h3>
+          <TourStepContent title="Form Guide">
             <p>
               Click this button to open the Form Guide panel. It provides helpful descriptions and tips for each field
               in the form.
             </p>
-          </div>
+          </TourStepContent>
         ),
         placement: "bottom",
         disableBeacon: true,
@@ -155,20 +150,19 @@ const GLOBAL_TOURS: Record<string, TourMetadata> = {
       {
         target: "[data-tour='page-guide-button']",
         content: (
-          <div className="space-y-2">
-            <h3 className="font-semibold">Discover Page Tours</h3>
+          <TourStepContent title="Discover Page Tours">
             <p>
               Click the Page Guide button to start an interactive tour of the current page. Each page tour will walk you
               through its key features and capabilities.
             </p>
-          </div>
+          </TourStepContent>
         ),
         placement: "bottom",
         disableBeacon: true,
       },
     ],
   },
-} as const;
+} as const satisfies Record<string, TourMetadata>;
 
 /**
  * Combined tour configuration with global and module-specific tours.
@@ -177,4 +171,4 @@ const GLOBAL_TOURS: Record<string, TourMetadata> = {
 export const TOURS_CONFIG: Record<string, TourMetadata> = {
   ...GLOBAL_TOURS,
   ...CODEBASES_TOURS,
-} as const;
+};
