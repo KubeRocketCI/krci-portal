@@ -66,10 +66,12 @@ export function waitForElement(options: WaitForElementOptions): Promise<Element>
         }
       });
 
-      // Observe all changes to the DOM tree
+      // Observe structural and data-tour attribute changes
       observer.observe(context, {
         childList: true,
         subtree: true,
+        attributes: true,
+        attributeFilter: ["data-tour"],
       });
     } else {
       // Fallback to polling for older browsers
@@ -82,20 +84,4 @@ export function waitForElement(options: WaitForElementOptions): Promise<Element>
       }, checkInterval);
     }
   });
-}
-
-/**
- * Wait for multiple elements to appear in the DOM.
- * All elements must appear before the timeout.
- *
- * @param selectors - Array of CSS selectors to find
- * @param options - Configuration options (applied to all selectors)
- * @returns Promise that resolves with an array of elements
- */
-export async function waitForElements(
-  selectors: string[],
-  options?: Omit<WaitForElementOptions, "selector">
-): Promise<Element[]> {
-  const promises = selectors.map((selector) => waitForElement({ ...options, selector }));
-  return Promise.all(promises);
 }

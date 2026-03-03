@@ -1,10 +1,8 @@
 import { CircleHelp } from "lucide-react";
 import { useParams } from "@tanstack/react-router";
 import { Button } from "@/core/components/ui/button";
-import { TOURS_CONFIG, useAutoTour, useTours } from "@/modules/tours";
+import { TOURS_CONFIG, useAutoTour, useTours, buildActivationContext } from "@/modules/tours";
 import { isTourEligible } from "@/modules/tours/utils";
-import { router } from "@/core/router";
-import type { TourActivationContext } from "@/modules/tours/types";
 
 interface PageGuideButtonProps {
   /** Tour ID from TOURS_CONFIG */
@@ -29,13 +27,7 @@ export function PageGuideButton({ tourId }: PageGuideButtonProps) {
   const handleClick = () => {
     if (!tour) return;
 
-    // Build activation context
-    const location = router.state.location;
-    const context: TourActivationContext = {
-      path: location.pathname,
-      params: currentRouteParams,
-      search: location.search as Record<string, unknown>,
-    };
+    const context = buildActivationContext(currentRouteParams);
 
     // Validate prerequisites
     if (!isTourEligible(tour, context)) {

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect, type ReactNode } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo, type ReactNode } from "react";
 import Joyride, { type CallBackProps, ACTIONS, EVENTS, STATUS } from "react-joyride";
 import { useParams } from "@tanstack/react-router";
 import { useAuth } from "@/core/auth/provider";
@@ -11,8 +11,12 @@ import { router } from "@/core/router";
 import { Button } from "@/core/components/ui/button";
 import { X, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { waitForElement } from "../utils/waitForElement";
-import { isTourEligible } from "../utils";
-import type { TourActivationContext } from "../types";
+import { isTourEligible, buildActivationContext } from "../utils";
+
+const AUTO_TRIGGER_DELAY_MS = 500;
+const NAVIGATION_START_DELAY_MS = 100;
+const ELEMENT_WAIT_TIMEOUT_MS = 5000;
+const POST_NAVIGATION_GLOW_MS = 800;
 
 interface ToursProviderProps {
   children: ReactNode;
@@ -29,12 +33,41 @@ export function ToursProvider({ children }: ToursProviderProps) {
   const [currentTourTab, setCurrentTourTab] = useState<string | null>(null);
   const onTourEndRef = useRef<TourEndCallback | null>(null);
   const onStepCallbackRef = useRef<TourStepCallback | null>(null);
+  /**
+   * Reference to react-joyride's internal `store` API for programmatic step control.
+   * Uses undocumented internals validated against react-joyride v2.9.x.
+   * If upgrading react-joyride, verify that `store.prev()` and `store.next()` still exist.
+   */
   const joyrideRef = useRef<{
     store: {
       prev: () => void;
       next: () => void;
     };
   } | null>(null);
+  const navigationAbortRef = useRef<AbortController | null>(null);
+  const navigationTimeoutIds = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+
+  const setTrackedTimeout = useCallback((fn: () => void | Promise<void>, delay: number) => {
+    const id = setTimeout(() => {
+      navigationTimeoutIds.current.delete(id);
+      Promise.resolve(fn()).catch((err) => console.warn("Navigation timeout error:", err));
+    }, delay);
+    navigationTimeoutIds.current.add(id);
+    return id;
+  }, []);
+
+  const cancelNavigation = useCallback(() => {
+    navigationAbortRef.current?.abort();
+    navigationAbortRef.current = null;
+    for (const id of navigationTimeoutIds.current) {
+      clearTimeout(id);
+    }
+    navigationTimeoutIds.current.clear();
+    setIsTourNavigating(false);
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => () => cancelNavigation(), [cancelNavigation]);
 
   // Determine if current tour is a popup (single-step informative)
   const isPopup = currentTour?.type === "popup";
@@ -69,6 +102,7 @@ export function ToursProvider({ children }: ToursProviderProps) {
 
   const endCurrentTour = useCallback(
     (completed: boolean) => {
+      cancelNavigation();
       setRun(false);
       if (currentTour) {
         markTourCompleted(currentTour.id, completed, currentTrigger);
@@ -78,7 +112,7 @@ export function ToursProvider({ children }: ToursProviderProps) {
       setCurrentTrigger(undefined);
       setCurrentTourTab(null);
     },
-    [currentTour, currentTrigger]
+    [cancelNavigation, currentTour, currentTrigger]
   );
 
   const skipTour = useCallback(() => {
@@ -97,12 +131,7 @@ export function ToursProvider({ children }: ToursProviderProps) {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const location = router.state.location;
-    const context: TourActivationContext = {
-      path: location.pathname,
-      params: currentRouteParams,
-      search: location.search as Record<string, unknown>,
-    };
+    const context = buildActivationContext(currentRouteParams);
 
     const onMountTours = Object.values(TOURS_CONFIG).filter((tour) => {
       if (tour.trigger !== "onMount") return false;
@@ -110,24 +139,21 @@ export function ToursProvider({ children }: ToursProviderProps) {
       return isTourEligible(tour, context);
     });
 
-    for (const tour of onMountTours) {
-      setTimeout(() => {
-        startTour(tour.id, tour, { type: "auto" });
-      }, 500);
-      break; // Only trigger one tour at a time
-    }
+    const firstTour = onMountTours[0];
+    if (!firstTour) return;
+
+    const timeoutId = setTimeout(() => {
+      startTour(firstTour.id, firstTour, { type: "auto" });
+    }, AUTO_TRIGGER_DELAY_MS);
+
+    return () => clearTimeout(timeoutId);
   }, [isAuthenticated, currentRouteParams, startTour]);
 
   // Auto-trigger route-based tours when navigating to matching routes
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const location = router.state.location;
-    const context: TourActivationContext = {
-      path: location.pathname,
-      params: currentRouteParams,
-      search: location.search as Record<string, unknown>,
-    };
+    const context = buildActivationContext(currentRouteParams);
 
     // Find tours with route trigger that match current route
     const eligibleTours = Object.values(TOURS_CONFIG).filter((tour) => {
@@ -139,9 +165,11 @@ export function ToursProvider({ children }: ToursProviderProps) {
     // Start first eligible tour if not already running
     if (eligibleTours.length > 0 && !run) {
       const tour = eligibleTours[0];
-      setTimeout(() => {
-        startTour(tour.id, tour, { type: "routeChange", route: location.pathname });
-      }, 500);
+      const timeoutId = setTimeout(() => {
+        startTour(tour.id, tour, { type: "routeChange", route: context.path });
+      }, AUTO_TRIGGER_DELAY_MS);
+
+      return () => clearTimeout(timeoutId);
     }
   }, [isAuthenticated, currentRouteParams, run, startTour]);
 
@@ -210,35 +238,45 @@ export function ToursProvider({ children }: ToursProviderProps) {
               : [waitFor]
             : [nextStep.target as string];
 
+          // Cancel any previous navigation before starting a new one
+          cancelNavigation();
+          const abortController = new AbortController();
+          navigationAbortRef.current = abortController;
+
           // Start checking after a small delay to allow navigation to start
-          setTimeout(async () => {
+          setTrackedTimeout(async () => {
             try {
               // Wait for all required elements
               for (const selector of selectorsToWaitFor) {
                 await waitForElement({
                   selector,
-                  timeout: 5000,
+                  timeout: ELEMENT_WAIT_TIMEOUT_MS,
                 });
+                if (abortController.signal.aborted) return;
               }
 
               // Additional stabilization delay (for animations, transitions, etc.)
               if (stabilizationDelay > 0) {
-                await new Promise((resolve) => setTimeout(resolve, stabilizationDelay));
+                await new Promise<void>((resolve) => {
+                  setTrackedTimeout(resolve, stabilizationDelay);
+                });
               }
+              if (abortController.signal.aborted) return;
 
               // NOW advance the step index
               setStepIndex(nextStepIndex);
               // And resume the tour
               setRun(true);
               // Keep the glow visible for a moment after navigation completes
-              setTimeout(() => setIsTourNavigating(false), 800);
+              setTrackedTimeout(() => setIsTourNavigating(false), POST_NAVIGATION_GLOW_MS);
             } catch (error) {
+              if (abortController.signal.aborted) return;
               console.warn("⚠️ Element not found within timeout, advancing anyway:", error);
               setStepIndex(nextStepIndex);
               setRun(true);
               setIsTourNavigating(false);
             }
-          }, 100);
+          }, NAVIGATION_START_DELAY_MS);
         } else {
           // No prerequisite, advance normally
           setStepIndex(nextStepIndex);
@@ -252,21 +290,24 @@ export function ToursProvider({ children }: ToursProviderProps) {
         setStepIndex(prevStepIndex);
       }
     },
-    [endCurrentTour, currentTour, currentRouteParams, stepIndex]
+    [endCurrentTour, currentTour, currentRouteParams, stepIndex, cancelNavigation, setTrackedTimeout]
   );
 
   return (
     <ToursContext.Provider
-      value={{
-        startTour,
-        skipTour,
-        isTourCompleted,
-        isRunning: run && !!currentTour,
-        isTourNavigating,
-        currentTourTab,
-        setOnTourEnd,
-        setStepCallback,
-      }}
+      value={useMemo(
+        () => ({
+          startTour,
+          skipTour,
+          isTourCompleted,
+          isRunning: run && !!currentTour,
+          isTourNavigating,
+          currentTourTab,
+          setOnTourEnd,
+          setStepCallback,
+        }),
+        [startTour, skipTour, run, currentTour, isTourNavigating, currentTourTab, setOnTourEnd, setStepCallback]
+      )}
     >
       {children}
       {currentTour && (

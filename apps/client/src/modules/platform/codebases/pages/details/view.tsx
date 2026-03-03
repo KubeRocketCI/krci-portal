@@ -9,6 +9,7 @@ import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
 import { getQuickLinkURLsFromList } from "@/k8s/api/groups/KRCI/QuickLink/utils/getURLsFromList";
 import { Tabs } from "@/core/providers/Tabs/components/Tabs";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
+import { useTours } from "@/modules/tours";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { isSystem, systemQuickLink } from "@my-project/shared";
 import { Box } from "lucide-react";
@@ -33,6 +34,7 @@ export default function CodebaseDetailsPageContent({ searchTabIdx }: { searchTab
   const tabs = usePageTabs();
 
   const { handleChangeTab } = useTabsContext();
+  const { isTourNavigating, currentTourTab } = useTours();
 
   const codebaseIsLoaded = codebaseWatch.query.isFetched && !codebaseWatch.query.error;
 
@@ -43,10 +45,24 @@ export default function CodebaseDetailsPageContent({ searchTabIdx }: { searchTab
 
     return (
       <LoadingWrapper isLoading={codebaseWatch.query.isLoading}>
-        <Tabs tabs={tabs} activeTabIdx={searchTabIdx} handleChangeTab={handleChangeTab} />
+        <Tabs
+          tabs={tabs}
+          activeTabIdx={searchTabIdx}
+          handleChangeTab={handleChangeTab}
+          dataTour="project-tabs"
+          tourHighlight={{ isNavigating: isTourNavigating, focusedTabId: currentTourTab }}
+        />
       </LoadingWrapper>
     );
-  }, [codebaseWatch.query.error, codebaseWatch.query.isLoading, handleChangeTab, tabs, searchTabIdx]);
+  }, [
+    codebaseWatch.query.error,
+    codebaseWatch.query.isLoading,
+    handleChangeTab,
+    tabs,
+    searchTabIdx,
+    isTourNavigating,
+    currentTourTab,
+  ]);
 
   return (
     <PageWrapper

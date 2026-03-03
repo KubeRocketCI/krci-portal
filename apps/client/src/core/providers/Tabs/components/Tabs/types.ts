@@ -7,8 +7,15 @@ export interface Tab {
   onClick?: () => void;
 }
 
+export interface TourHighlight {
+  isNavigating: boolean;
+  focusedTabId: string | null;
+}
+
 export interface TabsProps {
   tabs: Tab[];
   activeTabIdx: number;
   handleChangeTab: (event: React.ChangeEvent<object>, newActiveTabIdx: number) => void;
+  dataTour?: string;
+  tourHighlight?: TourHighlight;
 }
