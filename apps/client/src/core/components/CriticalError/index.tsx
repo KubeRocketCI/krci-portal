@@ -53,7 +53,6 @@ export function CriticalError({
           </div>
 
           <Alert variant="destructive" className="w-full text-left">
-            <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Error Details</AlertTitle>
             <AlertDescription className="mt-2 wrap-break-word whitespace-pre-wrap">{errorMessage}</AlertDescription>
           </Alert>

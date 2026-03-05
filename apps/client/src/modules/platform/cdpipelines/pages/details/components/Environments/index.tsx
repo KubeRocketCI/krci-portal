@@ -6,7 +6,8 @@ import { useStagePermissions } from "@/k8s/api/groups/KRCI/Stage";
 import { HorizontalEnvironmentFlow } from "../HorizontalEnvironmentFlow";
 import { EnvironmentDetailPanel } from "../EnvironmentDetailPanel";
 import { useStageFilter } from "../StageListFilter/hooks/useStageFilter";
-import { useCDPipelineWatch, useStageListWatch } from "../../hooks/data";
+import { useCDPipelineWatch } from "../../hooks/data";
+import { useSortedStages } from "../../hooks/usePipelineData";
 import { routeCDPipelineDetails } from "../../route";
 import { routeStageCreate } from "../../../stages/create/route";
 
@@ -17,14 +18,9 @@ export const Environments = () => {
   const { environment: urlSelectedEnvironment } = search;
 
   const cdPipelineWatch = useCDPipelineWatch();
-  const stageListWatch = useStageListWatch();
+  const { data: sortedStages, isLoading: isStagesLoading } = useSortedStages();
   const { filterFunction } = useStageFilter();
   const stagePermissions = useStagePermissions();
-
-  // Sort stages by order
-  const sortedStages = useMemo(() => {
-    return stageListWatch.data.array.toSorted((a, b) => a.spec.order - b.spec.order);
-  }, [stageListWatch.data.array]);
 
   // Apply filter
   const filteredStages = useMemo(() => {
@@ -43,7 +39,7 @@ export const Environments = () => {
   // Find selected stage
   const selectedStage = filteredStages.find((s) => s.spec.name === selectedEnvironment);
 
-  const isLoading = cdPipelineWatch.isLoading || stageListWatch.isLoading;
+  const isLoading = cdPipelineWatch.isLoading || isStagesLoading;
 
   if (isLoading) {
     return null;

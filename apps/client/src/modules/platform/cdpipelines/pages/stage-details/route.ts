@@ -29,7 +29,7 @@ export const routeStageDetails = createRoute({
   getParentRoute: () => routeCluster,
   path: PATH_CDPIPELINE_STAGE_DETAILS,
   validateSearch: (search: Record<string, unknown>): Search => {
-    return z
+    const parsed = z
       .object({
         tab: routeSearchTabSchema.optional(),
         pipelinesTab: pipelinesTabSchema.optional(),
@@ -37,6 +37,11 @@ export const routeStageDetails = createRoute({
         rowsPerPage: z.number().optional(),
       })
       .parse(search);
+
+    return {
+      ...parsed,
+      tab: parsed.tab ?? routeSearchTabName.overview,
+    };
   },
   head: ({ params }) => ({
     meta: [{ title: `${params.cdPipeline} [${params.namespace}] — ${params.stage} Stage | KRCI` }],

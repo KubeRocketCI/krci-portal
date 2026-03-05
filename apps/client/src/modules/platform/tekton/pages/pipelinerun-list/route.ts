@@ -21,13 +21,18 @@ export const routePipelineRunList = createRoute({
   getParentRoute: () => routeCICD,
   path: PATH_PIPELINERUNS,
   validateSearch: (search: Record<string, unknown>): Search => {
-    return z
+    const parsed = z
       .object({
         tab: routeSearchTabSchema.optional(),
         page: z.number().optional(),
         rowsPerPage: z.number().optional(),
       })
       .parse(search);
+
+    return {
+      ...parsed,
+      tab: parsed.tab ?? routeSearchTabName.live,
+    };
   },
   head: () => ({
     meta: [{ title: "Pipeline Runs | KRCI" }],

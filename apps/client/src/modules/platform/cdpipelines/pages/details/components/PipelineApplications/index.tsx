@@ -6,7 +6,7 @@ import { Badge } from "@/core/components/ui/badge";
 import { DataTable } from "@/core/components/Table";
 import { TableColumn } from "@/core/components/Table/types";
 import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
-import { StatusIcon } from "@/core/components/StatusIcon";
+import { StatusBadge } from "@/core/components/StatusBadge";
 import { QuickLink } from "@/core/components/QuickLink";
 import { ScrollCopyText } from "@/core/components/ScrollCopyText";
 import { CodebaseLanguageIcon } from "@/modules/platform/codebases/components/CodebaseLanguageIcon";
@@ -25,20 +25,14 @@ import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { PATH_CDPIPELINE_STAGE_DETAILS_FULL } from "@/modules/platform/cdpipelines/pages/stage-details/route";
-import {
-  useCDPipelineWatch,
-  useAppCodebaseListWatch,
-  useStageListWatch,
-  usePipelineArgoApplicationListWatch,
-  useQuickLinksUrlListWatch,
-} from "../../hooks/data";
+import { usePipelineArgoApplicationListWatch, useQuickLinksUrlListWatch } from "../../hooks/data";
+import { usePipelineAppCodebases, useSortedStages } from "../../hooks/usePipelineData";
 import { routeCDPipelineDetails } from "../../route";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { PodLogsDialog } from "../../../../dialogs/PodLogs";
 import { PodExecDialog } from "../../../../dialogs/PodExec";
-import { cn } from "@/core/utils/classname";
 
 const TABLE_ID = "pipelineApplicationsList";
 
@@ -142,26 +136,10 @@ export const PipelineApplications = () => {
   const openPodExecDialog = useDialogOpener(PodExecDialog);
 
   // Fetch data
-  const cdPipelineWatch = useCDPipelineWatch();
-  const appCodebaseListWatch = useAppCodebaseListWatch();
-  const stageListWatch = useStageListWatch();
   const argoAppsWatch = usePipelineArgoApplicationListWatch();
   const quickLinksUrlListWatch = useQuickLinksUrlListWatch();
-
-  // Filter app codebases to only those in the pipeline
-  const pipelineApplications = React.useMemo(() => {
-    const cdPipeline = cdPipelineWatch.data;
-    if (!cdPipeline) return [];
-
-    return appCodebaseListWatch.data.array.filter((appCodebase) =>
-      cdPipeline.spec.applications.some((appName) => appName === appCodebase.metadata.name)
-    );
-  }, [cdPipelineWatch.data, appCodebaseListWatch.data.array]);
-
-  // Sort stages by order
-  const sortedStages = React.useMemo(() => {
-    return stageListWatch.data.array.toSorted((a, b) => a.spec.order - b.spec.order);
-  }, [stageListWatch.data.array]);
+  const { data: pipelineApplications, isLoading: isPipelineAppsLoading } = usePipelineAppCodebases();
+  const { data: sortedStages, isLoading: isSortedStagesLoading } = useSortedStages();
 
   // Group Argo applications by app name and stage
   const argoAppsByAppAndStage = React.useMemo(() => {
@@ -190,8 +168,7 @@ export const PipelineApplications = () => {
 
   const columns = useColumns(clusterName, params.namespace, sortedStages.length, argoAppsByAppAndStage);
 
-  const isLoading =
-    cdPipelineWatch.isLoading || appCodebaseListWatch.isLoading || stageListWatch.isLoading || argoAppsWatch.isLoading;
+  const isLoading = isPipelineAppsLoading || isSortedStagesLoading || argoAppsWatch.isLoading;
 
   // Expandable row renderer
   const expandedRowRender = React.useCallback(
@@ -270,36 +247,8 @@ export const PipelineApplications = () => {
                             {stage.spec.name}
                           </Link>
                         </Button>
-                        <div
-                          className={cn("flex h-6 w-fit items-center gap-1 rounded px-2 py-0.5 text-xs")}
-                          style={{
-                            backgroundColor: `${healthStatusIcon.color}15`,
-                            color: healthStatusIcon.color,
-                          }}
-                        >
-                          <StatusIcon
-                            Icon={healthStatusIcon.component}
-                            color={healthStatusIcon.color}
-                            isSpinning={healthStatusIcon.isSpinning}
-                            width={12}
-                          />
-                          <span className="capitalize">{healthStatus.status}</span>
-                        </div>
-                        <div
-                          className={cn("flex h-6 w-fit items-center gap-1 rounded px-2 py-0.5 text-xs")}
-                          style={{
-                            backgroundColor: `${syncStatusIcon.color}15`,
-                            color: syncStatusIcon.color,
-                          }}
-                        >
-                          <StatusIcon
-                            Icon={syncStatusIcon.component}
-                            color={syncStatusIcon.color}
-                            isSpinning={syncStatusIcon.isSpinning}
-                            width={12}
-                          />
-                          <span className="capitalize">{syncStatus.status}</span>
-                        </div>
+                        <StatusBadge statusIcon={healthStatusIcon} label={healthStatus.status} />
+                        <StatusBadge statusIcon={syncStatusIcon} label={syncStatus.status} />
                       </div>
 
                       <div className="grid grid-cols-4 gap-4 text-sm">
