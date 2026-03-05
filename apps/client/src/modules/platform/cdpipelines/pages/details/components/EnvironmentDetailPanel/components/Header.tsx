@@ -34,7 +34,7 @@ export function Header({ stage }: HeaderProps) {
             <Button
               variant="link"
               asChild
-              className="h-auto !p-0 text-2xl font-semibold text-white hover:text-white/80"
+              className="h-auto !p-0 text-2xl font-semibold text-white underline hover:text-white/80"
             >
               <Link to={PATH_CDPIPELINE_STAGE_DETAILS_FULL} params={linkParams}>
                 {stage.spec.name}

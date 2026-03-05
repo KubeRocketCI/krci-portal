@@ -14,6 +14,8 @@ type ButtonSize = VariantProps<typeof buttonVariants>["size"];
 
 const iconSizeByBtnSize = (btnSize: ButtonSize) => {
   switch (btnSize) {
+    case "xs":
+      return 12;
     case "sm":
       return 16;
     case "default":
@@ -48,7 +50,7 @@ const renderIcon = (icon: React.ReactElement | string | undefined) => {
   return icon;
 };
 
-const DisabledResourceIconLink = ({ tooltip, icon, display, name, size }: ResourceIconLinkProps) => {
+const DisabledResourceIconLink = ({ tooltip, icon, display, name, size, variant }: ResourceIconLinkProps) => {
   return display === "text" ? (
     <Tooltip title={<div>{tooltip}</div>}>
       <span
@@ -63,7 +65,7 @@ const DisabledResourceIconLink = ({ tooltip, icon, display, name, size }: Resour
   ) : (
     <Tooltip title={<div>{tooltip}</div>}>
       <div>
-        <Button variant="ghost" size="icon" disabled className="!p-0 text-xs opacity-50">
+        <Button variant={variant || "ghost"} size="icon" disabled className="!p-0 text-xs opacity-50">
           {renderIcon(icon)}
         </Button>
       </div>
@@ -71,7 +73,7 @@ const DisabledResourceIconLink = ({ tooltip, icon, display, name, size }: Resour
   );
 };
 
-const EnabledResourceIconLink = ({ tooltip, icon, href, display, name, size }: ResourceIconLinkProps) => {
+const EnabledResourceIconLink = ({ tooltip, icon, href, display, name, size, variant }: ResourceIconLinkProps) => {
   const iconSize = iconSizeByBtnSize(size);
 
   return display === "text" ? (
@@ -99,7 +101,7 @@ const EnabledResourceIconLink = ({ tooltip, icon, href, display, name, size }: R
       }
     >
       <span>
-        <Button variant="ghost" size="icon" asChild className="!p-0">
+        <Button variant={variant || "ghost"} size="icon" asChild className="!p-0">
           <a href={href} target="_blank" rel="noopener noreferrer">
             {renderIcon(icon)}
           </a>
@@ -117,13 +119,29 @@ export const ResourceIconLink = ({
   name,
   size,
   display = "icon",
+  variant,
 }: ResourceIconLinkProps) => {
   return (
     <div onClick={stopPropagation} onFocus={stopPropagation}>
       {disabled ? (
-        <DisabledResourceIconLink tooltip={tooltip} icon={icon} display={display} name={name} size={size} />
+        <DisabledResourceIconLink
+          tooltip={tooltip}
+          icon={icon}
+          display={display}
+          name={name}
+          size={size}
+          variant={variant}
+        />
       ) : (
-        <EnabledResourceIconLink tooltip={tooltip} icon={icon} href={href} display={display} name={name} size={size} />
+        <EnabledResourceIconLink
+          tooltip={tooltip}
+          icon={icon}
+          href={href}
+          display={display}
+          name={name}
+          size={size}
+          variant={variant}
+        />
       )}
     </div>
   );

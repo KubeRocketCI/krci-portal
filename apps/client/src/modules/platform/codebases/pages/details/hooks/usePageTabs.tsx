@@ -38,55 +38,35 @@ export const usePageTabs = () => {
         icon: <Info className="size-4" />,
         id: routeSearchTabSchema.enum.overview,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.overview),
-        component: (
-          <div className="mt-6">
-            <Overview />
-          </div>
-        ),
+        component: <Overview />,
       },
       {
         label: "Branches",
         icon: <GitBranch className="size-4" />,
         id: routeSearchTabSchema.enum.branches,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.branches),
-        component: (
-          <div className="mt-6">
-            <BranchList />
-          </div>
-        ),
+        component: <BranchList />,
       },
       {
         label: "Pipelines",
         icon: <ENTITY_ICON.pipeline className="size-4" />,
         id: routeSearchTabSchema.enum.pipelines,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.pipelines),
-        component: (
-          <div className="mt-6">
-            <PipelineList />
-          </div>
-        ),
+        component: <PipelineList />,
       },
       {
         label: "Pull Requests",
         icon: <GitPullRequest className="size-4" />,
         id: routeSearchTabSchema.enum.code,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.code),
-        component: (
-          <div className="mt-6">
-            <PullRequestList />
-          </div>
-        ),
+        component: <PullRequestList />,
       },
       {
         label: "Deployments",
         icon: <ENTITY_ICON.deployment className="size-4" />,
         id: routeSearchTabSchema.enum.deployments,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.deployments),
-        component: (
-          <div className="mt-6">
-            <DeploymentStatusWidget />
-          </div>
-        ),
+        component: <DeploymentStatusWidget />,
       },
     ];
   }, [handleTabNavigate]);

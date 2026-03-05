@@ -1,5 +1,5 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FilterContext } from "./context";
 import { FilterContextValue, FilterProviderProps, FilterValueMap } from "./types";
 import { useAppForm } from "@/core/components/form";
@@ -13,6 +13,8 @@ export const FilterProvider = <Item, Values extends FilterValueMap>({
   const navigate = useNavigate();
   // Always call useSearch unconditionally to follow React Hooks rules
   const searchParams = useSearch({ strict: false }) as Record<string, unknown>;
+
+  const filterKeys = useMemo(() => Object.keys(defaultValues), [defaultValues]);
 
   // Helper to create filterFunction from values
   const createFilterFunction = useCallback(
@@ -46,7 +48,7 @@ export const FilterProvider = <Item, Values extends FilterValueMap>({
     const mergedValues = { ...defaultValues };
 
     // Merge URL search params with default values
-    Object.keys(defaultValues).forEach((key) => {
+    filterKeys.forEach((key) => {
       const urlValue = searchParams[key];
       if (urlValue !== undefined) {
         mergedValues[key as keyof Values] = urlValue as Values[keyof Values];
@@ -54,7 +56,7 @@ export const FilterProvider = <Item, Values extends FilterValueMap>({
     });
 
     return mergedValues;
-  }, [defaultValues, searchParams, syncWithUrl]);
+  }, [defaultValues, searchParams, syncWithUrl, filterKeys]);
 
   const [filterFunction, setFilterFunction] = useState<(item: Item) => boolean>(() =>
     createFilterFunction(initialValues)
@@ -64,8 +66,8 @@ export const FilterProvider = <Item, Values extends FilterValueMap>({
     defaultValues: initialValues,
   });
 
-  // Subscribe to form changes
-  useMemo(() => {
+  // Subscribe to form changes using useEffect for proper cleanup
+  useEffect(() => {
     const unsubscribe = form.store.subscribe(() => {
       const values = form.store.state.values;
 
@@ -75,29 +77,35 @@ export const FilterProvider = <Item, Values extends FilterValueMap>({
       // Sync with URL if enabled (skip during initialization)
       if (syncWithUrl && !isInitializing.current) {
         // Create a clean object with only non-default values
-        const urlParams: Record<string, unknown> = {};
+        const filterParams: Record<string, unknown> = {};
 
-        Object.keys(defaultValues).forEach((key) => {
+        filterKeys.forEach((key) => {
           const currentValue = values[key as keyof Values];
           const defaultValue = defaultValues[key as keyof Values];
 
           // Only include values that differ from defaults
           if (Array.isArray(currentValue)) {
             if (currentValue.length > 0) {
-              urlParams[key] = currentValue;
+              filterParams[key] = currentValue;
             }
           } else if (typeof currentValue === "string") {
             if (currentValue !== "" && currentValue !== defaultValue) {
-              urlParams[key] = currentValue;
+              filterParams[key] = currentValue;
             }
           } else if (currentValue !== defaultValue) {
-            urlParams[key] = currentValue;
+            filterParams[key] = currentValue;
           }
         });
 
-        // Update URL without navigation (replace instead of push)
+        // Preserve unrelated search params (e.g. tab, pipelinesTab) by merging
         void navigate({
-          search: urlParams as never,
+          search: ((prev: Record<string, unknown>) => {
+            const preserved = { ...prev };
+            filterKeys.forEach((key) => {
+              delete preserved[key];
+            });
+            return { ...preserved, ...filterParams };
+          }) as never,
           replace: true,
         }).catch(() => {
           // Ignore navigation errors
@@ -111,7 +119,7 @@ export const FilterProvider = <Item, Values extends FilterValueMap>({
     });
 
     return unsubscribe;
-  }, [form.store, createFilterFunction, syncWithUrl, defaultValues, navigate]);
+  }, [form.store, createFilterFunction, syncWithUrl, defaultValues, filterKeys, navigate]);
 
   // Reset function
   const reset = useCallback(() => {
@@ -121,16 +129,22 @@ export const FilterProvider = <Item, Values extends FilterValueMap>({
     // 1. Update filterFunction immediately (no debounce on reset for better UX)
     setFilterFunction(() => createFilterFunction(defaultValues));
 
-    // 2. Clear URL params (empty object means no search params)
+    // 2. Clear only filter-related URL params, preserve others (e.g. tab)
     if (syncWithUrl) {
       void navigate({
-        search: {} as never,
+        search: ((prev: Record<string, unknown>) => {
+          const preserved = { ...prev };
+          filterKeys.forEach((key) => {
+            delete preserved[key];
+          });
+          return preserved;
+        }) as never,
         replace: true,
       }).catch(() => {
         // Ignore navigation errors
       });
     }
-  }, [form, createFilterFunction, defaultValues, syncWithUrl, navigate]);
+  }, [form, createFilterFunction, defaultValues, filterKeys, syncWithUrl, navigate]);
 
   const contextValue: FilterContextValue<Item, Values> = useMemo(
     () => ({

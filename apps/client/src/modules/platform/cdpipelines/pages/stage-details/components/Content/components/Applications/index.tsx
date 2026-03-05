@@ -23,16 +23,16 @@ const MemoizedApplicationsInner = React.memo(
     return (
       <>
         {mode === applicationTableMode.preview && (
-          <>
+          <div className="space-y-4">
             <PreviewTableActions toggleMode={toggleMode} />
             <PreviewTable />
-          </>
+          </div>
         )}
         {mode === applicationTableMode.configuration && (
-          <>
+          <div className="space-y-4">
             <ConfigurationTableActions toggleMode={toggleMode} />
             <ConfigurationTable />
-          </>
+          </div>
         )}
       </>
     );

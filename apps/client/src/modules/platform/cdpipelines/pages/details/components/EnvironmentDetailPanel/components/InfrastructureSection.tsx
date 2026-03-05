@@ -1,12 +1,15 @@
 import { Cpu, Server, Database, Workflow, Trash2, Shield } from "lucide-react";
 import { Stage } from "@my-project/shared";
 import { ScrollCopyText } from "@/core/components/ScrollCopyText";
+import { PipelinePreview } from "@/core/components/PipelinePreview";
+import { routeCDPipelineDetails } from "../../../route";
 
 interface InfrastructureSectionProps {
   stage: Stage;
 }
 
 export function InfrastructureSection({ stage }: InfrastructureSectionProps) {
+  const params = routeCDPipelineDetails.useParams();
   const qualityGates = stage.spec.qualityGates || [];
 
   return (
@@ -40,7 +43,11 @@ export function InfrastructureSection({ stage }: InfrastructureSectionProps) {
               <Workflow className="size-3" />
               <span className="text-xs">Deploy Pipeline</span>
             </div>
-            <ScrollCopyText text={stage.spec.triggerTemplate} />
+            <PipelinePreview
+              pipelineName={stage.spec.triggerTemplate}
+              namespace={params.namespace}
+              clusterName={params.clusterName}
+            />
           </div>
           <div>
             <div className="text-muted-foreground mb-1 flex items-center gap-2">
@@ -48,7 +55,11 @@ export function InfrastructureSection({ stage }: InfrastructureSectionProps) {
               <span className="text-xs">Clean Pipeline</span>
             </div>
             {stage.spec.cleanTemplate ? (
-              <ScrollCopyText text={stage.spec.cleanTemplate} />
+              <PipelinePreview
+                pipelineName={stage.spec.cleanTemplate}
+                namespace={params.namespace}
+                clusterName={params.clusterName}
+              />
             ) : (
               <span className="text-muted-foreground text-xs">N/A</span>
             )}

@@ -1,3 +1,4 @@
+import type React from "react";
 import type { ButtonProps } from "@/core/components/ui/button";
 
 export interface ResourceIconLinkProps {

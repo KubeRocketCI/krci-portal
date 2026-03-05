@@ -22,7 +22,7 @@ export const routeCDPipelineDetails = createRoute({
   getParentRoute: () => routeCluster,
   path: PATH_CDPIPELINE_DETAILS,
   validateSearch: (search: Record<string, unknown>): Search => {
-    return z
+    const parsed = z
       .object({
         tab: routeSearchTabSchema.optional(),
         page: z.number().optional(),
@@ -30,6 +30,11 @@ export const routeCDPipelineDetails = createRoute({
         environment: z.string().optional(),
       })
       .parse(search);
+
+    return {
+      ...parsed,
+      tab: parsed.tab ?? routeSearchTabName.environments,
+    };
   },
   head: ({ params }) => ({
     meta: [{ title: `${params.name} [${params.namespace}] — Deployments | KRCI` }],
