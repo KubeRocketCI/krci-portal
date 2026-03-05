@@ -3,18 +3,19 @@ import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { PageGuideButton } from "@/core/components/PageGuide";
 import { QuickLink } from "@/core/components/QuickLink";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { useQuickLinkWatchList } from "@/k8s/api/groups/KRCI/QuickLink";
 import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
 import { getQuickLinkURLsFromList } from "@/k8s/api/groups/KRCI/QuickLink/utils/getURLsFromList";
-import { Tabs } from "@/core/providers/Tabs/components/Tabs";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { useTours } from "@/modules/tours";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { isSystem, systemQuickLink } from "@my-project/shared";
-import { Box } from "lucide-react";
-import React from "react";
+import { Box, EllipsisVertical } from "lucide-react";
+import { DropdownMenu, DropdownMenuTrigger } from "@/core/components/ui/dropdown-menu";
+import { Button } from "@/core/components/ui/button";
 import { CodebaseActionsMenu } from "../../components/CodebaseActionsMenu";
+import React from "react";
 import { routeProjectList } from "../list/route";
 import { useCodebaseWatch } from "./hooks/data";
 import { usePageTabs } from "./hooks/usePageTabs";
@@ -37,32 +38,8 @@ export default function CodebaseDetailsPageContent({ searchTabIdx }: { searchTab
   const { isTourNavigating, currentTourTab } = useTours();
 
   const codebaseIsLoaded = codebaseWatch.query.isFetched && !codebaseWatch.query.error;
-
-  const renderPageContent = React.useCallback(() => {
-    if (codebaseWatch.query.error) {
-      return <ErrorContent error={codebaseWatch.query.error} />;
-    }
-
-    return (
-      <LoadingWrapper isLoading={codebaseWatch.query.isLoading}>
-        <Tabs
-          tabs={tabs}
-          activeTabIdx={searchTabIdx}
-          handleChangeTab={handleChangeTab}
-          dataTour="project-tabs"
-          tourHighlight={{ isNavigating: isTourNavigating, focusedTabId: currentTourTab }}
-        />
-      </LoadingWrapper>
-    );
-  }, [
-    codebaseWatch.query.error,
-    codebaseWatch.query.isLoading,
-    handleChangeTab,
-    tabs,
-    searchTabIdx,
-    isTourNavigating,
-    currentTourTab,
-  ]);
+  const showTabs = !codebaseWatch.query.error && !codebaseWatch.query.isLoading;
+  const [menuOpen, setMenuOpen] = React.useState(false);
 
   return (
     <PageWrapper
@@ -83,7 +60,7 @@ export default function CodebaseDetailsPageContent({ searchTabIdx }: { searchTab
         </>
       }
     >
-      <Section
+      <PageContentWrapper
         icon={Box}
         title={params.name}
         enableCopyTitle
@@ -100,50 +77,60 @@ export default function CodebaseDetailsPageContent({ searchTabIdx }: { searchTab
         actions={
           codebaseIsLoaded &&
           !isSystem(codebase!) && (
-            <CodebaseActionsMenu
-              data={{
-                codebase: codebase!,
-              }}
-              backRoute={{
-                to: routeProjectList.fullPath,
-                params: {
-                  clusterName: params.clusterName,
-                },
-              }}
-              variant="inline"
-            />
+            <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" aria-label="More options">
+                  Actions
+                  <EllipsisVertical size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+              <CodebaseActionsMenu
+                data={{
+                  codebase: codebase!,
+                }}
+                backRoute={{
+                  to: routeProjectList.fullPath,
+                  params: {
+                    clusterName: params.clusterName,
+                  },
+                }}
+                variant="menu"
+              />
+            </DropdownMenu>
           )
         }
-        extraContent={
+        extraLinks={
           <div className="flex items-center gap-2">
             <QuickLink
-              name={{
-                label: "Git",
-                value: "git",
-              }}
-              enabledText="Open in GIT"
-              externalLink={codebase?.status?.gitWebUrl}
-              isTextButton
+              name="Git"
+              tooltip="Open in GIT"
+              href={codebase?.status?.gitWebUrl}
+              display="text"
               variant="link"
+              size="xs"
             />
             <QuickLink
-              name={{
-                label: quickLinkUiNames[systemQuickLink.sonar],
-                value: systemQuickLink.sonar,
-              }}
-              enabledText="Open the Quality Gates"
-              externalLink={LinkCreationService.sonar.createDashboardLink({
+              name={quickLinkUiNames[systemQuickLink.sonar]}
+              tooltip="Open the Quality Gates"
+              href={LinkCreationService.sonar.createDashboardLink({
                 baseURL: quickLinksURLs?.[systemQuickLink.sonar],
                 codebaseName: params.name,
               })}
-              isTextButton
+              display="text"
               variant="link"
+              size="xs"
             />
           </div>
         }
+        tabs={showTabs ? tabs : undefined}
+        activeTab={searchTabIdx}
+        onTabChange={handleChangeTab}
+        tabDataTour="project-tabs"
+        tourHighlight={{ isNavigating: isTourNavigating, focusedTabId: currentTourTab }}
       >
-        {renderPageContent()}
-      </Section>
+        {codebaseWatch.query.error && <ErrorContent error={codebaseWatch.query.error} />}
+        {codebaseWatch.query.isLoading && <LoadingWrapper isLoading>{null}</LoadingWrapper>}
+      </PageContentWrapper>
     </PageWrapper>
   );
 }

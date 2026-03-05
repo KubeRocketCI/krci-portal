@@ -1,4 +1,6 @@
 import React from "react";
+import { Info, GitBranch, GitPullRequest } from "lucide-react";
+import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import { router } from "@/core/router";
 import { BranchList } from "../components/BranchList";
 import { PullRequestList } from "../components/PullRequestList";
@@ -33,6 +35,7 @@ export const usePageTabs = () => {
     return [
       {
         label: "Overview",
+        icon: <Info className="size-4" />,
         id: routeSearchTabSchema.enum.overview,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.overview),
         component: (
@@ -43,6 +46,7 @@ export const usePageTabs = () => {
       },
       {
         label: "Branches",
+        icon: <GitBranch className="size-4" />,
         id: routeSearchTabSchema.enum.branches,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.branches),
         component: (
@@ -53,6 +57,7 @@ export const usePageTabs = () => {
       },
       {
         label: "Pipelines",
+        icon: <ENTITY_ICON.pipeline className="size-4" />,
         id: routeSearchTabSchema.enum.pipelines,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.pipelines),
         component: (
@@ -63,6 +68,7 @@ export const usePageTabs = () => {
       },
       {
         label: "Pull Requests",
+        icon: <GitPullRequest className="size-4" />,
         id: routeSearchTabSchema.enum.code,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.code),
         component: (
@@ -73,6 +79,7 @@ export const usePageTabs = () => {
       },
       {
         label: "Deployments",
+        icon: <ENTITY_ICON.deployment className="size-4" />,
         id: routeSearchTabSchema.enum.deployments,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.deployments),
         component: (

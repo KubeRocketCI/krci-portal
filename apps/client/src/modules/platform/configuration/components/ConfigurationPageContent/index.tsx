@@ -1,7 +1,7 @@
 import { Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
 import { ConfigurationPageContentProps } from "./types";
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { Plus } from "lucide-react";
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
@@ -16,7 +16,7 @@ export const ConfigurationPageContent = ({
   return (
     <>
       <PageWrapper breadcrumbs={[{ label }]} headerSlot={docLink ? <LearnMoreLink url={docLink} /> : undefined}>
-        <Section
+        <PageContentWrapper
           icon={icon}
           title={label}
           description={description}
@@ -36,7 +36,7 @@ export const ConfigurationPageContent = ({
           }
         >
           {children}
-        </Section>
+        </PageContentWrapper>
       </PageWrapper>
       {creationForm && (
         <Dialog

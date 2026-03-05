@@ -1,5 +1,5 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { Shield } from "lucide-react";
 import { useState, useMemo } from "react";
 import { DEFAULT_PORTFOLIO_METRICS_DAYS } from "@my-project/shared";
@@ -25,7 +25,7 @@ export default function SCAPageContent() {
 
   return (
     <PageWrapper breadcrumbs={[{ label: "Security" }, { label: "SCA" }, { label: "Portfolio" }]}>
-      <Section
+      <PageContentWrapper
         icon={Shield}
         title="Software Composition Analysis"
         description={`Portfolio vulnerability metrics and policy violations across all projects`}
@@ -66,7 +66,7 @@ export default function SCAPageContent() {
             <ComponentsChart metrics={memoizedMetrics} isLoading={isLoading} />
           </div>
         </div>
-      </Section>
+      </PageContentWrapper>
     </PageWrapper>
   );
 }

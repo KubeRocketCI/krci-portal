@@ -35,12 +35,13 @@ import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { PodLogsDialog } from "../../../../../dialogs/PodLogs";
 import { PodExecDialog } from "../../../../../dialogs/PodExec";
+import { ScrollCopyText } from "@/core/components/ScrollCopyText";
 
-interface ApplicationsListProps {
+interface ApplicationsSectionProps {
   stage: Stage;
 }
 
-export const ApplicationsList = ({ stage }: ApplicationsListProps) => {
+export function ApplicationsSection({ stage }: ApplicationsSectionProps) {
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
   const params = routeCDPipelineDetails.useParams();
 
@@ -84,12 +85,11 @@ export const ApplicationsList = ({ stage }: ApplicationsListProps) => {
   const argocdBaseURL = quickLinksUrlListWatch.data?.quickLinkURLs?.[systemQuickLink.argocd];
 
   return (
-    <div>
-      <h4 className="text-muted-foreground mb-2 flex items-center gap-2 text-xs">
-        <Package className="size-3" />
-        Deployed Versions
+    <div className="p-5 lg:col-span-2">
+      <h4 className="text-muted-foreground mb-3 flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
+        <Package className="size-3" /> Deployed Applications
       </h4>
-      <div className="flex flex-col gap-2">
+      <div className="grid gap-2" style={{ gridTemplateColumns: "minmax(220px, 280px) 200px auto 1fr" }}>
         {pipelineAppCodebases.map((appCodebase) => {
           // Lookup the Argo application for this codebase in this stage
           const argoApplication = argoAppsByAppName.get(appCodebase.metadata.name);
@@ -118,8 +118,10 @@ export const ApplicationsList = ({ stage }: ApplicationsListProps) => {
           return (
             <div
               key={appCodebase.metadata.name}
-              className="bg-secondary/30 col-span-full grid grid-cols-[minmax(7.5rem,12.5rem)_auto_auto_auto_auto_1fr] items-center gap-x-3 rounded-lg border p-2.5"
+              className="group bg-secondary/30 hover:border-border/80 hover:bg-card col-span-4 grid items-center gap-3 rounded-xl border p-2.5"
+              style={{ gridTemplateColumns: "subgrid" }}
             >
+              {/* Title Column */}
               <div className="flex items-center gap-2">
                 <Button variant="link" asChild className="text-foreground h-auto justify-start p-0 text-sm">
                   <Link
@@ -130,54 +132,59 @@ export const ApplicationsList = ({ stage }: ApplicationsListProps) => {
                       namespace: appCodebase.metadata.namespace || params.namespace,
                     }}
                   >
-                    <ENTITY_ICON.project className="text-muted-foreground/70 shrink-0" />
+                    <ENTITY_ICON.project className="text-muted-foreground/70 mr-1.5 shrink-0" />
                     {appCodebase.metadata.name}
                   </Link>
                 </Button>
               </div>
-              <Badge variant="outline" className="w-fit font-mono text-xs">
-                {version}
-              </Badge>
-              <div
-                className="flex w-fit items-center gap-1 rounded px-2 py-0.5 text-xs"
-                style={{ backgroundColor: `${healthStatusIcon.color}15`, color: healthStatusIcon.color }}
-              >
-                <StatusIcon
-                  Icon={healthStatusIcon.component}
-                  color={healthStatusIcon.color}
-                  isSpinning={healthStatusIcon.isSpinning}
-                  width={12}
+
+              {/* Version Column */}
+              <div className="flex items-center">
+                <ScrollCopyText text={version} className="w-full max-w-full" />
+              </div>
+
+              {/* Status Column */}
+              <div className="flex items-center gap-2">
+                <div
+                  className="flex h-6 w-fit items-center gap-1 rounded px-2 py-0.5 text-xs"
+                  style={{ backgroundColor: `${healthStatusIcon.color}15`, color: healthStatusIcon.color }}
+                >
+                  <StatusIcon
+                    Icon={healthStatusIcon.component}
+                    color={healthStatusIcon.color}
+                    isSpinning={healthStatusIcon.isSpinning}
+                    width={12}
+                  />
+                  <span className="capitalize">{healthStatus.status}</span>
+                </div>
+                <div
+                  className="flex h-6 w-fit items-center gap-1 rounded px-2 py-0.5 text-xs"
+                  style={{ backgroundColor: `${syncStatusIcon.color}15`, color: syncStatusIcon.color }}
+                >
+                  <RefreshCw className="size-3" />
+                  <span className="capitalize">{syncStatus.status}</span>
+                </div>
+              </div>
+
+              {/* Actions Column */}
+              <div className="flex items-center justify-end gap-1">
+                <QuickLink
+                  name={quickLinkUiNames[systemQuickLink.argocd]}
+                  icon={argocdQuickLink?.spec?.icon}
+                  href={argoAppLink}
+                  display="text"
+                  variant="link"
+                  size="xs"
                 />
-                <span className="capitalize">{healthStatus.status}</span>
-              </div>
-              <div
-                className="flex w-fit items-center gap-1 rounded px-2 py-0.5 text-xs"
-                style={{ backgroundColor: `${syncStatusIcon.color}15`, color: syncStatusIcon.color }}
-              >
-                <RefreshCw className="size-3" />
-                <span className="capitalize">{syncStatus.status}</span>
-              </div>
-              <QuickLink
-                name={{
-                  label: quickLinkUiNames[systemQuickLink.argocd],
-                  value: systemQuickLink.argocd,
-                }}
-                iconBase64={argocdQuickLink?.spec?.icon}
-                externalLink={argoAppLink}
-                quickLink={argocdQuickLink}
-                isTextButton
-                variant="link"
-              />
-              <div className="flex items-center justify-end gap-2">
                 {externalURLs && externalURLs.length > 0 && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                       <Badge
                         variant="outline"
-                        className="bg-muted text-muted-foreground hover:bg-accent hover:border-primary/50 cursor-pointer py-1 text-xs [&>svg]:size-4"
+                        className="bg-muted text-muted-foreground hover:bg-accent hover:border-primary/50 cursor-pointer py-1 text-xs [&>svg]:size-3"
                       >
                         <SquareArrowOutUpRight className="text-muted-foreground/70 mr-1" />
-                        {externalURLs.length} {externalURLs.length === 1 ? "Ingress" : "Ingresses"}
+                        {externalURLs.length}
                       </Badge>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="max-h-80 w-80 overflow-y-auto">
@@ -197,7 +204,7 @@ export const ApplicationsList = ({ stage }: ApplicationsListProps) => {
                 )}
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="xs"
                   className="gap-1.5 text-xs"
                   onClick={() =>
                     openPodLogsDialog({
@@ -207,11 +214,11 @@ export const ApplicationsList = ({ stage }: ApplicationsListProps) => {
                   }
                 >
                   <ScrollText className="size-3" />
-                  View Logs
+                  Logs
                 </Button>
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="xs"
                   className="gap-1.5 text-xs"
                   onClick={() =>
                     openPodExecDialog({
@@ -221,7 +228,7 @@ export const ApplicationsList = ({ stage }: ApplicationsListProps) => {
                   }
                 >
                   <Terminal className="size-3" />
-                  Open Terminal
+                  Terminal
                 </Button>
               </div>
             </div>
@@ -230,4 +237,4 @@ export const ApplicationsList = ({ stage }: ApplicationsListProps) => {
       </div>
     </div>
   );
-};
+}

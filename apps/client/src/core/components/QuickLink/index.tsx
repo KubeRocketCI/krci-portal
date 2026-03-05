@@ -1,81 +1,42 @@
 import React from "react";
-import { useDialogOpener } from "../../providers/Dialog/hooks";
 import { ResourceIconLink } from "../ResourceIconLink";
-import { QuickLinkExternalLinkProps } from "./types";
-import { Button } from "@/core/components/ui/button";
-import { Link } from "@tanstack/react-router";
-import { systemQuickLink } from "@my-project/shared";
-import { ManageQuickLinkDialog } from "@/modules/platform/configuration/modules/quicklinks/dialogs/ManageQuickLink";
+import { QuickLinkProps } from "./types";
 
 export const QuickLink = ({
   name,
-  Icon,
-  iconBase64,
-  externalLink,
-  enabledText = `Open in ${name?.label}`,
-  configurationRoute,
-  quickLink,
-  isTextButton = false,
+  href,
+  tooltip = `Open in ${name}`,
+  icon,
+  setupAction,
+  display = "icon",
   size = "sm",
   variant = "outline",
-}: QuickLinkExternalLinkProps) => {
-  const openManageQuickLinkDialog = useDialogOpener(ManageQuickLinkDialog);
+}: QuickLinkProps) => {
+  const disabledTooltip = React.useMemo(() => {
+    if (!setupAction) {
+      return `Link to ${name} is not available.`;
+    }
 
-  const renderDisabledTooltip = React.useCallback(() => {
     return (
-      <>
-        <div className="flex flex-col gap-1">
-          <div>Link to {name?.label} is not available.</div>
-          {!!configurationRoute && (
-            <div>
-              Please, set up {name?.label}{" "}
-              <Link to={configurationRoute?.to} params={configurationRoute?.params}>
-                here
-              </Link>
-            </div>
-          )}
-          {!!quickLink && (
-            <div>
-              Please, set up {name?.label}{" "}
-              <Button
-                variant="ghost"
-                onClick={() =>
-                  openManageQuickLinkDialog({
-                    quickLink,
-                    isSystem: Object.hasOwn(systemQuickLink, quickLink?.metadata.name),
-                  })
-                }
-              >
-                here
-              </Button>
-            </div>
-          )}
+      <div className="flex flex-col gap-1">
+        <div>Link to {name} is not available.</div>
+        <div>
+          Please, set up {name} {setupAction}
         </div>
-      </>
+      </div>
     );
-  }, [configurationRoute, name?.label, quickLink, openManageQuickLinkDialog]);
+  }, [name, setupAction]);
 
-  return externalLink ? (
+  return (
     <ResourceIconLink
-      Icon={Icon}
-      iconBase64={iconBase64}
-      tooltipTitle={enabledText}
-      link={externalLink}
+      disabled={!href}
+      icon={icon}
+      tooltip={href ? tooltip : disabledTooltip}
+      href={href}
       variant={variant}
-      isTextButton={isTextButton}
+      display={display}
       size={size}
-      name={name?.label}
-    />
-  ) : (
-    <ResourceIconLink
-      disabled
-      Icon={Icon}
-      iconBase64={iconBase64}
-      tooltipTitle={renderDisabledTooltip()}
-      name={name?.label}
-      variant={variant}
-      isTextButton={isTextButton}
-      size={size}
+      name={name}
     />
   );
 };

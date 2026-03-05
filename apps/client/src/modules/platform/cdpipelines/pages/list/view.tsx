@@ -3,7 +3,7 @@ import { EmptyList } from "@/core/components/EmptyList";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { useCDPipelinePermissions } from "@/k8s/api/groups/KRCI/CDPipeline";
 import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
 import { routeGitopsConfiguration } from "@/modules/platform/configuration/modules/gitops/route";
@@ -46,7 +46,7 @@ export default function CDPipelineListPage() {
       breadcrumbs={[{ label: "Deployments" }]}
       headerSlot={<LearnMoreLink url={EDP_USER_GUIDE.CD_PIPELINE_CREATE.anchors.CREATE_VIA_UI.url} />}
     >
-      <Section
+      <PageContentWrapper
         icon={CloudUpload}
         title="Deployments"
         description="Orchestrate and Monitor Your Deployments."
@@ -68,7 +68,7 @@ export default function CDPipelineListPage() {
         }
       >
         <CDPipelineList blockerComponent={renderBlockerIfNoGitOpsCodebase} />
-      </Section>
+      </PageContentWrapper>
     </PageWrapper>
   );
 }

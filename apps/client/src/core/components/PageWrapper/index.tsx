@@ -15,7 +15,7 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {hasBreadcrumbs ? (
-        <div className="flex h-(--breadcrumbs-height) shrink-0 border-b px-4">
+        <div className="bg-card flex h-(--breadcrumbs-height) shrink-0 border-b px-4">
           <div className="flex w-full items-center justify-between gap-2">
             <div className="w-full">
               <div className="flex items-center gap-4">
@@ -51,7 +51,7 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({
           </div>
         </div>
       ) : null}
-      <div className="flex min-h-0 flex-1 flex-col px-6 py-(--content-offset-y)">{children}</div>
+      <div className="flex min-h-0 flex-1 flex-col">{children}</div>
     </div>
   );
 };

@@ -144,12 +144,13 @@ export function Summary({ codebaseBranch, latestBuildPipelineRun, latestSecurity
           <div className="flex items-center gap-3">
             <div>
               <QuickLink
-                enabledText="Open in GIT"
-                name={{ label: "GIT" }}
-                Icon={<ExternalLink size={16} />}
-                externalLink={gitRepoBranchLink}
+                name="GIT"
+                tooltip="Open in GIT"
+                icon={<ExternalLink size={16} />}
+                href={gitRepoBranchLink}
                 variant="ghost"
-                isTextButton
+                display="text"
+                size="sm"
               />
             </div>
             <div>

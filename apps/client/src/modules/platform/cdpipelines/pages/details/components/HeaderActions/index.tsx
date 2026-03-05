@@ -7,43 +7,59 @@ import { systemQuickLink } from "@my-project/shared";
 import { PATH_CDPIPELINES_FULL } from "../../../list/route";
 import { routeCDPipelineDetails } from "../../route";
 import { useCDPipelineWatch, useQuickLinksUrlListWatch } from "../../hooks/data";
+import { CreateEnvironmentButton } from "../CreateEnvironmentButton";
+import { DropdownMenu, DropdownMenuTrigger } from "@/core/components/ui/dropdown-menu";
+import { Button } from "@/core/components/ui/button";
+import { EllipsisVertical } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import React from "react";
 
 export const HeaderActions = () => {
   const cdPipelineWatch = useCDPipelineWatch();
   const cdPipeline = cdPipelineWatch.query.data;
+  const [menuOpen, setMenuOpen] = React.useState(false);
 
   return (
-    <CDPipelineActionsMenu
-      data={{
-        CDPipeline: cdPipeline!,
-      }}
-      backRoute={{
-        to: PATH_CDPIPELINES_FULL,
-      }}
-      variant="inline"
-    />
+    <>
+      <CreateEnvironmentButton />
+      <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm" aria-label="More options">
+            Actions
+            <EllipsisVertical size={16} />
+          </Button>
+        </DropdownMenuTrigger>
+        <CDPipelineActionsMenu
+          data={{
+            CDPipeline: cdPipeline!,
+          }}
+          backRoute={{
+            to: PATH_CDPIPELINES_FULL,
+          }}
+          variant="menu"
+        />
+      </DropdownMenu>
+    </>
   );
 };
 
 export const HeaderLinks = () => {
-  const { name } = routeCDPipelineDetails.useParams();
+  const params = routeCDPipelineDetails.useParams();
   const quickLinksUrlListWatch = useQuickLinksUrlListWatch();
   const quickLinksURLs = quickLinksUrlListWatch.data?.quickLinkURLs;
 
   return (
-    <div className="flex items-center gap-1">
-      <QuickLink
-        name={{
-          label: quickLinkUiNames[systemQuickLink.argocd],
-          value: systemQuickLink.argocd,
-        }}
-        externalLink={LinkCreationService.argocd.createPipelineLink(quickLinksURLs?.[systemQuickLink.argocd], name)}
-        configurationRoute={{
-          to: PATH_CONFIG_SONAR_FULL,
-        }}
-        isTextButton
-        variant="link"
-      />
-    </div>
+    <QuickLink
+      name={quickLinkUiNames[systemQuickLink.argocd]}
+      href={LinkCreationService.argocd.createPipelineLink(quickLinksURLs?.[systemQuickLink.argocd], params.name)}
+      setupAction={
+        <Link to={PATH_CONFIG_SONAR_FULL} params={{ clusterName: params.clusterName }}>
+          here
+        </Link>
+      }
+      display="text"
+      variant="link"
+      size="xs"
+    />
   );
 };

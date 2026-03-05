@@ -1,5 +1,5 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { KeyRound } from "lucide-react";
 import { useCallback } from "react";
 import { ExposedSecretList } from "./components/ExposedSecretList";
@@ -33,7 +33,7 @@ export default function TrivyExposedSecretsPageContent() {
 
   return (
     <PageWrapper breadcrumbs={[{ label: "Security" }, { label: "Container Scanning" }, { label: "Exposed Secrets" }]}>
-      <Section
+      <PageContentWrapper
         icon={KeyRound}
         title="Exposed Secret Reports"
         description={`Exposed secrets detected in container images in namespace: ${selectedNamespace}`}
@@ -47,7 +47,7 @@ export default function TrivyExposedSecretsPageContent() {
         }
       >
         <ExposedSecretList namespace={selectedNamespace} />
-      </Section>
+      </PageContentWrapper>
     </PageWrapper>
   );
 }

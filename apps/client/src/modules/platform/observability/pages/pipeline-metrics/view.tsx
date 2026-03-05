@@ -1,5 +1,5 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { Activity } from "lucide-react";
 import { useMemo, useState } from "react";
 import { TIME_RANGES, TimeRange, PIPELINE_TYPES } from "@my-project/shared";
@@ -33,7 +33,7 @@ export default function PipelineMetricsPageContent() {
 
   return (
     <PageWrapper breadcrumbs={[{ label: "Observability" }, { label: "Pipeline Metrics" }]}>
-      <Section
+      <PageContentWrapper
         icon={Activity}
         title="Pipeline Metrics"
         description={`Aggregated pipeline statistics for namespace: ${namespace}`}
@@ -58,7 +58,7 @@ export default function PipelineMetricsPageContent() {
 
           <PipelineActivityChart namespace={namespace} timeRange={timeRange} codebase={codebase} />
         </div>
-      </Section>
+      </PageContentWrapper>
     </PageWrapper>
   );
 }

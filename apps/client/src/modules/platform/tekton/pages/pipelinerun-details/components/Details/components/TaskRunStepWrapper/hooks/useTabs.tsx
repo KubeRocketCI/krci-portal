@@ -1,6 +1,7 @@
 import CodeEditor from "@/core/components/CodeEditor";
 import { Task, TaskRun } from "@my-project/shared";
 import React from "react";
+import { ScrollText, FileText } from "lucide-react";
 import { TabContent } from "../../TabContent";
 import { TaskRunStepLogs } from "../components/TaskRunStepLogs";
 
@@ -21,6 +22,7 @@ export const useTabs = ({
     return [
       {
         label: "Logs",
+        icon: <ScrollText className="size-4" />,
         component: (
           <TabContent>
             <TaskRunStepLogs stepName={stepName} taskRunName={taskRun?.metadata?.name || ""} />
@@ -29,6 +31,7 @@ export const useTabs = ({
       },
       {
         label: "Details",
+        icon: <FileText className="size-4" />,
         component: (
           <TabContent>
             <CodeEditor content={details} />

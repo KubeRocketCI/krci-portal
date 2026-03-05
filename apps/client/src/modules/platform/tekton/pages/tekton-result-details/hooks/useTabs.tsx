@@ -1,4 +1,5 @@
 import React from "react";
+import { ScrollText, FileCode } from "lucide-react";
 import { Logs } from "../components/Logs/index";
 import { ViewPipelineRun } from "../components/ViewPipelineRun";
 import {
@@ -29,6 +30,7 @@ export const useTabs = (): Tab[] => {
       {
         id: routeSearchTabSchema.enum.logs,
         label: "Logs",
+        icon: <ScrollText className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.logs),
         component: (
           <div className="h-full pt-6">
@@ -39,6 +41,7 @@ export const useTabs = (): Tab[] => {
       {
         id: routeSearchTabSchema.enum.yaml,
         label: "View YAML",
+        icon: <FileCode className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.yaml),
         component: (
           <div className="h-full pt-6">

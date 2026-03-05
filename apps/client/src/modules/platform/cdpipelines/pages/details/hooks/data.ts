@@ -58,3 +58,18 @@ export const useStageArgoApplicationListWatch = (stageName: string) => {
     namespace: params.namespace,
   });
 };
+
+/**
+ * Watch all Argo applications for the entire pipeline.
+ * Filters by pipeline name only.
+ */
+export const usePipelineArgoApplicationListWatch = () => {
+  const params = routeCDPipelineDetails.useParams();
+
+  return useApplicationWatchList({
+    labels: {
+      [applicationLabels.pipeline]: params.name,
+    },
+    namespace: params.namespace,
+  });
+};

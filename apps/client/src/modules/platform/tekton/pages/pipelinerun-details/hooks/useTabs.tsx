@@ -1,4 +1,5 @@
 import React from "react";
+import { FileText, FileCode, CheckCircle, Network } from "lucide-react";
 import { Details } from "../components/Details";
 import { ViewPipelineRun } from "../components/ViewPipelineRun";
 import { routePipelineRunDetails, RouteSearchTab, routeSearchTabSchema, PATH_PIPELINERUN_DETAILS_FULL } from "../route";
@@ -26,6 +27,7 @@ export const useTabs = (): Tab[] => {
       {
         id: routeSearchTabSchema.enum.details,
         label: "Details",
+        icon: <FileText className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.details),
         component: (
           <div className="pt-6">
@@ -36,6 +38,7 @@ export const useTabs = (): Tab[] => {
       {
         id: routeSearchTabSchema.enum.yaml,
         label: "View YAML",
+        icon: <FileCode className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.yaml),
         component: (
           <div className="h-full overflow-hidden pt-6">
@@ -46,6 +49,7 @@ export const useTabs = (): Tab[] => {
       {
         id: routeSearchTabSchema.enum.results,
         label: "Results",
+        icon: <CheckCircle className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.results),
         component: (
           <div className="pt-6">
@@ -56,6 +60,7 @@ export const useTabs = (): Tab[] => {
       {
         id: routeSearchTabSchema.enum.diagram,
         label: "Diagram",
+        icon: <Network className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.diagram),
         component: (
           <div className="h-full pt-6">

@@ -3,7 +3,7 @@ import { Copy, CopyCheck } from "lucide-react";
 import React from "react";
 
 export const CopyButton = ({ text, size = "small" }: { text: string; size?: "medium" | "small" }) => {
-  const iconSize = size === "medium" ? 16 : 8;
+  const iconSize = size === "medium" ? 16 : 13;
   const shadcnSize = size === "medium" ? "default" : "icon-xs";
 
   const [showCopied, setShowCopied] = React.useState<boolean>(false);
@@ -23,15 +23,17 @@ export const CopyButton = ({ text, size = "small" }: { text: string; size?: "med
   };
 
   return (
-    <div className="text-muted-foreground pt-[0.4%]">
-      <Button
-        onClick={handleClickCopy}
-        variant="ghost"
-        size={shadcnSize}
-        className="hover:bg-muted/80 min-w-0 shrink-0 p-0"
-      >
-        {showCopied ? <CopyCheck width={iconSize} height={iconSize} /> : <Copy width={iconSize} height={iconSize} />}
-      </Button>
-    </div>
+    <Button
+      onClick={handleClickCopy}
+      variant="ghost"
+      size={shadcnSize}
+      className="min-w-0 shrink-0 rounded p-1 opacity-60 transition-all hover:bg-slate-100 hover:opacity-100"
+    >
+      {showCopied ? (
+        <CopyCheck width={iconSize} height={iconSize} className="text-slate-500" />
+      ) : (
+        <Copy width={iconSize} height={iconSize} className="text-slate-500" />
+      )}
+    </Button>
   );
 };

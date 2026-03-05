@@ -4,9 +4,8 @@ import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { HeaderActions, HeaderLinks } from "./components/HeaderActions";
 import { routeCDPipelineDetails, PATH_CDPIPELINE_DETAILS_FULL } from "./route";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { CloudUpload } from "lucide-react";
-import { Tabs } from "@/core/providers/Tabs/components/Tabs";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { useTabs } from "./hooks/useTabs";
 
@@ -33,7 +32,7 @@ export default function CDPipelineDetailsPageContent() {
       ]}
       headerSlot={<LearnMoreLink url={EDP_USER_GUIDE.CD_PIPELINE_MANAGE.url} />}
     >
-      <Section
+      <PageContentWrapper
         icon={CloudUpload}
         title={name}
         enableCopyTitle
@@ -48,10 +47,11 @@ export default function CDPipelineDetailsPageContent() {
         }}
         description="Manage and monitor your deployment environments across clusters. Each environment represents a stage in your artifact's progression path from development to production."
         actions={<HeaderActions />}
-        extraContent={<HeaderLinks />}
-      >
-        <Tabs tabs={tabs} activeTabIdx={activeTab} handleChangeTab={handleChangeTab} />
-      </Section>
+        extraLinks={<HeaderLinks />}
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={handleChangeTab}
+      />
     </PageWrapper>
   );
 }

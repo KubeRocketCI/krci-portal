@@ -1,5 +1,5 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { TaskList } from "./components/TaskList";
 import { Bot } from "lucide-react";
 
@@ -12,7 +12,7 @@ export default function PipelineListPage() {
         },
       ]}
     >
-      <Section
+      <PageContentWrapper
         icon={Bot}
         title="Tasks"
         description="Browse and visualize your Tekton tasks. View task definitions and their task dependencies."
@@ -20,7 +20,7 @@ export default function PipelineListPage() {
         <div className="flex flex-grow flex-col gap-6">
           <TaskList />
         </div>
-      </Section>
+      </PageContentWrapper>
     </PageWrapper>
   );
 }

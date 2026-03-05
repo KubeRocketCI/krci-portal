@@ -1,5 +1,5 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { Shield } from "lucide-react";
 import { useCallback } from "react";
 import { VulnerabilityReportList } from "./components/VulnerabilityReportList";
@@ -37,7 +37,7 @@ export default function TrivyVulnerabilitiesPageContent() {
     <PageWrapper
       breadcrumbs={[{ label: "Security" }, { label: "Container Scanning" }, { label: "Vulnerability Reports" }]}
     >
-      <Section
+      <PageContentWrapper
         icon={Shield}
         title="Container Vulnerability Reports"
         description={`Unique container images with vulnerabilities in namespace: ${selectedNamespace}`}
@@ -51,7 +51,7 @@ export default function TrivyVulnerabilitiesPageContent() {
         }
       >
         <VulnerabilityReportList namespace={selectedNamespace} />
-      </Section>
+      </PageContentWrapper>
     </PageWrapper>
   );
 }

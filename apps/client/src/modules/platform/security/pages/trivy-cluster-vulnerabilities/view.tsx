@@ -1,5 +1,5 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { Shield } from "lucide-react";
 import { ClusterVulnerabilityReportList } from "./components/ClusterVulnerabilityReportList";
 
@@ -8,13 +8,13 @@ export default function TrivyClusterVulnerabilitiesPageContent() {
     <PageWrapper
       breadcrumbs={[{ label: "Security" }, { label: "Cluster Security" }, { label: "Cluster Vulnerability Reports" }]}
     >
-      <Section
+      <PageContentWrapper
         icon={Shield}
         title="Cluster Vulnerability Reports"
         description="Cluster-wide container image vulnerability reports"
       >
         <ClusterVulnerabilityReportList />
-      </Section>
+      </PageContentWrapper>
     </PageWrapper>
   );
 }

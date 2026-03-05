@@ -4,14 +4,18 @@ import { useQuickLinksUrlListWatch } from "../../../hooks/data";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
 import { routeCDPipelineDetails } from "../../../route";
+import { useDialogOpener } from "@/core/providers/Dialog/hooks";
+import { ManageQuickLinkDialog } from "@/modules/platform/configuration/modules/quicklinks/dialogs/ManageQuickLink";
+import { Button } from "@/core/components/ui/button";
 
 interface ExternalServicesProps {
   stage: Stage;
 }
 
-export const ExternalServices = ({ stage }: ExternalServicesProps) => {
+export function ExternalServices({ stage }: ExternalServicesProps) {
   const params = routeCDPipelineDetails.useParams();
   const quickLinksUrlListWatch = useQuickLinksUrlListWatch();
+  const openManageQuickLinkDialog = useDialogOpener(ManageQuickLinkDialog);
 
   const argocdQuickLink = quickLinksUrlListWatch.data?.quickLinkList?.find(
     (el) => el.metadata.name === systemQuickLink.argocd
@@ -27,62 +31,67 @@ export const ExternalServices = ({ stage }: ExternalServicesProps) => {
   const monitoringBaseURL = quickLinksUrlListWatch.data?.quickLinkURLs?.[systemQuickLink.monitoring];
   const loggingBaseURL = quickLinksUrlListWatch.data?.quickLinkURLs?.[systemQuickLink.logging];
 
+  const quickLinkSetupAction = (quickLink: typeof argocdQuickLink) => {
+    if (!quickLink) return undefined;
+
+    return (
+      <Button
+        variant="ghost"
+        onClick={() =>
+          openManageQuickLinkDialog({
+            quickLink,
+            isSystem: Object.hasOwn(systemQuickLink, quickLink.metadata.name),
+          })
+        }
+      >
+        here
+      </Button>
+    );
+  };
+
   return (
-    <div className="bg-muted rounded-lg px-4 py-1">
+    <div className="bg-muted rounded-lg px-4 py-2">
       <div className="flex items-center justify-between">
         <h4 className="text-muted-foreground flex items-center gap-2 text-xs">External Services</h4>
         <div className="flex items-center gap-1">
           <QuickLink
-            name={{
-              label: quickLinkUiNames[systemQuickLink.argocd],
-              value: systemQuickLink.argocd,
-            }}
-            iconBase64={argocdQuickLink?.spec?.icon}
-            externalLink={LinkCreationService.argocd.createStageLink(
-              argocdBaseURL,
-              params.name,
-              stage.spec.clusterName
-            )}
-            quickLink={argocdQuickLink}
-            isTextButton
+            name={quickLinkUiNames[systemQuickLink.argocd]}
+            icon={argocdQuickLink?.spec?.icon}
+            href={LinkCreationService.argocd.createStageLink(argocdBaseURL, params.name, stage.spec.clusterName)}
+            setupAction={quickLinkSetupAction(argocdQuickLink)}
+            display="text"
             variant="link"
           />
           <QuickLink
-            name={{
-              label: quickLinkUiNames[systemQuickLink.monitoring],
-              value: systemQuickLink.monitoring,
-            }}
-            iconBase64={monitoringQuickLink?.spec?.icon}
-            enabledText="Open Metrics"
-            externalLink={LinkCreationService.monitoring.createDashboardLink({
+            name={quickLinkUiNames[systemQuickLink.monitoring]}
+            icon={monitoringQuickLink?.spec?.icon}
+            tooltip="Open Metrics"
+            href={LinkCreationService.monitoring.createDashboardLink({
               provider: monitoringQuickLink?.metadata?.labels?.[quickLinkLabels.provider],
               baseURL: monitoringBaseURL,
               namespace: stage.spec.namespace,
               clusterName: stage.spec.clusterName,
             })}
-            quickLink={monitoringQuickLink}
-            isTextButton
+            setupAction={quickLinkSetupAction(monitoringQuickLink)}
+            display="text"
             variant="link"
           />
           <QuickLink
-            name={{
-              label: quickLinkUiNames[systemQuickLink.logging],
-              value: systemQuickLink.logging,
-            }}
-            iconBase64={loggingQuickLink?.spec?.icon}
-            enabledText="Open Logs"
-            externalLink={LinkCreationService.logging.createDashboardLink({
+            name={quickLinkUiNames[systemQuickLink.logging]}
+            icon={loggingQuickLink?.spec?.icon}
+            tooltip="Open Logs"
+            href={LinkCreationService.logging.createDashboardLink({
               provider: loggingQuickLink?.metadata?.labels?.[quickLinkLabels.provider],
               baseURL: loggingBaseURL,
               namespace: stage.spec.namespace,
               clusterName: stage.spec.clusterName,
             })}
-            quickLink={loggingQuickLink}
-            isTextButton
+            setupAction={quickLinkSetupAction(loggingQuickLink)}
+            display="text"
             variant="link"
           />
         </div>
       </div>
     </div>
   );
-};
+}

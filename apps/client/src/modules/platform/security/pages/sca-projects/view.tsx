@@ -1,5 +1,5 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { Shield } from "lucide-react";
 import { useState, useCallback } from "react";
 import { ProjectsList } from "./components/ProjectsList";
@@ -53,7 +53,7 @@ export default function SCAProjectsPageContent() {
 
   return (
     <PageWrapper breadcrumbs={[{ label: "Security" }, { label: "SCA" }, { label: "Projects" }]}>
-      <Section
+      <PageContentWrapper
         icon={Shield}
         title="SCA Projects"
         description="Software composition analysis projects and their security metrics"
@@ -66,7 +66,7 @@ export default function SCAProjectsPageContent() {
           onPageSizeChange={handlePageSizeChange}
           onSearchChange={setSearchTerm}
         />
-      </Section>
+      </PageContentWrapper>
     </PageWrapper>
   );
 }

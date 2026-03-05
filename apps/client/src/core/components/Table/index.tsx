@@ -230,7 +230,7 @@ export const DataTable = <DataType,>({
     >
       <div className="flex flex-col gap-2">
         {renderHeader()}
-        <div className={cn(outlined ? "px-5" : "", "py-5")}>
+        <div className={cn(outlined ? "px-5" : "", validSelected.length > 0 ? "py-5" : "py-0")}>
           {selectionSettings.renderSelectionInfo && validSelected.length > 0 && (
             <div className="bg-muted flex items-center justify-between px-5">
               <div className="py-4">{selectionSettings.renderSelectionInfo(validSelected.length)}</div>

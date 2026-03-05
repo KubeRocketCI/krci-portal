@@ -1,5 +1,5 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { Server } from "lucide-react";
 import { useCallback } from "react";
 import { InfraAssessmentList } from "./components/InfraAssessmentList";
@@ -35,7 +35,7 @@ export default function TrivyInfraAssessmentsPageContent() {
     <PageWrapper
       breadcrumbs={[{ label: "Security" }, { label: "Namespace Security" }, { label: "Infrastructure Assessments" }]}
     >
-      <Section
+      <PageContentWrapper
         icon={Server}
         title="Infrastructure Assessment Reports"
         description={`Infrastructure security assessments in namespace: ${selectedNamespace}`}
@@ -49,7 +49,7 @@ export default function TrivyInfraAssessmentsPageContent() {
         }
       >
         <InfraAssessmentList namespace={selectedNamespace} />
-      </Section>
+      </PageContentWrapper>
     </PageWrapper>
   );
 }
