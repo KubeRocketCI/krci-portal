@@ -36,15 +36,15 @@ export const ValuesOverridePreviewColumn = ({ appCodebase }: { appCodebase: Code
           </div>
           {gitOpsCodebase?.status?.gitWebUrl && (
             <ResourceIconLink
-              tooltipTitle={"Go to the Source Code"}
-              link={LinkCreationService.git.createGitOpsValuesYamlFileLink(
+              tooltip="Go to the Source Code"
+              href={LinkCreationService.git.createGitOpsValuesYamlFileLink(
                 gitOpsCodebase?.status?.gitWebUrl,
                 params.cdPipeline,
                 params.stage,
                 appCodebase.metadata.name,
                 gitOpsGitServer?.spec.gitProvider as GitProvider
               )}
-              Icon={<SquareArrowOutUpRight className="text-muted-foreground/70" size={16} />}
+              icon={<SquareArrowOutUpRight className="text-muted-foreground/70" size={16} />}
               name="source code"
             />
           )}

@@ -1,15 +1,13 @@
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { StatusIcon } from "@/core/components/StatusIcon";
-import { Tabs } from "@/core/providers/Tabs/components/Tabs";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { formatTimestamp, formatDuration } from "@/core/utils/date-humanize";
 import { pipelineRunLabels, tektonResultAnnotations, getPipelineRunAnnotation } from "@my-project/shared";
 import type { PipelineRun } from "@my-project/shared";
 import { Calendar, Clock, GitBranch, GitPullRequest, Timer, User } from "lucide-react";
 import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
-import React from "react";
 import { PATH_PIPELINERUNS_FULL } from "../pipelinerun-list/route";
 import { useTektonResultPipelineRunQuery } from "./hooks/data";
 import { useTabs } from "./hooks/useTabs";
@@ -211,27 +209,9 @@ export default function TektonResultPipelineRunDetailsPageContent() {
   const tabs = useTabs();
   const { activeTab, handleChangeTab } = useTabsContext();
 
-  // Get display name - prefer the actual PipelineRun name from metadata
   const displayName = pipelineRun?.metadata?.name || params.recordUid;
 
-  const renderPageContent = React.useCallback(() => {
-    if (pipelineRunQuery.isError) {
-      return (
-        <div className="flex flex-col items-center justify-center py-12">
-          <p className="text-destructive text-lg font-medium">Failed to load PipelineRun</p>
-          <p className="text-muted-foreground mt-2 text-sm">
-            {pipelineRunQuery.error instanceof Error ? pipelineRunQuery.error.message : "Unknown error"}
-          </p>
-        </div>
-      );
-    }
-
-    return (
-      <LoadingWrapper isLoading={pipelineRunQuery.isLoading}>
-        <Tabs tabs={tabs} activeTabIdx={activeTab} handleChangeTab={handleChangeTab} />
-      </LoadingWrapper>
-    );
-  }, [pipelineRunQuery.isError, pipelineRunQuery.isLoading, pipelineRunQuery.error, tabs, activeTab, handleChangeTab]);
+  const showTabs = !pipelineRunQuery.isError && !pipelineRunQuery.isLoading;
 
   return (
     <PageWrapper
@@ -249,15 +229,26 @@ export default function TektonResultPipelineRunDetailsPageContent() {
         },
       ]}
     >
-      <Section
+      <PageContentWrapper
         icon={ENTITY_ICON.pipelineRun}
         title={displayName}
         enableCopyTitle
         actions={<HeaderActions />}
-        extraContent={<HeaderMetadata />}
+        subHeader={<HeaderMetadata />}
+        tabs={showTabs ? tabs : undefined}
+        activeTab={activeTab}
+        onTabChange={handleChangeTab}
       >
-        {renderPageContent()}
-      </Section>
+        {pipelineRunQuery.isError && (
+          <div className="flex flex-col items-center justify-center py-12">
+            <p className="text-destructive text-lg font-medium">Failed to load PipelineRun</p>
+            <p className="text-muted-foreground mt-2 text-sm">
+              {pipelineRunQuery.error instanceof Error ? pipelineRunQuery.error.message : "Unknown error"}
+            </p>
+          </div>
+        )}
+        {pipelineRunQuery.isLoading && <LoadingWrapper isLoading>{null}</LoadingWrapper>}
+      </PageContentWrapper>
     </PageWrapper>
   );
 }

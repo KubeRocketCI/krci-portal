@@ -11,7 +11,8 @@ export const Actions = ({ resource }: { resource: CDPipeline }) => {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={"Options"}>
+        <Button variant="outline" size="sm" aria-label={"Options"}>
+          Actions
           <EllipsisVertical size={16} />
         </Button>
       </DropdownMenuTrigger>

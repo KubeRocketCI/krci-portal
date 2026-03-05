@@ -1,6 +1,5 @@
 import React from "react";
-import { Section } from "@/core/components/Section";
-import { Tabs } from "@/core/providers/Tabs/components/Tabs";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { routeStageDetails, PATH_CDPIPELINE_STAGE_DETAILS_FULL } from "../../route";
 import { usePageTabs } from "./hooks/usePageTabs";
 import { Layers } from "lucide-react";
@@ -28,7 +27,7 @@ export const Content = () => {
   );
 
   return (
-    <Section
+    <PageContentWrapper
       icon={Layers}
       title={params.stage}
       enableCopyTitle
@@ -48,9 +47,10 @@ export const Content = () => {
       }}
       description="Manage, deploy, test, and troubleshoot your applications across distinct Environments."
       actions={<HeaderActions />}
-      extraContent={<HeaderLinks />}
-    >
-      <Tabs tabs={tabs} activeTabIdx={activeTabIdx} handleChangeTab={handleChangeTab} />
-    </Section>
+      extraLinks={<HeaderLinks />}
+      tabs={tabs}
+      activeTab={activeTabIdx}
+      onTabChange={handleChangeTab}
+    />
   );
 };

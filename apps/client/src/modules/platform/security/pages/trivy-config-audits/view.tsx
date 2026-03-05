@@ -1,5 +1,5 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { FileWarning } from "lucide-react";
 import { useCallback } from "react";
 import { ConfigAuditList } from "./components/ConfigAuditList";
@@ -37,7 +37,7 @@ export default function TrivyConfigAuditsPageContent() {
     <PageWrapper
       breadcrumbs={[{ label: "Security" }, { label: "Namespace Security" }, { label: "Configuration Audits" }]}
     >
-      <Section
+      <PageContentWrapper
         icon={FileWarning}
         title="Configuration Audit Reports"
         description={`Kubernetes resource misconfigurations in namespace: ${selectedNamespace}`}
@@ -51,7 +51,7 @@ export default function TrivyConfigAuditsPageContent() {
         }
       >
         <ConfigAuditList namespace={selectedNamespace} />
-      </Section>
+      </PageContentWrapper>
     </PageWrapper>
   );
 }

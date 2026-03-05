@@ -1,4 +1,5 @@
 import React from "react";
+import { Info, FileCode } from "lucide-react";
 import { Overview } from "../components/Overview";
 import { ViewTask } from "../components/ViewTask";
 import { routeTaskDetails, RouteSearchTab, routeSearchTabSchema, PATH_TASK_DETAILS_FULL } from "../route";
@@ -24,6 +25,7 @@ export const useTabs = (): Tab[] => {
       {
         id: routeSearchTabSchema.enum.overview,
         label: "Overview",
+        icon: <Info className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.overview),
         component: (
           <div className="pt-6">
@@ -34,6 +36,7 @@ export const useTabs = (): Tab[] => {
       {
         id: routeSearchTabSchema.enum.yaml,
         label: "View YAML",
+        icon: <FileCode className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.yaml),
         component: (
           <div className="h-full overflow-hidden pt-6">

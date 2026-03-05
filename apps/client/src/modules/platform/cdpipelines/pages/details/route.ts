@@ -15,6 +15,7 @@ export interface Search {
   tab?: RouteSearchTab;
   page?: number;
   rowsPerPage?: number;
+  environment?: string;
 }
 
 export const routeCDPipelineDetails = createRoute({
@@ -26,6 +27,7 @@ export const routeCDPipelineDetails = createRoute({
         tab: routeSearchTabSchema.optional(),
         page: z.number().optional(),
         rowsPerPage: z.number().optional(),
+        environment: z.string().optional(),
       })
       .parse(search);
   },

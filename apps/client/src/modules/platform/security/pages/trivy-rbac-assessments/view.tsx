@@ -1,5 +1,5 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { ShieldAlert } from "lucide-react";
 import { useCallback } from "react";
 import { RbacAssessmentList } from "./components/RbacAssessmentList";
@@ -33,7 +33,7 @@ export default function TrivyRbacAssessmentsPageContent() {
 
   return (
     <PageWrapper breadcrumbs={[{ label: "Security" }, { label: "Namespace Security" }, { label: "RBAC Assessments" }]}>
-      <Section
+      <PageContentWrapper
         icon={ShieldAlert}
         title="RBAC Assessment Reports"
         description={`RBAC policy security assessments in namespace: ${selectedNamespace}`}
@@ -47,7 +47,7 @@ export default function TrivyRbacAssessmentsPageContent() {
         }
       >
         <RbacAssessmentList namespace={selectedNamespace} />
-      </Section>
+      </PageContentWrapper>
     </PageWrapper>
   );
 }

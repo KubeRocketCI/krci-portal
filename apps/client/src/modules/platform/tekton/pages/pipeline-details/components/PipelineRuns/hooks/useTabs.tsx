@@ -1,4 +1,5 @@
 import React from "react";
+import { Radio, History as HistoryIcon } from "lucide-react";
 import {
   routePipelineDetails,
   PipelineRunsTab,
@@ -30,12 +31,14 @@ export const useTabs = (): Tab[] => {
       {
         id: pipelineRunsTabSchema.enum.live,
         label: "Live",
+        icon: <Radio className="size-4" />,
         onClick: () => handleTabNavigate(pipelineRunsTabSchema.enum.live),
         component: <PipelineRunListByPipeline />,
       },
       {
         id: pipelineRunsTabSchema.enum.history,
         label: "Pipelines History",
+        icon: <HistoryIcon className="size-4" />,
         onClick: () => handleTabNavigate(pipelineRunsTabSchema.enum.history),
         component: <History />,
       },

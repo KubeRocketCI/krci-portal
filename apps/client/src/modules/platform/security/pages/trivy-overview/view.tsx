@@ -1,5 +1,5 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { Shield } from "lucide-react";
 import { useCallback } from "react";
 import { useTrivyOverview } from "./hooks/useTrivyOverview";
@@ -42,7 +42,7 @@ export default function TrivyOverviewPageContent() {
 
   return (
     <PageWrapper breadcrumbs={[{ label: "Security" }, { label: "Container Scanning" }, { label: "Overview" }]}>
-      <Section
+      <PageContentWrapper
         icon={Shield}
         title="Trivy Security Overview"
         description={`Container image vulnerability analysis for namespace: ${selectedNamespace}`}
@@ -80,7 +80,7 @@ export default function TrivyOverviewPageContent() {
           {/* Row 4: Quick links */}
           <QuickLinksSection />
         </div>
-      </Section>
+      </PageContentWrapper>
     </PageWrapper>
   );
 }

@@ -1,4 +1,6 @@
 import React from "react";
+import { Package } from "lucide-react";
+import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import { routeCDPipelineDetails, RouteSearchTab, routeSearchTabSchema, PATH_CDPIPELINE_DETAILS_FULL } from "../route";
 import { Tab } from "@/core/providers/Tabs/components/Tabs/types";
 import { router } from "@/core/router";
@@ -24,22 +26,16 @@ export const useTabs = (): Tab[] => {
       {
         id: routeSearchTabSchema.enum.environments,
         label: "Environments",
+        icon: <ENTITY_ICON.stage className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.environments),
-        component: (
-          <div className="pt-6">
-            <Environments />
-          </div>
-        ),
+        component: <Environments />,
       },
       {
         id: routeSearchTabSchema.enum.applications,
         label: "Applications",
+        icon: <Package className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.applications),
-        component: (
-          <div className="pt-6">
-            <PipelineApplications />
-          </div>
-        ),
+        component: <PipelineApplications />,
       },
     ],
     [handleTabNavigate]

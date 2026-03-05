@@ -1,9 +1,10 @@
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { Badge } from "@/core/components/ui/badge";
-import { Tabs } from "@/core/providers/Tabs/components/Tabs";
+import { DropdownMenu, DropdownMenuTrigger } from "@/core/components/ui/dropdown-menu";
+import { Button } from "@/core/components/ui/button";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { humanize } from "@/core/utils/date-humanize";
 import { useCodebaseBranchWatchItem } from "@/k8s/api/groups/KRCI/CodebaseBranch";
@@ -14,7 +15,7 @@ import {
   tektonResultAnnotations,
   getPipelineRunAnnotation,
 } from "@my-project/shared";
-import { Calendar, Clock, GitBranch, GitPullRequest, SearchX, Timer, User } from "lucide-react";
+import { Calendar, Clock, EllipsisVertical, GitBranch, GitPullRequest, SearchX, Timer, User } from "lucide-react";
 import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import React from "react";
 import { PipelineRunActionsMenu } from "../../components/PipelineRunActionsMenu";
@@ -229,24 +230,33 @@ const HeaderActions = () => {
   const params = routePipelineRunDetails.useParams();
   const pipelineRunWatch = usePipelineRunWatchWithPageParams();
   const pipelineRun = pipelineRunWatch.query.data;
+  const [menuOpen, setMenuOpen] = React.useState(false);
 
   if (!pipelineRunWatch.isReady || !pipelineRun) {
     return null;
   }
 
   return (
-    <PipelineRunActionsMenu
-      data={{
-        pipelineRun: pipelineRun,
-      }}
-      backRoute={{
-        to: PATH_PIPELINERUNS_FULL,
-        params: {
-          clusterName: params.clusterName,
-        },
-      }}
-      variant="inline"
-    />
+    <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" aria-label="More options">
+          Actions
+          <EllipsisVertical size={16} />
+        </Button>
+      </DropdownMenuTrigger>
+      <PipelineRunActionsMenu
+        data={{
+          pipelineRun: pipelineRun,
+        }}
+        backRoute={{
+          to: PATH_PIPELINERUNS_FULL,
+          params: {
+            clusterName: params.clusterName,
+          },
+        }}
+        variant="menu"
+      />
+    </DropdownMenu>
   );
 };
 
@@ -257,34 +267,12 @@ export default function PipelineRunDetailsPageContent({ searchTabIdx }: { search
   const tabs = useTabs();
   const { handleChangeTab } = useTabsContext();
 
-  // When the live PipelineRun is not found (404), attempt to redirect to Tekton Results history
   const { isRedirecting, notFoundAnywhere } = usePipelineRunFallbackRedirect(
     pipelineRunWatch.query.error,
     pipelineRunWatch.query.isLoading
   );
 
-  const renderPageContent = React.useCallback(() => {
-    if (isRedirecting) {
-      return <LoadingWrapper isLoading>{null}</LoadingWrapper>;
-    }
-
-    if (notFoundAnywhere) {
-      return (
-        <div className="flex items-center justify-center gap-2 py-8">
-          <SearchX className="text-muted-foreground" size={48} />
-          <span className="text-muted-foreground text-sm">
-            Sorry. The requested PipelineRun was not found in the cluster or in Tekton Results history.
-          </span>
-        </div>
-      );
-    }
-
-    return (
-      <LoadingWrapper isLoading={pipelineRunWatch.query.isLoading}>
-        <Tabs tabs={tabs} activeTabIdx={searchTabIdx} handleChangeTab={handleChangeTab} />
-      </LoadingWrapper>
-    );
-  }, [pipelineRunWatch.query.isLoading, isRedirecting, notFoundAnywhere, tabs, searchTabIdx, handleChangeTab]);
+  const showTabs = !isRedirecting && !notFoundAnywhere && !pipelineRunWatch.query.isLoading;
 
   return (
     <PageWrapper
@@ -300,15 +288,29 @@ export default function PipelineRunDetailsPageContent({ searchTabIdx }: { search
         },
       ]}
     >
-      <Section
+      <PageContentWrapper
         icon={ENTITY_ICON.pipelineRun}
         title={params.name}
         enableCopyTitle
         actions={<HeaderActions />}
-        extraContent={<HeaderMetadata />}
+        subHeader={<HeaderMetadata />}
+        tabs={showTabs ? tabs : undefined}
+        activeTab={searchTabIdx}
+        onTabChange={handleChangeTab}
       >
-        {renderPageContent()}
-      </Section>
+        {isRedirecting && <LoadingWrapper isLoading>{null}</LoadingWrapper>}
+        {notFoundAnywhere && (
+          <div className="flex items-center justify-center gap-2 py-8">
+            <SearchX className="text-muted-foreground" size={48} />
+            <span className="text-muted-foreground text-sm">
+              Sorry. The requested PipelineRun was not found in the cluster or in Tekton Results history.
+            </span>
+          </div>
+        )}
+        {!isRedirecting && !notFoundAnywhere && pipelineRunWatch.query.isLoading && (
+          <LoadingWrapper isLoading>{null}</LoadingWrapper>
+        )}
+      </PageContentWrapper>
     </PageWrapper>
   );
 }

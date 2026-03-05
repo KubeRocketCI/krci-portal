@@ -1,4 +1,6 @@
 import React from "react";
+import { Info, Package, Variable, Activity } from "lucide-react";
+import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import { Overview } from "../components/Overview";
 import { Tab } from "@/core/providers/Tabs/components/Tabs/types";
 import { Applications } from "../components/Applications";
@@ -31,30 +33,35 @@ export const usePageTabs = (): Tab[] => {
     () => [
       {
         label: "Overview",
+        icon: <Info className="size-4" />,
         id: routeSearchTabSchema.enum.overview,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.overview),
         component: <Overview />,
       },
       {
         label: "Applications",
+        icon: <Package className="size-4" />,
         id: routeSearchTabSchema.enum.applications,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.applications),
         component: <Applications />,
       },
       {
         label: "Pipelines",
+        icon: <ENTITY_ICON.pipeline className="size-4" />,
         id: routeSearchTabSchema.enum.pipelines,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.pipelines),
         component: <StagePipelineRuns />,
       },
       {
         label: "Variables",
+        icon: <Variable className="size-4" />,
         id: routeSearchTabSchema.enum.variables,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.variables),
         component: <Variables />,
       },
       {
         label: "Monitoring",
+        icon: <Activity className="size-4" />,
         id: routeSearchTabSchema.enum.monitoring,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.monitoring),
         component: <Monitoring />,

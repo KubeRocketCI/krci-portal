@@ -10,18 +10,18 @@ export default function Root() {
   const localStorageDefaultOpen = LOCAL_STORAGE_SERVICE.getItem("sidebar_open") ?? true;
 
   return (
-    <DialogContextProvider>
-      <HeadContent />
-      <div className="w-full">
-        <SidebarProvider defaultOpen={localStorageDefaultOpen} className="flex flex-col">
-          <ToursProvider>
+    <ToursProvider>
+      <DialogContextProvider>
+        <HeadContent />
+        <div className="w-full">
+          <SidebarProvider defaultOpen={localStorageDefaultOpen} className="flex flex-col">
             <Outlet />
-          </ToursProvider>
-        </SidebarProvider>
-      </div>
-      <Toaster position="top-right" offset="80px" />
-      <K8sRelatedIconsSVGSprite />
-      <Scripts />
-    </DialogContextProvider>
+          </SidebarProvider>
+        </div>
+        <Toaster position="top-right" offset="80px" />
+        <K8sRelatedIconsSVGSprite />
+        <Scripts />
+      </DialogContextProvider>
+    </ToursProvider>
   );
 }

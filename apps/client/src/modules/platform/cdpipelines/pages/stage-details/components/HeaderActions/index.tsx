@@ -5,27 +5,42 @@ import { StageActionsMenu } from "@/modules/platform/cdpipelines/components/Stag
 import { quickLinkLabels, systemQuickLink } from "@my-project/shared";
 import { routeStageDetails } from "../../route";
 import { PATH_CONFIG_ARGOCD_FULL } from "@/modules/platform/configuration/modules/argocd/route";
-import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { PATH_CDPIPELINE_DETAILS_FULL } from "../../../details/route";
+import { Link } from "@tanstack/react-router";
 import { useQuickLinksUrlListWatch, useStageListWatch, useCDPipelineWatch, useStageWatch } from "../../hooks";
+import { DropdownMenu, DropdownMenuTrigger } from "@/core/components/ui/dropdown-menu";
+import { Button } from "@/core/components/ui/button";
+import { EllipsisVertical } from "lucide-react";
+import React from "react";
 
 export const HeaderActions = () => {
   const params = routeStageDetails.useParams();
   const stageWatch = useStageWatch();
   const stageListWatch = useStageListWatch();
   const cdPipelineWatch = useCDPipelineWatch();
+  const [menuOpen, setMenuOpen] = React.useState(false);
 
   const stage = stageWatch.query.data;
   const stages = stageListWatch.data.array;
 
+  const isLoaded = !stageWatch.query.isLoading && !stageListWatch.query.isLoading && !cdPipelineWatch.query.isLoading;
+
+  if (!isLoaded || !stage || !stages) {
+    return null;
+  }
+
   return (
-    <LoadingWrapper
-      isLoading={stageWatch.query.isLoading && stageListWatch.query.isLoading && cdPipelineWatch.query.isLoading}
-    >
+    <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" aria-label="More options">
+          Actions
+          <EllipsisVertical size={16} />
+        </Button>
+      </DropdownMenuTrigger>
       <StageActionsMenu
         data={{
-          stages: stages!,
-          stage: stage!,
+          stages,
+          stage,
         }}
         backRoute={{
           to: PATH_CDPIPELINE_DETAILS_FULL,
@@ -35,9 +50,9 @@ export const HeaderActions = () => {
             namespace: params.namespace,
           },
         }}
-        variant="inline"
+        variant="menu"
       />
-    </LoadingWrapper>
+    </DropdownMenu>
   );
 };
 
@@ -56,56 +71,48 @@ export const HeaderLinks = () => {
   return (
     <div className="flex items-center gap-1">
       <QuickLink
-        name={{
-          label: quickLinkUiNames[systemQuickLink.argocd],
-          value: systemQuickLink.argocd,
-        }}
-        externalLink={LinkCreationService.argocd.createStageLink(
+        name={quickLinkUiNames[systemQuickLink.argocd]}
+        href={LinkCreationService.argocd.createStageLink(
           quickLinksUrls?.[systemQuickLink.argocd],
           params.cdPipeline,
           params.stage
         )}
-        configurationRoute={{
-          to: PATH_CONFIG_ARGOCD_FULL,
-          params: {
-            name: params.cdPipeline,
-            namespace: params.namespace,
-          },
-        }}
-        isTextButton
+        setupAction={
+          <Link to={PATH_CONFIG_ARGOCD_FULL} params={{ clusterName: params.clusterName }}>
+            here
+          </Link>
+        }
+        display="text"
         variant="link"
+        size="xs"
       />
       <QuickLink
-        name={{
-          label: quickLinkUiNames[systemQuickLink.monitoring],
-          value: systemQuickLink.monitoring,
-        }}
-        enabledText="monitoring dashboard"
-        iconBase64={monitoringQuickLink?.spec?.icon}
-        externalLink={LinkCreationService.monitoring.createDashboardLink({
+        name={quickLinkUiNames[systemQuickLink.monitoring]}
+        tooltip="monitoring dashboard"
+        icon={monitoringQuickLink?.spec?.icon}
+        href={LinkCreationService.monitoring.createDashboardLink({
           provider: monitoringQuickLink?.metadata?.labels?.[quickLinkLabels.provider],
           baseURL: quickLinksUrls?.[systemQuickLink.monitoring],
           namespace: params.namespace,
           clusterName: stage?.spec.clusterName,
         })}
-        isTextButton
+        display="text"
         variant="link"
+        size="xs"
       />
       <QuickLink
-        name={{
-          label: quickLinkUiNames[systemQuickLink.logging],
-          value: systemQuickLink.logging,
-        }}
-        enabledText="logging dashboard"
-        iconBase64={loggingQuickLink?.spec?.icon}
-        externalLink={LinkCreationService.logging.createDashboardLink({
+        name={quickLinkUiNames[systemQuickLink.logging]}
+        tooltip="logging dashboard"
+        icon={loggingQuickLink?.spec?.icon}
+        href={LinkCreationService.logging.createDashboardLink({
           provider: loggingQuickLink?.metadata?.labels?.[quickLinkLabels.provider],
           baseURL: quickLinksUrls?.[systemQuickLink.logging],
           namespace: params.namespace,
           clusterName: stage?.spec.clusterName,
         })}
-        isTextButton
+        display="text"
         variant="link"
+        size="xs"
       />
     </div>
   );

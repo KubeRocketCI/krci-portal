@@ -1,5 +1,5 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { Shield } from "lucide-react";
 import { useState, useCallback } from "react";
 import { ProjectsTable } from "./components/ProjectsTable";
@@ -53,7 +53,7 @@ export default function SASTPageContent() {
 
   return (
     <PageWrapper breadcrumbs={[{ label: "Security" }, { label: "SAST" }, { label: "Projects" }]}>
-      <Section
+      <PageContentWrapper
         icon={Shield}
         title="Static Application Security Testing"
         description="SonarQube projects and their code quality metrics"
@@ -66,7 +66,7 @@ export default function SASTPageContent() {
           onPageSizeChange={handlePageSizeChange}
           onSearchChange={setSearchTerm}
         />
-      </Section>
+      </PageContentWrapper>
     </PageWrapper>
   );
 }

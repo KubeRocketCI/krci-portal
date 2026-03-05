@@ -1,6 +1,6 @@
 import { ComponentList } from "./components/ComponentList";
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { PageGuideButton } from "@/core/components/PageGuide";
 import { useCodebasePermissions } from "@/k8s/api/groups/KRCI/Codebase";
@@ -27,7 +27,7 @@ export default function ComponentListPageContent() {
         </>
       }
     >
-      <Section
+      <PageContentWrapper
         icon={Box}
         title="Projects"
         description="Create, view, and manage your projects, encompassing applications, libraries, autotests, and Terraform infrastructure code."
@@ -51,7 +51,7 @@ export default function ComponentListPageContent() {
         }
       >
         <ComponentList />
-      </Section>
+      </PageContentWrapper>
     </PageWrapper>
   );
 }

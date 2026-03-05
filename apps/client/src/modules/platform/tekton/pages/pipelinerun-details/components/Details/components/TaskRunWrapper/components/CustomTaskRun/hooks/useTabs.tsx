@@ -1,4 +1,5 @@
 import React from "react";
+import { Settings, CheckCircle, Info } from "lucide-react";
 import { TabContent } from "../../../../TabContent";
 import { TaskRun, CustomRun } from "@my-project/shared";
 import CodeEditor from "@/core/components/CodeEditor";
@@ -19,6 +20,7 @@ export const useTabs = ({ taskRun }: { taskRun: TaskRun | CustomRun | undefined 
         ? [
             {
               label: "Parameters",
+              icon: <Settings className="size-4" />,
               component: (
                 <TabContent>
                   <NameValueTable
@@ -36,6 +38,7 @@ export const useTabs = ({ taskRun }: { taskRun: TaskRun | CustomRun | undefined 
         ? [
             {
               label: "Results",
+              icon: <CheckCircle className="size-4" />,
               component: (
                 <TabContent>
                   <NameValueTable
@@ -51,6 +54,7 @@ export const useTabs = ({ taskRun }: { taskRun: TaskRun | CustomRun | undefined 
         : []),
       {
         label: "Status",
+        icon: <Info className="size-4" />,
         component: <CodeEditor content={taskRun?.status || {}} />,
       },
     ];

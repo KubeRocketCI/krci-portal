@@ -24,74 +24,73 @@ const iconSizeByBtnSize = (btnSize: ButtonSize) => {
   }
 };
 
-const DisabledResourceIconLink = ({
-  tooltipTitle,
-  Icon,
-  iconBase64,
-  withoutDisabledStyle,
-  variant,
-  isTextButton,
-  name,
-  size,
-}: ResourceIconLinkProps) => {
-  const iconSize = iconSizeByBtnSize(size);
-  const sanitizedIcon = sanitizeSvgBase64(iconBase64);
+const textDisplaySizeClasses = (btnSize: ButtonSize) => {
+  switch (btnSize) {
+    case "xs":
+      return "px-2 py-0.5 text-[11px] gap-1 rounded-md";
+    case "sm":
+      return "px-2.5 py-1 text-xs gap-1.5 rounded-lg";
+    case "lg":
+      return "px-4 py-2 text-sm gap-2 rounded-lg";
+    default:
+      return "px-3 py-1.5 text-xs gap-1.5 rounded-lg";
+  }
+};
 
-  return isTextButton ? (
-    <Button
-      variant={variant}
-      disabled
-      className={cn(!withoutDisabledStyle ? "opacity-50" : "", "!p-0 text-xs")}
-      size={size}
-    >
-      View in {name}
-      <SquareArrowOutUpRight className="text-muted-foreground/70" size={iconSize} />
-    </Button>
+const renderIcon = (icon: React.ReactElement | string | undefined) => {
+  if (!icon) return null;
+
+  if (typeof icon === "string") {
+    const sanitized = sanitizeSvgBase64(icon);
+    return <img src={`data:image/svg+xml;base64,${sanitized}`} className="h-4 w-4" alt="" />;
+  }
+
+  return icon;
+};
+
+const DisabledResourceIconLink = ({ tooltip, icon, display, name, size }: ResourceIconLinkProps) => {
+  return display === "text" ? (
+    <Tooltip title={<div>{tooltip}</div>}>
+      <span
+        className={cn(
+          "inline-flex cursor-not-allowed items-center border border-slate-200 text-slate-400 opacity-50",
+          textDisplaySizeClasses(size)
+        )}
+      >
+        {name} <SquareArrowOutUpRight size={11} />
+      </span>
+    </Tooltip>
   ) : (
-    <Tooltip title={<div>{tooltipTitle}</div>}>
+    <Tooltip title={<div>{tooltip}</div>}>
       <div>
-        <Button
-          variant="ghost"
-          size="icon"
-          disabled
-          className={cn(!withoutDisabledStyle ? "opacity-50" : "", "!p-0 text-xs")}
-        >
-          {iconBase64 ? (
-            <img src={`data:image/svg+xml;base64,${sanitizedIcon}`} className="h-4 w-4" alt="" />
-          ) : Icon ? (
-            Icon
-          ) : null}
+        <Button variant="ghost" size="icon" disabled className="!p-0 text-xs opacity-50">
+          {renderIcon(icon)}
         </Button>
       </div>
     </Tooltip>
   );
 };
 
-const EnabledResourceIconLink = ({
-  tooltipTitle,
-  Icon,
-  iconBase64,
-  link,
-  variant,
-  isTextButton,
-  name,
-  size,
-}: ResourceIconLinkProps) => {
+const EnabledResourceIconLink = ({ tooltip, icon, href, display, name, size }: ResourceIconLinkProps) => {
   const iconSize = iconSizeByBtnSize(size);
-  const sanitizedIcon = sanitizeSvgBase64(iconBase64);
 
-  return isTextButton ? (
-    <Button variant={variant} asChild size={size} className="text-primary hover:text-primary/80 !p-0 text-xs">
-      <a href={link} target="_blank" rel="noopener noreferrer">
-        View in {name}
-        <SquareArrowOutUpRight className="text-primary" size={iconSize} />
-      </a>
-    </Button>
+  return display === "text" ? (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={cn(
+        "text-primary border-primary bg-primary/5 hover:bg-primary/10 hover:border-primary/70 hover:text-primary/70 flex items-center border transition-colors",
+        textDisplaySizeClasses(size)
+      )}
+    >
+      {name} <SquareArrowOutUpRight size={11} />
+    </a>
   ) : (
     <Tooltip
       title={
         <div className="flex items-center gap-1">
-          <div>{tooltipTitle}</div>
+          <div>{tooltip}</div>
           <span> </span>
           <div>
             <SquareArrowOutUpRight className="text-muted-foreground/70" size={iconSize} />
@@ -101,12 +100,8 @@ const EnabledResourceIconLink = ({
     >
       <span>
         <Button variant="ghost" size="icon" asChild className="!p-0">
-          <a href={link} target="_blank" rel="noopener noreferrer">
-            {iconBase64 ? (
-              <img src={`data:image/svg+xml;base64,${sanitizedIcon}`} className="h-4 w-4" alt="" />
-            ) : Icon ? (
-              Icon
-            ) : null}
+          <a href={href} target="_blank" rel="noopener noreferrer">
+            {renderIcon(icon)}
           </a>
         </Button>
       </span>
@@ -116,40 +111,19 @@ const EnabledResourceIconLink = ({
 
 export const ResourceIconLink = ({
   disabled = false,
-  tooltipTitle,
-  Icon,
-  iconBase64,
-  link,
-  withoutDisabledStyle,
-  variant,
+  tooltip,
+  icon,
+  href,
   name,
   size,
-  isTextButton,
+  display = "icon",
 }: ResourceIconLinkProps) => {
   return (
     <div onClick={stopPropagation} onFocus={stopPropagation}>
       {disabled ? (
-        <DisabledResourceIconLink
-          tooltipTitle={tooltipTitle}
-          Icon={Icon}
-          iconBase64={iconBase64}
-          withoutDisabledStyle={withoutDisabledStyle}
-          variant={variant}
-          isTextButton={isTextButton}
-          name={name}
-          size={size}
-        />
+        <DisabledResourceIconLink tooltip={tooltip} icon={icon} display={display} name={name} size={size} />
       ) : (
-        <EnabledResourceIconLink
-          tooltipTitle={tooltipTitle}
-          Icon={Icon}
-          iconBase64={iconBase64}
-          link={link}
-          variant={variant}
-          isTextButton={isTextButton}
-          name={name}
-          size={size}
-        />
+        <EnabledResourceIconLink tooltip={tooltip} icon={icon} href={href} display={display} name={name} size={size} />
       )}
     </div>
   );

@@ -1,4 +1,6 @@
 import React from "react";
+import { Info, FileCode, Network } from "lucide-react";
+import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import { Overview } from "../components/Overview";
 import { ViewPipeline } from "../components/ViewPipeline";
 import { Diagram } from "../components/Diagram";
@@ -27,6 +29,7 @@ export const useTabs = (): Tab[] => {
       {
         id: routeSearchTabSchema.enum.overview,
         label: "Overview",
+        icon: <Info className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.overview),
         component: (
           <div className="pt-6">
@@ -37,6 +40,7 @@ export const useTabs = (): Tab[] => {
       {
         id: routeSearchTabSchema.enum.yaml,
         label: "View YAML",
+        icon: <FileCode className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.yaml),
         component: (
           <Card className="p-6">
@@ -47,6 +51,7 @@ export const useTabs = (): Tab[] => {
       {
         id: routeSearchTabSchema.enum.pipelineRuns,
         label: "Pipelines",
+        icon: <ENTITY_ICON.pipelineRun className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.pipelineRuns),
         component: (
           <Card className="p-6">
@@ -57,6 +62,7 @@ export const useTabs = (): Tab[] => {
       {
         id: routeSearchTabSchema.enum.diagram,
         label: "Diagram",
+        icon: <Network className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.diagram),
         component: (
           <Card className="h-full p-6">

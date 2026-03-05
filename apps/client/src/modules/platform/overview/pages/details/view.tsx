@@ -1,6 +1,6 @@
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { Section } from "@/core/components/Section";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { SubSection } from "@/core/components/SubSection";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { PanelsTopLeft } from "lucide-react";
@@ -21,7 +21,7 @@ export default function OverviewDetailsPageContent() {
     <PageWrapper breadcrumbs={[{ label: "Overview" }]} headerSlot={<LearnMoreLink url={EDP_USER_GUIDE.OVERVIEW.url} />}>
       <div className="flex flex-col gap-12">
         <div>
-          <Section
+          <PageContentWrapper
             icon={PanelsTopLeft}
             title="Overview"
             description="Gain essential information on your codebase insights. Organize your menu for faster and more convenient access to different parts of the portal."
@@ -53,7 +53,7 @@ export default function OverviewDetailsPageContent() {
                 <AddNewWidgetCard userWidgets={userWidgets} setUserWidgets={setUserWidgets} />
               </div>
             </div>
-          </Section>
+          </PageContentWrapper>
         </div>
         <div>
           <SubSection title="Links" description="A set of icons with links that redirect you to corresponding tools.">
