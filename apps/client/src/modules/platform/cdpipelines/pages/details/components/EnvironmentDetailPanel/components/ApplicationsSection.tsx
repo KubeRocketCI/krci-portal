@@ -57,7 +57,7 @@ export function ApplicationsSection({ stage }: ApplicationsSectionProps) {
   const argocdBaseURL = quickLinksUrlListWatch.data?.quickLinkURLs?.[systemQuickLink.argocd];
 
   return (
-    <div className="p-5 lg:col-span-2">
+    <div className="p-5 lg:col-span-2" data-tour="deployment-applications-section">
       <h4 className="text-muted-foreground mb-3 flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
         <Package className="size-3" /> Deployed Applications
       </h4>

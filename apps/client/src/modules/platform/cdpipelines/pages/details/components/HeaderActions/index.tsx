@@ -24,7 +24,7 @@ export const HeaderActions = () => {
       <CreateEnvironmentButton />
       <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" aria-label="More options">
+          <Button variant="outline" size="sm" aria-label="More options" data-tour="deployment-actions-menu">
             Actions
             <EllipsisVertical size={16} />
           </Button>

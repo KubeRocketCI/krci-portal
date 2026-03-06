@@ -1,4 +1,5 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
+import { PageGuideButton } from "@/core/components/PageGuide";
 import { PATH_CDPIPELINES_FULL } from "../list/route";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
@@ -30,7 +31,11 @@ export default function CDPipelineDetailsPageContent() {
           label: name,
         },
       ]}
-      headerSlot={<LearnMoreLink url={EDP_USER_GUIDE.CD_PIPELINE_MANAGE.url} />}
+      headerSlot={
+        <>
+          <PageGuideButton tourId="deploymentDetailsTour" />
+        </>
+      }
     >
       <PageContentWrapper
         icon={CloudUpload}
@@ -51,6 +56,7 @@ export default function CDPipelineDetailsPageContent() {
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={handleChangeTab}
+        tabDataTour="deployment-tabs"
       />
     </PageWrapper>
   );

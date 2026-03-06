@@ -1,6 +1,7 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { EmptyList } from "@/core/components/EmptyList";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
+import { PageGuideButton } from "@/core/components/PageGuide";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { PageContentWrapper } from "@/core/components/PageContentWrapper";
@@ -44,27 +45,33 @@ export default function CDPipelineListPage() {
   return (
     <PageWrapper
       breadcrumbs={[{ label: "Deployments" }]}
-      headerSlot={<LearnMoreLink url={EDP_USER_GUIDE.CD_PIPELINE_CREATE.anchors.CREATE_VIA_UI.url} />}
+      headerSlot={
+        <>
+          <PageGuideButton tourId="deploymentsListTour" />
+        </>
+      }
     >
       <PageContentWrapper
         icon={CloudUpload}
         title="Deployments"
         description="Orchestrate and Monitor Your Deployments."
         actions={
-          <ButtonWithPermission
-            ButtonProps={{
-              variant: "default",
-              disabled: !gitOpsCodebase,
-              asChild: true,
-            }}
-            allowed={cdPipelinePermissions.data.create.allowed}
-            reason={cdPipelinePermissions.data.create.reason}
-          >
-            <Link to={routeCDPipelineCreate.fullPath} params={{ clusterName }} className="no-underline">
-              <Plus />
-              Create Deployment
-            </Link>
-          </ButtonWithPermission>
+          <div data-tour="create-deployment-button">
+            <ButtonWithPermission
+              ButtonProps={{
+                variant: "default",
+                disabled: !gitOpsCodebase,
+                asChild: true,
+              }}
+              allowed={cdPipelinePermissions.data.create.allowed}
+              reason={cdPipelinePermissions.data.create.reason}
+            >
+              <Link to={routeCDPipelineCreate.fullPath} params={{ clusterName }} className="no-underline">
+                <Plus />
+                Create Deployment
+              </Link>
+            </ButtonWithPermission>
+          </div>
         }
       >
         <CDPipelineList blockerComponent={renderBlockerIfNoGitOpsCodebase} />

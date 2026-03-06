@@ -338,6 +338,7 @@ export const PipelineApplications = () => {
       data={pipelineApplications}
       isLoading={isLoading}
       columns={columns}
+      containerProps={{ "data-tour": "deployment-applications-tab" }}
       settings={{
         show: false,
       }}

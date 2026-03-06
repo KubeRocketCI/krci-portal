@@ -65,6 +65,7 @@ export const CDPipelineList = ({ blockerComponent }: CDPipelineListProps) => {
       blockerComponent={blockerComponent}
       emptyListComponent={renderEmptyList}
       slots={tableSlots}
+      containerProps={{ "data-tour": "deployments-table" }}
     />
   );
 };
