@@ -7,7 +7,7 @@ interface EnvironmentDetailPanelProps {
 
 export function EnvironmentDetailPanel({ stage }: EnvironmentDetailPanelProps) {
   return (
-    <div className="border-primary/30 bg-card overflow-hidden rounded-2xl border shadow-md">
+    <div className="border-primary/30 bg-card overflow-hidden rounded-2xl border shadow-md" data-tour="deployment-detail-panel">
       {/* Panel header */}
       <Header stage={stage} />
 

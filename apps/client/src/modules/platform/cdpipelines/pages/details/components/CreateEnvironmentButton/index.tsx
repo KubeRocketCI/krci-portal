@@ -10,22 +10,24 @@ export const CreateEnvironmentButton = () => {
   const { clusterName, namespace, name } = routeCDPipelineDetails.useParams();
 
   return (
-    <ButtonWithPermission
-      ButtonProps={{
-        variant: "default",
-        size: "sm",
-        asChild: true,
-      }}
-      allowed={stagePermissions.data.create.allowed}
-      reason={stagePermissions.data.create.reason}
-    >
-      <Link
-        to={routeStageCreate.fullPath}
-        params={{ clusterName, namespace, cdPipeline: name }}
-        className="flex items-center gap-1.5 no-underline"
+    <div data-tour="create-environment-button">
+      <ButtonWithPermission
+        ButtonProps={{
+          variant: "default",
+          size: "sm",
+          asChild: true,
+        }}
+        allowed={stagePermissions.data.create.allowed}
+        reason={stagePermissions.data.create.reason}
       >
-        <Plus size={12} /> Create Environment
-      </Link>
-    </ButtonWithPermission>
+        <Link
+          to={routeStageCreate.fullPath}
+          params={{ clusterName, namespace, cdPipeline: name }}
+          className="flex items-center gap-1.5 no-underline"
+        >
+          <Plus size={12} /> Create Environment
+        </Link>
+      </ButtonWithPermission>
+    </div>
   );
 };

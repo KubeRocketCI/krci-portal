@@ -1,6 +1,7 @@
 import { useAuth } from "@/core/auth/provider";
 import type { TourMetadata } from "./types";
 import { TourStepContent } from "./components/TourStepContent";
+import { CDPIPELINE_TOURS } from "@/modules/platform/cdpipelines/tours";
 import { CODEBASES_TOURS } from "@/modules/platform/codebases/tours";
 
 function WelcomeStepContent() {
@@ -170,5 +171,6 @@ const GLOBAL_TOURS = {
  */
 export const TOURS_CONFIG: Record<string, TourMetadata> = {
   ...GLOBAL_TOURS,
+  ...CDPIPELINE_TOURS,
   ...CODEBASES_TOURS,
 };

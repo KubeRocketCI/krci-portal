@@ -13,7 +13,7 @@ export function HorizontalEnvironmentFlow({ stages, selectedEnvironment }: Horiz
   }
 
   return (
-    <div className="overflow-x-auto pb-2">
+    <div className="overflow-x-auto pb-2" data-tour="deployment-env-flow">
       <div className="flex items-stretch gap-0">
         {stages.map((stage, index) => {
           const isSelected = stage.spec.name === selectedEnvironment;
