@@ -51,6 +51,7 @@ export const Content = () => {
       tabs={tabs}
       activeTab={activeTabIdx}
       onTabChange={handleChangeTab}
+      tabDataTour="stage-tabs"
     />
   );
 };

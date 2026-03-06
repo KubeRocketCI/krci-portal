@@ -23,17 +23,19 @@ export const ConfigureDeployButton = ({
   const pipelineRunPermissions = usePipelineRunPermissions();
 
   return (
-    <ButtonWithPermission
-      ButtonProps={{
-        variant: "default",
-        onClick: toggleMode,
-        disabled: latestDeployPipelineRunIsRunning || latestCleanPipelineRunIsRunning || deployBtnDisabled,
-      }}
-      allowed={pipelineRunPermissions.data?.create.allowed}
-      reason={pipelineRunPermissions.data?.create.reason}
-    >
-      {deployBtnDisabled || latestDeployPipelineRunIsRunning ? <LoadingSpinner size={16} /> : <Pencil size={16} />}
-      {deployBtnDisabled || latestDeployPipelineRunIsRunning ? "Deploying" : "Configure Deploy"}
-    </ButtonWithPermission>
+    <div data-tour="stage-configure-deploy-btn">
+      <ButtonWithPermission
+        ButtonProps={{
+          variant: "default",
+          onClick: toggleMode,
+          disabled: latestDeployPipelineRunIsRunning || latestCleanPipelineRunIsRunning || deployBtnDisabled,
+        }}
+        allowed={pipelineRunPermissions.data?.create.allowed}
+        reason={pipelineRunPermissions.data?.create.reason}
+      >
+        {deployBtnDisabled || latestDeployPipelineRunIsRunning ? <LoadingSpinner size={16} /> : <Pencil size={16} />}
+        {deployBtnDisabled || latestDeployPipelineRunIsRunning ? "Deploying" : "Configure Deploy"}
+      </ButtonWithPermission>
+    </div>
   );
 };

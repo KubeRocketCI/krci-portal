@@ -102,8 +102,8 @@ export const PreviewTableActions = ({ toggleMode }: PreviewTableActionsProps) =>
   }, [pipelineRunsWatch.data?.deploy]);
 
   return (
-    <div className="flex flex-row items-center justify-between gap-4">
-      <div>
+    <div className="flex flex-row items-center justify-between gap-4" data-tour="stage-applications-actions">
+      <div data-tour="stage-copy-status-btn">
         {copyText && (
           <Button variant="outline" onClick={handleCopy} className="gap-1.5">
             {isCopied ? <CopyCheck className="size-4" /> : <Copy className="size-4" />}
@@ -111,7 +111,7 @@ export const PreviewTableActions = ({ toggleMode }: PreviewTableActionsProps) =>
           </Button>
         )}
       </div>
-      <div className="flex flex-row items-center gap-4">
+      <div className="flex flex-row items-center gap-4" data-tour="stage-clean-deploy-btns">
         <CleanButton
           latestCleanPipelineRunIsRunning={latestCleanPipelineRunIsRunning}
           latestDeployPipelineRunIsRunning={latestDeployPipelineRunIsRunning}

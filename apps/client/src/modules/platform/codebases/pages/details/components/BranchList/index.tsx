@@ -61,7 +61,7 @@ export const BranchList = () => {
   const hasBranches = codebaseBranchListWatch.data.array.length > 0;
 
   return (
-    <Card className="p-6" data-tour="branches-table">
+    <Card className="space-y-4 p-6" data-tour="branches-table">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="text-foreground text-xl font-semibold">Branches</h3>

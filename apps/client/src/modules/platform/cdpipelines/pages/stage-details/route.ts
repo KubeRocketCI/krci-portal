@@ -18,9 +18,15 @@ export const pipelinesTabName = pipelinesTabSchema.enum;
 
 export type PipelinesTab = z.infer<typeof pipelinesTabSchema>;
 
+export const applicationsModeSchema = z.enum(["preview", "configure"]);
+export const applicationsModeName = applicationsModeSchema.enum;
+
+export type ApplicationsMode = z.infer<typeof applicationsModeSchema>;
+
 export interface Search {
   tab?: RouteSearchTab;
   pipelinesTab?: PipelinesTab;
+  applicationsMode?: ApplicationsMode;
   page?: number;
   rowsPerPage?: number;
 }
@@ -33,6 +39,7 @@ export const routeStageDetails = createRoute({
       .object({
         tab: routeSearchTabSchema.optional(),
         pipelinesTab: pipelinesTabSchema.optional(),
+        applicationsMode: applicationsModeSchema.optional(),
         page: z.number().optional(),
         rowsPerPage: z.number().optional(),
       })

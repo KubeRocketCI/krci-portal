@@ -32,7 +32,7 @@ export const HeaderActions = () => {
   return (
     <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" aria-label="More options">
+        <Button variant="outline" size="sm" aria-label="More options" data-tour="stage-actions">
           Actions
           <EllipsisVertical size={16} />
         </Button>
@@ -69,7 +69,7 @@ export const HeaderLinks = () => {
   const loggingQuickLink = quickLinks?.find((el) => el.metadata.name === systemQuickLink.logging);
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1" data-tour="stage-external-links">
       <QuickLink
         name={quickLinkUiNames[systemQuickLink.argocd]}
         href={LinkCreationService.argocd.createStageLink(
