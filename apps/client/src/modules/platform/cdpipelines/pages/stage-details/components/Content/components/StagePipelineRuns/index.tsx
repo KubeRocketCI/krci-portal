@@ -25,7 +25,7 @@ export const StagePipelineRuns = () => {
   );
 
   return (
-    <Card className="p-6">
+    <Card className="p-6" data-tour="stage-pipelines">
       <h3 className="text-foreground mb-4 text-xl font-semibold">Pipeline Runs</h3>
       <Tabs tabs={tabs} activeTabIdx={activeTabIdx} handleChangeTab={handleChangeTab} />
     </Card>

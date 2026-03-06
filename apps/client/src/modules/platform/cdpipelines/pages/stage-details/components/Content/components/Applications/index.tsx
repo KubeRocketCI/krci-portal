@@ -17,19 +17,21 @@ import { ApplicationsFormContext } from "./hooks/useApplicationsForm";
 import { ApplicationsFormValues, ApplicationsTableMode } from "./types";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { Card } from "@/core/components/ui/card";
+import { routeStageDetails, applicationsModeName, PATH_CDPIPELINE_STAGE_DETAILS_FULL } from "../../../../route";
+import { router } from "@/core/router";
 
 const MemoizedApplicationsInner = React.memo(
   ({ mode, toggleMode }: { mode: ApplicationsTableMode; toggleMode: () => void }) => {
     return (
       <>
         {mode === applicationTableMode.preview && (
-          <div className="space-y-4">
+          <div className="space-y-4" data-tour="stage-preview-table">
             <PreviewTableActions toggleMode={toggleMode} />
             <PreviewTable />
           </div>
         )}
         {mode === applicationTableMode.configuration && (
-          <div className="space-y-4">
+          <div className="space-y-4" data-tour="stage-configuration-table">
             <ConfigurationTableActions toggleMode={toggleMode} />
             <ConfigurationTable />
           </div>
@@ -131,13 +133,24 @@ export const Applications = () => {
     },
   });
 
-  const [mode, setMode] = React.useState<ApplicationsTableMode>(applicationTableMode.preview);
+  const params = routeStageDetails.useParams();
+  const { applicationsMode } = routeStageDetails.useSearch();
+
+  const mode: ApplicationsTableMode =
+    applicationsMode === applicationsModeName.configure
+      ? applicationTableMode.configuration
+      : applicationTableMode.preview;
 
   const toggleMode = React.useCallback(() => {
-    setMode((prev) =>
-      prev === applicationTableMode.preview ? applicationTableMode.configuration : applicationTableMode.preview
-    );
-  }, []);
+    router.navigate({
+      to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
+      params,
+      search: ((prev: Record<string, unknown>) => ({
+        ...prev,
+        applicationsMode: mode === applicationTableMode.preview ? applicationsModeName.configure : undefined,
+      })) as never,
+    });
+  }, [mode, params]);
 
   const isLoading = pipelineAppCodebasesWatch.isLoading || applicationsWatch.isLoading;
 

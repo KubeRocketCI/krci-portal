@@ -22,7 +22,7 @@ export default function CDPipelineDetailsPage() {
     >
       <ViewModeContextProvider entityID={"cdpipeline"} defaultViewMode={VIEW_MODES.COMPACT}>
         <TabsContextProvider id="cdpipeline-details-page" initialTabIdx={initialTabIdx}>
-          <CDPipelineDetailsPageContent />
+          <CDPipelineDetailsPageContent searchTabIdx={initialTabIdx} />
         </TabsContextProvider>
       </ViewModeContextProvider>
     </FilterProvider>

@@ -1,6 +1,11 @@
 import type { StepPrerequisite, TourMetadata } from "@/modules/tours/types";
 import { TourStepContent } from "@/modules/tours/components/TourStepContent";
 import { PATH_CDPIPELINE_DETAILS_FULL, routeSearchTabName } from "./pages/details/route";
+import {
+  PATH_CDPIPELINE_STAGE_DETAILS_FULL,
+  routeSearchTabName as stageTabName,
+  applicationsModeName,
+} from "./pages/stage-details/route";
 
 const environmentsTabPrerequisite: StepPrerequisite = {
   to: PATH_CDPIPELINE_DETAILS_FULL,
@@ -196,6 +201,243 @@ export const CDPIPELINE_TOURS = {
         ),
         placement: "bottom",
         prerequisite: environmentsTabPrerequisite,
+      },
+    ],
+  },
+  stageDetailsTour: {
+    id: "stage_details_tour",
+    title: "Environment Details Tour",
+    description: "Learn about environment tabs, deployment management, and monitoring features",
+    type: "tour",
+    showOnce: false,
+    trigger: "manual",
+    steps: [
+      {
+        target: "[data-tour='stage-tabs']",
+        content: (
+          <TourStepContent title="Environment Tabs">
+            <p>This environment page has 5 tabs:</p>
+            <ul className="list-disc space-y-1 pl-5 text-sm">
+              <li>
+                <strong>Overview</strong> — status, applications count, trigger type, cluster, and pipeline
+                configuration
+              </li>
+              <li>
+                <strong>Applications</strong> — deployed apps with versions, deploy and clean actions
+              </li>
+              <li>
+                <strong>Pipelines</strong> — deploy and clean pipeline run history
+              </li>
+              <li>
+                <strong>Variables</strong> — environment-specific variables
+              </li>
+              <li>
+                <strong>Monitoring</strong> — embedded Grafana dashboard
+              </li>
+            </ul>
+          </TourStepContent>
+        ),
+        placement: "bottom",
+        disableBeacon: true,
+        prerequisite: {
+          to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
+          search: (prev) => ({ ...prev, tab: stageTabName.overview, applicationsMode: undefined }),
+        },
+      },
+      {
+        target: "[data-tour='stage-preview-table']",
+        content: (
+          <TourStepContent title="Applications Preview">
+            <p>
+              The Applications tab shows your deployed applications with their current versions, status, and quick
+              actions. From here you can manage deployments, run clean pipelines, and configure new deploys.
+            </p>
+          </TourStepContent>
+        ),
+        placement: "top",
+        prerequisite: {
+          to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
+          search: (prev) => ({ ...prev, tab: stageTabName.applications, applicationsMode: undefined }),
+          waitFor: "[data-tour='stage-preview-table']",
+          stabilizationDelay: 300,
+        },
+      },
+      {
+        target: "[data-tour='stage-copy-status-btn']",
+        content: (
+          <TourStepContent title="Copy Deployment Status">
+            <p>
+              Copies the full list of applications with their deployed versions, cluster, and namespace to your
+              clipboard — useful for sharing or documenting the current deployment state.
+            </p>
+          </TourStepContent>
+        ),
+        placement: "bottom",
+        prerequisite: {
+          to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
+          search: (prev) => ({ ...prev, tab: stageTabName.applications, applicationsMode: undefined }),
+          waitFor: "[data-tour='stage-copy-status-btn']",
+        },
+      },
+      {
+        target: "[data-tour='stage-clean-deploy-btns']",
+        content: (
+          <TourStepContent title="Clean & Configure Deploy">
+            <p>
+              <strong>Clean</strong> runs a clean pipeline to wipe the environment. <strong>Configure Deploy</strong>{" "}
+              switches to configuration mode where you can select versions and trigger a deploy.
+            </p>
+          </TourStepContent>
+        ),
+        placement: "bottom",
+        prerequisite: {
+          to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
+          search: (prev) => ({ ...prev, tab: stageTabName.applications, applicationsMode: undefined }),
+          waitFor: "[data-tour='stage-clean-deploy-btns']",
+        },
+      },
+      {
+        target: "[data-tour='stage-configure-deploy-btn']",
+        content: (
+          <TourStepContent title="Configure Deploy">
+            <p>
+              Click here to switch to configuration mode where you can change deployed versions and values override for
+              each application before triggering a deploy pipeline.
+            </p>
+          </TourStepContent>
+        ),
+        placement: "bottom",
+        prerequisite: {
+          to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
+          search: (prev) => ({ ...prev, tab: stageTabName.applications, applicationsMode: undefined }),
+          waitFor: "[data-tour='stage-configure-deploy-btn']",
+        },
+      },
+      {
+        target: "[data-tour='stage-configuration-table']",
+        content: (
+          <TourStepContent title="Configuration Mode">
+            <p>
+              In configuration mode, you can change the deployed version for each application and toggle values
+              override. Use <strong>Undo Changes</strong> to reset or <strong>Cancel</strong> to go back to preview.
+            </p>
+          </TourStepContent>
+        ),
+        placement: "top",
+        prerequisite: {
+          to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
+          search: (prev) => ({
+            ...prev,
+            tab: stageTabName.applications,
+            applicationsMode: applicationsModeName.configure,
+          }),
+          waitFor: "[data-tour='stage-configuration-table']",
+          stabilizationDelay: 300,
+        },
+      },
+      {
+        target: "[data-tour='stage-start-deploy-btn']",
+        content: (
+          <TourStepContent title="Start Deploy">
+            <p>
+              Once you've selected the desired versions and configured values, click <strong>Start Deploy</strong> to
+              trigger a deploy pipeline run for this environment.
+            </p>
+          </TourStepContent>
+        ),
+        placement: "bottom",
+        prerequisite: {
+          to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
+          search: (prev) => ({
+            ...prev,
+            tab: stageTabName.applications,
+            applicationsMode: applicationsModeName.configure,
+          }),
+          waitFor: "[data-tour='stage-start-deploy-btn']",
+        },
+      },
+      {
+        target: "[data-tour='stage-pipelines']",
+        content: (
+          <TourStepContent title="Pipeline Runs">
+            <p>
+              View deploy and clean pipeline runs related to this environment. Switch between live pipeline runs and
+              historical results from Tekton Results.
+            </p>
+          </TourStepContent>
+        ),
+        placement: "top",
+        prerequisite: {
+          to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
+          search: (prev) => ({ ...prev, tab: stageTabName.pipelines, applicationsMode: undefined }),
+          waitFor: "[data-tour='stage-pipelines']",
+          stabilizationDelay: 300,
+        },
+      },
+      {
+        target: "[data-tour='stage-variables']",
+        content: (
+          <TourStepContent title="Environment Variables">
+            <p>
+              Add, edit, or remove environment-specific variables. These variables are injected into your applications
+              during deployment and can be used to configure environment-specific behavior.
+            </p>
+          </TourStepContent>
+        ),
+        placement: "top",
+        prerequisite: {
+          to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
+          search: (prev) => ({ ...prev, tab: stageTabName.variables, applicationsMode: undefined }),
+          waitFor: "[data-tour='stage-variables']",
+          stabilizationDelay: 300,
+        },
+      },
+      {
+        target: "[data-tour='stage-monitoring']",
+        content: (
+          <TourStepContent title="Monitoring Dashboard">
+            <p>
+              An embedded Grafana monitoring dashboard for this environment. View real-time metrics, resource usage, and
+              application performance directly within the portal.
+            </p>
+          </TourStepContent>
+        ),
+        placement: "top",
+        prerequisite: {
+          to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
+          search: (prev) => ({ ...prev, tab: stageTabName.monitoring, applicationsMode: undefined }),
+          waitFor: "[data-tour='stage-monitoring']",
+          stabilizationDelay: 300,
+        },
+      },
+      {
+        target: "[data-tour='stage-external-links']",
+        content: (
+          <TourStepContent title="External Services">
+            <p>
+              Quick links to external services connected to this environment — ArgoCD for GitOps management, monitoring
+              dashboards, and logging systems.
+            </p>
+          </TourStepContent>
+        ),
+        placement: "bottom",
+        prerequisite: {
+          to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
+          search: (prev) => ({ ...prev, tab: stageTabName.overview, applicationsMode: undefined }),
+        },
+      },
+      {
+        target: "[data-tour='stage-actions']",
+        content: (
+          <TourStepContent title="Environment Actions">
+            <p>Use this menu to edit the environment configuration or delete it from the deployment pipeline.</p>
+          </TourStepContent>
+        ),
+        placement: "bottom",
+        prerequisite: {
+          to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
+          search: (prev) => ({ ...prev, tab: stageTabName.overview, applicationsMode: undefined }),
+        },
       },
     ],
   },

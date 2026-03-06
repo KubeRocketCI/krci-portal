@@ -1,9 +1,7 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { EmptyList } from "@/core/components/EmptyList";
-import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { PageGuideButton } from "@/core/components/PageGuide";
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { useCDPipelinePermissions } from "@/k8s/api/groups/KRCI/CDPipeline";
 import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";

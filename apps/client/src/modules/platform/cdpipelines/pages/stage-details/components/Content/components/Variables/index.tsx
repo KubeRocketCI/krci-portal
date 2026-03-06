@@ -172,7 +172,7 @@ export const Variables = () => {
   ]);
 
   return (
-    <Card className="p-6">
+    <Card className="p-6" data-tour="stage-variables">
       <h3 className="text-foreground mb-4 text-xl font-semibold">
         Variables <LearnMoreLink url={EDP_USER_GUIDE.VARIABLES_INJECTION.url} />
       </h3>

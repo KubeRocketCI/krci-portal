@@ -23,7 +23,7 @@ export const usePageTabs = (): Tab[] => {
       router.navigate({
         to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
         params,
-        search: (prev) => ({ ...prev, tab }),
+        search: (prev) => ({ ...prev, tab, applicationsMode: undefined }),
       });
     },
     [params]

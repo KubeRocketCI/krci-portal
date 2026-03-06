@@ -178,18 +178,9 @@ export const PipelineRunTaskNode: React.FC<{
           )}
 
           {/* Status icon and task name */}
-          <div className="mb-2 flex items-center gap-4">
-            {statusData.component && (
-              <StatusIcon
-                Icon={statusData.component}
-                color={statusData.color}
-                isSpinning={statusData.isSpinning}
-                width={16}
-                Title={statusText}
-              />
-            )}
+          <div className="mb-2 flex w-full items-center gap-2">
             {hasTaskRun ? (
-              <Button variant="link" asChild className="h-auto p-0">
+              <Button variant="link" asChild className="h-auto min-w-0 shrink overflow-hidden p-0">
                 <Link
                   to={routePipelineRunDetails.fullPath}
                   params={{
@@ -200,23 +191,19 @@ export const PipelineRunTaskNode: React.FC<{
                   search={{
                     taskRun: data.name,
                   }}
-                  className="text-foreground hover:text-primary line-clamp-1 text-sm leading-tight font-semibold break-all"
+                  className="text-foreground hover:text-primary text-sm font-semibold"
                 >
-                  {displayName}
+                  <span className="truncate">{displayName}</span>
                 </Link>
               </Button>
             ) : (
-              <p className="text-foreground line-clamp-1 text-sm leading-tight font-semibold break-all">
-                {displayName}
-              </p>
+              <p className="text-foreground min-w-0 truncate text-sm font-semibold">{displayName}</p>
             )}
           </div>
 
           {/* Task reference */}
           {data.pipelineTask?.taskRef?.name && (
-            <span className="text-muted-foreground text-center text-xs leading-none">
-              {data.pipelineTask.taskRef.name}
-            </span>
+            <span className="text-muted-foreground w-full text-xs leading-none">{data.pipelineTask.taskRef.name}</span>
           )}
         </div>
       </Tooltip>

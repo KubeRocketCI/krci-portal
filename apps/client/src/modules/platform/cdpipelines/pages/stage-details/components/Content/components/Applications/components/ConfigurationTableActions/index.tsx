@@ -167,7 +167,7 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
   const buttonsEnabledMap = useButtonsEnabledMap();
 
   return (
-    <div className="flex flex-row items-center justify-end gap-6">
+    <div className="flex flex-row items-center justify-end gap-6" data-tour="stage-configuration-actions">
       <Tooltip title={"Reset selected image stream versions"}>
         <Button
           onClick={() => form.reset()}
@@ -187,25 +187,27 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
       >
         Cancel
       </Button>
-      <ConditionalWrapper
-        condition={pipelineRunPermissions.data?.create.allowed}
-        wrapper={(children) => (
-          <Tooltip title={"Deploy selected applications with selected image stream version"}>{children}</Tooltip>
-        )}
-      >
-        <ButtonWithPermission
-          ButtonProps={{
-            onClick: handleClickDeploy,
-            disabled: deployBtnDisabled || !buttonsEnabledMap.deploy,
-            variant: "default",
-          }}
-          allowed={pipelineRunPermissions.data?.create.allowed}
-          reason={pipelineRunPermissions.data?.create.reason}
+      <div data-tour="stage-start-deploy-btn">
+        <ConditionalWrapper
+          condition={pipelineRunPermissions.data?.create.allowed}
+          wrapper={(children) => (
+            <Tooltip title={"Deploy selected applications with selected image stream version"}>{children}</Tooltip>
+          )}
         >
-          {deployBtnDisabled || latestDeployPipelineRunIsRunning ? <LoadingSpinner size={16} /> : <Check size={16} />}
-          Start Deploy
-        </ButtonWithPermission>
-      </ConditionalWrapper>
+          <ButtonWithPermission
+            ButtonProps={{
+              onClick: handleClickDeploy,
+              disabled: deployBtnDisabled || !buttonsEnabledMap.deploy,
+              variant: "default",
+            }}
+            allowed={pipelineRunPermissions.data?.create.allowed}
+            reason={pipelineRunPermissions.data?.create.reason}
+          >
+            {deployBtnDisabled || latestDeployPipelineRunIsRunning ? <LoadingSpinner size={16} /> : <Check size={16} />}
+            Start Deploy
+          </ButtonWithPermission>
+        </ConditionalWrapper>
+      </div>
     </div>
   );
 };

@@ -19,7 +19,7 @@ export const Monitoring = () => {
   const clusterName = stage?.spec.clusterName;
 
   return (
-    <Card className="p-6">
+    <Card className="p-6" data-tour="stage-monitoring">
       <h3 className="text-foreground mb-4 text-xl font-semibold">Monitoring</h3>
       <iframe
         title="monitoring"

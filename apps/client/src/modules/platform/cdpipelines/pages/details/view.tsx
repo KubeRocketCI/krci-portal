@@ -1,8 +1,6 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { PageGuideButton } from "@/core/components/PageGuide";
 import { PATH_CDPIPELINES_FULL } from "../list/route";
-import { LearnMoreLink } from "@/core/components/LearnMoreLink";
-import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { HeaderActions, HeaderLinks } from "./components/HeaderActions";
 import { routeCDPipelineDetails, PATH_CDPIPELINE_DETAILS_FULL } from "./route";
 import { PageContentWrapper } from "@/core/components/PageContentWrapper";
@@ -10,9 +8,9 @@ import { CloudUpload } from "lucide-react";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { useTabs } from "./hooks/useTabs";
 
-export default function CDPipelineDetailsPageContent() {
+export default function CDPipelineDetailsPageContent({ searchTabIdx }: { searchTabIdx: number }) {
   const { name, namespace, clusterName } = routeCDPipelineDetails.useParams();
-  const { activeTab, handleChangeTab } = useTabsContext();
+  const { handleChangeTab } = useTabsContext();
   const tabs = useTabs();
 
   return (
@@ -54,7 +52,7 @@ export default function CDPipelineDetailsPageContent() {
         actions={<HeaderActions />}
         extraLinks={<HeaderLinks />}
         tabs={tabs}
-        activeTab={activeTab}
+        activeTab={searchTabIdx}
         onTabChange={handleChangeTab}
         tabDataTour="deployment-tabs"
       />
