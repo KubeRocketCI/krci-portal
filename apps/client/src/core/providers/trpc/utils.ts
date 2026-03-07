@@ -54,22 +54,17 @@ function handleAuthError(): void {
 }
 
 /**
- * Checks if error data indicates a SESSION authentication error (not K8s permission errors)
- * Only UNAUTHORIZED errors should trigger login redirect
- * FORBIDDEN errors (including K8s API 401/403) should NOT redirect
+ * Checks if error data indicates a SESSION authentication error (not K8s RBAC errors)
+ * UNAUTHORIZED errors should trigger login redirect (including K8s 401 = token rejected)
+ * FORBIDDEN errors (K8s 403 = RBAC denied) should NOT redirect
  */
 function isAuthError(errorData: TrpcErrorData): boolean {
-  // Exclude K8s API errors - these are permission issues, not session expiration
-  if (errorData.data?.source === "k8s") {
-    return false;
-  }
-
-  // Exclude FORBIDDEN - these are permission issues, not session expiration
+  // Exclude FORBIDDEN - these are RBAC permission issues, not session expiration
   if (errorData.code === "FORBIDDEN") {
     return false;
   }
 
-  // Only UNAUTHORIZED indicates session expiration
+  // UNAUTHORIZED indicates session expiration or K8s token rejection — redirect to login
   if (errorData.code === "UNAUTHORIZED") {
     return true;
   }
