@@ -130,6 +130,7 @@ export class OIDCClient {
     return authorizationCodeGrant(oidcConfig, url, {
       pkceCodeVerifier: codeVerifier,
       expectedState,
+      idTokenExpected: this.config.scope.includes("openid"),
     });
   }
 
@@ -184,11 +185,40 @@ export class OIDCClient {
     });
   }
 
-  async getNewTokens(oidcConfig: Configuration, refreshToken: string) {
+  async getNewTokens(oidcConfig: Configuration, refreshToken: string, previousIdToken?: string) {
     try {
-      const newTokens = await refreshTokenGrant(oidcConfig, refreshToken);
+      // Pass scope to ensure the IdP returns a new id_token.
+      // Without "openid" scope, Azure AD refresh responses omit id_token,
+      // causing K8s OIDC auth to fail with opaque access_token.
+      const newTokens = await refreshTokenGrant(oidcConfig, refreshToken, {
+        scope: this.config.scope,
+      });
 
-      return this.normalizeTokenResponse(newTokens);
+      const normalized = this.normalizeTokenResponse(newTokens);
+
+      // If the refresh response did not include a new id_token and we have
+      // a previous JWT id_token, preserve it as a fallback. This covers
+      // edge cases where the IdP ignores the scope parameter on refresh
+      // (e.g., Azure AD v1.0 endpoints). The previous JWT is only useful
+      // if it has not yet expired, since K8s validates the exp claim.
+      if (!newTokens.id_token && previousIdToken && looksLikeJWT(previousIdToken)) {
+        try {
+          const previousExp = getTokenExpirationTime(previousIdToken);
+          if (previousExp > Date.now()) {
+            console.warn("[OIDC] Refresh response missing id_token, preserving previous JWT id_token");
+            normalized.idToken = previousIdToken;
+            normalized.idTokenExpiresAt = previousExp;
+          } else {
+            console.error(
+              "[OIDC] Refresh response missing id_token and previous id_token is expired. K8s OIDC auth will likely fail."
+            );
+          }
+        } catch {
+          console.error("[OIDC] Refresh response missing id_token and previous id_token could not be decoded.");
+        }
+      }
+
+      return normalized;
     } catch (err) {
       console.error("[OIDC] Failed to refresh token", err);
       throw new TRPCError({

@@ -16,13 +16,17 @@ vi.mock("jose", async () => {
   };
 });
 
-// Mock openid-client (fetchProtectedResource used by fetchUserInfo)
+// Mock openid-client (fetchProtectedResource, authorizationCodeGrant, refreshTokenGrant)
 const mockFetchProtectedResource = vi.fn();
+const mockAuthorizationCodeGrant = vi.fn();
+const mockRefreshTokenGrant = vi.fn();
 vi.mock("openid-client", async () => {
   const actual = await vi.importActual("openid-client");
   return {
     ...actual,
     fetchProtectedResource: (...args: any[]) => mockFetchProtectedResource(...args),
+    authorizationCodeGrant: (...args: any[]) => mockAuthorizationCodeGrant(...args),
+    refreshTokenGrant: (...args: any[]) => mockRefreshTokenGrant(...args),
   };
 });
 
@@ -263,6 +267,212 @@ describe("OIDCClient", () => {
       const fiveMinutes = 5 * 60 * 1000;
       expect(result.idTokenExpiresAt).toBeGreaterThanOrEqual(now + fiveMinutes - 1000);
       expect(result.idTokenExpiresAt).toBeLessThanOrEqual(now + fiveMinutes + 1000);
+    });
+  });
+
+  describe("normalizeTokenResponse", () => {
+    const FAKE_ID_JWT = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEyMyIsImV4cCI6MTcwMDAwMDAwMH0.signature";
+    const FAKE_ACCESS_JWT = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEyMyIsImV4cCI6MTcwMDAwMDAwMH0.access-sig";
+
+    it("should use id_token when present (Azure AD with openid scope)", () => {
+      const result = client.normalizeTokenResponse({
+        access_token: OPAQUE_TOKEN,
+        token_type: "bearer",
+        id_token: FAKE_ID_JWT,
+        expires_in: 3600,
+      } as any);
+
+      expect(result.idToken).toBe(FAKE_ID_JWT);
+      expect(result.accessToken).toBe(OPAQUE_TOKEN);
+      expect(result.idToken).not.toBe(result.accessToken);
+    });
+
+    it("should fall back to access_token when no id_token", () => {
+      const result = client.normalizeTokenResponse({
+        access_token: FAKE_ACCESS_JWT,
+        token_type: "bearer",
+        expires_in: 3600,
+      } as any);
+
+      expect(result.idToken).toBe(FAKE_ACCESS_JWT);
+      expect(result.accessToken).toBe(FAKE_ACCESS_JWT);
+    });
+
+    it("should throw when access_token is missing", () => {
+      expect(() =>
+        client.normalizeTokenResponse({
+          access_token: "",
+          token_type: "bearer",
+        } as any)
+      ).toThrow(TRPCError);
+    });
+
+    it("should extract refresh_token", () => {
+      const result = client.normalizeTokenResponse({
+        access_token: FAKE_ACCESS_JWT,
+        token_type: "bearer",
+        refresh_token: "refresh-123",
+        expires_in: 3600,
+      } as any);
+
+      expect(result.refreshToken).toBe("refresh-123");
+    });
+
+    it("should default refresh_token to empty string", () => {
+      const result = client.normalizeTokenResponse({
+        access_token: FAKE_ACCESS_JWT,
+        token_type: "bearer",
+        expires_in: 3600,
+      } as any);
+
+      expect(result.refreshToken).toBe("");
+    });
+  });
+
+  describe("getNewTokens", () => {
+    const oidcConfig = createMockOIDCConfig();
+    const REFRESH_TOKEN = "refresh-token-123";
+
+    function makeJwtWithExp(expSeconds: number): string {
+      const header = Buffer.from(JSON.stringify({ alg: "RS256" })).toString("base64url");
+      const payload = Buffer.from(JSON.stringify({ sub: "user-123", exp: expSeconds })).toString("base64url");
+      return `${header}.${payload}.signature`;
+    }
+
+    it("should pass scope to refreshTokenGrant", async () => {
+      const futureExp = Math.floor(Date.now() / 1000) + 3600;
+      const jwtIdToken = makeJwtWithExp(futureExp);
+
+      mockRefreshTokenGrant.mockResolvedValue({
+        access_token: OPAQUE_TOKEN,
+        token_type: "bearer",
+        id_token: jwtIdToken,
+        expires_in: 3600,
+      });
+
+      await client.getNewTokens(oidcConfig, REFRESH_TOKEN);
+
+      expect(mockRefreshTokenGrant).toHaveBeenCalledWith(oidcConfig, REFRESH_TOKEN, {
+        scope: "openid profile email",
+      });
+    });
+
+    it("should return normalized tokens when refresh includes id_token", async () => {
+      const futureExp = Math.floor(Date.now() / 1000) + 3600;
+      const jwtIdToken = makeJwtWithExp(futureExp);
+
+      mockRefreshTokenGrant.mockResolvedValue({
+        access_token: OPAQUE_TOKEN,
+        token_type: "bearer",
+        id_token: jwtIdToken,
+        expires_in: 3600,
+      });
+
+      const result = await client.getNewTokens(oidcConfig, REFRESH_TOKEN);
+
+      expect(result.idToken).toBe(jwtIdToken);
+      expect(result.accessToken).toBe(OPAQUE_TOKEN);
+    });
+
+    it("should preserve previous id_token when refresh omits id_token and previous is not expired", async () => {
+      const futureExp = Math.floor(Date.now() / 1000) + 3600;
+      const previousJwt = makeJwtWithExp(futureExp);
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      mockRefreshTokenGrant.mockResolvedValue({
+        access_token: OPAQUE_TOKEN,
+        token_type: "bearer",
+        expires_in: 3600,
+        // no id_token
+      });
+
+      const result = await client.getNewTokens(oidcConfig, REFRESH_TOKEN, previousJwt);
+
+      expect(result.idToken).toBe(previousJwt);
+      expect(result.idTokenExpiresAt).toBe(futureExp * 1000);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("preserving previous JWT id_token"));
+      warnSpy.mockRestore();
+    });
+
+    it("should not preserve previous id_token when it is expired", async () => {
+      const pastExp = Math.floor(Date.now() / 1000) - 3600;
+      const expiredJwt = makeJwtWithExp(pastExp);
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      mockRefreshTokenGrant.mockResolvedValue({
+        access_token: OPAQUE_TOKEN,
+        token_type: "bearer",
+        expires_in: 3600,
+        // no id_token
+      });
+
+      const result = await client.getNewTokens(oidcConfig, REFRESH_TOKEN, expiredJwt);
+
+      // Should fall back to opaque access_token (bad, but no better option)
+      expect(result.idToken).toBe(OPAQUE_TOKEN);
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("previous id_token is expired"));
+      warnSpy.mockRestore();
+      errorSpy.mockRestore();
+    });
+
+    it("should not attempt fallback when no previousIdToken is provided", async () => {
+      mockRefreshTokenGrant.mockResolvedValue({
+        access_token: OPAQUE_TOKEN,
+        token_type: "bearer",
+        expires_in: 3600,
+        // no id_token
+      });
+
+      const result = await client.getNewTokens(oidcConfig, REFRESH_TOKEN);
+
+      expect(result.idToken).toBe(OPAQUE_TOKEN);
+    });
+
+    it("should throw UNAUTHORIZED when refreshTokenGrant fails", async () => {
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      mockRefreshTokenGrant.mockRejectedValue(new Error("refresh failed"));
+
+      await expect(client.getNewTokens(oidcConfig, REFRESH_TOKEN)).rejects.toMatchObject({
+        code: "UNAUTHORIZED",
+        message: "Session expired. Please log in again.",
+      });
+
+      errorSpy.mockRestore();
+    });
+  });
+
+  describe("exchangeCodeForTokens", () => {
+    const oidcConfig = createMockOIDCConfig();
+
+    it("should pass idTokenExpected: true when scope includes openid", async () => {
+      const mockResponse = { access_token: "token", token_type: "bearer" };
+      mockAuthorizationCodeGrant.mockResolvedValue(mockResponse);
+
+      const url = new URL("http://localhost:8000/callback?code=abc");
+      await client.exchangeCodeForTokens(oidcConfig, url, "verifier", "state");
+
+      expect(mockAuthorizationCodeGrant).toHaveBeenCalledWith(
+        oidcConfig,
+        url,
+        expect.objectContaining({ idTokenExpected: true })
+      );
+    });
+
+    it("should not set idTokenExpected when scope lacks openid", async () => {
+      const noOpenidClient = new OIDCClient({ ...validConfig, scope: "profile email" });
+      const mockResponse = { access_token: "token", token_type: "bearer" };
+      mockAuthorizationCodeGrant.mockResolvedValue(mockResponse);
+
+      const url = new URL("http://localhost:8000/callback?code=abc");
+      await noOpenidClient.exchangeCodeForTokens(oidcConfig, url, "verifier", "state");
+
+      expect(mockAuthorizationCodeGrant).toHaveBeenCalledWith(
+        oidcConfig,
+        url,
+        expect.objectContaining({ idTokenExpected: false })
+      );
     });
   });
 });

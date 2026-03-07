@@ -13,7 +13,7 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
   }
 
   const now = Date.now();
-  const { idTokenExpiresAt, accessTokenExpiresAt, refreshToken } = sessionUser.secret;
+  const { idToken, idTokenExpiresAt, accessTokenExpiresAt, refreshToken } = sessionUser.secret;
 
   const isIdTokenExpired = idTokenExpiresAt && now >= idTokenExpiresAt;
   const isAccessTokenExpired = accessTokenExpiresAt && now >= accessTokenExpiresAt;
@@ -26,7 +26,7 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
     try {
       const oidcClient = new OIDCClient(ctx.oidcConfig);
       const config = await oidcClient.discover();
-      const newTokens = await oidcClient.getNewTokens(config, refreshToken);
+      const newTokens = await oidcClient.getNewTokens(config, refreshToken, idToken);
 
       session.user = {
         data: sessionUser.data,
