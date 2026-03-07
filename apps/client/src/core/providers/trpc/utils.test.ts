@@ -143,34 +143,13 @@ describe("customFetch", () => {
       expect(window.location.href).toBe("");
     });
 
-    it("should redirect on K8s API 401 errors (UNAUTHORIZED from K8s)", async () => {
-      const errorResponse = {
-        error: {
-          code: "UNAUTHORIZED",
-          data: {
-            source: "k8s",
-            statusCode: 401,
-          },
-        },
-      };
-      const mockResponse = new Response(JSON.stringify(errorResponse), { status: 200 });
-      global.fetch = vi.fn().mockResolvedValue(mockResponse);
-
-      await customFetch("http://test.com/api", {});
-
-      expect(mockShowToast).toHaveBeenCalledWith("Session expired. Please log in again.", "warning", {
-        duration: 4000,
-      });
-      expect(window.location.href).toBe("/auth/login?redirect=%2Fsome-page&reason=session-expired");
-    });
-
-    it("should NOT redirect on K8s API 403 errors (FORBIDDEN from K8s)", async () => {
+    it("should NOT redirect on K8s API errors (source: k8s)", async () => {
       const errorResponse = {
         error: {
           code: "FORBIDDEN",
           data: {
             source: "k8s",
-            statusCode: 403,
+            statusCode: 401,
           },
         },
       };
@@ -224,31 +203,7 @@ describe("customFetch", () => {
       expect(window.location.href).toBe("/auth/login?redirect=%2Fsome-page&reason=session-expired");
     });
 
-    it("should redirect when batch has K8s UNAUTHORIZED errors", async () => {
-      const batchResponse = [
-        { result: { data: "success" } },
-        {
-          error: {
-            code: "UNAUTHORIZED",
-            data: {
-              source: "k8s",
-              statusCode: 401,
-            },
-          },
-        },
-      ];
-      const mockResponse = new Response(JSON.stringify(batchResponse), { status: 200 });
-      global.fetch = vi.fn().mockResolvedValue(mockResponse);
-
-      await customFetch("http://test.com/api", {});
-
-      expect(mockShowToast).toHaveBeenCalledWith("Session expired. Please log in again.", "warning", {
-        duration: 4000,
-      });
-      expect(window.location.href).toBe("/auth/login?redirect=%2Fsome-page&reason=session-expired");
-    });
-
-    it("should NOT redirect when batch has K8s FORBIDDEN errors", async () => {
+    it("should NOT redirect when batch has K8s errors", async () => {
       const batchResponse = [
         { result: { data: "success" } },
         {
@@ -256,7 +211,7 @@ describe("customFetch", () => {
             code: "FORBIDDEN",
             data: {
               source: "k8s",
-              statusCode: 403,
+              statusCode: 401,
             },
           },
         },
