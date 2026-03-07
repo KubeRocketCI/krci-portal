@@ -287,8 +287,19 @@ describe("OIDCClient", () => {
       expect(result.idToken).not.toBe(result.accessToken);
     });
 
-    it("should fall back to access_token when no id_token", () => {
-      const result = client.normalizeTokenResponse({
+    it("should throw when id_token is missing for openid flow (OIDC Core §3.1.3.3)", () => {
+      expect(() =>
+        client.normalizeTokenResponse({
+          access_token: FAKE_ACCESS_JWT,
+          token_type: "bearer",
+          expires_in: 3600,
+        } as any)
+      ).toThrow(TRPCError);
+    });
+
+    it("should fall back to access_token when no id_token for non-openid flow", () => {
+      const nonOpenidClient = new OIDCClient({ ...validConfig, scope: "profile email" });
+      const result = nonOpenidClient.normalizeTokenResponse({
         access_token: FAKE_ACCESS_JWT,
         token_type: "bearer",
         expires_in: 3600,
@@ -311,6 +322,7 @@ describe("OIDCClient", () => {
       const result = client.normalizeTokenResponse({
         access_token: FAKE_ACCESS_JWT,
         token_type: "bearer",
+        id_token: FAKE_ID_JWT,
         refresh_token: "refresh-123",
         expires_in: 3600,
       } as any);
@@ -322,6 +334,7 @@ describe("OIDCClient", () => {
       const result = client.normalizeTokenResponse({
         access_token: FAKE_ACCESS_JWT,
         token_type: "bearer",
+        id_token: FAKE_ID_JWT,
         expires_in: 3600,
       } as any);
 
@@ -331,110 +344,217 @@ describe("OIDCClient", () => {
 
   describe("getNewTokens", () => {
     const oidcConfig = createMockOIDCConfig();
-    const REFRESH_TOKEN = "refresh-token-123";
 
-    function makeJwtWithExp(expSeconds: number): string {
+    function makeJwtWithExp(expSeconds: number, sub = "user-123"): string {
       const header = Buffer.from(JSON.stringify({ alg: "RS256" })).toString("base64url");
-      const payload = Buffer.from(JSON.stringify({ sub: "user-123", exp: expSeconds })).toString("base64url");
+      const payload = Buffer.from(JSON.stringify({ sub, exp: expSeconds })).toString("base64url");
       return `${header}.${payload}.signature`;
     }
 
-    it("should pass scope to refreshTokenGrant", async () => {
+    function makeCurrentSecret(
+      overrides?: Partial<{ idToken: string; idTokenExpiresAt: number; refreshToken: string }>
+    ) {
+      const futureExp = Math.floor(Date.now() / 1000) + 32400; // +9hrs
+      return {
+        idToken: makeJwtWithExp(futureExp),
+        idTokenExpiresAt: futureExp * 1000,
+        refreshToken: "refresh-token-123",
+        ...overrides,
+      };
+    }
+
+    it("should not pass scope to refreshTokenGrant (Azure AD v1.0 returns unsigned JWTs with scope)", async () => {
+      const secret = makeCurrentSecret();
       const futureExp = Math.floor(Date.now() / 1000) + 3600;
-      const jwtIdToken = makeJwtWithExp(futureExp);
 
       mockRefreshTokenGrant.mockResolvedValue({
         access_token: OPAQUE_TOKEN,
         token_type: "bearer",
-        id_token: jwtIdToken,
+        id_token: makeJwtWithExp(futureExp),
         expires_in: 3600,
       });
 
-      await client.getNewTokens(oidcConfig, REFRESH_TOKEN);
+      await client.getNewTokens(oidcConfig, secret);
 
-      expect(mockRefreshTokenGrant).toHaveBeenCalledWith(oidcConfig, REFRESH_TOKEN, {
-        scope: "openid profile email",
-      });
+      expect(mockRefreshTokenGrant).toHaveBeenCalledWith(oidcConfig, secret.refreshToken);
     });
 
-    it("should return normalized tokens when refresh includes id_token", async () => {
+    it("should use new id_token when refresh response includes one (Keycloak)", async () => {
+      const secret = makeCurrentSecret();
       const futureExp = Math.floor(Date.now() / 1000) + 3600;
-      const jwtIdToken = makeJwtWithExp(futureExp);
+      const newIdToken = makeJwtWithExp(futureExp);
 
       mockRefreshTokenGrant.mockResolvedValue({
         access_token: OPAQUE_TOKEN,
         token_type: "bearer",
-        id_token: jwtIdToken,
+        id_token: newIdToken,
         expires_in: 3600,
       });
 
-      const result = await client.getNewTokens(oidcConfig, REFRESH_TOKEN);
+      const result = await client.getNewTokens(oidcConfig, secret);
 
-      expect(result.idToken).toBe(jwtIdToken);
+      expect(result.idToken).toBe(newIdToken);
+      expect(result.idTokenExpiresAt).toBe(futureExp * 1000);
       expect(result.accessToken).toBe(OPAQUE_TOKEN);
     });
 
-    it("should preserve previous id_token when refresh omits id_token and previous is not expired", async () => {
-      const futureExp = Math.floor(Date.now() / 1000) + 3600;
-      const previousJwt = makeJwtWithExp(futureExp);
+    it("should preserve current id_token when refresh omits it — OIDC §12.2 (Azure AD)", async () => {
+      const secret = makeCurrentSecret();
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
       mockRefreshTokenGrant.mockResolvedValue({
         access_token: OPAQUE_TOKEN,
         token_type: "bearer",
         expires_in: 3600,
-        // no id_token
       });
 
-      const result = await client.getNewTokens(oidcConfig, REFRESH_TOKEN, previousJwt);
+      const result = await client.getNewTokens(oidcConfig, secret);
 
-      expect(result.idToken).toBe(previousJwt);
-      expect(result.idTokenExpiresAt).toBe(futureExp * 1000);
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("preserving previous JWT id_token"));
+      expect(result.idToken).toBe(secret.idToken);
+      expect(result.idTokenExpiresAt).toBe(secret.idTokenExpiresAt);
+      expect(result.accessToken).toBe(OPAQUE_TOKEN);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("OIDC §12.2"));
       warnSpy.mockRestore();
     });
 
-    it("should not preserve previous id_token when it is expired", async () => {
+    it("should throw UNAUTHORIZED when current id_token is expired and refresh omits id_token", async () => {
       const pastExp = Math.floor(Date.now() / 1000) - 3600;
-      const expiredJwt = makeJwtWithExp(pastExp);
+      const secret = makeCurrentSecret({ idToken: makeJwtWithExp(pastExp), idTokenExpiresAt: pastExp * 1000 });
       const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
       mockRefreshTokenGrant.mockResolvedValue({
         access_token: OPAQUE_TOKEN,
         token_type: "bearer",
         expires_in: 3600,
-        // no id_token
       });
 
-      const result = await client.getNewTokens(oidcConfig, REFRESH_TOKEN, expiredJwt);
+      await expect(client.getNewTokens(oidcConfig, secret)).rejects.toMatchObject({
+        code: "UNAUTHORIZED",
+        message: "Session expired. Please log in again.",
+      });
 
-      // Should fall back to opaque access_token (bad, but no better option)
-      expect(result.idToken).toBe(OPAQUE_TOKEN);
-      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("previous id_token is expired"));
-      warnSpy.mockRestore();
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Forcing re-login"));
       errorSpy.mockRestore();
     });
 
-    it("should not attempt fallback when no previousIdToken is provided", async () => {
+    it("should throw UNAUTHORIZED when current id_token is opaque and refresh omits id_token", async () => {
+      const secret = makeCurrentSecret({ idToken: OPAQUE_TOKEN, idTokenExpiresAt: Date.now() + 3600000 });
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
       mockRefreshTokenGrant.mockResolvedValue({
         access_token: OPAQUE_TOKEN,
         token_type: "bearer",
         expires_in: 3600,
-        // no id_token
       });
 
-      const result = await client.getNewTokens(oidcConfig, REFRESH_TOKEN);
+      await expect(client.getNewTokens(oidcConfig, secret)).rejects.toMatchObject({
+        code: "UNAUTHORIZED",
+        message: "Session expired. Please log in again.",
+      });
 
-      expect(result.idToken).toBe(OPAQUE_TOKEN);
+      errorSpy.mockRestore();
+    });
+
+    it("should preserve current refresh_token when response omits it (RFC 6749 §6)", async () => {
+      const secret = makeCurrentSecret();
+
+      mockRefreshTokenGrant.mockResolvedValue({
+        access_token: OPAQUE_TOKEN,
+        token_type: "bearer",
+        id_token: secret.idToken,
+        expires_in: 3600,
+        // no refresh_token in response
+      });
+
+      const result = await client.getNewTokens(oidcConfig, secret);
+
+      expect(result.refreshToken).toBe(secret.refreshToken);
+    });
+
+    it("should use rotated refresh_token when response includes one (RFC 6749 §6)", async () => {
+      const secret = makeCurrentSecret();
+
+      mockRefreshTokenGrant.mockResolvedValue({
+        access_token: OPAQUE_TOKEN,
+        token_type: "bearer",
+        id_token: secret.idToken,
+        expires_in: 3600,
+        refresh_token: "rotated-refresh-token",
+      });
+
+      const result = await client.getNewTokens(oidcConfig, secret);
+
+      expect(result.refreshToken).toBe("rotated-refresh-token");
+    });
+
+    it("should throw UNAUTHORIZED when refreshed id_token has different subject (OIDC §12.2)", async () => {
+      const secret = makeCurrentSecret();
+      const futureExp = Math.floor(Date.now() / 1000) + 3600;
+      const newIdToken = makeJwtWithExp(futureExp, "different-user");
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      mockRefreshTokenGrant.mockResolvedValue({
+        access_token: OPAQUE_TOKEN,
+        token_type: "bearer",
+        id_token: newIdToken,
+        expires_in: 3600,
+      });
+
+      await expect(client.getNewTokens(oidcConfig, secret)).rejects.toMatchObject({
+        code: "UNAUTHORIZED",
+        message: expect.stringContaining("Identity changed"),
+      });
+
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("subject changed"));
+      errorSpy.mockRestore();
+    });
+
+    it("should accept refreshed id_token when subject matches", async () => {
+      const secret = makeCurrentSecret();
+      const futureExp = Math.floor(Date.now() / 1000) + 3600;
+      const newIdToken = makeJwtWithExp(futureExp, "user-123");
+
+      mockRefreshTokenGrant.mockResolvedValue({
+        access_token: OPAQUE_TOKEN,
+        token_type: "bearer",
+        id_token: newIdToken,
+        expires_in: 3600,
+      });
+
+      const result = await client.getNewTokens(oidcConfig, secret);
+
+      expect(result.idToken).toBe(newIdToken);
+    });
+
+    it("should use actual JWT exp claim, not session-stored idTokenExpiresAt", async () => {
+      const futureExp = Math.floor(Date.now() / 1000) + 32400; // +9hrs in JWT
+      const staleSessionExp = Date.now() + 60000; // session says 1 min left (stale)
+      const secret = makeCurrentSecret({
+        idToken: makeJwtWithExp(futureExp),
+        idTokenExpiresAt: staleSessionExp,
+      });
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      mockRefreshTokenGrant.mockResolvedValue({
+        access_token: OPAQUE_TOKEN,
+        token_type: "bearer",
+        expires_in: 3600,
+      });
+
+      const result = await client.getNewTokens(oidcConfig, secret);
+
+      expect(result.idTokenExpiresAt).toBe(futureExp * 1000);
+      expect(result.idTokenExpiresAt).not.toBe(staleSessionExp);
+      warnSpy.mockRestore();
     });
 
     it("should throw UNAUTHORIZED when refreshTokenGrant fails", async () => {
+      const secret = makeCurrentSecret();
       const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
       mockRefreshTokenGrant.mockRejectedValue(new Error("refresh failed"));
 
-      await expect(client.getNewTokens(oidcConfig, REFRESH_TOKEN)).rejects.toMatchObject({
+      await expect(client.getNewTokens(oidcConfig, secret)).rejects.toMatchObject({
         code: "UNAUTHORIZED",
         message: "Session expired. Please log in again.",
       });

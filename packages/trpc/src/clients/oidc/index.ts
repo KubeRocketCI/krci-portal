@@ -13,7 +13,7 @@ import {
 } from "openid-client";
 import { TRPCError } from "@trpc/server";
 import { type OIDCUser, OIDCUserSchema, tryParseJsonArray } from "@my-project/shared";
-import { createRemoteJWKSet, errors as joseErrors, jwtVerify } from "jose";
+import { createRemoteJWKSet, decodeJwt, errors as joseErrors, jwtVerify } from "jose";
 
 import { getTokenExpirationTime } from "../../utils/getTokenExpirationTime/index.js";
 
@@ -54,6 +54,11 @@ function looksLikeJWT(token: string): boolean {
   return token.split(".").length === 3;
 }
 
+const SESSION_EXPIRED_ERROR = {
+  code: "UNAUTHORIZED" as const,
+  message: "Session expired. Please log in again.",
+};
+
 export interface OIDCConfig {
   issuerURL: string;
   clientID: string;
@@ -65,6 +70,10 @@ export class OIDCClient {
   private config: OIDCConfig;
   private jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
   private jwksCacheKey: string | null = null;
+
+  private hasScope(name: string): boolean {
+    return this.config.scope.split(/\s+/).includes(name);
+  }
 
   constructor(config: OIDCConfig) {
     if (!config.issuerURL || !config.clientID || !config.clientSecret || !config.scope || !config.codeChallengeMethod) {
@@ -130,10 +139,18 @@ export class OIDCClient {
     return authorizationCodeGrant(oidcConfig, url, {
       pkceCodeVerifier: codeVerifier,
       expectedState,
-      idTokenExpected: this.config.scope.includes("openid"),
+      idTokenExpected: this.hasScope("openid"),
     });
   }
 
+  /**
+   * Normalizes a token endpoint response for initial authentication (code exchange).
+   *
+   * When scope includes "openid", the id_token is guaranteed to be present because
+   * exchangeCodeForTokens sets idTokenExpected: true (OIDC Core §3.1.3.3).
+   * The id_token || accessToken fallback only applies to non-openid scopes where
+   * no id_token is expected, and the access_token serves as the session identity.
+   */
   normalizeTokenResponse(tokenResponse: TokenEndpointResponse): {
     idToken: string;
     idTokenExpiresAt: number; // ms
@@ -142,7 +159,6 @@ export class OIDCClient {
     refreshToken: string;
   } {
     const accessToken = tokenResponse.access_token;
-    const idToken = tokenResponse.id_token || accessToken;
     const refreshToken = tokenResponse.refresh_token || "";
 
     if (!accessToken) {
@@ -152,9 +168,14 @@ export class OIDCClient {
       });
     }
 
-    // Access tokens may be opaque (e.g. Azure AD) and cannot be JWT-decoded.
-    // Use expires_in from the token response, fall back to JWT decode for
-    // providers that return JWT access tokens (e.g. Keycloak).
+    if (this.hasScope("openid") && !tokenResponse.id_token) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "OIDC token response missing id_token for openid flow (OIDC Core §3.1.3.3)",
+      });
+    }
+
+    const idToken = tokenResponse.id_token || accessToken;
     const accessTokenExpiresAt = this.getTokenExpiresAt(accessToken, tokenResponse.expires_in);
 
     return {
@@ -185,46 +206,100 @@ export class OIDCClient {
     });
   }
 
-  async getNewTokens(oidcConfig: Configuration, refreshToken: string, previousIdToken?: string) {
+  /**
+   * Refreshes tokens per OIDC Core §12.2 and RFC 6749 §6.
+   *
+   * Handles each token according to its spec definition:
+   * - access_token: Always present in refresh response (RFC 6749 §5.1)
+   * - id_token: Optional — "might not contain an id_token" (OIDC §12.2).
+   *   If absent, the current id_token is preserved (the client already has it).
+   * - refresh_token: IdP may rotate it (RFC 6749 §6); preserve current if not rotated.
+   *
+   * Does NOT pass scope to refreshTokenGrant because Azure AD v1.0 returns
+   * unsigned id_tokens (alg: "none") when scope includes "openid", which
+   * oauth4webapi rejects as an unexpected algorithm.
+   */
+  async getNewTokens(
+    oidcConfig: Configuration,
+    currentSecret: { idToken: string; idTokenExpiresAt: number; refreshToken: string }
+  ): Promise<{
+    idToken: string;
+    idTokenExpiresAt: number;
+    accessToken: string;
+    accessTokenExpiresAt: number;
+    refreshToken: string;
+  }> {
     try {
-      // Pass scope to ensure the IdP returns a new id_token.
-      // Without "openid" scope, Azure AD refresh responses omit id_token,
-      // causing K8s OIDC auth to fail with opaque access_token.
-      const newTokens = await refreshTokenGrant(oidcConfig, refreshToken, {
-        scope: this.config.scope,
-      });
+      const response = await refreshTokenGrant(oidcConfig, currentSecret.refreshToken);
 
-      const normalized = this.normalizeTokenResponse(newTokens);
-
-      // If the refresh response did not include a new id_token and we have
-      // a previous JWT id_token, preserve it as a fallback. This covers
-      // edge cases where the IdP ignores the scope parameter on refresh
-      // (e.g., Azure AD v1.0 endpoints). The previous JWT is only useful
-      // if it has not yet expired, since K8s validates the exp claim.
-      if (!newTokens.id_token && previousIdToken && looksLikeJWT(previousIdToken)) {
-        try {
-          const previousExp = getTokenExpirationTime(previousIdToken);
-          if (previousExp > Date.now()) {
-            console.warn("[OIDC] Refresh response missing id_token, preserving previous JWT id_token");
-            normalized.idToken = previousIdToken;
-            normalized.idTokenExpiresAt = previousExp;
-          } else {
-            console.error(
-              "[OIDC] Refresh response missing id_token and previous id_token is expired. K8s OIDC auth will likely fail."
-            );
-          }
-        } catch {
-          console.error("[OIDC] Refresh response missing id_token and previous id_token could not be decoded.");
-        }
+      if (!response.access_token) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "OIDC refresh response missing access_token",
+        });
       }
 
-      return normalized;
+      // 1. access_token — always present in refresh response (RFC 6749 §5.1)
+      const accessToken = response.access_token;
+      const accessTokenExpiresAt = this.getTokenExpiresAt(accessToken, response.expires_in);
+
+      // 2. refresh_token — IdP may rotate it (RFC 6749 §6); preserve current if not rotated
+      const refreshToken = response.refresh_token || currentSecret.refreshToken;
+
+      // 3. id_token — optional per OIDC Core §12.2 ("might not contain an id_token")
+      //    If present and valid JWT, use the new one.
+      //    If absent, preserve the current one (client already obtained it at login).
+      let idToken: string;
+      let idTokenExpiresAt: number;
+
+      if (response.id_token && looksLikeJWT(response.id_token)) {
+        if (looksLikeJWT(currentSecret.idToken)) {
+          try {
+            const currentSub = decodeJwt(currentSecret.idToken).sub;
+            const newSub = decodeJwt(response.id_token).sub;
+            if (currentSub && newSub && currentSub !== newSub) {
+              console.error("[OIDC] id_token subject changed during refresh — possible token substitution");
+              throw new TRPCError({
+                code: "UNAUTHORIZED",
+                message: "Identity changed during token refresh. Please log in again.",
+              });
+            }
+          } catch (err) {
+            if (err instanceof TRPCError) throw err;
+            console.warn("[OIDC] Could not verify id_token subject during refresh, skipping subject check");
+          }
+        }
+        idToken = response.id_token;
+        idTokenExpiresAt = this.getTokenExpiresAt(response.id_token, response.expires_in);
+      } else if (looksLikeJWT(currentSecret.idToken)) {
+        try {
+          const actualExp = getTokenExpirationTime(currentSecret.idToken);
+          if (actualExp <= Date.now()) {
+            console.error("[OIDC] Current JWT id_token is expired. Forcing re-login.");
+            throw new TRPCError(SESSION_EXPIRED_ERROR);
+          }
+          if (!response.id_token) {
+            console.warn("[OIDC] Refresh response missing id_token, preserving current JWT id_token (OIDC §12.2)");
+          } else {
+            console.warn("[OIDC] Refresh response returned non-JWT id_token, preserving current JWT id_token");
+          }
+          idToken = currentSecret.idToken;
+          idTokenExpiresAt = actualExp;
+        } catch (err) {
+          if (err instanceof TRPCError) throw err;
+          console.error("[OIDC] Failed to validate current id_token. Forcing re-login.");
+          throw new TRPCError(SESSION_EXPIRED_ERROR);
+        }
+      } else {
+        console.error("[OIDC] No valid JWT id_token available after refresh. Forcing re-login.");
+        throw new TRPCError(SESSION_EXPIRED_ERROR);
+      }
+
+      return { idToken, idTokenExpiresAt, accessToken, accessTokenExpiresAt, refreshToken };
     } catch (err) {
+      if (err instanceof TRPCError) throw err;
       console.error("[OIDC] Failed to refresh token", err);
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Session expired. Please log in again.",
-      });
+      throw new TRPCError(SESSION_EXPIRED_ERROR);
     }
   }
 
