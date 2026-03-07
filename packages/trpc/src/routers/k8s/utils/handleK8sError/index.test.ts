@@ -16,11 +16,11 @@ describe("handleK8sError", () => {
       expect(result.cause).toHaveProperty("statusCode", 400);
     });
 
-    test("converts 401 to FORBIDDEN (K8s auth errors should not trigger login redirect)", () => {
+    test("converts 401 to UNAUTHORIZED (K8s token rejection should trigger login redirect)", () => {
       const error = new K8sApiError(401, "Unauthorized", "");
       const result = handleK8sError(error);
 
-      expect(result.code).toBe("FORBIDDEN");
+      expect(result.code).toBe("UNAUTHORIZED");
       expect(result.cause).toHaveProperty("source", "k8s");
     });
 
