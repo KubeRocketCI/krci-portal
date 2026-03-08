@@ -11,14 +11,8 @@ export const routeSearchTabName = routeSearchTabSchema.enum;
 
 export type RouteSearchTab = z.infer<typeof routeSearchTabSchema>;
 
-export const pipelineRunsTabSchema = z.enum(["live", "history"]);
-export const pipelineRunsTabName = pipelineRunsTabSchema.enum;
-
-export type PipelineRunsTab = z.infer<typeof pipelineRunsTabSchema>;
-
 export interface Search {
   tab?: RouteSearchTab;
-  pipelineRunsTab?: PipelineRunsTab;
 }
 
 export const routePipelineDetails = createRoute({
@@ -28,13 +22,11 @@ export const routePipelineDetails = createRoute({
     const parsed = z
       .object({
         tab: routeSearchTabSchema.optional(),
-        pipelineRunsTab: pipelineRunsTabSchema.optional(),
       })
       .parse(search);
 
     return {
       tab: parsed.tab ?? "overview",
-      pipelineRunsTab: parsed.pipelineRunsTab,
     };
   },
   head: ({ params }) => ({

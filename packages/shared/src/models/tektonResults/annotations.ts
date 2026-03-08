@@ -13,4 +13,8 @@ export const tektonResultAnnotations = {
   stage: "app.edp.epam.com/stage",
   pipeline: "tekton.dev/pipeline",
   objectMetadataName: "object.metadata.name",
+  /** Client-side marker indicating the PipelineRun was loaded from Tekton Results history */
+  historySource: "app.edp.epam.com/history-source",
+  /** Annotation added by Tekton Results Watcher on archived PipelineRuns/TaskRuns */
+  tektonResultRef: "results.tekton.dev/result",
 } as const;

@@ -67,11 +67,11 @@ export function formatUnixTimestamp(
  * Calculate and format duration between two timestamps
  * @param startTime - Start timestamp (ISO 8601)
  * @param endTime - End timestamp (ISO 8601). If not provided, uses current time
- * @returns Formatted duration string or "N/A" if invalid
+ * @returns Formatted duration string or null if startTime is missing/invalid
  */
-export function formatDuration(startTime?: string, endTime?: string): string {
+export function formatDuration(startTime?: string, endTime?: string): string | null {
   if (!startTime) {
-    return "N/A";
+    return null;
   }
 
   try {
@@ -81,6 +81,6 @@ export function formatDuration(startTime?: string, endTime?: string): string {
 
     return humanize(duration, HUMANIZE_DURATION_OPTIONS);
   } catch {
-    return "N/A";
+    return null;
   }
 }

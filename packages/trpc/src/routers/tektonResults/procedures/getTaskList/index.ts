@@ -2,6 +2,7 @@ import { z } from "zod";
 import { decodeTektonRecordData, DecodedPipelineRun, TektonResultTask } from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createTektonResultsClient } from "../../../../clients/tektonResults/index.js";
+import { tektonInputSchemas } from "../../utils.js";
 
 /**
  * Get list of tasks (with metadata only, no logs) from a PipelineRun in Tekton Results
@@ -12,9 +13,9 @@ import { createTektonResultsClient } from "../../../../clients/tektonResults/ind
 export const getTaskListProcedure = protectedProcedure
   .input(
     z.object({
-      namespace: z.string(),
-      resultUid: z.string(),
-      recordUid: z.string(),
+      namespace: tektonInputSchemas.namespace,
+      resultUid: tektonInputSchemas.uuid,
+      recordUid: tektonInputSchemas.uuid,
     })
   )
   .query(async ({ input }) => {

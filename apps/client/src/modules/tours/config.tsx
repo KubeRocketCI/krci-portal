@@ -1,26 +1,8 @@
-import { useAuth } from "@/core/auth/provider";
 import type { TourMetadata } from "./types";
 import { TourStepContent } from "./components/TourStepContent";
+import { WelcomeStepContent } from "./components/WelcomeStepContent";
 import { CDPIPELINE_TOURS } from "@/modules/platform/cdpipelines/tours";
 import { CODEBASES_TOURS } from "@/modules/platform/codebases/tours";
-
-function WelcomeStepContent() {
-  const { user } = useAuth();
-  const firstName = user?.name?.split(" ")[0] || "";
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-3">
-        <img src="/krci-logo.svg" alt="KubeRocketCI" className="h-10 w-10" />
-        <h3 className="text-base font-semibold">Welcome{firstName ? `, ${firstName}` : ""}!</h3>
-      </div>
-      <p>
-        Let us show you around the KubeRocketCI platform. This quick tour will walk you through the key areas of the
-        interface.
-      </p>
-    </div>
-  );
-}
 
 /**
  * Global tour configurations that apply across the entire application.

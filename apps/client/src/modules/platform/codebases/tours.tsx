@@ -1,6 +1,6 @@
 import type { StepPrerequisite, TourMetadata } from "@/modules/tours/types";
 import { TourStepContent } from "@/modules/tours/components/TourStepContent";
-import { PATH_PROJECT_DETAILS_FULL, pipelinesTabSchema, routeSearchTabName } from "./pages/details/route";
+import { PATH_PROJECT_DETAILS_FULL, routeSearchTabName } from "./pages/details/route";
 
 const overviewTabPrerequisite: StepPrerequisite = {
   to: PATH_PROJECT_DETAILS_FULL,
@@ -178,7 +178,6 @@ export const CODEBASES_TOURS = {
           search: (prev) => ({
             ...prev,
             tab: routeSearchTabName.pipelines,
-            pipelinesTab: pipelinesTabSchema.enum.live,
           }),
           waitFor: "[data-tour='pipelines-table']",
           stabilizationDelay: 300,
@@ -200,7 +199,6 @@ export const CODEBASES_TOURS = {
           search: (prev) => ({
             ...prev,
             tab: routeSearchTabName.pipelines,
-            pipelinesTab: pipelinesTabSchema.enum["tekton-results"],
           }),
           waitFor: "[data-tour='pipeline-history']",
           stabilizationDelay: 300,

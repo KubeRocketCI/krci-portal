@@ -5,3 +5,5 @@ export * from "./getPipelineRunLogs/index.js";
 export * from "./getSummary/index.js";
 export * from "./getTaskList/index.js";
 export * from "./getTaskRunLogs/index.js";
+export * from "./getTaskRunRecords/index.js";
+export * from "./getPipelineRunRecords/index.js";

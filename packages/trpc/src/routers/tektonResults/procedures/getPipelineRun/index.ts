@@ -3,6 +3,7 @@ import { z } from "zod";
 import { decodeTektonRecordData, DecodedPipelineRun } from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createTektonResultsClient } from "../../../../clients/tektonResults/index.js";
+import { tektonInputSchemas } from "../../utils.js";
 
 /**
  * Get a single PipelineRun from Tekton Results by result_uid and record_uid
@@ -12,9 +13,9 @@ import { createTektonResultsClient } from "../../../../clients/tektonResults/ind
 export const getTektonResultPipelineRunProcedure = protectedProcedure
   .input(
     z.object({
-      namespace: z.string(),
-      resultUid: z.string(),
-      recordUid: z.string(),
+      namespace: tektonInputSchemas.namespace,
+      resultUid: tektonInputSchemas.uuid,
+      recordUid: tektonInputSchemas.uuid,
     })
   )
   .query(async ({ input }) => {

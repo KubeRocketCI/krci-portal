@@ -107,12 +107,12 @@ describe("formatDuration", () => {
     expect(result).toMatch(/2h/);
   });
 
-  test("returns 'N/A' for undefined startTime", () => {
-    expect(formatDuration(undefined)).toBe("N/A");
+  test("returns null for undefined startTime", () => {
+    expect(formatDuration(undefined)).toBeNull();
   });
 
-  test("returns 'N/A' for empty startTime", () => {
-    expect(formatDuration("")).toBe("N/A");
+  test("returns null for empty startTime", () => {
+    expect(formatDuration("")).toBeNull();
   });
 
   test("returns '0s' for invalid startTime", () => {

@@ -1,7 +1,6 @@
 import { useApprovalTaskWatchList } from "@/k8s/api/groups/KRCI/ApprovalTask";
 import { getApprovalTaskStatusIcon } from "@/k8s/api/groups/KRCI/ApprovalTask/utils";
 import { usePipelineRunWatchItem } from "@/k8s/api/groups/Tekton/PipelineRun";
-import { useTaskWatchList } from "@/k8s/api/groups/Tekton/Task";
 import { useTaskRunWatchList } from "@/k8s/api/groups/Tekton/TaskRun";
 import { getTaskRunStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun/utils";
 import { ToggleButton, ToggleButtonGroup } from "@/core/components/ui/toggle-button-group";
@@ -46,10 +45,6 @@ const PipelineRunDiagramDataWrapper: React.FC<{
     },
   });
 
-  const tasksWatch = useTaskWatchList({
-    namespace,
-  });
-
   const approvalTasksWatch = useApprovalTaskWatchList({
     namespace,
     labels: {
@@ -73,14 +68,12 @@ const PipelineRunDiagramDataWrapper: React.FC<{
   const pipelineRunTasksByNameMap = React.useMemo(() => {
     return buildPipelineRunTasksByNameMap({
       allPipelineTasks: pipelineRunTasks.allTasks,
-      tasks: tasksWatch.data.array,
       taskRuns: taskRunsWatch.data.array,
       approvalTasks: approvalTasksWatch.data.array,
     });
-  }, [pipelineRunTasks.allTasks, tasksWatch.data.array, taskRunsWatch.data.array, approvalTasksWatch.data.array]);
+  }, [pipelineRunTasks.allTasks, taskRunsWatch.data.array, approvalTasksWatch.data.array]);
 
-  const isLoading =
-    pipelineRunWatch.isLoading || tasksWatch.isLoading || taskRunsWatch.isLoading || approvalTasksWatch.isLoading;
+  const isLoading = pipelineRunWatch.isLoading || taskRunsWatch.isLoading || approvalTasksWatch.isLoading;
 
   return (
     <div className="flex h-full w-full flex-1 flex-col">
@@ -95,7 +88,7 @@ const PipelineRunDiagramDataWrapper: React.FC<{
   );
 };
 
-const PipelineRunDiagramView: React.FC<{
+export const PipelineRunDiagramView: React.FC<{
   pipelineRun: PipelineRun;
   pipelineRunTasksByNameMap: Map<string, PipelineRunTaskCombinedData>;
   namespace: string;
@@ -124,6 +117,8 @@ const PipelineRunDiagramView: React.FC<{
     const container = containerRef.current;
     if (!container) return;
 
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
       const hasValidSize = entry && entry.contentRect.width > 0 && entry.contentRect.height > 0;
@@ -132,7 +127,7 @@ const PipelineRunDiagramView: React.FC<{
         hasVisibleSizeRef.current = true;
         // Small delay to ensure ReactFlow has processed the resize
         // This is necessary because ReactFlow's internal resize handling is async
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
           fitView({ padding: 0.1, maxZoom: 1, duration: 200 });
         }, 50);
       } else if (!hasValidSize) {
@@ -142,7 +137,10 @@ const PipelineRunDiagramView: React.FC<{
     });
 
     observer.observe(container);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      clearTimeout(timeoutId);
+    };
   }, [fitView]);
 
   // Apply edge colors based on target node status

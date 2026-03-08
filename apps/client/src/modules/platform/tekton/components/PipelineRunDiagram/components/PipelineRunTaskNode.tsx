@@ -9,6 +9,7 @@ import { getApprovalTaskStatusIcon } from "@/k8s/api/groups/KRCI/ApprovalTask/ut
 import { humanize } from "@/core/utils/date-humanize";
 import { PipelineRunTaskNodeData } from "../hooks/usePipelineRunGraphData";
 import { getTaskRunStepStatus } from "@my-project/shared";
+import { getTaskDescription } from "../../../utils/getTaskDescription";
 import { ListOrdered, Timer } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/core/components/ui/button";
@@ -80,6 +81,7 @@ export const PipelineRunTaskNode: React.FC<{
 
   const duration = getDuration();
   const statusText = getStatusText();
+  const taskDescription = getTaskDescription(data.task, data.taskRun);
 
   const tooltipContent = (
     <div className="space-y-2">
@@ -99,10 +101,10 @@ export const PipelineRunTaskNode: React.FC<{
         </div>
       </div>
 
-      {data.task?.spec?.description && (
+      {taskDescription && (
         <div className="mb-4 flex items-start gap-2">
           <span className="text-background/80 text-xs">Description:</span>
-          <span className="text-xs">{data.task.spec.description}</span>
+          <span className="text-xs">{taskDescription}</span>
         </div>
       )}
 

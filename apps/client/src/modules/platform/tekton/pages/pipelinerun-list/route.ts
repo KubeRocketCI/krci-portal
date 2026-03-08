@@ -6,13 +6,7 @@ export const PATH_PIPELINERUNS = "pipelineruns" as const;
 export const PATH_PIPELINERUNS_FULL = "/c/$clusterName/cicd/pipelineruns" as const;
 export const ROUTE_ID_PIPELINERUNS = "/_layout/c/$clusterName/cicd/pipelineruns" as const;
 
-export const routeSearchTabSchema = z.enum(["live", "tekton-results"]);
-export const routeSearchTabName = routeSearchTabSchema.enum;
-
-export type RouteSearchTab = z.infer<typeof routeSearchTabSchema>;
-
 export interface Search {
-  tab?: RouteSearchTab;
   page?: number;
   rowsPerPage?: number;
 }
@@ -23,16 +17,12 @@ export const routePipelineRunList = createRoute({
   validateSearch: (search: Record<string, unknown>): Search => {
     const parsed = z
       .object({
-        tab: routeSearchTabSchema.optional(),
         page: z.number().optional(),
         rowsPerPage: z.number().optional(),
       })
       .parse(search);
 
-    return {
-      ...parsed,
-      tab: parsed.tab ?? routeSearchTabName.live,
-    };
+    return parsed;
   },
   head: () => ({
     meta: [{ title: "Pipeline Runs | KRCI" }],

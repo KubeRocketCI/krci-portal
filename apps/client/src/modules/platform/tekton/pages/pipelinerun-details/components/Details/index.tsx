@@ -1,66 +1,18 @@
 import React from "react";
-import { MenuAccordion } from "./components/MenuAccordion";
-import { TaskRunStepWrapper } from "./components/TaskRunStepWrapper";
-import { TaskRunWrapper } from "./components/TaskRunWrapper";
-import { routePipelineRunDetails, routeSearchTabName, PATH_PIPELINERUN_DETAILS_FULL } from "../../route";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { useApprovalTaskWatchList } from "@/k8s/api/groups/KRCI/ApprovalTask";
-import { useTaskRunWatchList } from "@/k8s/api/groups/Tekton/TaskRun";
-import { useTaskWatchList } from "@/k8s/api/groups/Tekton/Task";
-import { usePipelineRunWatchWithPageParams } from "../../hooks/data";
-import { approvalTaskLabels, PipelineTask, taskRunLabels } from "@my-project/shared";
-import { buildPipelineRunTasksByNameMap } from "../../hooks/utils";
+import { PipelineTask } from "@my-project/shared";
 import { Card } from "@/core/components/ui/card";
 import { router } from "@/core/router";
+import { routePipelineRunDetails, routeSearchTabName, PATH_PIPELINERUN_DETAILS_FULL } from "../../route";
+import { usePipelineRunContext } from "../../providers/PipelineRun/hooks";
+import { MenuAccordionView } from "./components/MenuAccordion";
+import { UnifiedTaskRunWrapper } from "./components/UnifiedTaskRunWrapper";
+import { UnifiedTaskRunStepWrapper } from "./components/UnifiedTaskRunStepWrapper";
 
-export const Details = () => {
+export function Details() {
   const params = routePipelineRunDetails.useParams();
   const queryParams = routePipelineRunDetails.useSearch();
-
-  const pipelineRunWatch = usePipelineRunWatchWithPageParams();
-
-  const taskRunsWatch = useTaskRunWatchList({
-    namespace: params.namespace,
-    labels: {
-      [taskRunLabels.parentPipelineRun]: params.name,
-    },
-  });
-
-  const tasksWatch = useTaskWatchList({
-    namespace: params.namespace,
-  });
-
-  const approvalTasksWatch = useApprovalTaskWatchList({
-    namespace: params.namespace,
-    labels: {
-      [approvalTaskLabels.parentPipelineRun]: params.name,
-    },
-  });
-
-  const pipelineRun = pipelineRunWatch.query.data;
-
-  const pipelineRunTasks = React.useMemo(() => {
-    const mainTasks: PipelineTask[] = pipelineRun?.status?.pipelineSpec?.tasks || [];
-    const finallyTasks: PipelineTask[] = pipelineRun?.status?.pipelineSpec?.finally || [];
-
-    return {
-      allTasks: [...mainTasks, ...finallyTasks],
-      mainTasks,
-      finallyTasks,
-    };
-  }, [pipelineRun]);
-
-  const pipelineRunTasksByNameMap = React.useMemo(() => {
-    return buildPipelineRunTasksByNameMap({
-      allPipelineTasks: pipelineRunTasks.allTasks,
-      tasks: tasksWatch.data.array,
-      taskRuns: taskRunsWatch.data.array,
-      approvalTasks: approvalTasksWatch.data.array,
-    });
-  }, [pipelineRunTasks.allTasks, tasksWatch.data.array, taskRunsWatch.data.array, approvalTasksWatch.data.array]);
-
-  const isLoading =
-    pipelineRunWatch.isLoading || tasksWatch.isLoading || taskRunsWatch.isLoading || approvalTasksWatch.isLoading;
+  const { pipelineRunTasks, pipelineRunTasksByNameMap, isLoading } = usePipelineRunContext();
 
   const queryParamTaskRun = queryParams.taskRun;
   const queryParamStep = queryParams.step;
@@ -76,11 +28,9 @@ export const Details = () => {
           namespace: params.namespace,
           name: params.name,
         },
-        search: {
-          taskRun: firstTaskName,
-          tab: routeSearchTabName.details,
-        },
+        search: (prev) => ({ ...prev, taskRun: firstTaskName, tab: routeSearchTabName.details }),
         replace: true,
+        resetScroll: false,
       });
     }
   }, [queryParamTaskRun, firstTaskName, isLoading, params.clusterName, params.namespace, params.name]);
@@ -89,34 +39,31 @@ export const Details = () => {
     let completed = 0;
     pipelineRunTasksByNameMap.forEach((data) => {
       const taskRun = data.taskRun;
-      if (taskRun?.status?.conditions?.[0]?.reason === "succeeded") {
+      const reason = taskRun?.status?.conditions?.[0]?.reason;
+      if (reason?.toLowerCase() === "succeeded") {
         completed++;
       }
     });
     return completed;
   }, [pipelineRunTasksByNameMap]);
 
-  const renderDetails = React.useCallback(() => {
-    const initialTaskRunName = pipelineRunTasks?.allTasks?.[0]?.name;
+  const handleNavigate = React.useCallback(
+    (taskRunName: string, taskRunStepName?: string) => {
+      router.navigate({
+        to: PATH_PIPELINERUN_DETAILS_FULL,
+        params: {
+          clusterName: params.clusterName,
+          namespace: params.namespace,
+          name: params.name,
+        },
+        search: (prev) => ({ ...prev, taskRun: taskRunName, step: taskRunStepName, tab: routeSearchTabName.details }),
+        resetScroll: false,
+      });
+    },
+    [params.clusterName, params.name, params.namespace]
+  );
 
-    if (!queryParamTaskRun || !initialTaskRunName) {
-      return null;
-    }
-
-    const activePipelineRunTaskData = pipelineRunTasksByNameMap.get(queryParamTaskRun || initialTaskRunName);
-
-    if (!activePipelineRunTaskData) {
-      return null;
-    }
-
-    if (!queryParamTaskRun || (queryParamTaskRun && !queryParamStep)) {
-      return <TaskRunWrapper pipelineRunTaskData={activePipelineRunTaskData} />;
-    } else if (queryParamTaskRun && queryParamStep) {
-      return <TaskRunStepWrapper pipelineRunTaskData={activePipelineRunTaskData} stepName={queryParamStep} />;
-    }
-
-    return null;
-  }, [pipelineRunTasks, pipelineRunTasksByNameMap, queryParamStep, queryParamTaskRun]);
+  const activePipelineRunTaskData = queryParamTaskRun ? pipelineRunTasksByNameMap.get(queryParamTaskRun) : undefined;
 
   return (
     <LoadingWrapper isLoading={isLoading}>
@@ -132,12 +79,15 @@ export const Details = () => {
             <div className="flex-1 overflow-auto p-2">
               <div className="flex flex-col gap-1">
                 {pipelineRunTasksByNameMap &&
-                  pipelineRunTasks.allTasks?.map(({ name: taskRunName }) =>
+                  pipelineRunTasks.allTasks?.map(({ name: taskRunName }: PipelineTask) =>
                     taskRunName ? (
-                      <MenuAccordion
+                      <MenuAccordionView
                         key={taskRunName}
                         pipelineRunTasksByNameMap={pipelineRunTasksByNameMap}
                         taskRunName={taskRunName}
+                        queryParamTaskRun={queryParamTaskRun}
+                        queryParamStep={queryParamStep}
+                        onNavigate={handleNavigate}
                       />
                     ) : null
                   )}
@@ -146,9 +96,16 @@ export const Details = () => {
           </Card>
         </div>
 
-        {/* Main content - Task/Step Details (70%) */}
-        <div className="min-w-0 flex-1">{renderDetails()}</div>
+        {/* Main content - Task/Step Details */}
+        <div className="min-w-0 flex-1">
+          {activePipelineRunTaskData && !queryParamStep && (
+            <UnifiedTaskRunWrapper pipelineRunTaskData={activePipelineRunTaskData} />
+          )}
+          {activePipelineRunTaskData && queryParamStep && (
+            <UnifiedTaskRunStepWrapper pipelineRunTaskData={activePipelineRunTaskData} stepName={queryParamStep} />
+          )}
+        </div>
       </div>
     </LoadingWrapper>
   );
-};
+}

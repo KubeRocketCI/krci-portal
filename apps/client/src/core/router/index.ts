@@ -42,7 +42,6 @@ import { routePipelineDetails } from "@/modules/platform/tekton/pages/pipeline-d
 import { routePipelineList } from "@/modules/platform/tekton/pages/pipeline-list/route";
 import { routePipelineRunList } from "@/modules/platform/tekton/pages/pipelinerun-list/route";
 import { routePipelineRunDetails } from "@/modules/platform/tekton/pages/pipelinerun-details/route";
-import { routeTektonResultPipelineRunDetails } from "@/modules/platform/tekton/pages/tekton-result-details/route";
 import { routeOverviewDetails } from "@/modules/platform/overview/pages/details/route";
 import { routeArgocdConfiguration } from "@/modules/platform/configuration/modules/argocd/route";
 import { routeClustersConfiguration } from "@/modules/platform/configuration/modules/clusters/route";
@@ -111,7 +110,6 @@ const routeTree = rootRoute.addChildren([
         routeTaskDetails,
         routePipelineRunList,
         routePipelineRunDetails,
-        routeTektonResultPipelineRunDetails,
       ]),
       routeObservability.addChildren([routePipelineMetrics]),
       routeSecurity.addChildren([

@@ -111,3 +111,23 @@ export function parseRecordName(recordName: string): { resultUid: string; record
     recordUid: parts[recordsIndex + 1],
   };
 }
+
+/**
+ * Parse the `results.tekton.dev/result` annotation value to extract the result UID.
+ * Annotation format: "{namespace}/results/{resultUid}"
+ *
+ * @example
+ * parseResultUidFromAnnotation("edp-delivery/results/6a04af6a-3424-40f9-9d3d-033769a9abe5")
+ * // Returns "6a04af6a-3424-40f9-9d3d-033769a9abe5"
+ *
+ * @param annotationValue - The raw annotation string from the PipelineRun
+ * @returns The result UID, or null if the format doesn't match
+ */
+export function parseResultUidFromAnnotation(annotationValue: string): string | null {
+  const parts = annotationValue.split("/");
+  const resultsIndex = parts.indexOf("results");
+  if (resultsIndex === -1 || resultsIndex + 1 >= parts.length) {
+    return null;
+  }
+  return parts[resultsIndex + 1] || null;
+}

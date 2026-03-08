@@ -1,55 +1,16 @@
-import { NameValueTable } from "@/core/components/NameValueTable";
-import { getValidURLPattern } from "@/core/utils/getValidURLPattern";
-import { usePipelineRunWatchItem } from "@/k8s/api/groups/Tekton/PipelineRun";
-import { VALIDATED_PROTOCOL } from "@/k8s/constants/validatedProtocols";
-import { routePipelineRunDetails } from "../../route";
-import { Link } from "@tanstack/react-router";
-import { Card } from "@/core/components/ui/card";
-import React from "react";
-import { EmptyList } from "@/core/components/EmptyList";
+import { ResultsView } from "@/modules/platform/tekton/components/ResultsView";
+import { usePipelineRunContext } from "../../providers/PipelineRun/hooks";
 
-export const Results = () => {
-  const params = routePipelineRunDetails.useParams();
+const EMPTY_RESULTS: Record<string, string>[] = [];
 
-  const pipelineRunWatch = usePipelineRunWatchItem({
-    namespace: params.namespace,
-    name: params.name,
-  });
+/**
+ * Unified Results component.
+ * Displays PipelineRun results from context data (works for both live and history).
+ * Unlike the existing Results component, this does NOT call usePipelineRunWatchItem internally.
+ */
+export function Results() {
+  const { pipelineRun } = usePipelineRunContext();
+  const results = pipelineRun?.status?.results || EMPTY_RESULTS;
 
-  const pipelineRun = pipelineRunWatch.query.data;
-
-  const results = React.useMemo(() => {
-    return pipelineRun?.status?.results || [];
-  }, [pipelineRun]);
-
-  const noResults = results.length === 0;
-
-  if (noResults) {
-    return (
-      <Card>
-        <EmptyList customText="No results found!" description="Results appear only if the pipeline produces them." />
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <NameValueTable
-        rows={results.map((el: Record<string, string>) => {
-          const isLink = getValidURLPattern(VALIDATED_PROTOCOL.HTTP_OR_HTTPS).test(el.value);
-
-          return {
-            name: el.name,
-            value: isLink ? (
-              <Link to={el.value} target="_blank">
-                {el.value}
-              </Link>
-            ) : (
-              el.value
-            ),
-          };
-        })}
-      />
-    </Card>
-  );
-};
+  return <ResultsView results={results} />;
+}

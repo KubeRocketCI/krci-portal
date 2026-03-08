@@ -17,6 +17,14 @@ export const pipelineRunFilterControlNames = {
   NAMESPACES: "namespaces",
 } as const;
 
+export const defaultPipelineRunFilterValues: PipelineRunListFilterValues = {
+  [pipelineRunFilterControlNames.CODEBASES]: [],
+  [pipelineRunFilterControlNames.CODEBASE_BRANCHES]: [],
+  [pipelineRunFilterControlNames.NAMESPACES]: [],
+  [pipelineRunFilterControlNames.STATUS]: "all",
+  [pipelineRunFilterControlNames.PIPELINE_TYPE]: "all",
+};
+
 export const matchFunctions: MatchFunctions<PipelineRun, PipelineRunListFilterValues> = {
   [pipelineRunFilterControlNames.CODEBASES]: (item, value) => {
     if (!value || value.length === 0) return true;
