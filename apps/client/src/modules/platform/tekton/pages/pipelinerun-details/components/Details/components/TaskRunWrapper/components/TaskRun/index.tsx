@@ -7,14 +7,18 @@ import { Tabs } from "@/core/providers/Tabs/components/Tabs";
 import { Card } from "@/core/components/ui/card";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { getTaskRunStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun";
+import { STATUS_COLOR } from "@/k8s/constants/colors";
 import { Badge } from "@/core/components/ui/badge";
-import { Timer, Clock } from "lucide-react";
+import { Timer, Clock, ShieldQuestion } from "lucide-react";
+import { getTaskDescription } from "../../../../../../../../utils/getTaskDescription";
 
 export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
-  const { taskRun, task } = pipelineRunTaskData;
-  const taskRunName = taskRun?.metadata?.labels?.[taskRunLabels.pipelineTask];
+  const { taskRun, task, pipelineRunTask } = pipelineRunTaskData;
+  const taskRunName = taskRun?.metadata?.labels?.[taskRunLabels.pipelineTask] ?? pipelineRunTask?.name;
   const taskRunStatus = getTaskRunStatus(taskRun);
-  const taskRunStatusIcon = getTaskRunStatusIcon(taskRun);
+  const taskRunStatusIcon = taskRun
+    ? getTaskRunStatusIcon(taskRun)
+    : { component: ShieldQuestion, color: STATUS_COLOR.UNKNOWN };
 
   const completionTime = taskRun?.status?.completionTime || "";
   const startTime = taskRun?.status?.startTime || "";
@@ -51,13 +55,16 @@ export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
       })
     : null;
 
-  const tabs = useTabs({ taskRun, task });
-  const taskDescription = pipelineRunTaskData.task?.spec?.description || "";
+  const tabs = useTabs({ taskRun, task, pipelineRunTask });
+  const taskDescription = getTaskDescription(
+    pipelineRunTaskData.task,
+    pipelineRunTaskData.taskRun,
+    pipelineRunTaskData.pipelineRunTask
+  );
   const { activeTab, handleChangeTab } = useTabsContext();
 
   return (
     <Card className="flex h-full flex-col">
-      {/* Task header */}
       <div className="border-b px-6 py-4">
         <div className="mb-3 flex items-start justify-between">
           <div className="flex gap-3">
@@ -77,7 +84,6 @@ export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
           </Badge>
         </div>
 
-        {/* Task metadata */}
         <div className="flex items-center gap-6">
           {startedAt && (
             <div className="flex items-center gap-2">
@@ -94,7 +100,6 @@ export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
         </div>
       </div>
 
-      {/* Tabs content */}
       <div className="flex flex-1 flex-col p-4">
         <Tabs tabs={tabs} activeTabIdx={activeTab} handleChangeTab={handleChangeTab} />
       </div>

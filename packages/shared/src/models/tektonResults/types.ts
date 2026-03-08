@@ -99,6 +99,7 @@ export interface DecodedPipelineRunStatus {
   completionTime?: string;
   childReferences?: DecodedChildReference[];
   pipelineSpec?: DecodedPipelineSpec;
+  results?: Array<{ name: string; value?: unknown }>;
 }
 
 // Pipeline task definition
@@ -146,6 +147,95 @@ export interface DecodedPipelineRun {
   metadata: DecodedPipelineRunMetadata;
   spec: DecodedPipelineRunSpec;
   status: DecodedPipelineRunStatus;
+}
+
+// =============================================================================
+// Decoded TaskRun Types (from Tekton Results records)
+// =============================================================================
+
+// TaskRun step state from decoded record
+export interface DecodedTaskRunStepState {
+  name?: string;
+  container?: string;
+  imageID?: string;
+  running?: { startedAt?: string };
+  terminated?: {
+    containerID?: string;
+    exitCode: number;
+    finishedAt?: string;
+    message?: string;
+    reason?: string;
+    signal?: number;
+    startedAt?: string;
+  };
+  waiting?: { message?: string; reason?: string };
+  results?: Array<{ name: string; type?: string; value: unknown }>;
+}
+
+// TaskRun condition from decoded record
+export interface DecodedTaskRunCondition {
+  type: string;
+  status: string;
+  reason?: string;
+  message?: string;
+  lastTransitionTime?: string;
+}
+
+// TaskRun status from decoded record
+export interface DecodedTaskRunStatus {
+  podName: string;
+  conditions?: DecodedTaskRunCondition[];
+  steps?: DecodedTaskRunStepState[];
+  startTime?: string;
+  completionTime?: string;
+  taskResults?: Array<{ name: string; type?: string; value: unknown }>;
+  results?: Array<{ name: string; type?: string; value: unknown }>;
+  taskSpec?: unknown;
+  annotations?: Record<string, string>;
+  spanContext?: Record<string, string>;
+  sidecars?: Array<{
+    name?: string;
+    container?: string;
+    imageID?: string;
+    running?: { startedAt?: string };
+    terminated?: {
+      containerID?: string;
+      exitCode: number;
+      finishedAt?: string;
+      message?: string;
+      reason?: string;
+      signal?: number;
+      startedAt?: string;
+    };
+    waiting?: { message?: string; reason?: string };
+  }>;
+}
+
+// TaskRun metadata from decoded record
+export interface DecodedTaskRunMetadata {
+  name: string;
+  namespace: string;
+  uid: string;
+  labels?: Record<string, string>;
+  annotations?: Record<string, string>;
+  creationTimestamp?: string;
+  resourceVersion?: string;
+  generation?: number;
+}
+
+// Full decoded TaskRun structure from Tekton Results record
+export interface DecodedTaskRun {
+  apiVersion: string;
+  kind: string;
+  metadata: DecodedTaskRunMetadata;
+  spec: {
+    params?: Array<{ name: string; value: unknown }>;
+    taskRef?: { name?: string; kind?: string; apiVersion?: string; resolver?: string };
+    serviceAccountName?: string;
+    timeout?: string;
+    workspaces?: Array<{ name: string; [key: string]: unknown }>;
+  };
+  status: DecodedTaskRunStatus;
 }
 
 // Decoded Log record from Tekton Results
@@ -290,4 +380,12 @@ export interface TektonResultTaskLogs {
   hasLogs: boolean;
   /** Error message if log fetching failed; null when no error */
   error: string | null;
+  /**
+   * When stepName was requested, indicates whether step-level filtering
+   * successfully matched log lines with [stepName] prefixes.
+   * - true: logs were filtered to step-specific lines
+   * - false: no [stepName] prefixes found, full TaskRun log returned instead
+   * - undefined: stepName was not requested
+   */
+  stepFiltered?: boolean;
 }

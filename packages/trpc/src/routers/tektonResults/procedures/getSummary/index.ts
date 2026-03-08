@@ -2,6 +2,7 @@ import { z } from "zod";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createTektonResultsClient } from "../../../../clients/tektonResults/index.js";
 import { DEFAULT_SUMMARY_METRICS } from "@my-project/shared";
+import { tektonInputSchemas } from "../../utils.js";
 
 /**
  * Valid summary metric names per Tekton Results API
@@ -118,7 +119,7 @@ const orderBySchema = z
 export const getSummaryProcedure = protectedProcedure
   .input(
     z.object({
-      namespace: z.string().min(1, "Namespace is required"),
+      namespace: tektonInputSchemas.namespace,
       summary: summarySchema,
       groupBy: groupBySchema,
       filter: z.string().optional(),

@@ -2,7 +2,7 @@ import { getApprovalTaskStatusIcon } from "@/k8s/api/groups/KRCI/ApprovalTask";
 import { getTaskRunStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun";
 import { STATUS_COLOR } from "@/k8s/constants/colors";
 import { K8sResourceStatusIcon } from "@/k8s/types";
-import { TaskRunStepState, ApprovalTask, TaskRun, getTaskRunStatus } from "@my-project/shared";
+import { TaskRunStepState, ApprovalTask, TaskRun } from "@my-project/shared";
 import { ShieldQuestion } from "lucide-react";
 
 export const approvalTaskBackground =
@@ -43,17 +43,4 @@ export const getApprovalTaskOrTaskRunStatusIcon = (
     component: ShieldQuestion,
     color: STATUS_COLOR.UNKNOWN,
   };
-};
-
-export const getApprovalTaskOrTaskRunStatusTitle = (
-  approvalTask: ApprovalTask | undefined,
-  taskRun: TaskRun | undefined
-) => {
-  if (approvalTask) {
-    return `Status: ${approvalTask?.spec?.action}`;
-  }
-
-  const taskRunStatus = getTaskRunStatus(taskRun);
-
-  return `Status: ${taskRunStatus.status}. Reason: ${taskRunStatus.reason}`;
 };

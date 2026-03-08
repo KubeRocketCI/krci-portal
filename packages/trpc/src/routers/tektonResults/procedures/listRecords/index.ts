@@ -1,11 +1,12 @@
 import { z } from "zod";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createTektonResultsClient } from "../../../../clients/tektonResults/index.js";
+import { tektonInputSchemas } from "../../utils.js";
 
 export const listTektonRecordsProcedure = protectedProcedure
   .input(
     z.object({
-      namespace: z.string(),
+      namespace: tektonInputSchemas.namespace,
       filter: z.string().optional(),
       pageSize: z.number().optional().default(50),
       pageToken: z.string().optional(),

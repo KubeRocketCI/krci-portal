@@ -2,6 +2,7 @@ import { z } from "zod";
 import { decodeTektonRecordData, parseRecordName, DecodedPipelineRun, DecodedLogRecord } from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createTektonResultsClient } from "../../../../clients/tektonResults/index.js";
+import { tektonInputSchemas } from "../../utils.js";
 
 // ANSI escape codes for terminal styling (supported by xterm.js)
 // Using 256-color palette with darker colors for better contrast on white backgrounds
@@ -114,9 +115,9 @@ async function processTaskRunLogs(
 export const getPipelineRunLogsProcedure = protectedProcedure
   .input(
     z.object({
-      namespace: z.string(),
-      resultUid: z.string(),
-      recordUid: z.string(),
+      namespace: tektonInputSchemas.namespace,
+      resultUid: tektonInputSchemas.uuid,
+      recordUid: tektonInputSchemas.uuid,
     })
   )
   .query(async ({ input }): Promise<{ logs: string }> => {

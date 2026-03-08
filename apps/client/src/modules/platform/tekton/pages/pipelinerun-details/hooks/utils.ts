@@ -1,5 +1,5 @@
 import { ApprovalTask, approvalTaskLabels, PipelineTask, Task, TaskRun, taskRunLabels } from "@my-project/shared";
-import type { PipelineRunTaskData } from "./data";
+import type { PipelineRunTaskData } from "./types";
 
 export const findTaskForPipelineTask = (tasks: Task[], pipelineTask: PipelineTask): Task | undefined => {
   return tasks.find((task) => task.metadata?.name === pipelineTask?.taskRef?.name);
@@ -20,17 +20,17 @@ export const findApprovalTaskForPipelineTask = (
 
 export const buildPipelineRunTasksByNameMap = (params: {
   allPipelineTasks: PipelineTask[];
-  tasks: Task[];
+  tasks?: Task[];
   taskRuns: TaskRun[];
   approvalTasks: ApprovalTask[];
 }): Map<string, PipelineRunTaskData> => {
-  const { allPipelineTasks, tasks, taskRuns, approvalTasks } = params;
+  const { allPipelineTasks, tasks = [], taskRuns, approvalTasks } = params;
   return allPipelineTasks.reduce((acc, pipelineTask) => {
     acc.set(pipelineTask.name!, {
       pipelineRunTask: pipelineTask,
-      task: findTaskForPipelineTask(tasks, pipelineTask) as Task,
-      taskRun: findTaskRunForPipelineTask(taskRuns, pipelineTask) as TaskRun,
-      approvalTask: findApprovalTaskForPipelineTask(approvalTasks, pipelineTask) as ApprovalTask,
+      task: findTaskForPipelineTask(tasks, pipelineTask),
+      taskRun: findTaskRunForPipelineTask(taskRuns, pipelineTask),
+      approvalTask: findApprovalTaskForPipelineTask(approvalTasks, pipelineTask),
     });
     return acc;
   }, new Map<string, PipelineRunTaskData>());

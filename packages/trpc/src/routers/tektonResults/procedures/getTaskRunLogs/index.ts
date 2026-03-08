@@ -2,6 +2,7 @@ import { z } from "zod";
 import { decodeTektonRecordData, parseRecordName, DecodedLogRecord, TektonResultTaskLogs } from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createTektonResultsClient } from "../../../../clients/tektonResults/index.js";
+import { tektonInputSchemas } from "../../utils.js";
 
 /**
  * Get logs for a single TaskRun from Tekton Results
@@ -13,13 +14,14 @@ import { createTektonResultsClient } from "../../../../clients/tektonResults/ind
 export const getTaskRunLogsProcedure = protectedProcedure
   .input(
     z.object({
-      namespace: z.string(),
-      resultUid: z.string(),
-      taskRunName: z.string(),
+      namespace: tektonInputSchemas.namespace,
+      resultUid: tektonInputSchemas.uuid,
+      taskRunName: tektonInputSchemas.k8sName,
+      stepName: tektonInputSchemas.stepName.optional(),
     })
   )
   .query(async ({ input }) => {
-    const { namespace, resultUid, taskRunName } = input;
+    const { namespace, resultUid, taskRunName, stepName } = input;
     const client = createTektonResultsClient(namespace);
 
     try {
@@ -39,36 +41,57 @@ export const getTaskRunLogsProcedure = protectedProcedure
           logs: "",
           hasLogs: false,
           error: null,
+          stepFiltered: undefined,
         } satisfies TektonResultTaskLogs;
       }
 
-      // Fetch and concatenate all log records for this TaskRun
-      const logParts: string[] = [];
+      // Identify fetchable log records (stored, non-empty, parseable name)
+      const fetchableRecords = records
+        .map((logRecord) => {
+          const decoded = decodeTektonRecordData<DecodedLogRecord>(logRecord.data.value);
+          const status = decoded.status || {};
 
-      for (const logRecord of records) {
-        const decoded = decodeTektonRecordData<DecodedLogRecord>(logRecord.data.value);
-        const status = decoded.status || {};
+          if (!status.isStored || status.size === 0) return null;
 
-        if (!status.isStored || status.size === 0) {
-          // Log not stored, skip
-          continue;
+          const parsed = parseRecordName(logRecord.name);
+          if (!parsed) return null;
+
+          return parsed;
+        })
+        .filter((r): r is NonNullable<typeof r> => r !== null);
+
+      // Fetch all log contents in parallel
+      const logParts = await Promise.all(
+        fetchableRecords.map((parsed) => client.getLogContent(parsed.resultUid, parsed.recordUid))
+      );
+
+      let logs = logParts.join("\n");
+      let stepFiltered: boolean | undefined;
+
+      // If stepName is provided, filter log lines by [stepName] prefix
+      if (stepName && logs) {
+        const prefix = `[${stepName}]`;
+        const filteredLines = logs
+          .split("\n")
+          .filter((line) => line.startsWith(prefix))
+          .map((line) => line.slice(prefix.length).trimStart());
+
+        // Graceful degradation: if no matches found, return full log
+        if (filteredLines.length > 0) {
+          logs = filteredLines.join("\n");
+          stepFiltered = true;
+        } else {
+          stepFiltered = false;
         }
-
-        // Parse record name to get log_uid
-        const parsed = parseRecordName(logRecord.name);
-        if (!parsed) continue;
-
-        // Fetch actual log content
-        const logContent = await client.getLogContent(parsed.resultUid, parsed.recordUid);
-        logParts.push(logContent);
       }
 
       return {
         taskName: "", // Could be extracted from taskRunName or fetched separately if needed
         taskRunName,
-        logs: logParts.join("\n") || "No logs available for this TaskRun",
+        logs: logs || "No logs available for this TaskRun",
         hasLogs: logParts.length > 0,
         error: null,
+        stepFiltered,
       } satisfies TektonResultTaskLogs;
     } catch (error) {
       return {
@@ -77,6 +100,7 @@ export const getTaskRunLogsProcedure = protectedProcedure
         logs: "",
         hasLogs: false,
         error: error instanceof Error ? error.message : "Unknown error",
+        stepFiltered: undefined,
       } satisfies TektonResultTaskLogs;
     }
   });

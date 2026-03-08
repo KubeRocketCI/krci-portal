@@ -43,8 +43,8 @@ describe("tektonResults.getPipelineRun", () => {
     const caller = createCaller(mockContext);
     const result = await caller.tektonResults.getPipelineRun({
       namespace: "test-ns",
-      resultUid: "uid-1",
-      recordUid: "uid-2",
+      resultUid: "a0a0a0a0-b1b1-c2c2-d3d3-e4e4e4e4e4e4",
+      recordUid: "b1b1b1b1-c2c2-d3d3-e4e4-f5f5f5f5f5f5",
     });
 
     expect(result.pipelineRun).toEqual(pipelineRunData);
@@ -58,8 +58,8 @@ describe("tektonResults.getPipelineRun", () => {
     await expect(
       caller.tektonResults.getPipelineRun({
         namespace: "test-ns",
-        resultUid: "uid-1",
-        recordUid: "uid-2",
+        resultUid: "a0a0a0a0-b1b1-c2c2-d3d3-e4e4e4e4e4e4",
+        recordUid: "b1b1b1b1-c2c2-d3d3-e4e4-f5f5f5f5f5f5",
       })
     ).rejects.toThrow("Record not found");
   });

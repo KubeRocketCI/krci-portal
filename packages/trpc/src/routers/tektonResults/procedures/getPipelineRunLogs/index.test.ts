@@ -45,14 +45,17 @@ describe("tektonResults.getPipelineRunLogs", () => {
     const caller = createCaller(mockContext);
     const result = await caller.tektonResults.getPipelineRunLogs({
       namespace: "default",
-      resultUid: "result-uid",
-      recordUid: "record-uid",
+      resultUid: "a0a0a0a0-b1b1-c2c2-d3d3-e4e4e4e4e4e4",
+      recordUid: "b1b1b1b1-c2c2-d3d3-e4e4-f5f5f5f5f5f5",
     });
 
     expect(result.logs).toContain("task-1");
     expect(result.logs).toContain("taskrun-1");
     expect(result.logs).toContain("line 1");
-    expect(mockGetRecord).toHaveBeenCalledWith("result-uid", "record-uid");
+    expect(mockGetRecord).toHaveBeenCalledWith(
+      "a0a0a0a0-b1b1-c2c2-d3d3-e4e4e4e4e4e4",
+      "b1b1b1b1-c2c2-d3d3-e4e4-f5f5f5f5f5f5"
+    );
   });
 
   it("should return message when no logs available", async () => {
@@ -64,8 +67,8 @@ describe("tektonResults.getPipelineRunLogs", () => {
     const caller = createCaller(mockContext);
     const result = await caller.tektonResults.getPipelineRunLogs({
       namespace: "default",
-      resultUid: "result-uid",
-      recordUid: "record-uid",
+      resultUid: "a0a0a0a0-b1b1-c2c2-d3d3-e4e4e4e4e4e4",
+      recordUid: "b1b1b1b1-c2c2-d3d3-e4e4-f5f5f5f5f5f5",
     });
 
     expect(result.logs).toBe("No logs available for this PipelineRun");
@@ -78,8 +81,8 @@ describe("tektonResults.getPipelineRunLogs", () => {
     await expect(
       caller.tektonResults.getPipelineRunLogs({
         namespace: "default",
-        resultUid: "result-uid",
-        recordUid: "record-uid",
+        resultUid: "a0a0a0a0-b1b1-c2c2-d3d3-e4e4e4e4e4e4",
+        recordUid: "b1b1b1b1-c2c2-d3d3-e4e4-f5f5f5f5f5f5",
       })
     ).rejects.toThrow("Connection refused");
   });

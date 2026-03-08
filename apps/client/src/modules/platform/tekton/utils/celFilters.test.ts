@@ -1,86 +1,61 @@
 import { describe, expect, test } from "vitest";
-import { buildPipelineFilter, buildPipelineRunNameFilter, buildStageFilter } from "./celFilters";
+import { escapeCELString, buildLabelsFilter, buildPipelineRunNameFilter } from "./celFilters";
 
-describe("buildPipelineFilter", () => {
-  test("builds CEL filter for pipeline name", () => {
-    const result = buildPipelineFilter("my-pipeline");
-
-    expect(result).toBe(
-      "data.metadata.labels['tekton.dev/pipeline'] == 'my-pipeline' && data_type == 'tekton.dev/v1.PipelineRun'"
-    );
+describe("escapeCELString", () => {
+  test("returns valid K8s names unchanged", () => {
+    expect(escapeCELString("my-pipeline-dev")).toBe("my-pipeline-dev");
+    expect(escapeCELString("pipeline123")).toBe("pipeline123");
+    expect(escapeCELString("my.pipeline")).toBe("my.pipeline");
   });
 
-  test("handles pipeline names with hyphens", () => {
-    const result = buildPipelineFilter("my-test-pipeline");
-
-    expect(result).toBe(
-      "data.metadata.labels['tekton.dev/pipeline'] == 'my-test-pipeline' && data_type == 'tekton.dev/v1.PipelineRun'"
-    );
+  test("escapes single quotes", () => {
+    expect(escapeCELString("name'injection")).toBe("name\\'injection");
   });
 
-  test("handles pipeline names with underscores", () => {
-    const result = buildPipelineFilter("my_pipeline");
-
-    expect(result).toBe(
-      "data.metadata.labels['tekton.dev/pipeline'] == 'my_pipeline' && data_type == 'tekton.dev/v1.PipelineRun'"
-    );
+  test("escapes backslashes", () => {
+    expect(escapeCELString("name\\value")).toBe("name\\\\value");
   });
 
-  test("handles pipeline names with numbers", () => {
-    const result = buildPipelineFilter("pipeline123");
-
-    expect(result).toBe(
-      "data.metadata.labels['tekton.dev/pipeline'] == 'pipeline123' && data_type == 'tekton.dev/v1.PipelineRun'"
-    );
-  });
-
-  test("handles pipeline names with dots", () => {
-    const result = buildPipelineFilter("my.pipeline");
-
-    expect(result).toBe(
-      "data.metadata.labels['tekton.dev/pipeline'] == 'my.pipeline' && data_type == 'tekton.dev/v1.PipelineRun'"
-    );
-  });
-
-  test("handles simple pipeline names", () => {
-    const result = buildPipelineFilter("build");
-
-    expect(result).toBe(
-      "data.metadata.labels['tekton.dev/pipeline'] == 'build' && data_type == 'tekton.dev/v1.PipelineRun'"
-    );
-  });
-
-  test("handles long pipeline names", () => {
-    const longName = "very-long-pipeline-name-with-many-segments";
-    const result = buildPipelineFilter(longName);
-
-    expect(result).toBe(
-      `data.metadata.labels['tekton.dev/pipeline'] == '${longName}' && data_type == 'tekton.dev/v1.PipelineRun'`
-    );
-  });
-
-  test("handles pipeline names with special characters", () => {
-    const result = buildPipelineFilter("pipeline-name_v1.0");
-
-    expect(result).toBe(
-      "data.metadata.labels['tekton.dev/pipeline'] == 'pipeline-name_v1.0' && data_type == 'tekton.dev/v1.PipelineRun'"
-    );
-  });
-
-  test("preserves case sensitivity", () => {
-    const result = buildPipelineFilter("MyPipeline");
-
-    expect(result).toBe(
-      "data.metadata.labels['tekton.dev/pipeline'] == 'MyPipeline' && data_type == 'tekton.dev/v1.PipelineRun'"
-    );
+  test("escapes backslash before single quote", () => {
+    expect(escapeCELString("a\\'b")).toBe("a\\\\\\'b");
   });
 
   test("handles empty string", () => {
-    const result = buildPipelineFilter("");
+    expect(escapeCELString("")).toBe("");
+  });
+
+  test("neutralizes CEL injection attempt", () => {
+    const malicious = "x' || true || '";
+    expect(escapeCELString(malicious)).toBe("x\\' || true || \\'");
+  });
+});
+
+describe("buildLabelsFilter", () => {
+  test("returns undefined for empty labels", () => {
+    expect(buildLabelsFilter({})).toBeUndefined();
+  });
+
+  test("builds single-label CEL filter", () => {
+    const result = buildLabelsFilter({ "tekton.dev/pipeline": "my-pipeline" });
+
+    expect(result).toBe("data.metadata.labels['tekton.dev/pipeline'] == 'my-pipeline'");
+  });
+
+  test("builds multi-label CEL filter joined with &&", () => {
+    const result = buildLabelsFilter({
+      "app.edp.epam.com/codebase": "my-app",
+      "app.edp.epam.com/stage": "dev",
+    });
 
     expect(result).toBe(
-      "data.metadata.labels['tekton.dev/pipeline'] == '' && data_type == 'tekton.dev/v1.PipelineRun'"
+      "data.metadata.labels['app.edp.epam.com/codebase'] == 'my-app' && data.metadata.labels['app.edp.epam.com/stage'] == 'dev'"
     );
+  });
+
+  test("escapes values with single quotes", () => {
+    const result = buildLabelsFilter({ "app.edp.epam.com/codebase": "app'injection" });
+
+    expect(result).toBe("data.metadata.labels['app.edp.epam.com/codebase'] == 'app\\'injection'");
   });
 });
 
@@ -113,27 +88,9 @@ describe("buildPipelineRunNameFilter", () => {
     expect(result).toBe("data.metadata.name == '' && data_type == 'tekton.dev/v1.PipelineRun'");
   });
 
-  test("handles names with single quotes", () => {
+  test("escapes names with single quotes", () => {
     const result = buildPipelineRunNameFilter("name'with-quote");
 
-    expect(result).toBe("data.metadata.name == 'name'with-quote' && data_type == 'tekton.dev/v1.PipelineRun'");
-  });
-});
-
-describe("buildStageFilter", () => {
-  test("builds CEL filter for stage label", () => {
-    const result = buildStageFilter("my-pipeline-dev");
-
-    expect(result).toBe(
-      "data.metadata.labels['app.edp.epam.com/stage'] == 'my-pipeline-dev' && data_type == 'tekton.dev/v1.PipelineRun'"
-    );
-  });
-
-  test("handles stage labels with hyphens", () => {
-    const result = buildStageFilter("vp-test-pipelin-dev");
-
-    expect(result).toBe(
-      "data.metadata.labels['app.edp.epam.com/stage'] == 'vp-test-pipelin-dev' && data_type == 'tekton.dev/v1.PipelineRun'"
-    );
+    expect(result).toBe("data.metadata.name == 'name\\'with-quote' && data_type == 'tekton.dev/v1.PipelineRun'");
   });
 });

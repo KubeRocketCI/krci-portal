@@ -1,115 +1,70 @@
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { getStepStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun/utils/getStepStatusIcon";
-import { router } from "@/core/router";
 import { ApprovalTask, approvalTaskAction, getTaskRunStepStatus, Task, TaskRun } from "@my-project/shared";
 import React from "react";
-import { routePipelineRunDetails, routeSearchTabName, PATH_PIPELINERUN_DETAILS_FULL } from "../../../../route";
 import { cn } from "@/core/utils/classname";
-import { humanize } from "@/core/utils/date-humanize";
+import { formatDuration } from "@/core/utils/date-humanize";
 import { approvalTaskBackground, getApprovalTaskOrTaskRunStatusIcon, updateUnexecutedSteps } from "./utils";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
-export const MenuAccordion = ({
-  taskRunName,
-  pipelineRunTasksByNameMap,
-}: {
+export interface MenuAccordionBaseProps {
   taskRunName: string;
   pipelineRunTasksByNameMap: Map<
     string,
     {
-      approvalTask: ApprovalTask;
-      taskRun: TaskRun;
-      task: Task;
+      approvalTask?: ApprovalTask;
+      taskRun?: TaskRun;
+      task?: Task;
     }
   >;
-}) => {
-  const params = routePipelineRunDetails.useParams();
-  const queryParams = routePipelineRunDetails.useSearch();
-  const queryParamTaskRun = queryParams.taskRun;
-  const queryParamStep = queryParams.step;
+  queryParamTaskRun: string | undefined;
+  queryParamStep: string | undefined;
+  onNavigate: (taskRunName: string, taskRunStepName?: string) => void;
+}
 
+export function MenuAccordionView({
+  taskRunName,
+  pipelineRunTasksByNameMap,
+  queryParamTaskRun,
+  queryParamStep,
+  onNavigate,
+}: MenuAccordionBaseProps) {
   const pipelineRunTaskData = pipelineRunTasksByNameMap.get(taskRunName);
 
   const approvalTask = pipelineRunTaskData?.approvalTask;
-
   const taskRun = pipelineRunTaskData?.taskRun;
   const task = pipelineRunTaskData?.task;
 
   const taskStatusIcon = getApprovalTaskOrTaskRunStatusIcon(approvalTask, taskRun);
 
-  const taskSteps = updateUnexecutedSteps(taskRun?.status?.steps ?? task?.spec.steps);
+  const taskSteps = updateUnexecutedSteps(
+    taskRun?.status?.steps ?? task?.spec?.steps ?? taskRun?.status?.taskSpec?.steps
+  );
   const isExpanded = queryParamTaskRun === taskRunName;
   const isTaskActive = queryParamTaskRun === taskRunName && !queryParamStep;
 
-  // Calculate task duration
   const taskDuration = React.useMemo(() => {
     if (!taskRun?.status?.startTime) return null;
-    const startTime = new Date(taskRun.status.startTime).getTime();
-    const endTime = taskRun.status.completionTime ? new Date(taskRun.status.completionTime).getTime() : Date.now();
-    return humanize(endTime - startTime, {
-      language: "en-mini",
-      spacer: "",
-      delimiter: " ",
-      fallbacks: ["en"],
-      largest: 2,
-      round: true,
-      units: ["d", "h", "m", "s"],
-    });
+    return formatDuration(taskRun.status.startTime, taskRun.status.completionTime);
   }, [taskRun?.status?.startTime, taskRun?.status?.completionTime]);
 
-  const handleNavigate = React.useCallback(
-    (taskRunName: string, taskRunStepName?: string) => {
-      router.navigate({
-        to: PATH_PIPELINERUN_DETAILS_FULL,
-        params: {
-          clusterName: params.clusterName,
-          namespace: params.namespace,
-          name: params.name,
-        },
-        search: {
-          taskRun: taskRunName,
-          step: taskRunStepName,
-          tab: routeSearchTabName.details,
-        },
-        resetScroll: false,
-      });
-    },
-    [params.clusterName, params.name, params.namespace]
-  );
-
   const handleTaskClick = React.useCallback(() => {
-    if (isExpanded && !queryParamStep) {
-      // If already on task overview, collapse by navigating without taskRun
-      // Actually, let's keep it expanded but allow selecting task overview
-    }
-    handleNavigate(taskRunName);
-  }, [isExpanded, queryParamStep, handleNavigate, taskRunName]);
+    onNavigate(taskRunName);
+  }, [onNavigate, taskRunName]);
 
   const hasApprovalTaskPending =
     pipelineRunTaskData?.approvalTask && pipelineRunTaskData?.approvalTask?.spec.action === approvalTaskAction.Pending;
 
   const hasSteps = taskSteps && taskSteps.length > 0;
 
-  // Calculate step duration
   const getStepDuration = (step: Parameters<typeof getTaskRunStepStatus>[0]) => {
     const stepStatus = getTaskRunStepStatus(step);
     if (!stepStatus.startedAt) return null;
-    const startTime = new Date(stepStatus.startedAt).getTime();
-    const endTime = stepStatus.finishedAt ? new Date(stepStatus.finishedAt).getTime() : Date.now();
-    return humanize(endTime - startTime, {
-      language: "en-mini",
-      spacer: "",
-      delimiter: " ",
-      fallbacks: ["en"],
-      largest: 2,
-      round: true,
-      units: ["d", "h", "m", "s"],
-    });
+    return formatDuration(stepStatus.startedAt, stepStatus.finishedAt || undefined);
   };
 
   return (
     <div className="mb-1">
-      {/* Task header button */}
       <button
         onClick={handleTaskClick}
         className={cn(
@@ -140,7 +95,6 @@ export const MenuAccordion = ({
         </div>
       </button>
 
-      {/* Steps list */}
       {isExpanded && hasSteps && (
         <div className="mt-1 ml-4 space-y-1">
           {taskSteps.map((step) => {
@@ -153,7 +107,7 @@ export const MenuAccordion = ({
             return (
               <button
                 key={taskRunStepName}
-                onClick={() => handleNavigate(taskRunName, taskRunStepName)}
+                onClick={() => onNavigate(taskRunName, taskRunStepName)}
                 className={cn(
                   "flex w-full items-center gap-2 rounded p-2 text-left",
                   isStepActive && "bg-primary/10 border-primary/30 border",
@@ -178,4 +132,4 @@ export const MenuAccordion = ({
       )}
     </div>
   );
-};
+}

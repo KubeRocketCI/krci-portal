@@ -3,7 +3,7 @@ import PipelineRunDetailsPageContent from "./view";
 import { routePipelineRunDetails } from "./route";
 import { tabNameToIndexMap } from "./constants";
 
-export const PipelineRunDetailsPage = () => {
+export function PipelineRunDetailsPage() {
   const search = routePipelineRunDetails.useSearch();
   const tabName = search.tab;
   const initialTabIdx = tabName ? tabNameToIndexMap[tabName] : 0;
@@ -13,4 +13,4 @@ export const PipelineRunDetailsPage = () => {
       <PipelineRunDetailsPageContent searchTabIdx={initialTabIdx} />
     </TabsContextProvider>
   );
-};
+}

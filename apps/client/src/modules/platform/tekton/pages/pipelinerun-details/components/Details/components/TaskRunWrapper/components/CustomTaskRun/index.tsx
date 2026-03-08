@@ -25,6 +25,8 @@ import { Card } from "@/core/components/ui/card";
 import { Badge } from "@/core/components/ui/badge";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { getApprovalTaskStatusIcon } from "@/k8s/api/groups/KRCI/ApprovalTask";
+import { STATUS_COLOR } from "@/k8s/constants/colors";
+import { getTaskDescription } from "../../../../../../../../utils/getTaskDescription";
 
 const updateApprovalTask = ({
   approvalTask,
@@ -75,7 +77,9 @@ export const CustomTaskRun = ({ pipelineRunTaskData }: CustomTaskRunProps) => {
     ? getTaskRunStatus(customTaskRun as TaskRun)
     : { status: "Unknown", reason: "Unknown" };
 
-  const approvalTaskStatusIcon = getApprovalTaskStatusIcon(approvalTask);
+  const approvalTaskStatusIcon = approvalTask
+    ? getApprovalTaskStatusIcon(approvalTask)
+    : { component: Clock, color: STATUS_COLOR.IN_PROGRESS };
 
   const completionTime = customTaskRun?.status?.completionTime || "";
   const startTime = customTaskRun?.status?.startTime || "";
@@ -114,6 +118,8 @@ export const CustomTaskRun = ({ pipelineRunTaskData }: CustomTaskRunProps) => {
 
   const handleClickApproveOrReject = React.useCallback(
     (action: ApprovalTaskAction, comment?: string) => {
+      if (!approvalTask) return;
+
       const updatedApprovalTask = updateApprovalTask({
         approvalTask,
         approvedBy: user?.email || "dev",
@@ -181,13 +187,12 @@ export const CustomTaskRun = ({ pipelineRunTaskData }: CustomTaskRunProps) => {
     [handleClickApproveOrReject, setDialog]
   );
 
-  const taskDescription = pipelineRunTaskData.task?.spec?.description || "";
+  const taskDescription = getTaskDescription(pipelineRunTaskData.task, pipelineRunTaskData.taskRun);
 
   const { activeTab, handleChangeTab } = useTabsContext();
 
   return (
     <Card className="flex h-full flex-col">
-      {/* Task header */}
       <div className="border-b px-6 py-4">
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -215,7 +220,6 @@ export const CustomTaskRun = ({ pipelineRunTaskData }: CustomTaskRunProps) => {
           </div>
         </div>
 
-        {/* Task metadata */}
         <div className="flex items-center gap-6">
           {startedAt && (
             <div className="flex items-center gap-2">
@@ -232,7 +236,6 @@ export const CustomTaskRun = ({ pipelineRunTaskData }: CustomTaskRunProps) => {
         </div>
       </div>
 
-      {/* Tabs content */}
       <div className="flex flex-1 flex-col p-4">
         <Tabs tabs={tabs} activeTabIdx={activeTab} handleChangeTab={handleChangeTab} />
       </div>

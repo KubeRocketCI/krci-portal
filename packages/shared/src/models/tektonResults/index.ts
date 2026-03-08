@@ -1,8 +1,9 @@
 /**
  * Tekton Results API - Barrel export
- * Exports types, utility functions, constants, and annotation constants
+ * Exports types, utility functions, constants, annotation constants, and adapters
  */
 
+export * from "./adapters.js";
 export * from "./annotations.js";
 export * from "./constants.js";
 export * from "./types.js";

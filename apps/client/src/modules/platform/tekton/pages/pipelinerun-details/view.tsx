@@ -6,11 +6,12 @@ import { Badge } from "@/core/components/ui/badge";
 import { DropdownMenu, DropdownMenuTrigger } from "@/core/components/ui/dropdown-menu";
 import { Button } from "@/core/components/ui/button";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
-import { humanize } from "@/core/utils/date-humanize";
+import { formatDuration, formatTimestamp } from "@/core/utils/date-humanize";
 import { useCodebaseBranchWatchItem } from "@/k8s/api/groups/KRCI/CodebaseBranch";
 import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
 import {
   getPipelineRunStatus,
+  PipelineRun,
   pipelineRunLabels,
   tektonResultAnnotations,
   getPipelineRunAnnotation,
@@ -20,8 +21,6 @@ import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import React from "react";
 import { PipelineRunActionsMenu } from "../../components/PipelineRunActionsMenu";
 import { PATH_PIPELINERUNS_FULL } from "../pipelinerun-list/route";
-import { usePipelineRunWatchWithPageParams } from "./hooks/data";
-import { usePipelineRunFallbackRedirect } from "./hooks/usePipelineRunFallbackRedirect";
 import { useTabs } from "./hooks/useTabs";
 import { routePipelineRunDetails } from "./route";
 import { Link } from "@tanstack/react-router";
@@ -30,11 +29,22 @@ import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/de
 import { AuthorAvatar } from "@/core/components/AuthorAvatar";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
+import { PipelineRunProvider } from "./providers/PipelineRun/provider";
+import { usePipelineRunContext } from "./providers/PipelineRun/hooks";
 
-const HeaderMetadata = () => {
+/**
+ * Look up an annotation from resultAnnotations JSON first, then fall back to raw metadata annotations.
+ * This handles both history data (where annotations are in resultAnnotations JSON)
+ * and live data (where annotations are on the CR metadata directly).
+ */
+function getAnnotation(pr: PipelineRun, key: string): string | undefined {
+  return getPipelineRunAnnotation(pr, key) ?? pr.metadata?.annotations?.[key];
+}
+
+function HeaderMetadata() {
   const params = routePipelineRunDetails.useParams();
-  const pipelineRunWatch = usePipelineRunWatchWithPageParams();
-  const pipelineRun = pipelineRunWatch.query.data;
+  const unifiedData = usePipelineRunContext();
+  const pipelineRun = unifiedData.pipelineRun;
   const { namespace: defaultNamespace, clusterName } = useClusterStore(
     useShallow((state) => ({
       namespace: state.defaultNamespace,
@@ -48,11 +58,11 @@ const HeaderMetadata = () => {
     name: codebaseBranchMetadataName || "",
     namespace: params.namespace,
     queryOptions: {
-      enabled: !!codebaseBranchMetadataName,
+      enabled: !!codebaseBranchMetadataName && unifiedData.source === "live",
     },
   });
 
-  if (!pipelineRunWatch.isReady || !pipelineRun) {
+  if (!unifiedData.isReady || !pipelineRun) {
     return null;
   }
 
@@ -69,30 +79,10 @@ const HeaderMetadata = () => {
 
   const pipelineName = pipelineRun.metadata?.labels?.[pipelineRunLabels.pipeline];
 
-  const startedAt = pipelineRunStatus.startTime
-    ? new Date(pipelineRunStatus.startTime).toLocaleString("en-US", {
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "numeric",
-      })
-    : null;
+  const startedAt = pipelineRunStatus.startTime ? formatTimestamp(pipelineRunStatus.startTime) : null;
 
   const activeDuration = pipelineRunStatus.startTime
-    ? humanize(
-        pipelineRunStatus.completionTime
-          ? new Date(pipelineRunStatus.completionTime).getTime() - new Date(pipelineRunStatus.startTime).getTime()
-          : new Date().getTime() - new Date(pipelineRunStatus.startTime).getTime(),
-        {
-          language: "en-mini",
-          spacer: "",
-          delimiter: " ",
-          fallbacks: ["en"],
-          largest: 2,
-          round: true,
-          units: ["d", "h", "m", "s"],
-        }
-      )
+    ? formatDuration(pipelineRunStatus.startTime, pipelineRunStatus.completionTime || undefined)
     : null;
 
   return (
@@ -113,6 +103,12 @@ const HeaderMetadata = () => {
           <span className="capitalize">{pipelineRunStatus.reason}</span>
         </Badge>
       </div>
+
+      {unifiedData.source === "history" && (
+        <Badge variant="outline" className="text-muted-foreground">
+          Historical Data
+        </Badge>
+      )}
 
       {pipelineName && (
         <div className="flex items-center gap-2">
@@ -159,12 +155,8 @@ const HeaderMetadata = () => {
       )}
 
       {(() => {
-        const changeNumber =
-          getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitChangeNumber) ??
-          pipelineRun.metadata?.annotations?.[tektonResultAnnotations.gitChangeNumber];
-        const changeUrl =
-          getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitChangeUrl) ??
-          pipelineRun.metadata?.annotations?.[tektonResultAnnotations.gitChangeUrl];
+        const changeNumber = getAnnotation(pipelineRun, tektonResultAnnotations.gitChangeNumber);
+        const changeUrl = getAnnotation(pipelineRun, tektonResultAnnotations.gitChangeUrl);
 
         if (!changeNumber) {
           return null;
@@ -191,8 +183,8 @@ const HeaderMetadata = () => {
       })()}
 
       {(() => {
-        const gitAuthor = getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitAuthor);
-        const gitAvatar = getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.gitAvatar);
+        const gitAuthor = getAnnotation(pipelineRun, tektonResultAnnotations.gitAuthor);
+        const gitAvatar = getAnnotation(pipelineRun, tektonResultAnnotations.gitAvatar);
 
         if (!gitAuthor) {
           return null;
@@ -224,15 +216,20 @@ const HeaderMetadata = () => {
       )}
     </div>
   );
-};
+}
 
-const HeaderActions = () => {
+function HeaderActions() {
   const params = routePipelineRunDetails.useParams();
-  const pipelineRunWatch = usePipelineRunWatchWithPageParams();
-  const pipelineRun = pipelineRunWatch.query.data;
+  const unifiedData = usePipelineRunContext();
+  const pipelineRun = unifiedData.pipelineRun;
   const [menuOpen, setMenuOpen] = React.useState(false);
 
-  if (!pipelineRunWatch.isReady || !pipelineRun) {
+  if (!unifiedData.isReady || !pipelineRun) {
+    return null;
+  }
+
+  // For history data, show a badge instead of actions (K8s operations are unavailable)
+  if (unifiedData.source === "history") {
     return null;
   }
 
@@ -258,21 +255,25 @@ const HeaderActions = () => {
       />
     </DropdownMenu>
   );
-};
+}
 
 export default function PipelineRunDetailsPageContent({ searchTabIdx }: { searchTabIdx: number }) {
+  return (
+    <PipelineRunProvider>
+      <PipelineRunDetailsPageInner searchTabIdx={searchTabIdx} />
+    </PipelineRunProvider>
+  );
+}
+
+function PipelineRunDetailsPageInner({ searchTabIdx }: { searchTabIdx: number }) {
   const params = routePipelineRunDetails.useParams();
-  const pipelineRunWatch = usePipelineRunWatchWithPageParams();
+  const unifiedData = usePipelineRunContext();
 
   const tabs = useTabs();
   const { handleChangeTab } = useTabsContext();
 
-  const { isRedirecting, notFoundAnywhere } = usePipelineRunFallbackRedirect(
-    pipelineRunWatch.query.error,
-    pipelineRunWatch.query.isLoading
-  );
-
-  const showTabs = !isRedirecting && !notFoundAnywhere && !pipelineRunWatch.query.isLoading;
+  const showTabs = unifiedData.isReady && !unifiedData.error;
+  const showNotFound = !!unifiedData.error && !unifiedData.isLoading;
 
   return (
     <PageWrapper
@@ -298,8 +299,7 @@ export default function PipelineRunDetailsPageContent({ searchTabIdx }: { search
         activeTab={searchTabIdx}
         onTabChange={handleChangeTab}
       >
-        {isRedirecting && <LoadingWrapper isLoading>{null}</LoadingWrapper>}
-        {notFoundAnywhere && (
+        {showNotFound && (
           <div className="flex items-center justify-center gap-2 py-8">
             <SearchX className="text-muted-foreground" size={48} />
             <span className="text-muted-foreground text-sm">
@@ -307,9 +307,7 @@ export default function PipelineRunDetailsPageContent({ searchTabIdx }: { search
             </span>
           </div>
         )}
-        {!isRedirecting && !notFoundAnywhere && pipelineRunWatch.query.isLoading && (
-          <LoadingWrapper isLoading>{null}</LoadingWrapper>
-        )}
+        {unifiedData.isLoading && <LoadingWrapper isLoading>{null}</LoadingWrapper>}
       </PageContentWrapper>
     </PageWrapper>
   );
