@@ -37,7 +37,7 @@ export default function CodebaseDetailsPageContent({ searchTabIdx }: { searchTab
   const { handleChangeTab } = useTabsContext();
   const { isTourNavigating, currentTourTab } = useTours();
 
-  const codebaseIsLoaded = codebaseWatch.query.isFetched && !codebaseWatch.query.error;
+  const codebaseIsLoaded = codebaseWatch.isReady && !codebaseWatch.query.error;
   const showTabs = !codebaseWatch.query.error && !codebaseWatch.query.isLoading;
   const [menuOpen, setMenuOpen] = React.useState(false);
 

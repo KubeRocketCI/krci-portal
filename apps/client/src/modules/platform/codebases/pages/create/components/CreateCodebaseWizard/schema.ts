@@ -223,6 +223,9 @@ const validateRepositoryAuth = (data: FormData, ctx: z.RefinementCtx) => {
 };
 
 const validateGitSetupStep = (data: FormData, ctx: z.RefinementCtx) => {
+  if (isCloneStrategy(data.strategy) && isEmptyStr(data.repositoryUrl)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["repositoryUrl"], message: "Enter the repository URL." });
+  }
   if (!data.gitServer) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["gitServer"], message: "Select an existing Git server" });
   }

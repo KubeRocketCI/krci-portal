@@ -57,9 +57,9 @@ export const EditCDPipelineForm: React.FC<EditCDPipelineFormProps> = ({ cdPipeli
             <FormGuideToggleButton />
           </div>
         </DialogHeader>
-        <DialogBody className="flex min-h-0 !overflow-hidden">
-          <div className="flex h-full flex-1 gap-4">
-            <div className="flex-1 overflow-y-auto">
+        <DialogBody className="flex min-h-0">
+          <div className="flex min-h-0 flex-1 gap-4">
+            <div className="min-h-0 flex-1 overflow-y-auto">
               <div className="flex flex-col gap-4">
                 {requestError && (
                   <Alert variant="destructive" title="Failed to update deployment flow">
