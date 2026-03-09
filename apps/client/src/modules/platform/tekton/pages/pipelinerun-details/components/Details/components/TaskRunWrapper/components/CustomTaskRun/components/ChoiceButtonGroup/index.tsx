@@ -50,7 +50,7 @@ export const ChoiceButtonGroup = ({
             <ChevronDown size={15} />
           </ButtonWithPermission>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="z-[1]">
+        <DropdownMenuContent align="end">
           {optionsWithoutFirstItem.map((option) => (
             <DropdownMenuItem key={option.id} onClick={option.onClick} className="flex items-center gap-2">
               {option.Icon}

@@ -43,21 +43,21 @@ export const CommentDialog: React.FC<CommentDialogProps> = ({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <DialogBody>
-          <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
+          <DialogBody>
             <form.AppField name="comment">
               {(field) => <field.FormTextField placeholder="Enter a comment" label="Comment" />}
             </form.AppField>
-          </form>
-        </DialogBody>
-        <DialogFooter>
-          <Button type="button" variant="ghost" onClick={closeDialog}>
-            Cancel
-          </Button>
-          <Button type="submit" variant="default">
-            Confirm
-          </Button>
-        </DialogFooter>
+          </DialogBody>
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={closeDialog}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="default">
+              Confirm
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

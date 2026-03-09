@@ -14,7 +14,7 @@ export const RepositoryUrl: React.FC<RepositoryUrlProps> = ({ disabled }) => {
       name={NAMES.repositoryUrl}
       validators={{
         onChange: ({ value }) => {
-          if (!value) return undefined;
+          if (!value) return "Enter the repository URL.";
           const urlPattern = /((git|ssh|http(s)?)|(git@[\w.]+))(:(\/\/)?)[\w.@/~-]+\w/;
           if (!urlPattern.test(value)) {
             return "Specify the application URL in the following format: http(s)://git.example.com/example.";
