@@ -3,7 +3,8 @@ import { Badge, type BadgeProps } from "@/core/components/ui/badge";
 import { usePipelineMetrics } from "@/modules/platform/tekton/hooks/usePipelineMetrics";
 import { MAIN_COLOR } from "@/k8s/constants/colors";
 import { routeOverviewDetails } from "../../route";
-import { Activity, TrendingUp, XCircle, Timer, Loader2, type LucideIcon } from "lucide-react";
+import { Activity, TrendingUp, XCircle, Timer, type LucideIcon } from "lucide-react";
+import { LoadingState } from "@/modules/platform/overview/components/LoadingState";
 
 function formatDuration(duration: string | undefined): string {
   if (!duration) return "-";
@@ -41,10 +42,7 @@ function StatCard({ title, value, icon: Icon, iconColor, badge, isLoading }: Sta
           {badge && <Badge variant={badge.variant}>{badge.label}</Badge>}
         </div>
         {isLoading ? (
-          <div className="flex items-center gap-2 pt-1">
-            <Loader2 className="text-muted-foreground size-5 animate-spin" />
-            <span className="text-muted-foreground text-sm">Loading...</span>
-          </div>
+          <LoadingState className="justify-start py-1" />
         ) : (
           <>
             <p className="text-foreground mb-1 text-3xl">{value}</p>

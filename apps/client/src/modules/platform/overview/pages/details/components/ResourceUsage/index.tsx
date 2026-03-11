@@ -31,17 +31,17 @@ export function ResourceUsage() {
       ) : (
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-3">
-            <div className="flex flex-col items-center rounded-lg bg-gray-50 p-3">
+            <div className="bg-muted flex flex-col items-center rounded-lg p-3">
               <Cpu className="mb-1 size-4" style={{ color: MAIN_COLOR.BLUE }} />
               <span className="text-foreground text-lg font-semibold">{formatCpu(data.totalCpuCores)}</span>
               <span className="text-muted-foreground text-xs">CPU</span>
             </div>
-            <div className="flex flex-col items-center rounded-lg bg-gray-50 p-3">
+            <div className="bg-muted flex flex-col items-center rounded-lg p-3">
               <MemoryStick className="mb-1 size-4" style={{ color: MAIN_COLOR.DARK_PURPLE }} />
               <span className="text-foreground text-lg font-semibold">{formatMemory(data.totalMemoryMi)}</span>
               <span className="text-muted-foreground text-xs">Memory</span>
             </div>
-            <div className="flex flex-col items-center rounded-lg bg-gray-50 p-3">
+            <div className="bg-muted flex flex-col items-center rounded-lg p-3">
               <Container className="mb-1 size-4" style={{ color: STATUS_COLOR.SUCCESS }} />
               <span className="text-foreground text-lg font-semibold">{data.podCount}</span>
               <span className="text-muted-foreground text-xs">Pods</span>

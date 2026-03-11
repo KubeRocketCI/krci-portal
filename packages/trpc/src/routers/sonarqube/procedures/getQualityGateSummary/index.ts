@@ -1,3 +1,4 @@
+import { QUALITY_GATE_STATUS } from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createSonarQubeClient } from "../../../../clients/sonarqube/index.js";
 
@@ -44,9 +45,9 @@ export const getQualityGateSummaryProcedure = protectedProcedure.query(async () 
 
   for (const key of projectKeys) {
     const status = measuresByComponent[key]?.alert_status;
-    if (status === "OK") passed++;
-    else if (status === "WARN") warned++;
-    else if (status === "ERROR") failed++;
+    if (status === QUALITY_GATE_STATUS.OK) passed++;
+    else if (status === QUALITY_GATE_STATUS.WARN) warned++;
+    else if (status === QUALITY_GATE_STATUS.ERROR) failed++;
   }
 
   const total = projectsResponse.components.length;
