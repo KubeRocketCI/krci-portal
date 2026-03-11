@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
   Activity,
@@ -11,16 +11,21 @@ import {
   Zap,
   FolderGit2,
   Package,
-  Shield,
-  ChevronRight,
   FileUser,
   User,
   Server,
+  Shield,
+  BarChart3,
+  ArrowRight,
+  X,
+  RotateCcw,
+  Loader2,
+  TrendingUp,
+  XCircle,
 } from "lucide-react";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { Card } from "@/core/components/ui/card";
-import { Badge } from "@/core/components/ui/badge";
 import { Button } from "@/core/components/ui/button";
 import { PATH_OVERVIEW_FULL } from "@/modules/platform/overview/pages/details/route";
 import { PATH_PROJECTS_FULL } from "@/modules/platform/codebases/pages/list/route";
@@ -37,14 +42,131 @@ import UserDetailsDialog from "@/core/components/UserDetails";
 import KubernetesDetailsDialog from "@/core/components/KubernetesDetails";
 import { PATH_PROJECT_CREATE_FULL } from "@/modules/platform/codebases/pages/create/route";
 import { useAutoTour, getToursForRoute } from "@/modules/tours";
+import { usePipelineMetrics } from "@/modules/platform/tekton/hooks/usePipelineMetrics";
+import { LOCAL_STORAGE_SERVICE } from "@/core/services/local-storage";
+import { LS_KEY_HOME_DISMISSED_SECTIONS } from "@/core/services/local-storage/keys";
+
+type DismissibleSection = "needHelp" | "gettingStarted";
+
+function useDismissibleSections() {
+  const [dismissed, setDismissed] = useState<Set<DismissibleSection>>(() => {
+    const stored = LOCAL_STORAGE_SERVICE.getItem(LS_KEY_HOME_DISMISSED_SECTIONS);
+    return new Set(Array.isArray(stored) ? stored : []);
+  });
+
+  // Sync dismissed state to localStorage
+  useEffect(() => {
+    if (dismissed.size > 0) {
+      LOCAL_STORAGE_SERVICE.setItem(LS_KEY_HOME_DISMISSED_SECTIONS, [...dismissed]);
+    } else {
+      LOCAL_STORAGE_SERVICE.removeItem(LS_KEY_HOME_DISMISSED_SECTIONS);
+    }
+  }, [dismissed]);
+
+  const dismiss = useCallback((section: DismissibleSection) => {
+    setDismissed((prev) => {
+      const next = new Set(prev);
+      next.add(section);
+      return next;
+    });
+  }, []);
+
+  const restore = useCallback((section: DismissibleSection) => {
+    setDismissed((prev) => {
+      const next = new Set(prev);
+      next.delete(section);
+      return next;
+    });
+  }, []);
+
+  const restoreAll = useCallback(() => {
+    setDismissed(new Set());
+  }, []);
+
+  return { dismissed, dismiss, restore, restoreAll };
+}
+
+function DashboardPromo({
+  clusterParams,
+  namespace,
+}: {
+  clusterParams: { clusterName: string; namespace: string };
+  namespace: string;
+}) {
+  const { data, isLoading } = usePipelineMetrics(namespace);
+
+  const total = data?.summary?.total ?? 0;
+  const successRate = data?.successRate;
+  const failed = data?.summary?.failed ?? 0;
+
+  return (
+    <Link to={PATH_OVERVIEW_FULL} params={clusterParams} className="block">
+      <Card className="group cursor-pointer border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 transition-shadow hover:shadow-md dark:border-blue-800 dark:from-blue-900/20 dark:to-indigo-900/20">
+        <div className="flex items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-600 dark:bg-blue-500">
+              <BarChart3 className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-slate-900 dark:text-slate-100">Platform Dashboard</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Pipeline metrics, resource usage, security insights, and deployment status.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {isLoading ? (
+              <div className="flex items-center gap-2 rounded-lg bg-white/60 px-4 py-2 dark:bg-slate-800/60">
+                <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                <span className="text-xs text-slate-500 dark:text-slate-400">Loading metrics...</span>
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col items-center rounded-lg bg-white/60 px-4 py-2 dark:bg-slate-800/60">
+                  <span className="text-lg font-semibold text-slate-900 dark:text-slate-100">{total}</span>
+                  <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                    <Activity className="h-3 w-3" />
+                    Runs
+                  </span>
+                </div>
+                <div className="flex flex-col items-center rounded-lg bg-white/60 px-4 py-2 dark:bg-slate-800/60">
+                  <span className="text-lg font-semibold text-green-600 dark:text-green-400">
+                    {successRate != null ? `${successRate}%` : "-"}
+                  </span>
+                  <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                    <TrendingUp className="h-3 w-3" />
+                    Success
+                  </span>
+                </div>
+                <div className="flex flex-col items-center rounded-lg bg-white/60 px-4 py-2 dark:bg-slate-800/60">
+                  <span
+                    className={`text-lg font-semibold ${failed > 0 ? "text-red-600 dark:text-red-400" : "text-slate-900 dark:text-slate-100"}`}
+                  >
+                    {failed}
+                  </span>
+                  <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                    <XCircle className="h-3 w-3" />
+                    Failed
+                  </span>
+                </div>
+              </>
+            )}
+            <ArrowRight className="ml-2 h-5 w-5 shrink-0 text-blue-600 transition-transform group-hover:translate-x-1 dark:text-blue-400" />
+          </div>
+        </div>
+      </Card>
+    </Link>
+  );
+}
 
 export default function HomePage() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
   const defaultNamespace = useClusterStore(useShallow((state) => state.defaultNamespace));
   const location = useLocation();
+  const { dismissed, dismiss, restoreAll } = useDismissibleSections();
 
-  // Auto-start pinned items tour on home page
   const tours = getToursForRoute(location.pathname);
   const pinnedItemsTour = tours.find((t) => t.id === "pinned_items_intro");
   useAutoTour(pinnedItemsTour || null);
@@ -144,23 +266,7 @@ export default function HomePage() {
     },
   ];
 
-  const systemStatus: Array<{ label: string; status: string; color: string }> = [];
-
-  const recentActivity: Array<{ title: string; time: string; icon: React.ElementType; status: string }> = [];
-
-  const statusColors: Record<string, string> = {
-    green:
-      "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800",
-    amber:
-      "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800",
-    red: "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800",
-  };
-
-  const activityStatusColors: Record<string, string> = {
-    success: "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400",
-    running: "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400",
-    failed: "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400",
-  };
+  const hasDismissed = dismissed.size > 0;
 
   return (
     <div className="space-y-6 p-8">
@@ -221,58 +327,79 @@ export default function HomePage() {
         </div>
       </Card>
 
-      {/* Resources Banner */}
-      <Card className="border-blue-200 bg-blue-50 p-5 dark:border-blue-800 dark:bg-blue-900/20">
-        <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600">
-              <FileText className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h4 className="mb-0.5 text-slate-900 dark:text-slate-100">Need Help?</h4>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                Explore our documentation and platform features to get the most out of the platform.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link to={EDP_USER_GUIDE.OVERVIEW.url} target="_blank" rel="noopener noreferrer">
-              <Button variant="outline">Documentation</Button>
-            </Link>
-            <Link to={PATH_CONFIG_QUICKLINKS_FULL} params={clusterParams}>
-              <Button>Configuration</Button>
-            </Link>
-          </div>
-        </div>
-      </Card>
+      {/* Dashboard Promo with Live Stats */}
+      <DashboardPromo clusterParams={clusterParams} namespace={defaultNamespace} />
 
-      {/* Getting Started Guide */}
-      <Card data-tour="getting-started" className="p-6">
-        <h3 className="mb-4 flex items-center gap-2 text-slate-900 dark:text-slate-100">
-          <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-          Getting Started
-        </h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {gettingStarted.map((item, idx) => {
-            const Icon = item.icon;
-            return (
-              <Link key={idx} to={item.to} params={item.params}>
-                <div className="group flex cursor-pointer items-start gap-3 rounded-lg p-4 hover:bg-slate-50 dark:hover:bg-slate-800">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 group-hover:bg-blue-100 dark:bg-blue-900/20 dark:group-hover:bg-blue-900/40">
-                    <Icon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="mb-1 text-sm text-slate-900 dark:text-slate-100">{item.title}</h4>
-                    <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">{item.description}</p>
-                  </div>
-                </div>
+      {/* Need Help - Dismissible */}
+      {!dismissed.has("needHelp") && (
+        <Card className="relative border-blue-200 bg-blue-50 p-5 dark:border-blue-800 dark:bg-blue-900/20">
+          <button
+            type="button"
+            onClick={() => dismiss("needHelp")}
+            className="absolute top-3 right-3 rounded-md p-1 text-slate-400 transition-colors hover:bg-blue-100 hover:text-slate-600 dark:hover:bg-blue-800"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600">
+                <FileText className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h4 className="mb-0.5 text-slate-900 dark:text-slate-100">Need Help?</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Explore our documentation and platform features to get the most out of the platform.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link to={EDP_USER_GUIDE.OVERVIEW.url} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline">Documentation</Button>
               </Link>
-            );
-          })}
-        </div>
-      </Card>
+              <Link to={PATH_CONFIG_QUICKLINKS_FULL} params={clusterParams}>
+                <Button>Configuration</Button>
+              </Link>
+            </div>
+          </div>
+        </Card>
+      )}
 
-      {/* Quick Actions - Compact Grid */}
+      {/* Getting Started Guide - Dismissible */}
+      {!dismissed.has("gettingStarted") && (
+        <Card data-tour="getting-started" className="relative p-6">
+          <button
+            type="button"
+            onClick={() => dismiss("gettingStarted")}
+            className="absolute top-3 right-3 rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          <h3 className="mb-4 flex items-center gap-2 text-slate-900 dark:text-slate-100">
+            <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            Getting Started
+          </h3>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {gettingStarted.map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <Link key={idx} to={item.to} params={item.params}>
+                  <div className="group flex cursor-pointer items-start gap-3 rounded-lg p-4 hover:bg-slate-50 dark:hover:bg-slate-800">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 group-hover:bg-blue-100 dark:bg-blue-900/20 dark:group-hover:bg-blue-900/40">
+                      <Icon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="mb-1 text-sm text-slate-900 dark:text-slate-100">{item.title}</h4>
+                      <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">{item.description}</p>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </Card>
+      )}
+
+      {/* Quick Actions */}
       <div>
         <h3 className="mb-3 flex items-center gap-2 text-slate-900 dark:text-slate-100">
           <Zap className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -300,82 +427,19 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Recent Activity */}
-        <Card className="p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
-              <Activity className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              Recent Activity
-            </h3>
-            <Link to={PATH_PIPELINERUNS_FULL} params={clusterParams}>
-              <Button variant="ghost" size="sm">
-                View All
-                <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-          <div className="space-y-2">
-            {recentActivity.length > 0 ? (
-              recentActivity.map((activity, idx) => {
-                const Icon = activity.icon;
-                return (
-                  <div
-                    key={idx}
-                    className="flex cursor-pointer items-start gap-3 rounded-lg bg-slate-50 p-3 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
-                  >
-                    <div
-                      className={`h-8 w-8 ${activityStatusColors[activity.status]} flex shrink-0 items-center justify-center rounded-lg`}
-                    >
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="mb-0.5 truncate text-sm text-slate-900 dark:text-slate-100">{activity.title}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{activity.time}</p>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <p className="py-4 text-center text-sm text-slate-500 dark:text-slate-400">No recent activity</p>
-            )}
-          </div>
-        </Card>
-
-        {/* System Status */}
-        <Card className="p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
-              <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              System Status
-            </h3>
-            <Link to={PATH_OVERVIEW_FULL} params={clusterParams}>
-              <Button variant="ghost" size="sm">
-                Details
-                <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-          <div className="space-y-3">
-            {systemStatus.length > 0 ? (
-              systemStatus.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between rounded-lg bg-slate-50 p-3 dark:bg-slate-800"
-                >
-                  <span className="text-sm text-slate-900 dark:text-slate-100">{item.label}</span>
-                  <Badge variant="outline" className={statusColors[item.color]}>
-                    <div className="mr-1.5 h-1.5 w-1.5 rounded-full bg-green-500"></div>
-                    {item.status}
-                  </Badge>
-                </div>
-              ))
-            ) : (
-              <p className="py-4 text-center text-sm text-slate-500 dark:text-slate-400">No system status available</p>
-            )}
-          </div>
-        </Card>
-      </div>
+      {/* Restore dismissed sections */}
+      {hasDismissed && (
+        <div className="flex items-center justify-center">
+          <button
+            type="button"
+            onClick={restoreAll}
+            className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+          >
+            <RotateCcw className="h-3 w-3" />
+            Restore hidden sections
+          </button>
+        </div>
+      )}
     </div>
   );
 }

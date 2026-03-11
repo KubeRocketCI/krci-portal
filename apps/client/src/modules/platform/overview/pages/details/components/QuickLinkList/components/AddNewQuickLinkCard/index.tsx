@@ -21,13 +21,13 @@ export const AddNewQuickLinkCard = () => {
     >
       <Button
         variant="ghost"
-        className="bg-card h-16 w-full rounded border shadow-xs"
+        className="bg-card h-auto w-full rounded-lg border border-dashed p-3 hover:border-blue-400 hover:bg-blue-50 dark:hover:border-blue-600 dark:hover:bg-blue-950/30"
         onClick={() => setDialog(ManageQuickLinkDialog, { quickLink: undefined })}
         disabled={!quickLinkPermissions.data.create.allowed}
       >
-        <div className="flex items-center gap-2">
-          <Plus size={16} />
-          <span className="text-base font-medium">ADD LINK</span>
+        <div className="flex items-center gap-1.5">
+          <Plus size={16} className="text-muted-foreground group-hover:text-blue-500" />
+          <span className="text-muted-foreground text-sm">Add Link</span>
         </div>
       </Button>
     </ConditionalWrapper>

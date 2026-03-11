@@ -12,17 +12,11 @@ export const QuickLinkList = () => {
     <ErrorContent error={quickLinkListWatch.query.error} outlined />
   ) : (
     <LoadingWrapper isLoading={quickLinkListWatch.query.isFetching}>
-      <div className="grid grid-cols-4 gap-6 sm:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {quickLinkList.map((el) => {
-          return el.spec.visible ? (
-            <div className="col-span-1" key={el.metadata.uid}>
-              <ComponentCard component={el} />
-            </div>
-          ) : null;
+          return el.spec.visible ? <ComponentCard key={el.metadata.uid} component={el} /> : null;
         })}
-        <div className="col-span-1">
-          <AddNewQuickLinkCard />
-        </div>
+        <AddNewQuickLinkCard />
       </div>
     </LoadingWrapper>
   );

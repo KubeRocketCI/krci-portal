@@ -28,6 +28,7 @@ import { k8sManageDefectDojoIntegrationProcedure } from "./procedures/composite/
 import { k8sManageChatAssistantIntegrationProcedure } from "./procedures/composite/manageChatAssistantIntegration/index.js";
 import { k8sManageDependencyTrackIntegrationProcedure } from "./procedures/composite/manageDependencyTrackIntegration/index.js";
 import { k8sTestIntegrationConnectionProcedure } from "./procedures/composite/testIntegrationConnection/index.js";
+import { getNamespaceResourceUsageProcedure } from "./procedures/composite/getNamespaceResourceUsage/index.js";
 import { t } from "../../trpc.js";
 
 export const k8sRouter = t.router({
@@ -61,4 +62,5 @@ export const k8sRouter = t.router({
   manageChatAssistantIntegration: k8sManageChatAssistantIntegrationProcedure,
   manageDependencyTrackIntegration: k8sManageDependencyTrackIntegrationProcedure,
   testIntegrationConnection: k8sTestIntegrationConnectionProcedure,
+  getNamespaceResourceUsage: getNamespaceResourceUsageProcedure,
 });
