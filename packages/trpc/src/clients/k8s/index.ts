@@ -106,6 +106,24 @@ export class K8sClient {
   }
 
   /**
+   * Fetch an arbitrary Kubernetes API path (e.g. Metrics API).
+   * The path is appended to the cluster server URL.
+   */
+  async fetchApiPath<T = unknown>(path: string): Promise<T> {
+    if (!this.KubeConfig) {
+      throw new Error("KubeConfig is not initialized");
+    }
+
+    const cluster = this.KubeConfig.getCurrentCluster();
+    if (!cluster) {
+      throw new Error("No current cluster found");
+    }
+
+    const url = `${cluster.server}${path}`;
+    return this.makeRequest("GET", url) as unknown as T;
+  }
+
+  /**
    * Get a specific resource by name
    */
   async getResource(resourceConfig: K8sResourceConfig, name: string, namespace?: string): Promise<KubeObjectBase> {

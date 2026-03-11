@@ -4,3 +4,4 @@ export { getBranchListProcedure as getBranchList } from "./getBranchList/index.j
 export { invalidateBranchListCacheProcedure as invalidateBranchListCache } from "./invalidateBranchListCache/index.js";
 export { triggerGitLabPipelineProcedure as triggerGitLabPipeline } from "./triggerGitLabPipeline/index.js";
 export { getPullRequestListProcedure as getPullRequestList } from "./getPullRequestList/index.js";
+export { getOpenPullRequestsSummaryProcedure as getOpenPullRequestsSummary } from "./getOpenPullRequestsSummary/index.js";

@@ -4,6 +4,7 @@ import { Layers, Shield } from "lucide-react";
 import { Stage, applicationHealthStatus, getApplicationStatus } from "@my-project/shared";
 import { Button } from "@/core/components/ui/button";
 import { cn } from "@/core/utils/classname";
+import { STATUS_COLOR } from "@/k8s/constants/colors";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { PATH_CDPIPELINE_STAGE_DETAILS_FULL } from "@/modules/platform/cdpipelines/pages/stage-details/route";
@@ -54,12 +55,11 @@ export function PipelineEnvironmentCard({ stage, isSelected }: PipelineEnvironme
     return "unknown";
   }, [pipelineAppCodebases, argoAppsByAppName]);
 
-  // Health dot styling
-  const healthDotClass = {
-    healthy: "bg-green-500",
-    degraded: "bg-red-500",
-    progressing: "bg-blue-500",
-    unknown: "bg-slate-400",
+  const healthDotColor = {
+    healthy: STATUS_COLOR.SUCCESS,
+    degraded: STATUS_COLOR.ERROR,
+    progressing: STATUS_COLOR.IN_PROGRESS,
+    unknown: STATUS_COLOR.UNKNOWN,
   }[overallHealth];
 
   const qualityGates = stage.spec.qualityGates || [];
@@ -77,7 +77,7 @@ export function PipelineEnvironmentCard({ stage, isSelected }: PipelineEnvironme
     >
       <Link to={routeCDPipelineDetails.fullPath} params={params} search={{ ...search, environment: stage.spec.name }}>
         {/* Health dot indicator */}
-        <div className={cn("absolute top-5 right-5 size-2.5 rounded-full", healthDotClass)} />
+        <div className="absolute top-5 right-5 size-2.5 rounded-full" style={{ backgroundColor: healthDotColor }} />
 
         {/* Icon + name */}
         <div className="flex items-center gap-2">
