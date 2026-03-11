@@ -43,6 +43,6 @@ export const useSortedStages = () => {
 
   return {
     data,
-    isLoading: stageListWatch.isLoading,
+    isLoading: !stageListWatch.isReady,
   };
 };

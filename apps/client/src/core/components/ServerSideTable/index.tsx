@@ -185,8 +185,8 @@ export const ServerSideTable = <DataType,>({
                     emptyListComponent
                   )
                 }
-                page={0} // Server-side: always show from start of current page data
-                rowsPerPage={data?.length || 0}
+                page={0}
+                rowsPerPage={data?.length || pagination.rowsPerPage}
                 isEmptyFilterResult={false}
                 blockerComponent={blockerComponent}
               />

@@ -9,7 +9,7 @@ export default function TaskDetailsPage() {
 
   return (
     <TabsContextProvider id="task-details-page" initialTabIdx={initialTabIdx}>
-      <TaskDetailsPageContent />
+      <TaskDetailsPageContent searchTabIdx={initialTabIdx} />
     </TabsContextProvider>
   );
 }

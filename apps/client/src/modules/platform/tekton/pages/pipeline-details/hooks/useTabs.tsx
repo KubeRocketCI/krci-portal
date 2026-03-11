@@ -31,11 +31,7 @@ export const useTabs = (): Tab[] => {
         label: "Overview",
         icon: <Info className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.overview),
-        component: (
-          <div className="pt-6">
-            <Overview />
-          </div>
-        ),
+        component: <Overview />,
       },
       {
         id: routeSearchTabSchema.enum.yaml,
@@ -54,7 +50,7 @@ export const useTabs = (): Tab[] => {
         icon: <ENTITY_ICON.pipelineRun className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.pipelineRuns),
         component: (
-          <Card className="p-6">
+          <Card className="px-6">
             <PipelineRuns />
           </Card>
         ),

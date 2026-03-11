@@ -228,6 +228,7 @@ export const WIZARD_GUIDE_STEPS: FormGuideStep[] = [
   { id: 1, label: "Basic Configuration", sublabel: "Configure environment basics" },
   { id: 2, label: "Pipeline Configuration", sublabel: "Configure pipeline settings" },
   { id: 3, label: "Quality Gates", sublabel: "Add quality gates" },
+  { id: 4, label: "Review", sublabel: "Review and create" },
 ];
 
 export const HELP_CONFIG: Record<number, FormGuideFieldDescription[]> = {

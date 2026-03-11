@@ -302,11 +302,11 @@ export const useWatchListMultiple = <I extends KubeObjectBase>({
 
   // Calculate loading and ready states
   const isLoading = useMemo(() => {
-    return namespaceQueries.some((q) => q.isPending);
+    return namespaceQueries.some((q) => q.isPending || q.isPlaceholderData);
   }, [namespaceQueries]);
 
   const isReady = useMemo(() => {
-    return namespaceQueries.every((q) => q.isSuccess);
+    return namespaceQueries.every((q) => q.isSuccess && !q.isPlaceholderData);
   }, [namespaceQueries]);
 
   return {
