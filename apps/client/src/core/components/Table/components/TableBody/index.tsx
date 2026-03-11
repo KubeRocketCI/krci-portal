@@ -3,12 +3,14 @@ import React from "react";
 import { EmptyList } from "@/core/components/EmptyList";
 import { ErrorContent } from "@/core/components/ErrorContent";
 import { Alert } from "@/core/components/ui/alert";
-import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
+import { Skeleton } from "@/core/components/ui/skeleton";
 import { TableBodyUI, TableCellUI, TableRowUI } from "@/core/components/ui/table";
 import { RequestError } from "@/core/types/global";
 
 import { TableRow } from "./components/TableRow";
 import { TableBodyProps } from "./types";
+
+const SKELETON_WIDTHS = ["60%", "45%", "75%", "50%", "40%", "70%", "55%", "65%", "35%", "80%"];
 
 const isSelectedRow = <DataType,>(isSelected: (row: DataType) => boolean, row: DataType) =>
   isSelected ? isSelected(row) : false;
@@ -28,11 +30,11 @@ export const TableBody = <DataType,>({
   isEmptyFilterResult,
   blockerComponent,
 }: TableBodyProps<DataType>) => {
+  const visibleColumns = React.useMemo(() => columns.filter((column) => column.cell.show !== false), [columns]);
+
   // Calculate total column span including selection and expandable columns
   const totalColumnSpan = React.useMemo(() => {
-    // Count only visible columns (where cell.show !== false)
-    const visibleColumnsCount = columns.filter((column) => column.cell.show !== false).length;
-    let span = visibleColumnsCount;
+    let span = visibleColumns.length;
 
     // Add 1 for expandable column if present
     if (expandable) {
@@ -57,7 +59,7 @@ export const TableBody = <DataType,>({
     }
 
     return span;
-  }, [columns, expandable, selection?.handleSelectRow, data, isLoading, blockerError, blockerComponent]);
+  }, [visibleColumns.length, expandable, selection?.handleSelectRow, data, isLoading, blockerError, blockerComponent]);
 
   const renderTableBody = React.useCallback(() => {
     if (blockerError) {
@@ -81,13 +83,19 @@ export const TableBody = <DataType,>({
     }
 
     if (isLoading) {
-      return (
-        <TableRowUI>
-          <TableCellUI colSpan={totalColumnSpan} className="border-b-0 px-0 pb-0 text-center">
-            <LoadingSpinner />
-          </TableCellUI>
+      return Array.from({ length: rowsPerPage }, (_, rowIdx) => (
+        <TableRowUI key={`skeleton-row-${rowIdx}`}>
+          {expandable && <TableCellUI className="w-10 px-1 py-2" />}
+          {visibleColumns.map((column, colIdx) => (
+            <TableCellUI key={column.id} className="px-3 py-2">
+              <Skeleton
+                className="h-4"
+                style={{ width: SKELETON_WIDTHS[(rowIdx + colIdx) % SKELETON_WIDTHS.length] }}
+              />
+            </TableCellUI>
+          ))}
         </TableRowUI>
-      );
+      ));
     }
 
     if (data !== null && data?.length && !isLoading) {
@@ -161,6 +169,7 @@ export const TableBody = <DataType,>({
     );
   }, [
     columns,
+    visibleColumns,
     totalColumnSpan,
     blockerError,
     blockerComponent,

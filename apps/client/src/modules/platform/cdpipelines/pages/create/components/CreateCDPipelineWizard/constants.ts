@@ -51,6 +51,7 @@ export const CREATE_CDPIPELINE_FORM_NAMES = {
 export const WIZARD_GUIDE_STEPS: FormGuideStep[] = [
   { id: 1, label: "Applications", sublabel: "Select applications" },
   { id: 2, label: "Pipeline Configuration", sublabel: "Configure pipeline settings" },
+  { id: 3, label: "Review", sublabel: "Review and create" },
 ];
 
 export const HELP_CONFIG: Record<number, FormGuideFieldDescription[]> = {

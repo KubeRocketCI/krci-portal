@@ -39,10 +39,14 @@ export const Environments = () => {
   // Find selected stage
   const selectedStage = filteredStages.find((s) => s.spec.name === selectedEnvironment);
 
-  const isLoading = cdPipelineWatch.isLoading || isStagesLoading;
+  const isLoading = !cdPipelineWatch.isReady || isStagesLoading;
 
   if (isLoading) {
-    return null;
+    return (
+      <div className="space-y-4">
+        <HorizontalEnvironmentFlow stages={[]} selectedEnvironment={null} isLoading />
+      </div>
+    );
   }
 
   if (sortedStages.length === 0) {

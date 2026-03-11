@@ -31,6 +31,7 @@ export function ToursProvider({ children }: ToursProviderProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [isTourNavigating, setIsTourNavigating] = useState(false);
   const [currentTourTab, setCurrentTourTab] = useState<string | null>(null);
+  const [tourInstanceId, setTourInstanceId] = useState(0);
   const onTourEndRef = useRef<TourEndCallback | null>(null);
   const onStepCallbackRef = useRef<TourStepCallback | null>(null);
   /**
@@ -69,41 +70,111 @@ export function ToursProvider({ children }: ToursProviderProps) {
   // Cleanup on unmount
   useEffect(() => () => cancelNavigation(), [cancelNavigation]);
 
-  // Determine if current tour is a popup (single-step informative)
-  const isPopup = currentTour?.type === "popup";
+  const navigateToStepPrerequisite = useCallback(
+    (targetStepIndex: number, steps: TourMetadata["steps"]) => {
+      const targetStep = steps[targetStepIndex];
+      if (!targetStep?.prerequisite) {
+        setStepIndex(targetStepIndex);
+        return;
+      }
 
-  const startTour = useCallback((tourId: string, tour: TourMetadata, trigger?: TourTriggerInfo) => {
-    const isCompleted = isTourCompleted(tourId);
+      const { to, params, search, waitFor, stabilizationDelay = 0 } = targetStep.prerequisite;
 
-    if (tour.showOnce && isCompleted) {
-      return;
-    }
+      cancelNavigation();
+      setRun(false);
+      setIsTourNavigating(true);
 
-    setCurrentTour(tour);
-    setCurrentTrigger(trigger);
-    setStepIndex(0);
-    setRun(true);
+      const finalParams =
+        typeof params === "function"
+          ? params(currentRouteParams as Record<string, string>)
+          : (params ?? currentRouteParams);
 
-    // Extract initial tab from first step's prerequisite if it exists
-    const firstStep = tour.steps[0];
-    if (firstStep?.prerequisite?.search) {
       const currentSearch = router.state.location.search as Record<string, unknown>;
-      const finalSearch =
-        typeof firstStep.prerequisite.search === "function"
-          ? firstStep.prerequisite.search(currentSearch)
-          : firstStep.prerequisite.search;
+      const finalSearch = typeof search === "function" ? search(currentSearch) : search;
 
       const tabValue = finalSearch?.tab as string | undefined;
       if (tabValue) {
         setCurrentTourTab(tabValue);
       }
-    }
-  }, []);
+
+      router.navigate({
+        to,
+        params: finalParams,
+        search: finalSearch,
+      });
+
+      const selectorsToWaitFor = waitFor
+        ? Array.isArray(waitFor)
+          ? waitFor
+          : [waitFor]
+        : [targetStep.target as string];
+
+      const abortController = new AbortController();
+      navigationAbortRef.current = abortController;
+
+      setTrackedTimeout(async () => {
+        try {
+          for (const selector of selectorsToWaitFor) {
+            await waitForElement({
+              selector,
+              timeout: ELEMENT_WAIT_TIMEOUT_MS,
+            });
+            if (abortController.signal.aborted) return;
+          }
+
+          if (stabilizationDelay > 0) {
+            await new Promise<void>((resolve) => {
+              setTrackedTimeout(resolve, stabilizationDelay);
+            });
+          }
+          if (abortController.signal.aborted) return;
+
+          setStepIndex(targetStepIndex);
+          setRun(true);
+          setTrackedTimeout(() => setIsTourNavigating(false), POST_NAVIGATION_GLOW_MS);
+        } catch (error) {
+          if (abortController.signal.aborted) return;
+          console.warn("⚠️ Element not found within timeout, advancing anyway:", error);
+          setStepIndex(targetStepIndex);
+          setRun(true);
+          setIsTourNavigating(false);
+        }
+      }, NAVIGATION_START_DELAY_MS);
+    },
+    [currentRouteParams, cancelNavigation, setTrackedTimeout]
+  );
+
+  // Determine if current tour is a popup (single-step informative)
+  const isPopup = currentTour?.type === "popup";
+
+  const startTour = useCallback(
+    (tourId: string, tour: TourMetadata, trigger?: TourTriggerInfo) => {
+      const isCompleted = isTourCompleted(tourId);
+
+      if (tour.showOnce && isCompleted) {
+        return;
+      }
+
+      setCurrentTour(tour);
+      setCurrentTrigger(trigger);
+      setTourInstanceId((prev) => prev + 1);
+      setStepIndex(0);
+
+      const firstStep = tour.steps[0];
+      if (firstStep?.prerequisite) {
+        navigateToStepPrerequisite(0, tour.steps);
+      } else {
+        setRun(true);
+      }
+    },
+    [navigateToStepPrerequisite]
+  );
 
   const endCurrentTour = useCallback(
     (completed: boolean) => {
       cancelNavigation();
       setRun(false);
+      setStepIndex(0);
       if (currentTour) {
         markTourCompleted(currentTour.id, completed, currentTrigger);
         onTourEndRef.current?.(currentTour.id, completed);
@@ -181,116 +252,21 @@ export function ToursProvider({ children }: ToursProviderProps) {
 
       if (finishedStatuses.includes(status as typeof STATUS.FINISHED | typeof STATUS.SKIPPED)) {
         endCurrentTour(status === STATUS.FINISHED);
-        setStepIndex(0);
       } else if (type === EVENTS.STEP_AFTER && action === ACTIONS.CLOSE) {
         endCurrentTour(false);
-        setStepIndex(0);
       } else if (type === "error:target_not_found") {
-        // Handle missing target (e.g., permission-gated elements like create-branch button)
         const currentStep = currentTour?.steps[stepIndex];
         console.warn(
           `⚠️ Target "${currentStep?.target}" not found for step ${stepIndex} - element may be permission-gated or hidden.`
         );
-
-        // Note: We don't auto-skip here because the element might appear soon (from async navigation)
-        // Let the navigation logic handle it
       } else if (type === EVENTS.STEP_AFTER && action === ACTIONS.NEXT) {
-        const nextStepIndex = stepIndex + 1;
-        const nextStep = currentTour?.steps[nextStepIndex];
-
-        // Handle navigation prerequisite for the next step
-        if (nextStep?.prerequisite) {
-          const { to, params, search, waitFor, stabilizationDelay = 0 } = nextStep.prerequisite;
-
-          // Pause tour but DON'T advance step yet - keep current step visible
-          setRun(false);
-          // Signal that navigation is happening (for visual feedback like tab highlights)
-          setIsTourNavigating(true);
-
-          // Resolve params: use provided params or fall back to current route params
-          const finalParams =
-            typeof params === "function"
-              ? params(currentRouteParams as Record<string, string>)
-              : (params ?? currentRouteParams);
-
-          // Resolve search params and extract tab value for highlighting
-          const currentSearch = router.state.location.search as Record<string, unknown>;
-          const finalSearch = typeof search === "function" ? search(currentSearch) : search;
-
-          // Extract the main tab value to track which tab the tour is focused on
-          const tabValue = finalSearch?.tab as string | undefined;
-          if (tabValue) {
-            setCurrentTourTab(tabValue);
-          }
-
-          // Navigate to the prerequisite route
-          router.navigate({
-            to,
-            params: finalParams,
-            search: finalSearch,
-          });
-
-          // Determine which element(s) to wait for
-          // Priority: waitFor > target selector
-          const selectorsToWaitFor = waitFor
-            ? Array.isArray(waitFor)
-              ? waitFor
-              : [waitFor]
-            : [nextStep.target as string];
-
-          // Cancel any previous navigation before starting a new one
-          cancelNavigation();
-          const abortController = new AbortController();
-          navigationAbortRef.current = abortController;
-
-          // Start checking after a small delay to allow navigation to start
-          setTrackedTimeout(async () => {
-            try {
-              // Wait for all required elements
-              for (const selector of selectorsToWaitFor) {
-                await waitForElement({
-                  selector,
-                  timeout: ELEMENT_WAIT_TIMEOUT_MS,
-                });
-                if (abortController.signal.aborted) return;
-              }
-
-              // Additional stabilization delay (for animations, transitions, etc.)
-              if (stabilizationDelay > 0) {
-                await new Promise<void>((resolve) => {
-                  setTrackedTimeout(resolve, stabilizationDelay);
-                });
-              }
-              if (abortController.signal.aborted) return;
-
-              // NOW advance the step index
-              setStepIndex(nextStepIndex);
-              // And resume the tour
-              setRun(true);
-              // Keep the glow visible for a moment after navigation completes
-              setTrackedTimeout(() => setIsTourNavigating(false), POST_NAVIGATION_GLOW_MS);
-            } catch (error) {
-              if (abortController.signal.aborted) return;
-              console.warn("⚠️ Element not found within timeout, advancing anyway:", error);
-              setStepIndex(nextStepIndex);
-              setRun(true);
-              setIsTourNavigating(false);
-            }
-          }, NAVIGATION_START_DELAY_MS);
-        } else {
-          // No prerequisite, advance normally
-          setStepIndex(nextStepIndex);
-        }
-
-        // Call custom callback if registered
+        navigateToStepPrerequisite(stepIndex + 1, currentTour!.steps);
         onStepCallbackRef.current?.(data);
       } else if (type === EVENTS.STEP_AFTER && action === ACTIONS.PREV) {
-        // Handle back button
-        const prevStepIndex = Math.max(0, stepIndex - 1);
-        setStepIndex(prevStepIndex);
+        navigateToStepPrerequisite(Math.max(0, stepIndex - 1), currentTour!.steps);
       }
     },
-    [endCurrentTour, currentTour, currentRouteParams, stepIndex, cancelNavigation, setTrackedTimeout]
+    [endCurrentTour, currentTour, stepIndex, navigateToStepPrerequisite]
   );
 
   return (
@@ -313,6 +289,7 @@ export function ToursProvider({ children }: ToursProviderProps) {
       {currentTour && (
         <>
           <Joyride
+            key={tourInstanceId}
             ref={joyrideRef as React.Ref<Joyride>}
             steps={currentTour.steps}
             run={run}

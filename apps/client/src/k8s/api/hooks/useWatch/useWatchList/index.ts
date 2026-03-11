@@ -200,8 +200,8 @@ export const useWatchList = <I extends KubeObjectBase>({
     query,
     resourceVersion: query.data?.metadata?.resourceVersion,
     isEmpty: query.data?.items.size === 0,
-    isLoading: query.isPending,
-    isReady: query.isSuccess,
+    isLoading: query.isPending || query.isPlaceholderData,
+    isReady: query.isSuccess && !query.isPlaceholderData,
     error: query.error,
   };
 };

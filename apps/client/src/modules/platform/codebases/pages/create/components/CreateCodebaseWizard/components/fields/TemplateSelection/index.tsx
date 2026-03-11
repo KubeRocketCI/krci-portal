@@ -1,9 +1,12 @@
 import React from "react";
+import { useStore } from "@tanstack/react-form";
 import { useTemplateWatchList } from "@/k8s/api/groups/KRCI/Template";
 import { codebaseCreationStrategy } from "@my-project/shared";
 import type { CodebaseType as CodebaseTypeValue } from "@my-project/shared";
 import { useAppForm } from "@/core/components/form";
+import { EmptyList } from "@/core/components/EmptyList";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
+import { Button } from "@/core/components/ui/button";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { getCodebaseMappingByType } from "@/k8s/api/groups/KRCI/Codebase";
 import { getIconByPattern } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
@@ -13,6 +16,7 @@ import { useCreateCodebaseForm } from "../../../providers/form/hooks";
 import { NAMES } from "../../../names";
 import { useFormGuide } from "@/core/providers/FormGuide/hooks";
 import type { Template } from "@my-project/shared";
+import { X } from "lucide-react";
 
 const useTemplateOptions = (filteredTemplates: Template[]) => {
   return React.useMemo(
@@ -96,16 +100,8 @@ export const TemplateSelection: React.FC = () => {
     [categories]
   );
 
-  const [searchFieldValue, setSearchFieldValue] = React.useState("");
-  const [categoryFieldValue, setCategoryFieldValue] = React.useState("all");
-
-  React.useEffect(() => {
-    const unsubscribe = filterForm.store.subscribe(() => {
-      setSearchFieldValue(filterForm.state.values.search ?? "");
-      setCategoryFieldValue(filterForm.state.values.category ?? "all");
-    });
-    return unsubscribe;
-  }, [filterForm]);
+  const searchFieldValue = useStore(filterForm.store, (s) => s.values.search ?? "");
+  const categoryFieldValue = useStore(filterForm.store, (s) => s.values.category ?? "all");
 
   const filteredTemplates = React.useMemo(
     () =>
@@ -119,57 +115,82 @@ export const TemplateSelection: React.FC = () => {
 
   const templateOptions = useTemplateOptions(filteredTemplates);
 
+  const hasActiveFilters = searchFieldValue !== "" || categoryFieldValue !== "all";
+
+  const handleClearFilters = React.useCallback(() => {
+    filterForm.reset();
+  }, [filterForm]);
+
   return (
-    <div className="space-y-2">
-      <div className="mb-2 grid grid-cols-2 gap-2">
-        <filterForm.AppField name="search">
-          {(field) => <field.FormTextField label="Search" placeholder="Search templates..." />}
-        </filterForm.AppField>
-        <filterForm.AppField name="category">
-          {(field) => <field.FormSelect label="Category" placeholder="Select category" options={categoriesOptions} />}
-        </filterForm.AppField>
+    <div>
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <div className="grid min-w-[200px] flex-1 grid-cols-2 gap-2">
+          <filterForm.AppField name="search">
+            {(field) => <field.FormTextField label="Search" placeholder="Search templates..." />}
+          </filterForm.AppField>
+          <filterForm.AppField name="category">
+            {(field) => <field.FormSelect label="Category" placeholder="Select category" options={categoriesOptions} />}
+          </filterForm.AppField>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleClearFilters}
+          disabled={!hasActiveFilters}
+          className="mt-6 shrink-0"
+        >
+          <X className="mr-1 size-4" />
+          Clear
+        </Button>
       </div>
       <LoadingWrapper isLoading={templatesWatch.query.isFetching}>
-        <wizardForm.AppField
-          name={NAMES.ui_creationTemplate}
-          validators={{
-            onChange: ({ value }) => {
-              const creationMethod = wizardForm.store.state.values[NAMES.ui_creationMethod];
-              return creationMethod === "template" && (!value || value.length === 0) ? "Select a template" : undefined;
-            },
-          }}
-          listeners={{
-            onChange: ({ value }) => {
-              const template = templates.find((t) => t.metadata.name === value);
-              if (template) {
-                wizardForm.setFieldValue(NAMES.lang, template.spec.language);
-                wizardForm.setFieldValue(NAMES.framework, template.spec.framework);
-                wizardForm.setFieldValue(NAMES.buildTool, template.spec.buildTool);
-                wizardForm.setFieldValue(NAMES.type, template.spec.type as CodebaseTypeValue);
-                wizardForm.setFieldValue(
-                  NAMES.strategy,
-                  codebaseCreationStrategy.clone as typeof codebaseCreationStrategy.clone
-                );
-                wizardForm.setFieldValue(NAMES.repositoryUrl, template.spec.source);
-              }
-            },
-          }}
-        >
-          {(field) => (
-            <field.FormRadioGroup
-              label="Select Template"
-              options={templateOptions}
-              variant="horizontal"
-              classNames={{
-                container: isHelpOpen ? "grid-cols-3" : "grid-cols-4",
-                item: "p-3",
-                itemIcon: "h-4 w-4",
-                itemIconContainer: "h-8 w-8",
-              }}
-              disabled={templatesWatch.query.isLoading}
-            />
-          )}
-        </wizardForm.AppField>
+        {filteredTemplates.length === 0 ? (
+          <EmptyList customText="No results found!" isSearch linkText="" />
+        ) : (
+          <wizardForm.AppField
+            name={NAMES.ui_creationTemplate}
+            validators={{
+              onChange: ({ value }) => {
+                const creationMethod = wizardForm.store.state.values[NAMES.ui_creationMethod];
+                return creationMethod === "template" && (!value || value.length === 0)
+                  ? "Select a template"
+                  : undefined;
+              },
+            }}
+            listeners={{
+              onChange: ({ value }) => {
+                const template = templates.find((t) => t.metadata.name === value);
+                if (template) {
+                  wizardForm.setFieldValue(NAMES.lang, template.spec.language);
+                  wizardForm.setFieldValue(NAMES.framework, template.spec.framework);
+                  wizardForm.setFieldValue(NAMES.buildTool, template.spec.buildTool);
+                  wizardForm.setFieldValue(NAMES.type, template.spec.type as CodebaseTypeValue);
+                  wizardForm.setFieldValue(
+                    NAMES.strategy,
+                    codebaseCreationStrategy.clone as typeof codebaseCreationStrategy.clone
+                  );
+                  wizardForm.setFieldValue(NAMES.repositoryUrl, template.spec.source);
+                }
+              },
+            }}
+          >
+            {(field) => (
+              <field.FormRadioGroup
+                label="Select Template"
+                options={templateOptions}
+                variant="horizontal"
+                classNames={{
+                  container: isHelpOpen ? "grid-cols-3" : "grid-cols-4",
+                  item: "p-3",
+                  itemIcon: "h-4 w-4",
+                  itemIconContainer: "h-8 w-8",
+                }}
+                disabled={templatesWatch.query.isLoading}
+              />
+            )}
+          </wizardForm.AppField>
+        )}
       </LoadingWrapper>
     </div>
   );
