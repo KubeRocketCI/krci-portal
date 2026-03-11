@@ -71,8 +71,9 @@ export const getOpenPullRequestsSummaryProcedure = protectedProcedure
       codebasesToProcess.map(async (codebase) => {
         const gitUrlPath = codebase.spec.gitUrlPath || "";
         const gitServer = codebase.spec.gitServer || "";
-        const repoName = gitUrlPath.split("/").at(-1) || "";
-        const owner = gitUrlPath.split("/").filter(Boolean).slice(0, -1).join("/");
+        const pathParts = gitUrlPath.split("/").filter(Boolean);
+        const repoName = pathParts.at(-1) || "";
+        const owner = pathParts.slice(0, -1).join("/");
 
         if (!gitServer || !owner || !repoName) return null;
 

@@ -1,7 +1,6 @@
-import { Card, CardContent } from "@/core/components/ui/card";
-import { Button } from "@/core/components/ui/button";
 import { CHART_STATUS_COLOR } from "@/k8s/constants/colors";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { DashboardCard } from "@/modules/platform/overview/components/DashboardCard";
 import { useCodebasesGraphData } from "../CodebasesGraph/hooks/useCodebasesGraphData";
 import { useCodebaseBranchesGraphData } from "../CodebaseBranchesGraph/hooks/useCodebaseBranchesGraphData";
 import { usePipelineRunsGraphData } from "../PipelineRunsGraph/hooks/usePipelineRunsGraphData";
@@ -109,28 +108,19 @@ export function ResourceHealth() {
   ];
 
   return (
-    <Card className="border">
-      <CardContent className="p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-foreground text-base font-medium">Resource Health</h2>
-          <Button variant="ghost" size="sm" className="text-primary h-auto p-0 text-sm">
-            View All
-            <ArrowRight className="ml-1 size-3.5" />
-          </Button>
-        </div>
-        <div className="grid grid-cols-5 gap-4">
-          {resources.map((resource) => (
-            <ResourceItem
-              key={resource.label}
-              label={resource.label}
-              ok={resource.data.ok ?? 0}
-              failed={resource.data.error ?? 0}
-              total={resource.data.total ?? 0}
-              isLoading={resource.isLoading}
-            />
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <DashboardCard title="Resource Health">
+      <div className="grid grid-cols-5 gap-4">
+        {resources.map((resource) => (
+          <ResourceItem
+            key={resource.label}
+            label={resource.label}
+            ok={resource.data.ok ?? 0}
+            failed={resource.data.error ?? 0}
+            total={resource.data.total ?? 0}
+            isLoading={resource.isLoading}
+          />
+        ))}
+      </div>
+    </DashboardCard>
   );
 }
