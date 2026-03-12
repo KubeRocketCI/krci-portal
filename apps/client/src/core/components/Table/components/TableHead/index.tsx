@@ -15,6 +15,7 @@ export const TableHead = <DataType,>({
   selected,
   handleSelectAllClick,
   showExpandColumn,
+  showSelectionColumn,
 }: TableHeadProps<DataType>) => {
   const handleRequestSort = (column: TableColumn<DataType>) => {
     const _isDesc = isDesc(column.id, sort.sortBy, sort.order);
@@ -54,14 +55,16 @@ export const TableHead = <DataType,>({
             {/* Empty header for expand column */}
           </TableHeadUI>
         )}
-        {!!handleSelectAllClick && !!selectableRowCount && (
+        {showSelectionColumn && (
           <TableHeadUI className="relative px-1 py-2 align-bottom">
-            <div className="flex flex-row flex-nowrap items-center justify-center">
-              <Checkbox
-                checked={selectedAllIndeterminate ? "indeterminate" : selectAllChecked}
-                onCheckedChange={handleCheckboxChange}
-              />
-            </div>
+            {!!handleSelectAllClick && !!selectableRowCount && (
+              <div className="flex flex-row flex-nowrap items-center justify-center">
+                <Checkbox
+                  checked={selectedAllIndeterminate ? "indeterminate" : selectAllChecked}
+                  onCheckedChange={handleCheckboxChange}
+                />
+              </div>
+            )}
           </TableHeadUI>
         )}
         {columns.map((column) => {

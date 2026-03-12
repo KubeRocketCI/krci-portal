@@ -10,4 +10,5 @@ export interface TableHeadProps<DataType> {
   selected?: string[];
   handleSelectAllClick?: ((event: React.ChangeEvent<HTMLInputElement>) => void | undefined) | null;
   showExpandColumn?: boolean;
+  showSelectionColumn?: boolean;
 }
