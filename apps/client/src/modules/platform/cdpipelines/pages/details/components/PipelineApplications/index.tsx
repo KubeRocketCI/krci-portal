@@ -1,35 +1,21 @@
 import React from "react";
 import { Link } from "@tanstack/react-router";
-import { ScrollText, Terminal } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
 import { Badge } from "@/core/components/ui/badge";
 import { DataTable } from "@/core/components/Table";
 import { TableColumn } from "@/core/components/Table/types";
 import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
-import { StatusBadge } from "@/core/components/StatusBadge";
-import { QuickLink } from "@/core/components/QuickLink";
-import { ScrollCopyText } from "@/core/components/ScrollCopyText";
 import { CodebaseLanguageIcon } from "@/modules/platform/codebases/components/CodebaseLanguageIcon";
 import { CodebaseFrameworkIcon } from "@/modules/platform/codebases/components/CodebaseFrameworkIcon";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
-import { getApplicationStatusIcon, getApplicationSyncStatusIcon } from "@/k8s/api/groups/ArgoCD/Application";
-import {
-  getApplicationStatus,
-  getApplicationSyncStatus,
-  applicationLabels,
-  systemQuickLink,
-  Codebase,
-  Application,
-} from "@my-project/shared";
+import { StageDeploymentCards } from "@/modules/platform/cdpipelines/components/StageDeploymentCards";
+import { applicationLabels, systemQuickLink, Codebase, Application } from "@my-project/shared";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
-import { PATH_CDPIPELINE_STAGE_DETAILS_FULL } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import { usePipelineArgoApplicationListWatch, useQuickLinksUrlListWatch } from "../../hooks/data";
 import { usePipelineAppCodebases, useSortedStages } from "../../hooks/usePipelineData";
 import { routeCDPipelineDetails } from "../../route";
-import { LinkCreationService } from "@/k8s/services/link-creation";
-import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { PodLogsDialog } from "../../../../dialogs/PodLogs";
 import { PodExecDialog } from "../../../../dialogs/PodExec";
@@ -174,151 +160,21 @@ export const PipelineApplications = () => {
   const expandedRowRender = React.useCallback(
     (appCodebase: Codebase) => {
       const appStages = argoAppsByAppAndStage.get(appCodebase.metadata.name);
-      const deployedCount = appStages?.size || 0;
 
       return (
-        <div>
-          <div className="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase">
-            Deployed in {deployedCount} {deployedCount === 1 ? "environment" : "environments"}
-          </div>
-
-          <div className="space-y-3">
-            {sortedStages.map((stage) => {
-              const argoApplication = appStages?.get(stage.spec.name);
-
-              if (!argoApplication) {
-                return (
-                  <div key={stage.spec.name} className="bg-card rounded-lg border p-4 opacity-60">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="mb-2 flex items-center gap-2">
-                          <Button variant="link" asChild className="h-auto p-0 font-medium">
-                            <Link
-                              to={PATH_CDPIPELINE_STAGE_DETAILS_FULL}
-                              params={{
-                                clusterName,
-                                cdPipeline: params.name,
-                                namespace: params.namespace,
-                                stage: stage.spec.name,
-                              }}
-                            >
-                              <ENTITY_ICON.stage className="text-muted-foreground/70 mr-1.5 shrink-0" />
-                              {stage.spec.name}
-                            </Link>
-                          </Button>
-                          <Badge variant="outline" className="text-xs">
-                            Not deployed
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              }
-
-              // Get status info
-              const healthStatus = getApplicationStatus(argoApplication);
-              const syncStatus = getApplicationSyncStatus(argoApplication);
-              const healthStatusIcon = getApplicationStatusIcon(argoApplication);
-              const syncStatusIcon = getApplicationSyncStatusIcon(argoApplication);
-              const version = argoApplication?.spec?.source?.targetRevision || "N/A";
-
-              const argoAppLink = LinkCreationService.argocd.createApplicationLink(
-                argocdBaseURL,
-                argoApplication.metadata?.labels?.[applicationLabels.pipeline],
-                argoApplication.metadata?.labels?.[applicationLabels.stage],
-                argoApplication.metadata?.labels?.[applicationLabels.appName]
-              );
-
-              return (
-                <div key={stage.spec.name} className="bg-card rounded-lg border p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="mb-3 flex items-center gap-2">
-                        <Button variant="link" asChild className="h-auto p-0 font-medium">
-                          <Link
-                            to={PATH_CDPIPELINE_STAGE_DETAILS_FULL}
-                            params={{
-                              clusterName,
-                              cdPipeline: params.name,
-                              namespace: params.namespace,
-                              stage: stage.spec.name,
-                            }}
-                          >
-                            <ENTITY_ICON.stage className="text-muted-foreground/70 mr-1.5 shrink-0" />
-                            {stage.spec.name}
-                          </Link>
-                        </Button>
-                        <StatusBadge statusIcon={healthStatusIcon} label={healthStatus.status} />
-                        <StatusBadge statusIcon={syncStatusIcon} label={syncStatus.status} />
-                      </div>
-
-                      <div className="grid grid-cols-4 gap-4 text-sm">
-                        <div>
-                          <div className="text-muted-foreground mb-1 text-xs">Build Version</div>
-                          <ScrollCopyText text={version} className="w-full max-w-full" />
-                        </div>
-                        <div>
-                          <div className="text-muted-foreground mb-1 text-xs">Namespace</div>
-                          <ScrollCopyText text={stage.spec.namespace} className="w-full max-w-full" />
-                        </div>
-                        <div>
-                          <div className="text-muted-foreground mb-1 text-xs">Cluster</div>
-                          <div className="text-foreground">{stage.spec.clusterName}</div>
-                        </div>
-                        <div>
-                          <div className="text-muted-foreground mb-1 text-xs">Trigger Type</div>
-                          <Badge variant="outline" className="text-xs capitalize">
-                            {stage.spec.triggerType}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="ml-4 flex gap-2">
-                      <QuickLink
-                        name={quickLinkUiNames[systemQuickLink.argocd]}
-                        icon={argocdQuickLink?.spec?.icon}
-                        href={argoAppLink}
-                        display="text"
-                        variant="outline"
-                        size="xs"
-                      />
-                      <Button
-                        variant="outline"
-                        size="xs"
-                        className="gap-1.5"
-                        onClick={() =>
-                          openPodLogsDialog({
-                            namespace: stage.spec.namespace,
-                            appName: appCodebase.metadata.name,
-                          })
-                        }
-                      >
-                        <ScrollText className="size-3" />
-                        Logs
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="xs"
-                        className="gap-1.5"
-                        onClick={() =>
-                          openPodExecDialog({
-                            namespace: stage.spec.namespace,
-                            appName: appCodebase.metadata.name,
-                          })
-                        }
-                      >
-                        <Terminal className="size-3" />
-                        Terminal
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <StageDeploymentCards
+          stages={sortedStages}
+          getArgoApp={(stageName) => appStages?.get(stageName)}
+          deployedCount={appStages?.size || 0}
+          pipelineName={params.name}
+          namespace={params.namespace}
+          appName={appCodebase.metadata.name}
+          clusterName={clusterName}
+          argocdBaseURL={argocdBaseURL}
+          argocdQuickLink={argocdQuickLink}
+          onOpenLogs={openPodLogsDialog}
+          onOpenTerminal={openPodExecDialog}
+        />
       );
     },
     [

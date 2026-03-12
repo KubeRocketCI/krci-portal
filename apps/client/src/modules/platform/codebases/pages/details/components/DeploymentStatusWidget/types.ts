@@ -5,5 +5,4 @@ export interface PipelineDeployment {
   namespace: string;
   argoApps: Map<string, Application>; // stageName -> Application
   stages: Stage[];
-  totalStages: number;
 }
