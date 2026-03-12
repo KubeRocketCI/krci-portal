@@ -86,9 +86,12 @@ export const PageContentWrapper: React.FC<PageContentWrapperProps> = ({
 
       <div className="flex min-w-0 grow flex-col overflow-hidden px-6">
         {hasTabs && (
-          <div className="mt-6 min-w-0">
+          <div className="mt-6 flex min-w-0 grow flex-col">
             {tabs.map((tab, idx) => (
-              <div key={`tab-content::${idx}`} className={cn("flex min-w-0 flex-col", activeTab !== idx && "hidden")}>
+              <div
+                key={`tab-content::${idx}`}
+                className={cn("flex min-w-0 grow flex-col", activeTab !== idx && "hidden")}
+              >
                 {tab.component}
               </div>
             ))}
