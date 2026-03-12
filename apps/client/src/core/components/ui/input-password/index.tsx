@@ -3,8 +3,9 @@ import { Input, InputProps } from "@/core/components/ui/input";
 import { FormField, FormFieldProps } from "@/core/components/ui/form-field";
 import { Button } from "@/core/components/ui/button";
 import { TooltipRoot, TooltipTrigger, TooltipContent } from "@/core/components/ui/tooltip";
-import { Eye, EyeOff, KeyRound } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/core/utils/classname";
+import { renderSecretLabel } from "@/core/components/ui/secret-label";
 
 export interface InputPasswordProps extends Omit<FormFieldProps, "children" | "suffix" | "prefix"> {
   showToggle?: boolean;
@@ -56,16 +57,7 @@ export const InputPassword = React.forwardRef<HTMLInputElement, InputPasswordPro
     ) : null;
 
     const hasError = !!error;
-
-    const enhancedLabel =
-      label && showSecretIcon ? (
-        <span className="inline-flex items-center gap-1.5">
-          <KeyRound size={14} className="text-muted-foreground" />
-          {label}
-        </span>
-      ) : (
-        label
-      );
+    const enhancedLabel = renderSecretLabel({ label, showSecretIcon });
 
     return (
       <FormField

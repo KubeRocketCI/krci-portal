@@ -102,8 +102,12 @@ export default function ClustersConfigurationPage() {
               if (clusterTypeValue === clusterType.irsa) {
                 clusterHost = safeDecode(clusterSecret.data?.server || "");
               } else {
-                const config = parseConfigJson(clusterSecret.data?.config || "");
-                clusterHost = config?.clusters?.[0]?.cluster?.server;
+                try {
+                  const config = parseConfigJson(clusterSecret.data?.config || "");
+                  clusterHost = config?.clusters?.[0]?.cluster?.server;
+                } catch {
+                  clusterHost = undefined;
+                }
               }
 
               return (

@@ -19,6 +19,7 @@ export const ButtonWithPermission = React.forwardRef<
   const { onClick, disabled, ...restButtonProps } = ButtonProps ?? {};
   return (
     <ConditionalWrapper condition={!allowed} wrapper={(children) => <Tooltip title={reason}>{children}</Tooltip>}>
+      {/* onClick from ButtonProps takes priority over HTML attributes */}
       <Button ref={ref} {...restButtonProps} {...rest} onClick={onClick} disabled={disabled || !allowed}>
         {children}
       </Button>

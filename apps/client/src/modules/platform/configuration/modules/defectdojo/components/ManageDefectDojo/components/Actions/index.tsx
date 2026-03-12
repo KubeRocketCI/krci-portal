@@ -4,13 +4,12 @@ import { useDataContext } from "../../providers/Data/hooks";
 import { FORM_MODES } from "@/core/types/forms";
 import { useManageDefectDojoForm } from "../../providers/form/hooks";
 import { useStore } from "@tanstack/react-form";
-import { useTRPCClient } from "@/core/providers/trpc";
-import { TestConnectionBlock, type TestConnectionStatus } from "@/core/components/TestConnectionBlock";
+import { TestConnectionBlock } from "@/core/components/TestConnectionBlock";
+import { useTestConnection } from "@/core/hooks/useTestConnection";
 
 export const Actions = () => {
   const form = useManageDefectDojoForm();
   const { secret, handleClosePanel } = useDataContext();
-  const trpc = useTRPCClient();
 
   const isDirty = useStore(form.store, (state) => state.isDirty);
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
@@ -19,55 +18,21 @@ export const Actions = () => {
     (state) => `${state.values.url}|${state.values.token}|${state.values.externalUrl}`
   );
 
-  const [testStatus, setTestStatus] = React.useState<TestConnectionStatus>("idle");
-  const [testError, setTestError] = React.useState<string | null>(null);
+  const getCredentials = React.useCallback(
+    () => ({ url: form.store.state.values.url, token: form.store.state.values.token }),
+    [form.store]
+  );
 
-  // Reset test status when form values change
-  React.useEffect(() => {
-    setTestStatus("idle");
-    setTestError(null);
-  }, [formValuesKey]);
-
-  const handleTestConnection = async () => {
-    const { url, token } = form.store.state.values;
-    setTestStatus("loading");
-    setTestError(null);
-
-    let cancelled = false;
-
-    try {
-      const result = await trpc.k8s.testIntegrationConnection.mutate({ serviceType: "defectdojo", url, token });
-      if (cancelled) return;
-
-      if (result.success) {
-        setTestStatus("success");
-      } else {
-        setTestStatus("error");
-        switch (result.error) {
-          case "UNAUTHORIZED":
-            setTestError("Authentication failed. Check your token.");
-            break;
-          case "TIMEOUT":
-            setTestError("Connection timed out after 10 seconds.");
-            break;
-          case "NETWORK":
-            setTestError(result.message);
-            break;
-          case "HTTP_ERROR":
-            setTestError(`DefectDojo responded with status ${result.statusCode}.`);
-            break;
-        }
-      }
-    } catch (error) {
-      if (cancelled) return;
-      setTestStatus("error");
-      setTestError(error instanceof Error ? error.message : "An unexpected error occurred.");
-    }
-
-    return () => {
-      cancelled = true;
-    };
-  };
+  const { testStatus, testError, handleTestConnection, serviceName } = useTestConnection({
+    serviceType: "defectdojo",
+    serviceName: "DefectDojo",
+    getCredentials,
+    formValuesKey,
+    errorLabels: {
+      unauthorized: "Authentication failed. Check your token.",
+      httpError: (statusCode) => `DefectDojo responded with status ${statusCode}.`,
+    },
+  });
 
   const mode = secret ? FORM_MODES.EDIT : FORM_MODES.CREATE;
 
@@ -84,7 +49,7 @@ export const Actions = () => {
         error={testError}
         onTest={handleTestConnection}
         disabled={!isDirty}
-        serviceName="DefectDojo"
+        serviceName={serviceName}
       />
       <div className="flex flex-row items-center justify-between gap-4">
         {mode === FORM_MODES.CREATE && (
