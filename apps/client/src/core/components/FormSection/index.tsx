@@ -1,23 +1,23 @@
 import React from "react";
-import { Separator } from "@/core/components/ui/separator";
+import { Card } from "@/core/components/ui/card";
+import type { LucideIcon } from "lucide-react";
 
 interface FormSectionProps {
-  icon: React.ReactNode;
+  icon: LucideIcon;
   title: string;
   children: React.ReactNode;
+  headerExtra?: React.ReactNode;
 }
 
-export const FormSection = ({ icon, title, children }: FormSectionProps) => {
+export function FormSection({ icon: Icon, title, children, headerExtra }: FormSectionProps) {
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground [&>svg]:size-4">{icon}</span>
-          <h6 className="text-sm font-medium">{title}</h6>
-        </div>
-        <Separator />
+    <Card className="border-input border bg-transparent p-3">
+      <div className="mb-4 flex items-center gap-2">
+        <Icon className="h-4 w-4 text-blue-600" />
+        <h5 className="text-foreground text-sm font-medium">{title}</h5>
+        {headerExtra}
       </div>
-      <div>{children}</div>
-    </div>
+      {children}
+    </Card>
   );
-};
+}

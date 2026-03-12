@@ -7,7 +7,7 @@ import { SSHPrivateKey, SSHPublicKey, Token } from "./components/fields";
 import { gitProvider } from "@my-project/shared";
 import { ShieldAlert, Shield } from "lucide-react";
 import { useDataContext } from "../../providers/Data/hooks";
-import { Card } from "@/core/components/ui/card";
+import { FormSection } from "@/core/components/FormSection";
 
 export const CredentialsForm = () => {
   const form = useManageGitServerForm();
@@ -47,17 +47,18 @@ export const CredentialsForm = () => {
   }, [gitProviderValue]);
 
   return (
-    <Card className="border-input border bg-transparent p-3">
-      <div className="mb-4 flex items-center gap-2">
-        <Shield className="h-4 w-4 text-blue-600" />
-        <h5 className="text-foreground text-sm font-medium">Authentication</h5>
-        {!!gitServerSecretOwnerReference && (
+    <FormSection
+      icon={Shield}
+      title="Authentication"
+      headerExtra={
+        !!gitServerSecretOwnerReference && (
           <Tooltip title={`Managed by ${gitServerSecretOwnerReference}`}>
             <ShieldAlert size={20} />
           </Tooltip>
-        )}
-      </div>
+        )
+      }
+    >
       <div className="flex flex-col gap-4">{secretFieldsRenderer()}</div>
-    </Card>
+    </FormSection>
   );
 };
