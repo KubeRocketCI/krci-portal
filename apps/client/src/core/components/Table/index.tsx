@@ -255,6 +255,7 @@ export const DataTable = <DataType,>({
                 selected={validSelected}
                 handleSelectAllClick={_handleSelectAllClick}
                 showExpandColumn={!!expandable}
+                showSelectionColumn={shouldShowSelectionColumn}
               />
               <TableBody
                 columns={columns}
