@@ -8,6 +8,7 @@ import { createDefaultValues } from "../../providers/form/constants";
 import { ClusterSecretDataProvider } from "../../providers/data/provider";
 import { useSecretCRUD, useSecretPermissions } from "@/k8s/api/groups/Core/Secret";
 import type { ManageClusterSecretValues } from "../../types";
+import { Separator } from "@/core/components/ui/separator";
 
 export const Create = ({ formData }: CreateProps) => {
   const [activeClusterType, setActiveClusterType] = React.useState<ClusterType>(clusterType.bearer);
@@ -50,13 +51,10 @@ export const Create = ({ formData }: CreateProps) => {
   return (
     <ClusterSecretDataProvider formData={formData}>
       <ClusterSecretFormProvider defaultValues={createDefaultValues} onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-6">
-          <div>
-            <Form activeClusterType={activeClusterType} setActiveClusterType={setActiveClusterType} />
-          </div>
-          <div>
-            <FormActions />
-          </div>
+        <div className="flex flex-col gap-4">
+          <Form activeClusterType={activeClusterType} setActiveClusterType={setActiveClusterType} />
+          <Separator />
+          <FormActions />
         </div>
       </ClusterSecretFormProvider>
     </ClusterSecretDataProvider>

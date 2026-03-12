@@ -10,6 +10,9 @@ import {
 } from "../../../fields";
 import { FieldEvent } from "@/core/types/forms";
 import { clusterType, ClusterType } from "@my-project/shared";
+import { Card } from "@/core/components/ui/card";
+import { Separator } from "@/core/components/ui/separator";
+import { Boxes, Shield } from "lucide-react";
 
 export const Form = ({
   activeClusterType,
@@ -20,27 +23,23 @@ export const Form = ({
 }) => {
   const renderBearerFormPart = React.useCallback(() => {
     return (
-      <>
-        <div>
-          <ClusterToken />
-        </div>
-        <div className="mt-5">
-          <SkipTLSVerify />
-        </div>
-      </>
+      <div className="flex flex-col gap-4">
+        <ClusterToken />
+        <SkipTLSVerify />
+      </div>
     );
   }, []);
 
   const renderIRSAFormPart = React.useCallback(() => {
     return (
-      <>
+      <div className="grid grid-cols-12 gap-4">
         <div className="col-span-6">
           <CaData />
         </div>
         <div className="col-span-6">
           <RoleARN />
         </div>
-      </>
+      </div>
     );
   }, []);
 
@@ -53,18 +52,33 @@ export const Form = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <ClusterTypeField value={activeClusterType} onChange={onClusterChange} />
-      </div>
-      <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-6">
-          <ClusterName />
+      <Card className="border-input border bg-transparent p-3">
+        <div className="mb-4 flex items-center gap-2">
+          <Boxes className="h-4 w-4 text-blue-600" />
+          <h5 className="text-foreground text-sm font-medium">Cluster Configuration</h5>
         </div>
-        <div className="col-span-6">
-          <ClusterHost />
+        <div className="flex flex-col gap-4">
+          <ClusterTypeField value={activeClusterType} onChange={onClusterChange} />
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-6">
+              <ClusterName />
+            </div>
+            <div className="col-span-6">
+              <ClusterHost />
+            </div>
+          </div>
         </div>
-      </div>
-      {activeClusterType === clusterType.bearer ? renderBearerFormPart() : renderIRSAFormPart()}
+      </Card>
+
+      <Separator />
+
+      <Card className="border-input border bg-transparent p-3">
+        <div className="mb-4 flex items-center gap-2">
+          <Shield className="h-4 w-4 text-blue-600" />
+          <h5 className="text-foreground text-sm font-medium">Authentication</h5>
+        </div>
+        {activeClusterType === clusterType.bearer ? renderBearerFormPart() : renderIRSAFormPart()}
+      </Card>
     </div>
   );
 };

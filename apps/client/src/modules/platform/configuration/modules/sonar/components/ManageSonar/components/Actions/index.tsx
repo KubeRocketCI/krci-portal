@@ -1,16 +1,11 @@
 import { Button } from "@/core/components/ui/button";
-import { Tooltip } from "@/core/components/ui/tooltip";
 import React from "react";
 import { useDataContext } from "../../providers/Data/hooks";
 import { FORM_MODES } from "@/core/types/forms";
-import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
-import { Plug, Loader2, CheckCircle2 } from "lucide-react";
 import { useManageSonarForm } from "../../providers/form/hooks";
 import { useStore } from "@tanstack/react-form";
 import { useTRPCClient } from "@/core/providers/trpc";
-import { Alert, AlertRoot, AlertDescription } from "@/core/components/ui/alert";
-
-type TestConnectionStatus = "idle" | "loading" | "success" | "error";
+import { TestConnectionBlock, type TestConnectionStatus } from "@/core/components/TestConnectionBlock";
 
 export const Actions = () => {
   const form = useManageSonarForm();
@@ -83,51 +78,21 @@ export const Actions = () => {
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      {(testStatus === "success" || testStatus === "error") && (
-        <div className="my-2">
-          {testStatus === "success" && (
-            <AlertRoot className="border-green-500 bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200">
-              <CheckCircle2 />
-              <AlertDescription>Connection to SonarQube is working.</AlertDescription>
-            </AlertRoot>
-          )}
-          {testStatus === "error" && <Alert variant="destructive">{testError}</Alert>}
-        </div>
-      )}
+    <div className="flex flex-col gap-4">
+      <TestConnectionBlock
+        status={testStatus}
+        error={testError}
+        onTest={handleTestConnection}
+        disabled={!isDirty}
+        serviceName="SonarQube"
+      />
       <div className="flex flex-row items-center justify-between gap-4">
         {mode === FORM_MODES.CREATE && (
           <Button onClick={handleClosePanel} variant="ghost" size="sm">
             Cancel
           </Button>
         )}
-
-        <ConditionalWrapper
-          condition={!isDirty}
-          wrapper={(children) => (
-            <Tooltip title="Edit credentials to test the connection">
-              <div>{children}</div>
-            </Tooltip>
-          )}
-        >
-          <Button
-            onClick={handleTestConnection}
-            size="sm"
-            variant="outline"
-            disabled={!isDirty || testStatus === "loading"}
-          >
-            {testStatus === "loading" ? (
-              <>
-                <Loader2 className="animate-spin" /> Testing...
-              </>
-            ) : (
-              <>
-                <Plug /> Test Connection
-              </>
-            )}
-          </Button>
-        </ConditionalWrapper>
-        <div className="flex flex-row items-center gap-4">
+        <div className="ml-auto flex flex-row items-center gap-4">
           <Button onClick={() => form.reset()} size="sm" variant="ghost" disabled={!isDirty}>
             Undo Changes
           </Button>

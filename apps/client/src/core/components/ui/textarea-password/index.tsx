@@ -3,11 +3,12 @@ import { Textarea, TextareaProps } from "@/core/components/ui/textarea";
 import { FormField, FormFieldProps } from "@/core/components/ui/form-field";
 import { Button } from "@/core/components/ui/button";
 import { TooltipRoot, TooltipTrigger, TooltipContent } from "@/core/components/ui/tooltip";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, KeyRound } from "lucide-react";
 import { cn } from "@/core/utils/classname";
 
 export interface TextareaPasswordProps extends Omit<FormFieldProps, "children" | "suffix" | "prefix"> {
   showToggle?: boolean;
+  showSecretIcon?: boolean;
   textareaProps?: Partial<Omit<TextareaProps, "invalid">>;
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
@@ -17,6 +18,7 @@ export const TextareaPassword = React.forwardRef<HTMLTextAreaElement, TextareaPa
   (
     {
       showToggle = true,
+      showSecretIcon = true,
       disabled = false,
       label,
       tooltipText,
@@ -59,6 +61,16 @@ export const TextareaPassword = React.forwardRef<HTMLTextAreaElement, TextareaPa
 
     const hasError = !!error;
 
+    const enhancedLabel =
+      label && showSecretIcon ? (
+        <span className="inline-flex items-center gap-1.5">
+          <KeyRound size={14} className="text-muted-foreground" />
+          {label}
+        </span>
+      ) : (
+        label
+      );
+
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       if (onChange) {
         onChange(e);
@@ -67,7 +79,7 @@ export const TextareaPassword = React.forwardRef<HTMLTextAreaElement, TextareaPa
 
     return (
       <FormField
-        label={label}
+        label={enhancedLabel}
         tooltipText={tooltipText}
         helperText={helperText}
         error={error}

@@ -16,9 +16,10 @@ export const ButtonWithPermission = React.forwardRef<
     children: React.ReactNode;
   } & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "children">
 >(({ allowed, reason = "Forbidden", ButtonProps, children, ...rest }, ref) => {
+  const { onClick, disabled, ...restButtonProps } = ButtonProps ?? {};
   return (
     <ConditionalWrapper condition={!allowed} wrapper={(children) => <Tooltip title={reason}>{children}</Tooltip>}>
-      <Button ref={ref} {...ButtonProps} {...rest} disabled={ButtonProps?.disabled || !allowed}>
+      <Button ref={ref} {...restButtonProps} {...rest} onClick={onClick} disabled={disabled || !allowed}>
         {children}
       </Button>
     </ConditionalWrapper>

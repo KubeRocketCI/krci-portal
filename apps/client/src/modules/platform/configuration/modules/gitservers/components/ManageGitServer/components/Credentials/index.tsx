@@ -5,8 +5,9 @@ import { NAMES } from "../../names";
 import { useManageGitServerForm } from "../../providers/form/hooks";
 import { SSHPrivateKey, SSHPublicKey, Token } from "./components/fields";
 import { gitProvider } from "@my-project/shared";
-import { ShieldX } from "lucide-react";
+import { ShieldAlert, Shield } from "lucide-react";
 import { useDataContext } from "../../providers/Data/hooks";
+import { Card } from "@/core/components/ui/card";
 
 export const CredentialsForm = () => {
   const form = useManageGitServerForm();
@@ -46,24 +47,17 @@ export const CredentialsForm = () => {
   }, [gitProviderValue]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <div>
-        <div className="flex items-center gap-2">
-          <div>
-            <h6 className="text-base font-medium">Credentials</h6>
-          </div>
-          {!!gitServerSecretOwnerReference && (
-            <div>
-              <Tooltip title={`Managed by ${gitServerSecretOwnerReference}`}>
-                <ShieldX size={20} />
-              </Tooltip>
-            </div>
-          )}
-        </div>
+    <Card className="border-input border bg-transparent p-3">
+      <div className="mb-4 flex items-center gap-2">
+        <Shield className="h-4 w-4 text-blue-600" />
+        <h5 className="text-foreground text-sm font-medium">Authentication</h5>
+        {!!gitServerSecretOwnerReference && (
+          <Tooltip title={`Managed by ${gitServerSecretOwnerReference}`}>
+            <ShieldAlert size={20} />
+          </Tooltip>
+        )}
       </div>
-      <div>
-        <div className="flex flex-col gap-4">{secretFieldsRenderer()}</div>
-      </div>
-    </div>
+      <div className="flex flex-col gap-4">{secretFieldsRenderer()}</div>
+    </Card>
   );
 };

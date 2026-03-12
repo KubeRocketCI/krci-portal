@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/core/components/ui/accordion";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { Tooltip } from "@/core/components/ui/tooltip";
-import { ShieldX, Trash } from "lucide-react";
+import { ShieldAlert, Trash } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { getIntegrationSecretStatusIcon } from "@/k8s/integrations/secret/utils/getStatusIcon";
@@ -86,32 +86,35 @@ const FormContent = ({
       <AccordionItem value="item-1">
         <AccordionTrigger className="cursor-default">
           <div className="flex w-full items-center justify-between">
-            <h6 className="text-base font-medium">
-              <div className="flex items-center gap-2">
-                <div className="mr-1">
-                  <StatusIcon
-                    Icon={statusIcon.component}
-                    color={statusIcon.color}
-                    Title={
-                      <>
-                        <p className="text-sm font-semibold">
-                          {`Connected: ${status.connected === undefined ? "Unknown" : status.connected}`}
-                        </p>
-                        {!!status.statusError && <p className="mt-3 text-sm font-medium">{status.statusError}</p>}
-                      </>
-                    }
-                  />
-                </div>
-                <div>{secret.metadata.name}</div>
-                {!!ownerReference && (
-                  <div>
-                    <Tooltip title={`Managed by ${ownerReference}`}>
-                      <ShieldX size={20} />
-                    </Tooltip>
+            <div className="flex w-full flex-col items-start gap-1">
+              <h6 className="text-base font-medium">
+                <div className="flex items-center gap-2">
+                  <div className="mr-1">
+                    <StatusIcon
+                      Icon={statusIcon.component}
+                      color={statusIcon.color}
+                      Title={
+                        <>
+                          <p className="text-sm font-semibold">
+                            {`Connected: ${status.connected === undefined ? "Unknown" : status.connected}`}
+                          </p>
+                          {!!status.statusError && <p className="mt-3 text-sm font-medium">{status.statusError}</p>}
+                        </>
+                      }
+                    />
                   </div>
-                )}
-              </div>
-            </h6>
+                  <div>{secret.metadata.name}</div>
+                  {!!ownerReference && (
+                    <div>
+                      <Tooltip title={`Managed by ${ownerReference}`}>
+                        <ShieldAlert size={20} />
+                      </Tooltip>
+                    </div>
+                  )}
+                </div>
+              </h6>
+              <p className="text-muted-foreground text-sm">SonarQube</p>
+            </div>
             <ConditionalWrapper
               condition={!canDelete}
               wrapper={(children) => (

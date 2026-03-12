@@ -3,8 +3,8 @@ import { CircleCheck, CircleX, LoaderCircle, ShieldQuestion } from "lucide-react
 import { STATUS_COLOR } from "@/k8s/constants/colors";
 import { K8sResourceStatusIcon } from "@/k8s/types";
 
-export const getStatusIcon = (resource: Codebase): K8sResourceStatusIcon => {
-  const status = resource.status?.status;
+export const getStatusIcon = (resource: Codebase | undefined): K8sResourceStatusIcon => {
+  const status = resource?.status?.status;
 
   if (status === undefined) {
     return {

@@ -1,6 +1,7 @@
 import { NAMES } from "@/modules/platform/configuration/modules/jira/components/ManageJiraServer/names";
 import { useDataContext } from "@/modules/platform/configuration/modules/jira/components/ManageJiraServer/providers/Data/hooks";
 import { useManageJiraServerForm } from "@/modules/platform/configuration/modules/jira/components/ManageJiraServer/providers/form/hooks";
+import { ManagedByHelper } from "@/core/components/ManagedByHelper";
 
 export const Password = () => {
   const form = useManageJiraServerForm();
@@ -15,7 +16,7 @@ export const Password = () => {
           tooltipText="Provide the password associated with your Jira account."
           placeholder="Enter password"
           disabled={!!secret && !!ownerReference}
-          helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
+          helperText={ownerReference ? <ManagedByHelper ownerReference={ownerReference} /> : undefined}
         />
       )}
     </form.AppField>

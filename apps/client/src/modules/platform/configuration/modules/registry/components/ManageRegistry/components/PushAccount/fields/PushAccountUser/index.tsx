@@ -1,6 +1,7 @@
 import { useDataContext } from "../../../../providers/Data/hooks";
 import { useManageRegistryForm } from "../../../../providers/form/hooks";
 import { NAMES } from "../../../../schema";
+import { ManagedByHelper } from "@/core/components/ManagedByHelper";
 
 export const PushAccountUser = () => {
   const form = useManageRegistryForm();
@@ -25,7 +26,7 @@ export const PushAccountUser = () => {
           label="User"
           tooltipText="Provide the unique identifier linked to your user account on the container registry."
           placeholder="Enter user name"
-          helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
+          helperText={ownerReference ? <ManagedByHelper ownerReference={ownerReference} /> : undefined}
           disabled={!!ownerReference}
         />
       )}

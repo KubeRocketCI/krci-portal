@@ -8,6 +8,7 @@ import { ClusterSecretDataProvider } from "../../providers/data/provider";
 import { useSecretCRUD } from "@/k8s/api/groups/Core/Secret";
 import { editClusterSecret } from "@my-project/shared";
 import type { ManageClusterSecretValues } from "../../types";
+import { Separator } from "@/core/components/ui/separator";
 
 export const Edit = ({ formData }: EditProps) => {
   const baseDefaultValues = useDefaultValues({ formData });
@@ -55,13 +56,10 @@ export const Edit = ({ formData }: EditProps) => {
   return (
     <ClusterSecretDataProvider formData={formData}>
       <ClusterSecretFormProvider defaultValues={baseDefaultValues} onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-6">
-          <div>
-            <Form />
-          </div>
-          <div>
-            <FormActions />
-          </div>
+        <div className="flex flex-col gap-4">
+          <Form />
+          <Separator />
+          <FormActions />
         </div>
       </ClusterSecretFormProvider>
     </ClusterSecretDataProvider>

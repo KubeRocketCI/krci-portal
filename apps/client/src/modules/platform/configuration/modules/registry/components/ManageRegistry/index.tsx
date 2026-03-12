@@ -17,6 +17,7 @@ import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { FORM_MODES } from "@/core/types/forms";
 import { toast } from "sonner";
+import { Separator } from "@/core/components/ui/separator";
 
 const satisfiesType = (registryType: string, allowedTypes: string[]) => {
   return registryType && allowedTypes.includes(registryType);
@@ -171,14 +172,13 @@ const ManageRegistryFormContent = ({ handleCloseCreateDialog }: { handleCloseCre
   const registryType = useStore(form.store, (state) => state.values[NAMES.REGISTRY_TYPE]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <ConfigMapForm />
-      </div>
+    <div className="flex flex-col gap-4">
+      <ConfigMapForm />
       {satisfiesType(registryType, [containerRegistryType.ecr]) && (
-        <div>
+        <>
+          <Separator />
           <ServiceAccountForm />
-        </div>
+        </>
       )}
       {satisfiesType(registryType, [
         containerRegistryType.harbor,
@@ -187,9 +187,10 @@ const ManageRegistryFormContent = ({ handleCloseCreateDialog }: { handleCloseCre
         containerRegistryType.dockerhub,
         containerRegistryType.ghcr,
       ]) && (
-        <div>
+        <>
+          <Separator />
           <PushAccountForm />
-        </div>
+        </>
       )}
       {satisfiesType(registryType, [
         containerRegistryType.harbor,
@@ -197,9 +198,10 @@ const ManageRegistryFormContent = ({ handleCloseCreateDialog }: { handleCloseCre
         containerRegistryType.dockerhub,
         containerRegistryType.ghcr,
       ]) && (
-        <div>
+        <>
+          <Separator />
           <UseSameAccount />
-        </div>
+        </>
       )}
       {satisfiesType(registryType, [
         containerRegistryType.harbor,
@@ -207,13 +209,13 @@ const ManageRegistryFormContent = ({ handleCloseCreateDialog }: { handleCloseCre
         containerRegistryType.dockerhub,
         containerRegistryType.ghcr,
       ]) && (
-        <div>
+        <>
+          <Separator />
           <PullAccountForm />
-        </div>
+        </>
       )}
-      <div>
-        <Actions handleCloseCreateDialog={handleCloseCreateDialog} />
-      </div>
+      <Separator />
+      <Actions handleCloseCreateDialog={handleCloseCreateDialog} />
     </div>
   );
 };

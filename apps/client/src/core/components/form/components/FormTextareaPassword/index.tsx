@@ -6,7 +6,7 @@ export interface FormTextareaPasswordProps {
   label?: string;
   placeholder?: string;
   tooltipText?: React.ReactNode;
-  helperText?: string;
+  helperText?: React.ReactNode;
   disabled?: boolean;
   rows?: number;
   showToggle?: boolean;

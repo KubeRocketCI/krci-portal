@@ -1,16 +1,15 @@
 import { IrsaRoleArn } from "./fields";
+import { Card } from "@/core/components/ui/card";
+import { Shield } from "lucide-react";
 
 export const ServiceAccountForm = () => {
   return (
-    <div>
-      <div className="flex flex-col gap-4">
-        <div>
-          <h6 className="text-base font-medium">Authentication</h6>
-        </div>
-        <div>
-          <IrsaRoleArn />
-        </div>
+    <Card className="border-input border bg-transparent p-3">
+      <div className="mb-4 flex items-center gap-2">
+        <Shield className="h-4 w-4 text-blue-600" />
+        <h5 className="text-foreground text-sm font-medium">Authentication</h5>
       </div>
-    </div>
+      <IrsaRoleArn />
+    </Card>
   );
 };
