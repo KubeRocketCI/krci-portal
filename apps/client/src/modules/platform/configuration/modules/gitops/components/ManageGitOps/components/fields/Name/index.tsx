@@ -35,7 +35,7 @@ export const Name = () => {
         <field.FormTextField
           label="Repository Name"
           tooltipText="Specify a unique repository name."
-          prefix={<div className="flex items-center px-5">/</div>}
+          prefix={<div className="bg-input/50 flex items-center px-5">/</div>}
           disabled={isReadOnly}
         />
       )}

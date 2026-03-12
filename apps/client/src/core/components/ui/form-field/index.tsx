@@ -8,9 +8,9 @@ import { useFormGuide } from "@/core/providers/FormGuide/hooks";
 import { cn } from "@/core/utils/classname";
 
 export interface FormFieldProps {
-  label?: string;
+  label?: React.ReactNode;
   tooltipText?: React.ReactNode;
-  helperText?: string;
+  helperText?: React.ReactNode;
   error?: string | boolean;
   required?: boolean;
   disabled?: boolean;

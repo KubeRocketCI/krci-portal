@@ -5,7 +5,7 @@ import { useFieldContext } from "../../form-context";
 export interface FormTextFieldPasswordProps {
   label?: string;
   tooltipText?: string;
-  helperText?: string;
+  helperText?: React.ReactNode;
   placeholder?: string;
   disabled?: boolean;
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>;

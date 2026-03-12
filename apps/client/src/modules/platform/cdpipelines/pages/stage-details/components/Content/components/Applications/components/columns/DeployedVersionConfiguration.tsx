@@ -76,7 +76,7 @@ export const DeployedVersionConfigurationColumn = ({
                   }}
                   disabled={!imageStreamTagsOptions.length}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="text-start">
                     <SelectValue placeholder={label} />
                   </SelectTrigger>
                   <SelectContent>

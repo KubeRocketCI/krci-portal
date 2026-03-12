@@ -80,9 +80,12 @@ export default function RegistryConfigurationPage() {
         <Accordion type="single" collapsible defaultValue="item-1">
           <AccordionItem value="item-1">
             <AccordionTrigger className="cursor-default">
-              <h6 className="text-base font-medium">
-                {containerRegistryTypeLabelMap[registryType as ContainerRegistryType]}
-              </h6>
+              <div className="flex w-full flex-col items-start gap-1">
+                <h6 className="text-base font-medium">
+                  {containerRegistryTypeLabelMap[registryType as ContainerRegistryType]}
+                </h6>
+                <p className="text-muted-foreground text-sm">Container Registry</p>
+              </div>
             </AccordionTrigger>
             <AccordionContent>
               <div className="flex flex-col gap-4">

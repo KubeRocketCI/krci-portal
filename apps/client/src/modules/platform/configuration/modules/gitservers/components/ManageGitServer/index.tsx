@@ -13,6 +13,7 @@ import { useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
 import { createGitServerSecretName, safeDecode } from "@my-project/shared";
 import { toast } from "sonner";
 import { gitProvider } from "@my-project/shared";
+import { Separator } from "@/core/components/ui/separator";
 
 export const ManageGitServer = ({ gitServer, webhookURL, handleClosePanel }: ManageGitServerProps) => {
   const trpc = useTRPCClient();
@@ -164,16 +165,12 @@ export const ManageGitServer = ({ gitServer, webhookURL, handleClosePanel }: Man
           onSubmit={handleSubmit}
           onSubmitError={handleSubmitError}
         >
-          <div className="flex flex-col gap-6">
-            <div>
-              <GitServerForm />
-            </div>
-            <div>
-              <CredentialsForm />
-            </div>
-            <div>
-              <Actions />
-            </div>
+          <div className="flex flex-col gap-4">
+            <GitServerForm />
+            <Separator />
+            <CredentialsForm />
+            <Separator />
+            <Actions />
           </div>
         </ManageGitServerFormProvider>
       </DataContextProvider>

@@ -1,6 +1,7 @@
 import { useDataContext } from "../../../../providers/Data/hooks";
 import { useManageRegistryForm } from "../../../../providers/form/hooks";
 import { NAMES } from "../../../../schema";
+import { ManagedByHelper } from "@/core/components/ManagedByHelper";
 
 export const PullAccountPassword = () => {
   const form = useManageRegistryForm();
@@ -15,7 +16,7 @@ export const PullAccountPassword = () => {
           label="Password / Token"
           tooltipText="Enter the confidential combination used for authenticating your access to the container registry."
           placeholder="Enter password or token"
-          helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
+          helperText={ownerReference ? <ManagedByHelper ownerReference={ownerReference} /> : undefined}
           disabled={!!ownerReference}
         />
       )}

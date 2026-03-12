@@ -3,6 +3,7 @@ import { CLUSTER_FORM_NAMES } from "../../../names";
 import { useClusterSecretForm } from "../../../providers/form/hooks";
 import { useClusterSecretData } from "../../../providers/data/hooks";
 import { FORM_MODES } from "@/core/types/forms";
+import { ManagedByHelper } from "@/core/components/ManagedByHelper";
 
 export const SkipTLSVerify = () => {
   const form = useClusterSecretForm();
@@ -14,6 +15,7 @@ export const SkipTLSVerify = () => {
       {(field) => (
         <field.FormSwitch
           label="Skip TLS verification"
+          description="Not recommended for production environments"
           rich
           variant="card"
           disabled={mode === FORM_MODES.EDIT && !!ownerReference}
@@ -34,7 +36,7 @@ export const SkipTLSVerify = () => {
                     tooltipText="Provide a Kubernetes certificate required for proper authentication. Take this certificate from the config file of the user you are going to access the cluster."
                     placeholder="Enter cluster certificate"
                     disabled={mode === FORM_MODES.EDIT && !!ownerReference}
-                    helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
+                    helperText={ownerReference ? <ManagedByHelper ownerReference={ownerReference} /> : undefined}
                   />
                 )}
               </form.AppField>

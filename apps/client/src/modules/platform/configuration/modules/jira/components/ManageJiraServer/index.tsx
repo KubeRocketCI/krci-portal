@@ -12,9 +12,10 @@ import { useShallow } from "zustand/react/shallow";
 import { safeDecode, k8sSecretConfig } from "@my-project/shared";
 import { toast } from "sonner";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/core/components/ui/accordion";
+import { Separator } from "@/core/components/ui/separator";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { Tooltip } from "@/core/components/ui/tooltip";
-import { ShieldX, Trash } from "lucide-react";
+import { ShieldAlert, Trash } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { getJiraServerStatusIcon } from "@/k8s/api/groups/KRCI/JiraServer";
@@ -63,16 +64,12 @@ const FormContent = ({
 
   if (!secret || !jiraServer) {
     return (
-      <div className="flex flex-col gap-6">
-        <div>
-          <JiraServerForm />
-        </div>
-        <div>
-          <SecretForm />
-        </div>
-        <div>
-          <Actions />
-        </div>
+      <div className="flex flex-col gap-4">
+        <JiraServerForm />
+        <Separator />
+        <SecretForm />
+        <Separator />
+        <Actions />
       </div>
     );
   }
@@ -85,34 +82,37 @@ const FormContent = ({
       <AccordionItem value="item-1">
         <AccordionTrigger className="cursor-default">
           <div className="flex w-full items-center justify-between">
-            <h6 className="text-base font-medium">
-              <div className="flex items-center gap-2">
-                <div className="mr-1">
-                  <StatusIcon
-                    Icon={statusIcon.component}
-                    color={statusIcon.color}
-                    Title={
-                      <>
-                        <p className="text-sm font-semibold">
-                          {`Status: ${status === undefined ? "Unknown" : status}`}
-                        </p>
-                        {!!jiraServer.status?.detailed_message && (
-                          <p className="mt-3 text-sm font-medium">{jiraServer.status.detailed_message}</p>
-                        )}
-                      </>
-                    }
-                  />
-                </div>
-                <div>{secret.metadata.name}</div>
-                {!!ownerReference && (
-                  <div>
-                    <Tooltip title={`Managed by ${ownerReference}`}>
-                      <ShieldX size={20} />
-                    </Tooltip>
+            <div className="flex w-full flex-col items-start gap-1">
+              <h6 className="text-base font-medium">
+                <div className="flex items-center gap-2">
+                  <div className="mr-1">
+                    <StatusIcon
+                      Icon={statusIcon.component}
+                      color={statusIcon.color}
+                      Title={
+                        <>
+                          <p className="text-sm font-semibold">
+                            {`Status: ${status === undefined ? "Unknown" : status}`}
+                          </p>
+                          {!!jiraServer.status?.detailed_message && (
+                            <p className="mt-3 text-sm font-medium">{jiraServer.status.detailed_message}</p>
+                          )}
+                        </>
+                      }
+                    />
                   </div>
-                )}
-              </div>
-            </h6>
+                  <div>{secret.metadata.name}</div>
+                  {!!ownerReference && (
+                    <div>
+                      <Tooltip title={`Managed by ${ownerReference}`}>
+                        <ShieldAlert size={20} />
+                      </Tooltip>
+                    </div>
+                  )}
+                </div>
+              </h6>
+              <p className="text-muted-foreground text-sm">Jira Server</p>
+            </div>
             <ConditionalWrapper
               condition={!canDelete}
               wrapper={(children) => (
@@ -137,16 +137,12 @@ const FormContent = ({
           </div>
         </AccordionTrigger>
         <AccordionContent>
-          <div className="flex flex-col gap-6">
-            <div>
-              <JiraServerForm />
-            </div>
-            <div>
-              <SecretForm />
-            </div>
-            <div>
-              <Actions />
-            </div>
+          <div className="flex flex-col gap-4">
+            <JiraServerForm />
+            <Separator />
+            <SecretForm />
+            <Separator />
+            <Actions />
           </div>
         </AccordionContent>
       </AccordionItem>

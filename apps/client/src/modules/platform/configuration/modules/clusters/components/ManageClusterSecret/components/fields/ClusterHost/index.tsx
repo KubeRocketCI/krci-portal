@@ -4,11 +4,15 @@ import { useClusterSecretData } from "../../../providers/data/hooks";
 import { FORM_MODES } from "@/core/types/forms";
 import { getValidURLPattern } from "@/core/utils/getValidURLPattern";
 import { VALIDATED_PROTOCOL } from "@/k8s/constants/validatedProtocols";
+import { CopyToClipboardButton } from "@/core/components/FieldSuffixButtons";
+import { ManagedByHelper } from "@/core/components/ManagedByHelper";
+import { useStore } from "@tanstack/react-form";
 
 export const ClusterHost = () => {
   const form = useClusterSecretForm();
   const { mode, ownerReference } = useClusterSecretData();
   const urlPattern = getValidURLPattern(VALIDATED_PROTOCOL.STRICT_HTTPS);
+  const clusterHost = useStore(form.store, (state) => state.values[CLUSTER_FORM_NAMES.CLUSTER_HOST]);
 
   return (
     <form.AppField
@@ -35,7 +39,8 @@ export const ClusterHost = () => {
           }
           placeholder="Enter cluster host"
           disabled={mode === FORM_MODES.EDIT && !!ownerReference}
-          helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
+          helperText={ownerReference ? <ManagedByHelper ownerReference={ownerReference} /> : undefined}
+          suffix={<CopyToClipboardButton getValue={() => clusterHost} />}
         />
       )}
     </form.AppField>

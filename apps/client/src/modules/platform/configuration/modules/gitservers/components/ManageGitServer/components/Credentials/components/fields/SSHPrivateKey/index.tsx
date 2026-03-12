@@ -1,6 +1,7 @@
 import { NAMES } from "@/modules/platform/configuration/modules/gitservers/components/ManageGitServer/names";
 import { useManageGitServerForm } from "@/modules/platform/configuration/modules/gitservers/components/ManageGitServer/providers/form/hooks";
 import { useDataContext } from "@/modules/platform/configuration/modules/gitservers/components/ManageGitServer/providers/Data/hooks";
+import { ManagedByHelper } from "@/core/components/ManagedByHelper";
 
 export const SSHPrivateKey = () => {
   const form = useManageGitServerForm();
@@ -16,9 +17,9 @@ export const SSHPrivateKey = () => {
           placeholder="-----BEGIN OPENSSH PRIVATE KEY-----\n"
           rows={6}
           helperText={
-            gitServerSecretOwnerReference
-              ? `This field value is managed by ${gitServerSecretOwnerReference}`
-              : undefined
+            gitServerSecretOwnerReference ? (
+              <ManagedByHelper ownerReference={gitServerSecretOwnerReference} />
+            ) : undefined
           }
           disabled={!!gitServerSecretOwnerReference}
         />

@@ -7,15 +7,20 @@ import { useApplicationPermissions } from "@/k8s/api/groups/ArgoCD/Application";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/core/components/ui/accordion";
 import { Tooltip } from "@/core/components/ui/tooltip";
+import { Badge } from "@/core/components/ui/badge";
 import {
   SECRET_LABEL_SECRET_TYPE,
   SECRET_ANNOTATION_CLUSTER_CONNECTED,
   SECRET_ANNOTATION_CLUSTER_ERROR,
+  SECRET_LABEL_CLUSTER_TYPE,
+  clusterType,
+  parseConfigJson,
+  safeDecode,
 } from "@my-project/shared";
 import React from "react";
 import { ManageClusterSecret } from "./components/ManageClusterSecret";
 import { getClusterSecretStatusIcon } from "@/k8s/integrations/secret/utils/getStatusIcon";
-import { ShieldX } from "lucide-react";
+import { ShieldAlert, Boxes, Key } from "lucide-react";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
 import { pageDescription } from "./constants";
 import { FORM_MODES } from "@/core/types/forms";
@@ -87,11 +92,25 @@ export default function ClustersConfigurationPage() {
               const clusterName = clusterSecret.metadata.name;
               const ownerReference = clusterSecret?.metadata?.ownerReferences?.[0]?.kind;
 
+              // Get cluster type and host for display
+              const clusterTypeValue = clusterSecret.metadata?.labels?.[SECRET_LABEL_CLUSTER_TYPE];
+              const clusterTypeLabel = clusterTypeValue === clusterType.irsa ? "IRSA" : "Bearer";
+              const ClusterTypeIcon = clusterTypeValue === clusterType.irsa ? Key : Boxes;
+
+              // Get cluster host based on type
+              let clusterHost: string | undefined;
+              if (clusterTypeValue === clusterType.irsa) {
+                clusterHost = safeDecode(clusterSecret.data?.server || "");
+              } else {
+                const config = parseConfigJson(clusterSecret.data?.config || "");
+                clusterHost = config?.clusters?.[0]?.cluster?.server;
+              }
+
               return (
                 <div key={clusterSecret.metadata.uid}>
                   <AccordionItem value={clusterName}>
                     <AccordionTrigger className={singleItem ? "cursor-default" : "cursor-pointer"}>
-                      <h6 className="text-base font-medium">
+                      <div className="flex w-full flex-col items-start gap-1">
                         <div className="flex items-center gap-2">
                           <div className="mr-1">
                             <StatusIcon
@@ -107,16 +126,21 @@ export default function ClustersConfigurationPage() {
                               }
                             />
                           </div>
-                          <div>{clusterName}</div>
+                          <h6 className="text-base font-medium">{clusterName}</h6>
+                          <Badge variant="secondary" className="inline-flex items-center gap-1 text-xs">
+                            <ClusterTypeIcon size={12} />
+                            {clusterTypeLabel}
+                          </Badge>
                           {!!ownerReference && (
                             <div>
                               <Tooltip title={`Managed by ${ownerReference}`}>
-                                <ShieldX size={20} />
+                                <ShieldAlert size={20} />
                               </Tooltip>
                             </div>
                           )}
                         </div>
-                      </h6>
+                        {clusterHost && <p className="text-muted-foreground text-sm">{clusterHost}</p>}
+                      </div>
                     </AccordionTrigger>
                     <AccordionContent>
                       <ManageClusterSecret

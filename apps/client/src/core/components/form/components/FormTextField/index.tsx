@@ -10,7 +10,7 @@ export interface FormTextFieldProps {
   label?: string;
   placeholder?: string;
   tooltipText?: React.ReactNode;
-  helperText?: string;
+  helperText?: React.ReactNode;
   disabled?: boolean;
   type?: "text" | "email" | "number" | "tel" | "url" | "password";
   editable?: boolean;

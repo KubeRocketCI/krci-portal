@@ -81,25 +81,28 @@ export default function GitserversConfigurationPage() {
                 <div key={gitServer.metadata.uid}>
                   <AccordionItem value={gitServerName}>
                     <AccordionTrigger className={singleItem ? "cursor-default" : "cursor-pointer"}>
-                      <h6 className="text-base font-medium">
-                        <div className="flex items-center gap-2">
-                          <div className="mr-1">
-                            <StatusIcon
-                              Icon={statusIcon.component}
-                              color={statusIcon.color}
-                              Title={
-                                <>
-                                  <p className="text-sm font-semibold">
-                                    {`Connected: ${connected === undefined ? "Unknown" : connected}`}
-                                  </p>
-                                  {!!error && <p className="mt-3 text-sm font-medium">{error}</p>}
-                                </>
-                              }
-                            />
+                      <div className="flex w-full flex-col items-start gap-1">
+                        <h6 className="text-base font-medium">
+                          <div className="flex items-center gap-2">
+                            <div className="mr-1">
+                              <StatusIcon
+                                Icon={statusIcon.component}
+                                color={statusIcon.color}
+                                Title={
+                                  <>
+                                    <p className="text-sm font-semibold">
+                                      {`Connected: ${connected === undefined ? "Unknown" : connected}`}
+                                    </p>
+                                    {!!error && <p className="mt-3 text-sm font-medium">{error}</p>}
+                                  </>
+                                }
+                              />
+                            </div>
+                            <div>{gitServerName}</div>
                           </div>
-                          <div>{gitServerName}</div>
-                        </div>
-                      </h6>
+                        </h6>
+                        {webhookURL && <p className="text-muted-foreground text-sm">{webhookURL}</p>}
+                      </div>
                     </AccordionTrigger>
                     <AccordionContent>
                       <ManageGitServer

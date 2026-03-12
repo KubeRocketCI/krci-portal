@@ -2,6 +2,7 @@ import { CLUSTER_FORM_NAMES } from "../../../names";
 import { useClusterSecretForm } from "../../../providers/form/hooks";
 import { useClusterSecretData } from "../../../providers/data/hooks";
 import { FORM_MODES } from "@/core/types/forms";
+import { ManagedByHelper } from "@/core/components/ManagedByHelper";
 
 export const RoleARN = () => {
   const form = useClusterSecretForm();
@@ -23,7 +24,7 @@ export const RoleARN = () => {
           type="password"
           placeholder="Enter Role ARN."
           disabled={mode === FORM_MODES.EDIT && !!ownerReference}
-          helperText={ownerReference ? `This field value is managed by ${ownerReference}` : undefined}
+          helperText={ownerReference ? <ManagedByHelper ownerReference={ownerReference} /> : undefined}
         />
       )}
     </form.AppField>

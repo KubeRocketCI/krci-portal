@@ -83,6 +83,10 @@ export default function GitopsConfigurationPage() {
       );
     }
 
+    if (!gitOpsCodebase) {
+      return <LoadingWrapper isLoading={isLoading}>{null}</LoadingWrapper>;
+    }
+
     const codebaseStatusIcon = getCodebaseStatusIcon(gitOpsCodebase);
 
     return (

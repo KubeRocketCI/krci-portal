@@ -46,7 +46,7 @@ export const GitRepoPath = () => {
           label="Git repo relative path"
           tooltipText="Enter your account name where the repository will be stored."
           placeholder="Indicate the repository relative path in the following format project/repository"
-          prefix={<div className="flex items-center px-5">/</div>}
+          prefix={<div className="bg-input/50 flex items-center px-5">/</div>}
           disabled={isReadOnly}
         />
       )}
