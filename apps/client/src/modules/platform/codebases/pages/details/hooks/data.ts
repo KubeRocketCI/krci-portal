@@ -3,6 +3,7 @@ import { useCodebaseWatchItem } from "@/k8s/api/groups/KRCI/Codebase";
 import { useCodebaseBranchWatchList } from "@/k8s/api/groups/KRCI/CodebaseBranch";
 import { useGitServerWatchItem } from "@/k8s/api/groups/KRCI/GitServer";
 import { useQuickLinkWatchList } from "@/k8s/api/groups/KRCI/QuickLink";
+import { useQuickLinkWatchURLs } from "@/k8s/api/groups/KRCI/QuickLink/hooks/useQuickLinksUrlListQuery";
 import { useStageWatchList } from "@/k8s/api/groups/KRCI/Stage";
 import { usePipelineRunWatchList } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { useTriggerTemplateWatchItem } from "@/k8s/api/groups/Tekton/TriggerTemplate";
@@ -197,4 +198,10 @@ export const useCodebaseStagesWatch = () => {
   return useStageWatchList({
     namespace: params.namespace,
   });
+};
+
+export const useQuickLinksUrlListWatch = () => {
+  const params = routeProjectDetails.useParams();
+
+  return useQuickLinkWatchURLs(params.namespace);
 };
