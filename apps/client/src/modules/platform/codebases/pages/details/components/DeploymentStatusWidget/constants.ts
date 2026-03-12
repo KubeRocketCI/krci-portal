@@ -1,6 +1,4 @@
 export const columnNames = {
   DEPLOYMENT: "deployment",
-  ENVIRONMENT: "environment",
-  STATUS: "status",
-  VERSION: "version",
+  ENVIRONMENTS: "environments",
 } as const;

@@ -13,8 +13,9 @@ import {
 } from "openid-client";
 import { TRPCError } from "@trpc/server";
 import { type OIDCUser, OIDCUserSchema, tryParseJsonArray } from "@my-project/shared";
-import { createRemoteJWKSet, decodeJwt, errors as joseErrors, jwtVerify } from "jose";
+import { createRemoteJWKSet, errors as joseErrors, jwtVerify } from "jose";
 
+import { getJwtPayloadClaim } from "../../utils/jwt/index.js";
 import { getTokenExpirationTime } from "../../utils/getTokenExpirationTime/index.js";
 
 /**
@@ -255,9 +256,9 @@ export class OIDCClient {
       if (response.id_token && looksLikeJWT(response.id_token)) {
         if (looksLikeJWT(currentSecret.idToken)) {
           try {
-            const currentSub = decodeJwt(currentSecret.idToken).sub;
-            const newSub = decodeJwt(response.id_token).sub;
-            if (currentSub && newSub && currentSub !== newSub) {
+            const currentSub = getJwtPayloadClaim(currentSecret.idToken, "sub");
+            const newSub = getJwtPayloadClaim(response.id_token, "sub");
+            if (typeof currentSub === "string" && typeof newSub === "string" && currentSub !== newSub) {
               console.error("[OIDC] id_token subject changed during refresh — possible token substitution");
               throw new TRPCError({
                 code: "UNAUTHORIZED",

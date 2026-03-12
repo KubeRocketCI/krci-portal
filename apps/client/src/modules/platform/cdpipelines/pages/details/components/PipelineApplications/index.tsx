@@ -202,6 +202,7 @@ export const PipelineApplications = () => {
                                 stage: stage.spec.name,
                               }}
                             >
+                              <ENTITY_ICON.stage className="text-muted-foreground/70 mr-1.5 shrink-0" />
                               {stage.spec.name}
                             </Link>
                           </Button>
@@ -244,6 +245,7 @@ export const PipelineApplications = () => {
                               stage: stage.spec.name,
                             }}
                           >
+                            <ENTITY_ICON.stage className="text-muted-foreground/70 mr-1.5 shrink-0" />
                             {stage.spec.name}
                           </Link>
                         </Button>
@@ -258,7 +260,7 @@ export const PipelineApplications = () => {
                         </div>
                         <div>
                           <div className="text-muted-foreground mb-1 text-xs">Namespace</div>
-                          <div className="text-foreground">{stage.spec.namespace}</div>
+                          <ScrollCopyText text={stage.spec.namespace} className="w-full max-w-full" />
                         </div>
                         <div>
                           <div className="text-muted-foreground mb-1 text-xs">Cluster</div>
