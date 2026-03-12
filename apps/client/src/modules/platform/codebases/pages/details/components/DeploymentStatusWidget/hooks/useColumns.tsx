@@ -46,7 +46,7 @@ export const useColumns = (): TableColumn<PipelineDeployment>[] => {
         data: {
           render: ({ data }) => {
             const deployedCount = data.argoApps.size;
-            const totalCount = data.totalStages;
+            const totalCount = data.stages.length;
 
             return (
               <span className="text-muted-foreground text-sm">
