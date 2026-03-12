@@ -61,7 +61,7 @@ export const useTabs = (): Tab[] => {
         icon: <Network className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.diagram),
         component: (
-          <Card className="h-full p-6">
+          <Card className="flex h-full w-full grow flex-col">
             <Diagram />
           </Card>
         ),
