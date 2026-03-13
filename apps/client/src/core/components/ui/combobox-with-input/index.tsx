@@ -63,11 +63,11 @@ export const ComboboxWithInput = React.forwardRef<HTMLInputElement, ComboboxWith
       setOpen(false);
     };
 
-    // Filter options based on input value
+    // Filter options only when the user is actively typing (inputValue
+    // differs from the committed field value). When they match the user
+    // is just viewing a pre-selected value, so show the full list.
     const availableOptions = React.useMemo(() => {
-      if (!inputValue.trim()) {
-        return options;
-      }
+      if (!inputValue.trim() || inputValue === value) return options;
 
       const searchTerm = inputValue.toLowerCase();
       return options.filter((option) => {
@@ -75,7 +75,7 @@ export const ComboboxWithInput = React.forwardRef<HTMLInputElement, ComboboxWith
         const labelMatch = typeof option.label === "string" ? option.label.toLowerCase().includes(searchTerm) : false;
         return valueMatch || labelMatch;
       });
-    }, [options, inputValue]);
+    }, [options, inputValue, value]);
 
     return (
       <Popover open={open} onOpenChange={setOpen} modal={false}>

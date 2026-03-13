@@ -57,7 +57,7 @@ export function ExternalServices({ stage }: ExternalServicesProps) {
           <QuickLink
             name={quickLinkUiNames[systemQuickLink.argocd]}
             icon={argocdQuickLink?.spec?.icon}
-            href={LinkCreationService.argocd.createStageLink(argocdBaseURL, params.name, stage.spec.clusterName)}
+            href={LinkCreationService.argocd.createStageLink(argocdBaseURL, params.name, stage.spec.name)}
             setupAction={quickLinkSetupAction(argocdQuickLink)}
             display="text"
             variant="link"

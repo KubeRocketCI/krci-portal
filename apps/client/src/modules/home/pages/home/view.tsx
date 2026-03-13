@@ -352,7 +352,7 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="mr-10 flex items-center gap-2">
               <Link to={EDP_USER_GUIDE.OVERVIEW.url} target="_blank" rel="noopener noreferrer">
                 <Button variant="outline">Documentation</Button>
               </Link>
