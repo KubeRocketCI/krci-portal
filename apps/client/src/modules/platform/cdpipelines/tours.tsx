@@ -168,7 +168,7 @@ export const CDPIPELINE_TOURS = {
             </p>
           </TourStepContent>
         ),
-        placement: "top",
+        placement: "top-end",
         prerequisite: {
           to: PATH_CDPIPELINE_DETAILS_FULL,
           search: (prev) => ({ ...prev, tab: routeSearchTabName.applications }),
@@ -366,7 +366,7 @@ export const CDPIPELINE_TOURS = {
             </p>
           </TourStepContent>
         ),
-        placement: "top",
+        placement: "top-end",
         prerequisite: {
           to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
           search: (prev) => ({ ...prev, tab: stageTabName.pipelines, applicationsMode: undefined }),
@@ -384,7 +384,7 @@ export const CDPIPELINE_TOURS = {
             </p>
           </TourStepContent>
         ),
-        placement: "top",
+        placement: "top-end",
         prerequisite: {
           to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
           search: (prev) => ({ ...prev, tab: stageTabName.variables, applicationsMode: undefined }),
@@ -402,7 +402,7 @@ export const CDPIPELINE_TOURS = {
             </p>
           </TourStepContent>
         ),
-        placement: "top",
+        placement: "top-end",
         prerequisite: {
           to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
           search: (prev) => ({ ...prev, tab: stageTabName.monitoring, applicationsMode: undefined }),

@@ -7,4 +7,5 @@ export const FormGuideContext = createContext<FormGuideContextValue>({
   currentStep: undefined,
   fields: [],
   docUrl: undefined,
+  hasContent: false,
 });

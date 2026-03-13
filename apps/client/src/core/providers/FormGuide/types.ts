@@ -18,4 +18,5 @@ export interface FormGuideContextValue {
   currentStep: FormGuideStep | undefined;
   fields: FormGuideFieldDescription[];
   docUrl?: string;
+  hasContent: boolean;
 }

@@ -4,9 +4,11 @@ import { useFormGuide } from "@/core/providers/FormGuide/hooks";
 import { TOURS_CONFIG, useAutoTour } from "@/modules/tours";
 
 export function FormGuideToggleButton() {
-  const { isOpen, toggle } = useFormGuide();
+  const { isOpen, toggle, hasContent } = useFormGuide();
 
   useAutoTour(TOURS_CONFIG.formGuide, 500);
+
+  if (!hasContent) return null;
 
   return (
     <Button
