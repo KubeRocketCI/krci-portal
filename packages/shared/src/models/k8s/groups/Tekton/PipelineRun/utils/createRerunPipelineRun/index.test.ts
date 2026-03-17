@@ -24,6 +24,10 @@ describe("testing createRerunPipelineRun", () => {
           "app.edp.epam.com/codebase": "test-codebase-name",
           "app.edp.epam.com/codebasebranch": "test-codebase-name-test-codebase-branch-name-very-long-long-name",
           "app.edp.epam.com/pipelinetype": "build",
+          "tekton.dev/pipeline": "test-build-pipeline",
+          "triggers.tekton.dev/trigger": "github-review",
+          "triggers.tekton.dev/eventlistener": "edp-github",
+          "triggers.tekton.dev/triggers-eventid": "5187e897-8686-42e3-8fbf-1cc0de1b83b7",
         },
       },
       spec: {
