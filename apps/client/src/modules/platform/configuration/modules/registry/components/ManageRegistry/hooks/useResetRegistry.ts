@@ -21,7 +21,7 @@ export const useResetRegistry = ({
   pushAccountSecret: Secret | undefined;
   pullAccountSecret: Secret | undefined;
   tektonServiceAccount: ServiceAccount | undefined;
-  onSuccess: () => void;
+  onSuccess?: () => void;
 }) => {
   const registryType = EDPConfigMap?.data?.container_registry_type;
   const secretsArray = [pushAccountSecret, pullAccountSecret].filter(Boolean);

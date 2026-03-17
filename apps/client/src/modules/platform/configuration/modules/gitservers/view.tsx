@@ -1,16 +1,18 @@
 import { EmptyList } from "@/core/components/EmptyList";
 import { ErrorContent } from "@/core/components/ErrorContent";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { StatusIcon } from "@/core/components/StatusIcon";
 import { useSecretPermissions } from "@/k8s/api/groups/Core/Secret";
 import { useGitServerPermissions, useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
-import { getGitServerStatusIcon } from "@/k8s/api/groups/KRCI/GitServer/utils";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/core/components/ui/accordion";
 import React from "react";
-import { ManageGitServer } from "./components/ManageGitServer";
+import { CreateGitServerForm } from "./components/CreateGitServerForm";
+import { GitServerCard } from "./components/GitServerCard";
+import { EditGitServerDialog } from "./components/EditGitServerDialog";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
 import { pageDescription } from "./constants";
+import { FORM_GUIDE_CONFIG } from "./components/CreateGitServerForm/constants";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
+import type { GitServer } from "@my-project/shared";
 
 export default function GitserversConfigurationPage() {
   const gitServerWatch = useGitServerWatchList();
@@ -20,14 +22,12 @@ export default function GitserversConfigurationPage() {
   const gitServerPermissions = useGitServerPermissions();
 
   const [isCreateDialogOpen, setCreateDialogOpen] = React.useState<boolean>(false);
-  const [expandedPanel, setExpandedPanel] = React.useState<string>("");
+  const [editingGitServer, setEditingGitServer] = React.useState<GitServer | null>(null);
 
   const handleOpenCreateDialog = () => setCreateDialogOpen(true);
   const handleCloseCreateDialog = () => setCreateDialogOpen(false);
-
-  const handleChange = React.useCallback((value: string) => {
-    setExpandedPanel(value);
-  }, []);
+  const handleOpenEditDialog = (gitServer: GitServer) => setEditingGitServer(gitServer);
+  const handleCloseEditDialog = () => setEditingGitServer(null);
 
   const renderPageContent = React.useCallback(() => {
     const gitServerError = gitServerWatch.query.error && getForbiddenError(gitServerWatch.query.error);
@@ -54,81 +54,35 @@ export default function GitserversConfigurationPage() {
       );
     }
 
-    const singleItem = gitServers?.length === 1;
-    const accordionValue = singleItem ? (gitServers?.[0]?.metadata.name ?? "") : expandedPanel;
-
     return (
       <LoadingWrapper isLoading={isLoading}>
-        <Accordion
-          type="single"
-          collapsible
-          value={accordionValue}
-          onValueChange={singleItem ? undefined : handleChange}
-        >
-          <div className="flex flex-col gap-2">
-            {gitServers?.map((gitServer) => {
-              const connected = gitServer?.status?.connected;
-              const error = gitServer?.status?.error;
-
-              const statusIcon = getGitServerStatusIcon(gitServer);
-
-              const gitServerName = gitServer.metadata.name;
-
-              // Get webhook URL from the GitServer spec or status
-              const webhookURL = gitServer.spec?.gitHost ? `https://${gitServer.spec.gitHost}` : "";
-
-              return (
-                <div key={gitServer.metadata.uid}>
-                  <AccordionItem value={gitServerName}>
-                    <AccordionTrigger className={singleItem ? "cursor-default" : "cursor-pointer"}>
-                      <div className="flex w-full flex-col items-start gap-1">
-                        <h6 className="text-base font-medium">
-                          <div className="flex items-center gap-2">
-                            <div className="mr-1">
-                              <StatusIcon
-                                Icon={statusIcon.component}
-                                color={statusIcon.color}
-                                Title={
-                                  <>
-                                    <p className="text-sm font-semibold">
-                                      {`Connected: ${connected === undefined ? "Unknown" : connected}`}
-                                    </p>
-                                    {!!error && <p className="mt-3 text-sm font-medium">{error}</p>}
-                                  </>
-                                }
-                              />
-                            </div>
-                            <div>{gitServerName}</div>
-                          </div>
-                        </h6>
-                        {webhookURL && <p className="text-muted-foreground text-sm">{webhookURL}</p>}
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <ManageGitServer
-                        gitServer={gitServer}
-                        webhookURL={webhookURL}
-                        handleClosePanel={handleCloseCreateDialog}
-                      />
-                    </AccordionContent>
-                  </AccordionItem>
-                </div>
-              );
-            })}
-          </div>
-        </Accordion>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {gitServers?.map((gitServer) => (
+            <GitServerCard
+              key={gitServer.metadata.uid}
+              gitServer={gitServer}
+              onEdit={() => handleOpenEditDialog(gitServer)}
+            />
+          ))}
+        </div>
+        {editingGitServer && (
+          <EditGitServerDialog
+            isOpen={!!editingGitServer}
+            onClose={handleCloseEditDialog}
+            gitServer={editingGitServer}
+            webhookURL={editingGitServer.spec?.gitHost ? `https://${editingGitServer.spec.gitHost}` : ""}
+          />
+        )}
       </LoadingWrapper>
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- permission fields omitted to avoid unnecessary callback recreation
-  }, [gitServerWatch.query.error, gitServerWatch.query.isLoading, gitServers, expandedPanel, handleChange]);
+  }, [gitServerWatch.query.error, gitServerWatch.query.isLoading, gitServers, editingGitServer]);
 
   return (
     <ConfigurationPageContent
       creationForm={{
         label: "Add GitServer",
-        component: (
-          <ManageGitServer gitServer={undefined} webhookURL={undefined} handleClosePanel={handleCloseCreateDialog} />
-        ),
+        component: <CreateGitServerForm onClose={handleCloseCreateDialog} />,
         isOpen: isCreateDialogOpen,
         onOpen: handleOpenCreateDialog,
         onClose: handleCloseCreateDialog,
@@ -139,6 +93,8 @@ export default function GitserversConfigurationPage() {
         },
       }}
       pageDescription={pageDescription}
+      formGuideConfig={FORM_GUIDE_CONFIG}
+      formGuideDocUrl={EDP_USER_GUIDE.GIT_SERVER_CREATE.url}
     >
       {renderPageContent()}
     </ConfigurationPageContent>

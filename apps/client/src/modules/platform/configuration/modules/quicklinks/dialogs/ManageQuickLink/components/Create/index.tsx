@@ -44,9 +44,9 @@ export const Create = () => {
       <DialogHeader>
         <CustomDialogHeader />
       </DialogHeader>
-      <DialogBody className="flex min-h-0 !overflow-hidden">
-        <div className="flex h-full flex-1 gap-4">
-          <div className="flex-1 overflow-y-auto">
+      <DialogBody className="flex min-h-0">
+        <div className="flex min-h-0 flex-1 gap-4">
+          <div className="min-h-0 flex-1 overflow-y-auto">
             <Form />
           </div>
           <FormGuidePanel />

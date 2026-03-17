@@ -204,6 +204,65 @@ export const CDPIPELINE_TOURS = {
       },
     ],
   },
+  /** Shorter tour for deployment details when no environments exist yet. Avoids broken navigation. */
+  deploymentDetailsTourNoEnvironments: {
+    id: "deployment_details_tour_no_environments",
+    title: "Deployment Details Tour",
+    description: "Get started with your deployment pipeline when no environments exist yet",
+    type: "tour",
+    showOnce: false,
+    trigger: "manual",
+    steps: [
+      {
+        target: "[data-tour='deployment-tabs']",
+        content: (
+          <TourStepContent title="Two Ways to View Deployment Data">
+            <p>This deployment has two perspectives for viewing data:</p>
+            <ul className="list-disc space-y-1 pl-5 text-sm">
+              <li>
+                <strong>Environments</strong> — view each environment (stage) with its deployed applications and
+                versions
+              </li>
+              <li>
+                <strong>Applications</strong> — see how each application is deployed across all environments with its
+                versions
+              </li>
+            </ul>
+            <p className="mt-2 text-sm">You don&apos;t have any environments yet. Create one to see the full flow.</p>
+          </TourStepContent>
+        ),
+        placement: "bottom",
+        disableBeacon: true,
+        prerequisite: environmentsTabPrerequisite,
+      },
+      {
+        target: "[data-tour='create-environment-button']",
+        content: (
+          <TourStepContent title="Create Your First Environment">
+            <p>
+              Add your first environment (stage) to this deployment pipeline. Each environment represents a step in your
+              delivery workflow — from development through to production.
+            </p>
+          </TourStepContent>
+        ),
+        placement: "bottom",
+        prerequisite: environmentsTabPrerequisite,
+      },
+      {
+        target: "[data-tour='deployment-actions-menu']",
+        content: (
+          <TourStepContent title="Deployment Actions">
+            <p>
+              Use this menu to configure or delete the deployment pipeline. You can edit the pipeline settings or remove
+              it entirely.
+            </p>
+          </TourStepContent>
+        ),
+        placement: "bottom",
+        prerequisite: environmentsTabPrerequisite,
+      },
+    ],
+  },
   stageDetailsTour: {
     id: "stage_details_tour",
     title: "Environment Details Tour",

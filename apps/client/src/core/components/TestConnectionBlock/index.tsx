@@ -74,7 +74,7 @@ export const TestConnectionBlock = ({
     <AlertRoot className={config.className}>
       {config.icon}
       <AlertDescription>
-        <div className="flex items-end justify-between gap-8">
+        <div className="flex w-full items-end justify-between gap-8">
           <div className="flex flex-col gap-0.5">
             <p className="text-sm font-medium">{getTitle()}</p>
             <p className="text-xs opacity-80">{getDescription()}</p>

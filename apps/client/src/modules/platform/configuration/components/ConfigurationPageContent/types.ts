@@ -1,4 +1,5 @@
 import { LucideIcon } from "lucide-react";
+import type { FormGuideFieldDescription } from "@/core/providers/FormGuide/types";
 
 export interface PageDescription {
   id: string;
@@ -23,4 +24,6 @@ export interface ConfigurationPageContentProps {
   };
   children: React.ReactNode;
   pageDescription: PageDescription;
+  formGuideConfig?: Record<number, FormGuideFieldDescription[]>;
+  formGuideDocUrl?: string;
 }

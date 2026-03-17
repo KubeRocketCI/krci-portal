@@ -1,29 +1,19 @@
 import { EmptyList } from "@/core/components/EmptyList";
 import { ErrorContent } from "@/core/components/ErrorContent";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { StatusIcon } from "@/core/components/StatusIcon";
 import { useSecretPermissions, useSecretWatchList } from "@/k8s/api/groups/Core/Secret";
 import { useApplicationPermissions } from "@/k8s/api/groups/ArgoCD/Application";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/core/components/ui/accordion";
-import { Tooltip } from "@/core/components/ui/tooltip";
-import { Badge } from "@/core/components/ui/badge";
-import {
-  SECRET_LABEL_SECRET_TYPE,
-  SECRET_ANNOTATION_CLUSTER_CONNECTED,
-  SECRET_ANNOTATION_CLUSTER_ERROR,
-  SECRET_LABEL_CLUSTER_TYPE,
-  clusterType,
-  parseConfigJson,
-  safeDecode,
-} from "@my-project/shared";
+import { SECRET_LABEL_SECRET_TYPE } from "@my-project/shared";
 import React from "react";
-import { ManageClusterSecret } from "./components/ManageClusterSecret";
-import { getClusterSecretStatusIcon } from "@/k8s/integrations/secret/utils/getStatusIcon";
-import { ShieldAlert, Boxes, Key } from "lucide-react";
+import { CreateClusterSecretForm } from "./components/CreateClusterSecretForm";
+import { ClusterCard } from "./components/ClusterCard";
+import { EditClusterDialog } from "./components/EditClusterDialog";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
 import { pageDescription } from "./constants";
-import { FORM_MODES } from "@/core/types/forms";
+import { FORM_GUIDE_CONFIG } from "./components/CreateClusterSecretForm/constants";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
+import type { Secret } from "@my-project/shared";
 
 export default function ClustersConfigurationPage() {
   const clusterSecretsWatch = useSecretWatchList({
@@ -37,14 +27,12 @@ export default function ClustersConfigurationPage() {
   const applicationPermissions = useApplicationPermissions();
 
   const [isCreateDialogOpen, setCreateDialogOpen] = React.useState<boolean>(false);
-  const [expandedPanel, setExpandedPanel] = React.useState<string | undefined>(undefined);
+  const [editingCluster, setEditingCluster] = React.useState<Secret | null>(null);
 
-  const handleOpenCreateDialog = () => setCreateDialogOpen(true);
-  const handleCloseCreateDialog = () => setCreateDialogOpen(false);
-
-  const handleChange = React.useCallback((value: string) => {
-    setExpandedPanel(value === "" ? undefined : value);
-  }, []);
+  const handleOpenCreateDialog = React.useCallback(() => setCreateDialogOpen(true), []);
+  const handleCloseCreateDialog = React.useCallback(() => setCreateDialogOpen(false), []);
+  const handleOpenEditDialog = React.useCallback((clusterSecret: Secret) => setEditingCluster(clusterSecret), []);
+  const handleCloseEditDialog = React.useCallback(() => setEditingCluster(null), []);
 
   const renderPageContent = React.useCallback(() => {
     const clusterSecretsError = clusterSecretsWatch.query.error && getForbiddenError(clusterSecretsWatch.query.error);
@@ -71,122 +59,35 @@ export default function ClustersConfigurationPage() {
       );
     }
 
-    const singleItem = clusterSecrets?.length === 1;
-
     return (
       <LoadingWrapper isLoading={isLoading}>
-        <Accordion
-          type="single"
-          collapsible
-          value={singleItem ? clusterSecrets?.[0]?.metadata.name : (expandedPanel ?? "")}
-          onValueChange={singleItem ? undefined : handleChange}
-        >
-          <div className="flex flex-col gap-2">
-            {clusterSecrets?.map((clusterSecret) => {
-              const connected = clusterSecret?.metadata?.annotations?.[SECRET_ANNOTATION_CLUSTER_CONNECTED];
-              const error = clusterSecret?.metadata?.annotations?.[SECRET_ANNOTATION_CLUSTER_ERROR];
-
-              // Use the integration secret status icon for cluster secrets
-              const statusIcon = getClusterSecretStatusIcon(clusterSecret);
-
-              const clusterName = clusterSecret.metadata.name;
-              const ownerReference = clusterSecret?.metadata?.ownerReferences?.[0]?.kind;
-
-              // Get cluster type and host for display
-              const clusterTypeValue = clusterSecret.metadata?.labels?.[SECRET_LABEL_CLUSTER_TYPE];
-              const clusterTypeLabel = clusterTypeValue === clusterType.irsa ? "IRSA" : "Bearer";
-              const ClusterTypeIcon = clusterTypeValue === clusterType.irsa ? Key : Boxes;
-
-              // Get cluster host based on type
-              let clusterHost: string | undefined;
-              if (clusterTypeValue === clusterType.irsa) {
-                clusterHost = safeDecode(clusterSecret.data?.server || "");
-              } else {
-                try {
-                  const config = parseConfigJson(clusterSecret.data?.config || "");
-                  clusterHost = config?.clusters?.[0]?.cluster?.server;
-                } catch {
-                  clusterHost = undefined;
-                }
-              }
-
-              return (
-                <div key={clusterSecret.metadata.uid}>
-                  <AccordionItem value={clusterName}>
-                    <AccordionTrigger className={singleItem ? "cursor-default" : "cursor-pointer"}>
-                      <div className="flex w-full flex-col items-start gap-1">
-                        <div className="flex items-center gap-2">
-                          <div className="mr-1">
-                            <StatusIcon
-                              Icon={statusIcon.component}
-                              color={statusIcon.color}
-                              Title={
-                                <>
-                                  <p className="text-sm font-semibold">
-                                    {`Connected: ${connected === undefined ? "Unknown" : connected}`}
-                                  </p>
-                                  {!!error && <p className="mt-3 text-sm font-medium">{error}</p>}
-                                </>
-                              }
-                            />
-                          </div>
-                          <h6 className="text-base font-medium">{clusterName}</h6>
-                          <Badge variant="secondary" className="inline-flex items-center gap-1 text-xs">
-                            <ClusterTypeIcon size={12} />
-                            {clusterTypeLabel}
-                          </Badge>
-                          {!!ownerReference && (
-                            <div>
-                              <Tooltip title={`Managed by ${ownerReference}`}>
-                                <ShieldAlert size={20} />
-                              </Tooltip>
-                            </div>
-                          )}
-                        </div>
-                        {clusterHost && <p className="text-muted-foreground text-sm">{clusterHost}</p>}
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <ManageClusterSecret
-                        formData={{
-                          currentElement: clusterSecret,
-                          ownerReference: ownerReference,
-                          mode: FORM_MODES.EDIT,
-                          handleClosePlaceholder: handleCloseCreateDialog,
-                        }}
-                      />
-                    </AccordionContent>
-                  </AccordionItem>
-                </div>
-              );
-            })}
-          </div>
-        </Accordion>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {clusterSecrets?.map((clusterSecret) => (
+            <ClusterCard
+              key={clusterSecret.metadata.uid}
+              clusterSecret={clusterSecret}
+              onEdit={() => handleOpenEditDialog(clusterSecret)}
+            />
+          ))}
+        </div>
+        {editingCluster && (
+          <EditClusterDialog
+            isOpen={!!editingCluster}
+            onClose={handleCloseEditDialog}
+            clusterSecret={editingCluster}
+            ownerReference={editingCluster?.metadata?.ownerReferences?.[0]?.kind}
+          />
+        )}
       </LoadingWrapper>
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- permission fields omitted to avoid unnecessary callback recreation
-  }, [
-    clusterSecretsWatch.query.error,
-    clusterSecretsWatch.query.isLoading,
-    clusterSecrets,
-    expandedPanel,
-    handleChange,
-  ]);
+  }, [clusterSecretsWatch.query.error, clusterSecretsWatch.query.isLoading, clusterSecrets, editingCluster]);
 
   return (
     <ConfigurationPageContent
       creationForm={{
         label: "Add Cluster",
-        component: (
-          <ManageClusterSecret
-            formData={{
-              currentElement: undefined,
-              ownerReference: undefined,
-              mode: FORM_MODES.CREATE,
-              handleClosePlaceholder: handleCloseCreateDialog,
-            }}
-          />
-        ),
+        component: <CreateClusterSecretForm onClose={handleCloseCreateDialog} />,
         isOpen: isCreateDialogOpen,
         onOpen: handleOpenCreateDialog,
         onClose: handleCloseCreateDialog,
@@ -197,6 +98,8 @@ export default function ClustersConfigurationPage() {
         },
       }}
       pageDescription={pageDescription}
+      formGuideConfig={FORM_GUIDE_CONFIG}
+      formGuideDocUrl={EDP_USER_GUIDE.CLUSTER_CREATE.url}
     >
       {renderPageContent()}
     </ConfigurationPageContent>

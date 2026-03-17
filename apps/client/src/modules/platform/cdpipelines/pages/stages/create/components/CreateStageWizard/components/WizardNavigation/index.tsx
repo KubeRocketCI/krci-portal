@@ -85,7 +85,7 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
             </Link>
           </Button>
         ) : (
-          <Button variant="outline" onClick={onBack} disabled={currentStepIndex === 0} size="sm">
+          <Button variant="outline" type="button" onClick={onBack} disabled={currentStepIndex === 0} size="sm">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>

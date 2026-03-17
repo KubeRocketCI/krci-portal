@@ -7,11 +7,18 @@ import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { CloudUpload } from "lucide-react";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { useTabs } from "./hooks/useTabs";
+import { useSortedStages } from "./hooks/usePipelineData";
 
 export default function CDPipelineDetailsPageContent({ searchTabIdx }: { searchTabIdx: number }) {
   const { name, namespace, clusterName } = routeCDPipelineDetails.useParams();
   const { handleChangeTab } = useTabsContext();
   const tabs = useTabs();
+  const { data: stages, isLoading: isStagesLoading } = useSortedStages();
+
+  // When there are no environments (or still loading), use a shorter tour so navigation works. Full tour only when we know environments exist.
+  const hasEnvironments = (stages?.length ?? 0) > 0;
+  const deploymentDetailsTourId =
+    isStagesLoading || !hasEnvironments ? "deploymentDetailsTourNoEnvironments" : "deploymentDetailsTour";
 
   return (
     <PageWrapper
@@ -31,7 +38,7 @@ export default function CDPipelineDetailsPageContent({ searchTabIdx }: { searchT
       ]}
       headerSlot={
         <>
-          <PageGuideButton tourId="deploymentDetailsTour" />
+          <PageGuideButton tourId={deploymentDetailsTourId} />
         </>
       }
     >

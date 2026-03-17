@@ -1,15 +1,17 @@
 import { EmptyList } from "@/core/components/EmptyList";
 import { ErrorContent } from "@/core/components/ErrorContent";
-import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { FORM_MODES } from "@/core/types/forms";
 import { useSecretPermissions, useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
 import { useQuickLinkPermissions, useQuickLinkWatchItem } from "@/k8s/api/groups/KRCI/QuickLink";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
 import { integrationSecretName, systemQuickLink } from "@my-project/shared";
 import React from "react";
-import { ManageNexus } from "./components/ManageNexus";
+import { CreateNexusForm } from "./components/CreateNexusForm";
+import { NexusCard } from "./components/NexusCard";
+import { EditNexusDialog } from "./components/EditNexusDialog";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
 import { pageDescription } from "./constants";
+import { FORM_GUIDE_CONFIG } from "./components/CreateNexusForm/constants";
+import { EDP_OPERATOR_GUIDE } from "@/k8s/constants/docs-urls";
 
 export default function NexusConfigurationPage() {
   const nexusSecretWatch = useSecretWatchItem({
@@ -25,12 +27,13 @@ export default function NexusConfigurationPage() {
   const secretPermissions = useSecretPermissions();
   const quickLinkPermissions = useQuickLinkPermissions();
 
-  const mode = nexusSecret ? FORM_MODES.EDIT : FORM_MODES.CREATE;
-
   const [isCreateDialogOpen, setCreateDialogOpen] = React.useState<boolean>(false);
+  const [isEditDialogOpen, setEditDialogOpen] = React.useState<boolean>(false);
 
   const handleOpenCreateDialog = () => setCreateDialogOpen(true);
   const handleCloseCreateDialog = () => setCreateDialogOpen(false);
+  const handleOpenEditDialog = () => setEditDialogOpen(true);
+  const handleCloseEditDialog = () => setEditDialogOpen(false);
 
   const renderPageContent = React.useCallback(() => {
     const nexusSecretError = nexusSecretWatch.query.error && getForbiddenError(nexusSecretWatch.query.error);
@@ -58,19 +61,29 @@ export default function NexusConfigurationPage() {
       );
     }
 
-    const ownerReference = nexusSecret?.metadata?.ownerReferences?.[0]?.kind;
+    if (nexusSecret) {
+      const ownerReference = nexusSecret.metadata?.ownerReferences?.[0]?.kind;
 
-    return (
-      <LoadingWrapper isLoading={isLoading}>
-        <ManageNexus
-          secret={nexusSecret}
-          quickLink={nexusQuickLink}
-          mode={mode}
-          ownerReference={ownerReference}
-          handleClosePanel={handleCloseCreateDialog}
-        />
-      </LoadingWrapper>
-    );
+      return (
+        <>
+          <NexusCard
+            secret={nexusSecret}
+            quickLink={nexusQuickLink}
+            ownerReference={ownerReference}
+            onEdit={handleOpenEditDialog}
+          />
+          <EditNexusDialog
+            isOpen={isEditDialogOpen}
+            onClose={handleCloseEditDialog}
+            secret={nexusSecret}
+            quickLink={nexusQuickLink}
+            ownerReference={ownerReference}
+          />
+        </>
+      );
+    }
+
+    return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps -- permission fields omitted to avoid unnecessary callback recreation
   }, [
     nexusSecretWatch.query.error,
@@ -79,22 +92,14 @@ export default function NexusConfigurationPage() {
     nexusQuickLinkWatch.query.isLoading,
     nexusSecret,
     nexusQuickLink,
-    mode,
+    isEditDialogOpen,
   ]);
 
   return (
     <ConfigurationPageContent
       creationForm={{
         label: "Add Integration",
-        component: (
-          <ManageNexus
-            secret={nexusSecret}
-            quickLink={nexusQuickLink}
-            mode={mode}
-            ownerReference={undefined}
-            handleClosePanel={handleCloseCreateDialog}
-          />
-        ),
+        component: <CreateNexusForm quickLink={nexusQuickLink} onClose={handleCloseCreateDialog} />,
         isOpen: isCreateDialogOpen,
         onOpen: handleOpenCreateDialog,
         onClose: handleCloseCreateDialog,
@@ -105,6 +110,8 @@ export default function NexusConfigurationPage() {
         },
       }}
       pageDescription={pageDescription}
+      formGuideConfig={FORM_GUIDE_CONFIG}
+      formGuideDocUrl={EDP_OPERATOR_GUIDE.NEXUS.url}
     >
       {renderPageContent()}
     </ConfigurationPageContent>

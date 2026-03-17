@@ -1,15 +1,17 @@
 import { EmptyList } from "@/core/components/EmptyList";
 import { ErrorContent } from "@/core/components/ErrorContent";
-import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { FORM_MODES } from "@/core/types/forms";
 import { useSecretPermissions, useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
 import { useQuickLinkPermissions, useQuickLinkWatchItem } from "@/k8s/api/groups/KRCI/QuickLink";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
 import { integrationSecretName, systemQuickLink } from "@my-project/shared";
 import React from "react";
-import { ManageArgoCD } from "./components/ManageArgoCD";
+import { CreateArgoCDForm } from "./components/CreateArgoCDForm";
+import { ArgoCDCard } from "./components/ArgoCDCard";
+import { EditArgoCDDialog } from "./components/EditArgoCDDialog";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
 import { pageDescription } from "./constants";
+import { FORM_GUIDE_CONFIG } from "./components/CreateArgoCDForm/constants";
+import { EDP_OPERATOR_GUIDE } from "@/k8s/constants/docs-urls";
 
 export default function ArgocdConfigurationPage() {
   const argoCDSecretWatch = useSecretWatchItem({
@@ -25,12 +27,13 @@ export default function ArgocdConfigurationPage() {
   const secretPermissions = useSecretPermissions();
   const quickLinkPermissions = useQuickLinkPermissions();
 
-  const mode = argoCDSecret ? FORM_MODES.EDIT : FORM_MODES.CREATE;
-
   const [isCreateDialogOpen, setCreateDialogOpen] = React.useState<boolean>(false);
+  const [isEditDialogOpen, setEditDialogOpen] = React.useState<boolean>(false);
 
   const handleOpenCreateDialog = () => setCreateDialogOpen(true);
   const handleCloseCreateDialog = () => setCreateDialogOpen(false);
+  const handleOpenEditDialog = () => setEditDialogOpen(true);
+  const handleCloseEditDialog = () => setEditDialogOpen(false);
 
   const renderPageContent = React.useCallback(() => {
     const argoCDSecretError = argoCDSecretWatch.query.error && getForbiddenError(argoCDSecretWatch.query.error);
@@ -59,19 +62,29 @@ export default function ArgocdConfigurationPage() {
       );
     }
 
-    const ownerReference = argoCDSecret?.metadata?.ownerReferences?.[0]?.kind;
+    if (argoCDSecret) {
+      const ownerReference = argoCDSecret.metadata?.ownerReferences?.[0]?.kind;
 
-    return (
-      <LoadingWrapper isLoading={isLoading}>
-        <ManageArgoCD
-          secret={argoCDSecret}
-          quickLink={argoCDQuickLink}
-          mode={mode}
-          ownerReference={ownerReference}
-          handleClosePanel={handleCloseCreateDialog}
-        />
-      </LoadingWrapper>
-    );
+      return (
+        <>
+          <ArgoCDCard
+            secret={argoCDSecret}
+            quickLink={argoCDQuickLink}
+            ownerReference={ownerReference}
+            onEdit={handleOpenEditDialog}
+          />
+          <EditArgoCDDialog
+            isOpen={isEditDialogOpen}
+            onClose={handleCloseEditDialog}
+            secret={argoCDSecret}
+            quickLink={argoCDQuickLink}
+            ownerReference={ownerReference}
+          />
+        </>
+      );
+    }
+
+    return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps -- permission fields omitted to avoid unnecessary callback recreation
   }, [
     argoCDSecretWatch.query.error,
@@ -80,22 +93,14 @@ export default function ArgocdConfigurationPage() {
     argoCDQuickLinkWatch.query.isLoading,
     argoCDSecret,
     argoCDQuickLink,
-    mode,
+    isEditDialogOpen,
   ]);
 
   return (
     <ConfigurationPageContent
       creationForm={{
         label: "Add Integration",
-        component: (
-          <ManageArgoCD
-            secret={argoCDSecret}
-            quickLink={argoCDQuickLink}
-            mode={mode}
-            ownerReference={undefined}
-            handleClosePanel={handleCloseCreateDialog}
-          />
-        ),
+        component: <CreateArgoCDForm quickLink={argoCDQuickLink} onClose={handleCloseCreateDialog} />,
         isOpen: isCreateDialogOpen,
         onOpen: handleOpenCreateDialog,
         onClose: handleCloseCreateDialog,
@@ -106,6 +111,8 @@ export default function ArgocdConfigurationPage() {
         },
       }}
       pageDescription={pageDescription}
+      formGuideConfig={FORM_GUIDE_CONFIG}
+      formGuideDocUrl={EDP_OPERATOR_GUIDE.ARGO_CD.url}
     >
       {renderPageContent()}
     </ConfigurationPageContent>
