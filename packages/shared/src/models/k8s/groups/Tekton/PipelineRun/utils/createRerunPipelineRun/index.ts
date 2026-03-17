@@ -1,15 +1,17 @@
-import { KubeObjectBase } from "../../../../../../../models/index.js";
 import { createRandomString, truncateName } from "../../../../../../../utils/index.js";
 import { PipelineRun } from "../../types.js";
 
 const rerunIdentifier = "r-";
 
-const removeSystemLabels = (resource: KubeObjectBase) => {
-  Object.keys(resource.metadata.labels ?? {}).forEach((label) => {
-    if (label.startsWith("tekton.dev/")) {
-      delete (resource.metadata.labels ?? {})[label]; // eslint-disable-line no-param-reassign
+const SYSTEM_LABEL_PREFIXES = ["tekton.dev/", "triggers.tekton.dev/"];
+
+const removeSystemLabels = (labels: Record<string, string> | undefined) => {
+  if (!labels) return;
+  for (const key of Object.keys(labels)) {
+    if (SYSTEM_LABEL_PREFIXES.some((p) => key.startsWith(p))) {
+      delete labels[key];
     }
-  });
+  }
 };
 
 const getNamePrefixForRerun = (name: string) => {
@@ -53,7 +55,7 @@ const generateNewPipelineRunPayload = ({ pipelineRun, rerun }: { pipelineRun: Pi
     payload.metadata.labels["dashboard.tekton.dev/rerunOf"] = name;
   }
 
-  removeSystemLabels(payload);
+  removeSystemLabels(payload.metadata.labels as Record<string, string>);
 
   /*
     This is used by Tekton Pipelines as part of the conversion between v1beta1
