@@ -8,10 +8,10 @@ import {
 } from "@my-project/shared";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { getIntegrationSecretStatusIcon } from "@/k8s/integrations/secret/utils/getStatusIcon";
-import { ShieldAlert } from "lucide-react";
+import { Lock, ShieldAlert } from "lucide-react";
 import { useManageRegistryForm } from "../../providers/form/hooks";
 import { NAMES } from "../../schema";
-import { Card } from "@/core/components/ui/card";
+import { FormSection } from "@/core/components/FormSection";
 
 export const PullAccountForm = () => {
   const form = useManageRegistryForm();
@@ -32,28 +32,32 @@ export const PullAccountForm = () => {
   const statusIcon = getIntegrationSecretStatusIcon(pullAccountSecret);
 
   return (
-    <Card className="border-input border bg-transparent p-3">
-      <div className="mb-4 flex items-center gap-2">
-        <StatusIcon
-          Icon={statusIcon.component}
-          color={statusIcon.color}
-          Title={
-            <>
-              <p className="text-sm font-semibold">
-                {`Connected: ${pullAccountConnected === undefined ? "Unknown" : pullAccountConnected}`}
-              </p>
-              {!!pullAccountError && <p className="mt-3 text-sm font-medium">{pullAccountError}</p>}
-            </>
-          }
-          width={20}
-        />
-        <h5 className="text-foreground text-sm font-medium">Pull Account</h5>
-        {!!pullAccountOwnerReference && (
-          <Tooltip title={`Managed by ${pullAccountOwnerReference}`}>
-            <ShieldAlert size={15} />
-          </Tooltip>
-        )}
-      </div>
+    <FormSection
+      icon={Lock}
+      title="Pull Account"
+      headerExtra={
+        <div className="flex items-center gap-2">
+          <StatusIcon
+            Icon={statusIcon.component}
+            color={statusIcon.color}
+            Title={
+              <>
+                <p className="text-sm font-semibold">
+                  {`Connected: ${pullAccountConnected === undefined ? "Unknown" : pullAccountConnected}`}
+                </p>
+                {!!pullAccountError && <p className="mt-3 text-sm font-medium">{pullAccountError}</p>}
+              </>
+            }
+            width={20}
+          />
+          {!!pullAccountOwnerReference && (
+            <Tooltip title={`Managed by ${pullAccountOwnerReference}`}>
+              <ShieldAlert size={15} />
+            </Tooltip>
+          )}
+        </div>
+      }
+    >
       {!useSameAccountFieldValue && (
         <div className="grid grid-cols-12 gap-4">
           <div className="col-span-6">
@@ -64,6 +68,6 @@ export const PullAccountForm = () => {
           </div>
         </div>
       )}
-    </Card>
+    </FormSection>
   );
 };

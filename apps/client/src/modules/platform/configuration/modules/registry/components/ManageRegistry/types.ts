@@ -26,6 +26,7 @@ export interface ManageRegistryProps {
   pullAccountSecret: Secret | undefined;
   tektonServiceAccount: ServiceAccount | undefined;
   handleCloseCreateDialog?: () => void;
+  hideActions?: boolean;
 }
 
 export type SharedFormValues = {

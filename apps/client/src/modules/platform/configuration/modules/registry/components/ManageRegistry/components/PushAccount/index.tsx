@@ -8,11 +8,11 @@ import {
   SECRET_ANNOTATION_INTEGRATION_SECRET_ERROR,
 } from "@my-project/shared";
 import { StatusIcon } from "@/core/components/StatusIcon";
-import { ShieldAlert } from "lucide-react";
+import { Lock, ShieldAlert } from "lucide-react";
 import { getIntegrationSecretStatusIcon } from "@/k8s/integrations/secret/utils/getStatusIcon";
 import { useManageRegistryForm } from "../../providers/form/hooks";
 import { NAMES } from "../../schema";
-import { Card } from "@/core/components/ui/card";
+import { FormSection } from "@/core/components/FormSection";
 
 export const PushAccountForm = () => {
   const form = useManageRegistryForm();
@@ -32,28 +32,32 @@ export const PushAccountForm = () => {
   const statusIcon = getIntegrationSecretStatusIcon(pushAccountSecret);
 
   return (
-    <Card className="border-input border bg-transparent p-3">
-      <div className="mb-4 flex items-center gap-2">
-        <StatusIcon
-          Icon={statusIcon.component}
-          color={statusIcon.color}
-          Title={
-            <>
-              <p className="text-sm font-semibold">
-                {`Connected: ${pushAccountConnected === undefined ? "Unknown" : pushAccountConnected}`}
-              </p>
-              {!!pushAccountError && <p className="mt-3 text-sm font-medium">{pushAccountError}</p>}
-            </>
-          }
-          width={20}
-        />
-        <h5 className="text-foreground text-sm font-medium">Push Account</h5>
-        {!!pushAccountOwnerReference && (
-          <Tooltip title={`Managed by ${pushAccountOwnerReference}`}>
-            <ShieldAlert size={15} />
-          </Tooltip>
-        )}
-      </div>
+    <FormSection
+      icon={Lock}
+      title="Push Account"
+      headerExtra={
+        <div className="flex items-center gap-2">
+          <StatusIcon
+            Icon={statusIcon.component}
+            color={statusIcon.color}
+            Title={
+              <>
+                <p className="text-sm font-semibold">
+                  {`Connected: ${pushAccountConnected === undefined ? "Unknown" : pushAccountConnected}`}
+                </p>
+                {!!pushAccountError && <p className="mt-3 text-sm font-medium">{pushAccountError}</p>}
+              </>
+            }
+            width={20}
+          />
+          {!!pushAccountOwnerReference && (
+            <Tooltip title={`Managed by ${pushAccountOwnerReference}`}>
+              <ShieldAlert size={15} />
+            </Tooltip>
+          )}
+        </div>
+      }
+    >
       <div className="grid grid-cols-12 gap-4">
         {registryTypeFieldValue !== containerRegistryType.openshift && (
           <div className="col-span-6">
@@ -64,6 +68,6 @@ export const PushAccountForm = () => {
           <PushAccountPassword />
         </div>
       </div>
-    </Card>
+    </FormSection>
   );
 };

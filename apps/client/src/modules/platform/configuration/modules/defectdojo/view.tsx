@@ -1,15 +1,17 @@
 import { EmptyList } from "@/core/components/EmptyList";
 import { ErrorContent } from "@/core/components/ErrorContent";
-import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { FORM_MODES } from "@/core/types/forms";
 import { useSecretPermissions, useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
 import { useQuickLinkPermissions, useQuickLinkWatchItem } from "@/k8s/api/groups/KRCI/QuickLink";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
 import { integrationSecretName, systemQuickLink } from "@my-project/shared";
 import React from "react";
-import { ManageDefectDojo } from "./components/ManageDefectDojo";
+import { CreateDefectDojoForm } from "./components/CreateDefectDojoForm";
+import { DefectDojoCard } from "./components/DefectDojoCard";
+import { EditDefectDojoDialog } from "./components/EditDefectDojoDialog";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
 import { pageDescription } from "./constants";
+import { FORM_GUIDE_CONFIG } from "./components/CreateDefectDojoForm/constants";
+import { EDP_OPERATOR_GUIDE } from "@/k8s/constants/docs-urls";
 
 export default function DefectdojoConfigurationPage() {
   const defectDojoSecretWatch = useSecretWatchItem({
@@ -25,12 +27,13 @@ export default function DefectdojoConfigurationPage() {
   const secretPermissions = useSecretPermissions();
   const quickLinkPermissions = useQuickLinkPermissions();
 
-  const mode = defectDojoSecret ? FORM_MODES.EDIT : FORM_MODES.CREATE;
-
   const [isCreateDialogOpen, setCreateDialogOpen] = React.useState<boolean>(false);
+  const [isEditDialogOpen, setEditDialogOpen] = React.useState<boolean>(false);
 
   const handleOpenCreateDialog = () => setCreateDialogOpen(true);
   const handleCloseCreateDialog = () => setCreateDialogOpen(false);
+  const handleOpenEditDialog = () => setEditDialogOpen(true);
+  const handleCloseEditDialog = () => setEditDialogOpen(false);
 
   const renderPageContent = React.useCallback(() => {
     const defectDojoSecretError =
@@ -60,19 +63,29 @@ export default function DefectdojoConfigurationPage() {
       );
     }
 
-    const ownerReference = defectDojoSecret?.metadata?.ownerReferences?.[0]?.kind;
+    if (defectDojoSecret) {
+      const ownerReference = defectDojoSecret.metadata?.ownerReferences?.[0]?.kind;
 
-    return (
-      <LoadingWrapper isLoading={isLoading}>
-        <ManageDefectDojo
-          secret={defectDojoSecret}
-          quickLink={defectDojoQuickLink}
-          mode={mode}
-          ownerReference={ownerReference}
-          handleClosePanel={handleCloseCreateDialog}
-        />
-      </LoadingWrapper>
-    );
+      return (
+        <>
+          <DefectDojoCard
+            secret={defectDojoSecret}
+            quickLink={defectDojoQuickLink}
+            ownerReference={ownerReference}
+            onEdit={handleOpenEditDialog}
+          />
+          <EditDefectDojoDialog
+            isOpen={isEditDialogOpen}
+            onClose={handleCloseEditDialog}
+            secret={defectDojoSecret}
+            quickLink={defectDojoQuickLink}
+            ownerReference={ownerReference}
+          />
+        </>
+      );
+    }
+
+    return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps -- permission fields omitted to avoid unnecessary callback recreation
   }, [
     defectDojoSecretWatch.query.error,
@@ -81,22 +94,14 @@ export default function DefectdojoConfigurationPage() {
     defectDojoQuickLinkWatch.query.isLoading,
     defectDojoSecret,
     defectDojoQuickLink,
-    mode,
+    isEditDialogOpen,
   ]);
 
   return (
     <ConfigurationPageContent
       creationForm={{
         label: "Add Integration",
-        component: (
-          <ManageDefectDojo
-            secret={defectDojoSecret}
-            quickLink={defectDojoQuickLink}
-            mode={mode}
-            ownerReference={undefined}
-            handleClosePanel={handleCloseCreateDialog}
-          />
-        ),
+        component: <CreateDefectDojoForm quickLink={defectDojoQuickLink} onClose={handleCloseCreateDialog} />,
         isOpen: isCreateDialogOpen,
         onOpen: handleOpenCreateDialog,
         onClose: handleCloseCreateDialog,
@@ -107,6 +112,8 @@ export default function DefectdojoConfigurationPage() {
         },
       }}
       pageDescription={pageDescription}
+      formGuideConfig={FORM_GUIDE_CONFIG}
+      formGuideDocUrl={EDP_OPERATOR_GUIDE.DEFECT_DOJO.url}
     >
       {renderPageContent()}
     </ConfigurationPageContent>

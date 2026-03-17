@@ -75,7 +75,7 @@ export const DeploymentStatusWidget = () => {
         stages,
       };
     });
-  }, [applications, stagesWatch.data.array]);
+  }, [applications, stagesWatch]);
 
   const copyText = React.useMemo(() => {
     if (!pipelineDeployments.length) return "";

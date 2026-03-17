@@ -1,16 +1,11 @@
-import { DataTable } from "@/core/components/Table";
-import { useColumns } from "./hooks/useColumns";
-import { TABLE } from "@/k8s/constants/tables";
-import { useQuickLinkWatchList, useQuickLinkPermissions } from "@/k8s/api/groups/KRCI/QuickLink";
+import { useQuickLinkWatchList } from "@/k8s/api/groups/KRCI/QuickLink";
 import { useShallow } from "zustand/react/shallow";
 import { useClusterStore } from "@/k8s/store";
 import { QuickLinkFilter } from "../QuickLinkFilter";
 import { useQuickLinkFilter } from "../QuickLinkFilter/hooks/useFilter";
-import React from "react";
-import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
-import { Plus } from "lucide-react";
-import { useDialogOpener } from "@/core/providers/Dialog/hooks";
-import { ManageQuickLinkDialog } from "../../dialogs/ManageQuickLink";
+import { ComponentCard } from "@/modules/platform/overview/pages/details/components/QuickLinkList/components/ComponentCard";
+import { AddNewQuickLinkCard } from "@/modules/platform/overview/pages/details/components/QuickLinkList/components/AddNewQuickLinkCard";
+import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 
 export const QuickLinkList = () => {
   const { namespace } = useClusterStore(
@@ -19,53 +14,24 @@ export const QuickLinkList = () => {
     }))
   );
 
-  const columns = useColumns();
-
-  const quickLinksWatch = useQuickLinkWatchList({
-    namespace,
-  });
-
-  const quickLinkPermissions = useQuickLinkPermissions();
-  const openManageQuickLinkDialog = useDialogOpener(ManageQuickLinkDialog);
-
+  const quickLinksWatch = useQuickLinkWatchList({ namespace });
   const { filterFunction } = useQuickLinkFilter();
 
-  const tableSlots = React.useMemo(
-    () => ({
-      header: {
-        component: <QuickLinkFilter />,
-      },
-    }),
-    []
-  );
+  const filteredItems = quickLinksWatch.data.array.filter(filterFunction);
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-end">
-        <ButtonWithPermission
-          ButtonProps={{
-            variant: "default",
-            onClick: () => {
-              openManageQuickLinkDialog({ quickLink: undefined });
-            },
-          }}
-          allowed={quickLinkPermissions.data.create.allowed}
-          reason={quickLinkPermissions.data.create.reason}
-        >
-          <Plus size={16} />
-          Add Link
-        </ButtonWithPermission>
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-4 gap-2">
+        <QuickLinkFilter />
       </div>
-      <DataTable
-        id={TABLE.QUICKLINK_LIST.id}
-        name={TABLE.QUICKLINK_LIST.name}
-        isLoading={!quickLinksWatch.isReady}
-        data={quickLinksWatch.data.array}
-        errors={[]}
-        columns={columns}
-        filterFunction={filterFunction}
-        slots={tableSlots}
-      />
+      <LoadingWrapper isLoading={!quickLinksWatch.isReady}>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {filteredItems.map((el) => (
+            <ComponentCard key={el.metadata.uid} component={el} />
+          ))}
+          <AddNewQuickLinkCard />
+        </div>
+      </LoadingWrapper>
     </div>
   );
 };

@@ -1,15 +1,17 @@
 import { EmptyList } from "@/core/components/EmptyList";
 import { ErrorContent } from "@/core/components/ErrorContent";
-import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { FORM_MODES } from "@/core/types/forms";
 import { useSecretPermissions, useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
 import { useQuickLinkPermissions, useQuickLinkWatchItem } from "@/k8s/api/groups/KRCI/QuickLink";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
 import { integrationSecretName, systemQuickLink } from "@my-project/shared";
 import React from "react";
-import { ManageSonar } from "./components/ManageSonar";
+import { CreateSonarForm } from "./components/CreateSonarForm";
+import { SonarCard } from "./components/SonarCard";
+import { EditSonarDialog } from "./components/EditSonarDialog";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
 import { pageDescription } from "./constants";
+import { FORM_GUIDE_CONFIG } from "./components/CreateSonarForm/constants";
+import { EDP_OPERATOR_GUIDE } from "@/k8s/constants/docs-urls";
 
 export default function SonarConfigurationPage() {
   const sonarSecretWatch = useSecretWatchItem({
@@ -25,12 +27,13 @@ export default function SonarConfigurationPage() {
   const secretPermissions = useSecretPermissions();
   const quickLinkPermissions = useQuickLinkPermissions();
 
-  const mode = sonarSecret ? FORM_MODES.EDIT : FORM_MODES.CREATE;
-
   const [isCreateDialogOpen, setCreateDialogOpen] = React.useState<boolean>(false);
+  const [isEditDialogOpen, setEditDialogOpen] = React.useState<boolean>(false);
 
   const handleOpenCreateDialog = () => setCreateDialogOpen(true);
   const handleCloseCreateDialog = () => setCreateDialogOpen(false);
+  const handleOpenEditDialog = () => setEditDialogOpen(true);
+  const handleCloseEditDialog = () => setEditDialogOpen(false);
 
   const renderPageContent = React.useCallback(() => {
     const sonarSecretError = sonarSecretWatch.query.error && getForbiddenError(sonarSecretWatch.query.error);
@@ -58,19 +61,29 @@ export default function SonarConfigurationPage() {
       );
     }
 
-    const ownerReference = sonarSecret?.metadata?.ownerReferences?.[0]?.kind;
+    if (sonarSecret) {
+      const ownerReference = sonarSecret.metadata?.ownerReferences?.[0]?.kind;
 
-    return (
-      <LoadingWrapper isLoading={isLoading}>
-        <ManageSonar
-          secret={sonarSecret}
-          quickLink={sonarQuickLink}
-          mode={mode}
-          ownerReference={ownerReference}
-          handleClosePanel={handleCloseCreateDialog}
-        />
-      </LoadingWrapper>
-    );
+      return (
+        <>
+          <SonarCard
+            secret={sonarSecret}
+            quickLink={sonarQuickLink}
+            ownerReference={ownerReference}
+            onEdit={handleOpenEditDialog}
+          />
+          <EditSonarDialog
+            isOpen={isEditDialogOpen}
+            onClose={handleCloseEditDialog}
+            secret={sonarSecret}
+            quickLink={sonarQuickLink}
+            ownerReference={ownerReference}
+          />
+        </>
+      );
+    }
+
+    return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps -- permission fields omitted to avoid unnecessary callback recreation
   }, [
     sonarSecretWatch.query.error,
@@ -79,22 +92,14 @@ export default function SonarConfigurationPage() {
     sonarQuickLinkWatch.query.isLoading,
     sonarSecret,
     sonarQuickLink,
-    mode,
+    isEditDialogOpen,
   ]);
 
   return (
     <ConfigurationPageContent
       creationForm={{
         label: "Add Integration",
-        component: (
-          <ManageSonar
-            secret={sonarSecret}
-            quickLink={sonarQuickLink}
-            mode={mode}
-            ownerReference={undefined}
-            handleClosePanel={handleCloseCreateDialog}
-          />
-        ),
+        component: <CreateSonarForm quickLink={sonarQuickLink} onClose={handleCloseCreateDialog} />,
         isOpen: isCreateDialogOpen,
         onOpen: handleOpenCreateDialog,
         onClose: handleCloseCreateDialog,
@@ -105,6 +110,8 @@ export default function SonarConfigurationPage() {
         },
       }}
       pageDescription={pageDescription}
+      formGuideConfig={FORM_GUIDE_CONFIG}
+      formGuideDocUrl={EDP_OPERATOR_GUIDE.SONAR.url}
     >
       {renderPageContent()}
     </ConfigurationPageContent>

@@ -1,16 +1,21 @@
 import { EmptyList } from "@/core/components/EmptyList";
 import { ErrorContent } from "@/core/components/ErrorContent";
-import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWatchKRCIConfig";
 import { useSecretPermissions, useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
 import { useServiceAccountWatchItem } from "@/k8s/api/groups/Core/ServiceAccount";
 import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/core/components/ui/accordion";
-import { ContainerRegistryType, containerRegistryTypeLabelMap, registrySecretName } from "@my-project/shared";
+import { registrySecretName } from "@my-project/shared";
 import React from "react";
 import { ConfigurationPageContent } from "../../components/ConfigurationPageContent";
 import { pageDescription } from "./constants";
-import { ManageRegistry } from "./components/ManageRegistry";
+import { CreateRegistryForm } from "./components/CreateRegistryForm";
+import { RegistryCard } from "./components/RegistryCard";
+import { EditRegistryDialog } from "./components/EditRegistryDialog";
+import { FORM_GUIDE_CONFIG } from "./components/ManageRegistry/constants";
+import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
+import { ConfirmResourcesUpdatesDialog } from "@/core/components/dialogs/ConfirmResourcesUpdates";
+import { useDialogContext } from "@/core/providers/Dialog/hooks";
+import { useResetRegistry } from "./components/ManageRegistry/hooks/useResetRegistry";
 
 export default function RegistryConfigurationPage() {
   const krciConfigMapWatch = useWatchKRCIConfig();
@@ -45,9 +50,43 @@ export default function RegistryConfigurationPage() {
   const secretPermissions = useSecretPermissions();
 
   const [isCreateDialogOpen, setCreateDialogOpen] = React.useState<boolean>(false);
+  const [isEditDialogOpen, setEditDialogOpen] = React.useState<boolean>(false);
 
-  const handleOpenCreateDialog = () => setCreateDialogOpen(true);
-  const handleCloseCreateDialog = () => setCreateDialogOpen(false);
+  const handleOpenCreateDialog = React.useCallback(() => setCreateDialogOpen(true), []);
+  const handleCloseCreateDialog = React.useCallback(() => setCreateDialogOpen(false), []);
+  const handleOpenEditDialog = React.useCallback(() => setEditDialogOpen(true), []);
+  const handleCloseEditDialog = React.useCallback(() => setEditDialogOpen(false), []);
+
+  const { setDialog } = useDialogContext();
+
+  const { resetRegistry } = useResetRegistry({
+    EDPConfigMap: krciConfigMap,
+    pushAccountSecret: pushAccountSecretWatch.query.data,
+    pullAccountSecret: pullAccountSecretWatch.query.data,
+    tektonServiceAccount: tektonServiceAccountWatch.query.data,
+  });
+
+  const handleResetRegistry = React.useCallback(() => {
+    const someOfTheSecretsHasExternalOwner =
+      !!pushAccountSecretWatch.query.data?.metadata?.ownerReferences ||
+      !!pullAccountSecretWatch.query.data?.metadata?.ownerReferences;
+
+    if (someOfTheSecretsHasExternalOwner || !secretPermissions.data.delete.allowed) {
+      return;
+    }
+
+    setDialog(ConfirmResourcesUpdatesDialog, {
+      deleteCallback: resetRegistry,
+      text: "Are you sure you want to reset the registry?",
+      resourcesArray: [],
+    });
+  }, [
+    pushAccountSecretWatch.query.data?.metadata?.ownerReferences,
+    pullAccountSecretWatch.query.data?.metadata?.ownerReferences,
+    secretPermissions.data.delete.allowed,
+    setDialog,
+    resetRegistry,
+  ]);
 
   const renderPageContent = React.useCallback(() => {
     const forbiddenError = error && getForbiddenError(error);
@@ -75,35 +114,29 @@ export default function RegistryConfigurationPage() {
       );
     }
 
-    return (
-      <LoadingWrapper isLoading={isLoading}>
-        <Accordion type="single" collapsible defaultValue="item-1">
-          <AccordionItem value="item-1">
-            <AccordionTrigger className="cursor-default">
-              <div className="flex w-full flex-col items-start gap-1">
-                <h6 className="text-base font-medium">
-                  {containerRegistryTypeLabelMap[registryType as ContainerRegistryType]}
-                </h6>
-                <p className="text-muted-foreground text-sm">Container Registry</p>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent>
-              <div className="flex flex-col gap-4">
-                <div>
-                  <ManageRegistry
-                    EDPConfigMap={krciConfigMap!}
-                    pullAccountSecret={pullAccountSecretWatch.query.data!}
-                    pushAccountSecret={pushAccountSecretWatch.query.data!}
-                    tektonServiceAccount={tektonServiceAccountWatch.query.data!}
-                    handleCloseCreateDialog={handleCloseCreateDialog}
-                  />
-                </div>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      </LoadingWrapper>
-    );
+    if (krciConfigMap && registryType) {
+      return (
+        <>
+          <RegistryCard
+            EDPConfigMap={krciConfigMap}
+            pushAccountSecret={pushAccountSecretWatch.query.data}
+            pullAccountSecret={pullAccountSecretWatch.query.data}
+            onEdit={handleOpenEditDialog}
+            onReset={handleResetRegistry}
+          />
+          <EditRegistryDialog
+            isOpen={isEditDialogOpen}
+            onClose={handleCloseEditDialog}
+            EDPConfigMap={krciConfigMap}
+            pushAccountSecret={pushAccountSecretWatch.query.data}
+            pullAccountSecret={pullAccountSecretWatch.query.data}
+            tektonServiceAccount={tektonServiceAccountWatch.query.data}
+          />
+        </>
+      );
+    }
+
+    return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps -- permission fields omitted to avoid unnecessary callback recreation
   }, [
     error,
@@ -111,8 +144,9 @@ export default function RegistryConfigurationPage() {
     krciConfigMap,
     pullAccountSecretWatch.query.data,
     pushAccountSecretWatch.query.data,
-    registryType,
     tektonServiceAccountWatch.query.data,
+    registryType,
+    isEditDialogOpen,
   ]);
 
   return (
@@ -120,12 +154,12 @@ export default function RegistryConfigurationPage() {
       creationForm={{
         label: "Add registry",
         component: (
-          <ManageRegistry
-            EDPConfigMap={krciConfigMap!}
-            pullAccountSecret={pullAccountSecretWatch.query.data!}
-            pushAccountSecret={pushAccountSecretWatch.query.data!}
-            tektonServiceAccount={tektonServiceAccountWatch.query.data!}
-            handleCloseCreateDialog={handleCloseCreateDialog}
+          <CreateRegistryForm
+            EDPConfigMap={krciConfigMap}
+            pullAccountSecret={pullAccountSecretWatch.query.data}
+            pushAccountSecret={pushAccountSecretWatch.query.data}
+            tektonServiceAccount={tektonServiceAccountWatch.query.data}
+            onClose={handleCloseCreateDialog}
           />
         ),
         isOpen: isCreateDialogOpen,
@@ -138,6 +172,8 @@ export default function RegistryConfigurationPage() {
         },
       }}
       pageDescription={pageDescription}
+      formGuideConfig={FORM_GUIDE_CONFIG}
+      formGuideDocUrl={EDP_USER_GUIDE.REGISTRY.url}
     >
       {renderPageContent()}
     </ConfigurationPageContent>

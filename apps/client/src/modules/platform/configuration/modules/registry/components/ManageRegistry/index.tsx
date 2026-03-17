@@ -15,13 +15,11 @@ import { useManageRegistryForm } from "./providers/form/hooks";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { FORM_MODES } from "@/core/types/forms";
 import { toast } from "sonner";
 import { Separator } from "@/core/components/ui/separator";
+import { satisfiesType } from "../../utils";
 
-const satisfiesType = (registryType: string, allowedTypes: string[]) => {
-  return registryType && allowedTypes.includes(registryType);
-};
+export { Actions as ManageRegistryActions } from "./components/Actions";
 
 export const ManageRegistry = ({
   EDPConfigMap,
@@ -29,6 +27,7 @@ export const ManageRegistry = ({
   pullAccountSecret,
   tektonServiceAccount,
   handleCloseCreateDialog,
+  hideActions,
 }: ManageRegistryProps) => {
   const trpc = useTRPCClient();
   const { clusterName, defaultNamespace } = useClusterStore(
@@ -37,9 +36,6 @@ export const ManageRegistry = ({
       defaultNamespace: state.defaultNamespace,
     }))
   );
-
-  // Determine mode based on presence of registryType in ConfigMap
-  const mode = EDPConfigMap?.data?.container_registry_type ? FORM_MODES.EDIT : FORM_MODES.CREATE;
 
   // Prepare default values from existing resources
   const defaultValues = React.useMemo<Partial<ManageRegistryFormValues>>(() => {
@@ -80,10 +76,12 @@ export const ManageRegistry = ({
         ]);
         const needsServiceAccount = satisfiesType(registryType, [containerRegistryType.ecr]);
 
+        const mode = EDPConfigMap?.data?.container_registry_type ? "edit" : "create";
+
         const result = await trpc.k8s.manageRegistryIntegration.mutate({
           clusterName,
           namespace: defaultNamespace,
-          mode: mode === FORM_MODES.CREATE ? "create" : "edit",
+          mode,
           dirtyFields: {
             configMap: true, // Always update ConfigMap in edit mode
             pullAccountSecret: true, // Always required
@@ -132,7 +130,6 @@ export const ManageRegistry = ({
     [
       clusterName,
       defaultNamespace,
-      mode,
       EDPConfigMap,
       pushAccountSecret,
       pullAccountSecret,
@@ -147,27 +144,31 @@ export const ManageRegistry = ({
   }, []);
 
   return (
-    <div data-testid="form">
-      <DataContextProvider
-        EDPConfigMap={EDPConfigMap}
-        pushAccountSecret={pushAccountSecret}
-        pullAccountSecret={pullAccountSecret}
-        tektonServiceAccount={tektonServiceAccount}
+    <DataContextProvider
+      EDPConfigMap={EDPConfigMap}
+      pushAccountSecret={pushAccountSecret}
+      pullAccountSecret={pullAccountSecret}
+      tektonServiceAccount={tektonServiceAccount}
+    >
+      <ManageRegistryFormProvider
+        defaultValues={defaultValues}
+        onSubmit={handleSubmit}
+        onSubmitError={handleSubmitError}
       >
-        <ManageRegistryFormProvider
-          defaultValues={defaultValues}
-          onSubmit={handleSubmit}
-          onSubmitError={handleSubmitError}
-        >
-          <ManageRegistryFormContent handleCloseCreateDialog={handleCloseCreateDialog} />
-        </ManageRegistryFormProvider>
-      </DataContextProvider>
-    </div>
+        <ManageRegistryFormContent handleCloseCreateDialog={handleCloseCreateDialog} hideActions={hideActions} />
+      </ManageRegistryFormProvider>
+    </DataContextProvider>
   );
 };
 
 // Separate component to use the form hook
-const ManageRegistryFormContent = ({ handleCloseCreateDialog }: { handleCloseCreateDialog?: () => void }) => {
+const ManageRegistryFormContent = ({
+  handleCloseCreateDialog,
+  hideActions,
+}: {
+  handleCloseCreateDialog?: () => void;
+  hideActions?: boolean;
+}) => {
   const form = useManageRegistryForm();
   const registryType = useStore(form.store, (state) => state.values[NAMES.REGISTRY_TYPE]);
 
@@ -214,8 +215,12 @@ const ManageRegistryFormContent = ({ handleCloseCreateDialog }: { handleCloseCre
           <PullAccountForm />
         </>
       )}
-      <Separator />
-      <Actions handleCloseCreateDialog={handleCloseCreateDialog} />
+      {!hideActions && (
+        <>
+          <Separator />
+          <Actions handleCloseCreateDialog={handleCloseCreateDialog} />
+        </>
+      )}
     </div>
   );
 };
