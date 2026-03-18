@@ -39,6 +39,15 @@ jobs:
             "/repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
             -f content="-1" || true
 
+      - name: Acknowledge review request
+        if: steps.auth.outputs.authorized == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api \
+            "/repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
+            -f content="eyes" || true
+
       - name: Checkout
         if: steps.auth.outputs.authorized == 'true'
         uses: actions/checkout@v6
@@ -61,8 +70,8 @@ jobs:
           use_sticky_comment: true
           plugin_marketplaces: "./claude-plugins"
           plugins: |
-            krci-general@claude-plugins
-            krci-fullstack@claude-plugins
+            krci-general@kuberocketci-plugins
+            krci-fullstack@kuberocketci-plugins
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
