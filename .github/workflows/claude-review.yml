@@ -9,8 +9,11 @@ on:
 jobs:
   review:
     if: >
-      (github.event.issue.pull_request && contains(github.event.comment.body, '/review')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '/review'))
+      github.event.comment.user.type != 'Bot' &&
+      (
+        (github.event.issue.pull_request && contains(github.event.comment.body, '/review')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '/review'))
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 8
     permissions:
