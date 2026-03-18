@@ -72,6 +72,12 @@ const generateNewPipelineRunPayload = ({ pipelineRun, rerun }: { pipelineRun: Pi
   if (payload.metadata.annotations) {
     delete payload.metadata.annotations["tekton.dev/v1beta1TaskRuns"];
     delete payload.metadata.annotations["kubectl.kubernetes.io/last-applied-configuration"];
+
+    for (const key of Object.keys(payload.metadata.annotations)) {
+      if (key.startsWith("results.tekton.dev/")) {
+        delete payload.metadata.annotations[key];
+      }
+    }
   }
 
   Object.keys(payload.metadata).forEach(
