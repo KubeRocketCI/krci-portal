@@ -49,19 +49,20 @@ jobs:
             "/repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
             -f content="eyes" || true
 
-      - name: Checkout PR branch
+      - name: Checkout repository
         if: steps.auth.outputs.authorized == 'true'
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha || '' }}
 
-      - name: Fetch base branch for diff
+      - name: Checkout PR branch and fetch base
         if: steps.auth.outputs.authorized == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
         run: |
-          BASE=$(gh pr view ${{ github.event.issue.number || github.event.pull_request.number }} --json baseRefName -q .baseRefName)
+          gh pr checkout "$PR_NUMBER"
+          BASE=$(gh pr view "$PR_NUMBER" --json baseRefName -q .baseRefName)
           git fetch origin "$BASE" --depth=1
           echo "BASE_BRANCH=origin/$BASE" >> "$GITHUB_ENV"
 
@@ -73,6 +74,7 @@ jobs:
           path: ./claude-plugins
 
       - name: Run Claude review
+        id: review
         if: steps.auth.outputs.authorized == 'true'
         uses: anthropics/claude-code-action@v1
         with:
@@ -159,6 +161,34 @@ jobs:
 
             If the user included extra instructions after /review, follow those too.
             Do not execute /review as a slash command — this prompt IS the review.
+
+            IMPORTANT: When posting summary via `gh pr comment`, write the body to a temp
+            file first, then use `gh pr comment --body-file /tmp/review-summary.md`.
+            Do NOT use `--body` with inline markdown — it gets rejected by security checks
+            when the body contains `#` characters after newlines.
           claude_args: |
             --max-turns 10
-            --allowedTools "Agent,Read,Grep,Glob,Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git blame:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(pnpm:*),mcp__github_inline_comment__create_inline_comment"
+            --allowedTools "Agent,Read,Grep,Glob,Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git blame:*),Bash(git fetch:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(pnpm:*),mcp__github_inline_comment__create_inline_comment"
+
+      - name: Post review metrics
+        if: always() && steps.review.outcome != 'skipped'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+        run: |
+          EXEC_FILE="${{ steps.review.outputs.execution_file }}"
+          if [ -f "$EXEC_FILE" ]; then
+            RESULT=$(tail -1 "$EXEC_FILE")
+            COST=$(echo "$RESULT" | jq -r '.total_cost_usd // "N/A"')
+            TURNS=$(echo "$RESULT" | jq -r '.num_turns // "N/A"')
+            DENIALS=$(echo "$RESULT" | jq -r '.permission_denials_count // 0')
+            STATUS=$(echo "$RESULT" | jq -r '.subtype // "unknown"')
+            echo "### Review Metrics" >> /tmp/metrics.md
+            echo "| Metric | Value |" >> /tmp/metrics.md
+            echo "|--------|-------|" >> /tmp/metrics.md
+            echo "| Status | \`$STATUS\` |" >> /tmp/metrics.md
+            echo "| Cost | \$$COST |" >> /tmp/metrics.md
+            echo "| Turns | $TURNS |" >> /tmp/metrics.md
+            echo "| Permission denials | $DENIALS |" >> /tmp/metrics.md
+            gh pr comment "$PR_NUMBER" --body-file /tmp/metrics.md
+          fi
