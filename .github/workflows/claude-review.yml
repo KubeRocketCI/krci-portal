@@ -184,7 +184,7 @@ jobs:
             Do not execute /review as a slash command — this prompt IS the review.
           claude_args: |
             --max-turns 20
-            --allowedTools "Agent,Read,Write,Grep,Glob,Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git blame:*),Bash(git fetch:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(pnpm:*),mcp__github_inline_comment__create_inline_comment"
+            --allowedTools "Agent,Read,Write,Grep,Glob,Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git blame:*),Bash(git fetch:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(pnpm:*),Bash(python3:*),mcp__github_inline_comment__create_inline_comment"
 
       - name: Post review summary
         if: always() && steps.review.outcome != 'skipped'
