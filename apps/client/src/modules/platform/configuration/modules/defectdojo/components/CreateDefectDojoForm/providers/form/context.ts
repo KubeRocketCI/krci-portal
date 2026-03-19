@@ -1,6 +1,8 @@
 import React from "react";
 import { useAppForm } from "@/core/components/form";
+import type { FormValidateOrFn } from "@tanstack/react-form";
 import type { CreateDefectDojoFormValues } from "../../types";
+import { createDefectDojoFormSchema } from "../../schema";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function useCreateDefectDojoForm(
@@ -10,6 +12,9 @@ function useCreateDefectDojoForm(
 ) {
   return useAppForm({
     defaultValues,
+    validators: {
+      onChange: createDefectDojoFormSchema as unknown as FormValidateOrFn<CreateDefectDojoFormValues>,
+    },
     onSubmit: async ({ value }) => {
       try {
         await onSubmit(value);

@@ -1,11 +1,14 @@
 import React from "react";
-import { containerRegistryType, ContainerRegistryPlatform, parseRegistrySecretUserProtectedData } from "@my-project/shared";
+import {
+  containerRegistryType,
+  ContainerRegistryPlatform,
+  parseRegistrySecretUserProtectedData,
+} from "@my-project/shared";
 import { EditRegistryFormValues } from "./schema";
 import { NAMES } from "./constants";
 import { EditRegistryFormProps } from "./types";
 import { EditRegistryFormProvider } from "./providers/form/provider";
 import { Form } from "./components/Form";
-import { FormActions } from "./components/FormActions";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
@@ -23,18 +26,10 @@ export const EditRegistryForm: React.FC<EditRegistryFormProps> = ({
   EDPConfigMap,
   pushAccountSecret,
   pullAccountSecret,
-  tektonServiceAccount,
-  onClose,
 }) => {
   const platform = EDPConfigMap?.data?.platform as ContainerRegistryPlatform;
 
-  return (
-    <Form
-      platform={platform}
-      pushAccountSecret={pushAccountSecret}
-      pullAccountSecret={pullAccountSecret}
-    />
-  );
+  return <Form platform={platform} pushAccountSecret={pushAccountSecret} pullAccountSecret={pullAccountSecret} />;
 };
 
 // Provider wrapper component that should wrap both form and actions in the view
@@ -140,7 +135,16 @@ export const EditRegistryFormProviderWrapper: React.FC<EditRegistryFormProviderW
         throw error;
       }
     },
-    [clusterName, defaultNamespace, EDPConfigMap, pushAccountSecret, pullAccountSecret, tektonServiceAccount, trpc, onClose]
+    [
+      clusterName,
+      defaultNamespace,
+      EDPConfigMap,
+      pushAccountSecret,
+      pullAccountSecret,
+      tektonServiceAccount,
+      trpc,
+      onClose,
+    ]
   );
 
   const handleSubmitError = React.useCallback((error: unknown) => {

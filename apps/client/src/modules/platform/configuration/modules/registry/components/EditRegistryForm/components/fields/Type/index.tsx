@@ -1,5 +1,4 @@
 import React from "react";
-import { useStore } from "@tanstack/react-form";
 import { REGISTRY_TYPE_ICON_MAPPING } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
 import { RESOURCE_ICON_NAMES } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
@@ -14,7 +13,6 @@ import {
 } from "@my-project/shared";
 import { useEditRegistryForm } from "../../../providers/form/hooks";
 import { NAMES } from "../../../constants";
-import { FORM_MODES } from "@/core/types/forms";
 
 const createRegistryTypeOptions = (platformName?: ContainerRegistryPlatform) => {
   // Default to kubernetes platform if not specified
@@ -36,8 +34,6 @@ interface TypeProps {
 
 export const Type = ({ platform }: TypeProps) => {
   const form = useEditRegistryForm();
-
-  const registryType = useStore(form.store, (state) => state.values[NAMES.REGISTRY_TYPE]);
 
   const options = React.useMemo(() => {
     const baseOptions = createRegistryTypeOptions(platform);

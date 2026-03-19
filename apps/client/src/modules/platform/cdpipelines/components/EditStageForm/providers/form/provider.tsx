@@ -1,6 +1,6 @@
 import React from "react";
 import { useAppForm } from "@/core/components/form";
-import { EditStageFormContext, EditStageFormInstance } from "./context";
+import { EditStageFormContext } from "./context";
 import type { EditStageFormProviderProps } from "./types";
 import { useDefaultValues } from "../../hooks/useDefaultValues";
 import type { EditStageFormValues } from "../../types";
@@ -44,7 +44,5 @@ export const EditStageFormProvider: React.FC<EditStageFormProviderProps> = ({
     },
   });
 
-  return (
-    <EditStageFormContext.Provider value={form as EditStageFormInstance}>{children}</EditStageFormContext.Provider>
-  );
+  return <EditStageFormContext.Provider value={form}>{children}</EditStageFormContext.Provider>;
 };

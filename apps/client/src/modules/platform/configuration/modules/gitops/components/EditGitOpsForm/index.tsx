@@ -20,7 +20,7 @@ export const EditGitOpsForm: React.FC<{
 
   const defaultValues = React.useMemo<EditGitOpsFormValues>(() => {
     const gitUrlPath = codebase?.spec.gitUrlPath || "";
-    const gitUrlPathWithNoSlashAtTheStart = gitUrlPath.replace("/", "");
+    const gitUrlPathWithNoSlashAtTheStart = gitUrlPath.replace(/^\/+/, "");
     const gitRepoPath = gitUrlPathWithNoSlashAtTheStart.split("/").slice(0, -1).join("/");
 
     return {

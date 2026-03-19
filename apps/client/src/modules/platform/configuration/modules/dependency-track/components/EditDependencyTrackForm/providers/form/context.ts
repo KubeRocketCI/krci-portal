@@ -1,6 +1,8 @@
 import React from "react";
 import { useAppForm } from "@/core/components/form";
+import type { FormValidateOrFn } from "@tanstack/react-form";
 import type { EditDependencyTrackFormValues } from "../../types";
+import { editDependencyTrackFormSchema } from "../../schema";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function useEditDependencyTrackForm(
@@ -10,9 +12,13 @@ function useEditDependencyTrackForm(
 ) {
   return useAppForm({
     defaultValues,
-    onSubmit: async ({ value }) => {
+    validators: {
+      onChange: editDependencyTrackFormSchema as unknown as FormValidateOrFn<EditDependencyTrackFormValues>,
+    },
+    onSubmit: async ({ value, formApi }) => {
       try {
         await onSubmit(value);
+        formApi.reset(value);
       } catch (error) {
         onSubmitError(error);
       }

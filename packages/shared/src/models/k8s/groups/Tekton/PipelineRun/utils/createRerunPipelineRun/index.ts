@@ -61,11 +61,10 @@ const generateNewPipelineRunPayload = ({ pipelineRun, rerun }: { pipelineRun: Pi
     This is used by Tekton Pipelines as part of the conversion between v1beta1
     and v1 resources. Creating a run with this in place prevents it from actually
     executing and instead adopts the status of the original TaskRuns.
-  
+
     Ideally we would just delete all `tekton.dev/*` annotations as we do with labels but
     `tekton.dev/v1beta1Resources` is required for pipelines that use PipelineResources,
     and there may be other similar annotations that are still required.
-  
     When v1beta1 has been fully removed from Tekton Pipelines we can revisit this
     and remove all remaining `tekton.dev/*` annotations.
     */

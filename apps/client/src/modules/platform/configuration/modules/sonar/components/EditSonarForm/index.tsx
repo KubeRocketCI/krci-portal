@@ -4,12 +4,13 @@ import { FormGuideToggleButton, FormGuidePanel } from "@/core/components/FormGui
 import { Alert } from "@/core/components/ui/alert";
 import type { RequestError } from "@/core/types/global";
 import { getK8sErrorMessage } from "@/k8s/api/utils/getK8sErrorMessage";
-import { Secret, QuickLink, safeDecode } from "@my-project/shared";
-import { CreateSonarFormValues } from "../CreateSonarForm/schema";
-import { NAMES } from "../CreateSonarForm/constants";
-import { CreateSonarFormProvider } from "../CreateSonarForm/providers/form/provider";
-import { useCreateSonarForm } from "../CreateSonarForm/providers/form/hooks";
-import { ExternalURL, Token, URL } from "../CreateSonarForm/components/fields";
+import { safeDecode } from "@my-project/shared";
+import { EditSonarFormValues } from "./schema";
+import { NAMES } from "./constants";
+import type { EditSonarFormProps } from "./types";
+import { EditSonarFormProvider } from "./providers/form/provider";
+import { useEditSonarForm } from "./providers/form/hooks";
+import { ExternalURL, Token, URL } from "./components/fields";
 import { FormSection } from "@/core/components/FormSection";
 import { Separator } from "@/core/components/ui/separator";
 import { Globe, Shield } from "lucide-react";
@@ -20,12 +21,7 @@ import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { toast } from "sonner";
 
-interface EditSonarFormProps {
-  secret: Secret;
-  quickLink: QuickLink | undefined;
-  ownerReference: string | undefined;
-  onClose: () => void;
-}
+export type { EditSonarFormProps } from "./types";
 
 export const EditSonarForm: React.FC<EditSonarFormProps> = ({ secret, quickLink, ownerReference, onClose }) => {
   const trpc = useTRPCClient();
@@ -35,7 +31,7 @@ export const EditSonarForm: React.FC<EditSonarFormProps> = ({ secret, quickLink,
 
   const [requestError, setRequestError] = React.useState<RequestError | null>(null);
 
-  const defaultValues = React.useMemo<Partial<CreateSonarFormValues>>(
+  const defaultValues = React.useMemo<Partial<EditSonarFormValues>>(
     () => ({
       [NAMES.EXTERNAL_URL]: quickLink?.spec?.url || "",
       [NAMES.TOKEN]: safeDecode(secret?.data?.token || "", ""),
@@ -45,7 +41,7 @@ export const EditSonarForm: React.FC<EditSonarFormProps> = ({ secret, quickLink,
   );
 
   const handleSubmit = React.useCallback(
-    async (values: CreateSonarFormValues) => {
+    async (values: EditSonarFormValues) => {
       try {
         setRequestError(null);
 
@@ -90,7 +86,7 @@ export const EditSonarForm: React.FC<EditSonarFormProps> = ({ secret, quickLink,
   }, []);
 
   return (
-    <CreateSonarFormProvider defaultValues={defaultValues} onSubmit={handleSubmit} onSubmitError={handleSubmitError}>
+    <EditSonarFormProvider defaultValues={defaultValues} onSubmit={handleSubmit} onSubmitError={handleSubmitError}>
       <DialogHeader>
         <div className="flex flex-row items-start justify-between gap-2">
           <div className="flex flex-col gap-4">
@@ -117,7 +113,7 @@ export const EditSonarForm: React.FC<EditSonarFormProps> = ({ secret, quickLink,
       <DialogFooter>
         <FormActions />
       </DialogFooter>
-    </CreateSonarFormProvider>
+    </EditSonarFormProvider>
   );
 };
 
@@ -125,7 +121,7 @@ const EditSonarFormContent = ({ ownerReference }: { ownerReference: string | und
   return (
     <>
       <FormSection icon={Globe} title="Quick Link">
-        <ExternalURL disabled={!ownerReference} />
+        <ExternalURL disabled={!!ownerReference} />
       </FormSection>
       <Separator />
       <FormSection icon={Shield} title="Connection">
@@ -143,18 +139,24 @@ const EditSonarFormContent = ({ ownerReference }: { ownerReference: string | und
 };
 
 const FormActions = () => {
-  const form = useCreateSonarForm();
+  const form = useEditSonarForm();
   const isDirty = useStore(form.store, (state) => state.isDirty);
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const canSubmit = useStore(form.store, (state) => state.canSubmit);
 
   return (
-    <>
+    <div className="flex w-full justify-between gap-2">
       <Button onClick={() => form.reset()} size="sm" variant="ghost" disabled={!isDirty}>
         Undo Changes
       </Button>
-      <Button onClick={() => form.handleSubmit()} size="sm" variant="default" disabled={!isDirty || isSubmitting}>
+      <Button
+        onClick={() => form.handleSubmit()}
+        size="sm"
+        variant="default"
+        disabled={!isDirty || isSubmitting || !canSubmit}
+      >
         Save
       </Button>
-    </>
+    </div>
   );
 };

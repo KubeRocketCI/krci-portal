@@ -88,7 +88,7 @@ export const CreateGitOpsForm: React.FC<{ onClose: () => void }> = ({ onClose })
 
   return (
     <CreateGitOpsFormProvider defaultValues={defaultValues} onSubmit={handleSubmit}>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         <Form />
         <FormActions onClose={onClose} />
       </div>

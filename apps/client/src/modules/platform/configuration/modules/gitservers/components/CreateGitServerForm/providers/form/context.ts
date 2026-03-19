@@ -1,6 +1,8 @@
 import React from "react";
 import { useAppForm } from "@/core/components/form";
+import type { FormValidateOrFn } from "@tanstack/react-form";
 import type { CreateGitServerFormValues } from "../../names";
+import { createGitServerFormSchema } from "../../names";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function useCreateGitServerFormFn(
@@ -10,6 +12,9 @@ function useCreateGitServerFormFn(
 ) {
   return useAppForm({
     defaultValues,
+    validators: {
+      onChange: createGitServerFormSchema as FormValidateOrFn<CreateGitServerFormValues>,
+    },
     onSubmit: async ({ value }) => {
       try {
         await onSubmit(value);

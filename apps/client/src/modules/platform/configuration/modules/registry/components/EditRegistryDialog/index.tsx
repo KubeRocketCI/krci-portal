@@ -4,7 +4,7 @@ import { FormGuideDialogContent, FormGuideToggleButton, FormGuidePanel } from "@
 import { FORM_GUIDE_CONFIG } from "../../constants/form-guide";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { EditRegistryForm, EditRegistryFormProviderWrapper, EditRegistryFormActions } from "../EditRegistryForm";
-import { ConfigMap, Secret, ServiceAccount } from "@my-project/shared";
+import type { ConfigMap, Secret, ServiceAccount } from "@my-project/shared";
 import type { FormGuideStep } from "@/core/providers/FormGuide/types";
 
 const EMPTY_STEPS: FormGuideStep[] = [];

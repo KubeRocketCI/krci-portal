@@ -1,6 +1,8 @@
 import React from "react";
 import { useAppForm } from "@/core/components/form";
+import type { FormValidateOrFn } from "@tanstack/react-form";
 import type { EditDefectDojoFormValues } from "../../types";
+import { editDefectDojoFormSchema } from "../../schema";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function useEditDefectDojoForm(
@@ -10,9 +12,13 @@ function useEditDefectDojoForm(
 ) {
   return useAppForm({
     defaultValues,
-    onSubmit: async ({ value }) => {
+    validators: {
+      onChange: editDefectDojoFormSchema as unknown as FormValidateOrFn<EditDefectDojoFormValues>,
+    },
+    onSubmit: async ({ value, formApi }) => {
       try {
         await onSubmit(value);
+        formApi.reset(value);
       } catch (error) {
         onSubmitError(error);
       }

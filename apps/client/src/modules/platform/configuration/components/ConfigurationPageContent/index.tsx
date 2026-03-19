@@ -1,4 +1,4 @@
-import { Dialog, DialogBody, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
+import { Dialog, DialogBody, DialogFooter, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
 import { ConfigurationPageContentProps } from "./types";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { PageContentWrapper } from "@/core/components/PageContentWrapper";
@@ -66,6 +66,7 @@ export const ConfigurationPageContent = ({
                 <FormGuidePanel />
               </div>
             </DialogBody>
+            {creationForm.actions && <DialogFooter>{creationForm.actions}</DialogFooter>}
           </FormGuideDialogContent>
         </Dialog>
       )}

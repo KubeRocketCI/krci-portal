@@ -12,6 +12,7 @@ export const FormActions: React.FC<FormActionsProps> = ({ onClose }) => {
 
   const isDirty = useStore(form.store, (state) => state.isDirty);
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const canSubmit = useStore(form.store, (state) => state.canSubmit);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +21,7 @@ export const FormActions: React.FC<FormActionsProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="flex justify-between gap-2 w-full">
+    <div className="flex w-full justify-between gap-2">
       <div className="flex gap-2">
         <Button onClick={onClose} variant="ghost" size="sm">
           Cancel
@@ -29,7 +30,7 @@ export const FormActions: React.FC<FormActionsProps> = ({ onClose }) => {
           Undo Changes
         </Button>
       </div>
-      <Button onClick={handleSubmit} size="sm" variant="default" disabled={!isDirty || isSubmitting}>
+      <Button onClick={handleSubmit} size="sm" variant="default" disabled={!isDirty || isSubmitting || !canSubmit}>
         Save
       </Button>
     </div>
