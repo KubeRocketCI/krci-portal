@@ -1,39 +1,67 @@
 import React from "react";
-import { Alert } from "@/core/components/ui/alert";
-import type { RequestError } from "@/core/types/global";
-import { getK8sErrorMessage } from "@/k8s/api/utils/getK8sErrorMessage";
-import { ConfigMap, Secret, ServiceAccount, containerRegistryType } from "@my-project/shared";
-import { ManageRegistryFormValues, NAMES } from "../ManageRegistry/schema";
-import { ManageRegistryFormProvider } from "../ManageRegistry/providers/form/provider";
-import { useManageRegistryForm } from "../ManageRegistry/providers/form/hooks";
-import { ConfigMapForm } from "../ManageRegistry/components/ConfigMap";
-import { UseSameAccount } from "../ManageRegistry/components/fields";
-import { PullAccountForm } from "../ManageRegistry/components/PullAccount";
-import { PushAccountForm } from "../ManageRegistry/components/PushAccount";
-import { ServiceAccountForm } from "../ManageRegistry/components/ServiceAccount";
-import { Separator } from "@/core/components/ui/separator";
-import { Button } from "@/core/components/ui/button";
-import { useStore } from "@tanstack/react-form";
+import { containerRegistryType, ContainerRegistryPlatform } from "@my-project/shared";
+import { CreateRegistryFormValues } from "./schema";
+import { NAMES } from "./constants";
+import { CreateRegistryFormProps } from "./types";
+import { CreateRegistryFormProvider } from "./providers/form/provider";
+import { Form } from "./components/Form";
+import { FormActions } from "./components/FormActions";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { toast } from "sonner";
 import { satisfiesType } from "../../utils";
+import { Alert } from "@/core/components/ui/alert";
+import type { RequestError } from "@/core/types/global";
+import { getK8sErrorMessage } from "@/k8s/api/utils/getK8sErrorMessage";
 
-interface CreateRegistryFormProps {
-  EDPConfigMap: ConfigMap | undefined;
-  pullAccountSecret: Secret | undefined;
-  pushAccountSecret: Secret | undefined;
-  tektonServiceAccount: ServiceAccount | undefined;
-  onClose: () => void;
-}
+export type { CreateRegistryFormProps } from "./types";
+export { FormActions as CreateRegistryFormActions } from "./components/FormActions";
+
+// Context to share error state between provider and form
+const CreateRegistryFormErrorContext = React.createContext<{
+  error: RequestError | null;
+  setError: (error: RequestError | null) => void;
+} | null>(null);
+
+export const useCreateRegistryFormError = () => {
+  const context = React.useContext(CreateRegistryFormErrorContext);
+  if (!context) {
+    throw new Error("useCreateRegistryFormError must be used within CreateRegistryFormProviderWrapper");
+  }
+  return context;
+};
 
 export const CreateRegistryForm: React.FC<CreateRegistryFormProps> = ({
+  EDPConfigMap,
+}) => {
+  const platform = EDPConfigMap?.data?.platform as ContainerRegistryPlatform;
+  const { error } = useCreateRegistryFormError();
+
+  return (
+    <>
+      {error && (
+        <Alert variant="destructive" title="Failed to create container registry integration">
+          {getK8sErrorMessage(error)}
+        </Alert>
+      )}
+      <Form platform={platform} />
+    </>
+  );
+};
+
+// Provider wrapper component that should wrap both form and actions in the view
+interface CreateRegistryFormProviderWrapperProps extends CreateRegistryFormProps {
+  children: React.ReactNode;
+}
+
+export const CreateRegistryFormProviderWrapper: React.FC<CreateRegistryFormProviderWrapperProps> = ({
   EDPConfigMap,
   pushAccountSecret,
   pullAccountSecret,
   tektonServiceAccount,
   onClose,
+  children,
 }) => {
   const trpc = useTRPCClient();
   const { clusterName, defaultNamespace } = useClusterStore(
@@ -45,10 +73,9 @@ export const CreateRegistryForm: React.FC<CreateRegistryFormProps> = ({
 
   const [requestError, setRequestError] = React.useState<RequestError | null>(null);
 
-  // Empty default values for create mode
-  const defaultValues = React.useMemo<Partial<ManageRegistryFormValues>>(() => {
+  const defaultValues = React.useMemo<Partial<CreateRegistryFormValues>>(() => {
     return {
-      [NAMES.REGISTRY_TYPE]: "" as ManageRegistryFormValues[typeof NAMES.REGISTRY_TYPE],
+      [NAMES.REGISTRY_TYPE]: "" as CreateRegistryFormValues[typeof NAMES.REGISTRY_TYPE],
       [NAMES.REGISTRY_ENDPOINT]: "",
       [NAMES.REGISTRY_SPACE]: "",
       [NAMES.AWS_REGION]: "",
@@ -62,11 +89,10 @@ export const CreateRegistryForm: React.FC<CreateRegistryFormProps> = ({
   }, []);
 
   const handleSubmit = React.useCallback(
-    async (values: ManageRegistryFormValues) => {
+    async (values: CreateRegistryFormValues) => {
       try {
         setRequestError(null);
 
-        // Check which resources need to be created
         const registryType = values[NAMES.REGISTRY_TYPE];
         const needsPushAccount = satisfiesType(registryType, [
           containerRegistryType.harbor,
@@ -144,89 +170,10 @@ export const CreateRegistryForm: React.FC<CreateRegistryFormProps> = ({
   }, []);
 
   return (
-    <ManageRegistryFormProvider defaultValues={defaultValues} onSubmit={handleSubmit} onSubmitError={handleSubmitError}>
-      <div className="flex flex-col gap-4">
-        {requestError && (
-          <Alert variant="destructive" title="Failed to create container registry integration">
-            {getK8sErrorMessage(requestError)}
-          </Alert>
-        )}
-        <CreateRegistryFormContent />
-        <FormActions onClose={onClose} />
-      </div>
-    </ManageRegistryFormProvider>
-  );
-};
-
-// Form content with conditional rendering based on registry type
-const CreateRegistryFormContent = () => {
-  const form = useManageRegistryForm();
-  const registryType = useStore(form.store, (state) => state.values[NAMES.REGISTRY_TYPE]);
-
-  return (
-    <>
-      <ConfigMapForm />
-      {satisfiesType(registryType, [containerRegistryType.ecr]) && (
-        <>
-          <Separator />
-          <ServiceAccountForm />
-        </>
-      )}
-      {satisfiesType(registryType, [
-        containerRegistryType.harbor,
-        containerRegistryType.nexus,
-        containerRegistryType.openshift,
-        containerRegistryType.dockerhub,
-        containerRegistryType.ghcr,
-      ]) && (
-        <>
-          <Separator />
-          <PushAccountForm />
-        </>
-      )}
-      {satisfiesType(registryType, [
-        containerRegistryType.harbor,
-        containerRegistryType.nexus,
-        containerRegistryType.dockerhub,
-        containerRegistryType.ghcr,
-      ]) && (
-        <>
-          <Separator />
-          <UseSameAccount />
-        </>
-      )}
-      {satisfiesType(registryType, [
-        containerRegistryType.harbor,
-        containerRegistryType.nexus,
-        containerRegistryType.dockerhub,
-        containerRegistryType.ghcr,
-      ]) && (
-        <>
-          <Separator />
-          <PullAccountForm />
-        </>
-      )}
-    </>
-  );
-};
-
-// Form actions for create mode
-const FormActions = ({ onClose }: { onClose: () => void }) => {
-  const form = useManageRegistryForm();
-  const isDirty = useStore(form.store, (state) => state.isDirty);
-  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
-
-  return (
-    <>
-      <Button onClick={onClose} variant="ghost" size="sm">
-        Cancel
-      </Button>
-      <Button onClick={() => form.reset()} size="sm" variant="ghost" disabled={!isDirty}>
-        Undo Changes
-      </Button>
-      <Button onClick={() => form.handleSubmit()} size="sm" variant="default" disabled={!isDirty || isSubmitting}>
-        Save
-      </Button>
-    </>
+    <CreateRegistryFormErrorContext.Provider value={{ error: requestError, setError: setRequestError }}>
+      <CreateRegistryFormProvider defaultValues={defaultValues} onSubmit={handleSubmit} onSubmitError={handleSubmitError}>
+        {children}
+      </CreateRegistryFormProvider>
+    </CreateRegistryFormErrorContext.Provider>
   );
 };
