@@ -22,7 +22,7 @@ export const EditGitServerForm: React.FC<{
   gitServer: GitServer;
   webhookURL: string | undefined;
   onClose?: () => void;
-}> = ({ gitServer, webhookURL }) => {
+}> = ({ gitServer, webhookURL, onClose }) => {
   const trpc = useTRPCClient();
   const { clusterName, defaultNamespace } = useClusterStore(
     useShallow((state) => ({
@@ -173,7 +173,7 @@ export const EditGitServerForm: React.FC<{
         </div>
       </DialogBody>
       <DialogFooter>
-        <FormActions />
+        <FormActions onClose={onClose ?? (() => {})} />
       </DialogFooter>
     </EditGitServerFormProvider>
   );
