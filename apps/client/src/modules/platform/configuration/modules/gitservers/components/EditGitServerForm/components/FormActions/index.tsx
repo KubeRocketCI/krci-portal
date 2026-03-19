@@ -3,7 +3,11 @@ import { Button } from "@/core/components/ui/button";
 import { useEditGitServerForm } from "../../providers/form/hooks";
 import { useStore } from "@tanstack/react-form";
 
-export const FormActions: React.FC = () => {
+export interface FormActionsProps {
+  onClose: () => void;
+}
+
+export const FormActions: React.FC<FormActionsProps> = ({ onClose }) => {
   const form = useEditGitServerForm();
 
   const isDirty = useStore(form.store, (state) => state.isDirty);
@@ -16,10 +20,15 @@ export const FormActions: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-end gap-2">
-      <Button onClick={() => form.reset()} size="sm" variant="ghost" disabled={!isDirty}>
-        Undo Changes
-      </Button>
+    <div className="flex justify-between gap-2 w-full">
+      <div className="flex gap-2">
+        <Button onClick={onClose} variant="ghost" size="sm">
+          Cancel
+        </Button>
+        <Button onClick={() => form.reset()} size="sm" variant="ghost" disabled={!isDirty}>
+          Undo Changes
+        </Button>
+      </div>
       <Button onClick={handleSubmit} size="sm" variant="default" disabled={!isDirty || isSubmitting}>
         Save
       </Button>
