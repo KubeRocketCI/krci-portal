@@ -28,35 +28,33 @@ export const FormActions = () => {
   }, [form]);
 
   return (
-    <div className="flex justify-between gap-4">
-      <div>
+    <div className="flex justify-between gap-2">
+      <div className="flex gap-2">
         <Button onClick={handleClosePlaceholder} variant="ghost" size="sm">
           Cancel
         </Button>
-      </div>
-      <div className="flex items-center gap-4">
         <Button onClick={handleReset} size="sm" variant="ghost" disabled={!isDirty}>
           Undo Changes
         </Button>
-        <ConditionalWrapper
-          condition={!secretPermissions.data.create.allowed}
-          wrapper={(children) => (
-            <Tooltip title={secretPermissions.data.create.reason}>
-              <div>{children}</div>
-            </Tooltip>
-          )}
-        >
-          <Button
-            type="button"
-            size="sm"
-            variant="default"
-            disabled={isLoading || !isDirty || !secretPermissions.data.create.allowed || !canSubmit}
-            onClick={() => form.handleSubmit()}
-          >
-            Save
-          </Button>
-        </ConditionalWrapper>
       </div>
+      <ConditionalWrapper
+        condition={!secretPermissions.data.create.allowed}
+        wrapper={(children) => (
+          <Tooltip title={secretPermissions.data.create.reason}>
+            <div>{children}</div>
+          </Tooltip>
+        )}
+      >
+        <Button
+          type="button"
+          size="sm"
+          variant="default"
+          disabled={isLoading || !isDirty || !secretPermissions.data.create.allowed || !canSubmit}
+          onClick={() => form.handleSubmit()}
+        >
+          Save
+        </Button>
+      </ConditionalWrapper>
     </div>
   );
 };

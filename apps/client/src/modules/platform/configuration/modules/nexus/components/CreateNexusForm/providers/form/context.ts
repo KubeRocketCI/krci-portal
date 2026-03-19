@@ -1,6 +1,8 @@
 import React from "react";
 import { useAppForm } from "@/core/components/form";
+import type { FormValidateOrFn } from "@tanstack/react-form";
 import type { CreateNexusFormValues } from "../../types";
+import { createNexusFormSchema } from "../../schema";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function useCreateNexusForm(
@@ -10,6 +12,9 @@ function useCreateNexusForm(
 ) {
   return useAppForm({
     defaultValues,
+    validators: {
+      onChange: createNexusFormSchema as unknown as FormValidateOrFn<CreateNexusFormValues>,
+    },
     onSubmit: async ({ value }) => {
       try {
         await onSubmit(value);

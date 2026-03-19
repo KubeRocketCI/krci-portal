@@ -7,7 +7,6 @@ import { createDefaultValues } from "./providers/form/constants";
 import { ClusterSecretDataProvider } from "./providers/data/provider";
 import { useSecretCRUD, useSecretPermissions } from "@/k8s/api/groups/Core/Secret";
 import type { ManageClusterSecretValues } from "./types";
-import { Separator } from "@/core/components/ui/separator";
 import { FORM_MODES } from "@/core/types/forms";
 
 export interface CreateClusterSecretFormProps {
@@ -66,7 +65,6 @@ export const CreateClusterSecretForm: React.FC<CreateClusterSecretFormProps> = (
       <ClusterSecretFormProvider defaultValues={createDefaultValues} onSubmit={handleSubmit}>
         <div className="flex flex-col gap-4">
           <Form activeClusterType={activeClusterType} setActiveClusterType={setActiveClusterType} />
-          <Separator />
           <FormActions />
         </div>
       </ClusterSecretFormProvider>

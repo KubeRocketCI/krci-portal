@@ -7,7 +7,11 @@ import { getForbiddenError } from "@/k8s/api/utils/get-forbidden-error";
 import { registrySecretName } from "@my-project/shared";
 import React from "react";
 import { pageDescription } from "./constants";
-import { CreateRegistryForm, CreateRegistryFormProviderWrapper, CreateRegistryFormActions } from "./components/CreateRegistryForm";
+import {
+  CreateRegistryForm,
+  CreateRegistryFormProviderWrapper,
+  CreateRegistryFormActions,
+} from "./components/CreateRegistryForm";
 import { RegistryCard } from "./components/RegistryCard";
 import { EditRegistryDialog } from "./components/EditRegistryDialog";
 import { FORM_GUIDE_CONFIG } from "./constants/form-guide";

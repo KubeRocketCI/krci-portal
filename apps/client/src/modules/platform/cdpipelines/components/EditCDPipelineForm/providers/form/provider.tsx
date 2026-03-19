@@ -1,5 +1,5 @@
 import React from "react";
-import { EditCDPipelineFormContext, EditCDPipelineFormInstance } from "./context";
+import { EditCDPipelineFormContext } from "./context";
 import type { EditCDPipelineFormProviderProps } from "./types";
 import { useDefaultValues } from "../../hooks/useDefaultValues";
 import type { EditCDPipelineFormValues } from "../../types";
@@ -43,9 +43,5 @@ export const EditCDPipelineFormProvider: React.FC<EditCDPipelineFormProviderProp
     },
   });
 
-  return (
-    <EditCDPipelineFormContext.Provider value={form as EditCDPipelineFormInstance}>
-      {children}
-    </EditCDPipelineFormContext.Provider>
-  );
+  return <EditCDPipelineFormContext.Provider value={form}>{children}</EditCDPipelineFormContext.Provider>;
 };

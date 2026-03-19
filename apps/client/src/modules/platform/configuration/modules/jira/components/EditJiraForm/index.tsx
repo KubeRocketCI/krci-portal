@@ -8,9 +8,8 @@ import React from "react";
 import { toast } from "sonner";
 import { Button } from "@/core/components/ui/button";
 import { useAppForm } from "@/core/components/form";
-import { createJiraFormSchema } from "../CreateJiraForm/schema";
+import { createJiraFormSchema, CreateJiraFormValues } from "../CreateJiraForm/schema";
 import { NAMES } from "../CreateJiraForm/constants";
-import type { FormValidateOrFn } from "@tanstack/react-form";
 import { useStore } from "@tanstack/react-form";
 import { CopyToClipboardButton } from "@/core/components/FieldSuffixButtons";
 import { ManagedByHelper } from "@/core/components/ManagedByHelper";
@@ -22,19 +21,13 @@ export interface EditJiraFormProps {
   onClose: () => void;
 }
 
-type EditJiraFormValues = {
-  url: string;
-  username: string;
-  password: string;
-};
-
 export function EditJiraForm({ secret, jiraServer, ownerReference, onClose }: EditJiraFormProps) {
   const trpc = useTRPCClient();
   const { clusterName, defaultNamespace } = useClusterStore(
     useShallow((state) => ({ clusterName: state.clusterName, defaultNamespace: state.defaultNamespace }))
   );
 
-  const defaultValues = React.useMemo<EditJiraFormValues>(
+  const defaultValues = React.useMemo<CreateJiraFormValues>(
     () => ({
       [NAMES.URL]: jiraServer?.spec?.apiUrl || jiraServer?.spec?.rootUrl || "",
       [NAMES.USERNAME]: safeDecode(secret?.data?.username ?? "", ""),
@@ -44,7 +37,7 @@ export function EditJiraForm({ secret, jiraServer, ownerReference, onClose }: Ed
   );
 
   const handleSubmit = React.useCallback(
-    async (values: EditJiraFormValues) => {
+    async (values: CreateJiraFormValues) => {
       try {
         const result = await trpc.k8s.manageJiraIntegration.mutate({
           clusterName,
@@ -86,25 +79,16 @@ export function EditJiraForm({ secret, jiraServer, ownerReference, onClose }: Ed
   const form = useAppForm({
     defaultValues,
     validators: {
-      onChange: createJiraFormSchema as unknown as FormValidateOrFn<EditJiraFormValues>,
+      onChange: createJiraFormSchema,
     },
-    onSubmit: async ({ value, formApi }) => {
-      const validationResult = createJiraFormSchema.safeParse(value);
-
-      if (!validationResult.success) {
-        validationResult.error.errors.forEach((error) => {
-          const fieldPath = error.path.join(".");
-          formApi.setFieldMeta(fieldPath as never, (prev) => ({ ...prev, isTouched: true }));
-        });
-        return;
-      }
-
+    onSubmit: async ({ value }) => {
       await handleSubmit(value);
     },
   });
 
   const isDirty = useStore(form.store, (state) => state.isDirty);
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const canSubmit = useStore(form.store, (state) => state.canSubmit);
   const url = useStore(form.store, (state) => state.values[NAMES.URL]);
 
   return (
@@ -162,12 +146,19 @@ export function EditJiraForm({ secret, jiraServer, ownerReference, onClose }: Ed
         </div>
       </DialogBody>
       <DialogFooter>
-        <Button onClick={() => form.reset()} size="sm" variant="ghost" disabled={!isDirty}>
-          Undo Changes
-        </Button>
-        <Button onClick={() => form.handleSubmit()} size="sm" variant="default" disabled={!isDirty || isSubmitting}>
-          Save
-        </Button>
+        <div className="flex w-full justify-between gap-2">
+          <Button onClick={() => form.reset()} size="sm" variant="ghost" disabled={!isDirty}>
+            Undo Changes
+          </Button>
+          <Button
+            onClick={() => form.handleSubmit()}
+            size="sm"
+            variant="default"
+            disabled={!isDirty || isSubmitting || !canSubmit}
+          >
+            Save
+          </Button>
+        </div>
       </DialogFooter>
     </>
   );

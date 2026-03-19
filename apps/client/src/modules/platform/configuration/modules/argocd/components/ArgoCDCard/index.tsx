@@ -22,7 +22,7 @@ function getStatusBadge(status: ReturnType<typeof getIntegrationSecretStatus>) {
       </Badge>
     );
   }
-  if (status.connected) {
+  if (status.connected === "true") {
     return (
       <Badge variant="outline" className="border-green-300 bg-green-100 text-green-700">
         <CheckCircle className="mr-1 h-3 w-3" />

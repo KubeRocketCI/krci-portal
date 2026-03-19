@@ -1,7 +1,7 @@
 import React from "react";
 import { useAppForm } from "@/core/components/form";
 import type { FormValidateOrFn } from "@tanstack/react-form";
-import { CreateCodebaseBranchFormContext, CreateValidationContext, CreateCodebaseBranchFormInstance } from "./context";
+import { CreateCodebaseBranchFormContext, CreateValidationContext } from "./context";
 import type { CreateCodebaseBranchFormProviderProps } from "./types";
 import type { CreateCodebaseBranchFormValues } from "../../types";
 import { createCodebaseBranchSchema } from "../../schema";
@@ -41,9 +41,7 @@ export const CreateCodebaseBranchFormProvider: React.FC<CreateCodebaseBranchForm
 
   return (
     <CreateValidationContext.Provider value={{ formSchema }}>
-      <CreateCodebaseBranchFormContext.Provider value={form as CreateCodebaseBranchFormInstance}>
-        {children}
-      </CreateCodebaseBranchFormContext.Provider>
+      <CreateCodebaseBranchFormContext.Provider value={form}>{children}</CreateCodebaseBranchFormContext.Provider>
     </CreateValidationContext.Provider>
   );
 };

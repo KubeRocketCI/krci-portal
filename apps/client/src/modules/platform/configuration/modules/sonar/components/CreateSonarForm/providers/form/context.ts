@@ -1,6 +1,8 @@
 import React from "react";
 import { useAppForm } from "@/core/components/form";
+import type { FormValidateOrFn } from "@tanstack/react-form";
 import type { CreateSonarFormValues } from "../../schema";
+import { createSonarFormSchema } from "../../schema";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function useCreateSonarForm(
@@ -10,6 +12,9 @@ function useCreateSonarForm(
 ) {
   return useAppForm({
     defaultValues,
+    validators: {
+      onChange: createSonarFormSchema as unknown as FormValidateOrFn<CreateSonarFormValues>,
+    },
     onSubmit: async ({ value }) => {
       try {
         await onSubmit(value);

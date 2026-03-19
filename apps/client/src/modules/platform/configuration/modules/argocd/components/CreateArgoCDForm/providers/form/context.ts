@@ -1,6 +1,8 @@
 import React from "react";
 import { useAppForm } from "@/core/components/form";
+import type { FormValidateOrFn } from "@tanstack/react-form";
 import type { CreateArgoCDFormValues } from "../../types";
+import { createArgoCDFormSchema } from "../../schema";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function useCreateArgoCDForm(
@@ -10,6 +12,9 @@ function useCreateArgoCDForm(
 ) {
   return useAppForm({
     defaultValues,
+    validators: {
+      onChange: createArgoCDFormSchema as unknown as FormValidateOrFn<CreateArgoCDFormValues>,
+    },
     onSubmit: async ({ value }) => {
       try {
         await onSubmit(value);

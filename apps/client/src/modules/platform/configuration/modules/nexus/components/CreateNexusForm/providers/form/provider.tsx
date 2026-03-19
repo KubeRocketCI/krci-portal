@@ -1,7 +1,7 @@
 import React from "react";
 import { useAppForm } from "@/core/components/form";
 import type { FormValidateOrFn } from "@tanstack/react-form";
-import { CreateNexusFormContext, CreateNexusFormInstance } from "./context";
+import { CreateNexusFormContext } from "./context";
 import type { CreateNexusFormProviderProps } from "./types";
 import type { CreateNexusFormValues } from "../../types";
 import { createNexusFormSchema } from "../../schema";
@@ -17,17 +17,7 @@ export const CreateNexusFormProvider: React.FC<CreateNexusFormProviderProps> = (
     validators: {
       onChange: createNexusFormSchema as unknown as FormValidateOrFn<CreateNexusFormValues>,
     },
-    onSubmit: async ({ value, formApi }) => {
-      const validationResult = createNexusFormSchema.safeParse(value);
-
-      if (!validationResult.success) {
-        validationResult.error.errors.forEach((error) => {
-          const fieldPath = error.path.join(".");
-          formApi.setFieldMeta(fieldPath as never, (prev) => ({ ...prev, isTouched: true }));
-        });
-        return;
-      }
-
+    onSubmit: async ({ value }) => {
       try {
         await onSubmit(value);
       } catch (error) {
@@ -36,9 +26,5 @@ export const CreateNexusFormProvider: React.FC<CreateNexusFormProviderProps> = (
     },
   });
 
-  return (
-    <CreateNexusFormContext.Provider value={form as CreateNexusFormInstance}>
-      {children}
-    </CreateNexusFormContext.Provider>
-  );
+  return <CreateNexusFormContext.Provider value={form}>{children}</CreateNexusFormContext.Provider>;
 };

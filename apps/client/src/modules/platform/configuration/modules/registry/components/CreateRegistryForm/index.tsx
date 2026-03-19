@@ -5,7 +5,6 @@ import { NAMES } from "./constants";
 import { CreateRegistryFormProps } from "./types";
 import { CreateRegistryFormProvider } from "./providers/form/provider";
 import { Form } from "./components/Form";
-import { FormActions } from "./components/FormActions";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
@@ -32,9 +31,7 @@ export const useCreateRegistryFormError = () => {
   return context;
 };
 
-export const CreateRegistryForm: React.FC<CreateRegistryFormProps> = ({
-  EDPConfigMap,
-}) => {
+export const CreateRegistryForm: React.FC<CreateRegistryFormProps> = ({ EDPConfigMap }) => {
   const platform = EDPConfigMap?.data?.platform as ContainerRegistryPlatform;
   const { error } = useCreateRegistryFormError();
 
@@ -171,7 +168,11 @@ export const CreateRegistryFormProviderWrapper: React.FC<CreateRegistryFormProvi
 
   return (
     <CreateRegistryFormErrorContext.Provider value={{ error: requestError, setError: setRequestError }}>
-      <CreateRegistryFormProvider defaultValues={defaultValues} onSubmit={handleSubmit} onSubmitError={handleSubmitError}>
+      <CreateRegistryFormProvider
+        defaultValues={defaultValues}
+        onSubmit={handleSubmit}
+        onSubmitError={handleSubmitError}
+      >
         {children}
       </CreateRegistryFormProvider>
     </CreateRegistryFormErrorContext.Provider>

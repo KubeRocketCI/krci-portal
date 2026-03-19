@@ -1,7 +1,7 @@
 import React from "react";
 import { useAppForm } from "@/core/components/form";
 import type { FormValidateOrFn } from "@tanstack/react-form";
-import { EditRegistryFormContext, EditRegistryFormInstance } from "./context";
+import { EditRegistryFormContext } from "./context";
 import type { EditRegistryFormProviderProps } from "./types";
 import type { EditRegistryFormValues } from "../../schema";
 import { editRegistryFormSchema } from "../../schema";
@@ -17,18 +17,15 @@ export const EditRegistryFormProvider: React.FC<EditRegistryFormProviderProps> =
     validators: {
       onChange: editRegistryFormSchema as unknown as FormValidateOrFn<EditRegistryFormValues>,
     },
-    onSubmit: async ({ value }) => {
+    onSubmit: async ({ value, formApi }) => {
       try {
         await onSubmit(value);
+        formApi.reset(value);
       } catch (error) {
         onSubmitError(error);
       }
     },
   });
 
-  return (
-    <EditRegistryFormContext.Provider value={form as EditRegistryFormInstance}>
-      {children}
-    </EditRegistryFormContext.Provider>
-  );
+  return <EditRegistryFormContext.Provider value={form}>{children}</EditRegistryFormContext.Provider>;
 };

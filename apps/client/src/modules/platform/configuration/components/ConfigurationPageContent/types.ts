@@ -12,6 +12,7 @@ export interface PageDescription {
 export interface ConfigurationPageContentProps {
   creationForm: {
     component: React.ReactNode;
+    actions?: React.ReactNode;
     isOpen: boolean;
     onClose: () => void;
     onOpen: () => void;

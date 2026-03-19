@@ -84,7 +84,7 @@ export const CreateNexusForm: React.FC<{ quickLink: QuickLink | undefined; onClo
 
   return (
     <CreateNexusFormProvider defaultValues={defaultValues} onSubmit={handleSubmit} onSubmitError={handleSubmitError}>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         {requestError && (
           <Alert variant="destructive" title="Failed to create Nexus integration">
             {getK8sErrorMessage(requestError)}

@@ -1,6 +1,8 @@
 import React from "react";
 import { useAppForm } from "@/core/components/form";
+import type { FormValidateOrFn } from "@tanstack/react-form";
 import type { CreateRegistryFormValues } from "../../schema";
+import { createRegistryFormSchema } from "../../schema";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function useCreateRegistryForm(
@@ -10,6 +12,9 @@ function useCreateRegistryForm(
 ) {
   return useAppForm({
     defaultValues,
+    validators: {
+      onChange: createRegistryFormSchema as unknown as FormValidateOrFn<CreateRegistryFormValues>,
+    },
     onSubmit: async ({ value }) => {
       try {
         await onSubmit(value);

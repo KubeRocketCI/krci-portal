@@ -20,16 +20,18 @@ export const FormActions: React.FC<FormActionsProps> = ({ onClose }) => {
   };
 
   return (
-    <>
-      <Button onClick={onClose} variant="ghost" size="sm">
-        Cancel
-      </Button>
-      <Button onClick={() => form.reset()} size="sm" variant="ghost" disabled={!isDirty}>
-        Undo Changes
-      </Button>
+    <div className="flex justify-between gap-2">
+      <div className="flex gap-2">
+        <Button onClick={onClose} variant="ghost" size="sm">
+          Cancel
+        </Button>
+        <Button onClick={() => form.reset()} size="sm" variant="ghost" disabled={!isDirty}>
+          Undo Changes
+        </Button>
+      </div>
       <Button onClick={handleSubmit} size="sm" variant="default" disabled={!isDirty || isSubmitting}>
         Save
       </Button>
-    </>
+    </div>
   );
 };

@@ -1,7 +1,7 @@
 import React from "react";
 import { useAppForm } from "@/core/components/form";
 import type { FormValidateOrFn } from "@tanstack/react-form";
-import { EditCodebaseFormContext, EditCodebaseFormInstance } from "./context";
+import { EditCodebaseFormContext } from "./context";
 import type { EditCodebaseFormProviderProps } from "./types";
 import type { EditCodebaseFormValues } from "../../types";
 import { editCodebaseSchema } from "../../schema";
@@ -40,9 +40,5 @@ export const EditCodebaseFormProvider: React.FC<EditCodebaseFormProviderProps> =
     },
   });
 
-  return (
-    <EditCodebaseFormContext.Provider value={form as EditCodebaseFormInstance}>
-      {children}
-    </EditCodebaseFormContext.Provider>
-  );
+  return <EditCodebaseFormContext.Provider value={form}>{children}</EditCodebaseFormContext.Provider>;
 };

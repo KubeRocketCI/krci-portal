@@ -10,6 +10,7 @@ export const FormActions: React.FC = () => {
 
   const isDirty = useStore(form.store, (state) => state.isDirty);
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const canSubmit = useStore(form.store, (state) => state.canSubmit);
   const formValuesKey = useStore(
     form.store,
     (state) => `${state.values.url}|${state.values.token}|${state.values.externalUrl}`
@@ -46,11 +47,11 @@ export const FormActions: React.FC = () => {
         disabled={!isDirty}
         serviceName={serviceName}
       />
-      <div className="flex justify-end gap-2">
+      <div className="flex justify-between gap-2">
         <Button onClick={() => form.reset()} size="sm" variant="ghost" disabled={!isDirty}>
           Undo Changes
         </Button>
-        <Button onClick={handleSubmit} size="sm" variant="default" disabled={!isDirty || isSubmitting}>
+        <Button onClick={handleSubmit} size="sm" variant="default" disabled={!isDirty || isSubmitting || !canSubmit}>
           Save
         </Button>
       </div>

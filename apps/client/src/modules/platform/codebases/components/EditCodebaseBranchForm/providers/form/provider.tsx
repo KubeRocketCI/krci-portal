@@ -1,7 +1,7 @@
 import React from "react";
 import { useAppForm } from "@/core/components/form";
 import type { FormValidateOrFn } from "@tanstack/react-form";
-import { EditCodebaseBranchFormContext, EditCodebaseBranchFormInstance } from "./context";
+import { EditCodebaseBranchFormContext } from "./context";
 import type { EditCodebaseBranchFormProviderProps } from "./types";
 import type { EditCodebaseBranchFormValues } from "../../types";
 import { editCodebaseBranchSchema } from "../../schema";
@@ -36,9 +36,5 @@ export const EditCodebaseBranchFormProvider: React.FC<EditCodebaseBranchFormProv
     },
   });
 
-  return (
-    <EditCodebaseBranchFormContext.Provider value={form as EditCodebaseBranchFormInstance}>
-      {children}
-    </EditCodebaseBranchFormContext.Provider>
-  );
+  return <EditCodebaseBranchFormContext.Provider value={form}>{children}</EditCodebaseBranchFormContext.Provider>;
 };

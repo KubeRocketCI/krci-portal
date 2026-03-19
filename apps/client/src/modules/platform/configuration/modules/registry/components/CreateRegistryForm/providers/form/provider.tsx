@@ -1,7 +1,7 @@
 import React from "react";
 import { useAppForm } from "@/core/components/form";
 import type { FormValidateOrFn } from "@tanstack/react-form";
-import { CreateRegistryFormContext, CreateRegistryFormInstance } from "./context";
+import { CreateRegistryFormContext } from "./context";
 import type { CreateRegistryFormProviderProps } from "./types";
 import type { CreateRegistryFormValues } from "../../schema";
 import { createRegistryFormSchema } from "../../schema";
@@ -26,9 +26,5 @@ export const CreateRegistryFormProvider: React.FC<CreateRegistryFormProviderProp
     },
   });
 
-  return (
-    <CreateRegistryFormContext.Provider value={form as CreateRegistryFormInstance}>
-      {children}
-    </CreateRegistryFormContext.Provider>
-  );
+  return <CreateRegistryFormContext.Provider value={form}>{children}</CreateRegistryFormContext.Provider>;
 };

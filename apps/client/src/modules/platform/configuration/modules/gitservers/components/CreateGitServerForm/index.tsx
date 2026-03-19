@@ -101,7 +101,6 @@ export const CreateGitServerForm: React.FC<{ onClose: () => void }> = ({ onClose
         <GitServerForm />
         <Separator />
         <CredentialsForm />
-        <Separator />
         <FormActions onClose={onClose} />
       </div>
     </CreateGitServerFormProvider>
