@@ -3,16 +3,16 @@ import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { Badge } from "@/core/components/ui/badge";
 import { Button } from "@/core/components/ui/button";
 import { Card } from "@/core/components/ui/card";
-import { Label } from "@/core/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
 import { cn } from "@/core/utils/classname";
+import { buildBranchOptions } from "@/modules/platform/cdpipelines/utils/buildBranchOptions";
+
 import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
 import {
   Codebase,
   codebaseLabels,
   codebaseType,
   codebaseBranchLabels,
-  sortKubeObjectByCreationTimestamp,
+  sortCodebaseBranchesWithDefaultFirst,
 } from "@my-project/shared";
 import { AlertCircle, GitBranch, Package, X, Check } from "lucide-react";
 import React from "react";
@@ -41,8 +41,8 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, index, o
 
   const sortedApplicationBranchList = React.useMemo(() => {
     if (!applicationBranchListWatch.data.array) return [];
-    return [...applicationBranchListWatch.data.array].sort(sortKubeObjectByCreationTimestamp);
-  }, [applicationBranchListWatch.data.array]);
+    return sortCodebaseBranchesWithDefaultFirst(applicationBranchListWatch.data.array, application.spec.defaultBranch);
+  }, [applicationBranchListWatch.data.array, application.spec.defaultBranch]);
 
   const fieldArrayValue = useStore(
     form.store,
@@ -65,11 +65,10 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, index, o
 
   const hasValidationError = !!appBranchError;
 
-  const branchOptions = sortedApplicationBranchList.map((el) => ({
-    label: el.spec.branchName,
-    value: el.metadata.name,
-    branchName: el.spec.branchName,
-  }));
+  const branchOptions = React.useMemo(
+    () => buildBranchOptions(sortedApplicationBranchList, application.spec.defaultBranch, true),
+    [sortedApplicationBranchList, application.spec.defaultBranch]
+  );
 
   // Track if we've initialized the default value to prevent re-setting
   const hasInitializedRef = React.useRef(false);
@@ -119,27 +118,6 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, index, o
     index,
   ]);
 
-  const handleBranchChange = React.useCallback(
-    (value: string) => {
-      const currentFieldArray = form.getFieldValue(CREATE_CDPIPELINE_FORM_NAMES.ui_applicationsFieldArray.name) || [];
-      const updatedFieldArray = [...currentFieldArray];
-      updatedFieldArray[index] = {
-        ...updatedFieldArray[index],
-        appBranch: value,
-      };
-      form.setFieldValue(CREATE_CDPIPELINE_FORM_NAMES.ui_applicationsFieldArray.name, updatedFieldArray);
-
-      const currentInputDockerStreamsValue =
-        form.getFieldValue(CREATE_CDPIPELINE_FORM_NAMES.inputDockerStreams.name) || [];
-      const newInputDockerStreamsValue = [
-        ...currentInputDockerStreamsValue.filter((el: string) => el !== rowAppBranchFieldValue),
-        value,
-      ] as string[];
-      form.setFieldValue(CREATE_CDPIPELINE_FORM_NAMES.inputDockerStreams.name, newInputDockerStreamsValue);
-    },
-    [form, index, rowAppBranchFieldValue]
-  );
-
   return (
     <LoadingWrapper isLoading={applicationBranchListWatch.query.isLoading}>
       <Card
@@ -179,40 +157,36 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, index, o
           </div>
 
           <div className="mt-4 border-t pt-2">
-            <Label htmlFor={`branch-select-grid-${index}`} className="mb-2 flex items-center gap-1.5 text-xs">
-              <GitBranch className="h-3 w-3" />
-              Branch
-              {hasValidationError && <span className="text-destructive">*</span>}
-            </Label>
-            <Select value={rowAppBranchFieldValue || ""} onValueChange={handleBranchChange}>
-              <SelectTrigger
-                id={`branch-select-grid-${index}`}
-                className={cn("h-9 text-xs", hasValidationError && "border-destructive focus:ring-destructive")}
-              >
-                <SelectValue placeholder="Select branch" />
-              </SelectTrigger>
-              <SelectContent className="fixed z-50">
-                {branchOptions.map((branch) => (
-                  <SelectItem key={branch.value} value={branch.value}>
-                    <div className="flex items-center gap-2">
-                      <GitBranch className="text-muted-foreground h-3 w-3" />
-                      <span className="text-xs">{branch.branchName}</span>
-                      {branch.branchName === application.spec.defaultBranch && (
-                        <Badge variant="outline" className="text-xs">
-                          default
-                        </Badge>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {hasValidationError && (
-              <p className="text-destructive mt-1.5 flex items-center gap-1 text-xs">
-                <AlertCircle className="h-3 w-3" />
-                {appBranchError}
-              </p>
-            )}
+            <form.AppField
+              name={`${CREATE_CDPIPELINE_FORM_NAMES.ui_applicationsFieldArray.name}[${index}].appBranch` as never}
+              listeners={{
+                onChange: ({ value }) => {
+                  const v = typeof value === "string" ? value : "";
+                  if (!v) return;
+                  const streams = [...(form.getFieldValue(CREATE_CDPIPELINE_FORM_NAMES.inputDockerStreams.name) || [])];
+                  streams[index] = v;
+                  form.setFieldValue(CREATE_CDPIPELINE_FORM_NAMES.inputDockerStreams.name, streams);
+                },
+              }}
+            >
+              {(f) => (
+                <f.FormCombobox
+                  label={
+                    <span className="flex items-center gap-1.5 text-xs font-medium">
+                      <GitBranch className="h-3 w-3" />
+                      Branch
+                      {hasValidationError && <span className="text-destructive">*</span>}
+                    </span>
+                  }
+                  options={branchOptions}
+                  placeholder="Select branch"
+                  searchPlaceholder="Search branches..."
+                  emptyText="No branches found"
+                  skipEmptySingleSelection
+                  displayError={appBranchError ? String(appBranchError) : undefined}
+                />
+              )}
+            </form.AppField>
           </div>
         </div>
       </Card>

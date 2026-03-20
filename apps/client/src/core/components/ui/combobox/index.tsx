@@ -27,6 +27,8 @@ export interface ComboboxOption {
   label: string | React.ReactNode;
   disabled?: boolean;
   icon?: React.ReactNode;
+  /** Extra strings matched by the search filter (cmdk `keywords`). */
+  keywords?: string[];
 }
 
 export interface ComboboxProps {
@@ -93,7 +95,7 @@ export const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(
             aria-expanded={open}
             disabled={disabled}
             variant="dark"
-            className="w-full justify-between py-1 font-normal normal-case shadow-none"
+            className={cn("w-full justify-between py-1 font-normal normal-case shadow-none", className)}
           >
             <div className="flex items-center gap-2">
               {renderIcon(selectedOption?.icon)}
@@ -114,6 +116,7 @@ export const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(
                     <CommandItem
                       key={option.value}
                       value={option.value}
+                      keywords={option.keywords}
                       disabled={option.disabled}
                       onSelect={(currentValue) => {
                         const newValue = currentValue === singleValue ? "" : currentValue;
@@ -255,6 +258,7 @@ const ComboboxMultiple = React.forwardRef<HTMLButtonElement, ComboboxMultiplePro
                     <CommandItem
                       key={option.value}
                       value={option.value}
+                      keywords={option.keywords}
                       disabled={option.disabled}
                       onSelect={() => toggleSelection(option.value)}
                       className={cn(isSelected && "bg-accent")}

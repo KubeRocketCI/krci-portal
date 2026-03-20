@@ -1,6 +1,13 @@
 import React from "react";
 import { Edge, Node, Position } from "@xyflow/react";
-import { PipelineRun, PipelineTask, TaskRun, ApprovalTask, Task } from "@my-project/shared";
+import {
+  ApprovalTask,
+  getPipelineRunTaskGraphDefinitions,
+  PipelineRun,
+  PipelineTask,
+  Task,
+  TaskRun,
+} from "@my-project/shared";
 import { getLayoutedElements } from "../../PipelineDiagram/utils/layoutUtils";
 
 export interface PipelineRunTaskNodeData extends Record<string, unknown> {
@@ -32,13 +39,11 @@ export const usePipelineRunGraphData = (
   direction: "TB" | "LR" = "TB"
 ): { nodes: MyNode[]; edges: MyEdge[] } => {
   return React.useMemo(() => {
-    if (!pipelineRun || !tasksByNameMap || tasksByNameMap.size === 0) {
+    if (!pipelineRun || !tasksByNameMap) {
       return { nodes: [], edges: [] };
     }
 
-    const mainTasks: PipelineTask[] = pipelineRun?.status?.pipelineSpec?.tasks || [];
-    const finallyTasks: PipelineTask[] = pipelineRun?.status?.pipelineSpec?.finally || [];
-    const allTasks = [...mainTasks, ...finallyTasks];
+    const { mainTasks, finallyTasks, allTasks } = getPipelineRunTaskGraphDefinitions(pipelineRun);
 
     if (allTasks.length === 0) {
       return { nodes: [], edges: [] };
