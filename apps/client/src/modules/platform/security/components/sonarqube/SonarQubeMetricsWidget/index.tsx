@@ -21,8 +21,9 @@ import { useClusterStore } from "@/k8s/store";
  * <SonarQubeMetricsWidget componentKey="my-service" />
  */
 export function SonarQubeMetricsWidget({ componentKey }: SonarQubeMetricsWidgetProps) {
-  const { data, isLoading, error } = useSonarQubeProject({ componentKey });
+  const { data, isLoading } = useSonarQubeProject({ componentKey });
   const clusterName = useClusterStore((state) => state.clusterName);
+  const sonarBaseUrl = useClusterStore((state) => state.sonarWebUrl);
 
   return (
     <SecurityMetricCard
@@ -34,8 +35,7 @@ export function SonarQubeMetricsWidget({ componentKey }: SonarQubeMetricsWidgetP
         </>
       }
       isLoading={isLoading}
-      error={error}
-      hasData={!!data}
+      hasData={!!data?.measures}
       emptyStateMessage={
         <p className="text-muted-foreground text-sm">
           No metrics available.{" "}
@@ -46,7 +46,7 @@ export function SonarQubeMetricsWidget({ componentKey }: SonarQubeMetricsWidgetP
         </p>
       }
     >
-      <SonarQubeMetricsList measures={data?.measures} />
+      <SonarQubeMetricsList measures={data?.measures} sonarBaseUrl={sonarBaseUrl} projectKey={componentKey} />
     </SecurityMetricCard>
   );
 }

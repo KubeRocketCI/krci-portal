@@ -87,7 +87,7 @@ export const DeletionDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent>
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Are you sure you want to delete the selected PipelineRuns?</DialogTitle>
         </DialogHeader>

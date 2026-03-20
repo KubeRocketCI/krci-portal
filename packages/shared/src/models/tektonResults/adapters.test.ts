@@ -295,6 +295,27 @@ describe("normalizeHistoryPipelineRun", () => {
     expect(result.spec.params).toHaveLength(2);
   });
 
+  it("should preserve spec.pipelineSpec for archived inline pipelines", () => {
+    const decoded: DecodedPipelineRun = {
+      ...mockDecodedPipelineRun,
+      spec: {
+        ...mockDecodedPipelineRun.spec,
+        pipelineSpec: {
+          tasks: [{ name: "inline-only-task", taskRef: { name: "git-clone", kind: "Task" } }],
+        },
+      },
+      status: {
+        ...mockDecodedPipelineRun.status,
+        pipelineSpec: undefined,
+      },
+    };
+
+    const result = normalizeHistoryPipelineRun(decoded);
+
+    expect(result.spec.pipelineSpec?.tasks).toHaveLength(1);
+    expect(result.spec.pipelineSpec?.tasks?.[0]?.name).toBe("inline-only-task");
+  });
+
   it("should use startTime as fallback for missing creationTimestamp", () => {
     const decoded: DecodedPipelineRun = {
       ...mockDecodedPipelineRun,

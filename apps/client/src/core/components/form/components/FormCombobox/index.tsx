@@ -20,8 +20,14 @@ import { Check, ChevronsUpDown, Loader2, X } from "lucide-react";
 import { cn } from "@/core/utils/classname";
 import type { SelectOption } from "../../types";
 
+/** Shared label↔control spacing for every FormCombobox instance */
+const FORM_COMBOBOX_FIELD_LAYOUT_CLASS = "gap-1.5";
+
+/** Shared trigger sizing/typography (overridable via {@link FormComboboxProps.className}) */
+const FORM_COMBOBOX_TRIGGER_DEFAULTS = "min-h-9 h-9 px-3 py-1 text-xs font-normal shadow-none";
+
 export interface FormComboboxProps<TData = unknown> {
-  label?: string;
+  label?: React.ReactNode;
   placeholder?: string;
   tooltipText?: React.ReactNode;
   helperText?: string;
@@ -64,6 +70,13 @@ export interface FormComboboxProps<TData = unknown> {
    * Additional data to pass to render functions
    */
   data?: TData;
+
+  /** Error text shown even when the field is untouched (e.g. parent array errorMap). */
+  displayError?: string;
+  /** Extra classes merged onto the combobox trigger (after shared defaults). */
+  className?: string;
+  /** Single-select: ignore `""` from the menu (cmdk re-select), so the value is never cleared. */
+  skipEmptySingleSelection?: boolean;
 }
 
 export const FormCombobox = <TData,>({
@@ -84,6 +97,9 @@ export const FormCombobox = <TData,>({
   renderOption,
   renderSelectedContent,
   data,
+  displayError,
+  className,
+  skipEmptySingleSelection = false,
 }: FormComboboxProps<TData>) => {
   // Access field from context
   // For multiple mode, the value is string[], for single mode it's string
@@ -93,8 +109,11 @@ export const FormCombobox = <TData,>({
   const fieldId = React.useId();
   const errors = field.state.meta.errors;
   const isTouched = field.state.meta.isTouched;
-  const hasError = isTouched && errors.length > 0;
-  const errorMessage = extractErrorMessage(errors);
+  const touchedError = isTouched && errors.length > 0 ? extractErrorMessage(errors) : undefined;
+  const errorMessage = displayError ?? touchedError;
+  const hasError = Boolean(errorMessage);
+
+  const standardTriggerClassName = cn(FORM_COMBOBOX_TRIGGER_DEFAULTS, hasError && "border-destructive", className);
 
   const fieldSuffix = React.useMemo(
     () =>
@@ -128,6 +147,7 @@ export const FormCombobox = <TData,>({
         label: option.label,
         disabled: option.disabled,
         icon: option.icon,
+        keywords: option.keywords,
       })),
     [options]
   );
@@ -167,6 +187,7 @@ export const FormCombobox = <TData,>({
 
     return (
       <FormField
+        className={FORM_COMBOBOX_FIELD_LAYOUT_CLASS}
         label={label}
         tooltipText={tooltipText}
         error={hasError ? errorMessage : undefined}
@@ -187,6 +208,7 @@ export const FormCombobox = <TData,>({
           emptyText={emptyText}
           disabled={disabled || loading}
           invalid={hasError}
+          className={standardTriggerClassName}
           maxShownItems={maxShownItems}
           getChipLabel={getChipLabel}
           renderOption={adaptedRenderOption}
@@ -239,6 +261,7 @@ export const FormCombobox = <TData,>({
     return (
       <>
         <FormField
+          className={FORM_COMBOBOX_FIELD_LAYOUT_CLASS}
           label={label}
           tooltipText={tooltipText}
           error={hasError ? errorMessage : undefined}
@@ -256,7 +279,7 @@ export const FormCombobox = <TData,>({
                 className={cn(
                   "h-auto min-h-[42px] w-full justify-between py-2 font-normal",
                   "bg-input text-foreground hover:bg-input hover:text-foreground",
-                  hasError && "border-destructive"
+                  standardTriggerClassName
                 )}
               >
                 <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
@@ -315,6 +338,7 @@ export const FormCombobox = <TData,>({
     const fieldValue = (Array.isArray(field.state.value) ? field.state.value : []) as string[];
     return (
       <FormField
+        className={FORM_COMBOBOX_FIELD_LAYOUT_CLASS}
         label={label}
         tooltipText={tooltipText}
         error={hasError ? errorMessage : undefined}
@@ -337,6 +361,7 @@ export const FormCombobox = <TData,>({
           disabled={disabled || loading}
           multiple={true}
           maxShownItems={maxShownItems}
+          className={standardTriggerClassName}
         />
       </FormField>
     );
@@ -364,6 +389,7 @@ export const FormCombobox = <TData,>({
 
     return (
       <FormField
+        className={FORM_COMBOBOX_FIELD_LAYOUT_CLASS}
         label={label}
         tooltipText={tooltipText}
         error={hasError ? errorMessage : undefined}
@@ -382,6 +408,7 @@ export const FormCombobox = <TData,>({
           emptyText={emptyText}
           disabled={disabled || loading}
           invalid={hasError}
+          className={standardTriggerClassName}
           renderOption={adaptedRenderOption}
         />
       </FormField>
@@ -392,6 +419,7 @@ export const FormCombobox = <TData,>({
   const fieldValue = (typeof field.state.value === "string" ? field.state.value : "") as string;
   return (
     <FormField
+      className={FORM_COMBOBOX_FIELD_LAYOUT_CLASS}
       label={label}
       tooltipText={tooltipText}
       error={hasError ? errorMessage : undefined}
@@ -405,6 +433,7 @@ export const FormCombobox = <TData,>({
         value={fieldValue}
         onValueChange={(value) => {
           if (typeof value === "string") {
+            if (value === "" && skipEmptySingleSelection) return;
             field.handleChange(value);
           }
         }}
@@ -413,6 +442,7 @@ export const FormCombobox = <TData,>({
         emptyText={emptyText}
         disabled={disabled || loading}
         multiple={false}
+        className={standardTriggerClassName}
       />
     </FormField>
   );

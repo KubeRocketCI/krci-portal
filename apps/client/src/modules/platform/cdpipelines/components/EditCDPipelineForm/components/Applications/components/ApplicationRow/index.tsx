@@ -1,12 +1,11 @@
 import { Button } from "@/core/components/ui/button";
 import { Card } from "@/core/components/ui/card";
 import { Badge } from "@/core/components/ui/badge";
-import { Label } from "@/core/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
 import React from "react";
 import { useCodebaseBranchWatchList } from "@/k8s/api/groups/KRCI/CodebaseBranch/hooks";
-import { codebaseBranchLabels, sortKubeObjectByCreationTimestamp } from "@my-project/shared";
+import { codebaseBranchLabels, sortCodebaseBranchesWithDefaultFirst } from "@my-project/shared";
 import { X, Package, GitBranch, Server } from "lucide-react";
+import { buildBranchOptions } from "@/modules/platform/cdpipelines/utils/buildBranchOptions";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { Codebase } from "@my-project/shared";
 import { getCodebaseMappingByType } from "@/k8s/api/groups/KRCI/Codebase";
@@ -14,10 +13,13 @@ import { getIconByPattern } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mapp
 import { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/mappings/types";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
-import { cn } from "@/core/utils/classname";
 import { useStore } from "@tanstack/react-form";
 import { useEditCDPipelineForm } from "../../../../providers/form/hooks";
-import type { ApplicationFieldArrayItem, EditCDPipelineFormValues } from "../../../../types";
+import {
+  EDIT_CDPIPELINE_FORM_NAMES,
+  type ApplicationFieldArrayItem,
+  type EditCDPipelineFormValues,
+} from "../../../../types";
 
 interface ApplicationRowProps {
   application: Codebase;
@@ -50,8 +52,8 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
 
   const sortedApplicationBranchList = React.useMemo(() => {
     if (!applicationBranchListWatch.data.array) return [];
-    return [...applicationBranchListWatch.data.array].sort(sortKubeObjectByCreationTimestamp);
-  }, [applicationBranchListWatch.data.array]);
+    return sortCodebaseBranchesWithDefaultFirst(applicationBranchListWatch.data.array, defaultBranch);
+  }, [applicationBranchListWatch.data.array, defaultBranch]);
 
   const handleDeleteApplicationRow = React.useCallback(() => {
     removeRow();
@@ -127,12 +129,10 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
     langLower && codebaseMapping ? codebaseMapping[langLower as keyof typeof codebaseMapping] : undefined
   ) as CodebaseInterface | undefined;
 
-  // Get branch options
-  const branchOptions = sortedApplicationBranchList.map((el) => ({
-    label: el.spec.branchName,
-    value: el.metadata.name,
-    branchName: el.spec.branchName,
-  }));
+  const branchOptions = React.useMemo(
+    () => buildBranchOptions(sortedApplicationBranchList, defaultBranch),
+    [sortedApplicationBranchList, defaultBranch]
+  );
 
   return (
     <LoadingWrapper isLoading={applicationBranchListWatch.query.isLoading}>
@@ -232,39 +232,38 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
           <div className="border-border col-span-3 flex flex-col justify-center border-l pl-8">
             <div className="space-y-4">
               <div>
-                <Label htmlFor={`branch-select-${index}`} className="mb-3 flex items-center gap-2">
-                  <GitBranch className="text-muted-foreground h-4 w-4" />
-                  <span className="text-sm font-medium">Select Branch for Deployment</span>
-                </Label>
-                <Select
-                  value={appBranchValue}
-                  onValueChange={(value) => {
-                    updateAppBranch(value);
+                <form.AppField
+                  name={`${EDIT_CDPIPELINE_FORM_NAMES.ui_applicationsFieldArray}[${index}].appBranch` as never}
+                  listeners={{
+                    onChange: ({ value }) => {
+                      const v = typeof value === "string" ? value : "";
+                      if (!v) return;
+                      const next = structuredClone(
+                        form.getFieldValue(EDIT_CDPIPELINE_FORM_NAMES.inputDockerStreams) ?? []
+                      );
+                      while (next.length <= index) next.push("");
+                      next[index] = v;
+                      form.setFieldValue(EDIT_CDPIPELINE_FORM_NAMES.inputDockerStreams, next);
+                    },
                   }}
                 >
-                  <SelectTrigger
-                    id={`branch-select-${index}`}
-                    className={cn("w-full", appBranchError && "border-destructive")}
-                  >
-                    <SelectValue placeholder="Select a branch" />
-                  </SelectTrigger>
-                  <SelectContent className="fixed">
-                    {branchOptions.map((branch) => (
-                      <SelectItem key={branch.value} value={branch.value}>
-                        <div className="flex items-center gap-2">
-                          <GitBranch className="text-muted-foreground h-3.5 w-3.5" />
-                          {branch.branchName}
-                          {branch.branchName === defaultBranch && (
-                            <Badge variant="outline" className="ml-1 text-xs">
-                              default
-                            </Badge>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {appBranchError && <p className="text-destructive mt-1 text-xs">{appBranchError}</p>}
+                  {(f) => (
+                    <f.FormCombobox
+                      label={
+                        <span className="flex items-center gap-2">
+                          <GitBranch className="text-muted-foreground h-4 w-4" />
+                          <span className="text-sm font-medium">Select Branch for Deployment</span>
+                        </span>
+                      }
+                      options={branchOptions}
+                      placeholder="Select a branch"
+                      searchPlaceholder="Search branches..."
+                      emptyText="No branches found"
+                      skipEmptySingleSelection
+                      displayError={appBranchError}
+                    />
+                  )}
+                </form.AppField>
               </div>
             </div>
           </div>

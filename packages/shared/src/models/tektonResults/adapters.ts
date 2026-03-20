@@ -47,6 +47,8 @@ export function normalizeHistoryPipelineRun(decoded: DecodedPipelineRun): Pipeli
     },
     spec: {
       pipelineRef: decoded.spec.pipelineRef,
+      // Inline pipeline spec — required for history rows where only spec (not status) retained task list
+      pipelineSpec: decoded.spec.pipelineSpec,
       params: decoded.spec.params,
       workspaces: decoded.spec.workspaces,
       serviceAccountName: decoded.spec.serviceAccountName,
