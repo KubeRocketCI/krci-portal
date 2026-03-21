@@ -70,6 +70,7 @@ export const Review: React.FC = () => {
   const description = useStore(form.store, (state) => state.values[NAMES.description]);
   const deploymentType = useStore(form.store, (state) => state.values[NAMES.deploymentType]);
   const applications = useStore(form.store, (state) => state.values[NAMES.applications]);
+  const applicationsToPromote = useStore(form.store, (state) => state.values[NAMES.applicationsToPromote]);
   const ui_applicationsFieldArray = useStore(form.store, (state) => state.values[NAMES.ui_applicationsFieldArray]);
 
   const deploymentTypeLabel = React.useMemo(() => {
@@ -130,7 +131,7 @@ export const Review: React.FC = () => {
                     key={app}
                     appName={app}
                     appBranch={appRow?.appBranch}
-                    appToPromote={appRow?.appToPromote || false}
+                    appToPromote={applicationsToPromote?.includes(app) || false}
                   />
                 );
               })}

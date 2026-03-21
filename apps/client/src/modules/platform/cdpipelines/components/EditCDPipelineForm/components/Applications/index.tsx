@@ -80,7 +80,7 @@ export const Applications: React.FC = () => {
       const exists = currentFieldArray.some((app) => app.appName === appName);
 
       if (!exists) {
-        const newArray = [...currentFieldArray, { appName, appBranch: "", appToPromote: false }];
+        const newArray = [...currentFieldArray, { appName, appBranch: "" }];
         form.setFieldValue("ui_applicationsFieldArray", newArray);
       }
     },

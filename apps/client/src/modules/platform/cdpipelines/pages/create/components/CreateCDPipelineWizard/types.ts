@@ -10,5 +10,4 @@ export type CreateCDPipelineFormValues = z.infer<typeof createCDPipelineFormSche
 export type ApplicationFieldArrayItem = {
   appName: string;
   appBranch: string;
-  appToPromote: boolean;
 };

@@ -15,5 +15,4 @@ export interface EditCDPipelineFormValues {
 export interface ApplicationFieldArrayItem {
   appName: string;
   appBranch: string;
-  appToPromote: boolean;
 }

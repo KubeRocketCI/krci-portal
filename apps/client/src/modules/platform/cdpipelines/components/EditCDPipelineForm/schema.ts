@@ -12,7 +12,6 @@ const schema = z.object({
       z.object({
         appName: z.string(),
         appBranch: z.string(),
-        appToPromote: z.boolean(),
       })
     )
     .default([]),

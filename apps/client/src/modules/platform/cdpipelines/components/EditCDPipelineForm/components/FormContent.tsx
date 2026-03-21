@@ -51,7 +51,7 @@ export const FormContent: React.FC = () => {
                 const values = form.store.state.values;
                 form.setFieldValue(
                   EDIT_CDPIPELINE_FORM_NAMES.applicationsToPromote,
-                  checked ? values.ui_applicationsToAddChooser : []
+                  checked ? values.applications : []
                 );
               }}
             />
