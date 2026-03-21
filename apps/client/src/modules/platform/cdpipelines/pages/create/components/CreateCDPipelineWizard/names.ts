@@ -37,13 +37,11 @@ const inputDockerStreamsSchema = createCDPipelineDraftInputSchema.shape.inputDoc
 // ============================================================================
 
 const uiOnlyFields = {
-  ui_applicationsToAddChooser: z.array(z.string()).optional().default([]),
   ui_applicationsFieldArray: z
     .array(
       z.object({
         appName: z.string(),
         appBranch: z.string().min(1, "Select branch"),
-        appToPromote: z.boolean(),
       })
     )
     .optional()

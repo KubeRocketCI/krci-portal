@@ -14,7 +14,6 @@ export const useDefaultValues = (cdPipeline: CDPipeline | undefined) => {
       [EDIT_CDPIPELINE_FORM_NAMES.ui_applicationsFieldArray]: cdPipeline?.spec.applications.map((app, idx) => ({
         appName: app,
         appBranch: cdPipeline?.spec.inputDockerStreams[idx],
-        appToPromote: (cdPipeline?.spec?.applicationsToPromote || []).includes(app),
       })),
     }),
     [

@@ -16,12 +16,8 @@ export const PipelineConfiguration: React.FC = () => {
 
   const handlePromoteAllChange = React.useCallback(
     (value: boolean) => {
-      const applicationsToAddChooser =
-        form.getFieldValue(CREATE_CDPIPELINE_FORM_NAMES.ui_applicationsToAddChooser.name) || [];
-      form.setFieldValue(
-        CREATE_CDPIPELINE_FORM_NAMES.applicationsToPromote.name,
-        value ? applicationsToAddChooser : []
-      );
+      const applications = form.getFieldValue(CREATE_CDPIPELINE_FORM_NAMES.applications.name) || [];
+      form.setFieldValue(CREATE_CDPIPELINE_FORM_NAMES.applicationsToPromote.name, value ? applications : []);
     },
     [form]
   );

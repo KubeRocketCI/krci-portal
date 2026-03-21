@@ -257,23 +257,26 @@ export const Applications: React.FC = () => {
     (selectedApps: string[]) => {
       const currentFieldArray = fieldArrayValue || [];
 
-      // Add new applications with default branch auto-selection
+      // Remove branches from inputDockerStreams for apps that were deselected
+      const removedApps = currentFieldArray.filter((app) => !selectedApps.includes(app.appName));
+      if (removedApps.length > 0) {
+        const currentStreams =
+          (form.getFieldValue(CREATE_CDPIPELINE_FORM_NAMES.inputDockerStreams.name) as string[]) || [];
+        const branchesToRemove = removedApps.map((app) => app.appBranch).filter(Boolean);
+        const newStreams = currentStreams.filter((stream) => !branchesToRemove.includes(stream));
+        form.setFieldValue(CREATE_CDPIPELINE_FORM_NAMES.inputDockerStreams.name, newStreams);
+      }
+
       const newFieldArray = selectedApps.map((appName) => {
         const existing = currentFieldArray.find((app) => app.appName === appName);
-
-        // If application already exists, keep its data
         if (existing) {
           return existing;
         }
-
-        // For new applications, set appBranch to empty string
-        // ApplicationCard will auto-select the default branch on mount via useEffect
-        return { appName, appBranch: "", appToPromote: false };
+        return { appName, appBranch: "" };
       });
 
       form.setFieldValue(CREATE_CDPIPELINE_FORM_NAMES.ui_applicationsFieldArray.name, newFieldArray);
 
-      // Update applicationsToPromote
       const applicationsToPromoteAllFieldValue =
         form.getFieldValue(CREATE_CDPIPELINE_FORM_NAMES.ui_applicationsToPromoteAll.name) || false;
       form.setFieldValue(

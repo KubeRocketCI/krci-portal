@@ -17,16 +17,13 @@ export const useDefaultValues = (): Partial<CreateCDPipelineFormValues> => {
 
   return React.useMemo(() => {
     const defaultApplications = preselectedApp ? [preselectedApp] : [];
-    const defaultApplicationsFieldArray = preselectedApp
-      ? [{ appName: preselectedApp, appBranch: "", appToPromote: false }]
-      : [];
+    const defaultApplicationsFieldArray = preselectedApp ? [{ appName: preselectedApp, appBranch: "" }] : [];
 
     return {
       [NAMES.applications]: defaultApplications,
       [NAMES.applicationsToPromote]: [],
       [NAMES.inputDockerStreams]: [],
       [NAMES.deploymentType]: cdPipelineDeploymentType.container,
-      [NAMES.ui_applicationsToAddChooser]: defaultApplications,
       [NAMES.ui_applicationsFieldArray]: defaultApplicationsFieldArray,
       [NAMES.ui_applicationsToPromoteAll]: false,
     };
