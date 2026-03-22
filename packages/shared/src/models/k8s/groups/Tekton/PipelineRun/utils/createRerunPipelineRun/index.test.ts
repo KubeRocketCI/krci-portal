@@ -21,6 +21,11 @@ describe("testing createRerunPipelineRun", () => {
           "results.tekton.dev/result": "krci/results/5187e897-8686-42e3-8fbf-1cc0de1b83b7",
           "results.tekton.dev/record": "krci/results/5187e897-8686-42e3-8fbf-1cc0de1b83b7/records/abc123",
           "results.tekton.dev/log": "krci/results/5187e897-8686-42e3-8fbf-1cc0de1b83b7/logs/def456",
+          "results.tekton.dev/resultAnnotations": JSON.stringify({
+            "app.edp.epam.com/git-branch": "main",
+            "app.edp.epam.com/git-author": "test-user",
+            "app.edp.epam.com/git-change-number": "#270",
+          }),
         },
         name: `build-test-codebase-name-test-codebase-branch-name-very-lo-${MOCKED_UUID}`,
         labels: {
@@ -88,6 +93,11 @@ describe("testing createRerunPipelineRun", () => {
       metadata: {
         annotations: {
           "argocd.argoproj.io/compare-options": "IgnoreExtraneous",
+          "results.tekton.dev/resultAnnotations": JSON.stringify({
+            "app.edp.epam.com/git-branch": "main",
+            "app.edp.epam.com/git-author": "test-user",
+            "app.edp.epam.com/git-change-number": "#270",
+          }),
         },
         name: "r-build-test-codebase-name-test-codebase-branch-name-very--1234",
         labels: {
