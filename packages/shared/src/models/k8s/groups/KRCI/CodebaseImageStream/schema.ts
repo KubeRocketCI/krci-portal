@@ -4,6 +4,7 @@ import { kubeObjectBaseSchema } from "../../../common/index.js";
 export const codebaseImageStreamTagSchema = z.object({
   created: z.string(),
   name: z.string(),
+  digest: z.string().optional(),
 });
 
 export const codebaseImageStreamSpecSchema = z.object({
