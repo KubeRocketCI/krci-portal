@@ -13,12 +13,14 @@ import { routePipelineRunDetails } from "../../route";
  */
 export function Diagram() {
   const params = routePipelineRunDetails.useParams();
-  const { pipelineRun, pipelineRunTasksByNameMap, isLoading } = usePipelineRunContext();
+  const { pipelineRun, pipelineRunTasks, pipelineRunTasksByNameMap, isLoading } = usePipelineRunContext();
+
+  const hasDiagramData = !!pipelineRun && pipelineRunTasks.allTasks.length > 0;
 
   return (
     <Card className="flex h-[var(--content-height)] w-full flex-col">
       <LoadingWrapper isLoading={isLoading}>
-        {pipelineRun ? (
+        {hasDiagramData ? (
           <ReactFlowProvider>
             <PipelineRunDiagramView
               pipelineRun={pipelineRun}
@@ -26,7 +28,11 @@ export function Diagram() {
               namespace={params.namespace}
             />
           </ReactFlowProvider>
-        ) : null}
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <p className="text-muted-foreground text-sm">No diagram data available for this pipeline run.</p>
+          </div>
+        )}
       </LoadingWrapper>
     </Card>
   );

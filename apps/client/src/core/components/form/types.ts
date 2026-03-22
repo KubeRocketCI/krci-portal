@@ -5,6 +5,8 @@ export interface SelectOption {
   value: string;
   disabled?: boolean;
   icon?: React.ReactNode;
+  /** Matched by searchable combobox filters (cmdk keywords). */
+  keywords?: string[];
 }
 
 // Re-export React for convenience
