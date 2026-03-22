@@ -13,10 +13,12 @@ import {
   usePipelineRunsWatch,
   useStageWatch,
   usePipelineAppCodebasesWatch,
+  useStageAppCodebasesCombinedData,
 } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import {
+  ApplicationPayload,
   createDeployPipelineRunDraft,
   getPipelineRunStatus,
   k8sOperation,
@@ -39,11 +41,6 @@ const parseTagLabelValue = (tag: string) => {
   }
 };
 
-const createApplicationPayload = (imageTag: string, customValues: boolean) => ({
-  imageTag,
-  customValues,
-});
-
 export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActionsProps) => {
   const { deployBtnDisabled, setDeployBtnDisabled } = usePageUIStore(
     useShallow((state) => ({
@@ -58,6 +55,7 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
   const deployPipelineRunTemplateWatch = useDeployPipelineRunTemplateWatch();
   const pipelineRunsWatch = usePipelineRunsWatch();
   const pipelineRunPermissions = usePipelineRunPermissions();
+  const { stageAppCodebasesCombinedDataByApplicationName } = useStageAppCodebasesCombinedData();
 
   const pipelineAppCodebases = pipelineAppCodebasesWatch.data;
   const deployPipelineRunTemplate = deployPipelineRunTemplateWatch.data;
@@ -100,22 +98,21 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
       return;
     }
 
-    const appPayload = pipelineAppCodebases.reduce<
-      Record<
-        string,
-        {
-          imageTag: string;
-          customValues: boolean;
-        }
-      >
-    >((acc, appCodebase) => {
+    const appPayload = pipelineAppCodebases.reduce<Record<string, ApplicationPayload>>((acc, appCodebase) => {
       const appName = appCodebase.metadata.name;
       const imageTagFieldValue = values[`${appName}${IMAGE_TAG_POSTFIX}`] as string;
       const valuesOverrideFieldValue = values[`${appName}${VALUES_OVERRIDE_POSTFIX}`];
 
       const { value: tagValue } = parseTagLabelValue(imageTagFieldValue);
 
-      acc[appName] = createApplicationPayload(tagValue, valuesOverrideFieldValue);
+      const appCombinedData = stageAppCodebasesCombinedDataByApplicationName.get(appName);
+      const digest = appCombinedData?.appCodebaseImageStream?.spec.tags?.find((tag) => tag.name === tagValue)?.digest;
+
+      acc[appName] = {
+        imageTag: tagValue,
+        customValues: valuesOverrideFieldValue,
+        ...(digest ? { imageDigest: digest } : {}),
+      };
       return acc;
     }, {});
 
@@ -151,6 +148,7 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
     });
   }, [
     cdPipeline,
+    stageAppCodebasesCombinedDataByApplicationName,
     deployPipelineRunTemplate,
     form,
     setDeployBtnDisabled,
