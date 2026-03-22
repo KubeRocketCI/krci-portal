@@ -119,6 +119,8 @@ describe("testing createDeployPipelineRunDraft", () => {
       },
     });
 
+    expect(object.spec.params?.find((p) => p.name === "APPLICATIONS_PAYLOAD")?.value).not.toContain("imageDigest");
+
     expect(object).toEqual({
       apiVersion: "tekton.dev/v1",
       kind: "PipelineRun",
@@ -155,5 +157,50 @@ describe("testing createDeployPipelineRunDraft", () => {
         timeouts: { pipeline: "1h00m0s" },
       },
     });
+  });
+
+  it("should include imageDigest in APPLICATIONS_PAYLOAD when provided", () => {
+    const object = createDeployPipelineRunDraft({
+      pipelineRunTemplate: {
+        apiVersion: "tekton.dev/v1",
+        kind: "PipelineRun",
+        // @ts-ignore
+        metadata: { labels: {} },
+        spec: {
+          params: [{ name: "APPLICATIONS_PAYLOAD", value: "" }],
+        },
+      },
+      cdPipeline: {
+        apiVersion: "v2.edp.epam.com/v1",
+        kind: "CDPipeline",
+        // @ts-ignore
+        metadata: { name: "pipe" },
+        // @ts-ignore
+        spec: { name: "pipe" },
+      },
+      stage: {
+        apiVersion: "v2.edp.epam.com/v1",
+        kind: "Stage",
+        // @ts-ignore
+        metadata: { name: "pipe-dev", namespace: "ns" },
+        // @ts-ignore
+        spec: { name: "dev", clusterName: "in-cluster" },
+      },
+      appPayload: {
+        "app-with-digest": {
+          imageTag: "0.1.0",
+          customValues: false,
+          imageDigest: "sha256:abc123",
+        },
+        "app-without-digest": {
+          imageTag: "0.2.0",
+          customValues: false,
+        },
+      },
+    });
+
+    const payload = JSON.parse(object.spec.params?.find((p) => p.name === "APPLICATIONS_PAYLOAD")?.value as string);
+    expect(payload["app-with-digest"].imageDigest).toBe("sha256:abc123");
+    expect(payload["app-without-digest"].imageDigest).toBeUndefined();
   });
 });

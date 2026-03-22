@@ -4,6 +4,12 @@ import { PipelineRun } from "../../types.js";
 import { pipelineRunLabels } from "../../labels.js";
 import { pipelineType } from "../../../Pipeline/constants.js";
 
+export interface ApplicationPayload {
+  imageTag: string;
+  customValues: boolean;
+  imageDigest?: string;
+}
+
 export const createDeployPipelineRunDraft = ({
   cdPipeline,
   stage,
@@ -13,13 +19,7 @@ export const createDeployPipelineRunDraft = ({
   cdPipeline: CDPipeline;
   stage: Stage;
   pipelineRunTemplate: PipelineRun;
-  appPayload: Record<
-    string,
-    {
-      imageTag: string;
-      customValues: boolean;
-    }
-  >;
+  appPayload: Record<string, ApplicationPayload>;
 }): PipelineRun => {
   const base = structuredClone(pipelineRunTemplate);
 
