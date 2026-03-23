@@ -29,11 +29,7 @@ export function useTabs(): Tab[] {
         label: "Details",
         icon: <FileText className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.details),
-        component: (
-          <div className="pt-6">
-            <Details />
-          </div>
-        ),
+        component: <Details />,
       },
       {
         id: routeSearchTabSchema.enum.yaml,
@@ -41,7 +37,7 @@ export function useTabs(): Tab[] {
         icon: <FileCode className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.yaml),
         component: (
-          <div className="h-full overflow-hidden pt-6">
+          <div className="h-full overflow-hidden">
             <ViewPipelineRun />
           </div>
         ),
@@ -51,11 +47,7 @@ export function useTabs(): Tab[] {
         label: "Results",
         icon: <CheckCircle className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.results),
-        component: (
-          <div className="pt-6">
-            <Results />
-          </div>
-        ),
+        component: <Results />,
       },
       {
         id: routeSearchTabSchema.enum.diagram,
@@ -63,7 +55,7 @@ export function useTabs(): Tab[] {
         icon: <Network className="size-4" />,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.diagram),
         component: (
-          <div className="h-full pt-6">
+          <div className="h-full">
             <Diagram />
           </div>
         ),
