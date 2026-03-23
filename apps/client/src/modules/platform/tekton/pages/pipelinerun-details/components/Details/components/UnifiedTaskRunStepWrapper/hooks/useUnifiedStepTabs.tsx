@@ -51,9 +51,9 @@ export function useUnifiedStepTabs({
           namespace,
         };
       } else if (resultUid) {
-        // Completed + archived -> Tekton Results with amber banner
+        // Completed + archived -> stored logs
         logsProps = {
-          logRoute: "archived",
+          logRoute: "history",
           stepName,
           taskRunName,
           resultUid,
