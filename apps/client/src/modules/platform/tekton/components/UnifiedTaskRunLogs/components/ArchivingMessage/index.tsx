@@ -26,7 +26,7 @@ export function ArchivingMessage() {
       <Card className="h-full overflow-hidden">
         <EmptyList
           customText="Logs may not be available"
-          description="The pipeline has completed, but logs were not archived by Tekton Results. Pod logs may have been garbage-collected."
+          description="The pipeline has completed, but logs were not archived. Pod logs may have been garbage-collected."
         />
       </Card>
     );
