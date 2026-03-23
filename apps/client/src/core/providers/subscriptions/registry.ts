@@ -130,6 +130,13 @@ class WatchListRegistry {
             namespace,
             labels: JSON.stringify(labels),
           });
+          // Clear subscription to allow restart on next startSubscription call
+          entry.subscription = null;
+        },
+        onComplete: () => {
+          // Subscription ended (server-side watch completed or stream closed).
+          // Clear subscription to allow restart on next startSubscription call.
+          entry.subscription = null;
         },
       }
     );
@@ -271,6 +278,13 @@ class WatchItemRegistry {
             namespace,
             name,
           });
+          // Clear subscription to allow restart on next startSubscription call
+          entry.subscription = null;
+        },
+        onComplete: () => {
+          // Subscription ended (server-side watch completed or stream closed).
+          // Clear subscription to allow restart on next startSubscription call.
+          entry.subscription = null;
         },
       }
     );
