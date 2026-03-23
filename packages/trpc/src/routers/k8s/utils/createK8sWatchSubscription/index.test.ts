@@ -238,6 +238,156 @@ describe("createK8sWatchSubscription", () => {
     expect(events).toHaveLength(0);
   });
 
+  test("restarts watch on clean termination with updated resourceVersion", async () => {
+    let watchCallCount = 0;
+
+    const mockRestartWatch = {
+      watch: vi.fn((url, options, onEvent, onDone) => {
+        watchCallCount++;
+        watchCallback = onEvent;
+        errorCallback = onDone;
+        return Promise.resolve(mockController);
+      }),
+    } as unknown as Watch;
+
+    const controller = new AbortController();
+
+    const generator = createK8sWatchSubscription(mockRestartWatch, {
+      watchUrl: "/api/v1/pods",
+      watchOptions: { resourceVersion: "1000" },
+      signal: controller.signal,
+    });
+
+    const events: WatchEvent[] = [];
+
+    const consumerPromise = (async () => {
+      for await (const event of generator) {
+        events.push(event);
+        if (events.length === 3) {
+          controller.abort();
+        }
+      }
+    })();
+
+    // Wait for first watch to be set up
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(watchCallCount).toBe(1);
+
+    // Emit event with resourceVersion, then trigger clean termination
+    watchCallback("ADDED", { metadata: { name: "pod1", resourceVersion: "2000" } } as KubeObjectBase);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    // Clean termination (K8s watch timeout) — done called with null
+    errorCallback(null as unknown as Error);
+
+    // Wait for watch to restart
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(watchCallCount).toBe(2);
+
+    // Verify the second watch was started with the updated resourceVersion
+    expect(mockRestartWatch.watch).toHaveBeenLastCalledWith(
+      "/api/v1/pods",
+      { resourceVersion: "2000" },
+      expect.any(Function),
+      expect.any(Function)
+    );
+
+    // Emit events on the restarted watch
+    watchCallback("MODIFIED", { metadata: { name: "pod1", resourceVersion: "3000" } } as KubeObjectBase);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    // Clean termination again
+    errorCallback(null as unknown as Error);
+
+    // Wait for third watch to start
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(watchCallCount).toBe(3);
+
+    // Third watch should use the latest resourceVersion
+    expect(mockRestartWatch.watch).toHaveBeenLastCalledWith(
+      "/api/v1/pods",
+      { resourceVersion: "3000" },
+      expect.any(Function),
+      expect.any(Function)
+    );
+
+    // Emit final event and abort
+    watchCallback("DELETED", { metadata: { name: "pod1", resourceVersion: "4000" } } as KubeObjectBase);
+
+    await consumerPromise;
+
+    expect(events).toHaveLength(3);
+    expect(events[0].type).toBe("ADDED");
+    expect(events[1].type).toBe("MODIFIED");
+    expect(events[2].type).toBe("DELETED");
+  });
+
+  test("handles 410 Gone by resetting resourceVersion and restarting watch", async () => {
+    let watchCallCount = 0;
+
+    const mockGoneWatch = {
+      watch: vi.fn((url, options, onEvent, onDone) => {
+        watchCallCount++;
+        watchCallback = onEvent;
+        errorCallback = onDone;
+        return Promise.resolve(mockController);
+      }),
+    } as unknown as Watch;
+
+    const controller = new AbortController();
+
+    const generator = createK8sWatchSubscription(mockGoneWatch, {
+      watchUrl: "/api/v1/pods",
+      watchOptions: { resourceVersion: "1000" },
+      signal: controller.signal,
+    });
+
+    const events: WatchEvent[] = [];
+
+    const consumerPromise = (async () => {
+      for await (const event of generator) {
+        events.push(event);
+        if (events.length === 2) {
+          controller.abort();
+        }
+      }
+    })();
+
+    // Wait for first watch to be set up
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(watchCallCount).toBe(1);
+
+    // Emit event, then simulate 410 Gone
+    watchCallback("ADDED", { metadata: { name: "pod1", resourceVersion: "2000" } } as KubeObjectBase);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    // 410 Gone — resourceVersion expired
+    const goneError = new Error("Gone") as Error & { statusCode: number };
+    goneError.statusCode = 410;
+    errorCallback(goneError);
+
+    // Wait for watch to restart
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(watchCallCount).toBe(2);
+
+    // Verify the restarted watch uses empty resourceVersion (fresh start)
+    expect(mockGoneWatch.watch).toHaveBeenLastCalledWith(
+      "/api/v1/pods",
+      { resourceVersion: "" },
+      expect.any(Function),
+      expect.any(Function)
+    );
+
+    // Emit event on restarted watch and abort
+    watchCallback("MODIFIED", { metadata: { name: "pod1", resourceVersion: "5000" } } as KubeObjectBase);
+
+    await consumerPromise;
+
+    expect(events).toHaveLength(2);
+    expect(events[0].type).toBe("ADDED");
+    expect(events[1].type).toBe("MODIFIED");
+  });
+
   test("yields multiple events in sequence", async () => {
     const generator = createK8sWatchSubscription(mockWatch, {
       watchUrl: "/api/v1/pods",

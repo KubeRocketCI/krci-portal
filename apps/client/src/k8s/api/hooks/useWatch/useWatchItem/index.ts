@@ -9,6 +9,7 @@ import { useShallow } from "zustand/react/shallow";
 import { getK8sWatchItemQueryCacheKey, getK8sWatchListQueryCacheKey } from "../query-keys";
 import { useWatchRegistries } from "@/core/providers/subscriptions";
 import { UseWatchItemResult, CustomKubeObjectList } from "../types";
+import { refetchOnWindowFocusIfStale } from "../utils";
 
 type OptionalQueryOptions<I extends KubeObjectBase> = Omit<
   UseQueryOptions<I | undefined, RequestError>,
@@ -78,14 +79,7 @@ export const useWatchItem = <I extends KubeObjectBase>({
       const state = queryClient.getQueryState<CustomKubeObjectList<I>>(listQueryKey);
       return state?.dataUpdatedAt;
     },
-    // Refetch when window gains focus if data is older than 5 minutes.
-    // This handles browser sleep/tab throttling where WebSocket events may be missed.
-    refetchOnWindowFocus: (query) => {
-      const dataUpdatedAt = query.state.dataUpdatedAt;
-      const now = Date.now();
-      const STALE_THRESHOLD = 5 * 60 * 1000; // 5 minutes
-      return dataUpdatedAt < now - STALE_THRESHOLD;
-    },
+    refetchOnWindowFocus: refetchOnWindowFocusIfStale,
     refetchOnMount: false,
     refetchOnReconnect: false,
     enabled: !!name && (queryOptions?.enabled ?? true),

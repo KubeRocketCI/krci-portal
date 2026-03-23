@@ -109,7 +109,6 @@ export class ProductionFastifyServer {
       trpcScope.register(fastifyTRPCPlugin, {
         prefix: process.env.API_PREFIX,
         useWSS: true,
-        keepAlive: { enabled: true, pingMs: 30000, pongWaitMs: 5000 },
         trpcOptions: {
           router: appRouter,
           createContext: ({ req, res }) => {
@@ -131,7 +130,11 @@ export class ProductionFastifyServer {
               portalUrl: process.env.PORTAL_URL!,
             });
           },
-        } satisfies FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],
+          // keepAlive must be inside trpcOptions — the Fastify adapter reads it from here at runtime.
+          // pongWaitMs must exceed Chrome's background-tab JS throttling window (up to 60s)
+          // to prevent the server from terminating WebSocket connections while the tab is hidden.
+          keepAlive: { enabled: true, pingMs: 30000, pongWaitMs: 90000 },
+        } as FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],
       });
     });
 

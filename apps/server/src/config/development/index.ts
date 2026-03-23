@@ -94,7 +94,6 @@ export class LocalFastifyServer {
       trpcScope.register(fastifyTRPCPlugin, {
         prefix: process.env.API_PREFIX,
         useWSS: true,
-        keepAlive: { enabled: true, pingMs: 15000, pongWaitMs: 10000 },
         trpcOptions: {
           router: appRouter,
           createContext: ({ req, res }) => {
@@ -116,7 +115,9 @@ export class LocalFastifyServer {
               portalUrl: process.env.PORTAL_URL!,
             });
           },
-        } satisfies FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],
+          // keepAlive must be inside trpcOptions — the Fastify adapter reads it from here at runtime.
+          keepAlive: { enabled: true, pingMs: 15000, pongWaitMs: 10000 },
+        } as FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],
       });
     });
 
