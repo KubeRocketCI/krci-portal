@@ -30,11 +30,11 @@ function EnvironmentCardSkeleton() {
   );
 }
 
-function FlowConnectorSkeleton() {
+function FlowConnectorSkeleton({ isFirst = false }: { isFirst?: boolean }) {
   return (
     <div className="flex flex-shrink-0 items-center px-2">
       <div className="flex items-center gap-1">
-        <Skeleton className="h-px w-6" />
+        {!isFirst && <Skeleton className="h-px w-6" />}
         <Skeleton className="h-6 w-14 rounded-full" />
         <Skeleton className="h-px w-2" />
         <Skeleton className="size-4 rounded" />
@@ -60,10 +60,10 @@ export function HorizontalEnvironmentFlow({
         <div className="flex items-stretch gap-0">
           {Array.from({ length: SKELETON_CARD_COUNT }).map((_, index) => (
             <React.Fragment key={`skeleton-${index}`}>
+              <FlowConnectorSkeleton isFirst={index === 0} />
               <div className="relative flex items-center">
                 <EnvironmentCardSkeleton />
               </div>
-              {index < SKELETON_CARD_COUNT - 1 && <FlowConnectorSkeleton />}
             </React.Fragment>
           ))}
         </div>
@@ -80,12 +80,12 @@ export function HorizontalEnvironmentFlow({
       <div className="flex items-stretch gap-0">
         {stages.map((stage, index) => {
           const isSelected = stage.spec.name === selectedEnvironment;
-          const isLast = index === stages.length - 1;
+          const isFirst = index === 0;
 
           return (
             <div key={stage.metadata.name} className="flex items-center">
+              <HorizontalFlowConnector triggerType={stage.spec.triggerType} isFirst={isFirst} />
               <PipelineEnvironmentCard stage={stage} isSelected={isSelected} />
-              {!isLast && <HorizontalFlowConnector triggerType={stage.spec.triggerType} />}
             </div>
           );
         })}
