@@ -5,7 +5,7 @@ import { TabsProps } from "./types";
 export const Tabs = ({ tabs, activeTabIdx, handleChangeTab, dataTour, tourHighlight }: TabsProps) => {
   return (
     <div className="flex min-h-0 flex-1 flex-col rounded-[0.3125rem]">
-      <div className="bg-card overflow-hidden border-b">
+      <div className="bg-card border-b">
         <div className="border-border border-b">
           <div className="flex gap-0" {...(dataTour && { "data-tour": dataTour })}>
             {tabs.map(({ label, icon, disabled = false, onClick, id }, idx) => (
