@@ -74,7 +74,18 @@ export const useWatchItem = <I extends KubeObjectBase>({
       const listData = queryClient.getQueryData<CustomKubeObjectList<I>>(listQueryKey);
       return listData?.items.get(name!) ?? undefined;
     },
-    refetchOnWindowFocus: false,
+    initialDataUpdatedAt: () => {
+      const state = queryClient.getQueryState<CustomKubeObjectList<I>>(listQueryKey);
+      return state?.dataUpdatedAt;
+    },
+    // Refetch when window gains focus if data is older than 5 minutes.
+    // This handles browser sleep/tab throttling where WebSocket events may be missed.
+    refetchOnWindowFocus: (query) => {
+      const dataUpdatedAt = query.state.dataUpdatedAt;
+      const now = Date.now();
+      const STALE_THRESHOLD = 5 * 60 * 1000; // 5 minutes
+      return dataUpdatedAt < now - STALE_THRESHOLD;
+    },
     refetchOnMount: false,
     refetchOnReconnect: false,
     enabled: !!name && (queryOptions?.enabled ?? true),

@@ -76,7 +76,15 @@ export const useWatchList = <I extends KubeObjectBase>({
       };
     },
     placeholderData: k8sListInitialData as CustomKubeObjectList<I>,
-    refetchOnWindowFocus: false,
+    // Refetch when window gains focus if data is older than 5 minutes.
+    // This handles browser sleep/tab throttling where WebSocket events may be missed.
+    // During normal operation, WebSocket updates keep data fresh without refetching.
+    refetchOnWindowFocus: (query) => {
+      const dataUpdatedAt = query.state.dataUpdatedAt;
+      const now = Date.now();
+      const STALE_THRESHOLD = 5 * 60 * 1000; // 5 minutes
+      return dataUpdatedAt < now - STALE_THRESHOLD;
+    },
     ...queryOptions,
   });
 
@@ -97,12 +105,12 @@ export const useWatchList = <I extends KubeObjectBase>({
           if (existing?.metadata?.resourceVersion) {
             const currentVersion = parseInt(existing.metadata.resourceVersion, 10);
             const newVersion = parseInt(event.data.metadata.resourceVersion ?? "0", 10);
-            if (currentVersion < newVersion) {
-              newItems.set(name, event.data);
+
+            if (currentVersion > newVersion) {
+              break;
             }
-          } else {
-            newItems.set(name, event.data);
           }
+          newItems.set(name, event.data);
           break;
         }
         case MSG_TYPE.DELETED:

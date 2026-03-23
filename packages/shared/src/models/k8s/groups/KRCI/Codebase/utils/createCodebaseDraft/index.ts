@@ -91,11 +91,11 @@ export const createCodebaseDraftObject = (input: z.infer<typeof createCodebaseDr
   if (input.ticketNamePattern !== undefined) {
     spec.ticketNamePattern = input.ticketNamePattern;
   }
-  if (input.type === codebaseType.application) {
-    spec.deploymentScript = codebaseDeploymentScript["helm-chart"];
-  }
   if (input.type === codebaseType.autotest) {
     spec.testReportFramework = codebaseTestReportFramework.allure;
+  }
+  if (input.type === codebaseType.application && spec.deploymentScript === undefined) {
+    spec.deploymentScript = codebaseDeploymentScript["helm-chart"];
   }
   if (input.versioningStartFrom !== undefined) {
     spec.versioning.startFrom = input.versioningStartFrom;

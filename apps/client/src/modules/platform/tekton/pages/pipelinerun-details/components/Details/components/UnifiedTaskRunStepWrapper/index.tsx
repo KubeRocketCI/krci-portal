@@ -17,14 +17,8 @@ export function UnifiedTaskRunStepWrapper({ pipelineRunTaskData, stepName }: Uni
     taskRun: pipelineRunTaskData?.taskRun,
     stepName: stepName,
     task: pipelineRunTaskData?.task,
+    taskName: pipelineRunTaskData?.task?.metadata?.name || "",
   });
 
-  return (
-    <TaskRunStepView
-      pipelineRunTaskData={pipelineRunTaskData}
-      stepName={stepName}
-      tabs={tabs}
-      tabsContextId="unified-pipeline-details-page-inner-taskrun-step"
-    />
-  );
+  return <TaskRunStepView tabs={tabs} tabsContextId="unified-pipeline-details-page-inner-taskrun-step" />;
 }

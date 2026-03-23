@@ -62,7 +62,9 @@ export const ConfigurationPageContent = ({
             </DialogHeader>
             <DialogBody className="flex min-h-0">
               <div className="flex min-h-0 flex-1 gap-4">
-                <div className="min-h-0 flex-1 overflow-y-auto">{creationForm.isOpen && creationForm.component}</div>
+                <div className="min-h-0 flex-1 overflow-y-auto p-0.5">
+                  {creationForm.isOpen && creationForm.component}
+                </div>
                 <FormGuidePanel />
               </div>
             </DialogBody>

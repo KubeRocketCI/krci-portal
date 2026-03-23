@@ -103,7 +103,7 @@ export function EditJiraForm({ secret, jiraServer, ownerReference, onClose }: Ed
       </DialogHeader>
       <DialogBody className="flex min-h-0">
         <div className="flex min-h-0 flex-1 gap-4">
-          <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="min-h-0 flex-1 overflow-y-auto p-0.5">
             <div className="flex flex-col gap-6">
               <form.AppField name={NAMES.URL}>
                 {(field) => (
