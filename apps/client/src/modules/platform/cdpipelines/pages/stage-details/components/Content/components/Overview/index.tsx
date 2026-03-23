@@ -5,7 +5,7 @@ import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { Badge } from "@/core/components/ui/badge";
 import { Card } from "@/core/components/ui/card";
 import { ScrollCopyText } from "@/core/components/ScrollCopyText";
-import { PipelinePreview } from "@/core/components/PipelinePreview";
+import { TriggerTemplatePipelinePreview } from "@/core/components/TriggerTemplatePipelinePreview";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { applicationHealthStatus, getApplicationStatus, stageTriggerType } from "@my-project/shared";
 import KubernetesIcon from "@/assets/icons/k8s/kubernetes.svg?react";
@@ -149,8 +149,8 @@ export const Overview = () => {
             <div className="border-border flex items-center justify-between border-b py-1.5">
               <span className="text-muted-foreground text-sm">Deploy Pipeline</span>
               {stage.spec?.triggerTemplate ? (
-                <PipelinePreview
-                  pipelineName={stage.spec.triggerTemplate}
+                <TriggerTemplatePipelinePreview
+                  triggerTemplateName={stage.spec.triggerTemplate}
                   namespace={stage.metadata.namespace!}
                   clusterName={params.clusterName}
                 />
@@ -161,8 +161,8 @@ export const Overview = () => {
             <div className="flex items-center justify-between py-1.5">
               <span className="text-muted-foreground text-sm">Clean Pipeline</span>
               {stage.spec?.cleanTemplate ? (
-                <PipelinePreview
-                  pipelineName={stage.spec.cleanTemplate}
+                <TriggerTemplatePipelinePreview
+                  triggerTemplateName={stage.spec.cleanTemplate}
                   namespace={stage.metadata.namespace!}
                   clusterName={params.clusterName}
                 />

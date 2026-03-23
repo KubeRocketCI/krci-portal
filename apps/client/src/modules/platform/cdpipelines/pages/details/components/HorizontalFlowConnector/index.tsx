@@ -4,9 +4,10 @@ import { STATUS_COLOR } from "@/k8s/constants/colors";
 
 interface HorizontalFlowConnectorProps {
   triggerType: StageTriggerType;
+  isFirst?: boolean;
 }
 
-export function HorizontalFlowConnector({ triggerType }: HorizontalFlowConnectorProps) {
+export function HorizontalFlowConnector({ triggerType, isFirst = false }: HorizontalFlowConnectorProps) {
   const triggerTypeLower = triggerType.toLowerCase();
   const isAuto = triggerTypeLower === "auto" || triggerTypeLower === "auto-stable";
 
@@ -15,7 +16,7 @@ export function HorizontalFlowConnector({ triggerType }: HorizontalFlowConnector
   return (
     <div className="flex flex-shrink-0 items-center px-2">
       <div className="flex items-center gap-1">
-        <div className="bg-border h-px w-6" />
+        {!isFirst && <div className="bg-border h-px w-6" />}
         <div
           className="flex items-center gap-1 rounded-full border px-2 py-1 text-xs"
           style={{
