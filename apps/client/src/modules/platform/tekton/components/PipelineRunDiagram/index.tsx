@@ -1,10 +1,7 @@
-import { useApprovalTaskWatchList } from "@/k8s/api/groups/KRCI/ApprovalTask";
 import { getApprovalTaskStatusIcon } from "@/k8s/api/groups/KRCI/ApprovalTask/utils";
-import { usePipelineRunWatchItem } from "@/k8s/api/groups/Tekton/PipelineRun";
-import { useTaskRunWatchList } from "@/k8s/api/groups/Tekton/TaskRun";
 import { getTaskRunStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun/utils";
 import { ToggleButton, ToggleButtonGroup } from "@/core/components/ui/toggle-button-group";
-import { approvalTaskLabels, PipelineRun, taskRunLabels } from "@my-project/shared";
+import { PipelineRun } from "@my-project/shared";
 import {
   Background,
   ConnectionLineType,
@@ -20,7 +17,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import React from "react";
-import { buildPipelineRunTasksByNameMap } from "../../pages/pipelinerun-details/hooks/utils";
+import { useUnifiedPipelineRunData } from "../../pages/pipelinerun-details/hooks/data";
 import { PipelineRunTaskNode } from "./components/PipelineRunTaskNode";
 import { PipelineRunTaskCombinedData, usePipelineRunGraphData } from "./hooks/usePipelineRunGraphData";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
@@ -29,60 +26,37 @@ const nodeTypes = {
   taskNode: PipelineRunTaskNode,
 } as NodeTypes;
 
+/**
+ * Loads live K8s or Tekton Results data — same as the pipelinerun details Diagram tab — so the
+ * list-row graph dialog works for historical runs that no longer exist in the cluster.
+ */
 const PipelineRunDiagramDataWrapper: React.FC<{
   pipelineRunName: string;
   namespace: string;
 }> = ({ pipelineRunName, namespace }) => {
-  const pipelineRunWatch = usePipelineRunWatchItem({
+  const { pipelineRun, pipelineRunTasks, pipelineRunTasksByNameMap, isLoading, error } = useUnifiedPipelineRunData({
+    namespace,
     name: pipelineRunName,
-    namespace,
   });
 
-  const taskRunsWatch = useTaskRunWatchList({
-    namespace,
-    labels: {
-      [taskRunLabels.parentPipelineRun]: pipelineRunName,
-    },
-  });
-
-  const approvalTasksWatch = useApprovalTaskWatchList({
-    namespace,
-    labels: {
-      [approvalTaskLabels.parentPipelineRun]: pipelineRunName,
-    },
-  });
-
-  const pipelineRun = pipelineRunWatch.query.data as PipelineRun | undefined;
-
-  const pipelineRunTasks = React.useMemo(() => {
-    const mainTasks = pipelineRun?.status?.pipelineSpec?.tasks || [];
-    const finallyTasks = pipelineRun?.status?.pipelineSpec?.finally || [];
-
-    return {
-      allTasks: [...mainTasks, ...finallyTasks],
-      mainTasks,
-      finallyTasks,
-    };
-  }, [pipelineRun]);
-
-  const pipelineRunTasksByNameMap = React.useMemo(() => {
-    return buildPipelineRunTasksByNameMap({
-      allPipelineTasks: pipelineRunTasks.allTasks,
-      taskRuns: taskRunsWatch.data.array,
-      approvalTasks: approvalTasksWatch.data.array,
-    });
-  }, [pipelineRunTasks.allTasks, taskRunsWatch.data.array, approvalTasksWatch.data.array]);
-
-  const isLoading = pipelineRunWatch.isLoading || taskRunsWatch.isLoading || approvalTasksWatch.isLoading;
+  const hasDiagramData = !!pipelineRun && pipelineRunTasks.allTasks.length > 0;
 
   return (
     <div className="flex h-full w-full flex-1 flex-col">
       <LoadingWrapper isLoading={isLoading}>
-        <PipelineRunDiagramView
-          pipelineRun={pipelineRun!}
-          pipelineRunTasksByNameMap={pipelineRunTasksByNameMap}
-          namespace={namespace}
-        />
+        {hasDiagramData ? (
+          <PipelineRunDiagramView
+            pipelineRun={pipelineRun}
+            pipelineRunTasksByNameMap={pipelineRunTasksByNameMap}
+            namespace={namespace}
+          />
+        ) : (
+          <div className="text-muted-foreground flex h-full items-center justify-center p-6 text-center text-sm">
+            {error
+              ? "Pipeline run was not found in the cluster or in Tekton Results."
+              : "No diagram data available for this pipeline run."}
+          </div>
+        )}
       </LoadingWrapper>
     </div>
   );

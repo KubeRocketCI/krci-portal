@@ -10,9 +10,9 @@ import {
   ApprovalTask,
   DecodedTaskRun,
   PipelineRun,
-  PipelineTask,
   TaskRun,
   approvalTaskLabels,
+  getPipelineRunTaskGraphDefinitions,
   normalizeHistoryPipelineRun,
   normalizeHistoryTaskRuns,
   parseRecordName,
@@ -30,22 +30,18 @@ import type { UnifiedPipelineRunData, UnifiedSource } from "../providers/Pipelin
 
 export type { UnifiedPipelineRunData, UnifiedSource };
 
+export interface UnifiedPipelineRunParams {
+  namespace: string;
+  name: string;
+}
+
 /**
- * Unified data hook for pipeline run detail page.
- *
- * Strategy:
- * 1. Try K8s watch for PipelineRun + TaskRuns (live data).
- * 2. If K8s returns 404, search Tekton Results by PipelineRun name.
- * 3. If found in Tekton Results, fetch decoded PipelineRun + TaskRun records.
- * 4. Normalize history data to K8s types via adapter functions.
- * 5. Return unified shape that works for all tab components.
+ * Unified PipelineRun + TaskRuns for an explicit namespace/name (live K8s or Tekton Results).
+ * Used by the details page provider and by embedded views (e.g. diagram dialog from the list).
  */
-export function useUnifiedPipelineRun(): UnifiedPipelineRunData {
-  const params = routePipelineRunDetails.useParams();
+export function useUnifiedPipelineRunData({ namespace, name }: UnifiedPipelineRunParams): UnifiedPipelineRunData {
   const trpc = useTRPCClient();
   const { clusterName } = useClusterStore(useShallow((state) => ({ clusterName: state.clusterName })));
-
-  const { namespace, name } = params;
 
   // ── Step 1: K8s watch ──────────────────────────────────────────────────────
   const pipelineRunWatch = usePipelineRunWatchItem({
@@ -164,26 +160,16 @@ export function useUnifiedPipelineRun(): UnifiedPipelineRunData {
   const liveResultUid =
     isLive && liveResultAnnotation ? (parseResultUidFromAnnotation(liveResultAnnotation) ?? undefined) : undefined;
 
-  // Build the pipeline tasks list from the resolved PipelineRun
-  const pipelineRunTasks = React.useMemo(() => {
-    const mainTasks: PipelineTask[] = resolvedPipelineRun?.status?.pipelineSpec?.tasks || [];
-    const finallyTasks: PipelineTask[] = resolvedPipelineRun?.status?.pipelineSpec?.finally || [];
-
-    return {
-      allTasks: [...mainTasks, ...finallyTasks],
-      mainTasks,
-      finallyTasks,
-    };
-  }, [resolvedPipelineRun?.status?.pipelineSpec]);
+  // Build the pipeline tasks list (status → spec → childReferences) for details + diagram
+  const pipelineRunTasks = React.useMemo(
+    () => getPipelineRunTaskGraphDefinitions(resolvedPipelineRun),
+    [resolvedPipelineRun]
+  );
 
   // Build the tasks-by-name map
   // For live: use K8s watches. For history: use normalized data (no Task/ApprovalTask defs available).
   const pipelineRunTasksByNameMap = React.useMemo(() => {
-    const taskRunsArray: TaskRun[] = isLive
-      ? taskRunsWatch.data.array
-      : isHistory && historyTaskRuns
-        ? historyTaskRuns
-        : [];
+    const taskRunsArray: TaskRun[] = isLive ? taskRunsWatch.data.array : (historyTaskRuns ?? []);
 
     const approvalTasksArray: ApprovalTask[] = isLive ? approvalTasksWatch.data.array : [];
 
@@ -192,11 +178,12 @@ export function useUnifiedPipelineRun(): UnifiedPipelineRunData {
       tasks: isLive ? tasksWatch.data.array : undefined,
       taskRuns: taskRunsArray,
       approvalTasks: approvalTasksArray,
+      pipelineRunName: resolvedPipelineRun?.metadata?.name,
     });
   }, [
     isLive,
-    isHistory,
     pipelineRunTasks.allTasks,
+    resolvedPipelineRun?.metadata?.name,
     tasksWatch.data.array,
     taskRunsWatch.data.array,
     approvalTasksWatch.data.array,
@@ -206,12 +193,14 @@ export function useUnifiedPipelineRun(): UnifiedPipelineRunData {
   // Loading state
   const liveIsLoading =
     !k8sNotFound &&
-    (pipelineRunWatch.isLoading || taskRunsWatch.isLoading || tasksWatch.isLoading || approvalTasksWatch.isLoading);
+    [pipelineRunWatch.isLoading, taskRunsWatch.isLoading, tasksWatch.isLoading, approvalTasksWatch.isLoading].some(
+      Boolean
+    );
 
   const historyIsLoading =
-    k8sNotFound && (tektonSearch.isLoading || historyPRQuery.isLoading || historyTaskRunsQuery.isLoading);
+    k8sNotFound && [tektonSearch.isLoading, historyPRQuery.isLoading, historyTaskRunsQuery.isLoading].some(Boolean);
 
-  const isLoading = pipelineRunWatch.isLoading || liveIsLoading || historyIsLoading;
+  const isLoading = [liveIsLoading, historyIsLoading].some(Boolean);
   const isReady = (isLive || isHistory) && !isLoading;
 
   // Error: only surface when both paths have failed.
@@ -250,4 +239,12 @@ export function useUnifiedPipelineRun(): UnifiedPipelineRunData {
       k8sNotFound,
     ]
   );
+}
+
+/**
+ * Same as {@link useUnifiedPipelineRunData}, but reads namespace/name from the pipelinerun details route.
+ */
+export function useUnifiedPipelineRun(): UnifiedPipelineRunData {
+  const params = routePipelineRunDetails.useParams();
+  return useUnifiedPipelineRunData({ namespace: params.namespace, name: params.name });
 }

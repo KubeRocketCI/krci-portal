@@ -16,7 +16,7 @@ interface ProjectHeaderProps {
 
 export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
   const params = routeSASTProjectDetails.useParams();
-  const { getProjectUrl } = useSonarQubeUrl();
+  const { baseUrl: sonarBaseUrl, getProjectUrl } = useSonarQubeUrl();
 
   if (isLoading) {
     return (
@@ -117,7 +117,7 @@ export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
 
           {/* Right section: Metrics badges */}
           <div className="hidden md:block">
-            <SonarQubeMetricsList measures={project.measures} />
+            <SonarQubeMetricsList measures={project.measures} sonarBaseUrl={sonarBaseUrl} projectKey={project.key} />
           </div>
         </div>
       </CardContent>

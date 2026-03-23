@@ -1,10 +1,16 @@
+const trimBase = (url: string) => {
+  let end = url.length;
+  while (end > 0 && url[end - 1] === "/") end--;
+  return end === url.length ? url : url.slice(0, end);
+};
+
 export const SonarQubeURLService = {
   createDashboardLink: ({ baseURL, codebaseName }: { baseURL: string | undefined; codebaseName: string }) => {
     if (!baseURL) {
       return undefined;
     }
 
-    const dashboardURL = new URL(`${baseURL}/dashboard`);
+    const dashboardURL = new URL(`${trimBase(baseURL)}/dashboard`);
 
     dashboardURL.searchParams.append("id", codebaseName);
 
@@ -23,7 +29,7 @@ export const SonarQubeURLService = {
       return undefined;
     }
 
-    const dashboardURL = new URL(`${baseURL}/project/issues`);
+    const dashboardURL = new URL(`${trimBase(baseURL)}/project/issues`);
 
     dashboardURL.searchParams.append("id", codebaseName);
     dashboardURL.searchParams.append("resolved", "false");
@@ -44,19 +50,28 @@ export const SonarQubeURLService = {
       return undefined;
     }
 
-    const componentMeasuresURL = new URL(`${baseURL}/component_measures`);
+    const componentMeasuresURL = new URL(`${trimBase(baseURL)}/component_measures`);
 
     componentMeasuresURL.searchParams.append("id", codebaseName);
     componentMeasuresURL.searchParams.append("metric", metricName);
 
     return componentMeasuresURL.toString();
   },
+  createSecurityHotspotsLink: ({ baseURL, codebaseName }: { baseURL: string | undefined; codebaseName: string }) => {
+    if (!baseURL) {
+      return undefined;
+    }
+
+    const url = new URL(`${trimBase(baseURL)}/security_hotspots`);
+    url.searchParams.append("id", codebaseName);
+    return url.toString();
+  },
   createMetricsApiUrl: ({ baseURL, codebaseName }: { baseURL: string; codebaseName: string }) => {
     if (!baseURL) {
       return undefined;
     }
 
-    const metricsApiUrl = new URL(`${baseURL}/api/measures/component`);
+    const metricsApiUrl = new URL(`${trimBase(baseURL)}/api/measures/component`);
 
     metricsApiUrl.searchParams.append("component", codebaseName);
     metricsApiUrl.searchParams.append(

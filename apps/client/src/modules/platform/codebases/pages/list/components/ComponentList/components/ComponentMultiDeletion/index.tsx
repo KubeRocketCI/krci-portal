@@ -12,11 +12,13 @@ import { Label } from "@/core/components/ui/label";
 import { TableUI, TableBodyUI, TableCellUI, TableHeadUI, TableHeaderUI, TableRowUI } from "@/core/components/ui/table";
 import { useClusterStore } from "@/k8s/store";
 import { PATH_CDPIPELINE_DETAILS_FULL } from "@/modules/platform/cdpipelines/pages/details/route";
+import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { k8sCodebaseConfig, k8sOperation, type Codebase } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import { AlertCircle, Loader2 } from "lucide-react";
 import React from "react";
+import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import { useShallow } from "zustand/react/shallow";
 import { useResourceCRUDMutation } from "@/k8s/api/hooks/useResourceCRUDMutation";
 import { useDeletionConflicts } from "../../hooks/useDeletionConflicts";
@@ -61,7 +63,22 @@ const ConflictsDialog = ({ open, handleClose, conflicts }: ConflictsDialogProps)
                 <TableBodyUI>
                   {Array.from(conflicts.entries()).map(([name, { component, pipelines, stages }]) => (
                     <TableRowUI key={name}>
-                      <TableCellUI className="px-4 py-3 font-medium">{name}</TableCellUI>
+                      <TableCellUI className="px-4 py-3 font-medium">
+                        <Button variant="link" asChild className="h-auto justify-start p-0">
+                          <Link
+                            to={PATH_PROJECT_DETAILS_FULL}
+                            params={{
+                              clusterName,
+                              name: component.metadata.name,
+                              namespace: component.metadata.namespace!,
+                            }}
+                            onClick={handleClose}
+                          >
+                            <ENTITY_ICON.project className="text-muted-foreground/70" />
+                            {name}
+                          </Link>
+                        </Button>
+                      </TableCellUI>
                       <TableCellUI className="px-4 py-3">{capitalizeFirstLetter(component.spec.type)}</TableCellUI>
                       <TableCellUI className="px-4 py-3">
                         <div className="flex flex-col gap-1">
@@ -81,13 +98,18 @@ const ConflictsDialog = ({ open, handleClose, conflicts }: ConflictsDialogProps)
                                 }}
                                 onClick={handleClose}
                               >
+                                <ENTITY_ICON.deployment className="text-muted-foreground/70" />
                                 {pipeline.metadata.name}
                               </Link>
                             </Button>
                           ))}
                           {stages.map((stage) => (
-                            <span key={stage.metadata.name} className="text-muted-foreground text-sm">
-                              Stage: {stage.metadata.name}
+                            <span
+                              key={stage.metadata.name}
+                              className="text-muted-foreground flex items-center gap-1 text-sm"
+                            >
+                              <ENTITY_ICON.stage className="text-muted-foreground/70 size-4 shrink-0" />
+                              {stage.metadata.name}
                             </span>
                           ))}
                         </div>

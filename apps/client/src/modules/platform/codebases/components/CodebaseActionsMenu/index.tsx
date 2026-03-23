@@ -14,6 +14,7 @@ import { k8sCodebaseConfig, k8sOperation } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import { AlertCircle, Settings, Trash } from "lucide-react";
 import React from "react";
+import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import { useShallow } from "zustand/react/shallow";
 import { useCodebaseDeletionConflictResourceQuery } from "./hooks/useDeletionConflictItem";
 import { CodebaseActionsMenuProps } from "./types";
@@ -30,7 +31,7 @@ const DeletionErrorMessage = ({ codebase, conflictedPipeline, clusterName }: Del
   const { closeDialog } = useDialogContext();
 
   return (
-    <div className="flex flex-col gap-4 rounded-md border border-red-400/30 bg-red-50/30 p-4">
+    <div className="border-destructive/30 bg-destructive/5 flex flex-col gap-4 rounded-md border p-4">
       <div className="flex items-center gap-2">
         <AlertCircle size={20} className="text-destructive shrink-0" />
         <p className="text-destructive text-sm font-semibold">Cannot Delete Project</p>
@@ -44,7 +45,7 @@ const DeletionErrorMessage = ({ codebase, conflictedPipeline, clusterName }: Del
         </p>
 
         <div className="bg-background border-border mt-2 rounded border px-3 py-2">
-          <Button variant="ghost" asChild className="h-auto p-0 font-semibold">
+          <Button variant="link" asChild className="h-auto justify-start p-0">
             <Link
               to={PATH_CDPIPELINE_DETAILS_FULL}
               params={{
@@ -56,6 +57,7 @@ const DeletionErrorMessage = ({ codebase, conflictedPipeline, clusterName }: Del
                 closeDialog(DIALOG_NAME_DELETE_KUBE_OBJECT);
               }}
             >
+              <ENTITY_ICON.deployment className="text-muted-foreground/70" />
               {conflictedPipeline.metadata.name}
             </Link>
           </Button>
