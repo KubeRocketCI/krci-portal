@@ -44,14 +44,23 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
 
   const handleNext = React.useCallback(async () => {
     if (isEditStep) {
-      // Validate all fields before proceeding to review
-      await form.validate("submit");
+      // Touch all registered fields so validation errors are displayed
+      const fieldNames = Object.keys(form.store.state.fieldMeta);
+      for (const fieldName of fieldNames) {
+        form.setFieldMeta(fieldName as never, (prev) => ({ ...prev, isTouched: true }));
+      }
 
-      // Check if there are any errors
-      const state = form.store.state;
-      const hasErrors = Object.values(state.errorMap).some((errors) => {
-        return Array.isArray(errors) && errors.length > 0;
-      });
+      // Validate all field-level validators
+      await form.validateAllFields("change");
+
+      // Check field-level errors (errorMap only holds form-level errors)
+      let hasErrors = false;
+      for (const meta of Object.values(form.store.state.fieldMeta)) {
+        if (meta?.errors && meta.errors.length > 0) {
+          hasErrors = true;
+          break;
+        }
+      }
 
       if (!hasErrors) {
         onNext();

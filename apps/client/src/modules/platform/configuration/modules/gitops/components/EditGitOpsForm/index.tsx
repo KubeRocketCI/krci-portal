@@ -31,34 +31,29 @@ export const EditGitOpsForm: React.FC<{
 
   const handleSubmit = React.useCallback(
     async (values: EditGitOpsFormValues) => {
-      try {
-        const updatedCodebase: Codebase = {
-          ...codebase,
-          spec: {
-            ...codebase.spec,
-            gitServer: values.gitServer,
-            gitUrlPath: values.gitRepoPath ? `/${values.gitRepoPath}/${values.name}` : `/${values.name}`,
-          },
-          metadata: {
-            ...codebase.metadata,
-            name: values.name,
-          },
-        };
+      const updatedCodebase: Codebase = {
+        ...codebase,
+        spec: {
+          ...codebase.spec,
+          gitServer: values.gitServer,
+          gitUrlPath: values.gitRepoPath ? `/${values.gitRepoPath}/${values.name}` : `/${values.name}`,
+        },
+        metadata: {
+          ...codebase.metadata,
+          name: values.name,
+        },
+      };
 
-        await triggerPatchCodebase({
-          data: {
-            codebase: updatedCodebase,
+      triggerPatchCodebase({
+        data: {
+          codebase: updatedCodebase,
+        },
+        callbacks: {
+          onSuccess: () => {
+            onClose();
           },
-          callbacks: {
-            onSuccess: () => {
-              onClose();
-            },
-          },
-        });
-      } catch (error) {
-        console.error("Failed to update GitOps repository:", error);
-        throw error;
-      }
+        },
+      });
     },
     [codebase, triggerPatchCodebase, onClose]
   );
