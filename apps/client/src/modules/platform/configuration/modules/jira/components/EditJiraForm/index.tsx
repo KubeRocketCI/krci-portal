@@ -5,7 +5,7 @@ import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import React from "react";
-import { toast } from "sonner";
+import { showToast } from "@/core/components/Snackbar";
 import { Button } from "@/core/components/ui/button";
 import { useAppForm } from "@/core/components/form";
 import { createJiraFormSchema, CreateJiraFormValues } from "../CreateJiraForm/schema";
@@ -38,6 +38,7 @@ export function EditJiraForm({ secret, jiraServer, ownerReference, onClose }: Ed
 
   const handleSubmit = React.useCallback(
     async (values: CreateJiraFormValues) => {
+      const loadingToastId = showToast("Saving Jira integration", "loading");
       try {
         const result = await trpc.k8s.manageJiraIntegration.mutate({
           clusterName,
@@ -65,11 +66,18 @@ export function EditJiraForm({ secret, jiraServer, ownerReference, onClose }: Ed
           throw new Error("Failed to save Jira integration");
         }
 
-        toast.success(result.data?.message || "Jira integration saved successfully");
+        showToast(result.data?.message || "Jira integration saved successfully", "success", {
+          id: loadingToastId,
+          duration: 5000,
+        });
         onClose();
       } catch (error) {
         console.error("Failed to save Jira integration:", error);
-        toast.error(error instanceof Error ? error.message : "Failed to save Jira integration");
+        showToast("Failed to save Jira integration", "error", {
+          id: loadingToastId,
+          duration: 10000,
+          description: error instanceof Error ? error.message : String(error),
+        });
         throw error;
       }
     },
@@ -147,9 +155,14 @@ export function EditJiraForm({ secret, jiraServer, ownerReference, onClose }: Ed
       </DialogBody>
       <DialogFooter>
         <div className="flex w-full justify-between gap-2">
-          <Button onClick={() => form.reset()} size="sm" variant="ghost" disabled={!isDirty}>
-            Undo Changes
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={onClose} size="sm" variant="ghost">
+              Cancel
+            </Button>
+            <Button onClick={() => form.reset()} size="sm" variant="ghost" disabled={!isDirty}>
+              Undo Changes
+            </Button>
+          </div>
           <Button
             onClick={() => form.handleSubmit()}
             size="sm"

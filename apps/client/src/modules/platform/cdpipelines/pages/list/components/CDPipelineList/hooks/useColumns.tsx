@@ -117,7 +117,7 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                   {applications.length <= 3 ? (
                     <div className="flex flex-wrap gap-1">
                       {applications.map((app) => (
-                        <Badge key={app} variant="outline" className="text-xs">
+                        <Badge key={app} variant="outline" className="!p-0 text-xs">
                           <Button variant="link" asChild className="h-auto py-1 text-xs">
                             <Link
                               to={routeProjectDetails.fullPath}

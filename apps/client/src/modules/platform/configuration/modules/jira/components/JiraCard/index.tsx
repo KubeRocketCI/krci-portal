@@ -61,7 +61,7 @@ export function JiraCard({ secret, jiraServer, ownerReference, onEdit }: JiraCar
           </DropdownMenu>
         }
       />
-      <div className="divide-y divide-slate-100">
+      <div className="divide-border divide-y">
         {url && (
           <IntegrationCard.CopyableRow label="URL" value={url} icon={<Globe className="h-4 w-4 text-purple-600" />} />
         )}

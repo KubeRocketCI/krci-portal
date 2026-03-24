@@ -8,7 +8,7 @@ import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { createGitServerSecretName } from "@my-project/shared";
-import { toast } from "sonner";
+import { showToast } from "@/core/components/Snackbar";
 import { Separator } from "@/core/components/ui/separator";
 
 export type { CreateGitServerFormProps } from "./types";
@@ -37,6 +37,7 @@ export const CreateGitServerForm: React.FC<{ onClose: () => void }> = ({ onClose
 
   const handleSubmit = React.useCallback(
     async (values: CreateGitServerFormValues) => {
+      const loadingToastId = showToast("Creating Git Server integration", "loading");
       try {
         const result = await trpc.k8s.manageGitServerIntegration.mutate({
           clusterName,
@@ -76,11 +77,18 @@ export const CreateGitServerForm: React.FC<{ onClose: () => void }> = ({ onClose
           throw new Error("Failed to create Git Server integration");
         }
 
-        toast.success(result.data?.message ?? "Git Server integration created successfully");
+        showToast(result.data?.message ?? "Git Server integration created successfully", "success", {
+          id: loadingToastId,
+          duration: 5000,
+        });
         onClose();
       } catch (error) {
         console.error("Git Server integration save failed:", error);
-        toast.error(error instanceof Error ? error.message : "Failed to create Git Server integration");
+        showToast("Failed to create Git Server integration", "error", {
+          id: loadingToastId,
+          duration: 10000,
+          description: error instanceof Error ? error.message : String(error),
+        });
         throw error;
       }
     },

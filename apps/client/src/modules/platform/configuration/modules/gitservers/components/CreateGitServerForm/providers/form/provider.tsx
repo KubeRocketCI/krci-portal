@@ -18,7 +18,8 @@ export const CreateGitServerFormProvider: React.FC<CreateGitServerFormProviderPr
     },
     onSubmit: async ({ value }) => {
       try {
-        await onSubmit(value);
+        const parsedValue = createGitServerFormSchema.parse(value);
+        await onSubmit(parsedValue);
       } catch (error) {
         onSubmitError(error);
       }

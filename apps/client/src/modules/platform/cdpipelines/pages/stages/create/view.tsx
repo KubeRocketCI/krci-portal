@@ -40,7 +40,7 @@ export default function CreateStagePageContent() {
         ]}
         breadcrumbsExtraContent={<FormGuideToggleButton />}
       >
-        <div className="flex h-(--content-height) gap-4">
+        <div className="flex h-(--content-height) gap-4 p-4">
           <div className="min-h-0 flex-1">
             <CreateStageWizard />
           </div>

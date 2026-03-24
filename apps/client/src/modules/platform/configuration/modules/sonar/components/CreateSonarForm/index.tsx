@@ -5,7 +5,7 @@ import { CreateSonarFormProvider } from "./providers/form/provider";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { toast } from "sonner";
+import { showToast } from "@/core/components/Snackbar";
 import { Form } from "./components/Form";
 import { FormActions } from "./components/FormActions";
 import { Alert } from "@/core/components/ui/alert";
@@ -37,6 +37,7 @@ export const CreateSonarForm: React.FC<CreateSonarFormProps> = ({ quickLink, onC
 
   const handleSubmit = React.useCallback(
     async (values: CreateSonarFormValues) => {
+      const loadingToastId = showToast("Creating SonarQube integration", "loading");
       try {
         setRequestError(null);
         const result = await trpc.k8s.manageSonarIntegration.mutate({
@@ -65,12 +66,19 @@ export const CreateSonarForm: React.FC<CreateSonarFormProps> = ({ quickLink, onC
           throw new Error("Failed to create SonarQube integration");
         }
 
-        toast.success(result.data?.message || "SonarQube integration created successfully");
+        showToast(result.data?.message || "SonarQube integration created successfully", "success", {
+          id: loadingToastId,
+          duration: 5000,
+        });
         onClose();
       } catch (error) {
         console.error("Failed to create SonarQube integration:", error);
         setRequestError(error as RequestError);
-        toast.error(error instanceof Error ? error.message : "Failed to create SonarQube integration");
+        showToast("Failed to create SonarQube integration", "error", {
+          id: loadingToastId,
+          duration: 10000,
+          description: error instanceof Error ? error.message : String(error),
+        });
         throw error;
       }
     },

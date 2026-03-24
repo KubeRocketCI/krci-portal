@@ -5,7 +5,6 @@ import { useCodebaseCRUD } from "@/k8s/api/groups/KRCI/Codebase";
 import type { Codebase } from "@my-project/shared";
 import type { EditGitOpsFormValues } from "./types";
 import { CODEBASE_FORM_NAMES } from "./constants";
-import { toast } from "sonner";
 import { Form } from "./components/Form";
 import { FormActions } from "./components/FormActions";
 import { FormGuideToggleButton, FormGuidePanel } from "@/core/components/FormGuide";
@@ -52,17 +51,12 @@ export const EditGitOpsForm: React.FC<{
           },
           callbacks: {
             onSuccess: () => {
-              toast.success("GitOps repository updated successfully");
               onClose();
-            },
-            onError: () => {
-              toast.error("Failed to update GitOps repository");
             },
           },
         });
       } catch (error) {
         console.error("Failed to update GitOps repository:", error);
-        toast.error(error instanceof Error ? error.message : "Failed to update GitOps repository");
         throw error;
       }
     },
@@ -88,7 +82,7 @@ export const EditGitOpsForm: React.FC<{
         </div>
       </DialogBody>
       <DialogFooter>
-        <FormActions />
+        <FormActions onClose={onClose} />
       </DialogFooter>
     </EditGitOpsFormProvider>
   );

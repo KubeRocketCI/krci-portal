@@ -307,7 +307,6 @@ export const Applications: React.FC = () => {
                     <div className="flex min-w-0 flex-1 items-center gap-3">
                       <Package className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
                       <span className="text-foreground shrink-0 text-sm font-medium">{app.metadata.name}</span>
-                      {/* Compact language and framework icons */}
                       {(app.spec.lang || app.spec.framework) && (
                         <div className="flex shrink-0 items-center gap-1.5">
                           {app.spec.lang && (

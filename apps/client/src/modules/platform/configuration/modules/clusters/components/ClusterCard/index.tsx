@@ -48,45 +48,45 @@ export function ClusterCard({ clusterSecret, onEdit }: ClusterCardProps) {
   const getStatusBadge = () => {
     if (connected === undefined) {
       return (
-        <Badge variant="outline" className="border-slate-300 bg-slate-100 text-slate-700">
-          <HelpCircle className="mr-1 h-3 w-3" />
+        <Badge variant="neutral">
+          <HelpCircle />
           Unknown
         </Badge>
       );
     }
     if (connected === "true") {
       return (
-        <Badge variant="outline" className="border-green-300 bg-green-100 text-green-700">
-          <CheckCircle className="mr-1 h-3 w-3" />
+        <Badge variant="success">
+          <CheckCircle />
           Connected
         </Badge>
       );
     }
     return (
-      <Badge variant="outline" className="border-red-300 bg-red-100 text-red-700">
-        <XCircle className="mr-1 h-3 w-3" />
+      <Badge variant="error">
+        <XCircle />
         Disconnected
       </Badge>
     );
   };
 
   return (
-    <Card className="flex h-full flex-col border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <Card className="border-border flex h-full flex-col border shadow-sm transition-shadow hover:shadow-md">
       {/* Header */}
-      <div className="border-b border-slate-200 p-4">
+      <div className="border-border border-b p-4">
         <div className="mb-2 flex items-start justify-between">
           <div className="flex min-w-0 flex-1 items-center gap-2">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100">
-              <Boxes className="h-5 w-5 text-blue-600" />
+            <div className="bg-primary/10 text-primary flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg">
+              <Boxes className="h-5 w-5" />
             </div>
             <div className="min-w-0 flex-1">
-              <h4 className="truncate text-sm font-medium text-slate-900" title={clusterName}>
+              <h4 className="text-foreground truncate text-sm font-medium" title={clusterName}>
                 {clusterName}
               </h4>
             </div>
             {ownerReference && (
               <Tooltip title={`Managed by ${ownerReference}`}>
-                <ShieldAlert size={16} className="flex-shrink-0 text-amber-600" />
+                <ShieldAlert size={16} className="text-status-missing flex-shrink-0" />
               </Tooltip>
             )}
           </div>
@@ -113,8 +113,8 @@ export function ClusterCard({ clusterSecret, onEdit }: ClusterCardProps) {
         {clusterHost && (
           <div className="mb-2 flex items-center justify-between">
             <div className="min-w-0 flex-1">
-              <div className="mb-1 text-xs text-slate-500">Cluster Host</div>
-              <div className="truncate font-mono text-sm text-slate-900" title={clusterHost}>
+              <div className="text-muted-foreground mb-1 text-xs">Cluster Host</div>
+              <div className="text-foreground truncate font-mono text-sm" title={clusterHost}>
                 {clusterHost}
               </div>
             </div>
@@ -123,8 +123,8 @@ export function ClusterCard({ clusterSecret, onEdit }: ClusterCardProps) {
         )}
 
         {error && (
-          <div className="mt-3 rounded border border-red-200 bg-red-50 p-2">
-            <div className="line-clamp-2 text-xs text-red-700" title={error}>
+          <div className="border-destructive/30 bg-destructive/10 mt-3 rounded-md border p-2">
+            <div className="text-destructive line-clamp-2 text-xs" title={error}>
               {error}
             </div>
           </div>

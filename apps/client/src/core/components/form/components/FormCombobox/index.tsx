@@ -75,6 +75,8 @@ export interface FormComboboxProps<TData = unknown> {
   displayError?: string;
   /** Extra classes merged onto the combobox trigger (after shared defaults). */
   className?: string;
+  /** Extra classes merged onto the popover content wrapper. */
+  popoverContentClassName?: string;
   /** Single-select: ignore `""` from the menu (cmdk re-select), so the value is never cleared. */
   skipEmptySingleSelection?: boolean;
 }
@@ -99,6 +101,7 @@ export const FormCombobox = <TData,>({
   data,
   displayError,
   className,
+  popoverContentClassName,
   skipEmptySingleSelection = false,
 }: FormComboboxProps<TData>) => {
   // Access field from context
@@ -295,7 +298,10 @@ export const FormCombobox = <TData,>({
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="z-50 w-(--radix-popper-anchor-width) p-0" align="start">
+            <PopoverContent
+              className={cn("z-50 w-(--radix-popper-anchor-width) p-0", popoverContentClassName)}
+              align="start"
+            >
               <Command>
                 <CommandInput placeholder={searchPlaceholder} />
                 <CommandList>

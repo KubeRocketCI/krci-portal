@@ -18,7 +18,8 @@ export const EditGitServerFormProvider: React.FC<EditGitServerFormProviderProps>
     },
     onSubmit: async ({ value, formApi }) => {
       try {
-        await onSubmit(value);
+        const parsedValue = editGitServerFormSchema.parse(value);
+        await onSubmit(parsedValue, formApi);
         formApi.reset(value);
       } catch (error) {
         onSubmitError(error);

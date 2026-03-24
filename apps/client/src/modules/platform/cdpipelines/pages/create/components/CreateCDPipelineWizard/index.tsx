@@ -102,7 +102,7 @@ const WizardContent: React.FC<WizardContentProps> = ({ isPending }) => {
         )}
 
         <div className="flex min-h-0 flex-1 flex-col">
-          <Card className="flex min-h-0 flex-1 flex-col overflow-y-auto p-3 shadow-none">
+          <Card className="flex min-h-0 flex-1 flex-col overflow-y-auto p-3">
             {currentStepIdx === 1 && <Applications />}
             {currentStepIdx === 2 && <PipelineConfiguration />}
             {currentStepIdx === 3 && <Review />}

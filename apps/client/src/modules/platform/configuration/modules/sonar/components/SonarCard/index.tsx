@@ -62,7 +62,7 @@ export function SonarCard({ secret, quickLink, ownerReference, onEdit }: SonarCa
           </DropdownMenu>
         }
       />
-      <div className="divide-y divide-slate-100">
+      <div className="divide-border divide-y">
         {quickLinkUrl && (
           <IntegrationCard.LinkRow
             label="Public URL"

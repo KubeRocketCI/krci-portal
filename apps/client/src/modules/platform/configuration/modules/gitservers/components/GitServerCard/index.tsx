@@ -23,23 +23,23 @@ export function GitServerCard({ gitServer, onEdit }: GitServerCardProps) {
   const getStatusBadge = () => {
     if (connected === undefined) {
       return (
-        <Badge variant="outline" className="border-slate-300 bg-slate-100 text-slate-700">
-          <HelpCircle className="mr-1 h-3 w-3" />
+        <Badge variant="neutral">
+          <HelpCircle />
           Unknown
         </Badge>
       );
     }
     if (connected) {
       return (
-        <Badge variant="outline" className="border-green-300 bg-green-100 text-green-700">
-          <CheckCircle className="mr-1 h-3 w-3" />
+        <Badge variant="success">
+          <CheckCircle />
           Connected
         </Badge>
       );
     }
     return (
-      <Badge variant="outline" className="border-red-300 bg-red-100 text-red-700">
-        <XCircle className="mr-1 h-3 w-3" />
+      <Badge variant="error">
+        <XCircle />
         Disconnected
       </Badge>
     );
@@ -47,34 +47,34 @@ export function GitServerCard({ gitServer, onEdit }: GitServerCardProps) {
 
   const getProviderBadge = () => {
     const providerConfig = {
-      github: { label: "GitHub", icon: Github, color: "bg-gray-100 text-gray-700 border-gray-300" },
-      gitlab: { label: "GitLab", icon: GitBranch, color: "bg-orange-100 text-orange-700 border-orange-300" },
-      gerrit: { label: "Gerrit", icon: GitBranch, color: "bg-blue-100 text-blue-700 border-blue-300" },
-      gitea: { label: "Gitea", icon: GitBranch, color: "bg-green-100 text-green-700 border-green-300" },
+      github: { label: "GitHub", icon: Github, variant: "neutral" as const },
+      gitlab: { label: "GitLab", icon: GitBranch, variant: "warning" as const },
+      gerrit: { label: "Gerrit", icon: GitBranch, variant: "info" as const },
+      gitea: { label: "Gitea", icon: GitBranch, variant: "success" as const },
     };
 
-    const config = providerConfig[gitProvider as keyof typeof providerConfig] || providerConfig.github;
+    const config = providerConfig[gitProvider as keyof typeof providerConfig] ?? providerConfig.github;
     const Icon = config.icon;
 
     return (
-      <Badge variant="outline" className={config.color}>
-        <Icon className="mr-1 h-3 w-3" />
+      <Badge variant={config.variant}>
+        <Icon />
         {config.label}
       </Badge>
     );
   };
 
   return (
-    <Card className="flex h-full flex-col border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <Card className="border-border flex h-full flex-col border shadow-sm transition-shadow hover:shadow-md">
       {/* Header */}
-      <div className="border-b border-slate-200 p-4">
+      <div className="border-border border-b p-4">
         <div className="mb-2 flex items-start justify-between">
           <div className="flex min-w-0 flex-1 items-center gap-2">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100">
-              <GitBranch className="h-5 w-5 text-blue-600" />
+            <div className="bg-primary/10 text-primary flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg">
+              <GitBranch className="h-5 w-5" />
             </div>
             <div className="min-w-0 flex-1">
-              <h4 className="truncate text-sm font-medium text-slate-900" title={gitServerName}>
+              <h4 className="text-foreground truncate text-sm font-medium" title={gitServerName}>
                 {gitServerName}
               </h4>
             </div>
@@ -99,8 +99,8 @@ export function GitServerCard({ gitServer, onEdit }: GitServerCardProps) {
         {gitHost && (
           <div className="mb-2 flex items-center justify-between">
             <div className="min-w-0 flex-1">
-              <div className="mb-1 text-xs text-slate-500">Git Host</div>
-              <div className="truncate font-mono text-sm text-slate-900" title={gitHost}>
+              <div className="text-muted-foreground mb-1 text-xs">Git Host</div>
+              <div className="text-foreground truncate font-mono text-sm" title={gitHost}>
                 {gitHost}
               </div>
             </div>
@@ -109,8 +109,8 @@ export function GitServerCard({ gitServer, onEdit }: GitServerCardProps) {
         )}
 
         {error && (
-          <div className="mt-3 rounded border border-red-200 bg-red-50 p-2">
-            <div className="line-clamp-2 text-xs text-red-700" title={error}>
+          <div className="border-destructive/30 bg-destructive/10 mt-3 rounded-md border p-2">
+            <div className="text-destructive line-clamp-2 text-xs" title={error}>
               {error}
             </div>
           </div>

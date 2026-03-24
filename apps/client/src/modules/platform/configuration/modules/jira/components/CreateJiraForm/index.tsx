@@ -5,7 +5,7 @@ import { CreateJiraFormProvider } from "./providers/form/provider";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { toast } from "sonner";
+import { showToast } from "@/core/components/Snackbar";
 import { Form } from "./components/Form";
 import { FormActions } from "./components/FormActions";
 import { Alert } from "@/core/components/ui/alert";
@@ -37,6 +37,7 @@ export const CreateJiraForm: React.FC<CreateJiraFormProps> = ({ jiraServer, onCl
 
   const handleSubmit = React.useCallback(
     async (values: CreateJiraFormValues) => {
+      const loadingToastId = showToast("Creating Jira integration", "loading");
       try {
         setRequestError(null);
         const result = await trpc.k8s.manageJiraIntegration.mutate({
@@ -63,12 +64,19 @@ export const CreateJiraForm: React.FC<CreateJiraFormProps> = ({ jiraServer, onCl
           throw new Error("Failed to create Jira integration");
         }
 
-        toast.success(result.data?.message || "Jira integration created successfully");
+        showToast(result.data?.message || "Jira integration created successfully", "success", {
+          id: loadingToastId,
+          duration: 5000,
+        });
         onClose();
       } catch (error) {
         console.error("Failed to create Jira integration:", error);
         setRequestError(error as RequestError);
-        toast.error(error instanceof Error ? error.message : "Failed to create Jira integration");
+        showToast("Failed to create Jira integration", "error", {
+          id: loadingToastId,
+          duration: 10000,
+          description: error instanceof Error ? error.message : String(error),
+        });
         throw error;
       }
     },

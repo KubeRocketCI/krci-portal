@@ -19,7 +19,7 @@ import { useStore } from "@tanstack/react-form";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { toast } from "sonner";
+import { showToast } from "@/core/components/Snackbar";
 
 export type { EditSonarFormProps } from "./types";
 
@@ -42,6 +42,7 @@ export const EditSonarForm: React.FC<EditSonarFormProps> = ({ secret, quickLink,
 
   const handleSubmit = React.useCallback(
     async (values: EditSonarFormValues) => {
+      const loadingToastId = showToast("Saving SonarQube integration", "loading");
       try {
         setRequestError(null);
 
@@ -69,12 +70,19 @@ export const EditSonarForm: React.FC<EditSonarFormProps> = ({ secret, quickLink,
           },
         });
 
-        toast.success("SonarQube integration saved successfully");
+        showToast("SonarQube integration saved successfully", "success", {
+          id: loadingToastId,
+          duration: 5000,
+        });
         onClose();
       } catch (error) {
         console.error("Failed to save SonarQube integration:", error);
         setRequestError(error as RequestError);
-        toast.error(error instanceof Error ? error.message : "Failed to save SonarQube integration");
+        showToast("Failed to save SonarQube integration", "error", {
+          id: loadingToastId,
+          duration: 10000,
+          description: error instanceof Error ? error.message : String(error),
+        });
         throw error;
       }
     },
@@ -111,7 +119,7 @@ export const EditSonarForm: React.FC<EditSonarFormProps> = ({ secret, quickLink,
         </div>
       </DialogBody>
       <DialogFooter>
-        <FormActions />
+        <FormActions onClose={onClose} />
       </DialogFooter>
     </EditSonarFormProvider>
   );
@@ -138,7 +146,7 @@ const EditSonarFormContent = ({ ownerReference }: { ownerReference: string | und
   );
 };
 
-const FormActions = () => {
+const FormActions = ({ onClose }: { onClose: () => void }) => {
   const form = useEditSonarForm();
   const isDirty = useStore(form.store, (state) => state.isDirty);
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
@@ -146,9 +154,14 @@ const FormActions = () => {
 
   return (
     <div className="flex w-full justify-between gap-2">
-      <Button onClick={() => form.reset()} size="sm" variant="ghost" disabled={!isDirty}>
-        Undo Changes
-      </Button>
+      <div className="flex gap-2">
+        <Button onClick={onClose} size="sm" variant="ghost">
+          Cancel
+        </Button>
+        <Button onClick={() => form.reset()} size="sm" variant="ghost" disabled={!isDirty}>
+          Undo Changes
+        </Button>
+      </div>
       <Button
         onClick={() => form.handleSubmit()}
         size="sm"
