@@ -174,8 +174,11 @@ export const DataTable = <DataType,>({
       return null;
     }
 
-    return (event: React.ChangeEvent<HTMLInputElement>) =>
-      selectionSettings.handleSelectAll?.(event, paginatedData.items);
+    const selectableItems = selectionSettings.isRowSelectable
+      ? paginatedData.items.filter(selectionSettings.isRowSelectable)
+      : paginatedData.items;
+
+    return (event: React.ChangeEvent<HTMLInputElement>) => selectionSettings.handleSelectAll?.(event, selectableItems);
   }, [selectionSettings, filteredData, paginatedData.items]);
 
   const shouldShowSelectionColumn = React.useMemo(() => {
