@@ -27,7 +27,7 @@ export const EditGitServerDialog: React.FC<EditGitServerDialogProps> = ({ isOpen
         docUrl={EDP_USER_GUIDE.GIT_SERVER_CREATE.url}
       >
         <FormGuideDialogContent>
-          <EditGitServerForm gitServer={gitServer} webhookURL={webhookURL} />
+          <EditGitServerForm gitServer={gitServer} webhookURL={webhookURL} onClose={onClose} />
         </FormGuideDialogContent>
       </FormGuideProvider>
     </Dialog>

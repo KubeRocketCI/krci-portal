@@ -5,7 +5,7 @@ import { CreateNexusFormProvider } from "./providers/form/provider";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { toast } from "sonner";
+import { showToast } from "@/core/components/Snackbar";
 import { Form } from "./components/Form";
 import { FormActions } from "./components/FormActions";
 import { Alert } from "@/core/components/ui/alert";
@@ -41,6 +41,7 @@ export const CreateNexusForm: React.FC<{ quickLink: QuickLink | undefined; onClo
 
   const handleSubmit = React.useCallback(
     async (values: CreateNexusFormValues) => {
+      const loadingToastId = showToast("Creating Nexus integration", "loading");
       try {
         setRequestError(null);
         await trpc.k8s.manageNexusIntegration.mutate({
@@ -66,12 +67,19 @@ export const CreateNexusForm: React.FC<{ quickLink: QuickLink | undefined; onClo
           },
         });
 
-        toast.success("Nexus integration created successfully");
+        showToast("Nexus integration created successfully", "success", {
+          id: loadingToastId,
+          duration: 5000,
+        });
         onClose();
       } catch (error) {
         console.error("Failed to create Nexus integration:", error);
         setRequestError(error as RequestError);
-        toast.error(error instanceof Error ? error.message : "Failed to create Nexus integration");
+        showToast("Failed to create Nexus integration", "error", {
+          id: loadingToastId,
+          duration: 10000,
+          description: error instanceof Error ? error.message : String(error),
+        });
         throw error;
       }
     },

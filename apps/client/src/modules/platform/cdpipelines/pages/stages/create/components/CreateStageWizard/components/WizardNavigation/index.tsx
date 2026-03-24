@@ -77,26 +77,26 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
   return (
     <Card className="p-3 shadow-none">
       <div className="flex items-center justify-between">
-        {currentStepIndex === 0 && backRoute ? (
-          <Button variant="outline" asChild size="sm">
-            <Link to={backRoute.to} params={backRoute.params}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Link>
-          </Button>
-        ) : (
-          <Button variant="outline" type="button" onClick={onBack} disabled={currentStepIndex === 0} size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-        )}
+        <Button variant="ghost" asChild size="sm">
+          <Link to={routeCDPipelineDetails.fullPath} params={{ clusterName, namespace, name: cdPipeline }}>
+            Cancel
+          </Link>
+        </Button>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" asChild size="sm">
-            <Link to={routeCDPipelineDetails.fullPath} params={{ clusterName, namespace, name: cdPipeline }}>
-              Cancel
-            </Link>
-          </Button>
+          {currentStepIndex === 0 && backRoute ? (
+            <Button variant="outline" asChild size="sm">
+              <Link to={backRoute.to} params={backRoute.params}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+              </Link>
+            </Button>
+          ) : (
+            <Button variant="outline" type="button" onClick={onBack} disabled={currentStepIndex === 0} size="sm">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+          )}
 
           {currentStepIndex < totalSteps - 1 ? (
             <Button key="continue" onClick={handleContinue} size="sm" type="button">

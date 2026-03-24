@@ -99,7 +99,7 @@ export const FormActions = () => {
 
   return (
     <div className="flex justify-between gap-4">
-      <div>
+      <div className="flex items-center gap-2">
         <ConditionalWrapper
           condition={!secretPermissions.data.delete.allowed || !!ownerReference}
           wrapper={(children) => (
@@ -118,11 +118,14 @@ export const FormActions = () => {
             <Trash size={20} />
           </Button>
         </ConditionalWrapper>
-      </div>
-      <div className="flex items-center gap-4">
+        <Button onClick={formData.handleClosePlaceholder} size="sm" variant="ghost">
+          Cancel
+        </Button>
         <Button onClick={handleReset} size="sm" variant="ghost" disabled={!isDirty}>
           Undo Changes
         </Button>
+      </div>
+      <div className="flex items-center gap-4">
         <ConditionalWrapper
           condition={!secretPermissions.data.patch.allowed || !!ownerReference}
           wrapper={(children) => (

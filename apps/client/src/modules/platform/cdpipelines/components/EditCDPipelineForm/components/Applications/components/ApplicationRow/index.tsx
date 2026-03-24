@@ -1,29 +1,20 @@
 import { Button } from "@/core/components/ui/button";
 import { Card } from "@/core/components/ui/card";
-import { Badge } from "@/core/components/ui/badge";
 import React from "react";
 import { useCodebaseBranchWatchList } from "@/k8s/api/groups/KRCI/CodebaseBranch/hooks";
 import { codebaseBranchLabels, sortCodebaseBranchesWithDefaultFirst } from "@my-project/shared";
-import { X, Package, GitBranch, Server } from "lucide-react";
+import { X, Package, GitBranch, AlertCircle } from "lucide-react";
 import { buildBranchOptions } from "@/modules/platform/cdpipelines/utils/buildBranchOptions";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { Codebase } from "@my-project/shared";
-import { getCodebaseMappingByType } from "@/k8s/api/groups/KRCI/Codebase";
-import { getIconByPattern } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
-import { CodebaseInterface } from "@/k8s/api/groups/KRCI/Codebase/configs/mappings/types";
-import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
-import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
+import { cn } from "@/core/utils/classname";
 import { useStore } from "@tanstack/react-form";
 import { useEditCDPipelineForm } from "../../../../providers/form/hooks";
-import {
-  EDIT_CDPIPELINE_FORM_NAMES,
-  type ApplicationFieldArrayItem,
-  type EditCDPipelineFormValues,
-} from "../../../../types";
+import { useEditCDPipelineData } from "../../../../providers/data/hooks";
+import { EDIT_CDPIPELINE_FORM_NAMES, type EditCDPipelineFormValues } from "../../../../types";
 
 interface ApplicationRowProps {
   application: Codebase;
-  field: ApplicationFieldArrayItem;
   index: number;
   removeRow: () => void;
 }
@@ -31,10 +22,11 @@ interface ApplicationRowProps {
 export const ApplicationRow = ({ application, index, removeRow }: ApplicationRowProps) => {
   const appName = application.metadata.name;
   const {
-    spec: { lang, framework, buildTool, ciTool, type, description, gitServer, gitUrlPath, defaultBranch },
+    spec: { description, defaultBranch },
   } = application;
 
   const form = useEditCDPipelineForm();
+  const { cdPipeline } = useEditCDPipelineData();
 
   // Subscribe to the specific field's value with proper typing
   const fieldArray = useStore(
@@ -54,10 +46,6 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
     if (!applicationBranchListWatch.data.array) return [];
     return sortCodebaseBranchesWithDefaultFirst(applicationBranchListWatch.data.array, defaultBranch);
   }, [applicationBranchListWatch.data.array, defaultBranch]);
-
-  const handleDeleteApplicationRow = React.useCallback(() => {
-    removeRow();
-  }, [removeRow]);
 
   // Helper to update field array item
   const updateAppBranch = React.useCallback(
@@ -86,24 +74,21 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
     hasInitializedRef.current = false;
   }, [appName]);
 
-  // Set default value once when branches are loaded
+  // Set default value once when branches are loaded - ONLY if no value is set
+  // In edit mode, preserve the original value even if it appears invalid
   React.useEffect(() => {
     if (hasInitializedRef.current || sortedApplicationBranchList.length === 0) {
       return;
     }
 
-    const availableBranches = sortedApplicationBranchList.map((el) => ({
-      specBranchName: el.spec.branchName,
-      metadataBranchName: el.metadata.name,
-    }));
+    // Only set default if there's NO branch value at all
+    // Don't auto-change values that are already set (even if they're invalid)
+    if (!appBranchValue) {
+      const availableBranches = sortedApplicationBranchList.map((el) => ({
+        specBranchName: el.spec.branchName,
+        metadataBranchName: el.metadata.name,
+      }));
 
-    const availableBranchNames = new Set(availableBranches.map((b) => b.metadataBranchName));
-
-    // Check if current value is valid for this application
-    const isCurrentValueValid = appBranchValue && availableBranchNames.has(appBranchValue);
-
-    // Set default if no value is set or if current value is invalid for this application
-    if (!isCurrentValueValid) {
       // Use first available branch
       if (availableBranches.length > 0) {
         const newBranchFieldValue = availableBranches[0].metadataBranchName;
@@ -118,154 +103,108 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
   // Check for errors using TanStack Form's API
   const appBranchFieldMeta = form.getFieldMeta(`ui_applicationsFieldArray[${index}].appBranch`);
   const appBranchError = appBranchFieldMeta?.errors?.length ? String(appBranchFieldMeta.errors[0]) : undefined;
-
-  // Get codebase mapping for display names
-  const codebaseMapping = getCodebaseMappingByType(type);
-  const langLower = lang?.toLowerCase() || "";
-  const frameworkLower = framework ? framework.toLowerCase() : "N/A";
-  const buildToolLower = buildTool?.toLowerCase() || "";
-  // Safe dynamic access with runtime check - requires type assertion due to dynamic key access
-  const codebaseMappingByLang = (
-    langLower && codebaseMapping ? codebaseMapping[langLower as keyof typeof codebaseMapping] : undefined
-  ) as CodebaseInterface | undefined;
+  const hasValidationError = !!appBranchError;
 
   const branchOptions = React.useMemo(
     () => buildBranchOptions(sortedApplicationBranchList, defaultBranch),
     [sortedApplicationBranchList, defaultBranch]
   );
 
+  // Get the original branch value from CDPipeline to detect changes
+  const originalBranchValue = React.useMemo(() => {
+    if (!cdPipeline) return "";
+    const appIndex = cdPipeline.spec.applications?.indexOf(appName) ?? -1;
+    if (appIndex === -1) return ""; // New application
+    return cdPipeline.spec.inputDockerStreams?.[appIndex] ?? "";
+  }, [cdPipeline, appName]);
+
+  // Detect if this is a new application (not in original CDPipeline)
+  const isNewApplication = !cdPipeline?.spec.applications?.includes(appName);
+
+  // Check if the branch value has changed
+  const branchHasChanged = !isNewApplication && appBranchValue !== originalBranchValue;
+
   return (
     <LoadingWrapper isLoading={applicationBranchListWatch.query.isLoading}>
-      <Card className="p-6 shadow-none">
-        {/* Header with App Name and Close Button */}
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <div className="mb-2 flex items-center gap-2">
-              <Package className="text-primary h-5 w-5 shrink-0" />
-              <h4 className="text-foreground font-medium">{appName}</h4>
-            </div>
-            {description && <p className="text-muted-foreground line-clamp-2 text-sm">{description}</p>}
+      <Card
+        className={cn(
+          "relative flex flex-col p-5 transition-all",
+          hasValidationError && "border-primary/50 bg-primary/5 dark:bg-primary/10"
+        )}
+      >
+        {hasValidationError && (
+          <div className="border-primary/30 bg-primary/10 text-primary dark:bg-primary/20 absolute top-0 right-0 left-0 flex items-center gap-2 rounded-t-lg border-b px-3 py-1.5">
+            <AlertCircle className="text-primary h-3.5 w-3.5" />
+            <span className="text-xs">Branch required</span>
           </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleDeleteApplicationRow}
-            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8 shrink-0 p-0"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+        )}
 
-        <div className="grid grid-cols-10 gap-8">
-          {/* Left Half - Application Details (70% = col-span-7) */}
-          <div className="col-span-7 space-y-4 pr-8">
-            {/* Application Metadata */}
-            <div className="grid grid-cols-8 gap-4 text-sm">
-              <div>
-                <div className="text-muted-foreground mb-1 text-xs">Type</div>
-                <div className="flex items-center gap-1.5">
-                  <Badge variant="secondary" className="text-xs">
-                    {type}
-                  </Badge>
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground mb-1 text-xs">Language</div>
-                <div className="text-foreground flex items-center gap-1.5">
-                  <UseSpriteSymbol
-                    name={getIconByPattern(lang)}
-                    width={14}
-                    height={14}
-                    className="text-muted-foreground"
-                  />
-                  {codebaseMappingByLang?.language?.name || capitalizeFirstLetter(lang)}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground mb-1 text-xs">Framework</div>
-                <div className="text-foreground flex items-center gap-1.5">
-                  <UseSpriteSymbol
-                    name={getIconByPattern(framework)}
-                    width={14}
-                    height={14}
-                    className="text-muted-foreground"
-                  />
-                  {codebaseMappingByLang?.frameworks?.[frameworkLower]?.name ||
-                    (framework && capitalizeFirstLetter(framework)) ||
-                    "N/A"}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground mb-1 text-xs">Build Tool</div>
-                <div className="text-foreground flex items-center gap-1.5">
-                  <UseSpriteSymbol
-                    name={getIconByPattern(buildTool)}
-                    width={14}
-                    height={14}
-                    className="text-muted-foreground"
-                  />
-                  {codebaseMappingByLang?.buildTools?.[buildToolLower]?.name || capitalizeFirstLetter(buildTool)}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground mb-1 text-xs">CI Tool</div>
-                <div className="text-foreground">{capitalizeFirstLetter(ciTool)}</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground mb-1 text-xs">Git Server</div>
-                <div className="text-foreground flex items-center gap-1.5">
-                  <Server className="text-muted-foreground h-3.5 w-3.5" />
-                  {gitServer}
-                </div>
-              </div>
-              <div className="col-span-2">
-                <div className="text-muted-foreground mb-1 text-xs">Repository Path</div>
-                <div className="text-foreground truncate text-xs" title={gitUrlPath}>
-                  {gitUrlPath}
-                </div>
-              </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={removeRow}
+          className={cn(
+            "text-muted-foreground hover:bg-destructive/10 hover:text-destructive absolute right-3 h-7 w-7 p-0",
+            hasValidationError ? "top-10" : "top-3"
+          )}
+        >
+          <X className="h-3.5 w-3.5" />
+        </Button>
+
+        <div className={cn("flex h-full flex-col gap-2", hasValidationError && "mt-6")}>
+          <div>
+            <div className="mb-1 flex items-center gap-2">
+              <Package className="text-primary h-4 w-4 shrink-0" />
+              <h4 className="text-foreground text-sm font-medium">{appName}</h4>
             </div>
+            {description && <p className="text-muted-foreground line-clamp-3 text-xs">{description}</p>}
           </div>
 
-          {/* Right Half - Branch Selection (30% = col-span-3) */}
-          <div className="border-border col-span-3 flex flex-col justify-center border-l pl-8">
-            <div className="space-y-4">
-              <div>
-                <form.AppField
-                  name={`${EDIT_CDPIPELINE_FORM_NAMES.ui_applicationsFieldArray}[${index}].appBranch` as never}
-                  listeners={{
-                    onChange: ({ value }) => {
-                      const v = typeof value === "string" ? value : "";
-                      if (!v) return;
-                      const next = structuredClone(
-                        form.getFieldValue(EDIT_CDPIPELINE_FORM_NAMES.inputDockerStreams) ?? []
-                      );
-                      while (next.length <= index) next.push("");
-                      next[index] = v;
-                      form.setFieldValue(EDIT_CDPIPELINE_FORM_NAMES.inputDockerStreams, next);
-                    },
-                  }}
-                >
-                  {(f) => (
+          <div className="mt-4 border-t pt-2">
+            <form.AppField
+              name={`${EDIT_CDPIPELINE_FORM_NAMES.ui_applicationsFieldArray}[${index}].appBranch` as never}
+              listeners={{
+                onChange: ({ value }) => {
+                  const v = typeof value === "string" ? value : "";
+                  if (!v) return;
+                  const next = structuredClone(form.getFieldValue(EDIT_CDPIPELINE_FORM_NAMES.inputDockerStreams) ?? []);
+                  while (next.length <= index) next.push("");
+                  next[index] = v;
+                  form.setFieldValue(EDIT_CDPIPELINE_FORM_NAMES.inputDockerStreams, next);
+                },
+              }}
+            >
+              {(f) => (
+                <div className="flex w-full flex-row items-stretch gap-2">
+                  <div
+                    className={cn(
+                      "w-1 shrink-0 rounded-sm",
+                      isNewApplication && "bg-primary",
+                      !isNewApplication && !branchHasChanged && "bg-muted-foreground/35",
+                      !isNewApplication && branchHasChanged && "bg-primary"
+                    )}
+                    aria-hidden
+                  />
+                  <div className="grow">
                     <f.FormCombobox
                       label={
-                        <span className="flex items-center gap-2">
-                          <GitBranch className="text-muted-foreground h-4 w-4" />
-                          <span className="text-sm font-medium">Select Branch for Deployment</span>
+                        <span className="flex items-center gap-1.5 text-xs font-medium">
+                          <GitBranch className="h-3 w-3" />
+                          Branch
+                          {hasValidationError && <span className="text-destructive">*</span>}
                         </span>
                       }
                       options={branchOptions}
-                      placeholder="Select a branch"
+                      placeholder="Select branch"
                       searchPlaceholder="Search branches..."
                       emptyText="No branches found"
                       skipEmptySingleSelection
                       displayError={appBranchError}
                     />
-                  )}
-                </form.AppField>
-              </div>
-            </div>
+                  </div>
+                </div>
+              )}
+            </form.AppField>
           </div>
         </div>
       </Card>

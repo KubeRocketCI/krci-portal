@@ -5,7 +5,11 @@ import { useStore } from "@tanstack/react-form";
 import { TestConnectionBlock } from "@/core/components/TestConnectionBlock";
 import { useTestConnection } from "@/core/hooks/useTestConnection";
 
-export const FormActions: React.FC = () => {
+export interface FormActionsProps {
+  onClose: () => void;
+}
+
+export const FormActions: React.FC<FormActionsProps> = ({ onClose }) => {
   const form = useEditDefectDojoForm();
 
   const isDirty = useStore(form.store, (state) => state.isDirty);
@@ -48,9 +52,14 @@ export const FormActions: React.FC = () => {
         serviceName={serviceName}
       />
       <div className="flex justify-between gap-2">
-        <Button onClick={() => form.reset()} size="sm" variant="ghost" disabled={!isDirty}>
-          Undo Changes
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={onClose} size="sm" variant="ghost">
+            Cancel
+          </Button>
+          <Button onClick={() => form.reset()} size="sm" variant="ghost" disabled={!isDirty}>
+            Undo Changes
+          </Button>
+        </div>
         <Button onClick={handleSubmit} size="sm" variant="default" disabled={!isDirty || isSubmitting || !canSubmit}>
           Save
         </Button>

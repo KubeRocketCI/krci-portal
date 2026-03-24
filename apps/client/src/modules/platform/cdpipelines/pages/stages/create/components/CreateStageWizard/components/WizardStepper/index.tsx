@@ -1,43 +1,66 @@
 import React from "react";
-import { Card } from "@/core/components/ui/card";
 import { Check } from "lucide-react";
 import { WIZARD_STEPS } from "../../store";
+import { cn } from "@/core/utils/classname";
+import { Card } from "@/core/components/ui/card";
 
 interface WizardStepperProps {
   currentStepIdx: number;
 }
 
 export const WizardStepper: React.FC<WizardStepperProps> = ({ currentStepIdx }) => {
+  // Filter out SUCCESS step
+  const navigableSteps = WIZARD_STEPS.filter((step) => step.id !== WIZARD_STEPS[WIZARD_STEPS.length - 1].id);
+
   return (
     <Card className="p-3 shadow-none">
-      <div className="flex items-center gap-4">
-        {WIZARD_STEPS.slice(0, -1).map((step) => {
-          const Icon = step.icon;
-          const stepIndex = WIZARD_STEPS.findIndex((s) => s.id === step.id);
-          const currentStepIndex = WIZARD_STEPS.findIndex((s) => s.id === currentStepIdx);
-          const isActive = step.id === currentStepIdx;
-          const isCompleted = currentStepIndex > stepIndex;
+      <div className="flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          {navigableSteps.map((step, index) => {
+            const isCompleted = currentStepIdx > step.id;
+            const isCurrent = currentStepIdx === step.id;
+            const Icon = step.icon;
 
-          return (
-            <div key={step.id} className="flex flex-1 items-center gap-2">
-              <div
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                  isCompleted
-                    ? "bg-primary text-white"
-                    : isActive
-                      ? "bg-accent text-primary"
-                      : "bg-border text-secondary-foreground"
-                }`}
-              >
-                {isCompleted ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className={`text-xs ${isActive ? "text-primary" : "text-foreground"}`}>{step.label}</div>
-                <div className="text-muted-foreground text-xs">{step.sublabel}</div>
-              </div>
-            </div>
-          );
-        })}
+            return (
+              <React.Fragment key={step.id}>
+                <div className="flex items-center gap-3">
+                  <div
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors",
+                      isCompleted && "border-primary bg-primary",
+                      isCurrent && "border-primary bg-primary/10",
+                      !isCompleted && !isCurrent && "border-border bg-background"
+                    )}
+                  >
+                    {isCompleted ? (
+                      <Check className="text-primary-foreground h-5 w-5" />
+                    ) : (
+                      <Icon
+                        className={cn("h-5 w-5", isCurrent && "text-primary", !isCurrent && "text-muted-foreground")}
+                      />
+                    )}
+                  </div>
+                  <div className="flex flex-col">
+                    <span
+                      className={cn(
+                        "text-sm font-medium",
+                        (isCurrent || isCompleted) && "text-foreground",
+                        !isCurrent && !isCompleted && "text-muted-foreground"
+                      )}
+                    >
+                      {step.label}
+                    </span>
+                    <span className="text-muted-foreground text-xs">{step.sublabel}</span>
+                  </div>
+                </div>
+
+                {index < navigableSteps.length - 1 && (
+                  <div className={cn("mx-3 h-0.5 w-12 transition-colors", isCompleted ? "bg-primary" : "bg-border")} />
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
       </div>
     </Card>
   );

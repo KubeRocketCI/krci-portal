@@ -11,10 +11,27 @@ import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
 import { createGitServerSecretName, safeDecode } from "@my-project/shared";
-import { toast } from "sonner";
+import { showToast } from "@/core/components/Snackbar";
 import { gitProvider } from "@my-project/shared";
 import { Separator } from "@/core/components/ui/separator";
 import type { GitServer } from "@my-project/shared";
+import type { AnyFormApi } from "@tanstack/react-form";
+
+const GIT_SERVER_FIELDS = [
+  NAMES.NAME,
+  NAMES.GIT_HOST,
+  NAMES.GIT_PROVIDER,
+  NAMES.GIT_USER,
+  NAMES.NAME_SSH_KEY_SECRET,
+  NAMES.SSH_PORT,
+  NAMES.HTTPS_PORT,
+  NAMES.SKIP_WEBHOOK_SSL,
+  NAMES.TEKTON_DISABLED,
+  NAMES.OVERRIDE_WEBHOOK_URL,
+  NAMES.WEBHOOK_URL,
+] as const;
+
+const SECRET_FIELDS = [NAMES.SSH_PRIVATE_KEY, NAMES.SSH_PUBLIC_KEY, NAMES.TOKEN] as const;
 
 export type { EditGitServerFormProps } from "./types";
 
@@ -60,7 +77,7 @@ export const EditGitServerForm: React.FC<{
   }, [gitServer, gitServerSecret, webhookURL]);
 
   const handleSubmit = React.useCallback(
-    async (values: EditGitServerFormValues) => {
+    async (values: EditGitServerFormValues, formApi: AnyFormApi) => {
       const gitProviderValue = values[NAMES.GIT_PROVIDER];
       const secretPayload =
         gitProviderValue === gitProvider.gerrit
@@ -77,41 +94,10 @@ export const EditGitServerForm: React.FC<{
               currentResource: gitServerSecret,
             };
 
-      const initialGitServer = {
-        name: gitServer.metadata.name,
-        gitHost: gitServer.spec?.gitHost ?? "",
-        gitProvider: gitServer.spec?.gitProvider,
-        gitUser: gitServer.spec?.gitUser ?? "",
-        nameSshKeySecret: gitServer.spec?.nameSshKeySecret ?? "",
-        sshPort: Number(gitServer.spec?.sshPort),
-        httpsPort: Number(gitServer.spec?.httpsPort),
-        skipWebhookSSLVerification: gitServer.spec?.skipWebhookSSLVerification ?? false,
-        tektonDisabled: gitServer.spec?.tektonDisabled ?? false,
-        webhookUrl: gitServer.spec?.webhookUrl,
-      };
+      const gitServerDirty = GIT_SERVER_FIELDS.some((name) => formApi.getFieldMeta(name)?.isDirty);
+      const secretDirty = !gitServerSecret || SECRET_FIELDS.some((name) => formApi.getFieldMeta(name)?.isDirty);
 
-      const gitServerDirty =
-        initialGitServer.name !== values[NAMES.NAME] ||
-        initialGitServer.gitHost !== values[NAMES.GIT_HOST] ||
-        initialGitServer.gitProvider !== values[NAMES.GIT_PROVIDER] ||
-        initialGitServer.gitUser !== values[NAMES.GIT_USER] ||
-        initialGitServer.nameSshKeySecret !== values[NAMES.NAME_SSH_KEY_SECRET] ||
-        initialGitServer.sshPort !== values[NAMES.SSH_PORT] ||
-        initialGitServer.httpsPort !== values[NAMES.HTTPS_PORT] ||
-        initialGitServer.skipWebhookSSLVerification !== values[NAMES.SKIP_WEBHOOK_SSL] ||
-        initialGitServer.tektonDisabled !== values[NAMES.TEKTON_DISABLED] ||
-        (values[NAMES.OVERRIDE_WEBHOOK_URL]
-          ? (initialGitServer.webhookUrl ?? "") !== (values[NAMES.WEBHOOK_URL] ?? "")
-          : !!initialGitServer.webhookUrl);
-
-      const initialSecret = gitServerSecret;
-      const secretDirty =
-        !initialSecret ||
-        safeDecode(initialSecret.data?.["id_rsa"] ?? "", "") !== values[NAMES.SSH_PRIVATE_KEY] ||
-        (gitProviderValue === gitProvider.gerrit
-          ? safeDecode(initialSecret.data?.["id_rsa.pub"] ?? "", "") !== (values[NAMES.SSH_PUBLIC_KEY] ?? "")
-          : safeDecode(initialSecret.data?.token ?? "", "") !== (values[NAMES.TOKEN] ?? ""));
-
+      const loadingToastId = showToast("Saving Git Server integration", "loading");
       try {
         const result = await trpc.k8s.manageGitServerIntegration.mutate({
           clusterName,
@@ -138,10 +124,17 @@ export const EditGitServerForm: React.FC<{
           throw new Error("Failed to save Git Server integration");
         }
 
-        toast.success(result.data?.message ?? "Git Server integration saved successfully");
+        showToast(result.data?.message ?? "Git Server integration saved successfully", "success", {
+          id: loadingToastId,
+          duration: 5000,
+        });
       } catch (error) {
         console.error("Git Server integration save failed:", error);
-        toast.error(error instanceof Error ? error.message : "Failed to save Git Server integration");
+        showToast("Failed to save Git Server integration", "error", {
+          id: loadingToastId,
+          duration: 10000,
+          description: error instanceof Error ? error.message : String(error),
+        });
         throw error;
       }
     },

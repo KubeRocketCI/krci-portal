@@ -8,7 +8,7 @@ import { Form } from "./components/Form";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { toast } from "sonner";
+import { showToast } from "@/core/components/Snackbar";
 import { satisfiesType } from "../../utils";
 import { Alert } from "@/core/components/ui/alert";
 import type { RequestError } from "@/core/types/global";
@@ -87,6 +87,7 @@ export const CreateRegistryFormProviderWrapper: React.FC<CreateRegistryFormProvi
 
   const handleSubmit = React.useCallback(
     async (values: CreateRegistryFormValues) => {
+      const loadingToastId = showToast("Creating container registry integration", "loading");
       try {
         setRequestError(null);
 
@@ -141,12 +142,19 @@ export const CreateRegistryFormProviderWrapper: React.FC<CreateRegistryFormProvi
           throw new Error("Failed to create container registry integration");
         }
 
-        toast.success(result.data?.message || "Container registry integration created successfully");
+        showToast(result.data?.message || "Container registry integration created successfully", "success", {
+          id: loadingToastId,
+          duration: 5000,
+        });
         onClose();
       } catch (error) {
         console.error("Failed to create container registry integration:", error);
         setRequestError(error as RequestError);
-        toast.error(error instanceof Error ? error.message : "Failed to create container registry integration");
+        showToast("Failed to create container registry integration", "error", {
+          id: loadingToastId,
+          duration: 10000,
+          description: error instanceof Error ? error.message : String(error),
+        });
         throw error;
       }
     },

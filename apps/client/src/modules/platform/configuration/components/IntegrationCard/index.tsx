@@ -6,12 +6,12 @@ import React from "react";
 import { CopyIconButton } from "../CopyIconButton";
 import { cn } from "@/core/utils/classname";
 
-const CARD_CLASS = "max-w-2xl border-slate-200 bg-white shadow-sm";
-const HEADER_CLASS = "flex items-center justify-between p-6 border-b border-slate-200";
-const HEADER_ICON_BOX_CLASS = "w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center";
-const ROW_CLASS = "px-6 py-4 hover:bg-slate-50 transition-colors";
-const ROW_ICON_BOX_CLASS = "w-8 h-8 rounded-lg flex items-center justify-center";
-const MANAGED_BY_ROW_CLASS = "px-6 py-3 bg-slate-50";
+const CARD_CLASS = "max-w-2xl border border-border shadow-sm";
+const HEADER_CLASS = "flex items-center justify-between border-b border-border p-6";
+const HEADER_ICON_BOX_CLASS = "flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary";
+const ROW_CLASS = "px-6 py-4 transition-colors hover:bg-muted/50";
+const ROW_ICON_BOX_CLASS = "flex h-8 w-8 items-center justify-center rounded-lg";
+const MANAGED_BY_ROW_CLASS = "bg-muted/50 px-6 py-3";
 
 interface IntegrationCardProps {
   children: React.ReactNode;
@@ -37,10 +37,10 @@ function IntegrationCardHeader({ icon, title, badge, subtitle, actions }: Integr
         <div className={HEADER_ICON_BOX_CLASS}>{icon}</div>
         <div>
           <div className="mb-1 flex items-center gap-2">
-            <h4 className="text-slate-900">{title}</h4>
+            <h4 className="text-foreground">{title}</h4>
             {badge}
           </div>
-          <p className="text-xs text-slate-500">{subtitle}</p>
+          <p className="text-muted-foreground text-xs">{subtitle}</p>
         </div>
       </div>
       {actions}
@@ -61,10 +61,10 @@ function IntegrationCardLinkRow({ label, href, icon, copyValue }: IntegrationCar
     <div className={ROW_CLASS}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className={cn(ROW_ICON_BOX_CLASS, "bg-blue-50")}>{icon}</div>
+          <div className={cn(ROW_ICON_BOX_CLASS, "bg-primary/10 text-primary")}>{icon}</div>
           <div>
-            <div className="mb-0.5 text-sm text-slate-900">{label}</div>
-            <a href={href} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
+            <div className="text-foreground mb-0.5 text-sm">{label}</div>
+            <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary text-xs hover:underline">
               {href}
             </a>
           </div>
@@ -72,7 +72,7 @@ function IntegrationCardLinkRow({ label, href, icon, copyValue }: IntegrationCar
         <div className="flex items-center gap-1">
           {copyValue !== undefined && <CopyIconButton value={copyValue} />}
           <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => window.open(href, "_blank")}>
-            <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
+            <ExternalLink className="text-muted-foreground h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
@@ -87,15 +87,20 @@ interface IntegrationCardTextRowProps {
   iconBoxClassName?: string;
 }
 
-function IntegrationCardTextRow({ label, value, icon, iconBoxClassName = "bg-blue-50" }: IntegrationCardTextRowProps) {
+function IntegrationCardTextRow({
+  label,
+  value,
+  icon,
+  iconBoxClassName = "bg-primary/10 text-primary",
+}: IntegrationCardTextRowProps) {
   return (
     <div className={ROW_CLASS}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className={cn(ROW_ICON_BOX_CLASS, iconBoxClassName)}>{icon}</div>
           <div>
-            <div className="mb-0.5 text-sm text-slate-900">{label}</div>
-            <div className="font-mono text-xs text-slate-600">{value}</div>
+            <div className="text-foreground mb-0.5 text-sm">{label}</div>
+            <div className="text-muted-foreground font-mono text-xs">{value}</div>
           </div>
         </div>
       </div>
@@ -114,7 +119,7 @@ function IntegrationCardCopyableRow({
   label,
   value,
   icon,
-  iconBoxClassName = "bg-purple-50",
+  iconBoxClassName = "bg-accent/15 text-accent-foreground",
 }: IntegrationCardCopyableRowProps) {
   return (
     <div className={ROW_CLASS}>
@@ -122,8 +127,8 @@ function IntegrationCardCopyableRow({
         <div className="flex items-center gap-3">
           <div className={cn(ROW_ICON_BOX_CLASS, iconBoxClassName)}>{icon}</div>
           <div>
-            <div className="mb-0.5 text-sm text-slate-900">{label}</div>
-            <div className="font-mono text-xs text-slate-600">{value}</div>
+            <div className="text-foreground mb-0.5 text-sm">{label}</div>
+            <div className="text-muted-foreground font-mono text-xs">{value}</div>
           </div>
         </div>
         <CopyIconButton value={value} />
@@ -139,8 +144,8 @@ interface IntegrationCardManagedByRowProps {
 function IntegrationCardManagedByRow({ text }: IntegrationCardManagedByRowProps) {
   return (
     <div className={MANAGED_BY_ROW_CLASS}>
-      <div className="flex items-center gap-2 text-xs text-slate-600">
-        <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
+      <div className="text-muted-foreground flex items-center gap-2 text-xs">
+        <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary">
           Managed by {text}
         </Badge>
       </div>

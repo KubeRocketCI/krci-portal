@@ -5,7 +5,7 @@ import { CreateDependencyTrackFormProvider } from "./providers/form/provider";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { toast } from "sonner";
+import { showToast } from "@/core/components/Snackbar";
 import { Form } from "./components/Form";
 import { FormActions } from "./components/FormActions";
 import { Alert } from "@/core/components/ui/alert";
@@ -37,6 +37,7 @@ export const CreateDependencyTrackForm: React.FC<CreateDependencyTrackFormProps>
 
   const handleSubmit = React.useCallback(
     async (values: CreateDependencyTrackFormValues) => {
+      const loadingToastId = showToast("Creating Dependency-Track integration", "loading");
       try {
         setRequestError(null);
         await trpc.k8s.manageDependencyTrackIntegration.mutate({
@@ -61,12 +62,19 @@ export const CreateDependencyTrackForm: React.FC<CreateDependencyTrackFormProps>
           },
         });
 
-        toast.success("Dependency-Track integration created successfully");
+        showToast("Dependency-Track integration created successfully", "success", {
+          id: loadingToastId,
+          duration: 5000,
+        });
         onClose();
       } catch (error) {
         console.error("Failed to create Dependency-Track integration:", error);
         setRequestError(error as RequestError);
-        toast.error(error instanceof Error ? error.message : "Failed to create Dependency-Track integration");
+        showToast("Failed to create Dependency-Track integration", "error", {
+          id: loadingToastId,
+          duration: 10000,
+          description: error instanceof Error ? error.message : String(error),
+        });
         throw error;
       }
     },

@@ -12,7 +12,7 @@ import { Form } from "./components/Form";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { toast } from "sonner";
+import { showToast } from "@/core/components/Snackbar";
 import { satisfiesType } from "../../utils";
 
 export type { EditRegistryFormProps } from "./types";
@@ -75,6 +75,7 @@ export const EditRegistryFormProviderWrapper: React.FC<EditRegistryFormProviderW
 
   const handleSubmit = React.useCallback(
     async (values: EditRegistryFormValues) => {
+      const loadingToastId = showToast("Saving container registry integration", "loading");
       try {
         const registryType = values[NAMES.REGISTRY_TYPE];
         const needsPushAccount = satisfiesType(registryType, [
@@ -127,11 +128,18 @@ export const EditRegistryFormProviderWrapper: React.FC<EditRegistryFormProviderW
           throw new Error("Failed to save container registry integration");
         }
 
-        toast.success(result.data?.message || "Container registry integration saved successfully");
+        showToast(result.data?.message || "Container registry integration saved successfully", "success", {
+          id: loadingToastId,
+          duration: 5000,
+        });
         onClose();
       } catch (error) {
         console.error("Failed to save container registry integration:", error);
-        toast.error(error instanceof Error ? error.message : "Failed to save container registry integration");
+        showToast("Failed to save container registry integration", "error", {
+          id: loadingToastId,
+          duration: 10000,
+          description: error instanceof Error ? error.message : String(error),
+        });
         throw error;
       }
     },

@@ -7,7 +7,7 @@ import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { safeDecode } from "@my-project/shared";
-import { toast } from "sonner";
+import { showToast } from "@/core/components/Snackbar";
 import { Form } from "./components/Form";
 import { FormActions } from "./components/FormActions";
 import { FormGuideToggleButton, FormGuidePanel } from "@/core/components/FormGuide";
@@ -46,6 +46,7 @@ export const EditNexusForm: React.FC<{
 
   const handleSubmit = React.useCallback(
     async (values: EditNexusFormValues) => {
+      const loadingToastId = showToast("Saving Nexus integration", "loading");
       try {
         setRequestError(null);
         await trpc.k8s.manageNexusIntegration.mutate({
@@ -74,12 +75,19 @@ export const EditNexusForm: React.FC<{
           },
         });
 
-        toast.success("Nexus integration saved successfully");
+        showToast("Nexus integration saved successfully", "success", {
+          id: loadingToastId,
+          duration: 5000,
+        });
         onClose();
       } catch (error) {
         console.error("Failed to save Nexus integration:", error);
         setRequestError(error as RequestError);
-        toast.error(error instanceof Error ? error.message : "Failed to save Nexus integration");
+        showToast("Failed to save Nexus integration", "error", {
+          id: loadingToastId,
+          duration: 10000,
+          description: error instanceof Error ? error.message : String(error),
+        });
         throw error;
       }
     },
@@ -116,7 +124,7 @@ export const EditNexusForm: React.FC<{
         </div>
       </DialogBody>
       <DialogFooter>
-        <FormActions />
+        <FormActions onClose={onClose} />
       </DialogFooter>
     </EditNexusFormProvider>
   );

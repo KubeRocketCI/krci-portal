@@ -73,26 +73,26 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
   return (
     <Card className="p-3">
       <div className="flex items-center justify-between">
-        {currentStepIndex === 0 && backRoute ? (
-          <Button variant="outline" asChild size="sm" type="button">
-            <Link to={backRoute.to} params={backRoute.params}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Link>
-          </Button>
-        ) : (
-          <Button variant="outline" onClick={onBack} disabled={currentStepIndex === 0} size="sm" type="button">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-        )}
+        <Button variant="ghost" asChild size="sm" type="button">
+          <Link to={routeProjectList.fullPath} params={{ clusterName }}>
+            Cancel
+          </Link>
+        </Button>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" asChild size="sm" type="button">
-            <Link to={routeProjectList.fullPath} params={{ clusterName }}>
-              Cancel
-            </Link>
-          </Button>
+          {currentStepIndex === 0 && backRoute ? (
+            <Button variant="outline" asChild size="sm" type="button">
+              <Link to={backRoute.to} params={backRoute.params}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+              </Link>
+            </Button>
+          ) : (
+            <Button variant="outline" onClick={onBack} disabled={currentStepIndex === 0} size="sm" type="button">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+          )}
 
           {currentStepIndex < totalSteps - 1 ? (
             <Button onClick={handleContinue} size="sm" type="button">

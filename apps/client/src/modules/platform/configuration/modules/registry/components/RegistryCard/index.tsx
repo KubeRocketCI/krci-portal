@@ -59,7 +59,7 @@ export function RegistryCard({
           </DropdownMenu>
         }
       />
-      <div className="divide-y divide-slate-100">
+      <div className="divide-border divide-y">
         <IntegrationCard.TextRow
           label="Registry Type"
           value={containerRegistryTypeLabelMap[registryType]}

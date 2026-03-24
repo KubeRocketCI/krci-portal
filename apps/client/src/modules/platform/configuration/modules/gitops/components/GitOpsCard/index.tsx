@@ -77,7 +77,7 @@ export function GitOpsCard({ codebase, onEdit }: GitOpsCardProps) {
           </DropdownMenu>
         }
       />
-      <div className="divide-y divide-slate-100">
+      <div className="divide-border divide-y">
         {gitWebUrl && (
           <IntegrationCard.LinkRow
             label="Source Code"

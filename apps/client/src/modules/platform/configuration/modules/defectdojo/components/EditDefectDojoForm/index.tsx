@@ -7,7 +7,7 @@ import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { safeDecode } from "@my-project/shared";
-import { toast } from "sonner";
+import { showToast } from "@/core/components/Snackbar";
 import { Form } from "./components/Form";
 import { FormActions } from "./components/FormActions";
 import { FormGuideToggleButton, FormGuidePanel } from "@/core/components/FormGuide";
@@ -45,6 +45,7 @@ export const EditDefectDojoForm: React.FC<{
 
   const handleSubmit = React.useCallback(
     async (values: EditDefectDojoFormValues) => {
+      const loadingToastId = showToast("Saving DefectDojo integration", "loading");
       try {
         setRequestError(null);
         const result = await trpc.k8s.manageDefectDojoIntegration.mutate({
@@ -75,12 +76,19 @@ export const EditDefectDojoForm: React.FC<{
           throw new Error("Failed to save DefectDojo integration");
         }
 
-        toast.success(result.data?.message || "DefectDojo integration saved successfully");
+        showToast(result.data?.message || "DefectDojo integration saved successfully", "success", {
+          id: loadingToastId,
+          duration: 5000,
+        });
         onClose();
       } catch (error) {
         console.error("Failed to save DefectDojo integration:", error);
         setRequestError(error as RequestError);
-        toast.error(error instanceof Error ? error.message : "Failed to save DefectDojo integration");
+        showToast("Failed to save DefectDojo integration", "error", {
+          id: loadingToastId,
+          duration: 10000,
+          description: error instanceof Error ? error.message : String(error),
+        });
         throw error;
       }
     },
@@ -117,7 +125,7 @@ export const EditDefectDojoForm: React.FC<{
         </div>
       </DialogBody>
       <DialogFooter>
-        <FormActions />
+        <FormActions onClose={onClose} />
       </DialogFooter>
     </EditDefectDojoFormProvider>
   );
