@@ -101,7 +101,7 @@ export const StageDeploymentCards = ({
                   <div className="grid grid-cols-4 gap-4 text-sm">
                     <div>
                       <div className="text-muted-foreground mb-1 text-xs">Build Version</div>
-                      <ScrollCopyText text={version} className="w-full max-w-full" />
+                      <ScrollCopyText text={version} className="w-full max-w-full" showFromEnd />
                     </div>
                     <div>
                       <div className="text-muted-foreground mb-1 text-xs">Namespace</div>

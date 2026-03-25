@@ -112,7 +112,7 @@ export function ApplicationsSection({ stage }: ApplicationsSectionProps) {
 
               {/* Version Column */}
               <div className="flex items-center">
-                <ScrollCopyText text={version} className="w-full max-w-full" />
+                <ScrollCopyText text={version} className="w-full max-w-full" showFromEnd />
               </div>
 
               {/* Status Column */}
