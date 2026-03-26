@@ -13,23 +13,10 @@ import { satisfiesType } from "../../utils";
 import { Alert } from "@/core/components/ui/alert";
 import type { RequestError } from "@/core/types/global";
 import { getK8sErrorMessage } from "@/k8s/api/utils/getK8sErrorMessage";
+import { CreateRegistryFormErrorContext, useCreateRegistryFormError } from "./context";
 
 export type { CreateRegistryFormProps } from "./types";
 export { FormActions as CreateRegistryFormActions } from "./components/FormActions";
-
-// Context to share error state between provider and form
-const CreateRegistryFormErrorContext = React.createContext<{
-  error: RequestError | null;
-  setError: (error: RequestError | null) => void;
-} | null>(null);
-
-export const useCreateRegistryFormError = () => {
-  const context = React.useContext(CreateRegistryFormErrorContext);
-  if (!context) {
-    throw new Error("useCreateRegistryFormError must be used within CreateRegistryFormProviderWrapper");
-  }
-  return context;
-};
 
 export const CreateRegistryForm: React.FC<CreateRegistryFormProps> = ({ EDPConfigMap }) => {
   const platform = EDPConfigMap?.data?.platform as ContainerRegistryPlatform;

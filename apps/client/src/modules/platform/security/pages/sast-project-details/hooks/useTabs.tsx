@@ -1,29 +1,17 @@
-import { useMemo, ReactNode } from "react";
-import { LayoutDashboard, AlertCircle, LucideIcon } from "lucide-react";
+import React, { useMemo } from "react";
+import { LayoutDashboard, AlertCircle } from "lucide-react";
 import { ProjectWithMetrics } from "@my-project/shared";
+import { router } from "@/core/router";
 import { MetricsGrid } from "../components/MetricsGrid";
 import { QualityGateDetails } from "../components/QualityGateDetails";
 import { IssuesSection } from "../components/IssuesSection";
-
-/**
- * Badge configuration for tabs
- */
-export interface TabBadge {
-  value: number;
-  variant: "secondary" | "default" | "destructive";
-  className?: string;
-}
-
-/**
- * Tab definition for the SAST project details page
- */
-export interface SASTProjectTab {
-  id: string;
-  label: string;
-  icon: LucideIcon;
-  badges?: TabBadge[];
-  content: ReactNode;
-}
+import {
+  routeSASTProjectDetails,
+  RouteSearchTab,
+  routeSearchTabSchema,
+  PATH_SAST_PROJECT_DETAILS_FULL,
+} from "../route";
+import type { Tab } from "@/core/providers/Tabs/components/Tabs/types";
 
 interface UseTabsParams {
   projectKey: string;
@@ -32,27 +20,30 @@ interface UseTabsParams {
 }
 
 /**
- * Hook to define tabs for the SAST Project Details page
+ * Hook to define tabs for the SAST Project Details page (PageContentWrapper format)
  */
-export function useTabs({ projectKey, project, isLoading }: UseTabsParams): SASTProjectTab[] {
-  const measures = project?.measures;
+export function useTabs({ projectKey, project, isLoading }: UseTabsParams): Tab[] {
+  const params = routeSASTProjectDetails.useParams();
 
-  // Calculate total issues count for badge
-  const totalIssues = useMemo(() => {
-    if (!measures) return 0;
-    const bugs = parseInt(measures.bugs || "0", 10) || 0;
-    const vulnerabilities = parseInt(measures.vulnerabilities || "0", 10) || 0;
-    const codeSmells = parseInt(measures.code_smells || "0", 10) || 0;
-    return bugs + vulnerabilities + codeSmells;
-  }, [measures]);
+  const handleTabNavigate = React.useCallback(
+    (tab: RouteSearchTab) => {
+      router.navigate({
+        to: PATH_SAST_PROJECT_DETAILS_FULL,
+        params,
+        search: (prev) => ({ ...prev, tab }),
+      });
+    },
+    [params]
+  );
 
   return useMemo(
     () => [
       {
-        id: "overview",
+        id: routeSearchTabSchema.enum.overview,
         label: "Overview",
-        icon: LayoutDashboard,
-        content: (
+        icon: <LayoutDashboard className="size-4" />,
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.overview),
+        component: (
           <div className="space-y-6">
             <MetricsGrid project={project} isLoading={isLoading} />
             {project && <QualityGateDetails projectKey={project.key} />}
@@ -60,13 +51,13 @@ export function useTabs({ projectKey, project, isLoading }: UseTabsParams): SAST
         ),
       },
       {
-        id: "issues",
+        id: routeSearchTabSchema.enum.issues,
         label: "Issues",
-        icon: AlertCircle,
-        badges: [{ value: totalIssues, variant: "secondary" }],
-        content: project ? <IssuesSection projectKey={projectKey} /> : null,
+        icon: <AlertCircle className="size-4" />,
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.issues),
+        component: project ? <IssuesSection projectKey={projectKey} /> : null,
       },
     ],
-    [project, projectKey, isLoading, totalIssues]
+    [handleTabNavigate, project, projectKey, isLoading]
   );
 }

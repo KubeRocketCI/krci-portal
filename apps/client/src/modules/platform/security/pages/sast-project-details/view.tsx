@@ -1,15 +1,21 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/core/components/ui/tabs";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
+import { QuickLink } from "@/core/components/QuickLink";
 import { Badge } from "@/core/components/ui/badge";
-import { routeSASTProjectDetails } from "./route";
+import { Shield } from "lucide-react";
+import { useTabsContext } from "@/core/providers/Tabs/hooks";
+import { routeSASTProjectDetails, PATH_SAST_PROJECT_DETAILS_FULL } from "./route";
 import { routeSAST } from "../sast/route";
-import { ProjectHeader } from "./components/ProjectHeader";
 import { useProject } from "./hooks/useProject";
 import { useTabs } from "./hooks/useTabs";
+import { useSonarQubeUrl } from "./hooks/useSonarQubeUrl";
+import { SonarQubeMetricsList } from "../../components/sonarqube/SonarQubeMetricsList";
 
-export default function SASTProjectDetailsPageContent() {
+export default function SASTProjectDetailsPageContent({ searchTabIdx }: { searchTabIdx: number }) {
   const { namespace, projectKey, clusterName } = routeSASTProjectDetails.useParams();
   const { data: project, isLoading } = useProject(projectKey);
+  const { baseUrl: sonarBaseUrl, getProjectUrl } = useSonarQubeUrl();
+  const { handleChangeTab } = useTabsContext();
 
   const tabs = useTabs({
     projectKey,
@@ -29,38 +35,74 @@ export default function SASTProjectDetailsPageContent() {
             params: { clusterName, namespace },
           },
         },
-        { label: "Project Details" },
+        { label: projectKey },
       ]}
     >
-      <div className="space-y-4">
-        <ProjectHeader project={project} isLoading={isLoading} />
-
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="w-full justify-start">
-            {tabs.map((tab) => (
-              <TabsTrigger key={tab.id} value={tab.id}>
-                <tab.icon className="mr-2 h-4 w-4" />
-                {tab.label}
-                {tab.badges?.map((badge, index) => (
-                  <Badge
-                    key={index}
-                    variant={badge.variant}
-                    className={`${index === 0 ? "ml-2" : "ml-1"} ${badge.className || ""}`}
-                  >
-                    {badge.value}
+      <PageContentWrapper
+        icon={Shield}
+        title={projectKey}
+        enableCopyTitle
+        pinConfig={{
+          key: `sast-project:${namespace}/${projectKey}`,
+          label: projectKey,
+          type: "sast-project",
+          route: {
+            to: PATH_SAST_PROJECT_DETAILS_FULL,
+            params: { clusterName, namespace, projectKey },
+          },
+        }}
+        description="Code quality metrics, security vulnerabilities, and technical debt analysis from SonarQube."
+        extraLinks={
+          <QuickLink
+            name="SonarQube"
+            tooltip="View in SonarQube"
+            href={getProjectUrl(projectKey)}
+            display="text"
+            variant="link"
+            size="xs"
+          />
+        }
+        subHeader={
+          !isLoading &&
+          project && (
+            <div className="ml-12 flex items-center justify-between gap-4">
+              <div className="hidden md:block">
+                <SonarQubeMetricsList
+                  measures={project.measures}
+                  sonarBaseUrl={sonarBaseUrl}
+                  projectKey={project.key}
+                  linkToExternal={true}
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                {project.visibility && (
+                  <Badge variant={project.visibility === "public" ? "secondary" : "default"}>
+                    {project.visibility.toUpperCase()}
                   </Badge>
-                ))}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {tabs.map((tab) => (
-            <TabsContent key={tab.id} value={tab.id} className="mt-4">
-              {tab.content}
-            </TabsContent>
-          ))}
-        </Tabs>
-      </div>
+                )}
+                <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                  <span>Key: {project.key}</span>
+                </div>
+                {project.lastAnalysisDate && (
+                  <div className="text-muted-foreground text-sm">
+                    Last analysis:{" "}
+                    {new Date(project.lastAnalysisDate).toLocaleString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "numeric",
+                      minute: "numeric",
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        }
+        tabs={tabs}
+        activeTab={searchTabIdx}
+        onTabChange={handleChangeTab}
+      />
     </PageWrapper>
   );
 }

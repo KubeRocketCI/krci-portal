@@ -24,7 +24,7 @@ import type { SelectOption } from "../../types";
 const FORM_COMBOBOX_FIELD_LAYOUT_CLASS = "gap-1.5";
 
 /** Shared trigger sizing/typography (overridable via {@link FormComboboxProps.className}) */
-const FORM_COMBOBOX_TRIGGER_DEFAULTS = "min-h-9 h-9 px-3 py-1 text-xs font-normal shadow-none";
+const FORM_COMBOBOX_TRIGGER_DEFAULTS = "min-h-9 h-auto px-3 py-1 text-xs font-normal shadow-none";
 
 export interface FormComboboxProps<TData = unknown> {
   label?: React.ReactNode;

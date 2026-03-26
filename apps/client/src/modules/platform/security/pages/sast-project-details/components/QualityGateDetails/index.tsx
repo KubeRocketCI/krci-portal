@@ -1,4 +1,4 @@
-import { Card, CardHeader, CardTitle, CardContent } from "@/core/components/ui/card";
+import { Card } from "@/core/components/ui/card";
 import { Badge } from "@/core/components/ui/badge";
 import { Skeleton } from "@/core/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/core/components/ui/alert";
@@ -24,35 +24,32 @@ export function QualityGateDetails({ projectKey }: QualityGateDetailsProps) {
   const conditions = data?.projectStatus.conditions;
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>Quality Gate Details</CardTitle>
-          {status && (
-            <Badge variant="outline" className={cn(getQualityGateColorClass(status))}>
-              {status}
-            </Badge>
-          )}
+    <Card className="space-y-5 p-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-foreground text-sm font-semibold">Quality Gate Details</h3>
+        {status && (
+          <Badge variant="outline" className={cn(getQualityGateColorClass(status))}>
+            {status}
+          </Badge>
+        )}
+      </div>
+
+      {isLoading && (
+        <div className="space-y-3">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
         </div>
-      </CardHeader>
-      <CardContent>
-        {isLoading && (
-          <div className="space-y-3">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-        )}
+      )}
 
-        {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>Failed to load quality gate details. Please try again later.</AlertDescription>
-          </Alert>
-        )}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>Failed to load quality gate details. Please try again later.</AlertDescription>
+        </Alert>
+      )}
 
-        {!isLoading && !error && data && <ConditionsTable conditions={conditions} />}
-      </CardContent>
+      {!isLoading && !error && data && <ConditionsTable conditions={conditions} />}
     </Card>
   );
 }

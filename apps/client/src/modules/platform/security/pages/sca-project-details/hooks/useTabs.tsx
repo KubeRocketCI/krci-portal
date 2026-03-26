@@ -1,6 +1,7 @@
-import { useMemo, ReactNode } from "react";
-import { Shield, Package, Server, Network, AlertTriangle, TrendingUp, ShieldAlert, LucideIcon } from "lucide-react";
+import React, { useMemo } from "react";
+import { Shield, Package, Server, Network, AlertTriangle, TrendingUp, ShieldAlert } from "lucide-react";
 import { DependencyTrackProject, PortfolioMetrics } from "@my-project/shared";
+import { router } from "@/core/router";
 import { ProjectOverview } from "../components/ProjectOverview";
 import { ProjectComponents } from "../components/ProjectComponents";
 import { ProjectServices } from "../components/ProjectServices";
@@ -8,74 +9,61 @@ import { ProjectDependencyGraph } from "../components/ProjectDependencyGraph";
 import { ProjectFindings } from "../components/ProjectFindings";
 import { ProjectEpss } from "../components/ProjectEpss";
 import { ProjectPolicyViolations } from "../components/ProjectPolicyViolations";
-
-/**
- * Badge configuration for tabs
- */
-export interface TabBadge {
-  value: number;
-  variant: "secondary" | "default" | "destructive";
-  className?: string;
-}
-
-/**
- * Tab definition for the project details page
- */
-export interface ProjectDetailsTab {
-  id: string;
-  label: string;
-  icon: LucideIcon;
-  badges?: TabBadge[];
-  content: ReactNode;
-}
+import { routeSCAProjectDetails, RouteSearchTab, routeSearchTabSchema, PATH_SCA_PROJECT_DETAILS_FULL } from "../route";
 
 interface UseTabsParams {
   projectUuid: string;
   project: DependencyTrackProject | undefined;
   projectMetrics: PortfolioMetrics[] | undefined;
   isMetricsLoading: boolean;
-  epssCount: number;
 }
 
 /**
  * Hook to define tabs for the SCA Project Details page
  */
-export function useTabs({
-  projectUuid,
-  project,
-  projectMetrics,
-  isMetricsLoading,
-  epssCount,
-}: UseTabsParams): ProjectDetailsTab[] {
-  const metrics = project?.metrics;
+export function useTabs({ projectUuid, project, projectMetrics, isMetricsLoading }: UseTabsParams) {
+  const params = routeSCAProjectDetails.useParams();
+
+  const handleTabNavigate = React.useCallback(
+    (tab: RouteSearchTab) => {
+      router.navigate({
+        to: PATH_SCA_PROJECT_DETAILS_FULL,
+        params,
+        search: (prev) => ({ ...prev, tab }),
+      });
+    },
+    [params]
+  );
 
   return useMemo(
     () => [
       {
-        id: "overview",
+        id: routeSearchTabSchema.enum.overview,
         label: "Overview",
-        icon: Shield,
-        content: <ProjectOverview project={project} metrics={projectMetrics} isMetricsLoading={isMetricsLoading} />,
+        icon: <Shield className="size-4" />,
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.overview),
+        component: <ProjectOverview project={project} metrics={projectMetrics} isMetricsLoading={isMetricsLoading} />,
       },
       {
-        id: "components",
+        id: routeSearchTabSchema.enum.components,
         label: "Components",
-        icon: Package,
-        badges: [{ value: metrics?.components || 0, variant: "secondary" }],
-        content: <ProjectComponents projectUuid={projectUuid} />,
+        icon: <Package className="size-4" />,
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.components),
+        component: <ProjectComponents projectUuid={projectUuid} />,
       },
       {
-        id: "services",
+        id: routeSearchTabSchema.enum.services,
         label: "Services",
-        icon: Server,
-        badges: [{ value: metrics?.services || 0, variant: "secondary" }],
-        content: <ProjectServices projectUuid={projectUuid} />,
+        icon: <Server className="size-4" />,
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.services),
+        component: <ProjectServices projectUuid={projectUuid} />,
       },
       {
-        id: "dependencies",
+        id: routeSearchTabSchema.enum.dependencies,
         label: "Dependency Graph",
-        icon: Network,
-        content: project ? (
+        icon: <Network className="size-4" />,
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.dependencies),
+        component: project ? (
           <ProjectDependencyGraph
             projectUuid={projectUuid}
             projectName={project.name}
@@ -84,36 +72,27 @@ export function useTabs({
         ) : null,
       },
       {
-        id: "vulnerabilities",
+        id: routeSearchTabSchema.enum.vulnerabilities,
         label: "Audit Vulnerabilities",
-        icon: AlertTriangle,
-        badges: [{ value: metrics?.findingsTotal || 0, variant: "secondary" }],
-        content: <ProjectFindings projectUuid={projectUuid} />,
+        icon: <AlertTriangle className="size-4" />,
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.vulnerabilities),
+        component: <ProjectFindings projectUuid={projectUuid} />,
       },
       {
-        id: "epss",
+        id: routeSearchTabSchema.enum.epss,
         label: "Exploit Predictions",
-        icon: TrendingUp,
-        badges: [{ value: epssCount, variant: "secondary" }],
-        content: <ProjectEpss projectUuid={projectUuid} />,
+        icon: <TrendingUp className="size-4" />,
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.epss),
+        component: <ProjectEpss projectUuid={projectUuid} />,
       },
       {
-        id: "violations",
+        id: routeSearchTabSchema.enum.violations,
         label: "Policy Violations",
-        icon: ShieldAlert,
-        badges: [
-          { value: metrics?.policyViolationsTotal || 0, variant: "secondary" },
-          { value: metrics?.policyViolationsInfo || 0, variant: "default" },
-          {
-            value: metrics?.policyViolationsWarn || 0,
-            variant: "default",
-            className: "bg-yellow-600 hover:bg-yellow-700",
-          },
-          { value: metrics?.policyViolationsFail || 0, variant: "destructive" },
-        ],
-        content: <ProjectPolicyViolations projectUuid={projectUuid} />,
+        icon: <ShieldAlert className="size-4" />,
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.violations),
+        component: <ProjectPolicyViolations projectUuid={projectUuid} />,
       },
     ],
-    [project, projectMetrics, isMetricsLoading, projectUuid, epssCount, metrics]
+    [handleTabNavigate, project, projectMetrics, isMetricsLoading, projectUuid]
   );
 }

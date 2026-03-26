@@ -117,7 +117,12 @@ export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
 
           {/* Right section: Metrics badges */}
           <div className="hidden md:block">
-            <SonarQubeMetricsList measures={project.measures} sonarBaseUrl={sonarBaseUrl} projectKey={project.key} />
+            <SonarQubeMetricsList
+              measures={project.measures}
+              sonarBaseUrl={sonarBaseUrl}
+              projectKey={project.key}
+              linkToExternal={true}
+            />
           </div>
         </div>
       </CardContent>
