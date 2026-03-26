@@ -8,7 +8,7 @@ replicaCount: 1
 # -- Image configuration
 image:
   # -- Image repository
-  repository: krci-portal
+  repository: epamedp/krci-portal
   # -- Image pull policy
   pullPolicy: IfNotPresent
   # -- Overrides the image tag whose default is the chart appVersion.
