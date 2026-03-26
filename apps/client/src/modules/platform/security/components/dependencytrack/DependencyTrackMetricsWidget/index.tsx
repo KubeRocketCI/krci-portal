@@ -6,8 +6,9 @@ import { DependencyTrackMetricsList } from "../DependencyTrackMetricsList";
 import { useDependencyTrackProject } from "./hooks/useDependencyTrackProject";
 import { DependencyTrackMetricsWidgetProps } from "./types";
 import { getRiskScoreBadgeVariant } from "./utils";
-import { Link } from "@tanstack/react-router";
+import { Link, useParams } from "@tanstack/react-router";
 import { PATH_CONFIG_DEPENDENCY_TRACK_FULL } from "@/modules/platform/configuration/modules/dependency-track/route";
+import { PATH_SCA_PROJECT_DETAILS_FULL } from "@/modules/platform/security/pages/sca-project-details/route";
 import { useClusterStore } from "@/k8s/store";
 
 /**
@@ -16,6 +17,7 @@ import { useClusterStore } from "@/k8s/store";
  * Displays dependency vulnerability metrics from DependencyTrack in a card layout:
  * - Risk score badge
  * - 5 severity badges (Critical, High, Medium, Low, Unassigned)
+ * - "View Details" link to internal SCA project page (requires UUID from API)
  * - Empty state with configuration link when no data available
  *
  * Searches for exact match using projectName + defaultBranch to ensure
@@ -34,9 +36,11 @@ export function DependencyTrackMetricsWidget({ projectName, defaultBranch }: Dep
     projectName,
     defaultBranch,
   });
+  const params = useParams({ strict: false });
   const clusterName = useClusterStore((state) => state.clusterName);
 
   const riskScore = data?.metrics?.inheritedRiskScore || 0;
+  const projectUuid = data?.uuid;
 
   return (
     <SecurityMetricCard
@@ -62,6 +66,18 @@ export function DependencyTrackMetricsWidget({ projectName, defaultBranch }: Dep
           </Link>{" "}
           and enable reporting in your pipeline.
         </p>
+      }
+      detailsLink={
+        projectUuid && params.namespace
+          ? {
+              to: PATH_SCA_PROJECT_DETAILS_FULL,
+              params: {
+                clusterName,
+                namespace: params.namespace,
+                projectUuid,
+              },
+            }
+          : undefined
       }
     >
       <DependencyTrackMetricsList metrics={data?.metrics} />

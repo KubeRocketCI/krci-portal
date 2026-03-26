@@ -8,9 +8,8 @@ import { useIssuesColumns } from "../../hooks/useIssuesColumns";
 import { IssueFilters } from "./IssueFilters";
 import { IssueDetailContent } from "./IssueDetailContent";
 import { ISSUE_TYPES, ISSUE_TYPE_TABS, IssueTypeTab, ISSUES_PAGE_SIZE } from "./constants";
-import { routeSASTProjectDetails } from "../../route";
+import { routeSASTProjectDetails, PATH_SAST_PROJECT_DETAILS_FULL, type Search } from "../../route";
 import { router } from "@/core/router";
-import { PATH_SAST_PROJECT_DETAILS_FULL } from "../../route";
 
 interface IssuesSectionProps {
   projectKey: string;
@@ -47,7 +46,7 @@ export function IssuesSection({ projectKey }: IssuesSectionProps) {
       router.navigate({
         to: PATH_SAST_PROJECT_DETAILS_FULL,
         params,
-        search: (prev) => ({ ...prev, page: urlPage }),
+        search: (prev) => ({ ...(prev as Search), page: urlPage }),
       });
     },
     [params]

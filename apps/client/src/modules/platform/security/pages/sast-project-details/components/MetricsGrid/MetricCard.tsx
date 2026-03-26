@@ -104,17 +104,17 @@ export function MetricCard({ config, project, isLoading }: MetricCardProps) {
   if (isLoading) {
     return (
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <config.icon className="text-muted-foreground h-5 w-5" />
-              <CardTitle className="text-base">{config.title}</CardTitle>
+              <config.icon className="text-muted-foreground h-4 w-4" />
+              <CardTitle className="text-sm">{config.title}</CardTitle>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-2">
-          <Skeleton className="h-9 w-20" />
-          <Skeleton className="h-4 w-24" />
+        <CardContent className="space-y-1 pb-3">
+          <Skeleton className="h-7 w-16" />
+          <Skeleton className="h-3 w-20" />
         </CardContent>
       </Card>
     );
@@ -125,39 +125,39 @@ export function MetricCard({ config, project, isLoading }: MetricCardProps) {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <config.icon className="text-muted-foreground h-5 w-5" />
-            <CardTitle className="text-base">{config.title}</CardTitle>
+            <config.icon className="text-muted-foreground h-4 w-4" />
+            <CardTitle className="text-sm">{config.title}</CardTitle>
           </div>
           {rating && rating !== "—" && (
-            <Badge variant="outline" className={cn(getRatingColorClass(rating))}>
+            <Badge variant="outline" className={cn("text-xs", getRatingColorClass(rating))}>
               {rating}
             </Badge>
           )}
           {config.type === "status" && value && (
-            <Badge variant="outline" className={cn(getQualityGateColorClass(value))}>
+            <Badge variant="outline" className={cn("text-xs", getQualityGateColorClass(value))}>
               {value}
             </Badge>
           )}
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
+      <CardContent className="pb-3">
+        <div className="space-y-1.5">
           <div className="flex items-center gap-2">
             {indicatorDot}
-            <div className={cn("text-3xl font-bold", valueColorClass)}>{formattedValue}</div>
+            <div className={cn("text-2xl font-bold", valueColorClass)}>{formattedValue}</div>
           </div>
 
           {trendValue && config.trendKey && (
-            <div className="text-muted-foreground flex items-center gap-1 text-sm">
+            <div className="text-muted-foreground flex items-center gap-1 text-xs">
               {getTrendIcon(trendValue, config.trendKey)}
               <span>{formatValue(trendValue, config.type)} new</span>
             </div>
           )}
 
-          {debtValue && <div className="text-muted-foreground text-sm">Debt: {formatDebtTime(debtValue)}</div>}
+          {debtValue && <div className="text-muted-foreground text-xs">Debt: {formatDebtTime(debtValue)}</div>}
 
           <p className="text-muted-foreground text-xs">{config.description}</p>
         </div>

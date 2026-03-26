@@ -6,7 +6,15 @@ export const PATH_PROJECT_DETAILS = "projects/$namespace/$name" as const;
 export const PATH_PROJECT_DETAILS_FULL = "/c/$clusterName/projects/$namespace/$name" as const;
 export const ROUTE_ID_PROJECT_DETAILS = "/_layout/c/$clusterName/projects/$namespace/$name" as const;
 
-export const routeSearchTabSchema = z.enum(["overview", "branches", "pipelines", "code", "deployments"]);
+export const routeSearchTabSchema = z.enum([
+  "overview",
+  "branches",
+  "pipelines",
+  "security",
+  "vulnerabilities",
+  "code",
+  "deployments",
+]);
 export const routeSearchTabName = routeSearchTabSchema.enum;
 
 export type RouteSearchTab = z.infer<typeof routeSearchTabSchema>;

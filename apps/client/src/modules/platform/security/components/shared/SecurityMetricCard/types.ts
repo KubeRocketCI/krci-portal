@@ -37,4 +37,13 @@ export interface SecurityMetricCardProps {
    * Can be a string or React element with links
    */
   emptyStateMessage?: ReactNode;
+
+  /**
+   * Optional link to internal details page
+   * Displays as a "View Details" button in the title area
+   */
+  detailsLink?: {
+    to: string;
+    params: Record<string, string>;
+  };
 }

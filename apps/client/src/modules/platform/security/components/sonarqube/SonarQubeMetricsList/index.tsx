@@ -1,6 +1,12 @@
 import React from "react";
-import { MetricBadge } from "@/modules/platform/security/pages/sast-project-details/components/MetricBadge";
 import { getRatingLabel, parsePercentage, parseCount } from "@/modules/platform/security/pages/sast/utils";
+import {
+  getRatingBgClass,
+  getRatingTextClass,
+  getCoverageColorClass,
+  isDuplicationGood,
+} from "@/modules/platform/security/pages/sast/utils";
+import { INDICATOR_COLORS } from "@/modules/platform/security/pages/sast/constants";
 import { SonarQubeMetricsListProps } from "./types";
 import { SonarQubeURLService } from "@/k8s/services/link-creation/sonar";
 
@@ -14,9 +20,9 @@ function wrapWithLink(url: string | undefined, children: React.ReactNode): React
 }
 
 /**
- * Reusable SonarQube metrics badges list
+ * Reusable SonarQube metrics list
  *
- * Displays 6 key SonarQube metrics as vertical badges:
+ * Displays 6 key SonarQube metrics horizontally:
  * - Vulnerabilities (with rating)
  * - Bugs (with rating)
  * - Code Smells (with rating)
@@ -24,12 +30,20 @@ function wrapWithLink(url: string | undefined, children: React.ReactNode): React
  * - Coverage (percentage with indicator)
  * - Duplications (percentage with indicator)
  *
+ * When used in widgets, badges are not clickable (linkToExternal=false).
+ * When used on internal SAST pages, badges link to external SonarQube (linkToExternal=true).
+ *
  * Extracted from SAST ProjectHeader for reuse across the application.
  *
  * @example
- * <SonarQubeMetricsList measures={data?.measures} />
+ * <SonarQubeMetricsList measures={data?.measures} linkToExternal={true} />
  */
-export function SonarQubeMetricsList({ measures, sonarBaseUrl, projectKey }: SonarQubeMetricsListProps) {
+export function SonarQubeMetricsList({
+  measures,
+  sonarBaseUrl,
+  projectKey,
+  linkToExternal = false,
+}: SonarQubeMetricsListProps) {
   if (!measures) return null;
 
   // Extract and parse metrics
@@ -48,7 +62,7 @@ export function SonarQubeMetricsList({ measures, sonarBaseUrl, projectKey }: Son
   const coverage = parsePercentage(measures.coverage);
   const duplications = parsePercentage(measures.duplicated_lines_density);
 
-  const canLink = !!sonarBaseUrl && !!projectKey;
+  const canLink = linkToExternal && !!sonarBaseUrl && !!projectKey;
 
   const metricUrls = canLink
     ? {
@@ -86,23 +100,104 @@ export function SonarQubeMetricsList({ measures, sonarBaseUrl, projectKey }: Son
 
   return (
     <div className="flex items-center gap-6">
+      {/* Vulnerabilities */}
       {wrapWithLink(
         metricUrls?.vulnerabilities,
-        <MetricBadge rating={vulnerabilitiesRating} value={vulnerabilities} label="Vulnerabilities" />
+        <div className="flex items-center gap-2">
+          {vulnerabilitiesRating && (
+            <div
+              className={`flex h-6 w-6 items-center justify-center rounded-full ${getRatingBgClass(vulnerabilitiesRating)}`}
+            >
+              <span className={`text-xs font-semibold ${getRatingTextClass(vulnerabilitiesRating)}`}>
+                {vulnerabilitiesRating.toUpperCase()}
+              </span>
+            </div>
+          )}
+          <span className="text-muted-foreground text-sm">
+            Vulnerabilities: <span className="text-foreground font-medium">{vulnerabilities}</span>
+          </span>
+        </div>
       )}
-      {wrapWithLink(metricUrls?.bugs, <MetricBadge rating={bugsRating} value={bugs} label="Bugs" />)}
+
+      {/* Bugs */}
+      {wrapWithLink(
+        metricUrls?.bugs,
+        <div className="flex items-center gap-2">
+          {bugsRating && (
+            <div className={`flex h-6 w-6 items-center justify-center rounded-full ${getRatingBgClass(bugsRating)}`}>
+              <span className={`text-xs font-semibold ${getRatingTextClass(bugsRating)}`}>
+                {bugsRating.toUpperCase()}
+              </span>
+            </div>
+          )}
+          <span className="text-muted-foreground text-sm">
+            Bugs: <span className="text-foreground font-medium">{bugs}</span>
+          </span>
+        </div>
+      )}
+
+      {/* Code Smells */}
       {wrapWithLink(
         metricUrls?.codeSmells,
-        <MetricBadge rating={codeSmellsRating} value={codeSmells} label="Code Smells" />
+        <div className="flex items-center gap-2">
+          {codeSmellsRating && (
+            <div
+              className={`flex h-6 w-6 items-center justify-center rounded-full ${getRatingBgClass(codeSmellsRating)}`}
+            >
+              <span className={`text-xs font-semibold ${getRatingTextClass(codeSmellsRating)}`}>
+                {codeSmellsRating.toUpperCase()}
+              </span>
+            </div>
+          )}
+          <span className="text-muted-foreground text-sm">
+            Code Smells: <span className="text-foreground font-medium">{codeSmells}</span>
+          </span>
+        </div>
       )}
+
+      {/* Hotspots Reviewed */}
       {wrapWithLink(
         metricUrls?.hotspots,
-        <MetricBadge rating={hotspotsRating} value={hotspotsReviewed} label="Hotspots Reviewed" type="percentage" />
+        <div className="flex items-center gap-2">
+          {hotspotsRating && (
+            <div
+              className={`flex h-6 w-6 items-center justify-center rounded-full ${getRatingBgClass(hotspotsRating)}`}
+            >
+              <span className={`text-xs font-semibold ${getRatingTextClass(hotspotsRating)}`}>
+                {hotspotsRating.toUpperCase()}
+              </span>
+            </div>
+          )}
+          <span className="text-muted-foreground text-sm">
+            Hotspots: <span className="text-foreground font-medium">{hotspotsReviewed}%</span>
+          </span>
+        </div>
       )}
-      {wrapWithLink(metricUrls?.coverage, <MetricBadge value={coverage} label="Coverage" type="percentage" />)}
+
+      {/* Coverage */}
+      {wrapWithLink(
+        metricUrls?.coverage,
+        <div className="flex items-center gap-2">
+          <div
+            className={`h-2 w-2 rounded-full ${coverage >= 60 ? INDICATOR_COLORS.GOOD : INDICATOR_COLORS.WARNING}`}
+          />
+          <span className="text-muted-foreground text-sm">
+            Coverage: <span className={`font-medium ${getCoverageColorClass(coverage)}`}>{coverage}%</span>
+          </span>
+        </div>
+      )}
+
+      {/* Duplications */}
       {wrapWithLink(
         metricUrls?.duplications,
-        <MetricBadge value={duplications} label="Duplications" type="percentage" />
+        <div className="flex items-center gap-2">
+          <div
+            className={`h-2 w-2 rounded-full ${isDuplicationGood(duplications) ? INDICATOR_COLORS.GOOD : INDICATOR_COLORS.WARNING}`}
+          />
+          <span className="text-muted-foreground text-sm">
+            Duplications: <span className="text-foreground font-medium">{duplications}%</span>
+          </span>
+        </div>
       )}
     </div>
   );

@@ -14,8 +14,6 @@ import { Badge, type BadgeProps } from "@/core/components/ui/badge";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { PipelinePreview } from "@/core/components/PipelinePreview";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
-import { SonarQubeMetricsWidget } from "@/modules/platform/security/components/sonarqube/SonarQubeMetricsWidget";
-import { DependencyTrackMetricsWidget } from "@/modules/platform/security/components/dependencytrack/DependencyTrackMetricsWidget";
 import { codebaseType, codebaseVersioning } from "@my-project/shared";
 import { Code2, Wrench, GitBranch, LucideIcon } from "lucide-react";
 import { useCodebaseWatch, usePipelineNamesWatch } from "../../hooks/data";
@@ -99,7 +97,6 @@ export const Overview = () => {
 
   const codebase = codebaseWatch.query.data;
   const pipelineNames = pipelineNamesWatch.data;
-  const defaultBranch = codebase?.spec?.defaultBranch || "main";
 
   if (!codebase) {
     return <LoadingWrapper isLoading={codebaseWatch.isLoading}>{null}</LoadingWrapper>;
@@ -289,14 +286,6 @@ export const Overview = () => {
             )}
           </div>
         </Card>
-      </div>
-
-      {/* Security Widgets */}
-      <div data-tour="code-quality-widget">
-        <SonarQubeMetricsWidget componentKey={params.name} />
-      </div>
-      <div data-tour="dependencies-widget">
-        <DependencyTrackMetricsWidget projectName={params.name} defaultBranch={defaultBranch} />
       </div>
     </div>
   );

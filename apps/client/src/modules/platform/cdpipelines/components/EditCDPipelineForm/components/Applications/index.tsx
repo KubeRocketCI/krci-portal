@@ -61,7 +61,7 @@ export const Applications: React.FC = () => {
       const newFieldArray = selectedApps.map((appName) => {
         const existing = currentFieldArray.find((app) => app.appName === appName);
         if (existing) {
-          return existing;
+          return structuredClone(existing);
         }
         return { appName, appBranch: "" };
       });

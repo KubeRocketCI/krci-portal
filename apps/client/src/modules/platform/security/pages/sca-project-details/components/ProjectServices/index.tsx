@@ -3,9 +3,8 @@ import { ServerSideTable } from "@/core/components/ServerSideTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { useServices } from "../../hooks/useServices";
 import { useServicesColumns } from "../../hooks/useServicesColumns";
-import { routeSCAProjectDetails } from "../../route";
+import { routeSCAProjectDetails, PATH_SCA_PROJECT_DETAILS_FULL, Search } from "../../route";
 import { router } from "@/core/router";
-import { PATH_SCA_PROJECT_DETAILS_FULL } from "../../route";
 
 interface ProjectServicesProps {
   projectUuid: string;
@@ -41,7 +40,7 @@ export function ProjectServices({ projectUuid }: ProjectServicesProps) {
       router.navigate({
         to: PATH_SCA_PROJECT_DETAILS_FULL,
         params,
-        search: (prev) => ({ ...prev, page: urlPage }),
+        search: (prev) => ({ ...(prev as Search), page: urlPage }),
       });
     },
     [params]
@@ -58,7 +57,7 @@ export function ProjectServices({ projectUuid }: ProjectServicesProps) {
       router.navigate({
         to: PATH_SCA_PROJECT_DETAILS_FULL,
         params,
-        search: (prev) => ({ ...prev, rowsPerPage: newPageSize, page: 1 }),
+        search: (prev) => ({ ...(prev as Search), rowsPerPage: newPageSize, page: 1 }),
       });
     },
     [params]

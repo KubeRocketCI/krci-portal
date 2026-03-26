@@ -5,9 +5,8 @@ import { Label } from "@/core/components/ui/label";
 import { Switch } from "@/core/components/ui/switch";
 import { useComponents } from "../../hooks/useComponents";
 import { useComponentsColumns } from "../../hooks/useComponentsColumns";
-import { routeSCAProjectDetails } from "../../route";
+import { routeSCAProjectDetails, PATH_SCA_PROJECT_DETAILS_FULL, Search } from "../../route";
 import { router } from "@/core/router";
-import { PATH_SCA_PROJECT_DETAILS_FULL } from "../../route";
 
 interface ProjectComponentsProps {
   projectUuid: string;
@@ -48,7 +47,7 @@ export function ProjectComponents({ projectUuid }: ProjectComponentsProps) {
       router.navigate({
         to: PATH_SCA_PROJECT_DETAILS_FULL,
         params,
-        search: (prev) => ({ ...prev, page: urlPage }),
+        search: (prev) => ({ ...(prev as Search), page: urlPage }),
       });
     },
     [params]
@@ -65,7 +64,7 @@ export function ProjectComponents({ projectUuid }: ProjectComponentsProps) {
       router.navigate({
         to: PATH_SCA_PROJECT_DETAILS_FULL,
         params,
-        search: (prev) => ({ ...prev, rowsPerPage: newPageSize, page: 1 }),
+        search: (prev) => ({ ...(prev as Search), rowsPerPage: newPageSize, page: 1 }),
       });
     },
     [params]
