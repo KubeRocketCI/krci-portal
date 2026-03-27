@@ -1,4 +1,6 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
+import { PageContentWrapper } from "@/core/components/PageContentWrapper";
+import { Shield } from "lucide-react";
 import { routeTrivyComplianceDetails } from "./route";
 import { PATH_TRIVY_COMPLIANCE_FULL } from "../trivy-compliance/route";
 import { useClusterComplianceReportWatchItem } from "@/k8s/api/groups/Trivy/ClusterComplianceReport";
@@ -37,12 +39,18 @@ export default function TrivyComplianceDetailsPageContent() {
           { label: reportName },
         ]}
       >
-        <div className="flex items-center justify-center p-8">
-          <div className="text-center">
-            <h2 className="text-lg font-semibold text-red-600">Error Loading Report</h2>
-            <p className="text-muted-foreground mt-2">{query.error.message}</p>
+        <PageContentWrapper
+          icon={Shield}
+          title={reportTitle}
+          description="Kubernetes security compliance benchmark check results"
+        >
+          <div className="flex items-center justify-center p-8">
+            <div className="text-center">
+              <h2 className="text-lg font-semibold text-red-600">Error Loading Report</h2>
+              <p className="text-muted-foreground mt-2">{query.error.message}</p>
+            </div>
           </div>
-        </div>
+        </PageContentWrapper>
       </PageWrapper>
     );
   }
@@ -62,21 +70,30 @@ export default function TrivyComplianceDetailsPageContent() {
         { label: reportTitle },
       ]}
     >
-      <div className="space-y-6">
-        <ComplianceHeader report={report} isLoading={isLoading} />
-
-        {isLoading ? (
-          <div className="grid gap-4 md:grid-cols-4">
-            {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full" />
-            ))}
+      <PageContentWrapper
+        icon={Shield}
+        title={reportTitle}
+        description="Kubernetes security compliance benchmark check results"
+        subHeader={
+          <div className="ml-12">
+            <ComplianceHeader report={report} isLoading={isLoading} />
           </div>
-        ) : (
-          <SeverityBreakdown controls={controls} />
-        )}
+        }
+      >
+        <div className="space-y-6">
+          {isLoading ? (
+            <div className="grid gap-4 md:grid-cols-4">
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="h-24 w-full" />
+              ))}
+            </div>
+          ) : (
+            <SeverityBreakdown controls={controls} />
+          )}
 
-        <ControlsTable controls={controls} isLoading={isLoading} />
-      </div>
+          <ControlsTable controls={controls} isLoading={isLoading} />
+        </div>
+      </PageContentWrapper>
     </PageWrapper>
   );
 }

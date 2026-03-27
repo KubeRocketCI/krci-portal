@@ -14,7 +14,7 @@ export function ResourcesExpandedRow({ resources }: ResourcesExpandedRowProps) {
   }
 
   return (
-    <div className="bg-muted/30 px-4 py-3">
+    <div className="px-4">
       <div className="mb-2 text-sm font-medium">Used in {resources.length} resource(s):</div>
       <table className="w-full text-sm">
         <thead>

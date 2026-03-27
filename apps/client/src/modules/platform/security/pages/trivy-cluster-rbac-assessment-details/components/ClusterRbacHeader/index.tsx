@@ -1,5 +1,4 @@
 import { Badge } from "@/core/components/ui/badge";
-import { ShieldAlert } from "lucide-react";
 import { ClusterRbacAssessmentReport } from "@my-project/shared";
 import { TrivyReportDetailHeader } from "@/modules/platform/security/components/shared/TrivyReportDetailHeader";
 import { getAuditSummaryStats } from "@/modules/platform/security/components/shared/TrivyReportDetailHeader/utils";
@@ -11,27 +10,15 @@ interface ClusterRbacHeaderProps {
 
 export function ClusterRbacHeader({ report, isLoading }: ClusterRbacHeaderProps) {
   const summary = report?.report.summary;
-  const resourceName = report?.metadata?.name || "";
   const scanner = report?.report?.scanner;
   const totalChecks = report?.report?.checks?.length || 0;
   const failedChecks = report?.report?.checks?.filter((check) => !check.success).length || 0;
   const passedChecks = totalChecks - failedChecks;
-  const totalIssues = summary ? summary.criticalCount + summary.highCount + summary.mediumCount + summary.lowCount : 0;
 
   return (
     <TrivyReportDetailHeader
       isLoading={isLoading}
       isEmpty={!report}
-      icon={ShieldAlert}
-      title={resourceName}
-      titleExtra={
-        <>
-          <Badge variant="outline" className="text-xs">
-            ClusterRole
-          </Badge>
-          {totalIssues === 0 && summary && <Badge variant="success">No Issues</Badge>}
-        </>
-      }
       metadata={
         <>
           <span>
