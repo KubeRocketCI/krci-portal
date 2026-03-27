@@ -125,7 +125,7 @@ export const TableRow = <DataType,>({
       {isExpandable && isExpanded && expandedContent && (
         <TableRowUI>
           <TableCellUI colSpan={totalColumnsCount} className="border-t-0 p-0">
-            <div className="bg-muted/30 border-border border-t p-6">{expandedContent}</div>
+            <div className="bg-muted/30 border-border border-t p-4">{expandedContent}</div>
           </TableCellUI>
         </TableRowUI>
       )}

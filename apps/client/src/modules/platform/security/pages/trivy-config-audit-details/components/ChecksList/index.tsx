@@ -19,7 +19,7 @@ interface ChecksListProps {
  */
 function ExpandedCheckRow({ check }: { check: AuditCheckWithId }) {
   return (
-    <div className="bg-muted/50 space-y-4 p-4">
+    <div className="space-y-4">
       {/* Description */}
       {check.description && (
         <div className="space-y-1">

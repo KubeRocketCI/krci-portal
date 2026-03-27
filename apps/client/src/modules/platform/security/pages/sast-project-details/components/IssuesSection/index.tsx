@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/core/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/core/components/ui/tabs";
+import { TabButton } from "@/core/components/TabButton";
 import { IssueSeverity } from "@my-project/shared";
 import { ServerSideTable } from "@/core/components/ServerSideTable";
 import { useProjectIssues } from "../../hooks/useProjectIssues";
@@ -72,15 +72,16 @@ export function IssuesSection({ projectKey }: IssuesSectionProps) {
         <CardTitle>Issues</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Tabs value={selectedTab} onValueChange={handleTabChange}>
-          <TabsList>
-            {ISSUE_TYPE_TABS.map((tab) => (
-              <TabsTrigger key={tab.value} value={tab.value}>
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        <div className="border-border flex gap-0 border-b">
+          {ISSUE_TYPE_TABS.map((tab) => (
+            <TabButton
+              key={tab.value}
+              label={tab.label}
+              isActive={selectedTab === tab.value}
+              onClick={() => handleTabChange(tab.value)}
+            />
+          ))}
+        </div>
 
         <ServerSideTable
           id="sast-issues-table"
