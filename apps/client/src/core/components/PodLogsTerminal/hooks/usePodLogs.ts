@@ -1,7 +1,6 @@
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect, useRef, useMemo } from "react";
-import { usePodWatchItem } from "@/k8s/api/groups/Core/Pod";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 interface UsePodLogsParams {
   clusterName: string;
@@ -13,12 +12,28 @@ interface UsePodLogsParams {
   timestamps?: boolean;
   previous?: boolean;
   enabled?: boolean;
+  /** Called with new log lines during streaming (follow=true). Bypasses state accumulation. */
+  onStreamLines?: (lines: string[]) => void;
 }
 
 interface UsePodLogsResult {
+  /** Full log content (only populated when follow=false). */
   logs: string;
   isLoading: boolean;
   error: Error | null;
+}
+
+/** How often (ms) buffered subscription chunks are flushed. */
+const FLUSH_INTERVAL_MS = 500;
+
+function isContainerNotReadyError(message: string): boolean {
+  return (
+    message.includes("container not created yet") ||
+    message.includes("Error occurred in log request") ||
+    message.includes("400") ||
+    message.includes("404") ||
+    message.includes("204")
+  );
 }
 
 export const usePodLogs = ({
@@ -31,35 +46,47 @@ export const usePodLogs = ({
   timestamps = false,
   previous = false,
   enabled = true,
+  onStreamLines,
 }: UsePodLogsParams): UsePodLogsResult => {
   const trpc = useTRPCClient();
-  const [accumulatedLogs, setAccumulatedLogs] = useState<string>("");
   const [subscriptionError, setSubscriptionError] = useState<Error | null>(null);
   const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(false);
   const subscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
 
-  // Watch the pod for real-time status updates
-  const podWatch = usePodWatchItem({
-    name: podName,
-    namespace,
-    queryOptions: {
-      enabled: enabled && !!podName,
-    },
-  });
+  // Stable ref for the streaming callback to avoid re-subscribing when it changes.
+  const onStreamLinesRef = useRef(onStreamLines);
+  useEffect(() => {
+    onStreamLinesRef.current = onStreamLines;
+  }, [onStreamLines]);
 
-  const pod = podWatch.query.data;
+  // Buffer for throttling subscription chunks.
+  const bufferRef = useRef<string[]>([]);
+  const flushTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Simple pod readiness check - try logs when pod exists
-  const podReadyForLogs = useMemo(() => {
-    if (!pod || !container) {
-      return false;
+  const flushBuffer = useCallback(() => {
+    if (bufferRef.current.length === 0) return;
+    const chunk = bufferRef.current.join("");
+    bufferRef.current = [];
+
+    // Split into lines, keeping partial last line for next flush
+    const lines = chunk.split("\n");
+    // If chunk ends with \n, last element is empty string — drop it.
+    // If chunk doesn't end with \n, last element is a partial line — keep it in buffer.
+    if (lines.length > 0 && lines[lines.length - 1] === "") {
+      lines.pop();
+    } else if (lines.length >= 1) {
+      // Last element is a partial line — put it back in the buffer
+      bufferRef.current.push(lines.pop()!);
     }
 
-    // Try logs as soon as pod exists - let the API and retry logic handle failures
-    return true;
-  }, [pod, container]);
+    if (lines.length > 0) {
+      onStreamLinesRef.current?.(lines);
+    }
+  }, []);
 
-  // Query for initial logs (non-follow mode or initial fetch)
+  const subscriptionEnabled = follow && enabled && !!podName && !!container;
+
+  // Query for initial logs (non-follow mode only)
   const {
     data: queryData,
     isLoading: queryLoading,
@@ -72,40 +99,31 @@ export const usePodLogs = ({
         namespace,
         podName,
         container,
-        follow: false, // Always false for query
+        follow: false,
         tailLines,
         timestamps,
         previous,
       }),
-    enabled: enabled && !!podName && !!container && podReadyForLogs,
+    enabled: !follow && enabled && !!podName && !!container,
     staleTime: 0,
     refetchOnWindowFocus: false,
     retry: (failureCount, error) => {
-      const errorMessage = error?.message || "";
-      const isContainerNotReady =
-        errorMessage.includes("container not created yet") ||
-        errorMessage.includes("Error occurred in log request") ||
-        errorMessage.includes("400") ||
-        errorMessage.includes("404") ||
-        errorMessage.includes("204");
-
-      // Log only for debugging if needed
-      // console.log("🔄 Query retry decision:", { failureCount, isContainerNotReady });
-
-      if (isContainerNotReady && failureCount < 10) {
-        return true; // Retry for container not ready errors
+      if (isContainerNotReadyError(error?.message || "") && failureCount < 10) {
+        return true;
       }
-
-      return failureCount < 3; // Standard retries for other errors
+      return failureCount < 3;
     },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000), // Exponential backoff, max 5s
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
   });
 
   // Subscription for follow mode with retry logic
   useEffect(() => {
-    const subscriptionEnabled = follow && enabled && !!podName && !!container && podReadyForLogs;
-
     if (!subscriptionEnabled) {
+      if (flushTimerRef.current) {
+        clearInterval(flushTimerRef.current);
+        flushTimerRef.current = null;
+      }
+      bufferRef.current = [];
       if (subscriptionRef.current) {
         subscriptionRef.current.unsubscribe();
         subscriptionRef.current = null;
@@ -115,9 +133,15 @@ export const usePodLogs = ({
 
     let retryCount = 0;
     const maxRetries = 10;
-    let retryTimer: NodeJS.Timeout;
+    let retryTimer: ReturnType<typeof setTimeout>;
+
+    // Start periodic flush timer
+    flushTimerRef.current = setInterval(flushBuffer, FLUSH_INTERVAL_MS);
+
+    let loadingCleared = false;
 
     const startSubscription = () => {
+      loadingCleared = false;
       setIsSubscriptionLoading(true);
       setSubscriptionError(null);
 
@@ -135,28 +159,22 @@ export const usePodLogs = ({
           },
           {
             onData: (data: { type: string; logs?: string }) => {
-              setIsSubscriptionLoading(false);
-              retryCount = 0; // Reset retry count on successful data
-              if (data.type === "data" && data.logs) {
-                setAccumulatedLogs((prev) => prev + data.logs);
-              } else if (data.type === "end") {
+              if (!loadingCleared) {
+                loadingCleared = true;
                 setIsSubscriptionLoading(false);
+              }
+              retryCount = 0;
+              if (data.type === "data" && data.logs) {
+                bufferRef.current.push(data.logs);
+              } else if (data.type === "end") {
+                flushBuffer();
               }
             },
             onError: (error: unknown) => {
               setIsSubscriptionLoading(false);
               setSubscriptionError(error as Error);
 
-              const errorMessage = (error as Error)?.message || "";
-              const isContainerNotReady =
-                errorMessage.includes("container not created yet") ||
-                errorMessage.includes("Error occurred in log request") ||
-                errorMessage.includes("400") ||
-                errorMessage.includes("404") ||
-                errorMessage.includes("204");
-
-              // Retry logic for container not ready errors
-              if (isContainerNotReady && retryCount < maxRetries) {
+              if (isContainerNotReadyError((error as Error)?.message || "") && retryCount < maxRetries) {
                 retryCount++;
                 const delay = Math.min(1000 * Math.pow(2, retryCount - 1), 5000);
                 retryTimer = setTimeout(() => {
@@ -173,7 +191,6 @@ export const usePodLogs = ({
         setIsSubscriptionLoading(false);
         setSubscriptionError(error as Error);
 
-        // Retry on setup errors too
         if (retryCount < maxRetries) {
           retryCount++;
           const delay = Math.min(1000 * Math.pow(2, retryCount - 1), 5000);
@@ -188,14 +205,18 @@ export const usePodLogs = ({
       if (retryTimer) {
         clearTimeout(retryTimer);
       }
+      if (flushTimerRef.current) {
+        clearInterval(flushTimerRef.current);
+        flushTimerRef.current = null;
+      }
+      bufferRef.current = [];
       if (subscriptionRef.current) {
         subscriptionRef.current.unsubscribe();
         subscriptionRef.current = null;
       }
     };
   }, [
-    follow,
-    enabled,
+    subscriptionEnabled,
     clusterName,
     namespace,
     podName,
@@ -203,24 +224,19 @@ export const usePodLogs = ({
     tailLines,
     timestamps,
     previous,
-    podReadyForLogs,
     trpc,
+    flushBuffer,
   ]);
 
-  // Reset accumulated logs when parameters change
+  // Reset on parameter change
   useEffect(() => {
-    setAccumulatedLogs("");
+    bufferRef.current = [];
     setSubscriptionError(null);
-  }, [namespace, podName, container, clusterName, timestamps]);
+  }, [namespace, podName, container, clusterName, timestamps, follow]);
 
-  // Determine which logs to return
-  const logs = follow ? accumulatedLogs : queryData?.logs || "";
+  const logs = follow ? "" : queryData?.logs || "";
   const isLoading = follow ? isSubscriptionLoading : queryLoading;
   const error = follow ? subscriptionError : queryError;
 
-  return {
-    logs,
-    isLoading,
-    error,
-  };
+  return { logs, isLoading, error };
 };

@@ -1,12 +1,12 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
 import { Label } from "@/core/components/ui/label";
 import { Switch } from "@/core/components/ui/switch";
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { Copy, Download } from "lucide-react";
-import { LogViewer } from "@/core/components/LogViewer";
-import { downloadTextFile } from "@/core/utils/download";
+import { LogViewer, type LogViewerRef } from "@/core/components/LogViewer";
+import { downloadTextFile, generateTimestampedLogFilename } from "@/core/utils/download";
 import { Pod } from "@my-project/shared";
 import { usePodLogs } from "./hooks/usePodLogs";
 
@@ -15,17 +15,42 @@ export interface PodLogsProps {
   namespace: string;
   pods: Pod[];
   selectedContainer?: string;
-  selectedPod?: string; // Optional pod name to select
+  selectedPod?: string;
   height?: number;
   follow?: boolean;
   tailLines?: number;
   timestamps?: boolean;
   previous?: boolean;
-  enableDebugLogs?: boolean; // Optional flag to enable debug console logs
 }
 
 // Legacy alias for backward compatibility
 export type PodLogsTerminalProps = PodLogsProps;
+
+const TIMESTAMP_REGEX = /\[\[(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.?\d*Z?)\]\]\s+/g;
+
+function formatLogLine(line: string, showTimestamps: boolean): string {
+  if (!showTimestamps) {
+    return line.replace(TIMESTAMP_REGEX, "");
+  }
+
+  return line.replace(TIMESTAMP_REGEX, (_match, timestamp) => {
+    try {
+      const date = new Date(timestamp);
+      const localeTime = date.toLocaleString(undefined, {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      });
+      return `[ ${localeTime} ] `;
+    } catch {
+      return _match;
+    }
+  });
+}
 
 export const PodLogsTerminal: React.FC<PodLogsProps> = ({
   clusterName,
@@ -42,6 +67,10 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
   const [userSelectedPodName, setUserSelectedPodName] = useState<string | undefined>(selectedPod);
   const [activeContainer, setActiveContainer] = useState<string>(selectedContainer || "");
   const [logsTimestamps, setLogsTimestamps] = useState(timestamps);
+
+  const logViewerRef = useRef<LogViewerRef>(null);
+  // Raw lines ref for copy/download in streaming mode
+  const rawLinesRef = useRef<string[]>([]);
 
   // Derive activePod from pods prop - this ensures it updates when pod watch updates
   const activePod = useMemo(() => {
@@ -66,9 +95,41 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
     if (!activePod?.metadata?.name || !activeContainer) return false;
 
     const phase = activePod.status?.phase;
-    // Pod is ready if it's running, succeeded, or failed (logs might be available)
     return phase === "Running" || phase === "Succeeded" || phase === "Failed";
   }, [activePod?.metadata?.name, activePod?.status?.phase, activeContainer]);
+
+  // Streaming callback — formats lines and appends to LogViewer incrementally
+  const handleStreamLines = useCallback(
+    (lines: string[]) => {
+      rawLinesRef.current.push(...lines);
+      const formatted = lines.map((line) => formatLogLine(line, logsTimestamps));
+      logViewerRef.current?.appendLines(formatted);
+    },
+    [logsTimestamps]
+  );
+
+  // Clear LogViewer when parameters change (pod, container, timestamps toggle)
+  const prevParamsRef = useRef({ podName: "", container: "", timestamps: true });
+  useEffect(() => {
+    const podName = activePod?.metadata?.name || "";
+    const prev = prevParamsRef.current;
+    if (prev.podName !== podName || prev.container !== activeContainer || prev.timestamps !== logsTimestamps) {
+      const savedLines = rawLinesRef.current;
+      logViewerRef.current?.clear();
+      rawLinesRef.current = [];
+
+      // If only timestamps changed and we have raw lines, re-append with new formatting
+      if (prev.podName === podName && prev.container === activeContainer && prev.timestamps !== logsTimestamps) {
+        if (savedLines.length > 0) {
+          const reformatted = savedLines.map((line) => formatLogLine(line, logsTimestamps));
+          logViewerRef.current?.appendLines(reformatted);
+          rawLinesRef.current = savedLines;
+        }
+      }
+
+      prevParamsRef.current = { podName, container: activeContainer, timestamps: logsTimestamps };
+    }
+  }, [activePod?.metadata?.name, activeContainer, logsTimestamps]);
 
   // Get logs using the hook
   const { logs, isLoading, error } = usePodLogs({
@@ -78,9 +139,10 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
     container: activeContainer,
     follow,
     tailLines,
-    timestamps: logsTimestamps,
+    timestamps: true,
     previous,
     enabled: podReadyForLogs,
+    onStreamLines: follow ? handleStreamLines : undefined,
   });
 
   // Available containers - memoized
@@ -89,7 +151,6 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
 
     const containers: Array<{ name: string; type: string }> = [];
 
-    // Add init containers
     if (activePod.spec?.initContainers) {
       containers.push(
         ...activePod.spec.initContainers.map((container: { name: string }) => ({
@@ -99,7 +160,6 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
       );
     }
 
-    // Add main containers
     if (activePod.spec?.containers) {
       containers.push(
         ...activePod.spec.containers.map((container: { name: string }) => ({
@@ -109,7 +169,6 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
       );
     }
 
-    // Add ephemeral containers
     if (activePod.spec?.ephemeralContainers) {
       containers.push(
         ...activePod.spec.ephemeralContainers.map((container: { name: string }) => ({
@@ -122,51 +181,30 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
     return containers;
   }, [activePod]);
 
-  // Format logs
+  // Format logs for static mode only
   const formattedLogs = useMemo(() => {
     if (!logs) return "";
-
-    const formatLogLine = (logLine: string): string => {
-      if (!logsTimestamps) {
-        return logLine.replace(/\[\[(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.?\d*Z?)\]\]\s+/gm, "");
-      }
-
-      return logLine.replace(/\[\[(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.?\d*Z?)\]\]\s+/gm, (match, timestamp) => {
-        try {
-          const date = new Date(timestamp);
-          const localeTime = date.toLocaleString(undefined, {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: false,
-          });
-          return `[ ${localeTime} ] `;
-        } catch {
-          return match;
-        }
-      });
-    };
-
-    return formatLogLine(logs);
+    return formatLogLine(logs, logsTimestamps);
   }, [logs, logsTimestamps]);
 
   // Generate download filename
-  const downloadFilename = useMemo(() => {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const sanitizeName = (name: string) => name.replace(/[^a-zA-Z0-9\-_]/g, "_");
-    const podName = sanitizeName(activePod?.metadata?.name || "pod");
-    const containerName = sanitizeName(activeContainer);
-    return `${podName}-${containerName}-${timestamp}.log`;
+  const getDownloadFilename = useCallback(() => {
+    const sanitize = (name: string) => name.replace(/[^a-zA-Z0-9\-_]/g, "_");
+    const prefix = `${sanitize(activePod?.metadata?.name || "pod")}-${sanitize(activeContainer)}`;
+    return generateTimestampedLogFilename(prefix);
   }, [activePod?.metadata?.name, activeContainer]);
 
-  // Event handlers
+  // Copy/download use raw lines ref in streaming mode, formatted string in static mode
+  const getExportContent = useCallback(() => {
+    if (follow && rawLinesRef.current.length > 0) {
+      return rawLinesRef.current.map((line) => formatLogLine(line, logsTimestamps)).join("\n");
+    }
+    return formattedLogs;
+  }, [follow, formattedLogs, logsTimestamps]);
+
   const handlePodChange = (value: string) => {
     setUserSelectedPodName(value);
     const pod = pods.find((p: Pod) => p.metadata?.name === value);
-    // Reset container selection when pod changes
     if (pod?.spec?.containers?.length) {
       setActiveContainer(pod.spec.containers[0].name);
     }
@@ -177,14 +215,13 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
   };
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(formattedLogs);
+    await navigator.clipboard.writeText(getExportContent());
   };
 
   const handleDownload = () => {
-    downloadTextFile(formattedLogs, downloadFilename);
+    downloadTextFile(getExportContent(), getDownloadFilename());
   };
 
-  // Early return if no pods
   if (!pods.length) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -193,7 +230,6 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
     );
   }
 
-  // Determine loading state and error message
   function getPhaseDetails(phase: string | undefined): string {
     switch (phase) {
       case "Pending":
@@ -227,6 +263,8 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
     const errorText = error instanceof Error ? error.message : String(error);
     return `${errorText}. Will retry automatically when the container is ready.`;
   }
+
+  const hasExportContent = follow ? rawLinesRef.current.length > 0 : !!formattedLogs;
 
   const renderControls = () => (
     <div className="flex w-full items-end justify-between gap-4">
@@ -275,7 +313,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
 
       <div className="flex gap-1 pb-1">
         <Tooltip title="Copy to clipboard">
-          <Button variant="secondary" size="icon" onClick={handleCopy} disabled={!formattedLogs} className="h-8 w-8">
+          <Button variant="secondary" size="icon" onClick={handleCopy} disabled={!hasExportContent} className="h-8 w-8">
             <Copy className="h-4 w-4" />
           </Button>
         </Tooltip>
@@ -284,7 +322,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
             variant="secondary"
             size="icon"
             onClick={handleDownload}
-            disabled={!formattedLogs}
+            disabled={!hasExportContent}
             className="h-8 w-8"
           >
             <Download className="h-4 w-4" />
@@ -296,7 +334,9 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
 
   return (
     <LogViewer
-      content={formattedLogs}
+      ref={logViewerRef}
+      streaming={follow}
+      content={follow ? undefined : formattedLogs}
       isLoading={isLoading || !podReadyForLogs}
       error={getErrorMessage()}
       renderControls={renderControls}

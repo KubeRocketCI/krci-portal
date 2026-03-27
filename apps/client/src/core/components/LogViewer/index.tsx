@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useRef, useImperativeHandle, forwardRef, useState } from "react";
 import { LazyLog } from "@melloware/react-logviewer";
 import { Card } from "@/core/components/ui/card";
 import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
 import { useTheme } from "@/core/hooks/useTheme";
 
 export interface LogViewerProps {
-  /** Log content - passed directly, preserved as-is with ANSI colors */
-  content: string;
+  /** Log content for static mode (one-time render). Ignored when streaming=true. */
+  content?: string;
+  /** Enable streaming mode — use appendLines() via ref for incremental updates. */
+  streaming?: boolean;
   /** Show loading overlay */
   isLoading?: boolean;
   /** Error message to display */
@@ -19,6 +21,11 @@ export interface LogViewerProps {
   errorMessagePrefix?: string;
   /** Empty state message */
   emptyMessage?: string;
+}
+
+export interface LogViewerRef {
+  appendLines: (lines: string[]) => void;
+  clear: () => void;
 }
 
 /**
@@ -131,88 +138,120 @@ const logViewerStyles = `
   }
 `;
 
+const lazyLogProps = {
+  enableSearch: true,
+  enableHotKeys: true,
+  caseInsensitive: true,
+  enableLineNumbers: true,
+  enableLinks: true,
+  selectableLines: true,
+  wrapLines: false,
+  height: "auto" as const,
+  rowHeight: 19,
+  lineClassName: "log-viewer-line",
+  highlightLineClassName: "log-viewer-highlight",
+};
+
 /**
  * LogViewer - Generic log viewer component
  *
- * Uses @melloware/react-logviewer (LazyLog) which provides:
- * - Built-in search (Ctrl+F, Enter for next, Shift+Enter for previous)
- * - ANSI color support
- * - Virtualized rendering for large logs
- * - Line numbers
- * - Line selection
- *
- * Can be used for various log types: Pod logs, Tekton results, etc.
+ * Supports two modes:
+ * - **Static** (default): Pass `content` string. Best for historical/completed logs.
+ * - **Streaming** (`streaming={true}`): Use `appendLines()` via ref for incremental updates.
+ *   Avoids full re-parse, O(delta) per update. Best for live/follow logs.
  */
-export const LogViewer: React.FC<LogViewerProps> = ({
-  content,
-  isLoading = false,
-  error,
-  renderControls,
-  loadingMessage = "Loading logs...",
-  errorMessagePrefix = "Failed to load logs",
-  emptyMessage = "No logs available",
-}) => {
-  const theme = useTheme();
-  const hasContent = !!content;
-  const showOverlay = isLoading || !!error || !hasContent;
+export const LogViewer = forwardRef<LogViewerRef, LogViewerProps>(
+  (
+    {
+      content,
+      streaming = false,
+      isLoading = false,
+      error,
+      renderControls,
+      loadingMessage = "Loading logs...",
+      errorMessagePrefix = "Failed to load logs",
+      emptyMessage = "No logs available",
+    },
+    ref
+  ) => {
+    const theme = useTheme();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const lazyLogRef = useRef<any>(null);
+    const [hasStreamContent, setHasStreamContent] = useState(false);
+    const hasStreamContentRef = useRef(false);
 
-  return (
-    <>
-      <style>{logViewerStyles}</style>
+    useImperativeHandle(
+      ref,
+      () => ({
+        appendLines: (lines: string[]) => {
+          if (lines.length > 0) {
+            if (!hasStreamContentRef.current) {
+              hasStreamContentRef.current = true;
+              setHasStreamContent(true);
+            }
+            lazyLogRef.current?.appendLines(lines);
+          }
+        },
+        clear: () => {
+          hasStreamContentRef.current = false;
+          setHasStreamContent(false);
+          lazyLogRef.current?.clear();
+        },
+      }),
+      []
+    );
 
-      <div className="flex h-full min-h-0 flex-col gap-4">
-        {/* Custom Controls */}
-        {renderControls && <div>{renderControls()}</div>}
+    const hasContent = streaming ? hasStreamContent : !!content;
+    const showOverlay = isLoading || !!error || !hasContent;
 
-        {/* Log Viewer Card */}
-        <Card className="relative flex min-h-0 min-h-[45svh] flex-1 flex-col overflow-hidden">
-          {/* Overlay for loading/error/empty states */}
-          {showOverlay && (
-            <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center">
-              <div className="flex flex-col items-center gap-3">
-                {isLoading && (
-                  <>
-                    <LoadingSpinner size={32} />
-                    <span className="text-muted-foreground text-sm">{loadingMessage}</span>
-                  </>
-                )}
-                {error && !isLoading && (
-                  <div className="flex flex-col items-center gap-2 text-center">
-                    <span className="text-destructive text-sm font-medium">{errorMessagePrefix}</span>
-                    <span className="text-muted-foreground text-xs">{error}</span>
-                  </div>
-                )}
-                {!isLoading && !error && !hasContent && (
-                  <span className="text-muted-foreground text-sm">{emptyMessage}</span>
-                )}
+    return (
+      <>
+        <style>{logViewerStyles}</style>
+
+        <div className="flex h-full min-h-0 flex-col gap-4">
+          {/* Custom Controls */}
+          {renderControls && <div>{renderControls()}</div>}
+
+          {/* Log Viewer Card */}
+          <Card className="relative flex min-h-0 min-h-[45svh] flex-1 flex-col overflow-hidden">
+            {/* Overlay for loading/error/empty states */}
+            {showOverlay && (
+              <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-3">
+                  {isLoading && (
+                    <>
+                      <LoadingSpinner size={32} />
+                      <span className="text-muted-foreground text-sm">{loadingMessage}</span>
+                    </>
+                  )}
+                  {error && !isLoading && (
+                    <div className="flex flex-col items-center gap-2 text-center">
+                      <span className="text-destructive text-sm font-medium">{errorMessagePrefix}</span>
+                      <span className="text-muted-foreground text-xs">{error}</span>
+                    </div>
+                  )}
+                  {!isLoading && !error && !hasContent && (
+                    <span className="text-muted-foreground text-sm">{emptyMessage}</span>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* LazyLog */}
-          {hasContent && (
+            {/* LazyLog — streaming or static mode */}
             <div className="log-viewer-container min-h-0 flex-1">
-              <LazyLog
-                key={theme}
-                text={content}
-                enableSearch
-                enableHotKeys
-                caseInsensitive
-                enableLineNumbers
-                enableLinks
-                selectableLines
-                wrapLines={false}
-                height="auto"
-                rowHeight={19}
-                lineClassName="log-viewer-line"
-                highlightLineClassName="log-viewer-highlight"
-              />
+              {streaming ? (
+                <LazyLog key={`stream-${theme}`} ref={lazyLogRef} external follow extraLines={1} {...lazyLogProps} />
+              ) : (
+                hasContent && <LazyLog key={theme} text={content || ""} {...lazyLogProps} />
+              )}
             </div>
-          )}
-        </Card>
-      </div>
-    </>
-  );
-};
+          </Card>
+        </div>
+      </>
+    );
+  }
+);
+
+LogViewer.displayName = "LogViewer";
 
 export default LogViewer;
