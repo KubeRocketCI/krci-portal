@@ -1,20 +1,21 @@
 # krci-portal
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.0](https://img.shields.io/badge/AppVersion-0.1.0-informational?style=flat-square)
+![Version: 0.2.0-SNAPSHOT](https://img.shields.io/badge/Version-0.2.0--SNAPSHOT-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.2.0-SNAPSHOT](https://img.shields.io/badge/AppVersion-0.2.0--SNAPSHOT-informational?style=flat-square)
 
-A Helm chart for Kubernetes
+A Helm chart for KubeRocketCI Portal
 
-**Homepage:** <https://github.com/epmd-edp/other-npm-krci-portal.git>
+**Homepage:** <https://docs.kuberocketci.io/>
 
 ## Maintainers
 
 | Name | Email | Url |
 | ---- | ------ | --- |
-| DEV Team |  |  |
+| epmd-edp | <SupportEPMD-EDP@epam.com> | <https://solutionshub.epam.com/solution/kuberocketci> |
+| sergk |  | <https://github.com/SergK> |
 
 ## Source Code
 
-* <https://github.com/epmd-edp/other-npm-krci-portal.git>
+* <https://github.com/KubeRocketCI/krci-portal>
 
 ## Values
 

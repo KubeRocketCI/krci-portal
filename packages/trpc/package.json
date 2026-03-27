@@ -1,6 +1,6 @@
 {
   "name": "@my-project/trpc",
-  "version": "1.0.0",
+  "version": "0.2.0-SNAPSHOT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
