@@ -1,6 +1,6 @@
 {
   "name": "krci",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Monorepo KRCI Portal",
   "scripts": {
     "dev": "concurrently -k -n SHARED,TRPC,SERVER,CLIENT -c yellow,magenta,blue,green \"pnpm --filter=shared build:watch\" \"pnpm --filter=trpc build:watch\" \"pnpm --filter=server dev\" \"pnpm --filter=client dev\"",
