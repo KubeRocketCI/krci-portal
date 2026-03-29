@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import type { TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc";
 import {
   GitFusionRepositoryListResponse,
   GitFusionOrganizationListResponse,
@@ -13,6 +14,20 @@ import {
 // =============================================================================
 
 const DEFAULT_TIMEOUT_MS = 30_000; // 30 seconds
+
+const HTTP_STATUS_TO_TRPC_CODE: Record<number, TRPC_ERROR_CODE_KEY> = {
+  400: "BAD_REQUEST",
+  401: "FORBIDDEN", // Not UNAUTHORIZED — that triggers frontend login redirect; GitFusion 401 means the git provider token is invalid, not the portal session
+  403: "FORBIDDEN",
+  404: "NOT_FOUND",
+  408: "TIMEOUT",
+  409: "CONFLICT",
+  429: "TOO_MANY_REQUESTS",
+};
+
+function getTRPCErrorCode(httpStatusCode: number): TRPC_ERROR_CODE_KEY {
+  return HTTP_STATUS_TO_TRPC_CODE[httpStatusCode] ?? "INTERNAL_SERVER_ERROR";
+}
 
 // =============================================================================
 // Configuration
@@ -155,7 +170,10 @@ export class GitFusionClient {
       return (await response.json()) as T;
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
-        throw new Error(`GitFusion API request timed out after ${this.timeoutMs}ms`);
+        throw new TRPCError({
+          code: "TIMEOUT",
+          message: `GitFusion API request timed out after ${this.timeoutMs}ms`,
+        });
       }
       throw error;
     } finally {
@@ -172,7 +190,6 @@ export class GitFusionClient {
     }
 
     const errorMessage = `GitFusion API request failed: ${response.status} ${response.statusText}`;
-    const fullError = errorText ? `${errorMessage}\nResponse: ${errorText}` : errorMessage;
 
     console.error(`[GitFusion] Error - URL: ${url}`);
     console.error(`[GitFusion] Status: ${response.status} ${response.statusText}`);
@@ -180,7 +197,10 @@ export class GitFusionClient {
       console.error(`[GitFusion] Response Body: ${errorText}`);
     }
 
-    throw new Error(fullError);
+    throw new TRPCError({
+      code: getTRPCErrorCode(response.status),
+      message: errorText ? `${errorMessage}\nResponse: ${errorText}` : errorMessage,
+    });
   }
 
   /**
