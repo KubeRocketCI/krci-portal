@@ -39,7 +39,7 @@ export const TRPCProvider: React.FC<{ children: React.ReactNode }> = ({ children
               false: httpBatchLink({
                 url: "/api",
                 headers: { credentials: "include" },
-                maxItems: 1,
+                maxItems: 10,
                 fetch: async (url, options) => {
                   return customFetch(url, {
                     ...options,

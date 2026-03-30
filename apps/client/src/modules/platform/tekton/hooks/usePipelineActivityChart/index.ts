@@ -47,6 +47,8 @@ export interface UsePipelineActivityChartOptions {
   codebase?: string;
   /** Enable/disable the query (default: true) */
   enabled?: boolean;
+  /** Override refetch interval in ms, or false to disable polling */
+  refetchInterval?: number | false;
 }
 
 /** Granularity mapping: time range -> group_by parameter */
@@ -142,7 +144,7 @@ export function usePipelineActivityChart(namespace: string, options: UsePipeline
   const trpc = useTRPCClient();
   const clusterName = useClusterStore((state) => state.clusterName);
 
-  const { timeRange = TIME_RANGES.TODAY, codebase, enabled = true } = options;
+  const { timeRange = TIME_RANGES.TODAY, codebase, enabled = true, refetchInterval = QUERY_REFETCH_INTERVAL } = options;
 
   const granularity = GRANULARITY_MAP[timeRange];
   const startTimestamp = getTimeRangeStartTimestamp(timeRange);
@@ -164,7 +166,7 @@ export function usePipelineActivityChart(namespace: string, options: UsePipeline
       }),
     enabled: enabled && Boolean(namespace),
     staleTime: QUERY_STALE_TIME,
-    refetchInterval: QUERY_REFETCH_INTERVAL,
+    refetchInterval,
     select: (data): ChartDataPoint[] => fillGaps(data.summary || [], startTimestamp, granularity),
   });
 }

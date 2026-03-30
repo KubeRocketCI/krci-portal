@@ -33,6 +33,7 @@ export function HistoryStepLogs({ taskRunName, stepName, resultUid, namespace }:
         stepName,
       }),
     enabled: !!taskRunName && !!resultUid,
+    staleTime: Infinity,
   });
 
   if (logsQuery.isLoading) {
