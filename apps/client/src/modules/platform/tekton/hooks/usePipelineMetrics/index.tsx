@@ -40,6 +40,8 @@ export interface UsePipelineMetricsOptions {
   summary?: string;
   /** Enable/disable the query */
   enabled?: boolean;
+  /** Override refetch interval in ms, or false to disable polling */
+  refetchInterval?: number | false;
 }
 
 export interface NormalizedPipelineMetrics {
@@ -92,6 +94,7 @@ export function usePipelineMetrics(namespace: string, options: UsePipelineMetric
     groupBy,
     summary = DEFAULT_SUMMARY_METRICS,
     enabled = true,
+    refetchInterval = DEFAULT_REFETCH_INTERVAL,
   } = options;
 
   // Build filter expression
@@ -113,7 +116,7 @@ export function usePipelineMetrics(namespace: string, options: UsePipelineMetric
       }),
     enabled: enabled && Boolean(namespace),
     staleTime: DEFAULT_STALE_TIME,
-    refetchInterval: DEFAULT_REFETCH_INTERVAL,
+    refetchInterval,
     select: (data): NormalizedPipelineMetrics => {
       const items = data.summary || [];
       const firstItem = items[0] ?? null;

@@ -131,15 +131,19 @@ export const getPipelineRunLogsProcedure = protectedProcedure
     const childRefs = pipelineRun.status?.childReferences || [];
     const logParts: string[] = [];
 
-    // Fetch logs for each TaskRun
-    for (const childRef of childRefs) {
-      try {
-        const taskLogs = await processTaskRunLogs(client, childRef.pipelineTaskName, childRef.name, resultUid);
-        logParts.push(...taskLogs);
-      } catch (error) {
-        // Handle errors for individual TaskRuns
+    // Fetch logs for all TaskRuns in parallel; allSettled preserves order and isolates failures
+    const results = await Promise.allSettled(
+      childRefs.map((childRef) => processTaskRunLogs(client, childRef.pipelineTaskName, childRef.name, resultUid))
+    );
+
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+      const childRef = childRefs[i];
+      if (result.status === "fulfilled") {
+        logParts.push(...result.value);
+      } else {
         logParts.push(formatTaskHeader(childRef.pipelineTaskName, childRef.name, false));
-        logParts.push(formatErrorMessage(error instanceof Error ? error.message : "Unknown error"));
+        logParts.push(formatErrorMessage(result.reason instanceof Error ? result.reason.message : "Unknown error"));
       }
     }
 

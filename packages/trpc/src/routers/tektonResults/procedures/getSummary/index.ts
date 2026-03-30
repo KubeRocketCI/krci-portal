@@ -1,8 +1,63 @@
 import { z } from "zod";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createTektonResultsClient } from "../../../../clients/tektonResults/index.js";
-import { DEFAULT_SUMMARY_METRICS } from "@my-project/shared";
+import { DEFAULT_SUMMARY_METRICS, TektonSummaryResponse } from "@my-project/shared";
 import { tektonInputSchemas } from "../../utils.js";
+
+/**
+ * Server-side TTL cache for getSummary results.
+ *
+ * Each unique (namespace, summary, groupBy, filter, orderBy) combination is cached
+ * for CACHE_TTL_MS. At high VU counts, many concurrent users requesting the same
+ * namespace summary within the same window share a single upstream DB aggregation.
+ */
+const CACHE_TTL_MS = 55_000;
+const CACHE_MAX_ENTRIES = 200;
+const CACHE_EVICT_COUNT = 20;
+
+interface SummaryCacheEntry {
+  data: TektonSummaryResponse;
+  cachedAt: number;
+}
+
+const summaryCache = new Map<string, SummaryCacheEntry>();
+
+export function clearSummaryCache(): void {
+  summaryCache.clear();
+}
+
+function buildCacheKey(
+  namespace: string,
+  summary: string,
+  groupBy: string | undefined,
+  filter: string | undefined,
+  orderBy: string | undefined
+): string {
+  return `${namespace}:${summary}:${groupBy ?? ""}:${filter ?? ""}:${orderBy ?? ""}`;
+}
+
+function getFromCache(key: string): TektonSummaryResponse | null {
+  const entry = summaryCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.cachedAt > CACHE_TTL_MS) {
+    summaryCache.delete(key);
+    return null;
+  }
+  return entry.data;
+}
+
+function setInCache(key: string, data: TektonSummaryResponse): void {
+  if (summaryCache.size >= CACHE_MAX_ENTRIES) {
+    // Evict the oldest CACHE_EVICT_COUNT entries
+    const keys = summaryCache.keys();
+    for (let i = 0; i < CACHE_EVICT_COUNT; i++) {
+      const next = keys.next();
+      if (next.done) break;
+      summaryCache.delete(next.value);
+    }
+  }
+  summaryCache.set(key, { data, cachedAt: Date.now() });
+}
 
 /**
  * Valid summary metric names per Tekton Results API
@@ -128,12 +183,14 @@ export const getSummaryProcedure = protectedProcedure
   )
   .query(async ({ input }) => {
     const { namespace, summary, groupBy, filter, orderBy } = input;
-    const client = createTektonResultsClient(namespace);
 
-    return await client.getSummary({
-      summary,
-      groupBy,
-      filter,
-      orderBy,
-    });
+    const cacheKey = buildCacheKey(namespace, summary, groupBy, filter, orderBy);
+    const cached = getFromCache(cacheKey);
+    if (cached) return cached;
+
+    const client = createTektonResultsClient(namespace);
+    const result = await client.getSummary({ summary, groupBy, filter, orderBy });
+
+    setInCache(cacheKey, result);
+    return result;
   });

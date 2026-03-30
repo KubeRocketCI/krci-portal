@@ -57,6 +57,7 @@ export function PipelineActivityTrend() {
   const { namespace } = routeOverviewDetails.useParams();
   const { data, isLoading, isError } = usePipelineActivityChart(namespace, {
     timeRange: TIME_RANGES.WEEK,
+    refetchInterval: 5 * 60_000,
   });
 
   const legend = (
