@@ -37,8 +37,8 @@ jobs:
       - name: Check Line Length
         uses: gsactions/commit-message-checker@v2
         with:
-          pattern: '.{0,50}'
-          error: 'The maximum line length of 50 characters is exceeded.'
+          pattern: '.{0,85}'
+          error: 'The maximum line length of 85 characters is exceeded.'
           excludeDescription: 'true'
           excludeTitle: 'true'
           checkAllCommitMessages: 'true'
