@@ -5,11 +5,17 @@ import { DEFAULT_SUMMARY_METRICS, TektonSummaryResponse } from "@my-project/shar
 import { tektonInputSchemas } from "../../utils.js";
 
 /**
- * Server-side TTL cache for getSummary results.
+ * Server-side TTL cache for getSummary results with singleflight coalescing.
  *
- * Each unique (namespace, summary, groupBy, filter, orderBy) combination is cached
- * for CACHE_TTL_MS. At high VU counts, many concurrent users requesting the same
- * namespace summary within the same window share a single upstream DB aggregation.
+ * Two-layer protection against DB saturation:
+ * 1. Settled cache: serves results for CACHE_TTL_MS after the last fetch.
+ * 2. In-flight map: coalesces concurrent requests that arrive while a fetch is
+ *    already running (thundering-herd / cache-stampede prevention). All callers
+ *    that arrive during the in-flight window await the same Promise and receive
+ *    the result without triggering additional DB queries.
+ *
+ * Eviction uses LRU order: Map insertion order is maintained, and a cache hit
+ * moves the entry to the tail so the head is always the least-recently-used key.
  */
 const CACHE_TTL_MS = 55_000;
 const CACHE_MAX_ENTRIES = 200;
@@ -20,20 +26,27 @@ interface SummaryCacheEntry {
   cachedAt: number;
 }
 
+// Settled results cache (LRU via Map insertion order)
 const summaryCache = new Map<string, SummaryCacheEntry>();
+const inflight = new Map<string, Promise<TektonSummaryResponse>>();
 
 export function clearSummaryCache(): void {
   summaryCache.clear();
+  inflight.clear();
 }
 
 function buildCacheKey(
+  userSub: string,
   namespace: string,
   summary: string,
   groupBy: string | undefined,
   filter: string | undefined,
   orderBy: string | undefined
 ): string {
-  return `${namespace}:${summary}:${groupBy ?? ""}:${filter ?? ""}:${orderBy ?? ""}`;
+  // JSON.stringify produces an unambiguous key: any field value that contains the
+  // separator character (e.g. ":" in OIDC sub claims or CEL timestamp literals)
+  // cannot collide with a different combination of fields.
+  return JSON.stringify([userSub, namespace, summary, groupBy ?? "", filter ?? "", orderBy ?? ""]);
 }
 
 function getFromCache(key: string): TektonSummaryResponse | null {
@@ -43,12 +56,15 @@ function getFromCache(key: string): TektonSummaryResponse | null {
     summaryCache.delete(key);
     return null;
   }
+  // LRU: move accessed entry to tail
+  summaryCache.delete(key);
+  summaryCache.set(key, entry);
   return entry.data;
 }
 
 function setInCache(key: string, data: TektonSummaryResponse): void {
+  // LRU eviction: head of Map is least-recently-used
   if (summaryCache.size >= CACHE_MAX_ENTRIES) {
-    // Evict the oldest CACHE_EVICT_COUNT entries
     const keys = summaryCache.keys();
     for (let i = 0; i < CACHE_EVICT_COUNT; i++) {
       const next = keys.next();
@@ -177,20 +193,44 @@ export const getSummaryProcedure = protectedProcedure
       namespace: tektonInputSchemas.namespace,
       summary: summarySchema,
       groupBy: groupBySchema,
-      filter: z.string().optional(),
+      filter: z
+        .string()
+        .optional()
+        .refine(
+          (val) => {
+            if (!val) return true;
+            // Allow CEL expression characters; reject shell metacharacters and backticks
+            return /^[a-zA-Z0-9\s_.\[\]()'",!=<>&|+\-*/%:]+$/.test(val);
+          },
+          { message: "Invalid filter: contains disallowed characters" }
+        ),
       orderBy: orderBySchema,
     })
   )
-  .query(async ({ input }) => {
+  .query(async ({ input, ctx }) => {
     const { namespace, summary, groupBy, filter, orderBy } = input;
+    const userSub = ctx.session.user?.data?.sub ?? "anonymous";
 
-    const cacheKey = buildCacheKey(namespace, summary, groupBy, filter, orderBy);
+    const cacheKey = buildCacheKey(userSub, namespace, summary, groupBy, filter, orderBy);
     const cached = getFromCache(cacheKey);
     if (cached) return cached;
 
-    const client = createTektonResultsClient(namespace);
-    const result = await client.getSummary({ summary, groupBy, filter, orderBy });
+    if (inflight.has(cacheKey)) {
+      return inflight.get(cacheKey)!;
+    }
 
-    setInCache(cacheKey, result);
-    return result;
+    const pending = (async () => {
+      const client = createTektonResultsClient(namespace);
+      return client.getSummary({ summary, groupBy, filter, orderBy });
+    })();
+
+    inflight.set(cacheKey, pending);
+
+    try {
+      const result = await pending;
+      setInCache(cacheKey, result);
+      return result;
+    } finally {
+      inflight.delete(cacheKey);
+    }
   });

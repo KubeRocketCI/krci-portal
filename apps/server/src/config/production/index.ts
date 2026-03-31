@@ -35,7 +35,11 @@ export class ProductionFastifyServer {
       "TEKTON_RESULTS_URL",
     ]);
 
-    this.fastify = Fastify({ logger: true, trustProxy: true });
+    this.fastify = Fastify({
+      logger: true,
+      trustProxy: true,
+      maxParamLength: 5000,
+    });
   }
 
   static validateRequiredEnv(keys: string[]) {

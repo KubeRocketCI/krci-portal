@@ -34,7 +34,7 @@ export class LocalFastifyServer {
       "TEKTON_RESULTS_URL",
     ]);
 
-    this.fastify = Fastify({ logger: false });
+    this.fastify = Fastify({ logger: false, maxParamLength: 5000 });
   }
 
   static validateRequiredEnv(keys: string[]) {

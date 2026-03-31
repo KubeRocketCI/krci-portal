@@ -12,6 +12,7 @@ import {
   TektonResultsPipelineType,
   getTimeRangeStartISO,
 } from "@my-project/shared";
+import { escapeCELString } from "@/modules/platform/tekton/utils/celFilters";
 
 /**
  * Build time range filter based on selected range (UTC-aligned)
@@ -54,7 +55,7 @@ export const buildPipelineRunTypeFilter = (): string => {
  * @returns CEL filter expression
  */
 export const buildCodebaseFilter = (codebase: string): string => {
-  return `data.metadata.labels['${TEKTON_RESULT_LABELS.CODEBASE}'] == '${codebase}'`;
+  return `data.metadata.labels['${TEKTON_RESULT_LABELS.CODEBASE}'] == '${escapeCELString(codebase)}'`;
 };
 
 /**

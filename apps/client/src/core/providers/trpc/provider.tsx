@@ -1,7 +1,7 @@
 import React, { useMemo, useRef } from "react";
 import type { AppRouter } from "@my-project/trpc";
 import type { TRPCClient } from "@trpc/client";
-import { createTRPCClient, createWSClient, httpBatchLink, splitLink, wsLink } from "@trpc/client";
+import { createTRPCClient, createWSClient, httpBatchStreamLink, splitLink, wsLink } from "@trpc/client";
 import { AuthContext } from "../../auth/provider/context";
 import { TRPCContext } from "./context";
 import { trpcHttpClient } from "./http-client";
@@ -36,7 +36,7 @@ export const TRPCProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   url: "/api",
                 }),
               }),
-              false: httpBatchLink({
+              false: httpBatchStreamLink({
                 url: "/api",
                 headers: { credentials: "include" },
                 maxItems: 10,

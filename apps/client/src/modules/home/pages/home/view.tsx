@@ -93,7 +93,7 @@ function DashboardPromo({
   clusterParams: { clusterName: string; namespace: string };
   namespace: string;
 }) {
-  const { data, isLoading } = usePipelineMetrics(namespace, { refetchInterval: 5 * 60_000 });
+  const { data, isLoading } = usePipelineMetrics(namespace, { refetchInterval: 2 * 60_000 });
 
   const total = data?.summary?.total ?? 0;
   const successRate = data?.successRate;
