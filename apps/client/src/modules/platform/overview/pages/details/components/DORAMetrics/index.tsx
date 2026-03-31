@@ -14,7 +14,7 @@ export function DORAMetrics() {
   const deployMetrics = usePipelineMetrics(namespace, {
     timeRange: TIME_RANGES.MONTH,
     pipelineType: PIPELINE_TYPES.DEPLOY,
-    refetchInterval: 10 * 60_000,
+    refetchInterval: 5 * 60_000,
   });
 
   const deployTrend = usePipelineActivityChart(namespace, {
