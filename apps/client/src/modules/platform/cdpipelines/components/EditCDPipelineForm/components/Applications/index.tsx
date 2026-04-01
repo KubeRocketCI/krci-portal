@@ -40,23 +40,12 @@ export const Applications: React.FC = () => {
     (state: { values: EditCDPipelineFormValues }) => state.values.ui_applicationsFieldArray || []
   );
 
-  // Sync applications field array when selection changes
+  // Sync applications field array when selection changes.
+  // Always rebuild inputDockerStreams from the field array so the two arrays
+  // stay 1:1 aligned — this heals any pre-existing misalignment in the spec.
   const handleApplicationsChange = React.useCallback(
     (selectedApps: string[]) => {
       const currentFieldArray = fieldArrayValue || [];
-
-      // Remove branches from inputDockerStreams for apps that were deselected
-      const removedApps = currentFieldArray.filter((app) => !selectedApps.includes(app.appName));
-      if (removedApps.length > 0) {
-        const currentStreams = (form.getFieldValue("inputDockerStreams") as string[]) || [];
-        const removedAppNames = new Set(removedApps.map((app) => app.appName));
-        // Remove by position using the current field array order (not by branch value)
-        const newStreams = currentStreams.filter((_, i) => {
-          const appAtPosition = currentFieldArray[i];
-          return appAtPosition && !removedAppNames.has(appAtPosition.appName);
-        });
-        form.setFieldValue("inputDockerStreams", newStreams);
-      }
 
       const newFieldArray = selectedApps.map((appName) => {
         const existing = currentFieldArray.find((app) => app.appName === appName);
@@ -67,6 +56,12 @@ export const Applications: React.FC = () => {
       });
 
       form.setFieldValue("ui_applicationsFieldArray", newFieldArray);
+
+      // Rebuild inputDockerStreams from field array to guarantee index alignment
+      form.setFieldValue(
+        "inputDockerStreams",
+        newFieldArray.map((item) => item.appBranch)
+      );
 
       // Sync the applications field (required for submission)
       form.setFieldValue("applications", selectedApps);
