@@ -1,5 +1,4 @@
 import { AuthorAvatar } from "@/core/components/AuthorAvatar";
-import { CopyButton } from "@/core/components/CopyButton";
 import { SavedTableSettings } from "@/core/components/Table/components/TableSettings/types";
 import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { TableColumn } from "@/core/components/Table/types";
@@ -17,7 +16,6 @@ import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { PATH_PIPELINE_DETAILS_FULL } from "../../../pages/pipeline-details/route";
-import { PipelineRunResults } from "../components/PipelineRunResults";
 import { Actions } from "../components/Actions";
 import { columnNames } from "../constants";
 import { PipelineRunGraphDialog } from "../../../dialogs/PipelineRunGraph";
@@ -187,38 +185,6 @@ export const useColumns = ({
         cell: {
           baseWidth: 10,
           ...getSyncedColumnData(tableSettings, columnNames.BRANCH),
-        },
-      },
-      {
-        id: columnNames.RESULTS,
-        label: "Results",
-        data: {
-          render: ({ data }) => {
-            const vcsTag = data?.status?.results?.find(
-              (el: { name: string; value?: string }) => el.name === "VCS_TAG"
-            )?.value;
-
-            if (!vcsTag) {
-              return null;
-            }
-
-            return (
-              <Tooltip title={<PipelineRunResults pipelineRun={data} />} delayDuration={500}>
-                <div className="flex w-full items-center gap-0.5">
-                  <span className="border-muted min-w-0 flex-1 overflow-hidden border-b border-dashed text-sm text-ellipsis whitespace-nowrap">
-                    {vcsTag}
-                  </span>
-                  <div className="flex-shrink-0">
-                    <CopyButton text={vcsTag} size="small" />
-                  </div>
-                </div>
-              </Tooltip>
-            );
-          },
-        },
-        cell: {
-          baseWidth: 9,
-          ...getSyncedColumnData(tableSettings, columnNames.RESULTS),
         },
       },
       {

@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { normalizeHistoryPipelineRun, normalizeHistoryTaskRun, normalizeHistoryTaskRuns } from "./adapters.js";
-import type { DecodedPipelineRun, DecodedTaskRun } from "./types.js";
+import {
+  normalizeHistoryPipelineRun,
+  normalizeHistoryTaskRun,
+  normalizeHistoryTaskRuns,
+  normalizeResultToPipelineRun,
+} from "./adapters.js";
+import type { DecodedPipelineRun, DecodedTaskRun, TektonResult } from "./types.js";
+import { tektonResultAnnotations } from "./annotations.js";
+import { pipelineRunLabels } from "../k8s/groups/Tekton/PipelineRun/labels.js";
+import { RESULT_ANNOTATIONS_KEY } from "../k8s/groups/Tekton/PipelineRun/utils/resultAnnotations/index.js";
 
 // Realistic mock data matching real Tekton Results API responses
 
@@ -21,7 +29,7 @@ const mockDecodedPipelineRun: DecodedPipelineRun = {
       "app.edp.epam.com/git-branch": "main",
       "app.edp.epam.com/git-change-number": "2843",
       "app.edp.epam.com/git-change-url": "https://gitlab.example.com/merge_requests/2843",
-      "app.edp.epam.com/git-author": "Oleksandr_Peresunko",
+      "app.edp.epam.com/git-author": "John_Doe",
       "app.edp.epam.com/git-avatar": "https://gitlab.example.com/avatar.png",
     },
     creationTimestamp: "2026-03-08T12:10:00Z",
@@ -232,7 +240,7 @@ describe("normalizeHistoryPipelineRun", () => {
 
     expect(result.metadata.annotations?.["app.edp.epam.com/git-branch"]).toBe("main");
     expect(result.metadata.annotations?.["app.edp.epam.com/git-change-number"]).toBe("2843");
-    expect(result.metadata.annotations?.["app.edp.epam.com/git-author"]).toBe("Oleksandr_Peresunko");
+    expect(result.metadata.annotations?.["app.edp.epam.com/git-author"]).toBe("John_Doe");
   });
 
   it("should lowercase condition reasons to match K8s enum", () => {
@@ -467,5 +475,267 @@ describe("normalizeHistoryTaskRuns", () => {
     expect(results[0].metadata.labels).toEqual({});
     expect(results[0].status?.steps).toBeUndefined();
     expect(results[0].status?.conditions).toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// normalizeResultToPipelineRun
+// ---------------------------------------------------------------------------
+
+const mockTektonResult: TektonResult = {
+  uid: "result-uid-001",
+  name: "edp-delivery/results/result-uid-001",
+  create_time: "2026-03-10T10:00:00Z",
+  update_time: "2026-03-10T10:15:00Z",
+  summary: {
+    record: "edp-delivery/results/result-uid-001/records/record-uid-001",
+    type: "tekton.dev/v1.PipelineRun",
+    status: "SUCCESS",
+    start_time: "2026-03-10T10:00:01Z",
+    end_time: "2026-03-10T10:14:50Z",
+  },
+  annotations: {
+    [tektonResultAnnotations.objectMetadataName]: "review-codemie-main-abc12",
+    [tektonResultAnnotations.pipeline]: "gitlab-poetry-fastapi-app-review",
+    [tektonResultAnnotations.codebase]: "codemie",
+    [tektonResultAnnotations.pipelineType]: "review",
+    [tektonResultAnnotations.gitBranch]: "main",
+    [tektonResultAnnotations.gitAuthor]: "John_Doe",
+    [tektonResultAnnotations.gitAvatar]: "https://gitlab.example.com/avatar.png",
+    [tektonResultAnnotations.gitChangeNumber]: "2843",
+    [tektonResultAnnotations.gitChangeUrl]: "https://gitlab.example.com/merge_requests/2843",
+  },
+};
+
+describe("normalizeResultToPipelineRun", () => {
+  it("should map SUCCESS status to succeeded condition", () => {
+    const result = normalizeResultToPipelineRun(mockTektonResult, "edp-delivery");
+
+    expect(result.status?.conditions?.[0]).toEqual(
+      expect.objectContaining({
+        type: "Succeeded",
+        status: "true",
+        reason: "succeeded",
+      })
+    );
+  });
+
+  it("should map FAILURE status to failed condition", () => {
+    const failedResult: TektonResult = {
+      ...mockTektonResult,
+      summary: { ...mockTektonResult.summary!, status: "FAILURE" },
+    };
+    const result = normalizeResultToPipelineRun(failedResult, "edp-delivery");
+
+    expect(result.status?.conditions?.[0]).toEqual(
+      expect.objectContaining({
+        status: "false",
+        reason: "failed",
+      })
+    );
+  });
+
+  it("should map TIMEOUT status to pipelineruntimeout condition", () => {
+    const timeoutResult: TektonResult = {
+      ...mockTektonResult,
+      summary: { ...mockTektonResult.summary!, status: "TIMEOUT" },
+    };
+    const result = normalizeResultToPipelineRun(timeoutResult, "edp-delivery");
+
+    expect(result.status?.conditions?.[0]).toEqual(
+      expect.objectContaining({
+        status: "false",
+        reason: "pipelineruntimeout",
+      })
+    );
+  });
+
+  it("should map CANCELLED status to cancelled condition", () => {
+    const cancelledResult: TektonResult = {
+      ...mockTektonResult,
+      summary: { ...mockTektonResult.summary!, status: "CANCELLED" },
+    };
+    const result = normalizeResultToPipelineRun(cancelledResult, "edp-delivery");
+
+    expect(result.status?.conditions?.[0]).toEqual(
+      expect.objectContaining({
+        status: "false",
+        reason: "cancelled",
+      })
+    );
+  });
+
+  it("should map UNKNOWN status to running condition", () => {
+    const unknownResult: TektonResult = {
+      ...mockTektonResult,
+      summary: { ...mockTektonResult.summary!, status: "UNKNOWN" },
+    };
+    const result = normalizeResultToPipelineRun(unknownResult, "edp-delivery");
+
+    expect(result.status?.conditions?.[0]).toEqual(
+      expect.objectContaining({
+        status: "unknown",
+        reason: "running",
+      })
+    );
+  });
+
+  it("should fallback to update_time when end_time is null for completed runs", () => {
+    const noEndTime: TektonResult = {
+      ...mockTektonResult,
+      summary: { ...mockTektonResult.summary!, end_time: undefined, status: "SUCCESS" },
+    };
+    const result = normalizeResultToPipelineRun(noEndTime, "edp-delivery");
+
+    expect(result.status?.completionTime).toBe("2026-03-10T10:15:00Z");
+  });
+
+  it("should not set completionTime for UNKNOWN status even without end_time", () => {
+    const running: TektonResult = {
+      ...mockTektonResult,
+      summary: { ...mockTektonResult.summary!, end_time: undefined, status: "UNKNOWN" },
+    };
+    const result = normalizeResultToPipelineRun(running, "edp-delivery");
+
+    expect(result.status?.completionTime).toBeUndefined();
+  });
+
+  it("should use end_time as completionTime when available", () => {
+    const result = normalizeResultToPipelineRun(mockTektonResult, "edp-delivery");
+
+    expect(result.status?.completionTime).toBe("2026-03-10T10:14:50Z");
+  });
+
+  it("should fallback to uid when objectMetadataName annotation is missing", () => {
+    const noNameAnnotation: TektonResult = {
+      ...mockTektonResult,
+      annotations: {
+        ...mockTektonResult.annotations,
+        [tektonResultAnnotations.objectMetadataName]: undefined,
+      } as TektonResult["annotations"],
+    };
+    const result = normalizeResultToPipelineRun(noNameAnnotation, "edp-delivery");
+
+    expect(result.metadata.name).toBe("result-uid-001");
+  });
+
+  it("should use objectMetadataName annotation as name when available", () => {
+    const result = normalizeResultToPipelineRun(mockTektonResult, "edp-delivery");
+
+    expect(result.metadata.name).toBe("review-codemie-main-abc12");
+  });
+
+  it("should populate git annotations in resultAnnotations", () => {
+    const result = normalizeResultToPipelineRun(mockTektonResult, "edp-delivery");
+
+    const resultAnnotations = JSON.parse(result.metadata.annotations?.[RESULT_ANNOTATIONS_KEY] ?? "{}");
+    expect(resultAnnotations[tektonResultAnnotations.gitBranch]).toBe("main");
+    expect(resultAnnotations[tektonResultAnnotations.gitAuthor]).toBe("John_Doe");
+    expect(resultAnnotations[tektonResultAnnotations.gitAvatar]).toBe("https://gitlab.example.com/avatar.png");
+    expect(resultAnnotations[tektonResultAnnotations.gitChangeNumber]).toBe("2843");
+    expect(resultAnnotations[tektonResultAnnotations.gitChangeUrl]).toBe(
+      "https://gitlab.example.com/merge_requests/2843"
+    );
+  });
+
+  it("should set historySource annotation to true", () => {
+    const result = normalizeResultToPipelineRun(mockTektonResult, "edp-delivery");
+
+    expect(result.metadata.annotations?.[tektonResultAnnotations.historySource]).toBe("true");
+  });
+
+  it("should populate codebase and pipelineType labels", () => {
+    const result = normalizeResultToPipelineRun(mockTektonResult, "edp-delivery");
+
+    expect(result.metadata.labels[pipelineRunLabels.codebase]).toBe("codemie");
+    expect(result.metadata.labels[pipelineRunLabels.pipelineType]).toBe("review");
+  });
+
+  it("should omit labels when corresponding annotations are missing", () => {
+    const noLabels: TektonResult = {
+      ...mockTektonResult,
+      annotations: {
+        [tektonResultAnnotations.objectMetadataName]: "some-run",
+        [tektonResultAnnotations.pipeline]: "some-pipeline",
+      },
+    };
+    const result = normalizeResultToPipelineRun(noLabels, "edp-delivery");
+
+    expect(result.metadata.labels[pipelineRunLabels.codebase]).toBeUndefined();
+    expect(result.metadata.labels[pipelineRunLabels.pipelineType]).toBeUndefined();
+  });
+
+  it("should set pipelineRef from pipeline annotation", () => {
+    const result = normalizeResultToPipelineRun(mockTektonResult, "edp-delivery");
+
+    expect(result.spec.pipelineRef?.name).toBe("gitlab-poetry-fastapi-app-review");
+  });
+
+  it("should set pipelineRef to undefined when pipeline annotation is missing", () => {
+    const noPipeline: TektonResult = {
+      ...mockTektonResult,
+      annotations: {},
+    };
+    const result = normalizeResultToPipelineRun(noPipeline, "edp-delivery");
+
+    expect(result.spec.pipelineRef).toBeUndefined();
+  });
+
+  it("should set metadata.namespace from the provided namespace argument", () => {
+    const result = normalizeResultToPipelineRun(mockTektonResult, "custom-ns");
+
+    expect(result.metadata.namespace).toBe("custom-ns");
+  });
+
+  it("should set metadata.uid from result.uid", () => {
+    const result = normalizeResultToPipelineRun(mockTektonResult, "edp-delivery");
+
+    expect(result.metadata.uid).toBe("result-uid-001");
+  });
+
+  it("should set creationTimestamp from create_time", () => {
+    const result = normalizeResultToPipelineRun(mockTektonResult, "edp-delivery");
+
+    expect(result.metadata.creationTimestamp).toBe("2026-03-10T10:00:00Z");
+  });
+
+  it("should handle result with no annotations gracefully", () => {
+    const noAnnotations: TektonResult = {
+      ...mockTektonResult,
+      annotations: undefined,
+    };
+    const result = normalizeResultToPipelineRun(noAnnotations, "edp-delivery");
+
+    expect(result.metadata.name).toBe("result-uid-001");
+    expect(result.spec.pipelineRef).toBeUndefined();
+    expect(result.metadata.labels).toEqual({});
+  });
+
+  it("should handle result with no summary gracefully", () => {
+    const noSummary: TektonResult = {
+      ...mockTektonResult,
+      summary: undefined,
+    };
+    const result = normalizeResultToPipelineRun(noSummary, "edp-delivery");
+
+    expect(result.status?.conditions?.[0]?.reason).toBe("running");
+    expect(result.status?.conditions?.[0]?.status).toBe("unknown");
+  });
+
+  it("should ignore non-string annotation values via type guard", () => {
+    const mixedAnnotations: TektonResult = {
+      ...mockTektonResult,
+      annotations: {
+        [tektonResultAnnotations.objectMetadataName]: "valid-name",
+        [tektonResultAnnotations.pipeline]: 42,
+        [tektonResultAnnotations.codebase]: true,
+        [tektonResultAnnotations.gitBranch]: null,
+      } as unknown as TektonResult["annotations"],
+    };
+    const result = normalizeResultToPipelineRun(mixedAnnotations, "edp-delivery");
+
+    expect(result.metadata.name).toBe("valid-name");
+    expect(result.spec.pipelineRef).toBeUndefined();
+    expect(result.metadata.labels[pipelineRunLabels.codebase]).toBeUndefined();
   });
 });

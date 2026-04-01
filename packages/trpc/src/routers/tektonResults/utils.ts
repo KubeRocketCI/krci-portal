@@ -16,6 +16,27 @@ export const tektonInputSchemas = {
   uuid: z.string().uuid("Invalid UUID"),
   /** Step name: lowercase alphanumeric + hyphens */
   stepName: z.string().regex(/^[a-z0-9][a-z0-9-]*$/, "Invalid step name"),
+  /**
+   * CEL filter expression: allows alphanumeric, whitespace, and common CEL
+   * operators/punctuation. Rejects shell metacharacters, backticks, and `@`
+   * to prevent injection when the value is interpolated into filter strings.
+   *
+   * Defense-in-depth: the Tekton Results backend compiles CEL via cel-go and
+   * converts the AST to SQL (cel2sql), but string literals are interpolated
+   * into SQL without parameterization (see cel2sql/interpreter.go
+   * interpretConstExpr). This regex blocks characters that could escape the
+   * SQL string context.
+   */
+  celFilter: z
+    .string()
+    .optional()
+    .refine(
+      (val) => {
+        if (!val) return true;
+        return /^[a-zA-Z0-9\s_.\[\]()'",!=<>&|+\-*/%:]+$/.test(val);
+      },
+      { message: "Invalid filter: contains disallowed characters" }
+    ),
 } as const;
 
 /**

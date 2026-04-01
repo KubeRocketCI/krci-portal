@@ -11,7 +11,11 @@
 
 import type { PipelineRun } from "../k8s/groups/Tekton/PipelineRun/types.js";
 import type { TaskRun } from "../k8s/groups/Tekton/TaskRun/types.js";
-import type { DecodedPipelineRun, DecodedTaskRun } from "./types.js";
+import type { DecodedPipelineRun, DecodedTaskRun, TektonResult, TektonResultStatus } from "./types.js";
+import { tektonResultAnnotations } from "./annotations.js";
+import { pipelineRunLabels } from "../k8s/groups/Tekton/PipelineRun/labels.js";
+import { RESULT_ANNOTATIONS_KEY } from "../k8s/groups/Tekton/PipelineRun/utils/resultAnnotations/index.js";
+import { k8sPipelineRunConfig } from "../k8s/groups/Tekton/PipelineRun/constants.js";
 
 /**
  * Normalize a decoded PipelineRun from Tekton Results to a K8s PipelineRun type.
@@ -129,4 +133,106 @@ export function normalizeHistoryTaskRun(decoded: DecodedTaskRun): TaskRun {
   };
 
   return normalized as unknown as TaskRun;
+}
+
+// ---------------------------------------------------------------------------
+// Result → PipelineRun normalizer (lightweight summary, no JSONB decode)
+// ---------------------------------------------------------------------------
+
+const RESULT_STATUS_MAP: Record<TektonResultStatus, { status: string; reason: string }> = {
+  SUCCESS: { status: "true", reason: "succeeded" },
+  FAILURE: { status: "false", reason: "failed" },
+  TIMEOUT: { status: "false", reason: "pipelineruntimeout" },
+  CANCELLED: { status: "false", reason: "cancelled" },
+  UNKNOWN: { status: "unknown", reason: "running" },
+};
+
+function getResultAnnotation(result: TektonResult, key: string): string | undefined {
+  const value = result.annotations?.[key];
+  if (typeof value !== "string") return undefined;
+  return value;
+}
+
+/**
+ * Normalize a Tekton Result (from the `results` table) to a K8s PipelineRun shape.
+ *
+ * Unlike `normalizeHistoryPipelineRun` which decodes full JSONB PipelineRun blobs,
+ * this function maps the lightweight Result annotations and summary fields to
+ * the minimum PipelineRun shape needed for the list table.
+ *
+ * The resulting PipelineRun has no `status.results`, `status.childReferences`,
+ * `spec.pipelineSpec`, or other heavyweight fields — those are only needed on
+ * the detail page which still uses the full record endpoint.
+ */
+export function normalizeResultToPipelineRun(result: TektonResult, namespace: string): PipelineRun {
+  const name = getResultAnnotation(result, tektonResultAnnotations.objectMetadataName) || result.uid;
+  const pipelineName = getResultAnnotation(result, tektonResultAnnotations.pipeline);
+  const codebase = getResultAnnotation(result, tektonResultAnnotations.codebase);
+  const pipelineType = getResultAnnotation(result, tektonResultAnnotations.pipelineType);
+
+  const summaryStatus = result.summary?.status || "UNKNOWN";
+  const statusInfo = RESULT_STATUS_MAP[summaryStatus] || RESULT_STATUS_MAP.UNKNOWN;
+
+  const startTime = result.create_time;
+  // summary.end_time is NULL for many results due to a Tekton Results watcher bug
+  // (the watcher uses ConditionReady instead of status.completionTime).
+  // Fallback to update_time: the Result is updated when the PipelineRun completes,
+  // so update_time ≈ actual completion time for finished runs.
+  const isCompleted = summaryStatus !== "UNKNOWN";
+  const completionTime = result.summary?.end_time || (isCompleted ? result.update_time : undefined);
+
+  const resultAnnotations: Record<string, string> = {};
+  const annotationKeys = [
+    tektonResultAnnotations.gitBranch,
+    tektonResultAnnotations.gitAuthor,
+    tektonResultAnnotations.gitAvatar,
+    tektonResultAnnotations.gitChangeNumber,
+    tektonResultAnnotations.gitChangeUrl,
+  ] as const;
+
+  for (const key of annotationKeys) {
+    const val = getResultAnnotation(result, key);
+    if (val) {
+      resultAnnotations[key] = val;
+    }
+  }
+
+  const labels: Record<string, string> = {};
+  if (codebase) labels[pipelineRunLabels.codebase] = codebase;
+  if (pipelineType) labels[pipelineRunLabels.pipelineType] = pipelineType;
+
+  const normalized = {
+    apiVersion: k8sPipelineRunConfig.apiVersion,
+    kind: k8sPipelineRunConfig.kind,
+    metadata: {
+      name,
+      namespace,
+      uid: result.uid,
+      creationTimestamp: result.create_time,
+      labels,
+      annotations: {
+        [tektonResultAnnotations.historySource]: "true",
+        ...(Object.keys(resultAnnotations).length > 0 && {
+          [RESULT_ANNOTATIONS_KEY]: JSON.stringify(resultAnnotations),
+        }),
+      },
+    },
+    spec: {
+      pipelineRef: pipelineName ? { name: pipelineName } : undefined,
+    },
+    status: {
+      startTime,
+      completionTime,
+      conditions: [
+        {
+          type: "Succeeded",
+          status: statusInfo.status,
+          reason: statusInfo.reason,
+          lastTransitionTime: completionTime || startTime,
+        },
+      ],
+    },
+  };
+
+  return normalized as unknown as PipelineRun;
 }

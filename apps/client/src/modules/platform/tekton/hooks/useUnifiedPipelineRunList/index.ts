@@ -1,13 +1,8 @@
 import { usePipelineRunWatchList } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { useClusterStore } from "@/k8s/store";
-import {
-  PipelineRun,
-  normalizeHistoryPipelineRun,
-  DecodedPipelineRun,
-  tektonResultAnnotations,
-} from "@my-project/shared";
+import { PipelineRun, TektonResult, normalizeResultToPipelineRun } from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
-import { buildLabelsFilter } from "@/modules/platform/tekton/utils/celFilters";
+import { buildAnnotationsFilter } from "@/modules/platform/tekton/utils/celFilters";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -15,7 +10,7 @@ import { useShallow } from "zustand/react/shallow";
 const HISTORY_PAGE_SIZE = 50;
 
 interface HistoryPage {
-  pipelineRuns: DecodedPipelineRun[];
+  results: TektonResult[];
   nextPageToken?: string;
 }
 
@@ -24,8 +19,8 @@ interface HistoryPage {
  *
  * @param labels - K8s label selectors for filtering live PipelineRuns (via watch)
  *   and history PipelineRuns (auto-converted to a CEL filter for Tekton Results).
- *   The same label keys work for both because Tekton Results stores the full
- *   PipelineRun resource, so `data.metadata.labels` matches K8s labels.
+ *   The same label keys work for both because Tekton Results stores the labels
+ *   as Result-level annotations, so `annotations["key"]` matches K8s labels.
  *   When undefined/empty, all PipelineRuns in the namespace are fetched.
  *
  * @param enabled - Whether the K8s watch and history queries are enabled.
@@ -56,13 +51,16 @@ export interface UseUnifiedPipelineRunListResult {
  * Internally manages both the K8s watch and the Tekton Results history query,
  * so callers only need to provide label selectors — the hook handles the rest.
  *
+ * Uses the lightweight `getPipelineRunResults` endpoint which queries the
+ * Tekton Results `results` table (annotations + summary) instead of the
+ * heavyweight `getPipelineRunRecords` endpoint (full JSONB blobs).
+ *
  * Merge strategy:
  * 1. Watch live PipelineRuns via usePipelineRunWatchList (with optional label selectors)
- * 2. Fetch history PipelineRuns from Tekton Results (CEL filter auto-derived from labels)
- * 3. Normalize history data to K8s PipelineRun type
- * 4. Annotate history items with historySource marker
- * 5. Deduplicate: filter out history items whose name exists in the live set (live wins)
- * 6. Concatenate live + filtered history, sorted by creation time (newest first)
+ * 2. Fetch history from Tekton Results via getPipelineRunResults (CEL filter auto-derived from labels)
+ * 3. Normalize Result objects to K8s PipelineRun type via normalizeResultToPipelineRun
+ * 4. Deduplicate: filter out history items whose name exists in the live set (live wins)
+ * 5. Concatenate live + filtered history, sorted by creation time (newest first)
  */
 export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOptions): UseUnifiedPipelineRunListResult {
   const { labels, enabled = true } = options ?? {};
@@ -80,18 +78,19 @@ export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOpt
     queryOptions: { enabled },
   });
 
-  // Derive CEL filter from the same labels used for the K8s watch
+  // Derive CEL filter from the same labels used for the K8s watch.
+  // Uses annotation-based CEL syntax for the Results table.
   const celFilter = React.useMemo(
-    () => (labels && Object.keys(labels).length > 0 ? buildLabelsFilter(labels) : undefined),
+    () => (labels && Object.keys(labels).length > 0 ? buildAnnotationsFilter(labels) : undefined),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- stable when label values don't change
     [labels && Object.entries(labels).flat().join("\0")]
   );
 
-  // History PipelineRuns from Tekton Results
+  // History PipelineRuns from Tekton Results (lightweight results table)
   const historyQuery = useInfiniteQuery<HistoryPage, Error>({
-    queryKey: ["tektonResults", "pipelineRunRecords", clusterName, namespace, celFilter],
+    queryKey: ["tektonResults", "pipelineRunResults", clusterName, namespace, celFilter],
     queryFn: ({ pageParam }) => {
-      return trpc.tektonResults.getPipelineRunRecords.query({
+      return trpc.tektonResults.getPipelineRunResults.query({
         namespace,
         pageSize: HISTORY_PAGE_SIZE,
         pageToken: pageParam as string | undefined,
@@ -103,24 +102,12 @@ export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOpt
     enabled,
   });
 
-  // Normalize history pages into K8s PipelineRun type with historySource annotation.
+  // Normalize history Result objects into K8s PipelineRun type.
   // Separated from merge so it only re-runs when history data changes (not on live updates).
   const normalizedHistory = React.useMemo((): PipelineRun[] => {
-    const allHistoryDecoded = historyQuery.data?.pages.flatMap((page) => page.pipelineRuns) ?? [];
-    return allHistoryDecoded.map((decoded) => {
-      const base = normalizeHistoryPipelineRun(decoded);
-      return {
-        ...base,
-        metadata: {
-          ...base.metadata,
-          annotations: {
-            ...base.metadata.annotations,
-            [tektonResultAnnotations.historySource]: "true",
-          },
-        },
-      };
-    });
-  }, [historyQuery.data]);
+    const allResults = historyQuery.data?.pages.flatMap((page) => page.results) ?? [];
+    return allResults.map((result) => normalizeResultToPipelineRun(result, namespace));
+  }, [historyQuery.data, namespace]);
 
   // Merge live + normalized history data
   const mergedPipelineRuns = React.useMemo((): PipelineRun[] => {
