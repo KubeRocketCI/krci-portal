@@ -5,6 +5,7 @@ import { useCodebaseBranchWatchList } from "@/k8s/api/groups/KRCI/CodebaseBranch
 import { codebaseBranchLabels, sortCodebaseBranchesWithDefaultFirst } from "@my-project/shared";
 import { X, Package, GitBranch, AlertCircle } from "lucide-react";
 import { buildBranchOptions } from "@/modules/platform/cdpipelines/utils/buildBranchOptions";
+import { resolveApplicationBranch } from "../../../../utils/resolveApplicationBranch";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { Codebase } from "@my-project/shared";
 import { cn } from "@/core/utils/classname";
@@ -28,7 +29,6 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
   const form = useEditCDPipelineForm();
   const { cdPipeline } = useEditCDPipelineData();
 
-  // Subscribe to the specific field's value with proper typing
   const fieldArray = useStore(
     form.store,
     (state: { values: EditCDPipelineFormValues }) => state.values.ui_applicationsFieldArray || []
@@ -47,60 +47,53 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
     return sortCodebaseBranchesWithDefaultFirst(applicationBranchListWatch.data.array, defaultBranch);
   }, [applicationBranchListWatch.data.array, defaultBranch]);
 
-  // Helper to update field array item
   const updateAppBranch = React.useCallback(
     (newBranchValue: string) => {
-      const currentArray = form.store.state.values.ui_applicationsFieldArray || [];
-      const newArray = [...currentArray];
-      if (newArray[index]) {
-        newArray[index] = { ...newArray[index], appBranch: newBranchValue };
-        form.setFieldValue("ui_applicationsFieldArray", newArray);
-      }
+      const currentArray = structuredClone(form.store.state.values.ui_applicationsFieldArray || []);
+      if (currentArray[index]) {
+        currentArray[index].appBranch = newBranchValue;
+        form.setFieldValue("ui_applicationsFieldArray", currentArray);
 
-      // Maintain index alignment: set the branch at the same index as the application
-      const currentInputDockerStreams = form.store.state.values.inputDockerStreams || [];
-      const newInputDockerStreams = [...currentInputDockerStreams];
-      newInputDockerStreams[index] = newBranchValue;
-      form.setFieldValue("inputDockerStreams", newInputDockerStreams);
+        const newInputDockerStreams = structuredClone(form.store.state.values.inputDockerStreams || []);
+        newInputDockerStreams[index] = newBranchValue;
+        form.setFieldValue("inputDockerStreams", newInputDockerStreams);
+      }
     },
     [form, index]
   );
 
-  // Track if we've initialized the default value to prevent re-setting
   const hasInitializedRef = React.useRef(false);
 
-  // Reset initialization flag when the application changes
   React.useEffect(() => {
     hasInitializedRef.current = false;
   }, [appName]);
 
-  // Set default value once when branches are loaded - ONLY if no value is set
-  // In edit mode, preserve the original value even if it appears invalid
+  // Resolve branch value once when branches are loaded.
+  // The CDPipeline spec may have a malformed inputDockerStreams array (wrong index
+  // alignment, duplicates, length mismatch). Instead of trusting the index, we check
+  // whether the stored value actually belongs to this application's branch list.
+  // If not, we search ALL inputDockerStreams entries for one that does — mirroring
+  // the label-based lookup the cd-pipeline-operator uses. Saving the form will
+  // produce a correctly-aligned spec, healing the malformed resource.
   React.useEffect(() => {
     if (hasInitializedRef.current || sortedApplicationBranchList.length === 0) {
       return;
     }
 
-    // Only set default if there's NO branch value at all
-    // Don't auto-change values that are already set (even if they're invalid)
-    if (!appBranchValue) {
-      const availableBranches = sortedApplicationBranchList.map((el) => ({
-        specBranchName: el.spec.branchName,
-        metadataBranchName: el.metadata.name,
-      }));
+    const currentBranch = form.store.state.values.ui_applicationsFieldArray?.[index]?.appBranch ?? "";
+    const branchNames = new Set(sortedApplicationBranchList.map((el) => el.metadata.name));
+    const originalStreams = cdPipeline?.spec.inputDockerStreams || [];
+    const fallbackBranch = sortedApplicationBranchList[0]?.metadata.name;
 
-      // Use first available branch
-      if (availableBranches.length > 0) {
-        const newBranchFieldValue = availableBranches[0].metadataBranchName;
-        updateAppBranch(newBranchFieldValue);
-      }
+    const resolved = resolveApplicationBranch(currentBranch, branchNames, originalStreams, fallbackBranch);
+
+    if (resolved && resolved !== currentBranch) {
+      updateAppBranch(resolved);
     }
 
-    // Mark as initialized regardless of whether we set a value
     hasInitializedRef.current = true;
-  }, [sortedApplicationBranchList, appBranchValue, updateAppBranch]);
+  }, [sortedApplicationBranchList, updateAppBranch, form, index, cdPipeline]);
 
-  // Check for errors using TanStack Form's API
   const appBranchFieldMeta = form.getFieldMeta(`ui_applicationsFieldArray[${index}].appBranch`);
   const appBranchError = appBranchFieldMeta?.errors?.length ? String(appBranchFieldMeta.errors[0]) : undefined;
   const hasValidationError = !!appBranchError;
@@ -110,18 +103,16 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
     [sortedApplicationBranchList, defaultBranch]
   );
 
-  // Get the original branch value from CDPipeline to detect changes
-  const originalBranchValue = React.useMemo(() => {
-    if (!cdPipeline) return "";
+  const { originalBranchValue, isNewApplication } = React.useMemo(() => {
+    if (!cdPipeline) return { originalBranchValue: "", isNewApplication: true };
     const appIndex = cdPipeline.spec.applications?.indexOf(appName) ?? -1;
-    if (appIndex === -1) return ""; // New application
-    return cdPipeline.spec.inputDockerStreams?.[appIndex] ?? "";
+    if (appIndex === -1) return { originalBranchValue: "", isNewApplication: true };
+    return {
+      originalBranchValue: cdPipeline.spec.inputDockerStreams?.[appIndex] ?? "",
+      isNewApplication: false,
+    };
   }, [cdPipeline, appName]);
 
-  // Detect if this is a new application (not in original CDPipeline)
-  const isNewApplication = !cdPipeline?.spec.applications?.includes(appName);
-
-  // Check if the branch value has changed
   const branchHasChanged = !isNewApplication && appBranchValue !== originalBranchValue;
 
   return (
