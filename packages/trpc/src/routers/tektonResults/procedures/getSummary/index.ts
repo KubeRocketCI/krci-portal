@@ -193,17 +193,7 @@ export const getSummaryProcedure = protectedProcedure
       namespace: tektonInputSchemas.namespace,
       summary: summarySchema,
       groupBy: groupBySchema,
-      filter: z
-        .string()
-        .optional()
-        .refine(
-          (val) => {
-            if (!val) return true;
-            // Allow CEL expression characters; reject shell metacharacters and backticks
-            return /^[a-zA-Z0-9\s_.\[\]()'",!=<>&|+\-*/%:]+$/.test(val);
-          },
-          { message: "Invalid filter: contains disallowed characters" }
-        ),
+      filter: tektonInputSchemas.celFilter,
       orderBy: orderBySchema,
     })
   )

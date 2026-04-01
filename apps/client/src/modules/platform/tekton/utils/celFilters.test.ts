@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { escapeCELString, buildLabelsFilter, buildPipelineRunNameFilter } from "./celFilters";
+import { escapeCELString, buildPipelineRunNameFilter, buildAnnotationsFilter } from "./celFilters";
 
 describe("escapeCELString", () => {
   test("returns valid K8s names unchanged", () => {
@@ -27,35 +27,6 @@ describe("escapeCELString", () => {
   test("neutralizes CEL injection attempt", () => {
     const malicious = "x' || true || '";
     expect(escapeCELString(malicious)).toBe("x\\' || true || \\'");
-  });
-});
-
-describe("buildLabelsFilter", () => {
-  test("returns undefined for empty labels", () => {
-    expect(buildLabelsFilter({})).toBeUndefined();
-  });
-
-  test("builds single-label CEL filter", () => {
-    const result = buildLabelsFilter({ "tekton.dev/pipeline": "my-pipeline" });
-
-    expect(result).toBe("data.metadata.labels['tekton.dev/pipeline'] == 'my-pipeline'");
-  });
-
-  test("builds multi-label CEL filter joined with &&", () => {
-    const result = buildLabelsFilter({
-      "app.edp.epam.com/codebase": "my-app",
-      "app.edp.epam.com/stage": "dev",
-    });
-
-    expect(result).toBe(
-      "data.metadata.labels['app.edp.epam.com/codebase'] == 'my-app' && data.metadata.labels['app.edp.epam.com/stage'] == 'dev'"
-    );
-  });
-
-  test("escapes values with single quotes", () => {
-    const result = buildLabelsFilter({ "app.edp.epam.com/codebase": "app'injection" });
-
-    expect(result).toBe("data.metadata.labels['app.edp.epam.com/codebase'] == 'app\\'injection'");
   });
 });
 
@@ -92,5 +63,57 @@ describe("buildPipelineRunNameFilter", () => {
     const result = buildPipelineRunNameFilter("name'with-quote");
 
     expect(result).toBe("data.metadata.name == 'name\\'with-quote' && data_type == 'tekton.dev/v1.PipelineRun'");
+  });
+});
+
+describe("buildAnnotationsFilter", () => {
+  test("returns undefined for empty annotations record", () => {
+    expect(buildAnnotationsFilter({})).toBeUndefined();
+  });
+
+  test("builds single annotation clause", () => {
+    const result = buildAnnotationsFilter({
+      "app.edp.epam.com/codebase": "codemie",
+    });
+
+    expect(result).toBe(`annotations["app.edp.epam.com/codebase"] == 'codemie'`);
+  });
+
+  test("builds multiple annotation clauses joined with &&", () => {
+    const result = buildAnnotationsFilter({
+      "app.edp.epam.com/codebase": "codemie",
+      "app.edp.epam.com/pipelinetype": "review",
+    });
+
+    expect(result).toBe(
+      `annotations["app.edp.epam.com/codebase"] == 'codemie' && annotations["app.edp.epam.com/pipelinetype"] == 'review'`
+    );
+  });
+
+  test("escapes single quotes in annotation values", () => {
+    const result = buildAnnotationsFilter({
+      "app.edp.epam.com/codebase": "name'with-quote",
+    });
+
+    expect(result).toBe(`annotations["app.edp.epam.com/codebase"] == 'name\\'with-quote'`);
+  });
+
+  test("escapes backslashes in annotation values", () => {
+    const result = buildAnnotationsFilter({
+      "app.edp.epam.com/codebase": "name\\value",
+    });
+
+    expect(result).toBe(`annotations["app.edp.epam.com/codebase"] == 'name\\\\value'`);
+  });
+
+  test("handles typical K8s label selectors", () => {
+    const result = buildAnnotationsFilter({
+      "tekton.dev/pipeline": "gitlab-poetry-fastapi-app-review",
+      "app.edp.epam.com/codebasebranch": "codemie-main",
+    });
+
+    expect(result).toBe(
+      `annotations["tekton.dev/pipeline"] == 'gitlab-poetry-fastapi-app-review' && annotations["app.edp.epam.com/codebasebranch"] == 'codemie-main'`
+    );
   });
 });
