@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { TRPCError } from "@trpc/server";
 import {
   TektonResultsListResponse,
@@ -14,6 +15,7 @@ import {
 
 const DEFAULT_TIMEOUT_MS = 30_000; // 30 seconds
 const TEKTON_RESULTS_API_VERSION = "v1alpha2";
+const SA_TOKEN_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/token";
 
 // =============================================================================
 // Configuration
@@ -22,6 +24,22 @@ const TEKTON_RESULTS_API_VERSION = "v1alpha2";
 interface TektonResultsConfig {
   apiBaseURL: string;
   timeoutMs: number;
+}
+
+/**
+ * Read the Kubernetes service account token from the mounted secret file.
+ *
+ * Returns an empty string when the token file is unavailable so requests can
+ * proceed without an Authorization header in non-cluster environments.
+ *
+ * @returns Service account bearer token or an empty string
+ */
+function readServiceAccountToken(): string {
+  try {
+    return readFileSync(SA_TOKEN_PATH, "utf-8").trim();
+  } catch {
+    return "";
+  }
 }
 
 /**
@@ -122,9 +140,13 @@ export class TektonResultsClient {
     const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
     try {
+      const token = readServiceAccountToken();
       const response = await fetch(url.toString(), {
         method: "GET",
-        headers: { Accept: "application/json" },
+        headers: {
+          Accept: "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
         signal: controller.signal,
       });
 
@@ -199,9 +221,13 @@ export class TektonResultsClient {
     const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
     try {
+      const token = readServiceAccountToken();
       const response = await fetch(url, {
         method: "GET",
-        headers: { Accept: "text/plain" },
+        headers: {
+          Accept: "text/plain",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
         signal: controller.signal,
       });
 
