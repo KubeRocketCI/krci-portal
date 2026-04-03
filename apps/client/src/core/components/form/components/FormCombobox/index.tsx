@@ -304,7 +304,7 @@ export const FormCombobox = <TData,>({
             >
               <Command>
                 <CommandInput placeholder={searchPlaceholder} />
-                <CommandList>
+                <CommandList onWheel={(e) => e.stopPropagation()}>
                   <CommandEmpty>{emptyText}</CommandEmpty>
                   <CommandGroup>
                     {options.map((option) => {

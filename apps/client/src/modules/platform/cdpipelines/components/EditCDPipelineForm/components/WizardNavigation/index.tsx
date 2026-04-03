@@ -7,6 +7,7 @@ import { useEditCDPipelineForm } from "../../providers/form/hooks";
 import { useHasChanges } from "../../hooks/useHasChanges";
 import { useEditCDPipelineData } from "../../providers/data/hooks";
 import { useDefaultValues } from "../../hooks/useDefaultValues";
+import type { EditCDPipelineFormValues } from "../../types";
 
 interface WizardNavigationProps {
   onBack: () => void;
@@ -36,10 +37,9 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
   const isReviewStep = currentStepIdx === 2;
 
   const handleUndoChanges = React.useCallback(() => {
-    // Reset form to original values
-    Object.entries(defaultValues).forEach(([key, value]) => {
-      form.setFieldValue(key as never, value as never);
-    });
+    // Reset all fields atomically to avoid listener side-effects during piecemeal updates.
+    const resetValues: EditCDPipelineFormValues = structuredClone(defaultValues);
+    form.reset(resetValues);
   }, [form, defaultValues]);
 
   const handleNext = React.useCallback(async () => {

@@ -23,4 +23,5 @@ export type EmptyListProps = EmptyListActionProps & {
   isSearch?: boolean;
   icon?: React.ReactNode;
   iconSize?: number;
+  actionVariant?: "link" | "button";
 };

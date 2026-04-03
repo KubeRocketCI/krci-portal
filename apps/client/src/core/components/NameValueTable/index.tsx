@@ -12,25 +12,29 @@ export const NameValueTable = ({ rows }: { rows: NameValueRow[] }) => {
   }
 
   return (
-    <div className="rounded-md border p-4">
+    <div className="bg-card rounded-md border">
       <TableUI className="table-fixed">
         <TableHeaderUI>
           <TableRowUI>
-            <TableHeadUI className="w-[45%]">Name</TableHeadUI>
-            <TableHeadUI className="w-[55%]">Value</TableHeadUI>
+            <TableHeadUI className="bg-muted text-muted-foreground w-[45%] px-4 py-2 text-left text-xs font-medium">
+              Name
+            </TableHeadUI>
+            <TableHeadUI className="bg-muted text-muted-foreground w-[55%] px-4 py-2 text-left text-xs font-medium">
+              Value
+            </TableHeadUI>
           </TableRowUI>
         </TableHeaderUI>
         <TableBodyUI>
           {rows.map((row, index) => (
             <TableRowUI key={index}>
               <TableCellUI
-                className="h-8 min-w-0 truncate text-sm"
+                className="h-10 min-w-0 truncate px-4 py-2 align-top text-sm"
                 title={typeof row.name === "string" ? row.name : undefined}
               >
                 {row.name}
               </TableCellUI>
               <TableCellUI
-                className="h-8 min-w-0 truncate text-sm"
+                className="h-10 min-w-0 truncate px-4 py-2 align-top text-sm"
                 title={typeof row.value === "string" ? row.value : undefined}
               >
                 {row.value}
