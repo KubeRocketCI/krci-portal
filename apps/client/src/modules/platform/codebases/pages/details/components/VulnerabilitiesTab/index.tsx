@@ -45,19 +45,17 @@ export function VulnerabilitiesTab({ codebaseName, defaultBranch, namespace, clu
   if (error || !project || !projectUuid) {
     return (
       <Alert>
-        <AlertDescription>
-          {error
-            ? "Failed to load DependencyTrack data. Please try again later."
-            : "No DependencyTrack data available for this project."}{" "}
-          <Link
-            to={PATH_CONFIG_DEPENDENCY_TRACK_FULL}
-            params={{ clusterName }}
-            className="hover:text-foreground underline"
-          >
-            Configure DependencyTrack integration
-          </Link>{" "}
-          and enable reporting in your pipeline to view vulnerability data.
-        </AlertDescription>
+        {error
+          ? "Failed to load DependencyTrack data. Please try again later."
+          : "No DependencyTrack data available for this project."}{" "}
+        <Link
+          to={PATH_CONFIG_DEPENDENCY_TRACK_FULL}
+          params={{ clusterName }}
+          className="hover:text-foreground underline"
+        >
+          Configure DependencyTrack integration
+        </Link>{" "}
+        and enable reporting in your pipeline to view vulnerability data.
       </Alert>
     );
   }

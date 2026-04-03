@@ -32,7 +32,26 @@ export const Overview = () => {
   const degradedCount = argoApps.filter(
     (a) => getApplicationStatus(a).status === applicationHealthStatus.degraded
   ).length;
-  const isManual = stage.spec.triggerType === stageTriggerType.Manual;
+  const triggerTypeMeta = (() => {
+    switch (stage.spec.triggerType) {
+      case stageTriggerType.Manual:
+        return {
+          label: "Manual",
+          description: "Requires approval",
+        };
+      case stageTriggerType["Auto-stable"]:
+        return {
+          label: "Auto-stable",
+          description: "Automatic deployment only after quality gates pass",
+        };
+      case stageTriggerType.Auto:
+      default:
+        return {
+          label: "Auto",
+          description: "Automatic deployment",
+        };
+    }
+  })();
 
   return (
     <div>
@@ -81,10 +100,8 @@ export const Overview = () => {
             </div>
             <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Trigger Type</div>
           </div>
-          <div className="text-foreground text-lg font-semibold">{isManual ? "Manual" : "Auto"}</div>
-          <div className="text-muted-foreground mt-1 text-xs">
-            {isManual ? "Requires approval" : "Automatic deployment"}
-          </div>
+          <div className="text-foreground text-lg font-semibold">{triggerTypeMeta.label}</div>
+          <div className="text-muted-foreground mt-1 text-xs">{triggerTypeMeta.description}</div>
         </Card>
 
         {/* Cluster */}

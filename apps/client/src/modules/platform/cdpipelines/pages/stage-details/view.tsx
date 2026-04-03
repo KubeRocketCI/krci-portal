@@ -13,7 +13,7 @@ export default function StageDetailsPageContent() {
       breadcrumbs={[
         { label: "Deployments", route: { to: PATH_CDPIPELINES_FULL } },
         {
-          label: params.cdPipeline,
+          label: `${params.cdPipeline}: Environments`,
           route: {
             to: PATH_CDPIPELINE_DETAILS_FULL,
             params: {
@@ -21,9 +21,6 @@ export default function StageDetailsPageContent() {
               namespace: params.namespace,
             },
           },
-        },
-        {
-          label: "Environments",
         },
         {
           label: params.stage,
