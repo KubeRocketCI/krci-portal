@@ -124,6 +124,7 @@ export default function GitopsConfigurationPage() {
         onOpen: handleOpenCreateDialog,
         onClose: handleCloseCreateDialog,
         isDisabled: isLoading || !!gitOpsCodebase,
+        dialogBaseMaxWidth: "max-w-5xl",
         permission: {
           allowed: codebasePermissions.data.create.allowed,
           reason: codebasePermissions.data.create.reason,

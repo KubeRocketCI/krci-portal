@@ -39,6 +39,17 @@ export default function CDPipelineListPage() {
       );
     }
   }, [gitOpsCodebaseWatch.query.isFetched, gitOpsCodebase]);
+  const isCreateDeploymentAllowed = cdPipelinePermissions.data.create.allowed && Boolean(gitOpsCodebase);
+  const createDeploymentReason = !cdPipelinePermissions.data.create.allowed
+    ? cdPipelinePermissions.data.create.reason
+    : "No GitOps repository configured. Configure GitOps first.";
+
+  const deploymentButtonContent = (
+    <>
+      <Plus />
+      Create Deployment
+    </>
+  );
 
   return (
     <PageWrapper
@@ -58,16 +69,18 @@ export default function CDPipelineListPage() {
             <ButtonWithPermission
               ButtonProps={{
                 variant: "default",
-                disabled: !gitOpsCodebase,
-                asChild: true,
+                asChild: isCreateDeploymentAllowed,
               }}
-              allowed={cdPipelinePermissions.data.create.allowed}
-              reason={cdPipelinePermissions.data.create.reason}
+              allowed={isCreateDeploymentAllowed}
+              reason={createDeploymentReason}
             >
-              <Link to={routeCDPipelineCreate.fullPath} params={{ clusterName }} className="no-underline">
-                <Plus />
-                Create Deployment
-              </Link>
+              {isCreateDeploymentAllowed ? (
+                <Link to={routeCDPipelineCreate.fullPath} params={{ clusterName }} className="no-underline">
+                  {deploymentButtonContent}
+                </Link>
+              ) : (
+                deploymentButtonContent
+              )}
             </ButtonWithPermission>
           </div>
         }

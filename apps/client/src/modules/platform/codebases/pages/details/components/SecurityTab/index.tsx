@@ -35,13 +35,11 @@ export function SecurityTab({ codebaseName, namespace, clusterName }: SecurityTa
   if (!project) {
     return (
       <Alert>
-        <AlertDescription>
-          No SonarQube data available for this project.{" "}
-          <Link to={PATH_CONFIG_SONAR_FULL} params={{ clusterName }} className="hover:text-foreground underline">
-            Configure SonarQube integration
-          </Link>{" "}
-          and enable reporting in your pipeline to view code quality metrics.
-        </AlertDescription>
+        No SonarQube data available for this project.{" "}
+        <Link to={PATH_CONFIG_SONAR_FULL} params={{ clusterName }} className="hover:text-foreground underline">
+          Configure SonarQube integration
+        </Link>{" "}
+        and enable reporting in your pipeline to view code quality metrics.
       </Alert>
     );
   }

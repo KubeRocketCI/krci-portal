@@ -34,6 +34,7 @@ export const CreateGitOpsForm: React.FC<{ onClose: () => void }> = ({ onClose })
       buildTool: "helm",
       ciTool: ciTool.tekton,
       gitServer: firstValidGitServer?.metadata.name || "",
+      ui_gitServerProvider: firstValidGitServer?.spec.gitProvider || "",
       defaultBranch: "main",
       deploymentScript: codebaseDeploymentScript["helm-chart"],
       description: "Custom values for deploy applications",
@@ -43,9 +44,10 @@ export const CreateGitOpsForm: React.FC<{ onClose: () => void }> = ({ onClose })
       versioningStartFrom: "0.1.0-SNAPSHOT",
       systemTypeLabel: "gitops",
       namespace: "",
-      gitRepoPath: "",
+      ui_repositoryOwner: "",
+      ui_repositoryName: "",
     }),
-    [firstValidGitServer?.metadata.name]
+    [firstValidGitServer?.metadata.name, firstValidGitServer?.spec.gitProvider]
   );
 
   const handleSubmit = React.useCallback(

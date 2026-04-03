@@ -1,4 +1,5 @@
-export * from "./GitRepoPath";
+export * from "./GitUrlPath";
 export * from "./GitServer";
-export * from "./Name";
 export * from "./CiTool";
+export * from "./Owner";
+export * from "./RepositoryName";
