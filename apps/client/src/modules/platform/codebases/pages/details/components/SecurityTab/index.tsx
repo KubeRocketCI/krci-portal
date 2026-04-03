@@ -1,5 +1,5 @@
 import { Alert, AlertDescription } from "@/core/components/ui/alert";
-import { AlertCircle, ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowRight, CheckCircle } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/core/components/ui/button";
 import { Badge } from "@/core/components/ui/badge";
@@ -35,7 +35,6 @@ export function SecurityTab({ codebaseName, namespace, clusterName }: SecurityTa
   if (!project) {
     return (
       <Alert>
-        <AlertCircle className="h-4 w-4" />
         <AlertDescription>
           No SonarQube data available for this project.{" "}
           <Link to={PATH_CONFIG_SONAR_FULL} params={{ clusterName }} className="hover:text-foreground underline">

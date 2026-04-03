@@ -5,19 +5,26 @@ import { Input } from "@/core/components/ui/input";
 import { EmptyList } from "@/core/components/EmptyList";
 import { Plus, Trash } from "lucide-react";
 import { NameValueTable } from "@/core/components/NameValueTable";
-import { useConfigMapPermissions } from "@/k8s/api/groups/Core/ConfigMap";
+import { useConfigMapCRUD, useConfigMapPermissions } from "@/k8s/api/groups/Core/ConfigMap";
 import { Card } from "@/core/components/ui/card";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
+import { useAppForm } from "@/core/components/form";
+import { useStore } from "@tanstack/react-form";
 
 type Variable = {
   key: string;
   value: string;
 };
 
+type VariablesFormValues = {
+  variables: Variable[];
+};
+
 export const Variables = () => {
   const variablesConfigMapWatch = useVariablesConfigMapWatch();
   const configMapPermissions = useConfigMapPermissions();
+  const { triggerEditConfigMap, mutations } = useConfigMapCRUD();
 
   const variablesConfigMap = variablesConfigMapWatch.query.data;
 
@@ -37,60 +44,96 @@ export const Variables = () => {
     [dataEntries]
   );
 
-  const [variables, setVariables] = React.useState<Variable[]>(initialVariables);
+  const form = useAppForm({
+    defaultValues: {
+      variables: initialVariables,
+    } as VariablesFormValues,
+    onSubmit: async ({ value, formApi }) => {
+      if (!variablesConfigMap) {
+        return;
+      }
+
+      const configMapCopy = {
+        ...variablesConfigMap,
+        data: (value.variables || []).reduce<Record<string, string>>((acc, { key, value: itemValue }) => {
+          if (key.trim()) {
+            acc[key] = itemValue;
+          }
+          return acc;
+        }, {}),
+      };
+
+      await new Promise<void>((resolve, reject) => {
+        triggerEditConfigMap({
+          data: {
+            resource: configMapCopy,
+          },
+          callbacks: {
+            onSuccess: () => {
+              const nextVariables = Object.entries(configMapCopy.data ?? {}).map(([key, itemValue]) => ({
+                key,
+                value: itemValue,
+              }));
+              formApi.reset({ variables: nextVariables });
+              resolve();
+            },
+            onError: () => reject(new Error("Failed to save variables")),
+          },
+        });
+      });
+    },
+  });
+
+  const variables = useStore(form.store, (state) => state.values.variables || []);
+  const isDirty = useStore(form.store, (state) => state.isDirty);
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
 
   // Update variables when config map data changes (stable dependency to avoid infinite loop)
   React.useEffect(() => {
-    setVariables(initialVariables);
+    form.reset({ variables: initialVariables });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- configDataSnapshot is stable dependency to avoid infinite loop
   }, [configDataSnapshot]);
 
-  const isDirty = React.useMemo(() => {
-    if (variables.length !== dataEntries.length) return true;
-    return variables.some((v, index) => {
-      const [originalKey, originalValue] = dataEntries[index] || ["", ""];
-      return v.key !== originalKey || v.value !== originalValue;
-    });
-  }, [variables, dataEntries]);
+  const updateVariables = React.useCallback(
+    (updater: (prev: Variable[]) => Variable[]) => {
+      const currentVariables = form.getFieldValue("variables") || [];
+      form.setFieldValue("variables", updater(currentVariables));
+    },
+    [form]
+  );
 
-  const handleDelete = React.useCallback((index: number) => {
-    setVariables((prev) => prev.filter((_, i) => i !== index));
-  }, []);
+  const handleDelete = React.useCallback(
+    (index: number) => {
+      updateVariables((prev) => prev.filter((_, i) => i !== index));
+    },
+    [updateVariables]
+  );
 
-  const handleKeyChange = React.useCallback((index: number, newKey: string) => {
-    setVariables((prev) => prev.map((v, i) => (i === index ? { ...v, key: newKey } : v)));
-  }, []);
+  const handleKeyChange = React.useCallback(
+    (index: number, newKey: string) => {
+      updateVariables((prev) => prev.map((v, i) => (i === index ? { ...v, key: newKey } : v)));
+    },
+    [updateVariables]
+  );
 
-  const handleValueChange = React.useCallback((index: number, newValue: string) => {
-    setVariables((prev) => prev.map((v, i) => (i === index ? { ...v, value: newValue } : v)));
-  }, []);
+  const handleValueChange = React.useCallback(
+    (index: number, newValue: string) => {
+      updateVariables((prev) => prev.map((v, i) => (i === index ? { ...v, value: newValue } : v)));
+    },
+    [updateVariables]
+  );
 
   const onSubmit = React.useCallback(() => {
-    const configMapCopy = { ...variablesConfigMap };
-    configMapCopy.data = variables.reduce<Record<string, string>>((acc, { key, value }) => {
-      if (key.trim()) {
-        acc[key] = value;
-      }
-      return acc;
-    }, {});
-
-    // editConfigMap({ configMapData: configMapCopy });
-    // Reset state to match new data (simulating successful save)
-    setVariables(
-      Object.entries(configMapCopy.data).map(([key, value]) => ({
-        key,
-        value,
-      }))
-    );
-  }, [variablesConfigMap, variables]);
+    form.handleSubmit();
+  }, [form]);
 
   const appendNewRow = React.useCallback(() => {
-    setVariables((prev) => [...prev, { key: "", value: "" }]);
-  }, []);
+    updateVariables((prev) => [...prev, { key: "", value: "" }]);
+  }, [updateVariables]);
 
   const handleReset = React.useCallback(() => {
-    setVariables(initialVariables);
-  }, [initialVariables]);
+    form.reset();
+  }, [form]);
 
   const renderContent = React.useCallback(() => {
     if (variables.length || dataEntries?.length) {
@@ -130,15 +173,15 @@ export const Variables = () => {
           </div>
           <div className="flex items-center justify-end gap-2">
             <Button size="sm" variant="ghost" onClick={handleReset} disabled={!isDirty}>
-              undo changes
+              Undo Changes
             </Button>
             <Button
               size="sm"
               variant="default"
-              // disabled={configMapEditMutation.isLoading || !isDirty}
+              disabled={mutations.configMapEditMutation.isPending || isSubmitting || !isDirty}
               onClick={onSubmit}
             >
-              save
+              Save
             </Button>
           </div>
         </div>
@@ -154,7 +197,8 @@ export const Variables = () => {
         <EmptyList
           customText="No variables found."
           handleClick={appendNewRow}
-          linkText="Click here to add a new variable."
+          linkText="Add variable"
+          actionVariant="button"
         />
       );
     }
@@ -162,6 +206,7 @@ export const Variables = () => {
   }, [
     appendNewRow,
     dataEntries?.length,
+    form,
     variables,
     handleDelete,
     handleKeyChange,

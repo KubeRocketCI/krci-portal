@@ -1,5 +1,5 @@
 import { Alert, AlertDescription } from "@/core/components/ui/alert";
-import { Shield, AlertTriangle, Package, FileWarning, ArrowRight, AlertCircle } from "lucide-react";
+import { Shield, AlertTriangle, Package, FileWarning, ArrowRight } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/core/components/ui/button";
 import { Badge } from "@/core/components/ui/badge";
@@ -45,7 +45,6 @@ export function VulnerabilitiesTab({ codebaseName, defaultBranch, namespace, clu
   if (error || !project || !projectUuid) {
     return (
       <Alert>
-        <AlertCircle className="h-4 w-4" />
         <AlertDescription>
           {error
             ? "Failed to load DependencyTrack data. Please try again later."

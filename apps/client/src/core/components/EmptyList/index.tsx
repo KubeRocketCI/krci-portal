@@ -27,6 +27,7 @@ export const EmptyList = ({
   isSearch = false,
   icon,
   iconSize = 96,
+  actionVariant = "link",
 }: EmptyListProps) => {
   const renderActionLink = () => {
     if (!linkText) return null;
@@ -40,11 +41,21 @@ export const EmptyList = ({
     }
 
     if (handleClick) {
-      return (
-        <Button variant="link" onClick={handleClick} className="h-auto p-0 text-sm">
-          <span className="text-sm">{linkText}</span>
-        </Button>
-      );
+      if (actionVariant === "button") {
+        return (
+          <Button size="sm" variant="default" onClick={handleClick} className="text-sm">
+            <span className="text-sm">{linkText}</span>
+          </Button>
+        );
+      }
+
+      if (actionVariant === "link") {
+        return (
+          <Button variant="link" onClick={handleClick} className="h-auto p-0 text-sm">
+            <span className="text-sm">{linkText}</span>
+          </Button>
+        );
+      }
     }
 
     return null;
