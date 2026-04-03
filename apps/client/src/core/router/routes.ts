@@ -37,8 +37,9 @@ export const routeCluster = createRoute({
   beforeLoad: ({ location, params }) => {
     const clusterName = useClusterStore.getState().clusterName || import.meta.env.VITE_K8S_DEFAULT_CLUSTER_NAME || "";
 
-    if (params.clusterName !== clusterName) {
-      // Load only known cluster
+    // Only redirect when the cluster name is known (store populated after config loads).
+    // An empty clusterName means ConfigProvider hasn't finished yet — allow the route through.
+    if (clusterName && params.clusterName !== clusterName) {
       throw redirect({
         to: "/home",
       });

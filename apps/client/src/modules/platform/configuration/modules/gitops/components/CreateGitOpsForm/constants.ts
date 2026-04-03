@@ -19,7 +19,9 @@ export const CODEBASE_FORM_NAMES = {
   VERSIONING_START_FROM: "versioningStartFrom",
   DEPLOYMENT_SCRIPT: "deploymentScript",
   CI_TOOL: "ciTool",
-  GIT_REPO_PATH: "gitRepoPath",
+  UI_GIT_SERVER_PROVIDER: "ui_gitServerProvider",
+  UI_REPOSITORY_OWNER: "ui_repositoryOwner",
+  UI_REPOSITORY_NAME: "ui_repositoryName",
   SYSTEM_TYPE_LABEL: "systemTypeLabel",
 } as const;
 
@@ -44,9 +46,23 @@ export const FORM_GUIDE_CONFIG: Record<number, FormGuideFieldDescription[]> = {
         "Select the Continuous Integration tool to use for this GitOps repository. This determines how your GitOps changes will be processed.",
     },
     {
-      fieldName: "gitRepoPath",
-      label: "Git Repository Path",
-      description: "Enter the repository path for the GitOps repository (e.g., organization/repo-name).",
+      fieldName: "gitUrlPath",
+      label: "Git URL Path",
+      description: "Enter the Gerrit repository path for the GitOps repository.",
+      notes: ["This field is visible only when using Gerrit as the Git provider"],
+      visibilityHint: "Visible when Git Server provider is Gerrit",
+    },
+    {
+      fieldName: "ui_repositoryOwner",
+      label: "Owner",
+      description: "Select the organization or account that owns the GitOps repository.",
+      notes: ["This field is hidden when using Gerrit as the Git provider"],
+      visibilityHint: "Visible when Git Server provider is not Gerrit",
+    },
+    {
+      fieldName: "ui_repositoryName",
+      label: "Repository",
+      description: "Select or enter the repository name for the GitOps repository.",
       notes: ["This field is hidden when using Gerrit as the Git provider"],
       visibilityHint: "Visible when Git Server provider is not Gerrit",
     },

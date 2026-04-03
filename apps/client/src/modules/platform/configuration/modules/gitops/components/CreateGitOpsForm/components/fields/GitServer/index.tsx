@@ -1,10 +1,8 @@
 import React from "react";
 import { CODEBASE_FORM_NAMES } from "../../../constants";
 import { useCreateGitOpsForm } from "../../../providers/form/hooks";
-import { updateGitUrlPath } from "../../../utils";
 import { getGitServerStatusIcon, useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { StatusIcon } from "@/core/components/StatusIcon";
-import { gitProvider } from "@my-project/shared";
 
 export const GitServer = () => {
   const form = useCreateGitOpsForm();
@@ -42,13 +40,11 @@ export const GitServer = () => {
       }}
       listeners={{
         onChange: ({ value }) => {
-          const gitRepoPath = form.getFieldValue(CODEBASE_FORM_NAMES.GIT_REPO_PATH) || "";
-          const name = form.getFieldValue(CODEBASE_FORM_NAMES.NAME) || "";
-
           const selectedServer = gitServers.find((gs) => gs.metadata.name === value);
-          const isGerrit = selectedServer?.spec.gitProvider === gitProvider.gerrit;
-
-          updateGitUrlPath(form, value, gitRepoPath, name, isGerrit);
+          form.setFieldValue(CODEBASE_FORM_NAMES.UI_GIT_SERVER_PROVIDER, selectedServer?.spec.gitProvider ?? "");
+          form.setFieldValue(CODEBASE_FORM_NAMES.UI_REPOSITORY_OWNER, "");
+          form.setFieldValue(CODEBASE_FORM_NAMES.UI_REPOSITORY_NAME, "");
+          form.setFieldValue(CODEBASE_FORM_NAMES.GIT_URL_PATH, "");
         },
       }}
     >

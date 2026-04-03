@@ -22,6 +22,7 @@ export interface ConfigurationPageContentProps {
     };
     label?: string;
     isDisabled?: boolean;
+    dialogBaseMaxWidth?: string;
   };
   children: React.ReactNode;
   pageDescription: PageDescription;
