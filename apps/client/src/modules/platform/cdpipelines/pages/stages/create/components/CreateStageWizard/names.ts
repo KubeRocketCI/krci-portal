@@ -90,7 +90,7 @@ const coreFields = {
   deployNamespace: deployNamespaceSchema,
   qualityGates: qualityGatesSchema,
   namespace: z.string(),
-  description: z.string().min(1, "Enter description"),
+  description: z.string().optional(),
   sourceLibraryBranch: z.string().default("default"),
   sourceLibraryName: z.string().default("default"),
   sourceType: z.string().default("default"),
@@ -132,14 +132,6 @@ const validateBasicConfigurationStep = (data: FormData, ctx: z.RefinementCtx) =>
       code: z.ZodIssueCode.custom,
       path: ["deployNamespace"],
       message: "Namespace is required",
-    });
-  }
-
-  if (isEmptyStr(data.description)) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["description"],
-      message: "Enter description",
     });
   }
 };
@@ -193,6 +185,7 @@ export const createStageSubmitSchema = createStageFormSchema.transform((data) =>
   return {
     ...data,
     name: typeof data.name === "string" ? data.name.trim() : data.name,
+    description: typeof data.description === "string" && isEmptyStr(data.description) ? undefined : data.description,
   };
 });
 

@@ -11,6 +11,12 @@ import {
   getPipelineRunAnnotation,
   tektonResultAnnotations,
 } from "@my-project/shared";
+
+const pipelineRunStatusLabels: Record<string, string> = {
+  [pipelineRunStatus.true]: "Succeeded",
+  [pipelineRunStatus.false]: "Failed",
+  [pipelineRunStatus.unknown]: "Running / Pending",
+};
 import React from "react";
 import { pipelineRunFilterControlNames } from "./constants";
 import { usePipelineRunFilter } from "./hooks/usePipelineRunFilter";
@@ -63,7 +69,10 @@ export const PipelineRunFilter = ({
   const statusOptions: SelectOption[] = React.useMemo(
     () => [
       { label: "All", value: "all" },
-      ...Object.values(pipelineRunStatus).map((v) => ({ label: capitalizeFirstLetter(String(v)), value: String(v) })),
+      ...Object.values(pipelineRunStatus).map((v) => ({
+        label: pipelineRunStatusLabels[v] ?? capitalizeFirstLetter(String(v)),
+        value: String(v),
+      })),
     ],
     []
   );

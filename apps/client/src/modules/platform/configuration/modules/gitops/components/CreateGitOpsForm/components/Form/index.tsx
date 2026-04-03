@@ -1,26 +1,25 @@
 import { CODEBASE_FORM_NAMES } from "../../constants";
-import { CiTool, GitRepoPath, GitServer, Name } from "../fields";
+import { CiTool, GitUrlPath, GitServer, Owner, RepositoryName } from "../fields";
 import { FolderPlus, CloudDownload } from "lucide-react";
 import { useGitServerWatchItem } from "@/k8s/api/groups/KRCI/GitServer";
 import { gitProvider } from "@my-project/shared";
 import { useCreateGitOpsForm } from "../../providers/form/hooks";
 import { useStore } from "@tanstack/react-form";
 import type { FormRadioOption } from "@/core/components/form";
+import { cn } from "@/core/utils/classname";
 
 const codebaseCreationStrategies: FormRadioOption[] = [
   {
     value: "create",
     label: "Create",
     description: "Create a new base repository.",
-    icon: <FolderPlus size={24} color="#002446" />,
-    checkedIcon: <FolderPlus size={24} color="#002446" />,
+    icon: FolderPlus,
   },
   {
     value: "import",
     label: "Import",
     description: "Onboard your existing repository.",
-    icon: <CloudDownload size={24} color="#002446" />,
-    checkedIcon: <CloudDownload size={24} color="#002446" />,
+    icon: CloudDownload,
   },
 ];
 
@@ -33,31 +32,33 @@ export const Form = () => {
     name: gitServerFieldValue,
   });
 
-  const gitServer = gitServerWatch.query.data;
-  const gitServerProvider = gitServer?.spec.gitProvider;
+  const gitServerProvider = gitServerWatch.query.data?.spec.gitProvider;
+  const isGerrit = gitServerProvider === gitProvider.gerrit;
 
   return (
     <div className="flex flex-col gap-2">
       <form.AppField name={CODEBASE_FORM_NAMES.STRATEGY}>
-        {(field) => <field.FormRadioGroup options={codebaseCreationStrategies} variant="tile" />}
+        {(field) => (
+          <field.FormRadioGroup
+            options={codebaseCreationStrategies}
+            variant="tile"
+            classNames={{ item: "p-3", itemIcon: "h-4 w-4", itemIconContainer: "h-8 w-8" }}
+          />
+        )}
       </form.AppField>
 
-      <div className="p-6 px-2">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <GitServer />
-          </div>
-          <div>
-            <CiTool />
-          </div>
-          {gitServerProvider !== gitProvider.gerrit && !!gitServerWatch.isReady && (
-            <div className="col-span-2">
-              <GitRepoPath />
-            </div>
-          )}
-          <div>
-            <Name />
-          </div>
+      <div className="flex flex-col gap-4 p-6 px-2">
+        {/* Row 1: URL-forming fields — owner + repoName = gitUrlPath for non-Gerrit; gitUrlPath direct for Gerrit */}
+        <div className={cn("grid gap-4", gitServerWatch.isReady && !isGerrit ? "grid-cols-3" : "grid-cols-2")}>
+          <GitServer />
+          {gitServerWatch.isReady && !isGerrit && <Owner />}
+          {gitServerWatch.isReady && !isGerrit && <RepositoryName />}
+          {gitServerWatch.isReady && isGerrit && <GitUrlPath />}
+        </div>
+
+        {/* Row 2: CI Tool — same column width as Git Server in row 1 */}
+        <div className={cn("grid gap-4", gitServerWatch.isReady && !isGerrit ? "grid-cols-3" : "grid-cols-2")}>
+          <CiTool />
         </div>
       </div>
     </div>

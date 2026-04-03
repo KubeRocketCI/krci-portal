@@ -53,7 +53,11 @@ export const ConfigurationPageContent = ({
             }
           }}
         >
-          <FormGuideDialogContent className="w-full" baseMaxWidth="max-w-4xl" expandedMaxWidth="max-w-6xl">
+          <FormGuideDialogContent
+            className="w-full"
+            baseMaxWidth={creationForm.dialogBaseMaxWidth ?? "max-w-4xl"}
+            expandedMaxWidth="max-w-6xl"
+          >
             <DialogHeader>
               <div className="flex w-full items-center justify-between gap-2">
                 <DialogTitle>{creationForm.label}</DialogTitle>
