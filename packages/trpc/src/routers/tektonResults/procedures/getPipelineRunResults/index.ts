@@ -34,7 +34,7 @@ export const getPipelineRunResultsProcedure = protectedProcedure
       filter: combinedFilter,
       pageSize,
       pageToken,
-      orderBy: "summary.end_time desc",
+      orderBy: "create_time desc",
     });
 
     return {
