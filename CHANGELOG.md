@@ -2,8 +2,8 @@
 ## [Unreleased]
 
 
-<a name="v0.1.0"></a>
-## v0.1.0 - 2026-03-27
+<a name="v0.2.0"></a>
+## v0.2.0 - 2026-04-04
 ### Features
 
 - Add reusable form components and refactor configuration modules
@@ -164,4 +164,4 @@
 - Setup initial code ([#1](https://github.com/KubeRocketCI/krci-portal/issues/1))
 
 
-[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.2.0...HEAD
