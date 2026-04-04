@@ -54,7 +54,7 @@ describe("tektonResults.getPipelineRunResults", () => {
       filter: "summary.type == 'tekton.dev/v1.PipelineRun'",
       pageSize: 50,
       pageToken: undefined,
-      orderBy: "summary.end_time desc",
+      orderBy: "create_time desc",
     });
   });
 
@@ -71,7 +71,7 @@ describe("tektonResults.getPipelineRunResults", () => {
       filter: "summary.type == 'tekton.dev/v1.PipelineRun' && (summary.status == 1 || summary.status == 2)",
       pageSize: 50,
       pageToken: undefined,
-      orderBy: "summary.end_time desc",
+      orderBy: "create_time desc",
     });
   });
 
@@ -116,7 +116,7 @@ describe("tektonResults.getPipelineRunResults", () => {
       filter: "summary.type == 'tekton.dev/v1.PipelineRun'",
       pageSize: 20,
       pageToken: "page-2-token",
-      orderBy: "summary.end_time desc",
+      orderBy: "create_time desc",
     });
   });
 
