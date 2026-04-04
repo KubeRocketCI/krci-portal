@@ -30,6 +30,7 @@ describe("config.get", () => {
       defaultNamespace: "default-ns",
       sonarWebUrl: "https://sonar.example.com",
       dependencyTrackWebUrl: "https://dt.example.com",
+      oidcIssuerUrl: "https://mock-issuer.example.com",
     });
   });
 
@@ -51,6 +52,7 @@ describe("config.get", () => {
       defaultNamespace: "",
       sonarWebUrl: "",
       dependencyTrackWebUrl: "",
+      oidcIssuerUrl: "https://mock-issuer.example.com",
     });
   });
 
