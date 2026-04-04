@@ -13,9 +13,10 @@ export const configRouter = t.router({
         defaultNamespace: z.string(),
         sonarWebUrl: z.string(),
         dependencyTrackWebUrl: z.string(),
+        oidcIssuerUrl: z.string(),
       })
     )
-    .query(() => {
+    .query(({ ctx }) => {
       const clusterName = process.env.DEFAULT_CLUSTER_NAME || "";
       const defaultNamespace = process.env.DEFAULT_CLUSTER_NAMESPACE || "";
       const sonarWebUrl = process.env.SONAR_WEB_URL || process.env.SONAR_HOST_URL || "";
@@ -26,6 +27,7 @@ export const configRouter = t.router({
         defaultNamespace,
         sonarWebUrl,
         dependencyTrackWebUrl,
+        oidcIssuerUrl: ctx.oidcConfig.issuerURL,
       };
     }),
 });
