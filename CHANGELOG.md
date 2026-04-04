@@ -1,6 +1,11 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Routine
+
+- Update current development version
+- Remove krci-ai framework
+
 
 <a name="v0.2.0"></a>
 ## [v0.2.0] - 2026-04-04
