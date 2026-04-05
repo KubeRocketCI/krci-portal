@@ -2,10 +2,53 @@
 ## [Unreleased]
 
 
+<a name="v0.2.0"></a>
+## [v0.2.0] - 2026-04-04
+### Features
+
+- Expose OIDC issuer URL in config.get response
+- Align security pages layouts
+- Enable CHANGELOG.md generation
+
+### Bug Fixes
+
+- Resolve pagination failure in Tekton Results PipelineRun query
+- Resolve misaligned inputDockerStreams in CDPipeline edit form
+- Add promise coalescing to getSummary cache to prevent thundering herd
+- Performance bottleneck in tekton results
+- Map GitFusion HTTP status codes to tRPC error codes
+- Throttle live log subscription to prevent page freezing
+
+### Code Refactoring
+
+- Improve CDPipeline form handling
+- Switch PipelineRun list from records to results table
+
+### Routine
+
+- Disable debug for claude review pipeline
+- update commit message length validation
+- Update current development version
+
+
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2026-03-27
 ### Features
 
+- Enable CHANGELOG.md generation
+- Improve project details page
+- Improve ScrollCopyText component
+- Add deployment submit review step
+- Minimize logs tab
+- Enhance FormCombobox, fix recent issues ([#171](https://github.com/KubeRocketCI/krci-portal/issues/171))
+- populate imageDigest in manual deploy payload
+- extend Zod schema to support digest
+- show deployed image reference with digest in environment view
+- Add Cancel button to EditGitServerForm actions
+- Complete Registry module refactoring to independent Create/Edit forms
+- Restructure integration forms and add FormGuide
+- add on-demand PR review workflow with plugin agents
+- add Bearer token authentication to protected tRPC procedures
 - Add reusable form components and refactor configuration modules
 - Add comprehensive platform overview dashboard with metrics components
 - Add table skeleton loading, fix template selection
@@ -62,6 +105,29 @@
 
 ### Bug Fixes
 
+- Correct form validation and error handling in edit wizards
+- History pipelinerun select
+- auto-restart K8s watch on API server timeout and improve stale data recovery
+- Pipelinerun page offset
+- position trigger badge and resolve TriggerTemplate to Pipeline
+- strip only watcher-grouping annotations from re-run PipelineRuns
+- populate applicationsToPromote from canonical applications field
+- Remove inline comments for review pipeline
+- Hide Authentication section for non-ECR registry types
+- Tune claudecode with sun-agent
+- Allow claudecode to run python3
+- Allow claudecode to run python3 command
+- Tune claudecode review pipeline
+- Tune claudecode review pipeline
+- Prevent infinite review loop from bot-generated comments
+- Correct PR review metrics extraction and documentation
+- Consolidate banner rendering in unified log viewer
+- Improve PR review workflow reliability and add metrics reporting
+- strip results.tekton.dev annotations from re-run PipelineRuns
+- Tune claude-agent for the review flow
+- Debug claude code commands for review
+- Fix plugins installation for GH Actions
+- strip triggers.tekton.dev labels from re-run PipelineRuns
 - Tour issue and other
 - resolve critical bugs and optimize form component refactoring
 - align table selection column header with body cells
@@ -122,6 +188,8 @@
 
 ### Code Refactoring
 
+- remove log source disclosure from UI
+- Polish existing integration form structure and layouts
 - extract shared stage deployment cards component and add JWT utility tests
 - Align OIDC token refresh with OIDC spec
 - address code review findings for projects tours feature
@@ -139,6 +207,9 @@
 
 ### Routine
 
+- Align repository path for image
+- fix Dependabot security vulnerabilities in dependencies
+- validate commit title length and format
 - Update README.md file
 - Add tests
 - Rename components to projects
@@ -164,4 +235,5 @@
 - Setup initial code ([#1](https://github.com/KubeRocketCI/krci-portal/issues/1))
 
 
-[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.2.0...HEAD
+[v0.2.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.1.0...v0.2.0

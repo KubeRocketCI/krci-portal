@@ -16,9 +16,9 @@ help:  ## Display this help
 .PHONY: changelog
 changelog: $(GITCHGLOG)	## generate changelog
 ifneq (${NEXT_RELEASE_TAG},)
-	$(GITCHGLOG) --next-tag v${NEXT_RELEASE_TAG} -o CHANGELOG.md v0.7.0..
+	$(GITCHGLOG) --next-tag v${NEXT_RELEASE_TAG} -o CHANGELOG.md
 else
-	$(GITCHGLOG) -o CHANGELOG.md v0.7.0..
+	$(GITCHGLOG) -o CHANGELOG.md
 endif
 
 .PHONY: validate-docs

@@ -109,7 +109,7 @@ To run the KubeRocketCI Portal, follow the steps below:
   cd krci-portal
   ```
 
-2. **Configure environment**
+1. **Configure environment**
 
    For local development, copy `.env.example` to `.env` in the repository root and set at least the following:
 
@@ -121,13 +121,13 @@ To run the KubeRocketCI Portal, follow the steps below:
 
    For production deployment, configure [deploy-templates/values.yaml](deploy-templates/values.yaml); see [deploy-templates/README.md](deploy-templates/README.md) for all options.
 
-3. **Install dependencies**
+2. **Install dependencies**
 
   ```bash
   pnpm install
   ```
 
-4. **Start development servers**
+1. **Start development servers**
 
   ```bash
   pnpm dev
@@ -135,7 +135,7 @@ To run the KubeRocketCI Portal, follow the steps below:
 
    This starts both the client (port 5173) and server (port 3000) in development mode.
 
-5. **Access the application**
+1. **Access the application**
    - Frontend: <http://localhost:5173>
    - Backend API: <http://localhost:3000>
 
@@ -168,6 +168,17 @@ Please refer to the following materials to get more info about the KRCI portal u
 
 We welcome contributions from the community! Please read our [Contributing Guidelines](CONTRIBUTING.md) before submitting pull requests.
 
+### Claude Code Plugins
+
+The project provides [Claude Code plugins](https://github.com/KubeRocketCI/claude-plugins) to accelerate development with AI assistance. The `krci-fullstack` plugin offers commands for implementing features and fixing issues in the portal codebase. To get started, install the plugin:
+
+  ```bash
+  claude plugin marketplace add KubeRocketCI/claude-plugins
+  claude plugin install krci-fullstack
+  ```
+
+Once installed, use `/krci-fullstack:implement-feature` to scaffold new features or `/krci-fullstack:fix-issue` to diagnose and fix bugs.
+
 ### Development Workflow
 
 To start the development process, follow the steps below:
@@ -180,39 +191,39 @@ To start the development process, follow the steps below:
   git checkout -b feature/amazing-feature
   ```
 
-3. Make your changes and add tests.
+1. Make your changes and add tests.
 
-4. Run the test suite:
+2. Run the test suite:
 
   ```bash
   pnpm test:coverage
   ```
 
-5. Run linting:
+1. Run linting:
 
   ```bash
   pnpm lint
   ```
 
-6. Format code:
+1. Format code:
 
   ```bash
   pnpm format:check
   ```
 
-7. Commit your changes:
+1. Commit your changes:
 
   ```bash
   git commit -m 'Add amazing feature'
   ```
 
-8. Push to the branch:
+1. Push to the branch:
 
   ```bash
   git push origin feature/amazing-feature
   ```
 
-9. Open a Pull Request.
+1. Open a Pull Request.
 
 ### Code Quality
 
@@ -249,13 +260,6 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 - [Tekton](https://tekton.dev/) for the CI/CD pipeline engine
 - [Argo CD](https://argoproj.github.io/cd/) for GitOps capabilities
 - All our [contributors](https://github.com/KubeRocketCI/krci-portal/graphs/contributors)
-
-## Project Status
-
-- **Current Version**: 0.1.0-SNAPSHOT
-- **Development Status**: Active
-- **Maintenance**: Actively maintained
-- **Support**: Community supported
 
 ---
 
