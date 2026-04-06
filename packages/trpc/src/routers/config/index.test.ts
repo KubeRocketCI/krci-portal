@@ -2,6 +2,17 @@ import { createMockedContext } from "../../__mocks__/context.js";
 import { createCaller } from "../../routers/index.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+describe("config.oidc", () => {
+  it("should return oidcIssuerUrl from context", async () => {
+    const mockContext = createMockedContext();
+    const caller = createCaller(mockContext);
+
+    const result = await caller.config.oidc();
+
+    expect(result).toEqual({ oidcIssuerUrl: "https://mock-issuer.example.com" });
+  });
+});
+
 describe("config.get", () => {
   const originalEnv = process.env;
 
@@ -30,7 +41,6 @@ describe("config.get", () => {
       defaultNamespace: "default-ns",
       sonarWebUrl: "https://sonar.example.com",
       dependencyTrackWebUrl: "https://dt.example.com",
-      oidcIssuerUrl: "https://mock-issuer.example.com",
     });
   });
 
@@ -52,7 +62,6 @@ describe("config.get", () => {
       defaultNamespace: "",
       sonarWebUrl: "",
       dependencyTrackWebUrl: "",
-      oidcIssuerUrl: "https://mock-issuer.example.com",
     });
   });
 

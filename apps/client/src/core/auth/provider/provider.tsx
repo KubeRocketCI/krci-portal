@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import {
   AuthCallbackLoginInput,
   AuthCallbackLoginOutput,
@@ -12,12 +12,10 @@ import {
 } from "./context";
 import { trpcHttpClient } from "@/core/providers/trpc/http-client";
 import { LoadingProgressBar } from "@/core/components/ui/LoadingProgressBar";
-import { CriticalError } from "@/core/components/CriticalError";
 import { router } from "@/core/router";
 import { routeHome } from "@/modules/home/pages/home/route";
 import { routeAuthCallback } from "../pages/callback/route";
 import { routeAuthLogin } from "../pages/login/route";
-import { useClusterStore } from "@/k8s/store";
 
 export const authInProgressKey = "authInProgress";
 export const authLogoutInProgressKey = "authLogoutInProgress";
@@ -28,54 +26,6 @@ const getLoginCallbackPath = (redirectSearchParam?: string) =>
 export const AuthProvider = ({ children }: React.PropsWithChildren) => {
   const queryClient = useQueryClient();
   const trpc = trpcHttpClient;
-
-  // Get stable setter functions from the store
-  const clusterName = useClusterStore((state) => state.clusterName);
-  const setClusterName = useClusterStore((state) => state.setClusterName);
-  const setDefaultNamespace = useClusterStore((state) => state.setDefaultNamespace);
-  const setAllowedNamespaces = useClusterStore((state) => state.setAllowedNamespaces);
-  const setSonarWebUrl = useClusterStore((state) => state.setSonarWebUrl);
-  const setDependencyTrackWebUrl = useClusterStore((state) => state.setDependencyTrackWebUrl);
-
-  // Fetch server configuration at startup
-  const configQuery = useQuery({
-    queryKey: ["server.config"],
-    queryFn: () => trpc.config.get.query(),
-    retry: 1,
-    staleTime: Infinity, // Config doesn't change during session
-    gcTime: Infinity, // Never garbage collect the data
-  });
-
-  // Initialize cluster store with server config when available
-  useEffect(() => {
-    if (configQuery.data) {
-      const { clusterName: serverClusterName, defaultNamespace, sonarWebUrl, dependencyTrackWebUrl } = configQuery.data;
-
-      // Only initialize if not already set
-      if (!clusterName) {
-        setClusterName(serverClusterName);
-
-        // Check if user has custom namespace settings in localStorage
-        const settings = localStorage.getItem("cluster_settings");
-        if (!settings || !JSON.parse(settings)[serverClusterName]) {
-          setDefaultNamespace(defaultNamespace);
-          setAllowedNamespaces([defaultNamespace]);
-        }
-      }
-
-      // Always update security tool URLs from server config
-      setSonarWebUrl(sonarWebUrl);
-      setDependencyTrackWebUrl(dependencyTrackWebUrl);
-    }
-  }, [
-    configQuery.data,
-    clusterName,
-    setClusterName,
-    setDefaultNamespace,
-    setAllowedNamespaces,
-    setSonarWebUrl,
-    setDependencyTrackWebUrl,
-  ]);
 
   const meQuery = useQuery({
     queryKey: ["auth.me"],
@@ -199,20 +149,8 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
     ]
   );
 
-  if ((meQuery.isLoading && !meQuery.isError) || authInProgress || authLogoutInProgress || configQuery.isLoading) {
+  if ((meQuery.isLoading && !meQuery.isError) || authInProgress || authLogoutInProgress) {
     return <LoadingProgressBar />;
-  }
-
-  if (configQuery.isError) {
-    return (
-      <CriticalError
-        title="Configuration Error"
-        message="Failed to load server configuration. Please check your deployment environment variables."
-        error={configQuery.error}
-        onRetry={() => configQuery.refetch()}
-        showActions={true}
-      />
-    );
   }
 
   return <AuthContext value={value}>{children}</AuthContext>;
