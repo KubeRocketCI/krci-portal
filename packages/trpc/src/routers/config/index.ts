@@ -1,22 +1,30 @@
 import { t } from "../../trpc.js";
+import { protectedProcedure } from "../../procedures/protected/index.js";
 import { z } from "zod";
 
 export const configRouter = t.router({
   /**
-   * Returns server runtime configuration
-   * This includes cluster name, namespace, and external tool URLs that are set at runtime in K8s
+   * Returns only the OIDC issuer URL, accessible without authentication.
+   * Used by CLI for OIDC discovery before login.
    */
-  get: t.procedure
+  oidc: t.procedure.output(z.object({ oidcIssuerUrl: z.string() })).query(({ ctx }) => ({
+    oidcIssuerUrl: ctx.oidcConfig.issuerURL,
+  })),
+
+  /**
+   * Returns server runtime configuration.
+   * Requires authentication — internal infrastructure URLs must not be exposed to unauthenticated callers.
+   */
+  get: protectedProcedure
     .output(
       z.object({
         clusterName: z.string(),
         defaultNamespace: z.string(),
         sonarWebUrl: z.string(),
         dependencyTrackWebUrl: z.string(),
-        oidcIssuerUrl: z.string(),
       })
     )
-    .query(({ ctx }) => {
+    .query(() => {
       const clusterName = process.env.DEFAULT_CLUSTER_NAME || "";
       const defaultNamespace = process.env.DEFAULT_CLUSTER_NAMESPACE || "";
       const sonarWebUrl = process.env.SONAR_WEB_URL || process.env.SONAR_HOST_URL || "";
@@ -27,7 +35,6 @@ export const configRouter = t.router({
         defaultNamespace,
         sonarWebUrl,
         dependencyTrackWebUrl,
-        oidcIssuerUrl: ctx.oidcConfig.issuerURL,
       };
     }),
 });

@@ -1,5 +1,5 @@
 import { ChevronsUpDown, FileUser, Shield } from "lucide-react";
-import * as React from "react";
+import type { ElementType } from "react";
 
 import {
   DropdownMenu,
@@ -20,12 +20,12 @@ export function ClusterSwitcher({
 }: {
   clusters: {
     name: string;
-    logo: React.ElementType;
+    logo: ElementType;
     plan: string;
   }[];
 }) {
   const { isMobile } = useSidebar();
-  const [activeCluster] = React.useState(clusters[0]);
+  const activeCluster = clusters[0];
 
   const openNamespacesDialog = useDialogOpener(NamespacesDialog);
   const openKubeConfigPreviewDialog = useDialogOpener(KubeConfigPreviewDialog);
