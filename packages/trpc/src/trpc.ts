@@ -1,4 +1,5 @@
 import { initTRPC } from "@trpc/server";
+import type { OpenApiMeta } from "trpc-to-openapi";
 import type { TRPCContext } from "./context/types.js";
 
 export function formatError({ shape, error }: { shape: any; error: { cause?: unknown } }) {
@@ -11,7 +12,7 @@ export function formatError({ shape, error }: { shape: any; error: { cause?: unk
   };
 }
 
-export const t = initTRPC.context<TRPCContext>().create({
+export const t = initTRPC.context<TRPCContext>().meta<OpenApiMeta>().create({
   errorFormatter: formatError,
 });
 

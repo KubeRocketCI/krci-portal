@@ -52,6 +52,8 @@ describe("k8sGetProcedure", () => {
     };
 
     const mockResponse = {
+      apiVersion: "test.group.io/v1",
+      kind: "TestResource",
       metadata: { name: "test-resource" },
     };
 

@@ -12,12 +12,25 @@ import { tektonInputSchemas } from "../../utils.js";
  * fetching all logs upfront.
  */
 export const getTaskRunLogsProcedure = protectedProcedure
+  .meta({
+    openapi: { method: "GET", path: "/v1/task-runs/{resultUid}/logs", protect: true, tags: ["tekton-results"] },
+  })
   .input(
     z.object({
       namespace: tektonInputSchemas.namespace,
       resultUid: tektonInputSchemas.uuid,
       taskRunName: tektonInputSchemas.k8sName,
       stepName: tektonInputSchemas.stepName.optional(),
+    })
+  )
+  .output(
+    z.object({
+      taskName: z.string(),
+      taskRunName: z.string(),
+      logs: z.string(),
+      hasLogs: z.boolean(),
+      error: z.string().nullable(),
+      stepFiltered: z.boolean().optional(),
     })
   )
   .query(async ({ input }) => {

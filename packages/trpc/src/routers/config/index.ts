@@ -7,15 +7,21 @@ export const configRouter = t.router({
    * Returns only the OIDC issuer URL, accessible without authentication.
    * Used by CLI for OIDC discovery before login.
    */
-  oidc: t.procedure.output(z.object({ oidcIssuerUrl: z.string() })).query(({ ctx }) => ({
-    oidcIssuerUrl: ctx.oidcConfig.issuerURL,
-  })),
+  oidc: t.procedure
+    .meta({ openapi: { method: "GET", path: "/v1/config/oidc", protect: false } })
+    .input(z.void())
+    .output(z.object({ oidcIssuerUrl: z.string() }))
+    .query(({ ctx }) => ({
+      oidcIssuerUrl: ctx.oidcConfig.issuerURL,
+    })),
 
   /**
    * Returns server runtime configuration.
    * Requires authentication — internal infrastructure URLs must not be exposed to unauthenticated callers.
    */
   get: protectedProcedure
+    .meta({ openapi: { method: "GET", path: "/v1/config", protect: true } })
+    .input(z.void())
     .output(
       z.object({
         clusterName: z.string(),

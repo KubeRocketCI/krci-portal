@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "concurrently -k -n SHARED,TRPC,SERVER,CLIENT -c yellow,magenta,blue,green \"pnpm --filter=shared build:watch\" \"pnpm --filter=trpc build:watch\" \"pnpm --filter=server dev\" \"pnpm --filter=client dev\"",
     "build": "pnpm --filter=shared build && pnpm --filter=trpc build && pnpm --filter=server build && pnpm --filter=client build",
+    "generate:openapi": "pnpm --filter=shared build && pnpm --filter=trpc build && pnpm --filter=trpc generate:openapi",
     "tsc:check": "pnpm --filter=shared tsc && pnpm --filter=trpc tsc && pnpm --filter=server tsc && pnpm --filter=client tsc",
     "lint:check": "pnpm --recursive run lint",
     "format:check": "pnpm --recursive run format:check",

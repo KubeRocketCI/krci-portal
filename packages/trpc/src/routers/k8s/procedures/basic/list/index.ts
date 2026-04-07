@@ -7,7 +7,33 @@ import { k8sResourceConfigSchema } from "@my-project/shared";
 import { handleK8sError } from "../../../utils/handleK8sError/index.js";
 import { K8sClient } from "../../../../../clients/k8s/index.js";
 
+const k8sItemMetadataSchema = z
+  .object({
+    name: z.string(),
+    namespace: z.string().optional(),
+    resourceVersion: z.string().optional(),
+  })
+  .passthrough();
+
+const k8sListOutputSchema = z.object({
+  apiVersion: z.string(),
+  kind: z.string(),
+  metadata: z.record(z.unknown()),
+  items: z.array(
+    z
+      .object({
+        apiVersion: z.string(),
+        kind: z.string(),
+        metadata: k8sItemMetadataSchema,
+        spec: z.record(z.unknown()).optional(),
+        status: z.record(z.unknown()).optional(),
+      })
+      .passthrough()
+  ),
+});
+
 export const k8sListProcedure = protectedProcedure
+  .meta({ openapi: { method: "POST", path: "/v1/resources/list", protect: true, tags: ["k8s"] } })
   .input(
     z.object({
       clusterName: z.string(),
@@ -16,6 +42,7 @@ export const k8sListProcedure = protectedProcedure
       labels: z.record(z.string()).optional().default({}),
     })
   )
+  .output(k8sListOutputSchema)
   .query(async ({ input, ctx }) => {
     try {
       const k8sClient = new K8sClient(ctx.session);

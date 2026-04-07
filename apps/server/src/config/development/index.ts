@@ -16,6 +16,7 @@ import {
 import Fastify, { FastifyInstance, FastifyRequest } from "fastify";
 import { IncomingMessage } from "http";
 import { maskEnvValue } from "../env-utils";
+import { registerOpenApi } from "../openapi";
 
 export class LocalFastifyServer {
   fastify: FastifyInstance;
@@ -77,6 +78,18 @@ export class LocalFastifyServer {
         sameSite: "lax",
       },
       saveUninitialized: false,
+    });
+
+    registerOpenApi(this.fastify, {
+      sessionStore,
+      oidcConfig: {
+        issuerURL: process.env.OIDC_ISSUER_URL!,
+        clientID: process.env.OIDC_CLIENT_ID!,
+        clientSecret: process.env.OIDC_CLIENT_SECRET!,
+        scope: process.env.OIDC_SCOPE!,
+        codeChallengeMethod: process.env.OIDC_CODE_CHALLENGE_METHOD!,
+      },
+      portalUrl: process.env.PORTAL_URL!,
     });
 
     this.fastify.register((trpcScope) => {
