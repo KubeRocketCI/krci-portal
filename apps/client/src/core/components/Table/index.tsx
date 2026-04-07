@@ -22,7 +22,11 @@ import {
 } from "./types";
 import { createSortFunction } from "./utils";
 import { usePagination } from "@/core/hooks/usePagination";
+import { useIsNarrow } from "@/core/hooks/use-narrow";
 import { cn } from "@/core/utils/classname";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/core/components/ui/sheet";
+import { Button } from "@/core/components/ui/button";
+import { SlidersHorizontal } from "lucide-react";
 
 export const DataTable = <DataType,>({
   id,
@@ -44,6 +48,7 @@ export const DataTable = <DataType,>({
   outlined = true,
   containerProps,
 }: TableProps<DataType>) => {
+  const isNarrow = useIsNarrow();
   const [columns, setColumns] = React.useState(_columns);
   const paginationSettings: TablePaginationType = React.useMemo(
     () => ({
@@ -207,24 +212,46 @@ export const DataTable = <DataType,>({
   ]);
 
   const renderHeader = React.useCallback(() => {
-    if (slots?.header || tableSettings.show) {
-      return (
-        <div className={cn(outlined ? "px-5" : "", "pt-5")}>
-          <div className="grid grid-cols-[1fr_auto] items-center gap-4">
-            <div
-              {...slots?.header?.slotProps}
-              className={cn("grid grid-cols-12 gap-4", slots?.header?.slotProps?.className)}
-            >
-              {slots?.header?.component}
-            </div>
-            <div className="mt-6">
-              {tableSettings.show && <TableSettings id={id} columns={columns} setColumns={setColumns} />}
-            </div>
+    if (!slots?.header && !tableSettings.show) return null;
+
+    return (
+      <div className={cn(outlined ? "px-5" : "", "pt-5")}>
+        <div className="grid grid-cols-[1fr_auto] items-center gap-4">
+          <div>
+            {slots?.header &&
+              (isNarrow ? (
+                <div {...slots.header.slotProps}>
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <SlidersHorizontal className="size-4" />
+                        Filters
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right">
+                      <SheetHeader>
+                        <SheetTitle>Filters</SheetTitle>
+                      </SheetHeader>
+                      <div className="flex flex-col gap-4 px-4">{slots.header.component}</div>
+                    </SheetContent>
+                  </Sheet>
+                </div>
+              ) : (
+                <div
+                  {...slots.header.slotProps}
+                  className={cn("grid grid-cols-12 gap-4", slots.header.slotProps?.className)}
+                >
+                  {slots.header.component}
+                </div>
+              ))}
+          </div>
+          <div className="mt-6">
+            {tableSettings.show && <TableSettings id={id} columns={columns} setColumns={setColumns} />}
           </div>
         </div>
-      );
-    }
-  }, [slots?.header, tableSettings.show, id, columns, setColumns, outlined]);
+      </div>
+    );
+  }, [isNarrow, slots?.header, tableSettings.show, id, columns, setColumns, outlined]);
 
   return (
     <div
@@ -240,7 +267,7 @@ export const DataTable = <DataType,>({
             </div>
           )}
           <div className="border-border w-full overflow-hidden rounded-md border">
-            <TableUI>
+            <TableUI style={{ minWidth: 1360 }}>
               <colgroup>
                 {expandable && <col key={"expand-chevron"} width="40px" />}
                 {shouldShowSelectionColumn && <col key={"select-checkbox"} width={`${TABLE_CELL_DEFAULTS.WIDTH}%`} />}

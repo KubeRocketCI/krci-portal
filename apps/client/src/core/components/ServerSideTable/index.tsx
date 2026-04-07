@@ -9,6 +9,10 @@ import { SortState, TableSort } from "@/core/components/Table/types";
 import { createSortFunction } from "@/core/components/Table/utils";
 import { cn } from "@/core/utils/classname";
 import { ServerSideTableProps } from "./types";
+import { useIsNarrow } from "@/core/hooks/use-narrow";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/core/components/ui/sheet";
+import { Button } from "@/core/components/ui/button";
+import { SlidersHorizontal } from "lucide-react";
 
 /**
  * ServerSideTable component for tables with server-side pagination
@@ -56,6 +60,7 @@ export const ServerSideTable = <DataType,>({
   settings,
   outlined = true,
 }: ServerSideTableProps<DataType>) => {
+  const isNarrow = useIsNarrow();
   const [columns, setColumns] = React.useState(_columns);
 
   const sortSettings: TableSort = React.useMemo(
@@ -107,19 +112,39 @@ export const ServerSideTable = <DataType,>({
   }, [data, isLoading, blockerError, sortState.sortFn, isPageOutOfBounds]);
 
   const renderHeader = React.useCallback(() => {
-    if (slots?.header || tableSettings.show) {
-      return (
-        <div className={cn(outlined ? "px-5" : "", "pt-5")}>
-          <div className="grid grid-cols-[1fr_auto] items-center gap-4">
-            <div className="grid grid-cols-12 gap-4">{slots?.header}</div>
-            <div className="mt-6">
-              {tableSettings.show && <TableSettings id={id} columns={columns} setColumns={setColumns} />}
-            </div>
+    if (!slots?.header && !tableSettings.show) return null;
+
+    return (
+      <div className={cn(outlined ? "px-5" : "", "pt-5")}>
+        <div className="grid grid-cols-[1fr_auto] items-center gap-4">
+          <div>
+            {slots?.header &&
+              (isNarrow ? (
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <SlidersHorizontal className="size-4" />
+                      Filters
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="right">
+                    <SheetHeader>
+                      <SheetTitle>Filters</SheetTitle>
+                    </SheetHeader>
+                    <div className="flex flex-col gap-4 px-4">{slots.header}</div>
+                  </SheetContent>
+                </Sheet>
+              ) : (
+                <div className="grid grid-cols-12 gap-4">{slots.header}</div>
+              ))}
+          </div>
+          <div className="mt-6">
+            {tableSettings.show && <TableSettings id={id} columns={columns} setColumns={setColumns} />}
           </div>
         </div>
-      );
-    }
-  }, [slots?.header, tableSettings.show, id, columns, setColumns, outlined]);
+      </div>
+    );
+  }, [isNarrow, slots?.header, tableSettings.show, id, columns, setColumns, outlined]);
 
   // Wrap pagination callbacks to convert types
   const handleChangePage = React.useCallback(
@@ -145,7 +170,7 @@ export const ServerSideTable = <DataType,>({
         {renderHeader()}
         <div className={cn(outlined ? "px-5" : "", "py-5")}>
           <div className="border-border w-full overflow-hidden rounded-md border">
-            <TableUI>
+            <TableUI style={{ minWidth: 1360 }}>
               <colgroup>
                 {expandable && <col key={"expand-chevron"} width="40px" />}
                 {columns.map(

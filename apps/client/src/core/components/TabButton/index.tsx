@@ -20,7 +20,7 @@ export function TabButton({ label, icon, isActive, disabled, tourHighlight, tabI
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "relative flex items-center gap-2 px-4 py-2.5 text-sm transition-all duration-300",
+        "relative flex shrink-0 items-center gap-2 px-4 py-2.5 text-sm whitespace-nowrap transition-all duration-300",
         isActive ? "text-primary" : "text-slate-500 hover:text-slate-700",
         disabled && "cursor-not-allowed opacity-50",
         shouldGlow && "outline-primary outline outline-2 outline-offset-2",
