@@ -68,7 +68,7 @@ export function Details() {
   return (
     <LoadingWrapper isLoading={isLoading}>
       <div className="flex h-full gap-6">
-        <div className="w-[20%] flex-shrink-0">
+        <div className="w-[25%] flex-shrink-0">
           <Card className="flex h-full flex-col">
             <div className="border-b px-4 py-3">
               <h3 className="text-foreground font-medium">Tasks & Steps</h3>

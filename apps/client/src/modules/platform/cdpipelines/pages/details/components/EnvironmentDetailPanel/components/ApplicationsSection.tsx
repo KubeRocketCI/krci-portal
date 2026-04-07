@@ -31,6 +31,7 @@ import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { PodLogsDialog } from "../../../../../dialogs/PodLogs";
 import { PodExecDialog } from "../../../../../dialogs/PodExec";
 import { ScrollCopyText } from "@/core/components/ScrollCopyText";
+import { useScrollFades } from "@/core/hooks/use-scroll-fades";
 
 interface ApplicationsSectionProps {
   stage: Stage;
@@ -49,6 +50,7 @@ export function ApplicationsSection({ stage }: ApplicationsSectionProps) {
   const quickLinksUrlListWatch = useQuickLinksUrlListWatch();
   const { data: pipelineAppCodebases } = usePipelineAppCodebases();
   const argoAppsByAppName = useArgoAppsByAppName(stageArgoAppsWatch.data.array);
+  const { scrollRef, showLeftFade, showRightFade } = useScrollFades<HTMLDivElement>();
 
   // Quick links
   const argocdQuickLink = quickLinksUrlListWatch.data?.quickLinkList?.find(
@@ -61,145 +63,158 @@ export function ApplicationsSection({ stage }: ApplicationsSectionProps) {
       <h4 className="text-muted-foreground mb-3 flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
         <Package className="size-3" /> Deployed Applications
       </h4>
-      <div className="grid gap-2" style={{ gridTemplateColumns: "minmax(10rem, 14rem) 200px auto auto auto" }}>
-        {pipelineAppCodebases.map((appCodebase) => {
-          // Lookup the Argo application for this codebase in this stage
-          const argoApplication = argoAppsByAppName.get(appCodebase.metadata.name);
+      <div className="relative">
+        <div ref={scrollRef} className="overflow-x-auto">
+          <div
+            className="grid gap-2"
+            style={{ gridTemplateColumns: "minmax(10rem, 14rem) 200px auto auto auto", minWidth: 700 }}
+          >
+            {pipelineAppCodebases.map((appCodebase) => {
+              // Lookup the Argo application for this codebase in this stage
+              const argoApplication = argoAppsByAppName.get(appCodebase.metadata.name);
 
-          // Get status info
-          const healthStatus = argoApplication ? getApplicationStatus(argoApplication) : { status: "Missing" };
-          const syncStatus = argoApplication ? getApplicationSyncStatus(argoApplication) : { status: "Unknown" };
-          const healthStatusIcon = argoApplication
-            ? getApplicationStatusIcon(argoApplication)
-            : { component: AlertTriangle, color: "#94a3b8" };
-          const syncStatusIcon = argoApplication
-            ? getApplicationSyncStatusIcon(argoApplication)
-            : { component: RefreshCw, color: "#94a3b8" };
-          const version = argoApplication?.spec?.source?.targetRevision || "N/A";
-          const externalURLs = argoApplication?.status?.summary?.externalURLs;
+              // Get status info
+              const healthStatus = argoApplication ? getApplicationStatus(argoApplication) : { status: "Missing" };
+              const syncStatus = argoApplication ? getApplicationSyncStatus(argoApplication) : { status: "Unknown" };
+              const healthStatusIcon = argoApplication
+                ? getApplicationStatusIcon(argoApplication)
+                : { component: AlertTriangle, color: "#94a3b8" };
+              const syncStatusIcon = argoApplication
+                ? getApplicationSyncStatusIcon(argoApplication)
+                : { component: RefreshCw, color: "#94a3b8" };
+              const version = argoApplication?.spec?.source?.targetRevision || "N/A";
+              const externalURLs = argoApplication?.status?.summary?.externalURLs;
 
-          const argoAppLink = argoApplication
-            ? LinkCreationService.argocd.createApplicationLink(
-                argocdBaseURL,
-                argoApplication.metadata?.labels?.[applicationLabels.pipeline],
-                argoApplication.metadata?.labels?.[applicationLabels.stage],
-                argoApplication.metadata?.labels?.[applicationLabels.appName]
-              )
-            : undefined;
+              const argoAppLink = argoApplication
+                ? LinkCreationService.argocd.createApplicationLink(
+                    argocdBaseURL,
+                    argoApplication.metadata?.labels?.[applicationLabels.pipeline],
+                    argoApplication.metadata?.labels?.[applicationLabels.stage],
+                    argoApplication.metadata?.labels?.[applicationLabels.appName]
+                  )
+                : undefined;
 
-          return (
-            <div
-              key={appCodebase.metadata.name}
-              className="group bg-secondary/30 hover:border-border/80 hover:bg-card col-span-5 grid items-center gap-3 rounded-xl border p-2.5"
-              style={{ gridTemplateColumns: "subgrid" }}
-            >
-              {/* Title Column */}
-              <div className="flex items-center gap-2">
-                <Button variant="link" asChild className="text-foreground h-auto justify-start p-0 text-sm">
-                  <Link
-                    to={PATH_PROJECT_DETAILS_FULL}
-                    params={{
-                      clusterName,
-                      name: appCodebase.metadata.name,
-                      namespace: appCodebase.metadata.namespace || params.namespace,
-                    }}
-                  >
-                    <ENTITY_ICON.project className="text-muted-foreground/70 mr-1.5 shrink-0" />
-                    {appCodebase.metadata.name}
-                  </Link>
-                </Button>
-              </div>
+              return (
+                <div
+                  key={appCodebase.metadata.name}
+                  className="group bg-secondary/30 hover:border-border/80 hover:bg-card col-span-5 grid items-center gap-3 rounded-xl border p-2.5"
+                  style={{ gridTemplateColumns: "subgrid" }}
+                >
+                  {/* Title Column */}
+                  <div className="flex items-center gap-2">
+                    <Button variant="link" asChild className="text-foreground h-auto justify-start p-0 text-sm">
+                      <Link
+                        to={PATH_PROJECT_DETAILS_FULL}
+                        params={{
+                          clusterName,
+                          name: appCodebase.metadata.name,
+                          namespace: appCodebase.metadata.namespace || params.namespace,
+                        }}
+                      >
+                        <ENTITY_ICON.project className="text-muted-foreground/70 mr-1.5 shrink-0" />
+                        {appCodebase.metadata.name}
+                      </Link>
+                    </Button>
+                  </div>
 
-              {/* Version Column */}
-              <div className="flex items-center">
-                <ScrollCopyText text={version} className="w-full max-w-full" showFromEnd />
-              </div>
+                  {/* Version Column */}
+                  <div className="flex items-center">
+                    <ScrollCopyText text={version} className="w-full max-w-full" showFromEnd />
+                  </div>
 
-              {/* Status Column */}
-              <div className="flex items-center gap-2">
-                <StatusBadge statusIcon={healthStatusIcon} label={healthStatus.status} />
-                <StatusBadge statusIcon={syncStatusIcon} label={syncStatus.status} />
-              </div>
+                  {/* Status Column */}
+                  <div className="flex items-center gap-2">
+                    <StatusBadge statusIcon={healthStatusIcon} label={healthStatus.status} />
+                    <StatusBadge statusIcon={syncStatusIcon} label={syncStatus.status} />
+                  </div>
 
-              {/* Ingresses Column */}
-              <div className="flex items-center justify-end">
-                {externalURLs && externalURLs.length > 0 ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  {/* Ingresses Column */}
+                  <div className="flex items-center justify-end">
+                    {externalURLs && externalURLs.length > 0 ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Badge
+                            variant="outline"
+                            className="bg-muted text-muted-foreground hover:bg-accent hover:border-primary/50 cursor-pointer py-1 text-xs [&>svg]:size-3"
+                          >
+                            <SquareArrowOutUpRight className="text-muted-foreground/70 mr-1" />
+                            {externalURLs.length}
+                          </Badge>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="max-h-80 w-80 overflow-y-auto">
+                          <div className="border-border text-muted-foreground border-b px-2 py-1.5 text-xs font-medium">
+                            Ingresses ({externalURLs.length})
+                          </div>
+                          {externalURLs.map((url: string) => (
+                            <DropdownMenuItem key={url} className="text-xs" asChild>
+                              <a href={url} target="_blank" rel="noopener noreferrer">
+                                <SquareArrowOutUpRight className="text-muted-foreground/70 mr-2" />
+                                <span className="truncate">{url}</span>
+                              </a>
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : (
                       <Badge
                         variant="outline"
-                        className="bg-muted text-muted-foreground hover:bg-accent hover:border-primary/50 cursor-pointer py-1 text-xs [&>svg]:size-3"
+                        className="bg-muted text-muted-foreground py-1 text-xs opacity-50 [&>svg]:size-3"
                       >
-                        <SquareArrowOutUpRight className="text-muted-foreground/70 mr-1" />
-                        {externalURLs.length}
+                        <SquareArrowOutUpRight className="text-muted-foreground/70 mr-1" />0
                       </Badge>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="max-h-80 w-80 overflow-y-auto">
-                      <div className="border-border text-muted-foreground border-b px-2 py-1.5 text-xs font-medium">
-                        Ingresses ({externalURLs.length})
-                      </div>
-                      {externalURLs.map((url: string) => (
-                        <DropdownMenuItem key={url} className="text-xs" asChild>
-                          <a href={url} target="_blank" rel="noopener noreferrer">
-                            <SquareArrowOutUpRight className="text-muted-foreground/70 mr-2" />
-                            <span className="truncate">{url}</span>
-                          </a>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  <Badge
-                    variant="outline"
-                    className="bg-muted text-muted-foreground py-1 text-xs opacity-50 [&>svg]:size-3"
-                  >
-                    <SquareArrowOutUpRight className="text-muted-foreground/70 mr-1" />0
-                  </Badge>
-                )}
-              </div>
+                    )}
+                  </div>
 
-              {/* Actions Column */}
-              <div className="flex items-center justify-end gap-1">
-                <QuickLink
-                  name={quickLinkUiNames[systemQuickLink.argocd]}
-                  icon={argocdQuickLink?.spec?.icon}
-                  href={argoAppLink}
-                  display="text"
-                  variant="link"
-                  size="xs"
-                />
-                <Button
-                  variant="outline"
-                  size="xs"
-                  className="gap-1.5 text-xs"
-                  onClick={() =>
-                    openPodLogsDialog({
-                      namespace: stage.spec.namespace,
-                      appName: appCodebase.metadata.name,
-                    })
-                  }
-                >
-                  <ScrollText className="size-3" />
-                  Logs
-                </Button>
-                <Button
-                  variant="outline"
-                  size="xs"
-                  className="gap-1.5 text-xs"
-                  onClick={() =>
-                    openPodExecDialog({
-                      namespace: stage.spec.namespace,
-                      appName: appCodebase.metadata.name,
-                    })
-                  }
-                >
-                  <Terminal className="size-3" />
-                  Terminal
-                </Button>
-              </div>
-            </div>
-          );
-        })}
+                  {/* Actions Column */}
+                  <div className="flex items-center justify-end gap-1">
+                    <QuickLink
+                      name={quickLinkUiNames[systemQuickLink.argocd]}
+                      icon={argocdQuickLink?.spec?.icon}
+                      href={argoAppLink}
+                      display="text"
+                      variant="link"
+                      size="xs"
+                    />
+                    <Button
+                      variant="outline"
+                      size="xs"
+                      className="gap-1.5 text-xs"
+                      onClick={() =>
+                        openPodLogsDialog({
+                          namespace: stage.spec.namespace,
+                          appName: appCodebase.metadata.name,
+                        })
+                      }
+                    >
+                      <ScrollText className="size-3" />
+                      Logs
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="xs"
+                      className="gap-1.5 text-xs"
+                      onClick={() =>
+                        openPodExecDialog({
+                          namespace: stage.spec.namespace,
+                          appName: appCodebase.metadata.name,
+                        })
+                      }
+                    >
+                      <Terminal className="size-3" />
+                      Terminal
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        {showLeftFade && (
+          <div className="from-card pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r to-transparent" />
+        )}
+        {showRightFade && (
+          <div className="from-card pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l to-transparent" />
+        )}
       </div>
     </div>
   );

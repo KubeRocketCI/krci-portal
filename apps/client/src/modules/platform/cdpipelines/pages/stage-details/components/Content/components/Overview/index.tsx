@@ -55,7 +55,7 @@ export const Overview = () => {
 
   return (
     <div>
-      <div className="mb-4 grid grid-cols-4 gap-4">
+      <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {/* Status */}
         <Card className="p-4">
           <div className="mb-2 flex items-center gap-2">
@@ -117,7 +117,7 @@ export const Overview = () => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Environment Details */}
         <Card className="p-5">
           <div className="mb-4 flex items-center gap-2">

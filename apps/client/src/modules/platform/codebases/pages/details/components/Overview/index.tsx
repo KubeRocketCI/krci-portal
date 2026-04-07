@@ -148,7 +148,7 @@ export const Overview = () => {
   return (
     <div className="flex flex-col gap-4">
       {/* Top Row - Key Info Cards */}
-      <div className="grid grid-cols-4 gap-4" data-tour="overview-info">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4" data-tour="overview-info">
         {/* Status */}
         <Card className="p-4">
           <div className="mb-2 flex items-center gap-2">
@@ -218,7 +218,7 @@ export const Overview = () => {
       </div>
 
       {/* Bottom Row - Detail Cards */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Build & CI Configuration */}
         <Card className="p-5">
           <div className="mb-4 flex items-center gap-2">
