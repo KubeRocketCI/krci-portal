@@ -41,7 +41,7 @@ const kubeOwnerReferenceSchema = z.object({
 export const kubeManagedFieldsEntrySchema = z.object({
   apiVersion: z.string(),
   fieldsType: z.string(),
-  fieldsV1: z.record(z.any()),
+  fieldsV1: z.record(z.unknown()),
   manager: z.string(),
   operation: z.string(),
   subresource: z.string().optional(),

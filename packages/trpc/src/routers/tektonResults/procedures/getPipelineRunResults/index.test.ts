@@ -27,14 +27,26 @@ describe("tektonResults.getPipelineRunResults", () => {
         {
           name: "test-ns/results/uid-1",
           uid: "uid-1",
+          create_time: "2025-01-01T00:00:00Z",
+          update_time: "2025-01-01T00:01:00Z",
           annotations: { repo: "my-repo" },
-          summary: { type: "tekton.dev/v1.PipelineRun", status: "SUCCESS" },
+          summary: {
+            record: "test-ns/results/uid-1/records/uid-1",
+            type: "tekton.dev/v1.PipelineRun",
+            status: "SUCCESS",
+          },
         },
         {
           name: "test-ns/results/uid-2",
           uid: "uid-2",
+          create_time: "2025-01-01T00:02:00Z",
+          update_time: "2025-01-01T00:03:00Z",
           annotations: {},
-          summary: { type: "tekton.dev/v1.PipelineRun", status: "FAILURE" },
+          summary: {
+            record: "test-ns/results/uid-2/records/uid-2",
+            type: "tekton.dev/v1.PipelineRun",
+            status: "FAILURE",
+          },
         },
       ],
       next_page_token: "token-abc",

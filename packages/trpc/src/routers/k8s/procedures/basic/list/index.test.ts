@@ -52,7 +52,16 @@ describe("k8sListProcedure", () => {
     };
 
     const mockResponse = {
-      items: [{ metadata: { name: "test-resource" } }],
+      apiVersion: "test.group.io/v1",
+      kind: "TestResourceList",
+      metadata: { resourceVersion: "1234" },
+      items: [
+        {
+          apiVersion: "test.group.io/v1",
+          kind: "TestResource",
+          metadata: { name: "test-resource" },
+        },
+      ],
     };
 
     mockK8sClientInstance.listResource.mockResolvedValueOnce(mockResponse);

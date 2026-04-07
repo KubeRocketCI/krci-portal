@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { tektonResultsListOutputSchema } from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createTektonResultsClient } from "../../../../clients/tektonResults/index.js";
 import { tektonInputSchemas } from "../../utils.js";
@@ -15,6 +16,7 @@ import { tektonInputSchemas } from "../../utils.js";
  * annotation/summary fields to its domain model.
  */
 export const getPipelineRunResultsProcedure = protectedProcedure
+  .meta({ openapi: { method: "GET", path: "/v1/pipeline-runs", protect: true, tags: ["tekton-results"] } })
   .input(
     z.object({
       namespace: tektonInputSchemas.namespace,
@@ -23,6 +25,7 @@ export const getPipelineRunResultsProcedure = protectedProcedure
       filter: tektonInputSchemas.celFilter,
     })
   )
+  .output(tektonResultsListOutputSchema)
   .query(async ({ input }) => {
     const { namespace, pageSize, pageToken, filter } = input;
     const client = createTektonResultsClient(namespace);

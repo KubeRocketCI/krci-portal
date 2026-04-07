@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DecodedTaskRun } from "@my-project/shared";
+import { type DecodedTaskRun, taskRunRecordsOutputSchema } from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createTektonResultsClient } from "../../../../clients/tektonResults/index.js";
 import { decodeRecords, tektonInputSchemas } from "../../utils.js";
@@ -16,12 +16,21 @@ import { decodeRecords, tektonInputSchemas } from "../../utils.js";
  * A pipeline typically has 5-20 tasks, well within a single page (pageSize=50).
  */
 export const getTaskRunRecordsProcedure = protectedProcedure
+  .meta({
+    openapi: {
+      method: "GET",
+      path: "/v1/pipeline-runs/{resultUid}/task-runs",
+      protect: true,
+      tags: ["tekton-results"],
+    },
+  })
   .input(
     z.object({
       namespace: tektonInputSchemas.namespace,
       resultUid: tektonInputSchemas.uuid,
     })
   )
+  .output(taskRunRecordsOutputSchema)
   .query(async ({ input }) => {
     const { namespace, resultUid } = input;
     const client = createTektonResultsClient(namespace);

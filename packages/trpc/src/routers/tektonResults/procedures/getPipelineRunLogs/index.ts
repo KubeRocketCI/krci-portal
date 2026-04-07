@@ -118,6 +118,9 @@ async function processTaskRunLogs(
  * Returns all TaskRun logs with [task-name] prefixes for easy reading
  */
 export const getPipelineRunLogsProcedure = protectedProcedure
+  .meta({
+    openapi: { method: "GET", path: "/v1/pipeline-runs/{resultUid}/logs", protect: true, tags: ["tekton-results"] },
+  })
   .input(
     z.object({
       namespace: tektonInputSchemas.namespace,
@@ -125,7 +128,8 @@ export const getPipelineRunLogsProcedure = protectedProcedure
       recordUid: tektonInputSchemas.uuid,
     })
   )
-  .query(async ({ input }): Promise<{ logs: string }> => {
+  .output(z.object({ logs: z.string() }))
+  .query(async ({ input }) => {
     const { namespace, resultUid, recordUid } = input;
     const client = createTektonResultsClient(namespace);
 
