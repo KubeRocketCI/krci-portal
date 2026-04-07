@@ -22,8 +22,8 @@ const k8sListOutputSchema = z.object({
   items: z.array(
     z
       .object({
-        apiVersion: z.string(),
-        kind: z.string(),
+        apiVersion: z.string().optional(),
+        kind: z.string().optional(),
         metadata: k8sItemMetadataSchema,
         spec: z.record(z.unknown()).optional(),
         status: z.record(z.unknown()).optional(),

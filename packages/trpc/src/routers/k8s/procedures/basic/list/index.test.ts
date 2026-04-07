@@ -57,8 +57,6 @@ describe("k8sListProcedure", () => {
       metadata: { resourceVersion: "1234" },
       items: [
         {
-          apiVersion: "test.group.io/v1",
-          kind: "TestResource",
           metadata: { name: "test-resource" },
         },
       ],
