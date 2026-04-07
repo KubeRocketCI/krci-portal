@@ -12,21 +12,11 @@ export const CLUSTER_FORM_NAMES = {
 } as const;
 
 /**
- * FormGuide configuration for Cluster
+ * FormGuide configuration for Cluster editing
+ * Note: Excludes clusterType and clusterName fields which are disabled in edit mode
  */
 export const FORM_GUIDE_CONFIG: Record<number, FormGuideFieldDescription[]> = {
   0: [
-    {
-      fieldName: "clusterType",
-      label: "Cluster Type",
-      description:
-        "Select the authentication type for this cluster. Choose IRSA for IAM Roles for Service Accounts (AWS EKS) or Bearer for token-based authentication.",
-    },
-    {
-      fieldName: "clusterName",
-      label: "Cluster Name",
-      description: "A unique identifier for this cluster. Used internally and shown throughout the platform.",
-    },
     {
       fieldName: "clusterHost",
       label: "Cluster Host",
