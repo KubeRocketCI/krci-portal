@@ -2,7 +2,7 @@ import React from "react";
 import { Dialog } from "@/core/components/ui/dialog";
 import { FormGuideProvider } from "@/core/providers/FormGuide/provider";
 import { FormGuideDialogContent } from "@/core/components/FormGuide";
-import { FORM_GUIDE_CONFIG } from "../CreateGitServerForm/constants";
+import { FORM_GUIDE_CONFIG } from "../EditGitServerForm/constants";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { EditGitServerForm } from "../EditGitServerForm";
 import type { GitServer } from "@my-project/shared";

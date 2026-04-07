@@ -23,19 +23,12 @@ export const NAMES = {
   TOKEN: "token",
 } as const;
 
+/**
+ * FormGuide configuration for Git Server editing
+ * Note: Excludes gitProvider and name fields which are disabled in edit mode
+ */
 export const FORM_GUIDE_CONFIG: Record<number, FormGuideFieldDescription[]> = {
   0: [
-    {
-      fieldName: "gitProvider",
-      label: "Git Provider",
-      description:
-        "Select the Git provider for this server (GitHub, GitLab, Gerrit, or Bitbucket). This determines the authentication method and available features.",
-    },
-    {
-      fieldName: "name",
-      label: "Name",
-      description: "A unique identifier for this Git server. Used internally and shown throughout the platform.",
-    },
     {
       fieldName: "gitHost",
       label: "Host Name",

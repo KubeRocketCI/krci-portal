@@ -2,7 +2,7 @@ import React from "react";
 import { Dialog } from "@/core/components/ui/dialog";
 import { FormGuideProvider } from "@/core/providers/FormGuide/provider";
 import { FormGuideDialogContent } from "@/core/components/FormGuide";
-import { FORM_GUIDE_CONFIG } from "../CreateClusterSecretForm/constants";
+import { FORM_GUIDE_CONFIG } from "../EditClusterSecretForm/constants";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { EditClusterSecretForm } from "../EditClusterSecretForm";
 import type { Secret } from "@my-project/shared";
