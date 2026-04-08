@@ -25,7 +25,7 @@ export const PipelineActionsMenu = ({ variant, data: { pipeline } }: PipelineAct
 
   const openEditorDialog = useDialogOpener(EditorYAML);
 
-  const pipelineTriggerTemplateName = pipeline?.metadata?.labels[pipelineLabels.triggerTemplate];
+  const pipelineTriggerTemplateName = pipeline?.metadata?.labels?.[pipelineLabels.triggerTemplate];
 
   const triggerTemplateWatch = useTriggerTemplateWatchItem({
     name: pipelineTriggerTemplateName,

@@ -136,6 +136,24 @@ describe("getPipelineRunAnnotation", () => {
     expect(result).toBeUndefined();
   });
 
+  it("should return undefined for unresolved template placeholders", () => {
+    const pipelineRun = {
+      metadata: {
+        name: "test-pipeline-run",
+        namespace: "default",
+        annotations: {
+          "results.tekton.dev/resultAnnotations": JSON.stringify({
+            "app.edp.epam.com/git-author": "${tt.params.git_author}",
+            "app.edp.epam.com/git-branch": "${tt.params.git_branch_name}",
+          }),
+        },
+      },
+    } as unknown as PipelineRun;
+
+    expect(getPipelineRunAnnotation(pipelineRun, "app.edp.epam.com/git-author")).toBeUndefined();
+    expect(getPipelineRunAnnotation(pipelineRun, "app.edp.epam.com/git-branch")).toBeUndefined();
+  });
+
   it("should convert non-string values to strings", () => {
     const pipelineRun = {
       metadata: {
