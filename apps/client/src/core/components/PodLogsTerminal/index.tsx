@@ -6,7 +6,7 @@ import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { Copy, Download } from "lucide-react";
 import { LogViewer, type LogViewerRef } from "@/core/components/LogViewer";
-import { downloadTextFile, generateTimestampedLogFilename } from "@/core/utils/download";
+import { downloadTextFile, generateTimestampedLogFilename, sanitizeLogFilenamePart } from "@/core/utils/download";
 import { Pod } from "@my-project/shared";
 import { usePodLogs } from "./hooks/usePodLogs";
 
@@ -71,6 +71,8 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
   const logViewerRef = useRef<LogViewerRef>(null);
   // Raw lines ref for copy/download in streaming mode
   const rawLinesRef = useRef<string[]>([]);
+  const hasStreamContentRef = useRef(false);
+  const [hasStreamContent, setHasStreamContent] = useState(false);
 
   // Derive activePod from pods prop - this ensures it updates when pod watch updates
   const activePod = useMemo(() => {
@@ -102,6 +104,10 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
   const handleStreamLines = useCallback(
     (lines: string[]) => {
       rawLinesRef.current.push(...lines);
+      if (!hasStreamContentRef.current) {
+        hasStreamContentRef.current = true;
+        setHasStreamContent(true);
+      }
       const formatted = lines.map((line) => formatLogLine(line, logsTimestamps));
       logViewerRef.current?.appendLines(formatted);
     },
@@ -125,6 +131,10 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
           logViewerRef.current?.appendLines(reformatted);
           rawLinesRef.current = savedLines;
         }
+      } else {
+        // Pod or container changed — reset stream content flag
+        hasStreamContentRef.current = false;
+        setHasStreamContent(false);
       }
 
       prevParamsRef.current = { podName, container: activeContainer, timestamps: logsTimestamps };
@@ -189,8 +199,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
 
   // Generate download filename
   const getDownloadFilename = useCallback(() => {
-    const sanitize = (name: string) => name.replace(/[^a-zA-Z0-9\-_]/g, "_");
-    const prefix = `${sanitize(activePod?.metadata?.name || "pod")}-${sanitize(activeContainer)}`;
+    const prefix = `${sanitizeLogFilenamePart(activePod?.metadata?.name || "pod")}-${sanitizeLogFilenamePart(activeContainer)}`;
     return generateTimestampedLogFilename(prefix);
   }, [activePod?.metadata?.name, activeContainer]);
 
@@ -264,7 +273,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
     return `${errorText}. Will retry automatically when the container is ready.`;
   }
 
-  const hasExportContent = follow ? rawLinesRef.current.length > 0 : !!formattedLogs;
+  const hasExportContent = follow ? hasStreamContent : !!formattedLogs;
 
   const renderControls = () => (
     <div className="flex w-full items-end justify-between gap-4">

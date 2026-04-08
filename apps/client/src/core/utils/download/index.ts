@@ -38,3 +38,11 @@ export function generateTimestampedLogFilename(prefix: string): string {
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   return `${prefix}-${timestamp}.log`;
 }
+
+/**
+ * Sanitizes a string for use in a log filename prefix.
+ * Replaces any character that is not alphanumeric, hyphen, or underscore with "_".
+ */
+export function sanitizeLogFilenamePart(name: string): string {
+  return name.replace(/[^a-zA-Z0-9\-_]/g, "_");
+}

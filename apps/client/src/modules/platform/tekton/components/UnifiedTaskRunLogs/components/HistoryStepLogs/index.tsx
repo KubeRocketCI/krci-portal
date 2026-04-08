@@ -1,10 +1,14 @@
 import { LogViewer } from "@/core/components/LogViewer";
 import { EmptyList } from "@/core/components/EmptyList";
 import { Alert } from "@/core/components/ui/alert";
+import { Button } from "@/core/components/ui/button";
 import { Card } from "@/core/components/ui/card";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { useTRPCClient } from "@/core/providers/trpc";
+import { downloadTextFile, generateTimestampedLogFilename, sanitizeLogFilenamePart } from "@/core/utils/download";
 import { useClusterStore } from "@/k8s/store";
 import { useQuery } from "@tanstack/react-query";
+import { Copy, Download } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 
 interface HistoryStepLogsProps {
@@ -36,6 +40,38 @@ export function HistoryStepLogs({ taskRunName, stepName, resultUid, namespace }:
     staleTime: Infinity,
   });
 
+  const logs = logsQuery.data?.logs;
+
+  const handleCopy = async () => {
+    if (logs) {
+      await navigator.clipboard.writeText(logs);
+    }
+  };
+
+  const handleDownload = () => {
+    if (logs) {
+      const prefix = `${sanitizeLogFilenamePart(taskRunName)}-${sanitizeLogFilenamePart(stepName)}`;
+      downloadTextFile(logs, generateTimestampedLogFilename(prefix));
+    }
+  };
+
+  const renderControls = () => (
+    <div className="flex w-full justify-end">
+      <div className="flex gap-1">
+        <Tooltip title="Copy to clipboard">
+          <Button variant="secondary" size="icon" onClick={handleCopy} disabled={!logs} className="h-8 w-8">
+            <Copy className="h-4 w-4" />
+          </Button>
+        </Tooltip>
+        <Tooltip title="Download logs">
+          <Button variant="secondary" size="icon" onClick={handleDownload} disabled={!logs} className="h-8 w-8">
+            <Download className="h-4 w-4" />
+          </Button>
+        </Tooltip>
+      </div>
+    </div>
+  );
+
   if (logsQuery.isLoading) {
     return <LogViewer content="" isLoading loadingMessage="Loading step logs..." />;
   }
@@ -64,10 +100,10 @@ export function HistoryStepLogs({ taskRunName, stepName, resultUid, namespace }:
         >
           Step-level log parsing is not available for this TaskRun. The logs below contain output from all steps.
         </Alert>
-        <LogViewer content={logsQuery.data.logs} />
+        <LogViewer content={logs} renderControls={renderControls} />
       </div>
     );
   }
 
-  return <LogViewer content={logsQuery.data.logs} />;
+  return <LogViewer content={logs} renderControls={renderControls} />;
 }
