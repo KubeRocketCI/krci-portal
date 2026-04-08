@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { downloadTextFile, ensureLogExtension, generateTimestampedLogFilename } from "./index";
+import { downloadTextFile, ensureLogExtension, generateTimestampedLogFilename, sanitizeLogFilenamePart } from "./index";
 
 describe("downloadTextFile", () => {
   let mockClick: ReturnType<typeof vi.fn>;
@@ -61,6 +61,28 @@ describe("ensureLogExtension", () => {
 
   it("should add .log extension for other extensions", () => {
     expect(ensureLogExtension("app.json")).toBe("app.json.log");
+  });
+});
+
+describe("sanitizeLogFilenamePart", () => {
+  it("should pass through alphanumeric characters unchanged", () => {
+    expect(sanitizeLogFilenamePart("abc123")).toBe("abc123");
+  });
+
+  it("should pass through hyphens and underscores unchanged", () => {
+    expect(sanitizeLogFilenamePart("my-pod_name")).toBe("my-pod_name");
+  });
+
+  it("should replace dots, slashes, and spaces with underscores", () => {
+    expect(sanitizeLogFilenamePart("my.pod/name space")).toBe("my_pod_name_space");
+  });
+
+  it("should replace colons with underscores", () => {
+    expect(sanitizeLogFilenamePart("step:init")).toBe("step_init");
+  });
+
+  it("should return empty string for empty input", () => {
+    expect(sanitizeLogFilenamePart("")).toBe("");
   });
 });
 
