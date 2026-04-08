@@ -7,6 +7,7 @@ export const columnNames = {
   PULL_REQUEST: "pullRequestUrl",
   AUTHOR: "author",
   TYPE: "type",
+  STARTED_AT: "startedAt",
   TIME: "time",
   DIAGRAM: "diagram",
   ACTIONS: "actions",

@@ -4,14 +4,14 @@ import { getSyncedColumnData } from "@/core/components/Table/components/TableSet
 import { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { useClusterStore } from "@/k8s/store";
-import { humanize, formatTimestamp } from "@/core/utils/date-humanize";
+import { formatTimestamp, formatUnixTimestamp, formatDuration } from "@/core/utils/date-humanize";
 import { PATH_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-details/route";
 import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { PipelineRun, pipelineRunLabels, tektonResultAnnotations, getPipelineRunAnnotation } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
-import { Clock, VectorSquare } from "lucide-react";
+import { VectorSquare } from "lucide-react";
 import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -71,7 +71,7 @@ export const useColumns = ({
           },
         },
         cell: {
-          baseWidth: 20,
+          baseWidth: 17,
           ...getSyncedColumnData(tableSettings, columnNames.RUN),
         },
       },
@@ -122,7 +122,7 @@ export const useColumns = ({
           },
         },
         cell: {
-          baseWidth: 14,
+          baseWidth: 12,
           ...getSyncedColumnData(tableSettings, columnNames.PIPELINE),
         },
       },
@@ -160,7 +160,7 @@ export const useColumns = ({
           },
         },
         cell: {
-          baseWidth: 11,
+          baseWidth: 10,
           ...getSyncedColumnData(tableSettings, columnNames.CODEBASE),
         },
       },
@@ -183,7 +183,7 @@ export const useColumns = ({
           },
         },
         cell: {
-          baseWidth: 10,
+          baseWidth: 8,
           ...getSyncedColumnData(tableSettings, columnNames.BRANCH),
         },
       },
@@ -266,6 +266,30 @@ export const useColumns = ({
         },
       },
       {
+        id: columnNames.STARTED_AT,
+        label: "Started at",
+        data: {
+          columnSortableValuePath: "status.startTime",
+          render: ({ data }) => {
+            const startTime = data?.status?.startTime;
+
+            if (!startTime) {
+              return <span className="text-muted-foreground text-sm">-</span>;
+            }
+
+            return (
+              <Tooltip title={formatUnixTimestamp(startTime)} delayDuration={500}>
+                <span className="text-sm">{formatTimestamp(startTime)}</span>
+              </Tooltip>
+            );
+          },
+        },
+        cell: {
+          baseWidth: 9,
+          ...getSyncedColumnData(tableSettings, columnNames.STARTED_AT),
+        },
+      },
+      {
         id: columnNames.TIME,
         label: "Time",
         data: {
@@ -275,54 +299,36 @@ export const useColumns = ({
             const bStartTime = b?.status?.startTime;
             const bCompletionTime = b?.status?.completionTime;
 
-            if (!aStartTime || !aCompletionTime || !bStartTime || !bCompletionTime) {
+            if (!aStartTime || !bStartTime) {
               return 0;
             }
 
+            const now = Date.now();
+
             const aDurationTime = aCompletionTime
               ? new Date(aCompletionTime).getTime() - new Date(aStartTime).getTime()
-              : new Date().getTime() - new Date(aStartTime).getTime();
+              : now - new Date(aStartTime).getTime();
 
             const bDurationTime = bCompletionTime
               ? new Date(bCompletionTime).getTime() - new Date(bStartTime).getTime()
-              : new Date().getTime() - new Date(bStartTime).getTime();
+              : now - new Date(bStartTime).getTime();
 
-            if (aDurationTime < bDurationTime) {
-              return -1;
-            } else if (aDurationTime > bDurationTime) {
-              return 1;
-            }
-
-            return 0;
+            return aDurationTime - bDurationTime;
           },
           render: ({ data }) => {
             const completionTime = data?.status?.completionTime;
             const startTime = data?.status?.startTime;
 
-            if (!startTime) {
+            const activeDuration = formatDuration(startTime, completionTime);
+
+            if (!activeDuration) {
               return null;
             }
 
-            const durationTime = completionTime
-              ? new Date(completionTime).getTime() - new Date(startTime).getTime()
-              : new Date().getTime() - new Date(startTime).getTime();
-
-            const activeDuration = humanize(durationTime, {
-              language: "en-mini",
-              spacer: "",
-              delimiter: " ",
-              fallbacks: ["en"],
-              largest: 2,
-              round: true,
-              units: ["d", "h", "m", "s"],
-            });
+            const durationParts = activeDuration.split(" ");
 
             const tooltipContent = (
               <div className="flex flex-col gap-1">
-                <div>
-                  <span className="font-medium">Started at: </span>
-                  <span>{formatTimestamp(startTime)}</span>
-                </div>
                 {completionTime && (
                   <div>
                     <span className="font-medium">Finished at: </span>
@@ -338,16 +344,22 @@ export const useColumns = ({
 
             return (
               <Tooltip title={tooltipContent} delayDuration={500}>
-                <div className="flex w-full items-center justify-between gap-1">
-                  <span className="text-sm">{activeDuration}</span>
-                  <Clock className="text-muted-foreground size-3.5" />
-                </div>
+                <span className="text-sm">
+                  {/* De-emphasize seconds (ends with "s" in en-mini humanize language) */}
+                  {durationParts.map((part, i) => (
+                    <span key={i} className={part.endsWith("s") ? "text-muted-foreground" : undefined}>
+                      {i > 0 ? " " : ""}
+                      {part}
+                    </span>
+                  ))}
+                </span>
               </Tooltip>
             );
           },
         },
         cell: {
           baseWidth: 7,
+          props: { align: "right" },
           ...getSyncedColumnData(tableSettings, columnNames.TIME),
         },
       },
