@@ -72,16 +72,22 @@ export const CODEBASES_TOURS = {
         target: "[data-tour='project-tabs']",
         content: (
           <TourStepContent title="Project Tabs Navigation">
-            <p>This project has 5 tabs that organize all project information:</p>
+            <p>This project has 7 tabs that organize all project information:</p>
             <ul className="list-disc space-y-1 pl-5">
               <li>
-                <strong>Overview</strong> - Project details and overview of code quality and security
+                <strong>Overview</strong> - Project details, tech stack, and pipeline configuration
               </li>
               <li>
                 <strong>Branches</strong> - View project branches, their statuses, and build capabilities
               </li>
               <li>
                 <strong>Pipelines</strong> - See pipeline runs related to this project
+              </li>
+              <li>
+                <strong>Code Quality</strong> - SonarQube metrics, quality gate status, and code analysis
+              </li>
+              <li>
+                <strong>Dependencies</strong> - DependencyTrack vulnerability scanning and risk scores
               </li>
               <li>
                 <strong>Pull Requests</strong> - Manage pull requests and code reviews
@@ -115,13 +121,18 @@ export const CODEBASES_TOURS = {
         content: (
           <TourStepContent title="Code Quality Metrics">
             <p>
-              This widget displays code quality metrics from your integrated quality gate system, showing a summary of
-              code coverage, bugs, vulnerabilities, and code smells.
+              This tab displays code quality metrics from your integrated quality gate system, showing a summary of code
+              coverage, bugs, vulnerabilities, and code smells.
             </p>
           </TourStepContent>
         ),
         placement: "top",
-        prerequisite: overviewTabPrerequisite,
+        prerequisite: {
+          to: PATH_PROJECT_DETAILS_FULL,
+          search: (prev) => ({ ...prev, tab: routeSearchTabName.security }),
+          waitFor: "[data-tour='code-quality-widget']",
+          stabilizationDelay: 300,
+        },
       },
       {
         target: "[data-tour='dependencies-widget']",
@@ -134,7 +145,12 @@ export const CODEBASES_TOURS = {
           </TourStepContent>
         ),
         placement: "top",
-        prerequisite: overviewTabPrerequisite,
+        prerequisite: {
+          to: PATH_PROJECT_DETAILS_FULL,
+          search: (prev) => ({ ...prev, tab: routeSearchTabName.vulnerabilities }),
+          waitFor: "[data-tour='dependencies-widget']",
+          stabilizationDelay: 300,
+        },
       },
       // Branches tab
       {
