@@ -10,6 +10,7 @@ import {
   matchFunctions,
   pipelineRunFilterControlNames,
 } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
+import { useDebouncedPipelineRunSearch } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter";
 
 const TABLE_ID = "stage-pipelines-unified";
 const TABLE_NAME = "Unified Pipeline Run List";
@@ -19,30 +20,42 @@ const TABLE_NAME = "Unified Pipeline Run List";
  * historical Tekton Results PipelineRuns for a specific stage.
  */
 export function Pipelines() {
-  const params = routeStageDetails.useParams();
+  return (
+    <FilterProvider matchFunctions={matchFunctions} syncWithUrl defaultValues={defaultPipelineRunFilterValues}>
+      <PipelinesContent />
+    </FilterProvider>
+  );
+}
 
+function PipelinesContent() {
+  const params = routeStageDetails.useParams();
   const stageLabel = `${params.cdPipeline}-${params.stage}`;
+
+  const debouncedSearch = useDebouncedPipelineRunSearch();
 
   const { mergedPipelineRuns, isLoading, isHistoryLoading, historyQuery } = useUnifiedPipelineRunList({
     labels: {
       [pipelineRunLabels.stage]: stageLabel,
     },
+    searchTerm: debouncedSearch,
   });
 
   return (
-    <FilterProvider matchFunctions={matchFunctions} syncWithUrl defaultValues={defaultPipelineRunFilterValues}>
-      <div className="flex flex-col gap-2">
-        <PipelineRunList
-          tableId={TABLE_ID}
-          tableName={TABLE_NAME}
-          pipelineRuns={mergedPipelineRuns}
-          isLoading={isLoading}
-          pipelineRunTypes={[pipelineType.deploy, pipelineType.clean]}
-          filterControls={[pipelineRunFilterControlNames.PIPELINE_TYPE, pipelineRunFilterControlNames.STATUS]}
-          detailRoutePath={PATH_PIPELINERUN_DETAILS_FULL}
-        />
-        <HistoryLoadingFooter isHistoryLoading={isHistoryLoading} historyQuery={historyQuery} />
-      </div>
-    </FilterProvider>
+    <div className="flex flex-col gap-2">
+      <PipelineRunList
+        tableId={TABLE_ID}
+        tableName={TABLE_NAME}
+        pipelineRuns={mergedPipelineRuns}
+        isLoading={isLoading}
+        pipelineRunTypes={[pipelineType.deploy, pipelineType.clean]}
+        filterControls={[
+          pipelineRunFilterControlNames.SEARCH,
+          pipelineRunFilterControlNames.PIPELINE_TYPE,
+          pipelineRunFilterControlNames.STATUS,
+        ]}
+        detailRoutePath={PATH_PIPELINERUN_DETAILS_FULL}
+      />
+      <HistoryLoadingFooter isHistoryLoading={isHistoryLoading} historyQuery={historyQuery} />
+    </div>
   );
 }

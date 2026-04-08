@@ -6,6 +6,7 @@ import { FilterTypeWithOptionAll } from "@/k8s/types";
 export type PipelineRunFilterNames = ValueOf<typeof pipelineRunFilterControlNames>;
 
 export type PipelineRunListFilterValues = {
+  [pipelineRunFilterControlNames.SEARCH]: string;
   [pipelineRunFilterControlNames.CODEBASES]: string[];
   [pipelineRunFilterControlNames.CODEBASE_BRANCHES]: string[];
   [pipelineRunFilterControlNames.STATUS]: FilterTypeWithOptionAll<PipelineRunStatus>;

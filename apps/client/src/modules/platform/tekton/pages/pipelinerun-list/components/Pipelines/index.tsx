@@ -8,6 +8,7 @@ import {
   matchFunctions,
   pipelineRunFilterControlNames,
 } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
+import { useDebouncedPipelineRunSearch } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter";
 
 const TABLE_ID = "pipelineruns-unified";
 const TABLE_NAME = "Unified Pipeline Run List";
@@ -19,26 +20,37 @@ const TABLE_NAME = "Unified Pipeline Run List";
  * No label filter on K8s watch and no CEL filter on history -- shows all pipeline runs.
  */
 export function Pipelines() {
-  const { mergedPipelineRuns, isLoading, isHistoryLoading, historyQuery } = useUnifiedPipelineRunList();
-
   return (
     <FilterProvider matchFunctions={matchFunctions} syncWithUrl defaultValues={defaultPipelineRunFilterValues}>
-      <div className="flex flex-col gap-2">
-        <PipelineRunList
-          tableId={TABLE_ID}
-          tableName={TABLE_NAME}
-          pipelineRuns={mergedPipelineRuns}
-          isLoading={isLoading}
-          filterControls={[
-            pipelineRunFilterControlNames.CODEBASES,
-            pipelineRunFilterControlNames.STATUS,
-            pipelineRunFilterControlNames.PIPELINE_TYPE,
-            pipelineRunFilterControlNames.NAMESPACES,
-          ]}
-          detailRoutePath={PATH_PIPELINERUN_DETAILS_FULL}
-        />
-        <HistoryLoadingFooter isHistoryLoading={isHistoryLoading} historyQuery={historyQuery} />
-      </div>
+      <PipelinesContent />
     </FilterProvider>
+  );
+}
+
+function PipelinesContent() {
+  const debouncedSearch = useDebouncedPipelineRunSearch();
+
+  const { mergedPipelineRuns, isLoading, isHistoryLoading, historyQuery } = useUnifiedPipelineRunList({
+    searchTerm: debouncedSearch,
+  });
+
+  return (
+    <div className="flex flex-col gap-2">
+      <PipelineRunList
+        tableId={TABLE_ID}
+        tableName={TABLE_NAME}
+        pipelineRuns={mergedPipelineRuns}
+        isLoading={isLoading}
+        filterControls={[
+          pipelineRunFilterControlNames.SEARCH,
+          pipelineRunFilterControlNames.CODEBASES,
+          pipelineRunFilterControlNames.STATUS,
+          pipelineRunFilterControlNames.PIPELINE_TYPE,
+          pipelineRunFilterControlNames.NAMESPACES,
+        ]}
+        detailRoutePath={PATH_PIPELINERUN_DETAILS_FULL}
+      />
+      <HistoryLoadingFooter isHistoryLoading={isHistoryLoading} historyQuery={historyQuery} />
+    </div>
   );
 }
