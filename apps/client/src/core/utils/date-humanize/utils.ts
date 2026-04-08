@@ -43,12 +43,12 @@ const UNIX_DATE_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
 
 /**
  * Format a Unix timestamp (milliseconds) to a localized date string
- * @param timestamp - Unix timestamp in milliseconds
+ * @param timestamp - Unix timestamp in milliseconds or ISO 8601 string
  * @param options - Optional Intl.DateTimeFormatOptions to customize output
  * @returns Formatted date string or "N/A" if invalid
  */
 export function formatUnixTimestamp(
-  timestamp?: number,
+  timestamp?: number | string,
   options: Intl.DateTimeFormatOptions = UNIX_DATE_FORMAT_OPTIONS
 ): string {
   if (!timestamp) {
