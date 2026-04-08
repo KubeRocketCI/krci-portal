@@ -3,6 +3,7 @@ import { FilterProvider } from "@/core/providers/Filter/provider";
 import { TABLE } from "@/k8s/constants/tables";
 import { PipelineRunList } from "@/modules/platform/tekton/components/PipelineRunList";
 import {
+  defaultPipelineRunFilterValues,
   matchFunctions,
   pipelineRunFilterControlNames,
 } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
@@ -26,19 +27,17 @@ export const Details = ({ pipelineRuns }: DetailsProps) => {
             <FilterProvider<PipelineRun, PipelineRunListFilterValues>
               matchFunctions={matchFunctions}
               syncWithUrl
-              defaultValues={{
-                [pipelineRunFilterControlNames.NAMESPACES]: [],
-                [pipelineRunFilterControlNames.CODEBASES]: [],
-                [pipelineRunFilterControlNames.CODEBASE_BRANCHES]: [],
-                [pipelineRunFilterControlNames.STATUS]: "all",
-                [pipelineRunFilterControlNames.PIPELINE_TYPE]: "all",
-              }}
+              defaultValues={defaultPipelineRunFilterValues}
             >
               <PipelineRunList
                 pipelineRuns={pipelineRuns!}
                 isLoading={pipelineRuns === null}
                 pipelineRunTypes={[pipelineType.review, pipelineType.build]}
-                filterControls={[pipelineRunFilterControlNames.PIPELINE_TYPE, pipelineRunFilterControlNames.STATUS]}
+                filterControls={[
+                  pipelineRunFilterControlNames.SEARCH,
+                  pipelineRunFilterControlNames.PIPELINE_TYPE,
+                  pipelineRunFilterControlNames.STATUS,
+                ]}
                 tableId={TABLE.BRANCH_PIPELINE_RUN_LIST.id}
                 tableName={TABLE.BRANCH_PIPELINE_RUN_LIST.name}
                 tableSettings={tableSettings}

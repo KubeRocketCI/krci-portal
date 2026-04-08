@@ -10,6 +10,7 @@ import {
   matchFunctions,
   pipelineRunFilterControlNames,
 } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
+import { useDebouncedPipelineRunSearch } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter";
 import { TABLE } from "@/k8s/constants/tables";
 
 /**
@@ -17,27 +18,35 @@ import { TABLE } from "@/k8s/constants/tables";
  * historical Tekton Results PipelineRuns for a specific pipeline.
  */
 export function Pipelines() {
+  return (
+    <FilterProvider matchFunctions={matchFunctions} syncWithUrl defaultValues={defaultPipelineRunFilterValues}>
+      <PipelinesContent />
+    </FilterProvider>
+  );
+}
+
+function PipelinesContent() {
   const params = routePipelineDetails.useParams();
+  const debouncedSearch = useDebouncedPipelineRunSearch();
 
   const { mergedPipelineRuns, isLoading, isHistoryLoading, historyQuery } = useUnifiedPipelineRunList({
     labels: {
       [pipelineRunLabels.pipeline]: params.name,
     },
+    searchTerm: debouncedSearch,
   });
 
   return (
-    <FilterProvider matchFunctions={matchFunctions} syncWithUrl defaultValues={defaultPipelineRunFilterValues}>
-      <div className="flex flex-col gap-2">
-        <PipelineRunList
-          pipelineRuns={mergedPipelineRuns}
-          isLoading={isLoading}
-          filterControls={[pipelineRunFilterControlNames.STATUS]}
-          tableId={TABLE.PIPELINE_PIPELINE_RUN_LIST.id}
-          tableName={TABLE.PIPELINE_PIPELINE_RUN_LIST.name}
-          detailRoutePath={PATH_PIPELINERUN_DETAILS_FULL}
-        />
-        <HistoryLoadingFooter isHistoryLoading={isHistoryLoading} historyQuery={historyQuery} />
-      </div>
-    </FilterProvider>
+    <div className="flex flex-col gap-2">
+      <PipelineRunList
+        pipelineRuns={mergedPipelineRuns}
+        isLoading={isLoading}
+        filterControls={[pipelineRunFilterControlNames.SEARCH, pipelineRunFilterControlNames.STATUS]}
+        tableId={TABLE.PIPELINE_PIPELINE_RUN_LIST.id}
+        tableName={TABLE.PIPELINE_PIPELINE_RUN_LIST.name}
+        detailRoutePath={PATH_PIPELINERUN_DETAILS_FULL}
+      />
+      <HistoryLoadingFooter isHistoryLoading={isHistoryLoading} historyQuery={historyQuery} />
+    </div>
   );
 }

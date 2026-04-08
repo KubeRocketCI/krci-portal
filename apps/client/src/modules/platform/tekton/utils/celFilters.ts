@@ -1,3 +1,5 @@
+import { tektonResultAnnotations } from "@my-project/shared";
+
 /**
  * Escape a value for safe interpolation into a CEL string literal.
  * Prevents CEL expression injection via crafted URL parameters.
@@ -38,4 +40,20 @@ export function buildAnnotationsFilter(annotations: Record<string, string>): str
   const entries = Object.entries(annotations);
   if (entries.length === 0) return undefined;
   return entries.map(([key, value]) => buildAnnotationClause(key, value)).join(" && ");
+}
+
+// ---------------------------------------------------------------------------
+// Name-based search filter (for Results table queries).
+// Filters by the `object.metadata.name` annotation which stores the original
+// PipelineRun metadata.name on every Result.
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a CEL filter that matches PipelineRun names containing the search term.
+ * Returns undefined when the search term is empty.
+ */
+export function buildNameSearchFilter(searchTerm: string): string | undefined {
+  const trimmed = searchTerm.trim();
+  if (!trimmed) return undefined;
+  return `annotations["${tektonResultAnnotations.objectMetadataName}"].contains('${escapeCELString(trimmed)}')`;
 }

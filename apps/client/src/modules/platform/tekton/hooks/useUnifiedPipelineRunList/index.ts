@@ -2,7 +2,7 @@ import { usePipelineRunWatchList } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { useClusterStore } from "@/k8s/store";
 import { PipelineRun, TektonResult, normalizeResultToPipelineRun } from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
-import { buildAnnotationsFilter } from "@/modules/platform/tekton/utils/celFilters";
+import { buildAnnotationsFilter, buildNameSearchFilter } from "@/modules/platform/tekton/utils/celFilters";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -29,6 +29,8 @@ interface HistoryPage {
 interface UseUnifiedPipelineRunListOptions {
   labels?: Record<string, string>;
   enabled?: boolean;
+  /** Debounced search term for server-side name filtering via Tekton Results CEL. */
+  searchTerm?: string;
 }
 
 /**
@@ -63,7 +65,7 @@ export interface UseUnifiedPipelineRunListResult {
  * 5. Concatenate live + filtered history, sorted by creation time (newest first)
  */
 export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOptions): UseUnifiedPipelineRunListResult {
-  const { labels, enabled = true } = options ?? {};
+  const { labels, enabled = true, searchTerm } = options ?? {};
   const trpc = useTRPCClient();
   const { namespace, clusterName } = useClusterStore(
     useShallow((state) => ({
@@ -78,13 +80,16 @@ export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOpt
     queryOptions: { enabled },
   });
 
-  // Derive CEL filter from the same labels used for the K8s watch.
-  // Uses annotation-based CEL syntax for the Results table.
-  const celFilter = React.useMemo(
-    () => (labels && Object.keys(labels).length > 0 ? buildAnnotationsFilter(labels) : undefined),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- stable when label values don't change
-    [labels && Object.entries(labels).flat().join("\0")]
-  );
+  // Derive CEL filter from labels and/or search term.
+  // Labels use annotation-based CEL syntax for the Results table.
+  // Search term filters by the `object.metadata.name` annotation.
+  const celFilter = React.useMemo(() => {
+    const labelFilter = labels && Object.keys(labels).length > 0 ? buildAnnotationsFilter(labels) : undefined;
+    const nameFilter = searchTerm ? buildNameSearchFilter(searchTerm) : undefined;
+    const parts = [labelFilter, nameFilter].filter(Boolean);
+    return parts.length > 0 ? parts.join(" && ") : undefined;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- labels serialized to avoid object identity churn; searchTerm is a direct dep
+  }, [labels && Object.entries(labels).flat().join("\0"), searchTerm]);
 
   // History PipelineRuns from Tekton Results (lightweight results table)
   const historyQuery = useInfiniteQuery<HistoryPage, Error>({

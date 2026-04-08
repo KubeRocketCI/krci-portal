@@ -94,6 +94,14 @@ export const PipelineRunFilter = ({
 
   return (
     <>
+      {filterControls.includes(pipelineRunFilterControlNames.SEARCH) && (
+        <div className="col-span-3">
+          <form.AppField name="search">
+            {(field) => <field.FormTextField label="Search" placeholder="Search pipeline runs" />}
+          </form.AppField>
+        </div>
+      )}
+
       {filterControls.includes(pipelineRunFilterControlNames.PIPELINE_TYPE) && (
         <div className="col-span-2">
           <form.AppField name="pipelineType">

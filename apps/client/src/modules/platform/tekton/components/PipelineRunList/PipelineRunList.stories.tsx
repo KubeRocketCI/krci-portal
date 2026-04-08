@@ -8,7 +8,11 @@ import {
   createMockPipelineRun,
   k8sPipelineRunConfig,
 } from "@my-project/shared";
-import { matchFunctions, pipelineRunFilterControlNames } from "./components/Filter/constants";
+import {
+  defaultPipelineRunFilterValues,
+  matchFunctions,
+  pipelineRunFilterControlNames,
+} from "./components/Filter/constants";
 import { PipelineRunListFilterValues } from "./components/Filter/types";
 import { getK8sItemPermissionsQueryCacheKey } from "@/k8s/api/hooks/useWatch/query-keys";
 import { withAppProviders, mockPermissions, STORYBOOK_CLUSTER_NAME, STORYBOOK_NAMESPACE } from "@sb/index";
@@ -167,11 +171,7 @@ const PipelineRunListContentWrapper = ({
     <FilterProvider<PipelineRun, PipelineRunListFilterValues>
       matchFunctions={matchFunctions}
       defaultValues={{
-        [pipelineRunFilterControlNames.CODEBASES]: [],
-        [pipelineRunFilterControlNames.CODEBASE_BRANCHES]: [],
-        [pipelineRunFilterControlNames.NAMESPACES]: [],
-        [pipelineRunFilterControlNames.STATUS]: "all",
-        [pipelineRunFilterControlNames.PIPELINE_TYPE]: "all",
+        ...defaultPipelineRunFilterValues,
         ...customFilterValues,
       }}
     >
@@ -236,6 +236,7 @@ export const Default: Story = {
       pipelineType.tests,
     ],
     filterControls: [
+      pipelineRunFilterControlNames.SEARCH,
       pipelineRunFilterControlNames.CODEBASES,
       pipelineRunFilterControlNames.STATUS,
       pipelineRunFilterControlNames.PIPELINE_TYPE,
@@ -524,6 +525,7 @@ export const UsageContextGeneralList: Story = {
       pipelineType.tests,
     ],
     filterControls: [
+      pipelineRunFilterControlNames.SEARCH,
       pipelineRunFilterControlNames.CODEBASES,
       pipelineRunFilterControlNames.STATUS,
       pipelineRunFilterControlNames.PIPELINE_TYPE,

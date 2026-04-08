@@ -10,6 +10,7 @@ import {
   pipelineRunFilterControlNames,
 } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
 import { PipelineRunListFilterValues } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/types";
+import { useDebouncedPipelineRunSearch } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter";
 import { routeProjectDetails } from "../../../../route";
 import { TABLE } from "@/k8s/constants/tables";
 import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
@@ -19,43 +20,52 @@ import { useTableSettings } from "@/core/components/Table/components/TableSettin
  * historical Tekton Results PipelineRuns for a specific codebase.
  */
 export function Pipelines() {
-  const params = routeProjectDetails.useParams();
-
-  const codebaseName = params.name;
-
-  const { loadSettings } = useTableSettings(TABLE.CODEBASE_PIPELINE_RUN_LIST.id);
-  const tableSettings = loadSettings();
-
-  const { mergedPipelineRuns, isLoading, isHistoryLoading, historyQuery } = useUnifiedPipelineRunList({
-    labels: {
-      [pipelineRunLabels.codebase]: codebaseName,
-    },
-    enabled: !!codebaseName,
-  });
-
   return (
     <FilterProvider<PipelineRun, PipelineRunListFilterValues>
       matchFunctions={matchFunctions}
       syncWithUrl
       defaultValues={defaultPipelineRunFilterValues}
     >
-      <div className="flex flex-col gap-2">
-        <PipelineRunList
-          pipelineRuns={mergedPipelineRuns}
-          isLoading={isLoading}
-          pipelineRunTypes={[pipelineType.review, pipelineType.build]}
-          filterControls={[
-            pipelineRunFilterControlNames.CODEBASE_BRANCHES,
-            pipelineRunFilterControlNames.PIPELINE_TYPE,
-            pipelineRunFilterControlNames.STATUS,
-          ]}
-          tableId={TABLE.CODEBASE_PIPELINE_RUN_LIST.id}
-          tableName={TABLE.CODEBASE_PIPELINE_RUN_LIST.name}
-          tableSettings={tableSettings}
-          detailRoutePath={PATH_PIPELINERUN_DETAILS_FULL}
-        />
-        <HistoryLoadingFooter isHistoryLoading={isHistoryLoading} historyQuery={historyQuery} />
-      </div>
+      <PipelinesContent />
     </FilterProvider>
+  );
+}
+
+function PipelinesContent() {
+  const params = routeProjectDetails.useParams();
+  const codebaseName = params.name;
+
+  const { loadSettings } = useTableSettings(TABLE.CODEBASE_PIPELINE_RUN_LIST.id);
+  const tableSettings = loadSettings();
+
+  const debouncedSearch = useDebouncedPipelineRunSearch();
+
+  const { mergedPipelineRuns, isLoading, isHistoryLoading, historyQuery } = useUnifiedPipelineRunList({
+    labels: {
+      [pipelineRunLabels.codebase]: codebaseName,
+    },
+    enabled: !!codebaseName,
+    searchTerm: debouncedSearch,
+  });
+
+  return (
+    <div className="flex flex-col gap-2">
+      <PipelineRunList
+        pipelineRuns={mergedPipelineRuns}
+        isLoading={isLoading}
+        pipelineRunTypes={[pipelineType.review, pipelineType.build]}
+        filterControls={[
+          pipelineRunFilterControlNames.SEARCH,
+          pipelineRunFilterControlNames.CODEBASE_BRANCHES,
+          pipelineRunFilterControlNames.PIPELINE_TYPE,
+          pipelineRunFilterControlNames.STATUS,
+        ]}
+        tableId={TABLE.CODEBASE_PIPELINE_RUN_LIST.id}
+        tableName={TABLE.CODEBASE_PIPELINE_RUN_LIST.name}
+        tableSettings={tableSettings}
+        detailRoutePath={PATH_PIPELINERUN_DETAILS_FULL}
+      />
+      <HistoryLoadingFooter isHistoryLoading={isHistoryLoading} historyQuery={historyQuery} />
+    </div>
   );
 }

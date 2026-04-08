@@ -1,4 +1,4 @@
-import { MatchFunctions } from "@/core/providers/Filter";
+import { MatchFunctions, createSearchMatchFunction } from "@/core/providers/Filter";
 import {
   PipelineRun,
   pipelineRunLabels,
@@ -10,6 +10,7 @@ import {
 import { PipelineRunListFilterValues } from "./types";
 
 export const pipelineRunFilterControlNames = {
+  SEARCH: "search",
   CODEBASES: "codebases",
   CODEBASE_BRANCHES: "codebaseBranches",
   STATUS: "status",
@@ -18,6 +19,7 @@ export const pipelineRunFilterControlNames = {
 } as const;
 
 export const defaultPipelineRunFilterValues: PipelineRunListFilterValues = {
+  [pipelineRunFilterControlNames.SEARCH]: "",
   [pipelineRunFilterControlNames.CODEBASES]: [],
   [pipelineRunFilterControlNames.CODEBASE_BRANCHES]: [],
   [pipelineRunFilterControlNames.NAMESPACES]: [],
@@ -26,6 +28,7 @@ export const defaultPipelineRunFilterValues: PipelineRunListFilterValues = {
 };
 
 export const matchFunctions: MatchFunctions<PipelineRun, PipelineRunListFilterValues> = {
+  [pipelineRunFilterControlNames.SEARCH]: createSearchMatchFunction<PipelineRun>(),
   [pipelineRunFilterControlNames.CODEBASES]: (item, value) => {
     if (!value || value.length === 0) return true;
 

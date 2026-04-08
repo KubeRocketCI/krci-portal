@@ -32,6 +32,7 @@ export const PipelineRunList = ({
     pipelineType.tests,
   ],
   filterControls = [
+    pipelineRunFilterControlNames.SEARCH,
     pipelineRunFilterControlNames.CODEBASES,
     pipelineRunFilterControlNames.STATUS,
     pipelineRunFilterControlNames.PIPELINE_TYPE,

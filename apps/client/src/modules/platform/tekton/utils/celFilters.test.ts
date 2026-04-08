@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { escapeCELString, buildPipelineRunNameFilter, buildAnnotationsFilter } from "./celFilters";
+import {
+  escapeCELString,
+  buildPipelineRunNameFilter,
+  buildAnnotationsFilter,
+  buildNameSearchFilter,
+} from "./celFilters";
 
 describe("escapeCELString", () => {
   test("returns valid K8s names unchanged", () => {
@@ -115,5 +120,39 @@ describe("buildAnnotationsFilter", () => {
     expect(result).toBe(
       `annotations["tekton.dev/pipeline"] == 'gitlab-poetry-fastapi-app-review' && annotations["app.edp.epam.com/codebasebranch"] == 'codemie-main'`
     );
+  });
+});
+
+describe("buildNameSearchFilter", () => {
+  test("returns undefined for empty string", () => {
+    expect(buildNameSearchFilter("")).toBeUndefined();
+  });
+
+  test("returns undefined for whitespace-only string", () => {
+    expect(buildNameSearchFilter("   ")).toBeUndefined();
+  });
+
+  test("builds CEL contains filter for a normal search term", () => {
+    const result = buildNameSearchFilter("my-build-abc123");
+
+    expect(result).toBe(`annotations["object.metadata.name"].contains('my-build-abc123')`);
+  });
+
+  test("trims whitespace from the search term", () => {
+    const result = buildNameSearchFilter("  deploy  ");
+
+    expect(result).toBe(`annotations["object.metadata.name"].contains('deploy')`);
+  });
+
+  test("escapes single quotes in search term", () => {
+    const result = buildNameSearchFilter("name'injection");
+
+    expect(result).toBe(`annotations["object.metadata.name"].contains('name\\'injection')`);
+  });
+
+  test("escapes backslashes in search term", () => {
+    const result = buildNameSearchFilter("name\\value");
+
+    expect(result).toBe(`annotations["object.metadata.name"].contains('name\\\\value')`);
   });
 });
