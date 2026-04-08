@@ -42,7 +42,7 @@ export const createPipelineRunDraftFromPipeline = (
       name: pipelineRunName,
       namespace: pipeline.metadata.namespace,
       labels: {
-        [pipelineRunLabels.pipelineType]: pipeline.metadata.labels[pipelineLabels.pipelineType],
+        [pipelineRunLabels.pipelineType]: pipeline.metadata.labels?.[pipelineLabels.pipelineType],
         [pipelineRunLabels.pipeline]: pipeline.metadata.name,
       },
     },

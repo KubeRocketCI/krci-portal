@@ -36,7 +36,14 @@ export const getPipelineRunAnnotation = (pipelineRun: PipelineRun, key: string):
       return undefined;
     }
 
-    return String(value);
+    const str = String(value);
+
+    // Return undefined for unresolved Tekton template placeholders like ${tt.params.foo}
+    if (str.includes("${")) {
+      return undefined;
+    }
+
+    return str;
   } catch {
     // Invalid JSON, silently ignore and return undefined
     return undefined;
