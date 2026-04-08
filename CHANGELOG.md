@@ -1,8 +1,27 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v0.3.0"></a>
+## [v0.3.0] - 2026-04-08
+### Features
+
+- Add REST API endpoints and OpenAPI spec generation
+
+### Bug Fixes
+
+- Improve responsiveness of generic components and pages
+- Edit form guides configs
+- Make apiVersion and kind optional on Kubernetes list items
+- GitOps form issues, stage breadcrumbs, deployment create btn permission
+
+### Code Refactoring
+
+- Protect config.get   endpoint and move cluster config to authenticated   tree
+
 ### Routine
 
+- Regenerate REST client after optional apiVersion/kind fix
 - Update current development version
 - Remove krci-ai framework
 
@@ -40,7 +59,6 @@
 ## v0.1.0 - 2026-03-27
 ### Features
 
-- Enable CHANGELOG.md generation
 - Improve project details page
 - Improve ScrollCopyText component
 - Add deployment submit review step
@@ -240,5 +258,6 @@
 - Setup initial code ([#1](https://github.com/KubeRocketCI/krci-portal/issues/1))
 
 
-[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.3.0...HEAD
+[v0.3.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.1.0...v0.2.0
