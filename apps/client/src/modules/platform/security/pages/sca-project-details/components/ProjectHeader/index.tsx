@@ -161,6 +161,7 @@ export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
                     key: `sca-project:${params.namespace}/${params.projectUuid}`,
                     label: project.name,
                     type: "sca-project",
+                    iconType: "sca-project",
                     route: {
                       to: PATH_SCA_PROJECT_DETAILS_FULL,
                       params: {

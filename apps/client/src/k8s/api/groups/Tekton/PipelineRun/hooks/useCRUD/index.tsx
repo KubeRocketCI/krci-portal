@@ -1,13 +1,23 @@
 import { useResourceCRUDMutation } from "@/k8s/api/hooks/useResourceCRUDMutation";
+import { useClusterStore } from "@/k8s/store";
+import { PATH_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-details/route";
 import { k8sOperation, k8sPipelineRunConfig, PipelineRun, PipelineRunDraft } from "@my-project/shared";
 import React from "react";
+import { useShallow } from "zustand/react/shallow";
 
 export const useCRUD = () => {
+  const { clusterName, defaultNamespace } = useClusterStore(
+    useShallow((state) => ({
+      clusterName: state.clusterName,
+      defaultNamespace: state.defaultNamespace,
+    }))
+  );
+
   const pipelineRunCreateMutation = useResourceCRUDMutation<PipelineRunDraft, typeof k8sOperation.create>(
     "pipelineRunCreateMutation",
     k8sOperation.create,
     {
-      createCustomMessages: () => ({
+      createCustomMessages: (pipelineRun) => ({
         loading: {
           message: "Creating PipelineRun",
         },
@@ -18,6 +28,14 @@ export const useCRUD = () => {
           message: "PipelineRun has been created",
           options: {
             duration: 8000,
+            route: {
+              to: PATH_PIPELINERUN_DETAILS_FULL,
+              params: {
+                clusterName,
+                namespace: pipelineRun.metadata.namespace || defaultNamespace,
+                name: pipelineRun.metadata.name,
+              },
+            },
           },
         },
       }),

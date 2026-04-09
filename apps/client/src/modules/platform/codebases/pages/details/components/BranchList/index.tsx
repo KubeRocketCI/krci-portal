@@ -7,7 +7,12 @@ import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { TABLE } from "@/k8s/constants/tables";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { CreateCodebaseBranchDialog } from "@/modules/platform/codebases/components/CreateCodebaseBranchDialog";
-import { pipelineRunLabels, pipelineType, sortKubeObjectByCreationTimestamp } from "@my-project/shared";
+import {
+  pipelineRunLabels,
+  pipelineType,
+  sortKubeObjectByCreationTimestamp,
+  sortCodebaseBranchesWithDefaultFirst,
+} from "@my-project/shared";
 import React from "react";
 import {
   useCodebaseBranchListWatch,
@@ -25,7 +30,15 @@ export const BranchList = () => {
 
   const codebaseBranchListWatch = useCodebaseBranchListWatch();
   const codebasePipelineRunListWatch = useCodebasePipelineRunListWatch();
-  const defaultBranch = codebaseBranchListWatch.data.array[0];
+
+  // Find the actual default branch based on codebase.spec.defaultBranch
+  const defaultBranch = React.useMemo(() => {
+    const found = codebaseBranchListWatch.data.array.find(
+      (branch) => branch.spec.branchName === codebase?.spec.defaultBranch
+    );
+    // Fallback to first branch if default branch is not found
+    return found || codebaseBranchListWatch.data.array[0];
+  }, [codebaseBranchListWatch.data.array, codebase?.spec.defaultBranch]);
 
   const { setDialog } = useDialogContext();
   const pipelineNamesWatch = usePipelineNamesWatch();
@@ -38,7 +51,11 @@ export const BranchList = () => {
   const enrichedBranches: EnrichedBranch[] = React.useMemo(() => {
     const branches = codebaseBranchListWatch.data.array;
     const allPipelineRuns = [...codebasePipelineRunListWatch.data.array].sort(sortKubeObjectByCreationTimestamp);
-    return branches.map((codebaseBranch) => {
+
+    // Sort branches with default branch first
+    const sortedBranches = sortCodebaseBranchesWithDefaultFirst(branches, codebase?.spec.defaultBranch);
+
+    return sortedBranches.map((codebaseBranch) => {
       const branchId = codebaseBranch.metadata.name;
       const branchRuns = allPipelineRuns.filter(
         (pr) => pr.metadata.labels?.[pipelineRunLabels.codebaseBranch] === branchId
@@ -55,7 +72,7 @@ export const BranchList = () => {
         latestSecurityPipelineRun,
       };
     });
-  }, [codebaseBranchListWatch.data.array, codebasePipelineRunListWatch.data.array]);
+  }, [codebaseBranchListWatch.data.array, codebasePipelineRunListWatch.data.array, codebase?.spec.defaultBranch]);
 
   const isLoading = !codebaseBranchListWatch.query.isFetched;
   const hasBranches = codebaseBranchListWatch.data.array.length > 0;

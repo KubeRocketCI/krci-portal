@@ -1,12 +1,14 @@
 import { useCallback } from "react";
 import { Link, useMatches } from "@tanstack/react-router";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Pin, PinOff } from "lucide-react";
 import { SidebarMenuAction, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub } from "../ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { cn } from "../../utils/classname";
 import { SidebarMenuContent } from "./SidebarMenuContent";
-import type { RouteParams } from "@/core/router/types";
+import { usePinnedItems } from "@/core/hooks/usePinnedItems";
+import { createPinConfig } from "./utils";
 import type { NavItem, SimpleNavItem, NavSubGroupItem, NavGroupItem } from "./types";
+import type { RouteParams } from "@/core/router/types";
 
 interface SidebarMenuItemWithHoverProps {
   item: NavItem;
@@ -51,10 +53,19 @@ export const SidebarMenuItemWithHover = ({
   };
 
   // Always call hooks at the top level
+  const { isPinned, togglePin } = usePinnedItems();
+
   // For items with children, prefer groupRoute.id, fallback to title
   const groupId =
     ("groupRoute" in item && item.groupRoute?.id) || ("children" in item && item.children ? item.title : "");
   const isOpen = isMenuOpen(groupId);
+
+  // Calculate pin config for simple items (at top level to satisfy hooks rules)
+  const isSimpleItem = "route" in item && item.route;
+  const simpleItem = isSimpleItem ? (item as SimpleNavItem) : null;
+  const pinConfig = simpleItem ? createPinConfig(simpleItem.title, simpleItem.route) : null;
+  const pinned = pinConfig ? isPinned(pinConfig.key) : false;
+
   const handleToggle = useCallback(() => {
     if (groupId) {
       onToggle(groupId);
@@ -74,9 +85,19 @@ export const SidebarMenuItemWithHover = ({
     }
   }, [onNavigate, groupId, onOpenMenu, isMinimized]);
 
-  if ("route" in item && item.route) {
+  const handlePin = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (pinConfig) {
+        togglePin(pinConfig);
+      }
+    },
+    [togglePin, pinConfig]
+  );
+
+  if (isSimpleItem && simpleItem) {
     // Simple menu item without children - use existing pattern
-    const simpleItem = item as SimpleNavItem;
 
     return (
       <SidebarMenuItem key={simpleItem.title}>
@@ -89,7 +110,7 @@ export const SidebarMenuItemWithHover = ({
               className: "text-accent-foreground border-l-2 border-primary bg-accent",
             }}
           >
-            {({ isActive }) => (
+            {({ isActive }: { isActive: boolean }) => (
               <>
                 {simpleItem.icon && (
                   <simpleItem.icon className={cn(isActive ? "text-foreground" : "text-sidebar-foreground")} />
@@ -99,16 +120,25 @@ export const SidebarMenuItemWithHover = ({
             )}
           </Link>
         </SidebarMenuButton>
+        <SidebarMenuAction
+          showOnHover
+          onClick={handlePin}
+          aria-label={pinned ? `Unpin ${simpleItem.title}` : `Pin ${simpleItem.title}`}
+        >
+          {pinned ? <Pin className="size-3 fill-current text-blue-600" /> : <PinOff className="size-3" />}
+        </SidebarMenuAction>
       </SidebarMenuItem>
     );
   }
 
   // Menu item with children - use Collapsible
-  const firstChildRoute = getFirstMenuItemRoute(item.children);
-  const linkRoute = item.defaultRoute || firstChildRoute;
+  const groupItem = item as NavGroupItem;
+  const firstChildRoute = getFirstMenuItemRoute(groupItem.children);
+  const linkRoute = groupItem.defaultRoute || firstChildRoute;
 
   // Check if group should be active (if current route is under this group)
-  const isGroupActive = item.groupRoute && matches.some((match) => match.routeId.includes(item.groupRoute?.id || ""));
+  const isGroupActive =
+    groupItem.groupRoute && matches.some((match) => match.routeId.includes(groupItem.groupRoute?.id || ""));
 
   return (
     <SidebarMenuItem key={item.title}>
@@ -127,7 +157,7 @@ export const SidebarMenuItemWithHover = ({
                 className: "text-accent-foreground border-l-2 border-primary bg-accent",
               }}
             >
-              {({ isActive }) => {
+              {({ isActive }: { isActive: boolean }) => {
                 const shouldBeActive = isActive || isGroupActive;
                 return (
                   <>

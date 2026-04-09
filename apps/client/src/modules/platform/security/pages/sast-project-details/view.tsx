@@ -46,6 +46,7 @@ export default function SASTProjectDetailsPageContent({ searchTabIdx }: { search
           key: `sast-project:${namespace}/${projectKey}`,
           label: projectKey,
           type: "sast-project",
+          iconType: "sast-project",
           route: {
             to: PATH_SAST_PROJECT_DETAILS_FULL,
             params: { clusterName, namespace, projectKey },

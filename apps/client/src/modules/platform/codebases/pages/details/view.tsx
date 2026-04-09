@@ -68,6 +68,7 @@ export default function CodebaseDetailsPageContent({ searchTabIdx }: { searchTab
           key: `project:${params.namespace}/${params.name}`,
           label: params.name,
           type: "project",
+          iconType: "project",
           route: {
             to: PATH_PROJECT_DETAILS_FULL,
             params: { clusterName: params.clusterName, namespace: params.namespace, name: params.name },

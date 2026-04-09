@@ -59,6 +59,8 @@ export const FromCommit = ({ codebase, defaultBranch }: FromCommitProps) => {
         clusterName,
       }),
     enabled: !!apiBaseUrl && !!codebaseGitServer && !!codebaseOwner && !!codebaseRepoName,
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   const defaultBranchName = defaultBranch?.spec.branchName;
