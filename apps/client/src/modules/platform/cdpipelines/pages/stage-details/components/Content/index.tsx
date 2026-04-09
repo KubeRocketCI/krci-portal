@@ -35,6 +35,7 @@ export const Content = () => {
         key: `stage:${params.namespace}/${params.cdPipeline}/${params.stage}`,
         label: params.stage,
         type: "stage",
+        iconType: "stage",
         route: {
           to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
           params: {

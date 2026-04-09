@@ -84,6 +84,7 @@ export function ProjectHeader({ project, isLoading }: ProjectHeaderProps) {
                     key: `sast-project:${params.namespace}/${params.projectKey}`,
                     label: project.name,
                     type: "sast-project",
+                    iconType: "sast-project",
                     route: {
                       to: PATH_SAST_PROJECT_DETAILS_FULL,
                       params: {

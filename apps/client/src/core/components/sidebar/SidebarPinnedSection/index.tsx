@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Box, ChevronDown, CloudUpload, Layers, PinOff, Pin as PinIcon, Shield } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { ChevronDown, PinOff, Pin as PinIcon, Box } from "lucide-react";
+import { PAGE_ICONS } from "@/core/constants/page-icons";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../../ui/collapsible";
 import {
   SidebarGroup,
@@ -13,15 +13,7 @@ import {
   useSidebar,
 } from "../../ui/sidebar";
 import { usePinnedItems } from "@/core/hooks/usePinnedItems";
-import type { PinnedPage, PinnedPageType } from "@/core/hooks/usePinnedItems";
-
-const PIN_TYPE_ICONS: Record<PinnedPageType, LucideIcon> = {
-  project: Box,
-  deployment: CloudUpload,
-  stage: Layers,
-  "sca-project": Shield,
-  "sast-project": Shield,
-};
+import type { PinnedPage } from "@/core/hooks/usePinnedItems";
 import { cn } from "@/core/utils/classname";
 
 export function SidebarPinnedSection() {
@@ -74,7 +66,9 @@ function PinnedPageItem({ page, onUnpin }: PinnedPageItemProps) {
     [onUnpin]
   );
 
-  const Icon = PIN_TYPE_ICONS[page.type];
+  // Get icon from iconType, fallback to type (for backwards compatibility), or Box
+  const iconKey = page.iconType || page.type;
+  const Icon = (iconKey && PAGE_ICONS[iconKey as keyof typeof PAGE_ICONS]) || Box;
 
   return (
     <SidebarMenuItem>

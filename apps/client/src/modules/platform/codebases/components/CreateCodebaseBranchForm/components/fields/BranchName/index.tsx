@@ -47,6 +47,8 @@ export const BranchName = ({ codebase, defaultBranchVersion }: BranchNameProps) 
         clusterName,
       }),
     enabled: canLoadBranches,
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   const invalidateBranchListCacheMutation = useMutation({

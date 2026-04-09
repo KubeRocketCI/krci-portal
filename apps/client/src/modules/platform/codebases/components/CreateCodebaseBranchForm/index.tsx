@@ -17,6 +17,10 @@ import {
 import { Alert } from "@/core/components/ui/alert";
 import type { RequestError } from "@/core/types/global";
 import { getK8sErrorMessage } from "@/k8s/api/utils/getK8sErrorMessage";
+import { useMutation } from "@tanstack/react-query";
+import { useTRPCClient } from "@/core/providers/trpc";
+import { useClusterStore } from "@/k8s/store";
+import { useShallow } from "zustand/react/shallow";
 
 export interface CreateCodebaseBranchFormProps {
   codebase: Codebase;
@@ -38,6 +42,28 @@ export const CreateCodebaseBranchForm: React.FC<CreateCodebaseBranchFormProps> =
   onClose,
 }) => {
   const baseDefaultValues = useDefaultValues({ codebase, defaultBranch, pipelines });
+
+  const trpc = useTRPCClient();
+  const { clusterName, defaultNamespace } = useClusterStore(
+    useShallow((state) => ({
+      clusterName: state.clusterName,
+      defaultNamespace: state.defaultNamespace,
+    }))
+  );
+
+  const invalidateBranchListCacheMutation = useMutation({
+    mutationFn: () =>
+      trpc.gitfusion.invalidateBranchListCache.mutate({
+        namespace: defaultNamespace,
+        clusterName,
+      }),
+  });
+
+  React.useEffect(() => {
+    invalidateBranchListCacheMutation.mutate();
+    // Run once on mount (dialog open) to ensure fresh branch list
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { triggerCreateCodebaseBranch, mutations } = useCodebaseBranchCRUD();
   const { codebaseBranchCreateMutation, codebaseBranchEditMutation } = mutations;
@@ -63,6 +89,11 @@ export const CreateCodebaseBranchForm: React.FC<CreateCodebaseBranchFormProps> =
         version: formValues.version,
       });
 
+      const handleSuccess = () => {
+        invalidateBranchListCacheMutation.mutate();
+        onClose();
+      };
+
       if (formValues.release) {
         const newDefaultCodebaseBranch = editDefaultCodebaseBranchObject(defaultBranch, {
           version: newDefaultBranchVersion,
@@ -74,7 +105,7 @@ export const CreateCodebaseBranchForm: React.FC<CreateCodebaseBranchFormProps> =
             defaultCodebaseBranch: newDefaultCodebaseBranch,
           },
           callbacks: {
-            onSuccess: onClose,
+            onSuccess: handleSuccess,
           },
         });
       } else {
@@ -83,12 +114,12 @@ export const CreateCodebaseBranchForm: React.FC<CreateCodebaseBranchFormProps> =
             codebaseBranch: newCodebaseBranch,
           },
           callbacks: {
-            onSuccess: onClose,
+            onSuccess: handleSuccess,
           },
         });
       }
     },
-    [codebase.metadata.name, onClose, defaultBranch, triggerCreateCodebaseBranch]
+    [codebase.metadata.name, onClose, defaultBranch, triggerCreateCodebaseBranch, invalidateBranchListCacheMutation]
   );
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

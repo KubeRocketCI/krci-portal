@@ -1,5 +1,4 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
-import { sortCodebaseBranches } from "@/k8s/api/groups/KRCI/CodebaseBranch/utils/sort";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { CreateCodebaseBranchDialog } from "@/modules/platform/codebases/components/CreateCodebaseBranchDialog";
 import { Plus } from "lucide-react";
@@ -13,12 +12,14 @@ export const BranchListActions = () => {
 
   const codebaseBranchListWatch = useCodebaseBranchListWatch();
 
-  const sortedCodebaseBranchList = React.useMemo(
-    () => sortCodebaseBranches(codebaseBranchListWatch.data.array, codebase!),
-    [codebaseBranchListWatch.data.array, codebase]
-  );
-
-  const defaultBranch = sortedCodebaseBranchList[0];
+  // Find the actual default branch based on codebase.spec.defaultBranch
+  const defaultBranch = React.useMemo(() => {
+    const found = codebaseBranchListWatch.data.array.find(
+      (branch) => branch.spec.branchName === codebase?.spec.defaultBranch
+    );
+    // Fallback to first branch if default branch is not found
+    return found || codebaseBranchListWatch.data.array[0];
+  }, [codebaseBranchListWatch.data.array, codebase?.spec.defaultBranch]);
 
   const pipelineNamesWatch = usePipelineNamesWatch();
 

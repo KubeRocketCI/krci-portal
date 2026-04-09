@@ -15,7 +15,7 @@ import { PATH_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/tekton/pages/p
 import { useCodebaseWatch, useGitServerWatch } from "../../../hooks/data";
 import { checkIsDefaultBranch, codebaseBranchStatus, getPipelineRunStatus } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
-import { GitBranch, SquareArrowOutUpRight } from "lucide-react";
+import { GitBranch, Pin, SquareArrowOutUpRight } from "lucide-react";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { Actions } from "../components/BranchListItem/components/Actions";
@@ -76,21 +76,54 @@ export const useColumns = ({
     return LinkCreationService.git.createRepoBranchLink(gp, url, codebaseBranch?.spec.branchName);
   }, []);
 
+  // Helper to create sort functions that keep default branch pinned at top
+  const createPinnedSortFn = React.useCallback(
+    (valuePath: string | string[]) => (a: EnrichedBranch, b: EnrichedBranch) => {
+      const isADefault = codebaseRef.current && checkIsDefaultBranch(codebaseRef.current, a.codebaseBranch);
+      const isBDefault = codebaseRef.current && checkIsDefaultBranch(codebaseRef.current, b.codebaseBranch);
+
+      // Default branch always comes first
+      if (isADefault && !isBDefault) return -1;
+      if (!isADefault && isBDefault) return 1;
+
+      // Both or neither are default - sort normally
+      const getValue = (obj: EnrichedBranch) => {
+        const parts = Array.isArray(valuePath) ? valuePath : valuePath.split(".");
+        let value: unknown = obj;
+        for (const part of parts) {
+          value = (value as Record<string, unknown>)?.[part];
+        }
+        return value?.toString().toLowerCase() || "";
+      };
+
+      const aValue = getValue(a);
+      const bValue = getValue(b);
+
+      return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+    },
+    []
+  );
+
   return React.useMemo(() => {
     return [
       {
         id: columnNames.BRANCH,
         label: "Branch",
         data: {
-          columnSortableValuePath: "codebaseBranch.spec.branchName",
+          customSortFn: createPinnedSortFn("codebaseBranch.spec.branchName"),
           render: ({ data }) => {
             const { codebaseBranch } = data;
             const gitLink = getGitRepoBranchLink(codebaseBranch);
+            const isDefault = codebaseRef.current && checkIsDefaultBranch(codebaseRef.current, codebaseBranch);
             return (
               <div>
                 <div className="flex flex-wrap items-center">
                   <div className="flex items-center gap-1">
-                    <GitBranch className="text-muted-foreground h-4 w-4 shrink-0" />
+                    {isDefault ? (
+                      <Pin className="text-primary h-4 w-4 shrink-0" />
+                    ) : (
+                      <GitBranch className="text-muted-foreground h-4 w-4 shrink-0" />
+                    )}
                     {gitLink ? (
                       <a
                         href={gitLink}
@@ -107,7 +140,7 @@ export const useColumns = ({
                     )}
                   </div>
                   <CopyButton text={codebaseBranch.spec.branchName} size="small" />
-                  {codebaseRef.current && checkIsDefaultBranch(codebaseRef.current, codebaseBranch) && (
+                  {isDefault && (
                     <Badge variant="info" className="h-5 text-xs">
                       Default
                     </Badge>
@@ -132,7 +165,7 @@ export const useColumns = ({
         id: columnNames.STATUS,
         label: "Status",
         data: {
-          columnSortableValuePath: "codebaseBranch.status.status",
+          customSortFn: createPinnedSortFn("codebaseBranch.status.status"),
           render: ({ data }) => {
             const { codebaseBranch } = data;
             const status = codebaseBranch?.status?.status;
@@ -237,7 +270,7 @@ export const useColumns = ({
         id: columnNames.VERSION,
         label: "Version",
         data: {
-          columnSortableValuePath: "codebaseBranch.spec.version",
+          customSortFn: createPinnedSortFn("codebaseBranch.spec.version"),
           render: ({ data }) => {
             const version = data.codebaseBranch?.spec?.version ?? "—";
             return <TextWithTooltip text={String(version)} className="text-muted-foreground text-sm" />;
@@ -286,5 +319,12 @@ export const useColumns = ({
         },
       },
     ];
-  }, [codebaseWatchQuery.query.isLoading, clusterName, defaultNamespace, tableSettings, getGitRepoBranchLink]);
+  }, [
+    codebaseWatchQuery.query.isLoading,
+    clusterName,
+    defaultNamespace,
+    tableSettings,
+    getGitRepoBranchLink,
+    createPinnedSortFn,
+  ]);
 };

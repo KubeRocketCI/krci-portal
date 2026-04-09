@@ -31,6 +31,7 @@ import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { PipelineRunProvider } from "./providers/PipelineRun/provider";
 import { usePipelineRunContext } from "./providers/PipelineRun/hooks";
+import { StopPipelineRunButton } from "./components/StopPipelineRunButton";
 
 /**
  * Look up an annotation from resultAnnotations JSON first, then fall back to raw metadata annotations.
@@ -234,26 +235,29 @@ function HeaderActions() {
   }
 
   return (
-    <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" aria-label="More options">
-          Actions
-          <EllipsisVertical size={16} />
-        </Button>
-      </DropdownMenuTrigger>
-      <PipelineRunActionsMenu
-        data={{
-          pipelineRun: pipelineRun,
-        }}
-        backRoute={{
-          to: PATH_PIPELINERUNS_FULL,
-          params: {
-            clusterName: params.clusterName,
-          },
-        }}
-        variant="menu"
-      />
-    </DropdownMenu>
+    <>
+      <StopPipelineRunButton />
+      <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm" aria-label="More options">
+            Actions
+            <EllipsisVertical size={16} />
+          </Button>
+        </DropdownMenuTrigger>
+        <PipelineRunActionsMenu
+          data={{
+            pipelineRun: pipelineRun,
+          }}
+          backRoute={{
+            to: PATH_PIPELINERUNS_FULL,
+            params: {
+              clusterName: params.clusterName,
+            },
+          }}
+          variant="menu"
+        />
+      </DropdownMenu>
+    </>
   );
 }
 
