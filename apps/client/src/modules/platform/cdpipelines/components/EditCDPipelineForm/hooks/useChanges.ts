@@ -3,6 +3,7 @@ import { useStore } from "@tanstack/react-form";
 import { useEditCDPipelineForm } from "../providers/form/hooks";
 import { useEditCDPipelineData } from "../providers/data/hooks";
 import type { EditCDPipelineFormValues } from "../types";
+import { alignInputDockerStreams } from "../utils/alignInputDockerStreams";
 
 type ChangeType = "added" | "removed" | "modified";
 
@@ -48,7 +49,10 @@ export const useChanges = (): CDPipelineChanges => {
       oldDescription !== newDescription ? { oldDescription, newDescription } : null;
 
     const originalApps = cdPipeline.spec.applications || [];
-    const originalBranches = cdPipeline.spec.inputDockerStreams || [];
+    // Align original branches to match form initialization behavior.
+    // The form uses alignInputDockerStreams in useDefaultValues, so we must align here too
+    // to avoid showing false diffs when the original spec has misaligned arrays.
+    const originalBranches = alignInputDockerStreams(cdPipeline.spec.inputDockerStreams, originalApps.length);
     const currentApps = formValues.applications || [];
     const currentBranches = formValues.inputDockerStreams || [];
 
