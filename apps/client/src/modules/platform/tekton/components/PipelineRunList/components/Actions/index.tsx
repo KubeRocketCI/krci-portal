@@ -1,18 +1,12 @@
 import { Button } from "@/core/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger } from "@/core/components/ui/dropdown-menu";
 import React from "react";
-import { isHistoryPipelineRun, PipelineRun } from "@my-project/shared";
+import { PipelineRun } from "@my-project/shared";
 import { PipelineRunActionsMenu } from "../../../PipelineRunActionsMenu";
 import { EllipsisVertical } from "lucide-react";
 
 export const Actions = ({ pipelineRun }: { pipelineRun: PipelineRun }) => {
   const [open, setOpen] = React.useState(false);
-
-  const isHistoryItem = isHistoryPipelineRun(pipelineRun);
-
-  if (isHistoryItem) {
-    return null;
-  }
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>

@@ -13,6 +13,9 @@ export function escapeCELString(value: string): string {
 
 const PIPELINE_RUN_DATA_TYPE = "data_type == 'tekton.dev/v1.PipelineRun'";
 
+/** Small page size for single-record lookups by name (buffer for potential collisions). */
+export const SINGLE_RECORD_LOOKUP_PAGE_SIZE = 6;
+
 export const buildPipelineRunNameFilter = (pipelineRunName: string): string => {
   return `data.metadata.name == '${escapeCELString(pipelineRunName)}' && ${PIPELINE_RUN_DATA_TYPE}`;
 };

@@ -22,7 +22,7 @@ import {
 } from "@my-project/shared";
 import React from "react";
 import { RequestError } from "@/core/types/global";
-import { buildPipelineRunNameFilter } from "../../../utils/celFilters";
+import { buildPipelineRunNameFilter, SINGLE_RECORD_LOOKUP_PAGE_SIZE } from "../../../utils/celFilters";
 import { isK8sNotFoundError } from "../../../utils/isK8sNotFoundError";
 import { buildPipelineRunTasksByNameMap } from "./utils";
 import { routePipelineRunDetails } from "../route";
@@ -80,7 +80,7 @@ export function useUnifiedPipelineRunData({ namespace, name }: UnifiedPipelineRu
       trpc.tektonResults.listRecords.query({
         namespace,
         filter: buildPipelineRunNameFilter(name),
-        pageSize: 5,
+        pageSize: SINGLE_RECORD_LOOKUP_PAGE_SIZE,
         orderBy: "create_time desc",
       }),
     enabled: k8sNotFound,

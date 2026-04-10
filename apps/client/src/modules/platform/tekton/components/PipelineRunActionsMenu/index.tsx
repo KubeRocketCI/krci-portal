@@ -1,20 +1,82 @@
 import { ActionsMenuList } from "@/core/components/ActionsMenuList";
+import { showToast } from "@/core/components/Snackbar";
 import EditorYAML from "@/core/components/EditorYAML";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
+import { useTRPCClient } from "@/core/providers/trpc";
 import { router } from "@/core/router";
 import { ListItemAction } from "@/core/types/global";
 import { createResourceAction } from "@/core/utils/createResourceAction";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { usePipelineRunCRUD, usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
-import { createRerunPipelineRun, isHistoryPipelineRun, k8sOperation, PipelineRun } from "@my-project/shared";
+import {
+  createRerunPipelineRun,
+  isHistoryPipelineRun,
+  k8sOperation,
+  normalizeHistoryPipelineRun,
+  parseRecordName,
+  PipelineRun,
+} from "@my-project/shared";
 import { Redo2, Trash } from "lucide-react";
 import React from "react";
+import { buildPipelineRunNameFilter, SINGLE_RECORD_LOOKUP_PAGE_SIZE } from "../../utils/celFilters";
 import { CustomActionsInlineList } from "./components/CustomActionsInlineList";
 import { PipelineRunActionsMenuProps } from "./types";
 
+// History items from the list view lack spec/status details needed for rerun.
+async function resolveFullPipelineRun(
+  trpc: ReturnType<typeof useTRPCClient>,
+  pipelineRun: PipelineRun
+): Promise<PipelineRun> {
+  if (!isHistoryPipelineRun(pipelineRun)) {
+    return pipelineRun;
+  }
+
+  if (pipelineRun.spec?.pipelineSpec || pipelineRun.status?.childReferences) {
+    return pipelineRun;
+  }
+
+  const namespace = pipelineRun.metadata.namespace;
+
+  if (!namespace) {
+    throw new Error("PipelineRun is missing namespace");
+  }
+
+  const name = pipelineRun.metadata.name;
+
+  const searchResult = await trpc.tektonResults.listRecords.query({
+    namespace,
+    filter: buildPipelineRunNameFilter(name),
+    pageSize: SINGLE_RECORD_LOOKUP_PAGE_SIZE,
+    orderBy: "create_time desc",
+  });
+
+  const firstRecord = searchResult.records?.[0];
+  const recordInfo = firstRecord?.name ? parseRecordName(firstRecord.name) : null;
+
+  if (!recordInfo?.resultUid || !recordInfo?.recordUid) {
+    throw new Error("PipelineRun record not found in Tekton Results");
+  }
+
+  const fullData = await trpc.tektonResults.getPipelineRun.query({
+    namespace,
+    resultUid: recordInfo.resultUid,
+    recordUid: recordInfo.recordUid,
+  });
+
+  return normalizeHistoryPipelineRun(fullData.pipelineRun);
+}
+
+function handleResolveError(err: unknown) {
+  console.error("resolveFullPipelineRun failed:", err);
+  showToast("Failed to fetch PipelineRun data for rerun", "error", {
+    description: err instanceof Error ? err.message : String(err),
+  });
+}
+
 export const PipelineRunActionsMenu = ({ backRoute, variant, data: { pipelineRun } }: PipelineRunActionsMenuProps) => {
   const pipelineRunPermissions = usePipelineRunPermissions();
+  const trpc = useTRPCClient();
 
   const { triggerCreatePipelineRun, triggerDeletePipelineRun } = usePipelineRunCRUD();
 
@@ -46,13 +108,17 @@ export const PipelineRunActionsMenu = ({ backRoute, variant, data: { pipelineRun
           reason: pipelineRunPermissions.data.create.reason,
         },
         callback: (pipelineRun) => {
-          const newPipelineRun = createRerunPipelineRun(pipelineRun);
+          resolveFullPipelineRun(trpc, pipelineRun)
+            .then((fullPipelineRun) => {
+              const newPipelineRun = createRerunPipelineRun(fullPipelineRun);
 
-          triggerCreatePipelineRun({
-            data: {
-              pipelineRun: newPipelineRun,
-            },
-          });
+              triggerCreatePipelineRun({
+                data: {
+                  pipelineRun: newPipelineRun,
+                },
+              });
+            })
+            .catch(handleResolveError);
         },
       }),
       createResourceAction({
@@ -65,21 +131,25 @@ export const PipelineRunActionsMenu = ({ backRoute, variant, data: { pipelineRun
           reason: pipelineRunPermissions.data.create.reason,
         },
         callback: (pipelineRun: PipelineRun) => {
-          const newPipelineRun = createRerunPipelineRun(pipelineRun);
-          openEditorDialog({
-            content: newPipelineRun,
-            onSave: (_yaml, json) => {
-              if (!json) {
-                return;
-              }
+          resolveFullPipelineRun(trpc, pipelineRun)
+            .then((fullPipelineRun) => {
+              const newPipelineRun = createRerunPipelineRun(fullPipelineRun);
+              openEditorDialog({
+                content: newPipelineRun,
+                onSave: (_yaml, json) => {
+                  if (!json) {
+                    return;
+                  }
 
-              triggerCreatePipelineRun({
-                data: {
-                  pipelineRun: json as PipelineRun,
+                  triggerCreatePipelineRun({
+                    data: {
+                      pipelineRun: json as PipelineRun,
+                    },
+                  });
                 },
               });
-            },
-          });
+            })
+            .catch(handleResolveError);
         },
       }),
       isHistoryItem
@@ -100,6 +170,7 @@ export const PipelineRunActionsMenu = ({ backRoute, variant, data: { pipelineRun
     ].filter((action): action is ListItemAction => action !== undefined);
   }, [
     pipelineRun,
+    trpc,
     pipelineRunPermissions.data.create.allowed,
     pipelineRunPermissions.data.create.reason,
     pipelineRunPermissions.data.delete.allowed,
