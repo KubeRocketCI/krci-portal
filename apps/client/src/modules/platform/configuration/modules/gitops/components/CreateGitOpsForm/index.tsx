@@ -24,11 +24,13 @@ export const CreateGitOpsForm: React.FC<{ onClose: () => void }> = ({ onClose })
   const gitServers = gitServersWatch.data.array;
   const firstValidGitServer = gitServers?.find((gitServer) => gitServer?.status?.connected);
 
-  const defaultValues = React.useMemo<CreateGitOpsFormValues>(
-    () => ({
+  const defaultValues = React.useMemo<CreateGitOpsFormValues>(() => {
+    const isGerrit = firstValidGitServer?.spec.gitProvider === "gerrit";
+
+    return {
       emptyProject: false,
       name: GIT_OPS_CODEBASE_NAME,
-      gitUrlPath: `/${GIT_OPS_CODEBASE_NAME}`,
+      gitUrlPath: isGerrit ? `/${GIT_OPS_CODEBASE_NAME}` : "",
       lang: "helm",
       framework: "gitops",
       buildTool: "helm",
@@ -45,10 +47,9 @@ export const CreateGitOpsForm: React.FC<{ onClose: () => void }> = ({ onClose })
       systemTypeLabel: "gitops",
       namespace: "",
       ui_repositoryOwner: "",
-      ui_repositoryName: "",
-    }),
-    [firstValidGitServer?.metadata.name, firstValidGitServer?.spec.gitProvider]
-  );
+      ui_repositoryName: isGerrit ? "" : GIT_OPS_CODEBASE_NAME,
+    };
+  }, [firstValidGitServer?.metadata.name, firstValidGitServer?.spec.gitProvider]);
 
   const handleSubmit = React.useCallback(
     async (values: CreateGitOpsFormValues) => {

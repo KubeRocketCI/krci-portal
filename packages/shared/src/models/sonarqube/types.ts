@@ -9,6 +9,7 @@ import {
   sonarqubeProjectSchema,
   sonarqubeProjectsQueryParamsSchema,
   projectsSearchResponseSchema,
+  componentShowResponseSchema,
   measureSchema,
   componentWithMeasuresSchema,
   measuresComponentResponseSchema,
@@ -43,6 +44,7 @@ export type Paging = z.infer<typeof pagingSchema>;
 export type SonarQubeProject = z.infer<typeof sonarqubeProjectSchema>;
 export type SonarQubeProjectsQueryParams = z.infer<typeof sonarqubeProjectsQueryParamsSchema>;
 export type ProjectsSearchResponse = z.infer<typeof projectsSearchResponseSchema>;
+export type ComponentShowResponse = z.infer<typeof componentShowResponseSchema>;
 
 // =============================================================================
 // Measures

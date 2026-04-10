@@ -4,6 +4,7 @@ import {
   SONARQUBE_METRIC_KEYS,
   ProjectsSearchResponse,
   SonarQubeProjectsQueryParams,
+  ComponentShowResponse,
   MeasuresComponentResponse,
   QualityGateStatusResponse,
   NormalizedMeasures,
@@ -208,17 +209,35 @@ export class SonarQubeClient {
    * });
    */
   async getProjects(params: SonarQubeProjectsQueryParams): Promise<ProjectsSearchResponse> {
-    const endpoint = this.buildEndpoint("/api/projects/search", {
+    const endpoint = this.buildEndpoint("/api/components/search", {
+      qualifiers: "TRK",
       p: params.page,
       ps: params.pageSize,
       q: params.searchTerm,
-      projects: params.projectKeys, // Exact key matching (comma-separated)
-      analyzedBefore: params.analyzedBefore,
-      onProvisionedOnly: params.onProvisionedOnly,
-      qualifiers: params.qualifiers,
     });
 
     return this.fetchJson<ProjectsSearchResponse>(endpoint);
+  }
+
+  /**
+   * Get a single component/project by exact key
+   *
+   * @param componentKey - The project/component key
+   * @returns Component data, or null if not found
+   */
+  async getComponent(componentKey: string): Promise<ComponentShowResponse | null> {
+    const endpoint = this.buildEndpoint("/api/components/show", {
+      component: componentKey,
+    });
+
+    try {
+      return await this.fetchJson<ComponentShowResponse>(endpoint);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("404")) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   /**

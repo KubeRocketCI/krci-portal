@@ -56,7 +56,7 @@ const SubGroupItem = ({ item, parentGroupId, onNavigate }: SubGroupItemProps) =>
         </Link>
       </SidebarMenuSubButton>
       <SidebarMenuAction
-        showOnHover
+        className="group-focus-within/menu-sub-item:opacity-100 group-hover/menu-sub-item:opacity-100 data-[state=open]:opacity-100 md:opacity-0"
         onClick={handlePin}
         aria-label={pinned ? `Unpin ${item.title}` : `Pin ${item.title}`}
       >

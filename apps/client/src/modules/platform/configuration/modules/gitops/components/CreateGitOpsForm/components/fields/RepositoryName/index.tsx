@@ -16,7 +16,6 @@ export const RepositoryName = () => {
   const gitServerFieldValue = useStore(form.store, (s) => s.values[CODEBASE_FORM_NAMES.GIT_SERVER]);
   const ownerFieldValue = useStore(form.store, (s) => s.values[CODEBASE_FORM_NAMES.UI_REPOSITORY_OWNER]);
   const strategyFieldValue = useStore(form.store, (s) => s.values[CODEBASE_FORM_NAMES.STRATEGY]);
-  const providerFieldValue = useStore(form.store, (s) => s.values[CODEBASE_FORM_NAMES.UI_GIT_SERVER_PROVIDER]);
 
   const krciConfigMapWatch = useWatchKRCIConfig();
   const apiBaseUrl = krciConfigMapWatch.data?.data?.api_gateway_url;
@@ -59,8 +58,9 @@ export const RepositoryName = () => {
     <form.AppField
       name={CODEBASE_FORM_NAMES.UI_REPOSITORY_NAME}
       validators={{
-        onChange: ({ value }) => {
-          if (providerFieldValue === gitProvider.gerrit) return undefined;
+        onChange: ({ value, fieldApi }) => {
+          const provider = fieldApi.form.getFieldValue(CODEBASE_FORM_NAMES.UI_GIT_SERVER_PROVIDER);
+          if (provider === gitProvider.gerrit) return undefined;
           if (!value || value.trim().length === 0) {
             return isImportStrategy ? "Select repository" : "Enter the repository name";
           }
