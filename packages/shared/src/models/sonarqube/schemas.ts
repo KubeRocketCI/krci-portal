@@ -25,13 +25,15 @@ export const pagingSchema = z.object({
 // =============================================================================
 
 /**
- * Project from SonarQube API
- * GET /api/projects/search
+ * Project/component from SonarQube API
+ * GET /api/components/search?qualifiers=TRK
+ * GET /api/components/show?component=KEY
  */
 export const sonarqubeProjectSchema = z.object({
   key: z.string(),
   name: z.string(),
   qualifier: z.string().optional(),
+  project: z.string().optional(),
   visibility: z.enum(["public", "private"]).optional(),
   lastAnalysisDate: z.string().optional(),
   revision: z.string().optional(),
@@ -39,24 +41,30 @@ export const sonarqubeProjectSchema = z.object({
 });
 
 /**
- * Query parameters for projects search endpoint
+ * Query parameters for components search endpoint
+ * GET /api/components/search?qualifiers=TRK
  */
 export const sonarqubeProjectsQueryParamsSchema = z.object({
   page: z.number().int().min(1).optional().default(1),
   pageSize: z.number().int().min(1).max(500).optional().default(50),
   searchTerm: z.string().optional(),
-  projectKeys: z.string().optional(), // Comma-separated list of exact project keys
-  analyzedBefore: z.string().optional(),
-  onProvisionedOnly: z.boolean().optional(),
-  qualifiers: z.string().optional(),
 });
 
 /**
- * Response from projects search endpoint
+ * Response from components search endpoint
+ * GET /api/components/search?qualifiers=TRK
  */
 export const projectsSearchResponseSchema = z.object({
   paging: pagingSchema,
   components: z.array(sonarqubeProjectSchema),
+});
+
+/**
+ * Response from components show endpoint
+ * GET /api/components/show?component=KEY
+ */
+export const componentShowResponseSchema = z.object({
+  component: sonarqubeProjectSchema,
 });
 
 // =============================================================================

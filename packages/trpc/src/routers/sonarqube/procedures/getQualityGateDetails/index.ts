@@ -31,6 +31,8 @@ export const getQualityGateDetailsProcedure = protectedProcedure
     const { projectKey } = input;
     const sonarqubeClient = createSonarQubeClient();
 
+    console.info(`[SonarQube] getQualityGateDetails → projectKey="${projectKey}"`);
+
     try {
       const qgResponse = await sonarqubeClient.getQualityGateDetails(projectKey);
       console.info(`[SonarQube] Quality gate status for ${projectKey}: ${qgResponse.projectStatus.status}`);
