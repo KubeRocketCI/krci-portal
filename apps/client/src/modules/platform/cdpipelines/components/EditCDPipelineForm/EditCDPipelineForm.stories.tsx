@@ -32,6 +32,42 @@ const mockCDPipeline: CDPipeline = {
   },
 };
 
+const mockCDPipelineWithMisalignedArrays: CDPipeline = {
+  apiVersion: "v2.edp.epam.com/v1",
+  kind: "CDPipeline",
+  metadata: {
+    name: "test-pipeline",
+    namespace: "default",
+    uid: "test-uid-123",
+    creationTimestamp: "2026-04-10T10:00:00Z",
+  },
+  spec: {
+    name: "test-pipeline",
+    deploymentType: "container",
+    description: "Test pipeline with misaligned applications and branches",
+    // Applications in one order
+    applications: ["frontend-app", "backend-api", "database-service", "cache-service", "auth-service"],
+    // Branches in different order (misaligned)
+    inputDockerStreams: [
+      "cache-service-main",
+      "frontend-app-develop",
+      "auth-service-feature-oauth",
+      "database-service-hotfix-123",
+      "backend-api-main",
+    ],
+    applicationsToPromote: ["frontend-app", "backend-api"],
+  },
+  status: {
+    action: "setup_initial_structure",
+    available: true,
+    last_time_updated: "2026-04-10T10:00:00Z",
+    result: "success",
+    status: "created",
+    username: "system",
+    value: "active",
+  },
+};
+
 const meta = {
   title: "Platform/CDPipelines/EditCDPipelineForm",
   component: EditCDPipelineForm,
@@ -106,5 +142,29 @@ export const ValidationRequired: Story = {
     await userEvent.tab();
 
     await expect(canvas.getByText("Description is required")).toBeInTheDocument();
+  },
+};
+
+/**
+ * CDPipeline with misaligned applications and inputDockerStreams arrays.
+ * Tests that the form correctly matches branches to apps using substring matching,
+ * not index-based mapping. Should show no changes on initial load despite the
+ * misalignment in the original resource.
+ */
+export const MisalignedArrays: Story = {
+  args: {
+    cdPipeline: mockCDPipelineWithMisalignedArrays,
+    onClose: () => {},
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText(/Edit test-pipeline/i)).toBeInTheDocument();
+
+    const descriptionTextarea = await canvas.findByLabelText("Description", { selector: "textarea" });
+    await expect(descriptionTextarea).toHaveValue("Test pipeline with misaligned applications and branches");
+
+    // Apply and Undo Changes should be disabled because no fields have been modified
+    // even though the original arrays are misaligned
+    await expect(canvas.getByRole("button", { name: /apply/i })).toBeDisabled();
+    await expect(canvas.getByRole("button", { name: /undo changes/i })).toBeDisabled();
   },
 };
