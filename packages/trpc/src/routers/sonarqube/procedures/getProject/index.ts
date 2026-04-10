@@ -1,7 +1,7 @@
-import { z } from "zod";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createSonarQubeClient } from "../../../../clients/sonarqube/index.js";
 import { SONARQUBE_METRIC_KEYS, projectWithMetricsSchema } from "@my-project/shared";
+import { z } from "zod";
 
 /**
  * Get a single SonarQube project with full metadata and metrics
@@ -35,20 +35,18 @@ export const getProjectProcedure = protectedProcedure
     const { componentKey } = input;
     const sonarqubeClient = createSonarQubeClient();
 
-    try {
-      // Step 1: Fetch the specific project by exact key to get full metadata
-      const projectsResponse = await sonarqubeClient.getProjects({
-        page: 1,
-        pageSize: 1,
-        projectKeys: componentKey, // Exact key matching via 'projects' API param
-      });
+    console.info(`[SonarQube] getProject → componentKey="${componentKey}"`);
 
-      // Check if project was found
-      const project = projectsResponse.components[0];
-      if (!project) {
+    try {
+      // Step 1: Fetch the specific project by exact key
+      const componentResponse = await sonarqubeClient.getComponent(componentKey);
+
+      if (!componentResponse) {
         console.warn(`[SonarQube] Component not found: ${componentKey}`);
         return null;
       }
+
+      const project = componentResponse.component;
 
       // Step 2: Fetch measures for the project
       let measures: Record<string, string> = {};

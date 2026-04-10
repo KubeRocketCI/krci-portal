@@ -29,6 +29,8 @@ export const getProjectIssuesProcedure = protectedProcedure
   .query(async ({ input }) => {
     const sonarqubeClient = createSonarQubeClient();
 
+    console.info(`[SonarQube] getProjectIssues → componentKeys="${input.componentKeys}" p=${input.p} ps=${input.ps}`);
+
     try {
       const issuesResponse = await sonarqubeClient.getIssues(input);
       console.info(`[SonarQube] Found ${issuesResponse.total} issues for ${input.componentKeys}`);

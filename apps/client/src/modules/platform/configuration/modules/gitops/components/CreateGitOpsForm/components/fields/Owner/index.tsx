@@ -12,7 +12,6 @@ export const Owner = () => {
   const form = useCreateGitOpsForm();
   const trpc = useTRPCClient();
   const gitServerFieldValue = useStore(form.store, (s) => s.values[CODEBASE_FORM_NAMES.GIT_SERVER]);
-  const providerFieldValue = useStore(form.store, (s) => s.values[CODEBASE_FORM_NAMES.UI_GIT_SERVER_PROVIDER]);
   const repositoryNameFieldValue = useStore(form.store, (s) => s.values[CODEBASE_FORM_NAMES.UI_REPOSITORY_NAME]);
 
   const krciConfigMapWatch = useWatchKRCIConfig();
@@ -48,8 +47,9 @@ export const Owner = () => {
     <form.AppField
       name={CODEBASE_FORM_NAMES.UI_REPOSITORY_OWNER}
       validators={{
-        onChange: ({ value }) => {
-          if (providerFieldValue === gitProvider.gerrit) return undefined;
+        onChange: ({ value, fieldApi }) => {
+          const provider = fieldApi.form.getFieldValue(CODEBASE_FORM_NAMES.UI_GIT_SERVER_PROVIDER);
+          if (provider === gitProvider.gerrit) return undefined;
           if (!value || value.trim().length === 0) return "Select owner";
           return undefined;
         },
