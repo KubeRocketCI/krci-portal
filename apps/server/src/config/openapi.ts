@@ -8,6 +8,7 @@ import {
 import { TRPCError } from "@trpc/server";
 import { getHTTPStatusCodeFromError } from "@trpc/server/http";
 import { generateOpenApiDocument } from "trpc-to-openapi";
+import { STATUS_CODES } from "node:http";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import type { DBSessionStore } from "@/clients/db-session-store";
 
@@ -66,8 +67,9 @@ export function registerOpenApi(
   function handleTRPCError(error: unknown, res: FastifyReply): never {
     if (error instanceof TRPCError) {
       const httpStatus = getHTTPStatusCodeFromError(error);
+      const message = STATUS_CODES[httpStatus] ?? "Unknown error";
       res.status(httpStatus).send({
-        error: { code: error.code, message: error.message },
+        error: { code: error.code, message },
       });
     }
     throw error;
