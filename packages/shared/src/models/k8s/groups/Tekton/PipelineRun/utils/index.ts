@@ -7,4 +7,5 @@ export * from "./createRerunPipelineRun/index.js";
 export * from "./getPipelineRunStatus/index.js";
 export * from "./getPipelineRunAnnotation/index.js";
 export * from "./getPipelineRunTaskGraphDefinitions/index.js";
+export * from "./isHistoryPipelineRun/index.js";
 export * from "./resultAnnotations/index.js";

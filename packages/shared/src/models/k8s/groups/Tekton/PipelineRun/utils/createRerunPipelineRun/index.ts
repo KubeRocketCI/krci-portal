@@ -1,3 +1,4 @@
+import { tektonResultAnnotations } from "../../../../../../tektonResults/annotations.js";
 import { createRandomString, truncateName } from "../../../../../../../utils/index.js";
 import { PipelineRun } from "../../types.js";
 
@@ -72,9 +73,10 @@ const generateNewPipelineRunPayload = ({ pipelineRun, rerun }: { pipelineRun: Pi
     delete payload.metadata.annotations["tekton.dev/v1beta1TaskRuns"];
     delete payload.metadata.annotations["kubectl.kubernetes.io/last-applied-configuration"];
 
-    delete payload.metadata.annotations["results.tekton.dev/result"];
-    delete payload.metadata.annotations["results.tekton.dev/record"];
-    delete payload.metadata.annotations["results.tekton.dev/log"];
+    delete payload.metadata.annotations[tektonResultAnnotations.tektonResultRef];
+    delete payload.metadata.annotations[tektonResultAnnotations.tektonRecordRef];
+    delete payload.metadata.annotations[tektonResultAnnotations.tektonLogRef];
+    delete payload.metadata.annotations[tektonResultAnnotations.historySource];
   }
 
   Object.keys(payload.metadata).forEach(

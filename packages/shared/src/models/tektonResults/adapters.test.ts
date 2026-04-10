@@ -360,7 +360,15 @@ describe("normalizeHistoryPipelineRun", () => {
     };
 
     const result = normalizeHistoryPipelineRun(decoded);
-    expect(result.metadata.annotations).toEqual({});
+    expect(result.metadata.annotations).toEqual({
+      [tektonResultAnnotations.historySource]: "true",
+    });
+  });
+
+  it("should set historySource annotation to true", () => {
+    const result = normalizeHistoryPipelineRun(mockDecodedPipelineRun);
+
+    expect(result.metadata.annotations?.[tektonResultAnnotations.historySource]).toBe("true");
   });
 });
 

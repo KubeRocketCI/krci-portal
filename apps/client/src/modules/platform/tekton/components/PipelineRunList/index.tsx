@@ -4,7 +4,7 @@ import { EmptyList } from "@/core/components/EmptyList";
 import { DataTable } from "@/core/components/Table";
 import { usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { Tooltip } from "@/core/components/ui/tooltip";
-import { pipelineType, tektonResultAnnotations } from "@my-project/shared";
+import { isHistoryPipelineRun, pipelineType } from "@my-project/shared";
 import { Trash } from "lucide-react";
 import React from "react";
 import { DeletionDialog } from "./components/DeleteDialog";
@@ -92,7 +92,7 @@ export const PipelineRunList = ({
           handleSelectAll: handleSelectAllClick,
           handleSelectRow: handleSelectRowClick,
           isRowSelected: (row) => selected.indexOf(row.metadata.name) !== -1,
-          isRowSelectable: (row) => row.metadata.annotations?.[tektonResultAnnotations.historySource] !== "true",
+          isRowSelectable: (row) => !isHistoryPipelineRun(row),
           renderSelectionInfo: (selectedCount: number) => (
             <div className={selectedCount ? "visible" : "pointer-events-none invisible"}>
               <div className="flex flex-row items-center gap-4">
