@@ -229,11 +229,6 @@ function HeaderActions() {
     return null;
   }
 
-  // For history data, show a badge instead of actions (K8s operations are unavailable)
-  if (unifiedData.source === "history") {
-    return null;
-  }
-
   return (
     <>
       <StopPipelineRunButton />

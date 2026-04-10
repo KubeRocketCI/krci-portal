@@ -2,11 +2,12 @@ import { ActionsMenuList } from "@/core/components/ActionsMenuList";
 import EditorYAML from "@/core/components/EditorYAML";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { router } from "@/core/router";
+import { ListItemAction } from "@/core/types/global";
 import { createResourceAction } from "@/core/utils/createResourceAction";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { usePipelineRunCRUD, usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
-import { createRerunPipelineRun, k8sOperation, PipelineRun } from "@my-project/shared";
+import { createRerunPipelineRun, isHistoryPipelineRun, k8sOperation, PipelineRun } from "@my-project/shared";
 import { Redo2, Trash } from "lucide-react";
 import React from "react";
 import { CustomActionsInlineList } from "./components/CustomActionsInlineList";
@@ -31,6 +32,8 @@ export const PipelineRunActionsMenu = ({ backRoute, variant, data: { pipelineRun
     if (!pipelineRun) {
       return [];
     }
+
+    const isHistoryItem = isHistoryPipelineRun(pipelineRun);
 
     return [
       createResourceAction({
@@ -79,20 +82,22 @@ export const PipelineRunActionsMenu = ({ backRoute, variant, data: { pipelineRun
           });
         },
       }),
-      createResourceAction({
-        type: k8sOperation.delete,
-        label: capitalizeFirstLetter(k8sOperation.delete),
-        Icon: <Trash size={16} />,
-        item: pipelineRun,
-        disabled: {
-          status: !pipelineRunPermissions.data.delete.allowed,
-          reason: pipelineRunPermissions.data.delete.reason,
-        },
-        callback: (pipelineRun) => {
-          triggerDeletePipelineRun({ data: { pipelineRun: pipelineRun }, callbacks: { onSuccess: onDelete } });
-        },
-      }),
-    ];
+      isHistoryItem
+        ? undefined
+        : createResourceAction({
+            type: k8sOperation.delete,
+            label: capitalizeFirstLetter(k8sOperation.delete),
+            Icon: <Trash size={16} />,
+            item: pipelineRun,
+            disabled: {
+              status: !pipelineRunPermissions.data.delete.allowed,
+              reason: pipelineRunPermissions.data.delete.reason,
+            },
+            callback: (pipelineRun) => {
+              triggerDeletePipelineRun({ data: { pipelineRun: pipelineRun }, callbacks: { onSuccess: onDelete } });
+            },
+          }),
+    ].filter((action): action is ListItemAction => action !== undefined);
   }, [
     pipelineRun,
     pipelineRunPermissions.data.create.allowed,
@@ -110,9 +115,6 @@ export const PipelineRunActionsMenu = ({ backRoute, variant, data: { pipelineRun
 
   return (
     <>
-      {/* {editor.open && editor.data && (
-        <EditorDialog open={editor.open} item={editor.data} onClose={handleCloseEditor} onSave={handleEditorSave} />
-      )} */}
       {variant === actionMenuType.inline ? (
         <CustomActionsInlineList groupActions={groupActions} inlineActions={inlineActions} />
       ) : variant === actionMenuType.menu ? (

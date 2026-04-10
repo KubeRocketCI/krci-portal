@@ -27,7 +27,10 @@ import { k8sPipelineRunConfig } from "../k8s/groups/Tekton/PipelineRun/constants
  */
 export function normalizeHistoryPipelineRun(decoded: DecodedPipelineRun): PipelineRun {
   const labels = decoded.metadata.labels ?? {};
-  const annotations = decoded.metadata.annotations ?? {};
+  const annotations = {
+    ...decoded.metadata.annotations,
+    [tektonResultAnnotations.historySource]: "true",
+  };
 
   const conditions = decoded.status?.conditions?.map((c) => ({
     ...c,

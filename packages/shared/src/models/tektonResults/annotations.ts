@@ -17,4 +17,8 @@ export const tektonResultAnnotations = {
   historySource: "app.edp.epam.com/history-source",
   /** Annotation added by Tekton Results Watcher on archived PipelineRuns/TaskRuns */
   tektonResultRef: "results.tekton.dev/result",
+  /** Record reference annotation added by Tekton Results Watcher */
+  tektonRecordRef: "results.tekton.dev/record",
+  /** Log reference annotation added by Tekton Results Watcher */
+  tektonLogRef: "results.tekton.dev/log",
 } as const;
