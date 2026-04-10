@@ -3,7 +3,7 @@ import { useStore } from "@tanstack/react-form";
 import { useEditCDPipelineForm } from "../providers/form/hooks";
 import { useEditCDPipelineData } from "../providers/data/hooks";
 import type { EditCDPipelineFormValues } from "../types";
-import { alignInputDockerStreams } from "../utils/alignInputDockerStreams";
+import { buildInitialApplicationBranches } from "../utils/buildInitialApplicationBranches";
 
 type ChangeType = "added" | "removed" | "modified";
 
@@ -49,12 +49,15 @@ export const useChanges = (): CDPipelineChanges => {
       oldDescription !== newDescription ? { oldDescription, newDescription } : null;
 
     const originalApps = cdPipeline.spec.applications || [];
-    // Align original branches to match form initialization behavior.
-    // The form uses alignInputDockerStreams in useDefaultValues, so we must align here too
-    // to avoid showing false diffs when the original spec has misaligned arrays.
-    const originalBranches = alignInputDockerStreams(cdPipeline.spec.inputDockerStreams, originalApps.length);
+    const originalStreams = cdPipeline.spec.inputDockerStreams || [];
     const currentApps = formValues.applications || [];
     const currentBranches = formValues.inputDockerStreams || [];
+
+    // Build a map of app -> original branch using substring matching.
+    // This ensures we compare against the correct original branch values,
+    // even when inputDockerStreams is in a different order than applications.
+    const originalAppBranches = buildInitialApplicationBranches(originalApps, originalStreams);
+    const originalBranchMap = new Map(originalAppBranches.map((item) => [item.appName, item.appBranch]));
 
     const applicationChanges: ApplicationChange[] = [];
 
@@ -64,16 +67,16 @@ export const useChanges = (): CDPipelineChanges => {
       }
     });
 
-    originalApps.forEach((app, index) => {
+    originalApps.forEach((app) => {
       if (!currentApps.includes(app)) {
-        applicationChanges.push({ app, type: "removed", branch: originalBranches[index] || "" });
+        const branch = originalBranchMap.get(app) || "";
+        applicationChanges.push({ app, type: "removed", branch });
       }
     });
 
     currentApps.forEach((app, currentIndex) => {
-      const originalIndex = originalApps.indexOf(app);
-      if (originalIndex !== -1) {
-        const oldBranch = originalBranches[originalIndex] || "";
+      if (originalApps.includes(app)) {
+        const oldBranch = originalBranchMap.get(app) || "";
         const newBranch = currentBranches[currentIndex] || "";
         if (oldBranch !== newBranch) {
           applicationChanges.push({ app, type: "modified", oldBranch, newBranch });

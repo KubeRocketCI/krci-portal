@@ -6,6 +6,7 @@ import { codebaseBranchLabels, sortCodebaseBranchesWithDefaultFirst } from "@my-
 import { X, Package, GitBranch, AlertCircle } from "lucide-react";
 import { buildBranchOptions } from "@/modules/platform/cdpipelines/utils/buildBranchOptions";
 import { resolveApplicationBranch } from "../../../../utils/resolveApplicationBranch";
+import { buildInitialApplicationBranches } from "../../../../utils/buildInitialApplicationBranches";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { Codebase } from "@my-project/shared";
 import { cn } from "@/core/utils/classname";
@@ -105,10 +106,21 @@ export const ApplicationRow = ({ application, index, removeRow }: ApplicationRow
 
   const { originalBranchValue, isNewApplication } = React.useMemo(() => {
     if (!cdPipeline) return { originalBranchValue: "", isNewApplication: true };
-    const appIndex = cdPipeline.spec.applications?.indexOf(appName) ?? -1;
-    if (appIndex === -1) return { originalBranchValue: "", isNewApplication: true };
+
+    const originalApps = cdPipeline.spec.applications || [];
+    const originalStreams = cdPipeline.spec.inputDockerStreams || [];
+
+    // Check if this is a new application (not in original spec)
+    if (!originalApps.includes(appName)) {
+      return { originalBranchValue: "", isNewApplication: true };
+    }
+
+    // Use substring matching to find the original branch (same logic as useDefaultValues)
+    const originalAppBranches = buildInitialApplicationBranches(originalApps, originalStreams);
+    const matchedBranch = originalAppBranches.find((item) => item.appName === appName);
+
     return {
-      originalBranchValue: cdPipeline.spec.inputDockerStreams?.[appIndex] ?? "",
+      originalBranchValue: matchedBranch?.appBranch ?? "",
       isNewApplication: false,
     };
   }, [cdPipeline, appName]);
