@@ -2,6 +2,30 @@
 ## [Unreleased]
 
 
+<a name="v0.4.0"></a>
+## [v0.4.0] - 2026-04-13
+### Features
+
+- Resolve full PipelineRun data for historical rerun actions
+- Enable rerun actions for historical PipelineRuns
+- Add 'Started at' sortable column to PipelineRun table
+- Add PipelineRun name search filter to list views
+- Add copy and download buttons for step logs
+
+### Bug Fixes
+
+- Security issues in openapi generation
+- Edit cdpipeline with mixed spec
+- Add sidebar pinning for generic pages and improve Tekton and branch UX
+- Branch diff in cdpipeline edit
+- Project details page tour
+- Pipelines page crash and tt params undefined value
+
+### Routine
+
+- Update current development version
+
+
 <a name="v0.3.0"></a>
 ## [v0.3.0] - 2026-04-08
 ### Features
@@ -258,6 +282,7 @@
 - Setup initial code ([#1](https://github.com/KubeRocketCI/krci-portal/issues/1))
 
 
-[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.4.0...HEAD
+[v0.4.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.3.0...v0.4.0
 [v0.3.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.1.0...v0.2.0
