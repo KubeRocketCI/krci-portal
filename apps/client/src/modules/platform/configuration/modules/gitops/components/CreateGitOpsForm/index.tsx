@@ -9,6 +9,7 @@ import {
   codebaseDeploymentScript,
   codebaseType,
   codebaseVersioning,
+  gitProvider,
 } from "@my-project/shared";
 import type { CreateGitOpsFormValues } from "./types";
 import { GIT_OPS_CODEBASE_NAME } from "./constants";
@@ -25,7 +26,7 @@ export const CreateGitOpsForm: React.FC<{ onClose: () => void }> = ({ onClose })
   const firstValidGitServer = gitServers?.find((gitServer) => gitServer?.status?.connected);
 
   const defaultValues = React.useMemo<CreateGitOpsFormValues>(() => {
-    const isGerrit = firstValidGitServer?.spec.gitProvider === "gerrit";
+    const isGerrit = firstValidGitServer?.spec.gitProvider === gitProvider.gerrit;
 
     return {
       emptyProject: false,

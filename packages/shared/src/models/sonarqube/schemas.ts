@@ -35,7 +35,8 @@ export const sonarqubeProjectSchema = z.object({
   qualifier: z.string().optional(),
   project: z.string().optional(),
   visibility: z.enum(["public", "private"]).optional(),
-  lastAnalysisDate: z.string().optional(),
+  lastAnalysisDate: z.string().optional(), // normalized from analysisDate (components/show)
+  analysisDate: z.string().optional(), // raw field from /api/components/show
   revision: z.string().optional(),
   managed: z.boolean().optional(),
 });
