@@ -2,11 +2,11 @@ import { createMockedContext } from "../../../../__mocks__/context.js";
 import { createCaller } from "../../../../routers/index.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockGetQualityGateDetails = vi.fn();
+const mockGetQualityGateStatus = vi.fn();
 
 vi.mock("../../../../clients/sonarqube/index.js", () => ({
   createSonarQubeClient: () => ({
-    getQualityGateDetails: mockGetQualityGateDetails,
+    getQualityGateStatus: mockGetQualityGateStatus,
   }),
 }));
 
@@ -29,7 +29,7 @@ describe("sonarqube.getQualityGateDetails", () => {
       },
     };
 
-    mockGetQualityGateDetails.mockResolvedValueOnce(mockResponse);
+    mockGetQualityGateStatus.mockResolvedValueOnce(mockResponse);
 
     const caller = createCaller(mockContext);
     const result = await caller.sonarqube.getQualityGateDetails({ projectKey: "my-service" });
@@ -39,7 +39,7 @@ describe("sonarqube.getQualityGateDetails", () => {
   });
 
   it("should throw on API error", async () => {
-    mockGetQualityGateDetails.mockRejectedValueOnce(new Error("Service Unavailable"));
+    mockGetQualityGateStatus.mockRejectedValueOnce(new Error("Service Unavailable"));
 
     const caller = createCaller(mockContext);
     await expect(caller.sonarqube.getQualityGateDetails({ projectKey: "error" })).rejects.toThrow(

@@ -19,6 +19,9 @@ describe("sonarqube.getProject", () => {
 
   beforeEach(() => {
     mockContext = createMockedContext();
+    // getMeasures runs in parallel with getComponent, so every test path needs it resolved.
+    mockGetMeasures.mockResolvedValue({});
+    mockParseMeasures.mockReturnValue({});
   });
 
   afterEach(() => {
@@ -50,16 +53,7 @@ describe("sonarqube.getProject", () => {
     expect(result).toBeNull();
   });
 
-  it("should return null on 404 error", async () => {
-    mockGetComponent.mockRejectedValueOnce(new Error("404 Not Found"));
-
-    const caller = createCaller(mockContext);
-    const result = await caller.sonarqube.getProject({ componentKey: "missing" });
-
-    expect(result).toBeNull();
-  });
-
-  it("should throw on non-404 errors", async () => {
+  it("should throw on client errors", async () => {
     mockGetComponent.mockRejectedValueOnce(new Error("500 Internal Server Error"));
 
     const caller = createCaller(mockContext);

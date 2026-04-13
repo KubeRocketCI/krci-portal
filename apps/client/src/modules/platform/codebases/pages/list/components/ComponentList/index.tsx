@@ -41,6 +41,18 @@ export const ComponentList = () => {
 
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
+  const formattedErrors = React.useMemo(() => {
+    if (!codebaseListWatch.errors || codebaseListWatch.errors.length === 0) {
+      return undefined;
+    }
+
+    return codebaseListWatch.errors.map((error) => {
+      const errorMessage = getK8sErrorMessage(error);
+      const formattedError = new Error(errorMessage);
+      return formattedError;
+    });
+  }, [codebaseListWatch.errors]);
+
   const emptyListComponent = React.useMemo(() => {
     if (
       codebaseListWatch.isLoading ||
@@ -48,6 +60,12 @@ export const ComponentList = () => {
       codebasePermissions.isFetching ||
       gitServerPermissions.isFetching
     ) {
+      return null;
+    }
+
+    // When there are list errors the errors banner explains why the list is empty —
+    // don't show an unrelated "cannot create" message on top of that.
+    if (formattedErrors?.length) {
       return null;
     }
 
@@ -90,6 +108,7 @@ export const ComponentList = () => {
     codebasePermissions.data.create.allowed,
     codebasePermissions.data.create.reason,
     codebasePermissions.isFetching,
+    formattedErrors,
     gitServerListWatch.isLoading,
     gitServerPermissions.data.create.allowed,
     gitServerPermissions.data.create.reason,
@@ -108,18 +127,6 @@ export const ComponentList = () => {
     }),
     []
   );
-
-  const formattedErrors = React.useMemo(() => {
-    if (!codebaseListWatch.errors || codebaseListWatch.errors.length === 0) {
-      return undefined;
-    }
-
-    return codebaseListWatch.errors.map((error) => {
-      const errorMessage = getK8sErrorMessage(error);
-      const formattedError = new Error(errorMessage);
-      return formattedError;
-    });
-  }, [codebaseListWatch.errors]);
 
   return (
     <>

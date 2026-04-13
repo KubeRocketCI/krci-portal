@@ -161,11 +161,26 @@ export const TableBody = <DataType,>({
     }
 
     return (
-      <TableRowUI>
-        <TableCellUI colSpan={totalColumnSpan} className="border-b-0 px-0 pb-0 text-center">
-          <>{emptyListComponent}</>
-        </TableCellUI>
-      </TableRowUI>
+      <>
+        {errors && !!errors.length && (
+          <TableRowUI>
+            <TableCellUI colSpan={totalColumnSpan} className="border-b-0 px-0 pb-0 text-center">
+              <Alert variant="default">
+                {errors.map((error, index) => (
+                  <div key={index}>{error?.message || error?.toString()}</div>
+                ))}
+              </Alert>
+            </TableCellUI>
+          </TableRowUI>
+        )}
+        {emptyListComponent && (
+          <TableRowUI>
+            <TableCellUI colSpan={totalColumnSpan} className="border-b-0 px-0 pb-0 text-center">
+              <>{emptyListComponent}</>
+            </TableCellUI>
+          </TableRowUI>
+        )}
+      </>
     );
   }, [
     columns,

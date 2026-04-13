@@ -3,33 +3,13 @@ import { createSonarQubeClient } from "../../../../clients/sonarqube/index.js";
 import { issuesQueryParamsSchema, issuesSearchResponseSchema } from "@my-project/shared";
 
 /**
- * Get issues for a SonarQube project with pagination and filtering
- *
- * Fetches issues from SonarQube with support for:
- * - Filtering by type (BUG, VULNERABILITY, CODE_SMELL)
- * - Filtering by severity (BLOCKER, CRITICAL, MAJOR, MINOR, INFO)
- * - Server-side pagination
- * - Only unresolved issues by default
- *
- * @input IssuesQueryParams - Component key, filters, pagination
- * @returns Paginated issues list with total count
- *
- * @example
- * const issues = await trpc.sonarqube.getProjectIssues.query({
- *   componentKeys: "my-service",
- *   types: "BUG,VULNERABILITY",
- *   severities: "BLOCKER,CRITICAL",
- *   p: 1,
- *   ps: 25
- * });
+ * Paginated issue search for a SonarQube project (via `/api/issues/search`).
  */
 export const getProjectIssuesProcedure = protectedProcedure
   .input(issuesQueryParamsSchema)
   .output(issuesSearchResponseSchema)
   .query(async ({ input }) => {
     const sonarqubeClient = createSonarQubeClient();
-
-    console.info(`[SonarQube] getProjectIssues → componentKeys="${input.componentKeys}" p=${input.p} ps=${input.ps}`);
 
     try {
       const issuesResponse = await sonarqubeClient.getIssues(input);

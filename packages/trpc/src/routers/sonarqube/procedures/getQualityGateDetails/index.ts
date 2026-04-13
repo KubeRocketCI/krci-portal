@@ -4,21 +4,7 @@ import { createSonarQubeClient } from "../../../../clients/sonarqube/index.js";
 import { qualityGateStatusResponseSchema } from "@my-project/shared";
 
 /**
- * Get quality gate details with all conditions
- *
- * Fetches the quality gate status including:
- * - Overall status (OK, WARN, ERROR, NONE)
- * - All quality gate conditions with thresholds
- * - Actual values vs expected thresholds
- * - Pass/fail status per condition
- *
- * @input projectKey - SonarQube project key
- * @returns Quality gate status with all conditions
- *
- * @example
- * const qgDetails = await trpc.sonarqube.getQualityGateDetails.query({
- *   projectKey: "my-service"
- * });
+ * Fetches the quality gate status (overall + per-condition) for a project.
  */
 export const getQualityGateDetailsProcedure = protectedProcedure
   .input(
@@ -31,10 +17,8 @@ export const getQualityGateDetailsProcedure = protectedProcedure
     const { projectKey } = input;
     const sonarqubeClient = createSonarQubeClient();
 
-    console.info(`[SonarQube] getQualityGateDetails → projectKey="${projectKey}"`);
-
     try {
-      const qgResponse = await sonarqubeClient.getQualityGateDetails(projectKey);
+      const qgResponse = await sonarqubeClient.getQualityGateStatus(projectKey);
       console.info(`[SonarQube] Quality gate status for ${projectKey}: ${qgResponse.projectStatus.status}`);
       return qgResponse;
     } catch (error) {

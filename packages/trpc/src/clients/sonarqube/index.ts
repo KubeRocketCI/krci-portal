@@ -187,9 +187,6 @@ export class SonarQubeClient {
 
     console.error(`[SonarQube] Error - URL: ${url}`);
     console.error(`[SonarQube] Status: ${response.status} ${response.statusText}`);
-    if (errorText) {
-      console.error(`[SonarQube] Response Body: ${errorText}`);
-    }
 
     throw new Error(fullError);
   }
@@ -305,21 +302,6 @@ export class SonarQubeClient {
     });
 
     return this.fetchJson<QualityGateStatusResponse>(endpoint);
-  }
-
-  /**
-   * Get quality gate details with all conditions
-   * (Alias for getQualityGateStatus for better semantic clarity)
-   *
-   * @param projectKey - The project key
-   * @returns Quality gate status with all conditions
-   *
-   * @example
-   * const client = createSonarQubeClient();
-   * const details = await client.getQualityGateDetails("my-project");
-   */
-  async getQualityGateDetails(projectKey: string): Promise<QualityGateStatusResponse> {
-    return this.getQualityGateStatus(projectKey);
   }
 
   /**
