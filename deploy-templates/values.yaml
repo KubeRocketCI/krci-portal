@@ -61,7 +61,7 @@ configEnv:
 # -- Override the name of the chart
 nameOverride: ""
 # -- Override the full name of the chart
-fullnameOverride: ""
+fullnameOverride: krci-portal
 
 # -- Service account configuration
 serviceAccount:
