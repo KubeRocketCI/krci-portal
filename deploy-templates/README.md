@@ -53,7 +53,7 @@ A Helm chart for KubeRocketCI Portal
 | eso.vault.mountPath | string | `"core"` | Mount path for the Kubernetes authentication method. |
 | eso.vault.role | string | `"krci-portal"` | Vault role for the Kubernetes authentication method. |
 | eso.vault.server | string | `"http://vault.vault:8200"` | Vault server URL. |
-| fullnameOverride | string | `""` | Override the full name of the chart |
+| fullnameOverride | string | `"krci-portal"` | Override the full name of the chart |
 | image | object | `{"pullPolicy":"IfNotPresent","repository":"epamedp/krci-portal","tag":""}` | Image configuration |
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | image.repository | string | `"epamedp/krci-portal"` | Image repository |
