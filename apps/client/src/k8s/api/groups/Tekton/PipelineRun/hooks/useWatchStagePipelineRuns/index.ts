@@ -1,47 +1,39 @@
 import { PipelineRun, pipelineRunLabels, pipelineType } from "@my-project/shared";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { usePipelineRunWatchList } from "..";
 
-export const useWatchStagePipelineRuns = (stageMetadataName: string, cdPipelineName: string, namespace: string) => {
+// ISO-8601 UTC timestamps are lex-sortable; string compare avoids per-call Date allocations.
+const byCreationDesc = (a: PipelineRun, b: PipelineRun) =>
+  (b.metadata.creationTimestamp ?? "").localeCompare(a.metadata.creationTimestamp ?? "");
+
+export const useWatchStagePipelineRuns = (stageResourceName: string, cdPipelineName: string, namespace: string) => {
   const pipelineRunWatchList = usePipelineRunWatchList({
     namespace,
     labels: {
-      [pipelineRunLabels.stage]: stageMetadataName,
+      [pipelineRunLabels.cdStage]: stageResourceName,
       [pipelineRunLabels.cdPipeline]: cdPipelineName,
     },
   });
 
-  return useQuery({
-    queryKey: ["stagePipelineRuns", pipelineRunWatchList.resourceVersion],
-    queryFn: () => {
-      return pipelineRunWatchList.data.array.reduce<{
-        all: PipelineRun[];
-        deploy: PipelineRun[];
-        clean: PipelineRun[];
-      }>(
-        (acc, cur) => {
-          const curPipelineType = cur.metadata?.labels?.[pipelineRunLabels.pipelineType];
+  const data = useMemo(() => {
+    const deploy: PipelineRun[] = [];
+    const clean: PipelineRun[] = [];
 
-          if (!pipelineType) {
-            acc.all.push(cur);
-          }
+    for (const run of pipelineRunWatchList.data.array) {
+      const runPipelineType = run.metadata?.labels?.[pipelineRunLabels.pipelineType];
 
-          if (curPipelineType === pipelineType.deploy) {
-            acc.deploy.push(cur);
-          }
+      if (runPipelineType === pipelineType.deploy) {
+        deploy.push(run);
+      } else if (runPipelineType === pipelineType.clean) {
+        clean.push(run);
+      }
+    }
 
-          if (curPipelineType === pipelineType.clean) {
-            acc.clean.push(cur);
-          }
+    deploy.sort(byCreationDesc);
+    clean.sort(byCreationDesc);
 
-          return acc;
-        },
-        {
-          all: [],
-          deploy: [],
-          clean: [],
-        }
-      );
-    },
-  });
+    return { deploy, clean };
+  }, [pipelineRunWatchList.data.array]);
+
+  return { data };
 };
