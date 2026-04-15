@@ -9,6 +9,7 @@ export const ConfigProvider = ({ children }: React.PropsWithChildren) => {
   const trpc = trpcHttpClient;
 
   const clusterName = useClusterStore((state) => state.clusterName);
+  const clusterNameResolved = useClusterStore((state) => state.clusterNameResolved);
   const setClusterName = useClusterStore((state) => state.setClusterName);
   const setDefaultNamespace = useClusterStore((state) => state.setDefaultNamespace);
   const setAllowedNamespaces = useClusterStore((state) => state.setAllowedNamespaces);
@@ -64,6 +65,10 @@ export const ConfigProvider = ({ children }: React.PropsWithChildren) => {
         showActions={true}
       />
     );
+  }
+
+  if (!clusterNameResolved) {
+    return <LoadingProgressBar />;
   }
 
   return <>{children}</>;
