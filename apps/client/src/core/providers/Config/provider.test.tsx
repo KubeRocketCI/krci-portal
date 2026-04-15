@@ -21,6 +21,7 @@ const {
   const mockSetDependencyTrackWebUrl = vi.fn();
   const mockClusterStore = {
     clusterName: null as string | null,
+    clusterNameResolved: true,
     setClusterName: mockSetClusterName,
     setDefaultNamespace: mockSetDefaultNamespace,
     setAllowedNamespaces: mockSetAllowedNamespaces,
@@ -87,6 +88,7 @@ describe("ConfigProvider", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockClusterStore.clusterName = null;
+    mockClusterStore.clusterNameResolved = true;
     localStorage.clear();
   });
 

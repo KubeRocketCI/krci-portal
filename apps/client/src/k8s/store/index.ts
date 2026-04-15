@@ -12,6 +12,7 @@ interface ClusterSettings {
 interface ClusterStore {
   clusterName: string;
   setClusterName: (newClusterName: string) => void;
+  clusterNameResolved: boolean;
   defaultNamespace: string;
   setDefaultNamespace: (newDefaultNamespace: string) => void;
   allowedNamespaces: string[];
@@ -58,8 +59,11 @@ export const useClusterStore = create<ClusterStore>((set, get) => {
         clusterName: newClusterName,
         defaultNamespace: newClusterSettings.default_namespace,
         allowedNamespaces: newClusterSettings.allowed_namespaces,
+        clusterNameResolved: true,
       });
     },
+
+    clusterNameResolved: !!clusterName,
 
     defaultNamespace: clusterSettings.default_namespace,
     setDefaultNamespace: (newDefaultNamespace) => {
