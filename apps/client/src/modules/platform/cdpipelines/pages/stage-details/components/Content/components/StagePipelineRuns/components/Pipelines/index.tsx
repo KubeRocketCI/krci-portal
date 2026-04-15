@@ -2,7 +2,7 @@ import { PipelineRunList } from "@/modules/platform/tekton/components/PipelineRu
 import { PATH_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-details/route";
 import { useUnifiedPipelineRunList } from "@/modules/platform/tekton/hooks/useUnifiedPipelineRunList";
 import { HistoryLoadingFooter } from "@/modules/platform/tekton/components/HistoryLoadingFooter";
-import { pipelineRunLabels, pipelineType } from "@my-project/shared";
+import { getStageResourceName, pipelineRunLabels, pipelineType } from "@my-project/shared";
 import { routeStageDetails } from "../../../../../../route";
 import { FilterProvider } from "@/core/providers/Filter/provider";
 import {
@@ -29,13 +29,13 @@ export function Pipelines() {
 
 function PipelinesContent() {
   const params = routeStageDetails.useParams();
-  const stageLabel = `${params.cdPipeline}-${params.stage}`;
 
   const debouncedSearch = useDebouncedPipelineRunSearch();
 
   const { mergedPipelineRuns, isLoading, isHistoryLoading, historyQuery } = useUnifiedPipelineRunList({
     labels: {
-      [pipelineRunLabels.stage]: stageLabel,
+      [pipelineRunLabels.cdPipeline]: params.cdPipeline,
+      [pipelineRunLabels.cdStage]: getStageResourceName(params.cdPipeline, params.stage),
     },
     searchTerm: debouncedSearch,
   });

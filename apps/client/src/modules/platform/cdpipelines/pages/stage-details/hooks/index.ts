@@ -9,6 +9,7 @@ import {
   CodebaseImageStream,
   codebaseLabels,
   codebaseType,
+  getStageResourceName,
   PipelineRun,
   Stage,
   TriggerTemplate,
@@ -39,7 +40,7 @@ export const useStageWatch = () => {
   const params = routeStageDetails.useParams();
 
   return useStageWatchItem({
-    name: `${params.cdPipeline}-${params.stage}`,
+    name: getStageResourceName(params.cdPipeline, params.stage),
     namespace: params.namespace,
   });
 };
@@ -55,7 +56,11 @@ export const useStageListWatch = () => {
 export const usePipelineRunsWatch = () => {
   const params = routeStageDetails.useParams();
 
-  return useWatchStagePipelineRuns(params.stage, params.cdPipeline, params.namespace);
+  return useWatchStagePipelineRuns(
+    getStageResourceName(params.cdPipeline, params.stage),
+    params.cdPipeline,
+    params.namespace
+  );
 };
 
 export const useApplicationsWatch = () => {
@@ -94,7 +99,7 @@ export const useVariablesConfigMapWatch = () => {
   const params = routeStageDetails.useParams();
 
   return useConfigMapWatchItem({
-    name: `${params.cdPipeline}-${params.stage}`,
+    name: getStageResourceName(params.cdPipeline, params.stage),
     namespace: params.namespace,
   });
 };
