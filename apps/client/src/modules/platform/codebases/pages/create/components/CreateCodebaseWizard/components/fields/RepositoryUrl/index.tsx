@@ -1,4 +1,5 @@
 import React from "react";
+import { codebaseCreationStrategy } from "@my-project/shared";
 import { useCreateCodebaseForm } from "../../../providers/form/hooks";
 import { NAMES } from "../../../names";
 
@@ -14,6 +15,8 @@ export const RepositoryUrl: React.FC<RepositoryUrlProps> = ({ disabled }) => {
       name={NAMES.repositoryUrl}
       validators={{
         onChange: ({ value }) => {
+          const strategy = form.store.state.values[NAMES.strategy];
+          if (strategy !== codebaseCreationStrategy.clone) return undefined;
           if (!value) return "Enter the repository URL.";
           const urlPattern = /((git|ssh|http(s)?)|(git@[\w.]+))(:(\/\/)?)[\w.@/~-]+\w/;
           if (!urlPattern.test(value)) {

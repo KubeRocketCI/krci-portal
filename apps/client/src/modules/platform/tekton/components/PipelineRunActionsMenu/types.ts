@@ -8,4 +8,5 @@ export interface PipelineRunActionsMenuProps {
   };
   backRoute?: RouteParams;
   variant?: ActionMenuType;
+  hideStopAction?: boolean;
 }
