@@ -6,15 +6,16 @@ import { CircleCheck, CircleX, LoaderCircle, ShieldQuestion } from "lucide-react
 import type { TaskRun } from "@my-project/shared";
 
 describe("getStatusIcon", () => {
-  test("returns unknown icon for undefined status", () => {
+  test("returns in-progress icon for missing conditions", () => {
     const taskRun: TaskRun = {
       status: {},
     } as unknown as TaskRun;
 
     const result = getStatusIcon(taskRun);
 
-    expect(result.component).toBe(ShieldQuestion);
-    expect(result.color).toBe(STATUS_COLOR.UNKNOWN);
+    expect(result.component).toBe(LoaderCircle);
+    expect(result.color).toBe(STATUS_COLOR.IN_PROGRESS);
+    expect(result.isSpinning).toBe(true);
   });
 
   test("returns success icon for true status", () => {
@@ -88,7 +89,7 @@ describe("getStatusIcon", () => {
   test("returns suspended icon for unknown status with TaskRunCancelled reason", () => {
     const taskRun: TaskRun = {
       status: {
-        conditions: [{ status: taskRunStatus.unknown, reason: taskRunStatusReason.TaskRunCancelled }],
+        conditions: [{ status: taskRunStatus.unknown, reason: taskRunStatusReason.taskruncancelled }],
       },
     } as unknown as TaskRun;
 

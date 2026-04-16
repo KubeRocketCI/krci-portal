@@ -93,7 +93,7 @@ export const QualityGates: React.FC = () => {
   const editingGateValues: QualityGateFormValues | null =
     editingGateIndex !== null
       ? {
-          qualityGateType: qualityGatesFieldValue[editingGateIndex]?.qualityGateType ?? "manual",
+          qualityGateType: qualityGatesFieldValue[editingGateIndex]?.qualityGateType ?? stageQualityGateType.manual,
           stepName: qualityGatesFieldValue[editingGateIndex]?.stepName ?? "",
           autotestName: qualityGatesFieldValue[editingGateIndex]?.autotestName ?? null,
           branchName: qualityGatesFieldValue[editingGateIndex]?.branchName ?? null,
@@ -150,7 +150,7 @@ export const QualityGates: React.FC = () => {
               <div className="flex items-start justify-between gap-4">
                 <div className="flex flex-1 items-start gap-3">
                   <div className="bg-primary/10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full">
-                    {gate.qualityGateType === "manual" ? (
+                    {gate.qualityGateType === stageQualityGateType.manual ? (
                       <CheckCircle className="text-primary h-4 w-4" />
                     ) : (
                       <TestTube2 className="text-primary h-4 w-4" />
@@ -163,7 +163,7 @@ export const QualityGates: React.FC = () => {
                         {gate.qualityGateType}
                       </Badge>
                     </div>
-                    {gate.qualityGateType === "autotests" && (
+                    {gate.qualityGateType === stageQualityGateType.autotests && (
                       <div className="text-muted-foreground space-y-1 text-sm">
                         <div className="flex items-center gap-2">
                           <TestTube2 className="text-muted-foreground h-3 w-3" />
@@ -182,7 +182,7 @@ export const QualityGates: React.FC = () => {
                         </div>
                       </div>
                     )}
-                    {gate.qualityGateType === "manual" && (
+                    {gate.qualityGateType === stageQualityGateType.manual && (
                       <div className="text-muted-foreground space-y-1 text-sm">
                         <p>Manual approval required before deployment</p>
                         <div className="flex items-center gap-2">

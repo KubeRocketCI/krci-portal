@@ -6,13 +6,6 @@ import { CircleCheck, CircleX, LoaderCircle, ShieldQuestion } from "lucide-react
 export const getStatusIcon = (resource: TaskRun): K8sResourceStatusIcon => {
   const status = getTaskRunStatus(resource);
 
-  if (status === undefined) {
-    return {
-      component: ShieldQuestion,
-      color: STATUS_COLOR.UNKNOWN,
-    };
-  }
-
   switch (status.status) {
     case taskRunStatus.unknown:
       if (
@@ -27,7 +20,7 @@ export const getStatusIcon = (resource: TaskRun): K8sResourceStatusIcon => {
         };
       }
 
-      if (status.reason === taskRunStatusReason.TaskRunCancelled.toLowerCase()) {
+      if (status.reason === taskRunStatusReason.taskruncancelled) {
         return {
           component: CircleX,
           color: STATUS_COLOR.SUSPENDED,

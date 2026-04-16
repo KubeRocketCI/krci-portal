@@ -2,7 +2,7 @@ import { CODEBASE_FORM_NAMES } from "../../constants";
 import { CiTool, GitUrlPath, GitServer, Owner, RepositoryName } from "../fields";
 import { FolderPlus, CloudDownload } from "lucide-react";
 import { useGitServerWatchItem } from "@/k8s/api/groups/KRCI/GitServer";
-import { gitProvider } from "@my-project/shared";
+import { codebaseCreationStrategy, gitProvider } from "@my-project/shared";
 import { useCreateGitOpsForm } from "../../providers/form/hooks";
 import { useStore } from "@tanstack/react-form";
 import type { FormRadioOption } from "@/core/components/form";
@@ -10,13 +10,13 @@ import { cn } from "@/core/utils/classname";
 
 const codebaseCreationStrategies: FormRadioOption[] = [
   {
-    value: "create",
+    value: codebaseCreationStrategy.create,
     label: "Create",
     description: "Create a new base repository.",
     icon: FolderPlus,
   },
   {
-    value: "import",
+    value: codebaseCreationStrategy.import,
     label: "Import",
     description: "Onboard your existing repository.",
     icon: CloudDownload,

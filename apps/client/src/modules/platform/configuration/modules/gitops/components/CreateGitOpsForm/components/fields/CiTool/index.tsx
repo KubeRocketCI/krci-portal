@@ -2,7 +2,7 @@ import React from "react";
 import { CODEBASE_FORM_NAMES } from "../../../constants";
 import { useCreateGitOpsForm } from "../../../providers/form/hooks";
 import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
-import { ciTool } from "@my-project/shared";
+import { ciTool, gitProvider } from "@my-project/shared";
 import { useStore } from "@tanstack/react-form";
 
 export const CiTool = () => {
@@ -14,7 +14,7 @@ export const CiTool = () => {
   const gitServerFieldValue = useStore(form.store, (state) => state.values[CODEBASE_FORM_NAMES.GIT_SERVER]);
   const selectedGitServer = gitServers.find((gitServer) => gitServer.metadata.name === gitServerFieldValue);
 
-  const isGitlabProvider = selectedGitServer?.spec.gitProvider === "gitlab";
+  const isGitlabProvider = selectedGitServer?.spec.gitProvider === gitProvider.gitlab;
 
   const ciToolOptions = React.useMemo(
     () => [

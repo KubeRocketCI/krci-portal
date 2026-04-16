@@ -1,4 +1,8 @@
 import { PipelineRun, PipelineRunStatus, PipelineRunReason } from "../../index.js";
+import {
+  pipelineRunStatus as pipelineRunStatusValues,
+  pipelineRunReason as pipelineRunReasonValues,
+} from "../../constants.js";
 
 export const getPipelineRunStatus = (
   pipelineRun: PipelineRun | undefined
@@ -12,8 +16,8 @@ export const getPipelineRunStatus = (
 } => {
   const firstCondition = pipelineRun?.status?.conditions?.[0];
 
-  const status = (firstCondition?.status?.toLowerCase() as PipelineRunStatus) || "Unknown";
-  const reason = (firstCondition?.reason?.toLowerCase() as PipelineRunReason) || "Unknown";
+  const status = (firstCondition?.status?.toLowerCase() as PipelineRunStatus) || pipelineRunStatusValues.unknown;
+  const reason = (firstCondition?.reason?.toLowerCase() as PipelineRunReason) || pipelineRunReasonValues.running;
   const message = firstCondition?.message || "No message";
   const lastTransitionTime = firstCondition?.lastTransitionTime || "N/A";
   const startTime = pipelineRun?.status?.startTime || "N/A";

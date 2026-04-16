@@ -1,12 +1,14 @@
 import React from "react";
-import { getRatingLabel, parsePercentage, parseCount } from "@/modules/platform/security/pages/sast/utils";
 import {
+  getRatingLabel,
+  parsePercentage,
+  parseCount,
   getRatingBgClass,
   getRatingTextClass,
   getCoverageColorClass,
   isDuplicationGood,
 } from "@/modules/platform/security/pages/sast/utils";
-import { INDICATOR_COLORS } from "@/modules/platform/security/pages/sast/constants";
+import { INDICATOR_COLORS, SONARQUBE_ISSUE_TYPES } from "@/modules/platform/security/pages/sast/constants";
 import { SonarQubeMetricsListProps } from "./types";
 import { SonarQubeURLService } from "@/k8s/services/link-creation/sonar";
 
@@ -46,7 +48,6 @@ export function SonarQubeMetricsList({
 }: SonarQubeMetricsListProps) {
   if (!measures) return null;
 
-  // Extract and parse metrics
   const vulnerabilities = parseCount(measures.vulnerabilities);
   const vulnerabilitiesRating = getRatingLabel(measures.security_rating);
 
@@ -69,17 +70,17 @@ export function SonarQubeMetricsList({
         vulnerabilities: SonarQubeURLService.createLinkByIssueType({
           baseURL: sonarBaseUrl,
           codebaseName: projectKey,
-          issueType: "VULNERABILITY",
+          issueType: SONARQUBE_ISSUE_TYPES.VULNERABILITY,
         }),
         bugs: SonarQubeURLService.createLinkByIssueType({
           baseURL: sonarBaseUrl,
           codebaseName: projectKey,
-          issueType: "BUG",
+          issueType: SONARQUBE_ISSUE_TYPES.BUG,
         }),
         codeSmells: SonarQubeURLService.createLinkByIssueType({
           baseURL: sonarBaseUrl,
           codebaseName: projectKey,
-          issueType: "CODE_SMELL",
+          issueType: SONARQUBE_ISSUE_TYPES.CODE_SMELL,
         }),
         hotspots: SonarQubeURLService.createSecurityHotspotsLink({
           baseURL: sonarBaseUrl,

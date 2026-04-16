@@ -2,7 +2,7 @@ import { createMockedContext } from "../../../../../__mocks__/context.js";
 import { createCaller } from "../../../../../routers/index.js";
 import { describe, it, expect, vi, beforeEach, afterEach, Mock } from "vitest";
 import { K8sClient } from "../../../../../clients/k8s/index.js";
-import { GitServer, Secret } from "@my-project/shared";
+import { GitServer, gitProvider, Secret } from "@my-project/shared";
 
 // Mock K8sClient
 vi.mock("../../../../../clients/k8s/index.js", () => ({
@@ -33,7 +33,7 @@ vi.mock("@my-project/shared", async (importOriginal) => {
       },
     })),
     createGitServerSecretDraft: vi.fn((input: any) => {
-      if (input.gitProvider === "gerrit") {
+      if (input.gitProvider === gitProvider.gerrit) {
         return {
           apiVersion: "v1",
           kind: "Secret",
@@ -77,7 +77,7 @@ vi.mock("@my-project/shared", async (importOriginal) => {
       },
     })),
     editGitServerSecret: vi.fn((secret: Secret, input: any) => {
-      if (input.gitProvider === "gerrit") {
+      if (input.gitProvider === gitProvider.gerrit) {
         return {
           ...secret,
           data: {

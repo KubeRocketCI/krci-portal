@@ -1,4 +1,5 @@
 import { K8sResourceConfig } from "../../../common/index.js";
+import { complianceSeverityEnum } from "./schema.js";
 
 export const k8sClusterComplianceReportConfig = {
   apiVersion: "aquasecurity.github.io/v1alpha1",
@@ -9,3 +10,5 @@ export const k8sClusterComplianceReportConfig = {
   pluralName: "clustercompliancereports",
   clusterScoped: true,
 } as const satisfies K8sResourceConfig;
+
+export const complianceSeverity = complianceSeverityEnum.enum;

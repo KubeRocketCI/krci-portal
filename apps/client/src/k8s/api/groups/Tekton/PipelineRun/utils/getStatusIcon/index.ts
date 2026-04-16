@@ -6,18 +6,9 @@ import { CircleCheck, CircleX, LoaderCircle, ShieldQuestion } from "lucide-react
 export const getStatusIcon = (pipelineRun: PipelineRun | undefined): K8sResourceStatusIcon => {
   const { status, reason } = getPipelineRunStatus(pipelineRun);
 
-  if (status === undefined || reason === undefined) {
-    return {
-      component: ShieldQuestion,
-      color: STATUS_COLOR.UNKNOWN,
-    };
-  }
-  const _status = status.toLowerCase();
-  const _reason = reason.toLowerCase();
-
-  switch (_status) {
+  switch (status) {
     case pipelineRunStatus.unknown:
-      if (_reason === pipelineRunReason.started) {
+      if (reason === pipelineRunReason.started) {
         return {
           component: LoaderCircle,
           color: STATUS_COLOR.IN_PROGRESS,
@@ -25,7 +16,7 @@ export const getStatusIcon = (pipelineRun: PipelineRun | undefined): K8sResource
         };
       }
 
-      if (_reason === pipelineRunReason.running) {
+      if (reason === pipelineRunReason.running) {
         return {
           component: LoaderCircle,
           color: STATUS_COLOR.IN_PROGRESS,
@@ -33,7 +24,7 @@ export const getStatusIcon = (pipelineRun: PipelineRun | undefined): K8sResource
         };
       }
 
-      if (_reason === pipelineRunReason.cancelled) {
+      if (reason === pipelineRunReason.cancelled) {
         return {
           component: CircleX,
           color: STATUS_COLOR.SUSPENDED,

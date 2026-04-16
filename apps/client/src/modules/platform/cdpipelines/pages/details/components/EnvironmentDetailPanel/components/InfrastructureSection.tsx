@@ -1,5 +1,5 @@
 import { Cpu, Server, Database, Workflow, Trash2, Shield } from "lucide-react";
-import { Stage } from "@my-project/shared";
+import { Stage, stageQualityGateType } from "@my-project/shared";
 import { ScrollCopyText } from "@/core/components/ScrollCopyText";
 import { TriggerTemplatePipelinePreview } from "@/core/components/TriggerTemplatePipelinePreview";
 import { routeCDPipelineDetails } from "../../../route";
@@ -80,7 +80,7 @@ export function InfrastructureSection({ stage }: InfrastructureSectionProps) {
                   className="bg-secondary/50 flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-xs"
                 >
                   <span className="capitalize">{gate.qualityGateType}</span>
-                  {gate.qualityGateType === "autotests" && gate.autotestName && (
+                  {gate.qualityGateType === stageQualityGateType.autotests && gate.autotestName && (
                     <span className="text-muted-foreground font-mono">({gate.autotestName})</span>
                   )}
                 </div>

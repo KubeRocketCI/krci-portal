@@ -47,7 +47,7 @@ export const createClusterSecretDraft = (input: CreateClusterSecretDraftInput): 
         name: clusterMetadataName,
         labels: {
           [SECRET_LABEL_SECRET_TYPE]: "cluster",
-          [SECRET_LABEL_CLUSTER_TYPE]: "bearer",
+          [SECRET_LABEL_CLUSTER_TYPE]: clusterType.bearer,
         },
       },
       data: {
@@ -104,7 +104,7 @@ export const createClusterSecretDraft = (input: CreateClusterSecretDraftInput): 
         name: clusterMetadataName,
         labels: {
           [SECRET_LABEL_SECRET_TYPE]: "cluster",
-          [SECRET_LABEL_CLUSTER_TYPE]: "irsa",
+          [SECRET_LABEL_CLUSTER_TYPE]: clusterType.irsa,
           "argocd.argoproj.io/secret-type": "cluster",
         },
       },

@@ -4,7 +4,7 @@ import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { createResourceAction, getResourceProtection, getDisabledState } from "@/core/utils/createResourceAction";
 import { useCodebasePermissions } from "@/k8s/api/groups/KRCI/Codebase";
 import type { Codebase } from "@my-project/shared";
-import { k8sCodebaseConfig, k8sOperation, codebaseLabels } from "@my-project/shared";
+import { codebaseGitOpsSystemType, codebaseLabels, k8sCodebaseConfig, k8sOperation } from "@my-project/shared";
 import { Settings, Trash } from "lucide-react";
 import React from "react";
 
@@ -27,7 +27,7 @@ export const GitOpsActionsMenu = ({ codebase, ownerReference, onEdit }: GitOpsAc
     }
 
     // Check if this is a system GitOps codebase
-    const isSystemGitOps = codebase.metadata.labels?.[codebaseLabels.systemType] === "gitops";
+    const isSystemGitOps = codebase.metadata.labels?.[codebaseLabels.systemType] === codebaseGitOpsSystemType;
     const systemGitOpsReason = "System GitOps repository cannot be modified or deleted.";
 
     // Check if resource has owner references

@@ -1,6 +1,7 @@
 import { Badge } from "@/core/components/ui/badge";
 import { CheckCircle2, XCircle, AlertTriangle, HelpCircle } from "lucide-react";
 import { cn } from "@/core/utils/classname";
+import { QUALITY_GATE_STATUS, type QualityGateStatusValue } from "@my-project/shared";
 import { QUALITY_GATE_COLORS } from "../../constants";
 
 interface QualityGateBadgeProps {
@@ -8,30 +9,28 @@ interface QualityGateBadgeProps {
   className?: string;
 }
 
-type QualityGateStatus = "OK" | "WARN" | "ERROR" | "NONE";
-
 /**
  * Badge component to display SonarQube Quality Gate status
  */
 export function QualityGateBadge({ status, className }: QualityGateBadgeProps) {
   const getStatusConfig = () => {
-    const normalizedStatus = (status || "NONE") as QualityGateStatus;
+    const normalizedStatus = (status || QUALITY_GATE_STATUS.NONE) as QualityGateStatusValue;
     const colors = QUALITY_GATE_COLORS[normalizedStatus] || QUALITY_GATE_COLORS.NONE;
 
     switch (normalizedStatus) {
-      case "OK":
+      case QUALITY_GATE_STATUS.OK:
         return {
           label: "Passed",
           icon: CheckCircle2,
           bgClass: `${colors.combined} ${colors.border}`,
         };
-      case "WARN":
+      case QUALITY_GATE_STATUS.WARN:
         return {
           label: "Warning",
           icon: AlertTriangle,
           bgClass: `${colors.combined} ${colors.border}`,
         };
-      case "ERROR":
+      case QUALITY_GATE_STATUS.ERROR:
         return {
           label: "Failed",
           icon: XCircle,
