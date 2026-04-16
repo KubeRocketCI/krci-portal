@@ -11,13 +11,15 @@ import { usePipelineRunCRUD, usePipelineRunPermissions } from "@/k8s/api/groups/
 import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import {
   createRerunPipelineRun,
+  getPipelineRunStatus,
   isHistoryPipelineRun,
   k8sOperation,
   normalizeHistoryPipelineRun,
   parseRecordName,
   PipelineRun,
+  pipelineRunReason,
 } from "@my-project/shared";
-import { Redo2, Trash } from "lucide-react";
+import { OctagonX, Redo2, Trash } from "lucide-react";
 import React from "react";
 import { buildPipelineRunNameFilter, SINGLE_RECORD_LOOKUP_PAGE_SIZE } from "../../utils/celFilters";
 import { CustomActionsInlineList } from "./components/CustomActionsInlineList";
@@ -74,11 +76,16 @@ function handleResolveError(err: unknown) {
   });
 }
 
-export const PipelineRunActionsMenu = ({ backRoute, variant, data: { pipelineRun } }: PipelineRunActionsMenuProps) => {
+export const PipelineRunActionsMenu = ({
+  backRoute,
+  variant,
+  data: { pipelineRun },
+  hideStopAction,
+}: PipelineRunActionsMenuProps) => {
   const pipelineRunPermissions = usePipelineRunPermissions();
   const trpc = useTRPCClient();
 
-  const { triggerCreatePipelineRun, triggerDeletePipelineRun } = usePipelineRunCRUD();
+  const { triggerCreatePipelineRun, triggerDeletePipelineRun, triggerPatchPipelineRun } = usePipelineRunCRUD();
 
   const onDelete = React.useCallback(() => {
     if (!backRoute) {
@@ -97,7 +104,27 @@ export const PipelineRunActionsMenu = ({ backRoute, variant, data: { pipelineRun
 
     const isHistoryItem = isHistoryPipelineRun(pipelineRun);
 
+    const status = getPipelineRunStatus(pipelineRun);
+    const isInProgress = status.reason === pipelineRunReason.started || status.reason === pipelineRunReason.running;
+
     return [
+      !hideStopAction && !isHistoryItem && isInProgress
+        ? createResourceAction({
+            type: k8sOperation.patch,
+            label: "Stop run",
+            Icon: <OctagonX size={16} />,
+            item: pipelineRun,
+            disabled: {
+              status: !pipelineRunPermissions.data.patch.allowed,
+              reason: pipelineRunPermissions.data.patch.reason,
+            },
+            callback: (pipelineRun) => {
+              const newPipelineRun = structuredClone(pipelineRun);
+              newPipelineRun.spec.status = "Cancelled";
+              triggerPatchPipelineRun({ data: { pipelineRun: newPipelineRun } });
+            },
+          })
+        : undefined,
       createResourceAction({
         type: k8sOperation.create,
         label: "Run again",
@@ -170,12 +197,16 @@ export const PipelineRunActionsMenu = ({ backRoute, variant, data: { pipelineRun
     ].filter((action): action is ListItemAction => action !== undefined);
   }, [
     pipelineRun,
+    hideStopAction,
     trpc,
     pipelineRunPermissions.data.create.allowed,
     pipelineRunPermissions.data.create.reason,
+    pipelineRunPermissions.data.patch.allowed,
+    pipelineRunPermissions.data.patch.reason,
     pipelineRunPermissions.data.delete.allowed,
     pipelineRunPermissions.data.delete.reason,
     triggerCreatePipelineRun,
+    triggerPatchPipelineRun,
     openEditorDialog,
     triggerDeletePipelineRun,
     onDelete,

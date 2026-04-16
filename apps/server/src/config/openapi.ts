@@ -67,10 +67,11 @@ export function registerOpenApi(
   function handleTRPCError(error: unknown, res: FastifyReply): never {
     if (error instanceof TRPCError) {
       const httpStatus = getHTTPStatusCodeFromError(error);
+      // Derive both fields from safe, static sources — never expose error.message or stack.
+      // `code` is a tRPC enum literal (e.g. "UNAUTHORIZED"); `message` is the HTTP status phrase.
+      const code: string = error.code;
       const message = STATUS_CODES[httpStatus] ?? "Unknown error";
-      res.status(httpStatus).send({
-        error: { code: error.code, message },
-      });
+      res.status(httpStatus).send({ error: { code, message } });
     }
     throw error;
   }

@@ -1,7 +1,7 @@
 import { appRouter } from "../src/routers/index.js";
 import { generateOpenApiDocument } from "trpc-to-openapi";
 import { writeFileSync, mkdirSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { resolve, dirname, relative, isAbsolute } from "node:path";
 
 const doc = generateOpenApiDocument(appRouter, {
   title: "KubeRocketCI Portal API",
@@ -20,8 +20,9 @@ const doc = generateOpenApiDocument(appRouter, {
 const rawPath = process.argv[2] || "dist/openapi.json";
 const outPath = resolve(rawPath);
 const cwd = process.cwd();
+const relPath = relative(cwd, outPath);
 
-if (outPath !== cwd && !outPath.startsWith(cwd + "/")) {
+if (relPath.startsWith("..") || isAbsolute(relPath)) {
   console.error(`Error: Output path must be within the project directory (${cwd})`);
   process.exit(1);
 }

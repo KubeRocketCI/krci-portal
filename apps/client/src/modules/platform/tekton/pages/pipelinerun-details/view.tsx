@@ -250,6 +250,7 @@ function HeaderActions() {
             },
           }}
           variant="menu"
+          hideStopAction
         />
       </DropdownMenu>
     </>
