@@ -62,15 +62,15 @@ describe("getStatusIcon", () => {
     expect(result.isSpinning).toBe(true);
   });
 
-  test("handles case-insensitive action", () => {
+  test("returns unknown icon for unrecognized action casing", () => {
     const approvalTask: ApprovalTask = {
       spec: { action: "APPROVED" },
     } as unknown as ApprovalTask;
 
     const result = getStatusIcon(approvalTask);
 
-    expect(result.component).toBe(CircleCheck);
-    expect(result.color).toBe(STATUS_COLOR.SUCCESS);
+    expect(result.component).toBe(ShieldQuestion);
+    expect(result.color).toBe(STATUS_COLOR.UNKNOWN);
   });
 
   test("returns unknown icon for unknown action", () => {

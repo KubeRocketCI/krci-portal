@@ -1,6 +1,6 @@
 import React from "react";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { PipelineTask } from "@my-project/shared";
+import { PipelineTask, pipelineRunReason } from "@my-project/shared";
 import { Card } from "@/core/components/ui/card";
 import { router } from "@/core/router";
 import { routePipelineRunDetails, routeSearchTabName, PATH_PIPELINERUN_DETAILS_FULL } from "../../route";
@@ -40,7 +40,7 @@ export function Details() {
     pipelineRunTasksByNameMap.forEach((data) => {
       const taskRun = data.taskRun;
       const reason = taskRun?.status?.conditions?.[0]?.reason;
-      if (reason?.toLowerCase() === "succeeded") {
+      if (reason?.toLowerCase() === pipelineRunReason.succeeded) {
         completed++;
       }
     });

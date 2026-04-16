@@ -7,7 +7,7 @@ import { CreateGitServerFormValues, NAMES } from "./names";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { createGitServerSecretName } from "@my-project/shared";
+import { createGitServerSecretName, gitProvider } from "@my-project/shared";
 import { showToast } from "@/core/components/Snackbar";
 import { Separator } from "@/core/components/ui/separator";
 
@@ -24,13 +24,13 @@ export const CreateGitServerForm: React.FC<{ onClose: () => void }> = ({ onClose
 
   const defaultValues = React.useMemo<Partial<CreateGitServerFormValues>>(
     () => ({
-      [NAMES.GIT_PROVIDER]: "github",
+      [NAMES.GIT_PROVIDER]: gitProvider.github,
       [NAMES.SKIP_WEBHOOK_SSL]: false,
       [NAMES.TEKTON_DISABLED]: false,
       [NAMES.OVERRIDE_WEBHOOK_URL]: false,
       [NAMES.SSH_PORT]: 22,
       [NAMES.HTTPS_PORT]: 443,
-      [NAMES.NAME_SSH_KEY_SECRET]: createGitServerSecretName("github"),
+      [NAMES.NAME_SSH_KEY_SECRET]: createGitServerSecretName(gitProvider.github),
     }),
     []
   );
@@ -58,9 +58,9 @@ export const CreateGitServerForm: React.FC<{ onClose: () => void }> = ({ onClose
             currentResource: undefined,
           },
           secret:
-            values[NAMES.GIT_PROVIDER] === "gerrit"
+            values[NAMES.GIT_PROVIDER] === gitProvider.gerrit
               ? {
-                  gitProvider: "gerrit" as const,
+                  gitProvider: gitProvider.gerrit,
                   sshPrivateKey: values[NAMES.SSH_PRIVATE_KEY],
                   sshPublicKey: (values[NAMES.SSH_PUBLIC_KEY] ?? "").trim(),
                   currentResource: undefined,

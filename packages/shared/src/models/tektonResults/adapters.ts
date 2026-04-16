@@ -15,7 +15,11 @@ import type { DecodedPipelineRun, DecodedTaskRun, TektonResult, TektonResultStat
 import { tektonResultAnnotations } from "./annotations.js";
 import { pipelineRunLabels } from "../k8s/groups/Tekton/PipelineRun/labels.js";
 import { RESULT_ANNOTATIONS_KEY } from "../k8s/groups/Tekton/PipelineRun/utils/resultAnnotations/index.js";
-import { k8sPipelineRunConfig } from "../k8s/groups/Tekton/PipelineRun/constants.js";
+import {
+  k8sPipelineRunConfig,
+  pipelineRunReason,
+  pipelineRunStatus,
+} from "../k8s/groups/Tekton/PipelineRun/constants.js";
 
 /**
  * Normalize a decoded PipelineRun from Tekton Results to a K8s PipelineRun type.
@@ -143,11 +147,11 @@ export function normalizeHistoryTaskRun(decoded: DecodedTaskRun): TaskRun {
 // ---------------------------------------------------------------------------
 
 const RESULT_STATUS_MAP: Record<TektonResultStatus, { status: string; reason: string }> = {
-  SUCCESS: { status: "true", reason: "succeeded" },
-  FAILURE: { status: "false", reason: "failed" },
-  TIMEOUT: { status: "false", reason: "pipelineruntimeout" },
-  CANCELLED: { status: "false", reason: "cancelled" },
-  UNKNOWN: { status: "unknown", reason: "running" },
+  SUCCESS: { status: pipelineRunStatus.true, reason: pipelineRunReason.succeeded },
+  FAILURE: { status: pipelineRunStatus.false, reason: pipelineRunReason.failed },
+  TIMEOUT: { status: pipelineRunStatus.false, reason: pipelineRunReason.pipelineruntimeout },
+  CANCELLED: { status: pipelineRunStatus.false, reason: pipelineRunReason.cancelled },
+  UNKNOWN: { status: pipelineRunStatus.unknown, reason: pipelineRunReason.running },
 };
 
 function getResultAnnotation(result: TektonResult, key: string): string | undefined {

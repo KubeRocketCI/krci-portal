@@ -170,7 +170,7 @@ export const QualityGateInlineForm: React.FC<QualityGateInlineFormProps> = ({
         </form.AppField>
 
         {/* Autotest Configuration (conditional) */}
-        {qualityGateType === "autotests" && (
+        {qualityGateType === stageQualityGateType.autotests && (
           <div className="grid grid-cols-3 gap-4">
             <form.AppField
               name="autotestName"
@@ -267,7 +267,7 @@ export const QualityGateInlineForm: React.FC<QualityGateInlineFormProps> = ({
         )}
 
         {/* Manual Step Name */}
-        {qualityGateType === "manual" && (
+        {qualityGateType === stageQualityGateType.manual && (
           <form.AppField
             name="stepName"
             validators={{

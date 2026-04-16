@@ -94,7 +94,7 @@ export const QualityGatesFieldInline: React.FC = () => {
   const editingGateValues: QualityGateFormValues | null =
     editingGateIndex !== null
       ? {
-          qualityGateType: qualityGatesFieldValue[editingGateIndex]?.qualityGateType ?? "manual",
+          qualityGateType: qualityGatesFieldValue[editingGateIndex]?.qualityGateType ?? stageQualityGateType.manual,
           stepName: qualityGatesFieldValue[editingGateIndex]?.stepName ?? "",
           autotestName: qualityGatesFieldValue[editingGateIndex]?.autotestName ?? null,
           branchName: qualityGatesFieldValue[editingGateIndex]?.branchName ?? null,

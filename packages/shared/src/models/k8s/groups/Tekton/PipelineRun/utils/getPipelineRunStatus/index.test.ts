@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getPipelineRunStatus } from "./index.js";
+import { pipelineRunReason, pipelineRunStatus } from "../../constants.js";
 
 describe("getPipelineRunStatus", () => {
   it("should extract status from first condition", () => {
@@ -31,8 +32,8 @@ describe("getPipelineRunStatus", () => {
   it("should return defaults for undefined input", () => {
     const result = getPipelineRunStatus(undefined);
 
-    expect(result.status).toBe("Unknown");
-    expect(result.reason).toBe("Unknown");
+    expect(result.status).toBe(pipelineRunStatus.unknown);
+    expect(result.reason).toBe(pipelineRunReason.running);
     expect(result.message).toBe("No message");
     expect(result.lastTransitionTime).toBe("N/A");
     expect(result.startTime).toBe("N/A");
@@ -48,8 +49,8 @@ describe("getPipelineRunStatus", () => {
 
     const result = getPipelineRunStatus(pipelineRun);
 
-    expect(result.status).toBe("Unknown");
-    expect(result.reason).toBe("Unknown");
+    expect(result.status).toBe(pipelineRunStatus.unknown);
+    expect(result.reason).toBe(pipelineRunReason.running);
     expect(result.startTime).toBe("2023-01-01T00:00:00Z");
   });
 
@@ -62,7 +63,7 @@ describe("getPipelineRunStatus", () => {
 
     const result = getPipelineRunStatus(pipelineRun);
 
-    expect(result.status).toBe("Unknown");
-    expect(result.reason).toBe("Unknown");
+    expect(result.status).toBe(pipelineRunStatus.unknown);
+    expect(result.reason).toBe(pipelineRunReason.running);
   });
 });

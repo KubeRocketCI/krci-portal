@@ -48,7 +48,7 @@ export const EditGitServerForm: React.FC<{
     }))
   );
 
-  const secretName = createGitServerSecretName(gitServer?.spec?.gitProvider ?? "github");
+  const secretName = createGitServerSecretName(gitServer?.spec?.gitProvider ?? gitProvider.github);
   const gitServerSecretWatch = useSecretWatchItem({ name: secretName });
   const gitServerSecret = gitServerSecretWatch.query.data;
 
@@ -58,7 +58,7 @@ export const EditGitServerForm: React.FC<{
     const base: Partial<EditGitServerFormValues> = {
       [NAMES.NAME]: gitServer.metadata.name,
       [NAMES.GIT_HOST]: gitServer.spec?.gitHost ?? "",
-      [NAMES.GIT_PROVIDER]: gitServer.spec?.gitProvider ?? "github",
+      [NAMES.GIT_PROVIDER]: gitServer.spec?.gitProvider ?? gitProvider.github,
       [NAMES.GIT_USER]: gitServer.spec?.gitUser ?? "",
       [NAMES.NAME_SSH_KEY_SECRET]: gitServer.spec?.nameSshKeySecret ?? "",
       [NAMES.SSH_PORT]: Number(gitServer.spec?.sshPort) || 22,

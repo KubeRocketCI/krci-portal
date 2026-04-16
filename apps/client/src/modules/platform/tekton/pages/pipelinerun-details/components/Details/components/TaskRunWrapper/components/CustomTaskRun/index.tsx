@@ -57,7 +57,7 @@ const updateApprovalTask = ({
 export const CustomTaskRun = ({ pipelineRunTaskData }: CustomTaskRunProps) => {
   const { approvalTask } = pipelineRunTaskData;
 
-  const isPending = approvalTask?.spec?.action === "Pending";
+  const isPending = approvalTask?.spec?.action === approvalTaskAction.Pending;
 
   const taskRunMetadataName = approvalTask?.metadata?.ownerReferences?.[0]?.name;
 

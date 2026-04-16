@@ -7,7 +7,7 @@ import { ConfigurationPageContent } from "../../components/ConfigurationPageCont
 import { CreateGitOpsForm } from "./components/CreateGitOpsForm";
 import { pageDescription } from "./constants";
 import { useCodebasePermissions, useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
-import { codebaseLabels, codebaseType } from "@my-project/shared";
+import { codebaseGitOpsSystemType, codebaseLabels, codebaseType } from "@my-project/shared";
 import { PATH_CONFIG_GITSERVERS_FULL } from "../gitservers/route";
 import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { FORM_GUIDE_CONFIG } from "./components/CreateGitOpsForm/constants";
@@ -23,7 +23,7 @@ export default function GitopsConfigurationPage() {
   const gitOpsCodebasesWatch = useCodebaseWatchList({
     labels: {
       [codebaseLabels.codebaseType]: codebaseType.system,
-      [codebaseLabels.systemType]: "gitops",
+      [codebaseLabels.systemType]: codebaseGitOpsSystemType,
     },
   });
   const gitOpsCodebase = gitOpsCodebasesWatch.data.array[0];

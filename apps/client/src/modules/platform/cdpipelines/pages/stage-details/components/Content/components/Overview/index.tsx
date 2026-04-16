@@ -7,7 +7,12 @@ import { Card } from "@/core/components/ui/card";
 import { ScrollCopyText } from "@/core/components/ScrollCopyText";
 import { TriggerTemplatePipelinePreview } from "@/core/components/TriggerTemplatePipelinePreview";
 import { StatusIcon } from "@/core/components/StatusIcon";
-import { applicationHealthStatus, getApplicationStatus, stageTriggerType } from "@my-project/shared";
+import {
+  applicationHealthStatus,
+  getApplicationStatus,
+  stageQualityGateType,
+  stageTriggerType,
+} from "@my-project/shared";
 import KubernetesIcon from "@/assets/icons/k8s/kubernetes.svg?react";
 import { Activity, Zap, Shield, Settings, Workflow } from "lucide-react";
 
@@ -137,7 +142,7 @@ export const Overview = () => {
                     <Badge key={idx} variant="outline" className="flex items-center gap-1 text-xs">
                       <Shield className="size-3" />
                       <span className="capitalize">{gate.qualityGateType}</span>
-                      {gate.qualityGateType === "autotests" && gate.autotestName && (
+                      {gate.qualityGateType === stageQualityGateType.autotests && gate.autotestName && (
                         <span className="text-muted-foreground font-mono">
                           ({gate.autotestName}/{gate.branchName})
                         </span>

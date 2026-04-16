@@ -1,5 +1,5 @@
 import { ChevronRight, Zap, Pause } from "lucide-react";
-import { StageTriggerType } from "@my-project/shared";
+import { StageTriggerType, stageTriggerType } from "@my-project/shared";
 import { STATUS_COLOR } from "@/k8s/constants/colors";
 
 interface HorizontalFlowConnectorProps {
@@ -8,8 +8,7 @@ interface HorizontalFlowConnectorProps {
 }
 
 export function HorizontalFlowConnector({ triggerType, isFirst = false }: HorizontalFlowConnectorProps) {
-  const triggerTypeLower = triggerType.toLowerCase();
-  const isAuto = triggerTypeLower === "auto" || triggerTypeLower === "auto-stable";
+  const isAuto = triggerType === stageTriggerType.Auto || triggerType === stageTriggerType["Auto-stable"];
 
   const badgeColor = isAuto ? STATUS_COLOR.SUCCESS : STATUS_COLOR.SUSPENDED;
 

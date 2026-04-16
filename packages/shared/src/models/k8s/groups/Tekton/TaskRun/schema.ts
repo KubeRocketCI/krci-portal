@@ -365,7 +365,7 @@ export const reasonSchema = z.enum([
   "started",
   "pending",
   "running",
-  "TaskRunCancelled",
+  "taskruncancelled",
   "succeeded",
   "failed",
   "taskruntimeout",

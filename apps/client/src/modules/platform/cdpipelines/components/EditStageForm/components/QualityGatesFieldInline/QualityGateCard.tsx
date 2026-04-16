@@ -3,6 +3,7 @@ import { Button } from "@/core/components/ui/button";
 import { Card } from "@/core/components/ui/card";
 import { Badge } from "@/core/components/ui/badge";
 import { CheckCircle, TestTube2, GitBranch, Workflow, Pencil, Trash2 } from "lucide-react";
+import { stageQualityGateType } from "@my-project/shared";
 
 type QualityGate = {
   id: string;
@@ -34,7 +35,7 @@ export const QualityGateCard: React.FC<QualityGateCardProps> = ({
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-1 items-start gap-3">
           <div className="bg-primary/10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full">
-            {gate.qualityGateType === "manual" ? (
+            {gate.qualityGateType === stageQualityGateType.manual ? (
               <CheckCircle className="text-primary h-4 w-4" />
             ) : (
               <TestTube2 className="text-primary h-4 w-4" />
@@ -47,7 +48,7 @@ export const QualityGateCard: React.FC<QualityGateCardProps> = ({
                 {gate.qualityGateType}
               </Badge>
             </div>
-            {gate.qualityGateType === "autotests" && (
+            {gate.qualityGateType === stageQualityGateType.autotests && (
               <div className="text-muted-foreground space-y-1 text-sm">
                 <div className="flex items-center gap-2">
                   <TestTube2 className="text-muted-foreground h-3 w-3" />
@@ -66,7 +67,7 @@ export const QualityGateCard: React.FC<QualityGateCardProps> = ({
                 </div>
               </div>
             )}
-            {gate.qualityGateType === "manual" && (
+            {gate.qualityGateType === stageQualityGateType.manual && (
               <div className="text-muted-foreground space-y-1 text-sm">
                 <p>Manual approval required before deployment</p>
                 <div className="flex items-center gap-2">

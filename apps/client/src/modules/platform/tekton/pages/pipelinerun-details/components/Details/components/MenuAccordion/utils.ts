@@ -2,7 +2,7 @@ import { getApprovalTaskStatusIcon } from "@/k8s/api/groups/KRCI/ApprovalTask";
 import { getTaskRunStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun";
 import { STATUS_COLOR } from "@/k8s/constants/colors";
 import { K8sResourceStatusIcon } from "@/k8s/types";
-import { TaskRunStepState, ApprovalTask, TaskRun } from "@my-project/shared";
+import { TaskRunStepState, ApprovalTask, TaskRun, taskRunStepStatusReason } from "@my-project/shared";
 import { ShieldQuestion } from "lucide-react";
 
 export const approvalTaskBackground =
@@ -15,7 +15,7 @@ export function updateUnexecutedSteps(steps: TaskRunStepState[] | undefined) {
 
   let errorIndex = steps.length - 1;
   return steps.map((step, index) => {
-    if (!step.terminated || step.terminated.reason !== "Completed") {
+    if (!step.terminated || step.terminated.reason !== taskRunStepStatusReason.Completed) {
       errorIndex = Math.min(index, errorIndex);
     }
     if (index > errorIndex) {

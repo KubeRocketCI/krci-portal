@@ -13,7 +13,12 @@ import { LinkCreationService } from "@/k8s/services/link-creation";
 import { useClusterStore } from "@/k8s/store";
 import { PATH_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-details/route";
 import { useCodebaseWatch, useGitServerWatch } from "../../../hooks/data";
-import { checkIsDefaultBranch, codebaseBranchStatus, getPipelineRunStatus } from "@my-project/shared";
+import {
+  checkIsDefaultBranch,
+  codebaseBranchStatus,
+  getPipelineRunStatus,
+  pipelineRunReason,
+} from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import { GitBranch, Pin, SquareArrowOutUpRight } from "lucide-react";
 import React from "react";
@@ -24,7 +29,7 @@ import { columnNames } from "../constants";
 import { EnrichedBranch } from "../types";
 
 function formatBuildStatusText(reason: string): string {
-  if (reason === "running") return "In progress";
+  if (reason === pipelineRunReason.running) return "In progress";
   return reason.charAt(0).toUpperCase() + reason.slice(1);
 }
 

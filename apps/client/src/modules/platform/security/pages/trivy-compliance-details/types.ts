@@ -1,4 +1,4 @@
-import { ControlResult } from "@my-project/shared";
+import { ControlResult, complianceSeverity } from "@my-project/shared";
 
 /**
  * Extended control result for table display with additional computed fields
@@ -43,16 +43,16 @@ export function calculateSeverityCounts(
     (acc, control) => {
       const severity = control.severity?.toUpperCase();
       switch (severity) {
-        case "CRITICAL":
+        case complianceSeverity.CRITICAL:
           acc.critical++;
           break;
-        case "HIGH":
+        case complianceSeverity.HIGH:
           acc.high++;
           break;
-        case "MEDIUM":
+        case complianceSeverity.MEDIUM:
           acc.medium++;
           break;
-        case "LOW":
+        case complianceSeverity.LOW:
           acc.low++;
           break;
       }

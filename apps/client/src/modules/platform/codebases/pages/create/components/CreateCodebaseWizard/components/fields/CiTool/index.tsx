@@ -1,5 +1,5 @@
 import React from "react";
-import { ciTool, gitlabCiDefaultTemplate } from "@my-project/shared";
+import { ciTool, gitProvider, gitlabCiDefaultTemplate } from "@my-project/shared";
 import { useStore } from "@tanstack/react-form";
 import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { useCreateCodebaseForm } from "../../../providers/form/hooks";
@@ -12,7 +12,7 @@ export const CiToolField: React.FC = () => {
   const gitServersWatch = useGitServerWatchList();
   const gitServers = gitServersWatch.data.array;
   const selectedGitServer = gitServers.find((gs) => gs.metadata.name === gitServerFieldValue);
-  const isGitlabProvider = selectedGitServer?.spec.gitProvider === "gitlab";
+  const isGitlabProvider = selectedGitServer?.spec.gitProvider === gitProvider.gitlab;
 
   const options = React.useMemo(
     () => [

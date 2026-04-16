@@ -2,7 +2,7 @@ import { Button } from "@/core/components/ui/button";
 import React from "react";
 import { BranchNameProps } from "./types";
 import { CODEBASE_BRANCH_FORM_NAMES } from "../../../constants";
-import { createVersioningString, getVersionAndPostfixFromVersioningString } from "@my-project/shared";
+import { createVersioningString, getVersionAndPostfixFromVersioningString, gitProvider } from "@my-project/shared";
 import { useCreateCodebaseBranchForm } from "../../../providers/form/hooks";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useClusterStore } from "@/k8s/store";
@@ -65,7 +65,7 @@ export const BranchName = ({ codebase, defaultBranchVersion }: BranchNameProps) 
       return [];
     }
 
-    if (codebaseGitServer === "gerrit") {
+    if (codebaseGitServer === gitProvider.gerrit) {
       return [
         {
           label: codebase.spec.defaultBranch,

@@ -1,5 +1,5 @@
 import z from "zod";
-import { gitProviderEnum } from "@my-project/shared";
+import { gitProvider, gitProviderEnum } from "@my-project/shared";
 import { NAMES } from "./constants";
 
 const nameRequirementRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -30,7 +30,7 @@ const baseSchema = z.object({
 });
 
 export const editGitServerFormSchema = baseSchema.superRefine((data, ctx) => {
-  if (data[NAMES.GIT_PROVIDER] === "gerrit") {
+  if (data[NAMES.GIT_PROVIDER] === gitProvider.gerrit) {
     if (!(data[NAMES.SSH_PUBLIC_KEY] ?? "").trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

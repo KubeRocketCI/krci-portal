@@ -12,30 +12,31 @@ import {
   createGitServerSecretDraft,
   editGitServer,
   editGitServerSecret,
+  gitProvider,
   gitProviderEnum,
 } from "@my-project/shared";
 
 const secretInputSchema = z.discriminatedUnion("gitProvider", [
   z.object({
-    gitProvider: z.literal("bitbucket"),
+    gitProvider: z.literal(gitProvider.bitbucket),
     sshPrivateKey: z.string(),
     token: z.string(),
     currentResource: z.any().optional(),
   }),
   z.object({
-    gitProvider: z.literal("github"),
+    gitProvider: z.literal(gitProvider.github),
     sshPrivateKey: z.string(),
     token: z.string(),
     currentResource: z.any().optional(),
   }),
   z.object({
-    gitProvider: z.literal("gitlab"),
+    gitProvider: z.literal(gitProvider.gitlab),
     sshPrivateKey: z.string(),
     token: z.string(),
     currentResource: z.any().optional(),
   }),
   z.object({
-    gitProvider: z.literal("gerrit"),
+    gitProvider: z.literal(gitProvider.gerrit),
     sshPrivateKey: z.string(),
     sshPublicKey: z.string(),
     currentResource: z.any().optional(),
@@ -103,7 +104,7 @@ export const k8sManageGitServerIntegrationProcedure = protectedProcedure
         if (!secret.currentResource) {
           // Create new secret (shape matches shared createGitServerSecretDraft discriminated union)
           const secretDraftInput =
-            secret.gitProvider === "gerrit"
+            secret.gitProvider === gitProvider.gerrit
               ? {
                   gitProvider: secret.gitProvider,
                   sshPrivateKey: secret.sshPrivateKey,
@@ -116,7 +117,7 @@ export const k8sManageGitServerIntegrationProcedure = protectedProcedure
         } else {
           // Edit existing secret
           const secretEditInput =
-            secret.gitProvider === "gerrit"
+            secret.gitProvider === gitProvider.gerrit
               ? {
                   gitProvider: secret.gitProvider,
                   sshPrivateKey: secret.sshPrivateKey,

@@ -1,11 +1,11 @@
 import React from "react";
-import { ciTemplateLabels, gitlabCiDefaultTemplate } from "@my-project/shared";
+import { ciTemplateLabels, ciTool, gitlabCiDefaultTemplate } from "@my-project/shared";
 import { useConfigMapWatchList } from "@/k8s/api/groups/Core/ConfigMap/hooks";
 import { useCreateCodebaseForm } from "../../../providers/form/hooks";
 import { NAMES } from "../../../names";
 
 const CI_TEMPLATE_LABEL_SELECTOR = {
-  [ciTemplateLabels.ciTemplate]: "gitlab",
+  [ciTemplateLabels.ciTemplate]: ciTool.gitlab,
 } as const;
 
 export const GitlabCiTemplate: React.FC = () => {
