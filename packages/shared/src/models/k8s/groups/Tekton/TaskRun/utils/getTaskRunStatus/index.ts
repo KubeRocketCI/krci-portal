@@ -1,17 +1,18 @@
 import { TaskRun, TaskRunStatus, TaskRunStatusReason } from "../../index.js";
-import { taskRunStatus as taskRunStatusValues, taskRunStatusReason as taskRunReasonValues } from "../../constants.js";
+import { taskRunStatus as taskRunStatusValues } from "../../constants.js";
 
 export const getTaskRunStatus = (
   taskRun: TaskRun | undefined
 ): {
   status: TaskRunStatus | "unknown";
-  reason: TaskRunStatusReason | "unknown";
+  reason: TaskRunStatusReason | undefined;
 } => {
-  const status = taskRun?.status?.conditions?.[0]?.status?.toLowerCase() || taskRunStatusValues.unknown;
-  const reason = taskRun?.status?.conditions?.[0]?.reason?.toLowerCase() || taskRunReasonValues.running;
+  const condition = taskRun?.status?.conditions?.[0];
+  const status = condition?.status?.toLowerCase() || taskRunStatusValues.unknown;
+  const reason = condition?.reason?.toLowerCase() as TaskRunStatusReason | undefined;
 
   return {
     status: status as TaskRunStatus,
-    reason: reason as TaskRunStatusReason,
+    reason,
   };
 };

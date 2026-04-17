@@ -363,8 +363,9 @@ export const statusSchema = z.enum(["true", "false", "unknown"]);
 
 export const reasonSchema = z.enum([
   "started",
-  "pending",
   "running",
+  "taskrunpending",
+  "toberetried",
   "taskruncancelled",
   "succeeded",
   "failed",

@@ -28,7 +28,8 @@ import { PipelineActionsGroup } from "../components/BranchListItem/components/Pi
 import { columnNames } from "../constants";
 import { EnrichedBranch } from "../types";
 
-function formatBuildStatusText(reason: string): string {
+function formatBuildStatusText(reason: string | undefined): string {
+  if (!reason) return "Unknown";
   if (reason === pipelineRunReason.running) return "In progress";
   return reason.charAt(0).toUpperCase() + reason.slice(1);
 }

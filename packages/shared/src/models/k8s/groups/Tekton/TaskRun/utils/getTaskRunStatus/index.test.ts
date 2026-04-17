@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getTaskRunStatus } from "./index.js";
-import { taskRunStatus, taskRunStatusReason } from "../../constants.js";
+import { taskRunStatus } from "../../constants.js";
 
 describe("getTaskRunStatus", () => {
   it("should return status and reason from first condition", () => {
@@ -27,22 +27,16 @@ describe("getTaskRunStatus", () => {
     });
   });
 
-  it("should return unknown when conditions are missing", () => {
-    expect(getTaskRunStatus({} as any)).toEqual({ status: taskRunStatus.unknown, reason: taskRunStatusReason.running });
-    expect(getTaskRunStatus({ status: {} } as any)).toEqual({
-      status: taskRunStatus.unknown,
-      reason: taskRunStatusReason.running,
-    });
+  it("should return undefined reason when conditions are missing", () => {
+    expect(getTaskRunStatus({} as any)).toEqual({ status: taskRunStatus.unknown, reason: undefined });
+    expect(getTaskRunStatus({ status: {} } as any)).toEqual({ status: taskRunStatus.unknown, reason: undefined });
     expect(getTaskRunStatus({ status: { conditions: [] } } as any)).toEqual({
       status: taskRunStatus.unknown,
-      reason: taskRunStatusReason.running,
+      reason: undefined,
     });
   });
 
-  it("should return unknown when taskRun is undefined", () => {
-    expect(getTaskRunStatus(undefined)).toEqual({
-      status: taskRunStatus.unknown,
-      reason: taskRunStatusReason.running,
-    });
+  it("should return undefined reason when taskRun is undefined", () => {
+    expect(getTaskRunStatus(undefined)).toEqual({ status: taskRunStatus.unknown, reason: undefined });
   });
 });
