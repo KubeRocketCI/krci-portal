@@ -17,7 +17,7 @@
     "deploy:clean": "rimraf deploy",
     "deploy:prepare": "pnpm deploy --filter=client --prod deploy/client && pnpm deploy --filter=server --prod deploy/server",
     "deploy:post": "shx mkdir -p deploy/server/db && shx touch deploy/server/db/sessions.sqlite",
-    "prepare:artifacts": "pnpm deploy:clean && pnpm build && pnpm deploy:prepare && pnpm deploy:post"
+    "prepare:artifacts": "pnpm deploy:clean && pnpm deploy:prepare && pnpm deploy:post"
   },
   "packageManager": "pnpm@10.11.0",
   "workspaces": [
