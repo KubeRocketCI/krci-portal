@@ -18,6 +18,7 @@ import {
   parseRecordName,
   PipelineRun,
   pipelineRunReason,
+  pipelineRunSpecStatus,
 } from "@my-project/shared";
 import { OctagonX, Redo2, Trash } from "lucide-react";
 import React from "react";
@@ -120,7 +121,7 @@ export const PipelineRunActionsMenu = ({
             },
             callback: (pipelineRun) => {
               const newPipelineRun = structuredClone(pipelineRun);
-              newPipelineRun.spec.status = "Cancelled";
+              newPipelineRun.spec.status = pipelineRunSpecStatus.Cancelled;
               triggerPatchPipelineRun({ data: { pipelineRun: newPipelineRun } });
             },
           })

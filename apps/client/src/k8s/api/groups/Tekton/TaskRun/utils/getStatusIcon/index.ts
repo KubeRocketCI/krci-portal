@@ -10,7 +10,7 @@ export const getStatusIcon = (resource: TaskRun): K8sResourceStatusIcon => {
     case taskRunStatus.unknown:
       if (
         status.reason === taskRunStatusReason.started ||
-        status.reason === taskRunStatusReason.pending ||
+        status.reason === taskRunStatusReason.taskrunpending ||
         status.reason === taskRunStatusReason.running
       ) {
         return {

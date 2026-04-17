@@ -25,6 +25,10 @@ const pipelineRunLabelsSchema = z
 export const pipelineRunReasonEnum = z.enum([
   "started",
   "running",
+  "pipelinerunpending",
+  "pipelinerunstopping",
+  "cancelledrunningfinally",
+  "stoppedrunningfinally",
   "cancelled",
   "succeeded",
   "completed",
@@ -403,6 +407,13 @@ const workspaceSchema = z
   })
   .required({ name: true });
 
+export const pipelineRunSpecStatusEnum = z.enum([
+  "Cancelled",
+  "CancelledRunFinally",
+  "StoppedRunFinally",
+  "PipelineRunPending",
+]);
+
 const specSchema = z.object({
   params: z.array(paramSchema).optional(),
   pipelineRef: pipelineRefSchema.optional(),
@@ -410,7 +421,7 @@ const specSchema = z.object({
   podTemplate: podTemplateSchema.optional(),
   resources: z.array(resourceSchema).optional(),
   serviceAccountName: z.string().optional(),
-  status: z.string().optional(),
+  status: pipelineRunSpecStatusEnum.optional(),
   taskRunSpecs: z.array(taskRunSpecSchema).optional(),
   timeout: z.string().optional(),
   timeouts: z

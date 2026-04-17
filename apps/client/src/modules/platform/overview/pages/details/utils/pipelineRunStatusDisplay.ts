@@ -10,7 +10,7 @@ export function getStatusDisplay(run: PipelineRun): {
 } {
   const { status, reason } = getPipelineRunStatus(run);
   const s = status.toLowerCase();
-  const r = reason.toLowerCase();
+  const r = reason?.toLowerCase() ?? "";
 
   if (s === pipelineRunStatus.true) {
     return { label: "Succeeded", variant: "success", icon: CheckCircle2 };

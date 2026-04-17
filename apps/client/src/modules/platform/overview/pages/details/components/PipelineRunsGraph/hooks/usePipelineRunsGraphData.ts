@@ -31,7 +31,7 @@ export const usePipelineRunsGraphData = () => {
         const { status, reason } = getPipelineRunStatus(cur);
 
         const _status = status.toLowerCase();
-        const _reason = reason.toLowerCase();
+        const _reason = reason?.toLowerCase() ?? "";
 
         switch (_status) {
           case pipelineRunStatus.unknown:

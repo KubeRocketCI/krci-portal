@@ -6,24 +6,22 @@ import { CircleCheck, CircleX, LoaderCircle, ShieldQuestion } from "lucide-react
 import type { PipelineRun } from "@my-project/shared";
 
 describe("getStatusIcon", () => {
-  test("returns in-progress icon for undefined pipelineRun", () => {
+  test("returns unknown icon for undefined pipelineRun", () => {
     const result = getStatusIcon(undefined);
 
-    expect(result.component).toBe(LoaderCircle);
-    expect(result.color).toBe(STATUS_COLOR.IN_PROGRESS);
-    expect(result.isSpinning).toBe(true);
+    expect(result.component).toBe(ShieldQuestion);
+    expect(result.color).toBe(STATUS_COLOR.UNKNOWN);
   });
 
-  test("returns in-progress icon for missing conditions", () => {
+  test("returns unknown icon for missing conditions", () => {
     const pipelineRun: PipelineRun = {
       status: {},
     } as unknown as PipelineRun;
 
     const result = getStatusIcon(pipelineRun);
 
-    expect(result.component).toBe(LoaderCircle);
-    expect(result.color).toBe(STATUS_COLOR.IN_PROGRESS);
-    expect(result.isSpinning).toBe(true);
+    expect(result.component).toBe(ShieldQuestion);
+    expect(result.color).toBe(STATUS_COLOR.UNKNOWN);
   });
 
   test("returns success icon for true status", () => {
