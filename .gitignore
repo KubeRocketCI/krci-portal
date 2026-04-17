@@ -35,3 +35,4 @@ coverage
 
 .claude/settings.local.json
 .codemie
+.pnpm-store
