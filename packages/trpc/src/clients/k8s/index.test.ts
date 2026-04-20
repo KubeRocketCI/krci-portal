@@ -169,6 +169,56 @@ describe("K8sClient", () => {
     expect(() => new K8sClient(validSession)).toThrow("No cluster configuration found");
   });
 
+  describe("discoverResource", () => {
+    it("discovers a core v1 resource", async () => {
+      const client = new K8sClient(validSession);
+      vi.spyOn(client, "fetchApiPath" as never).mockResolvedValue({
+        resources: [
+          { name: "configmaps", namespaced: true, kind: "ConfigMap" },
+          { name: "configmaps/status", namespaced: true, kind: "ConfigMap" },
+        ],
+      } as never);
+
+      const result = await client.discoverResource("v1", "ConfigMap");
+
+      expect(result).toEqual({ pluralName: "configmaps", namespaced: true });
+    });
+
+    it("discovers an API group resource", async () => {
+      const client = new K8sClient(validSession);
+      vi.spyOn(client, "fetchApiPath" as never).mockResolvedValue({
+        resources: [{ name: "deployments", namespaced: true, kind: "Deployment" }],
+      } as never);
+
+      const result = await client.discoverResource("apps/v1", "Deployment");
+
+      expect(result).toEqual({ pluralName: "deployments", namespaced: true });
+    });
+
+    it("excludes subresources (paths containing /)", async () => {
+      const client = new K8sClient(validSession);
+      vi.spyOn(client, "fetchApiPath" as never).mockResolvedValue({
+        resources: [
+          { name: "pods/log", namespaced: true, kind: "Pod" },
+          { name: "pods", namespaced: true, kind: "Pod" },
+        ],
+      } as never);
+
+      const result = await client.discoverResource("v1", "Pod");
+
+      expect(result.pluralName).toBe("pods");
+    });
+
+    it("throws when resource kind is not found", async () => {
+      const client = new K8sClient(validSession);
+      vi.spyOn(client, "fetchApiPath" as never).mockResolvedValue({ resources: [] } as never);
+
+      await expect(client.discoverResource("v1", "Unknown")).rejects.toThrow(
+        'Resource kind "Unknown" not found in apiVersion "v1"'
+      );
+    });
+  });
+
   it("throws error if current context is not found", () => {
     vi.mocked(KubeConfig).mockImplementationOnce(
       () =>
