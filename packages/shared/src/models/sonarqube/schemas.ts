@@ -266,4 +266,5 @@ export const issuesQueryParamsSchema = z.object({
   ps: z.number().int().min(1).max(500).optional().default(25),
   s: z.string().optional(), // Sort field
   asc: z.enum(["true", "false"]).optional(),
+  pullRequest: z.string().optional(), // Forward to SonarQube /api/issues/search&pullRequest=<id>
 });

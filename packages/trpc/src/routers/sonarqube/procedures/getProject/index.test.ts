@@ -42,21 +42,72 @@ describe("sonarqube.getProject", () => {
     expect(result!.key).toBe("my-service");
     expect(result!.qualityGateStatus).toBe("OK");
     expect(result!.measures).toEqual({ alert_status: "OK", bugs: "0" });
+    expect(mockGetComponent).toHaveBeenCalledWith("my-service", undefined);
+    expect(mockGetMeasures).toHaveBeenCalledWith("my-service", expect.any(Array), undefined);
   });
 
-  it("should return null when project not found", async () => {
+  it("should throw NOT_FOUND when project not found", async () => {
     mockGetComponent.mockResolvedValueOnce(null);
 
     const caller = createCaller(mockContext);
-    const result = await caller.sonarqube.getProject({ componentKey: "nonexistent" });
-
-    expect(result).toBeNull();
+    await expect(caller.sonarqube.getProject({ componentKey: "nonexistent" })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+      message: "project nonexistent not found",
+    });
   });
 
-  it("should throw on client errors", async () => {
+  it("should throw NOT_FOUND with pull-request message when PR 404", async () => {
+    mockGetComponent.mockResolvedValueOnce(null);
+
+    const caller = createCaller(mockContext);
+    await expect(caller.sonarqube.getProject({ componentKey: "my-service", pullRequest: "123" })).rejects.toMatchObject(
+      {
+        code: "NOT_FOUND",
+        message: "pull request 123 not found",
+      }
+    );
+  });
+
+  it("should throw INTERNAL_SERVER_ERROR on upstream failure", async () => {
     mockGetComponent.mockRejectedValueOnce(new Error("500 Internal Server Error"));
 
     const caller = createCaller(mockContext);
-    await expect(caller.sonarqube.getProject({ componentKey: "error" })).rejects.toThrow("500");
+    await expect(caller.sonarqube.getProject({ componentKey: "error" })).rejects.toMatchObject({
+      code: "INTERNAL_SERVER_ERROR",
+    });
+  });
+
+  it("should reject unknown fields via .strict()", async () => {
+    const caller = createCaller(mockContext);
+    // @ts-expect-error — deliberately passing an unknown field
+    await expect(caller.sonarqube.getProject({ componentKey: "ok", foo: "bar" })).rejects.toThrow();
+  });
+
+  it("should forward pullRequest when supplied", async () => {
+    mockGetComponent.mockResolvedValueOnce({
+      component: { key: "my-service", name: "My Service" },
+    });
+    mockGetMeasures.mockResolvedValueOnce({});
+    mockParseMeasures.mockReturnValueOnce({});
+
+    const caller = createCaller(mockContext);
+    await caller.sonarqube.getProject({ componentKey: "my-service", pullRequest: "123" });
+
+    expect(mockGetComponent).toHaveBeenCalledWith("my-service", "123");
+    expect(mockGetMeasures).toHaveBeenCalledWith("my-service", expect.any(Array), "123");
+  });
+
+  it("should omit pullRequest from upstream call when not supplied (UI regression)", async () => {
+    mockGetComponent.mockResolvedValueOnce({
+      component: { key: "my-service", name: "My Service" },
+    });
+    mockGetMeasures.mockResolvedValueOnce({});
+    mockParseMeasures.mockReturnValueOnce({});
+
+    const caller = createCaller(mockContext);
+    await caller.sonarqube.getProject({ componentKey: "my-service" });
+
+    expect(mockGetComponent.mock.calls[0][1]).toBeUndefined();
+    expect(mockGetMeasures.mock.calls[0][2]).toBeUndefined();
   });
 });
