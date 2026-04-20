@@ -6,7 +6,7 @@ import { CHECKS_LIST_FILTER_NAMES } from "./constants";
 import { useChecksListFilter } from "./hooks/useFilter";
 
 export function ChecksListFilter() {
-  const { form, reset } = useChecksListFilter();
+  const { form, reset, isDefaultValue } = useChecksListFilter();
 
   return (
     <>
@@ -24,7 +24,7 @@ export function ChecksListFilter() {
         </form.AppField>
       </div>
 
-      {form.state.isDirty && (
+      {!isDefaultValue && (
         <div className="col-span-1 flex flex-col gap-2">
           <Label> </Label>
           <Button variant="secondary" onClick={reset} size="sm" className="mt-0.5">

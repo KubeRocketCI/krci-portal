@@ -8,7 +8,7 @@ import { Label } from "@/core/components/ui/label";
 import { X } from "lucide-react";
 
 export const TaskFilter = () => {
-  const { form, reset } = useTaskFilter();
+  const { form, reset, isDefaultValue } = useTaskFilter();
 
   const allowedNamespaces = useClusterStore(useShallow((state) => state.allowedNamespaces));
   const showNamespaceFilter = allowedNamespaces.length > 1;
@@ -41,7 +41,7 @@ export const TaskFilter = () => {
         </div>
       )}
 
-      {form.state.isDirty && (
+      {!isDefaultValue && (
         <div className="col-span-1 flex flex-col gap-2">
           <Label> </Label>
           <Button variant="secondary" onClick={reset} size="sm" className="mt-0.5">

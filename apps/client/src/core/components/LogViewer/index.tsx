@@ -2,6 +2,7 @@ import React, { useRef, useImperativeHandle, forwardRef, useState } from "react"
 import { LazyLog } from "@melloware/react-logviewer";
 import { Card } from "@/core/components/ui/card";
 import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
 import { useTheme } from "@/core/hooks/useTheme";
 
 export interface LogViewerProps {
@@ -49,7 +50,7 @@ const logViewerStyles = `
   }
   .log-viewer-container * {
     font-family: "IBM Plex Mono", monospace !important;
-    font-size: 13px !important;
+    font-size: var(--log-font-size, 11px) !important;
   }
   .log-viewer-line {
     color: var(--card-foreground) !important;
@@ -179,6 +180,7 @@ export const LogViewer = forwardRef<LogViewerRef, LogViewerProps>(
     const lazyLogRef = useRef<any>(null);
     const [hasStreamContent, setHasStreamContent] = useState(false);
     const hasStreamContentRef = useRef(false);
+    const [fontSize, setFontSize] = useState(11);
 
     useImperativeHandle(
       ref,
@@ -213,7 +215,29 @@ export const LogViewer = forwardRef<LogViewerRef, LogViewerProps>(
           {renderControls && <div>{renderControls()}</div>}
 
           {/* Log Viewer Card */}
-          <Card className="relative flex min-h-0 min-h-[45svh] flex-1 flex-col overflow-hidden">
+          <Card
+            className="relative flex min-h-0 min-h-[45svh] flex-1 flex-col overflow-hidden"
+            style={{ "--log-font-size": `${fontSize}px` } as React.CSSProperties}
+          >
+            {/* Font size toolbar */}
+            <div className="border-border flex items-center justify-end border-b px-2 py-1">
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground text-xs">Font size</span>
+                <Select value={String(fontSize)} onValueChange={(v) => setFontSize(Number(v))}>
+                  <SelectTrigger className="h-6 w-20 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[8, 9, 10, 11, 12, 13, 14].map((size) => (
+                      <SelectItem key={size} value={String(size)} className="text-xs">
+                        {size}px
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             {/* Overlay for loading/error/empty states */}
             {showOverlay && (
               <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center">

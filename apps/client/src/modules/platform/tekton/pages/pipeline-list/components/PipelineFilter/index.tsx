@@ -11,7 +11,7 @@ import { Label } from "@/core/components/ui/label";
 import { X } from "lucide-react";
 
 export const PipelineFilter = () => {
-  const { form, reset } = usePipelineFilter();
+  const { form, reset, isDefaultValue } = usePipelineFilter();
 
   const pipelineListWatch = usePipelineWatchList();
   const pipelines = pipelineListWatch.data.array;
@@ -66,7 +66,7 @@ export const PipelineFilter = () => {
         </div>
       )}
 
-      {form.state.isDirty && (
+      {!isDefaultValue && (
         <div className="col-span-1 flex flex-col gap-2">
           <Label> </Label>
           <Button variant="secondary" onClick={reset} size="sm" className="mt-0.5">

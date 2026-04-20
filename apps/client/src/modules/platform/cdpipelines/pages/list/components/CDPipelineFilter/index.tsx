@@ -8,7 +8,7 @@ import { Label } from "@/core/components/ui/label";
 import { X } from "lucide-react";
 
 export const CDPipelineFilter = () => {
-  const { form, reset } = useCDPipelineFilter();
+  const { form, reset, isDefaultValue } = useCDPipelineFilter();
 
   const cdPipelineListWatch = useCDPipelineWatchList();
 
@@ -68,7 +68,7 @@ export const CDPipelineFilter = () => {
         </div>
       )}
 
-      {form.state.isDirty && (
+      {!isDefaultValue && (
         <div className="col-span-1 flex flex-col gap-2">
           <Label> </Label>
           <Button variant="secondary" onClick={reset} size="sm" className="mt-0.5">

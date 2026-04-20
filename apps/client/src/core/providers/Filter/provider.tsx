@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FilterContext } from "./context";
 import { FilterContextValue, FilterProviderProps, FilterValueMap } from "./types";
 import { useAppForm } from "@/core/components/form";
+import { useStore } from "@tanstack/react-form";
 
 export const FilterProvider = <Item, Values extends FilterValueMap>({
   children,
@@ -146,13 +147,24 @@ export const FilterProvider = <Item, Values extends FilterValueMap>({
     }
   }, [form, createFilterFunction, defaultValues, filterKeys, syncWithUrl, navigate]);
 
+  const isDefaultValue = useStore(form.store, (state) => {
+    const vals = state.values as Record<string, unknown>;
+    const defs = defaultValues as Record<string, unknown>;
+    return Object.keys(defs).every((key) => {
+      const current = vals[key];
+      const def = defs[key];
+      return Array.isArray(current) ? current.length === 0 : current === def;
+    });
+  });
+
   const contextValue: FilterContextValue<Item, Values> = useMemo(
     () => ({
       form,
       filterFunction,
       reset,
+      isDefaultValue,
     }),
-    [form, filterFunction, reset]
+    [form, filterFunction, reset, isDefaultValue]
   );
 
   return (

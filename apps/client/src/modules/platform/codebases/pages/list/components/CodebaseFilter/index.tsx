@@ -18,7 +18,7 @@ const codebaseTypeOptions: SelectOption[] = [
 ];
 
 export const CodebaseFilter = () => {
-  const { form, reset } = useCodebaseFilter();
+  const { form, reset, isDefaultValue } = useCodebaseFilter();
 
   const allowedNamespaces = useClusterStore(useShallow((state) => state.allowedNamespaces));
   const showNamespaceFilter = allowedNamespaces.length > 1;
@@ -57,7 +57,7 @@ export const CodebaseFilter = () => {
         </div>
       )}
 
-      {form.state.isDirty && (
+      {!isDefaultValue && (
         <div className="col-span-1 flex flex-col gap-2">
           <Label> </Label>
           <Button variant="secondary" onClick={reset} size="sm" className="mt-0.5">
