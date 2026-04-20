@@ -198,6 +198,29 @@ export class K8sClient {
   }
 
   /**
+   * Discover pluralName and scope for a given apiVersion + kind via the K8s discovery API.
+   */
+  async discoverResource(apiVersion: string, kind: string): Promise<{ pluralName: string; namespaced: boolean }> {
+    if (!this.KubeConfig) {
+      throw new Error("KubeConfig is not initialized");
+    }
+
+    const path = apiVersion === "v1" ? `/api/v1` : `/apis/${apiVersion}`;
+
+    const resourceList = await this.fetchApiPath<{
+      resources?: Array<{ name: string; namespaced: boolean; kind: string }>;
+    }>(path);
+
+    const resource = resourceList.resources?.find((r) => r.kind === kind && !r.name.includes("/"));
+
+    if (!resource) {
+      throw new Error(`Resource kind "${kind}" not found in apiVersion "${apiVersion}"`);
+    }
+
+    return { pluralName: resource.name, namespaced: resource.namespaced };
+  }
+
+  /**
    * Build the appropriate Kubernetes API URL for any resource
    */
   private buildResourceUrl(resourceConfig: K8sResourceConfig, options: { namespace?: string; name?: string }): string {

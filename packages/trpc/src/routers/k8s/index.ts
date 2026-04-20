@@ -1,5 +1,6 @@
 import { k8sGetApiVersions } from "./procedures/basic/apiVersions/index.js";
 import { k8sCreateItemProcedure } from "./procedures/basic/create/index.js";
+import { k8sApplyYamlProcedure } from "./procedures/basic/applyYaml/index.js";
 import { k8sDeleteItemProcedure } from "./procedures/basic/delete/index.js";
 import { k8sGetProcedure } from "./procedures/basic/get/index.js";
 import { k8sGetKubeConfig } from "./procedures/kubeconfig/index.js";
@@ -37,6 +38,7 @@ export const k8sRouter = t.router({
   watchItem: k8sWatchItemProcedure,
   watchList: k8sWatchListProcedure,
   create: k8sCreateItemProcedure,
+  applyYaml: k8sApplyYamlProcedure,
   patch: k8sPatchItemProcedure,
   delete: k8sDeleteItemProcedure,
   apiVersions: k8sGetApiVersions,
