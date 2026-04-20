@@ -21,6 +21,14 @@ describe("sonarqube.getProjectIssues", () => {
     vi.clearAllMocks();
   });
 
+  const emptyResp = {
+    total: 0,
+    p: 1,
+    ps: 25,
+    paging: { pageIndex: 1, pageSize: 25, total: 0 },
+    issues: [],
+  };
+
   it("should return issues list", async () => {
     const mockResponse = {
       total: 1,
@@ -56,12 +64,79 @@ describe("sonarqube.getProjectIssues", () => {
     expect(mockGetIssues).toHaveBeenCalledWith(expect.objectContaining({ componentKeys: "my-service" }));
   });
 
-  it("should throw on API error", async () => {
-    mockGetIssues.mockRejectedValueOnce(new Error("API Error"));
+  it("should forward pullRequest and filters", async () => {
+    mockGetIssues.mockResolvedValueOnce(emptyResp);
 
     const caller = createCaller(mockContext);
-    await expect(caller.sonarqube.getProjectIssues({ componentKeys: "error", p: 1, ps: 25 })).rejects.toThrow(
-      "API Error"
+    await caller.sonarqube.getProjectIssues({
+      componentKeys: "my-service",
+      pullRequest: "123",
+      types: "BUG,VULNERABILITY",
+      severities: "BLOCKER,CRITICAL",
+      statuses: "OPEN",
+      resolved: "true",
+      s: "SEVERITY",
+      asc: "true",
+      p: 2,
+      ps: 50,
+    });
+
+    expect(mockGetIssues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        componentKeys: "my-service",
+        pullRequest: "123",
+        types: "BUG,VULNERABILITY",
+        severities: "BLOCKER,CRITICAL",
+        statuses: "OPEN",
+        resolved: "true",
+        s: "SEVERITY",
+        asc: "true",
+        p: 2,
+        ps: 50,
+      })
     );
+  });
+
+  it("should default resolved=false when not provided (UI regression)", async () => {
+    mockGetIssues.mockResolvedValueOnce(emptyResp);
+
+    const caller = createCaller(mockContext);
+    await caller.sonarqube.getProjectIssues({ componentKeys: "my-service", p: 1, ps: 25 });
+
+    const forwarded = mockGetIssues.mock.calls[0][0];
+    expect(forwarded.resolved).toBe("false");
+    expect(forwarded.pullRequest).toBeUndefined();
+  });
+
+  it("should reject unknown fields via .strict()", async () => {
+    const caller = createCaller(mockContext);
+    await expect(
+      caller.sonarqube.getProjectIssues({
+        componentKeys: "my-service",
+        p: 1,
+        ps: 25,
+        // @ts-expect-error — deliberately passing an unknown field
+        foo: "bar",
+      })
+    ).rejects.toThrow();
+  });
+
+  it("should throw NOT_FOUND on Sonar 404", async () => {
+    mockGetIssues.mockRejectedValueOnce(new Error("SonarQube API request failed: 404 Not Found"));
+
+    const caller = createCaller(mockContext);
+    await expect(caller.sonarqube.getProjectIssues({ componentKeys: "nope", p: 1, ps: 25 })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+      message: "project nope not found",
+    });
+  });
+
+  it("should throw INTERNAL_SERVER_ERROR on Sonar 5xx", async () => {
+    mockGetIssues.mockRejectedValueOnce(new Error("SonarQube API request failed: 500 Internal Server Error"));
+
+    const caller = createCaller(mockContext);
+    await expect(caller.sonarqube.getProjectIssues({ componentKeys: "err", p: 1, ps: 25 })).rejects.toMatchObject({
+      code: "INTERNAL_SERVER_ERROR",
+    });
   });
 });

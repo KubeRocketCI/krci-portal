@@ -220,11 +220,13 @@ export class SonarQubeClient {
    * Get a single component/project by exact key
    *
    * @param componentKey - The project/component key
+   * @param pullRequest - Optional pull request id; forwarded to Sonar as `pullRequest=<id>`
    * @returns Component data, or null if not found
    */
-  async getComponent(componentKey: string): Promise<ComponentShowResponse | null> {
+  async getComponent(componentKey: string, pullRequest?: string): Promise<ComponentShowResponse | null> {
     const endpoint = this.buildEndpoint("/api/components/show", {
       component: componentKey,
+      pullRequest,
     });
 
     try {
@@ -242,6 +244,7 @@ export class SonarQubeClient {
    *
    * @param componentKey - The project/component key
    * @param metricKeys - Array of metric keys to fetch
+   * @param pullRequest - Optional pull request id; forwarded to Sonar as `pullRequest=<id>`
    * @returns Component with measures
    *
    * @example
@@ -250,11 +253,13 @@ export class SonarQubeClient {
    */
   async getMeasures(
     componentKey: string,
-    metricKeys: readonly string[] = SONARQUBE_METRIC_KEYS
+    metricKeys: readonly string[] = SONARQUBE_METRIC_KEYS,
+    pullRequest?: string
   ): Promise<MeasuresComponentResponse> {
     const endpoint = this.buildEndpoint("/api/measures/component", {
       component: componentKey,
       metricKeys: metricKeys.join(","),
+      pullRequest,
     });
 
     return this.fetchJson<MeasuresComponentResponse>(endpoint);
@@ -290,15 +295,17 @@ export class SonarQubeClient {
    * Get quality gate status for a project
    *
    * @param projectKey - The project key
+   * @param pullRequest - Optional pull request id; forwarded to Sonar as `pullRequest=<id>`
    * @returns Quality gate status
    *
    * @example
    * const client = createSonarQubeClient();
    * const status = await client.getQualityGateStatus("my-project");
    */
-  async getQualityGateStatus(projectKey: string): Promise<QualityGateStatusResponse> {
+  async getQualityGateStatus(projectKey: string, pullRequest?: string): Promise<QualityGateStatusResponse> {
     const endpoint = this.buildEndpoint("/api/qualitygates/project_status", {
       projectKey,
+      pullRequest,
     });
 
     return this.fetchJson<QualityGateStatusResponse>(endpoint);
@@ -331,6 +338,7 @@ export class SonarQubeClient {
       ps: params.ps,
       s: params.s,
       asc: params.asc,
+      pullRequest: params.pullRequest,
     });
 
     return this.fetchJson<IssuesSearchResponse>(endpoint);

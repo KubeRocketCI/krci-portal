@@ -209,6 +209,157 @@ export function registerOpenApi(
   });
 
   // ---------------------------------------------------------------------------
+  // SonarQube — view proxies for `krci sonar`
+  // ---------------------------------------------------------------------------
+
+  // Parses a positive-integer query string. Returns `undefined` when absent,
+  // or a typed marker when the value is present but not a positive integer so
+  // the caller can emit a 400.
+  const parsePositiveIntQuery = (
+    raw: string | undefined
+  ): number | undefined | "invalid" => {
+    if (raw === undefined) return undefined;
+    if (!/^[1-9]\d*$/.test(raw)) return "invalid";
+    return Number(raw);
+  };
+
+  // GET /rest/v1/sonar/list (protected) — proxies sonarqube.getProjects
+  fastify.get<{
+    Querystring: {
+      page?: string;
+      pageSize?: string;
+      searchTerm?: string;
+    };
+  }>("/rest/v1/sonar/list", async (req, res) => {
+    try {
+      const { page, pageSize, searchTerm } = req.query;
+      const parsedPage = parsePositiveIntQuery(page);
+      const parsedPageSize = parsePositiveIntQuery(pageSize);
+      if (parsedPage === "invalid") {
+        return res.code(400).send({ error: "page must be a positive integer" });
+      }
+      if (parsedPageSize === "invalid") {
+        return res
+          .code(400)
+          .send({ error: "pageSize must be a positive integer" });
+      }
+
+      const caller = await buildCaller(req, res);
+      return await caller.sonarqube.getProjects({
+        page: parsedPage,
+        pageSize: parsedPageSize,
+        searchTerm: searchTerm || undefined,
+      });
+    } catch (error) {
+      return handleTRPCError(error, res);
+    }
+  });
+
+  // GET /rest/v1/sonar/get (protected) — proxies sonarqube.getProject
+  fastify.get<{
+    Querystring: {
+      projectKey: string;
+      pullRequest?: string;
+    };
+  }>("/rest/v1/sonar/get", async (req, res) => {
+    try {
+      const { projectKey, pullRequest } = req.query;
+      if (!projectKey) {
+        return res.code(400).send({ error: "projectKey is required" });
+      }
+
+      const caller = await buildCaller(req, res);
+      return await caller.sonarqube.getProject({
+        componentKey: projectKey,
+        pullRequest,
+      });
+    } catch (error) {
+      return handleTRPCError(error, res);
+    }
+  });
+
+  // GET /rest/v1/sonar/gate (protected) — proxies sonarqube.getQualityGateDetails
+  fastify.get<{
+    Querystring: {
+      projectKey: string;
+      pullRequest?: string;
+    };
+  }>("/rest/v1/sonar/gate", async (req, res) => {
+    try {
+      const { projectKey, pullRequest } = req.query;
+      if (!projectKey) {
+        return res.code(400).send({ error: "projectKey is required" });
+      }
+
+      const caller = await buildCaller(req, res);
+      return await caller.sonarqube.getQualityGateDetails({
+        projectKey,
+        pullRequest,
+      });
+    } catch (error) {
+      return handleTRPCError(error, res);
+    }
+  });
+
+  // GET /rest/v1/sonar/issues (protected) — proxies sonarqube.getProjectIssues
+  fastify.get<{
+    Querystring: {
+      projectKey: string;
+      pullRequest?: string;
+      types?: string;
+      severities?: string;
+      statuses?: string;
+      resolved?: "true" | "false";
+      s?: string;
+      asc?: "true" | "false";
+      p?: string;
+      ps?: string;
+    };
+  }>("/rest/v1/sonar/issues", async (req, res) => {
+    try {
+      const {
+        projectKey,
+        pullRequest,
+        types,
+        severities,
+        statuses,
+        resolved,
+        s,
+        asc,
+        p,
+        ps,
+      } = req.query;
+      if (!projectKey) {
+        return res.code(400).send({ error: "projectKey is required" });
+      }
+      const parsedP = parsePositiveIntQuery(p);
+      const parsedPs = parsePositiveIntQuery(ps);
+      if (parsedP === "invalid") {
+        return res.code(400).send({ error: "p must be a positive integer" });
+      }
+      if (parsedPs === "invalid") {
+        return res.code(400).send({ error: "ps must be a positive integer" });
+      }
+
+      const caller = await buildCaller(req, res);
+      return await caller.sonarqube.getProjectIssues({
+        componentKeys: projectKey,
+        pullRequest,
+        types,
+        severities,
+        statuses,
+        resolved,
+        s,
+        asc,
+        p: parsedP,
+        ps: parsedPs,
+      });
+    } catch (error) {
+      return handleTRPCError(error, res);
+    }
+  });
+
+  // ---------------------------------------------------------------------------
   // OpenAPI spec (development only)
   // ---------------------------------------------------------------------------
 

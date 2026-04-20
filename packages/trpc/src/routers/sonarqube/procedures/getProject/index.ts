@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createSonarQubeClient } from "../../../../clients/sonarqube/index.js";
 import {
@@ -10,24 +11,30 @@ import {
 
 /**
  * Get a single SonarQube project (via `/api/components/show`) with its measures.
- * Returns null when the component does not exist, so the UI can render an empty state.
+ * Throws NOT_FOUND when the component does not exist.
+ *
+ * When `pullRequest` is supplied, forwards `&pullRequest=<id>` to both
+ * `/api/components/show` and `/api/measures/component`.
  */
 export const getProjectProcedure = protectedProcedure
   .input(
-    z.object({
-      componentKey: z.string().describe("SonarQube component/project key"),
-    })
+    z
+      .object({
+        componentKey: z.string().describe("SonarQube component/project key"),
+        pullRequest: z.string().optional().describe("Optional SonarQube pull-request id"),
+      })
+      .strict()
   )
-  .output(projectWithMetricsSchema.nullable())
+  .output(projectWithMetricsSchema)
   .query(async ({ input }) => {
-    const { componentKey } = input;
+    const { componentKey, pullRequest } = input;
     const sonarqubeClient = createSonarQubeClient();
 
     try {
       // Fetch component and measures in parallel — measures failures are tolerated.
       const [componentResponse, measuresResponse] = await Promise.all([
-        sonarqubeClient.getComponent(componentKey),
-        sonarqubeClient.getMeasures(componentKey, SONARQUBE_METRIC_KEYS).catch((error) => {
+        sonarqubeClient.getComponent(componentKey, pullRequest),
+        sonarqubeClient.getMeasures(componentKey, SONARQUBE_METRIC_KEYS, pullRequest).catch((error) => {
           console.warn(`[SonarQube] Failed to fetch measures for ${componentKey}:`, error);
           return null;
         }),
@@ -35,7 +42,10 @@ export const getProjectProcedure = protectedProcedure
 
       if (!componentResponse) {
         console.warn(`[SonarQube] Component not found: ${componentKey}`);
-        return null;
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: pullRequest ? `pull request ${pullRequest} not found` : `project ${componentKey} not found`,
+        });
       }
 
       const measures = measuresResponse ? sonarqubeClient.parseMeasures(measuresResponse) : {};
@@ -52,8 +62,15 @@ export const getProjectProcedure = protectedProcedure
         qualityGateStatus,
       };
     } catch (error) {
+      if (error instanceof TRPCError) {
+        throw error;
+      }
       console.error(`[SonarQube] Failed to fetch project: ${componentKey}`, error);
-      throw error;
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: `SonarQube upstream failure for ${componentKey}`,
+        cause: error,
+      });
     }
   });
 
