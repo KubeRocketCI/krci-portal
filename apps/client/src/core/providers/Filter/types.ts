@@ -32,4 +32,5 @@ export interface FilterContextValue<Item, Values extends FilterValueMap> {
   form: FilterFormApi<Values>;
   filterFunction: (item: Item) => boolean;
   reset: () => void;
+  isDefaultValue: boolean;
 }

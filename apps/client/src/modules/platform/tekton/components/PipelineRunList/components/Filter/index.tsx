@@ -34,7 +34,7 @@ export const PipelineRunFilter = ({
   pipelineRunTypes: FilterTypeWithOptionAll<PipelineType>[];
   filterControls: ValueOf<typeof pipelineRunFilterControlNames>[];
 }) => {
-  const { form, reset } = usePipelineRunFilter();
+  const { form, reset, isDefaultValue } = usePipelineRunFilter();
 
   const codebaseOptions = React.useMemo(() => {
     const set = new Set(
@@ -163,7 +163,7 @@ export const PipelineRunFilter = ({
         </div>
       )}
 
-      {form.state.isDirty && (
+      {!isDefaultValue && (
         <div className="col-span-1 flex flex-col gap-2">
           <Label> </Label>
           <Button variant="secondary" onClick={reset} size="sm" className="mt-0.5">

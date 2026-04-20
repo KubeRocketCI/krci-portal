@@ -6,7 +6,7 @@ import { CONTROLS_TABLE_FILTER_NAMES } from "./constants";
 import { useControlsTableFilter } from "./hooks/useFilter";
 
 export function ControlsTableFilter() {
-  const { form, reset } = useControlsTableFilter();
+  const { form, reset, isDefaultValue } = useControlsTableFilter();
 
   return (
     <>
@@ -24,7 +24,7 @@ export function ControlsTableFilter() {
         </form.AppField>
       </div>
 
-      {form.state.isDirty && (
+      {!isDefaultValue && (
         <div className="col-span-1 flex flex-col gap-2">
           <Label> </Label>
           <Button variant="secondary" onClick={reset} size="sm" className="mt-0.5">
