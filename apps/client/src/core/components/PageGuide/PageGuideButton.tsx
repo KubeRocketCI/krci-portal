@@ -1,6 +1,7 @@
 import { CircleHelp } from "lucide-react";
 import { useParams } from "@tanstack/react-router";
 import { Button } from "@/core/components/ui/button";
+import { useIsNarrow } from "@/core/hooks/use-narrow";
 import { TOURS_CONFIG, useAutoTour, useTours, buildActivationContext } from "@/modules/tours";
 import { isTourEligible } from "@/modules/tours/utils";
 
@@ -17,12 +18,13 @@ interface PageGuideButtonProps {
  * - Validates tour prerequisites before starting
  */
 export function PageGuideButton({ tourId }: PageGuideButtonProps) {
+  const isNarrow = useIsNarrow();
   const { startTour, isTourCompleted } = useTours();
   const currentRouteParams = useParams({ strict: false });
   const tour = TOURS_CONFIG[tourId];
 
   // Show global intro hint once (first time user encounters any Page Guide button)
-  useAutoTour(TOURS_CONFIG.pageGuideIntro, 500);
+  useAutoTour(isNarrow ? null : TOURS_CONFIG.pageGuideIntro, 500);
 
   const handleClick = () => {
     if (!tour) return;
@@ -45,8 +47,7 @@ export function PageGuideButton({ tourId }: PageGuideButtonProps) {
     startTour(tour.id, tour, { type: "manual" });
   };
 
-  // Don't render if tour doesn't exist
-  if (!tour) {
+  if (!tour || isNarrow) {
     return null;
   }
 

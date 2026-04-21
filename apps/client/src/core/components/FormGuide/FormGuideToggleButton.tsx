@@ -1,14 +1,16 @@
 import { CircleHelp } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
+import { useIsNarrow } from "@/core/hooks/use-narrow";
 import { useFormGuide } from "@/core/providers/FormGuide/hooks";
 import { TOURS_CONFIG, useAutoTour } from "@/modules/tours";
 
 export function FormGuideToggleButton() {
+  const isNarrow = useIsNarrow();
   const { isOpen, toggle, hasContent } = useFormGuide();
 
-  useAutoTour(TOURS_CONFIG.formGuide, 500);
+  useAutoTour(isNarrow ? null : TOURS_CONFIG.formGuide, 500);
 
-  if (!hasContent) return null;
+  if (!hasContent || isNarrow) return null;
 
   return (
     <Button
