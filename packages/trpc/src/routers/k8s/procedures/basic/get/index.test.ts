@@ -102,4 +102,51 @@ describe("k8sGetProcedure", () => {
 
     await expect(caller.k8s.get(input)).rejects.toThrow("Forbidden: User lacks permission");
   });
+
+  it("forwards labels, annotations and creationTimestamp through the schema", async () => {
+    const input = {
+      clusterName: "test-cluster",
+      namespace: "test-namespace",
+      name: "review-my-app-main-abc12",
+      resourceConfig: {
+        group: "tekton.dev",
+        version: "v1",
+        pluralName: "pipelineruns",
+        kind: "PipelineRun",
+        singularName: "pipelinerun",
+        apiVersion: "tekton.dev/v1",
+      },
+    };
+
+    const mockResponse = {
+      apiVersion: "tekton.dev/v1",
+      kind: "PipelineRun",
+      metadata: {
+        name: "review-my-app-main-abc12",
+        namespace: "edp-delivery",
+        resourceVersion: "100",
+        creationTimestamp: "2024-01-01T10:00:00Z",
+        labels: {
+          "app.edp.epam.com/codebase": "my-app",
+          "app.edp.epam.com/pipelinetype": "review",
+          "app.edp.epam.com/git-author": "alice",
+          "app.edp.epam.com/git-change-number": "42",
+        },
+        annotations: {
+          "app.edp.epam.com/git-change-url": "https://github.com/org/my-app/pull/42",
+          "app.edp.epam.com/git-commit-sha": "deadbeefcafef00d",
+        },
+      },
+    };
+
+    mockK8sClientInstance.getResource.mockResolvedValueOnce(mockResponse);
+
+    const caller = createCaller(mockContext);
+    const result = await caller.k8s.get(input);
+
+    const meta = result.metadata as Record<string, unknown>;
+    expect(meta.creationTimestamp).toBe("2024-01-01T10:00:00Z");
+    expect(meta.labels).toEqual(mockResponse.metadata.labels);
+    expect(meta.annotations).toEqual(mockResponse.metadata.annotations);
+  });
 });

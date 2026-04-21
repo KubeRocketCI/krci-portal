@@ -219,6 +219,21 @@
                         },
                         "resourceVersion": {
                           "type": "string"
+                        },
+                        "creationTimestamp": {
+                          "type": "string"
+                        },
+                        "labels": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        },
+                        "annotations": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
                         }
                       },
                       "required": [
@@ -408,6 +423,21 @@
                               },
                               "resourceVersion": {
                                 "type": "string"
+                              },
+                              "creationTimestamp": {
+                                "type": "string"
+                              },
+                              "labels": {
+                                "type": "object",
+                                "additionalProperties": {
+                                  "type": "string"
+                                }
+                              },
+                              "annotations": {
+                                "type": "object",
+                                "additionalProperties": {
+                                  "type": "string"
+                                }
                               }
                             },
                             "required": [

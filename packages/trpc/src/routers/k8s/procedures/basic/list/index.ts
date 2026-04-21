@@ -7,11 +7,16 @@ import { k8sResourceConfigSchema } from "@my-project/shared";
 import { handleK8sError } from "../../../utils/handleK8sError/index.js";
 import { K8sClient } from "../../../../../clients/k8s/index.js";
 
+// Explicit properties so `trpc-to-openapi` emits typed schemas; downstream
+// oapi-codegen clients otherwise drop every extra key on decode.
 const k8sItemMetadataSchema = z
   .object({
     name: z.string(),
     namespace: z.string().optional(),
     resourceVersion: z.string().optional(),
+    creationTimestamp: z.string().optional(),
+    labels: z.record(z.string().optional()).optional(),
+    annotations: z.record(z.string()).optional(),
   })
   .passthrough();
 
