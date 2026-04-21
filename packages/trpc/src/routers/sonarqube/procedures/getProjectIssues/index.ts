@@ -2,15 +2,18 @@ import { TRPCError } from "@trpc/server";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createSonarQubeClient } from "../../../../clients/sonarqube/index.js";
 import { issuesQueryParamsSchema, issuesSearchResponseSchema } from "@my-project/shared";
+import { notFoundMessage } from "../../utils.js";
 
 /**
  * Paginated issue search for a SonarQube project (via `/api/issues/search`).
  *
- * `pullRequest?` is plumbed through `issuesQueryParamsSchema` so it reaches
- * Sonar as `&pullRequest=<id>` when supplied.
+ * `pullRequest?` / `branch?` are plumbed through `issuesQueryParamsSchema`
+ * so they reach Sonar as `&pullRequest=<id>` / `&branch=<name>` when
+ * supplied. The two are mutually exclusive at the SonarQube API layer;
+ * `issuesQueryParamsSchema` already rejects callers that send both.
  */
 export const getProjectIssuesProcedure = protectedProcedure
-  .input(issuesQueryParamsSchema.strict())
+  .input(issuesQueryParamsSchema)
   .output(issuesSearchResponseSchema)
   .query(async ({ input }) => {
     const sonarqubeClient = createSonarQubeClient();
@@ -27,9 +30,7 @@ export const getProjectIssuesProcedure = protectedProcedure
       if (error instanceof Error && /:\s*404\b/.test(error.message)) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: input.pullRequest
-            ? `pull request ${input.pullRequest} not found`
-            : `project ${input.componentKeys} not found`,
+          message: notFoundMessage(input.componentKeys, input.pullRequest, input.branch),
           cause: error,
         });
       }

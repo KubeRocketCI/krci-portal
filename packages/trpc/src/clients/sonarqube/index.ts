@@ -81,6 +81,16 @@ export interface SonarQubeClientConfig {
 }
 
 /**
+ * SonarQube scope selector. SonarQube treats pullRequest and branch as
+ * mutually exclusive at the API level; callers enforce that invariant.
+ * Passing neither targets the default branch of the project.
+ */
+export interface SonarScope {
+  pullRequest?: string;
+  branch?: string;
+}
+
+/**
  * Client for SonarQube API.
  *
  * Features:
@@ -220,13 +230,16 @@ export class SonarQubeClient {
    * Get a single component/project by exact key
    *
    * @param componentKey - The project/component key
-   * @param pullRequest - Optional pull request id; forwarded to Sonar as `pullRequest=<id>`
+   * @param scope - Optional SonarQube scope. Pass `pullRequest` or `branch`
+   *   (mutually exclusive at the SonarQube API level). Forwarded as
+   *   `pullRequest=<id>` / `branch=<name>` respectively.
    * @returns Component data, or null if not found
    */
-  async getComponent(componentKey: string, pullRequest?: string): Promise<ComponentShowResponse | null> {
+  async getComponent(componentKey: string, scope?: SonarScope): Promise<ComponentShowResponse | null> {
     const endpoint = this.buildEndpoint("/api/components/show", {
       component: componentKey,
-      pullRequest,
+      pullRequest: scope?.pullRequest,
+      branch: scope?.branch,
     });
 
     try {
@@ -244,7 +257,7 @@ export class SonarQubeClient {
    *
    * @param componentKey - The project/component key
    * @param metricKeys - Array of metric keys to fetch
-   * @param pullRequest - Optional pull request id; forwarded to Sonar as `pullRequest=<id>`
+   * @param scope - Optional SonarQube scope (pullRequest xor branch).
    * @returns Component with measures
    *
    * @example
@@ -254,12 +267,13 @@ export class SonarQubeClient {
   async getMeasures(
     componentKey: string,
     metricKeys: readonly string[] = SONARQUBE_METRIC_KEYS,
-    pullRequest?: string
+    scope?: SonarScope
   ): Promise<MeasuresComponentResponse> {
     const endpoint = this.buildEndpoint("/api/measures/component", {
       component: componentKey,
       metricKeys: metricKeys.join(","),
-      pullRequest,
+      pullRequest: scope?.pullRequest,
+      branch: scope?.branch,
     });
 
     return this.fetchJson<MeasuresComponentResponse>(endpoint);
@@ -295,17 +309,18 @@ export class SonarQubeClient {
    * Get quality gate status for a project
    *
    * @param projectKey - The project key
-   * @param pullRequest - Optional pull request id; forwarded to Sonar as `pullRequest=<id>`
+   * @param scope - Optional SonarQube scope (pullRequest xor branch).
    * @returns Quality gate status
    *
    * @example
    * const client = createSonarQubeClient();
    * const status = await client.getQualityGateStatus("my-project");
    */
-  async getQualityGateStatus(projectKey: string, pullRequest?: string): Promise<QualityGateStatusResponse> {
+  async getQualityGateStatus(projectKey: string, scope?: SonarScope): Promise<QualityGateStatusResponse> {
     const endpoint = this.buildEndpoint("/api/qualitygates/project_status", {
       projectKey,
-      pullRequest,
+      pullRequest: scope?.pullRequest,
+      branch: scope?.branch,
     });
 
     return this.fetchJson<QualityGateStatusResponse>(endpoint);
@@ -339,6 +354,7 @@ export class SonarQubeClient {
       s: params.s,
       asc: params.asc,
       pullRequest: params.pullRequest,
+      branch: params.branch,
     });
 
     return this.fetchJson<IssuesSearchResponse>(endpoint);

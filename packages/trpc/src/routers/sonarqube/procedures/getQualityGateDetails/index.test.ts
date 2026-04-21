@@ -36,7 +36,7 @@ describe("sonarqube.getQualityGateDetails", () => {
 
     expect(result.projectStatus.status).toBe("OK");
     expect(result.projectStatus.conditions).toHaveLength(1);
-    expect(mockGetQualityGateStatus).toHaveBeenCalledWith("my-service", undefined);
+    expect(mockGetQualityGateStatus).toHaveBeenCalledWith("my-service", { pullRequest: undefined, branch: undefined });
   });
 
   it("should return status=NONE verbatim on never-analyzed project", async () => {
@@ -56,10 +56,40 @@ describe("sonarqube.getQualityGateDetails", () => {
     const caller = createCaller(mockContext);
     await caller.sonarqube.getQualityGateDetails({ projectKey: "my-service", pullRequest: "123" });
 
-    expect(mockGetQualityGateStatus).toHaveBeenCalledWith("my-service", "123");
+    expect(mockGetQualityGateStatus).toHaveBeenCalledWith("my-service", { pullRequest: "123", branch: undefined });
   });
 
-  it("should omit pullRequest from upstream call when not supplied (UI regression)", async () => {
+  it("should forward branch when supplied", async () => {
+    mockGetQualityGateStatus.mockResolvedValueOnce({
+      projectStatus: { status: "OK", conditions: [] },
+    });
+
+    const caller = createCaller(mockContext);
+    await caller.sonarqube.getQualityGateDetails({ projectKey: "my-service", branch: "main" });
+
+    expect(mockGetQualityGateStatus).toHaveBeenCalledWith("my-service", { pullRequest: undefined, branch: "main" });
+  });
+
+  it("should throw NOT_FOUND with branch message on Sonar 404 (branch)", async () => {
+    mockGetQualityGateStatus.mockRejectedValueOnce(new Error("SonarQube API request failed: 404 Not Found"));
+
+    const caller = createCaller(mockContext);
+    await expect(
+      caller.sonarqube.getQualityGateDetails({ projectKey: "my-service", branch: "feat/x" })
+    ).rejects.toMatchObject({
+      code: "NOT_FOUND",
+      message: "branch feat/x not found",
+    });
+  });
+
+  it("should reject pullRequest and branch at once", async () => {
+    const caller = createCaller(mockContext);
+    await expect(
+      caller.sonarqube.getQualityGateDetails({ projectKey: "my-service", pullRequest: "123", branch: "main" })
+    ).rejects.toThrow(/mutually exclusive/);
+  });
+
+  it("should omit scope params from upstream call when not supplied (UI regression)", async () => {
     mockGetQualityGateStatus.mockResolvedValueOnce({
       projectStatus: { status: "OK", conditions: [] },
     });
@@ -67,7 +97,7 @@ describe("sonarqube.getQualityGateDetails", () => {
     const caller = createCaller(mockContext);
     await caller.sonarqube.getQualityGateDetails({ projectKey: "my-service" });
 
-    expect(mockGetQualityGateStatus.mock.calls[0][1]).toBeUndefined();
+    expect(mockGetQualityGateStatus.mock.calls[0][1]).toEqual({ pullRequest: undefined, branch: undefined });
   });
 
   it("should reject unknown fields via .strict()", async () => {

@@ -2,30 +2,35 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createSonarQubeClient } from "../../../../clients/sonarqube/index.js";
-import { qualityGateStatusResponseSchema } from "@my-project/shared";
+import { qualityGateStatusResponseSchema, withScopeMutuallyExclusive } from "@my-project/shared";
+import { notFoundMessage } from "../../utils.js";
 
 /**
  * Fetches the quality gate status (overall + per-condition) for a project.
  *
- * When `pullRequest` is supplied, forwards `&pullRequest=<id>` to
- * `/api/qualitygates/project_status`.
+ * When `pullRequest` or `branch` is supplied, forwards the corresponding
+ * scope param to `/api/qualitygates/project_status`. The two are mutually
+ * exclusive at the SonarQube API layer.
  */
 export const getQualityGateDetailsProcedure = protectedProcedure
   .input(
-    z
-      .object({
-        projectKey: z.string().describe("SonarQube project key"),
-        pullRequest: z.string().optional().describe("Optional SonarQube pull-request id"),
-      })
-      .strict()
+    withScopeMutuallyExclusive(
+      z
+        .object({
+          projectKey: z.string().describe("SonarQube project key"),
+          pullRequest: z.string().min(1).optional().describe("Optional SonarQube pull-request id"),
+          branch: z.string().min(1).optional().describe("Optional SonarQube branch name"),
+        })
+        .strict()
+    )
   )
   .output(qualityGateStatusResponseSchema)
   .query(async ({ input }) => {
-    const { projectKey, pullRequest } = input;
+    const { projectKey, pullRequest, branch } = input;
     const sonarqubeClient = createSonarQubeClient();
 
     try {
-      const qgResponse = await sonarqubeClient.getQualityGateStatus(projectKey, pullRequest);
+      const qgResponse = await sonarqubeClient.getQualityGateStatus(projectKey, { pullRequest, branch });
       console.info(`[SonarQube] Quality gate status for ${projectKey}: ${qgResponse.projectStatus.status}`);
       return qgResponse;
     } catch (error) {
@@ -37,7 +42,7 @@ export const getQualityGateDetailsProcedure = protectedProcedure
       if (error instanceof Error && /:\s*404\b/.test(error.message)) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: pullRequest ? `pull request ${pullRequest} not found` : `project ${projectKey} not found`,
+          message: notFoundMessage(projectKey, pullRequest, branch),
           cause: error,
         });
       }
