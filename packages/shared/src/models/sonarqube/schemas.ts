@@ -6,6 +6,7 @@
  */
 
 import { z } from "zod";
+import { withScopeMutuallyExclusive } from "./utils.js";
 
 // =============================================================================
 // Paging
@@ -255,16 +256,24 @@ export const issuesSearchResponseSchema = z.object({
 
 /**
  * Issues query parameters for /api/issues/search
+ *
+ * `pullRequest` and `branch` are mutually exclusive at the SonarQube API
+ * layer; `.refine` rejects callers that send both.
  */
-export const issuesQueryParamsSchema = z.object({
-  componentKeys: z.string(), // Project key
-  resolved: z.enum(["true", "false"]).optional().default("false"),
-  types: z.string().optional(), // Comma-separated: BUG,VULNERABILITY,CODE_SMELL
-  severities: z.string().optional(), // Comma-separated: BLOCKER,CRITICAL,MAJOR,MINOR,INFO
-  statuses: z.string().optional(),
-  p: z.number().int().min(1).optional().default(1),
-  ps: z.number().int().min(1).max(500).optional().default(25),
-  s: z.string().optional(), // Sort field
-  asc: z.enum(["true", "false"]).optional(),
-  pullRequest: z.string().optional(), // Forward to SonarQube /api/issues/search&pullRequest=<id>
-});
+export const issuesQueryParamsSchema = withScopeMutuallyExclusive(
+  z
+    .object({
+      componentKeys: z.string(), // Project key
+      resolved: z.enum(["true", "false"]).optional().default("false"),
+      types: z.string().optional(), // Comma-separated: BUG,VULNERABILITY,CODE_SMELL
+      severities: z.string().optional(), // Comma-separated: BLOCKER,CRITICAL,MAJOR,MINOR,INFO
+      statuses: z.string().optional(),
+      p: z.number().int().min(1).optional().default(1),
+      ps: z.number().int().min(1).max(500).optional().default(25),
+      s: z.string().optional(), // Sort field
+      asc: z.enum(["true", "false"]).optional(),
+      pullRequest: z.string().min(1).optional(), // Forward to SonarQube /api/issues/search&pullRequest=<id>
+      branch: z.string().min(1).optional(), // Forward to SonarQube /api/issues/search&branch=<name>
+    })
+    .strict()
+);

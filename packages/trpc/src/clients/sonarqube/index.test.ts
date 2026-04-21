@@ -40,7 +40,7 @@ describe("createSonarQubeClient", () => {
   });
 });
 
-describe("SonarQubeClient pullRequest passthrough", () => {
+describe("SonarQubeClient scope passthrough", () => {
   const BASE = "https://sonar.example.com";
   let fetchMock: ReturnType<typeof vi.fn>;
   let originalFetch: typeof globalThis.fetch;
@@ -73,30 +73,54 @@ describe("SonarQubeClient pullRequest passthrough", () => {
 
   it("getComponent appends pullRequest when supplied", async () => {
     const client = await newClient();
-    await client.getComponent("my-proj", "123");
+    await client.getComponent("my-proj", { pullRequest: "123" });
     const url = capturedUrl();
     expect(url).toContain("component=my-proj");
     expect(url).toContain("pullRequest=123");
+    expect(url).not.toContain("branch=");
   });
 
-  it("getComponent omits pullRequest when undefined", async () => {
+  it("getComponent appends branch when supplied", async () => {
+    const client = await newClient();
+    await client.getComponent("my-proj", { branch: "main" });
+    const url = capturedUrl();
+    expect(url).toContain("component=my-proj");
+    expect(url).toContain("branch=main");
+    expect(url).not.toContain("pullRequest=");
+  });
+
+  it("getComponent omits scope params when scope is undefined", async () => {
     const client = await newClient();
     await client.getComponent("my-proj");
-    expect(capturedUrl()).not.toContain("pullRequest=");
+    const url = capturedUrl();
+    expect(url).not.toContain("pullRequest=");
+    expect(url).not.toContain("branch=");
   });
 
   it("getMeasures appends pullRequest when supplied", async () => {
     const client = await newClient();
-    await client.getMeasures("my-proj", ["bugs"], "123");
+    await client.getMeasures("my-proj", ["bugs"], { pullRequest: "123" });
     const url = capturedUrl();
     expect(url).toContain("component=my-proj");
     expect(url).toContain("pullRequest=123");
+    expect(url).not.toContain("branch=");
   });
 
-  it("getMeasures omits pullRequest when undefined", async () => {
+  it("getMeasures appends branch when supplied", async () => {
+    const client = await newClient();
+    await client.getMeasures("my-proj", ["bugs"], { branch: "main" });
+    const url = capturedUrl();
+    expect(url).toContain("component=my-proj");
+    expect(url).toContain("branch=main");
+    expect(url).not.toContain("pullRequest=");
+  });
+
+  it("getMeasures omits scope params when scope is undefined", async () => {
     const client = await newClient();
     await client.getMeasures("my-proj", ["bugs"]);
-    expect(capturedUrl()).not.toContain("pullRequest=");
+    const url = capturedUrl();
+    expect(url).not.toContain("pullRequest=");
+    expect(url).not.toContain("branch=");
   });
 
   it("getQualityGateStatus appends pullRequest when supplied", async () => {
@@ -107,13 +131,29 @@ describe("SonarQubeClient pullRequest passthrough", () => {
       })
     );
     const client = await newClient();
-    await client.getQualityGateStatus("my-proj", "123");
+    await client.getQualityGateStatus("my-proj", { pullRequest: "123" });
     const url = capturedUrl();
     expect(url).toContain("projectKey=my-proj");
     expect(url).toContain("pullRequest=123");
+    expect(url).not.toContain("branch=");
   });
 
-  it("getQualityGateStatus omits pullRequest when undefined", async () => {
+  it("getQualityGateStatus appends branch when supplied", async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ projectStatus: { status: "OK", conditions: [] } }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+    const client = await newClient();
+    await client.getQualityGateStatus("my-proj", { branch: "main" });
+    const url = capturedUrl();
+    expect(url).toContain("projectKey=my-proj");
+    expect(url).toContain("branch=main");
+    expect(url).not.toContain("pullRequest=");
+  });
+
+  it("getQualityGateStatus omits scope params when scope is undefined", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({ projectStatus: { status: "OK", conditions: [] } }), {
         status: 200,
@@ -122,44 +162,48 @@ describe("SonarQubeClient pullRequest passthrough", () => {
     );
     const client = await newClient();
     await client.getQualityGateStatus("my-proj");
-    expect(capturedUrl()).not.toContain("pullRequest=");
+    const url = capturedUrl();
+    expect(url).not.toContain("pullRequest=");
+    expect(url).not.toContain("branch=");
   });
 
+  const emptyIssuesResp = new Response(
+    JSON.stringify({
+      total: 0,
+      p: 1,
+      ps: 25,
+      paging: { pageIndex: 1, pageSize: 25, total: 0 },
+      issues: [],
+    }),
+    { status: 200, headers: { "Content-Type": "application/json" } }
+  );
+
   it("getIssues appends pullRequest when supplied", async () => {
-    fetchMock.mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          total: 0,
-          p: 1,
-          ps: 25,
-          paging: { pageIndex: 1, pageSize: 25, total: 0 },
-          issues: [],
-        }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      )
-    );
+    fetchMock.mockResolvedValueOnce(emptyIssuesResp.clone());
     const client = await newClient();
     await client.getIssues({ componentKeys: "my-proj", resolved: "false", p: 1, ps: 25, pullRequest: "123" });
     const url = capturedUrl();
     expect(url).toContain("componentKeys=my-proj");
     expect(url).toContain("pullRequest=123");
+    expect(url).not.toContain("branch=");
   });
 
-  it("getIssues omits pullRequest when undefined", async () => {
-    fetchMock.mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          total: 0,
-          p: 1,
-          ps: 25,
-          paging: { pageIndex: 1, pageSize: 25, total: 0 },
-          issues: [],
-        }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      )
-    );
+  it("getIssues appends branch when supplied", async () => {
+    fetchMock.mockResolvedValueOnce(emptyIssuesResp.clone());
+    const client = await newClient();
+    await client.getIssues({ componentKeys: "my-proj", resolved: "false", p: 1, ps: 25, branch: "main" });
+    const url = capturedUrl();
+    expect(url).toContain("componentKeys=my-proj");
+    expect(url).toContain("branch=main");
+    expect(url).not.toContain("pullRequest=");
+  });
+
+  it("getIssues omits scope params when neither supplied", async () => {
+    fetchMock.mockResolvedValueOnce(emptyIssuesResp.clone());
     const client = await newClient();
     await client.getIssues({ componentKeys: "my-proj", resolved: "false", p: 1, ps: 25 });
-    expect(capturedUrl()).not.toContain("pullRequest=");
+    const url = capturedUrl();
+    expect(url).not.toContain("pullRequest=");
+    expect(url).not.toContain("branch=");
   });
 });

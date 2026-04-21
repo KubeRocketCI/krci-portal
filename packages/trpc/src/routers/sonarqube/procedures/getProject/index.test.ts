@@ -93,11 +93,48 @@ describe("sonarqube.getProject", () => {
     const caller = createCaller(mockContext);
     await caller.sonarqube.getProject({ componentKey: "my-service", pullRequest: "123" });
 
-    expect(mockGetComponent).toHaveBeenCalledWith("my-service", "123");
-    expect(mockGetMeasures).toHaveBeenCalledWith("my-service", expect.any(Array), "123");
+    expect(mockGetComponent).toHaveBeenCalledWith("my-service", { pullRequest: "123", branch: undefined });
+    expect(mockGetMeasures).toHaveBeenCalledWith("my-service", expect.any(Array), {
+      pullRequest: "123",
+      branch: undefined,
+    });
   });
 
-  it("should omit pullRequest from upstream call when not supplied (UI regression)", async () => {
+  it("should forward branch when supplied", async () => {
+    mockGetComponent.mockResolvedValueOnce({
+      component: { key: "my-service", name: "My Service" },
+    });
+    mockGetMeasures.mockResolvedValueOnce({});
+    mockParseMeasures.mockReturnValueOnce({});
+
+    const caller = createCaller(mockContext);
+    await caller.sonarqube.getProject({ componentKey: "my-service", branch: "main" });
+
+    expect(mockGetComponent).toHaveBeenCalledWith("my-service", { pullRequest: undefined, branch: "main" });
+    expect(mockGetMeasures).toHaveBeenCalledWith("my-service", expect.any(Array), {
+      pullRequest: undefined,
+      branch: "main",
+    });
+  });
+
+  it("should throw NOT_FOUND with branch message when branch 404", async () => {
+    mockGetComponent.mockResolvedValueOnce(null);
+
+    const caller = createCaller(mockContext);
+    await expect(caller.sonarqube.getProject({ componentKey: "my-service", branch: "feat/x" })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+      message: "branch feat/x not found",
+    });
+  });
+
+  it("should reject pullRequest and branch at once", async () => {
+    const caller = createCaller(mockContext);
+    await expect(
+      caller.sonarqube.getProject({ componentKey: "my-service", pullRequest: "123", branch: "main" })
+    ).rejects.toThrow(/mutually exclusive/);
+  });
+
+  it("should omit scope params from upstream call when not supplied (UI regression)", async () => {
     mockGetComponent.mockResolvedValueOnce({
       component: { key: "my-service", name: "My Service" },
     });

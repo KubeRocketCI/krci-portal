@@ -7,34 +7,41 @@ import {
   QualityGateStatusValue,
   SONARQUBE_METRIC_KEYS,
   projectWithMetricsSchema,
+  withScopeMutuallyExclusive,
 } from "@my-project/shared";
+import { notFoundMessage } from "../../utils.js";
 
 /**
  * Get a single SonarQube project (via `/api/components/show`) with its measures.
  * Throws NOT_FOUND when the component does not exist.
  *
- * When `pullRequest` is supplied, forwards `&pullRequest=<id>` to both
- * `/api/components/show` and `/api/measures/component`.
+ * When `pullRequest` or `branch` is supplied, forwards the corresponding
+ * scope param to both `/api/components/show` and `/api/measures/component`.
+ * The two are mutually exclusive at the SonarQube API layer.
  */
 export const getProjectProcedure = protectedProcedure
   .input(
-    z
-      .object({
-        componentKey: z.string().describe("SonarQube component/project key"),
-        pullRequest: z.string().optional().describe("Optional SonarQube pull-request id"),
-      })
-      .strict()
+    withScopeMutuallyExclusive(
+      z
+        .object({
+          componentKey: z.string().describe("SonarQube component/project key"),
+          pullRequest: z.string().min(1).optional().describe("Optional SonarQube pull-request id"),
+          branch: z.string().min(1).optional().describe("Optional SonarQube branch name"),
+        })
+        .strict()
+    )
   )
   .output(projectWithMetricsSchema)
   .query(async ({ input }) => {
-    const { componentKey, pullRequest } = input;
+    const { componentKey, pullRequest, branch } = input;
     const sonarqubeClient = createSonarQubeClient();
+    const scope = pullRequest || branch ? { pullRequest, branch } : undefined;
 
     try {
       // Fetch component and measures in parallel — measures failures are tolerated.
       const [componentResponse, measuresResponse] = await Promise.all([
-        sonarqubeClient.getComponent(componentKey, pullRequest),
-        sonarqubeClient.getMeasures(componentKey, SONARQUBE_METRIC_KEYS, pullRequest).catch((error) => {
+        sonarqubeClient.getComponent(componentKey, scope),
+        sonarqubeClient.getMeasures(componentKey, SONARQUBE_METRIC_KEYS, scope).catch((error) => {
           console.warn(`[SonarQube] Failed to fetch measures for ${componentKey}:`, error);
           return null;
         }),
@@ -44,7 +51,7 @@ export const getProjectProcedure = protectedProcedure
         console.warn(`[SonarQube] Component not found: ${componentKey}`);
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: pullRequest ? `pull request ${pullRequest} not found` : `project ${componentKey} not found`,
+          message: notFoundMessage(componentKey, pullRequest, branch),
         });
       }
 

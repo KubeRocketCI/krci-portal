@@ -106,6 +106,43 @@ describe("sonarqube.getProjectIssues", () => {
     const forwarded = mockGetIssues.mock.calls[0][0];
     expect(forwarded.resolved).toBe("false");
     expect(forwarded.pullRequest).toBeUndefined();
+    expect(forwarded.branch).toBeUndefined();
+  });
+
+  it("should forward branch when supplied", async () => {
+    mockGetIssues.mockResolvedValueOnce(emptyResp);
+
+    const caller = createCaller(mockContext);
+    await caller.sonarqube.getProjectIssues({ componentKeys: "my-service", branch: "main", p: 1, ps: 25 });
+
+    expect(mockGetIssues).toHaveBeenCalledWith(
+      expect.objectContaining({ componentKeys: "my-service", branch: "main" })
+    );
+  });
+
+  it("should reject pullRequest and branch at once", async () => {
+    const caller = createCaller(mockContext);
+    await expect(
+      caller.sonarqube.getProjectIssues({
+        componentKeys: "my-service",
+        pullRequest: "123",
+        branch: "main",
+        p: 1,
+        ps: 25,
+      })
+    ).rejects.toThrow(/mutually exclusive/);
+  });
+
+  it("should throw NOT_FOUND with branch message on Sonar 404 (branch)", async () => {
+    mockGetIssues.mockRejectedValueOnce(new Error("SonarQube API request failed: 404 Not Found"));
+
+    const caller = createCaller(mockContext);
+    await expect(
+      caller.sonarqube.getProjectIssues({ componentKeys: "my-service", branch: "feat/x", p: 1, ps: 25 })
+    ).rejects.toMatchObject({
+      code: "NOT_FOUND",
+      message: "branch feat/x not found",
+    });
   });
 
   it("should reject unknown fields via .strict()", async () => {

@@ -260,10 +260,11 @@ export function registerOpenApi(
     Querystring: {
       projectKey: string;
       pullRequest?: string;
+      branch?: string;
     };
   }>("/rest/v1/sonar/get", async (req, res) => {
     try {
-      const { projectKey, pullRequest } = req.query;
+      const { projectKey, pullRequest, branch } = req.query;
       if (!projectKey) {
         return res.code(400).send({ error: "projectKey is required" });
       }
@@ -271,7 +272,8 @@ export function registerOpenApi(
       const caller = await buildCaller(req, res);
       return await caller.sonarqube.getProject({
         componentKey: projectKey,
-        pullRequest,
+        pullRequest: pullRequest || undefined,
+        branch: branch || undefined,
       });
     } catch (error) {
       return handleTRPCError(error, res);
@@ -283,10 +285,11 @@ export function registerOpenApi(
     Querystring: {
       projectKey: string;
       pullRequest?: string;
+      branch?: string;
     };
   }>("/rest/v1/sonar/gate", async (req, res) => {
     try {
-      const { projectKey, pullRequest } = req.query;
+      const { projectKey, pullRequest, branch } = req.query;
       if (!projectKey) {
         return res.code(400).send({ error: "projectKey is required" });
       }
@@ -294,7 +297,8 @@ export function registerOpenApi(
       const caller = await buildCaller(req, res);
       return await caller.sonarqube.getQualityGateDetails({
         projectKey,
-        pullRequest,
+        pullRequest: pullRequest || undefined,
+        branch: branch || undefined,
       });
     } catch (error) {
       return handleTRPCError(error, res);
@@ -306,6 +310,7 @@ export function registerOpenApi(
     Querystring: {
       projectKey: string;
       pullRequest?: string;
+      branch?: string;
       types?: string;
       severities?: string;
       statuses?: string;
@@ -320,6 +325,7 @@ export function registerOpenApi(
       const {
         projectKey,
         pullRequest,
+        branch,
         types,
         severities,
         statuses,
@@ -344,7 +350,8 @@ export function registerOpenApi(
       const caller = await buildCaller(req, res);
       return await caller.sonarqube.getProjectIssues({
         componentKeys: projectKey,
-        pullRequest,
+        pullRequest: pullRequest || undefined,
+        branch: branch || undefined,
         types,
         severities,
         statuses,
