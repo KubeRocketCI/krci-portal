@@ -18,7 +18,7 @@ export const ArgoCDActionsMenu = ({ secret, ownerReference, onEdit }: ArgoCDActi
   const secretPermissions = useSecretPermissions();
   const { setDialog } = useDialogContext();
 
-  const patchProtection = getResourceProtection(secret, k8sOperation.patch);
+  const patchProtection = getResourceProtection(secret, k8sOperation.update);
   const deleteProtection = getResourceProtection(secret, k8sOperation.delete);
 
   const actions = React.useMemo(() => {
@@ -33,7 +33,7 @@ export const ArgoCDActionsMenu = ({ secret, ownerReference, onEdit }: ArgoCDActi
     // Compute disabled state for Edit action
     const editDisabled = hasOwnerReference
       ? { status: true, reason: ownerReferenceReason }
-      : getDisabledState(patchProtection, secretPermissions.data.patch);
+      : getDisabledState(patchProtection, secretPermissions.data.update);
 
     // Compute disabled state for Delete action
     const deleteDisabled = hasOwnerReference
@@ -42,7 +42,7 @@ export const ArgoCDActionsMenu = ({ secret, ownerReference, onEdit }: ArgoCDActi
 
     return [
       createResourceAction({
-        type: k8sOperation.patch,
+        type: k8sOperation.update,
         label: "Edit",
         item: secret,
         Icon: <Settings size={16} />,
@@ -83,7 +83,7 @@ export const ArgoCDActionsMenu = ({ secret, ownerReference, onEdit }: ArgoCDActi
     ownerReference,
     patchProtection,
     deleteProtection,
-    secretPermissions.data.patch,
+    secretPermissions.data.update,
     secretPermissions.data.delete,
     onEdit,
     setDialog,

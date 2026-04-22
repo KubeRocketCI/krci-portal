@@ -22,7 +22,7 @@ export interface EditCodebaseFormProps {
 export const EditCodebaseForm: React.FC<EditCodebaseFormProps> = ({ codebase, onClose, isProtected }) => {
   const defaultValues = useDefaultValues(codebase);
   const { triggerPatchCodebase, mutations } = useCodebaseCRUD();
-  const { codebasePatchMutation } = mutations;
+  const { codebaseEditMutation } = mutations;
 
   const handleSubmit = React.useCallback(
     async (values: EditCodebaseFormValues) => {
@@ -54,7 +54,7 @@ export const EditCodebaseForm: React.FC<EditCodebaseFormProps> = ({ codebase, on
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const onSubmitError = React.useCallback((_error: unknown) => {}, []);
 
-  const requestError = codebasePatchMutation.error as RequestError | null;
+  const requestError = codebaseEditMutation.error as RequestError | null;
 
   return (
     <EditCodebaseFormProvider defaultValues={defaultValues} onSubmit={handleSubmit} onSubmitError={onSubmitError}>

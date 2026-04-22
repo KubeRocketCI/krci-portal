@@ -189,8 +189,8 @@ export const Variables = () => {
     }
 
     if (!dataEntries?.length) {
-      if (!configMapPermissions.data.patch.allowed) {
-        return <EmptyList customText="No variables found." beforeLinkText={configMapPermissions.data.patch.reason} />;
+      if (!configMapPermissions.data.update.allowed) {
+        return <EmptyList customText="No variables found." beforeLinkText={configMapPermissions.data.update.reason} />;
       }
 
       return (

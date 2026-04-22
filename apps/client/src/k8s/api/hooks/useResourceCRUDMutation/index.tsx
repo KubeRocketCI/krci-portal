@@ -65,8 +65,8 @@ export const useResourceCRUDMutation = <KubeObjectData extends KubeObjectDraft, 
           resourceConfig,
         });
 
-      case k8sOperation.patch:
-        return await trpc.k8s.patch.mutate({
+      case k8sOperation.update:
+        return await trpc.k8s.update.mutate({
           clusterName,
           namespace: finalNamespace,
           name: resource.metadata.name,
@@ -102,8 +102,8 @@ export const useResourceCRUDMutation = <KubeObjectData extends KubeObjectDraft, 
         switch (operation) {
           case k8sOperation.create:
             return `Applying ${defaultMsg}`;
-          case k8sOperation.patch:
-            return `Patching ${defaultMsg}`;
+          case k8sOperation.update:
+            return `Updating ${defaultMsg}`;
           case k8sOperation.delete:
             return `Deleting ${defaultMsg}`;
           default:
@@ -116,8 +116,8 @@ export const useResourceCRUDMutation = <KubeObjectData extends KubeObjectDraft, 
         switch (operation) {
           case k8sOperation.create:
             return `${defaultMsg} has been successfully applied`;
-          case k8sOperation.patch:
-            return `${defaultMsg} has been successfully patched`;
+          case k8sOperation.update:
+            return `${defaultMsg} has been successfully updated`;
           case k8sOperation.delete:
             return `${defaultMsg} has been successfully deleted`;
           default:
@@ -130,8 +130,8 @@ export const useResourceCRUDMutation = <KubeObjectData extends KubeObjectDraft, 
         switch (operation) {
           case k8sOperation.create:
             return `Failed to apply ${defaultMsg}`;
-          case k8sOperation.patch:
-            return `Failed to patch ${defaultMsg}`;
+          case k8sOperation.update:
+            return `Failed to update ${defaultMsg}`;
           case k8sOperation.delete:
             return `Failed to delete ${defaultMsg}`;
           default:

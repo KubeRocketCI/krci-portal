@@ -83,16 +83,16 @@ export const StageActionsMenu = ({ data: { stage, stages }, backRoute, variant }
   const openDeleteKubeObjectDialog = useDialogOpener(DeleteKubeObjectDialog);
   const stagePermissions = useStagePermissions();
 
-  const patchProtection = getResourceProtection(stage, k8sOperation.patch);
+  const patchProtection = getResourceProtection(stage, k8sOperation.update);
 
   const actions = React.useMemo(() => {
     return [
       createResourceAction({
         item: stage,
-        type: k8sOperation.patch,
+        type: k8sOperation.update,
         label: "Edit",
         Icon: <Pencil size={16} />,
-        disabled: getDisabledState(patchProtection, stagePermissions.data.patch),
+        disabled: getDisabledState(patchProtection, stagePermissions.data.update),
         callback: (stage) => {
           openEditStageDialog({ stage });
         },

@@ -46,8 +46,8 @@ export default function ArgocdConfigurationPage() {
     }
 
     if (!argoCDSecret && !isLoading && !argoCDSecretError && !argoCDQuickLinkError) {
-      const hasPermission = secretPermissions.data.create.allowed && quickLinkPermissions.data.patch.allowed;
-      const permissionReason = secretPermissions.data.create.reason || quickLinkPermissions.data.patch.reason;
+      const hasPermission = secretPermissions.data.create.allowed && quickLinkPermissions.data.update.allowed;
+      const permissionReason = secretPermissions.data.create.reason || quickLinkPermissions.data.update.reason;
 
       if (!hasPermission) {
         return <EmptyList customText={"No Argo CD integration secrets found."} beforeLinkText={permissionReason} />;
@@ -106,8 +106,8 @@ export default function ArgocdConfigurationPage() {
         onClose: handleCloseCreateDialog,
         isDisabled: argoCDSecretWatch.query.isLoading || !!argoCDSecret,
         permission: {
-          allowed: secretPermissions.data.create.allowed && quickLinkPermissions.data.patch.allowed,
-          reason: secretPermissions.data.create.reason || quickLinkPermissions.data.patch.reason,
+          allowed: secretPermissions.data.create.allowed && quickLinkPermissions.data.update.allowed,
+          reason: secretPermissions.data.create.reason || quickLinkPermissions.data.update.reason,
         },
       }}
       pageDescription={pageDescription}

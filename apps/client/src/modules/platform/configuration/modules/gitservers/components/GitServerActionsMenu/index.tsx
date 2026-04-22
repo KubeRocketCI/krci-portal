@@ -18,7 +18,7 @@ export const GitServerActionsMenu = ({ gitServer, ownerReference, onEdit }: GitS
   const gitServerPermissions = useGitServerPermissions();
   const { setDialog } = useDialogContext();
 
-  const patchProtection = getResourceProtection(gitServer, k8sOperation.patch);
+  const patchProtection = getResourceProtection(gitServer, k8sOperation.update);
   const deleteProtection = getResourceProtection(gitServer, k8sOperation.delete);
 
   const actions = React.useMemo(() => {
@@ -33,7 +33,7 @@ export const GitServerActionsMenu = ({ gitServer, ownerReference, onEdit }: GitS
     // Compute disabled state for Edit action
     const editDisabled = hasOwnerReference
       ? { status: true, reason: ownerReferenceReason }
-      : getDisabledState(patchProtection, gitServerPermissions.data.patch);
+      : getDisabledState(patchProtection, gitServerPermissions.data.update);
 
     // Compute disabled state for Delete action
     const deleteDisabled = hasOwnerReference
@@ -42,7 +42,7 @@ export const GitServerActionsMenu = ({ gitServer, ownerReference, onEdit }: GitS
 
     return [
       createResourceAction({
-        type: k8sOperation.patch,
+        type: k8sOperation.update,
         label: "Edit",
         item: gitServer,
         Icon: <Settings size={16} />,
@@ -83,7 +83,7 @@ export const GitServerActionsMenu = ({ gitServer, ownerReference, onEdit }: GitS
     ownerReference,
     patchProtection,
     deleteProtection,
-    gitServerPermissions.data.patch,
+    gitServerPermissions.data.update,
     gitServerPermissions.data.delete,
     onEdit,
     setDialog,

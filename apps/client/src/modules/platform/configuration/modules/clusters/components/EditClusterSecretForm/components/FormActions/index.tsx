@@ -74,8 +74,8 @@ export const FormActions = () => {
   }, [currentElement, onBeforeSubmit, openDeleteKubeObjectDialog]);
 
   const saveButtonTooltip = React.useMemo(() => {
-    if (!secretPermissions.data.patch.allowed) {
-      return secretPermissions.data.patch.reason;
+    if (!secretPermissions.data.update.allowed) {
+      return secretPermissions.data.update.reason;
     }
 
     if (ownerReference) {
@@ -83,7 +83,7 @@ export const FormActions = () => {
     }
 
     return "";
-  }, [ownerReference, secretPermissions.data.patch.allowed, secretPermissions.data.patch.reason]);
+  }, [ownerReference, secretPermissions.data.update.allowed, secretPermissions.data.update.reason]);
 
   const deleteButtonTooltip = React.useMemo(() => {
     if (!secretPermissions.data.delete.allowed) {
@@ -127,7 +127,7 @@ export const FormActions = () => {
       </div>
       <div className="flex items-center gap-4">
         <ConditionalWrapper
-          condition={!secretPermissions.data.patch.allowed || !!ownerReference}
+          condition={!secretPermissions.data.update.allowed || !!ownerReference}
           wrapper={(children) => (
             <Tooltip title={saveButtonTooltip}>
               <div>{children}</div>
@@ -138,7 +138,7 @@ export const FormActions = () => {
             type="button"
             size="sm"
             variant="default"
-            disabled={isLoading || !isDirty || !secretPermissions.data.patch.allowed || !canSubmit}
+            disabled={isLoading || !isDirty || !secretPermissions.data.update.allowed || !canSubmit}
             onClick={() => form.handleSubmit()}
           >
             Save

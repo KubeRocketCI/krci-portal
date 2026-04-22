@@ -24,19 +24,19 @@ export const useCRUD = () => {
     }
   );
 
-  const taskPatchMutation = useResourceCRUDMutation<TaskDraft, typeof k8sOperation.patch>(
-    "taskPatchMutation",
-    k8sOperation.patch,
+  const taskEditMutation = useResourceCRUDMutation<TaskDraft, typeof k8sOperation.update>(
+    "taskEditMutation",
+    k8sOperation.update,
     {
       createCustomMessages: () => ({
         loading: {
-          message: "Patching Task",
+          message: "Updating Task",
         },
         error: {
-          message: "Failed to patch Task",
+          message: "Failed to update Task",
         },
         success: {
-          message: "Task has been patched",
+          message: "Task has been updated",
           options: {
             duration: 8000,
           },
@@ -105,7 +105,7 @@ export const useCRUD = () => {
     }) => {
       const { task } = data;
 
-      taskPatchMutation.mutate(
+      taskEditMutation.mutate(
         {
           resource: task,
           resourceConfig: k8sTaskConfig,
@@ -117,7 +117,7 @@ export const useCRUD = () => {
         }
       );
     },
-    [taskPatchMutation]
+    [taskEditMutation]
   );
 
   const triggerDeleteTask = React.useCallback(
@@ -149,7 +149,7 @@ export const useCRUD = () => {
 
   const mutations = {
     taskCreateMutation,
-    taskPatchMutation,
+    taskEditMutation,
     taskDeleteMutation,
   };
 

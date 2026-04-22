@@ -34,7 +34,7 @@ export const RegistryActionsMenu = ({
 
     return [
       {
-        name: k8sOperation.patch,
+        name: k8sOperation.update,
         label: "Edit",
         Icon: <Settings size={16} />,
         disabled: {

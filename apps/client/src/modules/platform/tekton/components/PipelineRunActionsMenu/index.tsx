@@ -111,13 +111,13 @@ export const PipelineRunActionsMenu = ({
     return [
       !hideStopAction && !isHistoryItem && isInProgress
         ? createResourceAction({
-            type: k8sOperation.patch,
+            type: k8sOperation.update,
             label: "Stop run",
             Icon: <OctagonX size={16} />,
             item: pipelineRun,
             disabled: {
-              status: !pipelineRunPermissions.data.patch.allowed,
-              reason: pipelineRunPermissions.data.patch.reason,
+              status: !pipelineRunPermissions.data.update.allowed,
+              reason: pipelineRunPermissions.data.update.reason,
             },
             callback: (pipelineRun) => {
               const newPipelineRun = structuredClone(pipelineRun);
@@ -202,8 +202,8 @@ export const PipelineRunActionsMenu = ({
     trpc,
     pipelineRunPermissions.data.create.allowed,
     pipelineRunPermissions.data.create.reason,
-    pipelineRunPermissions.data.patch.allowed,
-    pipelineRunPermissions.data.patch.reason,
+    pipelineRunPermissions.data.update.allowed,
+    pipelineRunPermissions.data.update.reason,
     pipelineRunPermissions.data.delete.allowed,
     pipelineRunPermissions.data.delete.reason,
     triggerCreatePipelineRun,

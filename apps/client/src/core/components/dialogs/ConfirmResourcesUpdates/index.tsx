@@ -55,7 +55,7 @@ export const ConfirmResourcesUpdatesDialog: React.FC<ConfirmResourcesUpdatesDial
                             <span className="mr-1 text-sm font-bold">{name}</span>
                             <span className="text-sm">
                               will be{" "}
-                              {actionType === k8sOperation.patch
+                              {actionType === k8sOperation.update
                                 ? "updated"
                                 : actionType === k8sOperation.delete
                                   ? "deleted"

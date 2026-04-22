@@ -60,9 +60,9 @@ export const useCRUD = () => {
     k8sOperation.create
   );
 
-  const codebasePatchMutation = useResourceCRUDMutation<CodebaseDraft, typeof k8sOperation.patch>(
-    "codebasePatchMutation",
-    k8sOperation.patch,
+  const codebaseEditMutation = useResourceCRUDMutation<CodebaseDraft, typeof k8sOperation.update>(
+    "codebaseEditMutation",
+    k8sOperation.update,
     {
       createCustomMessages: (codebase) => ({
         loading: {
@@ -184,7 +184,7 @@ export const useCRUD = () => {
     }) => {
       const { codebase } = data;
 
-      codebasePatchMutation.mutate(
+      codebaseEditMutation.mutate(
         {
           resource: codebase,
           resourceConfig: k8sCodebaseConfig,
@@ -196,14 +196,14 @@ export const useCRUD = () => {
         }
       );
     },
-    [codebasePatchMutation]
+    [codebaseEditMutation]
   );
 
   const mutations = {
     codebaseCreateMutation,
     codebaseSecretCreateMutation,
     codebaseSecretDeleteMutation,
-    codebasePatchMutation,
+    codebaseEditMutation,
   };
 
   return { triggerCreateCodebase, triggerPatchCodebase, mutations };

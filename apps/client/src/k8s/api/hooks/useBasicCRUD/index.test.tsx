@@ -92,7 +92,7 @@ describe("useBasicCRUD", () => {
       if (operation === k8sOperation.create) {
         return mockCreateMutation as never;
       }
-      if (operation === k8sOperation.patch) {
+      if (operation === k8sOperation.update) {
         return mockEditMutation as never;
       }
       if (operation === k8sOperation.delete) {
@@ -126,7 +126,7 @@ describe("useBasicCRUD", () => {
       expect(useResourceCRUDMutation).toHaveBeenNthCalledWith(
         2,
         "EditMutation",
-        k8sOperation.patch,
+        k8sOperation.update,
         expect.objectContaining({
           createCustomMessages: expect.any(Function),
         })
@@ -346,7 +346,7 @@ describe("useBasicCRUD", () => {
           createCustomMessages = options.createCustomMessages;
           return mockCreateMutation as never;
         }
-        if (operation === k8sOperation.patch) {
+        if (operation === k8sOperation.update) {
           return mockEditMutation as never;
         }
         if (operation === k8sOperation.delete) {
@@ -384,7 +384,7 @@ describe("useBasicCRUD", () => {
         if (operation === k8sOperation.create) {
           return mockCreateMutation as never;
         }
-        if (operation === k8sOperation.patch && options?.createCustomMessages) {
+        if (operation === k8sOperation.update && options?.createCustomMessages) {
           editCustomMessages = options.createCustomMessages;
           return mockEditMutation as never;
         }
@@ -402,13 +402,13 @@ describe("useBasicCRUD", () => {
       const messages = editCustomMessages?.(mockResource);
       expect(messages).toEqual({
         loading: {
-          message: "Patching Resource",
+          message: "Updating Resource",
         },
         error: {
-          message: "Failed to patch Resource",
+          message: "Failed to update Resource",
         },
         success: {
-          message: "Resource has been patched",
+          message: "Resource has been updated",
           options: {
             duration: 8000,
           },

@@ -24,19 +24,19 @@ export const useCRUD = () => {
     }
   );
 
-  const quickLinkPatchMutation = useResourceCRUDMutation<QuickLinkDraft, typeof k8sOperation.patch>(
-    "quickLinkPatchMutation",
-    k8sOperation.patch,
+  const quickLinkEditMutation = useResourceCRUDMutation<QuickLinkDraft, typeof k8sOperation.update>(
+    "quickLinkEditMutation",
+    k8sOperation.update,
     {
       createCustomMessages: () => ({
         loading: {
-          message: "Patching QuickLink",
+          message: "Updating QuickLink",
         },
         error: {
-          message: "Failed to patch QuickLink",
+          message: "Failed to update QuickLink",
         },
         success: {
-          message: "QuickLink has been patched",
+          message: "QuickLink has been updated",
           options: {
             duration: 8000,
           },
@@ -105,7 +105,7 @@ export const useCRUD = () => {
     }) => {
       const { quickLink } = data;
 
-      quickLinkPatchMutation.mutate(
+      quickLinkEditMutation.mutate(
         {
           resource: quickLink,
           resourceConfig: k8sQuickLinkConfig,
@@ -117,7 +117,7 @@ export const useCRUD = () => {
         }
       );
     },
-    [quickLinkPatchMutation]
+    [quickLinkEditMutation]
   );
 
   const triggerDeleteQuickLink = React.useCallback(
@@ -149,7 +149,7 @@ export const useCRUD = () => {
 
   const mutations = {
     quickLinkCreateMutation,
-    quickLinkPatchMutation,
+    quickLinkEditMutation,
     quickLinkDeleteMutation,
   };
 

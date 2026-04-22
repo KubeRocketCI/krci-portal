@@ -17,10 +17,10 @@ export const FormActions = () => {
   const canSubmit = useStore(form.store, (state) => state.canSubmit);
 
   const {
-    mutations: { quickLinkPatchMutation },
+    mutations: { quickLinkEditMutation },
   } = useQuickLinkCRUD();
 
-  const isLoading = quickLinkPatchMutation.isPending || isSubmitting;
+  const isLoading = quickLinkEditMutation.isPending || isSubmitting;
 
   const handleClose = React.useCallback(() => {
     closeDialog();

@@ -20,16 +20,16 @@ export const useBasicCRUD = <T extends KubeObjectDraft>(k8sResourceConfig: K8sRe
     }),
   });
 
-  const editMutation = useResourceCRUDMutation<T, typeof k8sOperation.patch>("EditMutation", k8sOperation.patch, {
+  const editMutation = useResourceCRUDMutation<T, typeof k8sOperation.update>("EditMutation", k8sOperation.update, {
     createCustomMessages: () => ({
       loading: {
-        message: `Patching ${k8sResourceConfig.kind}`,
+        message: `Updating ${k8sResourceConfig.kind}`,
       },
       error: {
-        message: `Failed to patch ${k8sResourceConfig.kind}`,
+        message: `Failed to update ${k8sResourceConfig.kind}`,
       },
       success: {
-        message: `${k8sResourceConfig.kind} has been patched`,
+        message: `${k8sResourceConfig.kind} has been updated`,
         options: {
           duration: 8000,
         },

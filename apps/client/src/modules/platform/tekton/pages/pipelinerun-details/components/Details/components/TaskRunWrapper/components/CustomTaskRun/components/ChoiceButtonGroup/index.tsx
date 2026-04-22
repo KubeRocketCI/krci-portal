@@ -30,8 +30,8 @@ export const ChoiceButtonGroup = ({
           onClick: options[0].onClick,
           className: "rounded-r-none border-r-0",
         }}
-        allowed={approvalTaskPermissions.data?.patch?.allowed}
-        reason={approvalTaskPermissions.data?.patch?.reason}
+        allowed={approvalTaskPermissions.data?.update?.allowed}
+        reason={approvalTaskPermissions.data?.update?.reason}
       >
         {options[0].Icon}
         {options[0].label}
@@ -44,8 +44,8 @@ export const ChoiceButtonGroup = ({
               variant: type === "accept" ? "default" : "outline",
               className: "rounded-l-none",
             }}
-            allowed={approvalTaskPermissions.data?.patch?.allowed}
-            reason={approvalTaskPermissions.data?.patch?.reason}
+            allowed={approvalTaskPermissions.data?.update?.allowed}
+            reason={approvalTaskPermissions.data?.update?.reason}
           >
             <ChevronDown size={15} />
           </ButtonWithPermission>

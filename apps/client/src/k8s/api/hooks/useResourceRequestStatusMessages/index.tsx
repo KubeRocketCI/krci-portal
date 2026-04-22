@@ -30,8 +30,8 @@ export const useRequestStatusMessages = () => {
       switch (operation) {
         case k8sOperation.create:
           return `Applying ${entityName || "resource"}`;
-        case k8sOperation.patch:
-          return `Patching ${entityName || "resource"}`;
+        case k8sOperation.update:
+          return `Updating ${entityName || "resource"}`;
         case k8sOperation.delete:
           return `Deleting ${entityName || "resource"}`;
         default:
@@ -55,8 +55,8 @@ export const useRequestStatusMessages = () => {
       switch (operation) {
         case k8sOperation.create:
           return `${entityName || "Resource"} has been successfully applied`;
-        case k8sOperation.patch:
-          return `${entityName || "Resource"} has been successfully patched`;
+        case k8sOperation.update:
+          return `${entityName || "Resource"} has been successfully updated`;
         case k8sOperation.delete:
           return `${entityName || "Resource"} has been successfully deleted`;
         default:
@@ -80,8 +80,8 @@ export const useRequestStatusMessages = () => {
       switch (operation) {
         case k8sOperation.create:
           return `Failed to apply ${entityName || "resource"}`;
-        case k8sOperation.patch:
-          return `Failed to patch ${entityName || "resource"}`;
+        case k8sOperation.update:
+          return `Failed to update ${entityName || "resource"}`;
         case k8sOperation.delete:
           return `Failed to delete ${entityName || "resource"}`;
         default:

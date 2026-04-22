@@ -69,13 +69,13 @@ export const PipelineActionsMenu = ({ variant, data: { pipeline } }: PipelineAct
         },
       }),
       createResourceAction({
-        type: k8sOperation.patch,
+        type: k8sOperation.update,
         label: "Edit",
         Icon: <Edit size={16} />,
         item: pipeline,
         disabled: {
-          status: !pipelinePermissions.data.patch.allowed,
-          reason: pipelinePermissions.data.patch.reason,
+          status: !pipelinePermissions.data.update.allowed,
+          reason: pipelinePermissions.data.update.reason,
         },
         callback: (pipeline: Pipeline) => {
           openEditorDialog({
@@ -99,8 +99,8 @@ export const PipelineActionsMenu = ({ variant, data: { pipeline } }: PipelineAct
     pipeline,
     pipelinePermissions.data.create.allowed,
     pipelinePermissions.data.create.reason,
-    pipelinePermissions.data.patch.allowed,
-    pipelinePermissions.data.patch.reason,
+    pipelinePermissions.data.update.allowed,
+    pipelinePermissions.data.update.reason,
     triggerTemplate,
     openEditorDialog,
     triggerCreatePipelineRun,

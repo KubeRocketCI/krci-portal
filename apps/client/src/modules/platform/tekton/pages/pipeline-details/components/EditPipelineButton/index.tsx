@@ -41,8 +41,8 @@ export const EditPipelineButton = () => {
         size: "sm",
         onClick: handleClick,
       }}
-      allowed={pipelinePermissions.data.patch.allowed}
-      reason={pipelinePermissions.data.patch.reason}
+      allowed={pipelinePermissions.data.update.allowed}
+      reason={pipelinePermissions.data.update.reason}
     >
       <Edit size={16} /> Edit
     </ButtonWithPermission>

@@ -47,8 +47,8 @@ export default function DefectdojoConfigurationPage() {
     }
 
     if (!defectDojoSecret && !isLoading && !defectDojoSecretError && !defectDojoQuickLinkError) {
-      const hasPermission = secretPermissions.data.create.allowed && quickLinkPermissions.data.patch.allowed;
-      const permissionReason = secretPermissions.data.create.reason || quickLinkPermissions.data.patch.reason;
+      const hasPermission = secretPermissions.data.create.allowed && quickLinkPermissions.data.update.allowed;
+      const permissionReason = secretPermissions.data.create.reason || quickLinkPermissions.data.update.reason;
 
       if (!hasPermission) {
         return <EmptyList customText={"No DefectDojo integration secrets found."} beforeLinkText={permissionReason} />;
@@ -107,8 +107,8 @@ export default function DefectdojoConfigurationPage() {
         onClose: handleCloseCreateDialog,
         isDisabled: defectDojoSecretWatch.query.isLoading || !!defectDojoSecret,
         permission: {
-          allowed: secretPermissions.data.create.allowed && quickLinkPermissions.data.patch.allowed,
-          reason: secretPermissions.data.create.reason || quickLinkPermissions.data.patch.reason,
+          allowed: secretPermissions.data.create.allowed && quickLinkPermissions.data.update.allowed,
+          reason: secretPermissions.data.create.reason || quickLinkPermissions.data.update.reason,
         },
       }}
       pageDescription={pageDescription}
