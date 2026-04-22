@@ -45,8 +45,8 @@ export const StopPipelineRunButton = () => {
         size: "sm",
         onClick: handleClick,
       }}
-      allowed={pipelineRunPermissions.data.patch.allowed}
-      reason={pipelineRunPermissions.data.patch.reason}
+      allowed={pipelineRunPermissions.data.update.allowed}
+      reason={pipelineRunPermissions.data.update.reason}
     >
       <OctagonX size={16} /> Stop run
     </ButtonWithPermission>

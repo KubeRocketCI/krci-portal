@@ -24,19 +24,19 @@ export const useCRUD = () => {
     }
   );
 
-  const cdPipelineEditMutation = useResourceCRUDMutation<CDPipelineDraft, typeof k8sOperation.patch>(
+  const cdPipelineEditMutation = useResourceCRUDMutation<CDPipelineDraft, typeof k8sOperation.update>(
     "cdPipelineEditMutation",
-    k8sOperation.patch,
+    k8sOperation.update,
     {
       createCustomMessages: () => ({
         loading: {
-          message: "Patching CDPipeline",
+          message: "Updating CDPipeline",
         },
         error: {
-          message: "Failed to patch CDPipeline",
+          message: "Failed to update CDPipeline",
         },
         success: {
-          message: "CDPipeline has been patched",
+          message: "CDPipeline has been updated",
           options: {
             duration: 8000,
           },

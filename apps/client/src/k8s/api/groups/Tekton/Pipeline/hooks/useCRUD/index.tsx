@@ -24,19 +24,19 @@ export const useCRUD = () => {
     }
   );
 
-  const pipelinePatchMutation = useResourceCRUDMutation<PipelineDraft, typeof k8sOperation.patch>(
-    "pipelinePatchMutation",
-    k8sOperation.patch,
+  const pipelineEditMutation = useResourceCRUDMutation<PipelineDraft, typeof k8sOperation.update>(
+    "pipelineEditMutation",
+    k8sOperation.update,
     {
       createCustomMessages: () => ({
         loading: {
-          message: "Patching Pipeline",
+          message: "Updating Pipeline",
         },
         error: {
-          message: "Failed to patch Pipeline",
+          message: "Failed to update Pipeline",
         },
         success: {
-          message: "Pipeline has been patched",
+          message: "Pipeline has been updated",
           options: {
             duration: 8000,
           },
@@ -105,7 +105,7 @@ export const useCRUD = () => {
     }) => {
       const { pipeline } = data;
 
-      pipelinePatchMutation.mutate(
+      pipelineEditMutation.mutate(
         {
           resource: pipeline,
           resourceConfig: k8sPipelineConfig,
@@ -117,7 +117,7 @@ export const useCRUD = () => {
         }
       );
     },
-    [pipelinePatchMutation]
+    [pipelineEditMutation]
   );
 
   const triggerDeletePipeline = React.useCallback(
@@ -149,7 +149,7 @@ export const useCRUD = () => {
 
   const mutations = {
     pipelineCreateMutation,
-    pipelinePatchMutation,
+    pipelineEditMutation,
     pipelineDeleteMutation,
   };
 

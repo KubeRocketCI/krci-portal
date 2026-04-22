@@ -47,8 +47,8 @@ export default function DependencyTrackConfigurationPage() {
     }
 
     if (!dependencyTrackSecret && !isLoading && !dependencyTrackSecretError && !dependencyTrackQuickLinkError) {
-      const hasPermission = secretPermissions.data.create.allowed && quickLinkPermissions.data.patch.allowed;
-      const permissionReason = secretPermissions.data.create.reason || quickLinkPermissions.data.patch.reason;
+      const hasPermission = secretPermissions.data.create.allowed && quickLinkPermissions.data.update.allowed;
+      const permissionReason = secretPermissions.data.create.reason || quickLinkPermissions.data.update.reason;
 
       if (!hasPermission) {
         return (
@@ -109,8 +109,8 @@ export default function DependencyTrackConfigurationPage() {
         onClose: handleCloseCreateDialog,
         isDisabled: dependencyTrackSecretWatch.query.isLoading || !!dependencyTrackSecret,
         permission: {
-          allowed: secretPermissions.data.create.allowed && quickLinkPermissions.data.patch.allowed,
-          reason: secretPermissions.data.create.reason || quickLinkPermissions.data.patch.reason,
+          allowed: secretPermissions.data.create.allowed && quickLinkPermissions.data.update.allowed,
+          reason: secretPermissions.data.create.reason || quickLinkPermissions.data.update.reason,
         },
       }}
       pageDescription={pageDescription}

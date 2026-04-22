@@ -25,20 +25,20 @@ export const useCRUD = () => {
     }
   );
 
-  const codebaseBranchEditMutation = useResourceCRUDMutation<CodebaseBranchDraft, typeof k8sOperation.patch>(
+  const codebaseBranchEditMutation = useResourceCRUDMutation<CodebaseBranchDraft, typeof k8sOperation.update>(
     "codebaseBranchEditMutation",
-    k8sOperation.patch,
+    k8sOperation.update,
     {
       showMessages: false, // Disable toasts - errors are shown in dialog
       createCustomMessages: () => ({
         loading: {
-          message: "Patching CodebaseBranch",
+          message: "Updating CodebaseBranch",
         },
         error: {
-          message: "Failed to patch CodebaseBranch",
+          message: "Failed to update CodebaseBranch",
         },
         success: {
-          message: "CodebaseBranch has been patched",
+          message: "CodebaseBranch has been updated",
           options: {
             duration: 8000,
           },

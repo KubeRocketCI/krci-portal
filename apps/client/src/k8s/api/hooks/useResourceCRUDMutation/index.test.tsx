@@ -14,7 +14,7 @@ const { mockTrpcClient } = vi.hoisted(() => {
       create: {
         mutate: vi.fn(),
       },
-      patch: {
+      update: {
         mutate: vi.fn(),
       },
       delete: {
@@ -322,12 +322,12 @@ describe("useResourceCRUDMutation", () => {
     });
   });
 
-  describe("Patch Operation", () => {
-    it("should call patch mutation with correct parameters", async () => {
+  describe("Update Operation", () => {
+    it("should call update mutation with correct parameters", async () => {
       const patchedResource = { ...mockResource };
-      vi.mocked(mockTrpcClient.k8s.patch.mutate).mockResolvedValue(patchedResource);
+      vi.mocked(mockTrpcClient.k8s.update.mutate).mockResolvedValue(patchedResource);
 
-      const { result } = renderHook(() => useResourceCRUDMutation("test-patch", k8sOperation.patch), {
+      const { result } = renderHook(() => useResourceCRUDMutation("test-patch", k8sOperation.update), {
         wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
       });
 
@@ -336,7 +336,7 @@ describe("useResourceCRUDMutation", () => {
         resourceConfig: mockResourceConfig,
       });
 
-      expect(mockTrpcClient.k8s.patch.mutate).toHaveBeenCalledWith({
+      expect(mockTrpcClient.k8s.update.mutate).toHaveBeenCalledWith({
         clusterName: "test-cluster",
         namespace: "default",
         name: "test-resource",
@@ -345,11 +345,11 @@ describe("useResourceCRUDMutation", () => {
       });
     });
 
-    it("should show patch-specific messages", async () => {
-      vi.mocked(mockTrpcClient.k8s.patch.mutate).mockResolvedValue(mockResource);
+    it("should show update-specific messages", async () => {
+      vi.mocked(mockTrpcClient.k8s.update.mutate).mockResolvedValue(mockResource);
       vi.mocked(showToast).mockReturnValue("toast-id");
 
-      const { result } = renderHook(() => useResourceCRUDMutation("test-patch", k8sOperation.patch), {
+      const { result } = renderHook(() => useResourceCRUDMutation("test-patch", k8sOperation.update), {
         wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
       });
 
@@ -359,12 +359,12 @@ describe("useResourceCRUDMutation", () => {
       });
 
       await waitFor(() => {
-        expect(showToast).toHaveBeenCalledWith("Patching Resource test-resource", "loading");
+        expect(showToast).toHaveBeenCalledWith("Updating Resource test-resource", "loading");
       });
 
       await waitFor(() => {
         expect(showToast).toHaveBeenCalledWith(
-          "Resource test-resource has been successfully patched",
+          "Resource test-resource has been successfully updated",
           "success",
           expect.objectContaining({
             id: "toast-id",

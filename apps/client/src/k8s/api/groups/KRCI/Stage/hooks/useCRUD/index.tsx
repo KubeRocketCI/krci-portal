@@ -24,19 +24,19 @@ export const useCRUD = () => {
     }
   );
 
-  const stageEditMutation = useResourceCRUDMutation<StageDraft, typeof k8sOperation.patch>(
+  const stageEditMutation = useResourceCRUDMutation<StageDraft, typeof k8sOperation.update>(
     "stageEditMutation",
-    k8sOperation.patch,
+    k8sOperation.update,
     {
       createCustomMessages: () => ({
         loading: {
-          message: "Patching Stage",
+          message: "Updating Stage",
         },
         error: {
-          message: "Failed to patch Stage",
+          message: "Failed to update Stage",
         },
         success: {
-          message: "Stage has been patched",
+          message: "Stage has been updated",
           options: {
             duration: 8000,
           },

@@ -17,7 +17,7 @@ export const CDPipelineActionsMenu = ({ backRoute, variant, data: { CDPipeline }
   const openDeleteKubeObjectDialog = useDialogOpener(DeleteKubeObjectDialog);
   const cdPipelinePermissions = useCDPipelinePermissions();
 
-  const patchProtection = getResourceProtection(CDPipeline, k8sOperation.patch);
+  const patchProtection = getResourceProtection(CDPipeline, k8sOperation.update);
   const deleteProtection = getResourceProtection(CDPipeline, k8sOperation.delete);
 
   const actions = React.useMemo(() => {
@@ -27,11 +27,11 @@ export const CDPipelineActionsMenu = ({ backRoute, variant, data: { CDPipeline }
 
     return [
       createResourceAction({
-        type: k8sOperation.patch,
+        type: k8sOperation.update,
         label: "Configure",
         item: CDPipeline,
         Icon: <Settings size={16} />,
-        disabled: getDisabledState(patchProtection, cdPipelinePermissions.data.patch),
+        disabled: getDisabledState(patchProtection, cdPipelinePermissions.data.update),
         callback: () => {
           openEditCDPipelineDialog({ CDPipeline });
         },
@@ -68,7 +68,7 @@ export const CDPipelineActionsMenu = ({ backRoute, variant, data: { CDPipeline }
     ];
   }, [
     CDPipeline,
-    cdPipelinePermissions.data.patch,
+    cdPipelinePermissions.data.update,
     cdPipelinePermissions.data.delete,
     deleteProtection,
     openEditCDPipelineDialog,

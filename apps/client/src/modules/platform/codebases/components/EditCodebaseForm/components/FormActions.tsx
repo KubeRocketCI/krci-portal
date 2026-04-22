@@ -23,10 +23,10 @@ export const FormActions: React.FC<FormActionsProps> = ({ onClose, isProtected }
   }, [onClose, form]);
 
   const {
-    mutations: { codebasePatchMutation },
+    mutations: { codebaseEditMutation },
   } = useCodebaseCRUD();
 
-  const isPending = codebasePatchMutation.isPending || isSubmitting;
+  const isPending = codebaseEditMutation.isPending || isSubmitting;
 
   const handleReset = React.useCallback(() => {
     form.reset();

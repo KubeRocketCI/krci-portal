@@ -109,9 +109,9 @@ export const CustomTaskRun = ({ pipelineRunTaskData }: CustomTaskRunProps) => {
 
   const tabs = useTabs({ taskRun: customTaskRun });
 
-  const approvalTaskEditMutation = useResourceCRUDMutation<ApprovalTask, typeof k8sOperation.patch>(
+  const approvalTaskEditMutation = useResourceCRUDMutation<ApprovalTask, typeof k8sOperation.update>(
     "approvalTaskEditMutation",
-    k8sOperation.patch
+    k8sOperation.update
   );
 
   const { user } = useAuth();

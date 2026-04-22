@@ -25,14 +25,14 @@ describe("useRequestStatusMessages", () => {
       expect(mockShowToast).toHaveBeenCalledWith("Applying resource", "info", { duration: 2000 });
     });
 
-    it("should show default patch message", () => {
+    it("should show default update message", () => {
       const { result } = renderHook(() => useRequestStatusMessages());
 
       act(() => {
-        result.current.showBeforeRequestMessage(k8sOperation.patch, {});
+        result.current.showBeforeRequestMessage(k8sOperation.update, {});
       });
 
-      expect(mockShowToast).toHaveBeenCalledWith("Patching resource", "info", { duration: 2000 });
+      expect(mockShowToast).toHaveBeenCalledWith("Updating resource", "info", { duration: 2000 });
     });
 
     it("should show default delete message", () => {
@@ -103,14 +103,14 @@ describe("useRequestStatusMessages", () => {
       });
     });
 
-    it("should show default patch success message", () => {
+    it("should show default update success message", () => {
       const { result } = renderHook(() => useRequestStatusMessages());
 
       act(() => {
-        result.current.showRequestSuccessMessage(k8sOperation.patch, {});
+        result.current.showRequestSuccessMessage(k8sOperation.update, {});
       });
 
-      expect(mockShowToast).toHaveBeenCalledWith("Resource has been successfully patched", "success", {
+      expect(mockShowToast).toHaveBeenCalledWith("Resource has been successfully updated", "success", {
         duration: 5000,
       });
     });
@@ -166,14 +166,14 @@ describe("useRequestStatusMessages", () => {
       expect(mockShowToast).toHaveBeenCalledWith("Failed to apply resource", "error", { duration: 5000 });
     });
 
-    it("should show default patch error message", () => {
+    it("should show default update error message", () => {
       const { result } = renderHook(() => useRequestStatusMessages());
 
       act(() => {
-        result.current.showRequestErrorMessage(k8sOperation.patch, {});
+        result.current.showRequestErrorMessage(k8sOperation.update, {});
       });
 
-      expect(mockShowToast).toHaveBeenCalledWith("Failed to patch resource", "error", { duration: 5000 });
+      expect(mockShowToast).toHaveBeenCalledWith("Failed to update resource", "error", { duration: 5000 });
     });
 
     it("should show default delete error message", () => {

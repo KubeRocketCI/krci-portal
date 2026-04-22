@@ -43,7 +43,7 @@ export const CodebaseBranchActionsMenu = ({
   const isDefaultBranch = checkIsDefaultBranch(codebase, codebaseBranch);
 
   // Check if the branch is protected from updates (allows viewing but not saving)
-  const patchProtection = getResourceProtection(codebaseBranch, k8sOperation.patch);
+  const patchProtection = getResourceProtection(codebaseBranch, k8sOperation.update);
   const deleteProtection = getResourceProtection(codebaseBranch, k8sOperation.delete);
 
   const actions = React.useMemo(() => {
@@ -58,13 +58,13 @@ export const CodebaseBranchActionsMenu = ({
 
     return [
       createResourceAction({
-        type: k8sOperation.patch,
+        type: k8sOperation.update,
         label: "Configure",
         item: codebaseBranch,
         Icon: <Settings size={16} />,
         disabled: {
-          status: !codebaseBranchPermissions.data.patch.allowed,
-          reason: codebaseBranchPermissions.data.patch.reason,
+          status: !codebaseBranchPermissions.data.update.allowed,
+          reason: codebaseBranchPermissions.data.update.reason,
         },
         callback: (codebaseBranch) => {
           setNewDialog(EditCodebaseBranchDialog, {
@@ -93,8 +93,8 @@ export const CodebaseBranchActionsMenu = ({
   }, [
     codebaseBranch,
     codebaseBranchPermissions.data.delete,
-    codebaseBranchPermissions.data.patch.allowed,
-    codebaseBranchPermissions.data.patch.reason,
+    codebaseBranchPermissions.data.update.allowed,
+    codebaseBranchPermissions.data.update.reason,
     deleteProtection,
     isDefaultBranch,
     patchProtection.isProtected,

@@ -18,7 +18,7 @@ export const ClusterActionsMenu = ({ clusterSecret, ownerReference, onEdit }: Cl
   const secretPermissions = useSecretPermissions();
   const { setDialog } = useDialogContext();
 
-  const patchProtection = getResourceProtection(clusterSecret, k8sOperation.patch);
+  const patchProtection = getResourceProtection(clusterSecret, k8sOperation.update);
   const deleteProtection = getResourceProtection(clusterSecret, k8sOperation.delete);
 
   const actions = React.useMemo(() => {
@@ -33,7 +33,7 @@ export const ClusterActionsMenu = ({ clusterSecret, ownerReference, onEdit }: Cl
     // Compute disabled state for Edit action
     const editDisabled = hasOwnerReference
       ? { status: true, reason: ownerReferenceReason }
-      : getDisabledState(patchProtection, secretPermissions.data.patch);
+      : getDisabledState(patchProtection, secretPermissions.data.update);
 
     // Compute disabled state for Delete action
     const deleteDisabled = hasOwnerReference
@@ -42,7 +42,7 @@ export const ClusterActionsMenu = ({ clusterSecret, ownerReference, onEdit }: Cl
 
     return [
       createResourceAction({
-        type: k8sOperation.patch,
+        type: k8sOperation.update,
         label: "Edit",
         item: clusterSecret,
         Icon: <Settings size={16} />,
@@ -83,7 +83,7 @@ export const ClusterActionsMenu = ({ clusterSecret, ownerReference, onEdit }: Cl
     ownerReference,
     patchProtection,
     deleteProtection,
-    secretPermissions.data.patch,
+    secretPermissions.data.update,
     secretPermissions.data.delete,
     onEdit,
     setDialog,

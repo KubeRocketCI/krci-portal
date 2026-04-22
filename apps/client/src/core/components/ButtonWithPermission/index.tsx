@@ -1,5 +1,6 @@
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
+import { cn } from "@/core/utils/classname";
 import React from "react";
 import { ConditionalWrapper } from "../ConditionalWrapper";
 import type { VariantProps } from "class-variance-authority";
@@ -16,11 +17,32 @@ export const ButtonWithPermission = React.forwardRef<
     children: React.ReactNode;
   } & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "children">
 >(({ allowed, reason = "Forbidden", ButtonProps, children, ...rest }, ref) => {
-  const { onClick, disabled, ...restButtonProps } = ButtonProps ?? {};
+  const { onClick, disabled, asChild, ...restButtonProps } = ButtonProps ?? {};
+  const isDisabled = disabled || !allowed;
+
   return (
-    <ConditionalWrapper condition={!allowed} wrapper={(children) => <Tooltip title={reason}>{children}</Tooltip>}>
-      {/* onClick from ButtonProps takes priority over HTML attributes */}
-      <Button ref={ref} {...restButtonProps} {...rest} onClick={onClick} disabled={disabled || !allowed}>
+    <ConditionalWrapper
+      condition={!allowed}
+      wrapper={(children) => (
+        <Tooltip title={reason}>
+          <div>{children}</div>
+        </Tooltip>
+      )}
+    >
+      <Button
+        ref={ref}
+        {...restButtonProps}
+        {...rest}
+        asChild={asChild}
+        onClick={onClick}
+        disabled={!asChild && isDisabled}
+        aria-disabled={asChild && isDisabled ? true : undefined}
+        className={cn(
+          ButtonProps?.className,
+          rest.className,
+          asChild && isDisabled && "pointer-events-none opacity-50"
+        )}
+      >
         {children}
       </Button>
     </ConditionalWrapper>

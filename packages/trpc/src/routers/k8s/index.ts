@@ -6,7 +6,7 @@ import { k8sGetProcedure } from "./procedures/basic/get/index.js";
 import { k8sGetKubeConfig } from "./procedures/kubeconfig/index.js";
 import { k8sListProcedure } from "./procedures/basic/list/index.js";
 import { k8sGetResourcePermissions } from "./procedures/permissions/index.js";
-import { k8sPatchItemProcedure } from "./procedures/basic/patch/index.js";
+import { k8sUpdateItemProcedure } from "./procedures/basic/update/index.js";
 import { k8sWatchItemProcedure } from "./procedures/basic/watchItem/index.js";
 import { k8sWatchListProcedure } from "./procedures/basic/watchList/index.js";
 import { k8sPodLogsProcedure, k8sWatchPodLogsProcedure } from "./procedures/basic/logs/index.js";
@@ -39,7 +39,7 @@ export const k8sRouter = t.router({
   watchList: k8sWatchListProcedure,
   create: k8sCreateItemProcedure,
   applyYaml: k8sApplyYamlProcedure,
-  patch: k8sPatchItemProcedure,
+  update: k8sUpdateItemProcedure,
   delete: k8sDeleteItemProcedure,
   apiVersions: k8sGetApiVersions,
   itemPermissions: k8sGetResourcePermissions,

@@ -109,7 +109,7 @@ export const CodebaseActionsMenu = ({ backRoute, variant, data: { codebase } }: 
   );
 
   // Check if the codebase is protected from updates (allows viewing but not saving)
-  const patchProtection = getResourceProtection(codebase, k8sOperation.patch);
+  const patchProtection = getResourceProtection(codebase, k8sOperation.update);
   const deleteProtection = getResourceProtection(codebase, k8sOperation.delete);
 
   const actions = React.useMemo(() => {
@@ -119,13 +119,13 @@ export const CodebaseActionsMenu = ({ backRoute, variant, data: { codebase } }: 
 
     return [
       createResourceAction({
-        type: k8sOperation.patch,
+        type: k8sOperation.update,
         label: "Configure",
         item: codebase,
         Icon: <Settings size={16} />,
         disabled: {
-          status: !codebasePermissions.data.patch.allowed,
-          reason: codebasePermissions.data.patch.reason,
+          status: !codebasePermissions.data.update.allowed,
+          reason: codebasePermissions.data.update.reason,
         },
         callback: (codebase) => {
           setDialog(EditCodebaseDialog, { codebase, isProtected: patchProtection.isProtected });
@@ -155,8 +155,8 @@ export const CodebaseActionsMenu = ({ backRoute, variant, data: { codebase } }: 
     backRoute,
     codebase,
     codebasePermissions.data.delete,
-    codebasePermissions.data.patch.allowed,
-    codebasePermissions.data.patch.reason,
+    codebasePermissions.data.update.allowed,
+    codebasePermissions.data.update.reason,
     deleteProtection,
     patchProtection.isProtected,
     onBeforeSubmit,

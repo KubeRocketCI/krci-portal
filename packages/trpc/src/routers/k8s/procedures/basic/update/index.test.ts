@@ -9,7 +9,7 @@ vi.mock("../../../../../clients/k8s/index.js", () => {
   };
 });
 
-describe("k8sPatchItemProcedure", () => {
+describe("k8sUpdateItemProcedure", () => {
   let mockContext: ReturnType<typeof createMockedContext>;
   let mockK8sClientInstance: {
     KubeConfig: {};
@@ -51,7 +51,7 @@ describe("k8sPatchItemProcedure", () => {
     mockK8sClientInstance.replaceResource.mockResolvedValueOnce(mockResponse);
 
     const caller = createCaller(mockContext);
-    const result = await caller.k8s.patch(input);
+    const result = await caller.k8s.update(input);
 
     expect(mockK8sClientInstance.replaceResource).toHaveBeenCalledWith(
       input.resourceConfig,
@@ -64,7 +64,7 @@ describe("k8sPatchItemProcedure", () => {
 
   it("should throw validation error for missing required input fields", async () => {
     const caller = createCaller(mockContext);
-    await expect(caller.k8s.patch({ clusterName: "test" } as any)).rejects.toThrowError();
+    await expect(caller.k8s.update({ clusterName: "test" } as any)).rejects.toThrowError();
   });
 
   it("should throw error when K8sClient.replaceResource throws", async () => {
@@ -79,6 +79,6 @@ describe("k8sPatchItemProcedure", () => {
     mockK8sClientInstance.replaceResource.mockRejectedValueOnce(new Error("Conflict"));
 
     const caller = createCaller(mockContext);
-    await expect(caller.k8s.patch(input)).rejects.toThrow("Conflict");
+    await expect(caller.k8s.update(input)).rejects.toThrow("Conflict");
   });
 });

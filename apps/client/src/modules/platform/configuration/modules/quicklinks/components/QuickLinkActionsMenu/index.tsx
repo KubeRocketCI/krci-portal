@@ -26,13 +26,13 @@ export const QuickLinkActionsMenu = ({ backRoute, variant, data: { quickLink } }
 
     return [
       createResourceAction({
-        type: k8sOperation.patch,
+        type: k8sOperation.update,
         label: "Edit",
         item: quickLink,
         Icon: <Pencil size={16} />,
         disabled: {
-          status: !quickLinkPermissions.data.patch.allowed,
-          reason: quickLinkPermissions.data.patch.reason,
+          status: !quickLinkPermissions.data.update.allowed,
+          reason: quickLinkPermissions.data.update.reason,
         },
         callback: () => {
           openManageQuickLinkDialog({ quickLink });
@@ -75,8 +75,8 @@ export const QuickLinkActionsMenu = ({ backRoute, variant, data: { quickLink } }
     ];
   }, [
     quickLink,
-    quickLinkPermissions.data.patch.allowed,
-    quickLinkPermissions.data.patch.reason,
+    quickLinkPermissions.data.update.allowed,
+    quickLinkPermissions.data.update.reason,
     quickLinkPermissions.data.delete.allowed,
     quickLinkPermissions.data.delete.reason,
     openManageQuickLinkDialog,

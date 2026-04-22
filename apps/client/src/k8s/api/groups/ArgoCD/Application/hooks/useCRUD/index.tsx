@@ -24,19 +24,19 @@ export const useCRUD = () => {
     }
   );
 
-  const applicationEditMutation = useResourceCRUDMutation<ApplicationDraft, typeof k8sOperation.patch>(
+  const applicationEditMutation = useResourceCRUDMutation<ApplicationDraft, typeof k8sOperation.update>(
     "applicationEditMutation",
-    k8sOperation.patch,
+    k8sOperation.update,
     {
       createCustomMessages: () => ({
         loading: {
-          message: "Patching Application",
+          message: "Updating Application",
         },
         error: {
-          message: "Failed to patch Application",
+          message: "Failed to update Application",
         },
         success: {
-          message: "Application has been patched",
+          message: "Application has been updated",
           options: {
             duration: 8000,
           },

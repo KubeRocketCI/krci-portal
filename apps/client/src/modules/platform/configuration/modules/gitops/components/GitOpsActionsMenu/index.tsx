@@ -18,7 +18,7 @@ export const GitOpsActionsMenu = ({ codebase, ownerReference, onEdit }: GitOpsAc
   const codebasePermissions = useCodebasePermissions();
   const { setDialog } = useDialogContext();
 
-  const patchProtection = getResourceProtection(codebase, k8sOperation.patch);
+  const patchProtection = getResourceProtection(codebase, k8sOperation.update);
   const deleteProtection = getResourceProtection(codebase, k8sOperation.delete);
 
   const actions = React.useMemo(() => {
@@ -39,7 +39,7 @@ export const GitOpsActionsMenu = ({ codebase, ownerReference, onEdit }: GitOpsAc
       ? { status: true, reason: systemGitOpsReason }
       : hasOwnerReference
         ? { status: true, reason: ownerReferenceReason }
-        : getDisabledState(patchProtection, codebasePermissions.data.patch);
+        : getDisabledState(patchProtection, codebasePermissions.data.update);
 
     // Compute disabled state for Delete action
     const deleteDisabled = isSystemGitOps
@@ -50,7 +50,7 @@ export const GitOpsActionsMenu = ({ codebase, ownerReference, onEdit }: GitOpsAc
 
     return [
       createResourceAction({
-        type: k8sOperation.patch,
+        type: k8sOperation.update,
         label: "Edit",
         item: codebase,
         Icon: <Settings size={16} />,
@@ -91,7 +91,7 @@ export const GitOpsActionsMenu = ({ codebase, ownerReference, onEdit }: GitOpsAc
     ownerReference,
     patchProtection,
     deleteProtection,
-    codebasePermissions.data.patch,
+    codebasePermissions.data.update,
     codebasePermissions.data.delete,
     onEdit,
     setDialog,

@@ -22,13 +22,13 @@ export const TaskActionsMenu: React.FC<TaskActionsMenuProps> = ({ variant, data:
 
     return [
       createResourceAction({
-        type: k8sOperation.patch,
+        type: k8sOperation.update,
         label: "Edit",
         Icon: <Edit size={16} />,
         item: task,
         disabled: {
-          status: !taskPermissions.data.patch.allowed,
-          reason: taskPermissions.data.patch.reason,
+          status: !taskPermissions.data.update.allowed,
+          reason: taskPermissions.data.update.reason,
         },
         callback: (task: Task) => {
           openEditorDialog({
@@ -48,7 +48,13 @@ export const TaskActionsMenu: React.FC<TaskActionsMenuProps> = ({ variant, data:
         },
       }),
     ];
-  }, [task, taskPermissions.data.patch.allowed, taskPermissions.data.patch.reason, openEditorDialog, triggerPatchTask]);
+  }, [
+    task,
+    taskPermissions.data.update.allowed,
+    taskPermissions.data.update.reason,
+    openEditorDialog,
+    triggerPatchTask,
+  ]);
 
   return (
     <>
