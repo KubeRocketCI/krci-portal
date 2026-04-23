@@ -66,6 +66,7 @@ export function createDependencyTrackClient(): DependencyTrackClient {
     throw new TRPCError({
       code: "INTERNAL_SERVER_ERROR",
       message: "DEPENDENCY_TRACK_URL environment variable is not configured",
+      cause: { kind: "sca_not_configured", missing: "DEPENDENCY_TRACK_URL" },
     });
   }
 
@@ -73,6 +74,7 @@ export function createDependencyTrackClient(): DependencyTrackClient {
     throw new TRPCError({
       code: "INTERNAL_SERVER_ERROR",
       message: "DEPENDENCY_TRACK_API_KEY environment variable is not configured",
+      cause: { kind: "sca_not_configured", missing: "DEPENDENCY_TRACK_API_KEY" },
     });
   }
 
