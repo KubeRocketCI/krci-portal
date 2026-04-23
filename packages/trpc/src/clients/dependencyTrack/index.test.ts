@@ -1,4 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { TRPCError } from "@trpc/server";
 import { DependencyTrackClient } from "./index.js";
 
 const originalEnv = process.env;
@@ -20,12 +21,57 @@ describe("createDependencyTrackClient", () => {
     expect(() => createDependencyTrackClient()).toThrow("DEPENDENCY_TRACK_URL");
   });
 
+  it("attaches sca_not_configured cause when DEPENDENCY_TRACK_URL is missing", async () => {
+    delete process.env.DEPENDENCY_TRACK_URL;
+    const { createDependencyTrackClient } = await import("./index.js");
+
+    let caught: unknown;
+    try {
+      createDependencyTrackClient();
+    } catch (err) {
+      caught = err;
+    }
+
+    expect(caught).toBeInstanceOf(TRPCError);
+    const trpcErr = caught as TRPCError;
+    expect(trpcErr.code).toBe("INTERNAL_SERVER_ERROR");
+    // TRPCError wraps plain objects in an UnknownCauseError instance, so use
+    // objectContaining rather than a deep-equality check on the constructor.
+    expect(trpcErr.cause).toMatchObject({
+      kind: "sca_not_configured",
+      missing: "DEPENDENCY_TRACK_URL",
+    });
+  });
+
   it("should throw when DEPENDENCY_TRACK_API_KEY is not set", async () => {
     process.env.DEPENDENCY_TRACK_URL = "https://dt.example.com";
     delete process.env.DEPENDENCY_TRACK_API_KEY;
     const { createDependencyTrackClient } = await import("./index.js");
 
     expect(() => createDependencyTrackClient()).toThrow("DEPENDENCY_TRACK_API_KEY");
+  });
+
+  it("attaches sca_not_configured cause when DEPENDENCY_TRACK_API_KEY is missing", async () => {
+    process.env.DEPENDENCY_TRACK_URL = "https://dt.example.com";
+    delete process.env.DEPENDENCY_TRACK_API_KEY;
+    const { createDependencyTrackClient } = await import("./index.js");
+
+    let caught: unknown;
+    try {
+      createDependencyTrackClient();
+    } catch (err) {
+      caught = err;
+    }
+
+    expect(caught).toBeInstanceOf(TRPCError);
+    const trpcErr = caught as TRPCError;
+    expect(trpcErr.code).toBe("INTERNAL_SERVER_ERROR");
+    // TRPCError wraps plain objects in an UnknownCauseError instance, so use
+    // objectContaining rather than a deep-equality check on the constructor.
+    expect(trpcErr.cause).toMatchObject({
+      kind: "sca_not_configured",
+      missing: "DEPENDENCY_TRACK_API_KEY",
+    });
   });
 
   it("should return client when env is configured", async () => {

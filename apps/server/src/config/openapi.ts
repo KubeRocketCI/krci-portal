@@ -5,6 +5,18 @@ import {
   createContext,
   type RouterInput,
 } from "@my-project/trpc";
+import { k8sCodebaseConfig } from "@my-project/shared";
+import {
+  classifyBranchResolution,
+  clampPageSize,
+  isScaNotConfiguredError,
+  latestMetricsSnapshot,
+  parseBoolQuery,
+  sortFindings,
+  toZeroIndexedPage,
+  truncateFindings,
+  type ResolvedBranch,
+} from "./sca-helpers.js";
 import { TRPCError } from "@trpc/server";
 import { getHTTPStatusCodeFromError } from "@trpc/server/http";
 import { generateOpenApiDocument } from "trpc-to-openapi";
@@ -363,6 +375,304 @@ export function registerOpenApi(
       });
     } catch (error) {
       return handleTRPCError(error, res);
+    }
+  });
+
+  // ---------------------------------------------------------------------------
+  // Dependency-Track — view proxies for `krci sca`
+  // ---------------------------------------------------------------------------
+
+  // Attempt to classify a thrown error. TRPCErrors (e.g. UNAUTHORIZED) go
+  // through `handleTRPCError` so the caller gets the correct status. Any other
+  // error originating from the Dep-Track client is translated to 502 Bad
+  // Gateway; upstream-unconfigured TRPCErrors (INTERNAL_SERVER_ERROR whose
+  // message mentions the DT env vars) are translated to 503.
+  const handleScaError = (error: unknown, res: FastifyReply): never => {
+    if (isScaNotConfiguredError(error)) {
+      res.status(503).send({
+        error: {
+          code: "SERVICE_UNAVAILABLE",
+          message: "Dependency-Track integration is not configured",
+        },
+      });
+      throw error;
+    }
+    if (error instanceof TRPCError) {
+      return handleTRPCError(error, res);
+    }
+    // Non-TRPCError thrown from DT client (network / 5xx / timeout) → 502.
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Dependency-Track request failed";
+    res.status(502).send({ error: { code: "BAD_GATEWAY", message } });
+    throw error;
+  };
+
+  // Resolves the Dep-Track `version` value for a given codebase. When the
+  // caller supplies `branch`, that value is returned verbatim. When `branch`
+  // is empty/undefined, the Codebase CR is read via the same in-process
+  // caller the UI uses (`caller.k8s.get`) and `spec.defaultBranch` is
+  // returned. The Portal's default cluster/namespace come from the same env
+  // vars that power `caller.config.get()`, so the CLI does not need to know
+  // or send them.
+  async function resolveBranch(
+    caller: Awaited<ReturnType<typeof buildCaller>>,
+    codebase: string,
+    branch?: string
+  ): Promise<ResolvedBranch> {
+    const clusterName = process.env.DEFAULT_CLUSTER_NAME || "";
+    const namespace = process.env.DEFAULT_CLUSTER_NAMESPACE || "";
+
+    return classifyBranchResolution(branch, async () =>
+      caller.k8s.get({
+        clusterName,
+        namespace,
+        name: codebase,
+        resourceConfig: k8sCodebaseConfig,
+      })
+    );
+  }
+
+  function sendResolveBranchFailure(
+    res: FastifyReply,
+    failure: Extract<ResolvedBranch, { ok: false }>,
+    codebase: string
+  ) {
+    const body =
+      failure.reason === "codebase_not_found"
+        ? {
+            reason: failure.reason,
+            message: `Codebase '${codebase}' not found`,
+          }
+        : {
+            reason: failure.reason,
+            message: `Codebase '${codebase}' has no spec.defaultBranch configured`,
+          };
+    return res.code(404).send(body);
+  }
+
+  // GET /rest/v1/sca/list (protected) — proxies dependencyTrack.getProjects
+  fastify.get<{
+    Querystring: {
+      pageNumber?: string;
+      pageSize?: string;
+      searchTerm?: string;
+      onlyRoot?: "true" | "false";
+      excludeInactive?: "true" | "false";
+    };
+  }>("/rest/v1/sca/list", async (req, res) => {
+    try {
+      const { pageNumber, pageSize, searchTerm, onlyRoot, excludeInactive } =
+        req.query;
+      const parsedPageNumber = parsePositiveIntQuery(pageNumber);
+      const parsedPageSize = parsePositiveIntQuery(pageSize);
+      if (parsedPageNumber === "invalid") {
+        return res
+          .code(400)
+          .send({ error: "pageNumber must be a positive integer" });
+      }
+      if (parsedPageSize === "invalid") {
+        return res
+          .code(400)
+          .send({ error: "pageSize must be a positive integer" });
+      }
+
+      const caller = await buildCaller(req, res);
+      // CLI is 1-indexed (matches sonar). tRPC procedure is 0-indexed. Subtract 1.
+      // Clamp pageSize to the procedure ceiling.
+      const result = await caller.dependencyTrack.getProjects({
+        pageNumber: toZeroIndexedPage(parsedPageNumber),
+        pageSize: clampPageSize(parsedPageSize),
+        searchTerm: searchTerm || undefined,
+        onlyRoot: parseBoolQuery(onlyRoot) ?? true,
+        excludeInactive: parseBoolQuery(excludeInactive) ?? true,
+      });
+
+      return {
+        items: result.projects ?? [],
+        totalCount: result.totalCount ?? 0,
+      };
+    } catch (error) {
+      return handleScaError(error, res);
+    }
+  });
+
+  // GET /rest/v1/sca/get (protected) — proxies dependencyTrack.getProjectByNameAndVersion + getProjectMetrics
+  fastify.get<{
+    Querystring: {
+      codebase: string;
+      branch?: string;
+    };
+  }>("/rest/v1/sca/get", async (req, res) => {
+    try {
+      const { codebase, branch } = req.query;
+      if (!codebase) {
+        return res.code(400).send({ error: "codebase is required" });
+      }
+
+      const caller = await buildCaller(req, res);
+      const resolved = await resolveBranch(
+        caller,
+        codebase,
+        branch || undefined
+      );
+      if (!resolved.ok) {
+        return sendResolveBranchFailure(res, resolved, codebase);
+      }
+
+      const project = await caller.dependencyTrack.getProjectByNameAndVersion({
+        projectName: codebase,
+        defaultBranch: resolved.branch,
+      });
+
+      if (!project) {
+        return { status: "NONE" as const };
+      }
+
+      // `getProjectMetrics` returns a time series; the CLI wants the latest snapshot.
+      const series = await caller.dependencyTrack.getProjectMetrics({
+        uuid: project.uuid,
+      });
+      const latestMetrics = latestMetricsSnapshot(series);
+
+      return {
+        status: "OK" as const,
+        project: {
+          ...project,
+          version: resolved.branch,
+        },
+        metrics: latestMetrics,
+      };
+    } catch (error) {
+      return handleScaError(error, res);
+    }
+  });
+
+  // GET /rest/v1/sca/components (protected) — proxies dependencyTrack.getComponents
+  fastify.get<{
+    Querystring: {
+      codebase: string;
+      branch?: string;
+      pageNumber?: string;
+      pageSize?: string;
+      onlyOutdated?: "true" | "false";
+      onlyDirect?: "true" | "false";
+    };
+  }>("/rest/v1/sca/components", async (req, res) => {
+    try {
+      const {
+        codebase,
+        branch,
+        pageNumber,
+        pageSize,
+        onlyOutdated,
+        onlyDirect,
+      } = req.query;
+      if (!codebase) {
+        return res.code(400).send({ error: "codebase is required" });
+      }
+      const parsedPageNumber = parsePositiveIntQuery(pageNumber);
+      const parsedPageSize = parsePositiveIntQuery(pageSize);
+      if (parsedPageNumber === "invalid") {
+        return res
+          .code(400)
+          .send({ error: "pageNumber must be a positive integer" });
+      }
+      if (parsedPageSize === "invalid") {
+        return res
+          .code(400)
+          .send({ error: "pageSize must be a positive integer" });
+      }
+
+      const caller = await buildCaller(req, res);
+      const resolved = await resolveBranch(
+        caller,
+        codebase,
+        branch || undefined
+      );
+      if (!resolved.ok) {
+        return sendResolveBranchFailure(res, resolved, codebase);
+      }
+
+      const project = await caller.dependencyTrack.getProjectByNameAndVersion({
+        projectName: codebase,
+        defaultBranch: resolved.branch,
+      });
+
+      if (!project) {
+        return { status: "NONE" as const, items: [], totalCount: 0 };
+      }
+
+      const components = await caller.dependencyTrack.getComponents({
+        uuid: project.uuid,
+        pageNumber: toZeroIndexedPage(parsedPageNumber),
+        pageSize: clampPageSize(parsedPageSize),
+        onlyOutdated: parseBoolQuery(onlyOutdated),
+        onlyDirect: parseBoolQuery(onlyDirect),
+      });
+
+      return {
+        status: "OK" as const,
+        items: components.components ?? [],
+        totalCount: components.totalCount ?? 0,
+      };
+    } catch (error) {
+      return handleScaError(error, res);
+    }
+  });
+
+  // GET /rest/v1/sca/findings (protected) — proxies dependencyTrack.getFindingsByProject
+  fastify.get<{
+    Querystring: {
+      codebase: string;
+      branch?: string;
+      suppressed?: "true" | "false";
+      source?: string;
+    };
+  }>("/rest/v1/sca/findings", async (req, res) => {
+    try {
+      const { codebase, branch, suppressed, source } = req.query;
+      if (!codebase) {
+        return res.code(400).send({ error: "codebase is required" });
+      }
+
+      const caller = await buildCaller(req, res);
+      const resolved = await resolveBranch(
+        caller,
+        codebase,
+        branch || undefined
+      );
+      if (!resolved.ok) {
+        return sendResolveBranchFailure(res, resolved, codebase);
+      }
+
+      const project = await caller.dependencyTrack.getProjectByNameAndVersion({
+        projectName: codebase,
+        defaultBranch: resolved.branch,
+      });
+
+      if (!project) {
+        return { status: "NONE" as const, items: [], truncated: false };
+      }
+
+      const all = await caller.dependencyTrack.getFindingsByProject({
+        uuid: project.uuid,
+        suppressed: parseBoolQuery(suppressed),
+        source: source || undefined,
+      });
+
+      // Deterministic sort per spec §D10, then truncate at SCA_FINDINGS_MAX.
+      const sorted = sortFindings(all);
+      const { items, truncated } = truncateFindings(sorted);
+
+      return {
+        status: "OK" as const,
+        items,
+        truncated,
+      };
+    } catch (error) {
+      return handleScaError(error, res);
     }
   });
 
