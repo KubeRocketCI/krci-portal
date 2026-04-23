@@ -13,6 +13,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Fastify, { type FastifyInstance } from "fastify";
 import { TRPCError } from "@trpc/server";
 import type { DBSessionStore } from "@/clients/db-session-store/index.js";
+import { createMockedDBSessionStore } from "@my-project/trpc/__mocks__/context.js";
+import { mockSession } from "@my-project/trpc/__mocks__/session.js";
+import type { CustomSession } from "@my-project/trpc";
 
 // ---------------------------------------------------------------------------
 // Module mock — must be declared before any import that transitively imports
@@ -57,12 +60,9 @@ import { registerOpenApi } from "./openapi.js";
 // `registerOpenApi` accepts DBSessionStore (a concrete class). In tests we
 // never reach any code path that calls methods on the store because createCaller
 // is fully mocked, so a cast is safe here.
-const MOCK_SESSION_STORE = {
-  get: vi.fn(),
-  set: vi.fn(),
-  destroy: vi.fn(),
-  cleanup: vi.fn(),
-} as unknown as DBSessionStore;
+const MOCK_SESSION_STORE = createMockedDBSessionStore(
+  mockSession as unknown as CustomSession
+) as unknown as DBSessionStore;
 
 const MOCK_OIDC_CONFIG = {
   issuerURL: "https://oidc.example.com",

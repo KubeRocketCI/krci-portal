@@ -2,6 +2,7 @@ import { vi, describe, it, expect, beforeEach, afterEach, Mock } from "vitest";
 import Database from "better-sqlite3";
 import { DBSessionStore } from ".";
 import { CustomSession } from "@my-project/trpc";
+import { mockSession } from "@my-project/trpc/__mocks__/session.js";
 
 // Mock the better-sqlite3 module
 vi.mock("better-sqlite3", () => {
@@ -57,18 +58,6 @@ describe("DBSessionStore", () => {
 
   describe("get", () => {
     it("should return session data for valid session", async () => {
-      // Use a string for expires to match JSON-parsed output
-      const expiresDate = new Date(Date.now() + 10000);
-      const mockSession = {
-        user: {
-          data: {
-            name: "John Doe",
-          },
-        },
-        cookie: {
-          expires: expiresDate.toISOString(),
-        } as unknown as CustomSession["cookie"], // Changed to string
-      };
       const dbSession = {
         id: "session-1",
         expires_at: Date.now() + 10000,
@@ -81,7 +70,7 @@ describe("DBSessionStore", () => {
       await new Promise((resolve) => {
         store.get("session-1", (err, result) => {
           expect(err).toBeNull();
-          expect(result).toEqual(mockSession); // Should now pass
+          expect(result).toEqual(JSON.parse(JSON.stringify(mockSession)));
           resolve(null);
         });
       });
@@ -120,18 +109,10 @@ describe("DBSessionStore", () => {
 
   describe("set", () => {
     it("should store session with provided expiry", async () => {
-      const mockSession = {
-        user: {
-          data: {
-            name: "John Doe",
-          },
-        },
-        cookie: { expires: new Date(Date.now() + 10000) },
-      } as unknown as CustomSession;
       const sessionId = "session-1";
 
       await new Promise((resolve) => {
-        store.set(sessionId, mockSession, (err) => {
+        store.set(sessionId, mockSession as unknown as CustomSession, (err) => {
           expect(err).toBeNull();
           expect(mockDb.prepare).toHaveBeenCalledWith(
             expect.stringContaining("INSERT INTO sessions")
@@ -147,23 +128,19 @@ describe("DBSessionStore", () => {
     });
 
     it("should use default expiry when none provided", async () => {
-      const mockSession = {
-        user: {
-          data: {
-            name: "John Doe",
-          },
-        },
+      const noExpireSession = {
+        ...mockSession,
         cookie: {},
       } as unknown as CustomSession;
       const sessionId = "session-1";
 
       await new Promise((resolve) => {
-        store.set(sessionId, mockSession, (err) => {
+        store.set(sessionId, noExpireSession, (err) => {
           expect(err).toBeNull();
           expect((mockDb.prepare as Mock)().run).toHaveBeenCalledWith(
             sessionId,
             expect.any(Number),
-            JSON.stringify(mockSession)
+            JSON.stringify(noExpireSession)
           );
           resolve(null);
         });
