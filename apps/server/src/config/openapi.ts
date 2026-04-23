@@ -48,9 +48,10 @@ interface RegisterOpenApiOptions {
  * crashes. createCaller is tRPC's first-party server-side caller and
  * invokes procedures in-process without any adapter layer.
  *
- * When trpc-to-openapi ships a fix for tRPC v11, these routes can be
- * replaced with a single fastify.register(fastifyTRPCOpenApiPlugin, ...)
- * call. The REST contract (paths, methods, JSON shapes) stays the same.
+ * TODO: replace all hand-written routes below with a single
+ * fastify.register(fastifyTRPCOpenApiPlugin, ...) call once trpc-to-openapi
+ * ships tRPC v11 support. The REST contract (paths, methods, JSON shapes)
+ * must stay the same. Track: https://github.com/mcampa/trpc-to-openapi/issues
  */
 export function registerOpenApi(
   fastify: FastifyInstance,
@@ -75,6 +76,8 @@ export function registerOpenApi(
    * Maps TRPCError codes to proper HTTP status codes.
    * Without this, Fastify's default error handler returns 500 for all
    * tRPC errors (e.g. UNAUTHORIZED would surface as HTTP 500 instead of 401).
+   * TODO: this helper can be deleted once fastifyTRPCOpenApiPlugin handles
+   * error mapping natively.
    */
   function handleTRPCError(error: unknown, res: FastifyReply): never {
     if (error instanceof TRPCError) {
@@ -224,6 +227,8 @@ export function registerOpenApi(
   // SonarQube — view proxies for `krci sonar`
   // ---------------------------------------------------------------------------
 
+  // TODO: parsePositiveIntQuery and all manual query-string coercion below can
+  // be deleted once fastifyTRPCOpenApiPlugin handles input parsing automatically.
   // Parses a positive-integer query string. Returns `undefined` when absent,
   // or a typed marker when the value is present but not a positive integer so
   // the caller can emit a 400.
