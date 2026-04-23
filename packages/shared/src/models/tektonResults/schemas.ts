@@ -1,35 +1,44 @@
 import "zod-openapi/extend";
 import { z } from "zod";
 
-export const tektonResultSummarySchema = z
-  .object({
-    record: z.string(),
-    type: z.string(),
-    status: z.enum(["UNKNOWN", "SUCCESS", "FAILURE", "TIMEOUT", "CANCELLED"]),
-    start_time: z.string().optional(),
-    end_time: z.string().optional(),
-    annotations: z.record(z.unknown()).optional(),
-  })
-  .openapi({ ref: "TektonResultSummary" });
+// Protojson with EmitUnpopulated=true emits `null` for unpopulated message
+// fields. These helpers coerce null → undefined so optional fields stay typed
+// as `T | undefined` rather than `T | null | undefined`.
+const nullableString = z
+  .string()
+  .nullish()
+  .transform((v) => v ?? undefined)
+  .openapi({ effectType: "input" });
 
-export const tektonResultSchema = z
-  .object({
-    uid: z.string(),
-    name: z.string(),
-    create_time: z.string(),
-    update_time: z.string(),
-    summary: tektonResultSummarySchema.optional(),
-    annotations: z.record(z.unknown()).optional(),
-    etag: z.string().optional(),
-  })
-  .openapi({ ref: "TektonResult" });
+export const tektonResultSummarySchema = z.object({
+  record: z.string(),
+  type: z.string(),
+  // `.catch` forwards-compatible: unknown enum values default to "UNKNOWN"
+  status: z.enum(["UNKNOWN", "SUCCESS", "FAILURE", "TIMEOUT", "CANCELLED"]).catch("UNKNOWN"),
+  start_time: nullableString,
+  end_time: nullableString,
+  annotations: z.record(z.unknown()).optional(),
+});
 
-export const tektonResultsListOutputSchema = z
-  .object({
-    results: z.array(tektonResultSchema),
-    nextPageToken: z.string().optional(),
-  })
-  .openapi({ ref: "PipelineRunResultsResponse" });
+export const tektonResultSchema = z.object({
+  uid: z.string(),
+  name: z.string(),
+  create_time: z.string(),
+  update_time: z.string(),
+  summary: tektonResultSummarySchema
+    .nullish()
+    .transform((v) => v ?? undefined)
+    .openapi({ effectType: "input" }),
+  annotations: z.record(z.unknown()).optional(),
+  etag: z.string().optional(),
+});
+
+// No `.openapi({ ref })` wrappers — keeps these types out of the OpenAPI
+// components section so external CLI tools don't generate conflicting models.
+export const tektonResultsListOutputSchema = z.object({
+  results: z.array(tektonResultSchema),
+  nextPageToken: z.string().optional(),
+});
 
 const stepTerminatedSchema = z
   .object({
