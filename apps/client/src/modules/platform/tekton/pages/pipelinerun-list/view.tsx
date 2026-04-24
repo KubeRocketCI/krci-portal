@@ -17,7 +17,7 @@ export default function PipelineRunListView() {
         title="PipelineRuns"
         description="Monitor the progress of overall pipeline runs launched within the platform."
       >
-        <Card className="px-6">
+        <Card className="px-6 pb-6">
           <Pipelines />
         </Card>
       </PageContentWrapper>

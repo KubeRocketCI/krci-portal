@@ -22,6 +22,7 @@ export const PipelineRunList = ({
   isLoading,
   blockerError,
   errors,
+  pagination,
   pipelineRunTypes = [
     pipelineType.review,
     pipelineType.build,
@@ -87,6 +88,7 @@ export const PipelineRunList = ({
         isLoading={isLoading}
         emptyListComponent={<EmptyList missingItemName={"pipeline runs"} />}
         filterFunction={filterFunction}
+        pagination={pagination}
         selection={{
           selected,
           handleSelectAll: handleSelectAllClick,

@@ -1,8 +1,14 @@
 import { usePipelineRunWatchList } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { useClusterStore } from "@/k8s/store";
-import { PipelineRun, TektonResult, normalizeResultToPipelineRun } from "@my-project/shared";
+import { PipelineRun, TektonResult, normalizeResultToPipelineRun, pipelineRunLabels } from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
-import { buildAnnotationsFilter, buildNameSearchFilter } from "@/modules/platform/tekton/utils/celFilters";
+import {
+  buildAnnotationsFilter,
+  buildCodebaseFilter,
+  buildNameSearchFilter,
+  buildPipelineTypeFilter,
+  buildStatusFilter,
+} from "@/modules/platform/tekton/utils/celFilters";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -25,12 +31,27 @@ interface HistoryPage {
  *
  * @param enabled - Whether the K8s watch and history queries are enabled.
  *   Defaults to true. Set to false to defer data fetching (e.g., waiting for route params).
+ *
+ * @param searchTerm - Debounced search term for server-side name filtering via Tekton Results CEL.
+ *
+ * @param status - K8s condition status value ("true" | "false" | "unknown" | "all").
+ *   Translated to Tekton Results `summary.status` CEL filter for history.
+ *   Live K8s items are filtered in-memory by the FilterProvider matchFunction.
+ *
+ * @param pipelineType - Pipeline type label value (e.g. "build", "review", "deploy").
+ *   Applied as a K8s label selector for the live watch and as a CEL annotation filter for history.
+ *
+ * @param codebases - List of codebase names to filter by.
+ *   Applied as a CEL annotation OR-filter for history.
+ *   Live K8s items with a single codebase also get a label selector.
  */
 interface UseUnifiedPipelineRunListOptions {
   labels?: Record<string, string>;
   enabled?: boolean;
-  /** Debounced search term for server-side name filtering via Tekton Results CEL. */
   searchTerm?: string;
+  status?: string;
+  pipelineType?: string;
+  codebases?: string[];
 }
 
 /**
@@ -65,7 +86,7 @@ export interface UseUnifiedPipelineRunListResult {
  * 5. Concatenate live + filtered history, sorted by creation time (newest first)
  */
 export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOptions): UseUnifiedPipelineRunListResult {
-  const { labels, enabled = true, searchTerm } = options ?? {};
+  const { labels, enabled = true, searchTerm, status, pipelineType, codebases } = options ?? {};
   const trpc = useTRPCClient();
   const { namespace, clusterName } = useClusterStore(
     useShallow((state) => ({
@@ -74,22 +95,35 @@ export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOpt
     }))
   );
 
+  // Merge caller-provided labels with pipelineType so the K8s watch is pre-filtered
+  // when a single type is selected. Multi-value codebase filter can't be expressed as
+  // K8s equality label selectors, so live items are handled by the FilterProvider matchFunction.
+  const watchLabels = React.useMemo(() => {
+    const merged: Record<string, string> = { ...labels };
+    if (pipelineType && pipelineType !== "all") merged[pipelineRunLabels.pipelineType] = pipelineType;
+    if (codebases && codebases.length === 1) merged[pipelineRunLabels.codebase] = codebases[0];
+    return merged;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- labels serialized; scalar deps are direct
+  }, [labels && Object.entries(labels).flat().join("\0"), pipelineType, codebases?.join("\0")]);
+
   // Live K8s PipelineRuns (label selectors applied by the watch)
   const pipelineRunsWatch = usePipelineRunWatchList({
-    labels,
+    labels: watchLabels,
     queryOptions: { enabled },
   });
 
-  // Derive CEL filter from labels and/or search term.
-  // Labels use annotation-based CEL syntax for the Results table.
-  // Search term filters by the `object.metadata.name` annotation.
+  // Derive CEL filter from all active filter values for the Tekton Results history query.
+  // Changing any filter resets pagination (queryKey changes → page 1 of filtered results).
   const celFilter = React.useMemo(() => {
     const labelFilter = labels && Object.keys(labels).length > 0 ? buildAnnotationsFilter(labels) : undefined;
     const nameFilter = searchTerm ? buildNameSearchFilter(searchTerm) : undefined;
-    const parts = [labelFilter, nameFilter].filter(Boolean);
+    const statusFilter = buildStatusFilter(status ?? "");
+    const typeFilter = buildPipelineTypeFilter(pipelineType ?? "");
+    const codebaseFilter = buildCodebaseFilter(codebases ?? []);
+    const parts = [labelFilter, nameFilter, statusFilter, typeFilter, codebaseFilter].filter(Boolean);
     return parts.length > 0 ? parts.join(" && ") : undefined;
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- labels serialized to avoid object identity churn; searchTerm is a direct dep
-  }, [labels && Object.entries(labels).flat().join("\0"), searchTerm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- labels/codebases serialized to avoid object identity churn
+  }, [labels && Object.entries(labels).flat().join("\0"), searchTerm, status, pipelineType, codebases?.join("\0")]);
 
   // History PipelineRuns from Tekton Results (lightweight results table)
   const historyQuery = useInfiniteQuery<HistoryPage, Error>({

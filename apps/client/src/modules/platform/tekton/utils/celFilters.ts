@@ -60,3 +60,64 @@ export function buildNameSearchFilter(searchTerm: string): string | undefined {
   if (!trimmed) return undefined;
   return `annotations["${tektonResultAnnotations.objectMetadataName}"].contains('${escapeCELString(trimmed)}')`;
 }
+
+// ---------------------------------------------------------------------------
+// Status filter (for Results table queries).
+// Tekton Results stores status in the top-level `summary.status` field using
+// its own enum (SUCCESS, FAILURE, TIMEOUT, CANCELLED, UNKNOWN), while the
+// client uses the K8s condition status values ("true", "false", "unknown").
+// ---------------------------------------------------------------------------
+
+/**
+ * Maps K8s PipelineRun condition status values to Tekton Results proto enum integers.
+ * Proto RecordSummary.Status: UNKNOWN=0, SUCCESS=1, FAILURE=2, CANCELLED=3, TIMEOUT=4.
+ * CEL compares summary.status as int, not string — string literals cause a type error.
+ * "false" maps to all three terminal failure states since they all render as failed in the UI.
+ */
+const K8S_STATUS_TO_RESULT_STATUS_INTS: Record<string, number[]> = {
+  true: [1],
+  false: [2, 3, 4],
+  unknown: [0],
+};
+
+/**
+ * Build a CEL filter on `summary.status` from a K8s condition status value.
+ * Returns undefined when status is "all" or unrecognized.
+ */
+export function buildStatusFilter(status: string): string | undefined {
+  if (!status || status === "all") return undefined;
+  const ints = K8S_STATUS_TO_RESULT_STATUS_INTS[status];
+  if (!ints) return undefined;
+  if (ints.length === 1) return `summary.status == ${ints[0]}`;
+  return `(${ints.map((n) => `summary.status == ${n}`).join(" || ")})`;
+}
+
+// ---------------------------------------------------------------------------
+// Pipeline type filter (for Results table queries).
+// The pipeline type is stored as the `app.edp.epam.com/pipelinetype` annotation.
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a CEL filter on the pipeline type annotation.
+ * Returns undefined when type is "all" or empty.
+ */
+export function buildPipelineTypeFilter(pipelineType: string): string | undefined {
+  if (!pipelineType || pipelineType === "all") return undefined;
+  return buildAnnotationClause(tektonResultAnnotations.pipelineType, pipelineType);
+}
+
+// ---------------------------------------------------------------------------
+// Codebase filter (for Results table queries).
+// The codebase is stored as the `app.edp.epam.com/codebase` annotation.
+// Multiple codebases are joined with OR since a run belongs to exactly one.
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a CEL filter on the codebase annotation for one or more codebase names.
+ * Returns undefined when the list is empty.
+ */
+export function buildCodebaseFilter(codebases: string[]): string | undefined {
+  if (!codebases || codebases.length === 0) return undefined;
+  if (codebases.length === 1) return buildAnnotationClause(tektonResultAnnotations.codebase, codebases[0]);
+  return `(${codebases.map((c) => buildAnnotationClause(tektonResultAnnotations.codebase, c)).join(" || ")})`;
+}

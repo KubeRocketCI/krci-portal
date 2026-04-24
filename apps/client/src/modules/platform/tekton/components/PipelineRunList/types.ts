@@ -1,4 +1,5 @@
 import { SavedTableSettings } from "@/core/components/Table/components/TableSettings/types";
+import { TablePagination } from "@/core/components/Table/types";
 import { RequestError, ValueOf } from "@/core/types/global";
 import { PipelineRun, PipelineType } from "@my-project/shared";
 import { FilterTypeWithOptionAll } from "@/k8s/types";
@@ -21,4 +22,5 @@ export interface PipelineRunListProps {
   filterControls?: ValueOf<typeof pipelineRunFilterControlNames>[];
   /** Override the route path used for row detail links. Defaults to PATH_PIPELINERUN_DETAILS_FULL. */
   detailRoutePath?: string;
+  pagination?: TablePagination;
 }

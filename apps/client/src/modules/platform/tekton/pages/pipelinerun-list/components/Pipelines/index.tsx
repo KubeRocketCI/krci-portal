@@ -8,7 +8,11 @@ import {
   matchFunctions,
   pipelineRunFilterControlNames,
 } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
-import { useDebouncedPipelineRunSearch } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter";
+import {
+  useDebouncedPipelineRunSearch,
+  usePipelineRunFilter,
+} from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter";
+import { useStore } from "@tanstack/react-form";
 
 const TABLE_ID = "pipelineruns-unified";
 const TABLE_NAME = "Unified Pipeline Run List";
@@ -29,9 +33,17 @@ export function Pipelines() {
 
 function PipelinesContent() {
   const debouncedSearch = useDebouncedPipelineRunSearch();
+  const { form } = usePipelineRunFilter();
+
+  const pipelineType = useStore(form.store, (s) => s.values.pipelineType);
+  const status = useStore(form.store, (s) => s.values.status);
+  const codebases = useStore(form.store, (s) => s.values.codebases);
 
   const { mergedPipelineRuns, isLoading, isHistoryLoading, historyQuery } = useUnifiedPipelineRunList({
     searchTerm: debouncedSearch,
+    pipelineType,
+    status,
+    codebases,
   });
 
   return (
@@ -49,6 +61,7 @@ function PipelinesContent() {
           pipelineRunFilterControlNames.NAMESPACES,
         ]}
         detailRoutePath={PATH_PIPELINERUN_DETAILS_FULL}
+        pagination={{ show: false }}
       />
       <HistoryLoadingFooter isHistoryLoading={isHistoryLoading} historyQuery={historyQuery} />
     </div>
