@@ -18,7 +18,30 @@ const SCA_SEVERITY_RANK: Record<string, number> = {
 export const SCA_FINDINGS_MAX = 1000;
 
 /** Upper bound on the components / list pageSize (matches current tRPC procedure ceiling). */
-const SCA_PAGE_SIZE_MAX = 100;
+export const SCA_PAGE_SIZE_MAX = 100;
+
+/** Canonical Dep-Track severity values. */
+export const SCA_SEVERITIES = [
+  "CRITICAL",
+  "HIGH",
+  "MEDIUM",
+  "LOW",
+  "INFO",
+  "UNASSIGNED",
+] as const;
+export type ScaSeverity = (typeof SCA_SEVERITIES)[number];
+export type SeveritySet = ReadonlySet<ScaSeverity>;
+
+/** Cap on auto-paging iterations when the severity filter triggers the full-project scan loop. */
+export const SCA_PAGE_SIZE_MAX_PAGES = 50;
+
+/**
+ * Default page size for the severity-filter pagination path.
+ * Mirrors the `pageSize.optional().default(25)` in the `getComponents` tRPC
+ * procedure — keeping both in sync prevents the two code paths from silently
+ * drifting apart.
+ */
+export const SCA_DEFAULT_PAGE_SIZE = 25;
 
 /**
  * Sort findings by severity desc, component.name asc, vulnerability.vulnId asc.
@@ -130,6 +153,83 @@ export async function classifyBranchResolution(
 }
 
 /**
+ * Parse a comma-separated severity query string into a canonical set.
+ * Case-insensitive; empty / undefined input returns undefined (no filter).
+ * Unknown token → "invalid" sentinel so the caller can respond 400.
+ */
+export function parseSeverityCsv(
+  raw: string | undefined
+): SeveritySet | "invalid" | undefined {
+  if (raw === undefined || raw === "") return undefined;
+  const allowed = new Set<string>(SCA_SEVERITIES);
+  const out = new Set<ScaSeverity>();
+  for (const token of raw.split(",")) {
+    const trimmed = token.trim();
+    if (trimmed === "") continue;
+    const upper = trimmed.toUpperCase();
+    if (!allowed.has(upper)) return "invalid";
+    out.add(upper as ScaSeverity);
+  }
+  if (out.size === 0) return undefined;
+  return out;
+}
+
+/** The metric counter fields this module reads off a DT component. */
+export interface VulnerabilityMetrics {
+  readonly critical: number;
+  readonly high: number;
+  readonly medium: number;
+  readonly low: number;
+  readonly unassigned: number;
+}
+
+/**
+ * Return true iff the component has at least one vulnerability at a severity
+ * present in `allowed`. Components without metrics match nothing.
+ *
+ * INFO and UNASSIGNED both consult `metrics.unassigned` — Dep-Track folds
+ * these together at the rollup level and the CLI's inclusive expansion
+ * already sends both when either is requested.
+ */
+export function componentMatchesSeverity(
+  component: { readonly metrics?: VulnerabilityMetrics | null },
+  allowed: SeveritySet
+): boolean {
+  const m = component.metrics;
+  if (!m) return false;
+  if (allowed.has("CRITICAL") && m.critical > 0) return true;
+  if (allowed.has("HIGH") && m.high > 0) return true;
+  if (allowed.has("MEDIUM") && m.medium > 0) return true;
+  if (allowed.has("LOW") && m.low > 0) return true;
+  if ((allowed.has("INFO") || allowed.has("UNASSIGNED")) && m.unassigned > 0)
+    return true;
+  return false;
+}
+
+/**
+ * Slice a 1-indexed page out of the given array. Returns the slice and the
+ * total row count of the input (caller reports it back as totalCount).
+ * Out-of-range page numbers yield an empty slice but still expose the true
+ * totalCount so callers can render "page X of Y" accurately.
+ */
+export function paginate<T>(
+  items: readonly T[],
+  pageNumber: number | undefined,
+  pageSize: number | undefined
+): { items: T[]; totalCount: number } {
+  const size = clampPageSize(pageSize) ?? SCA_DEFAULT_PAGE_SIZE;
+  const page = pageNumber === undefined ? 1 : Math.max(1, pageNumber);
+  const start = (page - 1) * size;
+  if (start >= items.length) {
+    return { items: [], totalCount: items.length };
+  }
+  return {
+    items: items.slice(start, start + size),
+    totalCount: items.length,
+  };
+}
+
+/**
  * Matches the "Dep-Track env var X is not configured" TRPCError emitted by
  * `createDependencyTrackClient()`. Used by the REST handlers to translate that
  * specific INTERNAL_SERVER_ERROR into HTTP 503 Service Unavailable.
@@ -144,4 +244,74 @@ export function isScaNotConfiguredError(error: unknown): boolean {
   if (error.code !== "INTERNAL_SERVER_ERROR") return false;
   const cause = error.cause as Record<string, unknown> | null | undefined;
   return cause?.kind === "sca_not_configured";
+}
+
+/**
+ * The shape of a single upstream page response for components. Generic so this
+ * module stays free of any Fastify / caller dependency — the caller injects the
+ * concrete upstream function via `fetchPage`.
+ */
+export interface ComponentFetchPage<T> {
+  components: readonly T[];
+  totalCount: number;
+}
+
+/**
+ * Fetch every component from an upstream paginated source, collecting all pages
+ * into a flat array. Stops when:
+ *   a) the collected length reaches `totalCount` reported by upstream, or
+ *   b) an upstream page returns an empty batch (upstream has stopped yielding), or
+ *   c) `maxPages` iterations are exhausted (safety cap), or
+ *   d) the optional `signal` fires (client disconnect / Fastify requestTimeout).
+ *
+ * Returns `{ items, truncated }` where `truncated` is `true` iff the loop
+ * exited via the safety cap while more data was still reported upstream.
+ * When `signal` fires mid-loop the in-flight `fetchPage` promise will reject
+ * (propagated naturally to the caller); no additional items are collected.
+ *
+ * @param fetchPage  Async function that fetches one page given (pageNumber, pageSize).
+ *                   `pageNumber` is 0-indexed.
+ * @param opts.maxPages           Safety cap on iterations (default: SCA_PAGE_SIZE_MAX_PAGES).
+ * @param opts.upstreamPageSize   Items per upstream request (default: SCA_PAGE_SIZE_MAX).
+ * @param opts.signal             Optional AbortSignal; loop exits immediately when aborted.
+ */
+export async function fetchAllComponents<T>(
+  fetchPage: (
+    pageNumber: number,
+    pageSize: number
+  ) => Promise<ComponentFetchPage<T>>,
+  opts?: { maxPages?: number; upstreamPageSize?: number; signal?: AbortSignal }
+): Promise<{ items: T[]; truncated: boolean }> {
+  const maxPages = opts?.maxPages ?? SCA_PAGE_SIZE_MAX_PAGES;
+  const upstreamPageSize = opts?.upstreamPageSize ?? SCA_PAGE_SIZE_MAX;
+  const signal = opts?.signal;
+
+  const out: T[] = [];
+  let total: number = Number.POSITIVE_INFINITY;
+  // Tracks whether the loop exited via safety cap (true) vs. natural completion
+  // (batch exhausted or totalCount reached). An empty batch from upstream is
+  // treated as authoritative end-of-stream even if totalCount says otherwise.
+  let hitSafetyCap = false;
+
+  for (let page = 0; page < maxPages; page += 1) {
+    // Honour caller-supplied cancellation before issuing each upstream request.
+    // If the signal already fired before the loop started this exits immediately.
+    if (signal?.aborted) {
+      throw new DOMException("fetchAllComponents aborted", "AbortError");
+    }
+
+    const res = await fetchPage(page, upstreamPageSize);
+    const batch = res.components;
+    // Empty batch = upstream has stopped yielding; treat as end-of-stream.
+    if (batch.length === 0) break;
+    out.push(...batch);
+    total = res.totalCount;
+    if (out.length >= total) break;
+    // If this was the last allowed iteration and we haven't finished, flag it.
+    if (page === maxPages - 1 && out.length < total) {
+      hitSafetyCap = true;
+    }
+  }
+
+  return { items: out, truncated: hitSafetyCap };
 }

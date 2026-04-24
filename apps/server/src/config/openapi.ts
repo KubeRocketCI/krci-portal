@@ -9,9 +9,15 @@ import { k8sCodebaseConfig } from "@my-project/shared";
 import {
   classifyBranchResolution,
   clampPageSize,
+  componentMatchesSeverity,
+  fetchAllComponents,
   isScaNotConfiguredError,
   latestMetricsSnapshot,
+  paginate,
   parseBoolQuery,
+  parseSeverityCsv,
+  SCA_PAGE_SIZE_MAX,
+  SCA_PAGE_SIZE_MAX_PAGES,
   sortFindings,
   toZeroIndexedPage,
   truncateFindings,
@@ -23,6 +29,20 @@ import { generateOpenApiDocument } from "trpc-to-openapi";
 import { STATUS_CODES } from "node:http";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import type { DBSessionStore } from "@/clients/db-session-store";
+
+/**
+ * The element type of the `components` array returned by the DependencyTrack
+ * `getComponents` tRPC procedure. Declared once here so the severity-filter
+ * branch and related helpers share the same type without repeating the
+ * `Awaited<ReturnType<...>>` unwrapping at every call site.
+ */
+type DtComponents = NonNullable<
+  Awaited<
+    ReturnType<
+      ReturnType<typeof createCaller>["dependencyTrack"]["getComponents"]
+    >
+  >["components"]
+>;
 
 interface OidcConfig {
   issuerURL: string;
@@ -563,6 +583,7 @@ export function registerOpenApi(
       pageSize?: string;
       onlyOutdated?: "true" | "false";
       onlyDirect?: "true" | "false";
+      severity?: string;
     };
   }>("/rest/v1/sca/components", async (req, res) => {
     try {
@@ -573,6 +594,7 @@ export function registerOpenApi(
         pageSize,
         onlyOutdated,
         onlyDirect,
+        severity,
       } = req.query;
       if (!codebase) {
         return res.code(400).send({ error: "codebase is required" });
@@ -588,6 +610,14 @@ export function registerOpenApi(
         return res
           .code(400)
           .send({ error: "pageSize must be a positive integer" });
+      }
+
+      const parsedSeverity = parseSeverityCsv(severity);
+      if (parsedSeverity === "invalid") {
+        return res.code(400).send({
+          error:
+            "severity must be a comma-separated list of CRITICAL|HIGH|MEDIUM|LOW|INFO|UNASSIGNED",
+        });
       }
 
       const caller = await buildCaller(req, res);
@@ -606,21 +636,84 @@ export function registerOpenApi(
       });
 
       if (!project) {
-        return { status: "NONE" as const, items: [], totalCount: 0 };
+        return {
+          status: "NONE" as const,
+          items: [],
+          totalCount: 0,
+          truncated: false,
+        };
+      }
+
+      const { uuid } = project;
+      const filterOpts = {
+        onlyOutdated: parseBoolQuery(onlyOutdated),
+        onlyDirect: parseBoolQuery(onlyDirect),
+      };
+
+      if (parsedSeverity) {
+        // req.signal fires on client disconnect (tab closed, CLI Ctrl-C) and
+        // when Fastify's requestTimeout (30 s) fires. Threading it into
+        // fetchAllComponents ensures the auto-paging loop stops promptly rather
+        // than continuing to issue Dep-Track requests for a gone connection.
+        const { items: all, truncated } = await fetchAllComponents<
+          DtComponents[number]
+        >(
+          (pageNumber, pageSize) =>
+            caller.dependencyTrack
+              .getComponents({
+                uuid,
+                pageNumber,
+                pageSize,
+                onlyOutdated: filterOpts.onlyOutdated,
+                onlyDirect: filterOpts.onlyDirect,
+              })
+              .then((r) => ({
+                components: r.components ?? [],
+                totalCount: r.totalCount,
+              })),
+          {
+            maxPages: SCA_PAGE_SIZE_MAX_PAGES,
+            upstreamPageSize: SCA_PAGE_SIZE_MAX,
+            signal: req.signal,
+          }
+        );
+
+        if (truncated) {
+          req.log.warn(
+            {
+              codebase,
+              uuid,
+              collected: all.length,
+              upstreamTotal: `>${SCA_PAGE_SIZE_MAX_PAGES * SCA_PAGE_SIZE_MAX}`,
+            },
+            "sca components severity filter hit safety cap — results are truncated"
+          );
+        }
+
+        const filtered = all.filter((c) =>
+          componentMatchesSeverity(c, parsedSeverity)
+        );
+        const page = paginate(filtered, parsedPageNumber, parsedPageSize);
+        return {
+          status: "OK" as const,
+          items: page.items,
+          totalCount: page.totalCount,
+          truncated,
+        };
       }
 
       const components = await caller.dependencyTrack.getComponents({
-        uuid: project.uuid,
+        uuid,
         pageNumber: toZeroIndexedPage(parsedPageNumber),
         pageSize: clampPageSize(parsedPageSize),
-        onlyOutdated: parseBoolQuery(onlyOutdated),
-        onlyDirect: parseBoolQuery(onlyDirect),
+        ...filterOpts,
       });
 
       return {
         status: "OK" as const,
         items: components.components ?? [],
         totalCount: components.totalCount ?? 0,
+        truncated: false,
       };
     } catch (error) {
       return handleScaError(error, res);

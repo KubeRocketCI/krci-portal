@@ -40,6 +40,13 @@ export class ProductionFastifyServer {
       logger: true,
       trustProxy: true,
       maxParamLength: 5000,
+      // Hard upper bound on any single REST handler's wall-clock. Portal is a
+      // low-latency API layer; we do not accept requests longer than 30 s.
+      // Severity-filter auto-paging that cannot complete within this budget
+      // returns HTTP 408 — the caller narrows the query or retries. The
+      // CLI-side http.Client.Timeout sits just above (45 s) so the 408
+      // surfaces as a clean application response, not a transport drop.
+      requestTimeout: 30_000,
     });
   }
 
