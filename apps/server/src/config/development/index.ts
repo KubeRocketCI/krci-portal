@@ -35,7 +35,13 @@ export class LocalFastifyServer {
       "TEKTON_RESULTS_URL",
     ]);
 
-    this.fastify = Fastify({ logger: false, maxParamLength: 5000 });
+    this.fastify = Fastify({
+      logger: false,
+      maxParamLength: 5000,
+      // Mirror prod's requestTimeout so dev/prod divergence doesn't mask handler
+      // deadline bugs. 30 s matches the production ceiling; CLI timeout is 45 s.
+      requestTimeout: 30_000,
+    });
   }
 
   static validateRequiredEnv(keys: string[]) {

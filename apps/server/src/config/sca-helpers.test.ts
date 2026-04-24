@@ -4,9 +4,13 @@ import { TRPCError } from "@trpc/server";
 import {
   classifyBranchResolution,
   clampPageSize,
+  componentMatchesSeverity,
+  fetchAllComponents,
   isScaNotConfiguredError,
   latestMetricsSnapshot,
+  paginate,
   parseBoolQuery,
+  parseSeverityCsv,
   SCA_FINDINGS_MAX,
   sortFindings,
   toZeroIndexedPage,
@@ -276,5 +280,271 @@ describe("isScaNotConfiguredError", () => {
     ).toBe(false);
     expect(isScaNotConfiguredError(undefined)).toBe(false);
     expect(isScaNotConfiguredError("boom")).toBe(false);
+  });
+});
+
+describe("parseSeverityCsv", () => {
+  it("returns undefined for empty input", () => {
+    expect(parseSeverityCsv(undefined)).toBeUndefined();
+    expect(parseSeverityCsv("")).toBeUndefined();
+  });
+
+  it("parses a single severity case-insensitively", () => {
+    const result = parseSeverityCsv("high");
+    expect(result).toBeInstanceOf(Set);
+    expect([...(result as Set<string>)]).toEqual(["HIGH"]);
+  });
+
+  it("parses a comma-separated list and canonicalises to upper case", () => {
+    const result = parseSeverityCsv("Critical,high");
+    expect([...(result as Set<string>)].sort()).toEqual(["CRITICAL", "HIGH"]);
+  });
+
+  it("trims whitespace and collapses duplicates", () => {
+    const result = parseSeverityCsv(" HIGH , high ,critical");
+    expect([...(result as Set<string>)].sort()).toEqual(["CRITICAL", "HIGH"]);
+  });
+
+  it("returns 'invalid' on any unknown token", () => {
+    expect(parseSeverityCsv("high,garbage")).toBe("invalid");
+    expect(parseSeverityCsv("weird")).toBe("invalid");
+  });
+
+  it("returns undefined when only commas are supplied", () => {
+    expect(parseSeverityCsv(",,,")).toBeUndefined();
+  });
+});
+
+describe("componentMatchesSeverity", () => {
+  const component = (
+    counts: Partial<{
+      critical: number;
+      high: number;
+      medium: number;
+      low: number;
+      unassigned: number;
+    }>
+  ) => ({
+    metrics: {
+      critical: 0,
+      high: 0,
+      medium: 0,
+      low: 0,
+      unassigned: 0,
+      ...counts,
+    },
+  });
+
+  it("returns false when the component has no metrics", () => {
+    expect(componentMatchesSeverity({}, new Set(["HIGH"]))).toBe(false);
+    expect(componentMatchesSeverity({ metrics: null }, new Set(["HIGH"]))).toBe(
+      false
+    );
+  });
+
+  it("matches when the requested severity has a non-zero count", () => {
+    expect(
+      componentMatchesSeverity(component({ high: 2 }), new Set(["HIGH"]))
+    ).toBe(true);
+  });
+
+  it("does not match when the requested severity count is zero", () => {
+    expect(
+      componentMatchesSeverity(
+        component({ critical: 0, high: 0, medium: 5 }),
+        new Set(["HIGH"])
+      )
+    ).toBe(false);
+  });
+
+  it("INFO and UNASSIGNED both consult metrics.unassigned", () => {
+    expect(
+      componentMatchesSeverity(component({ unassigned: 1 }), new Set(["INFO"]))
+    ).toBe(true);
+    expect(
+      componentMatchesSeverity(
+        component({ unassigned: 1 }),
+        new Set(["UNASSIGNED"])
+      )
+    ).toBe(true);
+  });
+
+  it("OR semantics across multiple severities", () => {
+    expect(
+      componentMatchesSeverity(
+        component({ critical: 0, high: 1 }),
+        new Set(["CRITICAL", "HIGH"])
+      )
+    ).toBe(true);
+    expect(
+      componentMatchesSeverity(
+        component({ critical: 0, high: 0, medium: 0, low: 0, unassigned: 0 }),
+        new Set(["CRITICAL", "HIGH"])
+      )
+    ).toBe(false);
+  });
+});
+
+describe("fetchAllComponents", () => {
+  /** Build a fetchPage stub that returns pre-defined pages in order. */
+  function makePageFetcher<T>(
+    pages: Array<{ components: T[]; totalCount: number }>
+  ) {
+    let call = 0;
+    return async () => {
+      const page = pages[call++];
+      if (!page) return { components: [] as T[], totalCount: 0 };
+      return { components: page.components, totalCount: page.totalCount };
+    };
+  }
+
+  it("natural exhaustion after the first page — truncated: false", async () => {
+    const items = [{ id: 1 }, { id: 2 }, { id: 3 }];
+    const result = await fetchAllComponents(
+      makePageFetcher([{ components: items, totalCount: 3 }])
+    );
+    expect(result.items).toEqual(items);
+    expect(result.truncated).toBe(false);
+  });
+
+  it("multi-page exhaustion (3 pages, 250 total) — all collected, truncated: false", async () => {
+    const page0 = Array.from({ length: 100 }, (_, i) => ({ id: i }));
+    const page1 = Array.from({ length: 100 }, (_, i) => ({ id: 100 + i }));
+    const page2 = Array.from({ length: 50 }, (_, i) => ({ id: 200 + i }));
+    const result = await fetchAllComponents(
+      makePageFetcher([
+        { components: page0, totalCount: 250 },
+        { components: page1, totalCount: 250 },
+        { components: page2, totalCount: 250 },
+      ])
+    );
+    expect(result.items).toHaveLength(250);
+    expect(result.truncated).toBe(false);
+  });
+
+  it("safety-cap trigger — first maxPages pages collected, truncated: true", async () => {
+    // Each page returns 100 items but totalCount says 10_000.
+    const onePage = Array.from({ length: 100 }, (_, i) => ({ id: i }));
+    const pages = Array.from({ length: 5 }, () => ({
+      components: onePage,
+      totalCount: 10_000,
+    }));
+    const result = await fetchAllComponents(makePageFetcher(pages), {
+      maxPages: 3,
+    });
+    expect(result.items).toHaveLength(300);
+    expect(result.truncated).toBe(true);
+  });
+
+  it("empty first page — items: [], truncated: false", async () => {
+    const result = await fetchAllComponents(
+      makePageFetcher([{ components: [], totalCount: 0 }])
+    );
+    expect(result.items).toEqual([]);
+    expect(result.truncated).toBe(false);
+  });
+
+  it("early-exit when upstream returns an empty batch before totalCount is reached — truncated: false", async () => {
+    // Upstream claims 1000 but stops yielding after one page of 50.
+    const page0 = Array.from({ length: 50 }, (_, i) => ({ id: i }));
+    const result = await fetchAllComponents(
+      makePageFetcher([
+        { components: page0, totalCount: 1000 },
+        { components: [], totalCount: 1000 }, // empty batch = end of stream
+      ])
+    );
+    // We collected 50 rows but totalCount is 1000. However, the empty batch
+    // broke the loop before the safety cap — we treat this as NOT truncated
+    // because upstream itself stopped yielding.
+    expect(result.items).toHaveLength(50);
+    expect(result.truncated).toBe(false);
+  });
+});
+
+describe("fetchAllComponents — signal cancellation", () => {
+  it("aborts mid-loop: signal fires after page 2, no further fetchPage calls", async () => {
+    const controller = new AbortController();
+    let callCount = 0;
+
+    const fetchPage = async (pageNumber: number) => {
+      callCount += 1;
+      // Fire the abort signal after page index 1 (second call) completes.
+      if (pageNumber === 1) {
+        controller.abort();
+      }
+      return {
+        components: [{ id: pageNumber }],
+        totalCount: 1000, // large enough to keep looping without the signal
+      };
+    };
+
+    await expect(
+      fetchAllComponents(fetchPage, {
+        maxPages: 10,
+        signal: controller.signal,
+      })
+    ).rejects.toMatchObject({ name: "AbortError" });
+
+    // Pages 0 and 1 ran. After page 1 aborted the controller, page 2 must NOT be fetched.
+    expect(callCount).toBe(2);
+  });
+
+  it("aborts before first iteration when signal is already fired", async () => {
+    const controller = new AbortController();
+    controller.abort();
+
+    let callCount = 0;
+    const fetchPage = async () => {
+      callCount += 1;
+      return { components: [{ id: 1 }], totalCount: 100 };
+    };
+
+    await expect(
+      fetchAllComponents(fetchPage, { signal: controller.signal })
+    ).rejects.toMatchObject({ name: "AbortError" });
+
+    expect(callCount).toBe(0);
+  });
+});
+
+describe("paginate", () => {
+  const items = Array.from({ length: 12 }, (_, i) => i);
+
+  it("slices the first page and reports true total", () => {
+    expect(paginate(items, 1, 5)).toEqual({
+      items: [0, 1, 2, 3, 4],
+      totalCount: 12,
+    });
+  });
+
+  it("slices a middle page", () => {
+    expect(paginate(items, 2, 5)).toEqual({
+      items: [5, 6, 7, 8, 9],
+      totalCount: 12,
+    });
+  });
+
+  it("returns a short last page", () => {
+    expect(paginate(items, 3, 5)).toEqual({
+      items: [10, 11],
+      totalCount: 12,
+    });
+  });
+
+  it("returns an empty slice when page is past the end but preserves totalCount", () => {
+    expect(paginate(items, 99, 5)).toEqual({ items: [], totalCount: 12 });
+  });
+
+  it("defaults pageSize to 25 when undefined", () => {
+    const result = paginate(items, undefined, undefined);
+    expect(result.items).toEqual(items);
+    expect(result.totalCount).toBe(12);
+  });
+
+  it("clamps pageSize to the upstream ceiling (100)", () => {
+    const many = Array.from({ length: 150 }, (_, i) => i);
+    const result = paginate(many, 1, 500);
+    expect(result.items).toHaveLength(100);
+    expect(result.totalCount).toBe(150);
   });
 });

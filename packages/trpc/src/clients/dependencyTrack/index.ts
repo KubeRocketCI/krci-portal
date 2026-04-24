@@ -160,12 +160,25 @@ export class DependencyTrackClient {
     return queryString ? `${path}?${queryString}` : path;
   }
 
-  private async fetchJson<T>(endpoint: string): Promise<T>;
-  private async fetchJson<T>(endpoint: string, includeHeaders: true): Promise<{ data: T; headers: Headers }>;
-  private async fetchJson<T>(endpoint: string, includeHeaders?: boolean): Promise<T | { data: T; headers: Headers }> {
+  private async fetchJson<T>(endpoint: string, includeHeaders?: false, signal?: AbortSignal): Promise<T>;
+  private async fetchJson<T>(
+    endpoint: string,
+    includeHeaders: true,
+    signal?: AbortSignal
+  ): Promise<{ data: T; headers: Headers }>;
+  private async fetchJson<T>(
+    endpoint: string,
+    includeHeaders?: boolean,
+    signal?: AbortSignal
+  ): Promise<T | { data: T; headers: Headers }> {
     const url = `${this.apiBase}${endpoint}`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
+
+    // Combine the per-request timeout signal with an optional caller-supplied
+    // signal (e.g. sourced from req.signal on client disconnect). AbortSignal.any
+    // aborts as soon as the first of the two fires — requires Node >= 20.3.
+    const combinedSignal = signal !== undefined ? AbortSignal.any([controller.signal, signal]) : controller.signal;
 
     try {
       const response = await fetch(url, {
@@ -174,7 +187,7 @@ export class DependencyTrackClient {
           Accept: "application/json",
           "X-Api-Key": this.apiKey,
         },
-        signal: controller.signal,
+        signal: combinedSignal,
       });
 
       if (!response.ok) {
@@ -357,7 +370,7 @@ export class DependencyTrackClient {
    *   sortOrder: "asc"
    * });
    */
-  async getComponents(uuid: string, params: ComponentsQueryParams): Promise<ComponentsResponse> {
+  async getComponents(uuid: string, params: ComponentsQueryParams, signal?: AbortSignal): Promise<ComponentsResponse> {
     const endpoint = this.buildEndpoint(`/component/project/${uuid}`, {
       pageNumber: params.pageNumber,
       pageSize: params.pageSize,
@@ -367,7 +380,7 @@ export class DependencyTrackClient {
       onlyDirect: params.onlyDirect,
     });
 
-    const { data, headers } = await this.fetchJson<DependencyTrackComponent[]>(endpoint, true);
+    const { data, headers } = await this.fetchJson<DependencyTrackComponent[]>(endpoint, true, signal);
 
     return {
       components: data,
