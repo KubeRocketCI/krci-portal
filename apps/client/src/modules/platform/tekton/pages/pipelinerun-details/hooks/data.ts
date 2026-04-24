@@ -23,7 +23,7 @@ import {
 import React from "react";
 import { RequestError } from "@/core/types/global";
 import { buildPipelineRunNameFilter, SINGLE_RECORD_LOOKUP_PAGE_SIZE } from "../../../utils/celFilters";
-import { isK8sNotFoundError } from "../../../utils/isK8sNotFoundError";
+import { isK8sForbiddenError, isK8sNotFoundError } from "../../../utils/isK8sNotFoundError";
 import { buildPipelineRunTasksByNameMap } from "./utils";
 import { routePipelineRunDetails } from "../route";
 import type { UnifiedPipelineRunData, UnifiedSource } from "../providers/PipelineRun/types";
@@ -49,7 +49,11 @@ export function useUnifiedPipelineRunData({ namespace, name }: UnifiedPipelineRu
     name,
   });
 
-  const k8sNotFound = !pipelineRunWatch.isLoading && isK8sNotFoundError(pipelineRunWatch.query.error);
+  // Treat both 404 and 403 as "not available live" — fall through to Tekton Results history.
+  // 403 happens when the user has no RBAC permission to get pipelineruns in this namespace.
+  const k8sNotFound =
+    !pipelineRunWatch.isLoading &&
+    (isK8sNotFoundError(pipelineRunWatch.query.error) || isK8sForbiddenError(pipelineRunWatch.query.error));
 
   // Live TaskRuns, Tasks, and ApprovalTasks (only fetched when K8s PipelineRun exists)
   const hasLivePipelineRun = !k8sNotFound && !pipelineRunWatch.isLoading;
