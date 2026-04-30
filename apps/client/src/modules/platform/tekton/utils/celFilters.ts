@@ -1,4 +1,4 @@
-import { tektonResultAnnotations } from "@my-project/shared";
+import { pipelineType, tektonResultAnnotations } from "@my-project/shared";
 
 /**
  * Escape a value for safe interpolation into a CEL string literal.
@@ -106,18 +106,19 @@ export function buildPipelineTypeFilter(pipelineType: string): string | undefine
   return buildAnnotationClause(tektonResultAnnotations.pipelineType, pipelineType);
 }
 
-// ---------------------------------------------------------------------------
-// Codebase filter (for Results table queries).
-// The codebase is stored as the `app.edp.epam.com/codebase` annotation.
-// Multiple codebases are joined with OR since a run belongs to exactly one.
-// ---------------------------------------------------------------------------
-
 /**
- * Build a CEL filter on the codebase annotation for one or more codebase names.
- * Returns undefined when the list is empty.
+ * True when the pipeline type stores its codebase inside the `APPLICATIONS_PAYLOAD`
+ * PipelineRun param JSON instead of the `app.edp.epam.com/codebase` annotation.
+ * Server-side CEL on the annotation would silently drop matching runs of these
+ * types, so callers fall back to the client-side matchFunction.
  */
-export function buildCodebaseFilter(codebases: string[]): string | undefined {
+export function isCodebaseInPayloadType(activePipelineType: string | undefined): boolean {
+  return activePipelineType === pipelineType.deploy || activePipelineType === pipelineType.clean;
+}
+
+export function buildCodebaseFilter(codebases: string[], activePipelineType: string | undefined): string | undefined {
   if (!codebases || codebases.length === 0) return undefined;
+  if (isCodebaseInPayloadType(activePipelineType)) return undefined;
   if (codebases.length === 1) return buildAnnotationClause(tektonResultAnnotations.codebase, codebases[0]);
   return `(${codebases.map((c) => buildAnnotationClause(tektonResultAnnotations.codebase, c)).join(" || ")})`;
 }

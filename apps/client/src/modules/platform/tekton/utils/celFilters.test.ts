@@ -4,6 +4,9 @@ import {
   buildPipelineRunNameFilter,
   buildAnnotationsFilter,
   buildNameSearchFilter,
+  buildStatusFilter,
+  buildPipelineTypeFilter,
+  buildCodebaseFilter,
 } from "./celFilters";
 
 describe("escapeCELString", () => {
@@ -154,5 +157,91 @@ describe("buildNameSearchFilter", () => {
     const result = buildNameSearchFilter("name\\value");
 
     expect(result).toBe(`annotations["object.metadata.name"].contains('name\\\\value')`);
+  });
+});
+
+describe("buildStatusFilter", () => {
+  test("returns undefined for 'all'", () => {
+    expect(buildStatusFilter("all")).toBeUndefined();
+  });
+
+  test("returns undefined for empty string", () => {
+    expect(buildStatusFilter("")).toBeUndefined();
+  });
+
+  test("returns undefined for unrecognized value", () => {
+    expect(buildStatusFilter("bogus")).toBeUndefined();
+  });
+
+  test("maps 'true' (Succeeded) to summary.status == 1", () => {
+    expect(buildStatusFilter("true")).toBe("summary.status == 1");
+  });
+
+  test("maps 'false' (Failed) to OR of FAILURE / CANCELLED / TIMEOUT enum ints", () => {
+    expect(buildStatusFilter("false")).toBe("(summary.status == 2 || summary.status == 3 || summary.status == 4)");
+  });
+
+  test("maps 'unknown' (Pending/Running) to summary.status == 0", () => {
+    expect(buildStatusFilter("unknown")).toBe("summary.status == 0");
+  });
+});
+
+describe("buildPipelineTypeFilter", () => {
+  test("returns undefined for 'all'", () => {
+    expect(buildPipelineTypeFilter("all")).toBeUndefined();
+  });
+
+  test("returns undefined for empty string", () => {
+    expect(buildPipelineTypeFilter("")).toBeUndefined();
+  });
+
+  test("builds annotation equality clause for 'build'", () => {
+    expect(buildPipelineTypeFilter("build")).toBe(`annotations["app.edp.epam.com/pipelinetype"] == 'build'`);
+  });
+
+  test("builds annotation equality clause for 'review'", () => {
+    expect(buildPipelineTypeFilter("review")).toBe(`annotations["app.edp.epam.com/pipelinetype"] == 'review'`);
+  });
+
+  test("escapes single quotes in the value (defense in depth)", () => {
+    expect(buildPipelineTypeFilter("name'inj")).toBe(`annotations["app.edp.epam.com/pipelinetype"] == 'name\\'inj'`);
+  });
+});
+
+describe("buildCodebaseFilter", () => {
+  test("returns undefined for empty array regardless of pipelineType", () => {
+    expect(buildCodebaseFilter([], "build")).toBeUndefined();
+    expect(buildCodebaseFilter([], "deploy")).toBeUndefined();
+    expect(buildCodebaseFilter([], "all")).toBeUndefined();
+    expect(buildCodebaseFilter([], undefined)).toBeUndefined();
+  });
+
+  test("returns undefined when pipelineType is 'deploy' (codebase lives in APPLICATIONS_PAYLOAD)", () => {
+    expect(buildCodebaseFilter(["codemie"], "deploy")).toBeUndefined();
+    expect(buildCodebaseFilter(["a", "b"], "deploy")).toBeUndefined();
+  });
+
+  test("returns undefined when pipelineType is 'clean'", () => {
+    expect(buildCodebaseFilter(["codemie"], "clean")).toBeUndefined();
+  });
+
+  test("builds annotation clause when pipelineType is 'all' (annotation IS reliable for build/review/etc.)", () => {
+    expect(buildCodebaseFilter(["codemie"], "all")).toBe(`annotations["app.edp.epam.com/codebase"] == 'codemie'`);
+  });
+
+  test("builds annotation clause for 'build' / 'review' / 'security' / 'release' / 'tests'", () => {
+    for (const pt of ["build", "review", "security", "release", "tests"]) {
+      expect(buildCodebaseFilter(["codemie"], pt)).toBe(`annotations["app.edp.epam.com/codebase"] == 'codemie'`);
+    }
+  });
+
+  test("joins multiple codebases with OR inside parentheses", () => {
+    expect(buildCodebaseFilter(["a", "b"], "review")).toBe(
+      `(annotations["app.edp.epam.com/codebase"] == 'a' || annotations["app.edp.epam.com/codebase"] == 'b')`
+    );
+  });
+
+  test("escapes single quotes in codebase name", () => {
+    expect(buildCodebaseFilter(["name'inj"], "build")).toBe(`annotations["app.edp.epam.com/codebase"] == 'name\\'inj'`);
   });
 });

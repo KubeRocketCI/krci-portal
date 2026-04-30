@@ -13,6 +13,8 @@ import {
   usePipelineRunFilter,
 } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter";
 import { useStore } from "@tanstack/react-form";
+import { useNavigate } from "@tanstack/react-router";
+import React from "react";
 
 const TABLE_ID = "pipelineruns-unified";
 const TABLE_NAME = "Unified Pipeline Run List";
@@ -34,6 +36,16 @@ export function Pipelines() {
 function PipelinesContent() {
   const debouncedSearch = useDebouncedPipelineRunSearch();
   const { form } = usePipelineRunFilter();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    // `as never`: route Search is `Record<string, unknown>` so a generic reducer doesn't unify.
+    void navigate({
+      search: ((prev: Record<string, unknown>) =>
+        Object.fromEntries(Object.entries(prev).filter(([key]) => key !== "page" && key !== "rowsPerPage"))) as never,
+      replace: true,
+    });
+  }, [navigate]);
 
   const pipelineType = useStore(form.store, (s) => s.values.pipelineType);
   const status = useStore(form.store, (s) => s.values.status);
