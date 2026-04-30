@@ -1,8 +1,9 @@
 import {
   useWatchCDPipelineByCodebaseBranch,
+  useWatchCDPipelineByInputDockerStream,
   useWatchCDPipelineByStageAutotest,
 } from "@/k8s/api/groups/KRCI/CDPipeline";
-import { Codebase, CodebaseBranch, isAutotest, isLibrary } from "@my-project/shared";
+import { Codebase, CodebaseBranch, isApplication, isAutotest } from "@my-project/shared";
 
 export const useDeletionConflictItem = (codebaseBranch: CodebaseBranch, codebase: Codebase) => {
   const codebaseBranchSpecName = codebaseBranch.spec.branchName;
@@ -14,15 +15,18 @@ export const useDeletionConflictItem = (codebaseBranch: CodebaseBranch, codebase
   );
 
   const cdPipelineByCodebaseBranchWatch = useWatchCDPipelineByCodebaseBranch(
-    !isLibrary(codebase) && !isAutotest(codebase) ? codebaseBranchMetadataName : undefined,
+    isApplication(codebase) ? codebaseBranchMetadataName : undefined,
     codebase.metadata.namespace
   );
 
-  if (cdPipelineByStageAutotestWatch.data) {
-    return cdPipelineByStageAutotestWatch.data;
-  }
+  const cdPipelineByInputDockerStreamWatch = useWatchCDPipelineByInputDockerStream(
+    isApplication(codebase) ? codebaseBranchMetadataName : undefined,
+    codebase.metadata.namespace
+  );
 
-  if (cdPipelineByCodebaseBranchWatch.data) {
-    return cdPipelineByCodebaseBranchWatch.data;
-  }
+  return (
+    cdPipelineByStageAutotestWatch.data ??
+    cdPipelineByCodebaseBranchWatch.data ??
+    cdPipelineByInputDockerStreamWatch.data
+  );
 };
