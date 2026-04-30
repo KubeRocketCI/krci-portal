@@ -183,6 +183,22 @@ describe("DataTable - Page Out of Bounds", () => {
     expect(screen.queryByText("Page not found")).not.toBeInTheDocument();
   });
 
+  it("should NOT show 'Page not found' when pagination.show is false, even when URL ?page is out of range", async () => {
+    const { usePagination } = await import("@/core/hooks/usePagination");
+    // usePagination still reads ?page=5 from the URL via strict:false; we expect
+    // the table to ignore it and render the full dataset since pagination is hidden.
+    vi.mocked(usePagination).mockReturnValue({
+      page: 5,
+      rowsPerPage: 25,
+      handleChangePage: vi.fn(),
+      handleChangeRowsPerPage: vi.fn(),
+    });
+
+    render(<DataTable id="test-table" data={mockData} columns={mockColumns} pagination={{ show: false }} />);
+
+    expect(screen.queryByText("Page not found")).not.toBeInTheDocument();
+  });
+
   it("should NOT show error with very small rowsPerPage", async () => {
     const { usePagination } = await import("@/core/hooks/usePagination");
     // 10 items with 5 per page = 2 pages (page 0 and page 1)

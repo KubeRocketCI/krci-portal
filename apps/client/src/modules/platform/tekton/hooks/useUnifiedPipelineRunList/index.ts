@@ -8,6 +8,7 @@ import {
   buildNameSearchFilter,
   buildPipelineTypeFilter,
   buildStatusFilter,
+  isCodebaseInPayloadType,
 } from "@/modules/platform/tekton/utils/celFilters";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import React from "react";
@@ -95,18 +96,17 @@ export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOpt
     }))
   );
 
-  // Merge caller-provided labels with pipelineType so the K8s watch is pre-filtered
-  // when a single type is selected. Multi-value codebase filter can't be expressed as
-  // K8s equality label selectors, so live items are handled by the FilterProvider matchFunction.
+  // Multi-codebase selection can't be expressed as K8s equality label selectors, so it's
+  // handled by the FilterProvider matchFunction instead of the watch.
   const watchLabels = React.useMemo(() => {
     const merged: Record<string, string> = { ...labels };
     if (pipelineType && pipelineType !== "all") merged[pipelineRunLabels.pipelineType] = pipelineType;
-    if (codebases && codebases.length === 1) merged[pipelineRunLabels.codebase] = codebases[0];
+    if (!isCodebaseInPayloadType(pipelineType) && codebases && codebases.length === 1) {
+      merged[pipelineRunLabels.codebase] = codebases[0];
+    }
     return merged;
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- labels serialized; scalar deps are direct
-  }, [labels && Object.entries(labels).flat().join("\0"), pipelineType, codebases?.join("\0")]);
+  }, [labels, pipelineType, codebases]);
 
-  // Live K8s PipelineRuns (label selectors applied by the watch)
   const pipelineRunsWatch = usePipelineRunWatchList({
     labels: watchLabels,
     queryOptions: { enabled },
@@ -119,13 +119,11 @@ export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOpt
     const nameFilter = searchTerm ? buildNameSearchFilter(searchTerm) : undefined;
     const statusFilter = buildStatusFilter(status ?? "");
     const typeFilter = buildPipelineTypeFilter(pipelineType ?? "");
-    const codebaseFilter = buildCodebaseFilter(codebases ?? []);
+    const codebaseFilter = buildCodebaseFilter(codebases ?? [], pipelineType);
     const parts = [labelFilter, nameFilter, statusFilter, typeFilter, codebaseFilter].filter(Boolean);
     return parts.length > 0 ? parts.join(" && ") : undefined;
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- labels/codebases serialized to avoid object identity churn
-  }, [labels && Object.entries(labels).flat().join("\0"), searchTerm, status, pipelineType, codebases?.join("\0")]);
+  }, [labels, searchTerm, status, pipelineType, codebases]);
 
-  // History PipelineRuns from Tekton Results (lightweight results table)
   const historyQuery = useInfiniteQuery<HistoryPage, Error>({
     queryKey: ["tektonResults", "pipelineRunResults", clusterName, namespace, celFilter],
     queryFn: ({ pageParam }) => {

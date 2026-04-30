@@ -128,16 +128,21 @@ export const DataTable = <DataType,>({
     return !!data?.length && !filteredData?.length;
   }, [data, isLoading, isFilteredDataLoading, filteredData]);
 
-  // Check if current page is beyond total pages
+  // When pagination is hidden, ignore any stray `?page=N` from the URL and render the
+  // full dataset in one slice. The `_rowsPerPage` floor keeps skeleton row count sensible
+  // while filteredData is null.
+  const paginationHidden = paginationSettings.show === false;
+  const effectivePage = paginationHidden ? 0 : page;
+  const effectiveRowsPerPage = paginationHidden ? Math.max(filteredData?.length ?? 0, _rowsPerPage) : _rowsPerPage;
+
   const isPageOutOfBounds = React.useMemo(() => {
-    if (!filteredData || filteredData.length === 0) {
+    if (paginationHidden || !filteredData || filteredData.length === 0) {
       return false;
     }
-    const totalPages = Math.ceil(filteredData.length / _rowsPerPage);
-    return page >= totalPages;
-  }, [filteredData, page, _rowsPerPage]);
+    return page >= Math.ceil(filteredData.length / _rowsPerPage);
+  }, [filteredData, page, _rowsPerPage, paginationHidden]);
 
-  const activePage = filteredData !== null && filteredData.length < _rowsPerPage ? 0 : page;
+  const activePage = filteredData !== null && filteredData.length < effectiveRowsPerPage ? 0 : effectivePage;
 
   const paginatedData = React.useMemo(() => {
     if (!filteredData) {
@@ -147,13 +152,16 @@ export const DataTable = <DataType,>({
       };
     }
 
-    const items = filteredData.slice(page * _rowsPerPage, page * _rowsPerPage + _rowsPerPage);
+    const items = filteredData.slice(
+      effectivePage * effectiveRowsPerPage,
+      effectivePage * effectiveRowsPerPage + effectiveRowsPerPage
+    );
 
     return {
       items,
       count: items?.length,
     };
-  }, [page, filteredData, _rowsPerPage]);
+  }, [effectivePage, filteredData, effectiveRowsPerPage]);
 
   const selectableRowCount = React.useMemo(
     () => selectionSettings.isRowSelectable && paginatedData.items.filter(selectionSettings.isRowSelectable).length,
@@ -307,7 +315,7 @@ export const DataTable = <DataType,>({
                   )
                 }
                 page={activePage}
-                rowsPerPage={_rowsPerPage}
+                rowsPerPage={effectiveRowsPerPage}
                 isEmptyFilterResult={isEmptyFilterResult}
                 blockerComponent={blockerComponent}
               />

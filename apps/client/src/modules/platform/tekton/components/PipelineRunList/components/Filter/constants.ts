@@ -2,11 +2,12 @@ import { MatchFunctions, createSearchMatchFunction } from "@/core/providers/Filt
 import {
   PipelineRun,
   pipelineRunLabels,
-  pipelineType,
   getPipelineRunStatus,
   getPipelineRunAnnotation,
   tektonResultAnnotations,
+  isHistoryPipelineRun,
 } from "@my-project/shared";
+import { isCodebaseInPayloadType } from "@/modules/platform/tekton/utils/celFilters";
 import { PipelineRunListFilterValues } from "./types";
 
 export const pipelineRunFilterControlNames = {
@@ -33,17 +34,22 @@ export const matchFunctions: MatchFunctions<PipelineRun, PipelineRunListFilterVa
     if (!value || value.length === 0) return true;
 
     const pipelineRunType = item?.metadata?.labels?.[pipelineRunLabels.pipelineType];
-
-    if (pipelineRunType === pipelineType.deploy || pipelineRunType === pipelineType.clean) {
+    // Results adapter omits spec.params, so deploy/clean history must fall back to the codebase label.
+    if (isCodebaseInPayloadType(pipelineRunType) && !isHistoryPipelineRun(item)) {
       const appPayload = item?.spec?.params?.find(
         (param: { name: string; value?: string }) => param.name === "APPLICATIONS_PAYLOAD"
       );
 
-      if (!appPayload) {
+      if (!appPayload || !appPayload.value) {
         return false;
       }
 
-      const appPayloadValue = JSON.parse(appPayload.value);
+      let appPayloadValue: Record<string, unknown>;
+      try {
+        appPayloadValue = JSON.parse(appPayload.value);
+      } catch {
+        return false;
+      }
 
       return Object.keys(appPayloadValue).some((key) => value.includes(key));
     }
