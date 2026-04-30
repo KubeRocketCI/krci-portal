@@ -4,6 +4,7 @@ import { useUnifiedPipelineRunList } from "@/modules/platform/tekton/hooks/useUn
 import { HistoryLoadingFooter } from "@/modules/platform/tekton/components/HistoryLoadingFooter";
 import { FilterProvider } from "@/core/providers/Filter/provider";
 import {
+  CODEBASE_DIVIDER_VALUE,
   defaultPipelineRunFilterValues,
   matchFunctions,
   pipelineRunFilterControlNames,
@@ -51,11 +52,14 @@ function PipelinesContent() {
   const status = useStore(form.store, (s) => s.values.status);
   const codebases = useStore(form.store, (s) => s.values.codebases);
 
+  // Guard against a crafted URL injecting the sentinel into URL-synced filter state.
+  const sanitizedCodebases = React.useMemo(() => codebases.filter((c) => c !== CODEBASE_DIVIDER_VALUE), [codebases]);
+
   const { mergedPipelineRuns, isLoading, isHistoryLoading, historyQuery } = useUnifiedPipelineRunList({
     searchTerm: debouncedSearch,
     pipelineType,
     status,
-    codebases,
+    codebases: sanitizedCodebases,
   });
 
   return (

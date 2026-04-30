@@ -7,6 +7,8 @@ export interface SelectOption {
   icon?: React.ReactNode;
   /** Matched by searchable combobox filters (cmdk keywords). */
   keywords?: string[];
+  /** See `ComboboxOption.kind`. Honored by standard (non-renderOption) Combobox variants. */
+  kind?: "item" | "separator";
 }
 
 // Re-export React for convenience

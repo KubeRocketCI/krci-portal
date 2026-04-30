@@ -151,6 +151,7 @@ export const FormCombobox = <TData,>({
         disabled: option.disabled,
         icon: option.icon,
         keywords: option.keywords,
+        kind: option.kind,
       })),
     [options]
   );

@@ -19,6 +19,10 @@ export const pipelineRunFilterControlNames = {
   NAMESPACES: "namespaces",
 } as const;
 
+// Sentinel for the inert separator option in the codebase combobox. Stripped
+// downstream so a crafted `?codebases=__divider__` URL can't leak into filtering.
+export const CODEBASE_DIVIDER_VALUE = "__divider__";
+
 export const defaultPipelineRunFilterValues: PipelineRunListFilterValues = {
   [pipelineRunFilterControlNames.SEARCH]: "",
   [pipelineRunFilterControlNames.CODEBASES]: [],
@@ -31,7 +35,8 @@ export const defaultPipelineRunFilterValues: PipelineRunListFilterValues = {
 export const matchFunctions: MatchFunctions<PipelineRun, PipelineRunListFilterValues> = {
   [pipelineRunFilterControlNames.SEARCH]: createSearchMatchFunction<PipelineRun>(),
   [pipelineRunFilterControlNames.CODEBASES]: (item, value) => {
-    if (!value || value.length === 0) return true;
+    const realValues = new Set(value?.filter((v) => v !== CODEBASE_DIVIDER_VALUE));
+    if (realValues.size === 0) return true;
 
     const pipelineRunType = item?.metadata?.labels?.[pipelineRunLabels.pipelineType];
     // Results adapter omits spec.params, so deploy/clean history must fall back to the codebase label.
@@ -51,7 +56,7 @@ export const matchFunctions: MatchFunctions<PipelineRun, PipelineRunListFilterVa
         return false;
       }
 
-      return Object.keys(appPayloadValue).some((key) => value.includes(key));
+      return Object.keys(appPayloadValue).some((key) => realValues.has(key));
     }
 
     const itemCodebase = item?.metadata?.labels?.[pipelineRunLabels.codebase];
@@ -60,7 +65,7 @@ export const matchFunctions: MatchFunctions<PipelineRun, PipelineRunListFilterVa
       return false;
     }
 
-    return value.includes(itemCodebase);
+    return realValues.has(itemCodebase);
   },
   [pipelineRunFilterControlNames.CODEBASE_BRANCHES]: (item, value) => {
     if (!value || value.length === 0) return true;
