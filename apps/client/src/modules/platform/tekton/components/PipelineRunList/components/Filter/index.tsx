@@ -1,8 +1,10 @@
 import type { SelectOption } from "@/core/components/form";
 import { ValueOf } from "@/core/types/global";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
+import { sortByName } from "@/core/utils/sortByName";
 import { FilterTypeWithOptionAll } from "@/k8s/types";
 import { Button } from "@/core/components/ui/button";
+import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
 import {
   PipelineRun,
   pipelineRunLabels,
@@ -18,7 +20,7 @@ const pipelineRunStatusLabels: Record<string, string> = {
   [pipelineRunStatus.unknown]: "Running / Pending",
 };
 import React from "react";
-import { pipelineRunFilterControlNames } from "./constants";
+import { CODEBASE_DIVIDER_VALUE, pipelineRunFilterControlNames } from "./constants";
 import { usePipelineRunFilter } from "./hooks/usePipelineRunFilter";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
@@ -36,13 +38,22 @@ export const PipelineRunFilter = ({
 }) => {
   const { form, reset, isDefaultValue } = usePipelineRunFilter();
 
-  const codebaseOptions = React.useMemo(() => {
+  const activeCodebases = React.useMemo(() => {
     const set = new Set(
       pipelineRuns?.map(({ metadata: { labels } }) => labels?.[pipelineRunLabels.codebase]).filter(Boolean) as string[]
     );
 
-    return Array.from(set);
+    return Array.from(set).sort(sortByName);
   }, [pipelineRuns]);
+
+  const codebasesWatch = useCodebaseWatchList();
+  const otherCodebases = React.useMemo(() => {
+    const activeSet = new Set(activeCodebases);
+    return codebasesWatch.data.array
+      .map((codebase) => codebase.metadata.name)
+      .filter((name): name is string => Boolean(name) && !activeSet.has(name))
+      .sort(sortByName);
+  }, [codebasesWatch.data.array, activeCodebases]);
 
   const codebaseBranchOptions = React.useMemo(() => {
     const set = new Set(
@@ -55,8 +66,6 @@ export const PipelineRunFilter = ({
 
   const allowedNamespaces = useClusterStore(useShallow((state) => state.allowedNamespaces));
   const showNamespaceFilter = allowedNamespaces.length > 1;
-
-  const namespaceOptions = React.useMemo(() => allowedNamespaces, [allowedNamespaces]);
 
   const pipelineTypeOptions: SelectOption[] = React.useMemo(
     () => [
@@ -77,10 +86,14 @@ export const PipelineRunFilter = ({
     []
   );
 
-  const codebaseComboboxOptions = React.useMemo(
-    () => codebaseOptions.map((value) => ({ label: value, value })),
-    [codebaseOptions]
-  );
+  const codebaseComboboxOptions = React.useMemo<SelectOption[]>(() => {
+    const activeOptions: SelectOption[] = activeCodebases.map((value) => ({ label: value, value }));
+    const otherOptions: SelectOption[] = otherCodebases.map((value) => ({ label: value, value }));
+    if (activeOptions.length === 0 || otherOptions.length === 0) {
+      return [...activeOptions, ...otherOptions];
+    }
+    return [...activeOptions, { value: CODEBASE_DIVIDER_VALUE, label: "", kind: "separator" }, ...otherOptions];
+  }, [activeCodebases, otherCodebases]);
 
   const branchComboboxOptions = React.useMemo(
     () => codebaseBranchOptions.map((value) => ({ label: value, value })),
@@ -88,8 +101,8 @@ export const PipelineRunFilter = ({
   );
 
   const namespaceComboboxOptions = React.useMemo(
-    () => namespaceOptions.map((value) => ({ label: value, value })),
-    [namespaceOptions]
+    () => allowedNamespaces.map((value) => ({ label: value, value })),
+    [allowedNamespaces]
   );
 
   return (

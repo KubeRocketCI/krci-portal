@@ -11,6 +11,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from "@/core/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/core/components/ui/popover";
 import { cn } from "@/core/utils/classname";
@@ -22,6 +23,9 @@ const renderIcon = (icon: React.ReactNode, sizeClass = "size-4"): React.ReactNod
   return <span className={cn("flex shrink-0 items-center justify-center", sizeClass)}>{toElement(icon)}</span>;
 };
 
+const renderSeparator = (option: ComboboxOption): React.ReactNode =>
+  option.kind === "separator" ? <CommandSeparator key={option.value} className="my-1" /> : null;
+
 export interface ComboboxOption {
   value: string;
   label: string | React.ReactNode;
@@ -29,6 +33,11 @@ export interface ComboboxOption {
   icon?: React.ReactNode;
   /** Extra strings matched by the search filter (cmdk `keywords`). */
   keywords?: string[];
+  /**
+   * "separator" renders a non-selectable cmdk CommandSeparator instead of a CommandItem.
+   * `value` is still used as a React key; pick a sentinel that can't collide with real values.
+   */
+  kind?: "item" | "separator";
 }
 
 export interface ComboboxProps {
@@ -111,6 +120,7 @@ export const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(
               <CommandEmpty>{emptyText}</CommandEmpty>
               <CommandGroup>
                 {options.map((option) => {
+                  if (option.kind === "separator") return renderSeparator(option);
                   const isSelected = singleValue === option.value;
                   return (
                     <CommandItem
@@ -253,6 +263,7 @@ const ComboboxMultiple = React.forwardRef<HTMLButtonElement, ComboboxMultiplePro
               <CommandEmpty>{emptyText}</CommandEmpty>
               <CommandGroup>
                 {options.map((option) => {
+                  if (option.kind === "separator") return renderSeparator(option);
                   const isSelected = value.includes(option.value);
                   return (
                     <CommandItem
