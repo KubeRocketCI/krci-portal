@@ -5,6 +5,7 @@ import { configRouter } from "./config/index.js";
 import { dependencyTrackRouter } from "./dependencyTrack/index.js";
 import { gitfusionRouter } from "./gitfusion/index.js";
 import { k8sRouter } from "./k8s/index.js";
+import { prometheusRouter } from "./prometheus/index.js";
 import { sonarqubeRouter } from "./sonarqube/index.js";
 import { tektonResultsRouter } from "./tektonResults/index.js";
 
@@ -14,6 +15,7 @@ export const appRouter = t.router({
   dependencyTrack: dependencyTrackRouter,
   gitfusion: gitfusionRouter,
   k8s: k8sRouter,
+  prometheus: prometheusRouter,
   sonarqube: sonarqubeRouter,
   tektonResults: tektonResultsRouter,
 });
