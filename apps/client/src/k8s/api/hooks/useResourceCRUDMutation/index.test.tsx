@@ -423,4 +423,277 @@ describe("useResourceCRUDMutation", () => {
       });
     });
   });
+
+  describe("Cache update on success", () => {
+    const itemQueryKey = ["k8s:watchItem", "test-cluster", "default", "resources", "test-resource"];
+    const listQueryKeyNoLabels = ["k8s:watchList", "test-cluster", "default", "resources"];
+    const listQueryKeyWithLabels = ["k8s:watchList", "test-cluster", "default", "resources", "tier,frontend"];
+
+    const mockFreshResource = {
+      apiVersion: "test.group/v1",
+      kind: "Resource",
+      metadata: {
+        name: "test-resource",
+        namespace: "default",
+        uid: "uid-1",
+        resourceVersion: "200",
+      },
+      spec: { applications: ["a", "b"] },
+    };
+
+    it("should write item cache after a successful update", async () => {
+      vi.mocked(mockTrpcClient.k8s.update.mutate).mockResolvedValue(mockFreshResource);
+
+      const { result } = renderHook(() => useResourceCRUDMutation("test-update-cache", k8sOperation.update), {
+        wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
+      });
+
+      await result.current.mutateAsync({
+        resource: mockResource,
+        resourceConfig: mockResourceConfig,
+      });
+
+      expect(queryClient.getQueryData(itemQueryKey)).toEqual(mockFreshResource);
+    });
+
+    it("should patch list caches that already contain the item on update", async () => {
+      const stalePrev = {
+        apiVersion: "test.group/v1",
+        kind: "ResourceList",
+        metadata: { resourceVersion: "100" },
+        items: new Map([
+          [
+            "test-resource",
+            { ...mockFreshResource, metadata: { ...mockFreshResource.metadata, resourceVersion: "100" } },
+          ],
+        ]),
+      };
+      queryClient.setQueryData(listQueryKeyNoLabels, stalePrev);
+      queryClient.setQueryData(listQueryKeyWithLabels, {
+        ...stalePrev,
+        items: new Map(stalePrev.items),
+      });
+
+      vi.mocked(mockTrpcClient.k8s.update.mutate).mockResolvedValue(mockFreshResource);
+
+      const { result } = renderHook(() => useResourceCRUDMutation("test-update-list", k8sOperation.update), {
+        wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
+      });
+
+      await result.current.mutateAsync({
+        resource: mockResource,
+        resourceConfig: mockResourceConfig,
+      });
+
+      const updatedPlain = queryClient.getQueryData<typeof stalePrev>(listQueryKeyNoLabels);
+      expect(updatedPlain?.items.get("test-resource")?.metadata.resourceVersion).toBe("200");
+      expect(updatedPlain?.metadata.resourceVersion).toBe("200");
+
+      const updatedLabeled = queryClient.getQueryData<typeof stalePrev>(listQueryKeyWithLabels);
+      expect(updatedLabeled?.items.get("test-resource")?.metadata.resourceVersion).toBe("200");
+    });
+
+    it("should not add the item to lists that don't contain it on update", async () => {
+      const otherList = {
+        apiVersion: "test.group/v1",
+        kind: "ResourceList",
+        metadata: { resourceVersion: "50" },
+        items: new Map(),
+      };
+      queryClient.setQueryData(listQueryKeyWithLabels, otherList);
+
+      vi.mocked(mockTrpcClient.k8s.update.mutate).mockResolvedValue(mockFreshResource);
+
+      const { result } = renderHook(() => useResourceCRUDMutation("test-update-no-add", k8sOperation.update), {
+        wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
+      });
+
+      await result.current.mutateAsync({
+        resource: mockResource,
+        resourceConfig: mockResourceConfig,
+      });
+
+      const after = queryClient.getQueryData<typeof otherList>(listQueryKeyWithLabels);
+      expect(after?.items.has("test-resource")).toBe(false);
+    });
+
+    it("should write item cache but not lists on create", async () => {
+      const otherList = {
+        apiVersion: "test.group/v1",
+        kind: "ResourceList",
+        metadata: { resourceVersion: "50" },
+        items: new Map(),
+      };
+      queryClient.setQueryData(listQueryKeyNoLabels, otherList);
+
+      vi.mocked(mockTrpcClient.k8s.create.mutate).mockResolvedValue(mockFreshResource);
+
+      const { result } = renderHook(() => useResourceCRUDMutation("test-create-cache", k8sOperation.create), {
+        wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
+      });
+
+      await result.current.mutateAsync({
+        resource: mockResource,
+        resourceConfig: mockResourceConfig,
+      });
+
+      expect(queryClient.getQueryData(itemQueryKey)).toEqual(mockFreshResource);
+      const list = queryClient.getQueryData<typeof otherList>(listQueryKeyNoLabels);
+      expect(list?.items.has("test-resource")).toBe(false);
+    });
+
+    it("should invalidate every list cache for the resource type on create", async () => {
+      // Label selectors aren't known at mutation time, so on create we mark every
+      // list (labeled and unlabeled) for the resource type as stale and force a
+      // refetch — ensuring the new item appears when consumers (re)mount, even
+      // when the watch was unsubscribed during navigation.
+      const seedList = {
+        apiVersion: "test.group/v1",
+        kind: "ResourceList",
+        metadata: { resourceVersion: "50" },
+        items: new Map(),
+      };
+      queryClient.setQueryData(listQueryKeyNoLabels, seedList);
+      queryClient.setQueryData(listQueryKeyWithLabels, { ...seedList, items: new Map() });
+
+      vi.mocked(mockTrpcClient.k8s.create.mutate).mockResolvedValue(mockFreshResource);
+
+      const { result } = renderHook(() => useResourceCRUDMutation("test-create-invalidate", k8sOperation.create), {
+        wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
+      });
+
+      await result.current.mutateAsync({
+        resource: mockResource,
+        resourceConfig: mockResourceConfig,
+      });
+
+      expect(queryClient.getQueryState(listQueryKeyNoLabels)?.isInvalidated).toBe(true);
+      expect(queryClient.getQueryState(listQueryKeyWithLabels)?.isInvalidated).toBe(true);
+    });
+
+    it("should use server-assigned name from response for cache key on create (generateName)", async () => {
+      // Resources created with generateName have no name on the draft; the API
+      // server assigns one and returns it in the response. The cache key must
+      // use the server-assigned name, not the draft's empty value.
+      const draftWithoutName = {
+        ...mockResource,
+        metadata: { ...mockResource.metadata, name: undefined as unknown as string },
+      };
+      const generated = {
+        ...mockFreshResource,
+        metadata: { ...mockFreshResource.metadata, name: "generated-xyz" },
+      };
+      const generatedItemKey = ["k8s:watchItem", "test-cluster", "default", "resources", "generated-xyz"];
+
+      vi.mocked(mockTrpcClient.k8s.create.mutate).mockResolvedValue(generated);
+
+      const { result } = renderHook(() => useResourceCRUDMutation("test-create-generate-name", k8sOperation.create), {
+        wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
+      });
+
+      await result.current.mutateAsync({
+        resource: draftWithoutName,
+        resourceConfig: mockResourceConfig,
+      });
+
+      expect(queryClient.getQueryData(generatedItemKey)).toEqual(generated);
+    });
+
+    it("should remove item cache and prune lists on delete", async () => {
+      queryClient.setQueryData(itemQueryKey, mockFreshResource);
+      queryClient.setQueryData(listQueryKeyNoLabels, {
+        apiVersion: "test.group/v1",
+        kind: "ResourceList",
+        metadata: { resourceVersion: "100" },
+        items: new Map([["test-resource", mockFreshResource]]),
+      });
+
+      vi.mocked(mockTrpcClient.k8s.delete.mutate).mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useResourceCRUDMutation("test-delete-cache", k8sOperation.delete), {
+        wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
+      });
+
+      await result.current.mutateAsync({
+        resource: mockResource,
+        resourceConfig: mockResourceConfig,
+      });
+
+      expect(queryClient.getQueryData(itemQueryKey)).toBeUndefined();
+      const list = queryClient.getQueryData<{ items: Map<string, unknown> }>(listQueryKeyNoLabels);
+      expect(list?.items.has("test-resource")).toBe(false);
+    });
+
+    it("should not downgrade item cache when WebSocket already advanced resourceVersion", async () => {
+      const newer = {
+        ...mockFreshResource,
+        metadata: { ...mockFreshResource.metadata, resourceVersion: "300" },
+      };
+      queryClient.setQueryData(itemQueryKey, newer);
+
+      // Server response is older than what's already in cache (race with watch event)
+      vi.mocked(mockTrpcClient.k8s.update.mutate).mockResolvedValue(mockFreshResource);
+
+      const { result } = renderHook(() => useResourceCRUDMutation("test-no-downgrade", k8sOperation.update), {
+        wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
+      });
+
+      await result.current.mutateAsync({
+        resource: mockResource,
+        resourceConfig: mockResourceConfig,
+      });
+
+      const after = queryClient.getQueryData<typeof newer>(itemQueryKey);
+      expect(after?.metadata.resourceVersion).toBe("300");
+    });
+
+    it("should not downgrade list cache when stored item has a newer resourceVersion", async () => {
+      const newerInList = {
+        ...mockFreshResource,
+        metadata: { ...mockFreshResource.metadata, resourceVersion: "300" },
+      };
+      queryClient.setQueryData(listQueryKeyNoLabels, {
+        apiVersion: "test.group/v1",
+        kind: "ResourceList",
+        metadata: { resourceVersion: "300" },
+        items: new Map([["test-resource", newerInList]]),
+      });
+
+      vi.mocked(mockTrpcClient.k8s.update.mutate).mockResolvedValue(mockFreshResource);
+
+      const { result } = renderHook(() => useResourceCRUDMutation("test-list-no-downgrade", k8sOperation.update), {
+        wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
+      });
+
+      await result.current.mutateAsync({
+        resource: mockResource,
+        resourceConfig: mockResourceConfig,
+      });
+
+      const after = queryClient.getQueryData<{
+        metadata: { resourceVersion?: string };
+        items: Map<string, { metadata: { resourceVersion?: string } }>;
+      }>(listQueryKeyNoLabels);
+      expect(after?.items.get("test-resource")?.metadata.resourceVersion).toBe("300");
+      expect(after?.metadata.resourceVersion).toBe("300");
+    });
+
+    it("should use cluster scope key when resource is cluster-scoped", async () => {
+      const clusterScopedConfig: K8sResourceConfig = { ...mockResourceConfig, clusterScoped: true };
+      const clusterScopedItemKey = ["k8s:watchItem", "test-cluster", "__cluster__", "resources", "test-resource"];
+
+      vi.mocked(mockTrpcClient.k8s.update.mutate).mockResolvedValue(mockFreshResource);
+
+      const { result } = renderHook(() => useResourceCRUDMutation("test-cluster-scoped", k8sOperation.update), {
+        wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
+      });
+
+      await result.current.mutateAsync({
+        resource: mockResource,
+        resourceConfig: clusterScopedConfig,
+      });
+
+      expect(queryClient.getQueryData(clusterScopedItemKey)).toEqual(mockFreshResource);
+    });
+  });
 });
