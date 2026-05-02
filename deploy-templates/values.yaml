@@ -47,6 +47,10 @@ configEnv:
   DEPENDENCY_TRACK_URL: https://deptrack.example.com
   # DEPENDENCY_TRACK_WEB_URL: https://deptrack-public.example.com
   GITFUSION_URL: http://gitfusion.krci:8080
+  # PROMETHEUS_URL is the cluster-local Prometheus base URL used by the Monitoring.
+  # When unset, the tab returns PRECONDITION_FAILED.
+  # Example (in-cluster): http://prometheus.monitoring.svc:9090
+  PROMETHEUS_URL: http://prometheus.monitoring.svc:9090
 
 # -- Extends envFrom for the Deployment definition.
 # we expect to deserialize key-value pairs from the secret, e.g
