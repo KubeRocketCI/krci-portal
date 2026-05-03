@@ -456,8 +456,8 @@ export const CDPIPELINE_TOURS = {
         content: (
           <TourStepContent title="Monitoring Dashboard">
             <p>
-              An embedded Grafana monitoring dashboard for this environment. View real-time metrics, resource usage, and
-              application performance directly within the portal.
+              A monitoring dashboard for this environment. View real-time metrics, resource usage, and application
+              performance directly within the portal.
             </p>
           </TourStepContent>
         ),

@@ -1,4 +1,5 @@
 import { routeCluster } from "@/core/router/routes";
+import { METRIC_RANGE_VALUES, type MetricRange } from "@my-project/shared";
 import { createRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
@@ -23,6 +24,10 @@ export interface Search {
   applicationsMode?: ApplicationsMode;
   page?: number;
   rowsPerPage?: number;
+  // Monitoring tab:
+  apps?: string; // comma-separated app names; absent or "" means "all"
+  range?: MetricRange;
+  autoRefresh?: boolean;
 }
 
 export const routeStageDetails = createRoute({
@@ -35,6 +40,9 @@ export const routeStageDetails = createRoute({
         applicationsMode: applicationsModeSchema.optional(),
         page: z.number().optional(),
         rowsPerPage: z.number().optional(),
+        apps: z.string().optional(),
+        range: z.enum(METRIC_RANGE_VALUES).optional(),
+        autoRefresh: z.coerce.boolean().optional(),
       })
       .parse(search);
 

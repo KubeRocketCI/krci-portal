@@ -147,4 +147,86 @@ describe("PrometheusClient timeout & errors", () => {
     const client = new PrometheusClient({ baseURL: "http://x", timeoutMs: 500 });
     await expect(client.rangeQuery({ query: "x", start: 0, end: 1, step: 1 })).rejects.toThrow(/400 Bad Request/);
   });
+
+  it("instantQuery rejects with timeout message when fetch hangs past timeoutMs", async () => {
+    globalThis.fetch = vi.fn(
+      (_url: string, init: { signal?: AbortSignal } = {}) =>
+        new Promise((_resolve, reject) => {
+          init.signal?.addEventListener("abort", () => {
+            const err = new Error("aborted");
+            err.name = "AbortError";
+            reject(err);
+          });
+        })
+    ) as unknown as typeof globalThis.fetch;
+
+    const { PrometheusClient } = await import("./index.js");
+    const client = new PrometheusClient({ baseURL: "http://x", timeoutMs: 10 });
+    await expect(client.instantQuery({ query: "x" })).rejects.toThrow(/timed out/i);
+  });
+});
+
+describe("PrometheusClient.instantQuery URL shape", () => {
+  const BASE = "http://prom.example:9090";
+  let fetchMock: ReturnType<typeof vi.fn>;
+  let originalFetch: typeof globalThis.fetch;
+
+  beforeEach(async () => {
+    vi.resetModules();
+    originalFetch = globalThis.fetch;
+    fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          status: "success",
+          data: { resultType: "vector", result: [] },
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      )
+    );
+    globalThis.fetch = fetchMock as unknown as typeof globalThis.fetch;
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  async function newClient() {
+    const { PrometheusClient } = await import("./index.js");
+    return new PrometheusClient({ baseURL: BASE, timeoutMs: 500 });
+  }
+
+  function capturedUrl(): string {
+    const firstCall = fetchMock.mock.calls[0];
+    return String(firstCall[0]);
+  }
+
+  it("instantQuery hits /api/v1/query with the encoded query", async () => {
+    const client = await newClient();
+    await client.instantQuery({ query: 'up{namespace="foo"}' });
+    const url = capturedUrl();
+    expect(url).toContain("/api/v1/query?");
+    expect(url).toContain("query=up%7Bnamespace%3D%22foo%22%7D");
+    expect(url).not.toContain("start=");
+    expect(url).not.toContain("step=");
+  });
+
+  it("instantQuery happy path parses vector shape", async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          status: "success",
+          data: {
+            resultType: "vector",
+            result: [{ metric: { pod: "p1", phase: "Running" }, value: [1700000000, "1"] }],
+          },
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      )
+    );
+    const client = await newClient();
+    const result = await client.instantQuery({ query: "x" });
+    expect(result.data.result[0]?.metric.pod).toBe("p1");
+    expect(result.data.result[0]?.metric.phase).toBe("Running");
+    expect(result.data.result[0]?.value[1]).toBe("1");
+  });
 });

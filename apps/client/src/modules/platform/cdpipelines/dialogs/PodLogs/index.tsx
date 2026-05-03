@@ -2,6 +2,7 @@ import React from "react";
 import { Dialog, DialogContent, DialogBody, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { PodLogsTerminal } from "@/core/components/PodLogsTerminal";
+import { podLabels } from "@my-project/shared";
 import { usePodWatchList } from "@/k8s/api/groups/Core/Pod";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
@@ -17,7 +18,7 @@ export const PodLogsDialog: React.FC<PodLogsDialogProps> = ({ props, state }) =>
   const podWatchList = usePodWatchList({
     namespace,
     labels: {
-      "app.kubernetes.io/instance": appName,
+      [podLabels.instance]: appName,
     },
   });
 

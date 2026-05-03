@@ -16,9 +16,11 @@ vi.mock("@/core/providers/trpc", () => ({
 }));
 
 const okResponse: DeploymentMetricsOutput = {
-  cpu: [],
-  memory: [],
-  restarts: [],
+  compute: { cpu: [], memory: [], memoryRss: [], memoryCache: [], cpuThrottling: [] },
+  network: { rx: [], tx: [] },
+  storage: { readBytes: [], writeBytes: [] },
+  health: { restarts: [], oomEvents: [], podPhase: [] },
+  quotas: { cpuRequests: [], cpuLimits: [], memoryRequests: [], memoryLimits: [] },
   range: "1h",
   queriedAt: 1700000000,
 };
