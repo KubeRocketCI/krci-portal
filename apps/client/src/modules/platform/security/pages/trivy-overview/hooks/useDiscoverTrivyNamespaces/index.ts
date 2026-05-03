@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useVulnerabilityReportWatchList } from "@/k8s/api/groups/Trivy/VulnerabilityReport/hooks";
 import { useClusterStore } from "@/k8s/store";
+import { sortByName } from "@/core/utils/sortByName";
 import { useShallow } from "zustand/react/shallow";
 
 export interface UseDiscoverTrivyNamespacesResult {
@@ -76,7 +77,7 @@ export function useDiscoverTrivyNamespaces(): UseDiscoverTrivyNamespacesResult {
           .map((report) => report.metadata?.namespace)
           .filter((ns): ns is string => Boolean(ns))
       ),
-    ].sort((a, b) => a.localeCompare(b));
+    ].sort(sortByName);
 
     // If we discovered namespaces, use them; otherwise fall back to configured
     return discoveredNamespaces.length > 0 ? discoveredNamespaces : allowedNamespaces;

@@ -25,7 +25,21 @@ const series = (offset: number, scale: number) =>
 const apps = ["frontend", "api", "worker"];
 
 function buildSeries(scale: number) {
-  return apps.map((app, i) => ({ app, series: series(i, scale * (i + 1)) }));
+  return apps.map((app, i) => ({
+    app,
+    pods: [{ pod: `${app}-1`, series: series(i, scale * (i + 1)) }],
+  }));
+}
+
+function emptyForEachApp() {
+  return apps.map((app) => ({ app, pods: [] }));
+}
+
+function zeroSeries(base: ReturnType<typeof buildSeries>) {
+  return base.map((entry) => ({
+    app: entry.app,
+    pods: entry.pods.map((p) => ({ pod: p.pod, series: p.series.map((point) => ({ ...point, v: 0 })) })),
+  }));
 }
 
 const podPhase = [
@@ -41,13 +55,18 @@ function FullTab({ selected, emptyQuotas = false }: { selected: string[] | null;
   const set = React.useMemo(() => new Set(selectedApps ?? apps), [selectedApps]);
   const cpuUsage = buildSeries(0.3);
   const memUsage = buildSeries(64 * 1024 * 1024);
-  const cpuRequests = emptyQuotas ? apps.map((app) => ({ app, series: [] })) : buildSeries(0.5);
-  const cpuLimits = emptyQuotas ? apps.map((app) => ({ app, series: [] })) : buildSeries(1);
-  const memRequests = emptyQuotas ? apps.map((app) => ({ app, series: [] })) : buildSeries(128 * 1024 * 1024);
-  const memLimits = emptyQuotas ? apps.map((app) => ({ app, series: [] })) : buildSeries(256 * 1024 * 1024);
+  const cpuRequests = emptyQuotas ? emptyForEachApp() : buildSeries(0.5);
+  const cpuLimits = emptyQuotas ? emptyForEachApp() : buildSeries(1);
+  const memRequests = emptyQuotas ? emptyForEachApp() : buildSeries(128 * 1024 * 1024);
+  const memLimits = emptyQuotas ? emptyForEachApp() : buildSeries(256 * 1024 * 1024);
   const cpuThrottling = apps.map((app, i) => ({
     app,
-    series: series(i * 2, 5 + i * 12).map((p) => ({ ...p, v: Math.max(0, p.v) })),
+    pods: [
+      {
+        pod: `${app}-1`,
+        series: series(i * 2, 5 + i * 12).map((p) => ({ ...p, v: Math.max(0, p.v) })),
+      },
+    ],
   }));
   return (
     <MetricsCursorProvider>
@@ -140,7 +159,7 @@ function FullTab({ selected, emptyQuotas = false }: { selected: string[] | null;
           <MetricChart
             title="Container restarts"
             unit="count"
-            data={buildSeries(0).map((s) => ({ ...s, series: s.series.map((p) => ({ ...p, v: 0 })) }))}
+            data={zeroSeries(buildSeries(0))}
             isLoading={false}
             error={null}
             selectedApps={set}

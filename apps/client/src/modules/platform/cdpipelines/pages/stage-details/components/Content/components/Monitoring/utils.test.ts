@@ -12,7 +12,20 @@ import {
 
 const series = (app: string, values: number[]): MetricSeriesByApp => ({
   app,
-  series: values.map((v, i) => ({ t: 1700000000 + i * 60, v })),
+  pods: [
+    {
+      pod: `${app}-1`,
+      series: values.map((v, i) => ({ t: 1700000000 + i * 60, v })),
+    },
+  ],
+});
+
+const multiPod = (app: string, perPod: number[][]): MetricSeriesByApp => ({
+  app,
+  pods: perPod.map((values, idx) => ({
+    pod: `${app}-${idx + 1}`,
+    series: values.map((v, i) => ({ t: 1700000000 + i * 60, v })),
+  })),
 });
 
 describe("humanBytes", () => {
@@ -105,13 +118,29 @@ describe("latestSumByApp", () => {
   });
 
   it("treats apps with empty series as zero contribution", () => {
-    const data = [series("a", [3]), { app: "b", series: [] }];
+    const data = [series("a", [3]), { app: "b", pods: [] }];
     expect(latestSumByApp(data, new Set(["a", "b"]))).toBe(3);
   });
 
   it("returns 0 when nothing matches", () => {
     expect(latestSumByApp([], new Set(["a"]))).toBe(0);
     expect(latestSumByApp([series("a", [1])], new Set())).toBe(0);
+  });
+
+  it("sums the latest sample of every pod under each selected app", () => {
+    const data = [
+      multiPod("a", [
+        [1, 2, 3], // a-1 latest = 3
+        [10, 20], // a-2 latest = 20
+      ]),
+      series("b", [100]),
+    ];
+    expect(latestSumByApp(data, new Set(["a", "b"]))).toBe(123);
+  });
+
+  it("ignores pods within an app when the app is not selected", () => {
+    const data = [multiPod("a", [[1], [2]]), multiPod("b", [[3]])];
+    expect(latestSumByApp(data, new Set(["a"]))).toBe(3);
   });
 });
 
@@ -128,8 +157,8 @@ describe("computeUtilization", () => {
   it("returns null when no selected app has capacity configured", () => {
     const usage = [series("a", [0.5]), series("b", [0.5])];
     const capacity = [
-      { app: "a", series: [] },
-      { app: "b", series: [] },
+      { app: "a", pods: [] },
+      { app: "b", pods: [] },
     ];
     expect(computeUtilization(usage, capacity, apps)).toBeNull();
   });
@@ -150,6 +179,12 @@ describe("computeUtilization", () => {
     const usage = [series("a", [3])];
     const capacity = [series("a", [2])];
     expect(computeUtilization(usage, capacity, apps)).toBe(150);
+  });
+
+  it("rolls up multi-pod usage and capacity by summing all pods of selected apps", () => {
+    const usage = [multiPod("a", [[0.2], [0.3]])]; // total 0.5
+    const capacity = [multiPod("a", [[1], [1]])]; // total 2
+    expect(computeUtilization(usage, capacity, new Set(["a"]))).toBe(25);
   });
 });
 

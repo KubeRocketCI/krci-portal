@@ -6,6 +6,7 @@ import type {
   promqlVectorResponseSchema,
   metricSeriesPointSchema,
   metricSeriesByAppSchema,
+  metricSeriesByPodSchema,
   podPhaseSchema,
   podPhaseByAppSchema,
 } from "./schemas.js";
@@ -18,5 +19,6 @@ export type PromQLVectorResponse = z.infer<typeof promqlVectorResponseSchema>;
 export type MetricRange = (typeof METRIC_RANGE_VALUES)[number];
 export type MetricSeriesPoint = z.infer<typeof metricSeriesPointSchema>;
 export type MetricSeriesByApp = z.infer<typeof metricSeriesByAppSchema>;
+export type MetricSeriesByPod = z.infer<typeof metricSeriesByPodSchema>;
 export type PodPhase = z.infer<typeof podPhaseSchema>;
 export type PodPhaseByApp = z.infer<typeof podPhaseByAppSchema>;

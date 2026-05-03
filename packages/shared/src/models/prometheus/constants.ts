@@ -20,3 +20,11 @@ export const STEP_BY_RANGE = {
 export const MAX_APPLICATIONS = 50;
 
 export const PROMETHEUS_TIMEOUT_MS = 10_000;
+
+/**
+ * Prometheus label name emitted by `kube-state-metrics` for the
+ * `app.kubernetes.io/instance` Kubernetes label, after KSM's
+ * `label_` prefix and `_`-for-`/`/`.` munging. Used as the join
+ * key for vector matching pod metrics with `kube_pod_labels`.
+ */
+export const POD_LABEL_APP_INSTANCE = "label_app_kubernetes_io_instance";

@@ -4,6 +4,7 @@ import {
   deploymentMetricsOutputSchema,
   k8sPodConfig,
   podLabels,
+  POD_LABEL_APP_INSTANCE,
   STEP_BY_RANGE,
   PROMETHEUS_TIME_RANGES,
   type DeploymentMetricsOutput,
@@ -18,11 +19,13 @@ import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../k8s/errors/index.js";
 import { createPrometheusClient } from "../../../../clients/prometheus/index.js";
 import {
   buildPodPhaseQuery,
+  buildPodNamePromQLQueries,
   buildPromQLQueries,
   combineRatioSeriesByApp,
   deriveRateWindow,
   groupPodsByApp,
-  matrixToSeriesByApp,
+  matrixToPodSeriesByApp,
+  matrixToPodSeriesByAppFromMap,
   RANGE_METRIC_KEYS,
   vectorToPodPhaseByApp,
   type RangeMetricKey,
@@ -38,7 +41,7 @@ function emptyOutput(
   queriedAt: number,
   apps: string[]
 ): DeploymentMetricsOutput {
-  const empty = (): MetricSeriesByApp[] => apps.map((app) => ({ app, series: [] }));
+  const empty = (): MetricSeriesByApp[] => apps.map((app) => ({ app, pods: [] }));
   const emptyPhase = (): PodPhaseByApp[] => apps.map((app) => ({ app, pods: [] }));
   return {
     compute: {
@@ -80,37 +83,28 @@ export const getDeploymentMetricsProcedure = protectedProcedure
       throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
     }
 
+    // K8s pod listing is still needed for the live-only podPhase panel.
+    // Range queries no longer depend on it — they vector-match against
+    // kube_pod_labels server-side and so include historical pods.
     const labelSelector = `${podLabels.instance} in (${applications.join(",")})`;
     const podList = await k8sClient.listResource(k8sPodConfig, namespace, labelSelector);
-
     const podsByApp = groupPodsByApp(
       (podList.items ?? []) as Array<{ metadata: { name: string; labels?: Record<string, string> } }>,
       applications
     );
-
-    const podToApp = new Map<string, string>();
-    const allPodNames: string[] = [];
+    const livePodToApp = new Map<string, string>();
+    const livePodNames: string[] = [];
     for (const [app, pods] of podsByApp) {
       for (const podName of pods) {
-        podToApp.set(podName, app);
-        allPodNames.push(podName);
+        livePodToApp.set(podName, app);
+        livePodNames.push(podName);
       }
-    }
-
-    if (allPodNames.length === 0) {
-      return emptyOutput(range, queriedAt, applications);
     }
 
     const end = queriedAt;
     const step = STEP_BY_RANGE[range];
     const rangeSeconds = PROMETHEUS_TIME_RANGES[range];
     const start = end - rangeSeconds;
-    const queries = buildPromQLQueries({
-      namespace,
-      podNames: allPodNames,
-      lookbackWindow: deriveRateWindow(step),
-    });
-    const phaseQuery = buildPodPhaseQuery({ namespace, podNames: allPodNames });
 
     const prometheus = createPrometheusClient();
     const sharedAbort = new AbortController();
@@ -121,6 +115,29 @@ export const getDeploymentMetricsProcedure = protectedProcedure
     const combinedSignal = AbortSignal.any([sharedAbort.signal, budgetSignal]);
     const procedureStart = Date.now();
 
+    // Probe whether kube-state-metrics exposes kube_pod_labels for this
+    // namespace. Requires --metric-labels-allowlist=pods=[app.kubernetes.io/instance]
+    // on the KSM deployment; absent on many stock installations. When the metric
+    // is present we can use the kube_pod_labels join (includes historical pods);
+    // otherwise we fall back to filtering by live pod names from the K8s listing.
+    const kubePodLabelsProbe = await prometheus.instantQuery(
+      {
+        query: `count(kube_pod_labels{namespace="${namespace}", ${POD_LABEL_APP_INSTANCE}!=""})`,
+      },
+      combinedSignal
+    );
+    const hasKubePodLabels =
+      kubePodLabelsProbe.data.result.length > 0 && Number(kubePodLabelsProbe.data.result[0]?.value[1]) > 0;
+
+    // Without kube_pod_labels AND no live pods there is nothing to query.
+    if (!hasKubePodLabels && livePodNames.length === 0) {
+      return emptyOutput(range, queriedAt, applications);
+    }
+
+    const queries = hasKubePodLabels
+      ? buildPromQLQueries({ namespace, applications, lookbackWindow: deriveRateWindow(step) })
+      : buildPodNamePromQLQueries({ namespace, podNames: livePodNames, lookbackWindow: deriveRateWindow(step) });
+
     let rangeResults: PromQLMatrixResponse[];
     let phaseVector: PromQLVectorResponse;
     try {
@@ -129,7 +146,16 @@ export const getDeploymentMetricsProcedure = protectedProcedure
       const rangePromises = RANGE_METRIC_KEYS.map((key) =>
         prometheus.rangeQuery({ query: queries[key], start, end, step }, combinedSignal)
       );
-      const phasePromise = prometheus.instantQuery({ query: phaseQuery }, combinedSignal);
+      // podPhase is intrinsically about live pods. Skip the instant query
+      // when no live pods match — Prometheus would return an empty vector
+      // and an empty pod regex would be malformed.
+      const phasePromise: Promise<PromQLVectorResponse> =
+        livePodNames.length === 0
+          ? Promise.resolve({ status: "success", data: { resultType: "vector", result: [] } })
+          : prometheus.instantQuery(
+              { query: buildPodPhaseQuery({ namespace, podNames: livePodNames }) },
+              combinedSignal
+            );
       [rangeResults, phaseVector] = await Promise.all([Promise.all(rangePromises), phasePromise]);
     } catch (error) {
       sharedAbort.abort();
@@ -145,7 +171,7 @@ export const getDeploymentMetricsProcedure = protectedProcedure
       });
     } finally {
       console.info(
-        `[prometheus.getDeploymentMetrics] range=${range} apps=${applications.length} pods=${allPodNames.length} durationMs=${Date.now() - procedureStart}`
+        `[prometheus.getDeploymentMetrics] range=${range} apps=${applications.length} livePods=${livePodNames.length} hasKubePodLabels=${hasKubePodLabels} durationMs=${Date.now() - procedureStart}`
       );
     }
 
@@ -153,7 +179,9 @@ export const getDeploymentMetricsProcedure = protectedProcedure
       RANGE_METRIC_KEYS.map((key, idx) => [key, rangeResults[idx]!])
     );
     const seriesFor = (key: RangeMetricKey): MetricSeriesByApp[] =>
-      matrixToSeriesByApp(resultByKey.get(key)!, podToApp, applications);
+      hasKubePodLabels
+        ? matrixToPodSeriesByApp(resultByKey.get(key)!, applications)
+        : matrixToPodSeriesByAppFromMap(resultByKey.get(key)!, livePodToApp, applications);
 
     return {
       compute: {
@@ -174,7 +202,7 @@ export const getDeploymentMetricsProcedure = protectedProcedure
       health: {
         restarts: seriesFor("restarts"),
         oomEvents: seriesFor("oomEvents"),
-        podPhase: vectorToPodPhaseByApp(phaseVector, podToApp, applications),
+        podPhase: vectorToPodPhaseByApp(phaseVector, livePodToApp, applications),
       },
       quotas: {
         cpuRequests: seriesFor("cpuRequests"),

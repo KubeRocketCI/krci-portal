@@ -86,7 +86,7 @@ describe("prometheus.getDeploymentMetrics", () => {
     expect(mockListResource).not.toHaveBeenCalled();
   });
 
-  it("fans out 16 range queries + 1 instant query and groups output by section", async () => {
+  it("fans out 16 range queries + 2 instant queries (probe + pod phase) and groups output by section", async () => {
     mockListResource.mockResolvedValueOnce({
       items: [
         { metadata: { name: "frontend-1", labels: { "app.kubernetes.io/instance": "frontend" } } },
@@ -100,17 +100,29 @@ describe("prometheus.getDeploymentMetrics", () => {
         resultType: "matrix",
         result: [
           {
-            metric: { pod: "frontend-1" },
+            metric: { pod: "frontend-1", label_app_kubernetes_io_instance: "frontend" },
             values: [
               [100, "1.0"],
               [110, "2.0"],
             ],
           },
-          { metric: { pod: "frontend-2" }, values: [[110, "0.5"]] },
-          { metric: { pod: "api-1" }, values: [[100, "3.0"]] },
+          {
+            metric: { pod: "frontend-2", label_app_kubernetes_io_instance: "frontend" },
+            values: [[110, "0.5"]],
+          },
+          {
+            metric: { pod: "api-1", label_app_kubernetes_io_instance: "api" },
+            values: [[100, "3.0"]],
+          },
         ],
       },
     });
+    // First instant call: kube_pod_labels probe → confirms KSM has labels
+    mockInstantQuery.mockResolvedValueOnce({
+      status: "success",
+      data: { resultType: "vector", result: [{ metric: {}, value: [100, "3"] }] },
+    });
+    // Second instant call: pod phase
     mockInstantQuery.mockResolvedValueOnce({
       status: "success",
       data: {
@@ -130,43 +142,73 @@ describe("prometheus.getDeploymentMetrics", () => {
     });
 
     expect(mockRangeQuery).toHaveBeenCalledTimes(16);
-    expect(mockInstantQuery).toHaveBeenCalledTimes(1);
+    expect(mockInstantQuery).toHaveBeenCalledTimes(2); // probe + pod phase
+
     const cpuCall = mockRangeQuery.mock.calls.find(([q]) => q.query.includes("container_cpu_usage_seconds_total"));
     expect(cpuCall?.[0].query).toContain('namespace="test-namespace"');
-    expect(cpuCall?.[0].query).toContain("frontend-1");
-    expect(cpuCall?.[0].query).toContain("api-1");
+    expect(cpuCall?.[0].query).toContain('label_app_kubernetes_io_instance=~"^(frontend|api)$"');
+    expect(cpuCall?.[0].query).not.toContain("frontend-1"); // pod names are no longer interpolated
 
     const cpuFrontend = result.compute.cpu.find((r) => r.app === "frontend");
-    expect(cpuFrontend?.series).toEqual([
-      { t: 100, v: 1.0 },
-      { t: 110, v: 2.5 },
+    expect(cpuFrontend?.pods).toEqual([
+      {
+        pod: "frontend-1",
+        series: [
+          { t: 100, v: 1.0 },
+          { t: 110, v: 2.0 },
+        ],
+      },
+      { pod: "frontend-2", series: [{ t: 110, v: 0.5 }] },
     ]);
     const phaseFrontend = result.health.podPhase.find((r) => r.app === "frontend");
     expect(phaseFrontend?.pods).toEqual([
       { name: "frontend-1", phase: "Running" },
       { name: "frontend-2", phase: "Pending" },
     ]);
-    expect(result.network.rx.find((r) => r.app === "api")?.series).toEqual([{ t: 100, v: 3.0 }]);
+    expect(result.network.rx.find((r) => r.app === "api")?.pods).toEqual([
+      { pod: "api-1", series: [{ t: 100, v: 3.0 }] },
+    ]);
   });
 
-  it("returns empty grouped series per app when zero pods match (no Prometheus call)", async () => {
+  it("returns empty grouped series per app when zero pods match (range queries still fire for history)", async () => {
     mockListResource.mockResolvedValueOnce({ items: [] });
+    // Probe confirms kube_pod_labels is available so range queries fire for historical pods.
+    mockInstantQuery.mockResolvedValueOnce({
+      status: "success",
+      data: { resultType: "vector", result: [{ metric: {}, value: [100, "2"] }] },
+    });
     const caller = await getCaller();
     const result = await caller.prometheus.getDeploymentMetrics({
       ...validInput,
       applications: ["frontend", "api"],
     });
 
-    expect(mockRangeQuery).not.toHaveBeenCalled();
-    expect(mockInstantQuery).not.toHaveBeenCalled();
+    // Range queries still fire — they may return historical pod data
+    // even when no pods are currently alive. The instant podPhase query
+    // is short-circuited because there are no live pods to match.
+    expect(mockRangeQuery).toHaveBeenCalledTimes(16);
+    // Only the kube_pod_labels probe fires; podPhase is skipped (no live pods).
+    expect(mockInstantQuery).toHaveBeenCalledTimes(1);
     expect(result.compute.cpu.map((r) => r.app)).toEqual(["frontend", "api"]);
-    expect(result.compute.cpu.every((r) => r.series.length === 0)).toBe(true);
+    expect(result.compute.cpu.every((r) => r.pods.length === 0)).toBe(true);
     expect(result.health.podPhase.every((r) => r.pods.length === 0)).toBe(true);
   });
 
   it("includes an app with no pods as empty series alongside apps that do have pods", async () => {
     mockListResource.mockResolvedValueOnce({
       items: [{ metadata: { name: "frontend-1", labels: { "app.kubernetes.io/instance": "frontend" } } }],
+    });
+    mockRangeQuery.mockResolvedValue({
+      status: "success",
+      data: {
+        resultType: "matrix",
+        result: [
+          {
+            metric: { pod: "frontend-1", label_app_kubernetes_io_instance: "frontend" },
+            values: [[100, "1.0"]],
+          },
+        ],
+      },
     });
     const caller = await getCaller();
     const result = await caller.prometheus.getDeploymentMetrics({
@@ -176,10 +218,9 @@ describe("prometheus.getDeploymentMetrics", () => {
 
     expect(mockRangeQuery).toHaveBeenCalledTimes(16);
     const missing = result.compute.cpu.find((r) => r.app === "missing");
-    expect(missing).toBeDefined();
-    expect(missing?.series).toEqual([]);
+    expect(missing?.pods).toEqual([]);
     const frontend = result.compute.cpu.find((r) => r.app === "frontend");
-    expect(frontend).toBeDefined();
+    expect(frontend?.pods).toEqual([{ pod: "frontend-1", series: [{ t: 100, v: 1.0 }] }]);
     const missingPhase = result.health.podPhase.find((r) => r.app === "missing");
     expect(missingPhase?.pods).toEqual([]);
   });

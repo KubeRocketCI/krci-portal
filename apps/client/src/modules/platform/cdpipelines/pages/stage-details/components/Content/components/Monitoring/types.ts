@@ -17,16 +17,19 @@ export interface MetricChartProps {
    */
   selectedApps?: ReadonlySet<string>;
   /**
-   * Click handler for a legend entry.
-   * `modifiers.toggle` is true when the user held shift or cmd/ctrl while clicking.
-   */
-  onLegendClick?: (app: string, modifiers: { toggle: boolean }) => void;
-  /**
    * Resolution of the time series in seconds. Used to bucket cursor timestamps
    * so neighbouring pixels in the same step short-circuit the cross-chart
    * cursor broadcast.
    */
   step?: number;
+  /**
+   * Explicit `[startSec, endSec]` bounds for the X axis (unix seconds). When
+   * set, the chart spans the full selected time range even if data only
+   * exists for part of it — so a 24h selection always reads as 24h, with
+   * empty space where Prometheus has no samples (e.g. before the pod
+   * started). Falls back to data-fitted axis when omitted.
+   */
+  domain?: [number, number];
 }
 
 export interface ToolbarProps {

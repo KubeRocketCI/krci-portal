@@ -70,12 +70,10 @@ describe("useMonitoringSearch", () => {
     expect(lastNavigateSearch()).toMatchObject({ autoRefresh: false });
   });
 
-  it("setApps and isolateApp do not use replace:true", () => {
+  it("setApps does not use replace:true", () => {
     mockUseSearch.mockReturnValue({ apps: "a,b" });
     const { result } = renderHook(() => useMonitoringSearch());
     act(() => result.current.setApps(["a"]));
-    expect(lastNavigateCall().replace).toBe(false);
-    act(() => result.current.isolateApp("b"));
     expect(lastNavigateCall().replace).toBe(false);
   });
 
@@ -109,40 +107,5 @@ describe("useMonitoringSearch", () => {
     const { result } = renderHook(() => useMonitoringSearch());
     act(() => result.current.setApps(["a", "b"]));
     expect(lastNavigateSearch()).toMatchObject({ apps: "a,b" });
-  });
-
-  it("toggleApp adds when not present", () => {
-    mockUseSearch.mockReturnValue({ apps: "a" });
-    const { result } = renderHook(() => useMonitoringSearch());
-    act(() => result.current.toggleApp("b"));
-    expect(lastNavigateSearch()).toMatchObject({ apps: "a,b" });
-  });
-
-  it("toggleApp removes when present", () => {
-    mockUseSearch.mockReturnValue({ apps: "a,b" });
-    const { result } = renderHook(() => useMonitoringSearch());
-    act(() => result.current.toggleApp("a"));
-    expect(lastNavigateSearch()).toMatchObject({ apps: "b" });
-  });
-
-  it("toggleApp on the last selected app resets to all (apps undefined)", () => {
-    mockUseSearch.mockReturnValue({ apps: "a" });
-    const { result } = renderHook(() => useMonitoringSearch());
-    act(() => result.current.toggleApp("a"));
-    expect(lastNavigateSearch()).toMatchObject({ apps: undefined });
-  });
-
-  it("isolateApp sets apps to just that app", () => {
-    mockUseSearch.mockReturnValue({ apps: "a,b,c" });
-    const { result } = renderHook(() => useMonitoringSearch());
-    act(() => result.current.isolateApp("b"));
-    expect(lastNavigateSearch()).toMatchObject({ apps: "b" });
-  });
-
-  it("isolateApp on the already-isolated app resets to all", () => {
-    mockUseSearch.mockReturnValue({ apps: "b" });
-    const { result } = renderHook(() => useMonitoringSearch());
-    act(() => result.current.isolateApp("b"));
-    expect(lastNavigateSearch()).toMatchObject({ apps: undefined });
   });
 });
