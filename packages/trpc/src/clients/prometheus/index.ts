@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
-import { promqlMatrixResponseSchema, PROMETHEUS_TIMEOUT_MS } from "@my-project/shared";
-import type { PromQLMatrixResponse } from "@my-project/shared";
+import { promqlMatrixResponseSchema, promqlVectorResponseSchema, PROMETHEUS_TIMEOUT_MS } from "@my-project/shared";
+import type { PromQLMatrixResponse, PromQLVectorResponse } from "@my-project/shared";
+import type { ZodType } from "zod";
 
 export interface PrometheusClientConfig {
   baseURL: string;
@@ -39,6 +40,10 @@ export interface RangeQueryParams {
   step: number;
 }
 
+export interface InstantQueryParams {
+  query: string;
+}
+
 export class PrometheusClient {
   private readonly baseURL: string;
   private readonly timeoutMs: number;
@@ -58,10 +63,15 @@ export class PrometheusClient {
       end: String(Math.floor(params.end)),
       step: `${params.step}s`,
     }).toString();
-    return this.fetchJson(`/api/v1/query_range?${qs}`, externalSignal);
+    return this.fetchJson(`/api/v1/query_range?${qs}`, promqlMatrixResponseSchema, externalSignal);
   }
 
-  private async fetchJson(path: string, externalSignal?: AbortSignal): Promise<PromQLMatrixResponse> {
+  async instantQuery(params: InstantQueryParams, externalSignal?: AbortSignal): Promise<PromQLVectorResponse> {
+    const qs = new URLSearchParams({ query: params.query }).toString();
+    return this.fetchJson(`/api/v1/query?${qs}`, promqlVectorResponseSchema, externalSignal);
+  }
+
+  private async fetchJson<T>(path: string, schema: ZodType<T>, externalSignal?: AbortSignal): Promise<T> {
     const url = `${this.baseURL}${path}`;
     const timeoutSignal = AbortSignal.timeout(this.timeoutMs);
     const signal = externalSignal ? AbortSignal.any([timeoutSignal, externalSignal]) : timeoutSignal;
@@ -81,7 +91,7 @@ export class PrometheusClient {
       }
 
       const json = await response.json();
-      return promqlMatrixResponseSchema.parse(json);
+      return schema.parse(json);
     } catch (error) {
       if (error instanceof Error && (error.name === "AbortError" || error.name === "TimeoutError")) {
         throw new Error(`Prometheus request timed out after ${this.timeoutMs}ms`);
