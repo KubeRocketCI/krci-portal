@@ -24,9 +24,14 @@ export const metricSeriesPointSchema = z.object({
   v: z.number().finite(),
 });
 
+export const metricSeriesByPodSchema = z.object({
+  pod: z.string(),
+  series: z.array(metricSeriesPointSchema),
+});
+
 export const metricSeriesByAppSchema = z.object({
   app: z.string(),
-  series: z.array(metricSeriesPointSchema),
+  pods: z.array(metricSeriesByPodSchema),
 });
 
 export const podPhaseSchema = z.enum(["Pending", "Running", "Succeeded", "Failed", "Unknown"]);

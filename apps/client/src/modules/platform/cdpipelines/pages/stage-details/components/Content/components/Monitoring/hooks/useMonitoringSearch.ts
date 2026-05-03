@@ -13,8 +13,6 @@ interface UseMonitoringSearchResult {
   clearApps: () => void;
   setRange: (next: MetricRange) => void;
   setAutoRefresh: (next: boolean) => void;
-  toggleApp: (app: string) => void;
-  isolateApp: (app: string) => void;
 }
 
 type SearchPatch = Partial<{ apps: string | undefined; range: MetricRange; autoRefresh: boolean }>;
@@ -58,22 +56,5 @@ export function useMonitoringSearch(): UseMonitoringSearchResult {
   const setRange = React.useCallback((next: MetricRange) => update({ range: next }), [update]);
   const setAutoRefresh = React.useCallback((next: boolean) => update({ autoRefresh: next }, true), [update]);
 
-  const toggleApp = React.useCallback(
-    (app: string) => {
-      const current = apps ?? [];
-      const next = current.includes(app) ? current.filter((a) => a !== app) : [...current, app];
-      update({ apps: serializeApps(next) });
-    },
-    [apps, update]
-  );
-
-  const isolateApp = React.useCallback(
-    (app: string) => {
-      const alreadyIsolated = apps?.length === 1 && apps[0] === app;
-      update({ apps: alreadyIsolated ? undefined : serializeApps([app]) });
-    },
-    [apps, update]
-  );
-
-  return { apps, range, autoRefresh, setApps, clearApps, setRange, setAutoRefresh, toggleApp, isolateApp };
+  return { apps, range, autoRefresh, setApps, clearApps, setRange, setAutoRefresh };
 }

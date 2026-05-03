@@ -15,8 +15,17 @@ vi.mock("@/core/providers/trpc", () => ({
   }),
 }));
 
+// At least one populated app entry exercises the per-pod nesting so a
+// future regression that flattens the shape back to `{ app, series }` is
+// caught by hook-level tests, not only by the trpc-level Zod validator.
 const okResponse: DeploymentMetricsOutput = {
-  compute: { cpu: [], memory: [], memoryRss: [], memoryCache: [], cpuThrottling: [] },
+  compute: {
+    cpu: [{ app: "test-app", pods: [{ pod: "test-app-abc", series: [{ t: 1700000000, v: 0.5 }] }] }],
+    memory: [],
+    memoryRss: [],
+    memoryCache: [],
+    cpuThrottling: [],
+  },
   network: { rx: [], tx: [] },
   storage: { readBytes: [], writeBytes: [] },
   health: { restarts: [], oomEvents: [], podPhase: [] },

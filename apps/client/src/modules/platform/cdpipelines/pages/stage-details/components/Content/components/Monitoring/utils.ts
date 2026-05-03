@@ -32,24 +32,28 @@ export function chartSlug(title: string): string {
 }
 
 /**
- * Sum the latest sample of every selected app's series. Apps with empty series
- * are skipped (kube-state-metrics omits a series entirely when the resource
- * isn't configured, so empty == not set).
+ * Sum the latest sample of every pod under every selected app. Apps with
+ * no pods, or pods with empty series (kube-state-metrics omits a series
+ * entirely when the resource isn't configured, so empty == not set), are
+ * skipped.
  */
 export function latestSumByApp(series: MetricSeriesByApp[], apps: ReadonlySet<string>): number {
   let total = 0;
-  for (const s of series) {
-    if (!apps.has(s.app) || s.series.length === 0) continue;
-    total += s.series[s.series.length - 1].v;
+  for (const entry of series) {
+    if (!apps.has(entry.app)) continue;
+    for (const pod of entry.pods) {
+      if (pod.series.length === 0) continue;
+      total += pod.series[pod.series.length - 1].v;
+    }
   }
   return total;
 }
 
 /**
  * Compute utilisation percentage matching Grafana's
- * `sum(usage) / sum(capacity)` semantic. Returns `null` when no selected app
- * has capacity configured (so the panel can render "No data" instead of a
- * misleading 0% or division-by-zero infinity).
+ * `sum(usage) / sum(capacity)` semantic, summing across every pod of
+ * every selected app on both sides. Returns `null` when no selected app
+ * has any pod with capacity configured.
  */
 export function computeUtilization(
   usage: MetricSeriesByApp[],
@@ -58,10 +62,13 @@ export function computeUtilization(
 ): number | null {
   let totalCapacity = 0;
   let hasCapacity = false;
-  for (const s of capacity) {
-    if (!apps.has(s.app) || s.series.length === 0) continue;
-    totalCapacity += s.series[s.series.length - 1].v;
-    hasCapacity = true;
+  for (const entry of capacity) {
+    if (!apps.has(entry.app)) continue;
+    for (const pod of entry.pods) {
+      if (pod.series.length === 0) continue;
+      totalCapacity += pod.series[pod.series.length - 1].v;
+      hasCapacity = true;
+    }
   }
   if (!hasCapacity || totalCapacity <= 0) return null;
   return (latestSumByApp(usage, apps) / totalCapacity) * 100;

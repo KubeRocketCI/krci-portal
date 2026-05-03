@@ -1,5 +1,11 @@
 import * as React from "react";
-import { inClusterName, STEP_BY_RANGE, type DeploymentMetricsOutput, type MetricSeriesByApp } from "@my-project/shared";
+import {
+  inClusterName,
+  PROMETHEUS_TIME_RANGES,
+  STEP_BY_RANGE,
+  type DeploymentMetricsOutput,
+  type MetricSeriesByApp,
+} from "@my-project/shared";
 import { Card } from "@/core/components/ui/card";
 import { useStageWatch, usePipelineAppCodebasesWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
@@ -74,17 +80,7 @@ export function Monitoring() {
   const stageWatch = useStageWatch();
   const stage = stageWatch.query.data;
   const appCodebasesWatch = usePipelineAppCodebasesWatch();
-  const {
-    apps: filterApps,
-    range,
-    autoRefresh,
-    setRange,
-    setAutoRefresh,
-    setApps,
-    clearApps,
-    toggleApp,
-    isolateApp,
-  } = useMonitoringSearch();
+  const { apps: filterApps, range, autoRefresh, setRange, setAutoRefresh, setApps, clearApps } = useMonitoringSearch();
 
   const isRemoteCluster = stage !== undefined && stage.spec.clusterName !== inClusterName;
 
@@ -112,14 +108,6 @@ export function Monitoring() {
     autoRefresh,
     enabled: !!namespace && !isRemoteCluster && !appCodebasesWatch.isLoading && resolvedApps.length > 0,
   });
-
-  const onLegendClick = React.useCallback(
-    (app: string, modifiers: { toggle: boolean }) => {
-      if (modifiers.toggle) toggleApp(app);
-      else isolateApp(app);
-    },
-    [toggleApp, isolateApp]
-  );
 
   // Memoised so MetricChart's React.memo isn't defeated by a fresh Error
   // reference on every render.
@@ -169,6 +157,14 @@ export function Monitoring() {
   }
 
   const step = STEP_BY_RANGE[range];
+  // Pin the X axis to the time window the server actually queried
+  // (`data.range` echoes the request). Otherwise Recharts auto-fits to
+  // `dataMin..dataMax`, which collapses a "Last 24 hours" selection down to
+  // however much history the pod actually has — making the range filter
+  // appear ignored in the UI.
+  const domain: [number, number] | undefined = data
+    ? [data.queriedAt - PROMETHEUS_TIME_RANGES[data.range], data.queriedAt]
+    : undefined;
   const renderChart = (def: ChartDef) => (
     <MetricChart
       key={def.title}
@@ -177,8 +173,8 @@ export function Monitoring() {
       data={data ? def.pick(data) : []}
       isLoading={isLoading}
       error={error}
-      onLegendClick={onLegendClick}
       step={step}
+      domain={domain}
     />
   );
   const renderStat = (def: UtilisationDef) => (

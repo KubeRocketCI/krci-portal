@@ -1,9 +1,12 @@
 import {
   podLabels,
   podPhaseSchema,
+  sortByName,
+  POD_LABEL_APP_INSTANCE,
   type PromQLMatrixResponse,
   type PromQLVectorResponse,
   type MetricSeriesByApp,
+  type MetricSeriesByPod,
   type PodPhaseByApp,
   type PodPhase,
 } from "@my-project/shared";
@@ -42,12 +45,10 @@ export function groupPodsByApp(pods: PodLike[], apps: string[]): Map<string, str
   return result;
 }
 
-interface BuildQueriesParams {
+interface BuildRangeQueriesParams {
   namespace: string;
-  podNames: string[];
-}
-
-interface BuildRangeQueriesParams extends BuildQueriesParams {
+  /** RFC-1123-constrained app names (validated by Zod at the schema). */
+  applications: string[];
   /**
    * Range-vector window for both `rate()` and `increase()` queries, e.g.
    * "300s". Derive from `deriveRateWindow(step)`. Restart/OOM `increase()`
@@ -79,90 +80,189 @@ export const RANGE_METRIC_KEYS = [
 
 export type RangeMetricKey = (typeof RANGE_METRIC_KEYS)[number];
 
-function buildPodRegex(podNames: string[]): string {
-  return `^(${podNames.map(escapeRegex).join("|")})$`;
+function buildRegexAlternation(values: string[]): string {
+  return `^(${values.map(escapeRegex).join("|")})$`;
 }
 
 /**
- * Build every range-query PromQL string the dashboard needs. Only `namespace`
- * and `podNames` are interpolated; everything else is fixed text. `namespace`
- * is already validated by Zod (RFC-1123). `podNames` are regex-escaped and
- * anchored here.
+ * Build every range-query PromQL string the dashboard needs. Each query
+ * vector-matches against `kube_pod_labels` so the result includes any pod
+ * (current or historical, within KSM retention) whose
+ * `app.kubernetes.io/instance` label matches `applications`. The
+ * `${POD_LABEL_APP_INSTANCE}` label is preserved through the
+ * `group_left(...)` clause so each output series carries both `pod` and
+ * the app it belonged to.
  *
- * Precondition: callers must not pass an empty `podNames` array (the resulting
- * `pod=~""` selector matches nothing). The procedure handler short-circuits
- * before calling this util when zero pods match.
+ * `namespace` and `applications` are validated by Zod (RFC-1123) at the
+ * tRPC boundary; `applications` are additionally regex-escaped here.
+ *
+ * Precondition: callers must not pass an empty `applications` array.
+ * Only use when `kube_pod_labels` is confirmed available — see
+ * `buildPodNamePromQLQueries` for the fallback.
  */
 export function buildPromQLQueries({
   namespace,
-  podNames,
+  applications,
   lookbackWindow,
 }: BuildRangeQueriesParams): Record<RangeMetricKey, string> {
-  const podRegex = buildPodRegex(podNames);
-  const base = `namespace="${namespace}", pod=~"${podRegex}"`;
-  const sel = `${base}, container!="", container!="POD"`;
+  // `namespace` goes only into PromQL equality matchers (`namespace="…"`).
+  // Zod's RFC-1123 regex constrains it to `[a-z0-9-]`, none of which are
+  // metacharacters in a double-quoted PromQL string, so no escaping is
+  // required. `applications` below DO need `escapeRegex()` because they
+  // are placed into a `=~` regex matcher.
+  const baseSel = `namespace="${namespace}"`;
+  const containerSel = `${baseSel}, container!="", container!="POD"`;
+  const join = `* on (namespace, pod) group_left(${POD_LABEL_APP_INSTANCE}) kube_pod_labels{namespace="${namespace}", ${POD_LABEL_APP_INSTANCE}=~"${buildRegexAlternation(applications)}"}`;
+  const wrap = (inner: string): string => `sum by (pod, ${POD_LABEL_APP_INSTANCE}) (${inner} ${join})`;
 
   return {
-    cpu: `sum by (pod) (rate(container_cpu_usage_seconds_total{${sel}}[${lookbackWindow}]))`,
-    memory: `sum by (pod) (container_memory_working_set_bytes{${sel}})`,
-    memoryRss: `sum by (pod) (container_memory_rss{${sel}})`,
-    memoryCache: `sum by (pod) (container_memory_cache{${sel}})`,
-    restarts: `sum by (pod) (increase(kube_pod_container_status_restarts_total{${base}}[${lookbackWindow}]))`,
-    networkRx: `sum by (pod) (rate(container_network_receive_bytes_total{${base}}[${lookbackWindow}]))`,
-    networkTx: `sum by (pod) (rate(container_network_transmit_bytes_total{${base}}[${lookbackWindow}]))`,
-    diskReadBytes: `sum by (pod) (rate(container_fs_reads_bytes_total{${sel}}[${lookbackWindow}]))`,
-    diskWriteBytes: `sum by (pod) (rate(container_fs_writes_bytes_total{${sel}}[${lookbackWindow}]))`,
-    oomEvents: `sum by (pod) (increase(container_oom_events_total{${base}}[${lookbackWindow}]))`,
-    cpuRequests: `sum by (pod) (kube_pod_container_resource_requests{${base}, resource="cpu"})`,
-    cpuLimits: `sum by (pod) (kube_pod_container_resource_limits{${base}, resource="cpu"})`,
-    memoryRequests: `sum by (pod) (kube_pod_container_resource_requests{${base}, resource="memory"})`,
-    memoryLimits: `sum by (pod) (kube_pod_container_resource_limits{${base}, resource="memory"})`,
-    cpuThrottledPeriods: `sum by (pod) (rate(container_cpu_cfs_throttled_periods_total{${sel}}[${lookbackWindow}]))`,
-    cpuPeriods: `sum by (pod) (rate(container_cpu_cfs_periods_total{${sel}}[${lookbackWindow}]))`,
+    cpu: wrap(`rate(container_cpu_usage_seconds_total{${containerSel}}[${lookbackWindow}])`),
+    memory: wrap(`container_memory_working_set_bytes{${containerSel}}`),
+    memoryRss: wrap(`container_memory_rss{${containerSel}}`),
+    memoryCache: wrap(`container_memory_cache{${containerSel}}`),
+    restarts: wrap(`increase(kube_pod_container_status_restarts_total{${baseSel}}[${lookbackWindow}])`),
+    networkRx: wrap(`rate(container_network_receive_bytes_total{${baseSel}}[${lookbackWindow}])`),
+    networkTx: wrap(`rate(container_network_transmit_bytes_total{${baseSel}}[${lookbackWindow}])`),
+    diskReadBytes: wrap(`rate(container_fs_reads_bytes_total{${containerSel}}[${lookbackWindow}])`),
+    diskWriteBytes: wrap(`rate(container_fs_writes_bytes_total{${containerSel}}[${lookbackWindow}])`),
+    oomEvents: wrap(`increase(container_oom_events_total{${baseSel}}[${lookbackWindow}])`),
+    cpuRequests: wrap(`kube_pod_container_resource_requests{${baseSel}, resource="cpu"}`),
+    cpuLimits: wrap(`kube_pod_container_resource_limits{${baseSel}, resource="cpu"}`),
+    memoryRequests: wrap(`kube_pod_container_resource_requests{${baseSel}, resource="memory"}`),
+    memoryLimits: wrap(`kube_pod_container_resource_limits{${baseSel}, resource="memory"}`),
+    cpuThrottledPeriods: wrap(`rate(container_cpu_cfs_throttled_periods_total{${containerSel}}[${lookbackWindow}])`),
+    cpuPeriods: wrap(`rate(container_cpu_cfs_periods_total{${containerSel}}[${lookbackWindow}])`),
+  };
+}
+
+/**
+ * Fallback query builder for clusters where `kube_pod_labels` is not exposed
+ * by kube-state-metrics (requires `--metric-labels-allowlist` to enable).
+ * Filters by pod names from the live K8s listing instead of joining against
+ * `kube_pod_labels`. Results carry only the `pod` label; use
+ * `matrixToPodSeriesByAppFromMap` to group them by app.
+ *
+ * Precondition: `podNames` must be non-empty.
+ */
+export function buildPodNamePromQLQueries({
+  namespace,
+  podNames,
+  lookbackWindow,
+}: {
+  namespace: string;
+  podNames: string[];
+  lookbackWindow: string;
+}): Record<RangeMetricKey, string> {
+  const podRegex = buildRegexAlternation(podNames);
+  const baseSel = `namespace="${namespace}", pod=~"${podRegex}"`;
+  const containerSel = `${baseSel}, container!="", container!="POD"`;
+  const wrap = (inner: string): string => `sum by (pod) (${inner})`;
+
+  return {
+    cpu: wrap(`rate(container_cpu_usage_seconds_total{${containerSel}}[${lookbackWindow}])`),
+    memory: wrap(`container_memory_working_set_bytes{${containerSel}}`),
+    memoryRss: wrap(`container_memory_rss{${containerSel}}`),
+    memoryCache: wrap(`container_memory_cache{${containerSel}}`),
+    restarts: wrap(`increase(kube_pod_container_status_restarts_total{${baseSel}}[${lookbackWindow}])`),
+    networkRx: wrap(`rate(container_network_receive_bytes_total{${baseSel}}[${lookbackWindow}])`),
+    networkTx: wrap(`rate(container_network_transmit_bytes_total{${baseSel}}[${lookbackWindow}])`),
+    diskReadBytes: wrap(`rate(container_fs_reads_bytes_total{${containerSel}}[${lookbackWindow}])`),
+    diskWriteBytes: wrap(`rate(container_fs_writes_bytes_total{${containerSel}}[${lookbackWindow}])`),
+    oomEvents: wrap(`increase(container_oom_events_total{${baseSel}}[${lookbackWindow}])`),
+    cpuRequests: wrap(`kube_pod_container_resource_requests{${baseSel}, resource="cpu"}`),
+    cpuLimits: wrap(`kube_pod_container_resource_limits{${baseSel}, resource="cpu"}`),
+    memoryRequests: wrap(`kube_pod_container_resource_requests{${baseSel}, resource="memory"}`),
+    memoryLimits: wrap(`kube_pod_container_resource_limits{${baseSel}, resource="memory"}`),
+    cpuThrottledPeriods: wrap(`rate(container_cpu_cfs_throttled_periods_total{${containerSel}}[${lookbackWindow}])`),
+    cpuPeriods: wrap(`rate(container_cpu_cfs_periods_total{${containerSel}}[${lookbackWindow}])`),
   };
 }
 
 /** Build the single instant-query string for current pod phase. */
-export function buildPodPhaseQuery({ namespace, podNames }: BuildQueriesParams): string {
-  const podRegex = buildPodRegex(podNames);
-  return `kube_pod_status_phase{namespace="${namespace}", pod=~"${podRegex}"} == 1`;
+export function buildPodPhaseQuery({ namespace, podNames }: { namespace: string; podNames: string[] }): string {
+  return `kube_pod_status_phase{namespace="${namespace}", pod=~"${buildRegexAlternation(podNames)}"} == 1`;
 }
 
 /**
- * Convert a Prometheus matrix into per-app aggregated series. For each
- * timestamp present in any of an app's pod series, sum the values across that
- * app's pods. Apps with no matched pod series are present in the output with
- * an empty series array. Output order matches `knownApps`.
+ * Convert a Prometheus matrix into per-app, per-pod series. Each input
+ * series is identified by its `pod` label and partitioned by the
+ * `label_app_kubernetes_io_instance` label (see
+ * `POD_LABEL_APP_INSTANCE`). Pods whose app label is not in `knownApps`
+ * are dropped (defensive — the PromQL regex should already restrict
+ * this). Output preserves `knownApps` order; pods within each app are
+ * sorted by name for stable rendering.
  */
-export function matrixToSeriesByApp(
+export function matrixToPodSeriesByApp(matrix: PromQLMatrixResponse, knownApps: string[]): MetricSeriesByApp[] {
+  const perAppPods = new Map<string, Map<string, MetricSeriesByPod["series"]>>();
+  for (const app of knownApps) perAppPods.set(app, new Map());
+
+  for (const row of matrix.data.result) {
+    const podName = row.metric.pod;
+    const app = row.metric[POD_LABEL_APP_INSTANCE];
+    if (!podName || !app) continue;
+    const podMap = perAppPods.get(app);
+    if (!podMap) continue;
+    const points: MetricSeriesByPod["series"] = [];
+    for (const [t, value] of row.values) {
+      if (value === "") continue;
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) continue;
+      points.push({ t, v: numeric });
+    }
+    // Each PromQL query is `sum by (pod, label_app_kubernetes_io_instance)`,
+    // which guarantees one row per (pod, app) tuple. Last-write-wins here
+    // is therefore safe; a duplicate would indicate a Prometheus
+    // correctness bug rather than expected traffic.
+    podMap.set(podName, points);
+  }
+
+  return knownApps.map((app) => {
+    const podMap = perAppPods.get(app)!;
+    const sortedPodNames = [...podMap.keys()].sort(sortByName);
+    return {
+      app,
+      pods: sortedPodNames.map((pod) => ({ pod, series: podMap.get(pod)! })),
+    };
+  });
+}
+
+/**
+ * Fallback counterpart of `matrixToPodSeriesByApp` for clusters where the
+ * `kube_pod_labels` join is not available. Series carry only the `pod` label;
+ * the app is resolved via the live `podToApp` map from the K8s listing.
+ * Pods not present in `podToApp` are dropped.
+ */
+export function matrixToPodSeriesByAppFromMap(
   matrix: PromQLMatrixResponse,
   podToApp: Map<string, string>,
   knownApps: string[]
 ): MetricSeriesByApp[] {
-  const perApp = new Map<string, Map<number, number>>();
-  for (const app of knownApps) perApp.set(app, new Map());
+  const perAppPods = new Map<string, Map<string, MetricSeriesByPod["series"]>>();
+  for (const app of knownApps) perAppPods.set(app, new Map());
 
   for (const row of matrix.data.result) {
     const podName = row.metric.pod;
     if (!podName) continue;
     const app = podToApp.get(podName);
     if (!app) continue;
-    const bucket = perApp.get(app);
-    if (!bucket) continue;
-    for (const [ts, value] of row.values) {
+    const podMap = perAppPods.get(app);
+    if (!podMap) continue;
+    const points: MetricSeriesByPod["series"] = [];
+    for (const [t, value] of row.values) {
       if (value === "") continue;
       const numeric = Number(value);
       if (!Number.isFinite(numeric)) continue;
-      bucket.set(ts, (bucket.get(ts) ?? 0) + numeric);
+      points.push({ t, v: numeric });
     }
+    podMap.set(podName, points);
   }
 
   return knownApps.map((app) => {
-    const bucket = perApp.get(app)!;
-    const sortedTs = [...bucket.keys()].sort((a, b) => a - b);
+    const podMap = perAppPods.get(app)!;
+    const sortedPodNames = [...podMap.keys()].sort(sortByName);
     return {
       app,
-      series: sortedTs.map((t) => ({ t, v: bucket.get(t)! })),
+      pods: sortedPodNames.map((pod) => ({ pod, series: podMap.get(pod)! })),
     };
   });
 }
@@ -174,49 +274,57 @@ function coercePhase(value: string | undefined): PodPhase {
 }
 
 /**
- * Convert a `kube_pod_status_phase{...} == 1` vector into per-app pod-phase
- * lists. Each series has labels `pod` and `phase`; we group by app via the
- * shared podToApp map. Pods present in podToApp but missing from the vector
- * are not added (Prometheus only emits the matching phase).
- */
-/**
- * Combine two per-app series into a per-app ratio series, expressed as a
- * percentage (`100 * num / den`). Designed for "saturation"-style metrics like
- * CPU throttling where summing the underlying counters then dividing is the
- * mathematically correct rollup (you cannot meaningfully average ratios).
- *
- * Output preserves `numerator`'s app order. For each app, the result series
- * contains a point only at timestamps where both numerator and denominator
- * have a finite value AND the denominator is strictly positive. Apps absent
- * from the denominator emit an empty series — mirrors the "no capacity
- * configured → no data" semantic used by the client-side `computeUtilization`
- * helper for stat panels.
+ * Combine two per-pod series into a per-pod ratio series, expressed as a
+ * percentage (`100 * num / den`). For each app in `numerator`, for each
+ * pod, the result emits a point at every timestamp where both numerator
+ * and denominator have a finite value AND the denominator is strictly
+ * positive. Apps and pods missing from the denominator emit empty
+ * series — mirrors the "no capacity configured → no data" semantic
+ * used by the client-side `computeUtilization` helper.
  */
 export function combineRatioSeriesByApp(
   numerator: MetricSeriesByApp[],
   denominator: MetricSeriesByApp[]
 ): MetricSeriesByApp[] {
-  const denByApp = new Map<string, Map<number, number>>();
+  const denByAppPod = new Map<string, Map<string, Map<number, number>>>();
   for (const entry of denominator) {
-    const points = new Map<number, number>();
-    for (const point of entry.series) points.set(point.t, point.v);
-    denByApp.set(entry.app, points);
+    const podMap = new Map<string, Map<number, number>>();
+    for (const pod of entry.pods) {
+      const points = new Map<number, number>();
+      for (const p of pod.series) points.set(p.t, p.v);
+      podMap.set(pod.pod, points);
+    }
+    denByAppPod.set(entry.app, podMap);
   }
 
-  return numerator.map(({ app, series }) => {
-    const denPoints = denByApp.get(app);
-    if (!denPoints || denPoints.size === 0) return { app, series: [] };
-    const points: { t: number; v: number }[] = [];
-    for (const { t, v } of series) {
-      const den = denPoints.get(t);
-      if (den === undefined) continue;
-      if (!Number.isFinite(v) || !Number.isFinite(den) || den <= 0) continue;
-      points.push({ t, v: (100 * v) / den });
-    }
-    return { app, series: points };
+  return numerator.map(({ app, pods }) => {
+    const denPods = denByAppPod.get(app);
+    return {
+      app,
+      pods: pods.map(({ pod, series }) => {
+        const denPoints = denPods?.get(pod);
+        if (!denPoints || denPoints.size === 0) return { pod, series: [] };
+        const out: { t: number; v: number }[] = [];
+        for (const { t, v } of series) {
+          const den = denPoints.get(t);
+          if (den === undefined) continue;
+          if (!Number.isFinite(v) || !Number.isFinite(den) || den <= 0) continue;
+          out.push({ t, v: (100 * v) / den });
+        }
+        return { pod, series: out };
+      }),
+    };
   });
 }
 
+/**
+ * Convert a `kube_pod_status_phase{...} == 1` vector into per-app pod-phase
+ * lists. Each series has labels `pod` and `phase`; we group by app via the
+ * shared podToApp map (built from the live K8s pod list, since podPhase is
+ * intrinsically about currently running pods). Pods present in podToApp
+ * but missing from the vector are not added (Prometheus only emits the
+ * matching phase).
+ */
 export function vectorToPodPhaseByApp(
   vector: PromQLVectorResponse,
   podToApp: Map<string, string>,
