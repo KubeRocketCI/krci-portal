@@ -13,6 +13,7 @@ export { useCRUD as useCDPipelineCRUD } from "./useCRUD";
 export * from "./useWatchCDPipelineByAutotest";
 export * from "./useWatchCDPipelineByApplication";
 export * from "./useWatchCDPipelineByCodebaseBranch";
+export * from "./useWatchCDPipelineByInputDockerStream";
 export * from "./useWatchCDPipelineByStageAutotest";
 
 export const useCDPipelinePermissions = createUsePermissionsHook(k8sCDPipelineConfig);
