@@ -118,13 +118,7 @@ export const useWatchListMultiple = <I extends KubeObjectBase>({
     })),
   }) as UseQueryResult<CustomKubeObjectList<I>, RequestError>[];
 
-  // Stable references for dependency tracking
-  // Note: We intentionally do NOT include resourceVersion in querySuccessStates.
-  // Kubernetes Watch continues from the initial resourceVersion automatically.
-  // Restarting subscriptions on every resourceVersion change causes excessive start/stop cycles.
-  const querySuccessStates = namespaceQueries
-    .map((q) => `${q.isSuccess}-${q.data?.metadata?.resourceVersion}`)
-    .join(",");
+  const querySuccessStates = namespaceQueries.map((q) => q.isSuccess).join(",");
   const namespaceQueryKeysKey = namespaceQueryKeys.map((k) => JSON.stringify(k)).join(",");
 
   // Stable event handler using useEffectEvent
@@ -231,9 +225,6 @@ export const useWatchListMultiple = <I extends KubeObjectBase>({
   // Stable reference for error states
   const errorStatesKey = namespaceQueries.map((q) => q.isError).join(",");
 
-  // Stable reference for success states to track when queries complete
-  const successStatesKey = namespaceQueries.map((q) => q.isSuccess).join(",");
-
   // Create a real useQuery that will hold the combined data
   const combinedQuery = useQuery<WatchListMultipleData<I>, RequestError>({
     queryKey: combinedQueryKey,
@@ -249,6 +240,10 @@ export const useWatchListMultiple = <I extends KubeObjectBase>({
     gcTime: queryOptions?.gcTime,
     staleTime: queryOptions?.staleTime,
   });
+
+  const dataVersion = useMemo(() => {
+    return namespaceQueries.map((q) => q.data?.metadata?.resourceVersion).join(",");
+  }, [namespaceQueries]);
 
   // Update combined query data whenever namespace queries change
   useEffect(() => {
@@ -287,12 +282,7 @@ export const useWatchListMultiple = <I extends KubeObjectBase>({
     // Manually update the query data
     queryClient.setQueryData<WatchListMultipleData<I>>(combinedQueryKey, combinedData);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [namespacesKey, querySuccessStates, successStatesKey, errorStatesKey]);
-
-  // Calculate dataVersion (max resourceVersion across all namespaces)
-  const dataVersion = useMemo(() => {
-    return namespaceQueries.map((q) => q.data?.metadata?.resourceVersion).join(",");
-  }, [namespaceQueries]);
+  }, [namespacesKey, dataVersion, errorStatesKey]);
 
   // Derive errors map
   const errors = useMemo(() => {
