@@ -63,13 +63,13 @@ export interface WatchListMultipleData<I extends KubeObjectBase> {
 
 export interface UseWatchListMultipleResult<I extends KubeObjectBase> {
   data: WatchListMultipleData<I>;
-  queries: UseQueryResult<CustomKubeObjectList<I>, RequestError>[]; // individual namespace queries
-  query: UseQueryResult<WatchListMultipleData<I>, RequestError>; // Combined query for consistency
-  dataVersion: string | undefined; // combined version for cache invalidation
+  queries: UseQueryResult<CustomKubeObjectList<I>, RequestError>[];
+  query: UseQueryResult<WatchListMultipleData<I>, RequestError>;
+  dataVersion: string | undefined;
   errors: RequestError[];
   isEmpty: boolean;
-  isLoading: boolean; // True when ANY namespace query is pending (no cached data)
-  isReady: boolean; // True when ALL namespace queries are successful
+  isLoading: boolean;
+  isReady: boolean;
 }
 
 // ============================================================================

@@ -57,6 +57,16 @@ export async function* createK8sWatchSubscription(
         watchUrl,
         { ...watchOptions, resourceVersion: currentResourceVersion },
         (type, obj: KubeObjectBase) => {
+          if (type === "ERROR") {
+            // 410 Gone arrives as both an ERROR-type watch event and the done callback.
+            // Handle it here so ERROR frames never reach subscribers and receivedEvents
+            // stays false, keeping the backoff active on the next restart attempt.
+            if ((obj as { code?: number }).code === 410) {
+              currentResourceVersion = "";
+            }
+            queue.abort();
+            return;
+          }
           receivedEvents = true;
           if (obj?.metadata?.resourceVersion) {
             currentResourceVersion = obj.metadata.resourceVersion;
@@ -67,18 +77,12 @@ export async function* createK8sWatchSubscription(
           if (err) {
             const statusCode = (err as { statusCode?: number }).statusCode ?? (err as { code?: number }).code;
             if (statusCode === 410) {
-              // 410 Gone — resourceVersion expired (etcd compaction).
-              // Reset to "" so the next watch starts from current state.
-              // Matches @kubernetes/client-node ListWatch and client-go Reflector patterns.
               currentResourceVersion = "";
               queue.abort();
             } else {
               queue.emitError(err);
             }
           } else {
-            // Clean termination (K8s API server watch timeout).
-            // Abort the queue so yieldEvents returns normally,
-            // allowing the outer loop to restart the watch.
             queue.abort();
           }
         }

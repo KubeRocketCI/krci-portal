@@ -135,7 +135,7 @@ export class LocalFastifyServer {
             });
           },
           // keepAlive must be inside trpcOptions — the Fastify adapter reads it from here at runtime.
-          keepAlive: { enabled: true, pingMs: 15000, pongWaitMs: 10000 },
+          keepAlive: { enabled: true, pingMs: 30000, pongWaitMs: 90000 },
         } as FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],
       });
     });
