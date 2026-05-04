@@ -414,6 +414,11 @@ export const pipelineRunSpecStatusEnum = z.enum([
   "PipelineRunPending",
 ]);
 
+const taskRunTemplateSchema = z.object({
+  serviceAccountName: z.string().optional(),
+  podTemplate: podTemplateSchema.optional(),
+});
+
 const specSchema = z.object({
   params: z.array(paramSchema).optional(),
   pipelineRef: pipelineRefSchema.optional(),
@@ -423,6 +428,7 @@ const specSchema = z.object({
   serviceAccountName: z.string().optional(),
   status: pipelineRunSpecStatusEnum.optional(),
   taskRunSpecs: z.array(taskRunSpecSchema).optional(),
+  taskRunTemplate: taskRunTemplateSchema.optional(),
   timeout: z.string().optional(),
   timeouts: z
     .object({

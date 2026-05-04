@@ -303,6 +303,55 @@ describe("normalizeHistoryPipelineRun", () => {
     expect(result.spec.params).toHaveLength(2);
   });
 
+  it("should preserve scheduling/timeout spec fields needed for rerun signature", () => {
+    const decoded: DecodedPipelineRun = {
+      ...mockDecodedPipelineRun,
+      spec: {
+        ...mockDecodedPipelineRun.spec,
+        podTemplate: {
+          nodeSelector: { "kubernetes.io/os": "linux" },
+        },
+        taskRunTemplate: {
+          serviceAccountName: "tekton",
+          podTemplate: {
+            tolerations: [{ effect: "NoSchedule", key: "workload", operator: "Equal", value: "tekton" }],
+          },
+        },
+        taskRunSpecs: [
+          {
+            pipelineTaskName: "sonar",
+            serviceAccountName: "sonar-sa",
+            podTemplate: { nodeSelector: { "node-type": "sonar" } },
+          },
+        ],
+        timeouts: { pipeline: "1h0m0s", tasks: "30m", finally: "5m" },
+      },
+    };
+
+    const result = normalizeHistoryPipelineRun(decoded);
+
+    expect(result.spec.podTemplate?.nodeSelector?.["kubernetes.io/os"]).toBe("linux");
+
+    expect(result.spec.taskRunTemplate?.serviceAccountName).toBe("tekton");
+    expect(result.spec.taskRunTemplate?.podTemplate?.tolerations).toHaveLength(1);
+    expect(result.spec.taskRunTemplate?.podTemplate?.tolerations?.[0]?.key).toBe("workload");
+
+    expect(result.spec.taskRunSpecs).toHaveLength(1);
+    expect(result.spec.taskRunSpecs?.[0]?.pipelineTaskName).toBe("sonar");
+    // taskRunSpecs entry passes through by reference; runtime field names follow Tekton v1
+    // (serviceAccountName/podTemplate), not the stale v1beta1 names in taskRunSpecSchema.
+    const taskRunSpecRuntime = result.spec.taskRunSpecs?.[0] as unknown as {
+      serviceAccountName?: string;
+      podTemplate?: { nodeSelector?: Record<string, string> };
+    };
+    expect(taskRunSpecRuntime.serviceAccountName).toBe("sonar-sa");
+    expect(taskRunSpecRuntime.podTemplate?.nodeSelector?.["node-type"]).toBe("sonar");
+
+    expect(result.spec.timeouts?.pipeline).toBe("1h0m0s");
+    expect(result.spec.timeouts?.tasks).toBe("30m");
+    expect(result.spec.timeouts?.finally).toBe("5m");
+  });
+
   it("should preserve spec.pipelineSpec for archived inline pipelines", () => {
     const decoded: DecodedPipelineRun = {
       ...mockDecodedPipelineRun,

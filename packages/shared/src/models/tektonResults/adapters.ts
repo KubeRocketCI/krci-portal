@@ -63,7 +63,11 @@ export function normalizeHistoryPipelineRun(decoded: DecodedPipelineRun): Pipeli
       params: decoded.spec.params,
       workspaces: decoded.spec.workspaces,
       serviceAccountName: decoded.spec.serviceAccountName,
+      podTemplate: decoded.spec.podTemplate,
+      taskRunTemplate: decoded.spec.taskRunTemplate,
+      taskRunSpecs: decoded.spec.taskRunSpecs,
       timeout: decoded.spec.timeout,
+      timeouts: decoded.spec.timeouts,
     },
     status: decoded.status
       ? {

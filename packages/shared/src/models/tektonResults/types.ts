@@ -129,6 +129,30 @@ export interface DecodedPipelineSpec {
   workspaces?: Array<{ name: string; optional?: boolean }>;
 }
 
+export interface DecodedPodTemplate {
+  affinity?: unknown;
+  tolerations?: unknown;
+  nodeSelector?: Record<string, string>;
+  securityContext?: unknown;
+  imagePullSecrets?: Array<{ name: string }>;
+  env?: unknown;
+  volumes?: unknown;
+  schedulerName?: string;
+  hostNetwork?: boolean;
+  priorityClassName?: string;
+}
+
+export interface DecodedTaskRunTemplate {
+  serviceAccountName?: string;
+  podTemplate?: DecodedPodTemplate;
+}
+
+export interface DecodedTaskRunSpec {
+  pipelineTaskName?: string;
+  serviceAccountName?: string;
+  podTemplate?: DecodedPodTemplate;
+}
+
 // PipelineRun spec
 export interface DecodedPipelineRunSpec {
   pipelineRef?: { name: string };
@@ -137,7 +161,10 @@ export interface DecodedPipelineRunSpec {
   workspaces?: Array<{ name: string; [key: string]: unknown }>;
   serviceAccountName?: string;
   timeout?: string;
-  taskRunTemplate?: { serviceAccountName?: string };
+  timeouts?: { pipeline?: string; tasks?: string; finally?: string };
+  podTemplate?: DecodedPodTemplate;
+  taskRunTemplate?: DecodedTaskRunTemplate;
+  taskRunSpecs?: DecodedTaskRunSpec[];
 }
 
 // Full decoded PipelineRun structure
