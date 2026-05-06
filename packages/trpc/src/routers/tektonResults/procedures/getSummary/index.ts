@@ -2,7 +2,7 @@ import { z } from "zod";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createTektonResultsClient } from "../../../../clients/tektonResults/index.js";
 import { DEFAULT_SUMMARY_METRICS, TektonSummaryResponse } from "@my-project/shared";
-import { tektonInputSchemas } from "../../utils.js";
+import { tektonInputSchemas } from "../../../../schemas/tektonInput.js";
 
 /**
  * Server-side TTL cache for getSummary results with singleflight coalescing.

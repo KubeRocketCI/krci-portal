@@ -2,7 +2,7 @@ import { z } from "zod";
 import { decodeTektonRecordData, parseRecordName, DecodedLogRecord, TektonResultTaskLogs } from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createTektonResultsClient } from "../../../../clients/tektonResults/index.js";
-import { tektonInputSchemas } from "../../utils.js";
+import { tektonInputSchemas } from "../../../../schemas/tektonInput.js";
 
 /**
  * Get logs for a single TaskRun from Tekton Results
@@ -25,7 +25,6 @@ export const getTaskRunLogsProcedure = protectedProcedure
   )
   .output(
     z.object({
-      taskName: z.string(),
       taskRunName: z.string(),
       logs: z.string(),
       hasLogs: z.boolean(),
@@ -49,7 +48,6 @@ export const getTaskRunLogsProcedure = protectedProcedure
 
       if (records.length === 0) {
         return {
-          taskName: "", // Will be extracted from taskRunName if needed
           taskRunName,
           logs: "",
           hasLogs: false,
@@ -99,7 +97,6 @@ export const getTaskRunLogsProcedure = protectedProcedure
       }
 
       return {
-        taskName: "", // Could be extracted from taskRunName or fetched separately if needed
         taskRunName,
         logs: logs || "No logs available for this TaskRun",
         hasLogs: logParts.length > 0,
@@ -108,7 +105,6 @@ export const getTaskRunLogsProcedure = protectedProcedure
       } satisfies TektonResultTaskLogs;
     } catch (error) {
       return {
-        taskName: "",
         taskRunName,
         logs: "",
         hasLogs: false,

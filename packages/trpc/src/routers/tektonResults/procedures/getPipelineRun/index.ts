@@ -3,7 +3,7 @@ import { z } from "zod";
 import { decodeTektonRecordData, DecodedPipelineRun } from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createTektonResultsClient } from "../../../../clients/tektonResults/index.js";
-import { tektonInputSchemas } from "../../utils.js";
+import { tektonInputSchemas } from "../../../../schemas/tektonInput.js";
 
 /**
  * Get a single PipelineRun from Tekton Results by result_uid and record_uid

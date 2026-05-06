@@ -2,7 +2,8 @@ import { z } from "zod";
 import { type DecodedTaskRun, taskRunRecordsOutputSchema } from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createTektonResultsClient } from "../../../../clients/tektonResults/index.js";
-import { decodeRecords, tektonInputSchemas } from "../../utils.js";
+import { decodeRecords } from "../../utils.js";
+import { tektonInputSchemas } from "../../../../schemas/tektonInput.js";
 
 /**
  * Get all TaskRun records for a PipelineRun from Tekton Results.

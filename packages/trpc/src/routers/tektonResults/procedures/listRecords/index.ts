@@ -1,13 +1,13 @@
 import { z } from "zod";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createTektonResultsClient } from "../../../../clients/tektonResults/index.js";
-import { tektonInputSchemas } from "../../utils.js";
+import { tektonInputSchemas } from "../../../../schemas/tektonInput.js";
 
 export const listTektonRecordsProcedure = protectedProcedure
   .input(
     z.object({
       namespace: tektonInputSchemas.namespace,
-      filter: z.string().optional(),
+      filter: tektonInputSchemas.celFilter,
       pageSize: z.number().optional().default(50),
       pageToken: z.string().optional(),
       orderBy: z.string().optional().default("create_time desc"),

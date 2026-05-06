@@ -514,6 +514,194 @@
         }
       }
     },
+    "/v1/pipelineruns/start": {
+      "post": {
+        "operationId": "pipelineRun-start",
+        "tags": [
+          "pipelinerun"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "namespace": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+                    "minLength": 1,
+                    "maxLength": 253
+                  },
+                  "pipeline": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+                    "minLength": 1,
+                    "maxLength": 253
+                  },
+                  "params": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "labels": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string",
+                      "pattern": "^([A-Za-z0-9]([-A-Za-z0-9_.]{0,61}[A-Za-z0-9])?)?$"
+                    }
+                  },
+                  "dryRun": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                },
+                "required": [
+                  "namespace",
+                  "pipeline"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "created"
+                          ]
+                        },
+                        "row": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "type": "string"
+                            },
+                            "project": {
+                              "type": "string"
+                            },
+                            "pr": {
+                              "type": "string"
+                            },
+                            "author": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string"
+                            },
+                            "started": {
+                              "type": "string"
+                            },
+                            "duration": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "name",
+                            "status",
+                            "project",
+                            "pr",
+                            "author",
+                            "type",
+                            "started",
+                            "duration"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "row"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "dryRun"
+                          ]
+                        },
+                        "manifest": {
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "manifest"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authorization not provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/pipeline-runs/{resultUid}/logs": {
       "get": {
         "operationId": "tektonResults-getPipelineRunLogs",
@@ -540,7 +728,9 @@
             "name": "namespace",
             "schema": {
               "type": "string",
-              "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+              "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+              "minLength": 1,
+              "maxLength": 253
             },
             "required": true
           },
@@ -652,7 +842,9 @@
             "name": "namespace",
             "schema": {
               "type": "string",
-              "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+              "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+              "minLength": 1,
+              "maxLength": 253
             },
             "required": true
           },
@@ -661,7 +853,9 @@
             "name": "taskRunName",
             "schema": {
               "type": "string",
-              "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+              "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+              "minLength": 1,
+              "maxLength": 253
             },
             "required": true
           },
@@ -682,9 +876,6 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "taskName": {
-                      "type": "string"
-                    },
                     "taskRunName": {
                       "type": "string"
                     },
@@ -703,7 +894,6 @@
                     }
                   },
                   "required": [
-                    "taskName",
                     "taskRunName",
                     "logs",
                     "hasLogs",
@@ -792,7 +982,9 @@
             "name": "namespace",
             "schema": {
               "type": "string",
-              "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+              "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+              "minLength": 1,
+              "maxLength": 253
             },
             "required": true
           }
@@ -878,7 +1070,9 @@
             "name": "namespace",
             "schema": {
               "type": "string",
-              "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+              "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+              "minLength": 1,
+              "maxLength": 253
             },
             "required": true
           },
