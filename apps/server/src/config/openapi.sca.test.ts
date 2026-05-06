@@ -620,6 +620,10 @@ describe("GET /rest/v1/sca/findings", () => {
     vi.clearAllMocks();
     app = buildFastify();
     await app.ready();
+    stubCaller.k8s.get.mockResolvedValue({ spec: { defaultBranch: "main" } });
+    stubCaller.dependencyTrack.getProjectByNameAndVersion.mockResolvedValue(
+      MOCK_PROJECT
+    );
   });
 
   afterEach(async () => {
@@ -627,10 +631,6 @@ describe("GET /rest/v1/sca/findings", () => {
   });
 
   it("happy path — returns sorted findings with truncated flag", async () => {
-    stubCaller.k8s.get.mockResolvedValue({ spec: { defaultBranch: "main" } });
-    stubCaller.dependencyTrack.getProjectByNameAndVersion.mockResolvedValue(
-      MOCK_PROJECT
-    );
     stubCaller.dependencyTrack.getFindingsByProject.mockResolvedValue([
       makeFinding("LOW", "axios", "CVE-2023-001"),
       makeFinding("CRITICAL", "lodash", "CVE-2022-002"),
@@ -661,5 +661,94 @@ describe("GET /rest/v1/sca/findings", () => {
 
     expect(res.statusCode).toBe(400);
     expect(res.json<{ error: string }>().error).toMatch(/codebase/);
+  });
+
+  it("severity filter excludes findings outside the requested set", async () => {
+    stubCaller.dependencyTrack.getFindingsByProject.mockResolvedValue([
+      makeFinding("CRITICAL", "lodash", "CVE-1"),
+      makeFinding("HIGH", "axios", "CVE-2"),
+      makeFinding("MEDIUM", "express", "CVE-3"),
+      makeFinding("LOW", "react", "CVE-4"),
+    ]);
+
+    const res = await app.inject({
+      method: "GET",
+      url: "/rest/v1/sca/findings?codebase=my-service&severity=CRITICAL,HIGH",
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json<{
+      status: string;
+      items: Array<{ vulnerability: { severity: string } }>;
+      truncated: boolean;
+    }>();
+    expect(body.status).toBe("OK");
+    expect(body.truncated).toBe(false);
+    expect(body.items).toHaveLength(2);
+    expect(body.items.map((i) => i.vulnerability.severity).sort()).toEqual([
+      "CRITICAL",
+      "HIGH",
+    ]);
+  });
+
+  it("severity filter cap: 1500 critical findings → 1000 returned, truncated=true", async () => {
+    const huge = Array.from({ length: 1500 }, (_, i) =>
+      makeFinding("CRITICAL", `pkg-${String(i).padStart(4, "0")}`, `CVE-${i}`)
+    );
+    stubCaller.dependencyTrack.getFindingsByProject.mockResolvedValue(huge);
+
+    const res = await app.inject({
+      method: "GET",
+      url: "/rest/v1/sca/findings?codebase=my-service&severity=CRITICAL",
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json<{ items: unknown[]; truncated: boolean }>();
+    expect(body.items).toHaveLength(1000);
+    expect(body.truncated).toBe(true);
+  });
+
+  it("severity filter under cap: 50 critical of 1500 mixed → 50 returned, truncated=false", async () => {
+    const mixed = [
+      ...Array.from({ length: 50 }, (_, i) =>
+        makeFinding(
+          "CRITICAL",
+          `crit-${String(i).padStart(2, "0")}`,
+          `CVE-CRIT-${i}`
+        )
+      ),
+      ...Array.from({ length: 1450 }, (_, i) =>
+        makeFinding("LOW", `low-${String(i).padStart(4, "0")}`, `CVE-LOW-${i}`)
+      ),
+    ];
+    stubCaller.dependencyTrack.getFindingsByProject.mockResolvedValue(mixed);
+
+    const res = await app.inject({
+      method: "GET",
+      url: "/rest/v1/sca/findings?codebase=my-service&severity=CRITICAL",
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json<{
+      items: Array<{ vulnerability: { severity: string } }>;
+      truncated: boolean;
+    }>();
+    expect(body.items).toHaveLength(50);
+    expect(body.truncated).toBe(false);
+    expect(
+      body.items.every((i) => i.vulnerability.severity === "CRITICAL")
+    ).toBe(true);
+  });
+
+  it("returns 400 when severity contains an unknown value", async () => {
+    const res = await app.inject({
+      method: "GET",
+      url: "/rest/v1/sca/findings?codebase=my-service&severity=garbage",
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.json<{ error: string }>().error).toMatch(
+      /severity must be a comma-separated/
+    );
   });
 });

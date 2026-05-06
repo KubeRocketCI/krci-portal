@@ -22,6 +22,7 @@ import {
   toZeroIndexedPage,
   truncateFindings,
   type ResolvedBranch,
+  type ScaSeverity,
 } from "./sca-helpers.js";
 import { TRPCError } from "@trpc/server";
 import { getHTTPStatusCodeFromError } from "@trpc/server/http";
@@ -727,12 +728,21 @@ export function registerOpenApi(
       branch?: string;
       suppressed?: "true" | "false";
       source?: string;
+      severity?: string;
     };
   }>("/rest/v1/sca/findings", async (req, res) => {
     try {
-      const { codebase, branch, suppressed, source } = req.query;
+      const { codebase, branch, suppressed, source, severity } = req.query;
       if (!codebase) {
         return res.code(400).send({ error: "codebase is required" });
+      }
+
+      const parsedSeverity = parseSeverityCsv(severity);
+      if (parsedSeverity === "invalid") {
+        return res.code(400).send({
+          error:
+            "severity must be a comma-separated list of CRITICAL|HIGH|MEDIUM|LOW|INFO|UNASSIGNED",
+        });
       }
 
       const caller = await buildCaller(req, res);
@@ -760,8 +770,17 @@ export function registerOpenApi(
         source: source || undefined,
       });
 
+      // Filter BEFORE sort/truncate so the 1000-row cap applies to the
+      // matching set; `truncated=true` therefore means "more matching findings
+      // exist than were returned", not "more unfiltered rows existed upstream".
+      const filtered = parsedSeverity
+        ? all.filter((f) =>
+            parsedSeverity.has(f.vulnerability.severity as ScaSeverity)
+          )
+        : all;
+
       // Deterministic sort per spec §D10, then truncate at SCA_FINDINGS_MAX.
-      const sorted = sortFindings(all);
+      const sorted = sortFindings(filtered);
       const { items, truncated } = truncateFindings(sorted);
 
       return {

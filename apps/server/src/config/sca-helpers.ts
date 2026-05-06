@@ -32,6 +32,8 @@ export const SCA_SEVERITIES = [
 export type ScaSeverity = (typeof SCA_SEVERITIES)[number];
 export type SeveritySet = ReadonlySet<ScaSeverity>;
 
+const SCA_SEVERITIES_SET = new Set<string>(SCA_SEVERITIES);
+
 /** Cap on auto-paging iterations when the severity filter triggers the full-project scan loop. */
 export const SCA_PAGE_SIZE_MAX_PAGES = 50;
 
@@ -161,13 +163,12 @@ export function parseSeverityCsv(
   raw: string | undefined
 ): SeveritySet | "invalid" | undefined {
   if (raw === undefined || raw === "") return undefined;
-  const allowed = new Set<string>(SCA_SEVERITIES);
   const out = new Set<ScaSeverity>();
   for (const token of raw.split(",")) {
     const trimmed = token.trim();
     if (trimmed === "") continue;
     const upper = trimmed.toUpperCase();
-    if (!allowed.has(upper)) return "invalid";
+    if (!SCA_SEVERITIES_SET.has(upper)) return "invalid";
     out.add(upper as ScaSeverity);
   }
   if (out.size === 0) return undefined;

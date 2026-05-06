@@ -1049,6 +1049,338 @@
           }
         }
       }
+    },
+    "/v1/sca/findings": {
+      "get": {
+        "operationId": "sca-findings",
+        "tags": [
+          "sca"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "codebase",
+            "description": "Codebase (KubeRocketCI Codebase CR) name.",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "branch",
+            "description": "Branch override; defaults to the codebase's spec.defaultBranch.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "suppressed",
+            "description": "Include suppressed findings.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "source",
+            "description": "Filter findings by analyzer source (e.g. NPM, OSSINDEX_ANALYZER).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "severity",
+            "description": "Comma-separated list of severities to include. Allowed values: CRITICAL, HIGH, MEDIUM, LOW, INFO, UNASSIGNED. The filter is applied before the 1000-row server cap, so `truncated=true` reports that more matching findings exist than were returned.",
+            "schema": {
+              "type": "string",
+              "pattern": "^(CRITICAL|HIGH|MEDIUM|LOW|INFO|UNASSIGNED)(,(CRITICAL|HIGH|MEDIUM|LOW|INFO|UNASSIGNED))*$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response. status='NONE' when no Dep-Track project matches the codebase+branch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "OK",
+                        "NONE"
+                      ]
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Finding"
+                      }
+                    },
+                    "truncated": {
+                      "type": "boolean",
+                      "description": "True when more matching findings exist than were returned (1000-row server cap)."
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "items",
+                    "truncated"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authorization not provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Codebase not found or default branch missing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream Dep-Track failure"
+          },
+          "503": {
+            "description": "Dep-Track integration not configured"
+          }
+        }
+      }
+    },
+    "/v1/sca/components": {
+      "get": {
+        "operationId": "sca-components",
+        "tags": [
+          "sca"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "codebase",
+            "description": "Codebase (KubeRocketCI Codebase CR) name.",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "branch",
+            "description": "Branch override; defaults to the codebase's spec.defaultBranch.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageNumber",
+            "description": "1-indexed page number.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "description": "Page size, capped at 100.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "onlyOutdated",
+            "description": "Only outdated components.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "onlyDirect",
+            "description": "Only direct dependencies.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "severity",
+            "description": "Comma-separated list of severities to include. Allowed values: CRITICAL, HIGH, MEDIUM, LOW, INFO, UNASSIGNED. When set, the portal auto-pages Dep-Track and filters across the entire project before paginating; `truncated=true` indicates the safety cap was hit and not all matches were inspected.",
+            "schema": {
+              "type": "string",
+              "pattern": "^(CRITICAL|HIGH|MEDIUM|LOW|INFO|UNASSIGNED)(,(CRITICAL|HIGH|MEDIUM|LOW|INFO|UNASSIGNED))*$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response. status='NONE' when no Dep-Track project matches the codebase+branch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "OK",
+                        "NONE"
+                      ]
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/DtComponent"
+                      }
+                    },
+                    "totalCount": {
+                      "type": "integer"
+                    },
+                    "truncated": {
+                      "type": "boolean",
+                      "description": "True when the auto-paging safety cap fired before all components were inspected."
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "items",
+                    "totalCount",
+                    "truncated"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authorization not provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Codebase not found or default branch missing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream Dep-Track failure"
+          },
+          "503": {
+            "description": "Dep-Track integration not configured"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1270,6 +1602,212 @@
           "message": "Not found",
           "issues": []
         }
+      },
+      "Finding": {
+        "type": "object",
+        "description": "Dependency-Track finding (component + vulnerability + analysis + attribution).",
+        "properties": {
+          "component": {
+            "type": "object",
+            "properties": {
+              "uuid": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "version": {
+                "type": "string"
+              },
+              "group": {
+                "type": "string"
+              },
+              "latestVersion": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "uuid",
+              "name"
+            ]
+          },
+          "vulnerability": {
+            "type": "object",
+            "properties": {
+              "vulnId": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "CRITICAL",
+                  "HIGH",
+                  "MEDIUM",
+                  "LOW",
+                  "INFO",
+                  "UNASSIGNED"
+                ]
+              },
+              "severityRank": {
+                "type": "number"
+              },
+              "cwes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "cweId": {
+                      "type": "number"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "cweId",
+                    "name"
+                  ]
+                }
+              },
+              "aliases": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "source": {
+                      "type": "string"
+                    },
+                    "vulnId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "source",
+                    "vulnId"
+                  ]
+                }
+              },
+              "cvssV2BaseScore": {
+                "type": "number"
+              },
+              "cvssV3BaseScore": {
+                "type": "number"
+              },
+              "epssScore": {
+                "type": "number"
+              },
+              "epssPercentile": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "vulnId",
+              "source",
+              "severity"
+            ]
+          },
+          "analysis": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "EXPLOITABLE",
+                  "IN_TRIAGE",
+                  "RESOLVED",
+                  "FALSE_POSITIVE",
+                  "NOT_AFFECTED",
+                  "NOT_SET"
+                ]
+              },
+              "isSuppressed": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "isSuppressed"
+            ]
+          },
+          "attribution": {
+            "type": "object",
+            "properties": {
+              "analyzerIdentity": {
+                "type": "string"
+              },
+              "attributedOn": {
+                "type": "number"
+              },
+              "alternateIdentifier": {
+                "type": "string"
+              },
+              "referenceUrl": {
+                "type": "string"
+              }
+            }
+          },
+          "matrix": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "component",
+          "vulnerability"
+        ]
+      },
+      "DtComponent": {
+        "type": "object",
+        "description": "Dependency-Track component (project dependency) row.",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "purl": {
+            "type": "string"
+          },
+          "latestVersion": {
+            "type": "string"
+          },
+          "isOutdated": {
+            "type": "boolean"
+          },
+          "metrics": {
+            "type": "object",
+            "description": "Per-component vulnerability counts.",
+            "properties": {
+              "critical": {
+                "type": "integer"
+              },
+              "high": {
+                "type": "integer"
+              },
+              "medium": {
+                "type": "integer"
+              },
+              "low": {
+                "type": "integer"
+              },
+              "unassigned": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "required": [
+          "uuid",
+          "name"
+        ]
       },
       "TaskRunRecordsResponse": {
         "type": "object",
