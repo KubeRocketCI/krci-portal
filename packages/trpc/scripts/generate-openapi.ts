@@ -1,4 +1,5 @@
 import { appRouter } from "../src/routers/index.js";
+import { rewriteErrorEnvelopeSchemas } from "../src/utils/openapi/index.js";
 import { generateOpenApiDocument } from "trpc-to-openapi";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve, dirname, relative, isAbsolute } from "node:path";
@@ -16,6 +17,8 @@ const doc = generateOpenApiDocument(appRouter, {
     },
   },
 });
+
+rewriteErrorEnvelopeSchemas(doc);
 
 const rawPath = process.argv[2] || "dist/openapi.json";
 const outPath = resolve(rawPath);

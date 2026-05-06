@@ -864,7 +864,8 @@
             "name": "stepName",
             "schema": {
               "type": "string",
-              "pattern": "^[a-z0-9][a-z0-9-]*$"
+              "pattern": "^[a-z0-9][a-z0-9-]*$",
+              "maxLength": 63
             }
           }
         ],
@@ -1589,212 +1590,197 @@
     "schemas": {
       "error.INTERNAL_SERVER_ERROR": {
         "type": "object",
+        "title": "INTERNAL_SERVER_ERROR error envelope (500)",
+        "description": "REST error envelope emitted by handleTRPCError. `message` is the static HTTP status phrase; `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
+        "required": [
+          "error"
+        ],
         "properties": {
-          "message": {
-            "type": "string",
-            "description": "The error message",
-            "example": "Internal server error"
-          },
-          "code": {
-            "type": "string",
-            "description": "The error code",
-            "example": "INTERNAL_SERVER_ERROR"
-          },
-          "issues": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "message": {
-                  "type": "string"
-                }
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "tRPC error code (string literal)",
+                "example": "INTERNAL_SERVER_ERROR"
               },
-              "required": [
-                "message"
-              ]
-            },
-            "description": "An array of issues that were responsible for the error",
-            "example": []
+              "reason": {
+                "type": "string",
+                "description": "Stable machine-readable disambiguator (omitted when none applies)"
+              },
+              "message": {
+                "type": "string",
+                "description": "Static HTTP status phrase",
+                "example": "Internal Server Error"
+              }
+            }
           }
         },
-        "required": [
-          "message",
-          "code"
-        ],
-        "title": "Internal server error error (500)",
-        "description": "The error information",
         "example": {
-          "code": "INTERNAL_SERVER_ERROR",
-          "message": "Internal server error",
-          "issues": []
+          "error": {
+            "code": "INTERNAL_SERVER_ERROR",
+            "message": "Internal Server Error"
+          }
         }
       },
       "error.UNAUTHORIZED": {
         "type": "object",
+        "title": "UNAUTHORIZED error envelope (401)",
+        "description": "REST error envelope emitted by handleTRPCError. `message` is the static HTTP status phrase; `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
+        "required": [
+          "error"
+        ],
         "properties": {
-          "message": {
-            "type": "string",
-            "description": "The error message",
-            "example": "Authorization not provided"
-          },
-          "code": {
-            "type": "string",
-            "description": "The error code",
-            "example": "UNAUTHORIZED"
-          },
-          "issues": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "message": {
-                  "type": "string"
-                }
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "tRPC error code (string literal)",
+                "example": "UNAUTHORIZED"
               },
-              "required": [
-                "message"
-              ]
-            },
-            "description": "An array of issues that were responsible for the error",
-            "example": []
+              "reason": {
+                "type": "string",
+                "description": "Stable machine-readable disambiguator (omitted when none applies)"
+              },
+              "message": {
+                "type": "string",
+                "description": "Static HTTP status phrase",
+                "example": "Unauthorized"
+              }
+            }
           }
         },
-        "required": [
-          "message",
-          "code"
-        ],
-        "title": "Authorization not provided error (401)",
-        "description": "The error information",
         "example": {
-          "code": "UNAUTHORIZED",
-          "message": "Authorization not provided",
-          "issues": []
+          "error": {
+            "code": "UNAUTHORIZED",
+            "message": "Unauthorized"
+          }
         }
       },
       "error.FORBIDDEN": {
         "type": "object",
+        "title": "FORBIDDEN error envelope (403)",
+        "description": "REST error envelope emitted by handleTRPCError. `message` is the static HTTP status phrase; `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
+        "required": [
+          "error"
+        ],
         "properties": {
-          "message": {
-            "type": "string",
-            "description": "The error message",
-            "example": "Insufficient access"
-          },
-          "code": {
-            "type": "string",
-            "description": "The error code",
-            "example": "FORBIDDEN"
-          },
-          "issues": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "message": {
-                  "type": "string"
-                }
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "tRPC error code (string literal)",
+                "example": "FORBIDDEN"
               },
-              "required": [
-                "message"
-              ]
-            },
-            "description": "An array of issues that were responsible for the error",
-            "example": []
+              "reason": {
+                "type": "string",
+                "description": "Stable machine-readable disambiguator (omitted when none applies)"
+              },
+              "message": {
+                "type": "string",
+                "description": "Static HTTP status phrase",
+                "example": "Forbidden"
+              }
+            }
           }
         },
-        "required": [
-          "message",
-          "code"
-        ],
-        "title": "Insufficient access error (403)",
-        "description": "The error information",
         "example": {
-          "code": "FORBIDDEN",
-          "message": "Insufficient access",
-          "issues": []
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Forbidden"
+          }
         }
       },
       "error.BAD_REQUEST": {
         "type": "object",
+        "title": "BAD_REQUEST error envelope (400)",
+        "description": "REST error envelope emitted by handleTRPCError. `message` is the static HTTP status phrase; `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
+        "required": [
+          "error"
+        ],
         "properties": {
-          "message": {
-            "type": "string",
-            "description": "The error message",
-            "example": "Invalid input data"
-          },
-          "code": {
-            "type": "string",
-            "description": "The error code",
-            "example": "BAD_REQUEST"
-          },
-          "issues": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "message": {
-                  "type": "string"
-                }
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "tRPC error code (string literal)",
+                "example": "BAD_REQUEST"
               },
-              "required": [
-                "message"
-              ]
-            },
-            "description": "An array of issues that were responsible for the error",
-            "example": []
+              "reason": {
+                "type": "string",
+                "description": "Stable machine-readable disambiguator (omitted when none applies)"
+              },
+              "message": {
+                "type": "string",
+                "description": "Static HTTP status phrase",
+                "example": "Bad Request"
+              }
+            }
           }
         },
-        "required": [
-          "message",
-          "code"
-        ],
-        "title": "Invalid input data error (400)",
-        "description": "The error information",
         "example": {
-          "code": "BAD_REQUEST",
-          "message": "Invalid input data",
-          "issues": []
+          "error": {
+            "code": "BAD_REQUEST",
+            "message": "Bad Request"
+          }
         }
       },
       "error.NOT_FOUND": {
         "type": "object",
+        "title": "NOT_FOUND error envelope (404)",
+        "description": "REST error envelope emitted by handleTRPCError. `message` is the static HTTP status phrase; `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
+        "required": [
+          "error"
+        ],
         "properties": {
-          "message": {
-            "type": "string",
-            "description": "The error message",
-            "example": "Not found"
-          },
-          "code": {
-            "type": "string",
-            "description": "The error code",
-            "example": "NOT_FOUND"
-          },
-          "issues": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "message": {
-                  "type": "string"
-                }
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "tRPC error code (string literal)",
+                "example": "NOT_FOUND"
               },
-              "required": [
-                "message"
-              ]
-            },
-            "description": "An array of issues that were responsible for the error",
-            "example": []
+              "reason": {
+                "type": "string",
+                "description": "Stable machine-readable disambiguator (omitted when none applies)"
+              },
+              "message": {
+                "type": "string",
+                "description": "Static HTTP status phrase",
+                "example": "Not Found"
+              }
+            }
           }
         },
-        "required": [
-          "message",
-          "code"
-        ],
-        "title": "Not found error (404)",
-        "description": "The error information",
         "example": {
-          "code": "NOT_FOUND",
-          "message": "Not found",
-          "issues": []
+          "error": {
+            "code": "NOT_FOUND",
+            "message": "Not Found"
+          }
         }
       },
       "Finding": {
