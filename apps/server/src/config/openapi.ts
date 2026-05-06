@@ -98,6 +98,11 @@ export function registerOpenApi(
    * tRPC errors (e.g. UNAUTHORIZED would surface as HTTP 500 instead of 401).
    * TODO: this helper can be deleted once fastifyTRPCOpenApiPlugin handles
    * error mapping natively.
+   *
+   * If a procedure attaches `cause.reason` (a stable, machine-readable tag),
+   * it is surfaced verbatim so REST clients can disambiguate same-status
+   * errors without parsing the human message. The verbatim `error.message`
+   * is never exposed.
    */
   function handleTRPCError(error: unknown, res: FastifyReply): never {
     if (error instanceof TRPCError) {
@@ -106,9 +111,18 @@ export function registerOpenApi(
       // `code` is a tRPC enum literal (e.g. "UNAUTHORIZED"); `message` is the HTTP status phrase.
       const code: string = error.code;
       const message = STATUS_CODES[httpStatus] ?? "Unknown error";
-      res.status(httpStatus).send({ error: { code, message } });
+      const reason = extractCauseReason(error.cause);
+      res.status(httpStatus).send({
+        error: reason ? { code, reason, message } : { code, message },
+      });
     }
     throw error;
+  }
+
+  function extractCauseReason(cause: unknown): string | undefined {
+    if (typeof cause !== "object" || cause === null) return undefined;
+    const value = (cause as { reason?: unknown }).reason;
+    return typeof value === "string" ? value : undefined;
   }
 
   // ---------------------------------------------------------------------------
@@ -159,6 +173,23 @@ export function registerOpenApi(
       try {
         const caller = await buildCaller(req, res);
         return await caller.k8s.get(req.body);
+      } catch (error) {
+        return handleTRPCError(error, res);
+      }
+    }
+  );
+
+  // ---------------------------------------------------------------------------
+  // PipelineRun
+  // ---------------------------------------------------------------------------
+
+  // POST /rest/v1/pipelineruns/start (protected)
+  fastify.post<{ Body: RouterInput["pipelineRun"]["start"] }>(
+    "/rest/v1/pipelineruns/start",
+    async (req, res) => {
+      try {
+        const caller = await buildCaller(req, res);
+        return await caller.pipelineRun.start(req.body);
       } catch (error) {
         return handleTRPCError(error, res);
       }

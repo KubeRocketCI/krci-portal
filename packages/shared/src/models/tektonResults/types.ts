@@ -397,8 +397,6 @@ export interface TektonResultTask {
  * Returned when user selects a specific task
  */
 export interface TektonResultTaskLogs {
-  /** Friendly task name */
-  taskName: string;
   /** Full TaskRun name */
   taskRunName: string;
   /** Full log content for this TaskRun */

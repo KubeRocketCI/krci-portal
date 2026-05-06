@@ -2,7 +2,7 @@ import { z } from "zod";
 import { decodeTektonRecordData, parseRecordName, DecodedPipelineRun, DecodedLogRecord } from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createTektonResultsClient } from "../../../../clients/tektonResults/index.js";
-import { tektonInputSchemas } from "../../utils.js";
+import { tektonInputSchemas } from "../../../../schemas/tektonInput.js";
 
 /** Escape a value for safe interpolation into a CEL string literal. */
 function escapeCELString(value: string): string {
