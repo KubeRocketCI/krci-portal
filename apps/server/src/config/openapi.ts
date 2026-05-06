@@ -3,7 +3,9 @@ import {
   createCaller,
   type CustomSession,
   createContext,
+  rewriteErrorEnvelopeSchemas,
   type RouterInput,
+  UNKNOWN_ERROR_PHRASE,
 } from "@my-project/trpc";
 import { k8sCodebaseConfig } from "@my-project/shared";
 import {
@@ -111,7 +113,7 @@ export function registerOpenApi(
       // Derive both fields from safe, static sources — never expose error.message or stack.
       // `code` is a tRPC enum literal (e.g. "UNAUTHORIZED"); `message` is the HTTP status phrase.
       const code: string = error.code;
-      const message = STATUS_CODES[httpStatus] ?? "Unknown error";
+      const message = STATUS_CODES[httpStatus] ?? UNKNOWN_ERROR_PHRASE;
       const reason = extractCauseReason(error.cause);
       res.status(httpStatus).send({
         error: reason ? { code, reason, message } : { code, message },
@@ -842,6 +844,8 @@ export function registerOpenApi(
         },
       },
     });
+
+    rewriteErrorEnvelopeSchemas(openApiDocument);
 
     fastify.get("/rest/v1/openapi.json", async () => openApiDocument);
   }
