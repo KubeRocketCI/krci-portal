@@ -16,7 +16,17 @@ import {
   tektonResultAnnotations,
   getPipelineRunAnnotation,
 } from "@my-project/shared";
-import { Calendar, Clock, EllipsisVertical, GitBranch, GitPullRequest, SearchX, Timer, User } from "lucide-react";
+import {
+  AlertCircle,
+  Calendar,
+  Clock,
+  EllipsisVertical,
+  GitBranch,
+  GitPullRequest,
+  SearchX,
+  Timer,
+  User,
+} from "lucide-react";
 import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import React from "react";
 import { PipelineRunActionsMenu } from "../../components/PipelineRunActionsMenu";
@@ -87,132 +97,142 @@ function HeaderMetadata() {
     : null;
 
   return (
-    <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-      <div className="flex items-center gap-2">
-        <Clock className="text-muted-foreground size-4" />
-        <span className="text-muted-foreground text-sm">Status:</span>
-        <Badge
-          className="h-6"
-          style={{ backgroundColor: `${pipelineRunStatusIcon.color}15`, color: pipelineRunStatusIcon.color }}
-        >
-          <StatusIcon
-            Icon={pipelineRunStatusIcon.component}
-            isSpinning={pipelineRunStatusIcon.isSpinning}
-            color={pipelineRunStatusIcon.color}
-            width={12}
-          />
-          <span className="capitalize">{pipelineRunStatus.reason}</span>
-        </Badge>
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+        <div className="flex items-center gap-2">
+          <Clock className="text-muted-foreground size-4" />
+          <span className="text-muted-foreground text-sm">Status:</span>
+          <Badge
+            className="h-6"
+            style={{ backgroundColor: `${pipelineRunStatusIcon.color}15`, color: pipelineRunStatusIcon.color }}
+          >
+            <StatusIcon
+              Icon={pipelineRunStatusIcon.component}
+              isSpinning={pipelineRunStatusIcon.isSpinning}
+              color={pipelineRunStatusIcon.color}
+              width={12}
+            />
+            <span className="capitalize">{pipelineRunStatus.reason}</span>
+          </Badge>
+        </div>
+
+        {unifiedData.source === "history" && (
+          <Badge variant="outline" className="text-muted-foreground">
+            Historical Data
+          </Badge>
+        )}
+
+        {pipelineName && (
+          <div className="flex items-center gap-2">
+            <ENTITY_ICON.pipeline className="text-muted-foreground size-4" />
+            <span className="text-muted-foreground text-sm">Pipeline:</span>
+            <Link
+              to={PATH_PIPELINE_DETAILS_FULL}
+              params={{
+                clusterName,
+                namespace: pipelineRun.metadata.namespace || defaultNamespace,
+                name: pipelineName,
+              }}
+              className="text-sm font-medium hover:underline"
+            >
+              {pipelineName}
+            </Link>
+          </div>
+        )}
+
+        {codebase && (
+          <div className="flex items-center gap-2">
+            <ENTITY_ICON.project className="text-muted-foreground size-4" />
+            <span className="text-muted-foreground text-sm">Codebase:</span>
+            <Link
+              to={PATH_PROJECT_DETAILS_FULL}
+              params={{
+                clusterName,
+                namespace: pipelineRun.metadata.namespace || defaultNamespace,
+                name: codebase,
+              }}
+              className="text-sm font-medium hover:underline"
+            >
+              {codebase}
+            </Link>
+          </div>
+        )}
+
+        {branchName && (
+          <div className="flex items-center gap-2">
+            <GitBranch className="text-muted-foreground size-4" />
+            <span className="text-muted-foreground text-sm">Branch:</span>
+            <span className="text-foreground text-sm">{branchName}</span>
+          </div>
+        )}
+
+        {(() => {
+          const changeNumber = getAnnotation(pipelineRun, tektonResultAnnotations.gitChangeNumber);
+          const changeUrl = getAnnotation(pipelineRun, tektonResultAnnotations.gitChangeUrl);
+
+          if (!changeNumber) {
+            return null;
+          }
+
+          return (
+            <div className="flex items-center gap-2">
+              <GitPullRequest className="text-muted-foreground size-4" />
+              <span className="text-muted-foreground text-sm">PR:</span>
+              {changeUrl ? (
+                <a
+                  href={changeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium hover:underline"
+                >
+                  #{changeNumber}
+                </a>
+              ) : (
+                <span className="text-foreground text-sm">#{changeNumber}</span>
+              )}
+            </div>
+          );
+        })()}
+
+        {(() => {
+          const gitAuthor = getAnnotation(pipelineRun, tektonResultAnnotations.gitAuthor);
+          const gitAvatar = getAnnotation(pipelineRun, tektonResultAnnotations.gitAvatar);
+
+          if (!gitAuthor) {
+            return null;
+          }
+
+          return (
+            <div className="flex items-center gap-2">
+              <User className="text-muted-foreground size-4" />
+              <span className="text-muted-foreground text-sm">Author:</span>
+              <AuthorAvatar author={gitAuthor} avatarUrl={gitAvatar} size="sm" />
+            </div>
+          );
+        })()}
+
+        {startedAt && (
+          <div className="flex items-center gap-2">
+            <Calendar className="text-muted-foreground size-4" />
+            <span className="text-muted-foreground text-sm">Started:</span>
+            <span className="text-foreground text-sm">{startedAt}</span>
+          </div>
+        )}
+
+        {activeDuration && (
+          <div className="flex items-center gap-2">
+            <Timer className="text-muted-foreground size-4" />
+            <span className="text-muted-foreground text-sm">Duration:</span>
+            <span className="text-foreground text-sm">{activeDuration}</span>
+          </div>
+        )}
       </div>
 
-      {unifiedData.source === "history" && (
-        <Badge variant="outline" className="text-muted-foreground">
-          Historical Data
-        </Badge>
-      )}
-
-      {pipelineName && (
-        <div className="flex items-center gap-2">
-          <ENTITY_ICON.pipeline className="text-muted-foreground size-4" />
-          <span className="text-muted-foreground text-sm">Pipeline:</span>
-          <Link
-            to={PATH_PIPELINE_DETAILS_FULL}
-            params={{
-              clusterName,
-              namespace: pipelineRun.metadata.namespace || defaultNamespace,
-              name: pipelineName,
-            }}
-            className="text-sm font-medium hover:underline"
-          >
-            {pipelineName}
-          </Link>
-        </div>
-      )}
-
-      {codebase && (
-        <div className="flex items-center gap-2">
-          <ENTITY_ICON.project className="text-muted-foreground size-4" />
-          <span className="text-muted-foreground text-sm">Codebase:</span>
-          <Link
-            to={PATH_PROJECT_DETAILS_FULL}
-            params={{
-              clusterName,
-              namespace: pipelineRun.metadata.namespace || defaultNamespace,
-              name: codebase,
-            }}
-            className="text-sm font-medium hover:underline"
-          >
-            {codebase}
-          </Link>
-        </div>
-      )}
-
-      {branchName && (
-        <div className="flex items-center gap-2">
-          <GitBranch className="text-muted-foreground size-4" />
-          <span className="text-muted-foreground text-sm">Branch:</span>
-          <span className="text-foreground text-sm">{branchName}</span>
-        </div>
-      )}
-
-      {(() => {
-        const changeNumber = getAnnotation(pipelineRun, tektonResultAnnotations.gitChangeNumber);
-        const changeUrl = getAnnotation(pipelineRun, tektonResultAnnotations.gitChangeUrl);
-
-        if (!changeNumber) {
-          return null;
-        }
-
-        return (
-          <div className="flex items-center gap-2">
-            <GitPullRequest className="text-muted-foreground size-4" />
-            <span className="text-muted-foreground text-sm">PR:</span>
-            {changeUrl ? (
-              <a
-                href={changeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-medium hover:underline"
-              >
-                #{changeNumber}
-              </a>
-            ) : (
-              <span className="text-foreground text-sm">#{changeNumber}</span>
-            )}
-          </div>
-        );
-      })()}
-
-      {(() => {
-        const gitAuthor = getAnnotation(pipelineRun, tektonResultAnnotations.gitAuthor);
-        const gitAvatar = getAnnotation(pipelineRun, tektonResultAnnotations.gitAvatar);
-
-        if (!gitAuthor) {
-          return null;
-        }
-
-        return (
-          <div className="flex items-center gap-2">
-            <User className="text-muted-foreground size-4" />
-            <span className="text-muted-foreground text-sm">Author:</span>
-            <AuthorAvatar author={gitAuthor} avatarUrl={gitAvatar} size="sm" />
-          </div>
-        );
-      })()}
-
-      {startedAt && (
-        <div className="flex items-center gap-2">
-          <Calendar className="text-muted-foreground size-4" />
-          <span className="text-muted-foreground text-sm">Started:</span>
-          <span className="text-foreground text-sm">{startedAt}</span>
-        </div>
-      )}
-
-      {activeDuration && (
-        <div className="flex items-center gap-2">
-          <Timer className="text-muted-foreground size-4" />
-          <span className="text-muted-foreground text-sm">Duration:</span>
-          <span className="text-foreground text-sm">{activeDuration}</span>
+      {pipelineRunStatus.status === "false" && pipelineRunStatus.message !== "No message" && (
+        <div className="flex w-full items-center gap-2">
+          <AlertCircle className="text-muted-foreground size-4 shrink-0" />
+          <span className="text-muted-foreground shrink-0 text-sm">Error:</span>
+          <span className="text-foreground text-sm break-all">{pipelineRunStatus.message}</span>
         </div>
       )}
     </div>
