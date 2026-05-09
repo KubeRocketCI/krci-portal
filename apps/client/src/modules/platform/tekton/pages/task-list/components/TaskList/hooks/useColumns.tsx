@@ -12,7 +12,7 @@ import { TABLE } from "@/k8s/constants/tables";
 import { Actions } from "../components/Actions";
 import { Button } from "@/core/components/ui/button";
 
-export const useColumns = (): TableColumn<Task>[] => {
+export function useColumns(): TableColumn<Task>[] {
   const { namespace: defaultNamespace, clusterName } = useClusterStore(
     useShallow((state) => ({
       namespace: state.defaultNamespace,
@@ -104,4 +104,4 @@ export const useColumns = (): TableColumn<Task>[] => {
     ],
     [clusterName, defaultNamespace, tableSettings]
   );
-};
+}

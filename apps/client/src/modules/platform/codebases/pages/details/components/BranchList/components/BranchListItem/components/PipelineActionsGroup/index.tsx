@@ -83,7 +83,9 @@ export function PipelineActionsGroup({
       return;
     }
 
-    const buildPipelineRunTemplateCopy = structuredClone(buildPipelineRunTemplate);
+    // Schema models only `spec.pipelineRef.name` on resourcetemplates; the
+    // runtime payload is a full PipelineRun, which the cast reflects.
+    const buildPipelineRunTemplateCopy = structuredClone(buildPipelineRunTemplate) as unknown as PipelineRun;
 
     return createBuildPipelineRunDraft({
       codebase,
@@ -105,7 +107,7 @@ export function PipelineActionsGroup({
       return;
     }
 
-    const securityPipelineRunTemplateCopy = structuredClone(securityPipelineRunTemplate);
+    const securityPipelineRunTemplateCopy = structuredClone(securityPipelineRunTemplate) as unknown as PipelineRun;
 
     return createSecurityPipelineRunDraft({
       codebase,

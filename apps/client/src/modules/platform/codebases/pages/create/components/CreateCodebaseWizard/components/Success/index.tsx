@@ -85,7 +85,7 @@ export const Success: React.FC = () => {
                 <FolderOpen className="text-muted-foreground h-4 w-4" />
                 <div className="flex flex-col">
                   <span className="text-xs">View All Projects</span>
-                  <span className="text-muted-foreground text-[10px]">Go back to projects list</span>
+                  <span className="text-muted-foreground text-xs">Go back to projects list</span>
                 </div>
               </Link>
             </Button>
@@ -102,7 +102,7 @@ export const Success: React.FC = () => {
                 <ExternalLink className="h-4 w-4" />
                 <div className="flex flex-col">
                   <span className="text-xs">Open Project</span>
-                  <span className="text-[10px] opacity-80">View project details</span>
+                  <span className="text-xs opacity-80">View project details</span>
                 </div>
               </Link>
             </Button>
@@ -118,7 +118,7 @@ export const Success: React.FC = () => {
               <Sparkles className="text-muted-foreground h-4 w-4" />
               <div className="flex flex-col">
                 <span className="text-xs">Create Another Project</span>
-                <span className="text-muted-foreground text-[10px]">Start new project wizard</span>
+                <span className="text-muted-foreground text-xs">Start new project wizard</span>
               </div>
             </Button>
 
@@ -127,7 +127,7 @@ export const Success: React.FC = () => {
                 <Globe className="text-muted-foreground h-4 w-4" />
                 <div className="flex flex-col">
                   <span className="text-xs">Create Deployment</span>
-                  <span className="text-muted-foreground text-[10px]">Create deployment for this project</span>
+                  <span className="text-muted-foreground text-xs">Create deployment for this project</span>
                 </div>
               </Link>
             </Button>

@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-export interface SecurityMetricCardProps {
+export interface MetricCardProps {
   /**
    * Card title (e.g., "Code Quality (SonarQube)")
    */

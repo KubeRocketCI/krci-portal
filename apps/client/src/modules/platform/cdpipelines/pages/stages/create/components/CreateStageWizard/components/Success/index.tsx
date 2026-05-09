@@ -55,7 +55,7 @@ export const Success: React.FC = () => {
                 <FolderOpen className="text-muted-foreground h-4 w-4" />
                 <div className="flex flex-col">
                   <span className="text-xs">Back to Deployment</span>
-                  <span className="text-muted-foreground text-[10px]">View deployment details</span>
+                  <span className="text-muted-foreground text-xs">View deployment details</span>
                 </div>
               </Link>
             </Button>
@@ -73,7 +73,7 @@ export const Success: React.FC = () => {
                 <ExternalLink className="h-4 w-4" />
                 <div className="flex flex-col">
                   <span className="text-xs">Open Environment</span>
-                  <span className="text-[10px] opacity-80">View environment details</span>
+                  <span className="text-xs opacity-80">View environment details</span>
                 </div>
               </Link>
             </Button>
@@ -89,7 +89,7 @@ export const Success: React.FC = () => {
               <Sparkles className="text-muted-foreground h-4 w-4" />
               <div className="flex flex-col">
                 <span className="text-xs">Create Another Environment</span>
-                <span className="text-muted-foreground text-[10px]">Start new wizard</span>
+                <span className="text-muted-foreground text-xs">Start new wizard</span>
               </div>
             </Button>
           </div>

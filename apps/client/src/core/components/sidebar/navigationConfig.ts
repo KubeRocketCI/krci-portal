@@ -8,8 +8,11 @@ import {
   CloudUpload,
   Code,
   Database,
+  FileCode,
   FileText,
+  Funnel,
   GitBranch,
+  Globe,
   Layers,
   Link2,
   PanelsTopLeft,
@@ -19,6 +22,8 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
+  Webhook,
+  Zap,
 } from "lucide-react";
 import { routeCICD, routeConfiguration, routeObservability, routeSecurity } from "@/core/router";
 import { PATH_OVERVIEW_FULL } from "@/modules/platform/overview/pages/details/route";
@@ -42,6 +47,12 @@ import { PATH_CDPIPELINES_FULL } from "@/modules/platform/cdpipelines/pages/list
 import { PATH_PIPELINERUNS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-list/route";
 import { PATH_PIPELINES_FULL } from "@/modules/platform/tekton/pages/pipeline-list/route";
 import { PATH_TASKS_FULL } from "@/modules/platform/tekton/pages/task-list/route";
+import { PATH_EVENT_LISTENERS_FULL } from "@/modules/platform/tekton/pages/event-listener-list/route";
+import { PATH_TRIGGERS_FULL } from "@/modules/platform/tekton/pages/trigger-list/route";
+import { PATH_TRIGGER_TEMPLATES_FULL } from "@/modules/platform/tekton/pages/trigger-template-list/route";
+import { PATH_TRIGGER_BINDINGS_FULL } from "@/modules/platform/tekton/pages/trigger-binding-list/route";
+import { PATH_INTERCEPTORS_FULL } from "@/modules/platform/tekton/pages/interceptor-list/route";
+import { PATH_CLUSTER_INTERCEPTORS_FULL } from "@/modules/platform/tekton/pages/cluster-interceptor-list/route";
 import { PATH_CONFIG_QUICKLINKS_FULL } from "@/modules/platform/configuration/modules/quicklinks/route";
 import { PATH_CONFIG_NEXUS_FULL } from "@/modules/platform/configuration/modules/nexus/route";
 import { PATH_CONFIG_REGISTRY_FULL } from "@/modules/platform/configuration/modules/registry/route";
@@ -102,6 +113,37 @@ export function createNavigationConfig(clusterName: string, namespace: string): 
             to: PATH_TASKS_FULL,
             params: clusterDefaultParams,
           },
+        },
+        {
+          title: "Webhook Triggers",
+          children: [
+            {
+              title: "Event Listeners",
+              icon: Webhook,
+              route: { to: PATH_EVENT_LISTENERS_FULL, params: clusterDefaultParams },
+            },
+            { title: "Triggers", icon: Zap, route: { to: PATH_TRIGGERS_FULL, params: clusterDefaultParams } },
+            {
+              title: "Trigger Templates",
+              icon: FileCode,
+              route: { to: PATH_TRIGGER_TEMPLATES_FULL, params: clusterDefaultParams },
+            },
+            {
+              title: "Trigger Bindings",
+              icon: Link2,
+              route: { to: PATH_TRIGGER_BINDINGS_FULL, params: clusterDefaultParams },
+            },
+            {
+              title: "Interceptors",
+              icon: Funnel,
+              route: { to: PATH_INTERCEPTORS_FULL, params: clusterDefaultParams },
+            },
+            {
+              title: "Cluster Interceptors",
+              icon: Globe,
+              route: { to: PATH_CLUSTER_INTERCEPTORS_FULL, params: clusterDefaultParams },
+            },
+          ],
         },
       ],
     },

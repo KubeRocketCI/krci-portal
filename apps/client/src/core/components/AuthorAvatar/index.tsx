@@ -36,7 +36,7 @@ const getInitials = (name: string): string => {
 };
 
 const sizeClasses = {
-  sm: "size-6 text-[10px]",
+  sm: "size-6 text-xs",
   md: "size-8 text-xs",
 } as const;
 

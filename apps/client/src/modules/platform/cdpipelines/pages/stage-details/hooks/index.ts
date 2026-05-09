@@ -113,7 +113,9 @@ const useWatchStageTriggerTemplatePipelineRun = (triggerTemplateName: string | u
   return useQuery<TriggerTemplate, Error, PipelineRun>({
     queryKey: ["stageTriggerTemplatePipelineRun", triggerTemplateWatch.resourceVersion],
     queryFn: () => {
-      return triggerTemplateWatch.query.data?.spec.resourcetemplates?.[0] as PipelineRun;
+      // Schema models only `spec.pipelineRef.name` on resourcetemplates; the
+      // runtime payload is a full PipelineRun, which the cast reflects.
+      return triggerTemplateWatch.query.data?.spec?.resourcetemplates?.[0] as unknown as PipelineRun;
     },
     enabled: !!triggerTemplateWatch.query.isSuccess,
   });

@@ -7,7 +7,7 @@ import { useShallow } from "zustand/react/shallow";
 import { Label } from "@/core/components/ui/label";
 import { X } from "lucide-react";
 
-export const TaskFilter = () => {
+export function TaskFilter() {
   const { form, reset, isDefaultValue } = useTaskFilter();
 
   const allowedNamespaces = useClusterStore(useShallow((state) => state.allowedNamespaces));
@@ -52,4 +52,4 @@ export const TaskFilter = () => {
       )}
     </>
   );
-};
+}

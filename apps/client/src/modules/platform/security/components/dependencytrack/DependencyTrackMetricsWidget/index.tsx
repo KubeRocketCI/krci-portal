@@ -1,7 +1,7 @@
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { EDP_OPERATOR_GUIDE } from "@/k8s/constants/docs-urls";
 import { Badge } from "@/core/components/ui/badge";
-import { SecurityMetricCard } from "../../shared/SecurityMetricCard";
+import { MetricCard } from "@/core/components/MetricCard";
 import { DependencyTrackMetricsList } from "../DependencyTrackMetricsList";
 import { useDependencyTrackProject } from "./hooks/useDependencyTrackProject";
 import { DependencyTrackMetricsWidgetProps } from "./types";
@@ -43,7 +43,7 @@ export function DependencyTrackMetricsWidget({ projectName, defaultBranch }: Dep
   const projectUuid = data?.uuid;
 
   return (
-    <SecurityMetricCard
+    <MetricCard
       title="Dependencies"
       badge={
         <>
@@ -81,6 +81,6 @@ export function DependencyTrackMetricsWidget({ projectName, defaultBranch }: Dep
       }
     >
       <DependencyTrackMetricsList metrics={data?.metrics} />
-    </SecurityMetricCard>
+    </MetricCard>
   );
 }

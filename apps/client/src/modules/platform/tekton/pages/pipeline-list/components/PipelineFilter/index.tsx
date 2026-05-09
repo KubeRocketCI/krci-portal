@@ -10,7 +10,7 @@ import { pipelineLabels, PipelineType } from "@my-project/shared";
 import { Label } from "@/core/components/ui/label";
 import { X } from "lucide-react";
 
-export const PipelineFilter = () => {
+export function PipelineFilter() {
   const { form, reset, isDefaultValue } = usePipelineFilter();
 
   const pipelineListWatch = usePipelineWatchList();
@@ -77,4 +77,4 @@ export const PipelineFilter = () => {
       )}
     </>
   );
-};
+}

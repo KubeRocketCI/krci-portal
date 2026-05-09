@@ -233,8 +233,11 @@ describe("pipelineRun.start", () => {
     await expect(caller.pipelineRun.start({ ...baseInput, pipeline: "Foo_Build" })).rejects.toThrow();
   });
 
-  it("null draft from createPipelineRunDraftFromPipeline → INTERNAL_SERVER_ERROR", async () => {
-    // TriggerTemplate with no resourcetemplates → helper returns null.
+  it("TT with empty resourcetemplates falls back to a minimal PipelineRun draft", async () => {
+    // A TriggerTemplate that exists but carries no resourcetemplates is a
+    // misconfiguration the user can still recover from — we build a minimal
+    // PipelineRun pinned to the requested pipeline rather than failing the
+    // start request. Dead `if (!baseDraft)` removed accordingly.
     const pipelineWithTT = {
       ...minimalPipeline,
       metadata: {
@@ -250,14 +253,15 @@ describe("pipelineRun.start", () => {
     };
 
     mockK8sClientInstance.getResource.mockResolvedValueOnce(pipelineWithTT).mockResolvedValueOnce(emptyTriggerTemplate);
+    mockK8sClientInstance.createResource.mockResolvedValueOnce(minimalCreatedPipelineRun);
 
     const caller = createCaller(mockContext);
-    await expect(caller.pipelineRun.start(baseInput)).rejects.toMatchObject({
-      code: "INTERNAL_SERVER_ERROR",
-      message: expect.stringContaining("failed to build PipelineRun draft"),
-    });
+    const result = await caller.pipelineRun.start(baseInput);
 
-    expect(mockK8sClientInstance.createResource).not.toHaveBeenCalled();
+    expect(result.kind).toBe("created");
+    expect(mockK8sClientInstance.createResource).toHaveBeenCalledOnce();
+    const [, , draft] = mockK8sClientInstance.createResource.mock.calls[0];
+    expect((draft as { spec: { pipelineRef: { name: string } } }).spec.pipelineRef.name).toBe("foo-build");
   });
 
   it("TT path: $(tt.params.*) placeholders resolved to Pipeline defaults before create", async () => {

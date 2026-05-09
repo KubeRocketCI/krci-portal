@@ -5,6 +5,16 @@ import { TriggerTemplate } from "../../../TriggerTemplate/index.js";
 import { pipelineLabels } from "../../../Pipeline/labels.js";
 import { pipelineRunLabels } from "../../labels.js";
 
+interface PipelineRunWorkspaceWithVCT {
+  name: string;
+  volumeClaimTemplate: {
+    spec: {
+      accessModes: string[];
+      resources: { requests: { storage: string } };
+    };
+  };
+}
+
 // Matches Tekton Triggers placeholder syntax: $(tt.params.<name>)
 const TT_PARAM_RE = /^\$\(tt\.params\.([^)]+)\)$/;
 
@@ -85,19 +95,24 @@ function resolveTtParams(
   });
 }
 
-const getPipelineRunFromTriggerTemplate = (triggerTemplate: TriggerTemplate, pipeline: Pipeline) => {
+const getPipelineRunFromTriggerTemplate = (
+  triggerTemplate: TriggerTemplate,
+  pipeline: Pipeline
+): PipelineRunDraft | null => {
   if (!triggerTemplate) {
     return null;
   }
 
-  const template = triggerTemplate.spec.resourcetemplates?.[0];
+  const template = triggerTemplate.spec?.resourcetemplates?.[0];
   if (!template) {
     return null;
   }
 
   // Deep-clone so mutations below never write back into the original
-  // TriggerTemplate object (e.g. a K8s watch cache entry).
-  let pipelineRun = structuredClone(template);
+  // TriggerTemplate object (e.g. a K8s watch cache entry). The schema only
+  // models the fields read here (spec.pipelineRef.name); the runtime payload
+  // is a full PipelineRun, which the cast reflects.
+  let pipelineRun = structuredClone(template) as unknown as PipelineRunDraft;
 
   // Always pin pipelineRef to the user-requested pipeline.
   if (pipelineRun.spec?.pipelineRef) {
@@ -121,7 +136,10 @@ const getPipelineRunFromTriggerTemplate = (triggerTemplate: TriggerTemplate, pip
     // Pass 2: re-apply type-aware resolution to spec.params so that array
     // params get [] instead of the "" assigned by the string pass above.
     if (Array.isArray(pipelineRun.spec?.params)) {
-      pipelineRun.spec.params = resolveTtParams(pipelineRun.spec.params, pipeline.spec.params);
+      pipelineRun.spec.params = resolveTtParams(
+        pipelineRun.spec.params as { name: string; value: unknown }[],
+        pipeline.spec.params
+      );
     }
   }
 
@@ -133,7 +151,8 @@ export const createPipelineRunDraftFromPipeline = (
   pipeline: Pipeline
 ): PipelineRunDraft => {
   if (triggerTemplate) {
-    return getPipelineRunFromTriggerTemplate(triggerTemplate, pipeline);
+    const fromTemplate = getPipelineRunFromTriggerTemplate(triggerTemplate, pipeline);
+    if (fromTemplate) return fromTemplate;
   }
 
   const pipelineName = pipeline.metadata.name;
@@ -165,16 +184,17 @@ export const createPipelineRunDraftFromPipeline = (
       })),
       ...(pipeline.spec.workspaces?.length
         ? {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            workspaces: pipeline.spec.workspaces.map((ws: { name: string }) => ({
-              name: ws.name,
-              volumeClaimTemplate: {
-                spec: {
-                  accessModes: ["ReadWriteOnce"],
-                  resources: { requests: { storage: "1Gi" } },
+            workspaces: pipeline.spec.workspaces.map(
+              (ws: { name: string }): PipelineRunWorkspaceWithVCT => ({
+                name: ws.name,
+                volumeClaimTemplate: {
+                  spec: {
+                    accessModes: ["ReadWriteOnce"],
+                    resources: { requests: { storage: "1Gi" } },
+                  },
                 },
-              },
-            })) as any[],
+              })
+            ),
           }
         : {}),
     },

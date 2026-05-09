@@ -33,7 +33,7 @@ export function PodPhasePanel({ data, selectedApps }: PodPhasePanelProps) {
                       key={pod.name}
                       variant={POD_PHASE_BADGE_VARIANT[pod.phase]}
                       title={pod.name}
-                      className="text-[11px]"
+                      className="text-xs"
                     >
                       <span className="max-w-[160px] truncate">{pod.name}</span>
                       <span className="ml-1.5 opacity-75">{pod.phase}</span>

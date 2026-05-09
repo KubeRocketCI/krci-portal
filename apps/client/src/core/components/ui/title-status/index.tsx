@@ -43,7 +43,7 @@ export default function Component() {
                   <step.icon className="size-4" />
                 </StepperIndicator>
                 <div className="flex flex-col items-start gap-1">
-                  <div className="text-muted-foreground text-[10px] font-semibold uppercase">Step {index + 1}</div>
+                  <div className="text-muted-foreground text-xs font-semibold uppercase">Step {index + 1}</div>
                   <StepperTitle className="group-data-[state=inactive]/step:text-muted-foreground text-start text-base font-semibold">
                     {step.title}
                   </StepperTitle>

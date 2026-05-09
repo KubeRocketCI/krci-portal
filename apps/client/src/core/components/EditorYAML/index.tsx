@@ -52,7 +52,6 @@ export default function EditorYAML({ props, state }: KubeResourceEditorProps) {
               else setError(null);
               onChange?.(text, json, err);
             }}
-            theme="vs-light"
             options={{
               readOnly,
               minimap: { enabled: false },

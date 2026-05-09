@@ -82,14 +82,10 @@ export const pipelineRunStartProcedure = protectedProcedure
       );
     }
 
+    // createPipelineRunDraftFromPipeline always returns a draft: the TT path
+    // gracefully falls through to a minimal builder when the TriggerTemplate
+    // is missing resourcetemplates.
     const baseDraft = createPipelineRunDraftFromPipeline(triggerTemplate, pipeline);
-    if (!baseDraft) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: `failed to build PipelineRun draft for '${input.pipeline}'`,
-      });
-    }
-
     const draft = prepareStartDraft(baseDraft, input.pipeline, input.namespace, input.params, input.labels);
 
     // Return the resource as an object so transport layers (tRPC + Fastify)

@@ -2,6 +2,7 @@ import React from "react";
 import MonacoEditor from "@monaco-editor/react";
 import * as yaml from "js-yaml";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
+import { useMonacoTheme } from "@/core/hooks/useTheme";
 
 export type CodeEditorChangeHandler = (text: string, json: object | null, error?: Error) => void;
 
@@ -32,7 +33,7 @@ const CodeEditor = React.forwardRef<CodeEditorHandle, CodeEditorProps>(
       language = "yaml",
       height = "500px",
       readOnly = !onChange,
-      theme = "vs-light",
+      theme,
       options,
       serialize = (input: unknown) => yaml.dump(input),
       parse = (text: string) => yaml.load(text) as object,
@@ -40,6 +41,9 @@ const CodeEditor = React.forwardRef<CodeEditorHandle, CodeEditorProps>(
     },
     ref
   ) => {
+    const monacoTheme = useMonacoTheme();
+    const resolvedTheme = theme ?? monacoTheme;
+
     const [text, setText] = React.useState<string>("");
     const [error, setError] = React.useState<Error | null>(null);
     const [calculatedHeight, setCalculatedHeight] = React.useState<number>(500);
@@ -163,7 +167,7 @@ const CodeEditor = React.forwardRef<CodeEditorHandle, CodeEditorProps>(
             language={language}
             value={text}
             onChange={handleChange}
-            theme={theme}
+            theme={resolvedTheme}
             options={{
               readOnly,
               minimap: { enabled: false },
@@ -182,7 +186,7 @@ const CodeEditor = React.forwardRef<CodeEditorHandle, CodeEditorProps>(
         language={language}
         value={text}
         onChange={handleChange}
-        theme={theme}
+        theme={resolvedTheme}
         options={{
           readOnly,
           minimap: { enabled: false },
