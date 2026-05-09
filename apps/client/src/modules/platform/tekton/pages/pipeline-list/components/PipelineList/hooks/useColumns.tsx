@@ -17,7 +17,7 @@ import { routePipelineDetails } from "@/modules/platform/tekton/pages/pipeline-d
 import { Link } from "@tanstack/react-router";
 import { Actions } from "../components/Actions";
 
-export const useColumns = (): TableColumn<Pipeline>[] => {
+export function useColumns(): TableColumn<Pipeline>[] {
   const openPipelineGraphDialog = useDialogOpener(PipelineGraphDialog);
 
   const { loadSettings } = useTableSettings(TABLE.PIPELINE_LIST.id);
@@ -125,4 +125,4 @@ export const useColumns = (): TableColumn<Pipeline>[] => {
     ],
     [openPipelineGraphDialog, tableSettings, clusterName, defaultNamespace]
   );
-};
+}

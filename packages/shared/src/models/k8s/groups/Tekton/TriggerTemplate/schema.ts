@@ -12,11 +12,42 @@ const triggerTemplateLabelsSchema = z.object({
   [triggerTemplateLabels.pipelineType]: pipelineTypeEnum.optional(),
 });
 
+const resourceTemplateSchema = z
+  .object({
+    spec: z
+      .object({
+        pipelineRef: z
+          .object({
+            name: z.string().optional(),
+          })
+          .catchall(z.any())
+          .optional(),
+      })
+      .catchall(z.any())
+      .optional(),
+  })
+  .catchall(z.any());
+
+const triggerTemplateSpecSchema = z
+  .object({
+    resourcetemplates: z.array(resourceTemplateSchema).optional(),
+    params: z
+      .array(
+        z
+          .object({ name: z.string(), description: z.string().optional(), default: z.string().optional() })
+          .catchall(z.any())
+      )
+      .optional(),
+  })
+  .catchall(z.any());
+
 export const triggerTemplateSchema = kubeObjectBaseSchema
   .extend({
     metadata: kubeObjectMetadataSchema.extend({
-      labels: triggerTemplateLabelsSchema,
+      // Optional because TriggerTemplates created outside the portal may not carry the pipelinetype label.
+      labels: triggerTemplateLabelsSchema.optional(),
     }),
+    spec: triggerTemplateSpecSchema.optional(),
   })
   .catchall(z.any());
 

@@ -51,7 +51,7 @@ export const Success: React.FC = () => {
                 <FolderOpen className="text-muted-foreground h-4 w-4" />
                 <div className="flex flex-col">
                   <span className="text-xs">View All Deployments</span>
-                  <span className="text-muted-foreground text-[10px]">Go back to deployments list</span>
+                  <span className="text-muted-foreground text-xs">Go back to deployments list</span>
                 </div>
               </Link>
             </Button>
@@ -68,7 +68,7 @@ export const Success: React.FC = () => {
                 <ExternalLink className="h-4 w-4" />
                 <div className="flex flex-col">
                   <span className="text-xs">Open Deployment</span>
-                  <span className="text-[10px] opacity-80">View deployment details</span>
+                  <span className="text-xs opacity-80">View deployment details</span>
                 </div>
               </Link>
             </Button>
@@ -84,7 +84,7 @@ export const Success: React.FC = () => {
               <Sparkles className="text-muted-foreground h-4 w-4" />
               <div className="flex flex-col">
                 <span className="text-xs">Create Another Deployment</span>
-                <span className="text-muted-foreground text-[10px]">Start new wizard</span>
+                <span className="text-muted-foreground text-xs">Start new wizard</span>
               </div>
             </Button>
           </div>

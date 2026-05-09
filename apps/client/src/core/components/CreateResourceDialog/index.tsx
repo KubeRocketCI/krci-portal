@@ -102,7 +102,6 @@ export default function CreateResourceDialog({ state }: CreateResourceDialogProp
               if (err) setParseError(err.message);
               else setParseError(null);
             }}
-            theme="vs-light"
             options={{ minimap: { enabled: false } }}
           />
           {parseError && <Alert variant="destructive">{parseError}</Alert>}

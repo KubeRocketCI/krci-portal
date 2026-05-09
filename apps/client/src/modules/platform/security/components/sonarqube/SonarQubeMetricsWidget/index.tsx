@@ -1,7 +1,7 @@
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { EDP_OPERATOR_GUIDE } from "@/k8s/constants/docs-urls";
 import { QualityGateBadge } from "@/modules/platform/security/pages/sast/components/QualityGateBadge";
-import { SecurityMetricCard } from "../../shared/SecurityMetricCard";
+import { MetricCard } from "@/core/components/MetricCard";
 import { SonarQubeMetricsList } from "../SonarQubeMetricsList";
 import { useSonarQubeProject } from "./hooks/useSonarQubeProject";
 import { SonarQubeMetricsWidgetProps } from "./types";
@@ -29,7 +29,7 @@ export function SonarQubeMetricsWidget({ componentKey }: SonarQubeMetricsWidgetP
   const sonarBaseUrl = useClusterStore((state) => state.sonarWebUrl);
 
   return (
-    <SecurityMetricCard
+    <MetricCard
       title="Code Quality"
       badge={
         <>
@@ -62,6 +62,6 @@ export function SonarQubeMetricsWidget({ componentKey }: SonarQubeMetricsWidgetP
       }
     >
       <SonarQubeMetricsList measures={data?.measures} sonarBaseUrl={sonarBaseUrl} projectKey={componentKey} />
-    </SecurityMetricCard>
+    </MetricCard>
   );
 }

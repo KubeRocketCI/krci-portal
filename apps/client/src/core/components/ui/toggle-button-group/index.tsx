@@ -9,6 +9,8 @@ export interface ToggleButtonGroupProps<T extends string> {
   size?: "sm" | "default" | "lg";
   children: React.ReactElement<ToggleButtonProps<T>>[];
   className?: string;
+  "aria-label"?: string;
+  "aria-labelledby"?: string;
 }
 
 export interface ToggleButtonProps<T extends string> {
@@ -24,6 +26,8 @@ export function ToggleButtonGroup<T extends string>({
   size = "sm",
   children,
   className,
+  "aria-label": ariaLabel,
+  "aria-labelledby": ariaLabelledBy,
 }: ToggleButtonGroupProps<T>) {
   const handleButtonClick = (buttonValue: T) => (event: React.MouseEvent<HTMLElement>) => {
     if (exclusive) {
@@ -37,7 +41,12 @@ export function ToggleButtonGroup<T extends string>({
   };
 
   return (
-    <div className={cn("inline-flex rounded-md border", className)} role="group">
+    <div
+      className={cn("inline-flex rounded-md border", className)}
+      role="group"
+      aria-label={ariaLabel}
+      aria-labelledby={ariaLabelledBy}
+    >
       {React.Children.map(children, (child, index) => {
         if (!React.isValidElement<ToggleButtonProps<T>>(child)) {
           return child;

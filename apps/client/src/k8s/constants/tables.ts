@@ -155,4 +155,28 @@ export const TABLE = {
     id: "branchList",
     name: "Branch List",
   },
+  EVENT_LISTENER_LIST: {
+    id: "eventListenerList",
+    name: "Event Listener List",
+  },
+  TRIGGER_LIST: {
+    id: "triggerList",
+    name: "Trigger List",
+  },
+  TRIGGER_TEMPLATE_LIST: {
+    id: "triggerTemplateList",
+    name: "Trigger Template List",
+  },
+  TRIGGER_BINDING_LIST: {
+    id: "triggerBindingList",
+    name: "Trigger Binding List",
+  },
+  INTERCEPTOR_LIST: {
+    id: "interceptorList",
+    name: "Interceptor List",
+  },
+  CLUSTER_INTERCEPTOR_LIST: {
+    id: "clusterInterceptorList",
+    name: "Cluster Interceptor List",
+  },
 } as const;

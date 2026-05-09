@@ -59,6 +59,18 @@ import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-de
 import { routeStageCreate } from "@/modules/platform/cdpipelines/pages/stages/create/route";
 import { routeTaskList } from "@/modules/platform/tekton/pages/task-list/route";
 import { routeTaskDetails } from "@/modules/platform/tekton/pages/task-details/route";
+import { routeEventListenerList } from "@/modules/platform/tekton/pages/event-listener-list/route";
+import { routeEventListenerDetails } from "@/modules/platform/tekton/pages/event-listener-details/route";
+import { routeTriggerList } from "@/modules/platform/tekton/pages/trigger-list/route";
+import { routeTriggerDetails } from "@/modules/platform/tekton/pages/trigger-details/route";
+import { routeTriggerTemplateList } from "@/modules/platform/tekton/pages/trigger-template-list/route";
+import { routeTriggerTemplateDetails } from "@/modules/platform/tekton/pages/trigger-template-details/route";
+import { routeTriggerBindingList } from "@/modules/platform/tekton/pages/trigger-binding-list/route";
+import { routeTriggerBindingDetails } from "@/modules/platform/tekton/pages/trigger-binding-details/route";
+import { routeInterceptorList } from "@/modules/platform/tekton/pages/interceptor-list/route";
+import { routeInterceptorDetails } from "@/modules/platform/tekton/pages/interceptor-details/route";
+import { routeClusterInterceptorList } from "@/modules/platform/tekton/pages/cluster-interceptor-list/route";
+import { routeClusterInterceptorDetails } from "@/modules/platform/tekton/pages/cluster-interceptor-details/route";
 import { routePipelineMetrics } from "@/modules/platform/observability/pages/pipeline-metrics/route";
 import { routeSCA } from "@/modules/platform/security/pages/sca/route";
 import { routeSCAProjects } from "@/modules/platform/security/pages/sca-projects/route";
@@ -110,6 +122,18 @@ const routeTree = rootRoute.addChildren([
         routeTaskDetails,
         routePipelineRunList,
         routePipelineRunDetails,
+        routeEventListenerList,
+        routeEventListenerDetails,
+        routeTriggerList,
+        routeTriggerDetails,
+        routeTriggerTemplateList,
+        routeTriggerTemplateDetails,
+        routeTriggerBindingList,
+        routeTriggerBindingDetails,
+        routeInterceptorList,
+        routeInterceptorDetails,
+        routeClusterInterceptorList,
+        routeClusterInterceptorDetails,
       ]),
       routeObservability.addChildren([routePipelineMetrics]),
       routeSecurity.addChildren([

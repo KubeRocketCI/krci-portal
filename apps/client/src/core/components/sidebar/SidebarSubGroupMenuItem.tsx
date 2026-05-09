@@ -73,7 +73,7 @@ export const SidebarSubGroupMenuItem = ({ subGroup, parentGroupId, onNavigate }:
   return (
     <div>
       {/* Sub-group header */}
-      <div className="text-muted-foreground border-border mt-3 mb-2 border-b px-2 py-1.5 text-[11px] font-medium tracking-wider uppercase first:mt-1">
+      <div className="text-muted-foreground border-border mt-3 mb-2 border-b px-2 py-1.5 text-xs font-medium tracking-wider uppercase first:mt-1">
         {subGroup.title}
       </div>
       {/* Sub-group items */}

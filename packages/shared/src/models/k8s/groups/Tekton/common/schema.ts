@@ -34,3 +34,20 @@ export const taskRefSchema = z.object({
   params: z.array(paramValueSchema).optional(),
   resolver: z.string().optional(),
 });
+
+// Shared client config schema used by Interceptor and ClusterInterceptor
+export const clientConfigSchema = z
+  .object({
+    url: z.string().optional(),
+    service: z
+      .object({
+        name: z.string().optional(),
+        namespace: z.string().optional(),
+        port: z.number().optional(),
+        path: z.string().optional(),
+        caBundle: z.string().optional(),
+      })
+      .catchall(z.any())
+      .optional(),
+  })
+  .catchall(z.any());

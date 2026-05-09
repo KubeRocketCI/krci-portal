@@ -29,7 +29,7 @@ const iconSizeByBtnSize = (btnSize: ButtonSize) => {
 const textDisplaySizeClasses = (btnSize: ButtonSize) => {
   switch (btnSize) {
     case "xs":
-      return "px-2 py-0.5 text-[11px] gap-1 rounded-md";
+      return "px-2 py-0.5 text-xs gap-1 rounded-md";
     case "sm":
       return "px-2.5 py-1 text-xs gap-1.5 rounded-lg";
     case "lg":

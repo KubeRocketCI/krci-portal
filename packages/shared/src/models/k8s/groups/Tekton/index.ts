@@ -4,3 +4,8 @@ export * from "./PipelineRun/index.js";
 export * from "./Task/index.js";
 export * from "./TaskRun/index.js";
 export * from "./TriggerTemplate/index.js";
+export * from "./EventListener/index.js";
+export * from "./Trigger/index.js";
+export * from "./TriggerBinding/index.js";
+export * from "./Interceptor/index.js";
+export * from "./ClusterInterceptor/index.js";

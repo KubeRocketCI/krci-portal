@@ -252,7 +252,7 @@ const taskRunSpecSchema = z.object({
   taskServiceAccountName: z.string().optional(),
 });
 
-const workspaceSchema = z
+export const workspaceSchema = z
   .object({
     name: z.string(),
     configMap: z
@@ -285,7 +285,8 @@ const workspaceSchema = z
         readOnly: z.boolean().optional(),
         volumeAttributes: z.record(z.string()).optional(),
       })
-      .required({ driver: true }),
+      .required({ driver: true })
+      .optional(),
     emptyDir: z
       .object({
         medium: z.string().optional(),
@@ -297,7 +298,8 @@ const workspaceSchema = z
         claimName: z.string(),
         readOnly: z.boolean().optional(),
       })
-      .required({ claimName: true }),
+      .required({ claimName: true })
+      .optional(),
     projected: z
       .object({
         defaultMode: z.number().int().optional(),

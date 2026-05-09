@@ -3,12 +3,12 @@ import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
 import { TriangleAlert, ArrowRight } from "lucide-react";
 import { STATUS_COLOR } from "@/k8s/constants/colors";
 import { Link } from "@tanstack/react-router";
-import { SecurityMetricCardProps } from "./types";
+import { MetricCardProps } from "./types";
 
 /**
- * Reusable security metric card component
+ * Reusable metric card component
  *
- * Displays security metrics (SAST/SCA) with a consistent layout:
+ * Displays metrics with a consistent layout:
  * - Title with optional badge on the left
  * - Metric badges on the right
  * - Empty state with warning icon when no data available
@@ -16,7 +16,7 @@ import { SecurityMetricCardProps } from "./types";
  * - Responsive design (hides badges on mobile)
  *
  * @example
- * <SecurityMetricCard
+ * <MetricCard
  *   title="Code Quality (SonarQube)"
  *   badge={<QualityGateBadge status="OK" />}
  *   hasData={!!data}
@@ -24,9 +24,9 @@ import { SecurityMetricCardProps } from "./types";
  *   detailsLink={{ to: "/sast/projects/$namespace/$projectKey", params: {...} }}
  * >
  *   <SonarQubeMetricsList measures={data?.measures} />
- * </SecurityMetricCard>
+ * </MetricCard>
  */
-export function SecurityMetricCard({
+export function MetricCard({
   title,
   badge,
   children,
@@ -35,7 +35,7 @@ export function SecurityMetricCard({
   hasData = true,
   emptyStateMessage = "No metrics available",
   detailsLink,
-}: SecurityMetricCardProps) {
+}: MetricCardProps) {
   const cardContent = (
     <CardContent className="p-6">
       <div className="flex items-start justify-between gap-6">
