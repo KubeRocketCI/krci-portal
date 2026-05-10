@@ -1,7 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { useMatches } from "@tanstack/react-router";
+import { useLocation } from "@tanstack/react-router";
 import { useSidebar } from "../components/ui/sidebar";
-import type { NavItem } from "../components/sidebar/types";
+import type { NavGroupItem, NavItem, NavSubGroupItem, SimpleNavItem } from "../components/sidebar/types";
+
+function isGroupActiveForPathname(item: NavGroupItem, pathname: string): boolean {
+  return item.children.some((child) => {
+    if ("isActiveFn" in child && (child as SimpleNavItem).isActiveFn) {
+      return (child as SimpleNavItem).isActiveFn!(pathname);
+    }
+    if ("children" in child) {
+      return (child as NavSubGroupItem).children.some((c) => c.isActiveFn?.(pathname));
+    }
+    return false;
+  });
+}
 
 /**
  * Custom hook for managing sidebar menu state
@@ -9,13 +22,22 @@ import type { NavItem } from "../components/sidebar/types";
  */
 export function useSidebarMenu(nav: NavItem[], routerMatches: ReturnType<typeof useMatches>) {
   const { state: sidebarState } = useSidebar();
+  const { pathname } = useLocation();
 
   const activeMenuGroup = useMemo(() => {
     return nav.find((item) => {
-      if (!("groupRoute" in item) || !item.groupRoute) return false;
-      return routerMatches.some((match) => match.routeId.includes(item.groupRoute?.id || ""));
+      if (!("children" in item) || !item.children) return false;
+      const groupItem = item as NavGroupItem;
+
+      if (groupItem.groupRoute) {
+        if (routerMatches.some((match) => match.routeId.includes(groupItem.groupRoute?.id || ""))) {
+          return true;
+        }
+      }
+
+      return isGroupActiveForPathname(groupItem, pathname);
     });
-  }, [nav, routerMatches]);
+  }, [nav, routerMatches, pathname]);
 
   const [openMenuGroupId, setOpenMenuGroupId] = useState<string | null>(null);
 
@@ -25,8 +47,10 @@ export function useSidebarMenu(nav: NavItem[], routerMatches: ReturnType<typeof 
       return;
     }
 
-    setOpenMenuGroupId(activeMenuGroup?.groupRoute?.id || null);
-  }, [activeMenuGroup?.groupRoute?.id, sidebarState]);
+    const groupItem = activeMenuGroup as NavGroupItem | undefined;
+    const activeId = groupItem ? (groupItem.groupRoute?.id ?? groupItem.title) : null;
+    setOpenMenuGroupId(activeId);
+  }, [activeMenuGroup, sidebarState]);
 
   const toggleMenu = useCallback((groupId: string) => {
     setOpenMenuGroupId((prev) => (prev === groupId ? null : groupId));

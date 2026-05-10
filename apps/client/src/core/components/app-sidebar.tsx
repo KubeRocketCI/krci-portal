@@ -1,4 +1,4 @@
-import { useMatches } from "@tanstack/react-router";
+import { useLocation, useNavigate, useParams } from "@tanstack/react-router";
 import { Boxes } from "lucide-react";
 import { useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -13,6 +13,9 @@ import { useSidebarMenu } from "../hooks/useSidebarMenu";
 import { createNavigationConfig } from "./sidebar/navigationConfig";
 import { SidebarMenuItemWithHover } from "./sidebar/SidebarMenuItemWithHover";
 import { SidebarPinnedSection } from "./sidebar/SidebarPinnedSection";
+import { ModeSwitcher, type Mode } from "@/modules/k8s/components/ModeSwitcher";
+import { K8sSidebar } from "@/modules/k8s/components/K8sSidebar";
+import { useMatches } from "@tanstack/react-router";
 
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 
@@ -30,6 +33,22 @@ export function AppSidebar() {
       defaultNamespace: state.defaultNamespace,
     }))
   );
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { clusterName: paramClusterName } = useParams({ strict: false }) as { clusterName?: string };
+  const activeClusterName = paramClusterName ?? clusterName;
+
+  const mode: Mode = activeClusterName && location.pathname.includes(`/c/${activeClusterName}/k8s`) ? "k8s" : "krci";
+
+  const handleModeSelect = (next: Mode) => {
+    if (!activeClusterName) return;
+    if (next === "k8s") {
+      navigate({ to: "/c/$clusterName/k8s/overview", params: { clusterName: activeClusterName } });
+    } else {
+      navigate({ to: "/c/$clusterName", params: { clusterName: activeClusterName } });
+    }
+  };
 
   const clusters = useMemo(
     () => [
@@ -68,6 +87,9 @@ export function AppSidebar() {
           <div className="flex h-full w-full flex-col">
             <div data-slot="sidebar-header" data-sidebar="header" className={cn("flex flex-col gap-2 p-2")}>
               <ClusterSwitcher clusters={clusters} />
+              <div className="px-2 py-1">
+                <ModeSwitcher mode={mode} onSelect={handleModeSelect} />
+              </div>
             </div>
             <div
               data-slot="sidebar-content"
@@ -77,22 +99,26 @@ export function AppSidebar() {
               )}
             >
               <SidebarPinnedSection />
-              <SidebarGroup>
-                <SidebarGroupLabel>Platform</SidebarGroupLabel>
-                <SidebarMenu>
-                  {nav.map((item) => (
-                    <SidebarMenuItemWithHover
-                      key={item.title}
-                      item={item}
-                      isMenuOpen={isMenuOpen}
-                      onToggle={toggleMenu}
-                      onOpenMenu={openMenu}
-                      onNavigate={closeMenusExcept}
-                      isMinimized={state === "collapsed"}
-                    />
-                  ))}
-                </SidebarMenu>
-              </SidebarGroup>
+              {mode === "k8s" ? (
+                <K8sSidebar isMinimized={state === "collapsed"} />
+              ) : (
+                <SidebarGroup>
+                  <SidebarGroupLabel>Platform</SidebarGroupLabel>
+                  <SidebarMenu>
+                    {nav.map((item) => (
+                      <SidebarMenuItemWithHover
+                        key={item.title}
+                        item={item}
+                        isMenuOpen={isMenuOpen}
+                        onToggle={toggleMenu}
+                        onOpenMenu={openMenu}
+                        onNavigate={closeMenusExcept}
+                        isMinimized={state === "collapsed"}
+                      />
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroup>
+              )}
             </div>
             <div data-slot="sidebar-footer" data-sidebar="footer" className={cn("flex flex-col gap-2 p-2")}>
               <NavUser />
@@ -133,6 +159,9 @@ export function AppSidebar() {
         >
           <div data-slot="sidebar-header" data-sidebar="header" className={cn("flex flex-col gap-2 p-2")}>
             <ClusterSwitcher clusters={clusters} />
+            <div className="px-2 py-1">
+              <ModeSwitcher mode={mode} onSelect={handleModeSelect} />
+            </div>
           </div>
           <SidebarPinnedSection />
           <div
@@ -142,22 +171,26 @@ export function AppSidebar() {
               "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden"
             )}
           >
-            <SidebarGroup>
-              <SidebarGroupLabel>Platform</SidebarGroupLabel>
-              <SidebarMenu>
-                {nav.map((item) => (
-                  <SidebarMenuItemWithHover
-                    key={item.title}
-                    item={item}
-                    isMenuOpen={isMenuOpen}
-                    onToggle={toggleMenu}
-                    onOpenMenu={openMenu}
-                    onNavigate={closeMenusExcept}
-                    isMinimized={state === "collapsed"}
-                  />
-                ))}
-              </SidebarMenu>
-            </SidebarGroup>
+            {mode === "k8s" ? (
+              <K8sSidebar isMinimized={state === "collapsed"} />
+            ) : (
+              <SidebarGroup>
+                <SidebarGroupLabel>Platform</SidebarGroupLabel>
+                <SidebarMenu>
+                  {nav.map((item) => (
+                    <SidebarMenuItemWithHover
+                      key={item.title}
+                      item={item}
+                      isMenuOpen={isMenuOpen}
+                      onToggle={toggleMenu}
+                      onOpenMenu={openMenu}
+                      onNavigate={closeMenusExcept}
+                      isMinimized={state === "collapsed"}
+                    />
+                  ))}
+                </SidebarMenu>
+              </SidebarGroup>
+            )}
           </div>
           <div data-slot="sidebar-footer" data-sidebar="footer" className={cn("flex flex-col gap-2 p-2")}>
             <NavUser />

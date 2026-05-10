@@ -1,0 +1,161 @@
+import { useMemo, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { Box } from "lucide-react";
+import { Button } from "@/core/components/ui/button";
+import { DataTable } from "@/core/components/Table";
+import { EmptyList } from "@/core/components/EmptyList";
+import { TextWithTooltip } from "@/core/components/TextWithTooltip";
+import { useClusterStore } from "@/k8s/store";
+import { PATH_K8S_DETAIL_CLUSTER_FULL, PATH_K8S_DETAIL_NS_FULL } from "../../constants/paths";
+import type { TableProps } from "@/core/components/Table/types";
+import type { KubeObjectBase } from "@my-project/shared";
+import type { ResourceDescriptor } from "../../registry/types";
+import { BatchDeleteAction } from "../BatchDeleteAction";
+
+interface Props<T extends KubeObjectBase> {
+  items: T[];
+  descriptor: ResourceDescriptor;
+  isLoading: boolean;
+  error: Error | null;
+  tableId?: string;
+  namespace?: string;
+  filterFunction?: (item: KubeObjectBase) => boolean;
+  slots?: TableProps<KubeObjectBase>["slots"];
+}
+
+function NameLink({
+  item,
+  descriptor,
+  clusterName,
+}: {
+  item: KubeObjectBase;
+  descriptor: ResourceDescriptor;
+  clusterName: string;
+}) {
+  const name = item.metadata?.name ?? "";
+  const namespace = item.metadata?.namespace ?? "";
+
+  if (descriptor.detailVariant === "cluster") {
+    return (
+      <Button variant="link" asChild className="w-full justify-start p-0">
+        <Link to={PATH_K8S_DETAIL_CLUSTER_FULL} params={{ clusterName, kind: descriptor.config.pluralName, name }}>
+          <TextWithTooltip text={name || "—"} />
+        </Link>
+      </Button>
+    );
+  }
+
+  if (!namespace) {
+    return (
+      <span className="text-sm">
+        <TextWithTooltip text={name || "—"} />
+      </span>
+    );
+  }
+
+  return (
+    <Button variant="link" asChild className="w-full justify-start p-0">
+      <Link to={PATH_K8S_DETAIL_NS_FULL} params={{ clusterName, kind: descriptor.config.pluralName, namespace, name }}>
+        <TextWithTooltip text={name || "—"} />
+      </Link>
+    </Button>
+  );
+}
+
+export function ResourceTable<T extends KubeObjectBase>({
+  items,
+  descriptor,
+  isLoading,
+  error,
+  tableId,
+  namespace,
+  filterFunction,
+  slots,
+}: Props<T>) {
+  const clusterName = useClusterStore((s) => s.clusterName) ?? "";
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const columns = useMemo(
+    () => descriptor.columns((data) => <NameLink item={data} descriptor={descriptor} clusterName={clusterName} />),
+    [descriptor, clusterName]
+  );
+
+  const isRowSelected = (item: KubeObjectBase) => selected.has(item.metadata?.uid ?? "");
+
+  const handleSelectRow = (_e: React.MouseEvent<HTMLButtonElement>, item: KubeObjectBase) => {
+    const uid = item.metadata?.uid ?? "";
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(uid)) next.delete(uid);
+      else next.add(uid);
+      return next;
+    });
+  };
+
+  const handleSelectAll = (_e: React.ChangeEvent<HTMLInputElement>, paginatedItems: KubeObjectBase[]) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      const allSelected = paginatedItems.every((i) => next.has(i.metadata?.uid ?? ""));
+      if (allSelected) {
+        paginatedItems.forEach((i) => next.delete(i.metadata?.uid ?? ""));
+      } else {
+        paginatedItems.forEach((i) => next.add(i.metadata?.uid ?? ""));
+      }
+      return next;
+    });
+  };
+
+  const selectedItems = (items as KubeObjectBase[]).filter((i) => selected.has(i.metadata?.uid ?? ""));
+
+  const emptyDescription = descriptor.config.clusterScoped
+    ? `There are no ${descriptor.label} in the cluster`
+    : namespace
+      ? `There are no ${descriptor.label} in namespace ${namespace}`
+      : `There are no ${descriptor.label}`;
+
+  return (
+    <>
+      {selected.size > 0 && (
+        <div className="bg-muted/30 flex items-center gap-2 border-b px-4 py-2">
+          <span className="text-muted-foreground text-sm">{selected.size} selected</span>
+          <BatchDeleteAction
+            items={selectedItems}
+            config={descriptor.config}
+            onDeleted={() => setSelected(new Set())}
+          />
+        </div>
+      )}
+      <DataTable<KubeObjectBase>
+        id={tableId ?? `k8s-${descriptor.config.pluralName}`}
+        data={items as KubeObjectBase[]}
+        columns={columns}
+        isLoading={isLoading}
+        blockerError={error}
+        filterFunction={filterFunction}
+        slots={slots}
+        outlined={!slots}
+        sort={
+          descriptor.defaultSort
+            ? {
+                order: descriptor.defaultSort.order,
+                sortBy: descriptor.defaultSort.sortBy,
+              }
+            : undefined
+        }
+        selection={{
+          selected: Array.from(selected),
+          isRowSelected,
+          handleSelectRow,
+          handleSelectAll,
+        }}
+        emptyListComponent={
+          <EmptyList
+            icon={<Box width={64} height={64} className="text-muted-foreground" />}
+            customText={`No ${descriptor.label} found`}
+            description={emptyDescription}
+          />
+        }
+      />
+    </>
+  );
+}

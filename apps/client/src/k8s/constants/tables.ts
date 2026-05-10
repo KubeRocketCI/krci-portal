@@ -180,3 +180,25 @@ export const TABLE = {
     name: "Cluster Interceptor List",
   },
 } as const;
+
+export const TABLE_ID_K8S_PODS = "k8s-pods" as const;
+export const TABLE_ID_K8S_DEPLOYMENTS = "k8s-deployments" as const;
+export const TABLE_ID_K8S_STATEFULSETS = "k8s-statefulsets" as const;
+export const TABLE_ID_K8S_DAEMONSETS = "k8s-daemonsets" as const;
+export const TABLE_ID_K8S_JOBS = "k8s-jobs" as const;
+export const TABLE_ID_K8S_CRONJOBS = "k8s-cronjobs" as const;
+export const TABLE_ID_K8S_HPAS = "k8s-hpas" as const;
+export const TABLE_ID_K8S_SERVICES = "k8s-services" as const;
+export const TABLE_ID_K8S_INGRESSES = "k8s-ingresses" as const;
+export const TABLE_ID_K8S_PVCS = "k8s-pvcs" as const;
+export const TABLE_ID_K8S_PVS = "k8s-pvs" as const;
+export const TABLE_ID_K8S_STORAGE_CLASSES = "k8s-storage-classes" as const;
+export const TABLE_ID_K8S_CONFIG_MAPS = "k8s-config-maps" as const;
+export const TABLE_ID_K8S_SECRETS = "k8s-secrets" as const;
+export const TABLE_ID_K8S_NAMESPACES = "k8s-namespaces" as const;
+export const TABLE_ID_K8S_NODES = "k8s-nodes" as const;
+export const TABLE_ID_K8S_EVENTS = "k8s-events" as const;
+export const TABLE_ID_K8S_ROLES = "k8s-roles" as const;
+export const TABLE_ID_K8S_ROLE_BINDINGS = "k8s-role-bindings" as const;
+export const TABLE_ID_K8S_CLUSTER_ROLES = "k8s-cluster-roles" as const;
+export const TABLE_ID_K8S_CLUSTER_ROLE_BINDINGS = "k8s-cluster-role-bindings" as const;

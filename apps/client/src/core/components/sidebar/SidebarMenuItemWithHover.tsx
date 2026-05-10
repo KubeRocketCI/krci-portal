@@ -1,5 +1,5 @@
-import { useCallback } from "react";
-import { Link, useMatches } from "@tanstack/react-router";
+import { useCallback, useMemo } from "react";
+import { Link, useLocation, useMatches } from "@tanstack/react-router";
 import { ChevronRight, Pin, PinOff } from "lucide-react";
 import { SidebarMenuAction, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub } from "../ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
@@ -52,6 +52,8 @@ export const SidebarMenuItemWithHover = ({
     return { to: "/" };
   };
 
+  const { pathname } = useLocation();
+
   // Always call hooks at the top level
   const { isPinned, togglePin } = usePinnedItems();
 
@@ -96,6 +98,16 @@ export const SidebarMenuItemWithHover = ({
     [togglePin, pinConfig]
   );
 
+  // Must be called unconditionally before any early return to satisfy rules-of-hooks.
+  const isGroupActiveByFn = useMemo(() => {
+    if (!("children" in item) || !item.children) return false;
+    return (item as NavGroupItem).children.some((child) => {
+      if ("isActiveFn" in child && child.isActiveFn) return child.isActiveFn(pathname);
+      if ("children" in child) return (child.children ?? []).some((c) => c.isActiveFn?.(pathname));
+      return false;
+    });
+  }, [item, pathname]);
+
   if (isSimpleItem && simpleItem) {
     // Simple menu item without children - use existing pattern
 
@@ -138,7 +150,8 @@ export const SidebarMenuItemWithHover = ({
 
   // Check if group should be active (if current route is under this group)
   const isGroupActive =
-    groupItem.groupRoute && matches.some((match) => match.routeId.includes(groupItem.groupRoute?.id || ""));
+    isGroupActiveByFn ||
+    (groupItem.groupRoute && matches.some((match) => match.routeId.includes(groupItem.groupRoute?.id || "")));
 
   return (
     <SidebarMenuItem key={item.title}>

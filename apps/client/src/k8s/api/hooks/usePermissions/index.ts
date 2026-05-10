@@ -5,6 +5,14 @@ import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { getK8sItemPermissionsQueryCacheKey, getK8sAPIQueryCacheKey } from "../useWatch/query-keys";
 
+/**
+ * Returns create/update/delete permissions for the given resource in the user's
+ * default namespace.
+ *
+ * Note: cluster-scoped resources (Node, PersistentVolume, etc.) are still queried
+ * against `defaultNamespace`; the K8s SelfSubjectAccessReview API ignores namespace
+ * for cluster-scoped resources and returns the correct cluster-level permission.
+ */
 export const usePermissions = ({
   group,
   version,

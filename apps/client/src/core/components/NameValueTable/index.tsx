@@ -16,10 +16,10 @@ export const NameValueTable = ({ rows }: { rows: NameValueRow[] }) => {
       <TableUI className="table-fixed">
         <TableHeaderUI>
           <TableRowUI>
-            <TableHeadUI className="bg-muted text-muted-foreground w-[45%] px-4 py-2 text-left text-xs font-medium">
+            <TableHeadUI className="bg-muted text-muted-foreground w-[40%] px-4 py-2 text-left text-xs font-medium">
               Name
             </TableHeadUI>
-            <TableHeadUI className="bg-muted text-muted-foreground w-[55%] px-4 py-2 text-left text-xs font-medium">
+            <TableHeadUI className="bg-muted text-muted-foreground w-[60%] px-4 py-2 text-left text-xs font-medium">
               Value
             </TableHeadUI>
           </TableRowUI>
@@ -28,13 +28,13 @@ export const NameValueTable = ({ rows }: { rows: NameValueRow[] }) => {
           {rows.map((row, index) => (
             <TableRowUI key={index}>
               <TableCellUI
-                className="h-10 min-w-0 truncate px-4 py-2 align-top text-sm"
+                className="min-h-10 min-w-0 truncate px-4 py-2 align-top text-sm"
                 title={typeof row.name === "string" ? row.name : undefined}
               >
                 {row.name}
               </TableCellUI>
               <TableCellUI
-                className="h-10 min-w-0 truncate px-4 py-2 align-top text-sm"
+                className="min-h-10 min-w-0 px-4 py-2 align-top text-sm break-all"
                 title={typeof row.value === "string" ? row.value : undefined}
               >
                 {row.value}
