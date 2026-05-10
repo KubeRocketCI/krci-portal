@@ -1,8 +1,9 @@
 import { useCallback } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { Pin, PinOff } from "lucide-react";
 import { SidebarMenuAction, SidebarMenuSubButton, SidebarMenuSubItem } from "../ui/sidebar";
 import { usePinnedItems } from "@/core/hooks/usePinnedItems";
+import { cn } from "@/core/utils/classname";
 import { createPinConfig } from "./utils";
 import type { SimpleNavItem } from "./types";
 
@@ -16,7 +17,9 @@ interface SidebarMenuItemProps {
  * Component for rendering a simple nav item (just title and route)
  */
 export const SidebarMenuItem = ({ item, parentGroupId, onNavigate }: SidebarMenuItemProps) => {
+  const { pathname } = useLocation();
   const { isPinned, togglePin } = usePinnedItems();
+  const isActiveFnMatch = item.isActiveFn?.(pathname) ?? false;
   const pinConfig = createPinConfig(item.title, item.route);
   const pinned = isPinned(pinConfig.key);
 
@@ -35,7 +38,7 @@ export const SidebarMenuItem = ({ item, parentGroupId, onNavigate }: SidebarMenu
 
   return (
     <SidebarMenuSubItem>
-      <SidebarMenuSubButton asChild>
+      <SidebarMenuSubButton asChild className={cn(isActiveFnMatch && "bg-accent text-accent-foreground")}>
         <Link
           to={item.route.to}
           params={item.route.params}

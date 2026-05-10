@@ -18,7 +18,18 @@ import {
   routeObservability,
   routeSecurity,
   routeConfiguration,
+  routeK8sMode,
 } from "./routes";
+import { routeK8sOverview } from "@/modules/k8s/pages/overview/route";
+import { routeK8sList } from "@/modules/k8s/pages/list/route";
+import { routeK8sDetailNamespaced } from "@/modules/k8s/pages/detail-namespaced/route";
+import { routeK8sDetailCluster } from "@/modules/k8s/pages/detail-cluster/route";
+import { routeK8sPodsList } from "@/modules/k8s/pages/pods/list/route";
+import { routeK8sPodDetail } from "@/modules/k8s/pages/pods/detail/route";
+import { routeK8sNodesList } from "@/modules/k8s/pages/nodes/list/route";
+import { routeK8sNodeDetail } from "@/modules/k8s/pages/nodes/detail/route";
+import { routeK8sEvents } from "@/modules/k8s/pages/events/route";
+import { routeK8sRbacOverview } from "@/modules/k8s/pages/rbac/route";
 import { routeCDPipelineList } from "@/modules/platform/cdpipelines/pages/list/route";
 import { routeCDPipelineCreate } from "@/modules/platform/cdpipelines/pages/create/route";
 
@@ -36,6 +47,7 @@ export {
   routeObservability,
   routeSecurity,
   routeConfiguration,
+  routeK8sMode,
 };
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
 import { routePipelineDetails } from "@/modules/platform/tekton/pages/pipeline-details/route";
@@ -152,6 +164,18 @@ const routeTree = rootRoute.addChildren([
         routeQuicklinksConfiguration,
         routeRegistryConfiguration,
         routeSonarConfiguration,
+      ]),
+      routeK8sMode.addChildren([
+        routeK8sOverview,
+        routeK8sList,
+        routeK8sDetailNamespaced,
+        routeK8sDetailCluster,
+        routeK8sPodsList,
+        routeK8sPodDetail,
+        routeK8sNodesList,
+        routeK8sNodeDetail,
+        routeK8sEvents,
+        routeK8sRbacOverview,
       ]),
     ]),
   ]),

@@ -14,6 +14,7 @@ export interface SimpleNavItem extends BaseNavItem {
   children?: never;
   defaultRoute?: never;
   groupRoute?: never;
+  isActiveFn?: (pathname: string) => boolean;
 }
 
 // Nav group item with children

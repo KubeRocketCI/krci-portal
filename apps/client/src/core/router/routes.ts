@@ -75,3 +75,20 @@ export const routeConfiguration = createRoute({
   getParentRoute: () => routeCluster,
   path: PATH_CONFIGURATION,
 });
+
+export const PATH_K8S = "k8s" as const;
+
+export const routeK8sMode = createRoute({
+  getParentRoute: () => routeCluster,
+  path: PATH_K8S,
+  beforeLoad: ({ location, params }) => {
+    const isBareK8s =
+      location.pathname === `/c/${params.clusterName}/k8s` || location.pathname === `/c/${params.clusterName}/k8s/`;
+    if (isBareK8s) {
+      throw redirect({
+        to: "/c/$clusterName/k8s/overview",
+        params: { clusterName: params.clusterName },
+      });
+    }
+  },
+});
