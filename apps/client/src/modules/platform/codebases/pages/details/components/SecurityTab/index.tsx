@@ -21,7 +21,7 @@ const getStatusColor = (status: string | undefined) => {
  * Security Tab component for Codebase Details page
  */
 export function SecurityTab({ codebaseName, namespace, clusterName }: SecurityTabProps) {
-  const { data: project, isLoading } = useProject(codebaseName);
+  const { data: project, isLoading, error } = useProject(codebaseName);
   const sonarBaseUrl = useClusterStore((state) => state.sonarWebUrl);
 
   const measures = project?.measures;
@@ -34,7 +34,12 @@ export function SecurityTab({ codebaseName, namespace, clusterName }: SecurityTa
           <LoadingSpinner />
         </div>
       )}
-      {!isLoading && !project && (
+      {!isLoading && error && (
+        <Alert variant="destructive" title="Failed to load SonarQube data">
+          {error.message}
+        </Alert>
+      )}
+      {!isLoading && !error && !project && (
         <Alert>
           No SonarQube data available for this project.{" "}
           <Link to={PATH_CONFIG_SONAR_FULL} params={{ clusterName }} className="hover:text-foreground underline">

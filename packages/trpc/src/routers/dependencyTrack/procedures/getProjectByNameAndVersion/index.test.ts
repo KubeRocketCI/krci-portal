@@ -35,16 +35,19 @@ describe("dependencyTrack.getProjectByNameAndVersion", () => {
     expect(mockGetProjectByNameAndVersion).toHaveBeenCalledWith("my-service", "main");
   });
 
-  it("should return null when project not found", async () => {
+  it("should throw NOT_FOUND when project not found", async () => {
     mockGetProjectByNameAndVersion.mockResolvedValueOnce(null);
 
     const caller = createCaller(mockContext);
-    const result = await caller.dependencyTrack.getProjectByNameAndVersion({
-      projectName: "missing",
-      defaultBranch: "main",
+    await expect(
+      caller.dependencyTrack.getProjectByNameAndVersion({
+        projectName: "missing",
+        defaultBranch: "main",
+      })
+    ).rejects.toMatchObject({
+      code: "NOT_FOUND",
+      message: "project missing (version: main) not found",
     });
-
-    expect(result).toBeNull();
   });
 
   it("should throw on client error", async () => {
