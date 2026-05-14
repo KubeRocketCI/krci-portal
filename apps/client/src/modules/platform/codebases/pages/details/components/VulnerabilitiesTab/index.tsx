@@ -45,11 +45,14 @@ export function VulnerabilitiesTab({ codebaseName, defaultBranch, namespace, clu
           <LoadingSpinner />
         </div>
       )}
-      {!isLoading && (error || !project || !projectUuid) && (
+      {!isLoading && error && (
+        <Alert variant="destructive" title="Failed to load DependencyTrack data">
+          {error.message}
+        </Alert>
+      )}
+      {!isLoading && !error && (!project || !projectUuid) && (
         <Alert>
-          {error
-            ? "Failed to load DependencyTrack data. Please try again later."
-            : "No DependencyTrack data available for this project."}{" "}
+          No DependencyTrack data available for this project.{" "}
           <Link
             to={PATH_CONFIG_DEPENDENCY_TRACK_FULL}
             params={{ clusterName }}

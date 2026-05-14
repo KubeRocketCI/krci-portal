@@ -46,14 +46,19 @@ export const getProjectByNameAndVersion = protectedProcedure
         return project;
       }
 
-      // Not found - return null (UI will show empty state with config link)
       console.warn(`[DependencyTrack] Project not found: ${projectName} (version: ${defaultBranch})`);
-      return null;
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: `project ${projectName} (version: ${defaultBranch}) not found`,
+      });
     } catch (error) {
+      if (error instanceof TRPCError) {
+        throw error;
+      }
       console.error(`[DependencyTrack] Failed to lookup project: ${projectName}`, error);
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: `Failed to lookup project: ${projectName}`,
+        message: error instanceof Error ? error.message : `Failed to lookup project: ${projectName}`,
         cause: error,
       });
     }
