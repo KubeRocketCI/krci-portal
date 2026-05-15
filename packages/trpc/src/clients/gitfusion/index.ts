@@ -65,7 +65,7 @@ const config = loadConfig();
 export function createGitFusionClient(): GitFusionClient {
   if (!config.apiBaseURL) {
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
+      code: "PRECONDITION_FAILED",
       message: "GITFUSION_URL environment variable is not configured",
     });
   }

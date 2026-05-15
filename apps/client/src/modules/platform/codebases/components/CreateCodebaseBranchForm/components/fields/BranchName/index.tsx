@@ -8,7 +8,6 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { useTRPCClient } from "@/core/providers/trpc";
-import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWatchKRCIConfig";
 import { RotateCw } from "lucide-react";
 import { useStore } from "@tanstack/react-form";
 
@@ -23,18 +22,12 @@ export const BranchName = ({ codebase, defaultBranchVersion }: BranchNameProps) 
     }))
   );
 
-  const krciConfigMapWatch = useWatchKRCIConfig();
-  const krciConfigMap = krciConfigMapWatch.data;
-  const apiBaseUrl = krciConfigMap?.data?.api_gateway_url;
-
   const codebaseGitUrlPath = codebase.spec.gitUrlPath;
   const codebaseGitServer = codebase.spec.gitServer;
   const codebaseRepoName = codebaseGitUrlPath.split("/").at(-1) || "";
   const codebaseOwner = codebaseGitUrlPath.split("/").filter(Boolean).slice(0, -1).join("/");
 
-  const canLoadBranches = React.useMemo(() => {
-    return !!apiBaseUrl && !!codebaseGitServer && !!codebaseOwner && !!codebaseRepoName;
-  }, [apiBaseUrl, codebaseGitServer, codebaseOwner, codebaseRepoName]);
+  const canLoadBranches = !!codebaseGitServer && !!codebaseOwner && !!codebaseRepoName;
 
   const query = useQuery({
     queryKey: ["branchList", codebaseGitServer, codebaseOwner, codebaseRepoName],
@@ -107,17 +100,7 @@ export const BranchName = ({ codebase, defaultBranchVersion }: BranchNameProps) 
     });
   }, [invalidateBranchListCacheMutation, query]);
 
-  const helperText = React.useMemo(() => {
-    if (!apiBaseUrl) {
-      return "Branches auto-discovery cannot be performed.";
-    }
-
-    if (query.isError) {
-      return "Branches auto-discovery could not be performed.";
-    }
-
-    return " ";
-  }, [apiBaseUrl, query.isError]);
+  const helperText = query.isError ? "Branches auto-discovery could not be performed." : " ";
 
   return (
     <div>
@@ -135,7 +118,7 @@ export const BranchName = ({ codebase, defaultBranchVersion }: BranchNameProps) 
             options={branchesOptions}
             disabled={releaseFieldValue}
             freeSolo={true}
-            loading={!!apiBaseUrl && query.isLoading}
+            loading={query.isLoading}
             helperText={helperText}
             suffix={
               canLoadBranches ? (

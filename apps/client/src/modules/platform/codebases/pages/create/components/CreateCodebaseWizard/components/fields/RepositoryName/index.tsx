@@ -5,7 +5,6 @@ import { codebaseCreationStrategy, gitProvider } from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWatchKRCIConfig";
 import { useGitServerWatchItem } from "@/k8s/api/groups/KRCI/GitServer";
 import { validationRules } from "@/core/constants/validation";
 import { validateField } from "@/core/utils/forms/validation";
@@ -23,9 +22,6 @@ export const RepositoryName: React.FC = () => {
   const gitServerProvider = gitServerWatch.data?.spec?.gitProvider;
   const isGerrit = gitServerProvider?.includes(gitProvider.gerrit);
 
-  const krciConfigMapWatch = useWatchKRCIConfig();
-  const apiBaseUrl = krciConfigMapWatch.data?.data?.api_gateway_url;
-
   const { clusterName, defaultNamespace } = useClusterStore(
     useShallow((s) => ({ clusterName: s.clusterName, defaultNamespace: s.defaultNamespace }))
   );
@@ -39,7 +35,7 @@ export const RepositoryName: React.FC = () => {
         namespace: defaultNamespace,
         clusterName,
       }),
-    enabled: !!apiBaseUrl && !!gitServerFieldValue && !!ownerFieldValue,
+    enabled: !!gitServerFieldValue && !!ownerFieldValue,
   });
 
   const repositoryOptions = React.useMemo(() => {
@@ -52,11 +48,7 @@ export const RepositoryName: React.FC = () => {
     );
   }, [repoListQuery.data, repoListQuery.isError, repoListQuery.isLoading]);
 
-  const helperText = React.useMemo(() => {
-    if (!apiBaseUrl) return "Repositories auto-discovery cannot be performed.";
-    if (repoListQuery.isError) return "Repositories auto-discovery could not be performed.";
-    return "";
-  }, [apiBaseUrl, repoListQuery.isError]);
+  const helperText = repoListQuery.isError ? "Repositories auto-discovery could not be performed." : "";
 
   const isImportStrategy = strategyFieldValue === codebaseCreationStrategy.import;
 
@@ -102,7 +94,7 @@ export const RepositoryName: React.FC = () => {
             placeholder="repository_name"
             options={repositoryOptions}
             freeSolo
-            loading={!!apiBaseUrl && repoListQuery.isLoading}
+            loading={repoListQuery.isLoading}
             helperText={helperText}
             disabled={!ownerFieldValue}
           />

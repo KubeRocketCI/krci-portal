@@ -1,5 +1,4 @@
 import { useTRPCClient } from "@/core/providers/trpc";
-import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWatchKRCIConfig";
 import { useClusterStore } from "@/k8s/store";
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
@@ -39,10 +38,6 @@ export const FromCommit = ({ codebase, defaultBranch }: FromCommitProps) => {
     }))
   );
 
-  const krciConfigMapWatch = useWatchKRCIConfig();
-  const krciConfigMap = krciConfigMapWatch.data;
-  const apiBaseUrl = krciConfigMap?.data?.api_gateway_url;
-
   const codebaseGitUrlPath = codebase.spec.gitUrlPath;
   const codebaseGitServer = codebase.spec.gitServer;
   const codebaseRepoName = codebaseGitUrlPath.split("/").at(-1) || "";
@@ -58,7 +53,7 @@ export const FromCommit = ({ codebase, defaultBranch }: FromCommitProps) => {
         namespace: defaultNamespace,
         clusterName,
       }),
-    enabled: !!apiBaseUrl && !!codebaseGitServer && !!codebaseOwner && !!codebaseRepoName,
+    enabled: !!codebaseGitServer && !!codebaseOwner && !!codebaseRepoName,
     staleTime: 0,
     refetchOnMount: true,
   });
@@ -89,17 +84,7 @@ export const FromCommit = ({ codebase, defaultBranch }: FromCommitProps) => {
     );
   }, [releaseValue, defaultBranch, query.isLoading, query.isError, query.data, defaultBranchOption]);
 
-  const helperText = React.useMemo(() => {
-    if (!apiBaseUrl) {
-      return "Branches auto-discovery cannot be performed.";
-    }
-
-    if (query.isError) {
-      return "Branches auto-discovery could not be performed.";
-    }
-
-    return " ";
-  }, [apiBaseUrl, query.isError]);
+  const helperText = query.isError ? "Branches auto-discovery could not be performed." : " ";
 
   const fromTypeOptions = React.useMemo(() => {
     return FROM_TYPE_OPTIONS.map((option) => ({
@@ -141,7 +126,7 @@ export const FromCommit = ({ codebase, defaultBranch }: FromCommitProps) => {
                 options={branchesOptions}
                 disabled={query.isLoading}
                 helperText={helperText}
-                loading={!!apiBaseUrl && query.isLoading}
+                loading={query.isLoading}
                 freeSolo={true}
               />
             )}
