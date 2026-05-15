@@ -4,7 +4,6 @@ import { gitProvider } from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWatchKRCIConfig";
 import { useStore } from "@tanstack/react-form";
 import { CODEBASE_FORM_NAMES } from "../../../constants";
 import { useCreateGitOpsForm } from "../../../providers/form/hooks";
@@ -13,9 +12,6 @@ export const Owner = () => {
   const trpc = useTRPCClient();
   const gitServerFieldValue = useStore(form.store, (s) => s.values[CODEBASE_FORM_NAMES.GIT_SERVER]);
   const repositoryNameFieldValue = useStore(form.store, (s) => s.values[CODEBASE_FORM_NAMES.UI_REPOSITORY_NAME]);
-
-  const krciConfigMapWatch = useWatchKRCIConfig();
-  const apiBaseUrl = krciConfigMapWatch.data?.data?.api_gateway_url;
 
   const { clusterName, defaultNamespace } = useClusterStore(
     useShallow((s) => ({ clusterName: s.clusterName, defaultNamespace: s.defaultNamespace }))
@@ -29,7 +25,7 @@ export const Owner = () => {
         namespace: defaultNamespace,
         clusterName,
       }),
-    enabled: !!apiBaseUrl && !!gitServerFieldValue,
+    enabled: !!gitServerFieldValue,
   });
 
   const options = React.useMemo(() => {
@@ -37,11 +33,7 @@ export const Owner = () => {
     return ownerQuery.data.data?.map(({ name }: { name: string }) => ({ label: name, value: name })) ?? [];
   }, [ownerQuery.data, ownerQuery.isError, ownerQuery.isLoading]);
 
-  const helperText = React.useMemo(() => {
-    if (!apiBaseUrl) return "Owners auto-discovery cannot be performed.";
-    if (ownerQuery.isError) return "Owners auto-discovery could not be performed.";
-    return "";
-  }, [apiBaseUrl, ownerQuery.isError]);
+  const helperText = ownerQuery.isError ? "Owners auto-discovery could not be performed." : "";
 
   return (
     <form.AppField
@@ -68,7 +60,7 @@ export const Owner = () => {
           placeholder="owner"
           options={options}
           freeSolo
-          loading={!!apiBaseUrl && ownerQuery.isLoading}
+          loading={ownerQuery.isLoading}
           helperText={helperText}
         />
       )}

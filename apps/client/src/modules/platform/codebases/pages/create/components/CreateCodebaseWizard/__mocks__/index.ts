@@ -115,9 +115,6 @@ export const mockGitOrganizations = [
   { name: "company-name" },
 ];
 
-/**
- * Mock KRCI Config for API gateway URL
- */
 export const mockKRCIConfig = {
   apiVersion: "v1",
   kind: "ConfigMap",
@@ -126,7 +123,6 @@ export const mockKRCIConfig = {
     namespace: "default",
   },
   data: {
-    api_gateway_url: "http://localhost:3000/api",
     cluster_name: "test-cluster",
   },
 };

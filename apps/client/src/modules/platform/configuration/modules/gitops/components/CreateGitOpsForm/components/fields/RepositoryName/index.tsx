@@ -4,7 +4,6 @@ import { codebaseCreationStrategy, gitProvider } from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { useWatchKRCIConfig } from "@/k8s/api/groups/Core/ConfigMap/hooks/useWatchKRCIConfig";
 import { validationRules } from "@/core/constants/validation";
 import { validateField } from "@/core/utils/forms/validation";
 import { useStore } from "@tanstack/react-form";
@@ -16,9 +15,6 @@ export const RepositoryName = () => {
   const gitServerFieldValue = useStore(form.store, (s) => s.values[CODEBASE_FORM_NAMES.GIT_SERVER]);
   const ownerFieldValue = useStore(form.store, (s) => s.values[CODEBASE_FORM_NAMES.UI_REPOSITORY_OWNER]);
   const strategyFieldValue = useStore(form.store, (s) => s.values[CODEBASE_FORM_NAMES.STRATEGY]);
-
-  const krciConfigMapWatch = useWatchKRCIConfig();
-  const apiBaseUrl = krciConfigMapWatch.data?.data?.api_gateway_url;
 
   const { clusterName, defaultNamespace } = useClusterStore(
     useShallow((s) => ({ clusterName: s.clusterName, defaultNamespace: s.defaultNamespace }))
@@ -33,7 +29,7 @@ export const RepositoryName = () => {
         namespace: defaultNamespace,
         clusterName,
       }),
-    enabled: !!apiBaseUrl && !!gitServerFieldValue && !!ownerFieldValue,
+    enabled: !!gitServerFieldValue && !!ownerFieldValue,
   });
 
   const repositoryOptions = React.useMemo(() => {
@@ -46,11 +42,7 @@ export const RepositoryName = () => {
     );
   }, [repoListQuery.data, repoListQuery.isError, repoListQuery.isLoading]);
 
-  const helperText = React.useMemo(() => {
-    if (!apiBaseUrl) return "Repositories auto-discovery cannot be performed.";
-    if (repoListQuery.isError) return "Repositories auto-discovery could not be performed.";
-    return undefined;
-  }, [apiBaseUrl, repoListQuery.isError]);
+  const helperText = repoListQuery.isError ? "Repositories auto-discovery could not be performed." : undefined;
 
   const isImportStrategy = strategyFieldValue === codebaseCreationStrategy.import;
 
@@ -96,7 +88,7 @@ export const RepositoryName = () => {
             placeholder="repository_name"
             options={repositoryOptions}
             freeSolo
-            loading={!!apiBaseUrl && repoListQuery.isLoading}
+            loading={repoListQuery.isLoading}
             helperText={helperText}
             disabled={!ownerFieldValue}
           />
