@@ -71,7 +71,7 @@ export const useColumns = ({
           },
         },
         cell: {
-          baseWidth: 17,
+          baseWidth: 16,
           ...getSyncedColumnData(tableSettings, columnNames.RUN),
         },
       },
@@ -279,13 +279,13 @@ export const useColumns = ({
 
             return (
               <Tooltip title={formatUnixTimestamp(startTime)} delayDuration={500}>
-                <span className="text-sm">{formatTimestamp(startTime)}</span>
+                <span className="text-sm whitespace-nowrap">{formatTimestamp(startTime)}</span>
               </Tooltip>
             );
           },
         },
         cell: {
-          baseWidth: 9,
+          baseWidth: 10,
           ...getSyncedColumnData(tableSettings, columnNames.STARTED_AT),
         },
       },
