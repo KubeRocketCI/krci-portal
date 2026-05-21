@@ -2,6 +2,62 @@
 ## [Unreleased]
 
 
+<a name="v0.5.0"></a>
+## [v0.5.0] - 2026-05-21
+### Features
+
+- Add sonar deptrack error message ([#262](https://github.com/KubeRocketCI/krci-portal/issues/262))
+- Add k8s mode resources explorer
+- Add webhook Triggers portal module
+- Add pipelinerun error description
+- Add PipelineRun trigger endpoint with CLI parameter support
+- Add severity filtering to SCA findings REST endpoint
+- Per-pod, history-aware Stage Monitoring
+- Extend Stage Monitoring with network/storate metrics
+- Add native deployment metrics on Stage Monitoring tab
+- Allow filtering pipeline runs by any platform-registered projects
+- Refactor pipeline run list filtering with payload-aware codebase detection
+- Improve pipelinerun list querying
+- Implement server-side severity filtering with auto-paging and cancellation
+- Add SCA REST endpoints with Dep-Track integration
+- Add SonarQube branch scope support
+- Add SonarQube pr support and rest proxy ([#238](https://github.com/KubeRocketCI/krci-portal/issues/238))
+- Add create resource button
+
+### Bug Fixes
+
+- Align OpenAPI spec to actual REST error envelope shape
+- Preserve pod template and task scheduling config in pipeline rerun
+- Prevent K8s watch reconnect storm on stale resourceVersion
+- Block branch deletion when used by a deployment flow
+- Handle protojson null values in Tekton Results output schema
+- Declare labels, annotations, creationTimestamp in K8s metadata schema
+- Hide tours on smaller devices
+- Reset filters
+- Tekton resources statuses
+- Multiple UI and security improvements
+- Broken links when config is not loaded ([#229](https://github.com/KubeRocketCI/krci-portal/issues/229))
+- Show corret PipelineRuns in stage details
+
+### Code Refactoring
+
+- Remove ConfigMap-based GitFusion feature gate
+- Server tests mocks ([#244](https://github.com/KubeRocketCI/krci-portal/issues/244))
+- Fix rbac operations naming
+- Replace string literals with typed enum constants
+- Simplify SonarQube client and procedures
+- Replace sonar search  with browse-level api
+
+### Routine
+
+- Tune column width for pipelinerun page
+- Revert Node.js and better-sqlite3 upgrades to stable versions
+- Upgrade better-sqlite3 to v12    Update better-sqlite3 dependency to v12.9.0, which is compatible with node 24
+- Update Node.js runtime and remove redundant build step
+- Set Helm chart fullnameOverride to krci-portal
+- Update current development version
+
+
 <a name="v0.4.0"></a>
 ## [v0.4.0] - 2026-04-13
 ### Features
@@ -282,7 +338,8 @@
 - Setup initial code ([#1](https://github.com/KubeRocketCI/krci-portal/issues/1))
 
 
-[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.5.0...HEAD
+[v0.5.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.4.0...v0.5.0
 [v0.4.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.3.0...v0.4.0
 [v0.3.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.1.0...v0.2.0
