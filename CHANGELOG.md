@@ -2,87 +2,36 @@
 ## [Unreleased]
 
 
-<a name="v0.4.0"></a>
-## [v0.4.0] - 2026-04-13
+<a name="v0.5.0"></a>
+## v0.5.0 - 2026-05-20
 ### Features
 
+- Add sonar deptrack error message ([#262](https://github.com/KubeRocketCI/krci-portal/issues/262))
+- Add k8s mode resources explorer
+- Add webhook Triggers portal module
+- Add pipelinerun error description
+- Add PipelineRun trigger endpoint with CLI parameter support
+- Add severity filtering to SCA findings REST endpoint
+- Per-pod, history-aware Stage Monitoring
+- Extend Stage Monitoring with network/storate metrics
+- Add native deployment metrics on Stage Monitoring tab
+- Allow filtering pipeline runs by any platform-registered projects
+- Refactor pipeline run list filtering with payload-aware codebase detection
+- Improve pipelinerun list querying
+- Implement server-side severity filtering with auto-paging and cancellation
+- Add SCA REST endpoints with Dep-Track integration
+- Add SonarQube branch scope support
+- Add SonarQube pr support and rest proxy ([#238](https://github.com/KubeRocketCI/krci-portal/issues/238))
+- Add create resource button
 - Resolve full PipelineRun data for historical rerun actions
 - Enable rerun actions for historical PipelineRuns
 - Add 'Started at' sortable column to PipelineRun table
 - Add PipelineRun name search filter to list views
 - Add copy and download buttons for step logs
-
-### Bug Fixes
-
-- Security issues in openapi generation
-- Edit cdpipeline with mixed spec
-- Add sidebar pinning for generic pages and improve Tekton and branch UX
-- Branch diff in cdpipeline edit
-- Project details page tour
-- Pipelines page crash and tt params undefined value
-
-### Routine
-
-- Update current development version
-
-
-<a name="v0.3.0"></a>
-## [v0.3.0] - 2026-04-08
-### Features
-
 - Add REST API endpoints and OpenAPI spec generation
-
-### Bug Fixes
-
-- Improve responsiveness of generic components and pages
-- Edit form guides configs
-- Make apiVersion and kind optional on Kubernetes list items
-- GitOps form issues, stage breadcrumbs, deployment create btn permission
-
-### Code Refactoring
-
-- Protect config.get   endpoint and move cluster config to authenticated   tree
-
-### Routine
-
-- Regenerate REST client after optional apiVersion/kind fix
-- Update current development version
-- Remove krci-ai framework
-
-
-<a name="v0.2.0"></a>
-## [v0.2.0] - 2026-04-04
-### Features
-
 - Expose OIDC issuer URL in config.get response
 - Align security pages layouts
 - Enable CHANGELOG.md generation
-
-### Bug Fixes
-
-- Resolve pagination failure in Tekton Results PipelineRun query
-- Resolve misaligned inputDockerStreams in CDPipeline edit form
-- Add promise coalescing to getSummary cache to prevent thundering herd
-- Performance bottleneck in tekton results
-- Map GitFusion HTTP status codes to tRPC error codes
-- Throttle live log subscription to prevent page freezing
-
-### Code Refactoring
-
-- Improve CDPipeline form handling
-- Switch PipelineRun list from records to results table
-
-### Routine
-
-- Disable debug for claude review pipeline
-- update commit message length validation
-- Update current development version
-
-
-<a name="v0.1.0"></a>
-## v0.1.0 - 2026-03-27
-### Features
-
 - Improve project details page
 - Improve ScrollCopyText component
 - Add deployment submit review step
@@ -152,6 +101,34 @@
 
 ### Bug Fixes
 
+- Align OpenAPI spec to actual REST error envelope shape
+- Preserve pod template and task scheduling config in pipeline rerun
+- Prevent K8s watch reconnect storm on stale resourceVersion
+- Block branch deletion when used by a deployment flow
+- Handle protojson null values in Tekton Results output schema
+- Declare labels, annotations, creationTimestamp in K8s metadata schema
+- Hide tours on smaller devices
+- Reset filters
+- Tekton resources statuses
+- Multiple UI and security improvements
+- Broken links when config is not loaded ([#229](https://github.com/KubeRocketCI/krci-portal/issues/229))
+- Show corret PipelineRuns in stage details
+- Security issues in openapi generation
+- Edit cdpipeline with mixed spec
+- Add sidebar pinning for generic pages and improve Tekton and branch UX
+- Branch diff in cdpipeline edit
+- Project details page tour
+- Pipelines page crash and tt params undefined value
+- Improve responsiveness of generic components and pages
+- Edit form guides configs
+- Make apiVersion and kind optional on Kubernetes list items
+- GitOps form issues, stage breadcrumbs, deployment create btn permission
+- Resolve pagination failure in Tekton Results PipelineRun query
+- Resolve misaligned inputDockerStreams in CDPipeline edit form
+- Add promise coalescing to getSummary cache to prevent thundering herd
+- Performance bottleneck in tekton results
+- Map GitFusion HTTP status codes to tRPC error codes
+- Throttle live log subscription to prevent page freezing
 - Correct form validation and error handling in edit wizards
 - History pipelinerun select
 - auto-restart K8s watch on API server timeout and improve stale data recovery
@@ -235,6 +212,15 @@
 
 ### Code Refactoring
 
+- Remove ConfigMap-based GitFusion feature gate
+- Server tests mocks ([#244](https://github.com/KubeRocketCI/krci-portal/issues/244))
+- Fix rbac operations naming
+- Replace string literals with typed enum constants
+- Simplify SonarQube client and procedures
+- Replace sonar search  with browse-level api
+- Protect config.get   endpoint and move cluster config to authenticated   tree
+- Improve CDPipeline form handling
+- Switch PipelineRun list from records to results table
 - remove log source disclosure from UI
 - Polish existing integration form structure and layouts
 - extract shared stage deployment cards component and add JWT utility tests
@@ -254,6 +240,19 @@
 
 ### Routine
 
+- Tune column width for pipelinerun page
+- Revert Node.js and better-sqlite3 upgrades to stable versions
+- Upgrade better-sqlite3 to v12    Update better-sqlite3 dependency to v12.9.0, which is compatible with node 24
+- Update Node.js runtime and remove redundant build step
+- Set Helm chart fullnameOverride to krci-portal
+- Update current development version
+- Update current development version
+- Regenerate REST client after optional apiVersion/kind fix
+- Update current development version
+- Remove krci-ai framework
+- Disable debug for claude review pipeline
+- update commit message length validation
+- Update current development version
 - Align repository path for image
 - fix Dependabot security vulnerabilities in dependencies
 - validate commit title length and format
@@ -282,7 +281,4 @@
 - Setup initial code ([#1](https://github.com/KubeRocketCI/krci-portal/issues/1))
 
 
-[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.4.0...HEAD
-[v0.4.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.3.0...v0.4.0
-[v0.3.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.2.0...v0.3.0
-[v0.2.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.1.0...v0.2.0
+[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.5.0...HEAD
