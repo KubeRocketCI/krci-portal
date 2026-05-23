@@ -181,7 +181,10 @@ export const PipelineApplications = () => {
     );
     for (const { appName, appBranch } of appBranches) {
       const branch = branchesByName.get(appBranch);
-      if (branch) {
+      // Validate ownership: prefix matching in buildInitialApplicationBranches can
+      // misroute an orphan stream (from a deleted app) to a shorter-named sibling.
+      // Comparing spec.codebaseName to the app name rejects such misroutes.
+      if (branch && branch.spec.codebaseName === appName) {
         map.set(appName, branch);
       }
     }
@@ -223,11 +226,7 @@ export const PipelineApplications = () => {
   );
 
   const isLoading =
-    isPipelineAppsLoading ||
-    isSortedStagesLoading ||
-    argoAppsWatch.isLoading ||
-    codebaseBranchListWatch.isLoading ||
-    cdPipelineWatch.isLoading;
+    isPipelineAppsLoading || isSortedStagesLoading || argoAppsWatch.isLoading || codebaseBranchListWatch.isLoading;
 
   // Expandable row renderer
   const expandedRowRender = React.useCallback(
