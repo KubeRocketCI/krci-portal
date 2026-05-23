@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "@tanstack/react-router";
+import { GitBranch } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
 import { Badge } from "@/core/components/ui/badge";
 import { DataTable } from "@/core/components/Table";
@@ -9,11 +10,17 @@ import { CodebaseLanguageIcon } from "@/modules/platform/codebases/components/Co
 import { CodebaseFrameworkIcon } from "@/modules/platform/codebases/components/CodebaseFrameworkIcon";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { StageDeploymentCards } from "@/modules/platform/cdpipelines/components/StageDeploymentCards";
-import { applicationLabels, systemQuickLink, Codebase, Application } from "@my-project/shared";
+import { buildInitialApplicationBranches } from "@/modules/platform/cdpipelines/utils/buildInitialApplicationBranches";
+import { applicationLabels, systemQuickLink, Codebase, CodebaseBranch, Application } from "@my-project/shared";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
-import { usePipelineArgoApplicationListWatch, useQuickLinksUrlListWatch } from "../../hooks/data";
+import {
+  useCDPipelineWatch,
+  useCodebaseBranchListWatch,
+  usePipelineArgoApplicationListWatch,
+  useQuickLinksUrlListWatch,
+} from "../../hooks/data";
 import { usePipelineAppCodebases, useSortedStages } from "../../hooks/usePipelineData";
 import { routeCDPipelineDetails } from "../../route";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
@@ -26,7 +33,8 @@ const useColumns = (
   clusterName: string,
   namespace: string,
   sortedStagesCount: number,
-  argoAppsByAppAndStage: Map<string, Map<string, Application>>
+  argoAppsByAppAndStage: Map<string, Map<string, Application>>,
+  branchByAppName: Map<string, CodebaseBranch>
 ): TableColumn<Codebase>[] => {
   return React.useMemo(
     () => [
@@ -52,7 +60,7 @@ const useColumns = (
           ),
         },
         cell: {
-          baseWidth: 25,
+          baseWidth: 22,
         },
       },
       {
@@ -65,7 +73,7 @@ const useColumns = (
           },
         },
         cell: {
-          baseWidth: 15,
+          baseWidth: 12,
         },
       },
       {
@@ -75,7 +83,7 @@ const useColumns = (
           render: ({ data }) => <CodebaseLanguageIcon codebase={data} />,
         },
         cell: {
-          baseWidth: 15,
+          baseWidth: 12,
         },
       },
       {
@@ -85,7 +93,34 @@ const useColumns = (
           render: ({ data }) => <CodebaseFrameworkIcon codebase={data} />,
         },
         cell: {
-          baseWidth: 15,
+          baseWidth: 12,
+        },
+      },
+      {
+        id: "branch",
+        label: "Branch",
+        data: {
+          render: ({ data }) => {
+            const branch = branchByAppName.get(data.metadata.name);
+            if (!branch) {
+              return <span className="text-muted-foreground text-sm">—</span>;
+            }
+            const isDefault = branch.spec.branchName === data.spec.defaultBranch;
+            return (
+              <div className="flex min-w-0 items-center gap-1.5">
+                <GitBranch className="text-muted-foreground/70 h-3.5 w-3.5 shrink-0" />
+                <span className="truncate text-sm">{branch.spec.branchName}</span>
+                {isDefault && (
+                  <Badge variant="outline" className="shrink-0 text-xs">
+                    default
+                  </Badge>
+                )}
+              </div>
+            );
+          },
+        },
+        cell: {
+          baseWidth: 17,
         },
       },
       {
@@ -104,11 +139,11 @@ const useColumns = (
           },
         },
         cell: {
-          baseWidth: 30,
+          baseWidth: 25,
         },
       },
     ],
-    [clusterName, namespace, sortedStagesCount, argoAppsByAppAndStage]
+    [clusterName, namespace, sortedStagesCount, argoAppsByAppAndStage, branchByAppName]
   );
 };
 
@@ -124,8 +159,35 @@ export const PipelineApplications = () => {
   // Fetch data
   const argoAppsWatch = usePipelineArgoApplicationListWatch();
   const quickLinksUrlListWatch = useQuickLinksUrlListWatch();
+  const cdPipelineWatch = useCDPipelineWatch();
+  const codebaseBranchListWatch = useCodebaseBranchListWatch();
   const { data: pipelineApplications, isLoading: isPipelineAppsLoading } = usePipelineAppCodebases();
   const { data: sortedStages, isLoading: isSortedStagesLoading } = useSortedStages();
+
+  // Resolve each application's branch via inputDockerStreams (CodebaseBranch metadata.name).
+  const branchByAppName = React.useMemo(() => {
+    const map = new Map<string, CodebaseBranch>();
+    const cdPipeline = cdPipelineWatch.data;
+    if (!cdPipeline) return map;
+
+    const branchesByName = new Map<string, CodebaseBranch>();
+    for (const branch of codebaseBranchListWatch.data.array) {
+      branchesByName.set(branch.metadata.name, branch);
+    }
+
+    const appBranches = buildInitialApplicationBranches(
+      cdPipeline.spec.applications,
+      cdPipeline.spec.inputDockerStreams
+    );
+    for (const { appName, appBranch } of appBranches) {
+      const branch = branchesByName.get(appBranch);
+      if (branch) {
+        map.set(appName, branch);
+      }
+    }
+
+    return map;
+  }, [cdPipelineWatch.data, codebaseBranchListWatch.data.array]);
 
   // Group Argo applications by app name and stage
   const argoAppsByAppAndStage = React.useMemo(() => {
@@ -152,9 +214,20 @@ export const PipelineApplications = () => {
   );
   const argocdBaseURL = quickLinksUrlListWatch.data?.quickLinkURLs?.[systemQuickLink.argocd];
 
-  const columns = useColumns(clusterName, params.namespace, sortedStages.length, argoAppsByAppAndStage);
+  const columns = useColumns(
+    clusterName,
+    params.namespace,
+    sortedStages.length,
+    argoAppsByAppAndStage,
+    branchByAppName
+  );
 
-  const isLoading = isPipelineAppsLoading || isSortedStagesLoading || argoAppsWatch.isLoading;
+  const isLoading =
+    isPipelineAppsLoading ||
+    isSortedStagesLoading ||
+    argoAppsWatch.isLoading ||
+    codebaseBranchListWatch.isLoading ||
+    cdPipelineWatch.isLoading;
 
   // Expandable row renderer
   const expandedRowRender = React.useCallback(
