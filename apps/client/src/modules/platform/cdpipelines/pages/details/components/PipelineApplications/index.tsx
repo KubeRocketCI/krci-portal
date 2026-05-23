@@ -1,8 +1,9 @@
 import React from "react";
 import { Link } from "@tanstack/react-router";
-import { GitBranch } from "lucide-react";
+import { AlertCircle, GitBranch } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
 import { Badge } from "@/core/components/ui/badge";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { DataTable } from "@/core/components/Table";
 import { TableColumn } from "@/core/components/Table/types";
 import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
@@ -34,7 +35,8 @@ const useColumns = (
   namespace: string,
   sortedStagesCount: number,
   argoAppsByAppAndStage: Map<string, Map<string, Application>>,
-  branchByAppName: Map<string, CodebaseBranch>
+  branchByAppName: Map<string, CodebaseBranch>,
+  branchListError: Error | null
 ): TableColumn<Codebase>[] => {
   return React.useMemo(
     () => [
@@ -103,6 +105,16 @@ const useColumns = (
           render: ({ data }) => {
             const branch = branchByAppName.get(data.metadata.name);
             if (!branch) {
+              if (branchListError) {
+                return (
+                  <Tooltip title={`Failed to load branches: ${branchListError.message}`}>
+                    <span className="text-destructive inline-flex items-center gap-1 text-sm">
+                      <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                      unavailable
+                    </span>
+                  </Tooltip>
+                );
+              }
               return <span className="text-muted-foreground text-sm">—</span>;
             }
             const isDefault = branch.spec.branchName === data.spec.defaultBranch;
@@ -143,7 +155,7 @@ const useColumns = (
         },
       },
     ],
-    [clusterName, namespace, sortedStagesCount, argoAppsByAppAndStage, branchByAppName]
+    [clusterName, namespace, sortedStagesCount, argoAppsByAppAndStage, branchByAppName, branchListError]
   );
 };
 
@@ -176,15 +188,17 @@ export const PipelineApplications = () => {
     }
 
     const appBranches = buildInitialApplicationBranches(
-      cdPipeline.spec.applications,
-      cdPipeline.spec.inputDockerStreams
+      cdPipeline.spec.applications ?? [],
+      cdPipeline.spec.inputDockerStreams ?? []
     );
     for (const { appName, appBranch } of appBranches) {
       const branch = branchesByName.get(appBranch);
+      if (!branch) continue;
       // Validate ownership: prefix matching in buildInitialApplicationBranches can
       // misroute an orphan stream (from a deleted app) to a shorter-named sibling.
-      // Comparing spec.codebaseName to the app name rejects such misroutes.
-      if (branch && branch.spec.codebaseName === appName) {
+      // Comparing spec.codebaseName to the app name rejects such misroutes; if the
+      // field is absent (malformed/older CR) we fall back to trusting the prefix match.
+      if (!branch.spec.codebaseName || branch.spec.codebaseName === appName) {
         map.set(appName, branch);
       }
     }
@@ -222,7 +236,8 @@ export const PipelineApplications = () => {
     params.namespace,
     sortedStages.length,
     argoAppsByAppAndStage,
-    branchByAppName
+    branchByAppName,
+    codebaseBranchListWatch.error
   );
 
   const isLoading =
