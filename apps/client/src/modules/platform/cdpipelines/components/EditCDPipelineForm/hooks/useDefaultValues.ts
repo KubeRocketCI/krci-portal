@@ -1,7 +1,7 @@
 import React from "react";
 import { CDPipeline } from "@my-project/shared";
 import { EDIT_CDPIPELINE_FORM_NAMES } from "../constants";
-import { buildInitialApplicationBranches } from "../utils/buildInitialApplicationBranches";
+import { buildInitialApplicationBranches } from "@/modules/platform/cdpipelines/utils/buildInitialApplicationBranches";
 import type { EditCDPipelineFormValues } from "../types";
 
 export const useDefaultValues = (cdPipeline: CDPipeline | undefined) => {

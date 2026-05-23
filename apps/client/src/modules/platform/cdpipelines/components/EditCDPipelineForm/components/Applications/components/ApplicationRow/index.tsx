@@ -6,7 +6,7 @@ import { codebaseBranchLabels, sortCodebaseBranchesWithDefaultFirst } from "@my-
 import { X, Package, GitBranch, AlertCircle } from "lucide-react";
 import { buildBranchOptions } from "@/modules/platform/cdpipelines/utils/buildBranchOptions";
 import { resolveApplicationBranch } from "../../../../utils/resolveApplicationBranch";
-import { buildInitialApplicationBranches } from "../../../../utils/buildInitialApplicationBranches";
+import { buildInitialApplicationBranches } from "@/modules/platform/cdpipelines/utils/buildInitialApplicationBranches";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { Codebase } from "@my-project/shared";
 import { cn } from "@/core/utils/classname";

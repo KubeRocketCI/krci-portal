@@ -4,6 +4,7 @@ import { routeCDPipelineDetails } from "../route";
 import { useStageWatchList } from "@/k8s/api/groups/KRCI/Stage";
 import { useApplicationWatchList } from "@/k8s/api/groups/ArgoCD/Application";
 import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
+import { useCodebaseBranchWatchList } from "@/k8s/api/groups/KRCI/CodebaseBranch/hooks";
 import { useQuickLinkWatchURLs } from "@/k8s/api/groups/KRCI/QuickLink/hooks/useQuickLinksUrlListQuery";
 
 export const useQuickLinksUrlListWatch = () => {
@@ -39,6 +40,17 @@ export const useAppCodebaseListWatch = () => {
     labels: {
       [codebaseLabels.codebaseType]: codebaseType.application,
     },
+    namespace: params.namespace,
+  });
+};
+
+// Watches all CodebaseBranches in the namespace. A label selector can't OR over multiple
+// codebases (each app is a separate codebase), and N per-app watches would be costlier
+// than one namespace-scoped watch.
+export const useCodebaseBranchListWatch = () => {
+  const params = routeCDPipelineDetails.useParams();
+
+  return useCodebaseBranchWatchList({
     namespace: params.namespace,
   });
 };

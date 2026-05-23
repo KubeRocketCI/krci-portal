@@ -3,7 +3,7 @@ import { useStore } from "@tanstack/react-form";
 import { useEditCDPipelineForm } from "../providers/form/hooks";
 import { useEditCDPipelineData } from "../providers/data/hooks";
 import type { EditCDPipelineFormValues } from "../types";
-import { buildInitialApplicationBranches } from "../utils/buildInitialApplicationBranches";
+import { buildInitialApplicationBranches } from "@/modules/platform/cdpipelines/utils/buildInitialApplicationBranches";
 
 type ChangeType = "added" | "removed" | "modified";
 
