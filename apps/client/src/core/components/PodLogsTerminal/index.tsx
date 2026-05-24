@@ -349,6 +349,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
       isLoading={isLoading || !podReadyForLogs}
       error={getErrorMessage()}
       renderControls={renderControls}
+      fontSizeInline={false}
       loadingMessage={getLoadingMessage()}
       errorMessagePrefix="Error loading logs"
       emptyMessage="No logs available"
