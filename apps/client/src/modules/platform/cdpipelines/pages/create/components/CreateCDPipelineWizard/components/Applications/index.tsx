@@ -96,15 +96,11 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, index, o
         };
         form.setFieldValue(CREATE_CDPIPELINE_FORM_NAMES.ui_applicationsFieldArray.name, updatedFieldArray);
 
-        // Also update inputDockerStreams
-        const currentInputDockerStreams =
-          form.getFieldValue(CREATE_CDPIPELINE_FORM_NAMES.inputDockerStreams.name) || [];
-        if (!currentInputDockerStreams.includes(branchToSelect.metadata.name)) {
-          form.setFieldValue(CREATE_CDPIPELINE_FORM_NAMES.inputDockerStreams.name, [
-            ...currentInputDockerStreams,
-            branchToSelect.metadata.name,
-          ]);
-        }
+        // Write the auto-selected branch positionally so streams[i] tracks applications[i]
+        const streams = structuredClone(form.getFieldValue(CREATE_CDPIPELINE_FORM_NAMES.inputDockerStreams.name) ?? []);
+        while (streams.length <= index) streams.push("");
+        streams[index] = branchToSelect.metadata.name;
+        form.setFieldValue(CREATE_CDPIPELINE_FORM_NAMES.inputDockerStreams.name, streams);
 
         hasInitializedRef.current = true;
       }
@@ -234,16 +230,6 @@ export const Applications: React.FC = () => {
     (selectedApps: string[]) => {
       const currentFieldArray = fieldArrayValue || [];
 
-      // Remove branches from inputDockerStreams for apps that were deselected
-      const removedApps = currentFieldArray.filter((app) => !selectedApps.includes(app.appName));
-      if (removedApps.length > 0) {
-        const currentStreams =
-          (form.getFieldValue(CREATE_CDPIPELINE_FORM_NAMES.inputDockerStreams.name) as string[]) || [];
-        const branchesToRemove = removedApps.map((app) => app.appBranch).filter(Boolean);
-        const newStreams = currentStreams.filter((stream) => !branchesToRemove.includes(stream));
-        form.setFieldValue(CREATE_CDPIPELINE_FORM_NAMES.inputDockerStreams.name, newStreams);
-      }
-
       const newFieldArray = selectedApps.map((appName) => {
         const existing = currentFieldArray.find((app) => app.appName === appName);
         if (existing) {
@@ -253,6 +239,12 @@ export const Applications: React.FC = () => {
       });
 
       form.setFieldValue(CREATE_CDPIPELINE_FORM_NAMES.ui_applicationsFieldArray.name, newFieldArray);
+
+      // Rebuild inputDockerStreams from field array to guarantee index alignment
+      form.setFieldValue(
+        CREATE_CDPIPELINE_FORM_NAMES.inputDockerStreams.name,
+        newFieldArray.map((item) => item.appBranch)
+      );
 
       const applicationsToPromoteAllFieldValue =
         form.getFieldValue(CREATE_CDPIPELINE_FORM_NAMES.ui_applicationsToPromoteAll.name) || false;
