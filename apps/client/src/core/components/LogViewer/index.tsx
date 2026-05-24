@@ -14,8 +14,18 @@ export interface LogViewerProps {
   isLoading?: boolean;
   /** Error message to display */
   error?: string;
-  /** Custom controls to render above the log viewer */
+  /**
+   * Custom controls to render above the log viewer.
+   * In inline mode (default) the node shares a row with the font-size selector
+   * in a `flex-1 min-w-0` slot. Set `fontSizeInline={false}` to give the caller
+   * controls their own full-width row.
+   */
   renderControls?: () => React.ReactNode;
+  /**
+   * When true (default) the font-size selector shares a row with `renderControls`.
+   * Set false for callers whose controls need the full row width.
+   */
+  fontSizeInline?: boolean;
   /** Loading message */
   loadingMessage?: string;
   /** Error message prefix */
@@ -169,6 +179,7 @@ export const LogViewer = forwardRef<LogViewerRef, LogViewerProps>(
       isLoading = false,
       error,
       renderControls,
+      fontSizeInline = true,
       loadingMessage = "Loading logs...",
       errorMessagePrefix = "Failed to load logs",
       emptyMessage = "No logs available",
@@ -206,38 +217,47 @@ export const LogViewer = forwardRef<LogViewerRef, LogViewerProps>(
     const hasContent = streaming ? hasStreamContent : !!content;
     const showOverlay = isLoading || !!error || !hasContent;
 
+    const fontSizeSelector = (
+      <div className="flex flex-shrink-0 items-center gap-2">
+        <span className="text-muted-foreground text-xs">Font size</span>
+        <Select value={String(fontSize)} onValueChange={(v: string) => setFontSize(Number(v))}>
+          <SelectTrigger className="h-8 w-20 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {[8, 9, 10, 11, 12, 13, 14].map((size) => (
+              <SelectItem key={size} value={String(size)} className="text-xs">
+                {size}px
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    );
+
     return (
       <>
         <style>{logViewerStyles}</style>
 
-        <div className="flex h-full min-h-0 flex-col gap-4">
-          {/* Custom Controls */}
-          {renderControls && <div>{renderControls()}</div>}
+        <div className="flex h-full min-h-0 flex-col gap-4 pt-1">
+          {(hasContent || renderControls) &&
+            (fontSizeInline ? (
+              <div className="flex items-end gap-3">
+                {fontSizeSelector}
+                {renderControls && <div className="min-w-0 flex-1">{renderControls()}</div>}
+              </div>
+            ) : (
+              <>
+                {renderControls && <div>{renderControls()}</div>}
+                <div className="flex justify-end">{fontSizeSelector}</div>
+              </>
+            ))}
 
           {/* Log Viewer Card */}
           <Card
             className="relative flex min-h-0 min-h-[45svh] flex-1 flex-col overflow-hidden"
             style={{ "--log-font-size": `${fontSize}px` } as React.CSSProperties}
           >
-            {/* Font size toolbar */}
-            <div className="border-border flex items-center justify-end border-b px-2 py-1">
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground text-xs">Font size</span>
-                <Select value={String(fontSize)} onValueChange={(v) => setFontSize(Number(v))}>
-                  <SelectTrigger className="h-6 w-20 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[8, 9, 10, 11, 12, 13, 14].map((size) => (
-                      <SelectItem key={size} value={String(size)} className="text-xs">
-                        {size}px
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
             {/* Overlay for loading/error/empty states */}
             {showOverlay && (
               <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center">
