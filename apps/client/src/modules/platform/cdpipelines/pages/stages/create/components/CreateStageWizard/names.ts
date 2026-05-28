@@ -25,11 +25,15 @@ const deployNamespaceSchema = z
       "Namespace must contain only lowercase letters, numbers, and dashes. It cannot start or end with a dash, and cannot have whitespaces",
   });
 
+// Single source of truth for the step name rule. Reused by the inline quality
+// gate form so it can't accept a value this schema would reject on submit.
+export const stepNameSchema = z.string().min(2, "Step name must be at least 2 characters");
+
 const qualityGateSchema = z
   .object({
     id: z.string(),
     qualityGateType: z.nativeEnum(stageQualityGateType),
-    stepName: z.string(),
+    stepName: stepNameSchema,
     autotestName: z.string().nullable(),
     branchName: z.string().nullable(),
   })
@@ -55,15 +59,6 @@ const qualityGateSchema = z
     {
       message: "Branch is required for autotest quality gates",
       path: ["branchName"],
-    }
-  )
-  .refine(
-    (data) => {
-      return !!(data.stepName && data.stepName.trim().length > 0);
-    },
-    {
-      message: "Step name is required",
-      path: ["stepName"],
     }
   );
 
