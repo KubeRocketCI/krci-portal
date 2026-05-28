@@ -58,7 +58,9 @@ const stageStatusSchema = z.object({
   last_time_updated: z.string().datetime(),
   result: stageResultEnum,
   shouldBeHandled: z.boolean().default(false).optional(),
-  status: stageStatusEnum,
+  // The operator types status.status as a free-form string (stageStatusEnum
+  // lists only the values the UI maps); keep this lenient to match the CRD.
+  status: z.string(),
   username: z.string(),
   value: z.string(),
 });

@@ -1,5 +1,4 @@
 import z, { ZodError } from "zod";
-import { quickLinkSchema } from "../../schema.js";
 import { QuickLink } from "../../types.js";
 
 const editQuickLinkInputSchema = z.object({
@@ -15,23 +14,19 @@ export const editQuickLink = (quickLink: QuickLink, input: z.infer<typeof editQu
     throw new ZodError(parsedInput.error.errors);
   }
 
-  const updatedQuickLink: QuickLink = {
+  // Preserve the original object (including server-managed fields) and only
+  // overwrite editable spec fields. The full object is intentionally NOT
+  // re-validated against quickLinkSchema: a live resource can diverge from the
+  // strict schema and would otherwise fail validation here.
+  return {
     ...quickLink,
     spec: {
       ...quickLink.spec,
-      url: input.url,
-      visible: input.visible,
-      icon: input.icon,
+      url: parsedInput.data.url,
+      visible: parsedInput.data.visible,
+      icon: parsedInput.data.icon,
     },
   };
-
-  const parsedUpdatedQuickLink = quickLinkSchema.safeParse(updatedQuickLink);
-
-  if (!parsedUpdatedQuickLink.success) {
-    throw new ZodError(parsedUpdatedQuickLink.error.errors);
-  }
-
-  return parsedUpdatedQuickLink.data;
 };
 
 const editQuickLinkURLInputSchema = z.object({
@@ -48,19 +43,14 @@ export const editQuickLinkURL = (
     throw new ZodError(parsedInput.error.errors);
   }
 
-  const updatedQuickLink: QuickLink = {
+  // Preserve the original object and only overwrite the editable url. The full
+  // object is intentionally NOT re-validated against quickLinkSchema: a live
+  // resource can diverge from the strict schema and would otherwise fail here.
+  return {
     ...quickLink,
     spec: {
       ...quickLink.spec,
-      url: input.url,
+      url: parsedInput.data.url,
     },
   };
-
-  const parsedUpdatedQuickLink = quickLinkSchema.safeParse(updatedQuickLink);
-
-  if (!parsedUpdatedQuickLink.success) {
-    throw new ZodError(parsedUpdatedQuickLink.error.errors);
-  }
-
-  return parsedUpdatedQuickLink.data;
 };

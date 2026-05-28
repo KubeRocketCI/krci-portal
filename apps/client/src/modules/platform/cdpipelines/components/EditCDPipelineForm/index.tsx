@@ -26,9 +26,13 @@ export const EditCDPipelineForm: React.FC<EditCDPipelineFormProps> = ({ cdPipeli
   const { triggerEditCDPipeline, mutations } = useCDPipelineCRUD();
   const { cdPipelineEditMutation } = mutations;
 
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
+
   const handleSubmit = React.useCallback(
     async (values: EditCDPipelineFormValues) => {
       if (!cdPipeline) return;
+
+      setSubmitError(null);
 
       const updatedCDPipeline = editCDPipelineObject(cdPipeline, {
         description: values.description,
@@ -45,8 +49,10 @@ export const EditCDPipelineForm: React.FC<EditCDPipelineFormProps> = ({ cdPipeli
     [cdPipeline, triggerEditCDPipeline, onClose]
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onSubmitError = React.useCallback((_error: unknown) => {}, []);
+  const onSubmitError = React.useCallback((error: unknown) => {
+    console.error("Failed to prepare deployment flow update:", error);
+    setSubmitError("Failed to prepare the deployment flow update. Please review the form values and try again.");
+  }, []);
 
   const requestError = cdPipelineEditMutation.error as RequestError | null;
   const isSubmitting = cdPipelineEditMutation.isPending;
@@ -66,6 +72,7 @@ export const EditCDPipelineForm: React.FC<EditCDPipelineFormProps> = ({ cdPipeli
           cdPipeline={cdPipeline}
           onClose={onClose}
           requestError={requestError}
+          submitError={submitError}
           isSubmitting={isSubmitting}
         />
       </EditCDPipelineFormProvider>
@@ -77,10 +84,17 @@ interface WizardContentProps {
   cdPipeline: CDPipeline;
   onClose: () => void;
   requestError: RequestError | null;
+  submitError: string | null;
   isSubmitting: boolean;
 }
 
-const WizardContent: React.FC<WizardContentProps> = ({ cdPipeline, onClose, requestError, isSubmitting }) => {
+const WizardContent: React.FC<WizardContentProps> = ({
+  cdPipeline,
+  onClose,
+  requestError,
+  submitError,
+  isSubmitting,
+}) => {
   const { currentStepIdx, goToNextStep, goToPreviousStep } = useEditWizardStore(
     useShallow((state) => ({
       currentStepIdx: state.currentStepIdx,
@@ -107,9 +121,9 @@ const WizardContent: React.FC<WizardContentProps> = ({ cdPipeline, onClose, requ
         <div className="flex min-h-0 flex-1 gap-4">
           <div className="min-h-0 flex-1 overflow-y-auto p-0.5">
             <div className="flex flex-col gap-4">
-              {requestError && (
+              {(submitError || requestError) && (
                 <Alert variant="destructive" title="Failed to update deployment flow">
-                  {getK8sErrorMessage(requestError)}
+                  {submitError ?? (requestError ? getK8sErrorMessage(requestError) : "")}
                 </Alert>
               )}
               {isEditStep && <FormContent />}

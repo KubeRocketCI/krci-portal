@@ -44,7 +44,8 @@ const codebaseSpecSchema = z.object({
     .object({
       url: z.string(),
     })
-    .nullable(),
+    .nullable()
+    .optional(),
   strategy: codebaseCreationStrategyEnum,
   testReportFramework: z.string().nullable().optional(),
   ticketNamePattern: z.string().nullable().optional(),
@@ -66,7 +67,9 @@ const codebaseStatusSchema = z.object({
   gitWebUrl: z.string().optional(),
   lastTimeUpdated: z.string().datetime(),
   result: codebaseResultEnum,
-  status: codebaseStatusEnum,
+  // The operator types status.status as a free-form string (codebaseStatusEnum
+  // lists only the values the UI maps); keep this lenient to match the CRD.
+  status: z.string(),
   username: z.string(),
   value: z.string(),
   webHookID: z.number().int().optional(),

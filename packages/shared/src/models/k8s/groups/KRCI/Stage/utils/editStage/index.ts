@@ -1,6 +1,6 @@
 import { ZodError } from "zod";
 import { Stage, EditStageInput } from "../../types.js";
-import { editStageInputSchema, stageSchema } from "../../schema.js";
+import { editStageInputSchema } from "../../schema.js";
 
 /**
  * Updates a Stage resource with editable fields
@@ -13,24 +13,18 @@ export const editStageObject = (originalStage: Stage, input: EditStageInput): St
     throw new ZodError(parsedInput.error.errors);
   }
 
-  // Create updated Stage with only editable fields changed
-  const updatedStage: Stage = {
+  // Preserve the original object (including server-managed fields) and only
+  // overwrite editable spec fields. The full object is intentionally NOT
+  // re-validated against stageSchema: a live resource can diverge from the
+  // strict schema and would otherwise fail validation here.
+  return {
     ...originalStage,
     spec: {
       ...originalStage.spec,
-      triggerType: input.triggerType,
-      triggerTemplate: input.triggerTemplate,
-      cleanTemplate: input.cleanTemplate,
-      qualityGates: input.qualityGates,
+      triggerType: parsedInput.data.triggerType,
+      triggerTemplate: parsedInput.data.triggerTemplate,
+      cleanTemplate: parsedInput.data.cleanTemplate,
+      qualityGates: parsedInput.data.qualityGates,
     },
   };
-
-  // Validate the updated Stage
-  const parsedStage = stageSchema.safeParse(updatedStage);
-
-  if (!parsedStage.success) {
-    throw new ZodError(parsedStage.error.errors);
-  }
-
-  return parsedStage.data;
 };

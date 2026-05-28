@@ -26,6 +26,8 @@ export const EditCodebaseBranchForm: React.FC<EditCodebaseBranchFormProps> = ({
   const { triggerEditCodebaseBranch, mutations } = useCodebaseBranchCRUD();
   const { codebaseBranchEditMutation } = mutations;
 
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
+
   const defaultValues = React.useMemo(
     () => ({
       buildPipeline: codebaseBranch?.spec?.pipelines?.build || "",
@@ -46,6 +48,8 @@ export const EditCodebaseBranchForm: React.FC<EditCodebaseBranchFormProps> = ({
 
   const handleSubmit = React.useCallback(
     async (values: EditCodebaseBranchFormValues) => {
+      setSubmitError(null);
+
       const newCodebaseBranch = editCodebaseBranchObject(codebaseBranch, {
         pipelines: {
           build: values.buildPipeline,
@@ -62,8 +66,10 @@ export const EditCodebaseBranchForm: React.FC<EditCodebaseBranchFormProps> = ({
     [codebaseBranch, onClose, triggerEditCodebaseBranch]
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleSubmitError = React.useCallback((_error: unknown) => {}, []);
+  const handleSubmitError = React.useCallback((error: unknown) => {
+    console.error("Failed to prepare codebase branch update:", error);
+    setSubmitError("Failed to prepare the codebase branch update. Please review the form values and try again.");
+  }, []);
 
   const requestError = codebaseBranchEditMutation.error as RequestError | null;
 
@@ -85,9 +91,9 @@ export const EditCodebaseBranchForm: React.FC<EditCodebaseBranchFormProps> = ({
         <div className="flex min-h-0 flex-1 gap-4">
           <div className="min-h-0 flex-1 overflow-y-auto p-0.5">
             <div className="flex flex-col gap-4">
-              {requestError && (
+              {(submitError || requestError) && (
                 <Alert variant="destructive" title="Failed to update codebase branch">
-                  {getK8sErrorMessage(requestError)}
+                  {submitError ?? (requestError ? getK8sErrorMessage(requestError) : "")}
                 </Alert>
               )}
               <Form pipelines={pipelines} />

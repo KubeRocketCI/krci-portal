@@ -22,9 +22,13 @@ export const EditStageForm: React.FC<EditStageFormProps> = ({ stage, onClose }) 
   const { triggerEditStage, mutations } = useStageCRUD();
   const { stageEditMutation } = mutations;
 
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
+
   const handleSubmit = React.useCallback(
     async (values: EditStageFormValues) => {
       if (!stage) return;
+
+      setSubmitError(null);
 
       // Remove the 'id' field from qualityGates as it's only used for form state
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -45,8 +49,10 @@ export const EditStageForm: React.FC<EditStageFormProps> = ({ stage, onClose }) 
     [stage, triggerEditStage, onClose]
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onSubmitError = React.useCallback((_error: unknown) => {}, []);
+  const onSubmitError = React.useCallback((error: unknown) => {
+    console.error("Failed to prepare environment update:", error);
+    setSubmitError("Failed to prepare the environment update. Please review the form values and try again.");
+  }, []);
 
   const requestError = stageEditMutation.error as RequestError | null;
 
@@ -65,9 +71,9 @@ export const EditStageForm: React.FC<EditStageFormProps> = ({ stage, onClose }) 
           <div className="flex min-h-0 flex-1 gap-4">
             <div className="min-h-0 flex-1 overflow-y-auto p-0.5">
               <div className="flex flex-col gap-4">
-                {requestError && (
+                {(submitError || requestError) && (
                   <Alert variant="destructive" title="Failed to update environment">
-                    {getK8sErrorMessage(requestError)}
+                    {submitError ?? (requestError ? getK8sErrorMessage(requestError) : "")}
                   </Alert>
                 )}
                 <FormContent />

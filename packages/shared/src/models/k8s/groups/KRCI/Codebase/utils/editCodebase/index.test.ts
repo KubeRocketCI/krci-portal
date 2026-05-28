@@ -98,4 +98,41 @@ describe("editCodebaseObject", () => {
       })
     ).toThrow(ZodError);
   });
+
+  it("should not throw for a live codebase whose spec/status diverge from the strict schema", () => {
+    // Mirrors a real imported codebase: the operator omits `spec.repository`
+    // entirely (the schema marks it nullable-but-required) and attaches a full
+    // status subresource. Editing must still succeed and all server-managed
+    // fields must be preserved untouched.
+    const { repository: _omitted, ...specWithoutRepository } = mockCodebase.spec;
+    const liveCodebase = {
+      ...mockCodebase,
+      spec: specWithoutRepository,
+      status: {
+        action: "setup_deployment_templates",
+        available: true,
+        failureCount: 0,
+        git: "templates_pushed",
+        lastTimeUpdated: "2024-05-28T10:00:00Z",
+        result: "success",
+        status: "created",
+        username: "system",
+        value: "active",
+        webHookRef: "12345",
+      },
+    };
+
+    const input = {
+      jiraServer: null,
+      commitMessagePattern: "^(EPMCDME-\\d+:.*)$",
+      ticketNamePattern: null,
+      jiraIssueMetadataPayload: null,
+    };
+
+    const result = editCodebaseObject(liveCodebase as any, input);
+
+    expect(result.spec.commitMessagePattern).toBe("^(EPMCDME-\\d+:.*)$");
+    expect("repository" in result.spec).toBe(false);
+    expect((result as any).status).toEqual(liveCodebase.status);
+  });
 });

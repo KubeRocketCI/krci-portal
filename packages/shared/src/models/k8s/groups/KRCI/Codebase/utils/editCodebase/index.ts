@@ -1,6 +1,6 @@
 import { ZodError } from "zod";
 import { Codebase, EditCodebaseInput } from "../../types.js";
-import { editCodebaseInputSchema, codebaseSchema } from "../../schema.js";
+import { editCodebaseInputSchema } from "../../schema.js";
 
 /**
  * Updates a Codebase resource with editable fields
@@ -13,24 +13,18 @@ export const editCodebaseObject = (originalCodebase: Codebase, input: EditCodeba
     throw new ZodError(parsedInput.error.errors);
   }
 
-  // Create updated codebase with only editable fields changed
-  const updatedCodebase: Codebase = {
+  // Preserve the original object (including server-managed fields like status)
+  // and only overwrite the editable spec fields. The full object is intentionally
+  // NOT re-validated against codebaseSchema: a live codebase's status may be
+  // partially populated and would otherwise fail strict validation.
+  return {
     ...originalCodebase,
     spec: {
       ...originalCodebase.spec,
-      jiraServer: input.jiraServer,
-      commitMessagePattern: input.commitMessagePattern,
-      ticketNamePattern: input.ticketNamePattern,
-      jiraIssueMetadataPayload: input.jiraIssueMetadataPayload,
+      jiraServer: parsedInput.data.jiraServer,
+      commitMessagePattern: parsedInput.data.commitMessagePattern,
+      ticketNamePattern: parsedInput.data.ticketNamePattern,
+      jiraIssueMetadataPayload: parsedInput.data.jiraIssueMetadataPayload,
     },
   };
-
-  // Validate the updated codebase
-  const parsedCodebase = codebaseSchema.safeParse(updatedCodebase);
-
-  if (!parsedCodebase.success) {
-    throw new ZodError(parsedCodebase.error.errors);
-  }
-
-  return parsedCodebase.data;
 };

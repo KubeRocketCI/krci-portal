@@ -30,7 +30,9 @@ const codebaseBranchStatusSchema = z.object({
   lastSuccessfulBuild: z.string().nullable().optional(),
   lastTimeUpdated: z.string().datetime(),
   result: codebaseBranchResultEnum,
-  status: codebaseBranchStatusEnum,
+  // The operator types status.status as a free-form string (codebaseBranchStatusEnum
+  // lists only the values the UI maps); keep this lenient to match the CRD.
+  status: z.string(),
   username: z.string(),
   value: z.string(),
   versionHistory: z.array(z.string()).nullable().optional(),
