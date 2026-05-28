@@ -1,6 +1,6 @@
 import { ZodError } from "zod";
 import { CDPipeline, EditCDPipelineInput } from "../../types.js";
-import { editCDPipelineInputSchema, cdPipelineSchema } from "../../schema.js";
+import { editCDPipelineInputSchema } from "../../schema.js";
 
 /**
  * Updates a CDPipeline resource with editable fields
@@ -13,24 +13,18 @@ export const editCDPipelineObject = (originalCDPipeline: CDPipeline, input: Edit
     throw new ZodError(parsedInput.error.errors);
   }
 
-  // Create updated CDPipeline with only editable fields changed
-  const updatedCDPipeline: CDPipeline = {
+  // Preserve the original object (including server-managed fields) and only
+  // overwrite editable spec fields. The full object is intentionally NOT
+  // re-validated against cdPipelineSchema: a live resource can diverge from the
+  // strict schema and would otherwise fail validation here.
+  return {
     ...originalCDPipeline,
     spec: {
       ...originalCDPipeline.spec,
-      description: input.description,
-      applications: input.applications,
-      inputDockerStreams: input.inputDockerStreams,
-      applicationsToPromote: input.applicationsToPromote,
+      description: parsedInput.data.description,
+      applications: parsedInput.data.applications,
+      inputDockerStreams: parsedInput.data.inputDockerStreams,
+      applicationsToPromote: parsedInput.data.applicationsToPromote,
     },
   };
-
-  // Validate the updated CDPipeline
-  const parsedCDPipeline = cdPipelineSchema.safeParse(updatedCDPipeline);
-
-  if (!parsedCDPipeline.success) {
-    throw new ZodError(parsedCDPipeline.error.errors);
-  }
-
-  return parsedCDPipeline.data;
 };

@@ -2,7 +2,6 @@ import { ZodError } from "zod";
 import { CodebaseBranch } from "../../types.js";
 import { editDefaultCodebaseBranchInputSchema } from "./schema.js";
 import { EditDefaultCodebaseBranchInput } from "./types.js";
-import { codebaseBranchSchema } from "../../schema.js";
 
 export const editDefaultCodebaseBranchObject = (
   defaultBranch: CodebaseBranch,
@@ -14,14 +13,11 @@ export const editDefaultCodebaseBranchObject = (
     throw new ZodError(parsedInput.error.errors);
   }
 
+  // Clone and mutate only the editable field. The full object is intentionally
+  // NOT re-validated against codebaseBranchSchema: a live resource can diverge
+  // from the strict schema and would otherwise fail validation here.
   const draft = structuredClone(defaultBranch);
-  draft.spec.version = input.version;
+  draft.spec.version = parsedInput.data.version;
 
-  const parsedDraft = codebaseBranchSchema.safeParse(draft);
-
-  if (!parsedDraft.success) {
-    throw new ZodError(parsedDraft.error.errors);
-  }
-
-  return parsedDraft.data;
+  return draft;
 };

@@ -6,7 +6,7 @@ const qualityGateSchema = z
   .object({
     id: z.string(),
     qualityGateType: z.nativeEnum(stageQualityGateType),
-    stepName: z.string().min(1, "Step name is required"),
+    stepName: z.string().min(2, "Step name must be at least 2 characters"),
     autotestName: z.string().nullable(),
     branchName: z.string().nullable(),
   })

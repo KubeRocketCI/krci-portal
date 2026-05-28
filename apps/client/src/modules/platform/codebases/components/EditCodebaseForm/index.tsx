@@ -24,9 +24,13 @@ export const EditCodebaseForm: React.FC<EditCodebaseFormProps> = ({ codebase, on
   const { triggerPatchCodebase, mutations } = useCodebaseCRUD();
   const { codebaseEditMutation } = mutations;
 
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
+
   const handleSubmit = React.useCallback(
     async (values: EditCodebaseFormValues) => {
       if (!codebase) return;
+
+      setSubmitError(null);
 
       const hasJiraServerIntegration = values[EDIT_CODEBASE_FORM_NAMES.hasJiraServerIntegration];
       const commitMessagePattern = values[EDIT_CODEBASE_FORM_NAMES.commitMessagePattern];
@@ -51,8 +55,10 @@ export const EditCodebaseForm: React.FC<EditCodebaseFormProps> = ({ codebase, on
     [codebase, triggerPatchCodebase, onClose]
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onSubmitError = React.useCallback((_error: unknown) => {}, []);
+  const onSubmitError = React.useCallback((error: unknown) => {
+    console.error("Failed to prepare codebase update:", error);
+    setSubmitError("Failed to prepare the codebase update. Please review the form values and try again.");
+  }, []);
 
   const requestError = codebaseEditMutation.error as RequestError | null;
 
@@ -70,9 +76,9 @@ export const EditCodebaseForm: React.FC<EditCodebaseFormProps> = ({ codebase, on
         <div className="flex min-h-0 flex-1 gap-4">
           <div className="min-h-0 flex-1 overflow-y-auto p-0.5">
             <div className="flex flex-col gap-4">
-              {requestError && (
+              {(submitError || requestError) && (
                 <Alert variant="destructive" title="Failed to update codebase">
-                  {getK8sErrorMessage(requestError)}
+                  {submitError ?? (requestError ? getK8sErrorMessage(requestError) : "")}
                 </Alert>
               )}
               <FormContent />
