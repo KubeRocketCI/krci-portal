@@ -1,6 +1,5 @@
 import React from "react";
 import { useStore } from "@tanstack/react-form";
-import { z } from "zod";
 import { Button } from "@/core/components/ui/button";
 import { Card } from "@/core/components/ui/card";
 import { Shield, X, Check, CheckCircle, TestTube2 } from "lucide-react";
@@ -8,6 +7,7 @@ import { stageQualityGateType, codebaseBranchLabels, codebaseLabels, codebaseTyp
 import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
 import { useCodebaseBranchWatchList } from "@/k8s/api/groups/KRCI/CodebaseBranch";
 import { useAppForm } from "@/core/components/form";
+import { stepNameSchema } from "../../names";
 
 export type QualityGateFormValues = {
   qualityGateType: "manual" | "autotests";
@@ -70,6 +70,22 @@ export const QualityGateInlineForm: React.FC<QualityGateInlineFormProps> = ({
       return undefined;
     },
     [existingQualityGates, isEditing, editingGateId]
+  );
+
+  // Validate against the shared stepNameSchema so the inline form can't accept a
+  // value the main create form would silently reject on submit.
+  const validateStepName = React.useCallback(
+    (value: string) => {
+      if (!value || value.trim().length === 0) {
+        return "Step name is required";
+      }
+      const result = stepNameSchema.safeParse(value);
+      if (!result.success) {
+        return result.error.errors[0]?.message;
+      }
+      return validateStepNameUnique(value);
+    },
+    [validateStepNameUnique]
   );
 
   // Fetch autotests
@@ -236,28 +252,9 @@ export const QualityGateInlineForm: React.FC<QualityGateInlineFormProps> = ({
             <form.AppField
               name="stepName"
               validators={{
-                onChange: ({ value }: { value: string }) => {
-                  // Check for required
-                  if (!value || value.trim().length === 0) {
-                    return "Step name is required";
-                  }
-                  // Check for duplicates
-                  return validateStepNameUnique(value);
-                },
-                onSubmit: ({ value }: { value: string }) => {
-                  // Only validate if current type is autotests
-                  if (qualityGateType !== stageQualityGateType.autotests) {
-                    return undefined;
-                  }
-
-                  const result = z.string().min(1, "Step name is required").safeParse(value);
-                  if (!result.success) {
-                    return "Step name is required";
-                  }
-
-                  // Also check for duplicates on submit
-                  return validateStepNameUnique(value);
-                },
+                onChange: ({ value }: { value: string }) => validateStepName(value),
+                onSubmit: ({ value }: { value: string }) =>
+                  qualityGateType === stageQualityGateType.autotests ? validateStepName(value) : undefined,
               }}
             >
               {(field) => (
@@ -276,28 +273,9 @@ export const QualityGateInlineForm: React.FC<QualityGateInlineFormProps> = ({
           <form.AppField
             name="stepName"
             validators={{
-              onChange: ({ value }: { value: string }) => {
-                // Check for required
-                if (!value || value.trim().length === 0) {
-                  return "Step name is required";
-                }
-                // Check for duplicates
-                return validateStepNameUnique(value);
-              },
-              onSubmit: ({ value }: { value: string }) => {
-                // Only validate if current type is manual
-                if (qualityGateType !== stageQualityGateType.manual) {
-                  return undefined;
-                }
-
-                const result = z.string().min(1, "Step name is required").safeParse(value);
-                if (!result.success) {
-                  return "Step name is required";
-                }
-
-                // Also check for duplicates on submit
-                return validateStepNameUnique(value);
-              },
+              onChange: ({ value }: { value: string }) => validateStepName(value),
+              onSubmit: ({ value }: { value: string }) =>
+                qualityGateType === stageQualityGateType.manual ? validateStepName(value) : undefined,
             }}
           >
             {(field) => <field.FormTextField label="Step Name" placeholder="e.g., approve" />}

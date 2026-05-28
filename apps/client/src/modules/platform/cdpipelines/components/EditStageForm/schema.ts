@@ -2,11 +2,15 @@ import z from "zod";
 import { EDIT_STAGE_FORM_NAMES } from "./constants";
 import { stageQualityGateType } from "@my-project/shared";
 
+// Single source of truth for the step name rule. Reused by the inline quality
+// gate form so it can't accept a value this schema would reject on submit.
+export const stepNameSchema = z.string().min(2, "Step name must be at least 2 characters");
+
 const qualityGateSchema = z
   .object({
     id: z.string(),
     qualityGateType: z.nativeEnum(stageQualityGateType),
-    stepName: z.string().min(2, "Step name must be at least 2 characters"),
+    stepName: stepNameSchema,
     autotestName: z.string().nullable(),
     branchName: z.string().nullable(),
   })
