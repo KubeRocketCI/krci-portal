@@ -1,10 +1,11 @@
 import { createRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { routeK8sMode } from "@/core/router/routes";
+import { PATH_K8S_EVENTS_FULL } from "@/modules/k8s/constants/paths";
 
 export const PATH_K8S_EVENTS = "events" as const;
-export const PATH_K8S_EVENTS_FULL = "/c/$clusterName/k8s/events" as const;
-export const ROUTE_ID_K8S_EVENTS = "/_layout/c/$clusterName/k8s/events" as const;
+export { PATH_K8S_EVENTS_FULL };
+export const ROUTE_ID_K8S_EVENTS = `/_layout${PATH_K8S_EVENTS_FULL}` as const;
 
 const search = z.object({
   namespace: z.string().optional(),

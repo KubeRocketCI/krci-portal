@@ -19,6 +19,7 @@ import { rolesDescriptor } from "./descriptors/roles";
 import { roleBindingsDescriptor } from "./descriptors/role-bindings";
 import { clusterRolesDescriptor } from "./descriptors/cluster-roles";
 import { clusterRoleBindingsDescriptor } from "./descriptors/cluster-role-bindings";
+import { crdsDescriptor } from "./descriptors/crds";
 
 export const resourceRegistry: ResourceRegistry = {
   // Workloads — pods first to preserve sidebar order
@@ -47,6 +48,6 @@ export const resourceRegistry: ResourceRegistry = {
   rolebindings: roleBindingsDescriptor,
   clusterroles: clusterRolesDescriptor,
   clusterrolebindings: clusterRoleBindingsDescriptor,
+  // Custom Resources
+  customresourcedefinitions: crdsDescriptor,
 } as const;
-
-export type KindKey = keyof typeof resourceRegistry;

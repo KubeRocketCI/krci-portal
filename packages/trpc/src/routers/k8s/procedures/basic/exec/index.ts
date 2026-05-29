@@ -1,11 +1,10 @@
 import { protectedProcedure } from "../../../../../procedures/protected/index.js";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors/index.js";
-import { handleK8sError } from "../../../utils/handleK8sError/index.js";
+import { handleK8sError, rethrowOrHandleK8sError } from "../../../utils/handleK8sError/index.js";
 import * as k8s from "@kubernetes/client-node";
-import { K8sClient } from "../../../../../clients/k8s/index.js";
 import { createEventQueue, yieldEvents } from "../../../utils/createEventQueue/index.js";
+import { getInitializedK8sClient } from "../../../utils/getInitializedK8sClient/index.js";
 import { execSessionManager } from "./sessionManager.js";
 import { randomUUID } from "crypto";
 
@@ -25,11 +24,7 @@ export const k8sPodExecProcedure = protectedProcedure
   )
   .mutation(async ({ input, ctx }) => {
     try {
-      const k8sClient = new K8sClient(ctx.session);
-
-      if (!k8sClient.KubeConfig) {
-        throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-      }
+      const k8sClient = getInitializedK8sClient(ctx);
 
       const { namespace, podName, container, command, stdin, stdout, stderr, tty } = input;
 
@@ -56,7 +51,7 @@ export const k8sPodExecProcedure = protectedProcedure
           .catch(reject);
       });
     } catch (error) {
-      throw handleK8sError(error);
+      throw rethrowOrHandleK8sError(error);
     }
   });
 
@@ -75,11 +70,7 @@ export const k8sPodAttachProcedure = protectedProcedure
   )
   .mutation(async ({ input, ctx }) => {
     try {
-      const k8sClient = new K8sClient(ctx.session);
-
-      if (!k8sClient.KubeConfig) {
-        throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-      }
+      const k8sClient = getInitializedK8sClient(ctx);
 
       const { namespace, podName, container, stdin, stdout, stderr, tty } = input;
 
@@ -106,7 +97,7 @@ export const k8sPodAttachProcedure = protectedProcedure
           .catch(reject);
       });
     } catch (error) {
-      throw handleK8sError(error);
+      throw rethrowOrHandleK8sError(error);
     }
   });
 
@@ -123,11 +114,7 @@ export const k8sWatchPodExecProcedure = protectedProcedure
     })
   )
   .subscription(async function* ({ input, ctx, signal }) {
-    const k8sClient = new K8sClient(ctx.session);
-
-    if (!k8sClient.KubeConfig) {
-      throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-    }
+    const k8sClient = getInitializedK8sClient(ctx);
 
     const { namespace, podName, container, command, tty } = input;
     const sessionId = randomUUID();
@@ -212,11 +199,7 @@ export const k8sWatchPodAttachProcedure = protectedProcedure
     })
   )
   .subscription(async function* ({ input, ctx, signal }) {
-    const k8sClient = new K8sClient(ctx.session);
-
-    if (!k8sClient.KubeConfig) {
-      throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-    }
+    const k8sClient = getInitializedK8sClient(ctx);
 
     const { namespace, podName, container, tty } = input;
     const sessionId = randomUUID();

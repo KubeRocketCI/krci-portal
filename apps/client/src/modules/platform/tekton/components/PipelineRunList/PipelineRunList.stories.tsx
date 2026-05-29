@@ -188,6 +188,7 @@ const pipelineRunListDecorator = withAppProviders({
     const permissionsCacheKey = getK8sItemPermissionsQueryCacheKey(
       STORYBOOK_CLUSTER_NAME,
       STORYBOOK_NAMESPACE,
+      k8sPipelineRunConfig.group,
       k8sPipelineRunConfig.pluralName
     );
     client.setQueryData(permissionsCacheKey, mockPermissions);

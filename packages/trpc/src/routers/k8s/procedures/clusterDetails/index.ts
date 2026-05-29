@@ -1,9 +1,8 @@
-import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { TRPCError } from "@trpc/server";
+import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { z } from "zod";
-import { K8sClient } from "../../../../clients/k8s/index.js";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors/index.js";
 import { VersionApi } from "@kubernetes/client-node";
+import { getInitializedK8sClient } from "../../utils/getInitializedK8sClient/index.js";
 
 export const k8sGetClusterDetails = protectedProcedure
   .output(
@@ -17,17 +16,16 @@ export const k8sGetClusterDetails = protectedProcedure
     })
   )
   .query(async ({ ctx }) => {
-    const k8sClient = new K8sClient(ctx.session);
-
-    if (!k8sClient.KubeConfig) {
-      throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-    }
+    const k8sClient = getInitializedK8sClient(ctx);
 
     const currentCluster = k8sClient.KubeConfig.getCurrentCluster();
     const currentContext = k8sClient.KubeConfig.getCurrentContext();
 
     if (!currentCluster) {
-      throw new Error("No current cluster found");
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "No current cluster found in KubeConfig",
+      });
     }
 
     // Use actual cluster name from kubeconfig first, fallback to env var

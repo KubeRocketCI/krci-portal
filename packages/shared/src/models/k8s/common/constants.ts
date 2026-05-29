@@ -12,6 +12,7 @@ export const k8sToRbacVerbMap: Record<K8sOperation, RBACOperation> = {
   [k8sOperation.create]: rbacOperation.create,
   [k8sOperation.delete]: rbacOperation.delete,
   [k8sOperation.update]: rbacOperation.update,
+  [k8sOperation.patch]: rbacOperation.patch,
   [k8sOperation.connect]: rbacOperation.connect,
   [k8sOperation.replace]: rbacOperation.update,
 };
@@ -28,7 +29,12 @@ export const rbacToK8sVerbMap: Record<RBACOperation, K8sOperation> = {
   [rbacOperation.connect]: k8sOperation.connect,
 };
 
-export const defaultPermissionsToCheck = [k8sOperation.create, k8sOperation.update, k8sOperation.delete] as const;
+export const defaultPermissionsToCheck = [
+  k8sOperation.create,
+  k8sOperation.update,
+  k8sOperation.patch,
+  k8sOperation.delete,
+] as const;
 
 export const defaultPermissions = {
   [k8sOperation.create]: {
@@ -38,6 +44,10 @@ export const defaultPermissions = {
   [k8sOperation.update]: {
     allowed: false,
     reason: `You cannot update resources of this kind. Permission check result has not been received yet.`,
+  },
+  [k8sOperation.patch]: {
+    allowed: false,
+    reason: `You cannot patch resources of this kind. Permission check result has not been received yet.`,
   },
   [k8sOperation.delete]: {
     allowed: false,

@@ -108,3 +108,15 @@ export function handleK8sError(error: unknown): TRPCError {
     code: "INTERNAL_SERVER_ERROR",
   });
 }
+
+/**
+ * Re-throw a TRPCError untouched (so explicit NOT_FOUND/BAD_REQUEST from a procedure
+ * survives) or map any other unknown error through handleK8sError. Use in the catch
+ * block of procedures that throw their own TRPCErrors alongside calling the K8s API.
+ */
+export function rethrowOrHandleK8sError(error: unknown): never {
+  if (error instanceof TRPCError) {
+    throw error;
+  }
+  throw handleK8sError(error);
+}

@@ -14,9 +14,8 @@ import {
   type PromQLVectorResponse,
 } from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
-import { K8sClient } from "../../../../clients/k8s/index.js";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../k8s/errors/index.js";
 import { createPrometheusClient } from "../../../../clients/prometheus/index.js";
+import { getInitializedK8sClient } from "../../../k8s/utils/getInitializedK8sClient/index.js";
 import {
   buildPodPhaseQuery,
   buildPodNamePromQLQueries,
@@ -78,10 +77,7 @@ export const getDeploymentMetricsProcedure = protectedProcedure
       return emptyOutput(range, queriedAt, []);
     }
 
-    const k8sClient = new K8sClient(ctx.session);
-    if (!k8sClient.KubeConfig) {
-      throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-    }
+    const k8sClient = getInitializedK8sClient(ctx);
 
     // K8s pod listing is still needed for the live-only podPhase panel.
     // Range queries no longer depend on it — they vector-match against

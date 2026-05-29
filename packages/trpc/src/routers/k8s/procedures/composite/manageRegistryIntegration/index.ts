@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { protectedProcedure } from "../../../../../procedures/protected/index.js";
-import { K8sClient } from "../../../../../clients/k8s/index.js";
-import { handleK8sError } from "../../../utils/handleK8sError/index.js";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors/index.js";
+import { TRPCError } from "@trpc/server";
+import { rethrowOrHandleK8sError } from "../../../utils/handleK8sError/index.js";
+import { getInitializedK8sClient } from "../../../utils/getInitializedK8sClient/index.js";
 import {
   k8sConfigMapConfig,
   k8sSecretConfig,
@@ -77,11 +77,7 @@ export type ManageRegistryIntegrationInput = z.infer<typeof manageRegistryIntegr
 export const k8sManageRegistryIntegrationProcedure = protectedProcedure
   .input(manageRegistryIntegrationInputSchema)
   .mutation(async ({ input, ctx }) => {
-    const k8sClient = new K8sClient(ctx.session);
-
-    if (!k8sClient.KubeConfig) {
-      throw ERROR_K8S_CLIENT_NOT_INITIALIZED;
-    }
+    const k8sClient = getInitializedK8sClient(ctx);
 
     const { namespace, mode, dirtyFields, configMap, pullAccountSecret, pushAccountSecret, serviceAccount } = input;
 
@@ -94,7 +90,10 @@ export const k8sManageRegistryIntegrationProcedure = protectedProcedure
       // Step 1: Handle ConfigMap operations (always in edit mode for registry)
       if (dirtyFields.configMap) {
         if (!configMap.currentResource) {
-          throw new Error("currentResource is required for configMap in edit mode");
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "currentResource is required for configMap in edit mode",
+          });
         }
 
         const editedConfigMap = editKRCIConfigMapRegistryData(
@@ -134,7 +133,10 @@ export const k8sManageRegistryIntegrationProcedure = protectedProcedure
         } else {
           // Edit existing pull account secret
           if (!pullAccountSecret.currentResource) {
-            throw new Error("currentResource is required for pullAccountSecret in edit mode");
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "currentResource is required for pullAccountSecret in edit mode",
+            });
           }
 
           const editedPullSecret = editPullAccountRegistrySecret(pullAccountSecret.currentResource as Secret, {
@@ -172,7 +174,10 @@ export const k8sManageRegistryIntegrationProcedure = protectedProcedure
         } else {
           // Edit existing push account secret
           if (!pushAccountSecret.currentResource) {
-            throw new Error("currentResource is required for pushAccountSecret in edit mode");
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "currentResource is required for pushAccountSecret in edit mode",
+            });
           }
 
           const editedPushSecret = editPushAccountRegistrySecret(pushAccountSecret.currentResource as Secret, {
@@ -194,7 +199,10 @@ export const k8sManageRegistryIntegrationProcedure = protectedProcedure
       // Step 4: Handle ServiceAccount operations (optional, ECR only)
       if (dirtyFields.serviceAccount && serviceAccount) {
         if (!serviceAccount.currentResource) {
-          throw new Error("currentResource is required for serviceAccount in edit mode");
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "currentResource is required for serviceAccount in edit mode",
+          });
         }
 
         const editedServiceAccount = editRegistryServiceAccount(serviceAccount.currentResource as ServiceAccount, {
@@ -221,6 +229,6 @@ export const k8sManageRegistryIntegrationProcedure = protectedProcedure
       };
     } catch (error) {
       console.error("Container registry integration operation failed:", error);
-      throw handleK8sError(error);
+      throw rethrowOrHandleK8sError(error);
     }
   });

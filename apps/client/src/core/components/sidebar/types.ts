@@ -19,7 +19,7 @@ export interface SimpleNavItem extends BaseNavItem {
 
 // Nav group item with children
 export interface NavGroupItem extends BaseNavItem {
-  children: (SimpleNavItem | NavSubGroupItem)[];
+  children: (SimpleNavItem | NavSubGroupItem | NavCollapsibleSubGroupItem)[];
   defaultRoute?: RouteParams; // Route to navigate to when clicking the group
   groupRoute?: AnyRoute; // Parent route for active state detection of groups
   route?: never;
@@ -27,8 +27,20 @@ export interface NavGroupItem extends BaseNavItem {
 
 // Sub-group item (second level) that contains simple nav items
 export interface NavSubGroupItem {
+  kind?: never;
   title: string;
   children: SimpleNavItem[];
+  icon?: never;
+  route?: never;
+  defaultRoute?: never;
+  groupRoute?: never;
+}
+
+export interface NavCollapsibleSubGroupItem {
+  kind: "collapsible-subgroup";
+  title: string;
+  children: SimpleNavItem[];
+  defaultOpen?: boolean;
   icon?: never;
   route?: never;
   defaultRoute?: never;

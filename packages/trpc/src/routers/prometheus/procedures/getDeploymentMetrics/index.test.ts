@@ -76,6 +76,7 @@ describe("prometheus.getDeploymentMetrics", () => {
       () =>
         ({
           KubeConfig: null,
+          kubeConfigInitError: "No cluster configuration found in kubeconfig.",
           listResource: mockListResource,
         }) as unknown as InstanceType<typeof k8sClientModule.K8sClient>
     );

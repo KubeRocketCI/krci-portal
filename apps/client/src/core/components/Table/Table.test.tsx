@@ -2,6 +2,8 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { DataTable } from "./index";
 
+const tableHeadColumnsSpy = vi.fn();
+
 // Mock usePagination hook
 vi.mock("@/core/hooks/usePagination", () => ({
   usePagination: vi.fn(() => ({
@@ -18,7 +20,10 @@ vi.mock("@/core/components/ui/table", () => ({
 }));
 
 vi.mock("./components/TableHead", () => ({
-  TableHead: () => <thead data-testid="table-head" />,
+  TableHead: ({ columns }: { columns: { id: string }[] }) => {
+    tableHeadColumnsSpy(columns);
+    return <thead data-testid="table-head" />;
+  },
 }));
 
 vi.mock("./components/TableBody", () => ({
@@ -217,5 +222,93 @@ describe("DataTable - Page Out of Bounds", () => {
     render(<DataTable id="test-table" data={smallData} columns={mockColumns} pagination={{ show: true }} />);
 
     expect(screen.queryByText("Page not found")).not.toBeInTheDocument();
+  });
+});
+
+describe("DataTable - columns prop sync", () => {
+  it("renders the latest columns prop when the parent passes a new reference", async () => {
+    const { usePagination } = await import("@/core/hooks/usePagination");
+    vi.mocked(usePagination).mockReturnValue({
+      page: 0,
+      rowsPerPage: 25,
+      handleChangePage: vi.fn(),
+      handleChangeRowsPerPage: vi.fn(),
+    });
+
+    const columnsA = [
+      {
+        id: "name",
+        label: "Name",
+        data: { render: ({ data }: { data: { name: string } }) => data.name },
+        cell: { show: true, baseWidth: 50 },
+      },
+    ];
+    const columnsB = [
+      {
+        id: "name",
+        label: "Name",
+        data: { render: ({ data }: { data: { name: string } }) => data.name },
+        cell: { show: true, baseWidth: 50 },
+      },
+      {
+        id: "provisioner",
+        label: "Provisioner",
+        data: { render: () => "p" },
+        cell: { show: true, baseWidth: 20 },
+      },
+    ];
+
+    tableHeadColumnsSpy.mockClear();
+
+    const { rerender } = render(<DataTable id="test-table" data={[]} columns={columnsA} />);
+    const initialColumns = tableHeadColumnsSpy.mock.calls.at(-1)?.[0];
+    expect(initialColumns).toHaveLength(1);
+
+    rerender(<DataTable id="test-table" data={[]} columns={columnsB} />);
+    const updatedColumns = tableHeadColumnsSpy.mock.calls.at(-1)?.[0];
+    expect(updatedColumns).toHaveLength(2);
+    expect(updatedColumns.map((c: { id: string }) => c.id)).toEqual(["name", "provisioner"]);
+  });
+
+  it("does NOT resync local column state on parent re-render with a fresh array reference but identical column ids", async () => {
+    const { usePagination } = await import("@/core/hooks/usePagination");
+    vi.mocked(usePagination).mockReturnValue({
+      page: 0,
+      rowsPerPage: 25,
+      handleChangePage: vi.fn(),
+      handleChangeRowsPerPage: vi.fn(),
+    });
+
+    const columnsInitial = [
+      {
+        id: "name",
+        label: "Name",
+        data: { render: ({ data }: { data: { name: string } }) => data.name },
+        cell: { show: true, baseWidth: 50 },
+      },
+    ];
+    // Identical column ids, identical shape — but a brand new array reference,
+    // simulating a parent re-render that rebuilds the columns inline.
+    const columnsFreshReference = [
+      {
+        id: "name",
+        label: "Name",
+        data: { render: ({ data }: { data: { name: string } }) => data.name },
+        cell: { show: true, baseWidth: 50 },
+      },
+    ];
+
+    tableHeadColumnsSpy.mockClear();
+
+    const { rerender } = render(<DataTable id="test-table" data={[]} columns={columnsInitial} />);
+    const initiallyRendered = tableHeadColumnsSpy.mock.calls.at(-1)?.[0];
+
+    rerender(<DataTable id="test-table" data={[]} columns={columnsFreshReference} />);
+    const afterRerender = tableHeadColumnsSpy.mock.calls.at(-1)?.[0];
+
+    // TableHead must still receive the initial array reference: if the effect
+    // had fired on every new `_columns` reference, user-applied TableSettings
+    // visibility toggles would be wiped on every parent refetch.
+    expect(afterRerender).toBe(initiallyRendered);
   });
 });

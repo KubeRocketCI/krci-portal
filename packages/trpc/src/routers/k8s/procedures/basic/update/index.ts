@@ -1,10 +1,8 @@
-import { handleK8sError } from "../../../utils/handleK8sError/index.js";
+import { rethrowOrHandleK8sError } from "../../../utils/handleK8sError/index.js";
 import { protectedProcedure } from "../../../../../procedures/protected/index.js";
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors/index.js";
 import { k8sResourceConfigSchema } from "@my-project/shared";
-import { K8sClient } from "../../../../../clients/k8s/index.js";
+import { getInitializedK8sClient } from "../../../utils/getInitializedK8sClient/index.js";
 
 export const k8sUpdateItemProcedure = protectedProcedure
   .input(
@@ -18,16 +16,12 @@ export const k8sUpdateItemProcedure = protectedProcedure
   )
   .mutation(async ({ input, ctx }) => {
     try {
-      const k8sClient = new K8sClient(ctx.session);
-
-      if (!k8sClient.KubeConfig) {
-        throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-      }
+      const k8sClient = getInitializedK8sClient(ctx);
 
       const { namespace, name, resourceConfig, resource } = input;
 
       return await k8sClient.replaceResource(resourceConfig, name, namespace, resource);
     } catch (error) {
-      throw handleK8sError(error);
+      throw rethrowOrHandleK8sError(error);
     }
   });

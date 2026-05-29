@@ -1,4 +1,5 @@
-import { Box, Rocket } from "lucide-react";
+import { Rocket } from "lucide-react";
+import KubernetesIcon from "@/assets/icons/k8s/kubernetes.svg?react";
 import { cn } from "@/core/utils/classname";
 
 export type Mode = "krci" | "k8s";
@@ -26,7 +27,7 @@ export function ModeSwitcher({ mode, onSelect }: { mode: Mode; onSelect: (m: Mod
           mode === "k8s" ? "bg-background shadow-sm" : "text-muted-foreground"
         )}
       >
-        <Box size={12} aria-hidden /> Kubernetes
+        <KubernetesIcon width={12} height={12} aria-hidden /> Kubernetes
       </button>
     </div>
   );

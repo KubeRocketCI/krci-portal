@@ -1,18 +1,12 @@
 import { ApisApi } from "@kubernetes/client-node";
 import { protectedProcedure } from "../../../../../procedures/protected/index.js";
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors/index.js";
-import { K8sClient } from "../../../../../clients/k8s/index.js";
+import { getInitializedK8sClient } from "../../../utils/getInitializedK8sClient/index.js";
 
 export const defaultK8sApiVersion = "v1";
 
 export const k8sGetApiVersions = protectedProcedure.output(z.string()).query(async ({ ctx }) => {
-  const k8sClient = new K8sClient(ctx.session);
-
-  if (!k8sClient.KubeConfig) {
-    throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-  }
+  const k8sClient = getInitializedK8sClient(ctx);
 
   const apisApi = k8sClient.KubeConfig.makeApiClient(ApisApi);
 

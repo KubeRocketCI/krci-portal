@@ -2,12 +2,21 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { useMatches } from "@tanstack/react-router";
 import { useLocation } from "@tanstack/react-router";
 import { useSidebar } from "../components/ui/sidebar";
-import type { NavGroupItem, NavItem, NavSubGroupItem, SimpleNavItem } from "../components/sidebar/types";
+import type {
+  NavCollapsibleSubGroupItem,
+  NavGroupItem,
+  NavItem,
+  NavSubGroupItem,
+  SimpleNavItem,
+} from "../components/sidebar/types";
 
 function isGroupActiveForPathname(item: NavGroupItem, pathname: string): boolean {
   return item.children.some((child) => {
     if ("isActiveFn" in child && (child as SimpleNavItem).isActiveFn) {
       return (child as SimpleNavItem).isActiveFn!(pathname);
+    }
+    if ((child as NavCollapsibleSubGroupItem).kind === "collapsible-subgroup") {
+      return (child as NavCollapsibleSubGroupItem).children.some((c) => c.isActiveFn?.(pathname));
     }
     if ("children" in child) {
       return (child as NavSubGroupItem).children.some((c) => c.isActiveFn?.(pathname));

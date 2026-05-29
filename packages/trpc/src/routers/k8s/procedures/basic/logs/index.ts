@@ -1,12 +1,10 @@
 import { protectedProcedure } from "../../../../../procedures/protected/index.js";
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors/index.js";
-import { handleK8sError } from "../../../utils/handleK8sError/index.js";
+import { handleK8sError, rethrowOrHandleK8sError } from "../../../utils/handleK8sError/index.js";
 import * as k8s from "@kubernetes/client-node";
 import { PassThrough } from "stream";
-import { K8sClient } from "../../../../../clients/k8s/index.js";
 import { createEventQueue, yieldEvents } from "../../../utils/createEventQueue/index.js";
+import { getInitializedK8sClient } from "../../../utils/getInitializedK8sClient/index.js";
 
 export const k8sPodLogsProcedure = protectedProcedure
   .input(
@@ -24,11 +22,7 @@ export const k8sPodLogsProcedure = protectedProcedure
   )
   .query(async ({ input, ctx }) => {
     try {
-      const k8sClient = new K8sClient(ctx.session);
-
-      if (!k8sClient.KubeConfig) {
-        throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-      }
+      const k8sClient = getInitializedK8sClient(ctx);
 
       const log = new k8s.Log(k8sClient.KubeConfig);
       const { namespace, podName, container, tailLines, previous, sinceTime } = input;
@@ -78,7 +72,7 @@ export const k8sPodLogsProcedure = protectedProcedure
         });
       });
     } catch (error) {
-      throw handleK8sError(error);
+      throw rethrowOrHandleK8sError(error);
     }
   });
 
@@ -97,11 +91,7 @@ export const k8sWatchPodLogsProcedure = protectedProcedure
     })
   )
   .subscription(async function* ({ input, ctx, signal }) {
-    const k8sClient = new K8sClient(ctx.session);
-
-    if (!k8sClient.KubeConfig) {
-      throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-    }
+    const k8sClient = getInitializedK8sClient(ctx);
 
     const log = new k8s.Log(k8sClient.KubeConfig);
     const { namespace, podName, container, follow, tailLines, previous, sinceTime } = input;

@@ -7,6 +7,10 @@ import { k8sGetKubeConfig } from "./procedures/kubeconfig/index.js";
 import { k8sListProcedure } from "./procedures/basic/list/index.js";
 import { k8sGetResourcePermissions } from "./procedures/permissions/index.js";
 import { k8sUpdateItemProcedure } from "./procedures/basic/update/index.js";
+import { k8sScaleWorkloadProcedure } from "./procedures/workloads/scale/index.js";
+import { k8sRestartWorkloadProcedure } from "./procedures/workloads/restart/index.js";
+import { k8sListDeploymentRevisionsProcedure } from "./procedures/workloads/listRevisions/index.js";
+import { k8sRollbackDeploymentProcedure } from "./procedures/workloads/rollback/index.js";
 import { k8sWatchItemProcedure } from "./procedures/basic/watchItem/index.js";
 import { k8sWatchListProcedure } from "./procedures/basic/watchList/index.js";
 import { k8sPodLogsProcedure, k8sWatchPodLogsProcedure } from "./procedures/basic/logs/index.js";
@@ -41,6 +45,10 @@ export const k8sRouter = t.router({
   applyYaml: k8sApplyYamlProcedure,
   update: k8sUpdateItemProcedure,
   delete: k8sDeleteItemProcedure,
+  scaleWorkload: k8sScaleWorkloadProcedure,
+  restartWorkload: k8sRestartWorkloadProcedure,
+  listDeploymentRevisions: k8sListDeploymentRevisionsProcedure,
+  rollbackDeployment: k8sRollbackDeploymentProcedure,
   apiVersions: k8sGetApiVersions,
   itemPermissions: k8sGetResourcePermissions,
   kubeconfig: k8sGetKubeConfig,

@@ -1,10 +1,11 @@
 import { createRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { routeK8sMode } from "@/core/router/routes";
+import { PATH_K8S_LIST_FULL } from "@/modules/k8s/constants/paths";
 
 export const PATH_K8S_LIST = "$kind" as const;
-export const PATH_K8S_LIST_FULL = "/c/$clusterName/k8s/$kind" as const;
-export const ROUTE_ID_K8S_LIST = "/_layout/c/$clusterName/k8s/$kind" as const;
+export { PATH_K8S_LIST_FULL };
+export const ROUTE_ID_K8S_LIST = `/_layout${PATH_K8S_LIST_FULL}` as const;
 
 const searchSchema = z.object({
   namespace: z.string().optional(),

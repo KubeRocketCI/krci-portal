@@ -50,7 +50,6 @@ describe("k8sGetResourcePermissions", () => {
   it("should call createSelfSubjectAccessReview for each verb and return correct result", async () => {
     const input = {
       clusterName: "test-cluster",
-      apiVersion: "v1",
       group: "test.group.io",
       version: "v1",
       namespace: "test-namespace",
@@ -85,8 +84,7 @@ describe("k8sGetResourcePermissions", () => {
 
   it("should throw validation error for missing input fields", async () => {
     const invalidInput = {
-      clusterName: "test-cluster",
-      // apiVersion missing
+      // clusterName missing
       group: "test.group.io",
       version: "v1",
       namespace: "test-namespace",
@@ -102,7 +100,6 @@ describe("k8sGetResourcePermissions", () => {
   it("should return default reason if status.reason is missing", async () => {
     const input = {
       clusterName: "test-cluster",
-      apiVersion: "v1",
       group: "test.group.io",
       version: "v1",
       namespace: "test-namespace",
@@ -133,10 +130,43 @@ describe("k8sGetResourcePermissions", () => {
     });
   });
 
+  it("preserves an explicit empty-string reason from the SSARS response", async () => {
+    // K8s SelfSubjectAccessReview can legitimately return `reason: ""` (for
+    // example on an unconditioned allow). Using `||` would replace it with
+    // the synthetic "You cannot {verb} {plural}" fallback and surface a wrong
+    // tooltip in ButtonWithPermission; `??` must preserve the empty string.
+    const input = {
+      clusterName: "test-cluster",
+      group: "test.group.io",
+      version: "v1",
+      namespace: "test-namespace",
+      resourcePlural: "testresources",
+    };
+
+    const mockResponses = defaultPermissionsToCheck.map(() => ({
+      status: {
+        allowed: true,
+        reason: "",
+      },
+    }));
+
+    mockAuthApi.createSelfSubjectAccessReview.mockImplementation(({ body }) => {
+      const verb = body.spec.resourceAttributes.verb;
+      const index = defaultPermissionsToCheck.indexOf(verb);
+      return Promise.resolve(mockResponses[index]);
+    });
+
+    const caller = createCaller(mockContext);
+    const result = await caller.k8s.itemPermissions(input);
+
+    defaultPermissionsToCheck.forEach((verb) => {
+      expect(result[verb]).toEqual({ allowed: true, reason: "" });
+    });
+  });
+
   it("should throw error if Kubernetes API call fails", async () => {
     const input = {
       clusterName: "test-cluster",
-      apiVersion: "v1",
       group: "test.group.io",
       version: "v1",
       namespace: "test-namespace",

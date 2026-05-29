@@ -1,7 +1,7 @@
 import { AuthorizationV1Api } from "@kubernetes/client-node";
 import { V1SelfSubjectAccessReview } from "@kubernetes/client-node";
 import { z } from "zod";
-import { handleK8sError } from "../../utils/handleK8sError/index.js";
+import { rethrowOrHandleK8sError } from "../../utils/handleK8sError/index.js";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import {
   defaultPermissions,
@@ -9,15 +9,12 @@ import {
   DefaultPermissionListCheckResult,
   k8sToRbacVerbMap,
 } from "@my-project/shared";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../errors/index.js";
-import { TRPCError } from "@trpc/server";
-import { K8sClient } from "../../../../clients/k8s/index.js";
+import { getInitializedK8sClient } from "../../utils/getInitializedK8sClient/index.js";
 
 export const k8sGetResourcePermissions = protectedProcedure
   .input(
     z.object({
       clusterName: z.string(),
-      apiVersion: z.string(),
       group: z.string(),
       version: z.string(),
       namespace: z.string(),
@@ -26,12 +23,8 @@ export const k8sGetResourcePermissions = protectedProcedure
   )
   .mutation(async ({ input, ctx }) => {
     try {
-      const { apiVersion, group, version, namespace, resourcePlural } = input;
-      const k8sClient = new K8sClient(ctx.session);
-
-      if (!k8sClient.KubeConfig) {
-        throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-      }
+      const { group, version, namespace, resourcePlural } = input;
+      const k8sClient = getInitializedK8sClient(ctx);
 
       const authApi = k8sClient.KubeConfig.makeApiClient(AuthorizationV1Api);
 
@@ -41,7 +34,11 @@ export const k8sGetResourcePermissions = protectedProcedure
         acc.push(
           authApi.createSelfSubjectAccessReview({
             body: {
-              apiVersion: `authorization.k8s.io/${apiVersion}`,
+              // The SSARS object's own GVK is always authorization.k8s.io/v1 — it
+              // identifies the review request, not the target resource. The target
+              // GVR is conveyed via spec.resourceAttributes below.
+              apiVersion: "authorization.k8s.io/v1",
+              kind: "SelfSubjectAccessReview",
               spec: {
                 resourceAttributes: {
                   verb: rbacVerb,
@@ -63,13 +60,13 @@ export const k8sGetResourcePermissions = protectedProcedure
         const verb = defaultPermissionsToCheck[index];
         acc[verb] = {
           allowed: res.status?.allowed || false,
-          reason: res.status?.reason || `You cannot ${verb} ${resourcePlural}`,
+          reason: res.status?.reason ?? `You cannot ${verb} ${resourcePlural}`,
         };
         return acc;
-      }, defaultPermissions);
+      }, structuredClone(defaultPermissions));
 
       return result;
     } catch (error) {
-      throw handleK8sError(error);
+      throw rethrowOrHandleK8sError(error);
     }
   });

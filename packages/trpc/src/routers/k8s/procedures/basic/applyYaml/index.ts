@@ -1,10 +1,8 @@
 import { handleK8sError } from "../../../utils/handleK8sError/index.js";
 import { protectedProcedure } from "../../../../../procedures/protected/index.js";
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { K8sApiError } from "@my-project/shared";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors/index.js";
-import { K8sClient } from "../../../../../clients/k8s/index.js";
+import { getInitializedK8sClient } from "../../../utils/getInitializedK8sClient/index.js";
 
 const applyResultSchema = z.object({
   success: z.boolean(),
@@ -24,11 +22,7 @@ export const k8sApplyYamlProcedure = protectedProcedure
   )
   .output(z.array(applyResultSchema))
   .mutation(async ({ input, ctx }) => {
-    const k8sClient = new K8sClient(ctx.session);
-
-    if (!k8sClient.KubeConfig) {
-      throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-    }
+    const k8sClient = getInitializedK8sClient(ctx);
 
     const results: ApplyResult[] = [];
 

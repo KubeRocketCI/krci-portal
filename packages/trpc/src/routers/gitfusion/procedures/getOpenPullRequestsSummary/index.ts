@@ -1,11 +1,9 @@
 import { z } from "zod";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createGitFusionClient } from "../../../../clients/gitfusion/index.js";
-import { K8sClient } from "../../../../clients/k8s/index.js";
 import { k8sCodebaseConfig, type Codebase, type KubeObjectListBase } from "@my-project/shared";
-import { TRPCError } from "@trpc/server";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../k8s/errors/index.js";
-import { handleK8sError } from "../../../k8s/utils/handleK8sError/index.js";
+import { rethrowOrHandleK8sError } from "../../../k8s/utils/handleK8sError/index.js";
+import { getInitializedK8sClient } from "../../../k8s/utils/getInitializedK8sClient/index.js";
 
 const MAX_CODEBASES = 10;
 const PRS_PER_REPO = 3;
@@ -27,11 +25,7 @@ export const getOpenPullRequestsSummaryProcedure = protectedProcedure
   .query(async ({ input, ctx }) => {
     const { namespace } = input;
 
-    const k8sClient = new K8sClient(ctx.session);
-
-    if (!k8sClient.KubeConfig) {
-      throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-    }
+    const k8sClient = getInitializedK8sClient(ctx);
 
     let codebases: Codebase[];
     try {
@@ -41,7 +35,7 @@ export const getOpenPullRequestsSummaryProcedure = protectedProcedure
       )) as unknown as KubeObjectListBase<Codebase>;
       codebases = list.items ?? [];
     } catch (error) {
-      throw handleK8sError(error);
+      throw rethrowOrHandleK8sError(error);
     }
 
     if (codebases.length === 0) {

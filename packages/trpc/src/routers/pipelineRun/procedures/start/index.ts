@@ -10,9 +10,8 @@ import {
 import { pipelineRunStartRowSchema } from "../../../../schemas/pipelineRunStartRow.js";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { K8sClient } from "../../../../clients/k8s/index.js";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../k8s/errors/index.js";
-import { handleK8sError } from "../../../k8s/utils/handleK8sError/index.js";
+import { rethrowOrHandleK8sError } from "../../../k8s/utils/handleK8sError/index.js";
+import { getInitializedK8sClient } from "../../../k8s/utils/getInitializedK8sClient/index.js";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { tektonInputSchemas } from "../../../../schemas/tektonInput.js";
 import { getTriggerTemplateLabel, prepareStartDraft, projectPipelineRunRow } from "../../helpers.js";
@@ -48,11 +47,7 @@ export const pipelineRunStartProcedure = protectedProcedure
   .input(startInputSchema)
   .output(startOutputSchema)
   .mutation(async ({ input, ctx }): Promise<z.infer<typeof startOutputSchema>> => {
-    const k8sClient = new K8sClient(ctx.session);
-
-    if (!k8sClient.KubeConfig) {
-      throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
-    }
+    const k8sClient = getInitializedK8sClient(ctx);
 
     const pipeline = await getResourceOrThrowNotFound<Pipeline>(
       () => k8sClient.getResource(k8sPipelineConfig, input.pipeline, input.namespace) as Promise<Pipeline>,
@@ -103,7 +98,7 @@ export const pipelineRunStartProcedure = protectedProcedure
     try {
       created = (await k8sClient.createResource(k8sPipelineRunConfig, input.namespace, draft)) as PipelineRun;
     } catch (error) {
-      throw handleK8sError(error);
+      throw rethrowOrHandleK8sError(error);
     }
 
     return {

@@ -6,7 +6,12 @@ import { DataTable } from "@/core/components/Table";
 import { EmptyList } from "@/core/components/EmptyList";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { useClusterStore } from "@/k8s/store";
-import { PATH_K8S_DETAIL_CLUSTER_FULL, PATH_K8S_DETAIL_NS_FULL } from "../../constants/paths";
+import {
+  PATH_K8S_DETAIL_CLUSTER_FULL,
+  PATH_K8S_DETAIL_NS_FULL,
+  PATH_K8S_CR_DETAIL_CLUSTER_FULL,
+  PATH_K8S_CR_DETAIL_NS_FULL,
+} from "../../constants/paths";
 import type { TableProps } from "@/core/components/Table/types";
 import type { KubeObjectBase } from "@my-project/shared";
 import type { ResourceDescriptor } from "../../registry/types";
@@ -34,6 +39,48 @@ function NameLink({
 }) {
   const name = item.metadata?.name ?? "";
   const namespace = item.metadata?.namespace ?? "";
+
+  // Custom Resources use dedicated CR detail routes that carry group/version/plural.
+  if (descriptor.customResource) {
+    const { group, version, pluralName } = descriptor.config;
+    if (!group || !version || !pluralName) {
+      throw new Error(
+        `ResourceDescriptor with customResource=true must have non-empty group, version, and pluralName (kind: ${descriptor.config.kind})`
+      );
+    }
+
+    if (descriptor.detailVariant === "cluster") {
+      return (
+        <Button variant="link" asChild className="w-full justify-start p-0">
+          <Link
+            to={PATH_K8S_CR_DETAIL_CLUSTER_FULL}
+            params={{ clusterName, group, version, plural: pluralName, name } as never}
+          >
+            <TextWithTooltip text={name || "—"} />
+          </Link>
+        </Button>
+      );
+    }
+
+    if (!namespace) {
+      return (
+        <span className="text-sm">
+          <TextWithTooltip text={name || "—"} />
+        </span>
+      );
+    }
+
+    return (
+      <Button variant="link" asChild className="w-full justify-start p-0">
+        <Link
+          to={PATH_K8S_CR_DETAIL_NS_FULL}
+          params={{ clusterName, group, version, plural: pluralName, namespace, name } as never}
+        >
+          <TextWithTooltip text={name || "—"} />
+        </Link>
+      </Button>
+    );
+  }
 
   if (descriptor.detailVariant === "cluster") {
     return (

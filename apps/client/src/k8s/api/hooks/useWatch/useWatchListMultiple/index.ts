@@ -87,9 +87,12 @@ export const useWatchListMultiple = <I extends KubeObjectBase>({
 
   // Generate query keys for all namespaces
   const namespaceQueryKeys = useMemo(
-    () => _namespaces.map((ns) => getK8sWatchListQueryCacheKey(clusterName, ns, resourceConfig.pluralName, labels)),
+    () =>
+      _namespaces.map((ns) =>
+        getK8sWatchListQueryCacheKey(clusterName, ns, resourceConfig.group, resourceConfig.pluralName, labels)
+      ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [clusterName, namespacesKey, resourceConfig.pluralName, labelsKey]
+    [clusterName, namespacesKey, resourceConfig.group, resourceConfig.pluralName, labelsKey]
   );
 
   // Create individual queries for each namespace

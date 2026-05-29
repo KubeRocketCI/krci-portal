@@ -1,9 +1,9 @@
 import { K8sApiError } from "@my-project/shared";
 import { TRPCError } from "@trpc/server";
-import { handleK8sError } from "../k8s/utils/handleK8sError/index.js";
+import { rethrowOrHandleK8sError } from "../k8s/utils/handleK8sError/index.js";
 
 /**
- * Build the standard `cause` shape used by `handleK8sError` so downstream
+ * Build the standard `cause` shape used by handleK8sError so downstream
  * consumers treat not-found errors the same as any other K8s error. `reason`
  * is a stable machine-readable tag the REST adapter surfaces in the response
  * body so clients can branch on it without parsing the verbatim message
@@ -21,7 +21,7 @@ export function k8sNotFoundCause(error: K8sApiError, reason: string) {
 
 /**
  * Wrap a K8s `getResource` call so a 404 surfaces as a tRPC `NOT_FOUND` with
- * a stable `reason` tag. Any other error flows through `handleK8sError`.
+ * a stable `reason` tag. Any other error flows through rethrowOrHandleK8sError.
  */
 export async function getResourceOrThrowNotFound<T>(
   fetch: () => Promise<T>,
@@ -39,6 +39,6 @@ export async function getResourceOrThrowNotFound<T>(
       });
     }
 
-    throw handleK8sError(error);
+    throw rethrowOrHandleK8sError(error);
   }
 }

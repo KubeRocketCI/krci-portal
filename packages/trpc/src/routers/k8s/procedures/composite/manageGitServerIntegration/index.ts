@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { protectedProcedure } from "../../../../../procedures/protected/index.js";
-import { K8sClient } from "../../../../../clients/k8s/index.js";
-import { handleK8sError } from "../../../utils/handleK8sError/index.js";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors/index.js";
+import { TRPCError } from "@trpc/server";
+import { rethrowOrHandleK8sError } from "../../../utils/handleK8sError/index.js";
+import { getInitializedK8sClient } from "../../../utils/getInitializedK8sClient/index.js";
 import {
   k8sGitServerConfig,
   k8sSecretConfig,
@@ -85,11 +85,7 @@ export type ManageGitServerIntegrationInput = z.infer<typeof manageGitServerInte
 export const k8sManageGitServerIntegrationProcedure = protectedProcedure
   .input(manageGitServerIntegrationInputSchema)
   .mutation(async ({ input, ctx }) => {
-    const k8sClient = new K8sClient(ctx.session);
-
-    if (!k8sClient.KubeConfig) {
-      throw ERROR_K8S_CLIENT_NOT_INITIALIZED;
-    }
+    const k8sClient = getInitializedK8sClient(ctx);
 
     const { namespace, mode, dirtyFields, gitServer, secret } = input;
 
@@ -160,7 +156,10 @@ export const k8sManageGitServerIntegrationProcedure = protectedProcedure
         } else {
           // Edit existing gitserver
           if (!gitServer.currentResource) {
-            throw new Error("currentResource is required for gitServer in edit mode");
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "currentResource is required for gitServer in edit mode",
+            });
           }
 
           const editedGitServer = editGitServer(gitServer.currentResource as GitServer, {
@@ -194,6 +193,6 @@ export const k8sManageGitServerIntegrationProcedure = protectedProcedure
       };
     } catch (error) {
       console.error("Git Server integration operation failed:", error);
-      throw handleK8sError(error);
+      throw rethrowOrHandleK8sError(error);
     }
   });

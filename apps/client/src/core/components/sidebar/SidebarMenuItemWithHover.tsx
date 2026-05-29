@@ -7,7 +7,7 @@ import { cn } from "../../utils/classname";
 import { SidebarMenuContent } from "./SidebarMenuContent";
 import { usePinnedItems } from "@/core/hooks/usePinnedItems";
 import { createPinConfig } from "./utils";
-import type { NavItem, SimpleNavItem, NavSubGroupItem, NavGroupItem } from "./types";
+import type { NavItem, SimpleNavItem, NavSubGroupItem, NavCollapsibleSubGroupItem, NavGroupItem } from "./types";
 import type { RouteParams } from "@/core/router/types";
 
 interface SidebarMenuItemWithHoverProps {
@@ -19,38 +19,38 @@ interface SidebarMenuItemWithHoverProps {
   isMinimized?: boolean;
 }
 
+function getFirstMenuItemRoute(
+  children: (SimpleNavItem | NavSubGroupItem | NavCollapsibleSubGroupItem)[]
+): RouteParams {
+  for (const child of children) {
+    if ("route" in child && child.route) {
+      return {
+        to: child.route.to,
+        params: child.route.params,
+      };
+    } else if ("children" in child && child.children.length > 0) {
+      return {
+        to: child.children[0].route.to,
+        params: child.children[0].route.params,
+      };
+    }
+  }
+  return { to: "/" };
+}
+
 /**
  * Component for rendering sidebar menu items with hover effects and collapsible behavior
  * Handles both simple nav items and groups with children
  */
-export const SidebarMenuItemWithHover = ({
+export function SidebarMenuItemWithHover({
   item,
   isMenuOpen,
   onToggle,
   onOpenMenu,
   onNavigate,
   isMinimized = false,
-}: SidebarMenuItemWithHoverProps) => {
+}: SidebarMenuItemWithHoverProps) {
   const matches = useMatches();
-
-  const getFirstMenuItemRoute = (children: (SimpleNavItem | NavSubGroupItem)[]): RouteParams => {
-    for (const child of children) {
-      if ("route" in child && child.route) {
-        // This is a simple nav item
-        return {
-          to: child.route.to,
-          params: child.route.params,
-        };
-      } else if ("children" in child && child.children.length > 0) {
-        // This is a sub-group, get the first item from its children
-        return {
-          to: child.children[0].route.to,
-          params: child.children[0].route.params,
-        };
-      }
-    }
-    return { to: "/" };
-  };
 
   const { pathname } = useLocation();
 
@@ -103,6 +103,9 @@ export const SidebarMenuItemWithHover = ({
     if (!("children" in item) || !item.children) return false;
     return (item as NavGroupItem).children.some((child) => {
       if ("isActiveFn" in child && child.isActiveFn) return child.isActiveFn(pathname);
+      if ("kind" in child && child.kind === "collapsible-subgroup") {
+        return child.children.some((c) => c.isActiveFn?.(pathname));
+      }
       if ("children" in child) return (child.children ?? []).some((c) => c.isActiveFn?.(pathname));
       return false;
     });
@@ -205,4 +208,4 @@ export const SidebarMenuItemWithHover = ({
       </Collapsible>
     </SidebarMenuItem>
   );
-};
+}
