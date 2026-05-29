@@ -18,8 +18,11 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   state: { open, closeDialog },
 }) => {
   const [confirmValue, setConfirmValue] = React.useState("");
+  const [isPending, setIsPending] = React.useState(false);
 
-  const isSubmitNotAllowed = confirmValue !== "confirm";
+  // Disable Confirm both before the user has typed the magic word AND while the
+  // callback is in-flight, so rapid double-clicks cannot fire the action twice.
+  const isSubmitNotAllowed = confirmValue !== "confirm" || isPending;
 
   const handleClosePopup = React.useCallback(() => {
     closeDialog();
@@ -27,9 +30,15 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   }, [closeDialog]);
 
   const onSubmit = React.useCallback(async () => {
-    await actionCallback();
-    handleClosePopup();
-  }, [actionCallback, handleClosePopup]);
+    if (isPending) return;
+    setIsPending(true);
+    try {
+      await actionCallback();
+      handleClosePopup();
+    } finally {
+      setIsPending(false);
+    }
+  }, [actionCallback, handleClosePopup, isPending]);
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClosePopup()} data-testid="dialog">
@@ -59,7 +68,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           <Button type="button" variant="ghost" onClick={handleClosePopup}>
             Cancel
           </Button>
-          <Button variant="default" onClick={onSubmit} disabled={isSubmitNotAllowed}>
+          <Button variant="default" onClick={onSubmit} disabled={isSubmitNotAllowed} aria-busy={isPending}>
             Confirm
           </Button>
         </DialogFooter>
