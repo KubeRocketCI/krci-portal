@@ -1,6 +1,7 @@
 import { SidebarMenuItem } from "./SidebarMenuItem";
 import { SidebarSubGroupMenuItem } from "./SidebarSubGroupMenuItem";
-import type { NavGroupItem, SimpleNavItem, NavSubGroupItem } from "./types";
+import { SidebarCollapsibleSubGroupMenuItem } from "./SidebarCollapsibleSubGroupMenuItem";
+import type { NavGroupItem } from "./types";
 
 interface SidebarMenuContentProps {
   parentNavItem: NavGroupItem;
@@ -18,9 +19,15 @@ export function SidebarMenuContent({ parentNavItem, parentGroupId, onNavigate }:
       {parentNavItem.children.map((child) => {
         if ("route" in child && child.route) {
           return (
-            <SidebarMenuItem
+            <SidebarMenuItem key={child.title} item={child} parentGroupId={parentGroupId} onNavigate={onNavigate} />
+          );
+        }
+
+        if ("kind" in child && child.kind === "collapsible-subgroup") {
+          return (
+            <SidebarCollapsibleSubGroupMenuItem
               key={child.title}
-              item={child as SimpleNavItem}
+              subGroup={child}
               parentGroupId={parentGroupId}
               onNavigate={onNavigate}
             />
@@ -30,7 +37,7 @@ export function SidebarMenuContent({ parentNavItem, parentGroupId, onNavigate }:
         return (
           <SidebarSubGroupMenuItem
             key={child.title}
-            subGroup={child as NavSubGroupItem}
+            subGroup={child}
             parentGroupId={parentGroupId}
             onNavigate={onNavigate}
           />
