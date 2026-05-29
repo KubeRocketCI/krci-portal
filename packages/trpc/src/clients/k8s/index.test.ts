@@ -1,7 +1,11 @@
 import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import { KubeConfig } from "@kubernetes/client-node";
+import { K8sApiError } from "@my-project/shared";
+import fetchModule from "node-fetch";
 import { K8sClient } from "./index.js";
 import { CustomSession } from "../../context/types.js";
+
+vi.mock("node-fetch", () => ({ default: vi.fn() }));
 
 vi.mock("@kubernetes/client-node", () => {
   const mockKubeConfig: Partial<KubeConfig> = {
@@ -124,7 +128,9 @@ describe("K8sClient", () => {
     ]);
   });
 
-  it("throws error if no idToken is provided", () => {
+  it("leaves KubeConfig null when no idToken is provided (no throw)", () => {
+    // Mirrors the no-session branch so getInitializedK8sClient can raise a single
+    // typed UNAUTHORIZED error at the call site instead of a bare Error bubbling up.
     const sessionWithoutToken = {
       login: undefined,
       user: {
@@ -147,10 +153,14 @@ describe("K8sClient", () => {
       },
     } as CustomSession;
 
-    expect(() => new K8sClient(sessionWithoutToken)).toThrow("No access token provided in session");
+    const client = new K8sClient(sessionWithoutToken);
+    expect(client.KubeConfig).toBeNull();
   });
 
-  it("throws error if current cluster is not found", () => {
+  it("leaves KubeConfig null if current cluster is not found", () => {
+    // Mirrors the no-token branch: a misconfigured kubeconfig produces a null
+    // KubeConfig so getInitializedK8sClient can raise a typed UNAUTHORIZED
+    // TRPCError, instead of throwing a bare Error that handleK8sError maps to 500.
     vi.mocked(KubeConfig).mockImplementationOnce(
       () =>
         ({
@@ -166,7 +176,8 @@ describe("K8sClient", () => {
         }) as unknown as KubeConfig
     );
 
-    expect(() => new K8sClient(validSession)).toThrow("No cluster configuration found");
+    const client = new K8sClient(validSession);
+    expect(client.KubeConfig).toBeNull();
   });
 
   describe("discoverResource", () => {
@@ -219,7 +230,7 @@ describe("K8sClient", () => {
     });
   });
 
-  it("throws error if current context is not found", () => {
+  it("leaves KubeConfig null if current context is not found", () => {
     vi.mocked(KubeConfig).mockImplementationOnce(
       () =>
         ({
@@ -235,6 +246,272 @@ describe("K8sClient", () => {
         }) as unknown as KubeConfig
     );
 
-    expect(() => new K8sClient(validSession)).toThrow("No current context found in kubeConfig");
+    const client = new K8sClient(validSession);
+    expect(client.KubeConfig).toBeNull();
+  });
+
+  describe("patchResource — patchType + subresource", () => {
+    const deployConfig = {
+      group: "apps",
+      version: "v1",
+      apiVersion: "apps/v1",
+      kind: "Deployment",
+      singularName: "deployment",
+      pluralName: "deployments",
+    };
+
+    const makeKubeConfigWithServer = () =>
+      ({
+        loadFromDefault: vi.fn(),
+        loadFromCluster: vi.fn(),
+        getCurrentCluster: vi.fn().mockReturnValue({ name: "test-cluster", server: "https://k8s.example.com" }),
+        getCurrentContext: vi.fn().mockReturnValue("test-context"),
+        getCurrentUser: vi.fn().mockReturnValue({}),
+        setCurrentContext: vi.fn(),
+        applyToHTTPSOptions: vi.fn(),
+        users: [],
+        contexts: [],
+        clusters: [],
+        currentContext: "test-context",
+      }) as unknown as KubeConfig;
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it("default patchType sends Content-Type application/strategic-merge-patch+json", async () => {
+      vi.mocked(KubeConfig).mockImplementationOnce(makeKubeConfigWithServer);
+      const fetchMock = vi.mocked(fetchModule);
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ "content-type": "application/json" }),
+        json: async () => ({}),
+      } as never);
+
+      const client = new K8sClient(validSession);
+      await client.patchResource(deployConfig, "foo", "ns", { spec: { replicas: 3 } });
+
+      const call0 = fetchMock.mock.calls[0]!;
+      expect(call0[1]!.method).toBe("PATCH");
+      expect((call0[1]!.headers as Record<string, string>)["Content-Type"]).toBe(
+        "application/strategic-merge-patch+json"
+      );
+    });
+
+    it('patchType "merge" sends Content-Type application/merge-patch+json', async () => {
+      vi.mocked(KubeConfig).mockImplementationOnce(makeKubeConfigWithServer);
+      const fetchMock = vi.mocked(fetchModule);
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ "content-type": "application/json" }),
+        json: async () => ({}),
+      } as never);
+
+      const client = new K8sClient(validSession);
+      await client.patchResource(deployConfig, "foo", "ns", {}, "merge");
+
+      const call0 = fetchMock.mock.calls[0]!;
+      expect((call0[1]!.headers as Record<string, string>)["Content-Type"]).toBe("application/merge-patch+json");
+    });
+
+    it('patchType "json" sends Content-Type application/json-patch+json', async () => {
+      vi.mocked(KubeConfig).mockImplementationOnce(makeKubeConfigWithServer);
+      const fetchMock = vi.mocked(fetchModule);
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ "content-type": "application/json" }),
+        json: async () => ({}),
+      } as never);
+
+      const client = new K8sClient(validSession);
+      await client.patchResource(deployConfig, "foo", "ns", [], "json");
+
+      const call0 = fetchMock.mock.calls[0]!;
+      expect((call0[1]!.headers as Record<string, string>)["Content-Type"]).toBe("application/json-patch+json");
+    });
+
+    it('subresource "scale" appends /scale to the URL', async () => {
+      vi.mocked(KubeConfig).mockImplementationOnce(makeKubeConfigWithServer);
+      const fetchMock = vi.mocked(fetchModule);
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ "content-type": "application/json" }),
+        json: async () => ({}),
+      } as never);
+
+      const client = new K8sClient(validSession);
+      await client.patchResource(deployConfig, "foo", "ns", { spec: { replicas: 5 } }, "strategic", "scale");
+
+      expect(fetchMock.mock.calls[0][0] as string).toMatch(
+        /\/apis\/apps\/v1\/namespaces\/ns\/deployments\/foo\/scale$/
+      );
+    });
+
+    it('subresource "status" appends /status to the URL', async () => {
+      vi.mocked(KubeConfig).mockImplementationOnce(makeKubeConfigWithServer);
+      const fetchMock = vi.mocked(fetchModule);
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ "content-type": "application/json" }),
+        json: async () => ({}),
+      } as never);
+
+      const client = new K8sClient(validSession);
+      await client.patchResource(deployConfig, "foo", "ns", { status: {} }, "merge", "status");
+
+      expect(fetchMock.mock.calls[0][0] as string).toMatch(
+        /\/apis\/apps\/v1\/namespaces\/ns\/deployments\/foo\/status$/
+      );
+    });
+
+    it("throws K8sApiError on non-2xx PATCH response", async () => {
+      vi.mocked(KubeConfig).mockImplementationOnce(makeKubeConfigWithServer);
+      const fetchMock = vi.mocked(fetchModule);
+      fetchMock.mockResolvedValueOnce({
+        ok: false,
+        status: 409,
+        statusText: "Conflict",
+        text: async () => '{"message":"object has been modified"}',
+      } as never);
+
+      const client = new K8sClient(validSession);
+      await expect(
+        client.patchResource(deployConfig, "foo", "ns", { spec: { replicas: 2 } }, "strategic", "scale")
+      ).rejects.toMatchObject({
+        name: "K8sApiError",
+        statusCode: 409,
+        statusText: "Conflict",
+      });
+    });
+
+    it("throws K8sApiError instance (not a plain Error) on PATCH failure", async () => {
+      vi.mocked(KubeConfig).mockImplementationOnce(makeKubeConfigWithServer);
+      const fetchMock = vi.mocked(fetchModule);
+      fetchMock.mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        statusText: "Forbidden",
+        text: async () => "{}",
+      } as never);
+
+      const client = new K8sClient(validSession);
+      await expect(client.patchResource(deployConfig, "foo", "ns", {})).rejects.toBeInstanceOf(K8sApiError);
+    });
+  });
+
+  describe("listAllResources — continue-token pagination", () => {
+    const rsConfig = {
+      group: "apps",
+      version: "v1",
+      apiVersion: "apps/v1",
+      kind: "ReplicaSet",
+      singularName: "replicaset",
+      pluralName: "replicasets",
+    };
+
+    const makeKubeConfigWithServer = () =>
+      ({
+        loadFromDefault: vi.fn(),
+        loadFromCluster: vi.fn(),
+        getCurrentCluster: vi.fn().mockReturnValue({ name: "test-cluster", server: "https://k8s.example.com" }),
+        getCurrentContext: vi.fn().mockReturnValue("test-context"),
+        getCurrentUser: vi.fn().mockReturnValue({}),
+        setCurrentContext: vi.fn(),
+        applyToHTTPSOptions: vi.fn(),
+        users: [],
+        contexts: [],
+        clusters: [],
+        currentContext: "test-context",
+      }) as unknown as KubeConfig;
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it("follows the continue token until the API server stops returning one", async () => {
+      vi.mocked(KubeConfig).mockImplementationOnce(makeKubeConfigWithServer);
+      const fetchMock = vi.mocked(fetchModule);
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: true,
+          headers: new Headers({ "content-type": "application/json" }),
+          json: async () => ({ items: [{ name: "a" }, { name: "b" }], metadata: { continue: "tok-1" } }),
+        } as never)
+        .mockResolvedValueOnce({
+          ok: true,
+          headers: new Headers({ "content-type": "application/json" }),
+          json: async () => ({ items: [{ name: "c" }], metadata: { continue: "tok-2" } }),
+        } as never)
+        .mockResolvedValueOnce({
+          ok: true,
+          headers: new Headers({ "content-type": "application/json" }),
+          json: async () => ({ items: [{ name: "d" }], metadata: {} }),
+        } as never);
+
+      const client = new K8sClient(validSession);
+      const result = await client.listAllResources(rsConfig, "ns");
+
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      expect(result.items).toHaveLength(4);
+      expect(result.items.map((it) => (it as unknown as { name: string }).name)).toEqual(["a", "b", "c", "d"]);
+      const secondCallUrl = fetchMock.mock.calls[1]![0] as string;
+      expect(secondCallUrl).toContain("continue=tok-1");
+      const thirdCallUrl = fetchMock.mock.calls[2]![0] as string;
+      expect(thirdCallUrl).toContain("continue=tok-2");
+    });
+
+    it("forwards labelSelector on every page", async () => {
+      vi.mocked(KubeConfig).mockImplementationOnce(makeKubeConfigWithServer);
+      const fetchMock = vi.mocked(fetchModule);
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: true,
+          headers: new Headers({ "content-type": "application/json" }),
+          json: async () => ({ items: [], metadata: { continue: "tok" } }),
+        } as never)
+        .mockResolvedValueOnce({
+          ok: true,
+          headers: new Headers({ "content-type": "application/json" }),
+          json: async () => ({ items: [], metadata: {} }),
+        } as never);
+
+      const client = new K8sClient(validSession);
+      await client.listAllResources(rsConfig, "ns", "app=foo");
+
+      expect(fetchMock.mock.calls[0]![0] as string).toContain("labelSelector=app%3Dfoo");
+      expect(fetchMock.mock.calls[1]![0] as string).toContain("labelSelector=app%3Dfoo");
+    });
+
+    it("returns an empty list without throwing when the API server returns items: null", async () => {
+      // Some non-conformant API servers / alpha resources return null instead of [].
+      vi.mocked(KubeConfig).mockImplementationOnce(makeKubeConfigWithServer);
+      const fetchMock = vi.mocked(fetchModule);
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ "content-type": "application/json" }),
+        json: async () => ({ items: null, metadata: {} }),
+      } as never);
+
+      const client = new K8sClient(validSession);
+      const result = await client.listAllResources(rsConfig, "ns");
+
+      expect(result.items).toHaveLength(0);
+    });
+
+    it("caps at maxPages to prevent unbounded loops on a misbehaving server", async () => {
+      vi.mocked(KubeConfig).mockImplementationOnce(makeKubeConfigWithServer);
+      const fetchMock = vi.mocked(fetchModule);
+      fetchMock.mockResolvedValue({
+        ok: true,
+        headers: new Headers({ "content-type": "application/json" }),
+        json: async () => ({ items: [{ name: "x" }], metadata: { continue: "never-ends" } }),
+      } as never);
+
+      const client = new K8sClient(validSession);
+      const result = await client.listAllResources(rsConfig, "ns", undefined, { maxPages: 3 });
+
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      expect(result.items).toHaveLength(3);
+    });
   });
 });

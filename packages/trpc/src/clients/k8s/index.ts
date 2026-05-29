@@ -12,12 +12,22 @@ export { isCoreKubernetesResource };
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
+export type PatchType = "strategic" | "merge" | "json";
+export type PatchSubresource = "scale" | "status";
+
 export class K8sClient {
   KubeConfig: KubeConfig | null;
+  // Captures the specific reason the KubeConfig could not be initialized so
+  // `getInitializedK8sClient` can surface it in the TRPCError message instead
+  // of a generic "client could not be initialized" string. Operators rely on
+  // this to distinguish "no session" from "missing cluster config" from
+  // "missing current context" when triaging KRCI integration-view failures.
+  kubeConfigInitError: string | null = null;
 
   constructor(session: CustomSession | undefined) {
     if (!session || !session.user) {
       this.KubeConfig = null;
+      this.kubeConfigInitError = "No active session for this request.";
       return;
     }
 
@@ -33,7 +43,9 @@ export class K8sClient {
     const userToken = session.user?.secret.idToken;
 
     if (!userToken) {
-      throw new Error("No access token provided in session");
+      this.KubeConfig = null;
+      this.kubeConfigInitError = "No access token provided in session.";
+      return;
     }
 
     this.KubeConfig.users = [
@@ -45,12 +57,16 @@ export class K8sClient {
 
     const cluster = this.KubeConfig.getCurrentCluster();
     if (!cluster) {
-      throw new Error("No cluster configuration found");
+      this.KubeConfig = null;
+      this.kubeConfigInitError = "No cluster configuration found in kubeconfig.";
+      return;
     }
 
     const currentContext = this.KubeConfig.getCurrentContext();
     if (!currentContext) {
-      throw new Error("No current context found in kubeConfig");
+      this.KubeConfig = null;
+      this.kubeConfigInitError = "No current context found in kubeconfig.";
+      return;
     }
 
     this.KubeConfig.contexts = [
@@ -82,12 +98,16 @@ export class K8sClient {
   }
 
   /**
-   * Unified method to list any Kubernetes resource (core or custom)
+   * Unified method to list any Kubernetes resource (core or custom). Returns the
+   * single page returned by the API server (subject to the API server's chunk
+   * limit, typically 500 items by default). Use {@link listAllResources} when the
+   * full set is required.
    */
   async listResource(
     resourceConfig: K8sResourceConfig,
     namespace?: string,
-    labelSelector?: string
+    labelSelector?: string,
+    options?: { limit?: number; continueToken?: string }
   ): Promise<KubeObjectListBase<KubeObjectBase>> {
     if (!this.KubeConfig) {
       throw new Error("KubeConfig is not initialized");
@@ -99,10 +119,62 @@ export class K8sClient {
     if (labelSelector) {
       queryParams.append("labelSelector", labelSelector);
     }
+    if (options?.limit && options.limit > 0) {
+      queryParams.append("limit", String(options.limit));
+    }
+    if (options?.continueToken) {
+      queryParams.append("continue", options.continueToken);
+    }
 
     const fullUrl = queryParams.toString() ? `${url}?${queryParams.toString()}` : url;
 
     return this.makeRequest("GET", fullUrl) as unknown as KubeObjectListBase<KubeObjectBase>;
+  }
+
+  /**
+   * List every page of a resource by following the API server's `continue` token.
+   * Use when a single-page response could miss items (e.g. ReplicaSet history of a
+   * long-lived Deployment exceeding the default 500-item chunk limit).
+   */
+  async listAllResources(
+    resourceConfig: K8sResourceConfig,
+    namespace?: string,
+    labelSelector?: string,
+    options?: { pageSize?: number; maxPages?: number }
+  ): Promise<KubeObjectListBase<KubeObjectBase>> {
+    const pageSize = options?.pageSize;
+    const maxPages = options?.maxPages ?? 20;
+
+    let continueToken: string | undefined;
+    let pages = 0;
+    const items: KubeObjectBase[] = [];
+    let lastPage: KubeObjectListBase<KubeObjectBase> | undefined;
+
+    do {
+      const page = await this.listResource(resourceConfig, namespace, labelSelector, {
+        limit: pageSize,
+        continueToken,
+      });
+      items.push(...(page.items ?? []));
+      lastPage = page;
+      continueToken = (page.metadata as { continue?: string } | undefined)?.continue;
+      pages += 1;
+    } while (continueToken && pages < maxPages);
+
+    if (continueToken) {
+      // Pagination cap hit with a non-empty continue token — callers receive a
+      // truncated result and have no other signal. Warn so the gap is at least
+      // diagnosable in server logs (e.g. rollback failing with NOT_FOUND for a
+      // valid RS that lives beyond the cap).
+      console.warn(
+        `listAllResources: maxPages cap of ${maxPages} reached for ${resourceConfig.kind}` +
+          `${namespace ? ` in namespace ${namespace}` : ""}; results are truncated.`
+      );
+    }
+
+    // Reuse the last page's envelope (kind/apiVersion/metadata.resourceVersion)
+    // and replace the items array with the accumulated set.
+    return { ...lastPage!, items };
   }
 
   /**
@@ -187,14 +259,16 @@ export class K8sClient {
     resourceConfig: K8sResourceConfig,
     name: string,
     namespace: string | undefined,
-    body: object
+    body: object,
+    patchType: PatchType = "strategic",
+    subresource?: PatchSubresource
   ): Promise<KubeObjectBase> {
     if (!this.KubeConfig) {
       throw new Error("KubeConfig is not initialized");
     }
 
-    const url = this.buildResourceUrl(resourceConfig, { namespace, name });
-    return this.makeRequest("PATCH", url, body);
+    const url = this.buildResourceUrl(resourceConfig, { namespace, name, subresource });
+    return this.makeRequest("PATCH", url, body, patchType);
   }
 
   /**
@@ -223,57 +297,47 @@ export class K8sClient {
   /**
    * Build the appropriate Kubernetes API URL for any resource
    */
-  private buildResourceUrl(resourceConfig: K8sResourceConfig, options: { namespace?: string; name?: string }): string {
+  private buildResourceUrl(
+    resourceConfig: K8sResourceConfig,
+    options: { namespace?: string; name?: string; subresource?: string }
+  ): string {
     const cluster = this.KubeConfig!.getCurrentCluster();
     if (!cluster) {
       throw new Error("No current cluster found");
     }
 
     const { server } = cluster;
-    const { namespace, name } = options;
+    const { namespace, name, subresource } = options;
 
     const isNamespaced =
       !resourceConfig.clusterScoped &&
       !CLUSTER_SCOPED_CORE_RESOURCES.has(resourceConfig.kind) &&
       resourceConfig.kind !== "Namespace";
 
-    let basePath: string;
-    let resourcePath: string;
-
     // Extract version from either version field or apiVersion field
     const version = resourceConfig.version || resourceConfig.apiVersion?.split("/").pop() || "v1";
 
-    if (isCoreKubernetesResource(resourceConfig)) {
-      basePath = `/api/${version}`;
+    const basePath = isCoreKubernetesResource(resourceConfig)
+      ? `/api/${version}`
+      : resourceConfig.group
+        ? `/apis/${resourceConfig.group}/${version}`
+        : `/apis/${version}`;
 
-      if (isNamespaced && namespace) {
-        resourcePath = `namespaces/${namespace}/${resourceConfig.pluralName}`;
-      } else {
-        resourcePath = resourceConfig.pluralName;
-      }
-    } else {
-      // Handle empty group case to avoid double slashes
-      if (resourceConfig.group) {
-        basePath = `/apis/${resourceConfig.group}/${version}`;
-      } else {
-        basePath = `/apis/${version}`;
-      }
+    const resourcePath =
+      isNamespaced && namespace ? `namespaces/${namespace}/${resourceConfig.pluralName}` : resourceConfig.pluralName;
 
-      if (isNamespaced && namespace) {
-        resourcePath = `namespaces/${namespace}/${resourceConfig.pluralName}`;
-      } else {
-        resourcePath = resourceConfig.pluralName;
-      }
-    }
-
-    // Ensure no double slashes by cleaning up the path construction
-    let url = `${server}${basePath}/${resourcePath}`.replace(/\/+/g, "/").replace(":/", "://");
+    let url = `${server}${basePath}/${resourcePath}`;
 
     if (name) {
       url += `/${name}`;
     }
 
-    return url;
+    if (subresource) {
+      url += `/${subresource}`;
+    }
+
+    // Ensure no double slashes anywhere in the path (applied after all segments are appended)
+    return url.replace(/([^:])\/{2,}/g, "$1/");
   }
 
   /**
@@ -282,7 +346,8 @@ export class K8sClient {
   private async makeRequest(
     method: HttpMethod,
     url: string,
-    body?: object
+    body?: object,
+    patchType?: PatchType
   ): Promise<KubeObjectBase | KubeObjectListBase<KubeObjectBase>> {
     if (!this.KubeConfig) {
       throw new Error("KubeConfig is not initialized");
@@ -308,10 +373,6 @@ export class K8sClient {
       Accept: "application/json",
     };
 
-    if (body && ["POST", "PUT", "PATCH"].includes(method)) {
-      requestHeaders["Content-Type"] = "application/json";
-    }
-
     const opts = {
       method,
       headers: requestHeaders,
@@ -320,6 +381,16 @@ export class K8sClient {
     };
 
     if (body && ["POST", "PUT", "PATCH"].includes(method)) {
+      if (method === "PATCH") {
+        requestHeaders["Content-Type"] =
+          patchType === "merge"
+            ? "application/merge-patch+json"
+            : patchType === "json"
+              ? "application/json-patch+json"
+              : "application/strategic-merge-patch+json";
+      } else {
+        requestHeaders["Content-Type"] = "application/json";
+      }
       opts.body = JSON.stringify(body);
     }
 
