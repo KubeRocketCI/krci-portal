@@ -1,6 +1,5 @@
 export * from "./common/index.js";
 export * from "./groups/Core/index.js";
-export * from "./groups/Core/index.js";
 export * from "./groups/apps/index.js";
 export * from "./groups/autoscaling/index.js";
 export * from "./groups/batch/index.js";
@@ -10,5 +9,6 @@ export * from "./groups/Tekton/index.js";
 export * from "./groups/Trivy/index.js";
 export * from "./groups/Networking/index.js";
 export * from "./groups/Storage/index.js";
+export * from "./groups/ApiExtensions/index.js";
 export * from "./groups/RBAC/index.js";
 export * from "./integrations/index.js";

@@ -27,6 +27,23 @@ export type KubeObjectListBase<T extends KubeObjectBase> = z.infer<typeof KubeOb
 
 export type ResourceLabels = Record<string, string> | undefined;
 
+// Canonical K8s condition status values. Typed as `string` on KubeCondition
+// because runtime conditions extracted from arbitrary K8s resources may report
+// non-spec values, and a strict union would force casts at every consumer.
+export const KUBE_CONDITION_STATUS = {
+  True: "True",
+  False: "False",
+  Unknown: "Unknown",
+} as const;
+
+export interface KubeCondition {
+  type: string;
+  status: string;
+  lastTransitionTime?: string;
+  reason?: string;
+  message?: string;
+}
+
 export interface K8sResourceConfig<Labels extends ResourceLabels = ResourceLabels> extends z.infer<
   typeof k8sResourceConfigSchema
 > {
