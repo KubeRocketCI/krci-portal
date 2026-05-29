@@ -24,6 +24,11 @@ import { routeK8sOverview } from "@/modules/k8s/pages/overview/route";
 import { routeK8sList } from "@/modules/k8s/pages/list/route";
 import { routeK8sDetailNamespaced } from "@/modules/k8s/pages/detail-namespaced/route";
 import { routeK8sDetailCluster } from "@/modules/k8s/pages/detail-cluster/route";
+import { routeK8sCRDsDetail } from "@/modules/k8s/pages/crds/detail/route";
+import { routeK8sCRParent } from "@/modules/k8s/pages/custom-resources/cr-parent/route";
+import { routeK8sCRList } from "@/modules/k8s/pages/custom-resources/list/route";
+import { routeK8sCRDetailNs } from "@/modules/k8s/pages/custom-resources/detail-namespaced/route";
+import { routeK8sCRDetailCluster } from "@/modules/k8s/pages/custom-resources/detail-cluster/route";
 import { routeK8sPodsList } from "@/modules/k8s/pages/pods/list/route";
 import { routeK8sPodDetail } from "@/modules/k8s/pages/pods/detail/route";
 import { routeK8sNodesList } from "@/modules/k8s/pages/nodes/list/route";
@@ -194,6 +199,8 @@ const routeTree = rootRoute.addChildren([
         routeK8sList,
         routeK8sDetailNamespaced,
         routeK8sDetailCluster,
+        routeK8sCRDsDetail,
+        routeK8sCRParent.addChildren([routeK8sCRList, routeK8sCRDetailNs, routeK8sCRDetailCluster]),
         routeK8sPodsList,
         routeK8sPodDetail,
         routeK8sNodesList,
