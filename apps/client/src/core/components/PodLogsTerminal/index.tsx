@@ -9,6 +9,7 @@ import { LogViewer, type LogViewerRef } from "@/core/components/LogViewer";
 import { downloadTextFile, generateTimestampedLogFilename, sanitizeLogFilenamePart } from "@/core/utils/download";
 import { Pod } from "@my-project/shared";
 import { usePodLogs } from "./hooks/usePodLogs";
+import { formatLogText } from "./format";
 
 export interface PodLogsProps {
   clusterName: string;
@@ -25,32 +26,6 @@ export interface PodLogsProps {
 
 // Legacy alias for backward compatibility
 export type PodLogsTerminalProps = PodLogsProps;
-
-const TIMESTAMP_REGEX = /\[\[(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.?\d*Z?)\]\]\s+/g;
-
-function formatLogLine(line: string, showTimestamps: boolean): string {
-  if (!showTimestamps) {
-    return line.replace(TIMESTAMP_REGEX, "");
-  }
-
-  return line.replace(TIMESTAMP_REGEX, (_match, timestamp) => {
-    try {
-      const date = new Date(timestamp);
-      const localeTime = date.toLocaleString(undefined, {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      });
-      return `[ ${localeTime} ] `;
-    } catch {
-      return _match;
-    }
-  });
-}
 
 export const PodLogsTerminal: React.FC<PodLogsProps> = ({
   clusterName,
@@ -108,7 +83,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
         hasStreamContentRef.current = true;
         setHasStreamContent(true);
       }
-      const formatted = lines.map((line) => formatLogLine(line, logsTimestamps));
+      const formatted = lines.map((line) => formatLogText(line, logsTimestamps));
       logViewerRef.current?.appendLines(formatted);
     },
     [logsTimestamps]
@@ -127,7 +102,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
       // If only timestamps changed and we have raw lines, re-append with new formatting
       if (prev.podName === podName && prev.container === activeContainer && prev.timestamps !== logsTimestamps) {
         if (savedLines.length > 0) {
-          const reformatted = savedLines.map((line) => formatLogLine(line, logsTimestamps));
+          const reformatted = savedLines.map((line) => formatLogText(line, logsTimestamps));
           logViewerRef.current?.appendLines(reformatted);
           rawLinesRef.current = savedLines;
         }
@@ -194,7 +169,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
   // Format logs for static mode only
   const formattedLogs = useMemo(() => {
     if (!logs) return "";
-    return formatLogLine(logs, logsTimestamps);
+    return formatLogText(logs, logsTimestamps);
   }, [logs, logsTimestamps]);
 
   // Generate download filename
@@ -206,7 +181,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
   // Copy/download use raw lines ref in streaming mode, formatted string in static mode
   const getExportContent = useCallback(() => {
     if (follow && rawLinesRef.current.length > 0) {
-      return rawLinesRef.current.map((line) => formatLogLine(line, logsTimestamps)).join("\n");
+      return rawLinesRef.current.map((line) => formatLogText(line, logsTimestamps)).join("\n");
     }
     return formattedLogs;
   }, [follow, formattedLogs, logsTimestamps]);
@@ -275,69 +250,77 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
 
   const hasExportContent = follow ? hasStreamContent : !!formattedLogs;
 
-  const renderControls = () => (
-    <div className="flex w-full items-end justify-between gap-4">
-      <div className="flex flex-wrap items-end gap-4">
-        {pods.length > 1 && (
-          <div className="flex min-w-[180px] flex-col gap-1.5">
-            <Label htmlFor="pod-select">Pod</Label>
-            <Select value={activePod?.metadata?.name || ""} onValueChange={handlePodChange}>
-              <SelectTrigger id="pod-select" className="h-9">
-                <SelectValue placeholder="Select pod" />
-              </SelectTrigger>
-              <SelectContent>
-                {pods.map((pod: Pod) => (
-                  <SelectItem key={pod.metadata?.name} value={pod.metadata?.name || ""}>
-                    {pod.metadata?.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        <div className="flex min-w-[200px] flex-col gap-1.5">
-          <Label htmlFor="container-select">Container</Label>
-          <Select value={activeContainer} onValueChange={handleContainerChange}>
-            <SelectTrigger id="container-select" className="h-9">
-              <SelectValue placeholder="Select container" />
+  // Left toolbar group: what to show (pod / container / timestamps).
+  // Inline labels + h-8 controls so every item matches the built-in font-size
+  // selector and scroll buttons in height and baseline.
+  const renderLeftControls = () => (
+    <div className="flex flex-shrink-0 flex-wrap items-center gap-3">
+      {pods.length > 1 && (
+        <div className="flex items-center gap-2">
+          <Label htmlFor="pod-select" className="text-muted-foreground text-xs">
+            Pod
+          </Label>
+          <Select value={activePod?.metadata?.name || ""} onValueChange={handlePodChange}>
+            <SelectTrigger id="pod-select" className="h-8 min-w-[180px] text-xs">
+              <SelectValue placeholder="Select pod" />
             </SelectTrigger>
             <SelectContent>
-              {availableContainers.map((container) => (
-                <SelectItem key={container.name} value={container.name}>
-                  {container.name} {container.type !== "container" && <em>({container.type})</em>}
+              {pods.map((pod: Pod) => (
+                <SelectItem key={pod.metadata?.name} value={pod.metadata?.name || ""} className="text-xs">
+                  {pod.metadata?.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
+      )}
 
-        <div className="flex items-center gap-2 pb-1">
-          <Switch checked={logsTimestamps} onCheckedChange={setLogsTimestamps} id="timestamps-switch" />
-          <Label htmlFor="timestamps-switch" className="cursor-pointer text-sm">
-            Timestamps
-          </Label>
-        </div>
+      <div className="flex items-center gap-2">
+        <Label htmlFor="container-select" className="text-muted-foreground text-xs">
+          Container
+        </Label>
+        <Select value={activeContainer} onValueChange={handleContainerChange}>
+          <SelectTrigger id="container-select" className="h-8 min-w-[200px] text-xs">
+            <SelectValue placeholder="Select container" />
+          </SelectTrigger>
+          <SelectContent>
+            {availableContainers.map((container) => (
+              <SelectItem key={container.name} value={container.name} className="text-xs">
+                {container.name} {container.type !== "container" && <em>({container.type})</em>}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className="flex gap-1 pb-1">
-        <Tooltip title="Copy to clipboard">
-          <Button variant="secondary" size="icon" onClick={handleCopy} disabled={!hasExportContent} className="h-8 w-8">
-            <Copy className="h-4 w-4" />
-          </Button>
-        </Tooltip>
-        <Tooltip title="Download logs">
-          <Button
-            variant="secondary"
-            size="icon"
-            onClick={handleDownload}
-            disabled={!hasExportContent}
-            className="h-8 w-8"
-          >
-            <Download className="h-4 w-4" />
-          </Button>
-        </Tooltip>
+      <div className="flex items-center gap-2">
+        <Switch checked={logsTimestamps} onCheckedChange={setLogsTimestamps} id="timestamps-switch" />
+        <Label htmlFor="timestamps-switch" className="text-muted-foreground cursor-pointer text-xs">
+          Timestamps
+        </Label>
       </div>
+    </div>
+  );
+
+  // Right toolbar group: actions (copy / download).
+  const renderControls = () => (
+    <div className="flex flex-shrink-0 gap-1">
+      <Tooltip title="Copy to clipboard">
+        <Button variant="secondary" size="icon" onClick={handleCopy} disabled={!hasExportContent} className="h-8 w-8">
+          <Copy className="h-4 w-4" />
+        </Button>
+      </Tooltip>
+      <Tooltip title="Download logs">
+        <Button
+          variant="secondary"
+          size="icon"
+          onClick={handleDownload}
+          disabled={!hasExportContent}
+          className="h-8 w-8"
+        >
+          <Download className="h-4 w-4" />
+        </Button>
+      </Tooltip>
     </div>
   );
 
@@ -348,8 +331,8 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
       content={follow ? undefined : formattedLogs}
       isLoading={isLoading || !podReadyForLogs}
       error={getErrorMessage()}
+      renderLeftControls={renderLeftControls}
       renderControls={renderControls}
-      fontSizeInline={false}
       loadingMessage={getLoadingMessage()}
       errorMessagePrefix="Error loading logs"
       emptyMessage="No logs available"
