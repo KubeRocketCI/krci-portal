@@ -16,7 +16,7 @@ type CustomMessages = {
 };
 
 export type DeleteKubeObjectDialogProps = DialogProps<{
-  description: string;
+  description: React.ReactNode;
   objectName: string | undefined;
   resourceConfig: K8sResourceConfig;
   resource: KubeObjectBase;
