@@ -1,6 +1,7 @@
 import { Workflow } from "lucide-react";
 import { k8sDaemonSetConfig } from "@my-project/shared";
 import { daemonSetColumns } from "./daemonsets.columns";
+import { DaemonSetHeaderActions } from "./daemonsets.actions";
 import type { ResourceDescriptor } from "../types";
 
 export const daemonSetsDescriptor: ResourceDescriptor = {
@@ -19,4 +20,5 @@ export const daemonSetsDescriptor: ResourceDescriptor = {
       ? { phase: "Available", severity: "success" }
       : { phase: "Progressing", severity: "warning" };
   },
+  actionsSlot: DaemonSetHeaderActions,
 };

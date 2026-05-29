@@ -17,12 +17,34 @@ import { defaultPermissions } from "@my-project/shared";
 const searchParams: { tab?: string } = {};
 const navigateMock = vi.fn();
 
-vi.mock("@tanstack/react-router", () => ({
-  useParams: () => ({ clusterName: "test-cluster", kind: "pods", namespace: "default", name: "my-pod" }),
-  useSearch: () => searchParams,
-  useNavigate: () => navigateMock,
-  Link: ({ children, to }: { children: React.ReactNode; to?: string }) => <a href={to ?? "#"}>{children}</a>,
-}));
+vi.mock("@tanstack/react-router", () => {
+  const routeStub: Record<string, unknown> = {};
+  routeStub.lazy = () => routeStub;
+  routeStub.addChildren = () => routeStub;
+  routeStub.update = () => routeStub;
+  const createRootRouteWithContext = () => () => routeStub;
+  return {
+    useParams: () => ({ clusterName: "test-cluster", kind: "pods", namespace: "default", name: "my-pod" }),
+    useSearch: () => searchParams,
+    useNavigate: () => navigateMock,
+    Link: ({ children, to }: { children: React.ReactNode; to?: string }) => <a href={to ?? "#"}>{children}</a>,
+    createRoute: () => routeStub,
+    createRootRoute: () => routeStub,
+    createRootRouteWithContext,
+    createRouter: () => ({}),
+    createLazyRoute: () => routeStub,
+    Outlet: () => null,
+    RouterProvider: () => null,
+    redirect: () => {
+      throw new Error("redirect");
+    },
+    useRouterState: () => ({}),
+    useLocation: () => ({ pathname: "/" }),
+    useMatches: () => [],
+    HeadContent: () => null,
+    Scripts: () => null,
+  };
+});
 
 // ---- usePermissions mock — controlled per-test ----
 const permsMock = {
