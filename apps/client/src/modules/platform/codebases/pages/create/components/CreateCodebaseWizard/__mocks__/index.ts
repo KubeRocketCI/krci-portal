@@ -1,5 +1,12 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { gitProvider } from "@my-project/shared";
+import {
+  gitProvider,
+  k8sGitServerConfig,
+  k8sJiraServerConfig,
+  k8sTemplateConfig,
+  k8sConfigMapConfig,
+} from "@my-project/shared";
+import { getK8sWatchListQueryCacheKey, getK8sWatchItemQueryCacheKey } from "@/k8s/api/hooks/useWatch/query-keys";
 
 /**
  * Mock Git Servers for wizard testing
@@ -234,7 +241,15 @@ export const seedWizardMockData = (queryClient: QueryClient) => {
   // Mock Git Servers list (stored as Map)
   const gitServersMap = new Map(Object.values(mockGitServers).map((server) => [server.metadata.name, server]));
 
-  const gitServersQueryKey = ["k8s:watchList", clusterName, namespace, "gitservers"];
+  // Build keys via the same helpers the production hooks use so the seeded data
+  // always lands under the exact key the component reads (the key shape includes
+  // the resource `group`; hand-building it here would silently drift).
+  const gitServersQueryKey = getK8sWatchListQueryCacheKey(
+    clusterName,
+    namespace,
+    k8sGitServerConfig.group,
+    k8sGitServerConfig.pluralName
+  );
 
   queryClient.setQueryData(gitServersQueryKey, {
     apiVersion: "v2.krci.io/v1",
@@ -246,7 +261,13 @@ export const seedWizardMockData = (queryClient: QueryClient) => {
   // Mock individual Git Server watches
   Object.values(mockGitServers).forEach((gitServer) => {
     queryClient.setQueryData(
-      ["k8s:watchItem", clusterName, namespace, "gitservers", gitServer.metadata.name],
+      getK8sWatchItemQueryCacheKey(
+        clusterName,
+        namespace,
+        k8sGitServerConfig.group,
+        k8sGitServerConfig.pluralName,
+        gitServer.metadata.name
+      ),
       gitServer
     );
   });
@@ -254,7 +275,12 @@ export const seedWizardMockData = (queryClient: QueryClient) => {
   // Mock Jira Servers list (stored as Map)
   const jiraServersMap = new Map(Object.values(mockJiraServers).map((server) => [server.metadata.name, server]));
 
-  const jiraServersQueryKey = ["k8s:watchList", clusterName, namespace, "jiraservers"];
+  const jiraServersQueryKey = getK8sWatchListQueryCacheKey(
+    clusterName,
+    namespace,
+    k8sJiraServerConfig.group,
+    k8sJiraServerConfig.pluralName
+  );
 
   queryClient.setQueryData(jiraServersQueryKey, {
     apiVersion: "v2.krci.io/v1",
@@ -266,7 +292,13 @@ export const seedWizardMockData = (queryClient: QueryClient) => {
   // Mock individual Jira Server watches
   Object.values(mockJiraServers).forEach((jiraServer) => {
     queryClient.setQueryData(
-      ["k8s:watchItem", clusterName, namespace, "jiraservers", jiraServer.metadata.name],
+      getK8sWatchItemQueryCacheKey(
+        clusterName,
+        namespace,
+        k8sJiraServerConfig.group,
+        k8sJiraServerConfig.pluralName,
+        jiraServer.metadata.name
+      ),
       jiraServer
     );
   });
@@ -283,7 +315,12 @@ export const seedWizardMockData = (queryClient: QueryClient) => {
   // Mock Templates list (stored as Map)
   const templatesMap = new Map(Object.values(mockTemplates).map((template) => [template.metadata.name, template]));
 
-  const templatesQueryKey = ["k8s:watchList", clusterName, namespace, "templates"];
+  const templatesQueryKey = getK8sWatchListQueryCacheKey(
+    clusterName,
+    namespace,
+    k8sTemplateConfig.group,
+    k8sTemplateConfig.pluralName
+  );
 
   queryClient.setQueryData(templatesQueryKey, {
     apiVersion: "v2.krci.io/v1",
@@ -294,11 +331,29 @@ export const seedWizardMockData = (queryClient: QueryClient) => {
 
   // Mock individual Template watches
   Object.values(mockTemplates).forEach((template) => {
-    queryClient.setQueryData(["k8s:watchItem", clusterName, namespace, "templates", template.metadata.name], template);
+    queryClient.setQueryData(
+      getK8sWatchItemQueryCacheKey(
+        clusterName,
+        namespace,
+        k8sTemplateConfig.group,
+        k8sTemplateConfig.pluralName,
+        template.metadata.name
+      ),
+      template
+    );
   });
 
   // Mock KRCI Config
-  queryClient.setQueryData(["k8s:watchItem", clusterName, namespace, "configmaps", "krci-config"], mockKRCIConfig);
+  queryClient.setQueryData(
+    getK8sWatchItemQueryCacheKey(
+      clusterName,
+      namespace,
+      k8sConfigMapConfig.group,
+      k8sConfigMapConfig.pluralName,
+      "krci-config"
+    ),
+    mockKRCIConfig
+  );
 };
 
 /**

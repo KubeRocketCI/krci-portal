@@ -49,9 +49,16 @@ export const useWatchList = <I extends KubeObjectBase>({
   const queryClient = useQueryClient();
 
   const queryKey = React.useMemo(
-    () => getK8sWatchListQueryCacheKey(clusterName, _namespace, resourceConfig.pluralName, labels),
+    () =>
+      getK8sWatchListQueryCacheKey(clusterName, _namespace, resourceConfig.group, resourceConfig.pluralName, labels),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [_namespace, clusterName, resourceConfig.pluralName, labels ? JSON.stringify(labels) : undefined]
+    [
+      _namespace,
+      clusterName,
+      resourceConfig.group,
+      resourceConfig.pluralName,
+      labels ? JSON.stringify(labels) : undefined,
+    ]
   );
 
   const query = useQuery<CustomKubeObjectList<I>, RequestError>({
