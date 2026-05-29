@@ -5,8 +5,9 @@ import { TableHead } from "@/core/components/Table/components/TableHead";
 import { TablePagination } from "@/core/components/Table/components/TablePagination";
 import { TableSettings } from "@/core/components/Table/components/TableSettings";
 import { SORT_DEFAULTS, TABLE_SETTINGS_DEFAULTS } from "@/core/components/Table/constants";
-import { SortState, TableSort } from "@/core/components/Table/types";
-import { createSortFunction } from "@/core/components/Table/utils";
+import { TableSort } from "@/core/components/Table/types";
+import { useColumnSync } from "@/core/components/Table/hooks/useColumnSync";
+import { useSyncedSortState } from "@/core/components/Table/hooks/useSyncedSortState";
 import { cn } from "@/core/utils/classname";
 import { ServerSideTableProps } from "./types";
 import { useIsNarrow } from "@/core/hooks/use-narrow";
@@ -61,7 +62,7 @@ export const ServerSideTable = <DataType,>({
   outlined = true,
 }: ServerSideTableProps<DataType>) => {
   const isNarrow = useIsNarrow();
-  const [columns, setColumns] = React.useState(_columns);
+  const [columns, setColumns] = useColumnSync(_columns, id);
 
   const sortSettings: TableSort = React.useMemo(
     () => ({
@@ -78,11 +79,7 @@ export const ServerSideTable = <DataType,>({
     [settings?.show]
   );
 
-  const [sortState, setSortState] = React.useState<SortState<DataType>>({
-    order: sortSettings.order,
-    sortFn: createSortFunction(sortSettings.order, sortSettings.sortBy),
-    sortBy: sortSettings.sortBy,
-  });
+  const [sortState, setSortState] = useSyncedSortState<DataType>(sortSettings);
 
   // Check if current page is beyond total pages
   const isPageOutOfBounds = React.useMemo(() => {

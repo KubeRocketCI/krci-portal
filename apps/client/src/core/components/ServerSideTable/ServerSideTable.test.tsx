@@ -2,13 +2,18 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { ServerSideTable } from "./index";
 
+const tableHeadColumnsSpy = vi.fn();
+
 // Mock components
 vi.mock("@/core/components/ui/table", () => ({
   TableUI: ({ children }: { children: React.ReactNode }) => <table>{children}</table>,
 }));
 
 vi.mock("../Table/components/TableHead", () => ({
-  TableHead: () => <thead data-testid="table-head" />,
+  TableHead: ({ columns }: { columns: { id: string }[] }) => {
+    tableHeadColumnsSpy(columns);
+    return <thead data-testid="table-head" />;
+  },
 }));
 
 vi.mock("../Table/components/TableBody", () => ({
@@ -209,5 +214,50 @@ describe("ServerSideTable - Page Out of Bounds", () => {
 
     expect(screen.getByTestId("custom-empty")).toBeInTheDocument();
     expect(screen.queryByText("Page not found")).not.toBeInTheDocument();
+  });
+
+  it("does NOT resync local column state on parent re-render with a fresh array reference but identical column ids", () => {
+    const columnsInitial = [
+      {
+        id: "name",
+        label: "Name",
+        data: { render: ({ data }: { data: { name: string } }) => data.name },
+        cell: { show: true, baseWidth: 50 },
+      },
+    ];
+    // Identical column ids/shape — but a brand new array reference, simulating
+    // a parent re-render that rebuilds the columns inline (e.g. on data refetch).
+    const columnsFreshReference = [
+      {
+        id: "name",
+        label: "Name",
+        data: { render: ({ data }: { data: { name: string } }) => data.name },
+        cell: { show: true, baseWidth: 50 },
+      },
+    ];
+
+    tableHeadColumnsSpy.mockClear();
+
+    const pagination = {
+      show: true,
+      page: 0,
+      rowsPerPage: 25,
+      totalCount: 0,
+      onPageChange: vi.fn(),
+      onRowsPerPageChange: vi.fn(),
+    };
+
+    const { rerender } = render(
+      <ServerSideTable id="test-table" data={[]} columns={columnsInitial} pagination={pagination} />
+    );
+    const initiallyRendered = tableHeadColumnsSpy.mock.calls.at(-1)?.[0];
+
+    rerender(<ServerSideTable id="test-table" data={[]} columns={columnsFreshReference} pagination={pagination} />);
+    const afterRerender = tableHeadColumnsSpy.mock.calls.at(-1)?.[0];
+
+    // Must still be the initial array reference: a per-render resync would wipe
+    // user-applied TableSettings visibility toggles on every server-side page
+    // change or refetch.
+    expect(afterRerender).toBe(initiallyRendered);
   });
 });

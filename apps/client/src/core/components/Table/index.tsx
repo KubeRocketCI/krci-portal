@@ -12,15 +12,15 @@ import {
   TABLE_SETTINGS_DEFAULTS,
 } from "./constants";
 import { useFilteredData } from "./hooks/useFilteredData";
+import { useColumnSync } from "./hooks/useColumnSync";
+import { useSyncedSortState } from "./hooks/useSyncedSortState";
 import {
-  SortState,
   TablePagination as TablePaginationType,
   TableProps,
   TableSelection,
   TableSettings as TableSettingsType,
   TableSort,
 } from "./types";
-import { createSortFunction } from "./utils";
 import { usePagination } from "@/core/hooks/usePagination";
 import { useIsNarrow } from "@/core/hooks/use-narrow";
 import { cn } from "@/core/utils/classname";
@@ -49,7 +49,8 @@ export const DataTable = <DataType,>({
   containerProps,
 }: TableProps<DataType>) => {
   const isNarrow = useIsNarrow();
-  const [columns, setColumns] = React.useState(_columns);
+  const [columns, setColumns] = useColumnSync(_columns, id);
+
   const paginationSettings: TablePaginationType = React.useMemo(
     () => ({
       show: pagination?.show ?? PAGINATION_DEFAULTS.SHOW,
@@ -104,11 +105,7 @@ export const DataTable = <DataType,>({
     initialRowsPerPage: paginationSettings.rowsPerPage!,
   });
 
-  const [sortState, setSortState] = React.useState<SortState<DataType>>({
-    order: sortSettings.order,
-    sortFn: createSortFunction(sortSettings.order, sortSettings.sortBy),
-    sortBy: sortSettings.sortBy,
-  });
+  const [sortState, setSortState] = useSyncedSortState<DataType>(sortSettings);
 
   const filteredData = useFilteredData<DataType>({
     data,
