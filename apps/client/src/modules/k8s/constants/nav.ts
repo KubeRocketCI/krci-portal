@@ -1,4 +1,4 @@
-import { Bell, Folder, Globe, HardDrive, Layers, PanelsTopLeft, Server, Shield } from "lucide-react";
+import { Bell, Folder, Globe, HardDrive, Layers, PanelsTopLeft, Puzzle, Server, Shield } from "lucide-react";
 import type { NavItem, SimpleNavItem } from "@/core/components/sidebar/types";
 import { resourceRegistry } from "../registry";
 import type { SidebarGroup as RegistrySidebarGroup } from "../registry/types";
@@ -13,6 +13,7 @@ const groupIconMap: Record<RegistrySidebarGroup, typeof Layers> = {
   Config: Folder,
   Security: Shield,
   Cluster: Server,
+  CustomResources: Puzzle,
 };
 
 export function createK8sNavigationConfig(clusterName: string, allowedKinds: Set<string>): NavItem[] {
