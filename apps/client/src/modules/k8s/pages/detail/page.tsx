@@ -1,23 +1,22 @@
 import { Layers, Trash } from "lucide-react";
-import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
-import { PATH_K8S_LIST_FULL } from "../../pages/list/route";
-import { Button } from "@/core/components/ui/button";
+import { useParams } from "@tanstack/react-router";
+import { PATH_K8S_LIST_FULL } from "@/modules/k8s/constants/paths";
+import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { DeleteKubeObjectDialog } from "@/core/components/DeleteKubeObject";
+import { usePermissions } from "@/k8s/api/hooks/usePermissions";
 import { resolveDescriptor } from "../../registry/resolve";
 import { resourceRegistry } from "../../registry";
 import { useK8sResourceItem } from "../../hooks/useK8sResourceItem";
+import { useDetailTabs, DEFAULT_DETAIL_TABS } from "../../hooks/useDetailTabs";
 import { ResourceOverviewTab } from "../../components/ResourceOverviewTab";
 import { ResourceYamlTab } from "../../components/ResourceYamlTab";
 import { ResourceEventsTab } from "../../components/ResourceEventsTab";
 import { ErrorContent } from "@/core/components/ErrorContent";
 import type { DetailVariant } from "../../registry/types";
 import type { K8sResourceConfig, KubeObjectBase } from "@my-project/shared";
-
-const DETAIL_TABS = ["overview", "yaml", "events"] as const;
-type DetailTab = (typeof DETAIL_TABS)[number];
 
 const fallbackConfig: K8sResourceConfig = {
   apiVersion: "v1",
@@ -29,15 +28,14 @@ const fallbackConfig: K8sResourceConfig = {
 };
 
 export function K8sDetailPage({ expectedVariant }: { expectedVariant: DetailVariant }) {
-  const navigate = useNavigate();
   const params = useParams({ strict: false }) as {
     clusterName?: string;
     kind?: string;
     namespace?: string;
     name?: string;
   };
-  const search = useSearch({ strict: false }) as { tab?: string };
   const openDelete = useDialogOpener(DeleteKubeObjectDialog);
+  const { activeTabIdx, setTab, onTabChange } = useDetailTabs(DEFAULT_DETAIL_TABS);
 
   const { clusterName, kind, name } = params;
   const namespace = expectedVariant === "namespaced" ? (params.namespace ?? "") : "";
@@ -46,6 +44,16 @@ export function K8sDetailPage({ expectedVariant }: { expectedVariant: DetailVari
   const config = descriptor?.config ?? fallbackConfig;
   const result = useK8sResourceItem<KubeObjectBase>(config, namespace, name ?? "");
   const item = result.data;
+
+  // Permission check uses the resolved resource's GVR. For unknown kinds the
+  // hook is disabled to avoid a spurious SelfSubjectAccessReview against the
+  // "Unknown" fallback config; defaultPermissions keep Delete safely disabled.
+  const perms = usePermissions({
+    group: config.group,
+    version: config.version,
+    resourcePlural: config.pluralName,
+    enabled: !!descriptor,
+  });
 
   if (!descriptor) {
     return (
@@ -110,12 +118,7 @@ export function K8sDetailPage({ expectedVariant }: { expectedVariant: DetailVari
     );
   }
 
-  const activeTab: DetailTab = (DETAIL_TABS as readonly string[]).includes(search.tab ?? "")
-    ? (search.tab as DetailTab)
-    : "overview";
-  const activeTabIdx = DETAIL_TABS.indexOf(activeTab);
   const Overview = descriptor.overviewTab ?? ResourceOverviewTab;
-  const setTab = (t: DetailTab) => void navigate({ search: { ...search, tab: t } as never });
 
   const handleDelete = () => {
     openDelete({
@@ -151,25 +154,26 @@ export function K8sDetailPage({ expectedVariant }: { expectedVariant: DetailVari
   ];
 
   return (
-    <PageWrapper
-      breadcrumbs={[
-        { label: "Cluster" },
-        { label: descriptor.label, route: listRoute },
-        { label: item.metadata?.name ?? "" },
-      ]}
-    >
+    <PageWrapper breadcrumbs={breadcrumbs}>
       <PageContentWrapper
         icon={Layers}
         title={item.metadata?.name ?? ""}
         description={description}
         actions={
-          <Button variant="outline" size="sm" onClick={handleDelete}>
-            <Trash size={14} className="mr-1.5" /> Delete
-          </Button>
+          <>
+            {descriptor.actionsSlot && <descriptor.actionsSlot item={item} />}
+            <ButtonWithPermission
+              allowed={perms.data.delete.allowed}
+              reason={perms.data.delete.reason ?? ""}
+              ButtonProps={{ variant: "outline", size: "sm", onClick: handleDelete }}
+            >
+              <Trash size={14} className="mr-1.5" /> Delete
+            </ButtonWithPermission>
+          </>
         }
         tabs={tabs}
         activeTab={activeTabIdx}
-        onTabChange={(_, idx) => setTab(DETAIL_TABS[idx])}
+        onTabChange={onTabChange}
       />
     </PageWrapper>
   );
