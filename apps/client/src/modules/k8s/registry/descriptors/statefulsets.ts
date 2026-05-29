@@ -1,6 +1,7 @@
 import { Layers2 } from "lucide-react";
 import { k8sStatefulSetConfig } from "@my-project/shared";
 import { statefulSetColumns } from "./statefulsets.columns";
+import { StatefulSetHeaderActions } from "./statefulsets.actions";
 import type { ResourceDescriptor } from "../types";
 
 export const statefulSetsDescriptor: ResourceDescriptor = {
@@ -12,7 +13,7 @@ export const statefulSetsDescriptor: ResourceDescriptor = {
   defaultSort: { sortBy: "name", order: "asc" },
   columns: statefulSetColumns,
   status: (item) => {
-    const status = (item as { status?: { readyReplicas?: number; updatedReplicas?: number } }).status;
+    const status = (item as { status?: { readyReplicas?: number } }).status;
     const spec = (item as { spec?: { replicas?: number } }).spec;
     const ready = status?.readyReplicas ?? 0;
     const desired = spec?.replicas ?? 0;
@@ -21,4 +22,5 @@ export const statefulSetsDescriptor: ResourceDescriptor = {
       ? { phase: "Available", severity: "success" }
       : { phase: "Progressing", severity: "warning" };
   },
+  actionsSlot: StatefulSetHeaderActions,
 };
