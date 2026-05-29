@@ -1,8 +1,11 @@
-import React, { useRef, useImperativeHandle, forwardRef, useState } from "react";
+import React, { useRef, useImperativeHandle, forwardRef, useState, useCallback, useEffect } from "react";
 import { LazyLog } from "@melloware/react-logviewer";
+import { ArrowDownToLine, ArrowUpToLine } from "lucide-react";
+import { Button } from "@/core/components/ui/button";
 import { Card } from "@/core/components/ui/card";
 import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { useTheme } from "@/core/hooks/useTheme";
 
 export interface LogViewerProps {
@@ -15,17 +18,16 @@ export interface LogViewerProps {
   /** Error message to display */
   error?: string;
   /**
-   * Custom controls to render above the log viewer.
-   * In inline mode (default) the node shares a row with the font-size selector
-   * in a `flex-1 min-w-0` slot. Set `fontSizeInline={false}` to give the caller
-   * controls their own full-width row.
+   * Custom controls rendered at the LEFT of the toolbar row, before the
+   * built-in controls (font size + scroll-to-top/bottom). Use for inputs that
+   * select what is shown, e.g. a container/pod selector or a timestamps toggle.
+   */
+  renderLeftControls?: () => React.ReactNode;
+  /**
+   * Custom controls rendered RIGHT-aligned in the toolbar row, after a flexible
+   * spacer. Use for actions like copy / download.
    */
   renderControls?: () => React.ReactNode;
-  /**
-   * When true (default) the font-size selector shares a row with `renderControls`.
-   * Set false for callers whose controls need the full row width.
-   */
-  fontSizeInline?: boolean;
   /** Loading message */
   loadingMessage?: string;
   /** Error message prefix */
@@ -163,6 +165,17 @@ const lazyLogProps = {
   highlightLineClassName: "log-viewer-highlight",
 };
 
+/** Compact secondary icon button used for the scroll-to-top/bottom controls. */
+function ScrollButton({ label, icon, onClick }: { label: string; icon: React.ReactNode; onClick: () => void }) {
+  return (
+    <Tooltip title={label}>
+      <Button variant="secondary" size="icon" onClick={onClick} aria-label={label} className="h-8 w-8">
+        {icon}
+      </Button>
+    </Tooltip>
+  );
+}
+
 /**
  * LogViewer - Generic log viewer component
  *
@@ -178,8 +191,8 @@ export const LogViewer = forwardRef<LogViewerRef, LogViewerProps>(
       streaming = false,
       isLoading = false,
       error,
+      renderLeftControls,
       renderControls,
-      fontSizeInline = true,
       loadingMessage = "Loading logs...",
       errorMessagePrefix = "Failed to load logs",
       emptyMessage = "No logs available",
@@ -192,6 +205,48 @@ export const LogViewer = forwardRef<LogViewerRef, LogViewerProps>(
     const [hasStreamContent, setHasStreamContent] = useState(false);
     const hasStreamContentRef = useRef(false);
     const [fontSize, setFontSize] = useState(11);
+    // In streaming mode LazyLog's `follow` keeps the view pinned to the latest
+    // line. Jumping to the top pauses it (so it doesn't get yanked back on the
+    // next append); jumping to the bottom resumes it.
+    const [isFollowing, setIsFollowing] = useState(true);
+
+    /** virtua list handle exposed by LazyLog: scrollTo(offset)/scrollSize.
+     * `listRef` is a LazyLog implementation detail, so guard defensively against
+     * a future library version changing or removing it. */
+    const getScrollHandle = useCallback(() => {
+      const handle = lazyLogRef.current?.listRef?.current as
+        | { scrollTo: (o: number) => void; scrollSize: number }
+        | undefined;
+      return typeof handle?.scrollTo === "function" && typeof handle.scrollSize === "number" ? handle : undefined;
+    }, []);
+
+    // The streaming LazyLog `key` includes the theme, so a theme switch remounts
+    // it as a fresh, bottom-following instance. Mirror that by resuming follow —
+    // otherwise a prior "scroll to top" (which paused follow) would leave the
+    // remounted stream frozen at the top.
+    useEffect(() => {
+      setIsFollowing(true);
+    }, [theme]);
+
+    const scrollToTop = useCallback(() => {
+      // Only pause follow once there is content to pause on. The scroll
+      // controls stay visible in streaming mode even during the initial
+      // loading overlay (to avoid flicker on clear/repopulate); pausing here
+      // before the first line arrives would leave the stream frozen at the top
+      // once it starts, with follow silently disabled for the whole session.
+      if (streaming && hasStreamContent) {
+        setIsFollowing(false);
+      }
+      getScrollHandle()?.scrollTo(0);
+    }, [streaming, hasStreamContent, getScrollHandle]);
+
+    const scrollToBottom = useCallback(() => {
+      if (streaming) {
+        setIsFollowing(true);
+      }
+      const handle = getScrollHandle();
+      handle?.scrollTo(handle.scrollSize);
+    }, [streaming, getScrollHandle]);
 
     useImperativeHandle(
       ref,
@@ -208,6 +263,10 @@ export const LogViewer = forwardRef<LogViewerRef, LogViewerProps>(
         clear: () => {
           hasStreamContentRef.current = false;
           setHasStreamContent(false);
+          // Resume auto-follow for the fresh stream — otherwise a prior
+          // "scroll to top" (which paused follow) would leave the new stream
+          // (e.g. after switching container) frozen at the top.
+          setIsFollowing(true);
           lazyLogRef.current?.clear();
         },
       }),
@@ -216,6 +275,10 @@ export const LogViewer = forwardRef<LogViewerRef, LogViewerProps>(
 
     const hasContent = streaming ? hasStreamContent : !!content;
     const showOverlay = isLoading || !!error || !hasContent;
+    // In streaming mode the LazyLog instance stays mounted across reloads
+    // (e.g. switching container), so keep the scroll controls visible to avoid
+    // them flickering each time the stream is cleared and re-populated.
+    const showScrollControls = streaming || hasContent;
 
     const fontSizeSelector = (
       <div className="flex flex-shrink-0 items-center gap-2">
@@ -235,27 +298,40 @@ export const LogViewer = forwardRef<LogViewerRef, LogViewerProps>(
       </div>
     );
 
+    // Built-in controls: font size + scroll-to-top/bottom, grouped together
+    // (kept clear of LazyLog's own search-match navigation).
+    const builtInControls = (
+      <div className="flex flex-shrink-0 items-center gap-3">
+        {fontSizeSelector}
+        {showScrollControls && (
+          <div className="flex items-center gap-1">
+            <ScrollButton label="Scroll to top" icon={<ArrowUpToLine className="h-4 w-4" />} onClick={scrollToTop} />
+            <ScrollButton
+              label="Scroll to bottom"
+              icon={<ArrowDownToLine className="h-4 w-4" />}
+              onClick={scrollToBottom}
+            />
+          </div>
+        )}
+      </div>
+    );
+
     return (
       <>
         <style>{logViewerStyles}</style>
 
         <div className="flex h-full min-h-0 flex-col gap-4 pt-1">
-          {(hasContent || renderControls) &&
-            (fontSizeInline ? (
-              <div className="flex items-end gap-3">
-                {fontSizeSelector}
-                {renderControls && <div className="min-w-0 flex-1">{renderControls()}</div>}
-              </div>
-            ) : (
-              <>
-                {renderControls && <div>{renderControls()}</div>}
-                <div className="flex justify-end">{fontSizeSelector}</div>
-              </>
-            ))}
+          {(hasContent || streaming || renderControls || renderLeftControls) && (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              {renderLeftControls && renderLeftControls()}
+              {builtInControls}
+              {renderControls && <div className="ml-auto flex-shrink-0">{renderControls()}</div>}
+            </div>
+          )}
 
           {/* Log Viewer Card */}
           <Card
-            className="relative flex min-h-0 min-h-[45svh] flex-1 flex-col overflow-hidden"
+            className="relative flex min-h-[45svh] flex-1 flex-col overflow-hidden"
             style={{ "--log-font-size": `${fontSize}px` } as React.CSSProperties}
           >
             {/* Overlay for loading/error/empty states */}
@@ -284,9 +360,16 @@ export const LogViewer = forwardRef<LogViewerRef, LogViewerProps>(
             {/* LazyLog — streaming or static mode */}
             <div className="log-viewer-container min-h-0 flex-1">
               {streaming ? (
-                <LazyLog key={`stream-${theme}`} ref={lazyLogRef} external follow extraLines={1} {...lazyLogProps} />
+                <LazyLog
+                  key={`stream-${theme}`}
+                  ref={lazyLogRef}
+                  external
+                  follow={isFollowing}
+                  extraLines={1}
+                  {...lazyLogProps}
+                />
               ) : (
-                hasContent && <LazyLog key={theme} text={content || ""} {...lazyLogProps} />
+                hasContent && <LazyLog key={theme} ref={lazyLogRef} text={content || ""} {...lazyLogProps} />
               )}
             </div>
           </Card>

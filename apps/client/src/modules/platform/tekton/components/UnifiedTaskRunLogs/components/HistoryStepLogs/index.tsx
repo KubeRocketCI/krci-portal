@@ -56,19 +56,17 @@ export function HistoryStepLogs({ taskRunName, stepName, resultUid, namespace }:
   };
 
   const renderControls = () => (
-    <div className="flex w-full justify-end">
-      <div className="flex gap-1">
-        <Tooltip title="Copy to clipboard">
-          <Button variant="secondary" size="icon" onClick={handleCopy} disabled={!logs} className="h-8 w-8">
-            <Copy className="h-4 w-4" />
-          </Button>
-        </Tooltip>
-        <Tooltip title="Download logs">
-          <Button variant="secondary" size="icon" onClick={handleDownload} disabled={!logs} className="h-8 w-8">
-            <Download className="h-4 w-4" />
-          </Button>
-        </Tooltip>
-      </div>
+    <div className="flex flex-shrink-0 gap-1">
+      <Tooltip title="Copy to clipboard">
+        <Button variant="secondary" size="icon" onClick={handleCopy} disabled={!logs} className="h-8 w-8">
+          <Copy className="h-4 w-4" />
+        </Button>
+      </Tooltip>
+      <Tooltip title="Download logs">
+        <Button variant="secondary" size="icon" onClick={handleDownload} disabled={!logs} className="h-8 w-8">
+          <Download className="h-4 w-4" />
+        </Button>
+      </Tooltip>
     </div>
   );
 
