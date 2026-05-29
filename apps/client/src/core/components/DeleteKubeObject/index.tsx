@@ -47,15 +47,24 @@ export const DeleteKubeObjectDialog: React.FC<DeleteKubeObjectDialogProps> = (_p
       return;
     }
 
+    // Close the dialog first so the user sees the snackbar feedback unobscured;
+    // the toast is surfaced by useResourceCRUDMutation regardless of outcome.
     handleClosePopup();
 
-    await resourceDeleteMutation.mutate({
-      resource,
-      resourceConfig,
-    });
-
-    if (backRoute) {
-      router.navigate(backRoute);
+    try {
+      // mutateAsync (not mutate) is required to actually await the delete before navigating.
+      // The bare `.mutate(...)` returns void — `await` resolves immediately, navigating
+      // away while the request is still in flight and masking server-side failures.
+      await resourceDeleteMutation.mutateAsync({
+        resource,
+        resourceConfig,
+      });
+      if (backRoute) {
+        router.navigate(backRoute);
+      }
+    } catch {
+      // Toast is already surfaced by useResourceCRUDMutation. Stay on the current page
+      // (don't navigate to backRoute) so the user can re-open the dialog and retry.
     }
   }, [
     errorTemplate,
@@ -80,7 +89,7 @@ export const DeleteKubeObjectDialog: React.FC<DeleteKubeObjectDialogProps> = (_p
     })();
   }, [onBeforeSubmit, open]);
 
-  const isSubmitNotAllowed = nameValue !== objectName || !!errorTemplate;
+  const isSubmitNotAllowed = nameValue !== objectName || !!errorTemplate || resourceDeleteMutation.isPending;
   const dialogTitle = React.useMemo(() => getDialogTitle(errorTemplate, objectName || ""), [errorTemplate, objectName]);
 
   return (
@@ -93,7 +102,7 @@ export const DeleteKubeObjectDialog: React.FC<DeleteKubeObjectDialogProps> = (_p
           <div className="flex flex-col gap-2">
             {!loadingActive && !errorTemplate && (
               <div>
-                <p>{description}</p>
+                <div>{description}</div>
               </div>
             )}
             <div className="flex flex-col gap-2">
@@ -123,7 +132,13 @@ export const DeleteKubeObjectDialog: React.FC<DeleteKubeObjectDialogProps> = (_p
           <Button type="button" variant="ghost" onClick={handleClosePopup}>
             Cancel
           </Button>
-          <Button type="button" variant="default" onClick={onSubmit} disabled={isSubmitNotAllowed}>
+          <Button
+            type="button"
+            variant="default"
+            onClick={onSubmit}
+            disabled={isSubmitNotAllowed}
+            aria-busy={resourceDeleteMutation.isPending}
+          >
             Confirm
           </Button>
         </DialogFooter>
