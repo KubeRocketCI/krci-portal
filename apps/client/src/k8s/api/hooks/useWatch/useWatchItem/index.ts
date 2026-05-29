@@ -49,13 +49,13 @@ export const useWatchItem = <I extends KubeObjectBase>({
   const queryClient = useQueryClient();
 
   const queryKey = React.useMemo(
-    () => getK8sWatchItemQueryCacheKey(clusterName, _namespace, resourceConfig.pluralName, name),
-    [clusterName, _namespace, resourceConfig.pluralName, name]
+    () => getK8sWatchItemQueryCacheKey(clusterName, _namespace, resourceConfig.group, resourceConfig.pluralName, name),
+    [clusterName, _namespace, resourceConfig.group, resourceConfig.pluralName, name]
   );
 
   const listQueryKey = React.useMemo(
-    () => getK8sWatchListQueryCacheKey(clusterName, _namespace, resourceConfig.pluralName),
-    [clusterName, _namespace, resourceConfig.pluralName]
+    () => getK8sWatchListQueryCacheKey(clusterName, _namespace, resourceConfig.group, resourceConfig.pluralName),
+    [clusterName, _namespace, resourceConfig.group, resourceConfig.pluralName]
   );
 
   const query = useQuery<I | undefined, RequestError>({

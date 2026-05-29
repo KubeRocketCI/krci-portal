@@ -1,8 +1,9 @@
 import { defineProject } from "vitest/config";
 import tsconfigPaths from "vite-tsconfig-paths";
+import svgr from "vite-plugin-svgr";
 
 export default defineProject({
-  plugins: [tsconfigPaths({ root: "./" })],
+  plugins: [tsconfigPaths({ root: "./" }), svgr()],
   test: {
     name: "client",
     environment: "jsdom",
