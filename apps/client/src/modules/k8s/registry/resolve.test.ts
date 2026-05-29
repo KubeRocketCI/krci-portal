@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { listRouteSlug, resolveDescriptor } from "./resolve";
 import { resourceRegistry } from "./index";
-import type { ResourceRegistry } from "./types";
 
 describe("listRouteSlug", () => {
   it("extracts the URL segment after /k8s/", () => {
@@ -22,27 +21,10 @@ describe("resolveDescriptor", () => {
   });
 
   it("resolves a descriptor whose URL slug differs from its registry key", () => {
-    // Verify the slug-based fallback: registry key "widgets" but listRoute slug "wdg".
-    const mockRegistry: ResourceRegistry = {
-      widgets: {
-        config: {
-          group: "example.io",
-          version: "v1",
-          apiVersion: "example.io/v1",
-          kind: "Widget",
-          singularName: "widget",
-          pluralName: "widgets",
-        },
-        label: "Widgets",
-        sidebarGroup: "Workloads",
-        detailVariant: "namespaced",
-        columns: () => [],
-        listRoute: "/c/$clusterName/k8s/wdg",
-      },
-    };
-    const descriptor = resolveDescriptor(mockRegistry, "wdg");
+    // CRDs are registered under key "customresourcedefinitions" but routed at /k8s/crds.
+    const descriptor = resolveDescriptor(resourceRegistry, "crds");
     expect(descriptor).not.toBeNull();
-    expect(descriptor?.config.pluralName).toBe("widgets");
+    expect(descriptor?.config.pluralName).toBe("customresourcedefinitions");
   });
 
   it("resolves directly by registry key when no listRoute override applies", () => {

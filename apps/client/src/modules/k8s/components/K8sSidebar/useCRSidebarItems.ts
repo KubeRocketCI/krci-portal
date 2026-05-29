@@ -64,7 +64,7 @@ export function useCRSidebarItems(clusterName: string): NavCollapsibleSubGroupIt
                     version,
                     plural: crd.spec.names.plural,
                   },
-                } as unknown as SimpleNavItem["route"],
+                } as SimpleNavItem["route"],
                 isActiveFn: (pathname: string) => activeRe.test(pathname),
               },
             ];

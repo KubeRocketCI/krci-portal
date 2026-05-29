@@ -53,7 +53,7 @@ function NameLink({
       return (
         <Button variant="link" asChild className="w-full justify-start p-0">
           <Link
-            to={PATH_K8S_CR_DETAIL_CLUSTER_FULL as never}
+            to={PATH_K8S_CR_DETAIL_CLUSTER_FULL}
             params={{ clusterName, group, version, plural: pluralName, name } as never}
           >
             <TextWithTooltip text={name || "—"} />
@@ -73,7 +73,7 @@ function NameLink({
     return (
       <Button variant="link" asChild className="w-full justify-start p-0">
         <Link
-          to={PATH_K8S_CR_DETAIL_NS_FULL as never}
+          to={PATH_K8S_CR_DETAIL_NS_FULL}
           params={{ clusterName, group, version, plural: pluralName, namespace, name } as never}
         >
           <TextWithTooltip text={name || "—"} />
