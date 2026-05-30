@@ -17,8 +17,12 @@ export function useDeploymentRevisions({ namespace, name }: Params) {
     queryKey: getK8sDeploymentRevisionsQueryCacheKey(clusterName, namespace, name),
     queryFn: () => trpc.k8s.listDeploymentRevisions.query({ namespace, name }),
     enabled: !!name && !!namespace,
-    // Always-stale: the rollback dialog mounts on demand and must reflect the live revision list
-    // (newly added or pruned ReplicaSets between dialog opens).
+    // The rollback dialog mounts on demand and must reflect the live revision list
+    // (newly added or pruned ReplicaSets between dialog opens). staleTime:0 alone is not
+    // enough: the global QueryClient sets refetchOnMount:false, and RollbackAction keeps this
+    // query subscribed for the button state, so the dialog would otherwise show cached data.
+    // refetchOnMount:"always" forces a fresh fetch every time the dialog mounts.
     staleTime: 0,
+    refetchOnMount: "always",
   });
 }

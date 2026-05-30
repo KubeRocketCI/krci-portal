@@ -56,4 +56,29 @@ describe("useDeploymentRevisions", () => {
     expect(queryMock).not.toHaveBeenCalled();
     expect(result.current.isPending).toBe(true);
   });
+
+  it("refetches on every remount even when the client defaults to refetchOnMount:false", async () => {
+    // Mirror the global QueryClient (refetchOnMount:false). Without refetchOnMount:"always"
+    // the rollback dialog would show a stale revision list cached by RollbackAction.
+    queryMock.mockResolvedValue([{ revision: 1 }]);
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false, refetchOnMount: false } },
+    });
+    const sharedWrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client }, children);
+
+    const first = renderHook(() => useDeploymentRevisions({ namespace: "ns", name: "foo" }), {
+      wrapper: sharedWrapper,
+    });
+    await waitFor(() => expect(first.result.current.data).toEqual([{ revision: 1 }]));
+    expect(queryMock).toHaveBeenCalledTimes(1);
+    first.unmount();
+
+    // Remount with the SAME (warm) client — must trigger a fresh fetch.
+    const second = renderHook(() => useDeploymentRevisions({ namespace: "ns", name: "foo" }), {
+      wrapper: sharedWrapper,
+    });
+    await waitFor(() => expect(queryMock).toHaveBeenCalledTimes(2));
+    second.unmount();
+  });
 });
