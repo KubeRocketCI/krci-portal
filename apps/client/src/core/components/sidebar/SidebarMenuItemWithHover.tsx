@@ -6,7 +6,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/colla
 import { cn } from "../../utils/classname";
 import { SidebarMenuContent } from "./SidebarMenuContent";
 import { usePinnedItems } from "@/core/hooks/usePinnedItems";
-import { createPinConfig } from "./utils";
+import { createPinConfig, isNavGroupActiveForPathname } from "./utils";
 import type { NavItem, SimpleNavItem, NavSubGroupItem, NavCollapsibleSubGroupItem, NavGroupItem } from "./types";
 import type { RouteParams } from "@/core/router/types";
 
@@ -101,14 +101,7 @@ export function SidebarMenuItemWithHover({
   // Must be called unconditionally before any early return to satisfy rules-of-hooks.
   const isGroupActiveByFn = useMemo(() => {
     if (!("children" in item) || !item.children) return false;
-    return (item as NavGroupItem).children.some((child) => {
-      if ("isActiveFn" in child && child.isActiveFn) return child.isActiveFn(pathname);
-      if ("kind" in child && child.kind === "collapsible-subgroup") {
-        return child.children.some((c) => c.isActiveFn?.(pathname));
-      }
-      if ("children" in child) return (child.children ?? []).some((c) => c.isActiveFn?.(pathname));
-      return false;
-    });
+    return isNavGroupActiveForPathname(item as NavGroupItem, pathname);
   }, [item, pathname]);
 
   if (isSimpleItem && simpleItem) {

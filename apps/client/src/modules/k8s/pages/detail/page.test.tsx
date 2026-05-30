@@ -125,6 +125,20 @@ vi.mock("@/core/components/ErrorContent", () => ({
   ErrorContent: ({ error }: { error: unknown }) => <div>Error: {String(error)}</div>,
 }));
 
+// ---- registry resolve: delegate to the REAL descriptor, but let a test graft an
+//      actionsSlot onto it (a hoisted vi.mock can't be re-configured per-test otherwise).
+let actionsSlotOverride: React.FC<{ item: unknown }> | undefined;
+vi.mock("../../registry/resolve", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../registry/resolve")>();
+  return {
+    ...actual,
+    resolveDescriptor: (...args: Parameters<typeof actual.resolveDescriptor>) => {
+      const descriptor = actual.resolveDescriptor(...args);
+      return descriptor && actionsSlotOverride ? { ...descriptor, actionsSlot: actionsSlotOverride } : descriptor;
+    },
+  };
+});
+
 // ---- Import the component under test (after mocks are set up) ----
 import { K8sDetailPage } from "./page";
 
@@ -140,6 +154,8 @@ describe("K8sDetailPage", () => {
     permsMock.data = structuredClone(defaultPermissions);
     // Reset search params
     delete searchParams.tab;
+    // Reset the per-test actionsSlot injection
+    actionsSlotOverride = undefined;
   });
 
   // (1) Delete button is disabled when perms.data.delete.allowed=false
@@ -160,9 +176,9 @@ describe("K8sDetailPage", () => {
     renderPage();
     const deleteBtn = screen.getByRole("button", { name: /delete/i });
     expect(deleteBtn).toBeDisabled();
-    // ButtonWithPermission renders a Tooltip wrapper when !allowed
-    // Check the tooltip container is present
-    expect(deleteBtn.closest("[title], [aria-label]") ?? deleteBtn).toBeTruthy();
+    // When denied, ButtonWithPermission wraps the button in a Tooltip trigger
+    // (carrying the reason). When allowed there is no such wrapper.
+    expect(deleteBtn.closest('[data-slot="tooltip-trigger"]')).toBeInTheDocument();
   });
 
   // (2) Delete button is enabled and onClick fires when allowed=true
@@ -196,34 +212,13 @@ describe("K8sDetailPage", () => {
 
   // (4) actionsSlot component renders when descriptor.actionsSlot is set
   it("renders actionsSlot when the registry descriptor defines one", () => {
-    // Override the registry mock to inject an actionsSlot
-    const ActionsSlotMock = () => <div data-testid="actions-slot">Custom Action</div>;
+    // Graft an actionsSlot onto the resolved descriptor for this test.
+    actionsSlotOverride = () => <div data-testid="actions-slot">Custom Action</div>;
 
-    // We need to override the registry descriptor for "pods"
-    vi.doMock("../../registry/resolve", () => ({
-      resolveDescriptor: () => ({
-        config: {
-          apiVersion: "v1",
-          kind: "Pod",
-          group: "",
-          version: "v1",
-          singularName: "pod",
-          pluralName: "pods",
-        },
-        label: "Pods",
-        detailVariant: "namespaced",
-        sidebarGroup: "Workloads",
-        columns: () => [],
-        actionsSlot: ActionsSlotMock,
-      }),
-    }));
-
-    // Since vi.doMock is not hoisted, we test with the real registry below
-    // The actionsSlot renders as <descriptor.actionsSlot item={item} />
-    // For this test, we check the conditional rendering logic is correct:
-    // render the page and verify no actionsSlot div since pods has none by default
     renderPage();
-    expect(screen.queryByTestId("actions-slot")).not.toBeInTheDocument();
+
+    // The page renders `descriptor.actionsSlot && <descriptor.actionsSlot item={item} />`.
+    expect(screen.getByTestId("actions-slot")).toBeInTheDocument();
   });
 
   // (6) ?tab=yaml URL param activates YAML tab index
