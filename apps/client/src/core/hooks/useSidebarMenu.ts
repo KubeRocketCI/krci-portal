@@ -2,28 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { useMatches } from "@tanstack/react-router";
 import { useLocation } from "@tanstack/react-router";
 import { useSidebar } from "../components/ui/sidebar";
-import type {
-  NavCollapsibleSubGroupItem,
-  NavGroupItem,
-  NavItem,
-  NavSubGroupItem,
-  SimpleNavItem,
-} from "../components/sidebar/types";
-
-function isGroupActiveForPathname(item: NavGroupItem, pathname: string): boolean {
-  return item.children.some((child) => {
-    if ("isActiveFn" in child && (child as SimpleNavItem).isActiveFn) {
-      return (child as SimpleNavItem).isActiveFn!(pathname);
-    }
-    if ((child as NavCollapsibleSubGroupItem).kind === "collapsible-subgroup") {
-      return (child as NavCollapsibleSubGroupItem).children.some((c) => c.isActiveFn?.(pathname));
-    }
-    if ("children" in child) {
-      return (child as NavSubGroupItem).children.some((c) => c.isActiveFn?.(pathname));
-    }
-    return false;
-  });
-}
+import type { NavGroupItem, NavItem } from "../components/sidebar/types";
+import { isNavGroupActiveForPathname } from "../components/sidebar/utils";
 
 /**
  * Custom hook for managing sidebar menu state
@@ -44,7 +24,7 @@ export function useSidebarMenu(nav: NavItem[], routerMatches: ReturnType<typeof 
         }
       }
 
-      return isGroupActiveForPathname(groupItem, pathname);
+      return isNavGroupActiveForPathname(groupItem, pathname);
     });
   }, [nav, routerMatches, pathname]);
 

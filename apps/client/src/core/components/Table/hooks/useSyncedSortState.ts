@@ -15,7 +15,16 @@ export function useSyncedSortState<DataType>(
     sortBy: sortSettings.sortBy,
   }));
 
+  // The useState initializer already seeds the correct value on mount, so the
+  // effect only needs to run when `sortSettings` actually changes afterwards.
+  // Skipping the first run avoids a redundant extra render on every table mount
+  // (createSortFunction returns a new closure, so re-setting would not bail out).
+  const isFirstRender = React.useRef(true);
   React.useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     setSortState({
       order: sortSettings.order,
       sortFn: createSortFunction(sortSettings.order, sortSettings.sortBy),
