@@ -1,6 +1,7 @@
 import { FileType } from "lucide-react";
 import { k8sStorageClassConfig } from "@my-project/shared";
 import { storageClassColumns } from "./storage-classes.columns";
+import { StorageClassOverviewTab } from "../../components/overrides/StorageClassOverviewTab";
 import type { ResourceDescriptor } from "../types";
 
 export const storageClassesDescriptor: ResourceDescriptor = {
@@ -12,4 +13,5 @@ export const storageClassesDescriptor: ResourceDescriptor = {
   defaultSort: { sortBy: "name", order: "asc" },
   columns: storageClassColumns,
   status: () => ({ phase: "Active", severity: "success" }),
+  overviewTab: StorageClassOverviewTab,
 };

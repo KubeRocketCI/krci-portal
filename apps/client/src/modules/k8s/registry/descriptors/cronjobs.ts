@@ -1,6 +1,8 @@
 import { Clock } from "lucide-react";
 import { k8sCronJobConfig } from "@my-project/shared";
 import { cronJobColumns } from "./cronjobs.columns";
+import { CronJobOverviewTab } from "../../components/overrides/CronJobOverviewTab";
+import { CronJobHeaderActions } from "./cronjobs.actions";
 import type { ResourceDescriptor } from "../types";
 
 export const cronJobsDescriptor: ResourceDescriptor = {
@@ -15,4 +17,6 @@ export const cronJobsDescriptor: ResourceDescriptor = {
     const spec = (item as { spec?: { suspend?: boolean } }).spec;
     return spec?.suspend ? { phase: "Suspended", severity: "neutral" } : { phase: "Active", severity: "success" };
   },
+  overviewTab: CronJobOverviewTab,
+  actionsSlot: CronJobHeaderActions,
 };

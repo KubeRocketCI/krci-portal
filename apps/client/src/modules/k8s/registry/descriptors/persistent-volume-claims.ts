@@ -1,6 +1,7 @@
 import { Database } from "lucide-react";
 import { k8sPersistentVolumeClaimConfig } from "@my-project/shared";
 import { persistentVolumeClaimColumns } from "./persistent-volume-claims.columns";
+import { PVCOverviewTab } from "../../components/overrides/PVCOverviewTab";
 import type { ResourceDescriptor } from "../types";
 
 export const persistentVolumeClaimsDescriptor: ResourceDescriptor = {
@@ -17,4 +18,5 @@ export const persistentVolumeClaimsDescriptor: ResourceDescriptor = {
     if (phase === "Pending") return { phase: "Pending", severity: "warning" };
     return { phase: phase || "Unknown", severity: "neutral" };
   },
+  overviewTab: PVCOverviewTab,
 };

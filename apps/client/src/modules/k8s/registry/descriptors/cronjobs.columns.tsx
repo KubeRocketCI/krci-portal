@@ -1,11 +1,13 @@
 import type { RenderName } from "./columnHelpers";
 import type { TableColumn } from "@/core/components/Table/types";
 import type { KubeObjectBase } from "@my-project/shared";
-import { makeNameColumn, namespaceColumn, ageColumn } from "./columnHelpers";
+import { getCronJobStatusIcon, getCronJobStatusLabel } from "@/k8s/api/groups/batch/CronJob/utils/getStatus";
+import { makeNameColumn, makeStatusColumn, namespaceColumn, ageColumn } from "./columnHelpers";
 
 export const cronJobColumns = (renderName: RenderName): TableColumn<KubeObjectBase>[] => [
   makeNameColumn(renderName),
   namespaceColumn,
+  makeStatusColumn(getCronJobStatusIcon, getCronJobStatusLabel),
   {
     id: "schedule",
     label: "Schedule",
@@ -24,6 +26,17 @@ export const cronJobColumns = (renderName: RenderName): TableColumn<KubeObjectBa
       render: ({ data }) => {
         const s = data as { spec?: { suspend?: boolean } };
         return s.spec?.suspend ? "Yes" : "No";
+      },
+    },
+    cell: { baseWidth: 10 },
+  },
+  {
+    id: "active",
+    label: "Active",
+    data: {
+      render: ({ data }) => {
+        const s = data as { status?: { active?: unknown[] } };
+        return String(s.status?.active?.length ?? 0);
       },
     },
     cell: { baseWidth: 10 },

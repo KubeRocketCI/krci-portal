@@ -1,6 +1,7 @@
 import { HardDrive } from "lucide-react";
 import { k8sPersistentVolumeConfig } from "@my-project/shared";
 import { persistentVolumeColumns } from "./persistent-volumes.columns";
+import { PVOverviewTab } from "../../components/overrides/PVOverviewTab";
 import type { ResourceDescriptor } from "../types";
 
 export const persistentVolumesDescriptor: ResourceDescriptor = {
@@ -11,6 +12,7 @@ export const persistentVolumesDescriptor: ResourceDescriptor = {
   detailVariant: "cluster",
   defaultSort: { sortBy: "name", order: "asc" },
   columns: persistentVolumeColumns,
+  overviewTab: PVOverviewTab,
   status: (item) => {
     const phase = (item as { status?: { phase?: string } }).status?.phase ?? "";
     if (phase === "Bound") return { phase: "Bound", severity: "success" };

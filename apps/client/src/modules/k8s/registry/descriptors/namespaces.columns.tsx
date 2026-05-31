@@ -1,13 +1,15 @@
 import type { RenderName } from "./columnHelpers";
 import type { TableColumn } from "@/core/components/Table/types";
 import type { KubeObjectBase } from "@my-project/shared";
-import { makeNameColumn, ageColumn } from "./columnHelpers";
+import { getNamespaceStatusIcon, getNamespaceStatusLabel } from "@/k8s/api/groups/Core/Namespace/utils/getStatus";
+import { makeNameColumn, makeStatusColumn, ageColumn } from "./columnHelpers";
 
 export const namespaceColumns = (renderName: RenderName): TableColumn<KubeObjectBase>[] => [
   makeNameColumn(renderName),
+  makeStatusColumn(getNamespaceStatusIcon, getNamespaceStatusLabel),
   {
-    id: "status",
-    label: "Status",
+    id: "phase",
+    label: "Phase",
     data: {
       render: ({ data }) => {
         const s = data as { status?: { phase?: string } };

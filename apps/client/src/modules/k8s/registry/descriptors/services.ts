@@ -1,6 +1,7 @@
 import { Network } from "lucide-react";
 import { k8sServiceConfig } from "@my-project/shared";
 import { serviceColumns } from "./services.columns";
+import { ServiceOverviewTab } from "../../components/overrides/ServiceOverviewTab";
 import type { ResourceDescriptor } from "../types";
 
 export const servicesDescriptor: ResourceDescriptor = {
@@ -12,4 +13,5 @@ export const servicesDescriptor: ResourceDescriptor = {
   defaultSort: { sortBy: "name", order: "asc" },
   columns: serviceColumns,
   status: () => ({ phase: "Active", severity: "success" }),
+  overviewTab: ServiceOverviewTab,
 };

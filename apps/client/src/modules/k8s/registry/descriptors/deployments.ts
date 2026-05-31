@@ -2,6 +2,7 @@ import { Rocket } from "lucide-react";
 import { k8sDeploymentConfig } from "@my-project/shared";
 import { deploymentColumns } from "./deployments.columns";
 import { DeploymentHeaderActions } from "./deployments.actions";
+import { DeploymentOverviewTab } from "../../components/overrides/DeploymentOverviewTab";
 import type { ResourceDescriptor } from "../types";
 
 export const deploymentsDescriptor: ResourceDescriptor = {
@@ -22,5 +23,6 @@ export const deploymentsDescriptor: ResourceDescriptor = {
       ? { phase: "Available", severity: "success" }
       : { phase: "Progressing", severity: "warning" };
   },
+  overviewTab: DeploymentOverviewTab,
   actionsSlot: DeploymentHeaderActions,
 };

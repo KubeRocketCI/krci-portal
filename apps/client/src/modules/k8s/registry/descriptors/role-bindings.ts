@@ -1,6 +1,7 @@
 import { Users } from "lucide-react";
 import { k8sRoleBindingConfig } from "@my-project/shared";
 import { roleBindingColumns } from "./role-bindings.columns";
+import { RoleBindingOverviewTab } from "../../components/overrides/RoleBindingOverviewTab";
 import type { ResourceDescriptor } from "../types";
 
 export const roleBindingsDescriptor: ResourceDescriptor = {
@@ -12,4 +13,5 @@ export const roleBindingsDescriptor: ResourceDescriptor = {
   defaultSort: { sortBy: "name", order: "asc" },
   columns: roleBindingColumns,
   status: () => ({ phase: "Active", severity: "success" }),
+  overviewTab: RoleBindingOverviewTab,
 };

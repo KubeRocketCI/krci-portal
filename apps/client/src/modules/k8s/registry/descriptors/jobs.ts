@@ -1,6 +1,7 @@
 import { Play } from "lucide-react";
 import { k8sJobConfig } from "@my-project/shared";
 import { jobColumns } from "./jobs.columns";
+import { JobOverviewTab } from "../../components/overrides/JobOverviewTab";
 import type { ResourceDescriptor } from "../types";
 
 export const jobsDescriptor: ResourceDescriptor = {
@@ -22,4 +23,5 @@ export const jobsDescriptor: ResourceDescriptor = {
     if (succeeded >= completions) return { phase: "Complete", severity: "success" };
     return { phase: "Running", severity: "info" };
   },
+  overviewTab: JobOverviewTab,
 };

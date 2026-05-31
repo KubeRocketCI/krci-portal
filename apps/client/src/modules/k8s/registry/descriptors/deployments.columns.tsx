@@ -2,21 +2,24 @@ import type { RenderName } from "./columnHelpers";
 import type { TableColumn } from "@/core/components/Table/types";
 import type { KubeObjectBase } from "@my-project/shared";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
-import { makeNameColumn, namespaceColumn, ageColumn } from "./columnHelpers";
+import { ReplicaProgress } from "@/modules/k8s/components/workload";
+import { getDeploymentStatusIcon, getDeploymentStatusLabel } from "@/k8s/api/groups/apps/Deployment/utils/getStatus";
+import { makeNameColumn, makeStatusColumn, namespaceColumn, ageColumn } from "./columnHelpers";
 
 export const deploymentColumns = (renderName: RenderName): TableColumn<KubeObjectBase>[] => [
   makeNameColumn(renderName),
   namespaceColumn,
+  makeStatusColumn(getDeploymentStatusIcon, getDeploymentStatusLabel),
   {
     id: "ready",
     label: "Ready",
     data: {
       render: ({ data }) => {
         const d = data as { status?: { readyReplicas?: number }; spec?: { replicas?: number } };
-        return `${d.status?.readyReplicas ?? 0}/${d.spec?.replicas ?? 0}`;
+        return <ReplicaProgress ready={d.status?.readyReplicas ?? 0} desired={d.spec?.replicas ?? 0} />;
       },
     },
-    cell: { baseWidth: 10 },
+    cell: { baseWidth: 12 },
   },
   {
     id: "up-to-date",
