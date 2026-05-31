@@ -5,6 +5,7 @@ import { useK8sResourceList } from "../../../../hooks/useK8sResourceList";
 import { formatRelativeTime } from "@/core/utils/date-humanize/utils";
 import { k8sEventConfig } from "@my-project/shared";
 import type { KubeObjectBase, Pod } from "@my-project/shared";
+import { EVENT_TONE } from "../../../../constants/event";
 
 interface K8sEvent extends KubeObjectBase {
   type?: string;
@@ -21,11 +22,6 @@ interface K8sEvent extends KubeObjectBase {
     uid?: string;
   };
 }
-
-const EVENT_TONE: Record<string, string> = {
-  Normal: "bg-emerald-500",
-  Warning: "bg-amber-500",
-};
 
 function CompactEventsCard({ pod }: { pod: Pod }) {
   const ns = pod.metadata?.namespace ?? "";

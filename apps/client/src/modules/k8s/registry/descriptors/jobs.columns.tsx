@@ -1,7 +1,9 @@
 import type { RenderName } from "./columnHelpers";
 import type { TableColumn } from "@/core/components/Table/types";
 import type { KubeObjectBase } from "@my-project/shared";
-import { makeNameColumn, namespaceColumn, ageColumn } from "./columnHelpers";
+import { ReplicaProgress } from "@/modules/k8s/components/workload";
+import { getJobStatusIcon, getJobStatusLabel } from "@/k8s/api/groups/batch/Job/utils/getStatus";
+import { makeNameColumn, makeStatusColumn, namespaceColumn, ageColumn } from "./columnHelpers";
 
 const formatDuration = (start?: string, end?: string) => {
   if (!start) return "—";
@@ -17,13 +19,14 @@ const formatDuration = (start?: string, end?: string) => {
 export const jobColumns = (renderName: RenderName): TableColumn<KubeObjectBase>[] => [
   makeNameColumn(renderName),
   namespaceColumn,
+  makeStatusColumn(getJobStatusIcon, getJobStatusLabel),
   {
     id: "completions",
     label: "Completions",
     data: {
       render: ({ data }) => {
         const s = data as { status?: { succeeded?: number }; spec?: { completions?: number } };
-        return `${s.status?.succeeded ?? 0}/${s.spec?.completions ?? 1}`;
+        return <ReplicaProgress ready={s.status?.succeeded ?? 0} desired={s.spec?.completions ?? 1} />;
       },
     },
     cell: { baseWidth: 14 },

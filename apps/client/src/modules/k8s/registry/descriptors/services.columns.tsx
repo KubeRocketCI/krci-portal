@@ -24,7 +24,7 @@ export const serviceColumns = (renderName: RenderName): TableColumn<KubeObjectBa
     data: {
       render: ({ data }) => {
         const s = data as { spec?: { clusterIP?: string } };
-        return s.spec?.clusterIP ?? "—";
+        return <TextWithTooltip text={s.spec?.clusterIP ?? "—"} />;
       },
     },
     cell: { baseWidth: 14 },

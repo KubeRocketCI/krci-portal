@@ -1,6 +1,7 @@
 import { Gauge } from "lucide-react";
 import { k8sHorizontalPodAutoscalerConfig } from "@my-project/shared";
 import { horizontalPodAutoscalerColumns } from "./horizontal-pod-autoscalers.columns";
+import { HPAOverviewTab } from "../../components/overrides/HPAOverviewTab";
 import type { ResourceDescriptor } from "../types";
 
 export const horizontalPodAutoscalersDescriptor: ResourceDescriptor = {
@@ -11,5 +12,6 @@ export const horizontalPodAutoscalersDescriptor: ResourceDescriptor = {
   detailVariant: "namespaced",
   defaultSort: { sortBy: "name", order: "asc" },
   columns: horizontalPodAutoscalerColumns,
+  overviewTab: HPAOverviewTab,
   status: () => ({ phase: "Active", severity: "success" }),
 };

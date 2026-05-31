@@ -4,6 +4,8 @@ import type { KubeObjectBase } from "@my-project/shared";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { makeNameColumn, ageColumn } from "./columnHelpers";
 
+const DEFAULT_CLASS_ANNOTATION = "storageclass.kubernetes.io/is-default-class";
+
 export const storageClassColumns = (renderName: RenderName): TableColumn<KubeObjectBase>[] => [
   makeNameColumn(renderName),
   {
@@ -38,6 +40,17 @@ export const storageClassColumns = (renderName: RenderName): TableColumn<KubeObj
       },
     },
     cell: { baseWidth: 20 },
+  },
+  {
+    id: "default",
+    label: "Default",
+    data: {
+      render: ({ data }) => {
+        const isDefault = data.metadata?.annotations?.[DEFAULT_CLASS_ANNOTATION] === "true";
+        return isDefault ? "Yes" : "No";
+      },
+    },
+    cell: { baseWidth: 10 },
   },
   ageColumn,
 ];

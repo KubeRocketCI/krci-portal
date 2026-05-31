@@ -2,22 +2,13 @@ import type { RenderName } from "./columnHelpers";
 import type { TableColumn } from "@/core/components/Table/types";
 import type { KubeObjectBase } from "@my-project/shared";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
-import { makeNameColumn, namespaceColumn, ageColumn } from "./columnHelpers";
+import { getPVCStatusIcon, getPVCStatusLabel } from "@/k8s/api/groups/Core/PersistentVolumeClaim/utils/getStatus";
+import { makeNameColumn, makeStatusColumn, namespaceColumn, ageColumn } from "./columnHelpers";
 
 export const persistentVolumeClaimColumns = (renderName: RenderName): TableColumn<KubeObjectBase>[] => [
   makeNameColumn(renderName),
   namespaceColumn,
-  {
-    id: "status",
-    label: "Status",
-    data: {
-      render: ({ data }) => {
-        const s = data as { status?: { phase?: string } };
-        return s.status?.phase ?? "—";
-      },
-    },
-    cell: { baseWidth: 12 },
-  },
+  makeStatusColumn(getPVCStatusIcon, getPVCStatusLabel),
   {
     id: "volume",
     label: "Volume",

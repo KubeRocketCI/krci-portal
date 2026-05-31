@@ -2,6 +2,7 @@ import { Layers2 } from "lucide-react";
 import { k8sStatefulSetConfig } from "@my-project/shared";
 import { statefulSetColumns } from "./statefulsets.columns";
 import { StatefulSetHeaderActions } from "./statefulsets.actions";
+import { StatefulSetOverviewTab } from "../../components/overrides/StatefulSetOverviewTab";
 import type { ResourceDescriptor } from "../types";
 
 export const statefulSetsDescriptor: ResourceDescriptor = {
@@ -22,5 +23,6 @@ export const statefulSetsDescriptor: ResourceDescriptor = {
       ? { phase: "Available", severity: "success" }
       : { phase: "Progressing", severity: "warning" };
   },
+  overviewTab: StatefulSetOverviewTab,
   actionsSlot: StatefulSetHeaderActions,
 };

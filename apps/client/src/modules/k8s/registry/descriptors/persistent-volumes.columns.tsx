@@ -2,21 +2,12 @@ import type { RenderName } from "./columnHelpers";
 import type { TableColumn } from "@/core/components/Table/types";
 import type { KubeObjectBase } from "@my-project/shared";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
-import { makeNameColumn, ageColumn } from "./columnHelpers";
+import { getPVStatusIcon, getPVStatusLabel } from "@/k8s/api/groups/Core/PersistentVolume/utils/getStatus";
+import { makeNameColumn, makeStatusColumn, ageColumn } from "./columnHelpers";
 
 export const persistentVolumeColumns = (renderName: RenderName): TableColumn<KubeObjectBase>[] => [
   makeNameColumn(renderName),
-  {
-    id: "status",
-    label: "Status",
-    data: {
-      render: ({ data }) => {
-        const s = data as { status?: { phase?: string } };
-        return s.status?.phase ?? "—";
-      },
-    },
-    cell: { baseWidth: 12 },
-  },
+  makeStatusColumn(getPVStatusIcon, getPVStatusLabel),
   {
     id: "capacity",
     label: "Capacity",
