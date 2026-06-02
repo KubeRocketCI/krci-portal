@@ -1,4 +1,5 @@
 export interface ReleaseBranchProps {
-  isDefaultBranchProtected: boolean;
-  defaultBranchVersion: string;
+  disabledReason?: string;
+  defaultBranchVersion?: string;
+  defaultBranchName: string;
 }

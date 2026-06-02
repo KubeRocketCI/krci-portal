@@ -9,12 +9,7 @@ import { LinkCreationService } from "@/k8s/services/link-creation";
 import { useCodebaseWatch, useGitServerWatch } from "@/modules/platform/codebases/pages/details/hooks/data";
 import { Badge } from "@/core/components/ui/badge";
 import { Tooltip } from "@/core/components/ui/tooltip";
-import {
-  checkForKRCIVersioning,
-  checkIsDefaultBranch,
-  codebaseBranchStatus,
-  getPipelineRunStatus,
-} from "@my-project/shared";
+import { isKRCIVersioning, checkIsDefaultBranch, codebaseBranchStatus, getPipelineRunStatus } from "@my-project/shared";
 import { ExternalLink } from "lucide-react";
 import React from "react";
 import { Actions } from "../Actions";
@@ -33,7 +28,7 @@ export function Summary({ codebaseBranch, latestBuildPipelineRun, latestSecurity
   const codebaseBranchStatusIcon = getCodebaseBranchStatusIcon(codebaseBranch);
   const lastPipelineRunStatusIcon = getPipelineRunStatusIcon(latestBuildPipelineRun);
 
-  const isKRCIVersioning = checkForKRCIVersioning(codebase?.spec.versioning.type);
+  const supportsKRCIVersioning = isKRCIVersioning(codebase?.spec.versioning.type);
 
   const { status: lastPipelineRunStatus, reason: lastPipelineRunReason } = getPipelineRunStatus(latestBuildPipelineRun);
 
@@ -112,7 +107,7 @@ export function Summary({ codebaseBranch, latestBuildPipelineRun, latestSecurity
             </div>
           )}
 
-          {isKRCIVersioning ? (
+          {supportsKRCIVersioning ? (
             <>
               <div className="flex items-center gap-1">
                 <span className="text-xs">Build:</span>
