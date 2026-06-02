@@ -1,6 +1,5 @@
-import { codebaseBranchStatus, codebaseVersioning, krciCommonLabels } from "@my-project/shared";
+import { isKRCIVersioning, codebaseBranchStatus, krciCommonLabels } from "@my-project/shared";
 import type { Codebase, CodebaseBranch } from "@my-project/shared";
-import React from "react";
 import { useCreateCodebaseBranchForm } from "../../providers/form/hooks";
 import {
   BranchName,
@@ -28,40 +27,46 @@ interface FormProps {
 export const Form = ({ codebase, defaultBranch, pipelines }: FormProps) => {
   const form = useCreateCodebaseBranchForm();
 
-  const defaultBranchVersion = defaultBranch?.spec.version;
-
-  const canCreateReleaseBranch = React.useMemo(
-    () =>
-      (codebase.spec.versioning.type === codebaseVersioning.edp ||
-        codebase.spec.versioning.type === codebaseVersioning.semver) &&
-      defaultBranch?.status?.status === codebaseBranchStatus.created,
-    [codebase.spec.versioning.type, defaultBranch]
-  );
+  const defaultBranchVersion = defaultBranch?.spec.version ?? undefined;
 
   const releaseFieldValue = useStore(form.store, (state) => state.values.release);
 
-  const isDefaultBranchProtected = React.useMemo(() => {
-    return !!defaultBranch?.metadata?.labels?.[krciCommonLabels.editProtection];
-  }, [defaultBranch]);
+  const isDefaultBranchProtected = !!defaultBranch?.metadata?.labels?.[krciCommonLabels.editProtection];
+
+  const supportsReleaseVersioning = isKRCIVersioning(codebase.spec.versioning.type);
+
+  const isDefaultBranchReady = defaultBranch?.status?.status === codebaseBranchStatus.created;
+
+  const canCreateReleaseBranch = supportsReleaseVersioning && isDefaultBranchReady;
+
+  let releaseBranchDisabledReason: string | undefined;
+  if (!supportsReleaseVersioning) {
+    releaseBranchDisabledReason = "Release branches are available only for codebases using EDP or SemVer versioning.";
+  } else if (!isDefaultBranchReady) {
+    releaseBranchDisabledReason =
+      "Release branches can be created only after the default branch has been successfully provisioned.";
+  } else if (isDefaultBranchProtected) {
+    releaseBranchDisabledReason =
+      "The default branch is protected from editing, so a release branch cannot be created from it.";
+  }
 
   return (
     <>
       <div className="flex flex-col gap-4">
-        {canCreateReleaseBranch && (
-          <div>
-            <ReleaseBranch
-              isDefaultBranchProtected={isDefaultBranchProtected}
-              defaultBranchVersion={defaultBranchVersion!}
-            />
-          </div>
-        )}
+        <div>
+          <ReleaseBranch
+            disabledReason={releaseBranchDisabledReason}
+            defaultBranchVersion={defaultBranchVersion}
+            defaultBranchName={defaultBranch?.spec.branchName ?? ""}
+          />
+        </div>
         {releaseFieldValue ? (
           <div>
-            <ReleaseBranchName defaultBranchVersion={defaultBranchVersion!} />
+            <ReleaseBranchName defaultBranchVersion={defaultBranchVersion} />
           </div>
         ) : (
           <div>
-            <BranchName codebase={codebase} defaultBranchVersion={defaultBranchVersion!} />
+            <BranchName codebase={codebase} defaultBranchVersion={defaultBranchVersion} />
           </div>
         )}
         <div>

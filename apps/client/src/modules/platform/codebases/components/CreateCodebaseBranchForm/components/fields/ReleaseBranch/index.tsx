@@ -10,6 +10,8 @@ import {
 } from "@my-project/shared";
 import { Switch } from "@/core/components/ui/switch";
 import { Label } from "@/core/components/ui/label";
+import { Tooltip } from "@/core/components/ui/tooltip";
+import { Info } from "lucide-react";
 import { useStore } from "@tanstack/react-form";
 
 const createReleaseName = (versionFieldValue: string) => {
@@ -22,9 +24,11 @@ const createReleaseName = (versionFieldValue: string) => {
   return createReleaseNameString(major, minor);
 };
 
-export const ReleaseBranch = ({ isDefaultBranchProtected, defaultBranchVersion }: ReleaseBranchProps) => {
+export const ReleaseBranch = ({ disabledReason, defaultBranchVersion, defaultBranchName }: ReleaseBranchProps) => {
   const form = useCreateCodebaseBranchForm();
   const releaseValue = useStore(form.store, (state) => state.values.release);
+
+  const isDisabled = !!disabledReason;
 
   const handleReleaseValueChange = React.useCallback(
     (checked: boolean) => {
@@ -33,7 +37,14 @@ export const ReleaseBranch = ({ isDefaultBranchProtected, defaultBranchVersion }
 
       form.setFieldValue("release", checked);
 
-      if (!version || !defaultBranchVersion || isDefaultBranchProtected) {
+      // A release branch must always be cut from the default branch. Reset the source
+      // here so a commit/branch selected before enabling the switch can't redefine it.
+      if (checked) {
+        form.setFieldValue("fromType", "branch" as const);
+        form.setFieldValue("fromCommit", defaultBranchName);
+      }
+
+      if (!version || !defaultBranchVersion || isDisabled) {
         return;
       }
 
@@ -59,21 +70,26 @@ export const ReleaseBranch = ({ isDefaultBranchProtected, defaultBranchVersion }
         form.setFieldValue("defaultBranchVersionPostfix", postfix);
       }
     },
-    [defaultBranchVersion, form, isDefaultBranchProtected]
+    [defaultBranchVersion, defaultBranchName, form, isDisabled]
   );
 
   return (
     <div className="flex items-center justify-between rounded-lg border p-4">
-      <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-1.5">
         <Label htmlFor="release-branch" className="text-sm font-medium">
           Release branch
         </Label>
+        {disabledReason && (
+          <Tooltip title={disabledReason}>
+            <Info size={16} className="text-muted-foreground" />
+          </Tooltip>
+        )}
       </div>
       <Switch
         id="release-branch"
         checked={releaseValue || false}
         onCheckedChange={handleReleaseValueChange}
-        disabled={isDefaultBranchProtected}
+        disabled={isDisabled}
       />
     </div>
   );

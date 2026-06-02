@@ -2,7 +2,7 @@ import React from "react";
 import { CODEBASE_BRANCH_FORM_NAMES } from "../constants";
 import type { CreateCodebaseBranchFormValues } from "../types";
 import type { Codebase, CodebaseBranch } from "@my-project/shared";
-import { codebaseVersioning, getVersionAndPostfixFromVersioningString } from "@my-project/shared";
+import { isKRCIVersioning, getVersionAndPostfixFromVersioningString } from "@my-project/shared";
 
 interface UseDefaultValuesProps {
   codebase: Codebase;
@@ -36,7 +36,7 @@ export const useDefaultValues = ({ codebase, defaultBranch, pipelines }: UseDefa
       return base;
     }
 
-    if (versioningType !== codebaseVersioning.edp && versioningType !== codebaseVersioning.semver) {
+    if (!isKRCIVersioning(versioningType)) {
       return base;
     }
 
