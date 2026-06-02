@@ -22,4 +22,28 @@ describe("ModeSwitcher", () => {
     expect(screen.getByRole("button", { name: /Kubernetes/i })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("button", { name: /KRCI/i })).toHaveAttribute("aria-pressed", "false");
   });
+
+  describe("when minimized", () => {
+    const renderMinimized = (mode: "krci" | "k8s", onSelect = () => {}) =>
+      render(<ModeSwitcher mode={mode} onSelect={onSelect} isMinimized />);
+
+    it("still exposes both modes as accessible icon buttons", () => {
+      renderMinimized("krci");
+      expect(screen.getByRole("button", { name: /KRCI/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Kubernetes/i })).toBeInTheDocument();
+    });
+
+    it("keeps the active mode marked with aria-pressed=true", () => {
+      renderMinimized("k8s");
+      expect(screen.getByRole("button", { name: /Kubernetes/i })).toHaveAttribute("aria-pressed", "true");
+      expect(screen.getByRole("button", { name: /KRCI/i })).toHaveAttribute("aria-pressed", "false");
+    });
+
+    it("calls onSelect when an icon button is clicked", async () => {
+      const onSelect = vi.fn();
+      renderMinimized("krci", onSelect);
+      await userEvent.click(screen.getByRole("button", { name: /Kubernetes/i }));
+      expect(onSelect).toHaveBeenCalledWith("k8s");
+    });
+  });
 });

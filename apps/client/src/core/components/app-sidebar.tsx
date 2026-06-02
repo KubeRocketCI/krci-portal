@@ -159,8 +159,8 @@ export function AppSidebar() {
         >
           <div data-slot="sidebar-header" data-sidebar="header" className={cn("flex flex-col gap-2 p-2")}>
             <ClusterSwitcher clusters={clusters} />
-            <div className="px-2 py-1">
-              <ModeSwitcher mode={mode} onSelect={handleModeSelect} />
+            <div className="px-2 py-1 group-data-[collapsible=icon]:px-0">
+              <ModeSwitcher mode={mode} onSelect={handleModeSelect} isMinimized={state === "collapsed"} />
             </div>
           </div>
           <SidebarPinnedSection />
