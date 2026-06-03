@@ -51,3 +51,9 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: vi.fn(),
   })),
 });
+
+// Mock DOM APIs that Radix / cmdk rely on but jsdom does not implement.
+Element.prototype.scrollIntoView = vi.fn();
+Element.prototype.hasPointerCapture = vi.fn(() => false);
+Element.prototype.setPointerCapture = vi.fn();
+Element.prototype.releasePointerCapture = vi.fn();

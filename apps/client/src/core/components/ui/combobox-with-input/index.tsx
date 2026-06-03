@@ -5,6 +5,7 @@ import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@
 import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
 import { cn } from "@/core/utils/classname";
 import { ComboboxOption } from "@/core/components/ui/combobox";
+import { filterComboboxOptions, renderComboboxOption } from "@/core/components/ui/combobox/utils";
 
 export interface ComboboxWithInputProps {
   value?: string;
@@ -36,20 +37,32 @@ export const ComboboxWithInput = React.forwardRef<HTMLInputElement, ComboboxWith
     ref
   ) => {
     const [open, setOpen] = React.useState(false);
-    const [inputValue, setInputValue] = React.useState(value || "");
+    // In-progress search text while the user is typing. `null` means the user
+    // is not typing, so the input mirrors the committed `value` prop directly.
+    // Keeping the search text separate from `value` (rather than mirroring the
+    // prop into local state) is what lets filtering work even though every
+    // keystroke is committed upward via onValueChange.
+    const [typingValue, setTypingValue] = React.useState<string | null>(null);
     const inputRef = React.useRef<HTMLInputElement>(null);
 
     // Merge refs
     React.useImperativeHandle(ref, () => inputRef.current as HTMLInputElement);
 
-    // Sync inputValue with value prop
-    React.useEffect(() => {
-      setInputValue(value || "");
-    }, [value]);
+    const hasUserTyped = typingValue !== null;
+    const inputValue = typingValue ?? value;
+
+    const handleOpenChange = (nextOpen: boolean) => {
+      setOpen(nextOpen);
+      // Closing the popover ends the search: drop the in-progress text so the
+      // next open starts from the committed value with the full, unfiltered list.
+      if (!nextOpen) {
+        setTypingValue(null);
+      }
+    };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = e.target.value;
-      setInputValue(newValue);
+      setTypingValue(newValue);
       onValueChange?.(newValue);
       // Keep dropdown open when typing
       if (!open) {
@@ -58,27 +71,21 @@ export const ComboboxWithInput = React.forwardRef<HTMLInputElement, ComboboxWith
     };
 
     const handleOptionSelect = (optionValue: string) => {
+      setTypingValue(null);
       onValueChange?.(optionValue);
-      setInputValue(optionValue);
       setOpen(false);
     };
 
-    // Filter options only when the user is actively typing (inputValue
-    // differs from the committed field value). When they match the user
-    // is just viewing a pre-selected value, so show the full list.
-    const availableOptions = React.useMemo(() => {
-      if (!inputValue.trim() || inputValue === value) return options;
-
-      const searchTerm = inputValue.toLowerCase();
-      return options.filter((option) => {
-        const valueMatch = option.value.toLowerCase().includes(searchTerm);
-        const labelMatch = typeof option.label === "string" ? option.label.toLowerCase().includes(searchTerm) : false;
-        return valueMatch || labelMatch;
-      });
-    }, [options, inputValue, value]);
+    // Filter options only while the user is actively typing. When viewing a
+    // committed/pre-selected value, show the full list so the other options
+    // stay reachable.
+    const availableOptions = React.useMemo(
+      () => (hasUserTyped ? filterComboboxOptions(options, inputValue) : options),
+      [options, inputValue, hasUserTyped]
+    );
 
     return (
-      <Popover open={open} onOpenChange={setOpen} modal={false}>
+      <Popover open={open} onOpenChange={handleOpenChange} modal={false}>
         <PopoverTrigger asChild>
           <div className="relative flex w-full items-center" aria-hidden="true">
             <div
@@ -127,13 +134,7 @@ export const ComboboxWithInput = React.forwardRef<HTMLInputElement, ComboboxWith
                       disabled={option.disabled}
                       onSelect={() => handleOptionSelect(option.value)}
                     >
-                      {renderOption ? (
-                        renderOption(option)
-                      ) : typeof option.label === "string" ? (
-                        <span className="truncate">{option.label}</span>
-                      ) : (
-                        option.label
-                      )}
+                      {renderComboboxOption(option, renderOption)}
                       <CheckIcon className={cn("ml-auto size-4", isSelected ? "opacity-100" : "opacity-0")} />
                     </CommandItem>
                   );
