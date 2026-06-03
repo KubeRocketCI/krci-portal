@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import type { Configuration } from "openid-client";
 import type { FastifyRequest } from "fastify";
-import type { OIDCUser } from "@my-project/shared";
+import { type OIDCUser, stripTrailingSlash } from "@my-project/shared";
 import { ERROR_NO_SESSION_FOUND, ERROR_TOKEN_EXPIRED } from "../../routers/auth/errors/index.js";
 import { OIDCClient, type OIDCConfig } from "../../clients/oidc/index.js";
 import { getJwtPayloadClaim } from "../../utils/jwt/index.js";
@@ -129,7 +129,7 @@ function shouldUseOidc(token: string, oidcConfig: OIDCConfig): boolean {
     return true;
   }
 
-  return iss.replace(/\/+$/, "") === oidcConfig.issuerURL.replace(/\/+$/, "");
+  return stripTrailingSlash(iss) === stripTrailingSlash(oidcConfig.issuerURL);
 }
 
 export async function authenticateBearerToken(

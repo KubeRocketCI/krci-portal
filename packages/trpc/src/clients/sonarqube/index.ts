@@ -11,6 +11,7 @@ import {
   BatchMeasuresResponse,
   IssuesQueryParams,
   IssuesSearchResponse,
+  stripTrailingSlash,
 } from "@my-project/shared";
 
 // =============================================================================
@@ -116,7 +117,7 @@ export class SonarQubeClient {
     }
 
     // Remove trailing slash if present
-    this.apiBaseURL = apiBaseURL.replace(/\/$/, "");
+    this.apiBaseURL = stripTrailingSlash(apiBaseURL);
     this.token = token;
     this.timeoutMs = timeoutMs;
   }

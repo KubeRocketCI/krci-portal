@@ -7,6 +7,7 @@ import {
   GitFusionPullRequestListResponse,
   GitLabPipelineResponse,
   GitLabPipelineVariable,
+  stripTrailingSlash,
 } from "@my-project/shared";
 
 // =============================================================================
@@ -111,7 +112,7 @@ export class GitFusionClient {
     }
 
     // Remove trailing slash if present
-    this.apiBaseURL = apiBaseURL.replace(/\/$/, "");
+    this.apiBaseURL = stripTrailingSlash(apiBaseURL);
     this.timeoutMs = timeoutMs;
   }
 
