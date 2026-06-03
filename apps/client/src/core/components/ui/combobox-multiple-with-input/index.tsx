@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/core/components/ui/po
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/core/components/ui/command";
 import { cn } from "@/core/utils/classname";
 import { ComboboxOption } from "@/core/components/ui/combobox";
+import { filterComboboxOptions, renderComboboxOption } from "@/core/components/ui/combobox/utils";
 
 export interface ComboboxMultipleWithInputProps {
   value: string[];
@@ -71,6 +72,15 @@ export const ComboboxMultipleWithInput = React.forwardRef<HTMLInputElement, Comb
       }
     };
 
+    const handleOpenChange = (nextOpen: boolean) => {
+      setOpen(nextOpen);
+      // Closing the popover ends the search: drop the in-progress text so the
+      // next open starts with the full, unfiltered list.
+      if (!nextOpen) {
+        setInputValue("");
+      }
+    };
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = e.target.value;
       setInputValue(newValue);
@@ -92,21 +102,11 @@ export const ComboboxMultipleWithInput = React.forwardRef<HTMLInputElement, Comb
 
     const availableOptions = React.useMemo(() => {
       const unselectedOptions = options.filter((option) => !value.includes(option.value));
-
-      if (!inputValue.trim()) {
-        return unselectedOptions;
-      }
-
-      const searchTerm = inputValue.toLowerCase();
-      return unselectedOptions.filter((option) => {
-        const valueMatch = option.value.toLowerCase().includes(searchTerm);
-        const labelMatch = typeof option.label === "string" ? option.label.toLowerCase().includes(searchTerm) : false;
-        return valueMatch || labelMatch;
-      });
+      return filterComboboxOptions(unselectedOptions, inputValue);
     }, [options, value, inputValue]);
 
     return (
-      <Popover open={open} onOpenChange={setOpen} modal={false}>
+      <Popover open={open} onOpenChange={handleOpenChange} modal={false}>
         <PopoverTrigger asChild>
           <div className="relative flex w-full items-center" aria-hidden="true">
             <div
@@ -196,13 +196,7 @@ export const ComboboxMultipleWithInput = React.forwardRef<HTMLInputElement, Comb
                     disabled={option.disabled}
                     onSelect={() => handleOptionSelect(option.value)}
                   >
-                    {renderOption ? (
-                      renderOption(option)
-                    ) : typeof option.label === "string" ? (
-                      <span className="truncate">{option.label}</span>
-                    ) : (
-                      option.label
-                    )}
+                    {renderComboboxOption(option, renderOption)}
                   </CommandItem>
                 ))}
               </CommandGroup>
