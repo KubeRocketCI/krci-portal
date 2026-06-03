@@ -1,5 +1,10 @@
 import { TRPCError } from "@trpc/server";
-import { promqlMatrixResponseSchema, promqlVectorResponseSchema, PROMETHEUS_TIMEOUT_MS } from "@my-project/shared";
+import {
+  promqlMatrixResponseSchema,
+  promqlVectorResponseSchema,
+  PROMETHEUS_TIMEOUT_MS,
+  stripTrailingSlash,
+} from "@my-project/shared";
 import type { PromQLMatrixResponse, PromQLVectorResponse } from "@my-project/shared";
 import type { ZodType } from "zod";
 
@@ -11,7 +16,7 @@ export interface PrometheusClientConfig {
 /** Read PROMETHEUS_URL once at module load. */
 function loadConfig(): { baseURL: string } {
   return {
-    baseURL: (process.env.PROMETHEUS_URL || "").replace(/\/$/, ""),
+    baseURL: stripTrailingSlash(process.env.PROMETHEUS_URL),
   };
 }
 
