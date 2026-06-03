@@ -18,6 +18,8 @@ export type MockK8sClient = {
   createResource: Mock;
   replaceResource: Mock;
   patchResource: Mock;
+  fetchApiPath: Mock;
+  getSelfSubjectReview: Mock;
 } & K8sClient;
 
 export function createMockedK8sClient(mockSession: CustomSession): MockK8sClient {
@@ -58,6 +60,8 @@ export function createMockedK8sClient(mockSession: CustomSession): MockK8sClient
     createResource: vi.fn(),
     replaceResource: vi.fn(),
     patchResource: vi.fn(),
+    fetchApiPath: vi.fn(),
+    getSelfSubjectReview: vi.fn(),
   };
 
   return mockK8sClient as MockK8sClient;

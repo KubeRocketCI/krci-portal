@@ -10,7 +10,15 @@ vi.mock("../../clients/oidc/index.js", () => ({
   OIDCClient: vi.fn(),
 }));
 
+const { mockAuthenticateSA } = vi.hoisted(() => ({ mockAuthenticateSA: vi.fn() }));
+vi.mock("../../utils/authenticateServiceAccountToken/index.js", () => ({
+  authenticateServiceAccountToken: mockAuthenticateSA,
+}));
+
 const MockedOIDCClient = OIDCClient as unknown as Mock;
+
+const b64url = (o: object) => Buffer.from(JSON.stringify(o)).toString("base64url");
+const makeJwt = (payload: object) => `${b64url({ alg: "none", typ: "JWT" })}.${b64url(payload)}.sig`;
 
 describe("protected procedure", () => {
   let mockContext: ReturnType<typeof createMockedContext>;
@@ -206,6 +214,73 @@ describe("protected procedure", () => {
 
       await expect(caller.testProtected()).rejects.toThrow();
       expect(mockContext.session.user).toBeUndefined();
+    });
+  });
+
+  // Issuer-routed Bearer authentication: an SA token (or any token when OIDC is
+  // unconfigured) is validated against the cluster via SelfSubjectReview, so the
+  // CLI can present an SA token in the Authorization header in any configuration.
+  describe("issuer-routed Bearer authentication (Service Account tokens)", () => {
+    const saResult = {
+      data: {
+        sub: "sa-uid",
+        name: "edp-admin",
+        preferred_username: "system:serviceaccount:edp:edp-admin",
+        email: "",
+        groups: ["system:authenticated"],
+        default_namespace: "edp",
+      },
+      secret: {
+        idToken: "sa-token",
+        idTokenExpiresAt: 1800000000000,
+        accessToken: "sa-token",
+        accessTokenExpiresAt: 1800000000000,
+        refreshToken: "",
+      },
+    };
+
+    beforeEach(() => {
+      mockContext.session.user = undefined;
+      mockAuthenticateSA.mockResolvedValue(saResult);
+    });
+
+    it("routes to the SA path when OIDC is not configured", async () => {
+      mockContext.oidcConfig.issuerURL = "";
+      setBearerHeader("any-sa-token");
+
+      const caller = createTestRouterCaller(mockContext);
+      const result = await caller.testProtected();
+
+      expect(result).toBe(true);
+      expect(mockAuthenticateSA).toHaveBeenCalledWith("any-sa-token");
+      expect(mockDiscoverOrThrow).not.toHaveBeenCalled();
+      expect(mockContext.session.user).toEqual(saResult);
+    });
+
+    it("routes to the SA path when the token issuer differs from the OIDC issuer", async () => {
+      mockContext.oidcConfig.issuerURL = "https://oidc.example.com";
+      const saToken = makeJwt({ iss: "https://kubernetes.default.svc" });
+      setBearerHeader(saToken);
+
+      const caller = createTestRouterCaller(mockContext);
+      const result = await caller.testProtected();
+
+      expect(result).toBe(true);
+      expect(mockAuthenticateSA).toHaveBeenCalledWith(saToken);
+      expect(mockValidateTokenAndGetUserInfo).not.toHaveBeenCalled();
+    });
+
+    it("routes to the OIDC path when the token issuer matches the OIDC issuer", async () => {
+      mockContext.oidcConfig.issuerURL = "https://oidc.example.com";
+      const oidcToken = makeJwt({ iss: "https://oidc.example.com" });
+      setBearerHeader(oidcToken);
+
+      const caller = createTestRouterCaller(mockContext);
+      const result = await caller.testProtected();
+
+      expect(result).toBe(true);
+      expect(mockValidateTokenAndGetUserInfo).toHaveBeenCalled();
+      expect(mockAuthenticateSA).not.toHaveBeenCalled();
     });
   });
 });

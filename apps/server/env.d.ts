@@ -9,11 +9,12 @@ declare global {
 
       PORTAL_URL: string;
 
-      OIDC_ISSUER_URL: string;
-      OIDC_CLIENT_ID: string;
-      OIDC_CLIENT_SECRET: string;
-      OIDC_SCOPE: string;
-      OIDC_CODE_CHALLENGE_METHOD: string;
+      // Optional: when unset, the portal runs in SA-token-only mode (no OIDC).
+      OIDC_ISSUER_URL?: string;
+      OIDC_CLIENT_ID?: string;
+      OIDC_CLIENT_SECRET?: string;
+      OIDC_SCOPE?: string;
+      OIDC_CODE_CHALLENGE_METHOD?: string;
 
       API_PREFIX: string;
 

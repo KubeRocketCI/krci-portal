@@ -6,11 +6,6 @@ describe("LocalFastifyServer", () => {
     "API_PREFIX",
     "SERVER_SECRET",
     "SERVER_PORT",
-    "OIDC_ISSUER_URL",
-    "OIDC_CLIENT_ID",
-    "OIDC_CLIENT_SECRET",
-    "OIDC_SCOPE",
-    "OIDC_CODE_CHALLENGE_METHOD",
     "PORTAL_URL",
     "TEKTON_RESULTS_URL",
   ];
@@ -34,11 +29,23 @@ describe("LocalFastifyServer", () => {
     });
 
     it("should throw when a required key is missing", () => {
-      delete process.env.OIDC_ISSUER_URL;
+      delete process.env.PORTAL_URL;
 
       expect(() =>
         LocalFastifyServer.validateRequiredEnv(requiredKeys)
-      ).toThrow("Missing required OIDC_ISSUER_URL environment variable");
+      ).toThrow("Missing required PORTAL_URL environment variable");
+    });
+
+    it("does not require OIDC_* vars (SA-token-only deployments)", () => {
+      delete process.env.OIDC_ISSUER_URL;
+      delete process.env.OIDC_CLIENT_ID;
+      delete process.env.OIDC_CLIENT_SECRET;
+      delete process.env.OIDC_SCOPE;
+      delete process.env.OIDC_CODE_CHALLENGE_METHOD;
+
+      expect(() =>
+        LocalFastifyServer.validateRequiredEnv(requiredKeys)
+      ).not.toThrow();
     });
 
     it("should throw when a required key is empty string", () => {

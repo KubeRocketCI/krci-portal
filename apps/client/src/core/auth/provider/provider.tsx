@@ -1,14 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import {
   AuthCallbackLoginInput,
   AuthCallbackLoginOutput,
   AuthContext,
   AuthLoginOutput,
   AuthLoginWithTokenOutput,
+  AuthLoginWithSATokenOutput,
   AuthLogoutOutput,
   LoginMutationInput,
   LoginWithTokenMutationInput,
+  LoginWithSATokenMutationInput,
 } from "./context";
 import { trpcHttpClient } from "@/core/providers/trpc/http-client";
 import { LoadingProgressBar } from "@/core/components/ui/LoadingProgressBar";
@@ -40,6 +42,33 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
   });
 
   const isAuthenticated = meQuery.isFetched && !!meQuery.data;
+
+  const oidcConfigQuery = useQuery({
+    queryKey: ["config.oidc"],
+    queryFn: () => trpc.config.oidc.query(),
+    staleTime: Infinity,
+    gcTime: Infinity,
+    retry: 1,
+  });
+  // Default to true so the OIDC "Sign In" button isn't briefly hidden while the
+  // config loads in OIDC-enabled deployments. Set to false only once the server
+  // confirms OIDC is not configured (SA-only mode).
+  const oidcEnabled = oidcConfigQuery.data?.oidcEnabled ?? true;
+
+  // Shared success handler for the token-based logins (direct token + SA token):
+  // cache the resolved user, then navigate to the post-login redirect.
+  const handleTokenLoginSuccess = useCallback(
+    ({ success, userInfo, clientSearch }: AuthLoginWithTokenOutput) => {
+      if (success && userInfo) {
+        queryClient.setQueryData(["auth.me"], userInfo);
+
+        const redirect = new URLSearchParams(clientSearch || "").get("redirect") || routeHome.fullPath;
+
+        router.navigate({ to: redirect, replace: true });
+      }
+    },
+    [queryClient]
+  );
 
   const loginMutation = useMutation<AuthLoginOutput, Error, LoginMutationInput>({
     mutationKey: ["auth.login"],
@@ -86,16 +115,25 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
         redirectSearchParam,
       });
     },
-    onSuccess: ({ success, userInfo, clientSearch }) => {
-      if (success && userInfo) {
-        queryClient.setQueryData(["auth.me"], userInfo);
-
-        const clientSearchParams = new URLSearchParams(clientSearch || "");
-        const redirect = clientSearchParams.get("redirect") || routeHome.fullPath;
-
-        router.navigate({ to: redirect, replace: true });
-      }
+    onSuccess: handleTokenLoginSuccess,
+    onError: () => {
+      // Error handled in component
     },
+  });
+
+  const loginWithServiceAccountTokenMutation = useMutation<
+    AuthLoginWithSATokenOutput,
+    Error,
+    LoginWithSATokenMutationInput
+  >({
+    mutationKey: ["auth.loginWithServiceAccountToken"],
+    mutationFn: ({ token, redirectSearchParam }) => {
+      return trpc.auth.loginWithServiceAccountToken.mutate({
+        token,
+        redirectSearchParam,
+      });
+    },
+    onSuccess: handleTokenLoginSuccess,
     onError: () => {
       // Error handled in component
     },
@@ -131,11 +169,13 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
       loginMutation,
       loginCallbackMutation,
       loginWithTokenMutation,
+      loginWithServiceAccountTokenMutation,
       logoutMutation,
       user: meQuery.data,
       isLoading: meQuery.isLoading,
       isAuthenticated,
       authInProgress,
+      oidcEnabled,
     }),
     [
       authInProgress,
@@ -143,9 +183,11 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
       loginCallbackMutation,
       loginMutation,
       loginWithTokenMutation,
+      loginWithServiceAccountTokenMutation,
       logoutMutation,
       meQuery.data,
       meQuery.isLoading,
+      oidcEnabled,
     ]
   );
 

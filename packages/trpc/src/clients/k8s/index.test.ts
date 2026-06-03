@@ -514,4 +514,82 @@ describe("K8sClient", () => {
       expect(result.items).toHaveLength(3);
     });
   });
+
+  describe("fromToken", () => {
+    it("builds a client carrying the token with the oidc-user fallback name", () => {
+      const client = K8sClient.fromToken("sa-token");
+      const kc = client.KubeConfig!;
+
+      expect(kc).not.toBeNull();
+      expect(kc.users).toEqual([{ name: "oidc-user", token: "sa-token" }]);
+    });
+  });
+
+  describe("getSelfSubjectReview", () => {
+    const makeKubeConfigWithServer = () =>
+      ({
+        loadFromDefault: vi.fn(),
+        loadFromCluster: vi.fn(),
+        getCurrentCluster: vi.fn().mockReturnValue({ name: "test-cluster", server: "https://k8s.example.com" }),
+        getCurrentContext: vi.fn().mockReturnValue("test-context"),
+        getCurrentUser: vi.fn().mockReturnValue({}),
+        setCurrentContext: vi.fn(),
+        applyToHTTPSOptions: vi.fn(),
+        users: [],
+        contexts: [],
+        clusters: [],
+        currentContext: "test-context",
+      }) as unknown as KubeConfig;
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it("POSTs a SelfSubjectReview to the cluster and returns the parsed userInfo", async () => {
+      vi.mocked(KubeConfig).mockImplementationOnce(makeKubeConfigWithServer);
+      const fetchMock = vi.mocked(fetchModule);
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ "content-type": "application/json" }),
+        json: async () => ({
+          apiVersion: "authentication.k8s.io/v1",
+          kind: "SelfSubjectReview",
+          status: {
+            userInfo: {
+              username: "system:serviceaccount:edp:edp-admin",
+              uid: "uid-1",
+              groups: ["system:authenticated"],
+            },
+          },
+        }),
+      } as never);
+
+      const client = K8sClient.fromToken("sa-token");
+      const result = await client.getSelfSubjectReview();
+
+      const call0 = fetchMock.mock.calls[0]!;
+      expect(call0[0]).toBe("https://k8s.example.com/apis/authentication.k8s.io/v1/selfsubjectreviews");
+      expect(call0[1]!.method).toBe("POST");
+      expect(JSON.parse(call0[1]!.body as string)).toMatchObject({
+        apiVersion: "authentication.k8s.io/v1",
+        kind: "SelfSubjectReview",
+      });
+      expect(result.status?.userInfo?.username).toBe("system:serviceaccount:edp:edp-admin");
+    });
+
+    it("throws K8sApiError on a non-2xx response (e.g. 401)", async () => {
+      vi.mocked(KubeConfig).mockImplementationOnce(makeKubeConfigWithServer);
+      const fetchMock = vi.mocked(fetchModule);
+      fetchMock.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        statusText: "Unauthorized",
+        text: async () => "{}",
+      } as never);
+
+      const client = K8sClient.fromToken("bad-token");
+
+      await expect(client.getSelfSubjectReview()).rejects.toBeInstanceOf(K8sApiError);
+    });
+  });
 });
