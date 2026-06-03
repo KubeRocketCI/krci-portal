@@ -5,7 +5,10 @@ export const loginInputSchema = z.string().startsWith("/");
 
 export const loginCallbackInputSchema = z.string();
 
-export const loginCallbackOutputSchema = z
+// Shared success-output shape for login procedures that establish a session
+// (callback, direct token, SA token): success flag, resolved user identity
+// (with optional OIDC issuer URL), and the client-side redirect query.
+export const loginSuccessOutputSchema = z
   .object({
     success: z.boolean(),
     userInfo: OIDCUserSchema.extend({
@@ -14,6 +17,8 @@ export const loginCallbackOutputSchema = z
     clientSearch: z.string().optional(),
   })
   .strict();
+
+export const loginCallbackOutputSchema = loginSuccessOutputSchema;
 
 export const loginOutputSchema = z
   .object({
@@ -35,12 +40,13 @@ export const loginWithTokenInputSchema = z
   })
   .strict();
 
-export const loginWithTokenOutputSchema = z
+export const loginWithTokenOutputSchema = loginSuccessOutputSchema;
+
+export const loginWithSATokenInputSchema = z
   .object({
-    success: z.boolean(),
-    userInfo: OIDCUserSchema.extend({
-      issuerUrl: z.string().optional(),
-    }).optional(),
-    clientSearch: z.string().optional(),
+    token: z.string().min(1, "Service account token is required"),
+    redirectSearchParam: z.string().startsWith("/").optional(),
   })
   .strict();
+
+export const loginWithSATokenOutputSchema = loginSuccessOutputSchema;

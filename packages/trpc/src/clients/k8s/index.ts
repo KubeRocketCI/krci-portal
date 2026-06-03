@@ -15,6 +15,25 @@ type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 export type PatchType = "strategic" | "merge" | "json";
 export type PatchSubresource = "scale" | "status";
 
+// SelfSubjectReview response shape (authentication.k8s.io/v1). The generated
+// V1SelfSubjectReview / V1UserInfo types are not re-exported from
+// @kubernetes/client-node's top-level index, so we declare minimal
+// plain-object interfaces for the fields we consume.
+export interface K8sSelfSubjectUserInfo {
+  username?: string;
+  uid?: string;
+  groups?: string[];
+  extra?: Record<string, string[]>;
+}
+
+export interface K8sSelfSubjectReviewResponse {
+  apiVersion?: string;
+  kind?: string;
+  status?: {
+    userInfo?: K8sSelfSubjectUserInfo;
+  };
+}
+
 export class K8sClient {
   KubeConfig: KubeConfig | null;
   // Captures the specific reason the KubeConfig could not be initialized so
@@ -77,6 +96,60 @@ export class K8sClient {
       },
     ];
     this.KubeConfig.setCurrentContext(currentContext);
+  }
+
+  /**
+   * Builds a K8sClient that authenticates with a raw bearer token, without
+   * requiring a full session. Used by the Service Account token login path to
+   * validate a token against the cluster (via {@link getSelfSubjectReview})
+   * before any session exists. Reuses the standard constructor by passing a
+   * minimal synthetic session carrying only the token, so cluster/CA loading
+   * and token injection behave exactly as for a real session.
+   */
+  static fromToken(token: string): K8sClient {
+    const now = Date.now();
+    const syntheticSession = {
+      user: {
+        data: undefined,
+        secret: {
+          idToken: token,
+          idTokenExpiresAt: now + 60_000,
+          accessToken: token,
+          accessTokenExpiresAt: now + 60_000,
+          refreshToken: "",
+        },
+      },
+    } as unknown as CustomSession;
+
+    return new K8sClient(syntheticSession);
+  }
+
+  /**
+   * Calls the Kubernetes SelfSubjectReview API
+   * (POST /apis/authentication.k8s.io/v1/selfsubjectreviews) to validate the
+   * bearer token injected into this client and return the caller's identity.
+   * This is the same mechanism `kubectl auth whoami` uses. Requires Kubernetes
+   * 1.28+ (GA; 1.26-1.27 expose it as beta). Throws K8sApiError on non-2xx.
+   */
+  async getSelfSubjectReview(): Promise<K8sSelfSubjectReviewResponse> {
+    if (!this.KubeConfig) {
+      throw new Error("KubeConfig is not initialized");
+    }
+
+    const cluster = this.KubeConfig.getCurrentCluster();
+    if (!cluster) {
+      throw new Error("No current cluster found");
+    }
+
+    const url = `${cluster.server}/apis/authentication.k8s.io/v1/selfsubjectreviews`;
+    const body = {
+      apiVersion: "authentication.k8s.io/v1",
+      kind: "SelfSubjectReview",
+      metadata: {},
+      spec: {},
+    };
+
+    return this.makeRequest("POST", url, body) as unknown as K8sSelfSubjectReviewResponse;
   }
 
   /**

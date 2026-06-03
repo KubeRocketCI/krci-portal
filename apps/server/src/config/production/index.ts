@@ -23,15 +23,13 @@ export class ProductionFastifyServer {
   fastify: FastifyInstance;
 
   constructor() {
+    // OIDC_* vars are intentionally NOT required: the portal supports OIDC-less
+    // (Service Account token only) deployments. When OIDC is unset, OIDC login
+    // controls are hidden client-side and SA-token login is used instead.
     ProductionFastifyServer.validateRequiredEnv([
       "API_PREFIX",
       "SERVER_SECRET",
       "SERVER_PORT",
-      "OIDC_ISSUER_URL",
-      "OIDC_CLIENT_ID",
-      "OIDC_CLIENT_SECRET",
-      "OIDC_SCOPE",
-      "OIDC_CODE_CHALLENGE_METHOD",
       "PORTAL_URL",
       "TEKTON_RESULTS_URL",
     ]);
@@ -109,11 +107,11 @@ export class ProductionFastifyServer {
     registerOpenApi(this.fastify, {
       sessionStore,
       oidcConfig: {
-        issuerURL: process.env.OIDC_ISSUER_URL!,
-        clientID: process.env.OIDC_CLIENT_ID!,
-        clientSecret: process.env.OIDC_CLIENT_SECRET!,
-        scope: process.env.OIDC_SCOPE!,
-        codeChallengeMethod: process.env.OIDC_CODE_CHALLENGE_METHOD!,
+        issuerURL: process.env.OIDC_ISSUER_URL ?? "",
+        clientID: process.env.OIDC_CLIENT_ID ?? "",
+        clientSecret: process.env.OIDC_CLIENT_SECRET ?? "",
+        scope: process.env.OIDC_SCOPE ?? "",
+        codeChallengeMethod: process.env.OIDC_CODE_CHALLENGE_METHOD ?? "",
       },
       portalUrl: process.env.PORTAL_URL!,
     });
@@ -145,11 +143,12 @@ export class ProductionFastifyServer {
               session,
               sessionStore,
               oidcConfig: {
-                issuerURL: process.env.OIDC_ISSUER_URL!,
-                clientID: process.env.OIDC_CLIENT_ID!,
-                clientSecret: process.env.OIDC_CLIENT_SECRET!,
-                scope: process.env.OIDC_SCOPE!,
-                codeChallengeMethod: process.env.OIDC_CODE_CHALLENGE_METHOD!,
+                issuerURL: process.env.OIDC_ISSUER_URL ?? "",
+                clientID: process.env.OIDC_CLIENT_ID ?? "",
+                clientSecret: process.env.OIDC_CLIENT_SECRET ?? "",
+                scope: process.env.OIDC_SCOPE ?? "",
+                codeChallengeMethod:
+                  process.env.OIDC_CODE_CHALLENGE_METHOD ?? "",
               },
               portalUrl: process.env.PORTAL_URL!,
             });

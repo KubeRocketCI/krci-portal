@@ -17,6 +17,7 @@ import { createRemoteJWKSet, errors as joseErrors, jwtVerify } from "jose";
 
 import { getJwtPayloadClaim } from "../../utils/jwt/index.js";
 import { getTokenExpirationTime } from "../../utils/getTokenExpirationTime/index.js";
+import { buildTokenInfoFromToken } from "../../utils/buildTokenInfoFromToken/index.js";
 
 /**
  * Normalize the groups claim from OIDC providers.
@@ -462,27 +463,6 @@ export class OIDCClient {
     accessTokenExpiresAt: number;
     refreshToken: string;
   } {
-    const DEFAULT_EXPIRATION_MS = 5 * 60 * 1000; // 5 minutes
-    const MAX_SESSION_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
-
-    let expiresAt: number;
-
-    try {
-      expiresAt = getTokenExpirationTime(token);
-    } catch {
-      // Opaque token or missing exp — cannot determine expiration, use default
-      expiresAt = Date.now() + DEFAULT_EXPIRATION_MS;
-    }
-
-    // Cap expiration to prevent attacker-controlled far-future exp claims
-    expiresAt = Math.min(expiresAt, Date.now() + MAX_SESSION_DURATION_MS);
-
-    return {
-      idToken: token,
-      idTokenExpiresAt: expiresAt,
-      accessToken: token,
-      accessTokenExpiresAt: expiresAt,
-      refreshToken: "",
-    };
+    return buildTokenInfoFromToken(token);
   }
 }

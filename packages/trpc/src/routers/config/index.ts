@@ -4,15 +4,19 @@ import { z } from "zod";
 
 export const configRouter = t.router({
   /**
-   * Returns only the OIDC issuer URL, accessible without authentication.
-   * Used by CLI for OIDC discovery before login.
+   * Returns the OIDC issuer URL and whether OIDC is enabled, accessible without
+   * authentication. Used by the CLI for OIDC discovery before login, and by the
+   * web client to decide whether to render OIDC login controls.
    */
   oidc: t.procedure
     .meta({ openapi: { method: "GET", path: "/v1/config/oidc", protect: false } })
     .input(z.void())
-    .output(z.object({ oidcIssuerUrl: z.string() }))
+    .output(z.object({ oidcIssuerUrl: z.string(), oidcEnabled: z.boolean() }))
     .query(({ ctx }) => ({
       oidcIssuerUrl: ctx.oidcConfig.issuerURL,
+      // OIDC is enabled when an issuer URL is configured. When false, the client
+      // hides OIDC login controls and offers only Service Account token login.
+      oidcEnabled: !!ctx.oidcConfig.issuerURL,
     })),
 
   /**

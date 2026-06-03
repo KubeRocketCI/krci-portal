@@ -3,13 +3,23 @@ import { createCaller } from "../../routers/index.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("config.oidc", () => {
-  it("should return oidcIssuerUrl from context", async () => {
+  it("should return oidcIssuerUrl and oidcEnabled from context", async () => {
     const mockContext = createMockedContext();
     const caller = createCaller(mockContext);
 
     const result = await caller.config.oidc();
 
-    expect(result).toEqual({ oidcIssuerUrl: "https://mock-issuer.example.com" });
+    expect(result).toEqual({ oidcIssuerUrl: "https://mock-issuer.example.com", oidcEnabled: true });
+  });
+
+  it("reports oidcEnabled=false when no issuer URL is configured (SA-only mode)", async () => {
+    const mockContext = createMockedContext();
+    mockContext.oidcConfig.issuerURL = "";
+    const caller = createCaller(mockContext);
+
+    const result = await caller.config.oidc();
+
+    expect(result).toEqual({ oidcIssuerUrl: "", oidcEnabled: false });
   });
 });
 

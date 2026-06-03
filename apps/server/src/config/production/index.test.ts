@@ -6,11 +6,6 @@ describe("ProductionFastifyServer", () => {
     "API_PREFIX",
     "SERVER_SECRET",
     "SERVER_PORT",
-    "OIDC_ISSUER_URL",
-    "OIDC_CLIENT_ID",
-    "OIDC_CLIENT_SECRET",
-    "OIDC_SCOPE",
-    "OIDC_CODE_CHALLENGE_METHOD",
     "PORTAL_URL",
     "TEKTON_RESULTS_URL",
   ];
@@ -35,13 +30,13 @@ describe("ProductionFastifyServer", () => {
     });
 
     it("should not throw when a key is missing (production only logs)", () => {
-      delete process.env.OIDC_ISSUER_URL;
+      delete process.env.PORTAL_URL;
 
       expect(() =>
         ProductionFastifyServer.validateRequiredEnv(requiredKeys)
       ).not.toThrow();
       expect(console.error).toHaveBeenCalledWith(
-        "Missing required OIDC_ISSUER_URL environment variable"
+        "Missing required PORTAL_URL environment variable"
       );
     });
 
