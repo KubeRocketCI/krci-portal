@@ -32,7 +32,7 @@
     "monaco-yaml": "^5.4.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.26.0",
+    "@eslint/js": "^10.0.1",
     "@typescript-eslint/eslint-plugin": "^8.60.0",
     "@typescript-eslint/parser": "^8.32.1",
     "@vitest/coverage-istanbul": "^4.1.0",
