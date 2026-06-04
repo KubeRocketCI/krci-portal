@@ -4,7 +4,19 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
+    # Match the PR-validation commit-message gate: first line must be
+    # "EPMDEDP-<id>: <type>: <desc>". Dependabot renders this prefix as
+    # "EPMDEDP-17090: chore: bump <pkg> from x to y".
+    # Do NOT add `include: "scope"` — it produces "chore(deps):" which the regex rejects.
+    commit-message:
+      prefix: "EPMDEDP-17090: chore"
+    # Collapse many individual bumps into ~2 PRs/week to cut review noise.
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
     # Mirror the install-time minimumReleaseAge cooldown at the PR level: don't propose a
     # version update until it has aged. Security-advisory updates bypass this automatically.
     cooldown:
