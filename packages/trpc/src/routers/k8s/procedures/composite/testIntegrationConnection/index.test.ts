@@ -12,9 +12,9 @@ describe("k8sTestIntegrationConnectionProcedure", () => {
   let fetchSpy: Mock;
 
   beforeEach(() => {
-    (K8sClient as unknown as Mock).mockImplementation(() => ({
-      KubeConfig: {},
-    }));
+    (K8sClient as unknown as Mock).mockImplementation(function () {
+      return { KubeConfig: {} };
+    });
     mockContext = createMockedContext();
     fetchSpy = vi.spyOn(globalThis, "fetch") as unknown as Mock;
   });

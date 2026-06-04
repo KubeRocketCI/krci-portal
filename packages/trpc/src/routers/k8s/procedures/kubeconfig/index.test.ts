@@ -14,19 +14,21 @@ describe("k8s.getKubeConfig", () => {
   beforeEach(() => {
     mockContext = createMockedContext();
     mockListResource = vi.fn();
-    (K8sClient as unknown as Mock).mockImplementation(() => ({
-      KubeConfig: {
-        getCurrentCluster: () => ({
-          name: "test-cluster",
-          server: "https://api.example.com",
-          caData: "Y2EtZGF0YQ==",
-        }),
-        getCurrentUser: () => ({
-          token: "user-token",
-        }),
-      },
-      listResource: mockListResource,
-    }));
+    (K8sClient as unknown as Mock).mockImplementation(function () {
+      return {
+        KubeConfig: {
+          getCurrentCluster: () => ({
+            name: "test-cluster",
+            server: "https://api.example.com",
+            caData: "Y2EtZGF0YQ==",
+          }),
+          getCurrentUser: () => ({
+            token: "user-token",
+          }),
+        },
+        listResource: mockListResource,
+      };
+    });
   });
 
   afterEach(() => {
@@ -34,9 +36,9 @@ describe("k8s.getKubeConfig", () => {
   });
 
   it("should throw when KubeConfig is not initialized", async () => {
-    (K8sClient as unknown as Mock).mockImplementation(() => ({
-      KubeConfig: null,
-    }));
+    (K8sClient as unknown as Mock).mockImplementation(function () {
+      return { KubeConfig: null };
+    });
 
     mockContext.session.user = {
       ...mockContext.session.user,

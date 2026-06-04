@@ -56,13 +56,15 @@ describe("protected procedure", () => {
     mockValidateTokenAndGetUserInfo = vi.fn().mockResolvedValue(mockUserInfo);
     mockValidateTokenAndGetTokenInfo = vi.fn().mockReturnValue(mockTokenInfo);
 
-    MockedOIDCClient.mockImplementation(() => ({
-      discover: vi.fn(),
-      discoverOrThrow: mockDiscoverOrThrow,
-      validateTokenAndGetUserInfo: mockValidateTokenAndGetUserInfo,
-      validateTokenAndGetTokenInfo: mockValidateTokenAndGetTokenInfo,
-      getNewTokens: vi.fn(),
-    }));
+    MockedOIDCClient.mockImplementation(function () {
+      return {
+        discover: vi.fn(),
+        discoverOrThrow: mockDiscoverOrThrow,
+        validateTokenAndGetUserInfo: mockValidateTokenAndGetUserInfo,
+        validateTokenAndGetTokenInfo: mockValidateTokenAndGetTokenInfo,
+        getNewTokens: vi.fn(),
+      };
+    });
 
     mockContext = createMockedContext();
   });

@@ -6,10 +6,12 @@ const mockRangeQuery = vi.fn();
 const mockInstantQuery = vi.fn();
 
 vi.mock("../../../../clients/k8s/index.js", () => ({
-  K8sClient: vi.fn().mockImplementation(() => ({
-    KubeConfig: {},
-    listResource: mockListResource,
-  })),
+  K8sClient: vi.fn(function () {
+    return {
+      KubeConfig: {},
+      listResource: mockListResource,
+    };
+  }),
 }));
 
 vi.mock("../../../../clients/prometheus/index.js", () => ({

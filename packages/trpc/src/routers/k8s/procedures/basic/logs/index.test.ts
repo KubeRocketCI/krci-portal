@@ -12,14 +12,16 @@ describe("k8s.podLogs", () => {
 
   beforeEach(() => {
     mockContext = createMockedContext();
-    (K8sClient as unknown as Mock).mockImplementation(() => ({
-      KubeConfig: {
-        getCurrentCluster: () => ({ name: "test", server: "https://kubernetes.default.svc" }),
-        getCurrentUser: () => ({}),
-        applyToHTTPSOptions: () => {},
-        applyToFetchOptions: () => {},
-      },
-    }));
+    (K8sClient as unknown as Mock).mockImplementation(function () {
+      return {
+        KubeConfig: {
+          getCurrentCluster: () => ({ name: "test", server: "https://kubernetes.default.svc" }),
+          getCurrentUser: () => ({}),
+          applyToHTTPSOptions: () => {},
+          applyToFetchOptions: () => {},
+        },
+      };
+    });
   });
 
   afterEach(() => {
@@ -27,9 +29,9 @@ describe("k8s.podLogs", () => {
   });
 
   it("should throw when KubeConfig is not initialized", async () => {
-    (K8sClient as unknown as Mock).mockImplementation(() => ({
-      KubeConfig: null,
-    }));
+    (K8sClient as unknown as Mock).mockImplementation(function () {
+      return { KubeConfig: null };
+    });
 
     const caller = createCaller(mockContext);
     await expect(

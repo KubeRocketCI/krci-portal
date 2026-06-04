@@ -13,7 +13,11 @@ vi.mock("better-sqlite3", () => {
       get: vi.fn(),
     }),
   };
-  return { default: vi.fn().mockReturnValue(mockDb) };
+  return {
+    default: vi.fn(function () {
+      return mockDb;
+    }),
+  };
 });
 
 // Mock the fromServerRoot utility
@@ -46,7 +50,9 @@ describe("DBSessionStore", () => {
     });
 
     it("should call cleanup on initialization", () => {
-      const prepareSpy = mockDb.prepare as ReturnType<typeof vi.fn>;
+      const prepareSpy = mockDb.prepare as unknown as Mock<
+        (...args: unknown[]) => { run: Mock }
+      >;
       prepareSpy.mockReturnValueOnce({ run: vi.fn() });
       store = new DBSessionStore();
       expect(mockDb.prepare).toHaveBeenCalledWith(

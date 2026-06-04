@@ -12,7 +12,9 @@ describe("k8sRestartWorkload", () => {
   beforeEach(() => {
     mockContext = createMockedContext();
     mockK8s = { KubeConfig: {}, patchResource: vi.fn() };
-    (K8sClient as unknown as Mock).mockImplementation(() => mockK8s);
+    (K8sClient as unknown as Mock).mockImplementation(function () {
+      return mockK8s;
+    });
   });
 
   afterEach(() => vi.clearAllMocks());

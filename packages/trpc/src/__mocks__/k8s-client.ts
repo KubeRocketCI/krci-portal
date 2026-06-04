@@ -28,15 +28,17 @@ export function createMockedK8sClient(mockSession: CustomSession): MockK8sClient
 
     return {
       ...actual,
-      KubeConfig: vi.fn().mockImplementation(() => ({
-        loadFromDefault: vi.fn(),
-        loadFromCluster: vi.fn(),
-        getCurrentCluster: vi.fn().mockReturnValue({ name: "test-cluster" }),
-        getCurrentContext: vi.fn().mockReturnValue("test-namespace"),
-        getCurrentUser: vi.fn().mockReturnValue("john_doe@world.com"),
-        setCurrentContext: vi.fn(),
-        makeApiClient: vi.fn(),
-      })),
+      KubeConfig: vi.fn(
+        class {
+          loadFromDefault = vi.fn();
+          loadFromCluster = vi.fn();
+          getCurrentCluster = vi.fn().mockReturnValue({ name: "test-cluster" });
+          getCurrentContext = vi.fn().mockReturnValue("test-namespace");
+          getCurrentUser = vi.fn().mockReturnValue("john_doe@world.com");
+          setCurrentContext = vi.fn();
+          makeApiClient = vi.fn();
+        }
+      ),
     };
   });
 
