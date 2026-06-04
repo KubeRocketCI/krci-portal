@@ -12,23 +12,25 @@ describe("k8s.getClusterDetails", () => {
 
   beforeEach(() => {
     mockContext = createMockedContext();
-    (K8sClient as unknown as Mock).mockImplementation(() => ({
-      KubeConfig: {
-        getCurrentCluster: () => ({
-          name: "my-cluster",
-          server: "https://api.cluster.example.com",
-        }),
-        getCurrentContext: () => "my-context",
-        makeApiClient: () => ({
-          getCode: () =>
-            Promise.resolve({
-              gitVersion: "v1.28.0",
-              platform: "linux/amd64",
-              goVersion: "go1.21.0",
-            }),
-        }),
-      },
-    }));
+    (K8sClient as unknown as Mock).mockImplementation(function () {
+      return {
+        KubeConfig: {
+          getCurrentCluster: () => ({
+            name: "my-cluster",
+            server: "https://api.cluster.example.com",
+          }),
+          getCurrentContext: () => "my-context",
+          makeApiClient: () => ({
+            getCode: () =>
+              Promise.resolve({
+                gitVersion: "v1.28.0",
+                platform: "linux/amd64",
+                goVersion: "go1.21.0",
+              }),
+          }),
+        },
+      };
+    });
   });
 
   afterEach(() => {
@@ -48,9 +50,9 @@ describe("k8s.getClusterDetails", () => {
   });
 
   it("should throw when KubeConfig is not initialized", async () => {
-    (K8sClient as unknown as Mock).mockImplementation(() => ({
-      KubeConfig: null,
-    }));
+    (K8sClient as unknown as Mock).mockImplementation(function () {
+      return { KubeConfig: null };
+    });
 
     const caller = createCaller(mockContext);
     await expect(caller.k8s.clusterDetails()).rejects.toThrow();

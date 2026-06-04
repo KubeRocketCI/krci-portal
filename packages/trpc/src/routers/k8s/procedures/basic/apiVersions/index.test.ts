@@ -34,9 +34,9 @@ describe("k8sGetApiVersions", () => {
     };
 
     // Mock K8sClient constructor to return an object with KubeConfig
-    (K8sClient as unknown as Mock).mockImplementation(() => ({
-      KubeConfig: mockKubeConfig,
-    }));
+    (K8sClient as unknown as Mock).mockImplementation(function () {
+      return { KubeConfig: mockKubeConfig };
+    });
   });
 
   afterEach(() => {

@@ -34,7 +34,9 @@ describe("k8sListDeploymentRevisions", () => {
   beforeEach(() => {
     mockContext = createMockedContext();
     mockK8s = { KubeConfig: {}, getResource: vi.fn(), listAllResources: vi.fn() };
-    (K8sClient as unknown as Mock).mockImplementation(() => mockK8s);
+    (K8sClient as unknown as Mock).mockImplementation(function () {
+      return mockK8s;
+    });
   });
 
   afterEach(() => vi.clearAllMocks());

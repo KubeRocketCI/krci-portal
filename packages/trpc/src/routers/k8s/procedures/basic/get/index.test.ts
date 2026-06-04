@@ -29,7 +29,9 @@ describe("k8sGetProcedure", () => {
     };
 
     // Mock K8sClient constructor
-    (K8sClient as unknown as Mock).mockImplementation(() => mockK8sClientInstance);
+    (K8sClient as unknown as Mock).mockImplementation(function () {
+      return mockK8sClientInstance;
+    });
   });
 
   afterEach(() => {

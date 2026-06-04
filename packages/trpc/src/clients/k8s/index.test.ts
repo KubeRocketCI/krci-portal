@@ -1,4 +1,4 @@
-import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
+import { describe, it, beforeEach, afterEach, expect, vi, Mock } from "vitest";
 import { KubeConfig } from "@kubernetes/client-node";
 import { K8sApiError } from "@my-project/shared";
 import fetchModule from "node-fetch";
@@ -21,7 +21,9 @@ vi.mock("@kubernetes/client-node", () => {
   };
 
   return {
-    KubeConfig: vi.fn().mockImplementation(() => mockKubeConfig as KubeConfig),
+    KubeConfig: vi.fn(function () {
+      return mockKubeConfig as KubeConfig;
+    }),
   };
 });
 
@@ -161,20 +163,19 @@ describe("K8sClient", () => {
     // Mirrors the no-token branch: a misconfigured kubeconfig produces a null
     // KubeConfig so getInitializedK8sClient can raise a typed UNAUTHORIZED
     // TRPCError, instead of throwing a bare Error that handleK8sError maps to 500.
-    vi.mocked(KubeConfig).mockImplementationOnce(
-      () =>
-        ({
-          loadFromDefault: vi.fn(),
-          loadFromCluster: vi.fn(),
-          getCurrentCluster: vi.fn().mockReturnValue(undefined),
-          getCurrentContext: vi.fn().mockReturnValue("test-context"),
-          setCurrentContext: vi.fn(),
-          users: [],
-          contexts: [],
-          clusters: [],
-          currentContext: "test-context",
-        }) as unknown as KubeConfig
-    );
+    vi.mocked(KubeConfig).mockImplementationOnce(function () {
+      return {
+        loadFromDefault: vi.fn(),
+        loadFromCluster: vi.fn(),
+        getCurrentCluster: vi.fn().mockReturnValue(undefined),
+        getCurrentContext: vi.fn().mockReturnValue("test-context"),
+        setCurrentContext: vi.fn(),
+        users: [],
+        contexts: [],
+        clusters: [],
+        currentContext: "test-context",
+      } as unknown as KubeConfig;
+    });
 
     const client = new K8sClient(validSession);
     expect(client.KubeConfig).toBeNull();
@@ -183,7 +184,7 @@ describe("K8sClient", () => {
   describe("discoverResource", () => {
     it("discovers a core v1 resource", async () => {
       const client = new K8sClient(validSession);
-      vi.spyOn(client, "fetchApiPath" as never).mockResolvedValue({
+      (vi.spyOn(client, "fetchApiPath" as never) as unknown as Mock).mockResolvedValue({
         resources: [
           { name: "configmaps", namespaced: true, kind: "ConfigMap" },
           { name: "configmaps/status", namespaced: true, kind: "ConfigMap" },
@@ -197,7 +198,7 @@ describe("K8sClient", () => {
 
     it("discovers an API group resource", async () => {
       const client = new K8sClient(validSession);
-      vi.spyOn(client, "fetchApiPath" as never).mockResolvedValue({
+      (vi.spyOn(client, "fetchApiPath" as never) as unknown as Mock).mockResolvedValue({
         resources: [{ name: "deployments", namespaced: true, kind: "Deployment" }],
       } as never);
 
@@ -208,7 +209,7 @@ describe("K8sClient", () => {
 
     it("excludes subresources (paths containing /)", async () => {
       const client = new K8sClient(validSession);
-      vi.spyOn(client, "fetchApiPath" as never).mockResolvedValue({
+      (vi.spyOn(client, "fetchApiPath" as never) as unknown as Mock).mockResolvedValue({
         resources: [
           { name: "pods/log", namespaced: true, kind: "Pod" },
           { name: "pods", namespaced: true, kind: "Pod" },
@@ -222,7 +223,7 @@ describe("K8sClient", () => {
 
     it("throws when resource kind is not found", async () => {
       const client = new K8sClient(validSession);
-      vi.spyOn(client, "fetchApiPath" as never).mockResolvedValue({ resources: [] } as never);
+      (vi.spyOn(client, "fetchApiPath" as never) as unknown as Mock).mockResolvedValue({ resources: [] } as never);
 
       await expect(client.discoverResource("v1", "Unknown")).rejects.toThrow(
         'Resource kind "Unknown" not found in apiVersion "v1"'
@@ -231,20 +232,19 @@ describe("K8sClient", () => {
   });
 
   it("leaves KubeConfig null if current context is not found", () => {
-    vi.mocked(KubeConfig).mockImplementationOnce(
-      () =>
-        ({
-          loadFromDefault: vi.fn(),
-          loadFromCluster: vi.fn(),
-          getCurrentCluster: vi.fn().mockReturnValue({ name: "test-cluster" }),
-          getCurrentContext: vi.fn().mockReturnValue(undefined),
-          setCurrentContext: vi.fn(),
-          users: [],
-          contexts: [],
-          clusters: [],
-          currentContext: undefined,
-        }) as unknown as KubeConfig
-    );
+    vi.mocked(KubeConfig).mockImplementationOnce(function () {
+      return {
+        loadFromDefault: vi.fn(),
+        loadFromCluster: vi.fn(),
+        getCurrentCluster: vi.fn().mockReturnValue({ name: "test-cluster" }),
+        getCurrentContext: vi.fn().mockReturnValue(undefined),
+        setCurrentContext: vi.fn(),
+        users: [],
+        contexts: [],
+        clusters: [],
+        currentContext: undefined,
+      } as unknown as KubeConfig;
+    });
 
     const client = new K8sClient(validSession);
     expect(client.KubeConfig).toBeNull();
@@ -260,8 +260,8 @@ describe("K8sClient", () => {
       pluralName: "deployments",
     };
 
-    const makeKubeConfigWithServer = () =>
-      ({
+    const makeKubeConfigWithServer = function () {
+      return {
         loadFromDefault: vi.fn(),
         loadFromCluster: vi.fn(),
         getCurrentCluster: vi.fn().mockReturnValue({ name: "test-cluster", server: "https://k8s.example.com" }),
@@ -273,7 +273,8 @@ describe("K8sClient", () => {
         contexts: [],
         clusters: [],
         currentContext: "test-context",
-      }) as unknown as KubeConfig;
+      } as unknown as KubeConfig;
+    };
 
     beforeEach(() => {
       vi.clearAllMocks();
@@ -409,8 +410,8 @@ describe("K8sClient", () => {
       pluralName: "replicasets",
     };
 
-    const makeKubeConfigWithServer = () =>
-      ({
+    const makeKubeConfigWithServer = function () {
+      return {
         loadFromDefault: vi.fn(),
         loadFromCluster: vi.fn(),
         getCurrentCluster: vi.fn().mockReturnValue({ name: "test-cluster", server: "https://k8s.example.com" }),
@@ -422,7 +423,8 @@ describe("K8sClient", () => {
         contexts: [],
         clusters: [],
         currentContext: "test-context",
-      }) as unknown as KubeConfig;
+      } as unknown as KubeConfig;
+    };
 
     beforeEach(() => {
       vi.clearAllMocks();
@@ -526,8 +528,8 @@ describe("K8sClient", () => {
   });
 
   describe("getSelfSubjectReview", () => {
-    const makeKubeConfigWithServer = () =>
-      ({
+    const makeKubeConfigWithServer = function () {
+      return {
         loadFromDefault: vi.fn(),
         loadFromCluster: vi.fn(),
         getCurrentCluster: vi.fn().mockReturnValue({ name: "test-cluster", server: "https://k8s.example.com" }),
@@ -539,7 +541,8 @@ describe("K8sClient", () => {
         contexts: [],
         clusters: [],
         currentContext: "test-context",
-      }) as unknown as KubeConfig;
+      } as unknown as KubeConfig;
+    };
 
     beforeEach(() => {
       vi.clearAllMocks();

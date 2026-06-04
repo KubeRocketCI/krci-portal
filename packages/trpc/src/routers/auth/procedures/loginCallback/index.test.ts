@@ -9,12 +9,14 @@ const mockNormalizeTokenResponse = vi.fn();
 const mockFetchUserInfo = vi.fn();
 
 vi.mock("../../../../clients/oidc/index.js", () => ({
-  OIDCClient: vi.fn().mockImplementation(() => ({
-    discoverOrThrow: mockDiscover,
-    exchangeCodeForTokens: mockExchangeCodeForTokens,
-    normalizeTokenResponse: mockNormalizeTokenResponse,
-    fetchUserInfoOrThrow: mockFetchUserInfo,
-  })),
+  OIDCClient: vi.fn(function () {
+    return {
+      discoverOrThrow: mockDiscover,
+      exchangeCodeForTokens: mockExchangeCodeForTokens,
+      normalizeTokenResponse: mockNormalizeTokenResponse,
+      fetchUserInfoOrThrow: mockFetchUserInfo,
+    };
+  }),
 }));
 
 describe("authLoginCallbackProcedure", () => {

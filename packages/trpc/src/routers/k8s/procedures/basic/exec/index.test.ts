@@ -12,9 +12,9 @@ describe("k8s.podExec", () => {
 
   beforeEach(() => {
     mockContext = createMockedContext();
-    (K8sClient as unknown as Mock).mockImplementation(() => ({
-      KubeConfig: {},
-    }));
+    (K8sClient as unknown as Mock).mockImplementation(function () {
+      return { KubeConfig: {} };
+    });
   });
 
   afterEach(() => {
@@ -22,9 +22,9 @@ describe("k8s.podExec", () => {
   });
 
   it("should throw when KubeConfig is not initialized", async () => {
-    (K8sClient as unknown as Mock).mockImplementation(() => ({
-      KubeConfig: null,
-    }));
+    (K8sClient as unknown as Mock).mockImplementation(function () {
+      return { KubeConfig: null };
+    });
 
     const caller = createCaller(mockContext);
     await expect(

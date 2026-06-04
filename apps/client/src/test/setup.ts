@@ -33,11 +33,13 @@ const localStorageMock = {
 global.localStorage = localStorageMock as unknown as Storage;
 
 // Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+global.ResizeObserver = vi.fn(
+  class {
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+  }
+);
 
 // Mock window.matchMedia (not implemented in jsdom)
 Object.defineProperty(window, "matchMedia", {

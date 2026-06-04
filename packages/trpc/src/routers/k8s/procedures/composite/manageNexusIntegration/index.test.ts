@@ -53,7 +53,9 @@ describe("k8sManageNexusIntegrationProcedure", () => {
   beforeEach(() => {
     mockContext = createMockedContext();
     mockK8sClientInstance = { KubeConfig: {}, createResource: vi.fn(), replaceResource: vi.fn() };
-    (K8sClient as unknown as Mock).mockImplementation(() => mockK8sClientInstance);
+    (K8sClient as unknown as Mock).mockImplementation(function () {
+      return mockK8sClientInstance;
+    });
   });
 
   afterEach(() => vi.clearAllMocks());

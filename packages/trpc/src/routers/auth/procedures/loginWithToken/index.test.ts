@@ -8,11 +8,13 @@ const mockValidateTokenAndGetUserInfo = vi.fn();
 const mockValidateTokenAndGetTokenInfo = vi.fn();
 
 vi.mock("../../../../clients/oidc/index.js", () => ({
-  OIDCClient: vi.fn().mockImplementation(() => ({
-    discoverOrThrow: mockDiscover,
-    validateTokenAndGetUserInfo: mockValidateTokenAndGetUserInfo,
-    validateTokenAndGetTokenInfo: mockValidateTokenAndGetTokenInfo,
-  })),
+  OIDCClient: vi.fn(function () {
+    return {
+      discoverOrThrow: mockDiscover,
+      validateTokenAndGetUserInfo: mockValidateTokenAndGetUserInfo,
+      validateTokenAndGetTokenInfo: mockValidateTokenAndGetTokenInfo,
+    };
+  }),
 }));
 
 describe("authLoginWithTokenProcedure", () => {

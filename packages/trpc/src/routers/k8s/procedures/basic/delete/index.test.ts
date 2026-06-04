@@ -22,7 +22,9 @@ describe("k8sDeleteItemProcedure", () => {
       KubeConfig: {},
       deleteResource: vi.fn(),
     };
-    (K8sClient as unknown as Mock).mockImplementation(() => mockK8sClientInstance);
+    (K8sClient as unknown as Mock).mockImplementation(function () {
+      return mockK8sClientInstance;
+    });
   });
 
   afterEach(() => {
