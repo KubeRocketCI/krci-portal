@@ -400,38 +400,64 @@ describe("K8sClient", () => {
     });
   });
 
+  const rsConfig = {
+    group: "apps",
+    version: "v1",
+    apiVersion: "apps/v1",
+    kind: "ReplicaSet",
+    singularName: "replicaset",
+    pluralName: "replicasets",
+  };
+
+  const makeRsKubeConfigWithServer = function () {
+    return {
+      loadFromDefault: vi.fn(),
+      loadFromCluster: vi.fn(),
+      getCurrentCluster: vi.fn().mockReturnValue({ name: "test-cluster", server: "https://k8s.example.com" }),
+      getCurrentContext: vi.fn().mockReturnValue("test-context"),
+      getCurrentUser: vi.fn().mockReturnValue({}),
+      setCurrentContext: vi.fn(),
+      applyToHTTPSOptions: vi.fn(),
+      users: [],
+      contexts: [],
+      clusters: [],
+      currentContext: "test-context",
+    } as unknown as KubeConfig;
+  };
+
+  describe("listResource", () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it("appends fieldSelector to the query string on listResource", async () => {
+      vi.mocked(KubeConfig).mockImplementationOnce(makeRsKubeConfigWithServer);
+      const fetchMock = vi.mocked(fetchModule);
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ "content-type": "application/json" }),
+        json: async () => ({ items: [], metadata: {} }),
+      } as never);
+
+      const client = new K8sClient(validSession);
+      await client.listResource(rsConfig, "ns", undefined, {
+        fieldSelector: "involvedObject.uid=abc",
+        limit: 100,
+      });
+
+      const url = fetchMock.mock.calls[0]![0] as string;
+      expect(url).toContain("fieldSelector=involvedObject.uid%3Dabc");
+      expect(url).toContain("limit=100");
+    });
+  });
+
   describe("listAllResources — continue-token pagination", () => {
-    const rsConfig = {
-      group: "apps",
-      version: "v1",
-      apiVersion: "apps/v1",
-      kind: "ReplicaSet",
-      singularName: "replicaset",
-      pluralName: "replicasets",
-    };
-
-    const makeKubeConfigWithServer = function () {
-      return {
-        loadFromDefault: vi.fn(),
-        loadFromCluster: vi.fn(),
-        getCurrentCluster: vi.fn().mockReturnValue({ name: "test-cluster", server: "https://k8s.example.com" }),
-        getCurrentContext: vi.fn().mockReturnValue("test-context"),
-        getCurrentUser: vi.fn().mockReturnValue({}),
-        setCurrentContext: vi.fn(),
-        applyToHTTPSOptions: vi.fn(),
-        users: [],
-        contexts: [],
-        clusters: [],
-        currentContext: "test-context",
-      } as unknown as KubeConfig;
-    };
-
     beforeEach(() => {
       vi.clearAllMocks();
     });
 
     it("follows the continue token until the API server stops returning one", async () => {
-      vi.mocked(KubeConfig).mockImplementationOnce(makeKubeConfigWithServer);
+      vi.mocked(KubeConfig).mockImplementationOnce(makeRsKubeConfigWithServer);
       const fetchMock = vi.mocked(fetchModule);
       fetchMock
         .mockResolvedValueOnce({
@@ -463,7 +489,7 @@ describe("K8sClient", () => {
     });
 
     it("forwards labelSelector on every page", async () => {
-      vi.mocked(KubeConfig).mockImplementationOnce(makeKubeConfigWithServer);
+      vi.mocked(KubeConfig).mockImplementationOnce(makeRsKubeConfigWithServer);
       const fetchMock = vi.mocked(fetchModule);
       fetchMock
         .mockResolvedValueOnce({
@@ -486,7 +512,7 @@ describe("K8sClient", () => {
 
     it("returns an empty list without throwing when the API server returns items: null", async () => {
       // Some non-conformant API servers / alpha resources return null instead of [].
-      vi.mocked(KubeConfig).mockImplementationOnce(makeKubeConfigWithServer);
+      vi.mocked(KubeConfig).mockImplementationOnce(makeRsKubeConfigWithServer);
       const fetchMock = vi.mocked(fetchModule);
       fetchMock.mockResolvedValueOnce({
         ok: true,
@@ -501,7 +527,7 @@ describe("K8sClient", () => {
     });
 
     it("caps at maxPages to prevent unbounded loops on a misbehaving server", async () => {
-      vi.mocked(KubeConfig).mockImplementationOnce(makeKubeConfigWithServer);
+      vi.mocked(KubeConfig).mockImplementationOnce(makeRsKubeConfigWithServer);
       const fetchMock = vi.mocked(fetchModule);
       fetchMock.mockResolvedValue({
         ok: true,

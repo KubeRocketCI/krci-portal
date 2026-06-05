@@ -17,6 +17,8 @@ import {
 import { useTRPCClient } from "@/core/providers/trpc";
 import type { UseWatchListResult } from "@/k8s/api/hooks/useWatch/types";
 import { useK8sResourceList } from "@/modules/k8s/hooks/useK8sResourceList";
+import { useK8sResourceListPoll } from "@/modules/k8s/hooks/useK8sResourceListPoll";
+import { EVENTS_POLL_INTERVAL_MS, OVERVIEW_EVENTS_FETCH_LIMIT } from "@/modules/k8s/constants/event";
 import type { WatchStatus } from "@/modules/k8s/components/WatchConnectionIndicator";
 import type { OverviewEvent } from "../types";
 import type { WorkloadKind } from "../utils/workload";
@@ -46,7 +48,13 @@ export function useClusterOverview(): ClusterOverview {
   const nodes = useK8sResourceList<K8sNode>(k8sNodeConfig, "");
   const pods = useK8sResourceList<Pod>(k8sPodConfig, "");
   const namespaces = useK8sResourceList<Namespace>(k8sNamespaceConfig, "");
-  const events = useK8sResourceList<OverviewEvent>(k8sEventConfig, "");
+  // Recent events: poll a bounded, cluster-wide page instead of watching every
+  // event in the cluster (the card only renders the latest 25). One-shot the
+  // events rather than streaming them.
+  const events = useK8sResourceListPoll<OverviewEvent>(k8sEventConfig, "", {
+    limit: OVERVIEW_EVENTS_FETCH_LIMIT,
+    refetchInterval: EVENTS_POLL_INTERVAL_MS,
+  });
 
   const deployments = useK8sResourceList<KubeObjectBase>(k8sDeploymentConfig, "");
   const statefulsets = useK8sResourceList<KubeObjectBase>(k8sStatefulSetConfig, "");

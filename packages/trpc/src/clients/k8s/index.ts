@@ -180,7 +180,7 @@ export class K8sClient {
     resourceConfig: K8sResourceConfig,
     namespace?: string,
     labelSelector?: string,
-    options?: { limit?: number; continueToken?: string }
+    options?: { limit?: number; continueToken?: string; fieldSelector?: string }
   ): Promise<KubeObjectListBase<KubeObjectBase>> {
     if (!this.KubeConfig) {
       throw new Error("KubeConfig is not initialized");
@@ -191,6 +191,9 @@ export class K8sClient {
 
     if (labelSelector) {
       queryParams.append("labelSelector", labelSelector);
+    }
+    if (options?.fieldSelector) {
+      queryParams.append("fieldSelector", options.fieldSelector);
     }
     if (options?.limit && options.limit > 0) {
       queryParams.append("limit", String(options.limit));

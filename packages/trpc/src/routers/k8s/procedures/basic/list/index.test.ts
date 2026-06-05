@@ -69,7 +69,10 @@ describe("k8sListProcedure", () => {
     const caller = createCaller(mockContext);
     const result = await caller.k8s.list(input);
 
-    expect(mockK8sClientInstance.listResource).toHaveBeenCalledWith(input.resourceConfig, input.namespace, "");
+    expect(mockK8sClientInstance.listResource).toHaveBeenCalledWith(input.resourceConfig, input.namespace, "", {
+      limit: undefined,
+      fieldSelector: undefined,
+    });
     expect(result).toEqual(mockResponse);
   });
 
@@ -186,5 +189,111 @@ describe("k8sListProcedure", () => {
     expect(meta.creationTimestamp).toBe("2024-01-01T10:00:00Z");
     expect(meta.labels).toEqual(mockResponse.items[0].metadata.labels);
     expect(meta.annotations).toEqual(mockResponse.items[0].metadata.annotations);
+  });
+
+  it("forwards limit and fieldSelector to listResource", async () => {
+    const input = {
+      clusterName: "test-cluster",
+      namespace: "test-namespace",
+      resourceConfig: {
+        group: "",
+        version: "v1",
+        pluralName: "events",
+        kind: "Event",
+        singularName: "event",
+        apiVersion: "v1",
+      },
+      labels: {},
+      limit: 100,
+      fieldSelector: "involvedObject.uid=abc",
+    };
+
+    mockK8sClientInstance.listResource.mockResolvedValueOnce({
+      apiVersion: "v1",
+      kind: "EventList",
+      metadata: { resourceVersion: "1" },
+      items: [],
+    });
+
+    const caller = createCaller(mockContext);
+    await caller.k8s.list(input);
+
+    expect(mockK8sClientInstance.listResource).toHaveBeenCalledWith(input.resourceConfig, input.namespace, "", {
+      limit: 100,
+      fieldSelector: "involvedObject.uid=abc",
+    });
+  });
+
+  it("accepts and forwards a compound kind+name+namespace fieldSelector (the no-uid fallback)", async () => {
+    const compound = "involvedObject.kind=Pod,involvedObject.name=my-pod,involvedObject.namespace=ns";
+    const input = {
+      clusterName: "test-cluster",
+      namespace: "test-namespace",
+      resourceConfig: {
+        group: "",
+        version: "v1",
+        pluralName: "events",
+        kind: "Event",
+        singularName: "event",
+        apiVersion: "v1",
+      },
+      labels: {},
+      fieldSelector: compound,
+    };
+
+    mockK8sClientInstance.listResource.mockResolvedValueOnce({
+      apiVersion: "v1",
+      kind: "EventList",
+      metadata: { resourceVersion: "1" },
+      items: [],
+    });
+
+    const caller = createCaller(mockContext);
+    await caller.k8s.list(input);
+
+    expect(mockK8sClientInstance.listResource).toHaveBeenCalledWith(input.resourceConfig, input.namespace, "", {
+      limit: undefined,
+      fieldSelector: compound,
+    });
+  });
+
+  it("rejects limit values outside the allowed range", async () => {
+    const base = {
+      clusterName: "test-cluster",
+      namespace: "test-namespace",
+      resourceConfig: {
+        group: "",
+        version: "v1",
+        pluralName: "events",
+        kind: "Event",
+        singularName: "event",
+        apiVersion: "v1",
+      },
+      labels: {},
+    };
+    const caller = createCaller(mockContext);
+    await expect(caller.k8s.list({ ...base, limit: 0 })).rejects.toThrowError();
+    await expect(caller.k8s.list({ ...base, limit: 1001 })).rejects.toThrowError();
+    await expect(caller.k8s.list({ ...base, limit: 1.5 })).rejects.toThrowError();
+  });
+
+  it("rejects a malformed fieldSelector", async () => {
+    const base = {
+      clusterName: "test-cluster",
+      namespace: "test-namespace",
+      resourceConfig: {
+        group: "",
+        version: "v1",
+        pluralName: "events",
+        kind: "Event",
+        singularName: "event",
+        apiVersion: "v1",
+      },
+      labels: {},
+    };
+    const caller = createCaller(mockContext);
+    // No operator / illegal characters / whitespace must be rejected.
+    await expect(caller.k8s.list({ ...base, fieldSelector: "not a selector" })).rejects.toThrowError();
+    await expect(caller.k8s.list({ ...base, fieldSelector: "x".repeat(513) })).rejects.toThrowError();
   });
 });

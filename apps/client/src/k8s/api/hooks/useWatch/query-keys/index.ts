@@ -61,3 +61,16 @@ export function getK8sWatchItemQueryCacheKeyPrefix(
 export function getK8sDeploymentRevisionsQueryCacheKey(clusterName: string, namespace: string, name: string): string[] {
   return ["k8s:deploymentRevisions", clusterName, namespace, name];
 }
+
+export function getK8sListPollQueryCacheKey(
+  clusterName: string,
+  namespace: string | undefined,
+  group: string,
+  resourcePlural: string,
+  fieldSelector?: string,
+  limit?: number
+): (string | number | undefined)[] {
+  // Match the sibling builders' `undefined` sentinel; TanStack Query hashes a
+  // trailing undefined the same as null, and the type stays uniform with them.
+  return ["k8s:listPoll", clusterName, namespace ?? CLUSTER_SCOPE_KEY, group, resourcePlural, fieldSelector, limit];
+}

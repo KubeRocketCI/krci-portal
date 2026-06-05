@@ -12,6 +12,8 @@ export const eventSchema = kubeObjectBaseSchema
     count: z.number().optional(),
     firstTimestamp: z.string().optional(),
     lastTimestamp: z.string().optional(),
+    // core/v1 Event also carries eventTime (MicroTime) on newer API servers.
+    eventTime: z.string().optional(),
     involvedObject: z
       .object({
         kind: z.string().optional(),
