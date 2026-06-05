@@ -1,16 +1,4 @@
-import type { KubeObjectBase } from "@my-project/shared";
+import type { Event as K8sEvent } from "@my-project/shared";
 
-/** The shared `Event` schema is `.passthrough()`, so we type only the fields the overview renders. */
-export interface OverviewEvent extends KubeObjectBase {
-  type?: string;
-  reason?: string;
-  message?: string;
-  lastTimestamp?: string;
-  eventTime?: string;
-  involvedObject?: {
-    kind?: string;
-    namespace?: string;
-    name?: string;
-    uid?: string;
-  };
-}
+/** Cluster-overview "Recent events" item — the shared core/v1 `Event` type. */
+export type OverviewEvent = K8sEvent;

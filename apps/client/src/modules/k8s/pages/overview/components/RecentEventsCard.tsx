@@ -5,22 +5,12 @@ import { Skeleton } from "@/core/components/ui/skeleton";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { formatRelativeTime } from "@/core/utils/date-humanize/utils";
 import { PATH_K8S_EVENTS_FULL } from "@/modules/k8s/constants/paths";
-import { EVENT_TONE } from "@/modules/k8s/constants/event";
+import { eventToneClass } from "@/modules/k8s/constants/event";
+import { getEventTimestamp, sortLatestEvents } from "@/modules/k8s/utils/event";
 import type { UseWatchListResult } from "@/k8s/api/hooks/useWatch/types";
 import type { OverviewEvent } from "../types";
 
 const MAX_EVENTS = 25;
-
-function eventTimestamp(event: OverviewEvent): string | undefined {
-  return event.lastTimestamp ?? event.eventTime ?? event.metadata?.creationTimestamp;
-}
-
-function eventTime(event: OverviewEvent): number {
-  const raw = eventTimestamp(event);
-  if (!raw) return 0;
-  const time = new Date(raw).getTime();
-  return Number.isFinite(time) ? time : 0;
-}
 
 interface RecentEventsCardProps {
   clusterName: string;
@@ -28,10 +18,7 @@ interface RecentEventsCardProps {
 }
 
 export function RecentEventsCard({ clusterName, result }: RecentEventsCardProps) {
-  const sorted = useMemo(
-    () => [...result.data.array].sort((a, b) => eventTime(b) - eventTime(a)).slice(0, MAX_EVENTS),
-    [result.data.array]
-  );
+  const sorted = useMemo(() => sortLatestEvents(result.data.array, MAX_EVENTS), [result.data.array]);
 
   return (
     <Card>
@@ -57,16 +44,14 @@ export function RecentEventsCard({ clusterName, result }: RecentEventsCardProps)
         ) : (
           <ul className="max-h-80 space-y-2.5 overflow-y-auto pr-1">
             {sorted.map((event, index) => {
-              const timestamp = eventTimestamp(event);
+              const timestamp = getEventTimestamp(event);
               return (
                 <li
                   key={event.metadata?.uid ?? `${timestamp ?? "event"}-${index}`}
                   className="flex items-start gap-2 text-xs"
                 >
                   <span
-                    className={`mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full ${
-                      EVENT_TONE[event.type ?? ""] ?? "bg-muted-foreground"
-                    }`}
+                    className={`mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full ${eventToneClass(event.type)}`}
                     aria-hidden
                   />
                   <div className="min-w-0 flex-1">

@@ -7,6 +7,12 @@ import { k8sResourceConfigSchema } from "@my-project/shared";
 import { handleK8sError } from "../../../utils/handleK8sError/index.js";
 import { K8sClient } from "../../../../../clients/k8s/index.js";
 
+// Forwarded verbatim to the K8s API server, so constrain to the field-selector
+// grammar (comma-separated key(=|==|!=)value pairs). Project convention: regex-
+// constrained Zod for filter strings sent to backends (cf. tektonInputSchemas.celFilter).
+const K8S_FIELD_SELECTOR_REGEX =
+  /^[A-Za-z0-9_.]+(?:==|!=|=)[A-Za-z0-9_./-]*(?:,[A-Za-z0-9_.]+(?:==|!=|=)[A-Za-z0-9_./-]*)*$/;
+
 // Explicit properties so `trpc-to-openapi` emits typed schemas; downstream
 // oapi-codegen clients otherwise drop every extra key on decode.
 const k8sItemMetadataSchema = z
@@ -45,6 +51,8 @@ export const k8sListProcedure = protectedProcedure
       namespace: z.string().optional(),
       resourceConfig: k8sResourceConfigSchema,
       labels: z.record(z.string()).optional().default({}),
+      limit: z.number().int().positive().max(1000).optional(),
+      fieldSelector: z.string().max(512).regex(K8S_FIELD_SELECTOR_REGEX, "Invalid fieldSelector").optional(),
     })
   )
   .output(k8sListOutputSchema)
@@ -56,9 +64,12 @@ export const k8sListProcedure = protectedProcedure
         throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
       }
 
-      const { namespace, resourceConfig, labels } = input;
+      const { namespace, resourceConfig, labels, limit, fieldSelector } = input;
 
-      return await k8sClient.listResource(resourceConfig, namespace, createLabelSelectorString(labels));
+      return await k8sClient.listResource(resourceConfig, namespace, createLabelSelectorString(labels), {
+        limit,
+        fieldSelector,
+      });
     } catch (error) {
       throw handleK8sError(error);
     }
