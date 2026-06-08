@@ -182,6 +182,7 @@ export const BUILD_TOOL_ICON_MAPPING = {
 
 export const CI_TOOL_ICON_MAPPING = {
   [ciTool.tekton]: RESOURCE_ICON_NAMES.TEKTON,
+  [ciTool.gitlab]: RESOURCE_ICON_NAMES.GITLAB,
 } as const;
 
 export const GIT_PROVIDER_ICON_MAPPING = {
