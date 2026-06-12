@@ -1,4 +1,5 @@
 import { getIconTypeFromPath } from "@/core/constants/page-icons";
+import { buildPinKey } from "@/core/utils/pinKey";
 import type { PinnedPage } from "@/core/hooks/usePinnedItems";
 import type { RouteParams } from "@/core/router/types";
 import type { NavGroupItem } from "./types";
@@ -23,20 +24,30 @@ export function isNavGroupActiveForPathname(item: NavGroupItem, pathname: string
 /**
  * Helper to create a pin config from route and title.
  * Derives the icon type from the route path.
+ *
+ * The pin key is cluster-agnostic: `clusterName` is excluded from the key so
+ * that a page pinned on one cluster remains pinned when switching clusters.
+ * All other route params are included, sorted by key name, to disambiguate
+ * pages that share the same route template (e.g. generic K8s list pages
+ * parameterised by `kind`, or CR list pages parameterised by group/version/plural).
+ *
+ * Key format:
+ *   - No identifying params: `page:<path>`
+ *   - With identifying params: `page:<path>?<k1>=<v1>&<k2>=<v2>`
  */
 export function createPinConfig(title: string, route: RouteParams): PinnedPage {
   const path = route.to ?? "/";
-  const params = route.params ?? {};
+  const params = (route.params ?? {}) as Record<string, string>;
   const iconType = getIconTypeFromPath(path);
 
   return {
-    key: `page:${path}`,
+    key: buildPinKey(path, params),
     label: title,
     type: iconType as PinnedPage["type"],
     iconType,
     route: {
       to: path,
-      params: params as Record<string, string>,
+      params,
     },
   };
 }

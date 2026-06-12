@@ -4,12 +4,49 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/core/components/ui/collapsible";
 import { SidebarMenuSubButton, SidebarMenuSubItem } from "../ui/sidebar";
 import { cn } from "@/core/utils/classname";
-import type { NavCollapsibleSubGroupItem } from "./types";
+import { usePinToggle } from "./usePinToggle";
+import { SidebarPinAction } from "./SidebarPinAction";
+import type { NavCollapsibleSubGroupItem, SimpleNavItem } from "./types";
 
 interface Props {
   subGroup: NavCollapsibleSubGroupItem;
   parentGroupId?: string;
   onNavigate?: (groupId?: string) => void;
+}
+
+interface CollapsibleChildRowProps {
+  child: SimpleNavItem;
+  parentGroupId?: string;
+  onNavigate?: (groupId?: string) => void;
+}
+
+/**
+ * Individual child row inside a collapsible sub-group.
+ * Extracted to keep hook calls at the top level of a single component instance.
+ */
+function CollapsibleChildRow({ child, parentGroupId, onNavigate }: CollapsibleChildRowProps) {
+  const { pathname } = useLocation();
+  const { pinned, handlePin } = usePinToggle(child);
+
+  return (
+    <SidebarMenuSubItem>
+      <SidebarMenuSubButton asChild size="sm">
+        <Link
+          to={child.route.to}
+          params={child.route.params}
+          onClick={() => onNavigate?.(parentGroupId)}
+          activeOptions={{ exact: true, includeSearch: false }}
+          activeProps={{ className: "bg-accent text-accent-foreground" }}
+          title={child.title}
+          className={cn("min-w-0", child.isActiveFn?.(pathname) && "bg-accent text-accent-foreground")}
+        >
+          {child.icon && <child.icon className="size-4 shrink-0" />}
+          <span className="min-w-0 flex-1 truncate">{child.title}</span>
+        </Link>
+      </SidebarMenuSubButton>
+      <SidebarPinAction scope="menu-sub-item" title={child.title} pinned={pinned} onToggle={handlePin} />
+    </SidebarMenuSubItem>
+  );
 }
 
 export function SidebarCollapsibleSubGroupMenuItem({ subGroup, parentGroupId, onNavigate }: Props) {
@@ -44,22 +81,7 @@ export function SidebarCollapsibleSubGroupMenuItem({ subGroup, parentGroupId, on
       </CollapsibleTrigger>
       <CollapsibleContent>
         {subGroup.children.map((child) => (
-          <SidebarMenuSubItem key={child.title}>
-            <SidebarMenuSubButton asChild size="sm">
-              <Link
-                to={child.route.to}
-                params={child.route.params}
-                onClick={() => onNavigate?.(parentGroupId)}
-                activeOptions={{ exact: true, includeSearch: false }}
-                activeProps={{ className: "bg-accent text-accent-foreground" }}
-                title={child.title}
-                className={cn("min-w-0", child.isActiveFn?.(pathname) && "bg-accent text-accent-foreground")}
-              >
-                {child.icon && <child.icon className="size-4 shrink-0" />}
-                <span className="min-w-0 flex-1 truncate">{child.title}</span>
-              </Link>
-            </SidebarMenuSubButton>
-          </SidebarMenuSubItem>
+          <CollapsibleChildRow key={child.title} child={child} parentGroupId={parentGroupId} onNavigate={onNavigate} />
         ))}
       </CollapsibleContent>
     </Collapsible>

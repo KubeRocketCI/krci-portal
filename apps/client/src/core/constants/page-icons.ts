@@ -8,8 +8,11 @@ import {
   CloudUpload,
   Code,
   Database,
+  FileCode,
   FileText,
+  Funnel,
   GitBranch,
+  Globe,
   Layers,
   Link2,
   PanelsTopLeft,
@@ -18,6 +21,8 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
+  Webhook,
+  Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -35,6 +40,14 @@ export const PAGE_ICONS = {
   pipelineruns: Activity,
   pipelines: Bot,
   tasks: CheckCircle,
+
+  // CI/CD Webhook Triggers (icons mirror navigationConfig.ts entries)
+  "event-listeners": Webhook,
+  triggers: Zap,
+  "trigger-templates": FileCode,
+  "trigger-bindings": Link2,
+  interceptors: Funnel,
+  "cluster-interceptors": Globe,
 
   // Observability
   "pipeline-metrics": Activity,
@@ -115,57 +128,65 @@ export const PATH_TO_ICON_TYPE: Record<string, PageIconType> = {
   "/c/$clusterName/cicd/pipelines": "pipelines",
   "/c/$clusterName/cicd/tasks": "tasks",
 
+  // CI/CD Webhook Triggers
+  "/c/$clusterName/cicd/webhook-triggers/event-listeners": "event-listeners",
+  "/c/$clusterName/cicd/webhook-triggers/triggers": "triggers",
+  "/c/$clusterName/cicd/webhook-triggers/trigger-templates": "trigger-templates",
+  "/c/$clusterName/cicd/webhook-triggers/trigger-bindings": "trigger-bindings",
+  "/c/$clusterName/cicd/webhook-triggers/interceptors": "interceptors",
+  "/c/$clusterName/cicd/webhook-triggers/cluster-interceptors": "cluster-interceptors",
+
   // Observability
-  "/c/$clusterName/observability/pipeline-metrics": "pipeline-metrics",
+  "/c/$clusterName/observability/pipeline-metrics/$namespace": "pipeline-metrics",
 
   // Security - SCA
   "/c/$clusterName/security/sca/$namespace": "sca",
-  "/c/$clusterName/security/sca-projects/$namespace": "sca-projects",
+  "/c/$clusterName/security/sca/projects/$namespace": "sca-projects",
 
   // Security - SAST
-  "/c/$clusterName/security/sast/$namespace": "sast",
+  "/c/$clusterName/security/sast/projects/$namespace": "sast",
 
   // Security - Container Scanning
-  "/c/$clusterName/security/trivy/overview/$namespace": "trivy-overview",
-  "/c/$clusterName/security/trivy/vulnerabilities/$namespace": "trivy-vulnerabilities",
-  "/c/$clusterName/security/trivy/exposed-secrets/$namespace": "trivy-exposed-secrets",
+  "/c/$clusterName/security/trivy": "trivy-overview",
+  "/c/$clusterName/security/trivy/vulnerabilities": "trivy-vulnerabilities",
+  "/c/$clusterName/security/container/exposed-secrets": "trivy-exposed-secrets",
 
   // Security - Namespace Security
-  "/c/$clusterName/security/trivy/config-audits/$namespace": "trivy-config-audits",
-  "/c/$clusterName/security/trivy/rbac-assessments/$namespace": "trivy-rbac-assessments",
-  "/c/$clusterName/security/trivy/infra-assessments/$namespace": "trivy-infra-assessments",
+  "/c/$clusterName/security/namespace/config-audits": "trivy-config-audits",
+  "/c/$clusterName/security/namespace/rbac-assessments": "trivy-rbac-assessments",
+  "/c/$clusterName/security/namespace/infra-assessments": "trivy-infra-assessments",
 
   // Security - Cluster Security
-  "/c/$clusterName/security/trivy/compliance/$namespace": "trivy-compliance",
-  "/c/$clusterName/security/trivy/cluster-config-audits/$namespace": "trivy-cluster-config-audits",
-  "/c/$clusterName/security/trivy/cluster-rbac-assessments/$namespace": "trivy-cluster-rbac-assessments",
-  "/c/$clusterName/security/trivy/cluster-infra-assessments/$namespace": "trivy-cluster-infra-assessments",
-  "/c/$clusterName/security/trivy/cluster-vulnerabilities/$namespace": "trivy-cluster-vulnerabilities",
+  "/c/$clusterName/security/cluster/compliance": "trivy-compliance",
+  "/c/$clusterName/security/cluster/config-audits": "trivy-cluster-config-audits",
+  "/c/$clusterName/security/cluster/rbac-assessments": "trivy-cluster-rbac-assessments",
+  "/c/$clusterName/security/cluster/infra-assessments": "trivy-cluster-infra-assessments",
+  "/c/$clusterName/security/cluster/vulnerabilities": "trivy-cluster-vulnerabilities",
 
   // Configuration - Quick Access
-  "/c/$clusterName/configuration/quicklinks/$namespace": "config-quicklinks",
+  "/c/$clusterName/configuration/quicklinks": "config-quicklinks",
 
   // Configuration - Artifacts Storage
-  "/c/$clusterName/configuration/nexus/$namespace": "config-nexus",
-  "/c/$clusterName/configuration/registry/$namespace": "config-registry",
+  "/c/$clusterName/configuration/nexus": "config-nexus",
+  "/c/$clusterName/configuration/registry": "config-registry",
 
   // Configuration - Deployment
-  "/c/$clusterName/configuration/clusters/$namespace": "config-clusters",
-  "/c/$clusterName/configuration/gitops/$namespace": "config-gitops",
-  "/c/$clusterName/configuration/argocd/$namespace": "config-argocd",
+  "/c/$clusterName/configuration/clusters": "config-clusters",
+  "/c/$clusterName/configuration/gitops": "config-gitops",
+  "/c/$clusterName/configuration/argocd": "config-argocd",
 
   // Configuration - Security
-  "/c/$clusterName/configuration/defectdojo/$namespace": "config-defectdojo",
-  "/c/$clusterName/configuration/dependency-track/$namespace": "config-dependency-track",
+  "/c/$clusterName/configuration/defectdojo": "config-defectdojo",
+  "/c/$clusterName/configuration/dependency-track": "config-dependency-track",
 
   // Configuration - Code Quality
-  "/c/$clusterName/configuration/sonar/$namespace": "config-sonar",
+  "/c/$clusterName/configuration/sonar": "config-sonar",
 
   // Configuration - VCS
-  "/c/$clusterName/configuration/gitservers/$namespace": "config-gitservers",
+  "/c/$clusterName/configuration/gitservers": "config-gitservers",
 
   // Configuration - Management Tool
-  "/c/$clusterName/configuration/jira/$namespace": "config-jira",
+  "/c/$clusterName/configuration/jira": "config-jira",
 };
 
 /**

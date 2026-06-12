@@ -1,7 +1,8 @@
 import { useCallback, useMemo } from "react";
 import { Link, useLocation, useMatches } from "@tanstack/react-router";
-import { ChevronRight, Pin, PinOff } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { SidebarMenuAction, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub } from "../ui/sidebar";
+import { SidebarPinAction } from "./SidebarPinAction";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { cn } from "../../utils/classname";
 import { SidebarMenuContent } from "./SidebarMenuContent";
@@ -128,13 +129,7 @@ export function SidebarMenuItemWithHover({
             )}
           </Link>
         </SidebarMenuButton>
-        <SidebarMenuAction
-          showOnHover
-          onClick={handlePin}
-          aria-label={pinned ? `Unpin ${simpleItem.title}` : `Pin ${simpleItem.title}`}
-        >
-          {pinned ? <Pin className="size-3 fill-current text-blue-600" /> : <PinOff className="size-3" />}
-        </SidebarMenuAction>
+        <SidebarPinAction scope="menu-item" title={simpleItem.title} pinned={pinned} onToggle={handlePin} />
       </SidebarMenuItem>
     );
   }

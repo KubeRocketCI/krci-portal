@@ -1,9 +1,8 @@
 import { useCallback } from "react";
 import { Link } from "@tanstack/react-router";
-import { Pin, PinOff } from "lucide-react";
-import { SidebarMenuAction, SidebarMenuSubButton, SidebarMenuSubItem } from "../ui/sidebar";
-import { usePinnedItems } from "@/core/hooks/usePinnedItems";
-import { createPinConfig } from "./utils";
+import { SidebarMenuSubButton, SidebarMenuSubItem } from "../ui/sidebar";
+import { usePinToggle } from "./usePinToggle";
+import { SidebarPinAction } from "./SidebarPinAction";
 import type { NavSubGroupItem } from "./types";
 
 interface SidebarSubGroupMenuItemProps {
@@ -22,22 +21,11 @@ interface SubGroupItemProps {
  * Component for rendering an individual item within a sub-group
  */
 const SubGroupItem = ({ item, parentGroupId, onNavigate }: SubGroupItemProps) => {
-  const { isPinned, togglePin } = usePinnedItems();
-  const pinConfig = createPinConfig(item.title, item.route);
-  const pinned = isPinned(pinConfig.key);
+  const { pinned, handlePin } = usePinToggle(item);
 
   const handleClick = useCallback(() => {
     onNavigate?.(parentGroupId);
   }, [onNavigate, parentGroupId]);
-
-  const handlePin = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      togglePin(pinConfig);
-    },
-    [togglePin, pinConfig]
-  );
 
   return (
     <SidebarMenuSubItem>
@@ -55,13 +43,7 @@ const SubGroupItem = ({ item, parentGroupId, onNavigate }: SubGroupItemProps) =>
           <span>{item.title}</span>
         </Link>
       </SidebarMenuSubButton>
-      <SidebarMenuAction
-        className="group-focus-within/menu-sub-item:opacity-100 group-hover/menu-sub-item:opacity-100 data-[state=open]:opacity-100 md:opacity-0"
-        onClick={handlePin}
-        aria-label={pinned ? `Unpin ${item.title}` : `Pin ${item.title}`}
-      >
-        {pinned ? <Pin className="size-3 fill-current text-blue-600" /> : <PinOff className="size-3" />}
-      </SidebarMenuAction>
+      <SidebarPinAction scope="menu-sub-item" title={item.title} pinned={pinned} onToggle={handlePin} />
     </SidebarMenuSubItem>
   );
 };

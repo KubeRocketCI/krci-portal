@@ -1,10 +1,9 @@
 import { useCallback } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
-import { Pin, PinOff } from "lucide-react";
-import { SidebarMenuAction, SidebarMenuSubButton, SidebarMenuSubItem } from "../ui/sidebar";
-import { usePinnedItems } from "@/core/hooks/usePinnedItems";
+import { SidebarMenuSubButton, SidebarMenuSubItem } from "../ui/sidebar";
 import { cn } from "@/core/utils/classname";
-import { createPinConfig } from "./utils";
+import { usePinToggle } from "./usePinToggle";
+import { SidebarPinAction } from "./SidebarPinAction";
 import type { SimpleNavItem } from "./types";
 
 interface SidebarMenuItemProps {
@@ -18,23 +17,12 @@ interface SidebarMenuItemProps {
  */
 export const SidebarMenuItem = ({ item, parentGroupId, onNavigate }: SidebarMenuItemProps) => {
   const { pathname } = useLocation();
-  const { isPinned, togglePin } = usePinnedItems();
+  const { pinned, handlePin } = usePinToggle(item);
   const isActiveFnMatch = item.isActiveFn?.(pathname) ?? false;
-  const pinConfig = createPinConfig(item.title, item.route);
-  const pinned = isPinned(pinConfig.key);
 
   const handleClick = useCallback(() => {
     onNavigate?.(parentGroupId);
   }, [onNavigate, parentGroupId]);
-
-  const handlePin = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      togglePin(pinConfig);
-    },
-    [togglePin, pinConfig]
-  );
 
   return (
     <SidebarMenuSubItem>
@@ -52,13 +40,7 @@ export const SidebarMenuItem = ({ item, parentGroupId, onNavigate }: SidebarMenu
           <span>{item.title}</span>
         </Link>
       </SidebarMenuSubButton>
-      <SidebarMenuAction
-        showOnHover
-        onClick={handlePin}
-        aria-label={pinned ? `Unpin ${item.title}` : `Pin ${item.title}`}
-      >
-        {pinned ? <Pin className="size-3 fill-current text-blue-600" /> : <PinOff className="size-3" />}
-      </SidebarMenuAction>
+      <SidebarPinAction scope="menu-sub-item" title={item.title} pinned={pinned} onToggle={handlePin} />
     </SidebarMenuSubItem>
   );
 };
