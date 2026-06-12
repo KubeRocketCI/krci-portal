@@ -26,7 +26,7 @@ vi.mock("@tanstack/react-router", async () => {
   };
 });
 
-// Mock ResourceTable to avoid deep tree (DataTable, BatchDeleteAction, etc.)
+// Mock ResourceTable to avoid deep tree (DataTable, BatchDeleteDialog, etc.)
 // but still render items and column labels so we can assert on them.
 vi.mock("@/modules/k8s/components/ResourceTable", () => ({
   ResourceTable: ({
