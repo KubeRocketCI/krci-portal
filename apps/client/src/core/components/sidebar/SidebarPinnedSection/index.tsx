@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ChevronDown, PinOff, Pin as PinIcon, Box } from "lucide-react";
+import { ChevronDown, Pin as PinIcon, Box } from "lucide-react";
 import { PAGE_ICONS } from "@/core/constants/page-icons";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../../ui/collapsible";
 import {
@@ -9,12 +9,13 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarMenuAction,
   useSidebar,
 } from "../../ui/sidebar";
 import { usePinnedItems } from "@/core/hooks/usePinnedItems";
 import type { PinnedPage } from "@/core/hooks/usePinnedItems";
+import { getK8sPinnedPageIcon } from "@/modules/k8s/utils/pinned-icon";
 import { cn } from "@/core/utils/classname";
+import { SidebarPinAction } from "../SidebarPinAction";
 
 export function SidebarPinnedSection() {
   const [open, setOpen] = useState(true);
@@ -66,9 +67,11 @@ function PinnedPageItem({ page, onUnpin }: PinnedPageItemProps) {
     [onUnpin]
   );
 
-  // Get icon from iconType, fallback to type (for backwards compatibility), or Box
+  // Get icon from iconType, fallback to type (for backwards compatibility),
+  // then to the K8s registry resolver (K8s routes are param-identified and
+  // can't live in the static PAGE_ICONS map), or Box as the last resort.
   const iconKey = page.iconType || page.type;
-  const Icon = (iconKey && PAGE_ICONS[iconKey as keyof typeof PAGE_ICONS]) || Box;
+  const Icon = (iconKey && PAGE_ICONS[iconKey as keyof typeof PAGE_ICONS]) || getK8sPinnedPageIcon(page) || Box;
 
   return (
     <SidebarMenuItem>
@@ -90,9 +93,8 @@ function PinnedPageItem({ page, onUnpin }: PinnedPageItemProps) {
           )}
         </Link>
       </SidebarMenuButton>
-      <SidebarMenuAction showOnHover onClick={handleUnpin} aria-label={`Unpin ${page.label}`}>
-        <PinOff className="size-3" />
-      </SidebarMenuAction>
+      {/* Entries here are pinned by definition, so pinned={true} keeps the filled pin always visible. */}
+      <SidebarPinAction scope="menu-item" title={page.label} pinned={true} onToggle={handleUnpin} />
     </SidebarMenuItem>
   );
 }

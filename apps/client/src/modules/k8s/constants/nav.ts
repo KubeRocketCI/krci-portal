@@ -5,7 +5,7 @@ import { listRouteSlug } from "../registry/resolve";
 import type { SidebarGroup as RegistrySidebarGroup } from "../registry/types";
 import { PATH_K8S_CRDS_FULL, PATH_K8S_EVENTS_FULL, PATH_K8S_LIST_FULL, PATH_K8S_OVERVIEW_FULL } from "./paths";
 
-const groupIconMap: Record<RegistrySidebarGroup, typeof Layers> = {
+export const groupIconMap: Record<RegistrySidebarGroup, typeof Layers> = {
   Workloads: Layers,
   Network: Globe,
   Storage: HardDrive,
