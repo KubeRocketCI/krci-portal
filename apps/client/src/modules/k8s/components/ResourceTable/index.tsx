@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Box } from "lucide-react";
+import { Box, Trash } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
 import { DataTable } from "@/core/components/Table";
 import { EmptyList } from "@/core/components/EmptyList";
@@ -15,7 +15,7 @@ import {
 import type { TableProps } from "@/core/components/Table/types";
 import type { KubeObjectBase } from "@my-project/shared";
 import type { ResourceDescriptor } from "../../registry/types";
-import { BatchDeleteAction } from "../BatchDeleteAction";
+import { BatchDeleteDialog } from "../BatchDeleteDialog";
 
 interface Props<T extends KubeObjectBase> {
   items: T[];
@@ -121,15 +121,16 @@ export function ResourceTable<T extends KubeObjectBase>({
 }: Props<T>) {
   const clusterName = useClusterStore((s) => s.clusterName) ?? "";
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const columns = useMemo(
     () => descriptor.columns((data) => <NameLink item={data} descriptor={descriptor} clusterName={clusterName} />),
     [descriptor, clusterName]
   );
 
-  const isRowSelected = (item: KubeObjectBase) => selected.has(item.metadata?.uid ?? "");
+  const isRowSelected = useCallback((item: KubeObjectBase) => selected.has(item.metadata?.uid ?? ""), [selected]);
 
-  const handleSelectRow = (_e: React.MouseEvent<HTMLButtonElement>, item: KubeObjectBase) => {
+  const handleSelectRow = useCallback((_e: React.MouseEvent<HTMLButtonElement>, item: KubeObjectBase) => {
     const uid = item.metadata?.uid ?? "";
     setSelected((prev) => {
       const next = new Set(prev);
@@ -137,9 +138,9 @@ export function ResourceTable<T extends KubeObjectBase>({
       else next.add(uid);
       return next;
     });
-  };
+  }, []);
 
-  const handleSelectAll = (_e: React.ChangeEvent<HTMLInputElement>, paginatedItems: KubeObjectBase[]) => {
+  const handleSelectAll = useCallback((_e: React.ChangeEvent<HTMLInputElement>, paginatedItems: KubeObjectBase[]) => {
     setSelected((prev) => {
       const next = new Set(prev);
       const allSelected = paginatedItems.every((i) => next.has(i.metadata?.uid ?? ""));
@@ -150,9 +151,28 @@ export function ResourceTable<T extends KubeObjectBase>({
       }
       return next;
     });
-  };
+  }, []);
 
-  const selectedItems = (items as KubeObjectBase[]).filter((i) => selected.has(i.metadata?.uid ?? ""));
+  const selectedUids = useMemo(() => Array.from(selected), [selected]);
+
+  const selectedItems = useMemo(
+    () => (items as KubeObjectBase[]).filter((i) => selected.has(i.metadata?.uid ?? "")),
+    [items, selected]
+  );
+
+  const renderSelectionInfo = useCallback(
+    (selectionLength: number) => (
+      <div className="flex items-center gap-2">
+        <div className="min-w-38">
+          <p>{selectionLength} item(s) selected</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => setDeleteDialogOpen(true)}>
+          <Trash size={14} className="mr-1.5" /> Delete {selectionLength}
+        </Button>
+      </div>
+    ),
+    []
+  );
 
   const emptyDescription = descriptor.config.clusterScoped
     ? `There are no ${descriptor.label} in the cluster`
@@ -162,16 +182,6 @@ export function ResourceTable<T extends KubeObjectBase>({
 
   return (
     <>
-      {selected.size > 0 && (
-        <div className="bg-muted/30 flex items-center gap-2 border-b px-4 py-2">
-          <span className="text-muted-foreground text-sm">{selected.size} selected</span>
-          <BatchDeleteAction
-            items={selectedItems}
-            config={descriptor.config}
-            onDeleted={() => setSelected(new Set())}
-          />
-        </div>
-      )}
       <DataTable<KubeObjectBase>
         id={tableId ?? `k8s-${descriptor.config.pluralName}`}
         data={items as KubeObjectBase[]}
@@ -180,7 +190,6 @@ export function ResourceTable<T extends KubeObjectBase>({
         blockerError={error}
         filterFunction={filterFunction}
         slots={slots}
-        outlined={!slots}
         sort={
           descriptor.defaultSort
             ? {
@@ -190,10 +199,11 @@ export function ResourceTable<T extends KubeObjectBase>({
             : undefined
         }
         selection={{
-          selected: Array.from(selected),
+          selected: selectedUids,
           isRowSelected,
           handleSelectRow,
           handleSelectAll,
+          renderSelectionInfo,
         }}
         emptyListComponent={
           <EmptyList
@@ -203,6 +213,18 @@ export function ResourceTable<T extends KubeObjectBase>({
           />
         }
       />
+      {/* Mounted outside DataTable: the selection banner unmounts as soon as the
+          watch stream drains selected items from the data, which would otherwise
+          kill an in-flight deletion dialog. */}
+      {deleteDialogOpen && (
+        <BatchDeleteDialog
+          items={selectedItems}
+          config={descriptor.config}
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          onDeleted={() => setSelected(new Set())}
+        />
+      )}
     </>
   );
 }

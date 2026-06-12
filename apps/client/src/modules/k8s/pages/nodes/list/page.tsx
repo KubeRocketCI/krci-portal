@@ -53,7 +53,6 @@ function K8sNodesListContent() {
           blockerError={(result.error as Error) ?? null}
           filterFunction={filterFunction}
           slots={tableSlots}
-          outlined={false}
           emptyListComponent={
             <EmptyList
               icon={<Box width={64} height={64} className="text-muted-foreground" />}

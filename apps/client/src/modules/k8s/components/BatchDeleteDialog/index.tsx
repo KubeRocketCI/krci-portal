@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Trash } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
 import {
   Dialog,
@@ -18,18 +17,27 @@ import type { K8sResourceConfig, KubeObjectBase } from "@my-project/shared";
 interface Props<T extends KubeObjectBase> {
   items: T[];
   config: K8sResourceConfig;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onDeleted?: () => void;
 }
 
-export function BatchDeleteAction<T extends KubeObjectBase>({ items, config, onDeleted }: Props<T>) {
-  const [open, setOpen] = useState(false);
+export function BatchDeleteDialog<T extends KubeObjectBase>({
+  items,
+  config,
+  open,
+  onOpenChange,
+  onDeleted,
+}: Props<T>) {
   const [busy, setBusy] = useState(false);
   const trpc = useTRPCClient();
   const { clusterName } = useClusterStore(useShallow((s) => ({ clusterName: s.clusterName })));
 
-  if (items.length === 0) return null;
-
   const handleConfirm = async () => {
+    // The items list is live: the watch stream can drain it to empty while the
+    // dialog is open (e.g. another actor deleted the selected resources).
+    if (items.length === 0) return;
+
     setBusy(true);
     const results = await Promise.allSettled(
       items.map((item) =>
@@ -42,7 +50,7 @@ export function BatchDeleteAction<T extends KubeObjectBase>({ items, config, onD
       )
     );
     setBusy(false);
-    setOpen(false);
+    onOpenChange(false);
 
     const failures = results
       .map((r, i) => ({ result: r, item: items[i] }))
@@ -65,38 +73,33 @@ export function BatchDeleteAction<T extends KubeObjectBase>({ items, config, onD
   };
 
   return (
-    <>
-      <Button variant="outline" size="sm" onClick={() => setOpen(true)} disabled={busy}>
-        <Trash size={14} className="mr-1.5" /> Delete {items.length}
-      </Button>
-      <Dialog open={open} onOpenChange={(v) => !busy && setOpen(v)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              Delete {items.length} {config.pluralName}?
-            </DialogTitle>
-          </DialogHeader>
-          <DialogBody>
-            <p className="text-sm">This will delete the following resources:</p>
-            <ul className="mt-2 max-h-64 overflow-y-auto font-mono text-sm">
-              {items.map((i) => (
-                <li key={i.metadata?.uid}>
-                  {i.metadata?.namespace ? `${i.metadata.namespace}/` : ""}
-                  {i.metadata?.name}
-                </li>
-              ))}
-            </ul>
-          </DialogBody>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleConfirm} disabled={busy}>
-              {busy ? "Deleting…" : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+    <Dialog open={open} onOpenChange={(v) => !busy && onOpenChange(v)}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            Delete {items.length} {config.pluralName}?
+          </DialogTitle>
+        </DialogHeader>
+        <DialogBody>
+          <p className="text-sm">This will delete the following resources:</p>
+          <ul className="mt-2 max-h-64 overflow-y-auto font-mono text-sm">
+            {items.map((i) => (
+              <li key={i.metadata?.uid}>
+                {i.metadata?.namespace ? `${i.metadata.namespace}/` : ""}
+                {i.metadata?.name}
+              </li>
+            ))}
+          </ul>
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>
+            Cancel
+          </Button>
+          <Button variant="destructive" onClick={handleConfirm} disabled={busy || items.length === 0}>
+            {busy ? "Deleting…" : "Delete"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
