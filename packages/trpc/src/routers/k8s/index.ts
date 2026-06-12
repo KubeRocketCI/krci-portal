@@ -6,6 +6,7 @@ import { k8sGetProcedure } from "./procedures/basic/get/index.js";
 import { k8sGetKubeConfig } from "./procedures/kubeconfig/index.js";
 import { k8sListProcedure } from "./procedures/basic/list/index.js";
 import { k8sGetResourcePermissions } from "./procedures/permissions/index.js";
+import { k8sAccessibleCustomResourcesProcedure } from "./procedures/accessibleCustomResources/index.js";
 import { k8sUpdateItemProcedure } from "./procedures/basic/update/index.js";
 import { k8sScaleWorkloadProcedure } from "./procedures/workloads/scale/index.js";
 import { k8sRestartWorkloadProcedure } from "./procedures/workloads/restart/index.js";
@@ -51,6 +52,7 @@ export const k8sRouter = t.router({
   rollbackDeployment: k8sRollbackDeploymentProcedure,
   apiVersions: k8sGetApiVersions,
   itemPermissions: k8sGetResourcePermissions,
+  accessibleCustomResources: k8sAccessibleCustomResourcesProcedure,
   kubeconfig: k8sGetKubeConfig,
   clusterDetails: k8sGetClusterDetails,
   podLogs: k8sPodLogsProcedure,

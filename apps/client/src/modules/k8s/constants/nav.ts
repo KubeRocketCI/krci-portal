@@ -53,15 +53,15 @@ export function createK8sNavigationConfig(
     if (group === "CustomResources") {
       // The "CRDs" descriptor is sidebarHidden so the parent header doesn't visually
       // duplicate it; the group itself links to the CRDs list page via `defaultRoute`.
-      const mergedChildren = [...groupChildren, ...crSidebarItems];
-      if (mergedChildren.length > 0) {
-        items.push({
-          title: "Custom Resources",
-          icon: groupIconMap.CustomResources ?? Layers,
-          defaultRoute: { to: PATH_K8S_CRDS_FULL, params } as unknown as SimpleNavItem["route"],
-          children: mergedChildren,
-        });
-      }
+      // Always render the group, even with no children yet: the CR items arrive only
+      // after the CRD watch (or the permission-derived catalog) responds, and gating
+      // the header on them makes the whole section pop in seconds after first paint.
+      items.push({
+        title: "Custom Resources",
+        icon: groupIconMap.CustomResources ?? Layers,
+        defaultRoute: { to: PATH_K8S_CRDS_FULL, params } as unknown as SimpleNavItem["route"],
+        children: [...groupChildren, ...crSidebarItems],
+      });
     } else if (groupChildren.length > 0) {
       items.push({ title: group, icon: groupIconMap[group] ?? Layers, children: groupChildren });
     }

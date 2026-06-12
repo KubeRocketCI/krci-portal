@@ -36,6 +36,49 @@ export const defaultPermissionsToCheck = [
   k8sOperation.delete,
 ] as const;
 
+/**
+ * API groups that are built in or aggregated (not CRD-backed). Excluded from the
+ * permission-derived "Custom Resources" catalog so it lists only custom resources,
+ * matching the admin CRD-watch behaviour.
+ */
+export const BUILTIN_API_GROUPS = new Set<string>([
+  "", // core
+  "apps",
+  "batch",
+  "autoscaling",
+  "policy",
+  "extensions",
+  "networking.k8s.io",
+  "discovery.k8s.io",
+  "coordination.k8s.io",
+  "node.k8s.io",
+  "events.k8s.io",
+  "certificates.k8s.io",
+  "rbac.authorization.k8s.io",
+  "scheduling.k8s.io",
+  "storage.k8s.io",
+  "admissionregistration.k8s.io",
+  "apiextensions.k8s.io",
+  "apiregistration.k8s.io",
+  "authentication.k8s.io",
+  "authorization.k8s.io",
+  "flowcontrol.apiserver.k8s.io",
+  "internal.apiserver.k8s.io",
+  "metrics.k8s.io",
+  "resource.k8s.io",
+  "storagemigration.k8s.io",
+]);
+
+/** RBAC verbs that imply the user can MODIFY a resource (drives AccessibleCustomResource.editable). */
+export const CR_WRITE_VERBS = new Set<string>([
+  rbacOperation.create,
+  rbacOperation.update,
+  rbacOperation.patch,
+  rbacOperation.delete,
+  rbacOperation.deletecollection,
+  "*",
+]);
+
 export const defaultPermissions = {
   [k8sOperation.create]: {
     allowed: false,

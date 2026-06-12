@@ -32,11 +32,11 @@ const crds = [
 ];
 
 const mocked = {
-  ret: { data: { array: crds as never[], map: new Map() }, error: null, isReady: true, isLoading: false },
+  ret: { data: { array: crds as never[] }, error: null, isLoading: false },
 };
 
-vi.mock("@/modules/k8s/hooks/useCRDList", () => ({
-  useCRDList: vi.fn(() => mocked.ret),
+vi.mock("@/modules/k8s/hooks/useCRDCatalog", () => ({
+  useCRDCatalog: vi.fn(() => mocked.ret),
 }));
 
 import { useCRSidebarItems } from "./useCRSidebarItems";
@@ -54,16 +54,15 @@ describe("useCRSidebarItems", () => {
     expect(pr.route.params).toMatchObject({ group: "tekton.dev", version: "v1", plural: "pipelineruns" });
   });
 
-  it("returns empty array on watch error", () => {
+  it("returns empty array on catalog error", () => {
     mocked.ret = {
-      data: { array: [], map: new Map() },
+      data: { array: [] },
       error: new Error("boom"),
-      isReady: true,
       isLoading: false,
     } as never;
     const { result } = renderHook(() => useCRSidebarItems("c1"));
     expect(result.current).toEqual([]);
-    mocked.ret = { data: { array: crds as never[], map: new Map() }, error: null, isReady: true, isLoading: false };
+    mocked.ret = { data: { array: crds as never[] }, error: null, isLoading: false };
   });
 
   it("returns stable identity across renders when CRD data is unchanged", () => {
@@ -84,9 +83,8 @@ describe("useCRSidebarItems", () => {
       },
     };
     mocked.ret = {
-      data: { array: [...crds, crdWithEmptyGroup] as never[], map: new Map() },
+      data: { array: [...crds, crdWithEmptyGroup] as never[] },
       error: null,
-      isReady: true,
       isLoading: false,
     } as never;
 
@@ -96,7 +94,7 @@ describe("useCRSidebarItems", () => {
     expect(allChildren.every((c) => c.title !== "Broken")).toBe(true);
 
     // Restore original mock
-    mocked.ret = { data: { array: crds as never[], map: new Map() }, error: null, isReady: true, isLoading: false };
+    mocked.ret = { data: { array: crds as never[] }, error: null, isLoading: false };
   });
 
   it("does NOT emit a subgroup with an empty title when multiple CRDs have empty spec.group", () => {
@@ -122,9 +120,8 @@ describe("useCRSidebarItems", () => {
       },
     };
     mocked.ret = {
-      data: { array: [...crds, emptyGroup1, emptyGroup2] as never[], map: new Map() },
+      data: { array: [...crds, emptyGroup1, emptyGroup2] as never[] },
       error: null,
-      isReady: true,
       isLoading: false,
     } as never;
 
@@ -135,7 +132,7 @@ describe("useCRSidebarItems", () => {
     expect(result.current).toHaveLength(2);
 
     // Restore original mock
-    mocked.ret = { data: { array: crds as never[], map: new Map() }, error: null, isReady: true, isLoading: false };
+    mocked.ret = { data: { array: crds as never[] }, error: null, isLoading: false };
   });
 
   describe("isActiveFn matches list and detail paths", () => {

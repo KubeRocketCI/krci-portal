@@ -62,6 +62,12 @@ export function getK8sDeploymentRevisionsQueryCacheKey(clusterName: string, name
   return ["k8s:deploymentRevisions", clusterName, namespace, name];
 }
 
+export function getK8sAccessibleCustomResourcesQueryCacheKey(clusterName: string, namespace: string): string[] {
+  // Namespace is part of the key: the SelfSubjectRulesReview behind this query is
+  // namespace-scoped, so switching the default namespace must refetch the catalog.
+  return ["k8s:accessibleCustomResources", clusterName, namespace];
+}
+
 export function getK8sListPollQueryCacheKey(
   clusterName: string,
   namespace: string | undefined,

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useCRDList } from "./useCRDList";
+import { useCRDCatalog } from "./useCRDCatalog";
 import type { CRDObject } from "@my-project/shared";
 
 export interface UseCRDByGVRResult {
@@ -9,7 +9,7 @@ export interface UseCRDByGVRResult {
 }
 
 export function useCRDByGVR(group: string, version: string, plural: string): UseCRDByGVRResult {
-  const watch = useCRDList();
+  const watch = useCRDCatalog();
   const crd = useMemo(
     () =>
       watch.data.array.find(
