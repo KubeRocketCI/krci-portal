@@ -11,11 +11,10 @@ const fakeCrd = {
   },
 };
 
-vi.mock("./useCRDList", () => ({
-  useCRDList: vi.fn(() => ({
-    data: { array: [fakeCrd], map: new Map([[fakeCrd.metadata.name, fakeCrd]]) },
+vi.mock("./useCRDCatalog", () => ({
+  useCRDCatalog: vi.fn(() => ({
+    data: { array: [fakeCrd] },
     isLoading: false,
-    isReady: true,
     error: null,
   })),
 }));
@@ -34,7 +33,7 @@ describe("useCRDByGVR", () => {
   });
 
   it("does NOT match a version that is served: false (deprecated)", async () => {
-    const { useCRDList } = await import("./useCRDList");
+    const { useCRDCatalog } = await import("./useCRDCatalog");
     const deprecatedCrd = {
       ...fakeCrd,
       spec: {
@@ -42,10 +41,9 @@ describe("useCRDByGVR", () => {
         versions: [{ name: "v1beta1", storage: false, served: false }],
       },
     };
-    (useCRDList as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce({
-      data: { array: [deprecatedCrd], map: new Map() },
+    (useCRDCatalog as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce({
+      data: { array: [deprecatedCrd] },
       isLoading: false,
-      isReady: true,
       error: null,
     });
     const { result } = renderHook(() => useCRDByGVR("tekton.dev", "v1beta1", "pipelineruns"));

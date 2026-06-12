@@ -60,3 +60,34 @@ export type DefaultPermissionListCheckResult = Record<
 
 export type K8sOperation = ValueOf<typeof k8sOperation>;
 export type RBACOperation = ValueOf<typeof rbacOperation>;
+
+/**
+ * A custom-resource TYPE the signed-in user can access, derived from
+ * SelfSubjectRulesReview ∩ API discovery. Powers the permission-aware
+ * "Custom Resources" catalog for users who cannot list CRDs cluster-wide.
+ */
+export interface AccessibleCustomResource {
+  /** API group, e.g. "v2.edp.epam.com" */
+  group: string;
+  /**
+   * Served version from discovery, e.g. "v1" — the group's preferred version when
+   * the type is served there, otherwise the highest-priority version serving it.
+   */
+  version: string;
+  /** Resource plural, e.g. "codebasebranches" */
+  plural: string;
+  /** Kind from discovery, e.g. "CodebaseBranch" */
+  kind: string;
+  /** Singular name from discovery; falls back to the lowercase kind when discovery omits it */
+  singular: string;
+  /** Scope from discovery */
+  namespaced: boolean;
+  /** User's RBAC verbs from the rules review, e.g. ["*"] or ["get", "list", "watch"] */
+  verbs: string[];
+  /**
+   * Whether `verbs` includes a write verb (see CR_WRITE_VERBS). Informational —
+   * the client gates editing with per-resource SelfSubjectAccessReview
+   * (usePermissions), which stays the authoritative source.
+   */
+  editable: boolean;
+}

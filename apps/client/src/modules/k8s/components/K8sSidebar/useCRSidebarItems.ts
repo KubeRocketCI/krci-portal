@@ -1,13 +1,13 @@
 import { useMemo } from "react";
 import { Puzzle } from "lucide-react";
-import { useCRDList } from "@/modules/k8s/hooks/useCRDList";
+import { useCRDCatalog } from "@/modules/k8s/hooks/useCRDCatalog";
 import { storageVersionName, escapeRe } from "@/modules/k8s/registry/dynamic/crdUtils";
 import { PATH_K8S_CR_LIST_FULL } from "@/modules/k8s/constants/paths";
 import type { NavCollapsibleSubGroupItem, SimpleNavItem } from "@/core/components/sidebar/types";
 import type { CRDObject } from "@my-project/shared";
 
 export function useCRSidebarItems(clusterName: string): NavCollapsibleSubGroupItem[] {
-  const { data, error } = useCRDList();
+  const { data, error } = useCRDCatalog();
   return useMemo(() => {
     if (error || !data.array.length) return [];
 
