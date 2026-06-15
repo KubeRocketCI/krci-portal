@@ -6,6 +6,13 @@ import { mapObjectValuesToSelectOptions } from "@/core/utils/forms/mapToSelectOp
 import { useCreateCodebaseForm } from "../../../providers/form/hooks";
 import { NAMES } from "../../../names";
 
+// EDP is a legacy duplicate of the Semver versioning type that produces a codebase
+// without a build pipeline, so it must not be selectable when creating a codebase.
+// It is intentionally kept in the shared enum so existing EDP codebases still display.
+const versioningOptions = mapObjectValuesToSelectOptions(codebaseVersioning).filter(
+  (option) => option.value !== codebaseVersioning.edp
+);
+
 export const CodebaseVersioning: React.FC = () => {
   const form = useCreateCodebaseForm();
   const versioningTypeFieldValue = useStore(form.store, (s) => s.values[NAMES.versioningType]);
@@ -21,11 +28,7 @@ export const CodebaseVersioning: React.FC = () => {
         }}
         listeners={{
           onChange: ({ value }) => {
-            if (
-              (value === codebaseVersioning.edp || value === codebaseVersioning.semver) &&
-              !versioningStartFromVersion &&
-              !versioningStartFromSnapshot
-            ) {
+            if (value === codebaseVersioning.semver && !versioningStartFromVersion && !versioningStartFromSnapshot) {
               form.setFieldValue(NAMES.ui_versioningStartFromVersion, "0.0.0");
               form.setFieldValue(NAMES.ui_versioningStartFromSnapshot, "SNAPSHOT");
               form.setFieldValue(NAMES.versioningStartFrom, "0.0.0-SNAPSHOT");
@@ -37,13 +40,12 @@ export const CodebaseVersioning: React.FC = () => {
           <field.FormSelect
             label="Codebase versioning type"
             tooltipText="Define the versioning strategy for source code and artifacts."
-            options={mapObjectValuesToSelectOptions(codebaseVersioning)}
+            options={versioningOptions}
           />
         )}
       </form.AppField>
 
-      {(versioningTypeFieldValue === codebaseVersioning.edp ||
-        versioningTypeFieldValue === codebaseVersioning.semver) && (
+      {versioningTypeFieldValue === codebaseVersioning.semver && (
         <>
           <form.AppField
             name={NAMES.ui_versioningStartFromVersion}
