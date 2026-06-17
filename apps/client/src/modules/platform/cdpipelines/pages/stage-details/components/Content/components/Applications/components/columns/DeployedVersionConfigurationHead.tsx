@@ -14,7 +14,11 @@ import {
   useStageListWatch,
 } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
-import { CodebaseImageStream, Stage } from "@my-project/shared";
+import {
+  getVerifiedImageStream,
+  normalizeStreamNameSet,
+  resolveInputImageStream,
+} from "@/modules/platform/cdpipelines/pages/stage-details/utils/resolveStageImageStreams";
 
 export const DeployedVersionConfigurationHeadColumn = () => {
   const params = routeStageDetails.useParams();
@@ -37,6 +41,13 @@ export const DeployedVersionConfigurationHeadColumn = () => {
 
   const buttonsHighlighted = checkHighlightedButtons(values);
 
+  // All image tag field names — derived from the already-merged `values` object so keys from both
+  // active state and defaultValues are covered without a separate dedup step.
+  const allImageTagFields = React.useMemo(
+    () => Object.keys(values).filter((key) => key.includes(IMAGE_TAG_POSTFIX)),
+    [values]
+  );
+
   const isLoading =
     pipelineAppCodebasesWatch.isLoading ||
     imageStreamsWatch.isLoading ||
@@ -44,87 +55,29 @@ export const DeployedVersionConfigurationHeadColumn = () => {
     stageWatch.isLoading ||
     stageListWatch.isLoading;
 
-  // Helper functions for image stream lookups wrapped in useCallback to prevent recreating on every render
-  const findPreviousStage = React.useCallback((stages: Stage[], currentStageOrder: number): Stage | undefined => {
-    return stages.find(({ spec: { order: stageOrder } }) => stageOrder === currentStageOrder - 1);
-  }, []);
-
-  const createDockerStreamSet = React.useCallback((inputDockerStreams: string[] = []): Set<string> => {
-    const normalizedNames = inputDockerStreams.map((el) => el.replaceAll(".", "-"));
-    return new Set<string>(normalizedNames);
-  }, []);
-
-  const getLatestImageStream = React.useCallback(
-    (
-      imageStreams: CodebaseImageStream[],
-      codebaseName: string,
-      stageOrder: number,
-      inputDockerStreamsSet: Set<string>,
-      stages: Stage[],
-      cdPipelineName: string,
-      applicationsToPromote: string[] | null
-    ): CodebaseImageStream | undefined => {
-      const codebaseImageStreams = imageStreams.filter(({ spec: { codebase } }) => codebase === codebaseName);
-      const normalizedAppsToPromote = new Set(applicationsToPromote?.map((el) => el.replaceAll(".", "-")) || []);
-      const isPromote = normalizedAppsToPromote.has(codebaseName);
-
-      if (isPromote) {
-        if (stageOrder === 0) {
-          return codebaseImageStreams.find((el) => inputDockerStreamsSet.has(el.metadata.name));
-        }
-        const previousStage = findPreviousStage(stages, stageOrder);
-        if (!previousStage) return undefined;
-        return codebaseImageStreams.find(
-          ({ spec: { codebase }, metadata: { name } }) =>
-            name === `${cdPipelineName}-${previousStage.spec.name}-${codebase}-verified`
-        );
-      }
-
-      return codebaseImageStreams.find((el) => inputDockerStreamsSet.has(el.metadata.name));
-    },
-    [findPreviousStage]
-  );
-
-  const getVerifiedImageStream = React.useCallback(
-    (
-      imageStreams: CodebaseImageStream[],
-      cdPipelineName: string,
-      stageName: string,
-      codebaseName: string
-    ): CodebaseImageStream | undefined => {
-      return imageStreams.find(
-        ({ metadata: { name } }) => name === `${cdPipelineName}-${stageName}-${codebaseName}-verified`
-      );
-    },
-    []
-  );
-
   const handleClickLatest = React.useCallback(() => {
     if (isLoading || !cdPipelineWatch.data || !stageWatch.data) {
       return;
     }
 
-    const inputDockerStreamsSet = createDockerStreamSet(cdPipelineWatch.data.spec.inputDockerStreams);
-
-    // Get all image tag field names from both state.values and defaultValues
-    const stateKeys = Object.keys(form.state.values).filter((key) => key.includes(IMAGE_TAG_POSTFIX));
-    const defaultKeys = Object.keys(form.options.defaultValues || {}).filter((key) => key.includes(IMAGE_TAG_POSTFIX));
-    const allImageTagFields = Array.from(new Set([...stateKeys, ...defaultKeys]));
+    const inputDockerStreamsSet = normalizeStreamNameSet(cdPipelineWatch.data.spec.inputDockerStreams ?? []);
+    const appsToPromoteSet = normalizeStreamNameSet(cdPipelineWatch.data.spec.applicationsToPromote ?? []);
 
     // Process all image tag fields to set their latest values
     for (const fieldName of allImageTagFields) {
       // Extract app name from field name (remove IMAGE_TAG_POSTFIX)
       const appName = fieldName.replace(IMAGE_TAG_POSTFIX, "");
 
-      const latestImageStream = getLatestImageStream(
-        imageStreamsWatch.data.array,
-        appName,
-        stageWatch.data.spec.order,
+      const appImageStreams = imageStreamsWatch.data.array.filter(({ spec: { codebase } }) => codebase === appName);
+
+      const latestImageStream = resolveInputImageStream({
+        imageStreams: appImageStreams,
+        stageOrder: stageWatch.data.spec.order,
         inputDockerStreamsSet,
-        stageListWatch.data.array,
-        params.cdPipeline,
-        cdPipelineWatch.data.spec.applicationsToPromote ?? null
-      );
+        stages: stageListWatch.data.array,
+        cdPipelineName: params.cdPipeline,
+        isPromote: appsToPromoteSet.has(appName),
+      });
 
       if (!latestImageStream?.spec?.tags?.length) {
         continue;
@@ -143,25 +96,19 @@ export const DeployedVersionConfigurationHeadColumn = () => {
     }
   }, [
     isLoading,
+    allImageTagFields,
     cdPipelineWatch.data,
     stageWatch.data,
     imageStreamsWatch.data.array,
     stageListWatch.data.array,
     params.cdPipeline,
     form,
-    createDockerStreamSet,
-    getLatestImageStream,
   ]);
 
   const handleClickStable = React.useCallback(() => {
     if (isLoading || !stageWatch.data) {
       return;
     }
-
-    // Get all image tag field names from both state.values and defaultValues
-    const stateKeys = Object.keys(form.state.values).filter((key) => key.includes(IMAGE_TAG_POSTFIX));
-    const defaultKeys = Object.keys(form.options.defaultValues || {}).filter((key) => key.includes(IMAGE_TAG_POSTFIX));
-    const allImageTagFields = Array.from(new Set([...stateKeys, ...defaultKeys]));
 
     // Process all image tag fields to set their stable values
     for (const fieldName of allImageTagFields) {
@@ -202,12 +149,12 @@ export const DeployedVersionConfigurationHeadColumn = () => {
     }
   }, [
     isLoading,
+    allImageTagFields,
     stageWatch.data,
     imageStreamsWatch.data.array,
     params.cdPipeline,
     params.stage,
     form,
-    getVerifiedImageStream,
   ]);
 
   return (

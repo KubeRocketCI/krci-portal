@@ -97,6 +97,32 @@ describe("createImageStreamTags", () => {
     expect(result).toEqual([]);
   });
 
+  // Guard-relaxation path: the column now calls this whenever EITHER stream is present (previously
+  // it required both, blanking the dropdown when a stage's own verified stream was missing).
+  it("should return deployable tags when only the input stream is present (verified undefined)", () => {
+    const appStream = createMockImageStream(["tag-1", "tag-2"]);
+
+    const result = createImageStreamTags(appStream, undefined);
+
+    expect(result).toEqual([
+      { label: "[LATEST] - tag-2", value: "latest::tag-2" },
+      { label: "tag-2", value: "tag-2" },
+      { label: "tag-1", value: "tag-1" },
+    ]);
+  });
+
+  it("should return only the STABLE entry when just the verified stream is present (input undefined)", () => {
+    const verifiedStream = createMockImageStream(["stable-1"]);
+
+    const result = createImageStreamTags(undefined, verifiedStream);
+
+    expect(result).toEqual([{ label: "[STABLE] - stable-1", value: "stable::stable-1" }]);
+  });
+
+  it("should return an empty list when both streams are undefined", () => {
+    expect(createImageStreamTags(undefined, undefined)).toEqual([]);
+  });
+
   it("should reverse tag order (newest first)", () => {
     const appStream = createMockImageStream(["old-tag", "middle-tag", "new-tag"]);
     const verifiedStream = createMockImageStream([]);
