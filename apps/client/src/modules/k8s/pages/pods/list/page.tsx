@@ -1,14 +1,12 @@
 import { useMemo } from "react";
 import { Box } from "lucide-react";
-import { useSearch } from "@tanstack/react-router";
 import { EmptyList } from "@/core/components/EmptyList";
 import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { DataTable } from "@/core/components/Table";
 import { FilterProvider } from "@/core/providers/Filter";
-import { useK8sResourceList } from "../../../hooks/useK8sResourceList";
+import { useWatchListMultiple } from "@/k8s/api/hooks/useWatch/useWatchListMultiple";
 import { WatchConnectionIndicator, type WatchStatus } from "../../../components/WatchConnectionIndicator";
-import { useClusterStore } from "@/k8s/store";
 import { k8sPodConfig } from "@my-project/shared";
 import type { Pod } from "@my-project/shared";
 import { TABLE_ID_K8S_PODS } from "@/k8s/constants/tables";
@@ -26,13 +24,10 @@ export default function K8sPodsListPage() {
 }
 
 function K8sPodsListContent() {
-  const search = useSearch({ strict: false }) as { namespace?: string };
-  const stored = useClusterStore((s) => s.defaultNamespace);
   const columns = useColumns();
   const { filterFunction } = usePodFilter();
 
-  const namespace = search.namespace ?? stored ?? "";
-  const result = useK8sResourceList<Pod>(k8sPodConfig, namespace);
+  const result = useWatchListMultiple<Pod>({ resourceConfig: k8sPodConfig });
   const items = useMemo(() => result.data.array as Pod[], [result.data.array]);
 
   const tableSlots = useMemo(
@@ -44,7 +39,7 @@ function K8sPodsListContent() {
     []
   );
 
-  const watchStatus: WatchStatus = result.error ? "error" : "connected";
+  const watchStatus: WatchStatus = result.errors.length > 0 ? "error" : "connected";
 
   return (
     <PageWrapper
@@ -57,14 +52,14 @@ function K8sPodsListContent() {
           data={items}
           columns={columns}
           isLoading={result.isLoading}
-          blockerError={(result.error as Error) ?? null}
+          blockerError={(result.errors[0] as Error) ?? null}
           filterFunction={filterFunction}
           slots={tableSlots}
           emptyListComponent={
             <EmptyList
               icon={<Box width={64} height={64} className="text-muted-foreground" />}
               customText="No Pods found"
-              description={namespace ? `There are no Pods in namespace ${namespace}` : "There are no Pods"}
+              description="There are no Pods"
             />
           }
         />
