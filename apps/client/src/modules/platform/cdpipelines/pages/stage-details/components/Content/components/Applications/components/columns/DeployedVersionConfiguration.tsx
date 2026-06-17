@@ -45,9 +45,13 @@ export const DeployedVersionConfigurationColumn = ({
     (s) => (s.values as Record<string, unknown>)[fieldName] as string | undefined
   );
 
+  // Render options when EITHER stream is available. The input stream supplies the deployable
+  // tags ([LATEST] + history); the current stage's own verified stream only adds the optional
+  // [STABLE] entry. Requiring both (the previous behaviour) blanked the whole dropdown whenever
+  // the stage's own verified stream was missing, even though deployable tags were available.
   const imageStreamTagsOptions: SelectOption<string>[] = React.useMemo(
     () =>
-      appCodebaseImageStream && appCodebaseVerifiedImageStream
+      appCodebaseImageStream || appCodebaseVerifiedImageStream
         ? createImageStreamTags(appCodebaseImageStream, appCodebaseVerifiedImageStream)
         : [],
     [appCodebaseImageStream, appCodebaseVerifiedImageStream]

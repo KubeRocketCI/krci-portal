@@ -2,38 +2,21 @@ import { SelectOption } from "@/core/types/forms";
 import { CodebaseImageStream } from "@my-project/shared";
 
 export const createImageStreamTags = (
-  applicationImageStream: CodebaseImageStream,
-  applicationVerifiedImageStream: CodebaseImageStream
+  applicationImageStream: CodebaseImageStream | undefined,
+  applicationVerifiedImageStream: CodebaseImageStream | undefined
 ) => {
-  let base: SelectOption<string>[] =
-    applicationImageStream && applicationImageStream?.spec?.tags
-      ? applicationImageStream?.spec?.tags
-          .map(({ name }) => ({
-            label: name,
-            value: name,
-          }))
-          .reverse()
-      : [];
+  const tags = applicationImageStream?.spec?.tags ?? [];
 
-  if (applicationImageStream?.spec?.tags?.length) {
-    const latestTagValue = applicationImageStream?.spec?.tags.at(-1)?.name;
-    const latest = {
-      label: `[LATEST] - ${latestTagValue}`,
-      value: `latest::${latestTagValue}`,
-    };
+  let base: SelectOption<string>[] = tags.map(({ name }) => ({ label: name, value: name })).reverse();
 
-    base = [latest, ...base];
+  if (tags.length) {
+    const latestTagValue = tags.at(-1)?.name;
+    base = [{ label: `[LATEST] - ${latestTagValue}`, value: `latest::${latestTagValue}` }, ...base];
   }
 
   if (applicationVerifiedImageStream?.spec?.tags?.length) {
-    const latestTagValue = applicationVerifiedImageStream?.spec?.tags.at(-1)?.name;
-
-    const stable = {
-      label: `[STABLE] - ${latestTagValue}`,
-      value: `stable::${latestTagValue}`,
-    };
-
-    base = [stable, ...base];
+    const latestTagValue = applicationVerifiedImageStream.spec.tags.at(-1)?.name;
+    base = [{ label: `[STABLE] - ${latestTagValue}`, value: `stable::${latestTagValue}` }, ...base];
   }
 
   return base;

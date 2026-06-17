@@ -24,6 +24,11 @@ import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
 import { useConfigMapWatchItem } from "@/k8s/api/groups/Core/ConfigMap";
 import { useTriggerTemplateWatchItem } from "@/k8s/api/groups/Tekton/TriggerTemplate";
 import { routeStageDetails } from "../route";
+import {
+  getVerifiedImageStream,
+  normalizeStreamNameSet,
+  resolveInputImageStream,
+} from "../utils/resolveStageImageStreams";
 
 export const useWatchApplicationsPods = () => true; // noop
 
@@ -204,58 +209,6 @@ export interface StageAppCodebasesCombinedDataResult {
   isReady: boolean;
 }
 
-const findPreviousStage = (stages: Stage[], currentStageOrder: number): Stage | undefined => {
-  return stages.find(({ spec: { order: stageOrder } }) => stageOrder === currentStageOrder - 1);
-};
-
-const createDockerStreamSet = (inputDockerStreams: string[] = []): Set<string> => {
-  const normalizedNames = inputDockerStreams.map((el) => el.replaceAll(".", "-"));
-  return new Set<string>(normalizedNames);
-};
-
-const createAppToPromoteSet = (applicationsToPromote: string[] | null = []): Set<string> => {
-  const normalizedNames = applicationsToPromote?.map((el) => el.replaceAll(".", "-")) || [];
-  return new Set<string>(normalizedNames);
-};
-
-const getImageStreamByStageOrder = (
-  imageStreams: CodebaseImageStream[],
-  order: number,
-  inputDockerStreamsSet: Set<string>,
-  stages: Stage[],
-  cdPipelineName: string
-): CodebaseImageStream | undefined => {
-  if (order === 0) {
-    return imageStreams.find((el) => inputDockerStreamsSet.has(el.metadata.name));
-  }
-
-  const previousStage = findPreviousStage(stages, order);
-  if (!previousStage) {
-    return undefined;
-  }
-
-  return imageStreams.find(
-    ({ spec: { codebase }, metadata: { name } }) =>
-      name === `${cdPipelineName}-${previousStage.spec.name}-${codebase}-verified`
-  );
-};
-
-const getImageStreamByToPromoteFlag = (
-  imageStreams: CodebaseImageStream[],
-  inputDockerStreamsSet: Set<string>
-): CodebaseImageStream | undefined => {
-  return imageStreams.find((el) => inputDockerStreamsSet.has(el.metadata.name));
-};
-
-const getVerifiedImageStream = (
-  imageStreams: CodebaseImageStream[],
-  cdPipelineName: string,
-  stageName: string,
-  codebase: string
-): CodebaseImageStream | undefined => {
-  return imageStreams.find(({ metadata: { name } }) => name === `${cdPipelineName}-${stageName}-${codebase}-verified`);
-};
-
 const findArgoApplicationByCodebaseName = (
   argoApplications: Application[],
   appName: string
@@ -304,15 +257,14 @@ const processAppCodebase = (
 
   const application = findArgoApplicationByCodebaseName(argoApplications, appName);
 
-  const appCodebaseImageStream = isPromote
-    ? getImageStreamByStageOrder(
-        appCodebaseImageStreamList,
-        stageOrder,
-        cdPipelineInputDockerStreamsSet,
-        stages,
-        cdPipelineName
-      )
-    : getImageStreamByToPromoteFlag(appCodebaseImageStreamList, cdPipelineInputDockerStreamsSet);
+  const appCodebaseImageStream = resolveInputImageStream({
+    imageStreams: appCodebaseImageStreamList,
+    stageOrder,
+    inputDockerStreamsSet: cdPipelineInputDockerStreamsSet,
+    stages,
+    cdPipelineName,
+    isPromote,
+  });
 
   return {
     appCodebase,
@@ -374,8 +326,8 @@ export const useStageAppCodebasesCombinedData = (): StageAppCodebasesCombinedDat
     );
 
     const cdPipelineApplicationToPromoteListSet = new Set<string>(cdPipeline.spec.applicationsToPromote ?? []);
-    const cdPipelineAppsToPromoteSet = createAppToPromoteSet(cdPipeline.spec.applicationsToPromote ?? null);
-    const cdPipelineInputDockerStreamsSet = createDockerStreamSet(cdPipeline.spec.inputDockerStreams);
+    const cdPipelineAppsToPromoteSet = normalizeStreamNameSet(cdPipeline.spec.applicationsToPromote ?? []);
+    const cdPipelineInputDockerStreamsSet = normalizeStreamNameSet(cdPipeline.spec.inputDockerStreams ?? []);
 
     const stageAppCodebasesCombinedData = stageAppCodebaseList.map((appCodebase: Codebase) =>
       processAppCodebase(appCodebase, {
