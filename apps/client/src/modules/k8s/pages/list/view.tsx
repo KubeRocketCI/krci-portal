@@ -5,14 +5,15 @@ import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { FilterProvider } from "@/core/providers/Filter";
 import { ResourceTable } from "../../components/ResourceTable";
-import { WatchConnectionIndicator, type WatchStatus } from "../../components/WatchConnectionIndicator";
+import { WatchConnectionIndicator } from "../../components/WatchConnectionIndicator";
 import { ListFilter } from "./components/ListFilter";
 import { defaultK8sListFilterValues, matchFunctions } from "./components/ListFilter/constants";
 import { useK8sListFilter } from "./components/ListFilter/hooks/useK8sListFilter";
-import { useK8sResourceList } from "../../hooks/useK8sResourceList";
+import { useK8sResourceListMulti } from "../../hooks/useK8sResourceListMulti";
+import { useK8sWatchStatus } from "../../hooks/useK8sWatchStatus";
+import { resolveListNamespaces } from "../../utils/resolveListNamespaces";
 import { resolveDescriptor } from "../../registry/resolve";
 import { resourceRegistry } from "../../registry";
-import { useClusterStore } from "@/k8s/store";
 import type { KubeObjectBase } from "@my-project/shared";
 import type { ResourceDescriptor } from "../../registry/types";
 
@@ -51,13 +52,18 @@ export default function K8sResourceListView() {
 
 function K8sResourceListContent({ descriptor }: { descriptor: ResourceDescriptor }) {
   const search = useSearch({ strict: false }) as { namespace?: string };
-  const stored = useClusterStore((s) => s.defaultNamespace);
-  const { filterFunction } = useK8sListFilter();
+  const { form, filterFunction } = useK8sListFilter();
 
-  const namespace = !descriptor.config.clusterScoped ? (search.namespace ?? stored ?? "") : "";
+  const filterNamespaces = form.state.values.namespaces;
+  const namespaces = useMemo(
+    () => resolveListNamespaces({ urlNamespace: search.namespace, filterNamespaces }),
+    [search.namespace, filterNamespaces]
+  );
 
-  const result = useK8sResourceList<KubeObjectBase>(descriptor.config ?? FALLBACK_CONFIG, namespace);
+  const result = useK8sResourceListMulti<KubeObjectBase>(descriptor.config ?? FALLBACK_CONFIG, { namespaces });
   const items = result.data.array;
+
+  const { errors, watchStatus } = useK8sWatchStatus(result.errors);
 
   const tableSlots = useMemo(
     () => ({
@@ -67,8 +73,6 @@ function K8sResourceListContent({ descriptor }: { descriptor: ResourceDescriptor
     }),
     [descriptor]
   );
-
-  const watchStatus: WatchStatus = result.error ? "error" : "connected";
 
   return (
     <PageWrapper
@@ -80,8 +84,8 @@ function K8sResourceListContent({ descriptor }: { descriptor: ResourceDescriptor
           items={items}
           descriptor={descriptor}
           isLoading={result.isLoading}
-          error={(result.error as Error) ?? null}
-          namespace={namespace}
+          errors={errors}
+          namespace={search.namespace}
           filterFunction={filterFunction}
           slots={tableSlots}
         />

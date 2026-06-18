@@ -21,7 +21,10 @@ interface Props<T extends KubeObjectBase> {
   items: T[];
   descriptor: ResourceDescriptor;
   isLoading: boolean;
-  error: Error | null;
+  /** Blocking error — replaces the whole table. */
+  error?: Error | null;
+  /** Non-blocking errors — shown as a banner above the table while accessible data still renders. */
+  errors?: Error[] | null;
   tableId?: string;
   namespace?: string;
   filterFunction?: (item: KubeObjectBase) => boolean;
@@ -114,6 +117,7 @@ export function ResourceTable<T extends KubeObjectBase>({
   descriptor,
   isLoading,
   error,
+  errors,
   tableId,
   namespace,
   filterFunction,
@@ -187,7 +191,8 @@ export function ResourceTable<T extends KubeObjectBase>({
         data={items as KubeObjectBase[]}
         columns={columns}
         isLoading={isLoading}
-        blockerError={error}
+        blockerError={error ?? null}
+        errors={errors}
         filterFunction={filterFunction}
         slots={slots}
         sort={

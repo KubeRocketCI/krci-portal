@@ -3,11 +3,13 @@ import { X } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
 import { Label } from "@/core/components/ui/label";
 import type { SelectOption } from "@/core/components/form";
+import { useNamespaceFilterOptions } from "../../../../../hooks/useNamespaceFilterOptions";
 import { podFilterControlNames, podPhaseValues } from "./constants";
 import { usePodFilter } from "./hooks/usePodFilter";
 
 export function PodFilter() {
   const { form, reset, isDefaultValue } = usePodFilter();
+  const { namespaceOptions, showNamespaceFilter } = useNamespaceFilterOptions();
 
   const statusOptions: SelectOption[] = React.useMemo(
     () => [{ label: "All", value: "all" }, ...podPhaseValues.map((value) => ({ label: value, value }))],
@@ -27,6 +29,21 @@ export function PodFilter() {
           {(field) => <field.FormSelect label="Status" options={statusOptions} placeholder="Select status" />}
         </form.AppField>
       </div>
+
+      {showNamespaceFilter && (
+        <div className="col-span-3">
+          <form.AppField name={podFilterControlNames.NAMESPACES}>
+            {(field) => (
+              <field.FormCombobox
+                options={namespaceOptions}
+                label="Namespaces"
+                placeholder="Select namespaces"
+                multiple
+              />
+            )}
+          </form.AppField>
+        </div>
+      )}
 
       {!isDefaultValue && (
         <div className="col-span-1 flex flex-col gap-2">

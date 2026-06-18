@@ -6,11 +6,13 @@ import { PageWrapper } from "@/core/components/PageWrapper";
 import { FilterProvider } from "@/core/providers/Filter";
 import { ResourceTable } from "@/modules/k8s/components/ResourceTable";
 import { useCRDByGVR } from "@/modules/k8s/hooks/useCRDByGVR";
-import { useCRList } from "@/modules/k8s/hooks/useCRList";
+import { useCRListMulti } from "@/modules/k8s/hooks/useCRList";
+import { resolveListNamespaces } from "@/modules/k8s/utils/resolveListNamespaces";
+import { formatK8sErrors } from "@/modules/k8s/utils/formatK8sErrors";
 import { buildCRDescriptor } from "@/modules/k8s/registry/dynamic/buildCRDescriptor";
 import { resolveCRDVersion, CREATION_TIMESTAMP_PRINTER_COL_PATH } from "@/modules/k8s/registry/dynamic/crdUtils";
 import { extractByJsonPath } from "@/modules/k8s/utils/extractByJsonPath";
-import { useClusterStore } from "@/k8s/store";
+import type { RequestError } from "@/core/types/global";
 import type { KubeObjectBase } from "@my-project/shared";
 import { CRListFilter } from "./components/CRListFilter";
 import {
@@ -26,7 +28,6 @@ type Search = { namespace?: string; search?: string };
 export default function CRListView() {
   const { group, version, plural } = useParams({ strict: false }) as Partial<Params>;
   const search = useSearch({ strict: false }) as Search;
-  const storedNs = useClusterStore((s) => s.defaultNamespace);
 
   const { crd, isLoading, error } = useCRDByGVR(group ?? "", version ?? "", plural ?? "");
 
@@ -52,52 +53,39 @@ export default function CRListView() {
     );
   }
 
-  // Key on the CRD's identity so navigating between two CR list pages (e.g.
-  // pipelineruns → applications) remounts CRListInner — otherwise the
-  // `frozenAutoColsRef` inside would survive the navigation and the new CRD
-  // would inherit the previous CRD's filter columns and match functions.
+  // Remount CRListInner per CRD so its `frozenAutoColsRef` doesn't leak the
+  // previous CRD's filter columns when navigating between two CR list pages.
   const innerKey = `${crd.spec.group}/${crd.spec.names.plural}`;
-  return <CRListInner key={innerKey} crd={crd} version={version ?? ""} storedNs={storedNs ?? ""} search={search} />;
+  return <CRListInner key={innerKey} crd={crd} version={version ?? ""} search={search} />;
 }
 
 function CRListInner({
   crd,
   version,
-  storedNs,
   search,
 }: {
   crd: NonNullable<ReturnType<typeof useCRDByGVR>["crd"]>;
   version: string;
-  storedNs: string;
   search: Search;
 }) {
   const descriptor = useMemo(() => buildCRDescriptor(crd, version), [crd, version]);
-  const namespace = !descriptor.config.clusterScoped ? (search.namespace ?? storedNs ?? "") : "";
 
-  const watch = useCRList(crd, namespace, version);
+  const namespaces = useMemo(() => resolveListNamespaces({ urlNamespace: search.namespace }), [search.namespace]);
 
-  // Auto multi-select discovery from the FIRST non-empty watch snapshot.
-  // Cache the result in a ref so later watch ticks (new items arriving via WebSocket)
-  // do not recompute the option set — recomputation would churn FilterProvider and
-  // could surface/hide columns as the distinct-value threshold (≤8) is crossed,
-  // creating a flickering filter UI. MVP trade-off; live-update would require
-  // lifting FilterProvider into a reactive recompute.
-  //
-  // The ref is only frozen once `items.length > 0`. If the first snapshot is empty
-  // (e.g. namespace not yet selected), `frozenAutoColsRef.current` stays null and the
-  // memo re-runs on the next tick once items arrive, avoiding permanently-empty filters.
+  const watch = useCRListMulti(crd, namespaces, version);
+
+  // Discover the multi-select filter columns once, from the first non-empty watch
+  // snapshot, and freeze them in a ref. Recomputing on later watch ticks would
+  // churn FilterProvider and flicker columns as the distinct-value threshold is
+  // crossed. Stays null while empty so it re-runs once items arrive.
   const frozenAutoColsRef = useRef<PrinterColMeta[] | null>(null);
 
-  // Reset the frozen columns whenever the namespace changes so the new namespace's
-  // distinct values are used to build the filter dropdowns. Without this the ref
-  // would hold the previous namespace's frozen result until the component remounts.
+  // Rebuild the columns from fresh data when the deep-linked namespace changes.
   useEffect(() => {
     frozenAutoColsRef.current = null;
-  }, [namespace]);
+  }, [search.namespace]);
 
-  // `watch.data` is intentionally a dep here: we need the memo to re-run when
-  // `data.array.length` transitions from 0 → nonzero so the filter columns are
-  // derived from actual item values rather than an empty set.
+  // Dep on the item count so the memo re-runs when the list goes 0 → nonzero.
   const watchDataLength = watch.isReady ? (watch.data.array as KubeObjectBase[]).length : 0;
   const autoMultiSelectCols = useMemo<PrinterColMeta[]>(() => {
     if (frozenAutoColsRef.current !== null) return frozenAutoColsRef.current;
@@ -120,8 +108,7 @@ function CRListInner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watch.isReady, watchDataLength, crd, version]);
 
-  // Memoize so WebSocket watch ticks don't churn FilterProvider's internal memo/effect
-  // (otherwise URL-sync fires spuriously on every list update).
+  // Memoize so watch ticks don't churn FilterProvider and fire URL-sync spuriously.
   const defaultValues = useMemo(
     () => buildCRListDefaultValues(autoMultiSelectCols, search.search ?? ""),
     [autoMultiSelectCols, search.search]
@@ -147,8 +134,8 @@ function CRListInner({
         descriptor={descriptor}
         items={items}
         printerCols={autoMultiSelectCols}
-        watchError={watch.error}
-        namespace={namespace}
+        watchErrors={watch.errors}
+        namespace={search.namespace}
       />
     </FilterProvider>
   );
@@ -158,16 +145,18 @@ function CRListContent({
   descriptor,
   items,
   printerCols,
-  watchError,
+  watchErrors,
   namespace,
 }: {
   descriptor: ReturnType<typeof buildCRDescriptor>;
   items: KubeObjectBase[];
   printerCols: PrinterColMeta[];
-  watchError: unknown;
-  namespace: string;
+  watchErrors: RequestError[];
+  namespace?: string;
 }) {
   const { filterFunction } = useCRListFilter();
+
+  const errors = useMemo(() => formatK8sErrors(watchErrors), [watchErrors]);
 
   const tableSlots = useMemo(
     () => ({
@@ -185,7 +174,7 @@ function CRListContent({
           items={items}
           descriptor={descriptor}
           isLoading={false}
-          error={(watchError as Error) ?? null}
+          errors={errors}
           namespace={namespace}
           filterFunction={filterFunction}
           slots={tableSlots}

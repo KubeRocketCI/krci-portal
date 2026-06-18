@@ -8,6 +8,7 @@ export const ROUTE_ID_K8S_LIST = "/_layout/c/$clusterName/k8s/$kind" as const;
 
 const searchSchema = z.object({
   namespace: z.string().optional(),
+  namespaces: z.array(z.string()).optional(),
   tab: z.string().optional(),
 });
 

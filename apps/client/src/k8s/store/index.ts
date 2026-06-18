@@ -31,18 +31,27 @@ const saveSettingsToStorage = (settings: ClusterSettings) => {
   LOCAL_STORAGE_SERVICE.setItem(LOCAL_STORAGE_KEY, settings);
 };
 
-export const useClusterStore = create<ClusterStore>((set, get) => {
-  const clusterName = K8S_DEFAULT_CLUSTER_NAME;
-  const settings = getSettingsFromStorage();
-  const clusterSettings = settings[clusterName] || {
-    default_namespace: K8S_DEFAULT_CLUSTER_NAMESPACE,
-    allowed_namespaces: [K8S_DEFAULT_CLUSTER_NAMESPACE],
-  };
+// Cluster name and default namespace come from the server's DEFAULT_CLUSTER_* env
+// vars at runtime (via ConfigProvider); the build-time VITE_* constants are dev-only
+// fallbacks, normally undefined in production. Coerce to "" and never persist under an
+// empty cluster name — an undefined fallback used to seed a bogus `{"undefined": …}` entry.
+const FALLBACK_CLUSTER_NAME = K8S_DEFAULT_CLUSTER_NAME || "";
+const FALLBACK_NAMESPACE = K8S_DEFAULT_CLUSTER_NAMESPACE || "";
+const seedAllowedNamespaces = (namespace: string): string[] => (namespace ? [namespace] : []);
 
-  if (!settings[clusterName]) {
+export const useClusterStore = create<ClusterStore>((set, get) => {
+  const clusterName = FALLBACK_CLUSTER_NAME;
+  const settings = getSettingsFromStorage();
+  const persisted = clusterName ? settings[clusterName] : undefined;
+
+  const defaultNamespace = persisted?.default_namespace ?? FALLBACK_NAMESPACE;
+  const allowedNamespaces = persisted?.allowed_namespaces ?? seedAllowedNamespaces(FALLBACK_NAMESPACE);
+
+  // Seed only for a known cluster with nothing stored yet (see note above).
+  if (clusterName && !persisted) {
     settings[clusterName] = {
-      default_namespace: K8S_DEFAULT_CLUSTER_NAMESPACE,
-      allowed_namespaces: [K8S_DEFAULT_CLUSTER_NAMESPACE],
+      default_namespace: defaultNamespace,
+      allowed_namespaces: allowedNamespaces,
     };
     saveSettingsToStorage(settings);
   }
@@ -51,21 +60,18 @@ export const useClusterStore = create<ClusterStore>((set, get) => {
     clusterName,
     setClusterName: (newClusterName) => {
       const settings = getSettingsFromStorage();
-      const newClusterSettings = settings[newClusterName] || {
-        default_namespace: K8S_DEFAULT_CLUSTER_NAMESPACE,
-        allowed_namespaces: [K8S_DEFAULT_CLUSTER_NAMESPACE],
-      };
+      const persisted = settings[newClusterName];
       set({
         clusterName: newClusterName,
-        defaultNamespace: newClusterSettings.default_namespace,
-        allowedNamespaces: newClusterSettings.allowed_namespaces,
+        defaultNamespace: persisted?.default_namespace ?? FALLBACK_NAMESPACE,
+        allowedNamespaces: persisted?.allowed_namespaces ?? seedAllowedNamespaces(FALLBACK_NAMESPACE),
         clusterNameResolved: true,
       });
     },
 
     clusterNameResolved: !!clusterName,
 
-    defaultNamespace: clusterSettings.default_namespace,
+    defaultNamespace,
     setDefaultNamespace: (newDefaultNamespace) => {
       const { clusterName, allowedNamespaces, defaultNamespace } = get();
       const settings = getSettingsFromStorage();
@@ -94,7 +100,7 @@ export const useClusterStore = create<ClusterStore>((set, get) => {
       });
     },
 
-    allowedNamespaces: clusterSettings.allowed_namespaces,
+    allowedNamespaces,
     setAllowedNamespaces: (newAllowedNamespaces) => {
       const { clusterName } = get();
       const settings = getSettingsFromStorage();
