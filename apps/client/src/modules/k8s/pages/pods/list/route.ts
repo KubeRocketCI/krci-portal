@@ -7,7 +7,10 @@ export const PATH_K8S_PODS = "pods" as const;
 export { PATH_K8S_PODS_FULL };
 export const ROUTE_ID_K8S_PODS = "/_layout/c/$clusterName/k8s/pods" as const;
 
-const search = z.object({ namespace: z.string().optional() });
+const search = z.object({
+  namespace: z.string().optional(),
+  namespaces: z.array(z.string()).optional(),
+});
 
 export const routeK8sPodsList = createRoute({
   getParentRoute: () => routeK8sMode,

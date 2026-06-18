@@ -5,8 +5,9 @@ import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { FilterProvider } from "@/core/providers/Filter";
 import { ResourceTable } from "../../components/ResourceTable";
-import { useK8sResourceList } from "../../hooks/useK8sResourceList";
-import { useClusterStore } from "@/k8s/store";
+import { useK8sResourceListMulti } from "../../hooks/useK8sResourceListMulti";
+import { resolveListNamespaces } from "../../utils/resolveListNamespaces";
+import { formatK8sErrors } from "../../utils/formatK8sErrors";
 import { resourceRegistry } from "../../registry";
 import { ListFilter } from "../list/components/ListFilter";
 import { defaultK8sListFilterValues, matchFunctions } from "../list/components/ListFilter/constants";
@@ -54,39 +55,26 @@ export default function K8sRbacOverviewPage() {
 }
 
 function RbacTabPanel({ tabKey }: { tabKey: RbacTab }) {
-  const stored = useClusterStore((s) => s.defaultNamespace);
   const descriptor = resourceRegistry[tabKey];
-  const namespace = descriptor && !descriptor.config.clusterScoped ? (stored ?? "") : "";
-  const result = useK8sResourceList<KubeObjectBase>(descriptor.config, namespace);
-  const items = (result.data?.array ?? []) as KubeObjectBase[];
 
   return (
     <FilterProvider matchFunctions={matchFunctions} defaultValues={defaultK8sListFilterValues}>
-      <RbacContent
-        descriptor={descriptor}
-        items={items}
-        isLoading={result.isLoading}
-        error={(result.error as Error) ?? null}
-        namespace={namespace}
-      />
+      <RbacContent descriptor={descriptor} />
     </FilterProvider>
   );
 }
 
-function RbacContent({
-  descriptor,
-  items,
-  isLoading,
-  error,
-  namespace,
-}: {
-  descriptor: ResourceDescriptor;
-  items: KubeObjectBase[];
-  isLoading: boolean;
-  error: Error | null;
-  namespace: string;
-}) {
-  const { filterFunction } = useK8sListFilter();
+function RbacContent({ descriptor }: { descriptor: ResourceDescriptor }) {
+  const { form, filterFunction } = useK8sListFilter();
+
+  // No `?namespace=` deep-link here: the RBAC route has no namespace param and its
+  // tabs mix namespaced (Roles) and cluster-scoped (ClusterRoles) resources.
+  const filterNamespaces = form.state.values.namespaces;
+  const namespaces = useMemo(() => resolveListNamespaces({ filterNamespaces }), [filterNamespaces]);
+
+  const result = useK8sResourceListMulti<KubeObjectBase>(descriptor.config, { namespaces });
+  const items = (result.data?.array ?? []) as KubeObjectBase[];
+  const errors = useMemo(() => formatK8sErrors(result.errors), [result.errors]);
 
   const tableSlots = useMemo(
     () => ({
@@ -101,9 +89,8 @@ function RbacContent({
     <ResourceTable
       items={items}
       descriptor={descriptor}
-      isLoading={isLoading}
-      error={error}
-      namespace={namespace}
+      isLoading={result.isLoading}
+      errors={errors}
       filterFunction={filterFunction}
       slots={tableSlots}
     />

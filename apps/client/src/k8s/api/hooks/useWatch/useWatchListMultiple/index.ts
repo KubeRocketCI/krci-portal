@@ -39,7 +39,7 @@ export interface UseWatchListMultipleParams<I extends KubeObjectBase> {
 const getCombinedQueryKey = (
   clusterName: string,
   resourcePluralName: string,
-  namespaces: string[],
+  namespaces: (string | undefined)[],
   labels?: ResourceLabels
 ) => {
   return [
@@ -68,22 +68,13 @@ export const useWatchListMultiple = <I extends KubeObjectBase>({
   );
   const queryClient = useQueryClient();
 
-  // Use provided namespaces or fall back to allowedNamespaces from store
-  const _namespaces = namespaces ?? allowedNamespaces;
+  // Cluster-scoped resources collapse to a single cluster-wide query (namespace =
+  // undefined); fanning out per allowed namespace would just merge duplicate rows.
+  const isClusterScoped = !!resourceConfig.clusterScoped;
+  const _namespaces: (string | undefined)[] = isClusterScoped ? [undefined] : (namespaces ?? allowedNamespaces);
 
-  // Stable reference for namespaces array
-  const namespacesKey = useMemo(
-    () => _namespaces.join(","),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [_namespaces.join(",")]
-  );
-
-  // Stable reference for labels
-  const labelsKey = useMemo(
-    () => (labels ? JSON.stringify(labels) : undefined),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [labels ? JSON.stringify(labels) : undefined]
-  );
+  const namespacesKey = _namespaces.join(",");
+  const labelsKey = labels ? JSON.stringify(labels) : undefined;
 
   // Generate query keys for all namespaces
   const namespaceQueryKeys = useMemo(
@@ -244,9 +235,10 @@ export const useWatchListMultiple = <I extends KubeObjectBase>({
     staleTime: queryOptions?.staleTime,
   });
 
-  const dataVersion = useMemo(() => {
-    return namespaceQueries.map((q) => q.data?.metadata?.resourceVersion).join(",");
-  }, [namespaceQueries]);
+  // Not memoized: the merge effect below depends on this and must re-derive on
+  // every incoming watch event (a useMemo keyed on the always-new query array
+  // would never cache anyway).
+  const dataVersion = namespaceQueries.map((q) => q.data?.metadata?.resourceVersion).join(",");
 
   // Update combined query data whenever namespace queries change
   useEffect(() => {
@@ -255,22 +247,24 @@ export const useWatchListMultiple = <I extends KubeObjectBase>({
 
     _namespaces.forEach((ns, index) => {
       const query = namespaceQueries[index];
+      // Cluster-scoped resources have an `undefined` namespace; key the Maps by "".
+      const nsKey = ns ?? "";
 
       if (query.isError && query.error) {
-        byNamespace.set(ns, { array: [], map: new Map() });
+        byNamespace.set(nsKey, { array: [], map: new Map() });
         return;
       }
 
       const items = query.data?.items || new Map<string, I>();
       const itemsArray = Array.from(items.values());
 
-      byNamespace.set(ns, {
+      byNamespace.set(nsKey, {
         array: itemsArray,
         map: items,
       });
 
       items.forEach((item: I, name: string) => {
-        mergedMap.set(`${ns}/${name}`, item);
+        mergedMap.set(`${nsKey}/${name}`, item);
       });
     });
 
@@ -308,6 +302,7 @@ export const useWatchListMultiple = <I extends KubeObjectBase>({
     query: combinedQuery,
     dataVersion,
     errors,
+    error: errors[0] ?? null,
     isEmpty: (combinedQuery.data?.array.length ?? 0) === 0,
     isLoading,
     isReady,

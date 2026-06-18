@@ -67,6 +67,7 @@ export interface UseWatchListMultipleResult<I extends KubeObjectBase> {
   query: UseQueryResult<WatchListMultipleData<I>, RequestError>;
   dataVersion: string | undefined;
   errors: RequestError[];
+  error: RequestError | null; // Convenience: first per-namespace error, for table components
   isEmpty: boolean;
   isLoading: boolean;
   isReady: boolean;

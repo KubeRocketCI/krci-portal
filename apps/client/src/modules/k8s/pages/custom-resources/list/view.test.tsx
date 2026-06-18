@@ -7,10 +7,12 @@ vi.mock("@/modules/k8s/hooks/useCRDByGVR", () => ({
 
 vi.mock("@/modules/k8s/hooks/useCRList", () => ({
   useCRList: vi.fn(),
+  useCRListMulti: vi.fn(),
 }));
 
 vi.mock("@/k8s/store", () => ({
-  useClusterStore: (selector: (s: { defaultNamespace: string }) => unknown) => selector({ defaultNamespace: "dev" }),
+  useClusterStore: (selector: (s: { defaultNamespace: string; allowedNamespaces: string[] }) => unknown) =>
+    selector({ defaultNamespace: "dev", allowedNamespaces: ["dev"] }),
 }));
 
 vi.mock("@tanstack/react-router", async () => {
@@ -72,7 +74,7 @@ vi.mock("@/modules/k8s/components/ResourceTable", () => ({
 }));
 
 import { useCRDByGVR } from "@/modules/k8s/hooks/useCRDByGVR";
-import { useCRList } from "@/modules/k8s/hooks/useCRList";
+import { useCRListMulti } from "@/modules/k8s/hooks/useCRList";
 import CRListView from "./view";
 
 const defaultCrd = {
@@ -105,7 +107,7 @@ const baseWatchResult = (items: unknown[]) => ({
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(useCRDByGVR).mockReturnValue({ crd: defaultCrd as never, isLoading: false, error: null });
-  vi.mocked(useCRList).mockReturnValue(
+  vi.mocked(useCRListMulti).mockReturnValue(
     baseWatchResult([
       { metadata: { name: "pr-1", namespace: "dev" }, status: { phase: "Running" } },
       { metadata: { name: "pr-2", namespace: "dev" }, status: { phase: "Succeeded" } },
