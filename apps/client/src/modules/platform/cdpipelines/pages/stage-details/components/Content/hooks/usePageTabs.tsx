@@ -1,5 +1,5 @@
 import React from "react";
-import { Info, Package, Variable, Activity } from "lucide-react";
+import { Info, Package, Variable, Activity, Network } from "lucide-react";
 import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import { Overview } from "../components/Overview";
 import { Tab } from "@/core/providers/Tabs/components/Tabs/types";
@@ -7,6 +7,7 @@ import { Applications } from "../components/Applications";
 import { Variables } from "../components/Variables";
 import { Monitoring } from "../components/Monitoring";
 import { StagePipelineRuns } from "../components/StagePipelineRuns";
+import { NetworkingLive } from "../components/Networking/live/NetworkingLive";
 import { router } from "@/core/router";
 import {
   routeStageDetails,
@@ -65,6 +66,13 @@ export const usePageTabs = (): Tab[] => {
         id: routeSearchTabSchema.enum.monitoring,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.monitoring),
         component: <Monitoring />,
+      },
+      {
+        label: "Networking",
+        icon: <Network className="size-4" />,
+        id: routeSearchTabSchema.enum.networking,
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.networking),
+        component: <NetworkingLive />,
       },
     ],
     [handleTabNavigate]

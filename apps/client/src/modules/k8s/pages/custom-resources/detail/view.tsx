@@ -162,12 +162,18 @@ export default function CRDetailView({ expectedVariant }: { expectedVariant: Det
     );
   }
 
+  const OverrideOverview = descriptor.overviewTab;
+
   const tabs = [
     {
       id: "overview",
       label: "Overview",
       onClick: () => setTab("overview"),
-      component: <CROverviewTab crd={crd} item={item} version={version} />,
+      component: OverrideOverview ? (
+        <OverrideOverview item={item} />
+      ) : (
+        <CROverviewTab crd={crd} item={item} version={version} />
+      ),
     },
     {
       id: "yaml",

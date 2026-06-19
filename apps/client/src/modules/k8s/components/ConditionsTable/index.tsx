@@ -20,6 +20,11 @@ const POSITIVE_TYPES = new Set([
   "PodScheduled",
   "Healthy",
   "Progressing",
+  // Gateway API / Envoy Gateway — status=True is the healthy outcome
+  // (surfaced by Gateway/HTTPRoute/SecurityPolicy/BackendTrafficPolicy/ClientTrafficPolicy).
+  "Accepted",
+  "Programmed",
+  "ResolvedRefs",
 ]);
 
 function variantFor(type: string, status: string): Variant {

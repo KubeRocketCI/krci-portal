@@ -6,7 +6,7 @@ import { StageAppCodebaseCombinedData, useStageWatch } from "@/modules/platform/
 import { inClusterName } from "@my-project/shared";
 import { columnNames } from "../../../constants";
 import { DeployedVersionPreviewColumn } from "../../columns/DeployedVersionPreview";
-import { IngressColumn } from "../../columns/Ingress";
+import { IngressColumnLive } from "../../columns/IngressLive";
 import { IngressHeadColumn } from "../../columns/IngressHead";
 import { NameColumn } from "../../columns/Name";
 import { PodsColumn } from "../../columns/Pods";
@@ -95,7 +95,9 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
       id: columnNames.INGRESS,
       label: <IngressHeadColumn />,
       data: {
-        render: ({ data: { application } }) => <IngressColumn application={application!} />,
+        render: ({ data: { application, appCodebase } }) => (
+          <IngressColumnLive application={application} appName={appCodebase.metadata.name} />
+        ),
       },
       cell: {
         baseWidth: 10,
