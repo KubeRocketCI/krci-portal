@@ -1,7 +1,6 @@
 import React from "react";
-import { Search, ShieldAlert, PackageX, Workflow, List, Network, Lock } from "lucide-react";
-import { Alert, AlertTitle, AlertDescription } from "@/core/components/ui/alert";
-import { NetworkNotice, NoticeCode } from "./components/NetworkNotice";
+import { Search, Workflow, List } from "lucide-react";
+import { Alert } from "@/core/components/ui/alert";
 import { Button } from "@/core/components/ui/button";
 import { Separator } from "@/core/components/ui/separator";
 import { ToggleButton, ToggleButtonGroup } from "@/core/components/ui/toggle-button-group";
@@ -11,6 +10,7 @@ import { mockPopulated } from "./mock";
 import { GatewayCard } from "./components/GatewayCard";
 import { RouteCard } from "./components/RouteCard";
 import { IngressCard } from "./components/IngressCard";
+import { InlineCode } from "./components/InlineCode";
 import { DetailDrawer } from "./components/DetailDrawer";
 import { Legend } from "./components/Legend";
 import { SummaryTiles } from "./components/SummaryTiles";
@@ -90,41 +90,25 @@ export function Networking({
 
   return (
     <div className="flex flex-col gap-6 p-4">
-      {sampleData && (
-        <Alert>
-          <AlertTitle>DRAFT — sample data</AlertTitle>
-          <AlertDescription>This preview renders mock/sample data (Storybook only).</AlertDescription>
+      {sampleData && <Alert title="DRAFT — sample data">This preview renders mock/sample data (Storybook only).</Alert>}
+
+      {state === "crd-absent" && (
+        <Alert title="Some resources aren't shown">
+          <p>
+            The Gateway API (<InlineCode>gateway.networking.k8s.io</InlineCode>) isn't installed on this cluster, so
+            Gateways and HTTPRoutes can't be listed.
+          </p>
         </Alert>
       )}
 
-      {state === "crd-absent" && (
-        <NetworkNotice
-          icons={
-            <>
-              <PackageX />
-              <Network />
-            </>
-          }
-          title="Gateway API is not installed on this cluster"
-        >
-          <NoticeCode>gateway.networking.k8s.io</NoticeCode> CRDs were not found, so HTTPRoute and Gateway resources
-          cannot be shown. Ingresses are still discovered and displayed independently below.
-        </NetworkNotice>
-      )}
-
       {state === "rbac-denied" && (
-        <NetworkNotice
-          icons={
-            <>
-              <ShieldAlert />
-              <Lock />
-            </>
-          }
-          title="Permission denied"
-        >
-          You do not have permission to list HTTPRoutes or Gateways in this namespace. Ask your cluster administrator to
-          grant <NoticeCode>get/list/watch</NoticeCode> on <NoticeCode>gateway.networking.k8s.io</NoticeCode>.
-        </NetworkNotice>
+        <Alert title="Some resources might be hidden">
+          <p>
+            You don't have permission to list Gateways or HTTPRoutes in this namespace, so they're omitted here. Ask
+            your cluster administrator to grant <InlineCode>get/list/watch</InlineCode> on{" "}
+            <InlineCode>gateway.networking.k8s.io</InlineCode>
+          </p>
+        </Alert>
       )}
 
       {appName ? (

@@ -7,6 +7,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Badge } from "@/core/components/ui/badge";
 import type { NetGateway, NetHTTPRoute, NetIngress, NetPolicy, NetRouteFilter } from "../types";
 import { aggregateFilters, deriveHTTPRouteURLs } from "../utils";
+import { InlineCode } from "./InlineCode";
 import { StatusPill } from "./StatusPill";
 
 type SelectedResource = NetGateway | NetHTTPRoute | NetIngress | null;
@@ -86,9 +87,9 @@ export function DetailDrawer({ resource, gateways, policies, onClose }: DetailDr
                 {resource.addresses.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
                     {resource.addresses.map((a) => (
-                      <span key={`${a.type}:${a.value}`} className="bg-muted rounded px-2 py-0.5 font-mono text-xs">
+                      <InlineCode key={`${a.type}:${a.value}`}>
                         {a.type}: {a.value}
-                      </span>
+                      </InlineCode>
                     ))}
                   </div>
                 ) : (
