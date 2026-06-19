@@ -9,6 +9,7 @@ import { PrinterColumnValue } from "@/modules/k8s/components/PrinterColumnValue"
 import { makeNameColumn, namespaceColumn, ageColumn } from "../descriptors/columnHelpers";
 import { resolveCRDVersion, CREATION_TIMESTAMP_PRINTER_COL_PATH } from "./crdUtils";
 import { PATH_K8S_CR_DETAIL_NS_FULL, PATH_K8S_CR_DETAIL_CLUSTER_FULL } from "@/modules/k8s/constants/paths";
+import { getFirstClassCROverride } from "./firstClass";
 
 export function buildCRDescriptor(crd: CRDObject, preferredVersion?: string): ResourceDescriptor {
   const group = crd.spec.group;
@@ -23,6 +24,7 @@ export function buildCRDescriptor(crd: CRDObject, preferredVersion?: string): Re
 
   const version = resolved.name;
   const clusterScoped = crd.spec.scope === "Cluster";
+  const override = getFirstClassCROverride(group, crd.spec.names.kind);
 
   return {
     config: {
@@ -40,7 +42,8 @@ export function buildCRDescriptor(crd: CRDObject, preferredVersion?: string): Re
     detailVariant: clusterScoped ? "cluster" : "namespaced",
     customResource: true,
     defaultSort: { sortBy: "name", order: "asc" },
-    columns: makeCRColumns(crd, resolved, version),
+    columns: override?.columns ?? makeCRColumns(crd, resolved, version),
+    overviewTab: override?.overviewTab,
   };
 }
 

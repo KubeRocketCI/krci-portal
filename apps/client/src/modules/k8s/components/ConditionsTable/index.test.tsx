@@ -49,6 +49,39 @@ describe("ConditionsTable", () => {
     expect(namesAccepted?.getAttribute("data-variant")).toBe("destructive");
   });
 
+  it("treats Gateway API conditions (Accepted/Programmed/ResolvedRefs)=True as success", () => {
+    const gwConds = ["Accepted", "Programmed", "ResolvedRefs"].map((type) => ({
+      type,
+      status: "True",
+      lastTransitionTime: "2026-06-14T10:00:00Z",
+      reason: "Valid",
+      message: `${type} ok`,
+    }));
+    render(<ConditionsTable conditions={gwConds} />);
+    for (const type of ["Accepted", "Programmed", "ResolvedRefs"]) {
+      const badge = screen.getByText(type).closest("[data-variant]");
+      expect(badge?.getAttribute("data-variant")).toBe("success");
+    }
+  });
+
+  it("treats a Gateway API Accepted=False as destructive (rejected policy/route)", () => {
+    render(
+      <ConditionsTable
+        conditions={[
+          {
+            type: "Accepted",
+            status: "False",
+            lastTransitionTime: "2026-06-14T10:00:00Z",
+            reason: "Invalid",
+            message: "rejected",
+          },
+        ]}
+      />
+    );
+    const badge = screen.getByText("Accepted").closest("[data-variant]");
+    expect(badge?.getAttribute("data-variant")).toBe("destructive");
+  });
+
   it("returns secondary variant for Unknown status regardless of Type", () => {
     const unknown = [
       {

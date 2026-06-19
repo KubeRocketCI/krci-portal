@@ -3,5 +3,7 @@ export * from "./autoscaling/index.js";
 export * from "./batch/index.js";
 export * from "./Core/index.js";
 export * from "./Networking/index.js";
+export * from "./GatewayAPI/index.js";
+export * from "./EnvoyGateway/index.js";
 export * from "./Storage/index.js";
 export * from "./RBAC/index.js";

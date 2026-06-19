@@ -3,7 +3,7 @@ import { TABLE } from "@/k8s/constants/tables";
 import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
 import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { columnNames } from "../../../constants";
-import { IngressColumn } from "../../columns/Ingress";
+import { IngressColumnLive } from "../../columns/IngressLive";
 import { IngressHeadColumn } from "../../columns/IngressHead";
 import { NameColumn } from "../../columns/Name";
 import { PodsColumn } from "../../columns/Pods";
@@ -109,7 +109,9 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
       id: columnNames.INGRESS,
       label: <IngressHeadColumn />,
       data: {
-        render: ({ data: { application } }) => <IngressColumn application={application!} />,
+        render: ({ data: { application, appCodebase } }) => (
+          <IngressColumnLive application={application} appName={appCodebase.metadata.name} />
+        ),
       },
       cell: {
         baseWidth: 10,

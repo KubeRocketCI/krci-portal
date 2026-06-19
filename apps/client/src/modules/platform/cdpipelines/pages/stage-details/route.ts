@@ -9,7 +9,14 @@ export const PATH_CDPIPELINE_STAGE_DETAILS_FULL =
 export const ROUTE_ID_CDPIPELINE_STAGE_DETAILS =
   "/_layout/c/$clusterName/cdpipelines/$namespace/$cdPipeline/stages/$stage" as const;
 
-export const routeSearchTabSchema = z.enum(["overview", "applications", "pipelines", "variables", "monitoring"]);
+export const routeSearchTabSchema = z.enum([
+  "overview",
+  "applications",
+  "pipelines",
+  "variables",
+  "monitoring",
+  "networking",
+]);
 export const routeSearchTabName = routeSearchTabSchema.enum;
 
 export type RouteSearchTab = z.infer<typeof routeSearchTabSchema>;

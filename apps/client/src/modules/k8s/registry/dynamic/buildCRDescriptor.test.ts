@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { buildCRDescriptor } from "./buildCRDescriptor";
+import {
+  gatewayColumns,
+  httpRouteColumns,
+  securityPolicyColumns,
+  backendTrafficPolicyColumns,
+  clientTrafficPolicyColumns,
+} from "./firstClass/columns";
+import { GatewayOverviewTab } from "@/modules/k8s/components/overrides/GatewayOverviewTab";
+import { HTTPRouteOverviewTab } from "@/modules/k8s/components/overrides/HTTPRouteOverviewTab";
+import { PolicyOverviewTab } from "@/modules/k8s/components/overrides/PolicyOverviewTab";
 
 const baseCrd = (overrides: Record<string, unknown> = {}) =>
   ({
@@ -74,6 +84,58 @@ describe("buildCRDescriptor — config", () => {
   });
   it("sets defaultSort to name asc, consistent with the static CRD descriptor", () => {
     expect(buildCRDescriptor(baseCrd()).defaultSort).toEqual({ sortBy: "name", order: "asc" });
+  });
+});
+
+describe("buildCRDescriptor — first-class overrides (WS-B)", () => {
+  function makeCrd(group: string, kind: string, plural: string) {
+    return {
+      metadata: { name: `${plural}.${group}` },
+      spec: {
+        group,
+        scope: "Namespaced",
+        names: { kind, plural, singular: kind.toLowerCase() },
+        versions: [{ name: "v1", served: true, storage: true, additionalPrinterColumns: [] }],
+      },
+    } as never;
+  }
+
+  it("Gateway CRD uses gatewayColumns and GatewayOverviewTab", () => {
+    const d = buildCRDescriptor(makeCrd("gateway.networking.k8s.io", "Gateway", "gateways"));
+    expect(d.columns).toBe(gatewayColumns);
+    expect(d.overviewTab).toBe(GatewayOverviewTab);
+  });
+
+  it("SecurityPolicy CRD uses securityPolicyColumns and PolicyOverviewTab", () => {
+    const d = buildCRDescriptor(makeCrd("gateway.envoyproxy.io", "SecurityPolicy", "securitypolicies"));
+    expect(d.columns).toBe(securityPolicyColumns);
+    expect(d.overviewTab).toBe(PolicyOverviewTab);
+  });
+
+  it("HTTPRoute CRD uses httpRouteColumns and HTTPRouteOverviewTab", () => {
+    const d = buildCRDescriptor(makeCrd("gateway.networking.k8s.io", "HTTPRoute", "httproutes"));
+    expect(d.columns).toBe(httpRouteColumns);
+    expect(d.overviewTab).toBe(HTTPRouteOverviewTab);
+  });
+
+  it("BackendTrafficPolicy CRD uses backendTrafficPolicyColumns and PolicyOverviewTab", () => {
+    const d = buildCRDescriptor(makeCrd("gateway.envoyproxy.io", "BackendTrafficPolicy", "backendtrafficpolicies"));
+    expect(d.columns).toBe(backendTrafficPolicyColumns);
+    expect(d.overviewTab).toBe(PolicyOverviewTab);
+  });
+
+  it("ClientTrafficPolicy CRD uses clientTrafficPolicyColumns and PolicyOverviewTab", () => {
+    const d = buildCRDescriptor(makeCrd("gateway.envoyproxy.io", "ClientTrafficPolicy", "clienttrafficpolicies"));
+    expect(d.columns).toBe(clientTrafficPolicyColumns);
+    expect(d.overviewTab).toBe(PolicyOverviewTab);
+  });
+
+  it("non-first-class CRD has no overviewTab and uses generic columns builder", () => {
+    const d = buildCRDescriptor(makeCrd("some.example.com", "Widget", "widgets"));
+    expect(d.overviewTab).toBeUndefined();
+    // columns is a locally-built function, not one of the named first-class fns
+    expect(d.columns).not.toBe(gatewayColumns);
+    expect(d.columns).not.toBe(securityPolicyColumns);
   });
 });
 
