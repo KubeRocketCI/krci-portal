@@ -8,6 +8,11 @@ import { cronJobsDescriptor } from "./descriptors/cronjobs";
 import { horizontalPodAutoscalersDescriptor } from "./descriptors/horizontal-pod-autoscalers";
 import { servicesDescriptor } from "./descriptors/services";
 import { ingressesDescriptor } from "./descriptors/ingresses";
+import { gatewaysDescriptor } from "./descriptors/gateways";
+import { httpRoutesDescriptor } from "./descriptors/httproutes";
+import { securityPoliciesDescriptor } from "./descriptors/securitypolicies";
+import { backendTrafficPoliciesDescriptor } from "./descriptors/backendtrafficpolicies";
+import { clientTrafficPoliciesDescriptor } from "./descriptors/clienttrafficpolicies";
 import { persistentVolumeClaimsDescriptor } from "./descriptors/persistent-volume-claims";
 import { persistentVolumesDescriptor } from "./descriptors/persistent-volumes";
 import { storageClassesDescriptor } from "./descriptors/storage-classes";
@@ -33,6 +38,11 @@ export const resourceRegistry: ResourceRegistry = {
   // Network
   services: servicesDescriptor,
   ingresses: ingressesDescriptor,
+  gateways: gatewaysDescriptor,
+  httproutes: httpRoutesDescriptor,
+  securitypolicies: securityPoliciesDescriptor,
+  backendtrafficpolicies: backendTrafficPoliciesDescriptor,
+  clienttrafficpolicies: clientTrafficPoliciesDescriptor,
   // Storage
   persistentvolumeclaims: persistentVolumeClaimsDescriptor,
   persistentvolumes: persistentVolumesDescriptor,
