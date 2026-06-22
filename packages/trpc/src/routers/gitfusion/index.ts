@@ -7,6 +7,9 @@ import {
   triggerGitLabPipeline,
   getPullRequestList,
   getOpenPullRequestsSummary,
+  getPipelineList,
+  getPipelineJobList,
+  getPipelineJobTrace,
 } from "./procedures/index.js";
 
 export const gitfusionRouter = t.router({
@@ -17,4 +20,7 @@ export const gitfusionRouter = t.router({
   triggerGitLabPipeline,
   getPullRequestList,
   getOpenPullRequestsSummary,
+  getPipelineList,
+  getPipelineJobList,
+  getPipelineJobTrace,
 });

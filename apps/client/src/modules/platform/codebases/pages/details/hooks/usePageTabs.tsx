@@ -1,5 +1,6 @@
 import React from "react";
 import { Info, GitBranch, GitPullRequest, Shield, AlertTriangle } from "lucide-react";
+import { ciTool } from "@my-project/shared";
 import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import { router } from "@/core/router";
 import { BranchList } from "../components/BranchList";
@@ -9,6 +10,8 @@ import { PipelineList } from "../components/PipelineList";
 import { DeploymentStatusWidget } from "../components/DeploymentStatusWidget";
 import { SecurityTab } from "../components/SecurityTab";
 import { VulnerabilitiesTab } from "../components/VulnerabilitiesTab";
+import { CodebaseGitLabCIPipelineList } from "@/modules/platform/gitlabci/components/CodebaseGitLabCIPipelineList";
+import type { Tab } from "@/core/providers/Tabs/components/Tabs/types";
 import { useCodebaseWatch } from "../hooks/data";
 import { routeProjectDetails, RouteSearchTab, routeSearchTabSchema, PATH_PROJECT_DETAILS_FULL } from "../route";
 
@@ -29,7 +32,9 @@ export const usePageTabs = () => {
   );
 
   return React.useMemo(() => {
-    return [
+    const isGitLabCI = codebase?.spec?.ciTool === ciTool.gitlab;
+
+    const tabs: Tab[] = [
       {
         label: "Overview",
         icon: <Info className="size-4" />,
@@ -49,7 +54,7 @@ export const usePageTabs = () => {
         icon: <ENTITY_ICON.pipeline className="size-4" />,
         id: routeSearchTabSchema.enum.pipelines,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.pipelines),
-        component: <PipelineList />,
+        component: isGitLabCI && codebase ? <CodebaseGitLabCIPipelineList codebase={codebase} /> : <PipelineList />,
       },
       {
         label: "Code Quality",
@@ -89,5 +94,9 @@ export const usePageTabs = () => {
         component: <DeploymentStatusWidget />,
       },
     ];
-  }, [handleTabNavigate, params.name, params.namespace, params.clusterName, codebase?.spec?.defaultBranch]);
+
+    return tabs;
+    // `codebase` is referentially stable across polls (React Query structural sharing), so
+    // depending on the whole object is cheap and avoids enumerating individual spec fields.
+  }, [handleTabNavigate, params.name, params.namespace, params.clusterName, codebase]);
 };

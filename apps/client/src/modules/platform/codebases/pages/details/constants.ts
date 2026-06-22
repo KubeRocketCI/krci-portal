@@ -1,5 +1,6 @@
 import { RouteSearchTab, routeSearchTabSchema } from "./route";
 
+// Indices must match the tab order in usePageTabs.
 export const tabNameToIndexMap: Record<RouteSearchTab, number> = {
   [routeSearchTabSchema.enum.overview]: 0,
   [routeSearchTabSchema.enum.branches]: 1,

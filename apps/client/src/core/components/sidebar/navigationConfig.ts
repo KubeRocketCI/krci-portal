@@ -46,6 +46,7 @@ import { PATH_PROJECTS_FULL } from "@/modules/platform/codebases/pages/list/rout
 import { PATH_CDPIPELINES_FULL } from "@/modules/platform/cdpipelines/pages/list/route";
 import { PATH_PIPELINERUNS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-list/route";
 import { PATH_PIPELINES_FULL } from "@/modules/platform/tekton/pages/pipeline-list/route";
+import { PATH_GITLABCI_PIPELINES_FULL } from "@/modules/platform/gitlabci/pages/pipeline-list/route";
 import { PATH_TASKS_FULL } from "@/modules/platform/tekton/pages/task-list/route";
 import { PATH_EVENT_LISTENERS_FULL } from "@/modules/platform/tekton/pages/event-listener-list/route";
 import { PATH_TRIGGERS_FULL } from "@/modules/platform/tekton/pages/trigger-list/route";
@@ -111,6 +112,14 @@ export function createNavigationConfig(clusterName: string, namespace: string): 
           icon: CheckCircle,
           route: {
             to: PATH_TASKS_FULL,
+            params: clusterDefaultParams,
+          },
+        },
+        {
+          title: "GitLab CI",
+          icon: Activity,
+          route: {
+            to: PATH_GITLABCI_PIPELINES_FULL,
             params: clusterDefaultParams,
           },
         },
