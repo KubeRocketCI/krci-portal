@@ -114,37 +114,6 @@ export function createNavigationConfig(clusterName: string, namespace: string): 
             params: clusterDefaultParams,
           },
         },
-        {
-          title: "Webhook Triggers",
-          children: [
-            {
-              title: "Event Listeners",
-              icon: Webhook,
-              route: { to: PATH_EVENT_LISTENERS_FULL, params: clusterDefaultParams },
-            },
-            { title: "Triggers", icon: Zap, route: { to: PATH_TRIGGERS_FULL, params: clusterDefaultParams } },
-            {
-              title: "Trigger Templates",
-              icon: FileCode,
-              route: { to: PATH_TRIGGER_TEMPLATES_FULL, params: clusterDefaultParams },
-            },
-            {
-              title: "Trigger Bindings",
-              icon: Link2,
-              route: { to: PATH_TRIGGER_BINDINGS_FULL, params: clusterDefaultParams },
-            },
-            {
-              title: "Interceptors",
-              icon: Funnel,
-              route: { to: PATH_INTERCEPTORS_FULL, params: clusterDefaultParams },
-            },
-            {
-              title: "Cluster Interceptors",
-              icon: Globe,
-              route: { to: PATH_CLUSTER_INTERCEPTORS_FULL, params: clusterDefaultParams },
-            },
-          ],
-        },
       ],
     },
     {
@@ -459,6 +428,37 @@ export function createNavigationConfig(clusterName: string, namespace: string): 
                 to: PATH_CONFIG_JIRA_FULL,
                 params: clusterDefaultParams,
               },
+            },
+          ],
+        },
+        {
+          title: "Webhook Triggers",
+          children: [
+            {
+              title: "Event Listeners",
+              icon: Webhook,
+              route: { to: PATH_EVENT_LISTENERS_FULL, params: clusterDefaultParams },
+            },
+            { title: "Triggers", icon: Zap, route: { to: PATH_TRIGGERS_FULL, params: clusterDefaultParams } },
+            {
+              title: "Trigger Templates",
+              icon: FileCode,
+              route: { to: PATH_TRIGGER_TEMPLATES_FULL, params: clusterDefaultParams },
+            },
+            {
+              title: "Trigger Bindings",
+              icon: Link2,
+              route: { to: PATH_TRIGGER_BINDINGS_FULL, params: clusterDefaultParams },
+            },
+            {
+              title: "Interceptors",
+              icon: Funnel,
+              route: { to: PATH_INTERCEPTORS_FULL, params: clusterDefaultParams },
+            },
+            {
+              title: "Cluster Interceptors",
+              icon: Globe,
+              route: { to: PATH_CLUSTER_INTERCEPTORS_FULL, params: clusterDefaultParams },
             },
           ],
         },
