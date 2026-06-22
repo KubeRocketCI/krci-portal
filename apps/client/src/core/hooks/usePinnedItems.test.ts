@@ -219,7 +219,7 @@ describe("migratePinnedItems", () => {
   describe("iconType backfill for newly mapped paths", () => {
     it("heals items pinned before their route had an icon mapping (e.g. Trigger Bindings)", () => {
       const item = makeItem({
-        routeTo: "/c/$clusterName/cicd/webhook-triggers/trigger-bindings",
+        routeTo: "/c/$clusterName/configuration/webhook-triggers/trigger-bindings",
         routeParams: { clusterName: "dev" },
         label: "Trigger Bindings",
         type: undefined as unknown as PinnedPage["type"],
@@ -229,7 +229,7 @@ describe("migratePinnedItems", () => {
 
       expect(migrated.iconType).toBe("trigger-bindings");
       expect(migrated.type).toBe("trigger-bindings");
-      expect(migrated.key).toBe("page:/c/$clusterName/cicd/webhook-triggers/trigger-bindings");
+      expect(migrated.key).toBe("page:/c/$clusterName/configuration/webhook-triggers/trigger-bindings");
     });
   });
 });

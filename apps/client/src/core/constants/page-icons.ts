@@ -41,7 +41,7 @@ export const PAGE_ICONS = {
   pipelines: Bot,
   tasks: CheckCircle,
 
-  // CI/CD Webhook Triggers (icons mirror navigationConfig.ts entries)
+  // Configuration - Webhook Triggers (icons mirror navigationConfig.ts entries)
   "event-listeners": Webhook,
   triggers: Zap,
   "trigger-templates": FileCode,
@@ -128,13 +128,13 @@ export const PATH_TO_ICON_TYPE: Record<string, PageIconType> = {
   "/c/$clusterName/cicd/pipelines": "pipelines",
   "/c/$clusterName/cicd/tasks": "tasks",
 
-  // CI/CD Webhook Triggers
-  "/c/$clusterName/cicd/webhook-triggers/event-listeners": "event-listeners",
-  "/c/$clusterName/cicd/webhook-triggers/triggers": "triggers",
-  "/c/$clusterName/cicd/webhook-triggers/trigger-templates": "trigger-templates",
-  "/c/$clusterName/cicd/webhook-triggers/trigger-bindings": "trigger-bindings",
-  "/c/$clusterName/cicd/webhook-triggers/interceptors": "interceptors",
-  "/c/$clusterName/cicd/webhook-triggers/cluster-interceptors": "cluster-interceptors",
+  // Configuration - Webhook Triggers
+  "/c/$clusterName/configuration/webhook-triggers/event-listeners": "event-listeners",
+  "/c/$clusterName/configuration/webhook-triggers/triggers": "triggers",
+  "/c/$clusterName/configuration/webhook-triggers/trigger-templates": "trigger-templates",
+  "/c/$clusterName/configuration/webhook-triggers/trigger-bindings": "trigger-bindings",
+  "/c/$clusterName/configuration/webhook-triggers/interceptors": "interceptors",
+  "/c/$clusterName/configuration/webhook-triggers/cluster-interceptors": "cluster-interceptors",
 
   // Observability
   "/c/$clusterName/observability/pipeline-metrics/$namespace": "pipeline-metrics",
