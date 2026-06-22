@@ -26,8 +26,8 @@
     "zod-openapi": "^4.2.4"
   },
   "devDependencies": {
-    "@types/node": "^22.13.5",
-    "@types/uuid": "^10.0.0",
-    "typescript": "^5.8.3"
+    "@types/node": "^25.9.2",
+    "@types/uuid": "^11.0.0",
+    "typescript": "^6.0.3"
   }
 }
