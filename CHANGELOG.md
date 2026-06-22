@@ -1,6 +1,70 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Features
+
+- add Envoy Gateway and Gateway API support in Portal
+- add permission-aware Custom Resources catalog for users without cluster-wide CRD access
+- reduce Kubernetes events volume on overview and detail views
+- redesign Kubernetes cluster overview dashboard
+- add Service Account token login and make OIDC optional
+- enrich Kubernetes resource overview tabs and list descriptors
+- router registration — CRD detail + CR parent/list/detail routes
+- Scale + Restart + Rollback action UI components + Deployment, StatefulSet, DaemonSet descriptor wiring
+- workload mutation hooks (useK8sActionMutation, useK8sScale, useK8sRestart, useK8sRollback, useDeploymentRevisions, useHpaForTarget) + useUpdatePermission
+- K8sDetailPage — actionsSlot + ButtonWithPermission Delete + useDetailTabs
+- Custom Resources sidebar group (useCRSidebarItems + K8sSidebar + nav.ts)
+- Custom Resource detail page (cluster-scoped + namespaced)
+- Custom Resource list page (CRListView, CRListFilter, routes)
+- CRD list descriptor + CRD detail page
+- CRD/CR infra hooks + ConditionsTable + PrinterColumnValue + extractByJsonPath + useDetailTabs + buildCRDescriptor
+- workload utility helpers + scale/restart/rollback/listRevisions procedures + k8sRouter wiring
+- HoverInfoLabel primitive + Radix Slider primitive + [@radix](https://github.com/radix)-ui/react-slider dependency
+- CRD/CR path constants + registry descriptor shape + resolveDescriptor slug fallback
+- collapsible sidebar sub-group — NavCollapsibleSubGroupItem + SidebarCollapsibleSubGroupMenuItem
+- drop apiVersion from server input + client hook; group-aware watch/permission cache keys
+- K8sClient patchResource/listAllResources + getInitializedK8sClient + rethrowOrHandleK8sError
+- add patch verb, KubeCondition, CRD model, and ReplicaSet model
+- Add scroll-to-top/bottom controls to LogViewer
+- Add branch column to pipeline applications table
+
+### Bug Fixes
+
+- Align notification area for envoy
+- honor allowed namespaces in Kubernetes mode list views
+- populate Deployed version dropdown on CD promotion stages in multi-pipeline clusters
+- exclude EDP from codebase versioning type selection
+- bump concurrently to patch shell-quote CVE-2026-9277
+- make sidebar pin keys param-aware and restore icons for pinned pages
+- align K8s mode list pages with KRCI list layout
+- Set gitlabci icon on the project page
+- remediate dependency vulnerabilities and harden npm supply chain
+- enable search filtering in freeSolo combobox
+- replace backtracking trailing-slash regex with linear stripTrailingSlash helper
+- render mode switcher as icon-only toggle in collapsed sidebar
+- prevent release branches from being created from a commit
+- useDeploymentRevisions refetch-on-mount for live rollback data
+- DataTable and ServerSideTable — useColumnSync + useSyncedSortState hooks
+- DeleteKubeObject — ReactNode description + mutateAsync navigation guard
+- ConfirmDialog isPending guard
+- Align stage quality gate step name validation to min 2 characters
+- Fix silent save failure in resource edit forms
+- Align inputDockerStreams with applications positionally in create wizard
+- Reject misrouted branches in pipeline applications column
+- Improve LogViewer controls layout and focus visibility
+
+### Code Refactoring
+
+- address review findings in sidebar predicate, sort-state, detail-page
+
+### Routine
+
+- bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin
+- align dependabot commit messages with PR validation and reduce PR noise
+- drop transitional route-type casts after registration
+- Remove dead alignInputDockerStreams utility
+- Update current development version
+
 
 <a name="v0.5.0"></a>
 ## [v0.5.0] - 2026-05-21
@@ -139,6 +203,7 @@
 ## v0.1.0 - 2026-03-27
 ### Features
 
+- Enable CHANGELOG.md generation
 - Improve project details page
 - Improve ScrollCopyText component
 - Add deployment submit review step

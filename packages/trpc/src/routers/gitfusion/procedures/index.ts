@@ -5,3 +5,6 @@ export { invalidateBranchListCacheProcedure as invalidateBranchListCache } from 
 export { triggerGitLabPipelineProcedure as triggerGitLabPipeline } from "./triggerGitLabPipeline/index.js";
 export { getPullRequestListProcedure as getPullRequestList } from "./getPullRequestList/index.js";
 export { getOpenPullRequestsSummaryProcedure as getOpenPullRequestsSummary } from "./getOpenPullRequestsSummary/index.js";
+export { getPipelineListProcedure as getPipelineList } from "./getPipelineList/index.js";
+export { getPipelineJobListProcedure as getPipelineJobList } from "./getPipelineJobList/index.js";
+export { getPipelineJobTraceProcedure as getPipelineJobTrace } from "./getPipelineJobTrace/index.js";

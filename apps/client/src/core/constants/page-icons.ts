@@ -40,6 +40,7 @@ export const PAGE_ICONS = {
   pipelineruns: Activity,
   pipelines: Bot,
   tasks: CheckCircle,
+  "gitlabci-pipelines": Activity,
 
   // Configuration - Webhook Triggers (icons mirror navigationConfig.ts entries)
   "event-listeners": Webhook,
@@ -127,6 +128,7 @@ export const PATH_TO_ICON_TYPE: Record<string, PageIconType> = {
   "/c/$clusterName/cicd/pipelineruns": "pipelineruns",
   "/c/$clusterName/cicd/pipelines": "pipelines",
   "/c/$clusterName/cicd/tasks": "tasks",
+  "/c/$clusterName/cicd/gitlabci-pipelines": "gitlabci-pipelines",
 
   // Configuration - Webhook Triggers
   "/c/$clusterName/configuration/webhook-triggers/event-listeners": "event-listeners",

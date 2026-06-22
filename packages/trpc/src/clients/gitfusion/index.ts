@@ -5,6 +5,9 @@ import {
   GitFusionOrganizationListResponse,
   GitFusionBranchListResponse,
   GitFusionPullRequestListResponse,
+  GitFusionPipelineListResponse,
+  GitFusionPipelineJobListResponse,
+  GitFusionPipelineJobTrace,
   GitLabPipelineResponse,
   GitLabPipelineVariable,
   stripTrailingSlash,
@@ -313,6 +316,50 @@ export class GitFusionClient {
     await this.fetchJson<void>(url, {
       method: "DELETE",
     });
+  }
+
+  /** List CI/CD pipelines for a project (provider-agnostic; GitLab today). */
+  async getPipelines(
+    gitServer: string,
+    project: string,
+    opts?: { ref?: string; status?: string; page?: number; perPage?: number }
+  ): Promise<GitFusionPipelineListResponse> {
+    const endpoint = this.buildEndpoint("/api/v1/pipelines", {
+      gitServer,
+      project,
+      ref: opts?.ref,
+      status: opts?.status,
+      page: opts?.page,
+      perPage: opts?.perPage,
+    });
+
+    return this.fetchJson<GitFusionPipelineListResponse>(endpoint);
+  }
+
+  /** List the jobs of a CI/CD pipeline (provider-agnostic; GitLab today). */
+  async getPipelineJobs(
+    gitServer: string,
+    project: string,
+    pipelineId: string
+  ): Promise<GitFusionPipelineJobListResponse> {
+    const endpoint = this.buildEndpoint("/api/v1/pipeline-jobs", {
+      gitServer,
+      project,
+      pipelineId,
+    });
+
+    return this.fetchJson<GitFusionPipelineJobListResponse>(endpoint);
+  }
+
+  /** Get the trace (log) of a CI/CD pipeline job. */
+  async getJobTrace(gitServer: string, project: string, jobId: string): Promise<GitFusionPipelineJobTrace> {
+    const endpoint = this.buildEndpoint("/api/v1/pipeline-job-trace", {
+      gitServer,
+      project,
+      jobId,
+    });
+
+    return this.fetchJson<GitFusionPipelineJobTrace>(endpoint);
   }
 
   /**
