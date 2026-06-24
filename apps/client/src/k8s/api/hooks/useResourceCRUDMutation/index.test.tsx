@@ -217,6 +217,58 @@ describe("useResourceCRUDMutation", () => {
       });
     });
 
+    it("should build success options from the K8s response name for generateName resources", async () => {
+      const generateNameResource = {
+        apiVersion: "test.group/v1",
+        kind: "Resource",
+        metadata: {
+          generateName: "run-prefix-",
+          namespace: "default",
+        },
+      } as KubeObjectDraft;
+
+      const serverAssignedName = "run-prefix-abc12";
+      const createdResource = {
+        ...generateNameResource,
+        metadata: { ...generateNameResource.metadata, name: serverAssignedName },
+      };
+      vi.mocked(mockTrpcClient.k8s.create.mutate).mockResolvedValue(createdResource);
+      vi.mocked(showToast).mockReturnValue("toast-id");
+
+      const { result } = renderHook(
+        () =>
+          useResourceCRUDMutation("test-create", k8sOperation.create, {
+            createCustomMessages: (item) => ({
+              success: {
+                message: "Resource has been created",
+                options: {
+                  externalLink: { url: `https://example.com/runs/${item.metadata.name}`, text: "View" },
+                },
+              },
+            }),
+          }),
+        {
+          wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
+        }
+      );
+
+      await result.current.mutateAsync({
+        resource: generateNameResource,
+        resourceConfig: mockResourceConfig,
+      });
+
+      await waitFor(() => {
+        expect(showToast).toHaveBeenCalledWith(
+          "Resource has been created",
+          "success",
+          expect.objectContaining({
+            id: "toast-id",
+            externalLink: { url: `https://example.com/runs/${serverAssignedName}`, text: "View" },
+          })
+        );
+      });
+    });
+
     it("should call onMutate callback", async () => {
       const onMutate = vi.fn();
       vi.mocked(mockTrpcClient.k8s.create.mutate).mockResolvedValue(mockResource);

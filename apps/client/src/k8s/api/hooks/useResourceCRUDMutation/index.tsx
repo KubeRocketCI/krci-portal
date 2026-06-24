@@ -146,13 +146,18 @@ export const useResourceCRUDMutation = <KubeObjectData extends KubeObjectDraft, 
       const loadingToastId = showToast(loadingMessage, "loading");
 
       promise
-        .then(() => {
-          // Update to success toast with optional link
+        .then((responseData) => {
+          // Re-derive from the response: `generateName` resources only carry their assigned name there, not on the input.
+          const resolvedSuccessOptions =
+            (responseData != null && typeof responseData === "object"
+              ? options?.createCustomMessages?.(responseData as KubeObjectData)?.success?.options
+              : undefined) ?? customMessages?.success?.options;
+
           showToast(successMessage, "success", {
             id: loadingToastId,
-            duration: customMessages?.success?.options?.duration || 5000,
-            route: customMessages?.success?.options?.route,
-            externalLink: customMessages?.success?.options?.externalLink,
+            duration: resolvedSuccessOptions?.duration || 5000,
+            route: resolvedSuccessOptions?.route,
+            externalLink: resolvedSuccessOptions?.externalLink,
           });
         })
         .catch((err) => {
