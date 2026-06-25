@@ -1,6 +1,7 @@
 import { createRouter } from "@tanstack/react-router";
 import { LoadingProgressBar } from "../components/ui/LoadingProgressBar";
 import { RouterErrorComponent } from "./components/RouterErrorComponent";
+import NotFound from "../components/NotFound";
 import { routeHome } from "../../modules/home/pages/home/route";
 import { routeProjectList } from "../../modules/platform/codebases/pages/list/route";
 import { routeProjectCreate } from "../../modules/platform/codebases/pages/create/route";
@@ -222,6 +223,7 @@ export const router = createRouter({
   defaultPreloadStaleTime: 0,
   defaultPendingComponent: LoadingProgressBar,
   defaultErrorComponent: RouterErrorComponent,
+  defaultNotFoundComponent: NotFound,
   context: {
     queryClient: undefined!,
   },

@@ -22,6 +22,7 @@ const {
   const mockClusterStore = {
     clusterName: null as string | null,
     clusterNameResolved: true,
+    defaultNamespace: "" as string,
     setClusterName: mockSetClusterName,
     setDefaultNamespace: mockSetDefaultNamespace,
     setAllowedNamespaces: mockSetAllowedNamespaces,
@@ -89,7 +90,7 @@ describe("ConfigProvider", () => {
     vi.clearAllMocks();
     mockClusterStore.clusterName = null;
     mockClusterStore.clusterNameResolved = true;
-    localStorage.clear();
+    mockClusterStore.defaultNamespace = "";
   });
 
   afterEach(() => {
@@ -150,7 +151,7 @@ describe("ConfigProvider", () => {
       await waitFor(() => {
         expect(mockSetClusterName).toHaveBeenCalledWith("test-cluster");
         expect(mockSetDefaultNamespace).toHaveBeenCalledWith("default");
-        expect(mockSetAllowedNamespaces).toHaveBeenCalledWith(["default"]);
+        expect(mockSetAllowedNamespaces).not.toHaveBeenCalled();
         expect(mockSetSonarWebUrl).toHaveBeenCalledWith("https://sonar.example.com");
         expect(mockSetDependencyTrackWebUrl).toHaveBeenCalledWith("https://dependency-track.example.com");
       });
@@ -177,14 +178,9 @@ describe("ConfigProvider", () => {
       });
     });
 
-    it("should preserve custom namespace settings from localStorage", async () => {
-      const customSettings = {
-        "test-cluster": {
-          defaultNamespace: "custom-namespace",
-          allowedNamespaces: ["custom-namespace", "other"],
-        },
-      };
-      localStorage.setItem("cluster_settings", JSON.stringify(customSettings));
+    it("should not override a default namespace already resolved in the store", async () => {
+      // Must not clobber a user-chosen namespace (e.g. via "Manage Namespaces") with the server default.
+      mockClusterStore.defaultNamespace = "custom-namespace";
 
       mockTrpcClient.config.get.query.mockResolvedValue({
         clusterName: "test-cluster",
@@ -200,9 +196,58 @@ describe("ConfigProvider", () => {
       );
 
       await waitFor(() => {
-        expect(mockSetDefaultNamespace).not.toHaveBeenCalled();
-        expect(mockSetAllowedNamespaces).not.toHaveBeenCalled();
+        expect(mockSetClusterName).toHaveBeenCalledWith("test-cluster");
       });
+      expect(mockSetDefaultNamespace).not.toHaveBeenCalled();
+      expect(mockSetAllowedNamespaces).not.toHaveBeenCalled();
+    });
+
+    it("should adopt the server default namespace when the store has none (stale cluster_settings)", async () => {
+      // Regression: a stale cluster_settings entry (persisted before the server had a namespace)
+      // leaves defaultNamespace empty; the provider must still reconcile it from server config.
+      mockClusterStore.clusterName = "test-cluster";
+      mockClusterStore.defaultNamespace = "";
+
+      mockTrpcClient.config.get.query.mockResolvedValue({
+        clusterName: "test-cluster",
+        defaultNamespace: "c4jerry4",
+        sonarWebUrl: "https://sonar.example.com",
+        dependencyTrackWebUrl: "https://dependency-track.example.com",
+      });
+
+      renderWithProviders(
+        <ConfigProvider>
+          <div />
+        </ConfigProvider>
+      );
+
+      await waitFor(() => {
+        expect(mockSetDefaultNamespace).toHaveBeenCalledWith("c4jerry4");
+      });
+    });
+
+    it("should not persist an empty namespace when the server provides none", async () => {
+      // An unset DEFAULT_CLUSTER_NAMESPACE must not make the client seed an empty namespace —
+      // that used to poison cluster_settings and keep the client broken after the server was fixed.
+      mockClusterStore.defaultNamespace = "";
+
+      mockTrpcClient.config.get.query.mockResolvedValue({
+        clusterName: "test-cluster",
+        defaultNamespace: "",
+        sonarWebUrl: "",
+        dependencyTrackWebUrl: "",
+      });
+
+      renderWithProviders(
+        <ConfigProvider>
+          <div />
+        </ConfigProvider>
+      );
+
+      await waitFor(() => {
+        expect(mockSetClusterName).toHaveBeenCalledWith("test-cluster");
+      });
+      expect(mockSetDefaultNamespace).not.toHaveBeenCalled();
     });
 
     it("should always update security tool URLs from server config", async () => {
