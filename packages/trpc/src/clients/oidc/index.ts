@@ -1,12 +1,14 @@
 import {
   Configuration,
   TokenEndpointResponse,
+  TokenEndpointResponseHelpers,
   allowInsecureRequests,
   authorizationCodeGrant,
   buildAuthorizationUrl,
   calculatePKCECodeChallenge,
   discovery,
   fetchProtectedResource,
+  fetchUserInfo as fetchOIDCUserInfo,
   randomPKCECodeVerifier,
   randomState,
   refreshTokenGrant,
@@ -137,7 +139,7 @@ export class OIDCClient {
     url: URL,
     codeVerifier: string,
     expectedState: string
-  ): Promise<TokenEndpointResponse> {
+  ): Promise<TokenEndpointResponse & TokenEndpointResponseHelpers> {
     return authorizationCodeGrant(oidcConfig, url, {
       pkceCodeVerifier: codeVerifier,
       expectedState,
@@ -305,6 +307,49 @@ export class OIDCClient {
     }
   }
 
+  /**
+   * Resolves the user identity for the authorization-code flow: ID Token first
+   * (already validated by authorizationCodeGrant), then UserInfo as a best-effort,
+   * subject-matched (OIDC Core §5.3.2) supplement, merged ID-Token-authoritative.
+   * Captures email whether the IdP emits it in the ID Token (Entra ID optional
+   * claim) or only via UserInfo (Keycloak).
+   */
+  async resolveUserFromTokenResponse(
+    oidcConfig: Configuration,
+    tokens: TokenEndpointResponse & TokenEndpointResponseHelpers
+  ): Promise<OIDCUser> {
+    const idTokenClaims = tokens.claims() as Record<string, unknown> | undefined;
+
+    if (!idTokenClaims) {
+      if (!tokens.access_token) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Sign-in failed: the identity provider returned neither an ID Token nor an access token.",
+        });
+      }
+      return this.fetchUserInfoOrThrow(oidcConfig, tokens.access_token);
+    }
+
+    const fromIdToken = OIDCUserSchema.safeParse(idTokenClaims);
+    if (fromIdToken.success) {
+      return normalizeUserGroups(fromIdToken.data);
+    }
+
+    let userInfoClaims: Record<string, unknown> | undefined;
+    const subject = typeof idTokenClaims.sub === "string" ? idTokenClaims.sub : undefined;
+    if (tokens.access_token && subject) {
+      try {
+        userInfoClaims = (await fetchOIDCUserInfo(oidcConfig, tokens.access_token, subject)) as Record<string, unknown>;
+      } catch (err) {
+        console.warn("[OIDC] UserInfo supplement skipped; proceeding with ID Token claims", err);
+      }
+    }
+
+    const mergedClaims = userInfoClaims ? { ...userInfoClaims, ...idTokenClaims } : idTokenClaims;
+
+    return this.parseOIDCUserOrThrow(mergedClaims);
+  }
+
   async fetchUserInfo(oidcConfig: Configuration, accessToken: string): Promise<OIDCUser> {
     const userinfoEndpoint = oidcConfig.serverMetadata().userinfo_endpoint;
 
@@ -338,11 +383,43 @@ export class OIDCClient {
       throw new Error("Invalid response from userinfo endpoint");
     }
 
-    const parsed = OIDCUserSchema.safeParse(raw);
-    if (!parsed.success) {
-      throw new Error("Invalid user info response from userinfo endpoint");
+    return this.parseOIDCUserOrThrow(raw as Record<string, unknown>);
+  }
+
+  /**
+   * Validates raw identity claims against {@link OIDCUserSchema}, returning a
+   * normalized {@link OIDCUser}. On failure, throws an actionable TRPCError that
+   * names the missing claim(s) — most often `email`, which Entra ID omits for
+   * member accounts without a mailbox.
+   */
+  private parseOIDCUserOrThrow(claims: Record<string, unknown>): OIDCUser {
+    const parsed = OIDCUserSchema.safeParse(claims);
+    if (parsed.success) {
+      return normalizeUserGroups(parsed.data);
     }
-    return normalizeUserGroups(parsed.data);
+
+    const failedClaims = [...new Set(parsed.error.issues.map((issue) => String(issue.path[0] ?? "")).filter(Boolean))];
+
+    console.error("[OIDC] Identity claims failed validation", {
+      failedClaims,
+      availableClaims: Object.keys(claims),
+      issues: parsed.error.issues,
+    });
+
+    if (failedClaims.includes("email")) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message:
+          "Your account does not have an email address, which is required to sign in. " +
+          "Please ask your administrator to add an email address to your account.",
+      });
+    }
+
+    const claimList = failedClaims.length ? ` (${failedClaims.join(", ")})` : "";
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: `Sign-in failed: the identity provider did not return the required profile information${claimList}.`,
+    });
   }
 
   buildEndSessionUrl(
@@ -440,6 +517,8 @@ export class OIDCClient {
     try {
       return await this.fetchUserInfo(oidcConfig, token);
     } catch (error) {
+      // Surface actionable errors (e.g. missing email) instead of masking them.
+      if (error instanceof TRPCError) throw error;
       const errorMessage = (error as Error)?.message || "Unknown error";
       throw new TRPCError({
         code: "UNAUTHORIZED",
