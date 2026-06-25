@@ -5,11 +5,11 @@ import { Link, LinkProps } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, Rocket } from "lucide-react";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
-import { routeStageCreate } from "../../../../route";
 import { CREATE_FORM_PARTS } from "../../names";
 import { NAVIGABLE_STEP_IDXS, useWizardStore } from "../../store";
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
 import { useCreateStageForm } from "../../providers/form/hooks";
+import { useSafeStageCreateParams } from "../../hooks/useSafeStageCreateParams";
 
 interface WizardNavigationProps {
   onBack: () => void;
@@ -25,7 +25,7 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
   backRoute,
 }) => {
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
-  const { namespace, cdPipeline } = routeStageCreate.useParams();
+  const { namespace, cdPipeline } = useSafeStageCreateParams();
   const form = useCreateStageForm();
 
   const { currentStepIdx, getCurrentFormPart } = useWizardStore(
@@ -61,7 +61,6 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
           }
         }
 
-        // Only proceed if no errors in current step
         if (!hasStepErrors) {
           onNext();
         }
@@ -69,7 +68,6 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
         onNext();
       }
     } else {
-      // For steps without form fields (like REVIEW), just proceed
       onNext();
     }
   }, [currentFormPart, onNext, form]);

@@ -7,7 +7,6 @@ import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { showToast } from "@/core/components/Snackbar";
 import { useClusterStore } from "@/k8s/store";
-import { routeStageCreate } from "../../route";
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
 import { BasicConfiguration } from "./components/BasicConfiguration";
 import { PipelineConfiguration } from "./components/PipelineConfiguration";
@@ -16,14 +15,23 @@ import { Review } from "./components/Review";
 import { Success } from "./components/Success";
 import { WizardStepper } from "./components/WizardStepper";
 import { WizardNavigation } from "./components/WizardNavigation";
-import { useCDPipelineData } from "./hooks/useDefaultValues";
+import { useCDPipelineData, useDefaultValues } from "./hooks/useDefaultValues";
+import { useSafeStageCreateParams } from "./hooks/useSafeStageCreateParams";
 import { CreateStageFormValues } from "./names";
 import { useWizardStore } from "./store";
 import { CreateStageFormProvider } from "./providers/form/provider";
 import { useCreateStageForm } from "./providers/form/hooks";
 
 export const CreateStageWizard: React.FC = () => {
-  const { cdPipelineIsLoading, cdPipelineError, otherStagesIsLoading } = useCDPipelineData();
+  const {
+    cdPipelineIsLoading,
+    cdPipelineError,
+    otherStages,
+    otherStagesIsLoading,
+    triggerTemplatesIsLoading,
+    triggerTemplateList,
+  } = useCDPipelineData();
+  const defaultValues = useDefaultValues({ triggerTemplateList, stagesQuantity: otherStages.length });
   const {
     triggerCreateStage,
     mutations: { stageCreateMutation },
@@ -92,7 +100,7 @@ export const CreateStageWizard: React.FC = () => {
     return <ErrorContent error={cdPipelineError} />;
   }
 
-  if (cdPipelineIsLoading || otherStagesIsLoading) {
+  if (cdPipelineIsLoading || otherStagesIsLoading || triggerTemplatesIsLoading) {
     return (
       <div className="flex h-full items-center justify-center">
         <LoadingWrapper isLoading={true}>
@@ -103,7 +111,7 @@ export const CreateStageWizard: React.FC = () => {
   }
 
   return (
-    <CreateStageFormProvider onSubmit={onSubmit} onSubmitError={onSubmitError}>
+    <CreateStageFormProvider defaultValues={defaultValues} onSubmit={onSubmit} onSubmitError={onSubmitError}>
       <WizardContent isPending={isPending} />
     </CreateStageFormProvider>
   );
@@ -116,7 +124,7 @@ interface WizardContentProps {
 const WizardContent: React.FC<WizardContentProps> = ({ isPending }) => {
   const form = useCreateStageForm();
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
-  const { namespace, cdPipeline } = routeStageCreate.useParams();
+  const { namespace, cdPipeline } = useSafeStageCreateParams();
 
   const { currentStepIdx, goToNextStep, goToPreviousStep } = useWizardStore(
     useShallow((state) => ({

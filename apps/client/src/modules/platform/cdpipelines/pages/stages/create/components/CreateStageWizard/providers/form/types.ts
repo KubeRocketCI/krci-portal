@@ -3,6 +3,7 @@ import { CreateStageFormValues } from "../../names";
 
 export interface CreateStageFormProviderProps {
   children: ReactNode;
+  defaultValues: CreateStageFormValues;
   onSubmit: (values: CreateStageFormValues) => Promise<void> | void;
   onSubmitError: (error: unknown) => void;
   onSubmitInvalid?: (errors: unknown) => void;
