@@ -10,12 +10,13 @@ import {
   stageTriggerType,
   stageQualityGateType,
   triggerTemplateLabels,
+  type TriggerTemplate,
 } from "@my-project/shared";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { v4 as uuidv4 } from "uuid";
 import { NAMES } from "../names";
-import { routeStageCreate } from "../../../route";
+import { useSafeStageCreateParams } from "./useSafeStageCreateParams";
 
 const defaultQualityGate = {
   id: uuidv4(),
@@ -25,15 +26,13 @@ const defaultQualityGate = {
   branchName: null,
 };
 
-export const useDefaultValues = () => {
-  // Safely get route params - fallback to empty object if route is not active (e.g., in Storybook)
-  let routeParams: { namespace?: string; cdPipeline?: string } = {};
-  try {
-    routeParams = routeStageCreate.useParams();
-  } catch {
-    // Route not active - use empty params
-  }
-  const { namespace, cdPipeline: cdPipelineName } = routeParams;
+interface UseDefaultValuesParams {
+  triggerTemplateList: TriggerTemplate[];
+  stagesQuantity: number;
+}
+
+export const useDefaultValues = ({ triggerTemplateList, stagesQuantity }: UseDefaultValuesParams) => {
+  const { namespace, cdPipeline: cdPipelineName } = useSafeStageCreateParams();
 
   const { defaultNamespace } = useClusterStore(
     useShallow((state) => ({
@@ -42,21 +41,6 @@ export const useDefaultValues = () => {
   );
 
   const effectiveNamespace = namespace || defaultNamespace;
-
-  const stagesWatch = useStageWatchList({
-    namespace: effectiveNamespace,
-    labels: {
-      [stageLabels.cdPipeline]: cdPipelineName ?? "",
-    },
-    queryOptions: {
-      enabled: !!cdPipelineName && !!effectiveNamespace,
-    },
-  });
-
-  const stagesQuantity = stagesWatch.data.array.length;
-
-  const triggerTemplateListWatch = useTriggerTemplateWatchList();
-  const triggerTemplateList = triggerTemplateListWatch.data.array;
 
   const deployTriggerTemplate = triggerTemplateList.find(
     (el) => el.metadata.labels?.[triggerTemplateLabels.pipelineType] === pipelineType.deploy
@@ -87,14 +71,7 @@ export const useDefaultValues = () => {
 };
 
 export const useCDPipelineData = () => {
-  // Safely get route params - fallback to empty object if route is not active (e.g., in Storybook)
-  let routeParams: { namespace?: string; cdPipeline?: string } = {};
-  try {
-    routeParams = routeStageCreate.useParams();
-  } catch {
-    // Route not active - use empty params
-  }
-  const { namespace, cdPipeline: cdPipelineName } = routeParams;
+  const { namespace, cdPipeline: cdPipelineName } = useSafeStageCreateParams();
 
   const { defaultNamespace } = useClusterStore(
     useShallow((state) => ({
@@ -122,12 +99,20 @@ export const useCDPipelineData = () => {
     },
   });
 
+  const triggerTemplateListWatch = useTriggerTemplateWatchList();
+
   return {
     cdPipeline: cdPipelineWatch.query.data,
     cdPipelineIsLoading: cdPipelineWatch.query.isLoading,
     cdPipelineError: cdPipelineWatch.query.error,
     otherStages: stagesWatch.data.array,
-    otherStagesIsLoading: stagesWatch.query.isLoading,
+    otherStagesIsLoading: stagesWatch.isLoading,
+    // Use the watch wrapper's `isLoading` (isPending || isPlaceholderData), not the raw
+    // query.isLoading. The list query sets placeholderData, so query.isLoading is false on
+    // first render while the real templates are still loading — gating on it lets the form
+    // mount with an empty cleanTemplate default before the templates arrive.
+    triggerTemplatesIsLoading: triggerTemplateListWatch.isLoading,
+    triggerTemplateList: triggerTemplateListWatch.data.array,
     namespace: effectiveNamespace,
   };
 };

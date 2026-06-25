@@ -6,17 +6,18 @@ import { Link } from "@tanstack/react-router";
 import { NAMES } from "../../names";
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
-import { routeStageCreate, PATH_STAGE_CREATE_FULL } from "../../../../route";
+import { PATH_STAGE_CREATE_FULL } from "../../../../route";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { useWizardStore } from "../../store";
 import { router } from "@/core/router";
 import { useCreateStageForm } from "../../providers/form/hooks";
+import { useSafeStageCreateParams } from "../../hooks/useSafeStageCreateParams";
 
 export const Success: React.FC = () => {
   const form = useCreateStageForm();
   const name = useStore(form.store, (state) => state.values[NAMES.name]);
-  const { namespace, cdPipeline } = routeStageCreate.useParams();
+  const { namespace, cdPipeline } = useSafeStageCreateParams();
 
   const { clusterName } = useClusterStore(
     useShallow((state) => ({
