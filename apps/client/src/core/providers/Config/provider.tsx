@@ -12,7 +12,6 @@ export const ConfigProvider = ({ children }: React.PropsWithChildren) => {
   const clusterNameResolved = useClusterStore((state) => state.clusterNameResolved);
   const setClusterName = useClusterStore((state) => state.setClusterName);
   const setDefaultNamespace = useClusterStore((state) => state.setDefaultNamespace);
-  const setAllowedNamespaces = useClusterStore((state) => state.setAllowedNamespaces);
   const setSonarWebUrl = useClusterStore((state) => state.setSonarWebUrl);
   const setDependencyTrackWebUrl = useClusterStore((state) => state.setDependencyTrackWebUrl);
 
@@ -25,31 +24,27 @@ export const ConfigProvider = ({ children }: React.PropsWithChildren) => {
   });
 
   useEffect(() => {
-    if (configQuery.data) {
-      const { clusterName: serverClusterName, defaultNamespace, sonarWebUrl, dependencyTrackWebUrl } = configQuery.data;
-
-      if (!clusterName) {
-        setClusterName(serverClusterName);
-
-        const settings = localStorage.getItem("cluster_settings");
-        if (!settings || !JSON.parse(settings)[serverClusterName]) {
-          setDefaultNamespace(defaultNamespace);
-          setAllowedNamespaces([defaultNamespace]);
-        }
-      }
-
-      setSonarWebUrl(sonarWebUrl);
-      setDependencyTrackWebUrl(dependencyTrackWebUrl);
+    if (!configQuery.data) {
+      return;
     }
-  }, [
-    configQuery.data,
-    clusterName,
-    setClusterName,
-    setDefaultNamespace,
-    setAllowedNamespaces,
-    setSonarWebUrl,
-    setDependencyTrackWebUrl,
-  ]);
+
+    const { clusterName: serverClusterName, defaultNamespace, sonarWebUrl, dependencyTrackWebUrl } = configQuery.data;
+
+    if (!clusterName) {
+      setClusterName(serverClusterName);
+    }
+
+    // Reconcile AFTER setClusterName: that call synchronously hydrates defaultNamespace from
+    // persisted cluster_settings, so a user-chosen namespace loads first and the guard preserves
+    // it. Adopt the server default only when the store is still empty (e.g. a stale entry
+    // persisted before the server had a namespace). setDefaultNamespace also repairs allowedNamespaces.
+    if (defaultNamespace && !useClusterStore.getState().defaultNamespace) {
+      setDefaultNamespace(defaultNamespace);
+    }
+
+    setSonarWebUrl(sonarWebUrl);
+    setDependencyTrackWebUrl(dependencyTrackWebUrl);
+  }, [configQuery.data, clusterName, setClusterName, setDefaultNamespace, setSonarWebUrl, setDependencyTrackWebUrl]);
 
   if (configQuery.isLoading && !configQuery.isError) {
     return <LoadingProgressBar />;
