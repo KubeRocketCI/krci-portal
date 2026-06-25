@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { TRPCError } from "@trpc/server";
 import { OIDCClient } from "./index.js";
 import type { Configuration } from "openid-client";
@@ -16,10 +16,11 @@ vi.mock("jose", async () => {
   };
 });
 
-// Mock openid-client (fetchProtectedResource, authorizationCodeGrant, refreshTokenGrant)
+// Mock openid-client (fetchProtectedResource, authorizationCodeGrant, refreshTokenGrant, fetchUserInfo)
 const mockFetchProtectedResource = vi.fn();
 const mockAuthorizationCodeGrant = vi.fn();
 const mockRefreshTokenGrant = vi.fn();
+const mockFetchUserInfoLib = vi.fn();
 vi.mock("openid-client", async () => {
   const actual = await vi.importActual("openid-client");
   return {
@@ -27,6 +28,7 @@ vi.mock("openid-client", async () => {
     fetchProtectedResource: (...args: any[]) => mockFetchProtectedResource(...args),
     authorizationCodeGrant: (...args: any[]) => mockAuthorizationCodeGrant(...args),
     refreshTokenGrant: (...args: any[]) => mockRefreshTokenGrant(...args),
+    fetchUserInfo: (...args: any[]) => mockFetchUserInfoLib(...args),
   };
 });
 
@@ -156,6 +158,19 @@ describe("OIDCClient", () => {
       expect(result).toEqual(mockUserInfo);
     });
 
+    it("should throw an actionable UNAUTHORIZED when the userinfo response is missing email", async () => {
+      const oidcConfig = createMockOIDCConfig();
+      mockFetchProtectedResource.mockResolvedValue(mockResponse({ sub: "user-123", name: "No Email User" }));
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      await expect(client.validateTokenAndGetUserInfo(oidcConfig, OPAQUE_TOKEN)).rejects.toMatchObject({
+        code: "UNAUTHORIZED",
+        message: expect.stringContaining("does not have an email address"),
+      });
+
+      errorSpy.mockRestore();
+    });
+
     it("should use userinfo when metadata has no jwks_uri", async () => {
       const oidcConfig = createMockOIDCConfig({ jwks_uri: undefined });
       mockFetchProtectedResource.mockResolvedValue(mockResponse(mockUserInfo));
@@ -242,6 +257,111 @@ describe("OIDCClient", () => {
 
       // createRemoteJWKSet should only be called once (cached)
       expect(mockCreateRemoteJWKSet).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("resolveUserFromTokenResponse", () => {
+    const oidcConfig = createMockOIDCConfig();
+
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+    let warnSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+      warnSpy.mockRestore();
+    });
+
+    function makeTokens(
+      claims: Record<string, unknown> | undefined,
+      access_token: string | undefined = "access-token"
+    ): any {
+      return { access_token, token_type: "bearer", claims: () => claims };
+    }
+
+    it("uses ID Token claims and skips UserInfo when the ID Token is sufficient", async () => {
+      const tokens = makeTokens({ sub: "user-123", email: "user@example.com", name: "Test User" });
+
+      const result = await client.resolveUserFromTokenResponse(oidcConfig, tokens);
+
+      expect(result).toMatchObject({ sub: "user-123", email: "user@example.com", name: "Test User" });
+      expect(mockFetchUserInfoLib).not.toHaveBeenCalled();
+    });
+
+    it("supplements with UserInfo when the ID Token lacks a required claim (e.g. Keycloak emits email there)", async () => {
+      const tokens = makeTokens({ sub: "user-123", name: "Test User" });
+      mockFetchUserInfoLib.mockResolvedValue({ sub: "user-123", email: "user@example.com" });
+
+      const result = await client.resolveUserFromTokenResponse(oidcConfig, tokens);
+
+      expect(result).toMatchObject({ sub: "user-123", email: "user@example.com", name: "Test User" });
+      expect(mockFetchUserInfoLib).toHaveBeenCalledWith(oidcConfig, "access-token", "user-123");
+    });
+
+    it("keeps ID Token claims authoritative over UserInfo on conflict", async () => {
+      const tokens = makeTokens({ sub: "user-123", name: "From ID Token" });
+      mockFetchUserInfoLib.mockResolvedValue({ sub: "user-123", email: "user@example.com", name: "From UserInfo" });
+
+      const result = await client.resolveUserFromTokenResponse(oidcConfig, tokens);
+
+      expect(result.name).toBe("From ID Token");
+      expect(result.email).toBe("user@example.com");
+    });
+
+    it("throws an actionable UNAUTHORIZED when email is absent and UserInfo is unavailable", async () => {
+      const tokens = makeTokens({ sub: "user-123", name: "Test User" });
+      mockFetchUserInfoLib.mockRejectedValue(new Error("userinfo 500"));
+
+      await expect(client.resolveUserFromTokenResponse(oidcConfig, tokens)).rejects.toMatchObject({
+        code: "UNAUTHORIZED",
+        message: expect.stringContaining("does not have an email address"),
+      });
+    });
+
+    it("throws an actionable UNAUTHORIZED when neither the ID Token nor UserInfo provides email", async () => {
+      const tokens = makeTokens({ sub: "user-123", name: "Test User" });
+      mockFetchUserInfoLib.mockResolvedValue({ sub: "user-123", name: "Test User" });
+
+      await expect(client.resolveUserFromTokenResponse(oidcConfig, tokens)).rejects.toMatchObject({
+        code: "UNAUTHORIZED",
+        message: expect.stringContaining("does not have an email address"),
+      });
+    });
+
+    it("normalizes groups from ID Token claims", async () => {
+      const tokens = makeTokens({
+        sub: "user-123",
+        email: "user@example.com",
+        name: "Test User",
+        groups: ['["admin","users"]'],
+      });
+
+      const result = await client.resolveUserFromTokenResponse(oidcConfig, tokens);
+
+      expect(result.groups).toEqual(["admin", "users"]);
+    });
+
+    it("falls back to the UserInfo endpoint when there is no ID Token (non-openid flow)", async () => {
+      const tokens = makeTokens(undefined);
+      mockFetchProtectedResource.mockResolvedValue(mockResponse(mockUserInfo));
+
+      const result = await client.resolveUserFromTokenResponse(oidcConfig, tokens);
+
+      expect(result).toMatchObject(mockUserInfo);
+      expect(mockFetchProtectedResource).toHaveBeenCalled();
+    });
+
+    it("throws UNAUTHORIZED when neither an ID Token nor an access token is returned", async () => {
+      const tokens = { token_type: "bearer", claims: () => undefined } as any;
+
+      await expect(client.resolveUserFromTokenResponse(oidcConfig, tokens)).rejects.toMatchObject({
+        code: "UNAUTHORIZED",
+        message: expect.stringContaining("neither an ID Token nor an access token"),
+      });
     });
   });
 

@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mockDiscover = vi.fn();
 const mockExchangeCodeForTokens = vi.fn();
 const mockNormalizeTokenResponse = vi.fn();
-const mockFetchUserInfo = vi.fn();
+const mockResolveUser = vi.fn();
 
 vi.mock("../../../../clients/oidc/index.js", () => ({
   OIDCClient: vi.fn(function () {
@@ -14,7 +14,7 @@ vi.mock("../../../../clients/oidc/index.js", () => ({
       discoverOrThrow: mockDiscover,
       exchangeCodeForTokens: mockExchangeCodeForTokens,
       normalizeTokenResponse: mockNormalizeTokenResponse,
-      fetchUserInfoOrThrow: mockFetchUserInfo,
+      resolveUserFromTokenResponse: mockResolveUser,
     };
   }),
 }));
@@ -54,9 +54,9 @@ describe("authLoginCallbackProcedure", () => {
       clientSearch: "?redirect=/pipelines",
     };
     mockDiscover.mockResolvedValue({});
-    mockExchangeCodeForTokens.mockResolvedValue({ access_token: "access-token" });
+    mockExchangeCodeForTokens.mockResolvedValue({ access_token: "access-token", claims: () => mockUserInfo });
     mockNormalizeTokenResponse.mockReturnValue(mockNormalizedTokens);
-    mockFetchUserInfo.mockResolvedValue(mockUserInfo);
+    mockResolveUser.mockResolvedValue(mockUserInfo);
   });
 
   afterEach(() => {
@@ -82,7 +82,7 @@ describe("authLoginCallbackProcedure", () => {
     });
     expect(mockContext.session.login).toBeUndefined();
     expect(mockExchangeCodeForTokens).toHaveBeenCalled();
-    expect(mockFetchUserInfo).toHaveBeenCalled();
+    expect(mockResolveUser).toHaveBeenCalled();
   });
 
   it("should reject callback URL with wrong origin", async () => {

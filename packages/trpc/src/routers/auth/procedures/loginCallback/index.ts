@@ -38,7 +38,7 @@ export const authLoginCallbackProcedure = publicProcedure
 
     const normalizedTokens = oidcClient.normalizeTokenResponse(tokens);
 
-    const userInfo = await oidcClient.fetchUserInfoOrThrow(config, tokens.access_token);
+    const userInfo = await oidcClient.resolveUserFromTokenResponse(config, tokens);
 
     ctx.session.user = {
       data: userInfo,
