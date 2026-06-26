@@ -55,6 +55,13 @@ A Helm chart for KubeRocketCI Portal
 | eso.vault.role | string | `"krci-portal"` | Vault role for the Kubernetes authentication method. |
 | eso.vault.server | string | `"http://vault.vault:8200"` | Vault server URL. |
 | fullnameOverride | string | `"krci-portal"` | Override the full name of the chart |
+| httproute | object | `{"annotations":{},"dnsWildcard":"","enabled":false,"hostnames":["edpDefault"],"matches":[{"path":{"type":"PathPrefix","value":"/"}}],"parentRefs":[{"name":"main-gateway","namespace":"envoy-gateway-system"}]}` | HTTPRoute (Gateway API / Envoy Gateway) configuration. Alternative to `ingress` for clusters migrating from nginx-ingress to Envoy Gateway. When enabled, an HTTPRoute is created and attached to the referenced Gateway instead of relying on a nginx Ingress. Disabled by default. |
+| httproute.annotations | object | `{}` | Annotations to add to the HTTPRoute |
+| httproute.dnsWildcard | string | `""` | Cluster-wide DNS wildcard domain (e.g. `apps.cluster.example.com`). Used to build the default hostname as `portal-<namespace>.<dnsWildcard>` when `hostnames` contains `edpDefault`. Required when using the `edpDefault` hostname sentinel. |
+| httproute.enabled | bool | `false` | Enable HTTPRoute (Gateway API) resource |
+| httproute.hostnames | list | `["edpDefault"]` | Hostnames for the route. 'edpDefault' renders portal-<namespace>.<dnsWildcard> |
+| httproute.matches | list | `[{"path":{"type":"PathPrefix","value":"/"}}]` | Path matches for the route rule |
+| httproute.parentRefs | list | `[{"name":"main-gateway","namespace":"envoy-gateway-system"}]` | Parent Gateways the route attaches to (name + namespace of the Envoy Gateway) |
 | image | object | `{"pullPolicy":"IfNotPresent","repository":"epamedp/krci-portal","tag":""}` | Image configuration |
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | image.repository | string | `"epamedp/krci-portal"` | Image repository |
