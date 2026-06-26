@@ -1,0 +1,41 @@
+{{- if .Values.httproute.enabled -}}
+{{- $fullName := include "krci-portal.fullname" . -}}
+{{- $svcPort := .Values.service.port -}}
+{{- $dnsWildcard := coalesce .Values.httproute.dnsWildcard .Values.ingress.dnsWildcard "" -}}
+{{- if not .Values.httproute.parentRefs -}}
+{{- fail "httproute.parentRefs must contain at least one Gateway reference" -}}
+{{- end -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "krci-portal.labels" . | nindent 4 }}
+  {{- with .Values.httproute.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- toYaml .Values.httproute.parentRefs | nindent 4 }}
+  {{- if .Values.httproute.hostnames }}
+  hostnames:
+    {{- range .Values.httproute.hostnames }}
+    {{- /* 'edpDefault' is a sentinel: renders portal-<namespace>.<dnsWildcard>; otherwise the literal hostname is used as-is */ -}}
+    {{- if eq . "edpDefault" }}
+    {{- if not $dnsWildcard }}
+    {{- fail "httproute.dnsWildcard (or ingress.dnsWildcard) must be set when using the 'edpDefault' hostname" }}
+    {{- end }}
+    - portal-{{ $.Release.Namespace }}.{{ $dnsWildcard }}
+    {{- else }}
+    - {{ . | quote }}
+    {{- end }}
+    {{- end }}
+  {{- end }}
+  rules:
+    - matches:
+        {{- toYaml .Values.httproute.matches | nindent 8 }}
+      backendRefs:
+        - name: {{ $fullName }}
+          port: {{ $svcPort | int }}
+{{- end }}

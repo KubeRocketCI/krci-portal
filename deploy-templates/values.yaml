@@ -127,6 +127,30 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
+# -- HTTPRoute (Gateway API / Envoy Gateway) configuration.
+# Alternative to `ingress` for clusters migrating from nginx-ingress to Envoy Gateway.
+# When enabled, an HTTPRoute is created and attached to the referenced Gateway instead
+# of relying on a nginx Ingress. Disabled by default.
+httproute:
+  # -- Enable HTTPRoute (Gateway API) resource
+  enabled: false
+  # -- Cluster-wide DNS wildcard domain (e.g. `apps.cluster.example.com`). Used to build the default hostname as `portal-<namespace>.<dnsWildcard>` when `hostnames` contains `edpDefault`. Required when using the `edpDefault` hostname sentinel.
+  dnsWildcard: ""
+  # -- Annotations to add to the HTTPRoute
+  annotations: {}
+  # -- Parent Gateways the route attaches to (name + namespace of the Envoy Gateway)
+  parentRefs:
+    - name: main-gateway
+      namespace: envoy-gateway-system
+  # -- Hostnames for the route. 'edpDefault' renders portal-<namespace>.<dnsWildcard>
+  hostnames:
+    - edpDefault
+  # -- Path matches for the route rule
+  matches:
+    - path:
+        type: PathPrefix
+        value: /
+
 # -- Resource limits and requests
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
