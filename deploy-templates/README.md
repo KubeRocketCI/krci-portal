@@ -1,6 +1,9 @@
 # krci-portal
 
-![Version: 0.6.0-SNAPSHOT](https://img.shields.io/badge/Version-0.6.0--SNAPSHOT-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.6.0-SNAPSHOT](https://img.shields.io/badge/AppVersion-0.6.0--SNAPSHOT-informational?style=flat-square)
+
+
+
+![Version: 0.6.0-SNAPSHOT](https://img.shields.io/badge/Version-0.6.0--SNAPSHOT-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.6.0-SNAPSHOT](https://img.shields.io/badge/AppVersion-0.6.0--SNAPSHOT-informational?style=flat-square) 
 
 A Helm chart for KubeRocketCI Portal
 
@@ -16,6 +19,8 @@ A Helm chart for KubeRocketCI Portal
 ## Source Code
 
 * <https://github.com/KubeRocketCI/krci-portal>
+
+
 
 ## Values
 
@@ -55,6 +60,13 @@ A Helm chart for KubeRocketCI Portal
 | eso.vault.role | string | `"krci-portal"` | Vault role for the Kubernetes authentication method. |
 | eso.vault.server | string | `"http://vault.vault:8200"` | Vault server URL. |
 | fullnameOverride | string | `"krci-portal"` | Override the full name of the chart |
+| httproute | object | `{"annotations":{},"dnsWildcard":"","enabled":false,"hostnames":["edpDefault"],"matches":[{"path":{"type":"PathPrefix","value":"/"}}],"parentRefs":[{"name":"main-gateway","namespace":"envoy-gateway-system"}]}` | HTTPRoute (Gateway API / Envoy Gateway) configuration. Alternative to `ingress` for clusters migrating from nginx-ingress to Envoy Gateway. When enabled, an HTTPRoute is created and attached to the referenced Gateway instead of relying on a nginx Ingress. Disabled by default. |
+| httproute.annotations | object | `{}` | Annotations to add to the HTTPRoute |
+| httproute.dnsWildcard | string | `""` | DNS wildcard for the cluster (typically the same value as ingress.dnsWildcard) |
+| httproute.enabled | bool | `false` | Enable HTTPRoute (Gateway API) resource |
+| httproute.hostnames | list | `["edpDefault"]` | Hostnames for the route. 'edpDefault' renders <fullname>-<namespace>.<dnsWildcard> |
+| httproute.matches | list | `[{"path":{"type":"PathPrefix","value":"/"}}]` | Path matches for the route rule |
+| httproute.parentRefs | list | `[{"name":"main-gateway","namespace":"envoy-gateway-system"}]` | Parent Gateways the route attaches to (name + namespace of the Envoy Gateway) |
 | image | object | `{"pullPolicy":"IfNotPresent","repository":"epamedp/krci-portal","tag":""}` | Image configuration |
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | image.repository | string | `"epamedp/krci-portal"` | Image repository |
