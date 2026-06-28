@@ -1,6 +1,4 @@
-# CLAUDE.md
-
-## Project
+# krci-portal
 
 KubeRocketCI Portal — monorepo for a Kubernetes CI/CD platform UI.
 
@@ -8,7 +6,7 @@ KubeRocketCI Portal — monorepo for a Kubernetes CI/CD platform UI.
 
 ```
 apps/client    — React 19 SPA (Vite, Radix UI, Tailwind, TanStack Router/Query/Form)
-apps/server    — Express + tRPC v11 (session: SQLite, auth: OIDC via Keycloak/Azure AD)
+apps/server    — Fastify + tRPC v11 (session: SQLite, auth: OIDC via Keycloak/Azure AD)
 packages/trpc  — tRPC routers, procedures, Kubernetes API clients
 packages/shared — shared types, models, K8s resource interfaces
 ```
