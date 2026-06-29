@@ -33,7 +33,7 @@ const gatewayEg: NetGateway = {
       protocol: "HTTP",
       port: 80,
       hostname: undefined,
-      tlsSecret: undefined,
+      tlsCertificateRef: undefined,
       attachedRoutes: 1,
       conditions: [
         { type: "Accepted", status: "True", reason: "Accepted", observedGeneration: 1 },
@@ -46,7 +46,7 @@ const gatewayEg: NetGateway = {
       protocol: "HTTPS",
       port: 443,
       hostname: "*.example.com",
-      tlsSecret: "example-tls",
+      tlsCertificateRef: { name: "example-tls" },
       attachedRoutes: 1,
       conditions: [
         { type: "Accepted", status: "True", reason: "Accepted", observedGeneration: 1 },

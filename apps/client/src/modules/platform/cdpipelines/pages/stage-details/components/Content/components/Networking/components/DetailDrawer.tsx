@@ -110,7 +110,9 @@ export function DetailDrawer({ resource, gateways, policies, onClose }: DetailDr
                       <div className="mb-1 font-medium">
                         {l.name} — {l.protocol}:{l.port}
                         {l.hostname ? ` (${l.hostname})` : ""}
-                        {l.tlsSecret ? ` [Secret: ${l.tlsSecret}]` : ""}
+                        {l.tlsCertificateRef
+                          ? ` [Cert ref: ${l.tlsCertificateRef.kind ? `${l.tlsCertificateRef.kind}/` : ""}${l.tlsCertificateRef.name}]`
+                          : ""}
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {l.conditions.map((c) => (

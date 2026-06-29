@@ -54,15 +54,21 @@ export function mapGateway(gw: Gateway, envoyServices: Service[]): NetGateway {
     const statusL = statusListenerByName.get(name) ?? {};
     const rawConds: AnyRecord[] = Array.isArray(statusL["conditions"]) ? statusL["conditions"] : [];
 
-    // TLS secret from spec.listeners[].tls.certificateRefs[0].name
-    const tlsSecret: string | undefined = sl["tls"]?.["certificateRefs"]?.[0]?.["name"];
+    const certRef: AnyRecord | undefined = sl["tls"]?.["certificateRefs"]?.[0];
+    const tlsCertificateRef = certRef
+      ? {
+          kind: certRef["kind"] as string | undefined,
+          namespace: certRef["namespace"] as string | undefined,
+          name: (certRef["name"] as string) ?? "",
+        }
+      : undefined;
 
     return {
       name,
       protocol: sl["protocol"] ?? "",
       port: sl["port"] ?? 0,
       hostname: sl["hostname"],
-      tlsSecret,
+      tlsCertificateRef,
       attachedRoutes: statusL["attachedRoutes"] ?? 0,
       conditions: rawConds.map(toCondition),
     };

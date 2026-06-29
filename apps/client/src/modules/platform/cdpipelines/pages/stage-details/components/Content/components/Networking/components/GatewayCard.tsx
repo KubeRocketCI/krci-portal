@@ -108,9 +108,11 @@ export function GatewayCard({ gateway, policies, onSelect }: GatewayCardProps) {
                     {listener.hostname ?? "*"}
                   </TableCellUI>
                   <TableCellUI className="px-3 py-2 font-mono text-xs">
-                    {listener.tlsSecret ? (
+                    {listener.tlsCertificateRef ? (
                       <Badge variant="outline" className="bg-muted text-xs">
-                        Secret: {listener.tlsSecret}
+                        {listener.tlsCertificateRef.kind
+                          ? `${listener.tlsCertificateRef.kind}/${listener.tlsCertificateRef.name}`
+                          : listener.tlsCertificateRef.name}
                       </Badge>
                     ) : (
                       <span className="text-muted-foreground">—</span>

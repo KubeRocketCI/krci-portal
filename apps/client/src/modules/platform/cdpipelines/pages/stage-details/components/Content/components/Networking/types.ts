@@ -14,7 +14,7 @@ export interface NetListener {
   protocol: string;
   port: number;
   hostname?: string;
-  tlsSecret?: string;
+  tlsCertificateRef?: { kind?: string; namespace?: string; name: string };
   attachedRoutes: number;
   conditions: NetCondition[];
 }
