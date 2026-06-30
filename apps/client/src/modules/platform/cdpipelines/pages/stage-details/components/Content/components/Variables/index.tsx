@@ -11,6 +11,7 @@ import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { useAppForm } from "@/core/components/form";
 import { useStore } from "@tanstack/react-form";
+import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
 
 type Variable = {
   key: string;
@@ -88,7 +89,6 @@ export const Variables = () => {
   const isDirty = useStore(form.store, (state) => state.isDirty);
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
 
-  // Update variables when config map data changes (stable dependency to avoid infinite loop)
   React.useEffect(() => {
     form.reset({ variables: initialVariables });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- configDataSnapshot is stable dependency to avoid infinite loop
@@ -135,7 +135,7 @@ export const Variables = () => {
     form.reset();
   }, [form]);
 
-  const renderContent = React.useCallback(() => {
+  const renderContent = () => {
     if (variables.length || dataEntries?.length) {
       return (
         <div className="flex flex-col gap-4">
@@ -189,6 +189,16 @@ export const Variables = () => {
     }
 
     if (!dataEntries?.length) {
+      // Defer the empty state until the permission query resolves; otherwise the
+      // placeholder "denied" reason flashes before the real result arrives.
+      if (!configMapPermissions.isFetched) {
+        return (
+          <div className="flex justify-center p-4">
+            <LoadingSpinner />
+          </div>
+        );
+      }
+
       if (!configMapPermissions.data.update.allowed) {
         return <EmptyList customText="No variables found." beforeLinkText={configMapPermissions.data.update.reason} />;
       }
@@ -202,19 +212,7 @@ export const Variables = () => {
         />
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- permission fields omitted to avoid unnecessary callback recreation
-  }, [
-    appendNewRow,
-    dataEntries?.length,
-    form,
-    variables,
-    handleDelete,
-    handleKeyChange,
-    handleValueChange,
-    isDirty,
-    onSubmit,
-    handleReset,
-  ]);
+  };
 
   return (
     <Card className="p-6" data-tour="stage-variables">
