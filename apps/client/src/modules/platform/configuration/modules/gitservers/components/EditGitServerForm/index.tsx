@@ -10,9 +10,8 @@ import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
-import { createGitServerSecretName, safeDecode } from "@my-project/shared";
+import { createGitServerSecretName, gitProvider, k8sGitServerConfig, safeDecode } from "@my-project/shared";
 import { showToast } from "@/core/components/Snackbar";
-import { gitProvider } from "@my-project/shared";
 import { Separator } from "@/core/components/ui/separator";
 import type { GitServer } from "@my-project/shared";
 import type { AnyFormApi } from "@tanstack/react-form";
@@ -52,7 +51,11 @@ export const EditGitServerForm: React.FC<{
   const gitServerSecretWatch = useSecretWatchItem({ name: secretName });
   const gitServerSecret = gitServerSecretWatch.query.data;
 
-  const ownerReference = gitServerSecret?.metadata?.ownerReferences?.[0]?.kind;
+  // Ignore the GitServer's own owner reference (added by the operator for GC only); only an
+  // external controller such as an ExternalSecret marks the credentials as read-only here.
+  const ownerReference = gitServerSecret?.metadata?.ownerReferences?.find(
+    (ref) => ref.controller === true && ref.kind !== k8sGitServerConfig.kind
+  )?.kind;
 
   const defaultValues = React.useMemo<Partial<EditGitServerFormValues>>(() => {
     const base: Partial<EditGitServerFormValues> = {
