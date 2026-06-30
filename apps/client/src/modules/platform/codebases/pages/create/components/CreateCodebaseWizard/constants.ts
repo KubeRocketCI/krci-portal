@@ -25,6 +25,8 @@ export type FormPart = ValueOf<typeof FORM_PARTS>;
 
 export const CREATE_FORM_PARTS = {
   [FORM_PARTS.METHOD]: [NAMES.ui_creationMethod, NAMES.ui_creationTemplate, NAMES.type, NAMES.strategy],
+  // ui_gitServerProvider is intentionally omitted: it is a hidden mirror of the selected Git
+  // server's provider (no validator of its own), read only by the other fields' validators.
   [FORM_PARTS.GIT_SETUP]: [
     NAMES.repositoryUrl,
     NAMES.gitServer,

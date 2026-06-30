@@ -1,11 +1,12 @@
 import React from "react";
 import { useStore } from "@tanstack/react-form";
-import { codebaseCreationStrategy, gitProvider } from "@my-project/shared";
+import { codebaseCreationStrategy } from "@my-project/shared";
 import { Separator } from "@/core/components/ui/separator";
 import { useGitServerWatchItem } from "@/k8s/api/groups/KRCI/GitServer";
 import { FolderGit2 } from "lucide-react";
 import { NAMES } from "../../names";
 import { useCreateCodebaseForm } from "../../providers/form/hooks";
+import { isGerritProvider } from "../../utils";
 import {
   RepositoryUrl,
   GitServer,
@@ -35,9 +36,14 @@ const GitUrlPreview: React.FC = () => {
     const owner = ownerFieldValue || "org";
     const repo = repositoryNameFieldValue || "repo";
     const gitUrlPath = gitUrlPathFieldValue || "repo";
-    const isGerrit = gitServerFieldValue === gitProvider.gerrit;
-    return isGerrit ? `${host}/${gitUrlPath}` : `${host}/${owner}/${repo}`;
-  }, [gitServer?.spec?.gitHost, ownerFieldValue, repositoryNameFieldValue, gitServerFieldValue, gitUrlPathFieldValue]);
+    return isGerritProvider(gitServer?.spec?.gitProvider) ? `${host}/${gitUrlPath}` : `${host}/${owner}/${repo}`;
+  }, [
+    gitServer?.spec?.gitHost,
+    gitServer?.spec?.gitProvider,
+    ownerFieldValue,
+    repositoryNameFieldValue,
+    gitUrlPathFieldValue,
+  ]);
 
   return (
     <div className="bg-card col-span-4 space-y-2 rounded-lg border p-3">
@@ -56,8 +62,7 @@ const GitPart: React.FC = () => {
   const isCreateFromTemplate = useStore(form.store, (s) => s.values[NAMES.ui_creationMethod] === "template");
 
   const gitServerWatch = useGitServerWatchItem({ name: gitServerFieldValue });
-  const gitServerProvider = gitServerWatch.data?.spec?.gitProvider;
-  const isGerritOrNoApi = gitServerProvider?.includes(gitProvider.gerrit);
+  const isGerritOrNoApi = isGerritProvider(gitServerWatch.data?.spec?.gitProvider);
 
   return (
     <>

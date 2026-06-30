@@ -32,6 +32,7 @@ export const useDefaultValues = (): DeepPartial<CreateCodebaseFormValues> => {
       [NAMES.ciTool]: ciTool.tekton,
       [NAMES.ui_gitlabCiTemplate]: null,
       [NAMES.gitServer]: firstValidGitServer?.metadata.name || "",
+      [NAMES.ui_gitServerProvider]: firstValidGitServer?.spec?.gitProvider || "",
       [NAMES.deploymentScript]: codebaseDeploymentScript["helm-chart"],
       [NAMES.repositoryUrl]: null,
       [NAMES.ui_creationMethod]: "template",

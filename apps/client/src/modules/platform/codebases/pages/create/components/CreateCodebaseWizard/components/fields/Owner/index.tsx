@@ -1,22 +1,17 @@
 import React from "react";
 import { useStore } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
-import { gitProvider } from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { useGitServerWatchItem } from "@/k8s/api/groups/KRCI/GitServer";
 import { useCreateCodebaseForm } from "../../../providers/form/hooks";
 import { NAMES } from "../../../names";
+import { isGerritProvider } from "../../../utils";
 
 export const Owner: React.FC = () => {
   const form = useCreateCodebaseForm();
   const trpc = useTRPCClient();
   const gitServerFieldValue = useStore(form.store, (s) => s.values[NAMES.gitServer]);
-
-  const gitServerWatch = useGitServerWatchItem({ name: gitServerFieldValue });
-  const gitServerProvider = gitServerWatch.data?.spec?.gitProvider;
-  const isGerrit = gitServerProvider?.includes(gitProvider.gerrit);
 
   const { clusterName, defaultNamespace } = useClusterStore(
     useShallow((s) => ({ clusterName: s.clusterName, defaultNamespace: s.defaultNamespace }))
@@ -44,8 +39,8 @@ export const Owner: React.FC = () => {
     <form.AppField
       name={NAMES.ui_repositoryOwner}
       validators={{
-        onChange: ({ value }) => {
-          // Only validate if git server is NOT Gerrit
+        onChange: ({ value, fieldApi }) => {
+          const isGerrit = isGerritProvider(fieldApi.form.getFieldValue(NAMES.ui_gitServerProvider));
           if (isGerrit) {
             return undefined;
           }

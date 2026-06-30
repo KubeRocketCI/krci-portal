@@ -2,8 +2,9 @@ import React from "react";
 import { useStore } from "@tanstack/react-form";
 import { NAMES } from "../../names";
 import { useCreateCodebaseForm } from "../../providers/form/hooks";
+import { isGerritProvider } from "../../utils";
 import { Card } from "@/core/components/ui/card";
-import { ciTool as ciToolValues, codebaseVersioning, gitProvider, isDefaultGitlabCiTemplate } from "@my-project/shared";
+import { ciTool as ciToolValues, codebaseVersioning, isDefaultGitlabCiTemplate } from "@my-project/shared";
 import { InfoColumns } from "@/core/components/InfoColumns";
 import { GridItem } from "@/core/components/InfoColumns/types";
 import { ScrollCopyText } from "@/core/components/ScrollCopyText";
@@ -119,7 +120,7 @@ export const Review: React.FC = () => {
     const owner = repositoryOwner || "org";
     const repo = repositoryName || "repo";
     const gitUrlPathValue = gitUrlPath || "repo";
-    const isGerrit = gitServerProvider?.includes(gitProvider.gerrit);
+    const isGerrit = isGerritProvider(gitServerProvider);
 
     return isGerrit ? `${host}/${gitUrlPathValue}` : `${host}/${owner}/${repo}`;
   }, [gitServerData?.spec?.gitHost, repositoryOwner, repositoryName, gitServerProvider, gitUrlPath, repositoryUrl]);
