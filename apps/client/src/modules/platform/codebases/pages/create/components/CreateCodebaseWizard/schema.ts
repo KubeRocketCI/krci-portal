@@ -1,11 +1,7 @@
-import {
-  codebaseCreationStrategy,
-  codebaseType,
-  createCodebaseDraftInputSchema,
-  gitProvider,
-} from "@my-project/shared";
+import { codebaseCreationStrategy, codebaseType, createCodebaseDraftInputSchema } from "@my-project/shared";
 import z from "zod";
 import { validationRules } from "@/core/constants/validation";
+import { isGerritProvider } from "./utils";
 
 // ============================================================================
 // UTILITY FUNCTIONS
@@ -20,8 +16,6 @@ const isApplication = (type: string | null | undefined): boolean => type === cod
 const isAutotest = (type: string | null | undefined): boolean => type === codebaseType.autotest;
 
 const isCloneStrategy = (strategy: string | null | undefined): boolean => strategy === codebaseCreationStrategy.clone;
-
-const isGerrit = (gitServer: string | null | undefined): boolean => gitServer === gitProvider.gerrit;
 
 // ============================================================================
 // EXTENDED SCHEMAS (from single source of truth)
@@ -63,6 +57,10 @@ const langSchema = createCodebaseDraftInputSchema.shape.lang.min(1, "Select code
 const uiOnlyFields = {
   ui_creationMethod: z.string().nullable().optional(),
   ui_creationTemplate: z.string().nullable().optional(),
+  // Provider of the currently selected Git server, mirrored into form state so field
+  // validators (and the submit-time schema) can read it synchronously at validation time
+  // rather than from a render-captured closure (see utils.ts/isGerritProvider).
+  ui_gitServerProvider: z.string().nullable().optional(),
   ui_repositoryOwner: z.string().optional(),
   ui_repositoryName: z.string().optional(),
   ui_hasCodebaseAuth: z.boolean(),
@@ -229,7 +227,7 @@ const validateGitSetupStep = (data: FormData, ctx: z.RefinementCtx) => {
   if (!data.gitServer) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["gitServer"], message: "Select an existing Git server" });
   }
-  if (isGerrit(data.gitServer)) {
+  if (isGerritProvider(data.ui_gitServerProvider)) {
     validateGerritGitUrlPath(data, ctx);
   } else {
     validateNonGerritRepository(data, ctx);

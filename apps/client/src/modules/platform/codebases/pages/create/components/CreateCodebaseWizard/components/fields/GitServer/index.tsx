@@ -30,6 +30,14 @@ export const GitServer: React.FC = () => {
       validators={{
         onChange: ({ value }) => (!value ? "Select an existing Git server" : undefined),
       }}
+      listeners={{
+        // Mirror the selected server's provider into form state so dependent field
+        // validators can read it at validation time (see utils.ts/isGerritProvider).
+        onChange: ({ value }) => {
+          const provider = gitServers.find((gitServer) => gitServer.metadata.name === value)?.spec?.gitProvider;
+          form.setFieldValue(NAMES.ui_gitServerProvider, provider ?? "", { dontUpdateMeta: true });
+        },
+      }}
     >
       {(field) => (
         <field.FormSelect

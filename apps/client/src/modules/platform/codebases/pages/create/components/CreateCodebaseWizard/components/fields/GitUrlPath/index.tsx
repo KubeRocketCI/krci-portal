@@ -1,24 +1,17 @@
 import React from "react";
-import { useStore } from "@tanstack/react-form";
-import { gitProvider } from "@my-project/shared";
-import { useGitServerWatchItem } from "@/k8s/api/groups/KRCI/GitServer";
 import { useCreateCodebaseForm } from "../../../providers/form/hooks";
 import { NAMES } from "../../../names";
+import { isGerritProvider } from "../../../utils";
 
 export const GitUrlPath: React.FC = () => {
   const form = useCreateCodebaseForm();
-  const gitServerFieldValue = useStore(form.store, (s) => s.values[NAMES.gitServer]);
-
-  const gitServerWatch = useGitServerWatchItem({ name: gitServerFieldValue });
-  const gitServerProvider = gitServerWatch.data?.spec?.gitProvider;
-  const isGerrit = gitServerProvider?.includes(gitProvider.gerrit);
 
   return (
     <form.AppField
       name={NAMES.gitUrlPath}
       validators={{
-        onChange: ({ value }) => {
-          // Only validate if git server is Gerrit
+        onChange: ({ value, fieldApi }) => {
+          const isGerrit = isGerritProvider(fieldApi.form.getFieldValue(NAMES.ui_gitServerProvider));
           if (!isGerrit) {
             return undefined;
           }
