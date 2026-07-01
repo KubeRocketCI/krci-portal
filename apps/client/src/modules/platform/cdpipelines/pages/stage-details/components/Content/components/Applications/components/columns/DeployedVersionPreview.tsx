@@ -1,13 +1,9 @@
-import {
-  CODEBASE_COMMON_BUILD_TOOLS,
-  CODEBASE_COMMON_FRAMEWORKS,
-  CODEBASE_COMMON_LANGUAGES,
-} from "@/k8s/api/groups/KRCI/Codebase/configs/mappings";
 import { quickLinkUiNames } from "@/k8s/api/groups/KRCI/QuickLink/constants";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { useQuickLinksUrlListWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
+import { getAppDeployedVersion } from "@/modules/platform/cdpipelines/pages/stage-details/utils/getAppDeployedVersion";
 import { Tooltip } from "@/core/components/ui/tooltip";
-import { Application, applicationLabels, Codebase, getDeployedVersion, systemQuickLink } from "@my-project/shared";
+import { Application, applicationLabels, Codebase, systemQuickLink } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import { CircleCheck, Fingerprint, SquareArrowOutUpRight } from "lucide-react";
 import React from "react";
@@ -58,20 +54,13 @@ export const DeployedVersionPreviewColumn = ({
   appCodebase: Codebase;
   application: Application;
 }) => {
-  const { lang, framework, buildTool } = appCodebase.spec;
-
   const quickLinksUrlListWatch = useQuickLinksUrlListWatch();
 
   const quickLinkURLs = quickLinksUrlListWatch.data?.quickLinkURLs;
 
-  const isHelm =
-    lang === CODEBASE_COMMON_LANGUAGES.HELM &&
-    framework === CODEBASE_COMMON_FRAMEWORKS.HELM &&
-    buildTool === CODEBASE_COMMON_BUILD_TOOLS.HELM;
+  const withValuesOverride = application?.spec ? Object.hasOwn(application.spec, "sources") : false;
 
-  const withValuesOverride = application ? Object.hasOwn(application?.spec, "sources") : false;
-
-  const deployedVersion = getDeployedVersion(withValuesOverride, isHelm, application);
+  const deployedVersion = getAppDeployedVersion(appCodebase, application);
 
   const deployedImage = (() => {
     const images: string[] = application?.status?.summary?.images || [];
