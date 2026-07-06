@@ -42,6 +42,8 @@ import { useShallow } from "zustand/react/shallow";
 import { PipelineRunProvider } from "./providers/PipelineRun/provider";
 import { usePipelineRunContext } from "./providers/PipelineRun/hooks";
 import { StopPipelineRunButton } from "./components/StopPipelineRunButton";
+import { TriggeredByField } from "./components/TriggeredByField";
+import { useTriggeredBy } from "./hooks/useTriggeredBy";
 
 /**
  * Look up an annotation from resultAnnotations JSON first, then fall back to raw metadata annotations.
@@ -72,6 +74,10 @@ function HeaderMetadata() {
       enabled: !!codebaseBranchMetadataName && unifiedData.source === "live",
     },
   });
+
+  // "Triggered By" — the krci-audit CREATE actor, resolved by namespace/name (correct for both
+  // live and Tekton Results history runs). Independent of the git "Author" annotation above.
+  const triggeredBy = useTriggeredBy(params.namespace, params.name, unifiedData.isReady && !!pipelineRun);
 
   if (!unifiedData.isReady || !pipelineRun) {
     return null;
@@ -210,6 +216,8 @@ function HeaderMetadata() {
             </div>
           );
         })()}
+
+        <TriggeredByField triggeredBy={triggeredBy} />
 
         {startedAt && (
           <div className="flex items-center gap-2">

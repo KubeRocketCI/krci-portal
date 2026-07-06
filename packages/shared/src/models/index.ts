@@ -6,3 +6,4 @@ export * from "./prometheus/index.js";
 export * from "./sonarqube/index.js";
 export * from "./user/index.js";
 export * from "./tektonResults/index.js";
+export * from "./krciAudit/index.js";
