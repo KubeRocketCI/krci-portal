@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, type ReactNode } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
   Activity,
   BookOpen,
   FileText,
+  TvMinimalPlay,
   GitBranch,
   PlayCircle,
   Rocket,
@@ -22,6 +23,7 @@ import {
   Loader2,
   TrendingUp,
   XCircle,
+  type LucideIcon,
 } from "lucide-react";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
@@ -35,6 +37,7 @@ import { PATH_CONFIG_QUICKLINKS_FULL } from "@/modules/platform/configuration/mo
 import { PATH_CONFIG_GITSERVERS_FULL } from "@/modules/platform/configuration/modules/gitservers/route";
 import { PATH_PIPELINES_FULL } from "@/modules/platform/tekton/pages/pipeline-list/route";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
+import { PLATFORM_YOUTUBE_CHANNEL_URL } from "@/k8s/constants/external-links";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import NamespacesDialog from "@/core/components/Namespaces";
 import KubeConfigPreviewDialog from "@/core/components/KubeConfigPreview";
@@ -47,6 +50,19 @@ import { LOCAL_STORAGE_SERVICE } from "@/core/services/local-storage";
 import { LS_KEY_HOME_DISMISSED_SECTIONS } from "@/core/services/local-storage/keys";
 
 type DismissibleSection = "needHelp" | "gettingStarted";
+
+type GettingStartedItem = { title: string; description: string; icon: LucideIcon } & (
+  | { to: string; params: { clusterName: string; namespace: string } }
+  | { href: string }
+);
+
+function ExternalLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link to={href} target="_blank" rel="noopener noreferrer">
+      {children}
+    </Link>
+  );
+}
 
 function useDismissibleSections() {
   const [dismissed, setDismissed] = useState<Set<DismissibleSection>>(() => {
@@ -235,7 +251,7 @@ export default function HomePage() {
     },
   ];
 
-  const gettingStarted = [
+  const gettingStarted: GettingStartedItem[] = [
     {
       title: "Import Your First Project",
       description: "Connect to Git and import existing codebases",
@@ -258,11 +274,10 @@ export default function HomePage() {
       params: clusterParams,
     },
     {
-      title: "Explore Documentation",
-      description: "Learn about platform features and APIs",
-      icon: BookOpen,
-      to: PATH_OVERVIEW_FULL,
-      params: clusterParams,
+      title: "Explore Videos",
+      description: "Step-by-step tutorials on YouTube",
+      icon: TvMinimalPlay,
+      href: PLATFORM_YOUTUBE_CHANNEL_URL,
     },
   ];
 
@@ -353,9 +368,9 @@ export default function HomePage() {
               </div>
             </div>
             <div className="mr-10 flex items-center gap-2">
-              <Link to={EDP_USER_GUIDE.OVERVIEW.url} target="_blank" rel="noopener noreferrer">
+              <ExternalLink href={EDP_USER_GUIDE.OVERVIEW.url}>
                 <Button variant="outline">Documentation</Button>
-              </Link>
+              </ExternalLink>
               <Link to={PATH_CONFIG_QUICKLINKS_FULL} params={clusterParams}>
                 <Button>Configuration</Button>
               </Link>
@@ -381,17 +396,29 @@ export default function HomePage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {gettingStarted.map((item, idx) => {
               const Icon = item.icon;
+              const content = (
+                <div className="group flex cursor-pointer items-start gap-3 rounded-lg p-4 hover:bg-slate-50 dark:hover:bg-slate-800">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 group-hover:bg-blue-100 dark:bg-blue-900/20 dark:group-hover:bg-blue-900/40">
+                    <Icon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="mb-1 text-sm text-slate-900 dark:text-slate-100">{item.title}</h4>
+                    <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">{item.description}</p>
+                  </div>
+                </div>
+              );
+
+              if ("href" in item) {
+                return (
+                  <ExternalLink key={idx} href={item.href}>
+                    {content}
+                  </ExternalLink>
+                );
+              }
+
               return (
                 <Link key={idx} to={item.to} params={item.params}>
-                  <div className="group flex cursor-pointer items-start gap-3 rounded-lg p-4 hover:bg-slate-50 dark:hover:bg-slate-800">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 group-hover:bg-blue-100 dark:bg-blue-900/20 dark:group-hover:bg-blue-900/40">
-                      <Icon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h4 className="mb-1 text-sm text-slate-900 dark:text-slate-100">{item.title}</h4>
-                      <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">{item.description}</p>
-                    </div>
-                  </div>
+                  {content}
                 </Link>
               );
             })}
