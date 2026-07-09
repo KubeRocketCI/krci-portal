@@ -74,7 +74,7 @@ describe("protected procedure", () => {
     resetBearerCache();
   });
 
-  // Existing tests — cookie session path
+  // Cookie session path
 
   it("should return true if session user is found", async () => {
     const caller = createTestRouterCaller(mockContext);

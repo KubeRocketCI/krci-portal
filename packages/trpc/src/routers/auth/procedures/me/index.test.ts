@@ -18,13 +18,8 @@ describe("authMeProcedure", () => {
   beforeEach(() => {
     mockSession.user = structuredClone(originalMockSessionUser);
 
-    // Create mocked context
     mockContext = createMockedContext();
-
-    // Reset mocks
     vi.clearAllMocks();
-
-    // Create caller with mocked context
     caller = createCaller(mockContext);
   });
 
