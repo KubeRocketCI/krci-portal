@@ -21,6 +21,7 @@ export const mockSession = {
       email: "john_doe@world.com",
       picture: "test-picture",
     },
+    authSource: "oidc" as const,
     secret: {
       accessToken: "mockAccessToken",
       accessTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours from now

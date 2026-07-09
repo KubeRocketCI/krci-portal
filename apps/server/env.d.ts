@@ -30,6 +30,12 @@ declare global {
 
       GITFUSION_URL: string;
 
+      KRCI_AUDIT_URL: string;
+
+      // Comma-separated Keycloak group name(s) bound to the "administrator" role
+      // (see packages/shared/src/models/role). Optional; defaults to "administrator".
+      PORTAL_ADMIN_GROUPS?: string;
+
       DEPLOY_CLIENT_DIST_DIR?: string;
     }
   }

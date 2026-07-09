@@ -1,5 +1,5 @@
 import { publicProcedure } from "../../../../procedures/public/index.js";
-import { loginWithTokenInputSchema, loginWithTokenOutputSchema } from "@my-project/shared";
+import { loginWithTokenInputSchema, loginWithTokenOutputSchema, resolvePortalRoles } from "@my-project/shared";
 import { OIDCClient } from "../../../../clients/oidc/index.js";
 
 export const authLoginWithTokenProcedure = publicProcedure
@@ -16,6 +16,7 @@ export const authLoginWithTokenProcedure = publicProcedure
 
     ctx.session.user = {
       data: userInfo,
+      authSource: "oidc",
       secret: tokenInfo,
     };
 
@@ -26,6 +27,7 @@ export const authLoginWithTokenProcedure = publicProcedure
       userInfo: {
         ...userInfo,
         issuerUrl: ctx.oidcConfig.issuerURL || undefined,
+        roles: resolvePortalRoles("oidc", userInfo.groups),
       },
       clientSearch,
     };

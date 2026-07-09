@@ -13,6 +13,7 @@ import { routeProjectDetails } from "../../modules/platform/codebases/pages/deta
 import {
   authRoute,
   contentLayoutRoute,
+  adminLayoutRoute,
   indexRoute,
   routeCluster,
   routeCICD,
@@ -21,6 +22,8 @@ import {
   routeConfiguration,
   routeK8sMode,
 } from "./routes";
+import { routeForbidden } from "../../modules/administration/pages/forbidden/route";
+import { routeAdminAuditEvents } from "../../modules/administration/pages/audit-events/route";
 import { routeK8sOverview } from "@/modules/k8s/pages/overview/route";
 import { routeK8sList } from "@/modules/k8s/pages/list/route";
 import { routeK8sDetailNamespaced } from "@/modules/k8s/pages/detail-namespaced/route";
@@ -47,6 +50,7 @@ contentLayoutRoute.update({
 export {
   authRoute,
   contentLayoutRoute,
+  adminLayoutRoute,
   indexRoute,
   routeCluster,
   routeCICD,
@@ -124,6 +128,8 @@ const routeTree = rootRoute.addChildren([
     indexRoute,
     routeHome,
     routeSettingsTours,
+    routeForbidden,
+    adminLayoutRoute.addChildren([routeAdminAuditEvents]),
     routeCluster.addChildren([
       routeOverviewDetails,
       routeProjectList,

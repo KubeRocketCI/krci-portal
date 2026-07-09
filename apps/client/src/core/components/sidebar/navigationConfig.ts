@@ -25,7 +25,7 @@ import {
   Webhook,
   Zap,
 } from "lucide-react";
-import { routeCICD, routeConfiguration, routeObservability, routeSecurity } from "@/core/router";
+import { adminLayoutRoute, routeCICD, routeConfiguration, routeObservability, routeSecurity } from "@/core/router";
 import { PATH_OVERVIEW_FULL } from "@/modules/platform/overview/pages/details/route";
 import { PATH_PIPELINE_METRICS_FULL } from "@/modules/platform/observability/pages/pipeline-metrics/route";
 import { PATH_SCA_FULL } from "@/modules/platform/security/pages/sca/route";
@@ -65,15 +65,16 @@ import { PATH_CONFIG_DEPENDENCY_TRACK_FULL } from "@/modules/platform/configurat
 import { PATH_CONFIG_SONAR_FULL } from "@/modules/platform/configuration/modules/sonar/route";
 import { PATH_CONFIG_GITSERVERS_FULL } from "@/modules/platform/configuration/modules/gitservers/route";
 import { PATH_CONFIG_JIRA_FULL } from "@/modules/platform/configuration/modules/jira/route";
+import { PATH_ADMIN_AUDIT_EVENTS_FULL } from "@/modules/administration/pages/audit-events/route";
 import type { NavItem } from "./types";
 
-export function createNavigationConfig(clusterName: string, namespace: string): NavItem[] {
+export function createNavigationConfig(clusterName: string, namespace: string, isAdmin = false): NavItem[] {
   const clusterDefaultParams = {
     clusterName,
     namespace,
   };
 
-  return [
+  const navItems: NavItem[] = [
     {
       title: "Overview",
       icon: PanelsTopLeft,
@@ -473,5 +474,29 @@ export function createNavigationConfig(clusterName: string, namespace: string): 
         },
       ],
     },
-  ] as const satisfies NavItem[];
+  ];
+
+  // Visibility only — the server-side procedures are the authoritative gate. Extensible
+  // group: add more admin pages as children here (and under the `_admin` route).
+  if (isAdmin) {
+    navItems.push({
+      title: "Administration",
+      icon: ShieldCheck,
+      defaultRoute: {
+        to: PATH_ADMIN_AUDIT_EVENTS_FULL,
+      },
+      groupRoute: adminLayoutRoute,
+      children: [
+        {
+          title: "Audit Events",
+          icon: FileText,
+          route: {
+            to: PATH_ADMIN_AUDIT_EVENTS_FULL,
+          },
+        },
+      ],
+    });
+  }
+
+  return navItems;
 }

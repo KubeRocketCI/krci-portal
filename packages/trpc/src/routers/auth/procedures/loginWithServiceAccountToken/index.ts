@@ -1,5 +1,5 @@
 import { publicProcedure } from "../../../../procedures/public/index.js";
-import { loginWithSATokenInputSchema, loginWithSATokenOutputSchema } from "@my-project/shared";
+import { loginWithSATokenInputSchema, loginWithSATokenOutputSchema, resolvePortalRoles } from "@my-project/shared";
 import { authenticateServiceAccountToken } from "../../../../utils/authenticateServiceAccountToken/index.js";
 
 export const authLoginWithServiceAccountTokenProcedure = publicProcedure
@@ -12,13 +12,18 @@ export const authLoginWithServiceAccountTokenProcedure = publicProcedure
     // the session identity + token info. Fully OIDC-independent.
     const { data, secret } = await authenticateServiceAccountToken(token);
 
-    ctx.session.user = { data, secret };
+    ctx.session.user = { data, authSource: "serviceaccount", secret };
 
     const clientSearch = redirectSearchParam ? `?redirect=${redirectSearchParam}` : "";
 
     return {
       success: true,
-      userInfo: data,
+      userInfo: {
+        ...data,
+        // SA sessions authenticate but never carry portal roles — authorization for
+        // them is the cluster's job (K8s RBAC). Always [] regardless of K8s groups.
+        roles: resolvePortalRoles("serviceaccount", data.groups),
+      },
       clientSearch,
     };
   });

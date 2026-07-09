@@ -49,8 +49,24 @@ describe("authLoginWithServiceAccountTokenProcedure", () => {
       name: "edp-admin",
       default_namespace: "edp",
     });
+    expect(result.userInfo?.roles).toEqual([]);
     expect(result.clientSearch).toBe("");
-    expect(mockContext.session.user).toEqual({ data, secret });
+    expect(mockContext.session.user).toEqual({ data, authSource: "serviceaccount", secret });
+  });
+
+  it("assigns no portal roles even when the SA's Kubernetes groups match an admin binding", async () => {
+    // Decoupling guarantee: SA identities authenticate but are never privileged in the
+    // portal, so a K8s group named like an admin group must NOT grant a role.
+    mockAuthSA.mockResolvedValueOnce({
+      data: { ...data, groups: ["administrator", "system:masters"] },
+      secret,
+    });
+    const caller = createCaller(mockContext);
+
+    const result = await caller.auth.loginWithServiceAccountToken({ token: "sa-token" });
+
+    expect(result.userInfo?.roles).toEqual([]);
+    expect(mockContext.session.user?.authSource).toBe("serviceaccount");
   });
 
   it("includes redirect in clientSearch when redirectSearchParam is provided", async () => {

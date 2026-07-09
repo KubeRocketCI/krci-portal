@@ -1,6 +1,7 @@
 import { createRoute, redirect } from "@tanstack/react-router";
 import { rootRoute } from "./_root";
 import { useClusterStore } from "@/k8s/store";
+import { requireRole } from "@/core/auth/requireRole";
 
 // Route path constants
 export const PATH_AUTH = "auth" as const;
@@ -18,6 +19,14 @@ export const authRoute = createRoute({
 export const contentLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: "_layout",
+});
+
+// Pathless layout route: one guard gates the whole Administration section; nested
+// admin pages inherit it (parent-first: auth → role).
+export const adminLayoutRoute = createRoute({
+  getParentRoute: () => contentLayoutRoute,
+  id: "_admin",
+  beforeLoad: requireRole("administrator"),
 });
 
 // Index route to redirect "/" to "/home"

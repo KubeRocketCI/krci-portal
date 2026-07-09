@@ -1,6 +1,16 @@
 import { TRPCError } from "@trpc/server";
 import type { TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc";
-import { KrciAuditInitiator, krciAuditInitiatorSchema, stripTrailingSlash } from "@my-project/shared";
+import {
+  KrciAuditEventsResponse,
+  KrciAuditEventsQuery,
+  KrciAuditFacetField,
+  KrciAuditFacetsResponse,
+  KrciAuditInitiator,
+  krciAuditEventsResponseSchema,
+  krciAuditFacetsResponseSchema,
+  krciAuditInitiatorSchema,
+  stripTrailingSlash,
+} from "@my-project/shared";
 
 const DEFAULT_TIMEOUT_MS = 10_000; // single-object lookup, keep it snappy
 
@@ -146,6 +156,33 @@ export class KrciAuditClient {
 
     return krciAuditInitiatorSchema.parse(raw);
   }
+
+  async getAuditEvents(query: KrciAuditEventsQuery): Promise<KrciAuditEventsResponse> {
+    const endpoint = this.buildEndpoint("/api/v1/audit/events", toQueryParamStrings(query));
+    const raw = await this.fetchJson<unknown>(endpoint);
+
+    return krciAuditEventsResponseSchema.parse(raw);
+  }
+
+  /**
+   * Fetch the bounded (≤50, see `Facet.truncated`) set of distinct values krci-audit has
+   * observed for each requested field, so the portal can offer a dropdown instead of free text.
+   */
+  async getFacets(fields: KrciAuditFacetField[]): Promise<KrciAuditFacetsResponse> {
+    const endpoint = this.buildEndpoint("/api/v1/audit/facets", { fields: fields.join(",") });
+    const raw = await this.fetchJson<unknown>(endpoint);
+
+    return krciAuditFacetsResponseSchema.parse(raw);
+  }
 }
 
 export type KrciAuditInitiatorQuery = { objectUid: string } | { kind: string; namespace: string; name: string };
+
+function toQueryParamStrings(query: KrciAuditEventsQuery): Record<string, string> {
+  return Object.entries(query).reduce<Record<string, string>>((params, [key, value]) => {
+    if (value !== undefined && value !== null) {
+      params[key] = String(value);
+    }
+    return params;
+  }, {});
+}
