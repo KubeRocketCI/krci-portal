@@ -2,7 +2,7 @@ import { useTRPCClient } from "@/core/providers/trpc";
 import { sortByName } from "@/core/utils/sortByName";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type { DeploymentMetricsOutput, MetricRange } from "@my-project/shared";
-import { REFRESH_INTERVAL_MS } from "../constants";
+import { REFRESH_INTERVAL_MS } from "@/core/components/metrics/constants";
 
 export interface UseDeploymentMetricsParams {
   clusterName: string;

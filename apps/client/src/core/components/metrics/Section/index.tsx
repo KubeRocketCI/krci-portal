@@ -1,5 +1,5 @@
 import { cn } from "@/core/utils/classname";
-import type { SectionProps } from "../../types";
+import type { SectionProps } from "../types";
 
 export function Section({ title, children, grid = false }: SectionProps) {
   return (

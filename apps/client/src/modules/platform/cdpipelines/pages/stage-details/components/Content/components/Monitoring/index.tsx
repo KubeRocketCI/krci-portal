@@ -10,15 +10,15 @@ import { Card } from "@/core/components/ui/card";
 import { useStageWatch, usePipelineAppCodebasesWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import { Toolbar } from "./components/Toolbar";
-import { MetricChart } from "./components/MetricChart";
+import { MetricChart } from "@/core/components/metrics/MetricChart";
 import { RemoteClusterNotice } from "./components/RemoteClusterNotice";
-import { Section } from "./components/Section";
+import { Section } from "@/core/components/metrics/Section";
 import { PodPhasePanel } from "./components/PodPhasePanel";
-import { StatPanel } from "./components/StatPanel";
+import { StatPanel } from "@/core/components/metrics/StatPanel";
 import { useDeploymentMetrics } from "./hooks/useDeploymentMetrics";
 import { useMonitoringSearch } from "./hooks/useMonitoringSearch";
-import { MetricsCursorProvider } from "./hooks/MetricsCursorProvider";
-import type { MetricUnit } from "./types";
+import { MetricsCursorProvider } from "@/core/components/metrics/hooks/MetricsCursorProvider";
+import type { MetricUnit } from "@/core/components/metrics/types";
 import { computeUtilization } from "./utils";
 
 type ChartDef = {
@@ -175,6 +175,7 @@ export function Monitoring() {
       error={error}
       step={step}
       domain={domain}
+      tourPrefix="stage-monitoring"
     />
   );
   const renderStat = (def: UtilisationDef) => (
@@ -184,6 +185,7 @@ export function Monitoring() {
       value={data ? computeUtilization(def.usage(data), def.capacity(data), selectedAppsSet) : null}
       isLoading={isLoading}
       error={error}
+      tourPrefix="stage-monitoring"
     />
   );
 

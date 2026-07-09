@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { StatPanel } from "./index";
 
 const meta = {
-  title: "CDPipelines/StageDetails/Monitoring/StatPanel",
+  title: "Core/Metrics/StatPanel",
   component: StatPanel,
   parameters: { layout: "padded" },
   tags: ["autodocs"],

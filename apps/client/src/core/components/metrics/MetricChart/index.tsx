@@ -10,12 +10,12 @@ import {
   ReferenceLine,
   ResponsiveContainer,
 } from "recharts";
-import type { MetricChartProps } from "../../types";
+import type { MetricChartProps } from "../types";
 import { Card } from "@/core/components/ui/card";
 import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
-import { CHART_PALETTE, CHART_TEXT } from "../../constants";
-import { useMetricsCursor } from "../../hooks/useMetricsCursor";
-import { chartSlug, formatChartTimestamp, formatValue } from "../../utils";
+import { CHART_PALETTE, CHART_TEXT } from "../constants";
+import { useMetricsCursor } from "../hooks/useMetricsCursor";
+import { chartSlug, formatChartTimestamp, formatValue } from "../utils";
 
 type FlattenedSeries = {
   key: string; // pod name (chart line dataKey + legend label)
@@ -60,6 +60,7 @@ export const MetricChart = React.memo(function MetricChart({
   selectedApps,
   step,
   domain,
+  tourPrefix = "metrics",
 }: MetricChartProps) {
   const { cursorTs, setCursorTs } = useMetricsCursor();
 
@@ -153,7 +154,7 @@ export const MetricChart = React.memo(function MetricChart({
   );
 
   return (
-    <Card className="p-4" data-tour={`stage-monitoring-${chartSlug(title)}`}>
+    <Card className="p-4" data-tour={`${tourPrefix}-${chartSlug(title)}`}>
       <div className="flex items-baseline justify-between">
         <h4 className="text-foreground text-base font-semibold">{title}</h4>
         <span className="text-muted-foreground text-xs">{unit}</span>

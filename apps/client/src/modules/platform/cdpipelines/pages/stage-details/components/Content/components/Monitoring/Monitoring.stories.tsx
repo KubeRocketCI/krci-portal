@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import * as React from "react";
-import { MetricChart } from "./components/MetricChart";
+import { MetricChart } from "@/core/components/metrics/MetricChart";
 import { Toolbar } from "./components/Toolbar";
-import { Section } from "./components/Section";
+import { Section } from "@/core/components/metrics/Section";
 import { PodPhasePanel } from "./components/PodPhasePanel";
-import { StatPanel } from "./components/StatPanel";
-import { MetricsCursorProvider } from "./hooks/MetricsCursorProvider";
+import { StatPanel } from "@/core/components/metrics/StatPanel";
+import { MetricsCursorProvider } from "@/core/components/metrics/hooks/MetricsCursorProvider";
 import { computeUtilization } from "./utils";
 
 const meta: Meta = {
