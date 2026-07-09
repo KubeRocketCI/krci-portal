@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { MetricChart } from "./index";
 
 const meta = {
-  title: "CDPipelines/StageDetails/Monitoring/MetricChart",
+  title: "Core/Metrics/MetricChart",
   component: MetricChart,
   parameters: { layout: "padded" },
   tags: ["autodocs"],

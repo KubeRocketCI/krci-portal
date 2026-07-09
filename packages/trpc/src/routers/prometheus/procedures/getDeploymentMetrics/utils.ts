@@ -24,6 +24,23 @@ export function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/**
+ * Parse one Prometheus matrix row's `values` into finite numeric points,
+ * dropping empty strings and non-finite samples. Shared by every
+ * matrix-to-series converter so sample-parsing semantics can't drift
+ * between procedures.
+ */
+export function matrixValuesToPoints(values: Array<[number, string]>): MetricSeriesByPod["series"] {
+  const points: MetricSeriesByPod["series"] = [];
+  for (const [t, value] of values) {
+    if (value === "") continue;
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) continue;
+    points.push({ t, v: numeric });
+  }
+  return points;
+}
+
 interface PodLike {
   metadata: { name: string; labels?: Record<string, string> };
 }
@@ -80,7 +97,7 @@ export const RANGE_METRIC_KEYS = [
 
 export type RangeMetricKey = (typeof RANGE_METRIC_KEYS)[number];
 
-function buildRegexAlternation(values: string[]): string {
+export function buildRegexAlternation(values: string[]): string {
   return `^(${values.map(escapeRegex).join("|")})$`;
 }
 
@@ -202,13 +219,7 @@ export function matrixToPodSeriesByApp(matrix: PromQLMatrixResponse, knownApps: 
     if (!podName || !app) continue;
     const podMap = perAppPods.get(app);
     if (!podMap) continue;
-    const points: MetricSeriesByPod["series"] = [];
-    for (const [t, value] of row.values) {
-      if (value === "") continue;
-      const numeric = Number(value);
-      if (!Number.isFinite(numeric)) continue;
-      points.push({ t, v: numeric });
-    }
+    const points = matrixValuesToPoints(row.values);
     // Each PromQL query is `sum by (pod, label_app_kubernetes_io_instance)`,
     // which guarantees one row per (pod, app) tuple. Last-write-wins here
     // is therefore safe; a duplicate would indicate a Prometheus
@@ -247,14 +258,7 @@ export function matrixToPodSeriesByAppFromMap(
     if (!app) continue;
     const podMap = perAppPods.get(app);
     if (!podMap) continue;
-    const points: MetricSeriesByPod["series"] = [];
-    for (const [t, value] of row.values) {
-      if (value === "") continue;
-      const numeric = Number(value);
-      if (!Number.isFinite(numeric)) continue;
-      points.push({ t, v: numeric });
-    }
-    podMap.set(podName, points);
+    podMap.set(podName, matrixValuesToPoints(row.values));
   }
 
   return knownApps.map((app) => {

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { METRIC_RANGE_VALUES, MAX_APPLICATIONS } from "./constants.js";
+import { METRIC_RANGE_VALUES, MAX_APPLICATIONS, MAX_PIPELINE_RUN_PODS } from "./constants.js";
 
 const RFC_1123_LABEL_REGEX = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/;
 const RFC_1123_LABEL_MESSAGE =
@@ -18,6 +18,44 @@ export const deploymentMetricsInputSchema = z
     range: z.enum(METRIC_RANGE_VALUES),
   })
   .strict();
+
+// Pod names are DNS subdomains (labels joined by dots), unlike the
+// single-label namespace/application names above.
+const RFC_1123_SUBDOMAIN_REGEX = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$/;
+
+// Pod names reach PromQL (inside a regex-escaped alternation); the RFC-1123
+// constraint is defence in depth on top of that escaping. The task name is
+// only echoed back for client-side grouping and never enters PromQL.
+export const pipelineRunMetricsInputSchema = z
+  .object({
+    clusterName: z.string().min(1),
+    namespace: z.string().min(1).regex(RFC_1123_LABEL_REGEX, `namespace ${RFC_1123_LABEL_MESSAGE}`),
+    pods: z
+      .array(
+        z
+          .object({
+            podName: z
+              .string()
+              .min(1)
+              .max(253)
+              .regex(RFC_1123_SUBDOMAIN_REGEX, "pod name must be a valid RFC-1123 DNS subdomain"),
+            task: z.string().min(1).max(253),
+          })
+          .strict()
+      )
+      .min(1)
+      .max(MAX_PIPELINE_RUN_PODS),
+    /** Unix seconds. */
+    start: z.number().int().nonnegative(),
+    /** Unix seconds; omitted for in-flight runs (server substitutes "now"). */
+    end: z.number().int().nonnegative().optional(),
+  })
+  .strict()
+  .superRefine((value, ctx) => {
+    if (value.end !== undefined && value.end <= value.start) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "end must be greater than start", path: ["end"] });
+    }
+  });
 
 export const metricSeriesPointSchema = z.object({
   t: z.number().int().nonnegative(), // unix seconds
@@ -74,6 +112,31 @@ export const deploymentMetricsOutputSchema = z.object({
     memoryLimits: z.array(metricSeriesByAppSchema), // bytes
   }),
   range: z.enum(METRIC_RANGE_VALUES),
+  queriedAt: z.number().int().nonnegative(),
+});
+
+export const metricSeriesByStepSchema = z.object({
+  /** Step name with the Tekton `step-` container prefix stripped. */
+  step: z.string(),
+  series: z.array(metricSeriesPointSchema),
+});
+
+export const taskMetricSeriesSchema = z.object({
+  /** Pipeline task name (as supplied by the client). */
+  task: z.string(),
+  pod: z.string(),
+  steps: z.array(metricSeriesByStepSchema),
+});
+
+export const pipelineRunMetricsOutputSchema = z.object({
+  cpu: z.array(taskMetricSeriesSchema), // cores
+  memory: z.array(taskMetricSeriesSchema), // bytes (working set)
+  cpuThrottling: z.array(taskMetricSeriesSchema), // percent (0-100): throttled periods / total periods × 100
+  /** Echo of the effective queried window (unix seconds). */
+  start: z.number().int().nonnegative(),
+  end: z.number().int().nonnegative(),
+  /** Resolution of the series in seconds. */
+  step: z.number().int().positive(),
   queriedAt: z.number().int().nonnegative(),
 });
 

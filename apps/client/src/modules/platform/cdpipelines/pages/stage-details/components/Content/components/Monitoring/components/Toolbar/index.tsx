@@ -4,7 +4,7 @@ import { Switch } from "@/core/components/ui/switch";
 import { Label } from "@/core/components/ui/label";
 import type { ToolbarProps } from "../../types";
 import { RANGE_OPTIONS } from "../../constants";
-import { formatChartTimestamp } from "../../utils";
+import { formatChartTimestamp } from "@/core/components/metrics/utils";
 import { AppMultiSelect } from "../AppMultiSelect";
 
 export function Toolbar({

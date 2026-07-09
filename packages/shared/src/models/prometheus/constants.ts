@@ -19,6 +19,27 @@ export const STEP_BY_RANGE = {
 
 export const MAX_APPLICATIONS = 50;
 
+/** Upper bound on TaskRun pods accepted by getPipelineRunMetrics. */
+export const MAX_PIPELINE_RUN_PODS = 50;
+
+/**
+ * Upper bound on the queried window for getPipelineRunMetrics. Matches the
+ * longest Prometheus retention we target; anything older has no samples
+ * anyway, and an unbounded window would let a client request an arbitrarily
+ * expensive range query.
+ */
+export const MAX_PIPELINE_RUN_WINDOW_SECONDS = 7 * 86_400;
+
+/**
+ * Target datapoint count per series for PipelineRun metrics. The query step
+ * is derived from the run window to stay at or under this, bounding payload
+ * size for long-running pipelines.
+ */
+export const PIPELINE_RUN_METRICS_MAX_POINTS = 300;
+
+/** Allowed query_range steps (seconds) for PipelineRun metrics, ascending. */
+export const PIPELINE_RUN_STEP_CHOICES = [15, 30, 60, 120, 300, 600, 1800, 3600] as const;
+
 export const PROMETHEUS_TIMEOUT_MS = 10_000;
 
 /**

@@ -1,9 +1,10 @@
 import React from "react";
-import { FileText, FileCode, CheckCircle, Network } from "lucide-react";
+import { FileText, FileCode, CheckCircle, Network, Activity } from "lucide-react";
 import { Details } from "../components/Details";
 import { ViewPipelineRun } from "../components/ViewPipelineRun";
 import { Diagram } from "../components/Diagram";
 import { Results } from "../components/Results";
+import { Monitoring } from "../components/Monitoring";
 import { routePipelineRunDetails, RouteSearchTab, routeSearchTabSchema, PATH_PIPELINERUN_DETAILS_FULL } from "../route";
 import { Tab } from "@/core/providers/Tabs/components/Tabs/types";
 import { router } from "@/core/router";
@@ -59,6 +60,13 @@ export function useTabs(): Tab[] {
             <Diagram />
           </div>
         ),
+      },
+      {
+        id: routeSearchTabSchema.enum.monitoring,
+        label: "Monitoring",
+        icon: <Activity className="size-4" />,
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.monitoring),
+        component: <Monitoring />,
       },
     ],
     [handleTabNavigate]
