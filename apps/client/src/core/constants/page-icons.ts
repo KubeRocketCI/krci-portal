@@ -102,6 +102,9 @@ export const PAGE_ICONS = {
   // Configuration - Management Tool
   "config-jira": FileText,
 
+  // Administration
+  "audit-events": ShieldCheck,
+
   // Detail pages (from ENTITY_ICON)
   project: Box,
   deployment: CloudUpload,
@@ -189,6 +192,9 @@ export const PATH_TO_ICON_TYPE: Record<string, PageIconType> = {
 
   // Configuration - Management Tool
   "/c/$clusterName/configuration/jira": "config-jira",
+
+  // Administration
+  "/administration/audit-events": "audit-events",
 };
 
 /**

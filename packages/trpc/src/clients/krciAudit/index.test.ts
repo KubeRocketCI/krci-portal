@@ -133,3 +133,109 @@ describe("KrciAuditClient.getInitiator", () => {
     });
   });
 });
+
+describe("KrciAuditClient.getAuditEvents", () => {
+  const sampleEvent = {
+    eventUid: "event-1",
+    receivedAt: "2026-07-08T00:00:00Z",
+    operation: "CREATE",
+    apiGroup: "tekton.dev",
+    apiVersion: "v1",
+    resource: "pipelineruns",
+    kind: "PipelineRun",
+    namespace: "krci",
+    name: "run-1",
+    username: "kubernetes-admin",
+    dryRun: false,
+  };
+
+  it("requests with filter/pagination params serialized as query strings", async () => {
+    mockFetchOnce({ data: [sampleEvent], pagination: { total: 1, page: 1, perPage: 20 } });
+    const client = new KrciAuditClient({ apiBaseURL: BASE });
+
+    const result = await client.getAuditEvents({ kind: "PipelineRun", namespace: "krci", page: 1, perPage: 20 });
+
+    expect(result.data).toHaveLength(1);
+    expect(result.pagination).toEqual({ total: 1, page: 1, perPage: 20 });
+    expect(String(fetchMock.mock.calls[0][0])).toBe(
+      `${BASE}/api/v1/audit/events?kind=PipelineRun&namespace=krci&page=1&perPage=20`
+    );
+  });
+
+  it("omits undefined filters from the query string", async () => {
+    mockFetchOnce({ data: [], pagination: { total: 0, page: 1, perPage: 20 } });
+    const client = new KrciAuditClient({ apiBaseURL: BASE });
+
+    await client.getAuditEvents({ kind: undefined, actor: "kubernetes-admin" });
+
+    expect(String(fetchMock.mock.calls[0][0])).toBe(`${BASE}/api/v1/audit/events?actor=kubernetes-admin`);
+  });
+
+  it("returns an empty list when there is no match (not an error)", async () => {
+    mockFetchOnce({ data: [], pagination: { total: 0, page: 1, perPage: 20 } });
+    const client = new KrciAuditClient({ apiBaseURL: BASE });
+
+    const result = await client.getAuditEvents({ actor: "no-such-user" });
+
+    expect(result.data).toEqual([]);
+  });
+
+  it("throws when the response shape is invalid (missing required event fields)", async () => {
+    mockFetchOnce({ data: [{ eventUid: "event-1" }], pagination: { total: 1, page: 1, perPage: 20 } });
+    const client = new KrciAuditClient({ apiBaseURL: BASE });
+
+    await expect(client.getAuditEvents({})).rejects.toThrow();
+  });
+
+  it("throws a TRPCError for a 403 response (remapped to FORBIDDEN)", async () => {
+    mockFetchOnce({ code: "forbidden", message: "denied" }, 403);
+    const client = new KrciAuditClient({ apiBaseURL: BASE });
+
+    await expect(client.getAuditEvents({})).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+});
+
+describe("KrciAuditClient.getFacets", () => {
+  it("builds a comma-separated fields query string and parses the response", async () => {
+    mockFetchOnce({
+      namespace: { values: ["default", "krci"], truncated: false },
+      kind: { values: ["PipelineRun"], truncated: false },
+      actor: { values: [], truncated: true },
+    });
+    const client = new KrciAuditClient({ apiBaseURL: BASE });
+
+    const result = await client.getFacets(["namespace", "kind", "actor"]);
+
+    expect(String(fetchMock.mock.calls[0][0])).toBe(`${BASE}/api/v1/audit/facets?fields=namespace%2Ckind%2Cactor`);
+    expect(result).toEqual({
+      namespace: { values: ["default", "krci"], truncated: false },
+      kind: { values: ["PipelineRun"], truncated: false },
+      actor: { values: [], truncated: true },
+    });
+  });
+
+  it("omits fields not requested, mirroring the response krci-audit returns for a subset", async () => {
+    mockFetchOnce({ namespace: { values: ["krci"], truncated: false } });
+    const client = new KrciAuditClient({ apiBaseURL: BASE });
+
+    const result = await client.getFacets(["namespace"]);
+
+    expect(String(fetchMock.mock.calls[0][0])).toBe(`${BASE}/api/v1/audit/facets?fields=namespace`);
+    expect(result).toEqual({ namespace: { values: ["krci"], truncated: false } });
+    expect(result.kind).toBeUndefined();
+  });
+
+  it("throws when the response shape is invalid (missing required `truncated`)", async () => {
+    mockFetchOnce({ namespace: { values: ["krci"] } });
+    const client = new KrciAuditClient({ apiBaseURL: BASE });
+
+    await expect(client.getFacets(["namespace"])).rejects.toThrow();
+  });
+
+  it("throws a TRPCError for a 403 response (remapped to FORBIDDEN)", async () => {
+    mockFetchOnce({ code: "forbidden", message: "denied" }, 403);
+    const client = new KrciAuditClient({ apiBaseURL: BASE });
+
+    await expect(client.getFacets(["namespace", "kind", "actor"])).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+});

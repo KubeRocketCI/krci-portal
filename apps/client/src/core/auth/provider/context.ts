@@ -1,5 +1,6 @@
 import {
   OIDCUser,
+  PortalRole,
   LoginOutput,
   LoginCallbackInput,
   LoginCallbackOutput,
@@ -27,6 +28,10 @@ export type LoginWithTokenMutationInput = LoginWithTokenInput;
 
 export type LoginWithSATokenMutationInput = LoginWithSATokenInput;
 
+// `auth.me` extends `OIDCUser` with the server-computed `roles` verdict. Client role
+// checks (`useHasRole`, `requireRole`) read `roles` directly — they never derive them.
+export type AuthUser = OIDCUser & { roles?: PortalRole[] };
+
 export interface AuthContextValue {
   loginMutation: UseMutationResult<AuthLoginOutput, Error, LoginMutationInput> | null;
   loginCallbackMutation: UseMutationResult<AuthCallbackLoginOutput, Error, AuthCallbackLoginInput> | null;
@@ -37,7 +42,7 @@ export interface AuthContextValue {
     LoginWithSATokenMutationInput
   > | null;
   logoutMutation: UseMutationResult<AuthLogoutOutput, Error, void> | null;
-  user: OIDCUser | undefined;
+  user: AuthUser | undefined;
   isLoading: boolean;
   isAuthenticated: boolean;
   authInProgress: boolean;

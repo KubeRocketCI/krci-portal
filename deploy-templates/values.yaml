@@ -47,6 +47,15 @@ configEnv:
   DEPENDENCY_TRACK_URL: https://deptrack.example.com
   # DEPENDENCY_TRACK_WEB_URL: https://deptrack-public.example.com
   GITFUSION_URL: http://gitfusion.krci:8080
+  # KRCI_AUDIT_URL is used by the backend to read the audit trail (krci-audit) for
+  # the "Triggered By" field and the admin Audit Events view.
+  KRCI_AUDIT_URL: http://krci-audit-api.krci-audit:8080
+  # PORTAL_ADMIN_GROUPS is a comma-separated list of Keycloak group name(s) bound to
+  # the "administrator" role (gates the Administration section). Optional; defaults
+  # to "administrator" when unset. A single group is just a list of one.
+  #   one group:       PORTAL_ADMIN_GROUPS: administrator
+  #   multiple groups: PORTAL_ADMIN_GROUPS: administrator,platform-admins
+  # PORTAL_ADMIN_GROUPS: administrator,platform-admins
   # PROMETHEUS_URL is the cluster-local Prometheus base URL used by the Monitoring.
   # When unset, the tab returns PRECONDITION_FAILED.
   # Example (in-cluster): http://prometheus.monitoring.svc:9090

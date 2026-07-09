@@ -75,14 +75,28 @@ describe("authLoginCallbackProcedure", () => {
         issuerUrl: mockContext.oidcConfig.issuerURL,
       })
     );
+    // Non-admin groups resolve to no roles — the client caches a role-aware user.
+    expect(result.userInfo?.roles).toEqual([]);
     expect(result.clientSearch).toBe("?redirect=/pipelines");
     expect(mockContext.session.user).toEqual({
       data: mockUserInfo,
+      authSource: "oidc",
       secret: mockNormalizedTokens,
     });
     expect(mockContext.session.login).toBeUndefined();
     expect(mockExchangeCodeForTokens).toHaveBeenCalled();
     expect(mockResolveUser).toHaveBeenCalled();
+  });
+
+  it("resolves administrator role for a user in the admin group", async () => {
+    const adminUserInfo = { ...mockUserInfo, groups: ["administrator"] };
+    mockExchangeCodeForTokens.mockResolvedValue({ access_token: "access-token", claims: () => adminUserInfo });
+    mockResolveUser.mockResolvedValue(adminUserInfo);
+    const caller = createCaller(mockContext);
+
+    const result = await caller.auth.loginCallback(VALID_CALLBACK_URL);
+
+    expect(result.userInfo?.roles).toEqual(["administrator"]);
   });
 
   it("should reject callback URL with wrong origin", async () => {

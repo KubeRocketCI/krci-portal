@@ -1,5 +1,5 @@
 import type { FastifySessionObject } from "@fastify/session";
-import type { ISessionStore, OIDCUser } from "@my-project/shared";
+import type { AuthSource, ISessionStore, OIDCUser } from "@my-project/shared";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { OIDCConfig } from "../clients/oidc/index.js";
 
@@ -17,6 +17,9 @@ export type CustomSession = FastifySessionObject & {
   user:
     | {
         data: OIDCUser | undefined;
+        // Which identity provider established this session. Gates portal-role
+        // resolution: only `oidc` sessions carry roles (see `resolvePortalRoles`).
+        authSource: AuthSource;
         secret: {
           idToken: string;
           idTokenExpiresAt: number;

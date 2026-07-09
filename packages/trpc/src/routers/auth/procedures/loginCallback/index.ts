@@ -1,5 +1,5 @@
 import { publicProcedure } from "../../../../procedures/public/index.js";
-import { loginCallbackInputSchema, loginCallbackOutputSchema } from "@my-project/shared";
+import { loginCallbackInputSchema, loginCallbackOutputSchema, resolvePortalRoles } from "@my-project/shared";
 import { OIDCClient } from "../../../../clients/oidc/index.js";
 import { TRPCError } from "@trpc/server";
 
@@ -42,6 +42,7 @@ export const authLoginCallbackProcedure = publicProcedure
 
     ctx.session.user = {
       data: userInfo,
+      authSource: "oidc",
       secret: normalizedTokens,
     };
 
@@ -50,6 +51,7 @@ export const authLoginCallbackProcedure = publicProcedure
       userInfo: {
         ...userInfo,
         issuerUrl: ctx.oidcConfig.issuerURL || undefined,
+        roles: resolvePortalRoles("oidc", userInfo.groups),
       },
       clientSearch,
     };

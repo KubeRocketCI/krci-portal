@@ -109,6 +109,7 @@ describe("protected procedure", () => {
       expect(mockValidateTokenAndGetTokenInfo).toHaveBeenCalledWith("valid-jwt-token");
       expect(mockContext.session.user).toEqual({
         data: mockUserInfo,
+        authSource: "oidc",
         secret: mockTokenInfo,
       });
     });
@@ -163,6 +164,7 @@ describe("protected procedure", () => {
           given_name: "Cookie",
           family_name: "User",
         },
+        authSource: "oidc",
         secret: {
           idToken: "cookie-id-token",
           idTokenExpiresAt: 1800000000000,
@@ -256,7 +258,8 @@ describe("protected procedure", () => {
       expect(result).toBe(true);
       expect(mockAuthenticateSA).toHaveBeenCalledWith("any-sa-token");
       expect(mockDiscoverOrThrow).not.toHaveBeenCalled();
-      expect(mockContext.session.user).toEqual(saResult);
+      // Bearer SA path tags the session so role resolution treats it as non-privileged.
+      expect(mockContext.session.user).toEqual({ ...saResult, authSource: "serviceaccount" });
     });
 
     it("routes to the SA path when the token issuer differs from the OIDC issuer", async () => {

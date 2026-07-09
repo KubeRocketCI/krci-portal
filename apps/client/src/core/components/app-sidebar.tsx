@@ -16,6 +16,7 @@ import { SidebarPinnedSection } from "./sidebar/SidebarPinnedSection";
 import { ModeSwitcher, type Mode } from "@/modules/k8s/components/ModeSwitcher";
 import { K8sSidebar } from "@/modules/k8s/components/K8sSidebar";
 import { useMatches } from "@tanstack/react-router";
+import { useHasRole } from "@/core/auth/useHasRole";
 
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 
@@ -61,7 +62,11 @@ export function AppSidebar() {
     [clusterName]
   );
 
-  const nav = useMemo(() => createNavigationConfig(clusterName, defaultNamespace), [clusterName, defaultNamespace]);
+  const isAdmin = useHasRole("administrator");
+  const nav = useMemo(
+    () => createNavigationConfig(clusterName, defaultNamespace, isAdmin),
+    [clusterName, defaultNamespace, isAdmin]
+  );
 
   const { isMenuOpen, toggleMenu, openMenu, closeMenusExcept } = useSidebarMenu(nav, matches);
 

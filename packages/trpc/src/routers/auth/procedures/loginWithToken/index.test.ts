@@ -61,9 +61,11 @@ describe("authLoginWithTokenProcedure", () => {
         issuerUrl: mockContext.oidcConfig.issuerURL,
       })
     );
+    expect(result.userInfo?.roles).toEqual([]);
     expect(result.clientSearch).toBe("");
     expect(mockContext.session.user).toEqual({
       data: mockUserInfo,
+      authSource: "oidc",
       secret: mockTokenInfo,
     });
     expect(mockValidateTokenAndGetUserInfo).toHaveBeenCalled();
