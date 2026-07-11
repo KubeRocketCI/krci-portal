@@ -13,3 +13,8 @@ export const k8sCodebaseBranchConfig = {
 } as const satisfies K8sResourceConfig<typeof codebaseBranchLabels>;
 
 export const codebaseBranchStatus = codebaseBranchStatusEnum.enum;
+
+// Status condition types written by the codebase-operator.
+export const codebaseBranchConditionType = {
+  stale: "Stale",
+} as const;
