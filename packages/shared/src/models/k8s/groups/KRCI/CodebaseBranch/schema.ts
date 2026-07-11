@@ -21,9 +21,20 @@ const codebaseBranchSpecSchema = z.object({
   version: z.string().nullable().optional(),
 });
 
+// Lenient standard k8s metav1.Condition shape: only type/status are guaranteed,
+// reason/message/lastTransitionTime vary by controller implementation.
+const codebaseBranchConditionSchema = z.object({
+  type: z.string(),
+  status: z.string(),
+  reason: z.string().optional(),
+  message: z.string().optional(),
+  lastTransitionTime: z.string().optional(),
+});
+
 const codebaseBranchStatusSchema = z.object({
   action: z.string(),
   build: z.string().nullable().optional(),
+  conditions: z.array(codebaseBranchConditionSchema).optional(),
   detailedMessage: z.string().optional(),
   failureCount: z.number().int(),
   git: z.string().optional(),
@@ -40,6 +51,8 @@ const codebaseBranchStatusSchema = z.object({
 
 const codebaseBranchLabelsSchema = krciCommonLabelsSchema.extend({
   [codebaseBranchLabels.codebase]: z.string(),
+  // Present only when the codebase-operator has flagged this branch as stale.
+  [codebaseBranchLabels.stale]: z.string().optional(),
 });
 
 export const codebaseBranchSchema = kubeObjectBaseSchema.extend({
