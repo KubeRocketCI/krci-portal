@@ -47,4 +47,11 @@ describe("checkIsStaleBranch", () => {
     expect(checkIsStaleBranch(byLabel)).toBe(true);
     expect(checkIsStaleBranch(branch({}))).toBe(false);
   });
+
+  it("accepts a precomputed stale condition instead of looking it up", () => {
+    const unlabeled = branch({});
+
+    expect(checkIsStaleBranch(unlabeled, { type: "Stale", status: "True" })).toBe(true);
+    expect(checkIsStaleBranch(unlabeled, undefined)).toBe(false);
+  });
 });

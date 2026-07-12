@@ -7,7 +7,6 @@ import { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { Badge } from "@/core/components/ui/badge";
 import { Button } from "@/core/components/ui/button";
-import { Tooltip } from "@/core/components/ui/tooltip";
 import { getCodebaseBranchStatusIcon } from "@/k8s/api/groups/KRCI/CodebaseBranch";
 import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
 import { LinkCreationService } from "@/k8s/services/link-creation";
@@ -16,10 +15,8 @@ import { PATH_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/tekton/pages/p
 import { useCodebaseWatch, useGitServerWatch } from "../../../hooks/data";
 import {
   checkIsDefaultBranch,
-  checkIsStaleBranch,
   codebaseBranchStatus,
   getPipelineRunStatus,
-  getStaleCondition,
   pipelineRunReason,
 } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
@@ -27,6 +24,7 @@ import { GitBranch, Pin, SquareArrowOutUpRight } from "lucide-react";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { Actions } from "../components/Actions";
+import { StaleBadge } from "../components/StaleBadge";
 import { PipelineActionsGroup } from "../components/PipelineActionsGroup";
 import { columnNames } from "../constants";
 import { EnrichedBranch } from "../types";
@@ -124,8 +122,6 @@ export const useColumns = ({
             const { codebaseBranch } = data;
             const gitLink = getGitRepoBranchLink(codebaseBranch);
             const isDefault = codebaseRef.current && checkIsDefaultBranch(codebaseRef.current, codebaseBranch);
-            const isStale = checkIsStaleBranch(codebaseBranch);
-            const staleMessage = getStaleCondition(codebaseBranch)?.message;
             return (
               <div>
                 <div className="flex flex-wrap items-center">
@@ -161,13 +157,7 @@ export const useColumns = ({
                       Release
                     </Badge>
                   )}
-                  {isStale && (
-                    <Tooltip title={staleMessage ?? "Branch was not found in the git repository"}>
-                      <Badge variant="warning" className="h-5 text-xs">
-                        Stale
-                      </Badge>
-                    </Tooltip>
-                  )}
+                  <StaleBadge codebaseBranch={codebaseBranch} />
                 </div>
               </div>
             );
