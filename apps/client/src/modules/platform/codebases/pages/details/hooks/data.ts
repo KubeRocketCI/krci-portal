@@ -8,7 +8,6 @@ import { useStageWatchList } from "@/k8s/api/groups/KRCI/Stage";
 import { usePipelineRunWatchList } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { useTriggerTemplateWatchItem } from "@/k8s/api/groups/Tekton/TriggerTemplate";
 import {
-  CodebaseBranch,
   applicationLabels,
   codebaseBranchLabels,
   createBuildPipelineRef,
@@ -64,20 +63,6 @@ export const useGitServerWatch = () => {
     namespace: params.namespace,
     queryOptions: {
       enabled: !!codebase?.spec.gitServer,
-    },
-  });
-};
-
-export const useCodebaseBranchPipelineRunListWatch = (codebaseBranch: CodebaseBranch) => {
-  const params = routeProjectDetails.useParams();
-
-  return usePipelineRunWatchList({
-    namespace: params.namespace,
-    labels: {
-      [pipelineRunLabels.codebaseBranch]: codebaseBranch.metadata.name,
-    },
-    queryOptions: {
-      enabled: !!codebaseBranch,
     },
   });
 };
