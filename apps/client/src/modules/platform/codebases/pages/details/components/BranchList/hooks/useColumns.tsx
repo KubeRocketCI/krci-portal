@@ -26,8 +26,8 @@ import { Link } from "@tanstack/react-router";
 import { GitBranch, Pin, SquareArrowOutUpRight } from "lucide-react";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
-import { Actions } from "../components/BranchListItem/components/Actions";
-import { PipelineActionsGroup } from "../components/BranchListItem/components/PipelineActionsGroup";
+import { Actions } from "../components/Actions";
+import { PipelineActionsGroup } from "../components/PipelineActionsGroup";
 import { columnNames } from "../constants";
 import { EnrichedBranch } from "../types";
 
