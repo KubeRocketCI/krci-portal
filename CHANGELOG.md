@@ -1,8 +1,22 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v0.6.0"></a>
+## v0.6.0 - 2026-07-12
 ### Features
 
+- show stale badge for codebase branches missing in git
+- add Monitoring tab with per-step resource metrics on PipelineRun details
+- replace docs link with YouTube channel card
+- replace audit From/To text inputs with a single date-range picker
+- add admin audit events page with role-based access control
+- show "Triggered By" actor on PipelineRun details
+- show current deployed version in stage deploy dropdown
+- add optional HTTPRoute (Envoy Gateway) support to chart
+- improve Tekton pipeline run history footer UX
+- add GitLab CI pipeline list and log viewer for codebases
+- Register Gateway API and traffic policy resource descriptors
 - add Envoy Gateway and Gateway API support in Portal
 - add permission-aware Custom Resources catalog for users without cluster-wide CRD access
 - reduce Kubernetes events volume on overview and detail views
@@ -27,49 +41,6 @@
 - add patch verb, KubeCondition, CRD model, and ReplicaSet model
 - Add scroll-to-top/bottom controls to LogViewer
 - Add branch column to pipeline applications table
-
-### Bug Fixes
-
-- Align notification area for envoy
-- honor allowed namespaces in Kubernetes mode list views
-- populate Deployed version dropdown on CD promotion stages in multi-pipeline clusters
-- exclude EDP from codebase versioning type selection
-- bump concurrently to patch shell-quote CVE-2026-9277
-- make sidebar pin keys param-aware and restore icons for pinned pages
-- align K8s mode list pages with KRCI list layout
-- Set gitlabci icon on the project page
-- remediate dependency vulnerabilities and harden npm supply chain
-- enable search filtering in freeSolo combobox
-- replace backtracking trailing-slash regex with linear stripTrailingSlash helper
-- render mode switcher as icon-only toggle in collapsed sidebar
-- prevent release branches from being created from a commit
-- useDeploymentRevisions refetch-on-mount for live rollback data
-- DataTable and ServerSideTable — useColumnSync + useSyncedSortState hooks
-- DeleteKubeObject — ReactNode description + mutateAsync navigation guard
-- ConfirmDialog isPending guard
-- Align stage quality gate step name validation to min 2 characters
-- Fix silent save failure in resource edit forms
-- Align inputDockerStreams with applications positionally in create wizard
-- Reject misrouted branches in pipeline applications column
-- Improve LogViewer controls layout and focus visibility
-
-### Code Refactoring
-
-- address review findings in sidebar predicate, sort-state, detail-page
-
-### Routine
-
-- bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin
-- align dependabot commit messages with PR validation and reduce PR noise
-- drop transitional route-type casts after registration
-- Remove dead alignInputDockerStreams utility
-- Update current development version
-
-
-<a name="v0.5.0"></a>
-## [v0.5.0] - 2026-05-21
-### Features
-
 - Add sonar deptrack error message ([#262](https://github.com/KubeRocketCI/krci-portal/issues/262))
 - Add k8s mode resources explorer
 - Add webhook Triggers portal module
@@ -87,122 +58,14 @@
 - Add SonarQube branch scope support
 - Add SonarQube pr support and rest proxy ([#238](https://github.com/KubeRocketCI/krci-portal/issues/238))
 - Add create resource button
-
-### Bug Fixes
-
-- Align OpenAPI spec to actual REST error envelope shape
-- Preserve pod template and task scheduling config in pipeline rerun
-- Prevent K8s watch reconnect storm on stale resourceVersion
-- Block branch deletion when used by a deployment flow
-- Handle protojson null values in Tekton Results output schema
-- Declare labels, annotations, creationTimestamp in K8s metadata schema
-- Hide tours on smaller devices
-- Reset filters
-- Tekton resources statuses
-- Multiple UI and security improvements
-- Broken links when config is not loaded ([#229](https://github.com/KubeRocketCI/krci-portal/issues/229))
-- Show corret PipelineRuns in stage details
-
-### Code Refactoring
-
-- Remove ConfigMap-based GitFusion feature gate
-- Server tests mocks ([#244](https://github.com/KubeRocketCI/krci-portal/issues/244))
-- Fix rbac operations naming
-- Replace string literals with typed enum constants
-- Simplify SonarQube client and procedures
-- Replace sonar search  with browse-level api
-
-### Routine
-
-- Tune column width for pipelinerun page
-- Revert Node.js and better-sqlite3 upgrades to stable versions
-- Upgrade better-sqlite3 to v12    Update better-sqlite3 dependency to v12.9.0, which is compatible with node 24
-- Update Node.js runtime and remove redundant build step
-- Set Helm chart fullnameOverride to krci-portal
-- Update current development version
-
-
-<a name="v0.4.0"></a>
-## [v0.4.0] - 2026-04-13
-### Features
-
 - Resolve full PipelineRun data for historical rerun actions
 - Enable rerun actions for historical PipelineRuns
 - Add 'Started at' sortable column to PipelineRun table
 - Add PipelineRun name search filter to list views
 - Add copy and download buttons for step logs
-
-### Bug Fixes
-
-- Security issues in openapi generation
-- Edit cdpipeline with mixed spec
-- Add sidebar pinning for generic pages and improve Tekton and branch UX
-- Branch diff in cdpipeline edit
-- Project details page tour
-- Pipelines page crash and tt params undefined value
-
-### Routine
-
-- Update current development version
-
-
-<a name="v0.3.0"></a>
-## [v0.3.0] - 2026-04-08
-### Features
-
 - Add REST API endpoints and OpenAPI spec generation
-
-### Bug Fixes
-
-- Improve responsiveness of generic components and pages
-- Edit form guides configs
-- Make apiVersion and kind optional on Kubernetes list items
-- GitOps form issues, stage breadcrumbs, deployment create btn permission
-
-### Code Refactoring
-
-- Protect config.get   endpoint and move cluster config to authenticated   tree
-
-### Routine
-
-- Regenerate REST client after optional apiVersion/kind fix
-- Update current development version
-- Remove krci-ai framework
-
-
-<a name="v0.2.0"></a>
-## [v0.2.0] - 2026-04-04
-### Features
-
 - Expose OIDC issuer URL in config.get response
 - Align security pages layouts
-- Enable CHANGELOG.md generation
-
-### Bug Fixes
-
-- Resolve pagination failure in Tekton Results PipelineRun query
-- Resolve misaligned inputDockerStreams in CDPipeline edit form
-- Add promise coalescing to getSummary cache to prevent thundering herd
-- Performance bottleneck in tekton results
-- Map GitFusion HTTP status codes to tRPC error codes
-- Throttle live log subscription to prevent page freezing
-
-### Code Refactoring
-
-- Improve CDPipeline form handling
-- Switch PipelineRun list from records to results table
-
-### Routine
-
-- Disable debug for claude review pipeline
-- update commit message length validation
-- Update current development version
-
-
-<a name="v0.1.0"></a>
-## v0.1.0 - 2026-03-27
-### Features
-
 - Enable CHANGELOG.md generation
 - Improve project details page
 - Improve ScrollCopyText component
@@ -273,6 +136,64 @@
 
 ### Bug Fixes
 
+- clear stale Git URL Path validation when switching Git server provider
+- don't treat GitServer-owned credentials Secret as externally managed
+- show Add variable button once Stage ConfigMap permissions resolve
+- replace NetListener.tlsSecret with structured tlsCertificateRef
+- derive OIDC identity from ID Token to fix Entra ID member login
+- prevent intermittent "Not Found" on Overview and namespace-scoped pages
+- prevent silent submit when creating an environment without a Clean Pipeline template
+- use K8s response to build success toast route
+- Align notification area for envoy
+- honor allowed namespaces in Kubernetes mode list views
+- populate Deployed version dropdown on CD promotion stages in multi-pipeline clusters
+- exclude EDP from codebase versioning type selection
+- bump concurrently to patch shell-quote CVE-2026-9277
+- make sidebar pin keys param-aware and restore icons for pinned pages
+- align K8s mode list pages with KRCI list layout
+- Set gitlabci icon on the project page
+- remediate dependency vulnerabilities and harden npm supply chain
+- enable search filtering in freeSolo combobox
+- replace backtracking trailing-slash regex with linear stripTrailingSlash helper
+- render mode switcher as icon-only toggle in collapsed sidebar
+- prevent release branches from being created from a commit
+- useDeploymentRevisions refetch-on-mount for live rollback data
+- DataTable and ServerSideTable — useColumnSync + useSyncedSortState hooks
+- DeleteKubeObject — ReactNode description + mutateAsync navigation guard
+- ConfirmDialog isPending guard
+- Align stage quality gate step name validation to min 2 characters
+- Fix silent save failure in resource edit forms
+- Align inputDockerStreams with applications positionally in create wizard
+- Reject misrouted branches in pipeline applications column
+- Improve LogViewer controls layout and focus visibility
+- Align OpenAPI spec to actual REST error envelope shape
+- Preserve pod template and task scheduling config in pipeline rerun
+- Prevent K8s watch reconnect storm on stale resourceVersion
+- Block branch deletion when used by a deployment flow
+- Handle protojson null values in Tekton Results output schema
+- Declare labels, annotations, creationTimestamp in K8s metadata schema
+- Hide tours on smaller devices
+- Reset filters
+- Tekton resources statuses
+- Multiple UI and security improvements
+- Broken links when config is not loaded ([#229](https://github.com/KubeRocketCI/krci-portal/issues/229))
+- Show corret PipelineRuns in stage details
+- Security issues in openapi generation
+- Edit cdpipeline with mixed spec
+- Add sidebar pinning for generic pages and improve Tekton and branch UX
+- Branch diff in cdpipeline edit
+- Project details page tour
+- Pipelines page crash and tt params undefined value
+- Improve responsiveness of generic components and pages
+- Edit form guides configs
+- Make apiVersion and kind optional on Kubernetes list items
+- GitOps form issues, stage breadcrumbs, deployment create btn permission
+- Resolve pagination failure in Tekton Results PipelineRun query
+- Resolve misaligned inputDockerStreams in CDPipeline edit form
+- Add promise coalescing to getSummary cache to prevent thundering herd
+- Performance bottleneck in tekton results
+- Map GitFusion HTTP status codes to tRPC error codes
+- Throttle live log subscription to prevent page freezing
 - Correct form validation and error handling in edit wizards
 - History pipelinerun select
 - auto-restart K8s watch on API server timeout and improve stale data recovery
@@ -356,6 +277,18 @@
 
 ### Code Refactoring
 
+- extract StaleBadge component with Storybook coverage
+- remove unused BranchListItem accordion components
+- address review findings in sidebar predicate, sort-state, detail-page
+- Remove ConfigMap-based GitFusion feature gate
+- Server tests mocks ([#244](https://github.com/KubeRocketCI/krci-portal/issues/244))
+- Fix rbac operations naming
+- Replace string literals with typed enum constants
+- Simplify SonarQube client and procedures
+- Replace sonar search  with browse-level api
+- Protect config.get   endpoint and move cluster config to authenticated   tree
+- Improve CDPipeline form handling
+- Switch PipelineRun list from records to results table
 - remove log source disclosure from UI
 - Polish existing integration form structure and layouts
 - extract shared stage deployment cards component and add JWT utility tests
@@ -375,6 +308,25 @@
 
 ### Routine
 
+- Move Tekton Details to Configuration section
+- bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin
+- align dependabot commit messages with PR validation and reduce PR noise
+- drop transitional route-type casts after registration
+- Remove dead alignInputDockerStreams utility
+- Update current development version
+- Tune column width for pipelinerun page
+- Revert Node.js and better-sqlite3 upgrades to stable versions
+- Upgrade better-sqlite3 to v12    Update better-sqlite3 dependency to v12.9.0, which is compatible with node 24
+- Update Node.js runtime and remove redundant build step
+- Set Helm chart fullnameOverride to krci-portal
+- Update current development version
+- Update current development version
+- Regenerate REST client after optional apiVersion/kind fix
+- Update current development version
+- Remove krci-ai framework
+- Disable debug for claude review pipeline
+- update commit message length validation
+- Update current development version
 - Align repository path for image
 - fix Dependabot security vulnerabilities in dependencies
 - validate commit title length and format
@@ -402,9 +354,9 @@
 - Improve initial setup ([#1](https://github.com/KubeRocketCI/krci-portal/issues/1))
 - Setup initial code ([#1](https://github.com/KubeRocketCI/krci-portal/issues/1))
 
+### Documentation
 
-[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.5.0...HEAD
-[v0.5.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.4.0...v0.5.0
-[v0.4.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.3.0...v0.4.0
-[v0.3.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.2.0...v0.3.0
-[v0.2.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.1.0...v0.2.0
+- correct server framework in CLAUDE.md
+
+
+[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.6.0...HEAD
