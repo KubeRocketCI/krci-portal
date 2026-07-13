@@ -1,8 +1,22 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v0.6.0"></a>
+## [v0.6.0] - 2026-07-13
 ### Features
 
+- show stale badge for codebase branches missing in git
+- add Monitoring tab with per-step resource metrics on PipelineRun details
+- replace docs link with YouTube channel card
+- replace audit From/To text inputs with a single date-range picker
+- add admin audit events page with role-based access control
+- show "Triggered By" actor on PipelineRun details
+- show current deployed version in stage deploy dropdown
+- add optional HTTPRoute (Envoy Gateway) support to chart
+- improve Tekton pipeline run history footer UX
+- add GitLab CI pipeline list and log viewer for codebases
+- Register Gateway API and traffic policy resource descriptors
 - add Envoy Gateway and Gateway API support in Portal
 - add permission-aware Custom Resources catalog for users without cluster-wide CRD access
 - reduce Kubernetes events volume on overview and detail views
@@ -30,6 +44,14 @@
 
 ### Bug Fixes
 
+- clear stale Git URL Path validation when switching Git server provider
+- don't treat GitServer-owned credentials Secret as externally managed
+- show Add variable button once Stage ConfigMap permissions resolve
+- replace NetListener.tlsSecret with structured tlsCertificateRef
+- derive OIDC identity from ID Token to fix Entra ID member login
+- prevent intermittent "Not Found" on Overview and namespace-scoped pages
+- prevent silent submit when creating an environment without a Clean Pipeline template
+- use K8s response to build success toast route
 - Align notification area for envoy
 - honor allowed namespaces in Kubernetes mode list views
 - populate Deployed version dropdown on CD promotion stages in multi-pipeline clusters
@@ -55,15 +77,22 @@
 
 ### Code Refactoring
 
+- extract StaleBadge component with Storybook coverage
+- remove unused BranchListItem accordion components
 - address review findings in sidebar predicate, sort-state, detail-page
 
 ### Routine
 
+- Move Tekton Details to Configuration section
 - bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin
 - align dependabot commit messages with PR validation and reduce PR noise
 - drop transitional route-type casts after registration
 - Remove dead alignInputDockerStreams utility
 - Update current development version
+
+### Documentation
+
+- correct server framework in CLAUDE.md
 
 
 <a name="v0.5.0"></a>
@@ -203,7 +232,6 @@
 ## v0.1.0 - 2026-03-27
 ### Features
 
-- Enable CHANGELOG.md generation
 - Improve project details page
 - Improve ScrollCopyText component
 - Add deployment submit review step
@@ -403,7 +431,8 @@
 - Setup initial code ([#1](https://github.com/KubeRocketCI/krci-portal/issues/1))
 
 
-[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.6.0...HEAD
+[v0.6.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.5.0...v0.6.0
 [v0.5.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.4.0...v0.5.0
 [v0.4.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.3.0...v0.4.0
 [v0.3.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.2.0...v0.3.0
