@@ -23,14 +23,16 @@ export function NotificationListRow({ notification, onOpen }: NotificationListRo
     </div>
   );
 
-  if (!link) {
+  const interactive = Boolean(link) || !read;
+
+  if (!interactive) {
     return <div className="px-2">{content}</div>;
   }
 
   return (
     <button
       type="button"
-      className="hover:bg-accent w-full rounded-md px-2 text-left transition-colors"
+      className="hover:bg-accent w-full cursor-pointer rounded-md px-2 text-left transition-colors"
       onClick={() => onOpen(notification)}
     >
       {content}

@@ -35,6 +35,7 @@ describe("notificationsSubscriptionRegistry", () => {
   let handlers: SubscriptionHandlers | null;
   let subscribeSpy: ReturnType<typeof vi.fn>;
   let unsubscribeSpy: ReturnType<typeof vi.fn>;
+  let markReadSpy: ReturnType<typeof vi.fn>;
   let trpcClient: TRPCClient<AppRouter>;
   // The registry is a module singleton — collect cleanups so a failing test
   // can't leak an active subscription into the next one.
@@ -49,8 +50,12 @@ describe("notificationsSubscriptionRegistry", () => {
       handlers = opts;
       return { unsubscribe: unsubscribeSpy };
     });
+    markReadSpy = vi.fn().mockResolvedValue(undefined);
     trpcClient = {
-      notifications: { subscribe: { subscribe: subscribeSpy } },
+      notifications: {
+        subscribe: { subscribe: subscribeSpy },
+        markRead: { mutate: markReadSpy },
+      },
     } as unknown as TRPCClient<AppRouter>;
     cleanups = [];
 
@@ -100,7 +105,11 @@ describe("notificationsSubscriptionRegistry", () => {
     const cached = queryClient.getQueryData<NotificationListItem[]>(notificationsListQueryKey);
     expect(cached?.map((item) => item.id)).toEqual(["evt-new", "evt-old"]);
     expect(cached?.[0].read).toBe(false);
-    expect(showToast).toHaveBeenCalledWith("Build pipeline failed", "error", expect.anything());
+    expect(showToast).toHaveBeenCalledWith(
+      "Build pipeline failed",
+      "error",
+      expect.objectContaining({ id: "evt-new" })
+    );
   });
 
   it("deduplicates a re-delivered event id in the cache", () => {
@@ -111,6 +120,21 @@ describe("notificationsSubscriptionRegistry", () => {
 
     const cached = queryClient.getQueryData<NotificationListItem[]>(notificationsListQueryKey);
     expect(cached).toHaveLength(1);
+  });
+
+  it("marks the event read when the toast link is followed", async () => {
+    join();
+
+    handlers!.onData(buildEvent("evt-1"));
+
+    const options = vi.mocked(showToast).mock.calls[0][2] as { onNavigate?: () => void };
+    options.onNavigate!();
+    await vi.waitFor(() => expect(markReadSpy).toHaveBeenCalledWith({ ids: ["evt-1"] }));
+
+    await vi.waitFor(() => {
+      const cached = queryClient.getQueryData<NotificationListItem[]>(notificationsListQueryKey);
+      expect(cached?.[0].read).toBe(true);
+    });
   });
 
   it("re-arms the subscription after an error while subscribers remain", () => {

@@ -156,8 +156,9 @@ export const useResourceCRUDMutation = <KubeObjectData extends KubeObjectDraft, 
           showToast(successMessage, "success", {
             id: loadingToastId,
             duration: resolvedSuccessOptions?.duration || 5000,
-            route: resolvedSuccessOptions?.route,
-            externalLink: resolvedSuccessOptions?.externalLink,
+            ...(resolvedSuccessOptions?.route
+              ? { route: resolvedSuccessOptions.route }
+              : { externalLink: resolvedSuccessOptions?.externalLink }),
           });
         })
         .catch((err) => {
