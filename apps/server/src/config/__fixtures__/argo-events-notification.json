@@ -1,0 +1,10 @@
+{
+  "id": "38f1a2c4-9d5e-4b7a-8c3f-6e2d1a0b9c8d",
+  "type": "pipelinerun.failed",
+  "severity": "error",
+  "title": "Build pipeline failed",
+  "body": "PipelineRun review-test-go-app-main-xyz failed in namespace krci",
+  "namespace": "krci",
+  "link": "/c/default/pipelineruns/review-test-go-app-main-xyz",
+  "timestamp": "2026-07-18T10:00:00Z"
+}

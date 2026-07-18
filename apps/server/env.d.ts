@@ -37,6 +37,11 @@ declare global {
       PORTAL_ADMIN_GROUPS?: string;
 
       DEPLOY_CLIENT_DIST_DIR?: string;
+
+      // Shared secret for POST /rest/v1/internal/events (Argo Events Sensor).
+      // Optional: when unset the route responds 503. Read ad-hoc, not part of
+      // validateRequiredEnv — same pattern as PROMETHEUS_URL.
+      INTERNAL_EVENTS_TOKEN?: string;
     }
   }
 }

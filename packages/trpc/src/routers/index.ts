@@ -6,6 +6,7 @@ import { dependencyTrackRouter } from "./dependencyTrack/index.js";
 import { gitfusionRouter } from "./gitfusion/index.js";
 import { k8sRouter } from "./k8s/index.js";
 import { krciAuditRouter } from "./krciAudit/index.js";
+import { notificationsRouter } from "./notifications/index.js";
 import { prometheusRouter } from "./prometheus/index.js";
 import { pipelineRunRouter } from "./pipelineRun/index.js";
 import { sonarqubeRouter } from "./sonarqube/index.js";
@@ -18,6 +19,7 @@ export const appRouter = t.router({
   gitfusion: gitfusionRouter,
   k8s: k8sRouter,
   krciAudit: krciAuditRouter,
+  notifications: notificationsRouter,
   prometheus: prometheusRouter,
   pipelineRun: pipelineRunRouter,
   sonarqube: sonarqubeRouter,

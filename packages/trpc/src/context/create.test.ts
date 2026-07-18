@@ -7,6 +7,7 @@ describe("createContext", () => {
     const res = {} as any;
     const session = { user: null } as any;
     const sessionStore = {} as any;
+    const notificationsStore = {} as any;
     const oidcConfig = {
       issuerURL: "https://issuer.example.com",
       clientID: "client-id",
@@ -21,6 +22,7 @@ describe("createContext", () => {
       res,
       session,
       sessionStore,
+      notificationsStore,
       oidcConfig,
       portalUrl,
     });
@@ -30,6 +32,7 @@ describe("createContext", () => {
       res,
       session,
       sessionStore,
+      notificationsStore,
       oidcConfig,
       portalUrl,
     });

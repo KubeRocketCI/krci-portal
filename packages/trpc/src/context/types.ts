@@ -1,5 +1,5 @@
 import type { FastifySessionObject } from "@fastify/session";
-import type { AuthSource, ISessionStore, OIDCUser } from "@my-project/shared";
+import type { AuthSource, INotificationsStore, ISessionStore, OIDCUser } from "@my-project/shared";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { OIDCConfig } from "../clients/oidc/index.js";
 
@@ -36,6 +36,7 @@ export interface TRPCContext {
   res: FastifyReply;
   session: CustomSession;
   sessionStore: ISessionStore;
+  notificationsStore: INotificationsStore;
   oidcConfig: OIDCConfig;
   portalUrl: string;
 }
