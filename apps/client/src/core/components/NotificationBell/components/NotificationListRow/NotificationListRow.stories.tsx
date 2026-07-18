@@ -53,8 +53,17 @@ export const Read: Story = {
   },
 };
 
-export const WithoutLinkIsNotClickable: Story = {
+export const UnreadWithoutLinkMarksReadOnClick: Story = {
   args: { notification: { ...baseNotification, link: undefined } },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    canvas.getByRole("button").click();
+    await expect(args.onOpen).toHaveBeenCalledWith({ ...baseNotification, link: undefined });
+  },
+};
+
+export const ReadWithoutLinkIsNotClickable: Story = {
+  args: { notification: { ...baseNotification, link: undefined, read: true } },
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).queryByRole("button")).not.toBeInTheDocument();
   },

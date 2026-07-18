@@ -1,74 +1,41 @@
 import { RouteParams } from "@/core/router/types";
-import { STATUS_COLOR } from "@/k8s/constants/colors";
 import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
+import { cn } from "@/core/utils/classname";
+import { Severity, SEVERITY_ICON, SEVERITY_ICON_COLOR_CLASS } from "@/core/utils/severity";
 import { Link } from "@tanstack/react-router";
-import { ChevronDown, ChevronRight, CircleCheck, CircleX, Info, TriangleAlert, X } from "lucide-react";
+import { X } from "lucide-react";
 import { ExternalToast, toast } from "sonner";
-import { useState } from "react";
 
-export type ToastVariant = "success" | "error" | "warning" | "info" | "loading";
+export type ToastVariant = Severity | "loading";
 
-export interface ToastOptions extends ExternalToast {
-  route?: RouteParams;
-  externalLink?: {
-    url: string;
-    text: string;
-  };
-  description?: string;
+interface ExternalLink {
+  url: string;
+  text: string;
 }
 
-// Helper to get variant-specific icon
-const getVariantIcon = (variant: ToastVariant) => {
-  switch (variant) {
-    case "success":
-      return <CircleCheck size={20} />;
-    case "error":
-      return <CircleX size={20} />;
-    case "warning":
-      return <TriangleAlert size={20} />;
-    case "loading":
-      return <LoadingSpinner size={20} />;
-    case "info":
-    default:
-      return <Info size={20} />;
-  }
+// A toast navigates either in-app or externally, never both: with both set the
+// external anchor would nest inside the route Link (invalid HTML, double-fire).
+type ToastLinkOptions = { route?: RouteParams; externalLink?: never } | { route?: never; externalLink?: ExternalLink };
+
+export type ToastOptions = ExternalToast &
+  ToastLinkOptions & {
+    description?: string;
+    /** Called when the user follows the toast's route link. */
+    onNavigate?: () => void;
+  };
+
+const ICON_COLOR_BY_VARIANT: Record<ToastVariant, string> = {
+  ...SEVERITY_ICON_COLOR_CLASS,
+  loading: "text-status-in-progress",
 };
 
-// Helper to get variant-specific styling
-const getVariantStyles = (variant: ToastVariant) => {
-  switch (variant) {
-    case "success":
-      return {
-        backgroundColor: STATUS_COLOR.SUCCESS,
-        borderColor: STATUS_COLOR.SUCCESS,
-        color: "#FFFFFF",
-      };
-    case "error":
-      return {
-        backgroundColor: STATUS_COLOR.ERROR,
-        borderColor: STATUS_COLOR.ERROR,
-        color: "#FFFFFF",
-      };
-    case "warning":
-      return {
-        backgroundColor: STATUS_COLOR.MISSING,
-        borderColor: STATUS_COLOR.MISSING,
-        color: "#FFFFFF",
-      };
-    case "loading":
-      return {
-        backgroundColor: STATUS_COLOR.IN_PROGRESS,
-        borderColor: STATUS_COLOR.IN_PROGRESS,
-        color: "#FFFFFF",
-      };
-    case "info":
-    default:
-      return {
-        backgroundColor: STATUS_COLOR.IN_PROGRESS,
-        borderColor: STATUS_COLOR.IN_PROGRESS,
-        color: "#FFFFFF",
-      };
+// eslint-disable-next-line react-refresh/only-export-components
+const VariantIcon = ({ variant }: { variant: ToastVariant }) => {
+  if (variant === "loading") {
+    return <LoadingSpinner size={16} />;
   }
+  const Icon = SEVERITY_ICON[variant];
+  return <Icon className="h-4 w-4" aria-hidden="true" />;
 };
 
 // Fully custom toast component (Headless approach)
@@ -80,74 +47,66 @@ const CustomToast = ({
   route,
   externalLink,
   description,
+  onNavigate,
 }: {
   id: string | number;
   message: string;
   variant: ToastVariant;
-  route?: RouteParams;
-  externalLink?: { url: string; text: string };
   description?: string;
-}) => {
-  const variantStyles = getVariantStyles(variant);
-  const variantIcon = getVariantIcon(variant);
-  const [isExpanded, setIsExpanded] = useState(false);
+  onNavigate?: () => void;
+} & ToastLinkOptions) => {
+  const content = (
+    <div className="flex items-start gap-3">
+      <span className={cn("mt-0.5 shrink-0", ICON_COLOR_BY_VARIANT[variant])}>
+        <VariantIcon variant={variant} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium group-hover:underline">{message}</p>
+        {description && (
+          <p title={description} className="text-muted-foreground mt-0.5 line-clamp-2 text-xs break-words">
+            {description}
+          </p>
+        )}
+      </div>
+    </div>
+  );
 
   return (
-    <div
-      className="flex max-w-[600px] min-w-[400px] flex-col rounded-lg border px-4 py-3 shadow-lg"
-      style={variantStyles}
-    >
-      <div className="flex items-center gap-3">
-        <div className="shrink-0 text-white">{variantIcon}</div>
-        <div className="flex-1">
-          <p className="text-sm font-medium text-white">{message}</p>
-        </div>
-        {description && (
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="flex h-6 w-6 cursor-pointer items-center justify-center p-1 text-white transition-opacity hover:opacity-70"
-            aria-label={isExpanded ? "Collapse details" : "Expand details"}
+    <div className="bg-popover text-popover-foreground flex w-[356px] max-w-[90vw] flex-col rounded-lg border p-3 shadow-lg">
+      <div className="flex items-start gap-2">
+        {route?.to ? (
+          <Link
+            to={route.to}
+            params={route.params}
+            className="group min-w-0 flex-1 text-left"
+            onClick={() => {
+              onNavigate?.();
+              toast.dismiss(id);
+            }}
           >
-            {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-          </button>
+            {content}
+          </Link>
+        ) : (
+          <div className="min-w-0 flex-1">{content}</div>
         )}
-        {(route?.to || externalLink) && (
-          <div className="flex items-center gap-2">
-            {route?.to && (
-              <Link
-                to={route.to}
-                params={route.params}
-                className="text-xs font-medium text-white underline underline-offset-4 hover:no-underline"
-                onClick={() => toast.dismiss()}
-              >
-                Go to page
-              </Link>
-            )}
-            {externalLink && (
-              <a
-                href={externalLink.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-medium text-white underline underline-offset-4 hover:no-underline"
-                onClick={() => toast.dismiss()}
-              >
-                {externalLink.text}
-              </a>
-            )}
-          </div>
-        )}
-        <div className={description ? "ml-0" : "ml-4"}>
-          <button
-            onClick={() => toast.dismiss(id)}
-            className="flex h-6 w-6 cursor-pointer items-center justify-center p-1 text-white transition-opacity hover:opacity-70"
-            aria-label="Close toast"
-          >
-            <X size={16} />
-          </button>
-        </div>
+        <button
+          onClick={() => toast.dismiss(id)}
+          className="text-muted-foreground hover:text-foreground -m-1 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md p-1 transition-colors"
+          aria-label="Dismiss"
+        >
+          <X size={14} />
+        </button>
       </div>
-      {description && isExpanded && (
-        <div className="mt-2 ml-11 text-xs break-words text-white opacity-90">{description}</div>
+      {externalLink && (
+        <a
+          href={externalLink.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary mt-1 ml-7 self-start text-xs font-medium underline underline-offset-4 hover:no-underline"
+          onClick={() => toast.dismiss(id)}
+        >
+          {externalLink.text}
+        </a>
       )}
     </div>
   );
@@ -155,7 +114,7 @@ const CustomToast = ({
 
 // Helper to show toast with optional links
 export const showToast = (message: string, variant: ToastVariant, options?: ToastOptions) => {
-  const { route, externalLink, description, ...sonnerOptions } = options || {};
+  const { route, externalLink, description, onNavigate, ...sonnerOptions } = options || {};
 
   return toast.custom(
     (id) => (
@@ -163,9 +122,9 @@ export const showToast = (message: string, variant: ToastVariant, options?: Toas
         id={id}
         message={message}
         variant={variant}
-        route={route}
-        externalLink={externalLink}
         description={description}
+        onNavigate={onNavigate}
+        {...(route ? { route } : { externalLink })}
       />
     ),
     {

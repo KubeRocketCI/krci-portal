@@ -112,10 +112,31 @@ class NotificationsSubscriptionRegistry {
       return [{ ...event, read: false }, ...existing];
     });
 
+    // Same-id replays update the existing toast instead of stacking a duplicate.
     showToast(event.title, event.severity, {
+      id: event.id,
       description: event.body,
       route: event.link ? notificationLinkToRoute(event.link) : undefined,
+      onNavigate: () => this.markEventRead(event.id),
     });
+  }
+
+  // Mirrors useMarkNotificationsRead, which needs React context the registry lacks.
+  private markEventRead(id: string) {
+    if (!this.trpcClient || !this.queryClient) {
+      return;
+    }
+    void this.queryClient.cancelQueries({ queryKey: notificationsListQueryKey });
+    this.trpcClient.notifications.markRead
+      .mutate({ ids: [id] })
+      .then(() => {
+        this.queryClient?.setQueryData<NotificationListItem[]>(notificationsListQueryKey, (current) =>
+          current?.map((item) => (item.id === id ? { ...item, read: true } : item))
+        );
+      })
+      .catch((error) => {
+        console.error("[NotificationsSubscriptionRegistry] markRead failed", error);
+      });
   }
 }
 

@@ -18,6 +18,9 @@ export function useMarkNotificationsRead() {
         current?.map((item) => (ids.includes(item.id) ? { ...item, read: true } : item))
       );
     },
+    onError: (error) => {
+      console.error("[useMarkNotificationsRead] markRead failed", error);
+    },
   });
 }
 
@@ -32,6 +35,9 @@ export function useMarkAllNotificationsRead() {
       queryClient.setQueryData<NotificationListItem[]>(notificationsListQueryKey, (current) =>
         current?.map((item) => ({ ...item, read: true }))
       );
+    },
+    onError: (error) => {
+      console.error("[useMarkAllNotificationsRead] markAllRead failed", error);
     },
   });
 }

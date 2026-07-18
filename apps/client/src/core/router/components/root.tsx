@@ -18,7 +18,7 @@ export default function Root() {
             <Outlet />
           </SidebarProvider>
         </div>
-        <Toaster position="top-right" offset="80px" />
+        <Toaster position="top-right" offset={{ top: "calc(var(--header-height) + 8px)", right: 16 }} />
         <K8sRelatedIconsSVGSprite />
         <Scripts />
       </DialogContextProvider>
