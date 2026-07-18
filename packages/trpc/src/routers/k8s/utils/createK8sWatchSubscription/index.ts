@@ -1,7 +1,7 @@
 import { Watch } from "@kubernetes/client-node";
 import { KubeObjectBase } from "@my-project/shared";
 import { handleK8sError } from "../handleK8sError/index.js";
-import { createEventQueue, yieldEvents } from "../createEventQueue/index.js";
+import { createEventQueue, yieldEvents } from "../../../../utils/createEventQueue/index.js";
 
 export type WatchEvent = { type: string; data: KubeObjectBase };
 

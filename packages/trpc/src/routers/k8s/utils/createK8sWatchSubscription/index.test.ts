@@ -8,8 +8,8 @@ vi.mock("../handleK8sError/index.js", () => ({
   handleK8sError: (err: Error) => err,
 }));
 
-vi.mock("../createEventQueue/index.js", () => {
-  const actual = vi.importActual("../createEventQueue/index.js");
+vi.mock("../../../../utils/createEventQueue/index.js", () => {
+  const actual = vi.importActual("../../../../utils/createEventQueue/index.js");
   return actual;
 });
 

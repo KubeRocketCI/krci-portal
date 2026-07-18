@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Plus, Settings } from "lucide-react";
 import { SidebarTrigger } from "../ui/sidebar";
+import { NotificationBell } from "../NotificationBell";
 import { ResourceQuotas } from "../ResourceQuotas";
 import { ThemeSwitcher } from "../ThemeSwitcher";
 import { Button } from "../ui/button";
@@ -36,6 +37,7 @@ function Header() {
           </Link>
         )}
         <ThemeSwitcher />
+        <NotificationBell />
         <ResourceQuotas />
       </div>
     </div>

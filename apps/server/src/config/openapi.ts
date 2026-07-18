@@ -7,7 +7,10 @@ import {
   type RouterInput,
   UNKNOWN_ERROR_PHRASE,
 } from "@my-project/trpc";
-import { k8sCodebaseConfig } from "@my-project/shared";
+import {
+  k8sCodebaseConfig,
+  type INotificationsStore,
+} from "@my-project/shared";
 import {
   classifyBranchResolution,
   clampPageSize,
@@ -57,6 +60,7 @@ interface OidcConfig {
 
 interface RegisterOpenApiOptions {
   sessionStore: DBSessionStore;
+  notificationsStore: INotificationsStore;
   oidcConfig: OidcConfig;
   portalUrl: string;
 }
@@ -80,7 +84,7 @@ export function registerOpenApi(
   fastify: FastifyInstance,
   opts: RegisterOpenApiOptions
 ) {
-  const { sessionStore, oidcConfig, portalUrl } = opts;
+  const { sessionStore, notificationsStore, oidcConfig, portalUrl } = opts;
 
   async function buildCaller(req: FastifyRequest, res: FastifyReply) {
     const session = req.session as CustomSession;
@@ -89,6 +93,7 @@ export function registerOpenApi(
       res,
       session,
       sessionStore,
+      notificationsStore,
       oidcConfig,
       portalUrl,
     });
@@ -846,6 +851,85 @@ export function registerOpenApi(
     });
 
     rewriteErrorEnvelopeSchemas(openApiDocument);
+
+    // `/v1/internal/events` is a raw Fastify route (see `internalEvents.ts`),
+    // invisible to trpc-to-openapi, so its document entry is hand-authored.
+    // It must mirror `notificationEventSchema` — the contract test asserts
+    // the two stay in sync, so update both together.
+    openApiDocument.components = openApiDocument.components ?? {};
+    openApiDocument.components.securitySchemes = {
+      ...openApiDocument.components.securitySchemes,
+      internalEventsToken: {
+        type: "apiKey",
+        in: "header",
+        name: "x-internal-events-token",
+        description:
+          "Shared secret configured via the INTERNAL_EVENTS_TOKEN env var. " +
+          "Presented by the in-cluster Argo Events Sensor; not a user credential.",
+      },
+    };
+    openApiDocument.paths = openApiDocument.paths ?? {};
+    openApiDocument.paths["/v1/internal/events"] = {
+      post: {
+        operationId: "internal-events-ingest",
+        summary: "Ingest a notification event (internal)",
+        description:
+          "Internal ingestion endpoint for the in-cluster Argo Events Sensor. " +
+          "Idempotent on `id`: re-delivering an already-stored event is a no-op. " +
+          "Tolerant reader: unknown body fields are ignored. " +
+          "Responds 503 until INTERNAL_EVENTS_TOKEN is configured.",
+        tags: ["internal"],
+        security: [{ internalEventsToken: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: [
+                  "id",
+                  "type",
+                  "severity",
+                  "title",
+                  "body",
+                  "namespace",
+                  "timestamp",
+                ],
+                additionalProperties: true,
+                properties: {
+                  id: { type: "string", minLength: 1, maxLength: 512 },
+                  type: { type: "string", minLength: 1, maxLength: 256 },
+                  severity: {
+                    type: "string",
+                    enum: ["info", "success", "warning", "error"],
+                  },
+                  title: { type: "string", minLength: 1, maxLength: 512 },
+                  body: { type: "string", minLength: 1, maxLength: 4096 },
+                  namespace: { type: "string", minLength: 1, maxLength: 253 },
+                  link: {
+                    type: "string",
+                    pattern: "^/(?!/|\\\\)",
+                    maxLength: 2048,
+                  },
+                  timestamp: { type: "string", minLength: 1, maxLength: 64 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          "204": {
+            description: "Event stored (or already stored) and broadcast",
+          },
+          "400": { description: "Body failed schema validation" },
+          "401": {
+            description: "Missing or invalid x-internal-events-token header",
+          },
+          "413": { description: "Body exceeds the 32 KiB limit" },
+          "503": { description: "INTERNAL_EVENTS_TOKEN is not configured" },
+        },
+      },
+    };
 
     fastify.get("/rest/v1/openapi.json", async () => openApiDocument);
   }

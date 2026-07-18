@@ -14,6 +14,6 @@
     },
     "skipLibCheck": true
   },
-  "include": ["./src/**/*", "build.config.js"],
+  "include": ["./src/**/*", "./src/**/*.json", "build.config.js"],
   "exclude": ["node_modules", "dist"]
 }

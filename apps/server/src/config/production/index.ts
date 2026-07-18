@@ -1,4 +1,5 @@
 import { DBSessionStore } from "@/clients/db-session-store";
+import { DBNotificationsStore } from "@/clients/db-notifications-store";
 import {
   appRouter,
   type AppRouter,
@@ -18,6 +19,7 @@ import { IncomingMessage } from "http";
 import { fromMonorepoRoot } from "@/paths";
 import { maskEnvValue } from "../env-utils";
 import { registerOpenApi } from "../openapi";
+import { registerInternalEventsRoute } from "../internalEvents";
 
 export class ProductionFastifyServer {
   fastify: FastifyInstance;
@@ -60,6 +62,8 @@ export class ProductionFastifyServer {
 
   private registerPlugins() {
     const sessionStore = new DBSessionStore();
+    const notificationsStore = new DBNotificationsStore();
+    notificationsStore.cleanup();
 
     this.fastify.register(FastifyWebsocket, {
       prefix: process.env.API_PREFIX,
@@ -104,8 +108,11 @@ export class ProductionFastifyServer {
       }
     });
 
+    registerInternalEventsRoute(this.fastify, { notificationsStore });
+
     registerOpenApi(this.fastify, {
       sessionStore,
+      notificationsStore,
       oidcConfig: {
         issuerURL: process.env.OIDC_ISSUER_URL ?? "",
         clientID: process.env.OIDC_CLIENT_ID ?? "",
@@ -142,6 +149,7 @@ export class ProductionFastifyServer {
               res,
               session,
               sessionStore,
+              notificationsStore,
               oidcConfig: {
                 issuerURL: process.env.OIDC_ISSUER_URL ?? "",
                 clientID: process.env.OIDC_CLIENT_ID ?? "",
@@ -163,6 +171,7 @@ export class ProductionFastifyServer {
 
     this.fastify.addHook("onClose", (instance, done) => {
       sessionStore.cleanup();
+      notificationsStore.cleanup();
       done();
     });
   }

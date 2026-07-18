@@ -6,7 +6,7 @@ import { handleK8sError } from "../../../utils/handleK8sError/index.js";
 import * as k8s from "@kubernetes/client-node";
 import { PassThrough } from "stream";
 import { K8sClient } from "../../../../../clients/k8s/index.js";
-import { createEventQueue, yieldEvents } from "../../../utils/createEventQueue/index.js";
+import { createEventQueue, yieldEvents } from "../../../../../utils/createEventQueue/index.js";
 
 export const k8sPodLogsProcedure = protectedProcedure
   .input(

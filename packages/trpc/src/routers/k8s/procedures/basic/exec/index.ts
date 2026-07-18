@@ -5,7 +5,7 @@ import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors/index.js";
 import { handleK8sError } from "../../../utils/handleK8sError/index.js";
 import * as k8s from "@kubernetes/client-node";
 import { K8sClient } from "../../../../../clients/k8s/index.js";
-import { createEventQueue, yieldEvents } from "../../../utils/createEventQueue/index.js";
+import { createEventQueue, yieldEvents } from "../../../../../utils/createEventQueue/index.js";
 import { execSessionManager } from "./sessionManager.js";
 import { randomUUID } from "crypto";
 

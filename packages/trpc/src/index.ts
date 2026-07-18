@@ -6,3 +6,7 @@ export { createContext } from "./context/create.js";
 export { appRouter, createCaller } from "./routers/index.js";
 
 export { rewriteErrorEnvelopeSchemas, UNKNOWN_ERROR_PHRASE } from "./utils/openapi/index.js";
+
+export { createEventQueue, yieldEvents } from "./utils/createEventQueue/index.js";
+
+export { notificationEventBus } from "./clients/eventBus/index.js";

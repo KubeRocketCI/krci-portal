@@ -1,4 +1,5 @@
 import { DBSessionStore } from "@/clients/db-session-store";
+import { DBNotificationsStore } from "@/clients/db-notifications-store";
 import {
   appRouter,
   type AppRouter,
@@ -17,6 +18,7 @@ import Fastify, { FastifyInstance, FastifyRequest } from "fastify";
 import { IncomingMessage } from "http";
 import { maskEnvValue } from "../env-utils";
 import { registerOpenApi } from "../openapi";
+import { registerInternalEventsRoute } from "../internalEvents";
 
 export class LocalFastifyServer {
   fastify: FastifyInstance;
@@ -54,6 +56,8 @@ export class LocalFastifyServer {
 
   private registerPlugins() {
     const sessionStore = new DBSessionStore();
+    const notificationsStore = new DBNotificationsStore();
+    notificationsStore.cleanup();
 
     if (process.env.NODE_ENV === "development") {
       sessionStore.clearAllSessions();
@@ -84,8 +88,11 @@ export class LocalFastifyServer {
       saveUninitialized: false,
     });
 
+    registerInternalEventsRoute(this.fastify, { notificationsStore });
+
     registerOpenApi(this.fastify, {
       sessionStore,
+      notificationsStore,
       oidcConfig: {
         issuerURL: process.env.OIDC_ISSUER_URL ?? "",
         clientID: process.env.OIDC_CLIENT_ID ?? "",
@@ -122,6 +129,7 @@ export class LocalFastifyServer {
               res,
               session,
               sessionStore,
+              notificationsStore,
               oidcConfig: {
                 issuerURL: process.env.OIDC_ISSUER_URL ?? "",
                 clientID: process.env.OIDC_CLIENT_ID ?? "",
@@ -141,6 +149,7 @@ export class LocalFastifyServer {
 
     this.fastify.addHook("onClose", (instance, done) => {
       sessionStore.cleanup();
+      notificationsStore.cleanup();
       done();
     });
   }

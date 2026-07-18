@@ -2,7 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Fastify, { type FastifyInstance } from "fastify";
 import { TRPCError } from "@trpc/server";
 import type { DBSessionStore } from "@/clients/db-session-store/index.js";
-import { createMockedDBSessionStore } from "@my-project/trpc/__mocks__/context.js";
+import {
+  createMockedDBSessionStore,
+  createMockedNotificationsStore,
+} from "@my-project/trpc/__mocks__/context.js";
 import { mockSession } from "@my-project/trpc/__mocks__/session.js";
 import type { CustomSession } from "@my-project/trpc";
 
@@ -27,6 +30,8 @@ const MOCK_SESSION_STORE = createMockedDBSessionStore(
   mockSession as unknown as CustomSession
 ) as unknown as DBSessionStore;
 
+const MOCK_NOTIFICATIONS_STORE = createMockedNotificationsStore();
+
 const MOCK_OIDC_CONFIG = {
   issuerURL: "https://oidc.example.com",
   clientID: "client-id",
@@ -42,6 +47,7 @@ function buildFastify(): FastifyInstance {
 
   registerOpenApi(app, {
     sessionStore: MOCK_SESSION_STORE,
+    notificationsStore: MOCK_NOTIFICATIONS_STORE,
     oidcConfig: MOCK_OIDC_CONFIG,
     portalUrl: "http://localhost:8000",
   });
