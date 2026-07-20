@@ -2,6 +2,22 @@
 ## [Unreleased]
 
 
+<a name="v0.7.0"></a>
+## [v0.7.0] - 2026-07-20
+### Features
+
+- render cancelled PipelineRuns as a neutral state instead of failed
+- add in-app notifications hub with real-time delivery and per-user read state
+
+### Bug Fixes
+
+- restyle notification toasts and close notification interaction gaps
+
+### Routine
+
+- Update current development version
+
+
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2026-07-13
 ### Features
@@ -431,7 +447,8 @@
 - Setup initial code ([#1](https://github.com/KubeRocketCI/krci-portal/issues/1))
 
 
-[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.7.0...HEAD
+[v0.7.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.6.0...v0.7.0
 [v0.6.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.5.0...v0.6.0
 [v0.5.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.4.0...v0.5.0
 [v0.4.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.3.0...v0.4.0
