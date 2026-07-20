@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { getStatusIcon } from "./index";
 import { pipelineRunStatus, pipelineRunReason } from "@my-project/shared";
 import { STATUS_COLOR } from "@/k8s/constants/colors";
-import { CircleCheck, CircleX, LoaderCircle, ShieldQuestion } from "lucide-react";
+import { CircleCheck, CircleSlash, CircleX, LoaderCircle, ShieldQuestion } from "lucide-react";
 import type { PipelineRun } from "@my-project/shared";
 
 describe("getStatusIcon", () => {
@@ -78,7 +78,26 @@ describe("getStatusIcon", () => {
     expect(result.isSpinning).toBe(true);
   });
 
-  test("returns suspended icon for unknown status with cancelled reason", () => {
+  test("returns cancelled icon for false status with cancelled reason", () => {
+    const pipelineRun: PipelineRun = {
+      status: {
+        conditions: [
+          {
+            status: pipelineRunStatus.false,
+            reason: pipelineRunReason.cancelled,
+            message: 'PipelineRun "review-foo" was cancelled',
+          },
+        ],
+      },
+    } as unknown as PipelineRun;
+
+    const result = getStatusIcon(pipelineRun);
+
+    expect(result.component).toBe(CircleSlash);
+    expect(result.color).toBe(STATUS_COLOR.CANCELLED);
+  });
+
+  test("returns cancelled icon for unknown status with cancelled reason", () => {
     const pipelineRun: PipelineRun = {
       status: {
         conditions: [{ status: pipelineRunStatus.unknown, reason: pipelineRunReason.cancelled }],
@@ -87,8 +106,47 @@ describe("getStatusIcon", () => {
 
     const result = getStatusIcon(pipelineRun);
 
-    expect(result.component).toBe(CircleX);
-    expect(result.color).toBe(STATUS_COLOR.SUSPENDED);
+    expect(result.component).toBe(CircleSlash);
+    expect(result.color).toBe(STATUS_COLOR.CANCELLED);
+  });
+
+  test("returns cancelled icon for cancelledRunningFinally reason", () => {
+    const pipelineRun: PipelineRun = {
+      status: {
+        conditions: [{ status: pipelineRunStatus.false, reason: pipelineRunReason.cancelledrunningfinally }],
+      },
+    } as unknown as PipelineRun;
+
+    const result = getStatusIcon(pipelineRun);
+
+    expect(result.component).toBe(CircleSlash);
+    expect(result.color).toBe(STATUS_COLOR.CANCELLED);
+  });
+
+  test("returns cancelled icon for stoppedRunningFinally reason", () => {
+    const pipelineRun: PipelineRun = {
+      status: {
+        conditions: [{ status: pipelineRunStatus.false, reason: pipelineRunReason.stoppedrunningfinally }],
+      },
+    } as unknown as PipelineRun;
+
+    const result = getStatusIcon(pipelineRun);
+
+    expect(result.component).toBe(CircleSlash);
+    expect(result.color).toBe(STATUS_COLOR.CANCELLED);
+  });
+
+  test("returns cancelled icon for pipelineRunStopping reason", () => {
+    const pipelineRun: PipelineRun = {
+      status: {
+        conditions: [{ status: pipelineRunStatus.unknown, reason: pipelineRunReason.pipelinerunstopping }],
+      },
+    } as unknown as PipelineRun;
+
+    const result = getStatusIcon(pipelineRun);
+
+    expect(result.component).toBe(CircleSlash);
+    expect(result.color).toBe(STATUS_COLOR.CANCELLED);
   });
 
   test("returns unknown icon for unknown status with unknown reason", () => {

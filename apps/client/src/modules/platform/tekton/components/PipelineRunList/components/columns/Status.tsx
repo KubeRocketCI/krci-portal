@@ -2,13 +2,21 @@ import { StatusIcon } from "@/core/components/StatusIcon";
 import { Badge } from "@/core/components/ui/badge";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
-import { PipelineRun, getPipelineRunStatus } from "@my-project/shared";
+import {
+  PipelineRun,
+  getPipelineRunReasonLabel,
+  getPipelineRunStatus,
+  isPipelineRunCancelledReason,
+} from "@my-project/shared";
 
 export const StatusColumn = ({ pipelineRun }: { pipelineRun: PipelineRun }) => {
   const statusIcon = getPipelineRunStatusIcon(pipelineRun);
   const status = getPipelineRunStatus(pipelineRun);
 
-  const errorMessage = status.status === "false" && status.message !== "No message" ? status.message : undefined;
+  const errorMessage =
+    status.status === "false" && !isPipelineRunCancelledReason(status.reason) && status.message !== "No message"
+      ? status.message
+      : undefined;
 
   const badge = (
     <Badge
@@ -23,7 +31,7 @@ export const StatusColumn = ({ pipelineRun }: { pipelineRun: PipelineRun }) => {
           width={12}
         />
       </span>
-      <span className="min-w-0 flex-1 truncate capitalize">{status.reason}</span>
+      <span className="min-w-0 flex-1 truncate capitalize">{getPipelineRunReasonLabel(status.reason)}</span>
     </Badge>
   );
 

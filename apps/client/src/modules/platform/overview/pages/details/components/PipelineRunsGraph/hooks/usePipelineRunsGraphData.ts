@@ -1,5 +1,10 @@
 import { usePipelineRunWatchList } from "@/k8s/api/groups/Tekton/PipelineRun";
-import { getPipelineRunStatus, pipelineRunReason, pipelineRunStatus } from "@my-project/shared";
+import {
+  getPipelineRunStatus,
+  isPipelineRunCancelledReason,
+  pipelineRunReason,
+  pipelineRunStatus,
+} from "@my-project/shared";
 import React from "react";
 
 interface GraphData {
@@ -8,7 +13,7 @@ interface GraphData {
   error: number;
   inProgress: number;
   unknown: number;
-  suspended: number;
+  cancelled: number;
 }
 
 export const usePipelineRunsGraphData = () => {
@@ -22,7 +27,7 @@ export const usePipelineRunsGraphData = () => {
         error: null,
         inProgress: null,
         unknown: null,
-        suspended: null,
+        cancelled: null,
       };
     }
 
@@ -33,14 +38,16 @@ export const usePipelineRunsGraphData = () => {
         const _status = status.toLowerCase();
         const _reason = reason?.toLowerCase() ?? "";
 
+        if (isPipelineRunCancelledReason(reason)) {
+          acc.cancelled++;
+          acc.total++;
+          return acc;
+        }
+
         switch (_status) {
           case pipelineRunStatus.unknown:
             if (_reason === pipelineRunReason.started || _reason === pipelineRunReason.running) {
               acc.inProgress++;
-            }
-
-            if (_reason === pipelineRunReason.cancelled) {
-              acc.suspended++;
             }
             break;
           case pipelineRunStatus.true:
@@ -64,7 +71,7 @@ export const usePipelineRunsGraphData = () => {
         error: 0,
         inProgress: 0,
         unknown: 0,
-        suspended: 0,
+        cancelled: 0,
       }
     );
   }, [pipelineRunListWatch.data.array, pipelineRunListWatch.query.data, pipelineRunListWatch.query.isFetching]);

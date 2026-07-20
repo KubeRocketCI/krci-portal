@@ -16,8 +16,11 @@ import { useCodebaseWatch, useGitServerWatch } from "../../../hooks/data";
 import {
   checkIsDefaultBranch,
   codebaseBranchStatus,
+  getPipelineRunReasonLabel,
   getPipelineRunStatus,
+  isPipelineRunCancelledReason,
   pipelineRunReason,
+  type PipelineRunReason,
 } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import { GitBranch, Pin, SquareArrowOutUpRight } from "lucide-react";
@@ -29,9 +32,10 @@ import { PipelineActionsGroup } from "../components/PipelineActionsGroup";
 import { columnNames } from "../constants";
 import { EnrichedBranch } from "../types";
 
-function formatBuildStatusText(reason: string | undefined): string {
+function formatBuildStatusText(reason: PipelineRunReason | undefined): string {
   if (!reason) return "Unknown";
   if (reason === pipelineRunReason.running) return "In progress";
+  if (isPipelineRunCancelledReason(reason)) return getPipelineRunReasonLabel(reason);
   return reason.charAt(0).toUpperCase() + reason.slice(1);
 }
 

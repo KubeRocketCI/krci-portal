@@ -9,7 +9,7 @@ export type PipelineRunListFilterValues = {
   [pipelineRunFilterControlNames.SEARCH]: string;
   [pipelineRunFilterControlNames.CODEBASES]: string[];
   [pipelineRunFilterControlNames.CODEBASE_BRANCHES]: string[];
-  [pipelineRunFilterControlNames.STATUS]: FilterTypeWithOptionAll<PipelineRunStatus>;
+  [pipelineRunFilterControlNames.STATUS]: FilterTypeWithOptionAll<PipelineRunStatus> | "cancelled";
   [pipelineRunFilterControlNames.PIPELINE_TYPE]: FilterTypeWithOptionAll<PipelineType>;
   [pipelineRunFilterControlNames.NAMESPACES]: string[];
 };
