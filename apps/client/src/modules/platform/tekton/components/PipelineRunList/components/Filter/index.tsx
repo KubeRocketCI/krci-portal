@@ -82,6 +82,7 @@ export const PipelineRunFilter = ({
         label: pipelineRunStatusLabels[v] ?? capitalizeFirstLetter(String(v)),
         value: String(v),
       })),
+      { label: "Cancelled", value: "cancelled" },
     ],
     []
   );

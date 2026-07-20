@@ -10,7 +10,9 @@ import { formatDuration, formatTimestamp } from "@/core/utils/date-humanize";
 import { useCodebaseBranchWatchItem } from "@/k8s/api/groups/KRCI/CodebaseBranch";
 import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
 import {
+  getPipelineRunReasonLabel,
   getPipelineRunStatus,
+  isPipelineRunCancelledReason,
   PipelineRun,
   pipelineRunLabels,
   tektonResultAnnotations,
@@ -118,7 +120,7 @@ function HeaderMetadata() {
               color={pipelineRunStatusIcon.color}
               width={12}
             />
-            <span className="capitalize">{pipelineRunStatus.reason}</span>
+            <span className="capitalize">{getPipelineRunReasonLabel(pipelineRunStatus.reason)}</span>
           </Badge>
         </div>
 
@@ -236,13 +238,15 @@ function HeaderMetadata() {
         )}
       </div>
 
-      {pipelineRunStatus.status === "false" && pipelineRunStatus.message !== "No message" && (
-        <div className="flex w-full items-center gap-2">
-          <AlertCircle className="text-muted-foreground size-4 shrink-0" />
-          <span className="text-muted-foreground shrink-0 text-sm">Error:</span>
-          <span className="text-foreground text-sm break-all">{pipelineRunStatus.message}</span>
-        </div>
-      )}
+      {pipelineRunStatus.status === "false" &&
+        !isPipelineRunCancelledReason(pipelineRunStatus.reason) &&
+        pipelineRunStatus.message !== "No message" && (
+          <div className="flex w-full items-center gap-2">
+            <AlertCircle className="text-muted-foreground size-4 shrink-0" />
+            <span className="text-muted-foreground shrink-0 text-sm">Error:</span>
+            <span className="text-foreground text-sm break-all">{pipelineRunStatus.message}</span>
+          </div>
+        )}
     </div>
   );
 }

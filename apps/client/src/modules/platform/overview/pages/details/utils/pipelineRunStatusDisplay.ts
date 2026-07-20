@@ -1,5 +1,11 @@
-import { getPipelineRunStatus, pipelineRunStatus, pipelineRunReason, type PipelineRun } from "@my-project/shared";
-import { CheckCircle2, XCircle, PlayCircle, Clock } from "lucide-react";
+import {
+  getPipelineRunStatus,
+  isPipelineRunCancelledReason,
+  pipelineRunStatus,
+  pipelineRunReason,
+  type PipelineRun,
+} from "@my-project/shared";
+import { CheckCircle2, CircleSlash, XCircle, PlayCircle, Clock } from "lucide-react";
 
 export type StatusVariant = "success" | "error" | "info" | "neutral";
 
@@ -12,6 +18,10 @@ export function getStatusDisplay(run: PipelineRun): {
   const s = status.toLowerCase();
   const r = reason?.toLowerCase() ?? "";
 
+  // Must precede the "False" → Failed branch: a cancelled run also reports status "False".
+  if (isPipelineRunCancelledReason(reason)) {
+    return { label: "Cancelled", variant: "neutral", icon: CircleSlash };
+  }
   if (s === pipelineRunStatus.true) {
     return { label: "Succeeded", variant: "success", icon: CheckCircle2 };
   }
@@ -21,9 +31,6 @@ export function getStatusDisplay(run: PipelineRun): {
   if (s === pipelineRunStatus.unknown) {
     if (r === pipelineRunReason.started || r === pipelineRunReason.running) {
       return { label: "Running", variant: "info", icon: PlayCircle };
-    }
-    if (r === pipelineRunReason.cancelled) {
-      return { label: "Cancelled", variant: "neutral", icon: Clock };
     }
   }
   return { label: "Pending", variant: "neutral", icon: Clock };

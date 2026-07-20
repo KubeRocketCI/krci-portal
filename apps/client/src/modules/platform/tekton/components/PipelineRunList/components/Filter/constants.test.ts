@@ -3,6 +3,7 @@ import { PipelineRun, pipelineRunLabels, pipelineType, tektonResultAnnotations }
 import { matchFunctions, pipelineRunFilterControlNames } from "./constants";
 
 const codebasesMatch = matchFunctions[pipelineRunFilterControlNames.CODEBASES]!;
+const statusMatch = matchFunctions[pipelineRunFilterControlNames.STATUS]!;
 
 interface PrOverrides {
   type?: string;
@@ -26,6 +27,15 @@ const makeRun = ({ type, codebaseLabel, appsPayload, isHistory }: PrOverrides): 
     spec: params ? { params } : {},
   } as unknown as PipelineRun;
 };
+
+const makeRunWithCondition = (status: string, reason?: string): PipelineRun =>
+  ({
+    metadata: { name: "x", namespace: "ns", labels: {}, annotations: {} },
+    spec: {},
+    status: {
+      conditions: [{ status, reason }],
+    },
+  }) as unknown as PipelineRun;
 
 describe("matchFunctions.codebases", () => {
   test("empty selection passes everything", () => {
@@ -82,5 +92,48 @@ describe("matchFunctions.codebases", () => {
     const item = makeRun({ type: pipelineType.build, codebaseLabel: "alpha" });
     expect(codebasesMatch(item, ["alpha", "beta"])).toBe(true);
     expect(codebasesMatch(item, ["beta", "gamma"])).toBe(false);
+  });
+});
+
+describe("matchFunctions.status", () => {
+  test("'all' matches every status", () => {
+    expect(statusMatch(makeRunWithCondition("True"), "all")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("False", "Failed"), "all")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("False", "Cancelled"), "all")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("Unknown", "Running"), "all")).toBe(true);
+  });
+
+  test("'true' matches only succeeded runs", () => {
+    expect(statusMatch(makeRunWithCondition("True"), "true")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("False", "Failed"), "true")).toBe(false);
+  });
+
+  test("'unknown' matches only running/pending runs", () => {
+    expect(statusMatch(makeRunWithCondition("Unknown", "Running"), "unknown")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("False", "Failed"), "unknown")).toBe(false);
+  });
+
+  test("a stopping run (Unknown + PipelineRunStopping) counts as cancelled, not unknown", () => {
+    // Regression: Tekton reports an in-flight stop as condition status "Unknown".
+    // It renders as grey "Cancelled" everywhere, so the filter must agree.
+    expect(statusMatch(makeRunWithCondition("Unknown", "PipelineRunStopping"), "cancelled")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("Unknown", "PipelineRunStopping"), "unknown")).toBe(false);
+  });
+
+  test("'false' matches failed runs but excludes cancelled/stopped runs", () => {
+    expect(statusMatch(makeRunWithCondition("False", "Failed"), "false")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("False", "Cancelled"), "false")).toBe(false);
+    expect(statusMatch(makeRunWithCondition("False", "CancelledRunningFinally"), "false")).toBe(false);
+    expect(statusMatch(makeRunWithCondition("False", "StoppedRunningFinally"), "false")).toBe(false);
+    expect(statusMatch(makeRunWithCondition("False", "PipelineRunStopping"), "false")).toBe(false);
+  });
+
+  test("'cancelled' matches only cancelled/stopped runs", () => {
+    expect(statusMatch(makeRunWithCondition("False", "Cancelled"), "cancelled")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("False", "CancelledRunningFinally"), "cancelled")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("False", "StoppedRunningFinally"), "cancelled")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("False", "PipelineRunStopping"), "cancelled")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("False", "Failed"), "cancelled")).toBe(false);
+    expect(statusMatch(makeRunWithCondition("True"), "cancelled")).toBe(false);
   });
 });

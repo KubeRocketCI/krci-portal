@@ -6,6 +6,7 @@ import {
   getPipelineRunAnnotation,
   tektonResultAnnotations,
   isHistoryPipelineRun,
+  isPipelineRunCancelledReason,
 } from "@my-project/shared";
 import { isCodebaseInPayloadType } from "@/modules/platform/tekton/utils/celFilters";
 import { PipelineRunListFilterValues } from "./types";
@@ -78,7 +79,21 @@ export const matchFunctions: MatchFunctions<PipelineRun, PipelineRunListFilterVa
       return true;
     }
 
-    return getPipelineRunStatus(item).status === value;
+    const status = getPipelineRunStatus(item);
+    // A cancelled/stopped run is treated as its own category regardless of the
+    // underlying condition status (it can be "False" once cancelled or "Unknown"
+    // while stopping), matching how it is rendered everywhere else.
+    const isCancelled = isPipelineRunCancelledReason(status.reason);
+
+    if (value === "cancelled") {
+      return isCancelled;
+    }
+
+    if (isCancelled) {
+      return false;
+    }
+
+    return status.status === value;
   },
   [pipelineRunFilterControlNames.PIPELINE_TYPE]: (item, value) => {
     if (value === "all") {

@@ -27,6 +27,11 @@ export const PipelineRunsGraph = () => {
           fill: CHART_STATUS_COLOR.ERROR,
         },
         {
+          name: "Cancelled",
+          value: graphData.cancelled!,
+          fill: CHART_STATUS_COLOR.CANCELLED,
+        },
+        {
           name: "Unknown",
           value: graphData.unknown!,
           fill: CHART_STATUS_COLOR.UNKNOWN,
@@ -39,8 +44,8 @@ export const PipelineRunsGraph = () => {
           {!!graphData.error && (
             <LegendListItem color={CHART_STATUS_COLOR.ERROR} number={graphData.error} label="Failed" />
           )}
-          {!!graphData.suspended && (
-            <LegendListItem color={CHART_STATUS_COLOR.SUSPENDED} number={graphData.suspended} label="Suspended" />
+          {!!graphData.cancelled && (
+            <LegendListItem color={CHART_STATUS_COLOR.CANCELLED} number={graphData.cancelled} label="Cancelled" />
           )}
           {!!graphData.inProgress && (
             <LegendListItem color={CHART_STATUS_COLOR.IN_PROGRESS} number={graphData.inProgress} label="In Progress" />
