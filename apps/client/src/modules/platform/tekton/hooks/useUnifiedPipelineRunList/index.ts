@@ -1,6 +1,12 @@
 import { usePipelineRunWatchList } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { useClusterStore } from "@/k8s/store";
-import { PipelineRun, TektonResult, normalizeResultToPipelineRun, pipelineRunLabels } from "@my-project/shared";
+import {
+  PipelineRun,
+  TektonResult,
+  normalizeResultToPipelineRun,
+  pipelineRunLabels,
+  pipelineRunStatus,
+} from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
 import {
   buildAnnotationsFilter,
@@ -124,6 +130,13 @@ export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOpt
     return parts.length > 0 ? parts.join(" && ") : undefined;
   }, [labels, searchTerm, status, pipelineType, codebases]);
 
+  // "Running / Pending" (status "unknown") is a live-only state: the Tekton Results
+  // `results` table stores only archived (terminal) runs, so history can never
+  // contribute a genuinely running run. Skip the history query for this filter —
+  // otherwise it returns terminal runs whose summary was never finalized ("unknown")
+  // that would masquerade as running, and wastes a full page on rows that never show.
+  const historyEnabled = enabled && status !== pipelineRunStatus.unknown;
+
   const historyQuery = useInfiniteQuery<HistoryPage, Error>({
     queryKey: ["tektonResults", "pipelineRunResults", clusterName, namespace, celFilter],
     queryFn: ({ pageParam }) => {
@@ -136,7 +149,7 @@ export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOpt
     },
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextPageToken || undefined,
-    enabled,
+    enabled: historyEnabled,
   });
 
   // Normalize history Result objects into K8s PipelineRun type.

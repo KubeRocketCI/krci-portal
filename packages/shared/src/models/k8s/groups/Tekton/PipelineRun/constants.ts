@@ -34,13 +34,30 @@ export const isPipelineRunCancelledReason = (reason: PipelineRunReason | undefin
   reason !== undefined && pipelineRunCancelledReasons.includes(reason);
 
 /**
+ * Human-friendly labels for reasons whose raw (lowercased) value reads poorly when
+ * capitalized for display, e.g. "pipelinerunpending" → "Pending". Reasons not listed
+ * here fall back to their raw value, which already reads fine ("running", "failed").
+ */
+const pipelineRunReasonLabels: Partial<Record<PipelineRunReason, string>> = {
+  [pipelineRunReason.pipelinerunpending]: "Pending",
+  [pipelineRunReason.resolvingpipelineref]: "Resolving",
+  [pipelineRunReason.pipelineruntimeoutrunningfinally]: "Finalizing",
+  [pipelineRunReason.pipelineruntimeout]: "Timeout",
+};
+
+/**
  * Human-friendly label for a PipelineRun condition reason. Collapses the several
- * cancel/stop reasons into a single "Cancelled" label; other reasons fall back
- * to their raw value (callers typically capitalize it for display).
+ * cancel/stop reasons into a single "Cancelled" label; maps the compound in-progress
+ * reasons to readable text; other reasons fall back to their raw value (callers
+ * typically capitalize it for display).
  */
 export const getPipelineRunReasonLabel = (reason: PipelineRunReason | undefined): string => {
   if (isPipelineRunCancelledReason(reason)) {
     return "Cancelled";
+  }
+
+  if (reason && pipelineRunReasonLabels[reason]) {
+    return pipelineRunReasonLabels[reason];
   }
 
   return reason ?? "Unknown";

@@ -22,16 +22,27 @@ const pipelineRunLabelsSchema = z
   })
   .catchall(z.string());
 
+// Mirrors tektoncd/pipeline PipelineRunReason (pkg/apis/pipeline/v1/pipelinerun_types.go).
+// Lowercased to match getPipelineRunStatus(), which lowercases the condition reason.
+// In-progress reasons all carry condition status "Unknown"; terminal reasons carry
+// "True" (succeeded/completed) or "False". Reasons Tekton emits that aren't listed
+// here still flow through as raw strings — this enum only types the ones we branch on.
 export const pipelineRunReasonEnum = z.enum([
+  // status "Unknown" — in progress
   "started",
   "running",
   "pipelinerunpending",
+  "resolvingpipelineref",
+  "pipelineruntimeoutrunningfinally",
+  // status "Unknown"/"False" — cancelled/stopped family (rendered neutrally, not as failures)
   "pipelinerunstopping",
   "cancelledrunningfinally",
   "stoppedrunningfinally",
   "cancelled",
+  // status "True" — success
   "succeeded",
   "completed",
+  // status "False" — failure
   "failed",
   "pipelineruntimeout",
   "createrunfailed",
