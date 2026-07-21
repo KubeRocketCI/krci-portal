@@ -3,8 +3,8 @@ import { K8sResourceStatusIcon } from "@/k8s/types";
 import {
   getPipelineRunStatus,
   isPipelineRunCancelledReason,
+  isPipelineRunInProgress,
   PipelineRun,
-  pipelineRunReason,
   pipelineRunStatus,
 } from "@my-project/shared";
 import { CircleCheck, CircleSlash, CircleX, LoaderCircle, ShieldQuestion } from "lucide-react";
@@ -21,28 +21,17 @@ export const getStatusIcon = (pipelineRun: PipelineRun | undefined): K8sResource
     };
   }
 
+  // A reasonless "Unknown" (loading, or an archived unfinalized record) is not in
+  // progress and falls through to the neutral icon below. See isPipelineRunInProgress.
+  if (isPipelineRunInProgress(pipelineRun)) {
+    return {
+      component: LoaderCircle,
+      color: STATUS_COLOR.IN_PROGRESS,
+      isSpinning: true,
+    };
+  }
+
   switch (status) {
-    case pipelineRunStatus.unknown:
-      if (reason === pipelineRunReason.started) {
-        return {
-          component: LoaderCircle,
-          color: STATUS_COLOR.IN_PROGRESS,
-          isSpinning: true,
-        };
-      }
-
-      if (reason === pipelineRunReason.running) {
-        return {
-          component: LoaderCircle,
-          color: STATUS_COLOR.IN_PROGRESS,
-          isSpinning: true,
-        };
-      }
-
-      return {
-        component: ShieldQuestion,
-        color: STATUS_COLOR.UNKNOWN,
-      };
     case pipelineRunStatus.true:
       return {
         component: CircleCheck,

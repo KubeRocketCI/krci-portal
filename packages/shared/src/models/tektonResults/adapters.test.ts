@@ -622,19 +622,16 @@ describe("normalizeResultToPipelineRun", () => {
     );
   });
 
-  it("should map UNKNOWN status to running condition", () => {
+  it("should render UNKNOWN status as a terminal, neutral condition (never running)", () => {
     const unknownResult: TektonResult = {
       ...mockTektonResult,
       summary: { ...mockTektonResult.summary!, status: "UNKNOWN" },
     };
     const result = normalizeResultToPipelineRun(unknownResult, "edp-delivery");
 
-    expect(result.status?.conditions?.[0]).toEqual(
-      expect.objectContaining({
-        status: "unknown",
-        reason: "running",
-      })
-    );
+    // Archived Results are terminal; an unfinalized summary must not spin as "Running".
+    expect(result.status?.conditions?.[0]?.status).toBe("unknown");
+    expect(result.status?.conditions?.[0]?.reason).toBeUndefined();
   });
 
   it("should fallback to update_time when end_time is null for completed runs", () => {
@@ -647,14 +644,15 @@ describe("normalizeResultToPipelineRun", () => {
     expect(result.status?.completionTime).toBe("2026-03-10T10:15:00Z");
   });
 
-  it("should not set completionTime for UNKNOWN status even without end_time", () => {
-    const running: TektonResult = {
+  it("should bound completionTime to update_time for UNKNOWN status without end_time", () => {
+    const unfinalized: TektonResult = {
       ...mockTektonResult,
       summary: { ...mockTektonResult.summary!, end_time: undefined, status: "UNKNOWN" },
     };
-    const result = normalizeResultToPipelineRun(running, "edp-delivery");
+    const result = normalizeResultToPipelineRun(unfinalized, "edp-delivery");
 
-    expect(result.status?.completionTime).toBeUndefined();
+    // Terminal-but-unfinalized runs still get a completion time (the "Running forever" bug).
+    expect(result.status?.completionTime).toBe("2026-03-10T10:15:00Z");
   });
 
   it("should use end_time as completionTime when available", () => {
@@ -775,8 +773,9 @@ describe("normalizeResultToPipelineRun", () => {
     };
     const result = normalizeResultToPipelineRun(noSummary, "edp-delivery");
 
-    expect(result.status?.conditions?.[0]?.reason).toBe("running");
     expect(result.status?.conditions?.[0]?.status).toBe("unknown");
+    expect(result.status?.conditions?.[0]?.reason).toBeUndefined();
+    expect(result.status?.completionTime).toBe("2026-03-10T10:15:00Z");
   });
 
   it("should ignore non-string annotation values via type guard", () => {

@@ -150,12 +150,20 @@ export function normalizeHistoryTaskRun(decoded: DecodedTaskRun): TaskRun {
 // Result → PipelineRun normalizer (lightweight summary, no JSONB decode)
 // ---------------------------------------------------------------------------
 
-const RESULT_STATUS_MAP: Record<TektonResultStatus, { status: string; reason: string }> = {
+// A Result in the `results` table is an ARCHIVED run — terminal by definition:
+// the unified list dedupes any live run out (live wins), so a Result that reaches
+// the UI is never actually running. When the Tekton Results watcher failed to
+// finalize `summary.status` (left UNKNOWN), the true SUCCESS/FAILURE lives only in
+// the heavyweight record blob (surfaced on the detail page). For the lightweight
+// list we render it as a neutral, terminal "Unknown" — never an active "Running"
+// spinner. Omitting the reason is load-bearing: isPipelineRunInProgress (which
+// getStatusIcon uses) only spins an "unknown"-status run when a reason is present.
+const RESULT_STATUS_MAP: Record<TektonResultStatus, { status: string; reason?: string }> = {
   SUCCESS: { status: pipelineRunStatus.true, reason: pipelineRunReason.succeeded },
   FAILURE: { status: pipelineRunStatus.false, reason: pipelineRunReason.failed },
   TIMEOUT: { status: pipelineRunStatus.false, reason: pipelineRunReason.pipelineruntimeout },
   CANCELLED: { status: pipelineRunStatus.false, reason: pipelineRunReason.cancelled },
-  UNKNOWN: { status: pipelineRunStatus.unknown, reason: pipelineRunReason.running },
+  UNKNOWN: { status: pipelineRunStatus.unknown },
 };
 
 function getResultAnnotation(result: TektonResult, key: string): string | undefined {
@@ -185,12 +193,13 @@ export function normalizeResultToPipelineRun(result: TektonResult, namespace: st
   const statusInfo = RESULT_STATUS_MAP[summaryStatus] || RESULT_STATUS_MAP.UNKNOWN;
 
   const startTime = result.create_time;
+  // A Result row is archived => terminal, so it always has a completion time.
   // summary.end_time is NULL for many results due to a Tekton Results watcher bug
-  // (the watcher uses ConditionReady instead of status.completionTime).
-  // Fallback to update_time: the Result is updated when the PipelineRun completes,
-  // so update_time ≈ actual completion time for finished runs.
-  const isCompleted = summaryStatus !== "UNKNOWN";
-  const completionTime = result.summary?.end_time || (isCompleted ? result.update_time : undefined);
+  // (the watcher uses ConditionReady instead of status.completionTime). Fall back
+  // to update_time: the Result is updated when the PipelineRun completes, so
+  // update_time ≈ actual completion time. This bounds the rendered duration even
+  // when summary.status was never finalized (otherwise it grows forever).
+  const completionTime = result.summary?.end_time || result.update_time;
 
   const resultAnnotations: Record<string, string> = {};
   const annotationKeys = [
@@ -238,7 +247,7 @@ export function normalizeResultToPipelineRun(result: TektonResult, namespace: st
         {
           type: "Succeeded",
           status: statusInfo.status,
-          reason: statusInfo.reason,
+          ...(statusInfo.reason ? { reason: statusInfo.reason } : {}),
           lastTransitionTime: completionTime || startTime,
         },
       ],

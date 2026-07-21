@@ -28,14 +28,18 @@ const makeRun = ({ type, codebaseLabel, appsPayload, isHistory }: PrOverrides): 
   } as unknown as PipelineRun;
 };
 
-const makeRunWithCondition = (status: string, reason?: string): PipelineRun =>
-  ({
-    metadata: { name: "x", namespace: "ns", labels: {}, annotations: {} },
+const makeRunWithCondition = (status: string, reason?: string, isHistory?: boolean): PipelineRun => {
+  const annotations: Record<string, string> = {};
+  if (isHistory) annotations[tektonResultAnnotations.historySource] = "true";
+
+  return {
+    metadata: { name: "x", namespace: "ns", labels: {}, annotations },
     spec: {},
     status: {
       conditions: [{ status, reason }],
     },
-  }) as unknown as PipelineRun;
+  } as unknown as PipelineRun;
+};
 
 describe("matchFunctions.codebases", () => {
   test("empty selection passes everything", () => {
@@ -111,6 +115,13 @@ describe("matchFunctions.status", () => {
   test("'unknown' matches only running/pending runs", () => {
     expect(statusMatch(makeRunWithCondition("Unknown", "Running"), "unknown")).toBe(true);
     expect(statusMatch(makeRunWithCondition("False", "Failed"), "unknown")).toBe(false);
+  });
+
+  test("'unknown' excludes archived history runs (terminal, never actually running)", () => {
+    const historyUnknown = makeRunWithCondition("Unknown", undefined, true);
+    expect(statusMatch(historyUnknown, "unknown")).toBe(false);
+    // Same condition status, but live => genuinely running.
+    expect(statusMatch(makeRunWithCondition("Unknown", "Running"), "unknown")).toBe(true);
   });
 
   test("a stopping run (Unknown + PipelineRunStopping) counts as cancelled, not unknown", () => {

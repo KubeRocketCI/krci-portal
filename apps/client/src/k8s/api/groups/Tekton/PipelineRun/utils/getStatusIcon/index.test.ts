@@ -78,6 +78,21 @@ describe("getStatusIcon", () => {
     expect(result.isSpinning).toBe(true);
   });
 
+  test("returns in-progress icon for unknown status with pending reason", () => {
+    // Tekton keeps a pending run at status "Unknown", so it must spin, not render grey.
+    const pipelineRun: PipelineRun = {
+      status: {
+        conditions: [{ status: pipelineRunStatus.unknown, reason: pipelineRunReason.pipelinerunpending }],
+      },
+    } as unknown as PipelineRun;
+
+    const result = getStatusIcon(pipelineRun);
+
+    expect(result.component).toBe(LoaderCircle);
+    expect(result.color).toBe(STATUS_COLOR.IN_PROGRESS);
+    expect(result.isSpinning).toBe(true);
+  });
+
   test("returns cancelled icon for false status with cancelled reason", () => {
     const pipelineRun: PipelineRun = {
       status: {
@@ -149,10 +164,26 @@ describe("getStatusIcon", () => {
     expect(result.color).toBe(STATUS_COLOR.CANCELLED);
   });
 
-  test("returns unknown icon for unknown status with unknown reason", () => {
+  test("returns in-progress icon for unknown status with any (even unrecognized) reason", () => {
+    // "Unknown" + any reason means a live in-flight run, recognized or not.
     const pipelineRun: PipelineRun = {
       status: {
-        conditions: [{ status: pipelineRunStatus.unknown, reason: "unknown-reason" }],
+        conditions: [{ status: pipelineRunStatus.unknown, reason: "some-future-running-reason" }],
+      },
+    } as unknown as PipelineRun;
+
+    const result = getStatusIcon(pipelineRun);
+
+    expect(result.component).toBe(LoaderCircle);
+    expect(result.color).toBe(STATUS_COLOR.IN_PROGRESS);
+    expect(result.isSpinning).toBe(true);
+  });
+
+  test("returns neutral unknown icon for a reasonless unknown status (loading / unfinalized archive)", () => {
+    // No reason => not live (matches an archived, unfinalized record). Must not spin.
+    const pipelineRun: PipelineRun = {
+      status: {
+        conditions: [{ status: pipelineRunStatus.unknown }],
       },
     } as unknown as PipelineRun;
 
@@ -160,5 +191,6 @@ describe("getStatusIcon", () => {
 
     expect(result.component).toBe(ShieldQuestion);
     expect(result.color).toBe(STATUS_COLOR.UNKNOWN);
+    expect(result.isSpinning).toBeFalsy();
   });
 });

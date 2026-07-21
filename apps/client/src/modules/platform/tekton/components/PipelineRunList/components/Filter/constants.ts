@@ -2,6 +2,7 @@ import { MatchFunctions, createSearchMatchFunction } from "@/core/providers/Filt
 import {
   PipelineRun,
   pipelineRunLabels,
+  pipelineRunStatus,
   getPipelineRunStatus,
   getPipelineRunAnnotation,
   tektonResultAnnotations,
@@ -90,6 +91,13 @@ export const matchFunctions: MatchFunctions<PipelineRun, PipelineRunListFilterVa
     }
 
     if (isCancelled) {
+      return false;
+    }
+
+    // "Running / Pending" (status "unknown") is a live-only state. A history run
+    // from Tekton Results is archived => terminal; its summary may be an
+    // unfinalized "unknown" but it is never actually running, so exclude it.
+    if (value === pipelineRunStatus.unknown && isHistoryPipelineRun(item)) {
       return false;
     }
 
