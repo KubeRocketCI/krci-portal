@@ -10,6 +10,7 @@ import { validateField } from "@/core/utils/forms/validation";
 import { useCreateCodebaseForm } from "../../../providers/form/hooks";
 import { NAMES } from "../../../names";
 import { isGerritProvider } from "../../../utils";
+import { useOnboardedRepoCheck } from "../../../hooks/useOnboardedRepoCheck";
 
 export const RepositoryName: React.FC = () => {
   const form = useCreateCodebaseForm();
@@ -48,6 +49,15 @@ export const RepositoryName: React.FC = () => {
 
   const isImportStrategy = strategyFieldValue === codebaseCreationStrategy.import;
 
+  const { findOnboardedProject, membershipKey } = useOnboardedRepoCheck();
+
+  // Re-validate on list updates — validation otherwise runs only on change/blur/submit
+  React.useEffect(() => {
+    if (form.getFieldMeta(NAMES.ui_repositoryName)?.isTouched) {
+      form.validateField(NAMES.ui_repositoryName, "change");
+    }
+  }, [membershipKey, form]);
+
   return (
     <form.AppField
       name={NAMES.ui_repositoryName}
@@ -72,6 +82,14 @@ export const RepositoryName: React.FC = () => {
           ) {
             return "Repository with this name already exists";
           }
+
+          if (ownerFieldValue) {
+            const onboardedProject = findOnboardedProject(`${ownerFieldValue}/${value}`);
+            if (onboardedProject) {
+              return `This repository is already onboarded as project "${onboardedProject}".`;
+            }
+          }
+
           return undefined;
         },
       }}
