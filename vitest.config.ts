@@ -81,6 +81,7 @@ export default defineConfig({
         "**/useFilter.tsx",
         "**/useColumns.tsx",
         "**/useDefaultValues.ts",
+        "**/useOnboardedRepoCheck.ts",
 
         // ============================================
         // INFRASTRUCTURE & SETUP

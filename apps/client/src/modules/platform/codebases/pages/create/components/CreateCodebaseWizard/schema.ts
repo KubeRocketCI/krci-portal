@@ -29,7 +29,7 @@ const repositoryUrlSchema = createCodebaseDraftInputSchema.shape.repositoryUrl.r
   { message: "Specify the application URL in the following format: http(s)://git.example.com/example." }
 );
 
-const nameSchema = createCodebaseDraftInputSchema.shape.name
+export const nameSchema = createCodebaseDraftInputSchema.shape.name
   .min(2, "Project name must be not less than two characters long.")
   .max(30, "Project name must be less than 30 characters long.")
   .regex(/^[a-z](?!.*--[^-])[a-z0-9-]*[a-z0-9]$/, {
