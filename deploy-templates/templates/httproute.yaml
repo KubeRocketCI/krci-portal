@@ -1,3 +1,6 @@
+{{- /* Opt-in (default off). Enable only on clusters that serve the Gateway API; if the
+CRDs are absent the resource fails at apply time with a clear "no matches for kind
+HTTPRoute" error. */ -}}
 {{- if .Values.httproute.enabled -}}
 {{- $fullName := include "krci-portal.fullname" . -}}
 {{- $svcPort := .Values.service.port -}}
@@ -21,12 +24,14 @@ spec:
   {{- if .Values.httproute.hostnames }}
   hostnames:
     {{- range .Values.httproute.hostnames }}
-    {{- /* 'edpDefault' is a sentinel: renders portal-<namespace>.<dnsWildcard>; otherwise the literal hostname is used as-is */ -}}
+    {{- /* 'edpDefault' is a sentinel: renders <fullname>-<namespace>.<dnsWildcard> — the
+    same host the Ingress template renders for its 'edpDefault', so the HTTPRoute takes
+    over exactly the host the Ingress serves; otherwise the literal hostname is used as-is */ -}}
     {{- if eq . "edpDefault" }}
     {{- if not $dnsWildcard }}
     {{- fail "httproute.dnsWildcard (or ingress.dnsWildcard) must be set when using the 'edpDefault' hostname" }}
     {{- end }}
-    - portal-{{ $.Release.Namespace }}.{{ $dnsWildcard }}
+    - {{ $fullName }}-{{ $.Release.Namespace }}.{{ $dnsWildcard }}
     {{- else }}
     - {{ . | quote }}
     {{- end }}
