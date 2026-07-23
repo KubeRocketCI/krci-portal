@@ -3,6 +3,7 @@ import { Button } from "@/core/components/ui/button";
 import { Badge } from "@/core/components/ui/badge";
 import { ExternalLink } from "lucide-react";
 import React from "react";
+import { safeHttpsHref } from "@my-project/shared";
 import { CopyIconButton } from "../CopyIconButton";
 import { cn } from "@/core/utils/classname";
 
@@ -57,6 +58,8 @@ interface IntegrationCardLinkRowProps {
 }
 
 function IntegrationCardLinkRow({ label, href, icon, copyValue }: IntegrationCardLinkRowProps) {
+  const safeHref = safeHttpsHref(href);
+
   return (
     <div className={ROW_CLASS}>
       <div className="flex items-center justify-between">
@@ -64,14 +67,29 @@ function IntegrationCardLinkRow({ label, href, icon, copyValue }: IntegrationCar
           <div className={cn(ROW_ICON_BOX_CLASS, "bg-primary/10 text-primary")}>{icon}</div>
           <div>
             <div className="text-foreground mb-0.5 text-sm">{label}</div>
-            <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary text-xs hover:underline">
-              {href}
-            </a>
+            {safeHref ? (
+              <a
+                href={safeHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary text-xs hover:underline"
+              >
+                {href}
+              </a>
+            ) : (
+              <span className="text-muted-foreground text-xs">{href}</span>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-1">
           {copyValue !== undefined && <CopyIconButton value={copyValue} />}
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => window.open(href, "_blank")}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            disabled={!safeHref}
+            onClick={() => window.open(safeHref, "_blank", "noopener,noreferrer")}
+          >
             <ExternalLink className="text-muted-foreground h-3.5 w-3.5" />
           </Button>
         </div>

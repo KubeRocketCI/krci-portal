@@ -104,34 +104,17 @@ export const k8sTestIntegrationConnectionProcedure = protectedProcedure
         };
       }
 
-      // Provide detailed network error messages
-      let errorMessage = "Unknown network error";
+      // Log the underlying cause server-side; return a generic message to the client.
       if (error instanceof Error) {
-        // Extract the underlying error from fetch's cause property
         const cause = "cause" in error ? error.cause : undefined;
-        const rootError = cause instanceof Error ? cause.message : error.message;
-        errorMessage = rootError;
-
-        // Add helpful context for common errors
-        if (errorMessage.includes("ENOTFOUND") || errorMessage.includes("getaddrinfo")) {
-          errorMessage = `DNS resolution failed: ${errorMessage}. Check if the service name and namespace are correct.`;
-        } else if (errorMessage.includes("ECONNREFUSED")) {
-          errorMessage = `Connection refused: ${errorMessage}. The service may not be running or the port may be incorrect.`;
-        } else if (errorMessage.includes("ETIMEDOUT")) {
-          errorMessage = `Connection timed out: ${errorMessage}. The service may be unreachable due to network policies.`;
-        } else if (errorMessage === "fetch failed") {
-          // If still generic, include both error and cause for debugging
-          errorMessage =
-            cause instanceof Error
-              ? `Network error: ${cause.message}`
-              : `Network error: ${error.message}. Check if the URL is accessible from the cluster.`;
-        }
+        const detail = cause instanceof Error ? cause.message : error.message;
+        console.error(`testIntegrationConnection network error [${serviceType}]: ${detail}`);
       }
 
       return {
         success: false as const,
         error: "NETWORK" as const,
-        message: errorMessage,
+        message: "Unable to connect to the service. Check that the URL is correct and reachable from the cluster.",
       };
     } finally {
       clearTimeout(timeoutId);

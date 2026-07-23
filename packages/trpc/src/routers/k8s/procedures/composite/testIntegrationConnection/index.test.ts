@@ -71,7 +71,7 @@ describe("k8sTestIntegrationConnectionProcedure", () => {
     expect(result).toEqual({ success: true });
   });
 
-  it("should return NETWORK when fetch rejects with a connection error", async () => {
+  it("should return a generic NETWORK message without the underlying errno", async () => {
     fetchSpy.mockRejectedValueOnce(new Error("connect ECONNREFUSED"));
 
     const caller = createCaller(mockContext);
@@ -85,11 +85,13 @@ describe("k8sTestIntegrationConnectionProcedure", () => {
       success: false,
       error: "NETWORK",
     });
-    expect(result.message).toContain("ECONNREFUSED");
-    expect(result.message).toContain("Connection refused");
+    expect(result.message).not.toContain("ECONNREFUSED");
+    expect(result.message).toBe(
+      "Unable to connect to the service. Check that the URL is correct and reachable from the cluster."
+    );
   });
 
-  it("should extract cause from generic fetch failed errors", async () => {
+  it("should not surface the underlying cause from generic fetch failed errors", async () => {
     const causeError = new Error("connect EHOSTUNREACH 10.96.1.5:8081");
     const fetchError = new Error("fetch failed");
     (fetchError as any).cause = causeError;
@@ -106,7 +108,8 @@ describe("k8sTestIntegrationConnectionProcedure", () => {
       success: false,
       error: "NETWORK",
     });
-    expect(result.message).toContain("EHOSTUNREACH");
+    expect(result.message).not.toContain("EHOSTUNREACH");
+    expect(result.message).not.toContain("10.96.1.5");
   });
 
   it("should return TIMEOUT when the request is aborted after 10 seconds", async () => {
