@@ -92,18 +92,22 @@ podAnnotations: {}
 # -- Pod labels
 podLabels: {}
 
-# -- Pod security context
-podSecurityContext: {}
-  # fsGroup: 2000
+# -- Pod security context. `fsGroup` chowns the persistence volume to this GID on mount so the non-root container can write the SQLite database.
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
 
 # -- Container security context
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  # readOnlyRootFilesystem: true  # needs a writable volume for every runtime write path besides the persistence mount
 
 # -- Service configuration
 service:
@@ -209,6 +213,22 @@ volumeMounts: []
 # - name: foo
 #   mountPath: "/etc/foo"
 #   readOnly: true
+
+# -- Persistence for the SQLite session/events database. A ReadWriteOnce PVC mounted at the server's DB directory (`/app/db`) keeps sessions across pod restarts (RWO forces the Recreate strategy). Removed on `helm uninstall` — no retention policy.
+persistence:
+  # -- Enable persistent storage for the SQLite database. Disabled by default.
+  enabled: false
+  # -- Bind an existing PVC instead of creating one. When set, no PVC is created.
+  existingClaim: ""
+  # -- StorageClass for the PVC. Empty uses the cluster default; "-" disables dynamic provisioning.
+  storageClass: ""
+  # -- Access modes for the PVC (RWO is required for the SQLite file lock)
+  accessModes:
+    - ReadWriteOnce
+  # -- Size of the PVC
+  size: 1Gi
+  # -- Extra annotations for the PVC
+  annotations: {}
 
 # -- Node selector for pod assignment
 # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector

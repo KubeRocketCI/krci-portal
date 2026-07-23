@@ -76,6 +76,11 @@ Create the name of the secretstore to use
   {{- end }}
 {{- end }}
 
+{{/* Server DB directory. Hardcoded contract, not user-configurable. */}}
+{{- define "krci-portal.dbMountPath" -}}
+/app/db
+{{- end -}}
+
 {{/*
 Return the appropriate apiVersion for External Secrets
 */}}

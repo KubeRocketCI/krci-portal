@@ -78,13 +78,20 @@ A Helm chart for KubeRocketCI Portal
 | livenessProbe | object | `{"tcpSocket":{"port":"http"}}` | Liveness probe configuration |
 | nameOverride | string | `""` | Override the name of the chart |
 | nodeSelector | object | `{}` | Node selector for pod assignment https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector |
+| persistence | object | `{"accessModes":["ReadWriteOnce"],"annotations":{},"enabled":false,"existingClaim":"","size":"1Gi","storageClass":""}` | Persistence for the SQLite session/events database. A ReadWriteOnce PVC mounted at the server's DB directory (`/app/db`) keeps sessions across pod restarts (RWO forces the Recreate strategy). Removed on `helm uninstall` — no retention policy. |
+| persistence.accessModes | list | `["ReadWriteOnce"]` | Access modes for the PVC (RWO is required for the SQLite file lock) |
+| persistence.annotations | object | `{}` | Extra annotations for the PVC |
+| persistence.enabled | bool | `false` | Enable persistent storage for the SQLite database. Disabled by default. |
+| persistence.existingClaim | string | `""` | Bind an existing PVC instead of creating one. When set, no PVC is created. |
+| persistence.size | string | `"1Gi"` | Size of the PVC |
+| persistence.storageClass | string | `""` | StorageClass for the PVC. Empty uses the cluster default; "-" disables dynamic provisioning. |
 | podAnnotations | object | `{}` | Pod annotations |
 | podLabels | object | `{}` | Pod labels |
-| podSecurityContext | object | `{}` | Pod security context |
+| podSecurityContext | object | `{"fsGroup":1000,"runAsGroup":1000,"runAsNonRoot":true,"runAsUser":1000,"seccompProfile":{"type":"RuntimeDefault"}}` | Pod security context. `fsGroup` chowns the persistence volume to this GID on mount so the non-root container can write the SQLite database. |
 | readinessProbe | object | `{"initialDelaySeconds":20,"tcpSocket":{"port":"http"}}` | Readiness probe configuration |
 | replicaCount | int | `1` | Number of replicas for the deployment |
 | resources | object | `{}` | Resource limits and requests |
-| securityContext | object | `{}` | Container security context |
+| securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]}}` | Container security context |
 | service | object | `{"port":3000,"type":"ClusterIP"}` | Service configuration |
 | service.type | string | `"ClusterIP"` | Service type |
 | serviceAccount | object | `{"annotations":{},"automount":true,"create":true,"name":""}` | Service account configuration |
