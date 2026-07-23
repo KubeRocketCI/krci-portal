@@ -15,6 +15,7 @@ import {
   createJiraServerDraft,
   editJiraServer,
   JiraServer,
+  httpsUrlSchema,
 } from "@my-project/shared";
 
 const manageJiraIntegrationInputSchema = z.object({
@@ -33,7 +34,7 @@ const manageJiraIntegrationInputSchema = z.object({
   quickLink: z
     .object({
       name: z.string(),
-      externalUrl: z.string(),
+      externalUrl: httpsUrlSchema,
       currentResource: z.any().optional(),
     })
     .optional(),

@@ -11,6 +11,7 @@ import {
   k8sQuickLinkConfig,
   editQuickLinkURL,
   QuickLink,
+  httpsUrlSchema,
 } from "@my-project/shared";
 
 const manageNexusIntegrationInputSchema = z.object({
@@ -24,7 +25,7 @@ const manageNexusIntegrationInputSchema = z.object({
   quickLink: z
     .object({
       name: z.string(),
-      externalUrl: z.string(),
+      externalUrl: httpsUrlSchema,
       currentResource: z.any().optional(),
     })
     .optional(),

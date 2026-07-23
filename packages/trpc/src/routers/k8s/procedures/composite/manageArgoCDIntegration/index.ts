@@ -11,6 +11,7 @@ import {
   k8sQuickLinkConfig,
   editQuickLinkURL,
   QuickLink,
+  httpsUrlSchema,
 } from "@my-project/shared";
 
 /**
@@ -27,7 +28,7 @@ const manageArgoCDIntegrationInputSchema = z.object({
   quickLink: z
     .object({
       name: z.string(),
-      externalUrl: z.string(),
+      externalUrl: httpsUrlSchema,
       currentResource: z.any().optional(), // The existing QuickLink resource (for edit mode)
     })
     .optional(),
