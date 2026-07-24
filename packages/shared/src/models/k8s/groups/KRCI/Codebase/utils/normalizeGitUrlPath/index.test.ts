@@ -15,6 +15,15 @@ describe("normalizeGitUrlPath", () => {
     expect(normalizeGitUrlPath("org/repo.git.git")).toBe("org/repo");
   });
 
+  it("strips a trailing slash", () => {
+    expect(normalizeGitUrlPath("org/repo/")).toBe("org/repo");
+    expect(normalizeGitUrlPath("/org/repo.git/")).toBe("org/repo");
+  });
+
+  it("collapses duplicate and surrounding slashes", () => {
+    expect(normalizeGitUrlPath("//org//repo//")).toBe("org/repo");
+  });
+
   it("lowercases the path", () => {
     expect(normalizeGitUrlPath("Org/Repo")).toBe("org/repo");
   });
