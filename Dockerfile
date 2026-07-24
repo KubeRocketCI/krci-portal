@@ -12,6 +12,10 @@ COPY deploy/server/db ./db
 COPY deploy/server/node_modules ./node_modules
 COPY deploy/server/package.json ./package.json
 
+RUN chown -R 1000:0 /app/db && chmod -R g+rwX /app/db
+
+USER 1000
+
 EXPOSE 3000
 
 CMD ["node", "./dist/index.js"]
