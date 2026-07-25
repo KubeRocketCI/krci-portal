@@ -1,5 +1,6 @@
 import type { PipelineTask } from "../../../Pipeline/types.js";
 import type { PipelineRun } from "../../types.js";
+import { isTaskRunChildReference } from "../childReferences/index.js";
 
 export interface PipelineRunTaskGraphDefinitions {
   allTasks: PipelineTask[];
@@ -34,7 +35,7 @@ export function getPipelineRunTaskGraphDefinitions(
     const names = [
       ...new Set(
         pipelineRun.status.childReferences
-          .filter((ref) => ref.pipelineTaskName && ref.kind !== "Run")
+          .filter((ref) => ref.pipelineTaskName && isTaskRunChildReference(ref))
           .map((ref) => ref.pipelineTaskName as string)
       ),
     ];

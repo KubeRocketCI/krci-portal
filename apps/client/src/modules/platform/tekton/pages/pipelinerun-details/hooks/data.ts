@@ -178,12 +178,12 @@ export function useUnifiedPipelineRunData({ namespace, name }: UnifiedPipelineRu
       tasks: isLive ? tasksWatch.data.array : undefined,
       taskRuns: taskRunsArray,
       approvalTasks: approvalTasksArray,
-      pipelineRunName: resolvedPipelineRun?.metadata?.name,
+      childReferences: resolvedPipelineRun?.status?.childReferences,
     });
   }, [
     isLive,
     pipelineRunTasks.allTasks,
-    resolvedPipelineRun?.metadata?.name,
+    resolvedPipelineRun?.status?.childReferences,
     tasksWatch.data.array,
     taskRunsWatch.data.array,
     approvalTasksWatch.data.array,
