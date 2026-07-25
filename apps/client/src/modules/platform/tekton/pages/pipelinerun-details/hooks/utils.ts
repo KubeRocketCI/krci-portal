@@ -1,34 +1,55 @@
-import { ApprovalTask, approvalTaskLabels, PipelineTask, Task, TaskRun, taskRunLabels } from "@my-project/shared";
+import {
+  ApprovalTask,
+  approvalTaskLabels,
+  buildTaskRunNameByPipelineTaskMap,
+  PipelineRunChildReference,
+  PipelineTask,
+  Task,
+  TaskRun,
+  taskRunLabels,
+} from "@my-project/shared";
 import type { PipelineRunTaskData } from "./types";
 
-export const findTaskForPipelineTask = (tasks: Task[], pipelineTask: PipelineTask): Task | undefined => {
-  return tasks.find((task) => task.metadata?.name === pipelineTask?.taskRef?.name);
+/** Keeps the first item per key, so lookups resolve as the equivalent Array.prototype.find would have. */
+const indexByKey = <T>(items: T[], keyOf: (item: T) => string | undefined): Map<string, T> => {
+  const map = new Map<string, T>();
+
+  for (const item of items) {
+    const key = keyOf(item);
+    if (key && !map.has(key)) {
+      map.set(key, item);
+    }
+  }
+
+  return map;
 };
 
-export const findTaskRunForPipelineTask = (
+export interface TaskRunIndex {
+  byPipelineTask: Map<string, TaskRun>;
+  byName: Map<string, TaskRun>;
+  nameByPipelineTask: Map<string, string>;
+}
+
+export const buildTaskRunIndex = (
   taskRuns: TaskRun[],
-  pipelineTask: PipelineTask,
-  pipelineRunName?: string
-): TaskRun | undefined => {
-  const byLabel = taskRuns.find(
-    (taskRun) => taskRun.metadata?.labels?.[taskRunLabels.pipelineTask] === pipelineTask?.name
-  );
-  if (byLabel) return byLabel;
-  if (!pipelineRunName || !pipelineTask?.name) return undefined;
-  const prefix = `${pipelineRunName}-${pipelineTask.name}-`;
-  return taskRuns.find((taskRun) => {
-    const n = taskRun.metadata?.name;
-    return typeof n === "string" && n.startsWith(prefix);
-  });
-};
+  childReferences?: PipelineRunChildReference[]
+): TaskRunIndex => ({
+  byPipelineTask: indexByKey(taskRuns, (taskRun) => taskRun.metadata?.labels?.[taskRunLabels.pipelineTask]),
+  byName: indexByKey(taskRuns, (taskRun) => taskRun.metadata?.name),
+  nameByPipelineTask: buildTaskRunNameByPipelineTaskMap(childReferences),
+});
 
-export const findApprovalTaskForPipelineTask = (
-  approvalTasks: ApprovalTask[],
-  pipelineTask: PipelineTask
-): ApprovalTask | undefined => {
-  return approvalTasks.find(
-    (approvalTask) => approvalTask.metadata?.labels?.[approvalTaskLabels.pipelineTask] === pipelineTask?.name
-  );
+export const findTaskRunForPipelineTask = (index: TaskRunIndex, pipelineTaskName?: string): TaskRun | undefined => {
+  if (!pipelineTaskName) return undefined;
+
+  const byLabel = index.byPipelineTask.get(pipelineTaskName);
+  if (byLabel) return byLabel;
+
+  // Defense in depth: Tekton always sets this label on TaskRuns it creates, so this
+  // tier should rarely fire. Kept in case a TaskRun is observed before its label is set,
+  // or via a future Tekton Results/API path that doesn't preserve labels.
+  const taskRunName = index.nameByPipelineTask.get(pipelineTaskName);
+  return taskRunName ? index.byName.get(taskRunName) : undefined;
 };
 
 export const buildPipelineRunTasksByNameMap = (params: {
@@ -36,17 +57,32 @@ export const buildPipelineRunTasksByNameMap = (params: {
   tasks?: Task[];
   taskRuns: TaskRun[];
   approvalTasks: ApprovalTask[];
-  pipelineRunName?: string;
+  childReferences?: PipelineRunChildReference[];
 }): Map<string, PipelineRunTaskData> => {
-  const { allPipelineTasks, tasks = [], taskRuns, approvalTasks, pipelineRunName } = params;
-  return allPipelineTasks.reduce((acc, pipelineTask) => {
-    if (!pipelineTask.name) return acc;
-    acc.set(pipelineTask.name, {
+  const { allPipelineTasks, tasks = [], taskRuns, approvalTasks, childReferences } = params;
+
+  // `tasks` is the namespace-wide Task list, so scanning it per pipeline task was the dominant cost.
+  const taskByName = indexByKey(tasks, (task) => task.metadata?.name);
+  const approvalTaskByPipelineTask = indexByKey(
+    approvalTasks,
+    (approvalTask) => approvalTask.metadata?.labels?.[approvalTaskLabels.pipelineTask]
+  );
+  const taskRunIndex = buildTaskRunIndex(taskRuns, childReferences);
+
+  const result = new Map<string, PipelineRunTaskData>();
+
+  for (const pipelineTask of allPipelineTasks) {
+    if (!pipelineTask.name) continue;
+
+    const taskRefName = pipelineTask.taskRef?.name;
+
+    result.set(pipelineTask.name, {
       pipelineRunTask: pipelineTask,
-      task: findTaskForPipelineTask(tasks, pipelineTask),
-      taskRun: findTaskRunForPipelineTask(taskRuns, pipelineTask, pipelineRunName),
-      approvalTask: findApprovalTaskForPipelineTask(approvalTasks, pipelineTask),
+      task: taskRefName ? taskByName.get(taskRefName) : undefined,
+      taskRun: findTaskRunForPipelineTask(taskRunIndex, pipelineTask.name),
+      approvalTask: approvalTaskByPipelineTask.get(pipelineTask.name),
     });
-    return acc;
-  }, new Map<string, PipelineRunTaskData>());
+  }
+
+  return result;
 };
