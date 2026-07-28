@@ -10,6 +10,7 @@ import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter
 import { usePipelineRunCRUD, usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import {
+  createGracefulCancelPipelineRun,
   createRerunPipelineRun,
   getPipelineRunStatus,
   isHistoryPipelineRun,
@@ -18,7 +19,6 @@ import {
   parseRecordName,
   PipelineRun,
   pipelineRunReason,
-  pipelineRunSpecStatus,
 } from "@my-project/shared";
 import { OctagonX, Redo2, Trash } from "lucide-react";
 import React from "react";
@@ -120,8 +120,7 @@ export const PipelineRunActionsMenu = ({
               reason: pipelineRunPermissions.data.update.reason,
             },
             callback: (pipelineRun) => {
-              const newPipelineRun = structuredClone(pipelineRun);
-              newPipelineRun.spec.status = pipelineRunSpecStatus.Cancelled;
+              const newPipelineRun = createGracefulCancelPipelineRun(pipelineRun);
               triggerPatchPipelineRun({ data: { pipelineRun: newPipelineRun } });
             },
           })

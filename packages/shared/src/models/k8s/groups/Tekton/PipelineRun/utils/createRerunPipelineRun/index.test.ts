@@ -1,5 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { createRerunPipelineRun } from "./index.js";
+import { createGracefulCancelPipelineRun } from "../createGracefulCancelPipelineRun/index.js";
+import { PipelineRun } from "../../types.js";
 import { vi, Mock, describe, expect, it } from "vitest";
 
 vi.mock("uuid", () => ({
@@ -151,6 +153,59 @@ describe("testing createRerunPipelineRun", () => {
           },
         ],
       },
+    });
+  });
+
+  it("should not carry over the queue-cancel-reason annotation of the stopped run", () => {
+    const object = createRerunPipelineRun(
+      createGracefulCancelPipelineRun({
+        apiVersion: "tekton.dev/v1",
+        kind: "PipelineRun",
+        metadata: {
+          name: "test-pipeline-run",
+          namespace: "edp",
+        },
+        spec: {
+          pipelineRef: { name: "test-build-pipeline" },
+        },
+      } as unknown as PipelineRun)
+    );
+
+    expect(object.metadata.annotations).not.toHaveProperty("app.edp.epam.com/queue-cancel-reason");
+  });
+
+  // Losing tekton.dev/pipeline off the cached run blanks the Pipeline name on the
+  // details page that rendered the menu.
+  it("should not mutate the labels or annotations of the original pipeline run", () => {
+    const original = {
+      apiVersion: "tekton.dev/v1",
+      kind: "PipelineRun",
+      metadata: {
+        name: "test-pipeline-run",
+        namespace: "edp",
+        labels: {
+          "tekton.dev/pipeline": "test-build-pipeline",
+          "app.edp.epam.com/codebase": "test-codebase",
+        },
+        annotations: {
+          "app.edp.epam.com/queue-cancel-reason": "user-cancelled",
+          "argocd.argoproj.io/compare-options": "IgnoreExtraneous",
+        },
+      },
+      spec: {
+        pipelineRef: { name: "test-build-pipeline" },
+      },
+    } as unknown as PipelineRun;
+
+    createRerunPipelineRun(original);
+
+    expect(original.metadata.labels).toEqual({
+      "tekton.dev/pipeline": "test-build-pipeline",
+      "app.edp.epam.com/codebase": "test-codebase",
+    });
+    expect(original.metadata.annotations).toEqual({
+      "app.edp.epam.com/queue-cancel-reason": "user-cancelled",
+      "argocd.argoproj.io/compare-options": "IgnoreExtraneous",
     });
   });
 });
