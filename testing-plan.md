@@ -86,7 +86,6 @@ These are utility functions in dedicated folders that should have tests alongsid
 - [x] `modules/platform/security/pages/sca/utils/cvss.ts`
 - [x] `modules/platform/tekton/components/PipelineDiagram/utils/layoutUtils.ts`
 - [x] `modules/platform/tekton/utils/celFilters.ts`
-- [x] `modules/platform/tekton/utils/statusIcons.ts`
 
 ---
 

@@ -1,10 +1,10 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { usePipelineRunCRUD, usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
 import {
+  createGracefulCancelPipelineRun,
   getPipelineRunStatus,
   isHistoryPipelineRun,
   pipelineRunReason,
-  pipelineRunSpecStatus,
 } from "@my-project/shared";
 import { OctagonX } from "lucide-react";
 import { usePipelineRunContext } from "../../providers/PipelineRun/hooks";
@@ -32,8 +32,7 @@ export const StopPipelineRunButton = () => {
       return;
     }
 
-    const newPipelineRun = structuredClone(pipelineRun);
-    newPipelineRun.spec.status = pipelineRunSpecStatus.Cancelled;
+    const newPipelineRun = createGracefulCancelPipelineRun(pipelineRun);
 
     triggerPatchPipelineRun({ data: { pipelineRun: newPipelineRun } });
   };
