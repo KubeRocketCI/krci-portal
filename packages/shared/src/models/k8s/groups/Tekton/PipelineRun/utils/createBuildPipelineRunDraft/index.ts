@@ -96,20 +96,11 @@ export const createBuildPipelineRunDraft = ({
       case "patchsetNumber":
         param.value = "1";
         break;
-      case "TICKET_NAME_PATTERN":
-        param.value = codebase.spec.ticketNamePattern ?? "";
-        break;
       case "COMMIT_MESSAGE_PATTERN":
         param.value = codebase.spec.commitMessagePattern ?? "";
         break;
-      case "JIRA_ISSUE_METADATA_PAYLOAD":
-        param.value = codebase.spec.jiraIssueMetadataPayload ?? "";
-        break;
       case "COMMIT_MESSAGE":
         param.value = "";
-        break;
-      case "JIRA_SERVER":
-        param.value = codebase.spec.jiraServer ?? "";
         break;
       case "gitfullrepositoryname":
         param.value = gitUrlPathWithoutSlashAtStart;
