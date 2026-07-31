@@ -15,6 +15,7 @@ import { routeInterceptorDetails } from "@/modules/platform/tekton/pages/interce
 import { routeClusterInterceptorDetails } from "@/modules/platform/tekton/pages/cluster-interceptor-details/route";
 import { PATH_CONFIG_GITSERVERS_FULL } from "@/modules/platform/configuration/modules/gitservers/route";
 import { ResolutionStatusBadge } from "../EventFlowDiagram/components/ResolutionStatusBadge";
+import { describeSelectionGaps } from "../EventFlowDiagram/utils/selectionGaps";
 import { DrawerSelection } from "./types";
 
 export interface EventFlowNodeDrawerProps {
@@ -89,7 +90,8 @@ export const EventFlowNodeDrawer: React.FC<EventFlowNodeDrawerProps> = ({ open, 
             )}
           </div>
         );
-      case "eventListener":
+      case "eventListener": {
+        const { terms, listedCount, labelMatchedCount, gaps } = selection.triggerSelection;
         return (
           <div className="space-y-2 text-sm">
             <div>
@@ -97,17 +99,41 @@ export const EventFlowNodeDrawer: React.FC<EventFlowNodeDrawerProps> = ({ open, 
               <code>{selection.eventListener.status?.address?.url ?? "—"}</code>
             </div>
             <div>
-              <span className="text-muted-foreground">Triggers:</span>{" "}
-              {(selection.eventListener.spec?.triggers ?? []).length}
+              <span className="text-muted-foreground">Triggers (spec.triggers):</span> {listedCount}
             </div>
+            {terms.length > 0 && (
+              <>
+                <div>
+                  <span className="text-muted-foreground">Label selector:</span> <code>{terms.join(", ")}</code>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Matched via label selector:</span> {labelMatchedCount}
+                </div>
+              </>
+            )}
+            {describeSelectionGaps(gaps).map((message) => (
+              <p key={message} className="text-status-missing">
+                {message}
+              </p>
+            ))}
           </div>
         );
+      }
       case "trigger":
         return (
           <div className="space-y-2 text-sm">
             <div>
               <span className="text-muted-foreground">Ref:</span> {selection.triggerRef}
             </div>
+            {selection.viaTerms && (
+              <div>
+                <span className="text-muted-foreground">Matched via labelSelector:</span>{" "}
+                <code>{selection.viaTerms.join(", ") || "—"}</code>
+              </div>
+            )}
+            {selection.firesTwice && (
+              <Badge variant="destructive">Fires twice — listed in spec.triggers AND matched by labelSelector</Badge>
+            )}
             {selection.resolved ? (
               <Button variant="link" asChild className="p-0">
                 <Link

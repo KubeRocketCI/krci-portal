@@ -5,6 +5,7 @@ import {
   EventListenerTopology,
   ResolvedTriggerNode,
   ResolutionStatus,
+  TriggerSelection,
 } from "@/modules/platform/tekton/hooks/useEventListenerTopology";
 import { NODE_KIND, NodeKind } from "../constants";
 import { getLayoutedElements } from "../utils/layoutUtils";
@@ -15,13 +16,18 @@ export type EventListenerNodeData = {
   eventListener: EventListenerTopology["eventListener"];
   ready: boolean;
   address: string | null;
-  triggerCount: number;
+  triggerSelection: TriggerSelection;
 };
 export type TriggerNodeData = {
   triggerRef: string;
   resolved: Trigger | null;
   status: ResolutionStatus;
   namespace: string;
+  // Selector terms this Trigger satisfied; set only when it was discovered via
+  // spec.labelSelector rather than listed in spec.triggers.
+  viaTerms?: string[];
+  // Both listed AND label-matched — the Tekton sink fires it twice per event.
+  firesTwice?: boolean;
 };
 export type InterceptorNodeData = { interceptor: ResolvedTriggerNode["interceptors"][number]; namespace: string };
 export type TriggerBindingNodeData = { binding: ResolvedTriggerNode["bindings"][number]; namespace: string };
@@ -76,7 +82,7 @@ export const buildNodes = (topology: EventListenerTopology): FlowNode[] => {
       eventListener: topology.eventListener,
       ready: topology.ready,
       address: topology.address,
-      triggerCount: topology.triggers.length,
+      triggerSelection: topology.triggerSelection,
     },
     position: { x: 0, y: 0 },
   });
@@ -93,6 +99,20 @@ export const buildNodes = (topology: EventListenerTopology): FlowNode[] => {
           resolved: entry.source.resolved,
           status: entry.source.status,
           namespace: topology.eventListener.metadata.namespace ?? "",
+          firesTwice: entry.firesTwice,
+        },
+        position: { x: 0, y: 0 },
+      });
+    } else if (entry.source.kind === "labelSelector") {
+      nodes.push({
+        id: `node::trigger::${key}`,
+        type: NODE_KIND.TRIGGER,
+        data: {
+          triggerRef: entry.source.name,
+          resolved: entry.source.resolved,
+          status: "resolved",
+          namespace: topology.eventListener.metadata.namespace ?? "",
+          viaTerms: entry.source.matchedTerms,
         },
         position: { x: 0, y: 0 },
       });
@@ -144,6 +164,13 @@ export const buildEdges = (topology: EventListenerTopology): Edge[] => {
     type: "smoothstep",
     markerEnd: { type: MarkerType.ArrowClosed, width: 18, height: 18 },
     style: { strokeWidth: 1.5 },
+    // Edge labels sit on top of the dotted canvas and can overlap a node when
+    // the gap between ranks is short, so they carry their own opaque plate.
+    labelStyle: { fontSize: 11 },
+    labelShowBg: true,
+    labelBgPadding: [6, 3] as [number, number],
+    labelBgBorderRadius: 4,
+    labelBgStyle: { fill: "var(--card)", fillOpacity: 0.95, stroke: "var(--border)" },
   };
 
   if (topology.gitServer) {
@@ -156,13 +183,18 @@ export const buildEdges = (topology: EventListenerTopology): Edge[] => {
     const templateId = `node::template::${key}`;
     const pipelineId = `node::pipeline::${key}`;
 
-    if (entry.source.kind === "triggerRef") {
+    if (entry.source.kind === "triggerRef" || entry.source.kind === "labelSelector") {
+      const viaLabel = entry.source.kind === "labelSelector";
       edges.push({
         id: `edge::el→trigger::${key}`,
         source: "node::eventListener",
         target: `node::trigger::${key}`,
-        label: entry.source.ref,
+        // The target node already names the Trigger and badges it "via label",
+        // so the edge only has to say how it was selected.
+        label: entry.source.kind === "labelSelector" ? "via label" : entry.source.ref,
         ...opts,
+        // dashed = discovered via labelSelector, solid = explicitly listed
+        style: viaLabel ? { ...opts.style, strokeDasharray: "6 4" } : opts.style,
       });
       const tail = firstInterceptorId ?? (entry.bindings.length ? `node::binding::${key}::0` : templateId);
       edges.push({ id: `edge::trigger→${tail}`, source: `node::trigger::${key}`, target: tail, ...opts });
@@ -191,7 +223,7 @@ export const buildEdges = (topology: EventListenerTopology): Edge[] => {
       : null;
 
     const noInterceptorBindingSourceId = !lastInterceptorId
-      ? entry.source.kind === "triggerRef"
+      ? entry.source.kind === "triggerRef" || entry.source.kind === "labelSelector"
         ? `node::trigger::${key}`
         : "node::eventListener"
       : null;

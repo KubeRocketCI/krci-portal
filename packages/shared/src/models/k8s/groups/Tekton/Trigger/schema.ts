@@ -33,8 +33,10 @@ const triggerBindingRefSchema = z
 export const triggerSpecSchema = z
   .object({
     name: z.string().optional(),
-    interceptors: z.array(triggerInterceptorSchema).optional(),
-    bindings: z.array(triggerBindingRefSchema).optional(),
+    // Tekton persists these as explicit `null` (not absent) when a Trigger
+    // declares neither, so they must be nullish rather than merely optional.
+    interceptors: z.array(triggerInterceptorSchema).nullish(),
+    bindings: z.array(triggerBindingRefSchema).nullish(),
     template: z
       .object({
         ref: z.string().optional(),

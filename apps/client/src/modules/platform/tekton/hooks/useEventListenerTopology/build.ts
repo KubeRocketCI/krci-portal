@@ -9,6 +9,12 @@ import {
   eventListenerLabels,
 } from "@my-project/shared";
 import {
+  labelSelectorTerms,
+  otherSelectedNamespaces,
+  parseLabelSelector,
+  triggerMatchesSelector,
+} from "@/modules/platform/tekton/utils/labelSelector";
+import {
   BuildTopologyArgs,
   EventListenerTopology,
   PipelineRefShape,
@@ -16,6 +22,8 @@ import {
   ResolvedBindingRef,
   ResolvedInterceptorRef,
   ResolvedTriggerNode,
+  SelectionGap,
+  TriggerSelection,
 } from "./types";
 
 const PR_TRIGGER_LABEL = "triggers.tekton.dev/trigger";
@@ -36,14 +44,17 @@ const readPipelineRefName = (template: TriggerTemplate | null): string | undefin
 const statusFor = (resolved: object | null, available: boolean): ResolutionStatus =>
   resolved ? "resolved" : available ? "missing" : "restricted";
 
+// `raw` is defaulted with `??`, not a default parameter: Tekton stores an
+// absent interceptors/bindings list as `null`, which a default parameter
+// (undefined-only) would pass straight through to `.map`.
 const resolveInterceptors = (
-  raw: TriggerEntry["interceptors"] = [],
+  raw: TriggerEntry["interceptors"],
   interceptorsByName: Map<string, Interceptor>,
   clusterInterceptorsByName: Map<string, ClusterInterceptor>,
   interceptorsAvailable: boolean,
   clusterInterceptorsAvailable: boolean
 ): ResolvedInterceptorRef[] =>
-  raw.map((i) => {
+  (raw ?? []).map((i) => {
     const kind = i.ref?.kind === "ClusterInterceptor" ? "ClusterInterceptor" : "NamespacedInterceptor";
     const name = i.ref?.name ?? "";
     const resolved =
@@ -60,11 +71,11 @@ const resolveInterceptors = (
   });
 
 const resolveBindings = (
-  raw: TriggerEntry["bindings"] = [],
+  raw: TriggerEntry["bindings"],
   triggerBindingsByName: Map<string, TriggerBinding>,
   triggerBindingsAvailable: boolean
 ): ResolvedBindingRef[] =>
-  raw.map((b) => {
+  (raw ?? []).map((b) => {
     const kind = b.kind === "ClusterTriggerBinding" ? "ClusterTriggerBinding" : "TriggerBinding";
     const ref = b.ref ?? "";
     // ClusterTriggerBinding is intentionally not watched in MVP. We cannot
@@ -139,19 +150,30 @@ export const buildTopology = ({
     };
   };
 
+  // An inline spec.triggers entry has the same shape as a Trigger CR's spec, so
+  // all three sources — inline, triggerRef, label-matched — resolve through here.
+  const resolveFromTriggerSpec = (triggerSpec: TriggerEntry | undefined, triggerName: string) => {
+    const interceptors = resolveInterceptors(
+      triggerSpec?.interceptors,
+      interceptorsByName,
+      clusterInterceptorsByName,
+      interceptorsAvailable,
+      clusterInterceptorsAvailable
+    );
+    const bindings = resolveBindings(triggerSpec?.bindings, triggerBindingsByName, triggerBindingsAvailable);
+    const templateRef = triggerSpec?.template?.ref ?? "";
+    return {
+      interceptors,
+      bindings,
+      template: resolveTemplate(templateRef),
+      latestPipelineRun: pickLatestRun(recentRuns, triggerName),
+    };
+  };
+
   const triggers: ResolvedTriggerNode[] = rawTriggers.map((entry) => {
     if (entry.triggerRef) {
       const resolvedTrigger = triggersByName.get(entry.triggerRef) ?? null;
-      const triggerSpec = resolvedTrigger?.spec;
-      const interceptors = resolveInterceptors(
-        triggerSpec?.interceptors,
-        interceptorsByName,
-        clusterInterceptorsByName,
-        interceptorsAvailable,
-        clusterInterceptorsAvailable
-      );
-      const bindings = resolveBindings(triggerSpec?.bindings, triggerBindingsByName, triggerBindingsAvailable);
-      const templateRef = triggerSpec?.template?.ref ?? "";
+      const resolution = resolveFromTriggerSpec(resolvedTrigger?.spec, entry.triggerRef);
       return {
         source: {
           kind: "triggerRef" as const,
@@ -159,30 +181,79 @@ export const buildTopology = ({
           resolved: resolvedTrigger,
           status: statusFor(resolvedTrigger, triggersAvailable),
         },
-        interceptors,
-        bindings,
-        template: resolveTemplate(templateRef),
-        latestPipelineRun: pickLatestRun(recentRuns, entry.triggerRef),
+        ...resolution,
       };
     }
     const inlineName = entry.name ?? "";
-    const interceptors = resolveInterceptors(
-      entry.interceptors,
-      interceptorsByName,
-      clusterInterceptorsByName,
-      interceptorsAvailable,
-      clusterInterceptorsAvailable
-    );
-    const bindings = resolveBindings(entry.bindings, triggerBindingsByName, triggerBindingsAvailable);
-    const templateRef = entry.template?.ref ?? "";
+    const resolution = resolveFromTriggerSpec(entry, inlineName);
     return {
       source: { kind: "inline" as const, name: inlineName },
-      interceptors,
-      bindings,
-      template: resolveTemplate(templateRef),
-      latestPipelineRun: pickLatestRun(recentRuns, inlineName),
+      ...resolution,
     };
   });
 
-  return { eventListener, address, ready, gitServer, triggers };
+  // The Tekton sink serves the UNION of spec.triggers and every Trigger CR the
+  // selector matches, so a Trigger that is both listed and label-matched fires
+  // twice per event — keep the listed node, flagged, instead of rendering two.
+  const selector = parseLabelSelector(eventListener);
+  const terms = labelSelectorTerms(selector);
+
+  const listedTriggerRefNames = new Set(
+    triggers
+      .map((t) => (t.source.kind === "triggerRef" ? t.source.ref : null))
+      .filter((ref): ref is string => ref !== null)
+  );
+
+  const labelMatchedTriggers = selector.active
+    ? Array.from(triggersByName.values()).filter((trigger) => triggerMatchesSelector(trigger, selector))
+    : [];
+
+  const doubleFiredNames = new Set(
+    labelMatchedTriggers.map((t) => t.metadata.name).filter((name) => listedTriggerRefNames.has(name))
+  );
+
+  const flaggedTriggers = triggers.map((t) =>
+    t.source.kind === "triggerRef" && doubleFiredNames.has(t.source.ref) ? { ...t, firesTwice: true } : t
+  );
+
+  const labelSelectorNodes: ResolvedTriggerNode[] = labelMatchedTriggers
+    .filter((trigger) => !listedTriggerRefNames.has(trigger.metadata.name))
+    .map((trigger) => ({
+      source: {
+        kind: "labelSelector" as const,
+        name: trigger.metadata.name,
+        matchedTerms: terms,
+        resolved: trigger,
+      },
+      ...resolveFromTriggerSpec(trigger.spec, trigger.metadata.name),
+    }));
+
+  const gaps: SelectionGap[] = [];
+  if (selector.active && !triggersAvailable) {
+    gaps.push({ kind: "triggersRestricted" });
+  }
+  if (selector.unsupportedOperators.length) {
+    gaps.push({ kind: "unsupportedOperators", operators: selector.unsupportedOperators });
+  }
+  const otherNamespaces = otherSelectedNamespaces(eventListener);
+  if (otherNamespaces.length) {
+    gaps.push({ kind: "otherNamespaces", namespaces: otherNamespaces });
+  }
+
+  const triggerSelection: TriggerSelection = {
+    labelSelectorActive: selector.active,
+    terms,
+    listedCount: rawTriggers.length,
+    labelMatchedCount: labelSelectorNodes.length,
+    gaps,
+  };
+
+  return {
+    eventListener,
+    address,
+    ready,
+    gitServer,
+    triggers: [...flaggedTriggers, ...labelSelectorNodes],
+    triggerSelection,
+  };
 };

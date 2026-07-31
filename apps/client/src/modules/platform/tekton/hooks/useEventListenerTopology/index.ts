@@ -20,6 +20,8 @@ export type {
   ResolvedBindingRef,
   ResolutionStatus,
   PipelineRefShape,
+  SelectionGap,
+  TriggerSelection,
 } from "./types";
 
 export interface UseEventListenerTopologyResult {

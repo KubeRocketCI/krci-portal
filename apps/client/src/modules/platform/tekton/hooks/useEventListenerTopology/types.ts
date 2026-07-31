@@ -43,7 +43,10 @@ export type PipelineRefShape =
 export type ResolvedTriggerNode = {
   source:
     | { kind: "triggerRef"; ref: string; resolved: Trigger | null; status: ResolutionStatus }
-    | { kind: "inline"; name: string };
+    | { kind: "inline"; name: string }
+    // Discovered by matching spec.labelSelector against the namespace's Trigger
+    // CRs, so unlike a triggerRef this one cannot be unresolved.
+    | { kind: "labelSelector"; name: string; matchedTerms: string[]; resolved: Trigger };
   interceptors: ResolvedInterceptorRef[];
   bindings: ResolvedBindingRef[];
   template: {
@@ -53,6 +56,32 @@ export type ResolvedTriggerNode = {
     pipelineRef: PipelineRefShape;
   };
   latestPipelineRun: PipelineRun | null;
+  /**
+   * True when this Trigger is both listed in spec.triggers AND matched by
+   * spec.labelSelector — Tekton's sink fires it twice per event, a
+   * misconfiguration the UI flags rather than hiding behind a single node.
+   */
+  firesTwice?: boolean;
+};
+
+/**
+ * A reason the label-matched Trigger set the UI shows may be narrower than what
+ * the Tekton sink actually serves, so an incomplete diagram is never mistaken
+ * for a complete one.
+ */
+export type SelectionGap =
+  | { kind: "triggersRestricted" }
+  | { kind: "unsupportedOperators"; operators: string[] }
+  | { kind: "otherNamespaces"; namespaces: string[] };
+
+export type TriggerSelection = {
+  labelSelectorActive: boolean;
+  /** Selector terms in kubectl syntax, e.g. ["app=gitlab", "tier in (a, b)"]. */
+  terms: string[];
+  /** The "Triggers" number the list view shows; kept apart from the label-matched count so the two views cannot disagree. */
+  listedCount: number;
+  labelMatchedCount: number;
+  gaps: SelectionGap[];
 };
 
 export type EventListenerTopology = {
@@ -61,6 +90,7 @@ export type EventListenerTopology = {
   ready: boolean;
   gitServer: GitServer | null;
   triggers: ResolvedTriggerNode[];
+  triggerSelection: TriggerSelection;
 };
 
 /**
