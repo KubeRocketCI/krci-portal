@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { eventListenerSchema, gitServerSchema } from "@my-project/shared";
+import { eventListenerSchema, gitServerSchema, triggerSchema } from "@my-project/shared";
 import { EventListenerTopology, ResolvedTriggerNode } from "@/modules/platform/tekton/hooks/useEventListenerTopology";
 import { NODE_KIND } from "../constants";
 import { buildEdges, buildNodes } from "./useEventFlowGraphData";
@@ -20,6 +20,7 @@ const baseTopology = (overrides: Partial<EventListenerTopology>): EventListenerT
   ready: true,
   gitServer: null,
   triggers: [],
+  triggerSelection: { labelSelectorActive: false, terms: [], listedCount: 0, labelMatchedCount: 0, gaps: [] },
   ...overrides,
 });
 
@@ -34,6 +35,22 @@ const triggerRefNode = (overrides: Partial<ResolvedTriggerNode> = {}): ResolvedT
 
 const inlineNode = (overrides: Partial<ResolvedTriggerNode> = {}): ResolvedTriggerNode => ({
   source: { kind: "inline", name: "inline-1" },
+  interceptors: [],
+  bindings: [],
+  template: { ref: "tt", resolved: null, status: "resolved", pipelineRef: { kind: "unknown" } },
+  latestPipelineRun: null,
+  ...overrides,
+});
+
+const labelMatchedTrigger = triggerSchema.parse({
+  apiVersion: "triggers.tekton.dev/v1beta1",
+  kind: "Trigger",
+  metadata: { name: "lbl", namespace: ns, uid: "u-lbl", creationTimestamp: "2025-01-01T00:00:00Z", labels: {} },
+  spec: {},
+});
+
+const labelSelectorNode = (overrides: Partial<ResolvedTriggerNode> = {}): ResolvedTriggerNode => ({
+  source: { kind: "labelSelector", name: "lbl", matchedTerms: ["app=gitlab"], resolved: labelMatchedTrigger },
   interceptors: [],
   bindings: [],
   template: { ref: "tt", resolved: null, status: "resolved", pipelineRef: { kind: "unknown" } },
@@ -77,6 +94,24 @@ describe("buildNodes", () => {
       "node::template::inline-1-0",
       "node::pipeline::inline-1-0",
     ]);
+  });
+
+  test("labelSelector trigger emits trigger + template + pipeline nodes (like triggerRef)", () => {
+    const result = buildNodes(baseTopology({ triggers: [labelSelectorNode()] }));
+    expect(result.map((n) => n.id)).toEqual([
+      "node::eventListener",
+      "node::trigger::lbl-0",
+      "node::template::lbl-0",
+      "node::pipeline::lbl-0",
+    ]);
+    const triggerNode = result.find((n) => n.id === "node::trigger::lbl-0");
+    expect(triggerNode?.data).toMatchObject({ triggerRef: "lbl", viaTerms: ["app=gitlab"] });
+  });
+
+  test("firesTwice flag on a triggerRef entry is passed through to the trigger node data", () => {
+    const result = buildNodes(baseTopology({ triggers: [triggerRefNode({ firesTwice: true })] }));
+    const triggerNode = result.find((n) => n.id === "node::trigger::g-0");
+    expect(triggerNode?.data).toMatchObject({ firesTwice: true });
   });
 
   test("interceptors and bindings get unique numbered ids per trigger", () => {
@@ -249,6 +284,13 @@ describe("buildEdges", () => {
     expect(pairs).toContainEqual({ source: "node::binding::g-0::0", target: "node::template::g-0" });
     expect(pairs).toContainEqual({ source: "node::binding::g-0::1", target: "node::template::g-0" });
     expect(pairs).toContainEqual({ source: "node::binding::g-0::2", target: "node::template::g-0" });
+  });
+
+  test("labelSelector trigger emits a dashed EL → trigger edge (visually distinct from a listed triggerRef)", () => {
+    const edges = buildEdges(baseTopology({ triggers: [labelSelectorNode()] }));
+    const elToTrigger = edges.find((e) => e.id === "edge::el→trigger::lbl-0");
+    expect(elToTrigger).toMatchObject({ source: "node::eventListener", target: "node::trigger::lbl-0" });
+    expect(elToTrigger?.style).toMatchObject({ strokeDasharray: "6 4" });
   });
 
   test("inline trigger with no interceptors and multiple bindings: every binding has an incoming edge from the EventListener", () => {

@@ -14,7 +14,7 @@ const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
 export default function EventListenerDetailsView() {
   const { topology, params } = useEventListenerDetailsData();
 
-  const triggersConfigured = topology.data ? topology.data.triggers.length : 0;
+  const selection = topology.data?.triggerSelection;
   const runs24h = React.useMemo(() => {
     const cutoff = Date.now() - TWENTY_FOUR_HOURS_MS;
 
@@ -36,7 +36,12 @@ export default function EventListenerDetailsView() {
       </div>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <MetricCard title="Triggers configured" hasData={topology.isReady} isLoading={!topology.isReady}>
-          <div className="text-3xl font-semibold">{triggersConfigured}</div>
+          <div className="text-3xl font-semibold">{selection?.listedCount ?? 0}</div>
+          {!!selection?.labelMatchedCount && (
+            <div className="text-muted-foreground text-sm">
+              + {selection.labelMatchedCount} matched via label selector
+            </div>
+          )}
         </MetricCard>
         <MetricCard
           title="Triggered runs · 24h"

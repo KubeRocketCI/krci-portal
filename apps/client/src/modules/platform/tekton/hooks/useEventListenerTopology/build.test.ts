@@ -419,6 +419,316 @@ describe("buildTopology — GitServer resolution", () => {
   });
 });
 
+describe("buildTopology — labelSelector union", () => {
+  test("no labelSelector → output identical to today (regression guard)", () => {
+    const trig = triggerCR("g", { interceptors: [], bindings: [], template: { ref: "" } });
+    const withoutSelector = buildTopology(
+      args({
+        eventListener: baseEL({ spec: { triggers: [{ triggerRef: "g" }] } }),
+        triggersByName: new Map([["g", trig]]),
+      })
+    );
+    const withEmptyMatchLabels = buildTopology(
+      args({
+        eventListener: baseEL({ spec: { triggers: [{ triggerRef: "g" }], labelSelector: { matchLabels: {} } } }),
+        triggersByName: new Map([["g", trig]]),
+      })
+    );
+    expect(withEmptyMatchLabels.triggers).toEqual(withoutSelector.triggers);
+    expect(withoutSelector.triggers[0].firesTwice).toBeUndefined();
+  });
+
+  test("Trigger CR matched only via labelSelector appears as an additional labelSelector-sourced node", () => {
+    const listed = triggerCR("listed", { interceptors: [], bindings: [], template: { ref: "" } });
+    const labelOnly = triggerCR("label-only", { interceptors: [], bindings: [], template: { ref: "" } });
+    labelOnly.metadata.labels = { "app.edp.epam.com/gitServer": "gitlab" };
+    const result = buildTopology(
+      args({
+        eventListener: baseEL({
+          spec: {
+            triggers: [{ triggerRef: "listed" }],
+            labelSelector: { matchLabels: { "app.edp.epam.com/gitServer": "gitlab" } },
+          },
+        }),
+        triggersByName: new Map([
+          ["listed", listed],
+          ["label-only", labelOnly],
+        ]),
+      })
+    );
+    expect(result.triggers).toHaveLength(2);
+    expect(result.triggers[0].source).toMatchObject({ kind: "triggerRef", ref: "listed" });
+    expect(result.triggers[0].firesTwice).toBeUndefined();
+    expect(result.triggers[1].source).toEqual({
+      kind: "labelSelector",
+      name: "label-only",
+      matchedTerms: ["app.edp.epam.com/gitServer=gitlab"],
+      resolved: labelOnly,
+    });
+    expect(result.triggerSelection).toMatchObject({ listedCount: 1, labelMatchedCount: 1, gaps: [] });
+  });
+
+  test("Trigger CR both listed AND label-matched dedups to a single flagged node", () => {
+    const both = triggerCR("both", { interceptors: [], bindings: [], template: { ref: "" } });
+    both.metadata.labels = { "app.edp.epam.com/gitServer": "gitlab" };
+    const result = buildTopology(
+      args({
+        eventListener: baseEL({
+          spec: {
+            triggers: [{ triggerRef: "both" }],
+            labelSelector: { matchLabels: { "app.edp.epam.com/gitServer": "gitlab" } },
+          },
+        }),
+        triggersByName: new Map([["both", both]]),
+      })
+    );
+    expect(result.triggers).toHaveLength(1);
+    expect(result.triggers[0].source).toMatchObject({ kind: "triggerRef", ref: "both" });
+    expect(result.triggers[0].firesTwice).toBe(true);
+  });
+
+  test("matchLabels requires ALL pairs to match — a Trigger with only a subset of labels is excluded", () => {
+    const partial = triggerCR("partial", { interceptors: [], bindings: [], template: { ref: "" } });
+    partial.metadata.labels = { "app.edp.epam.com/gitServer": "gitlab" };
+    const result = buildTopology(
+      args({
+        eventListener: baseEL({
+          spec: {
+            triggers: [],
+            labelSelector: {
+              matchLabels: { "app.edp.epam.com/gitServer": "gitlab", "app.edp.epam.com/pipelinetype": "build" },
+            },
+          },
+        }),
+        triggersByName: new Map([["partial", partial]]),
+      })
+    );
+    expect(result.triggers).toHaveLength(0);
+  });
+});
+
+describe("buildTopology — labelSelector matchExpressions", () => {
+  const withLabels = (name: string, labels: Record<string, string>) => {
+    const trigger = triggerCR(name, { interceptors: [], bindings: [], template: { ref: "" } });
+    trigger.metadata.labels = labels;
+    return trigger;
+  };
+
+  const selectorEL = (labelSelector: object) => baseEL({ spec: { triggers: [], labelSelector } });
+
+  const matchedNames = (labelSelector: object, triggers: ReturnType<typeof withLabels>[]) =>
+    buildTopology(
+      args({
+        eventListener: selectorEL(labelSelector),
+        triggersByName: new Map(triggers.map((t) => [t.metadata.name, t])),
+      })
+    ).triggers.map((t) => t.source.kind === "labelSelector" && t.source.name);
+
+  test("In / NotIn / Exists / DoesNotExist are evaluated with Kubernetes semantics", () => {
+    const build = withLabels("build", { type: "build" });
+    const review = withLabels("review", { type: "review" });
+    const unlabelled = withLabels("unlabelled", {});
+
+    expect(matchedNames({ matchExpressions: [{ key: "type", operator: "In", values: ["build"] }] }, [build, review])) //
+      .toEqual(["build"]);
+    expect(
+      matchedNames({ matchExpressions: [{ key: "type", operator: "NotIn", values: ["build"] }] }, [build, review])
+    ).toEqual(["review"]);
+    expect(matchedNames({ matchExpressions: [{ key: "type", operator: "Exists" }] }, [build, unlabelled])).toEqual([
+      "build",
+    ]);
+    expect(
+      matchedNames({ matchExpressions: [{ key: "type", operator: "DoesNotExist" }] }, [build, unlabelled])
+    ).toEqual(["unlabelled"]);
+  });
+
+  test("matchLabels and matchExpressions are ANDed — passing only one is not enough", () => {
+    const both = withLabels("both", { app: "el", type: "build" });
+    const labelsOnly = withLabels("labels-only", { app: "el", type: "review" });
+    expect(
+      matchedNames(
+        { matchLabels: { app: "el" }, matchExpressions: [{ key: "type", operator: "In", values: ["build"] }] },
+        [both, labelsOnly]
+      )
+    ).toEqual(["both"]);
+  });
+
+  test("matchExpressions alone activates label selection (no matchLabels present)", () => {
+    const result = buildTopology(
+      args({
+        eventListener: selectorEL({ matchExpressions: [{ key: "type", operator: "Exists" }] }),
+        triggersByName: new Map([["build", withLabels("build", { type: "build" })]]),
+      })
+    );
+    expect(result.triggers).toHaveLength(1);
+    expect(result.triggerSelection).toMatchObject({ labelSelectorActive: true, terms: ["type"], gaps: [] });
+  });
+
+  test("an operator this client cannot evaluate excludes the Trigger and is reported as a gap", () => {
+    const result = buildTopology(
+      args({
+        eventListener: selectorEL({ matchExpressions: [{ key: "type", operator: "GreaterThan", values: ["1"] }] }),
+        triggersByName: new Map([["build", withLabels("build", { type: "build" })]]),
+      })
+    );
+    expect(result.triggers).toHaveLength(0);
+    expect(result.triggerSelection.gaps).toEqual([{ kind: "unsupportedOperators", operators: ["GreaterThan"] }]);
+  });
+
+  test("a malformed matchExpressions entry is skipped rather than throwing", () => {
+    const result = buildTopology(
+      args({
+        eventListener: selectorEL({ matchLabels: { type: "build" }, matchExpressions: [{}, null, "nonsense"] }),
+        triggersByName: new Map([["build", withLabels("build", { type: "build" })]]),
+      })
+    );
+    expect(result.triggers).toHaveLength(1);
+    expect(result.triggerSelection.terms).toEqual(["type=build"]);
+  });
+});
+
+describe("buildTopology — selection gaps", () => {
+  test("an errored Trigger watch is reported as restricted rather than silently matching nothing", () => {
+    const result = buildTopology(
+      args({
+        eventListener: baseEL({ spec: { triggers: [], labelSelector: { matchLabels: { app: "el" } } } }),
+        triggersByName: new Map(),
+        availability: { triggers: false },
+      })
+    );
+    expect(result.triggers).toHaveLength(0);
+    expect(result.triggerSelection.gaps).toEqual([{ kind: "triggersRestricted" }]);
+  });
+
+  test("no restricted gap is reported when the EventListener has no label selector at all", () => {
+    const result = buildTopology(
+      args({
+        eventListener: baseEL({ spec: { triggers: [] } }),
+        availability: { triggers: false },
+      })
+    );
+    expect(result.triggerSelection.gaps).toEqual([]);
+  });
+
+  test("namespaceSelector reaching other namespaces is reported, the EventListener's own namespace is not", () => {
+    const result = buildTopology(
+      args({
+        eventListener: baseEL({
+          spec: { triggers: [], namespaceSelector: { matchNames: [ns, "other-a", "other-b", "other-a"] } },
+        }),
+      })
+    );
+    expect(result.triggerSelection.gaps).toEqual([{ kind: "otherNamespaces", namespaces: ["other-a", "other-b"] }]);
+  });
+
+  test("namespaceSelector listing only the EventListener's own namespace is not a gap", () => {
+    const result = buildTopology(
+      args({ eventListener: baseEL({ spec: { triggers: [], namespaceSelector: { matchNames: [ns] } } }) })
+    );
+    expect(result.triggerSelection.gaps).toEqual([]);
+  });
+});
+
+describe("buildTopology — degenerate EventListener specs", () => {
+  test("an EventListener with no spec at all builds an empty topology", () => {
+    const el = eventListenerSchema.parse({
+      apiVersion: "triggers.tekton.dev/v1beta1",
+      kind: "EventListener",
+      metadata: { name: elName, namespace: ns, uid: "u-el", creationTimestamp: "2025-01-01T00:00:00Z" },
+    });
+    const result = buildTopology(args({ eventListener: el }));
+    expect(result.triggers).toEqual([]);
+    expect(result.triggerSelection).toEqual({
+      labelSelectorActive: false,
+      terms: [],
+      listedCount: 0,
+      labelMatchedCount: 0,
+      gaps: [],
+    });
+  });
+
+  test("a labelSelector-only EventListener (no spec.triggers) still resolves its matched Triggers", () => {
+    const labelled = triggerCR("labelled", { interceptors: [], bindings: [{ ref: "b" }], template: { ref: "t" } });
+    labelled.metadata.labels = { app: "el" };
+    const result = buildTopology(
+      args({
+        eventListener: baseEL({ spec: { labelSelector: { matchLabels: { app: "el" } } } }),
+        triggersByName: new Map([["labelled", labelled]]),
+        triggerBindingsByName: new Map([["b", tb("b")]]),
+        triggerTemplatesByName: new Map([["t", tt("t", "build-pipeline")]]),
+      })
+    );
+    expect(result.triggers).toHaveLength(1);
+    expect(result.triggers[0].bindings[0]).toMatchObject({ ref: "b", status: "resolved" });
+    expect(result.triggers[0].template.pipelineRef).toEqual({ kind: "literal", pipelineName: "build-pipeline" });
+    expect(result.triggerSelection).toMatchObject({ listedCount: 0, labelMatchedCount: 1 });
+  });
+
+  // Tekton stores an omitted interceptors/bindings list as an explicit `null`,
+  // which a default parameter would hand straight to `.map`.
+  test("a Trigger CR with null bindings/interceptors resolves to empty lists", () => {
+    const nulled = triggerSchema.parse({
+      apiVersion: "triggers.tekton.dev/v1beta1",
+      kind: "Trigger",
+      metadata: {
+        name: "nulled",
+        namespace: ns,
+        uid: "u-nulled",
+        creationTimestamp: "2025-01-01T00:00:00Z",
+        labels: { app: "el" },
+      },
+      spec: { bindings: null, interceptors: null, template: { ref: "t" } },
+    });
+    const viaLabel = buildTopology(
+      args({
+        eventListener: baseEL({ spec: { triggers: [], labelSelector: { matchLabels: { app: "el" } } } }),
+        triggersByName: new Map([["nulled", nulled]]),
+        triggerTemplatesByName: new Map([["t", tt("t", "p")]]),
+      })
+    );
+    expect(viaLabel.triggers[0]).toMatchObject({ interceptors: [], bindings: [] });
+
+    const viaRef = buildTopology(
+      args({
+        eventListener: baseEL({ spec: { triggers: [{ triggerRef: "nulled" }] } }),
+        triggersByName: new Map([["nulled", nulled]]),
+      })
+    );
+    expect(viaRef.triggers[0]).toMatchObject({ interceptors: [], bindings: [] });
+  });
+
+  test("an EventListener with null spec.triggers is treated as having none", () => {
+    const result = buildTopology(args({ eventListener: baseEL({ spec: { triggers: null } }) }));
+    expect(result.triggers).toEqual([]);
+    expect(result.triggerSelection.listedCount).toBe(0);
+  });
+
+  test("a label-matched Trigger CR with no spec resolves to empty interceptors/bindings", () => {
+    const bare = triggerSchema.parse({
+      apiVersion: "triggers.tekton.dev/v1beta1",
+      kind: "Trigger",
+      metadata: {
+        name: "bare",
+        namespace: ns,
+        uid: "u-bare",
+        creationTimestamp: "2025-01-01T00:00:00Z",
+        labels: { app: "el" },
+      },
+    });
+    const result = buildTopology(
+      args({
+        eventListener: baseEL({ spec: { triggers: [], labelSelector: { matchLabels: { app: "el" } } } }),
+        triggersByName: new Map([["bare", bare]]),
+      })
+    );
+    expect(result.triggers[0]).toMatchObject({
+      interceptors: [],
+      bindings: [],
+      template: { ref: "", status: "resolved" },
+    });
+  });
+});
+
 describe("buildTopology — latestPipelineRun selection", () => {
   test("no labeled runs → null", () => {
     const trig = triggerCR("g", { interceptors: [], bindings: [], template: { ref: "" } });

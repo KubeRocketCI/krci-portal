@@ -59,7 +59,11 @@ const nodeToSelection = (node: FlowNode, topology: EventListenerTopology): Drawe
     case NODE_KIND.GIT_SOURCE:
       return { kind: "gitSource", gitServer: topology.gitServer };
     case NODE_KIND.EVENT_LISTENER:
-      return { kind: "eventListener", eventListener: topology.eventListener };
+      return {
+        kind: "eventListener",
+        eventListener: topology.eventListener,
+        triggerSelection: node.data.triggerSelection,
+      };
     case NODE_KIND.TRIGGER:
       return {
         kind: "trigger",
@@ -67,6 +71,8 @@ const nodeToSelection = (node: FlowNode, topology: EventListenerTopology): Drawe
         resolved: node.data.resolved,
         status: node.data.status,
         namespace: ns,
+        viaTerms: node.data.viaTerms,
+        firesTwice: node.data.firesTwice,
       };
     case NODE_KIND.INTERCEPTOR:
       return { kind: "interceptor", interceptor: node.data.interceptor, namespace: ns };

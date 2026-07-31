@@ -7,9 +7,27 @@ const eventListenerLabelsSchema = z.object({
   [eventListenerLabels.gitServer]: z.string().optional(),
 });
 
+// Loose on purpose: one EventListener with an unexpected shape here must not
+// fail the parse of the whole list and blank the page. Consumers validate and
+// degrade per entry instead — see the tekton labelSelector util.
+const eventListenerLabelSelectorSchema = z
+  .object({
+    matchLabels: z.record(z.unknown()).optional(),
+    matchExpressions: z.array(z.unknown()).optional(),
+  })
+  .catchall(z.any());
+
+const eventListenerNamespaceSelectorSchema = z
+  .object({
+    matchNames: z.array(z.unknown()).optional(),
+  })
+  .catchall(z.any());
+
 const eventListenerSpecSchema = z
   .object({
-    triggers: z.array(triggerSpecSchema).optional(),
+    triggers: z.array(triggerSpecSchema).nullish(),
+    labelSelector: eventListenerLabelSelectorSchema.optional(),
+    namespaceSelector: eventListenerNamespaceSelectorSchema.optional(),
   })
   .catchall(z.any());
 
