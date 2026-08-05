@@ -172,6 +172,41 @@ function getResultAnnotation(result: TektonResult, key: string): string | undefi
   return value;
 }
 
+function toEpochMs(timestamp: string | undefined): number | undefined {
+  if (!timestamp) return undefined;
+  const ms = Date.parse(timestamp);
+  return Number.isNaN(ms) ? undefined : ms;
+}
+
+/**
+ * Tekton Results < v0.20.0 derived RecordSummary timestamps from Knative conditions,
+ * leaving `start_time` NULL on every row (`ConditionReady` is never set on batch
+ * resources) and `end_time` NULL on failed/timed-out/cancelled ones (`ConditionSucceeded`
+ * was skipped while False) — hence the per-field, rather than all-or-nothing, fallback.
+ * tektoncd/results#1285 fixed the write path in v0.20.0 but does not backfill, so both
+ * shapes coexist until the pre-upgrade rows age out of the retention window.
+ *
+ * `create_time`/`update_time` are server-populated and never NULL, so the fallback always
+ * yields a bounded duration instead of one that grows forever — which matters most for
+ * rows whose `summary.status` the watcher also left UNKNOWN.
+ */
+function resolveResultTimes(result: TektonResult): { startTime: string; completionTime: string } {
+  const startTime = result.summary?.start_time || result.create_time;
+  const completionTime = result.summary?.end_time || result.update_time;
+
+  const startMs = toEpochMs(startTime);
+  const completionMs = toEpochMs(completionTime);
+
+  // Mixing a summary timestamp with a row timestamp can invert the interval: a run
+  // archived after it finished has `create_time` > `end_time`, rendering a negative
+  // duration. The row pair is written in order, so it is always self-consistent.
+  if (startMs !== undefined && completionMs !== undefined && completionMs < startMs) {
+    return { startTime: result.create_time, completionTime: result.update_time };
+  }
+
+  return { startTime, completionTime };
+}
+
 /**
  * Normalize a Tekton Result (from the `results` table) to a K8s PipelineRun shape.
  *
@@ -192,14 +227,7 @@ export function normalizeResultToPipelineRun(result: TektonResult, namespace: st
   const summaryStatus = result.summary?.status || "UNKNOWN";
   const statusInfo = RESULT_STATUS_MAP[summaryStatus] || RESULT_STATUS_MAP.UNKNOWN;
 
-  const startTime = result.create_time;
-  // A Result row is archived => terminal, so it always has a completion time.
-  // summary.end_time is NULL for many results due to a Tekton Results watcher bug
-  // (the watcher uses ConditionReady instead of status.completionTime). Fall back
-  // to update_time: the Result is updated when the PipelineRun completes, so
-  // update_time ≈ actual completion time. This bounds the rendered duration even
-  // when summary.status was never finalized (otherwise it grows forever).
-  const completionTime = result.summary?.end_time || result.update_time;
+  const { startTime, completionTime } = resolveResultTimes(result);
 
   const resultAnnotations: Record<string, string> = {};
   const annotationKeys = [

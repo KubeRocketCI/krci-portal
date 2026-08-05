@@ -634,31 +634,84 @@ describe("normalizeResultToPipelineRun", () => {
     expect(result.status?.conditions?.[0]?.reason).toBeUndefined();
   });
 
-  it("should fallback to update_time when end_time is null for completed runs", () => {
-    const noEndTime: TektonResult = {
-      ...mockTektonResult,
-      summary: { ...mockTektonResult.summary!, end_time: undefined, status: "SUCCESS" },
-    };
-    const result = normalizeResultToPipelineRun(noEndTime, "edp-delivery");
+  describe("run interval resolution across watcher versions", () => {
+    it("should prefer summary timestamps when the watcher populated both (>= v0.20.0)", () => {
+      const result = normalizeResultToPipelineRun(mockTektonResult, "edp-delivery");
 
-    expect(result.status?.completionTime).toBe("2026-03-10T10:15:00Z");
-  });
+      expect(result.status?.startTime).toBe("2026-03-10T10:00:01Z");
+      expect(result.status?.completionTime).toBe("2026-03-10T10:14:50Z");
+    });
 
-  it("should bound completionTime to update_time for UNKNOWN status without end_time", () => {
-    const unfinalized: TektonResult = {
-      ...mockTektonResult,
-      summary: { ...mockTektonResult.summary!, end_time: undefined, status: "UNKNOWN" },
-    };
-    const result = normalizeResultToPipelineRun(unfinalized, "edp-delivery");
+    it("should fall back to row timestamps when both summary fields are null (< v0.20.0)", () => {
+      const legacyRow: TektonResult = {
+        ...mockTektonResult,
+        summary: { ...mockTektonResult.summary!, start_time: undefined, end_time: undefined, status: "FAILURE" },
+      };
+      const result = normalizeResultToPipelineRun(legacyRow, "edp-delivery");
 
-    // Terminal-but-unfinalized runs still get a completion time (the "Running forever" bug).
-    expect(result.status?.completionTime).toBe("2026-03-10T10:15:00Z");
-  });
+      expect(result.status?.startTime).toBe("2026-03-10T10:00:00Z");
+      expect(result.status?.completionTime).toBe("2026-03-10T10:15:00Z");
+    });
 
-  it("should use end_time as completionTime when available", () => {
-    const result = normalizeResultToPipelineRun(mockTektonResult, "edp-delivery");
+    it("should mix sources per field: real end_time with create_time as start (< v0.20.0 success)", () => {
+      // The old watcher set end_time for SUCCESS runs (ConditionSucceeded was True)
+      // but never start_time (ConditionReady is unset on batch resources).
+      const legacySuccess: TektonResult = {
+        ...mockTektonResult,
+        summary: { ...mockTektonResult.summary!, start_time: undefined, status: "SUCCESS" },
+      };
+      const result = normalizeResultToPipelineRun(legacySuccess, "edp-delivery");
 
-    expect(result.status?.completionTime).toBe("2026-03-10T10:14:50Z");
+      expect(result.status?.startTime).toBe("2026-03-10T10:00:00Z");
+      expect(result.status?.completionTime).toBe("2026-03-10T10:14:50Z");
+    });
+
+    it("should bound completionTime to update_time for UNKNOWN status without end_time", () => {
+      const unfinalized: TektonResult = {
+        ...mockTektonResult,
+        summary: { ...mockTektonResult.summary!, end_time: undefined, status: "UNKNOWN" },
+      };
+      const result = normalizeResultToPipelineRun(unfinalized, "edp-delivery");
+
+      // Terminal-but-unfinalized runs still get a completion time (the "Running forever" bug).
+      expect(result.status?.completionTime).toBe("2026-03-10T10:15:00Z");
+    });
+
+    it("should fall back to the row pair when mixed sources invert the interval", () => {
+      // Archived after completion: create_time (10:20) is later than the watcher's
+      // end_time (10:14:50), which would render a negative duration.
+      const archivedLate: TektonResult = {
+        ...mockTektonResult,
+        create_time: "2026-03-10T10:20:00Z",
+        update_time: "2026-03-10T10:20:05Z",
+        summary: { ...mockTektonResult.summary!, start_time: undefined, status: "SUCCESS" },
+      };
+      const result = normalizeResultToPipelineRun(archivedLate, "edp-delivery");
+
+      expect(result.status?.startTime).toBe("2026-03-10T10:20:00Z");
+      expect(result.status?.completionTime).toBe("2026-03-10T10:20:05Z");
+    });
+
+    it("should not invert when only the summary pair is present and ordered", () => {
+      const result = normalizeResultToPipelineRun(mockTektonResult, "edp-delivery");
+      const start = Date.parse(result.status!.startTime!);
+      const end = Date.parse(result.status!.completionTime!);
+
+      expect(end).toBeGreaterThanOrEqual(start);
+    });
+
+    it("should tolerate unparseable summary timestamps without inverting", () => {
+      const malformed: TektonResult = {
+        ...mockTektonResult,
+        summary: { ...mockTektonResult.summary!, start_time: "not-a-timestamp" },
+      };
+      const result = normalizeResultToPipelineRun(malformed, "edp-delivery");
+
+      // No epoch to compare against, so the value passes through untouched rather
+      // than silently discarding the (valid) end_time.
+      expect(result.status?.startTime).toBe("not-a-timestamp");
+      expect(result.status?.completionTime).toBe("2026-03-10T10:14:50Z");
+    });
   });
 
   it("should fallback to uid when objectMetadataName annotation is missing", () => {
