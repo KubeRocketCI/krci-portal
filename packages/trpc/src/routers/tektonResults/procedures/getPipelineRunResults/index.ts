@@ -37,6 +37,9 @@ export const getPipelineRunResultsProcedure = protectedProcedure
       filter: combinedFilter,
       pageSize,
       pageToken,
+      // Not `summary.end_time desc`: it is NULL on rows archived before Tekton Results
+      // v0.20.0 (tektoncd/results#1285, no backfill), and ordering by a NULL column
+      // corrupts the pagination cursor so page 2+ comes back empty.
       orderBy: "create_time desc",
     });
 
