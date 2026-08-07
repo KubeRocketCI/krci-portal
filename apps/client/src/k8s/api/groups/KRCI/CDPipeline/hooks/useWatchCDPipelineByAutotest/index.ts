@@ -11,11 +11,16 @@ export const useWatchCDPipelineByAutotest = (codebaseName: string | undefined, n
   });
 
   const cdPipelineName = React.useMemo(() => {
-    const stage = stageListWatch.data.array.find((stage) => {
-      return stage.spec.qualityGates.some((qualityGate: { autotestName?: string | null }) => {
-        return qualityGate.autotestName === codebaseName;
-      });
-    });
+    // Guards the opt-out `undefined`, which would otherwise make the predicate
+    // `undefined === undefined` and match every manual quality gate. Disabling the
+    // list query is not enough — React Query still serves its cached data.
+    if (!codebaseName) {
+      return undefined;
+    }
+
+    const stage = stageListWatch.data.array.find((stage) =>
+      stage.spec.qualityGates.some((qualityGate) => qualityGate.autotestName === codebaseName)
+    );
 
     return stage?.spec.cdPipeline;
   }, [codebaseName, stageListWatch.data.array]);

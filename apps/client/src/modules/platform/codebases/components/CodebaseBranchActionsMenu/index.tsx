@@ -10,8 +10,7 @@ import { checkIsDefaultBranch, k8sCodebaseBranchConfig, k8sOperation } from "@my
 import { Settings, Trash } from "lucide-react";
 import React from "react";
 import { EditCodebaseBranchDialog } from "../EditCodebaseBranchDialog";
-import { ConflictItemError } from "./components/ConflictItemError";
-import { useDeletionConflictItem } from "./hooks/useDeletionConflictItem";
+import { useValidateDelete } from "@/k8s/api/hooks/useValidateDelete";
 import { CodebaseBranchActionsProps } from "./types";
 
 export const CodebaseBranchActionsMenu = ({
@@ -22,22 +21,23 @@ export const CodebaseBranchActionsMenu = ({
 
   const codebaseBranchPermissions = useCodebaseBranchPermissions();
 
-  const conflictedCDPipeline = useDeletionConflictItem(codebaseBranch, codebase);
+  const validateDelete = useValidateDelete();
 
   const onBeforeSubmit = React.useCallback(
     async (handleError: (error: React.ReactNode) => void, setLoadingActive: (loading: boolean) => void) => {
       setLoadingActive(true);
-      if (!conflictedCDPipeline) {
-        setLoadingActive(false);
-        return;
-      }
 
-      handleError(
-        <ConflictItemError conflictedCDPipeline={conflictedCDPipeline} name={codebaseBranch.spec.branchName} />
-      );
-      setLoadingActive(false);
+      try {
+        const { allowed, reason } = await validateDelete(codebaseBranch, k8sCodebaseBranchConfig);
+
+        if (!allowed) {
+          handleError(reason);
+        }
+      } finally {
+        setLoadingActive(false);
+      }
     },
-    [codebaseBranch.spec.branchName, conflictedCDPipeline]
+    [codebaseBranch, validateDelete]
   );
 
   const isDefaultBranch = checkIsDefaultBranch(codebase, codebaseBranch);
