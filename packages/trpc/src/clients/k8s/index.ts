@@ -284,15 +284,23 @@ export class K8sClient {
   }
 
   /**
-   * Delete a specific resource by name
+   * Delete a specific resource by name.
+   *
+   * `dryRun` still runs the full admission chain — including validating webhooks — and
+   * reports their verdict, without persisting anything.
    */
-  async deleteResource(resourceConfig: K8sResourceConfig, name: string, namespace?: string): Promise<KubeObjectBase> {
+  async deleteResource(
+    resourceConfig: K8sResourceConfig,
+    name: string,
+    namespace?: string,
+    options?: { dryRun?: boolean }
+  ): Promise<KubeObjectBase> {
     if (!this.KubeConfig) {
       throw new Error("KubeConfig is not initialized");
     }
 
     const url = this.buildResourceUrl(resourceConfig, { namespace, name });
-    return this.makeRequest("DELETE", url);
+    return this.makeRequest("DELETE", options?.dryRun ? `${url}?dryRun=All` : url);
   }
 
   /**

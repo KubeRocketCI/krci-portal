@@ -2,6 +2,7 @@ import { k8sGetApiVersions } from "./procedures/basic/apiVersions/index.js";
 import { k8sCreateItemProcedure } from "./procedures/basic/create/index.js";
 import { k8sApplyYamlProcedure } from "./procedures/basic/applyYaml/index.js";
 import { k8sDeleteItemProcedure } from "./procedures/basic/delete/index.js";
+import { k8sValidateDeleteProcedure } from "./procedures/basic/validateDelete/index.js";
 import { k8sGetProcedure } from "./procedures/basic/get/index.js";
 import { k8sGetKubeConfig } from "./procedures/kubeconfig/index.js";
 import { k8sListProcedure } from "./procedures/basic/list/index.js";
@@ -46,6 +47,7 @@ export const k8sRouter = t.router({
   applyYaml: k8sApplyYamlProcedure,
   update: k8sUpdateItemProcedure,
   delete: k8sDeleteItemProcedure,
+  validateDelete: k8sValidateDeleteProcedure,
   scaleWorkload: k8sScaleWorkloadProcedure,
   restartWorkload: k8sRestartWorkloadProcedure,
   listDeploymentRevisions: k8sListDeploymentRevisionsProcedure,
