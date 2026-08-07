@@ -224,3 +224,58 @@ describe("createSecurityPipelineRunDraft", () => {
     });
   });
 });
+
+describe("createSecurityPipelineRunDraft ServiceAccount resolution", () => {
+  const templateWith = (serviceAccountName: string) =>
+    ({
+      ...structuredClone(mockPipelineRunTemplate),
+      spec: { ...structuredClone(mockPipelineRunTemplate.spec), taskRunTemplate: { serviceAccountName } },
+    }) as unknown as PipelineRun;
+
+  const triggerTemplate = {
+    spec: { params: [{ name: "serviceAccount", default: "tekton-unprivileged" }] },
+  } as unknown as Parameters<typeof createSecurityPipelineRunDraft>[0]["triggerTemplate"];
+
+  const base = {
+    codebase: mockCodebase as unknown as Codebase,
+    codebaseBranch: mockCodebaseBranch as unknown as CodebaseBranch,
+    gitServer: mockGitServer,
+  };
+
+  it("leaves the chart-pinned tekton-security account untouched", () => {
+    const result = createSecurityPipelineRunDraft({
+      ...base,
+      pipelineRunTemplate: templateWith("tekton-security"),
+      pipeline: {
+        metadata: { name: "sec", annotations: { "app.edp.epam.com/service-account": "tekton" } },
+        spec: {},
+      } as unknown as Parameters<typeof createSecurityPipelineRunDraft>[0]["pipeline"],
+      triggerTemplate,
+    });
+
+    expect(result.spec.taskRunTemplate?.serviceAccountName).toBe("tekton-security");
+  });
+
+  it("resolves a placeholder from the security Pipeline annotation", () => {
+    const result = createSecurityPipelineRunDraft({
+      ...base,
+      pipelineRunTemplate: templateWith("$(tt.params.serviceAccount)"),
+      pipeline: {
+        metadata: { name: "sec", annotations: { "app.edp.epam.com/service-account": "tekton-security" } },
+        spec: {},
+      } as unknown as Parameters<typeof createSecurityPipelineRunDraft>[0]["pipeline"],
+      triggerTemplate,
+    });
+
+    expect(result.spec.taskRunTemplate?.serviceAccountName).toBe("tekton-security");
+  });
+
+  it("never emits an unresolved placeholder as a ServiceAccount name", () => {
+    const result = createSecurityPipelineRunDraft({
+      ...base,
+      pipelineRunTemplate: templateWith("$(tt.params.serviceAccount)"),
+    });
+
+    expect(result.spec.taskRunTemplate?.serviceAccountName).toBeUndefined();
+  });
+});

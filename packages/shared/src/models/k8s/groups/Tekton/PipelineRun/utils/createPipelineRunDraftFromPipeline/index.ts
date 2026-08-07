@@ -4,6 +4,7 @@ import { PipelineRunDraft } from "../../types.js";
 import { TriggerTemplate } from "../../../TriggerTemplate/index.js";
 import { pipelineLabels } from "../../../Pipeline/labels.js";
 import { pipelineRunLabels } from "../../labels.js";
+import { applyTaskRunServiceAccount, WHOLE_TT_PARAM_RE } from "../resolveTaskRunServiceAccount/index.js";
 
 interface PipelineRunWorkspaceWithVCT {
   name: string;
@@ -14,9 +15,6 @@ interface PipelineRunWorkspaceWithVCT {
     };
   };
 }
-
-// Matches Tekton Triggers placeholder syntax: $(tt.params.<name>)
-const TT_PARAM_RE = /^\$\(tt\.params\.([^)]+)\)$/;
 
 type PipelineParamSpec = NonNullable<Pipeline["spec"]["params"]>[number];
 
@@ -81,7 +79,7 @@ function resolveTtParams(
     const spec = byName.get(param.name);
 
     // Case 1: unresolved placeholder
-    if (typeof param.value === "string" && TT_PARAM_RE.test(param.value)) {
+    if (typeof param.value === "string" && WHOLE_TT_PARAM_RE.test(param.value)) {
       const value = spec?.default ?? (spec?.type === "array" ? [] : "");
       return { name: param.name, value };
     }
@@ -118,6 +116,10 @@ const getPipelineRunFromTriggerTemplate = (
   if (pipelineRun.spec?.pipelineRef) {
     pipelineRun.spec.pipelineRef.name = pipeline.metadata.name;
   }
+
+  // Must precede the generic pass: serviceAccount is no Pipeline param, so the
+  // walker below would resolve it to "" and silently use Tekton's default account.
+  applyTaskRunServiceAccount(pipelineRun, { pipeline, triggerTemplate });
 
   if (pipeline.spec?.params) {
     // Pass 1: resolve ALL $(tt.params.*) throughout the entire template as

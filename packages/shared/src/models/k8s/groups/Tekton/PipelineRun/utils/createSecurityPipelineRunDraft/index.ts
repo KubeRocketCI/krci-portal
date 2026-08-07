@@ -3,18 +3,25 @@ import { Codebase, GitServer, CodebaseBranch, gitProvider } from "../../../../KR
 import { PipelineRun } from "../../types.js";
 import { pipelineRunLabels } from "../../labels.js";
 import { pipelineType } from "../../../Pipeline/constants.js";
+import { Pipeline } from "../../../Pipeline/types.js";
+import { TriggerTemplate } from "../../../TriggerTemplate/types.js";
 import { RESULT_ANNOTATIONS_KEY, createResultAnnotations } from "../resultAnnotations/index.js";
+import { applyTaskRunServiceAccount } from "../resolveTaskRunServiceAccount/index.js";
 
 export function createSecurityPipelineRunDraft({
   codebase,
   codebaseBranch,
   pipelineRunTemplate,
   gitServer,
+  pipeline,
+  triggerTemplate,
 }: {
   codebase: Codebase;
   codebaseBranch: CodebaseBranch;
   pipelineRunTemplate: PipelineRun;
   gitServer: GitServer;
+  pipeline?: Pipeline;
+  triggerTemplate?: TriggerTemplate;
 }): PipelineRun {
   const {
     metadata: { name: codebaseName },
@@ -51,6 +58,8 @@ export function createSecurityPipelineRunDraft({
   if (base.spec.pipelineRef) {
     base.spec.pipelineRef.name = codebaseBranch.spec?.pipelines?.security;
   }
+
+  applyTaskRunServiceAccount(base, { pipeline, triggerTemplate });
 
   const gitUrlPathWithoutSlashAtStart = stripLeadingSlash(codebaseGitUrlPath);
 
