@@ -452,3 +452,65 @@ describe("testing createBuildPipelineRunDraft", () => {
     });
   });
 });
+
+describe("createBuildPipelineRunDraft ServiceAccount resolution", () => {
+  const gitServer = {
+    spec: { gitHost: "github.com", gitProvider: "github", gitUser: "git", sshPort: 22, nameSshKeySecret: "secretName" },
+  } as unknown as GitServer;
+
+  const templateWithPlaceholder = () =>
+    ({
+      ...structuredClone(mockPipelineRunTemplate),
+      spec: {
+        ...structuredClone(mockPipelineRunTemplate.spec),
+        taskRunTemplate: { serviceAccountName: "$(tt.params.serviceAccount)" },
+      },
+    }) as unknown as PipelineRun;
+
+  const triggerTemplate = {
+    spec: { params: [{ name: "serviceAccount", default: "tekton-unprivileged" }] },
+  } as unknown as Parameters<typeof createBuildPipelineRunDraft>[0]["triggerTemplate"];
+
+  it("resolves the placeholder from the build Pipeline annotation", () => {
+    const object = createBuildPipelineRunDraft({
+      codebase: mockCodebase,
+      codebaseBranch: mockCodebaseBranch as unknown as CodebaseBranch,
+      pipelineRunTemplate: templateWithPlaceholder(),
+      gitServer,
+      pipeline: {
+        metadata: { name: "test-build-pipeline", annotations: { "app.edp.epam.com/service-account": "tekton" } },
+        spec: {},
+      } as unknown as Parameters<typeof createBuildPipelineRunDraft>[0]["pipeline"],
+      triggerTemplate,
+    });
+
+    expect(object.spec.taskRunTemplate?.serviceAccountName).toBe("tekton");
+  });
+
+  it("falls back to the TriggerTemplate default for an unannotated Pipeline", () => {
+    const object = createBuildPipelineRunDraft({
+      codebase: mockCodebase,
+      codebaseBranch: mockCodebaseBranch as unknown as CodebaseBranch,
+      pipelineRunTemplate: templateWithPlaceholder(),
+      gitServer,
+      pipeline: {
+        metadata: { name: "test-build-pipeline" },
+        spec: {},
+      } as unknown as Parameters<typeof createBuildPipelineRunDraft>[0]["pipeline"],
+      triggerTemplate,
+    });
+
+    expect(object.spec.taskRunTemplate?.serviceAccountName).toBe("tekton-unprivileged");
+  });
+
+  it("never emits an unresolved placeholder as a ServiceAccount name", () => {
+    const object = createBuildPipelineRunDraft({
+      codebase: mockCodebase,
+      codebaseBranch: mockCodebaseBranch as unknown as CodebaseBranch,
+      pipelineRunTemplate: templateWithPlaceholder(),
+      gitServer,
+    });
+
+    expect(object.spec.taskRunTemplate?.serviceAccountName).toBeUndefined();
+  });
+});

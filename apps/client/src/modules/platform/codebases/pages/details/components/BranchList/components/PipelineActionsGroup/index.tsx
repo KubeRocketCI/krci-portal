@@ -2,6 +2,7 @@ import React from "react";
 
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { StatusIcon } from "@/core/components/StatusIcon";
+import { usePipelineWatchItem } from "@/k8s/api/groups/Tekton/Pipeline";
 import { usePipelineRunCRUD, usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { CUSTOM_RESOURCE_STATUS } from "@/k8s/constants/statuses";
 import {
@@ -65,6 +66,36 @@ export function PipelineActionsGroup({
   const isTektonCI = codebaseCiTool === ciTool.tekton;
   const isGitLabCI = codebaseCiTool === ciTool.gitlab;
 
+  // Fetched solely for its app.edp.epam.com/service-account annotation, which the
+  // TriggerTemplates reference as $(tt.params.serviceAccount) and the interceptor
+  // resolves for webhooks — this path bypasses the interceptor.
+  // Per branch row, but cache and watch registry key on (cluster, ns, kind, name),
+  // so branches sharing a pipeline collapse to one GET; a namespace-wide list watch
+  // would be worse, the library ships 200+ Pipelines.
+  const buildPipelineName = codebaseBranch.spec?.pipelines?.build;
+  const securityPipelineName = codebaseBranch.spec?.pipelines?.security;
+
+  const buildPipelineWatch = usePipelineWatchItem({
+    name: buildPipelineName,
+    namespace: codebaseBranch.metadata.namespace,
+    queryOptions: {
+      enabled: isTektonCI && !!buildPipelineName,
+    },
+  });
+
+  const securityPipelineWatch = usePipelineWatchItem({
+    name: securityPipelineName,
+    namespace: codebaseBranch.metadata.namespace,
+    queryOptions: {
+      enabled: isTektonCI && !!securityPipelineName,
+    },
+  });
+
+  // Settled, not successful: a 404 must not wedge the button — it falls back to the
+  // TriggerTemplate default.
+  const buildPipelineReady = !buildPipelineName || !buildPipelineWatch.query.isPending;
+  const securityPipelineReady = !securityPipelineName || !securityPipelineWatch.query.isPending;
+
   // Normalize gitUrlPath by stripping leading slash (used for GitLab CI)
   const normalizedGitUrlPath = React.useMemo(
     () => stripLeadingSlash(codebase?.spec.gitUrlPath),
@@ -73,7 +104,7 @@ export function PipelineActionsGroup({
 
   // Build pipeline run draft (Tekton)
   const buildPipelineRunData = React.useMemo(() => {
-    if (!isTektonCI || !gitServerByCodebase || !codebase) {
+    if (!isTektonCI || !gitServerByCodebase || !codebase || !buildPipelineReady) {
       return;
     }
 
@@ -92,12 +123,22 @@ export function PipelineActionsGroup({
       codebaseBranch,
       pipelineRunTemplate: buildPipelineRunTemplateCopy,
       gitServer: gitServerByCodebase,
+      pipeline: buildPipelineWatch.query.data,
+      triggerTemplate: buildTriggerTemplate,
     });
-  }, [isTektonCI, buildTriggerTemplate?.spec?.resourcetemplates, codebase, codebaseBranch, gitServerByCodebase]);
+  }, [
+    isTektonCI,
+    buildTriggerTemplate,
+    codebase,
+    codebaseBranch,
+    gitServerByCodebase,
+    buildPipelineReady,
+    buildPipelineWatch.query.data,
+  ]);
 
   // Security pipeline run draft (Tekton only)
   const securityPipelineRunData = React.useMemo(() => {
-    if (!isTektonCI || !gitServerByCodebase || !codebase) {
+    if (!isTektonCI || !gitServerByCodebase || !codebase || !securityPipelineReady) {
       return;
     }
 
@@ -114,8 +155,18 @@ export function PipelineActionsGroup({
       codebaseBranch,
       pipelineRunTemplate: securityPipelineRunTemplateCopy,
       gitServer: gitServerByCodebase,
+      pipeline: securityPipelineWatch.query.data,
+      triggerTemplate: securityTriggerTemplate,
     });
-  }, [isTektonCI, securityTriggerTemplate?.spec?.resourcetemplates, codebase, codebaseBranch, gitServerByCodebase]);
+  }, [
+    isTektonCI,
+    securityTriggerTemplate,
+    codebase,
+    codebaseBranch,
+    gitServerByCodebase,
+    securityPipelineReady,
+    securityPipelineWatch.query.data,
+  ]);
 
   // Build handlers
   const onTektonBuildClick = React.useCallback(async () => {
@@ -228,13 +279,15 @@ export function PipelineActionsGroup({
     !pipelineRunPermissions.data.create.allowed ||
     latestBuildIsRunning ||
     !codebaseBranchStatusIsOk ||
-    (isGitLabCI && isGitLabLoading);
+    (isGitLabCI && isGitLabLoading) ||
+    (isTektonCI && !buildPipelineRunData);
 
   const securityButtonDisabled =
     !pipelineRunPermissions.data.create.allowed ||
     latestSecurityIsRunning ||
     !codebaseBranchStatusIsOk ||
-    !securityPipelineConfigured;
+    !securityPipelineConfigured ||
+    (isTektonCI && !securityPipelineRunData);
 
   // Tooltips
   const buildButtonTooltip = (() => {
@@ -252,6 +305,14 @@ export function PipelineActionsGroup({
 
     if (!codebaseBranchStatusIsOk) {
       return `Codebase branch status is ${codebaseBranch?.status?.status}`;
+    }
+
+    if (isTektonCI && !buildPipelineRunData) {
+      // A settled-but-empty TriggerTemplate watch is misconfiguration, not slow load;
+      // "loading" would leave the button disabled behind a promise never kept.
+      return buildTriggerTemplateWatch.query.isPending || buildTriggerTemplate?.spec?.resourcetemplates?.[0]
+        ? "Loading build pipeline definition..."
+        : "Build TriggerTemplate is missing or declares no resourcetemplates";
     }
 
     return isGitLabCI ? "Trigger GitLab CI pipeline" : "Trigger build PipelineRun";

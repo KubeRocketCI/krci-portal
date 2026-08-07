@@ -12,3 +12,4 @@ export * from "./childReferences/index.js";
 export * from "./getPipelineRunTaskGraphDefinitions/index.js";
 export * from "./isHistoryPipelineRun/index.js";
 export * from "./resultAnnotations/index.js";
+export * from "./resolveTaskRunServiceAccount/index.js";

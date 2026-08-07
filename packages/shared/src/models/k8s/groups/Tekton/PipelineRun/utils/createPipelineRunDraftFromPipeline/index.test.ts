@@ -480,3 +480,56 @@ describe("testing createPipelineRunDraftFromPipeline", () => {
     ]);
   });
 });
+
+describe("createPipelineRunDraftFromPipeline ServiceAccount resolution", () => {
+  const triggerTemplate = (saDefault?: string) =>
+    ({
+      spec: {
+        params: [
+          { name: "codebase" },
+          ...(saDefault === undefined ? [] : [{ name: "serviceAccount", default: saDefault }]),
+        ],
+        resourcetemplates: [
+          {
+            apiVersion: "tekton.dev/v1",
+            kind: "PipelineRun",
+            metadata: { generateName: "build-$(tt.params.codebase)-", labels: {} },
+            spec: {
+              taskRunTemplate: { serviceAccountName: "$(tt.params.serviceAccount)" },
+              pipelineRef: { name: "$(tt.params.pipelineName)" },
+              params: [],
+            },
+          },
+        ],
+      },
+    }) as unknown as TriggerTemplate;
+
+  const pipeline = (sa?: string) =>
+    ({
+      metadata: {
+        name: "github-go-beego-app-build-default",
+        namespace: "krci",
+        labels: { "app.edp.epam.com/pipelinetype": "build" },
+        ...(sa === undefined ? {} : { annotations: { "app.edp.epam.com/service-account": sa } }),
+      },
+      spec: { params: [{ name: "CODEBASE_NAME", default: "" }] },
+    }) as unknown as Pipeline;
+
+  it("resolves the placeholder from the Pipeline annotation, not the generic param walker", () => {
+    const result = createPipelineRunDraftFromPipeline(triggerTemplate("tekton-unprivileged"), pipeline("tekton"));
+
+    expect(result.spec?.taskRunTemplate?.serviceAccountName).toBe("tekton");
+  });
+
+  it("falls back to the TriggerTemplate default for an unannotated Pipeline", () => {
+    const result = createPipelineRunDraftFromPipeline(triggerTemplate("tekton-unprivileged"), pipeline());
+
+    expect(result.spec?.taskRunTemplate?.serviceAccountName).toBe("tekton-unprivileged");
+  });
+
+  it("does not degrade the ServiceAccount to an empty string", () => {
+    const result = createPipelineRunDraftFromPipeline(triggerTemplate(), pipeline());
+
+    expect(result.spec?.taskRunTemplate?.serviceAccountName).toBeUndefined();
+  });
+});
