@@ -2,6 +2,38 @@
 ## [Unreleased]
 
 
+<a name="v0.8.0"></a>
+## [v0.8.0] - 2026-08-10
+### Features
+
+- surface EventListener labelSelector in list and topology views
+- persist SQLite session store on an optional PVC
+- flag duplicate projects inline in the create wizard
+
+### Bug Fixes
+
+- validate branch deletion against the operator webhook instead of guessing client-side
+- resolve the TriggerTemplate ServiceAccount placeholder for portal-started PipelineRuns
+- resolve PipelineRun history timestamps across both Tekton Results watcher generations
+- stop PipelineRuns gracefully so finally tasks report the VCS commit status
+- correct Prettier format-on-write hook
+- Correct edpDefault HTTPRoute hostname
+- bind each pipeline task to its own TaskRun
+- remove ReDoS-prone regex from git URL path normalization
+- make SQLite DB directory writable for the non-root runtime user
+- harden integration configuration against SSRF probing and stored XSS
+- render archived PipelineRuns with an unfinalized Tekton Results summary as terminal, not Running
+
+### Code Refactoring
+
+- drop dead Jira-era params from the build PipelineRun draft
+
+### Routine
+
+- trigger Claude PR review only on explicit /review commands
+- Update current development version
+
+
 <a name="v0.7.0"></a>
 ## [v0.7.0] - 2026-07-20
 ### Features
@@ -447,7 +479,8 @@
 - Setup initial code ([#1](https://github.com/KubeRocketCI/krci-portal/issues/1))
 
 
-[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.8.0...HEAD
+[v0.8.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.7.0...v0.8.0
 [v0.7.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.6.0...v0.7.0
 [v0.6.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.5.0...v0.6.0
 [v0.5.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.4.0...v0.5.0
