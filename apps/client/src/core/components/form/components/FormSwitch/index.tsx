@@ -14,6 +14,7 @@ export interface FormSwitchProps {
   icon?: React.ReactNode; // For rich variant
   variant?: "card" | "list"; // For rich variant
   expandableContent?: React.ReactNode; // For rich variant
+  expandWhen?: "checked" | "unchecked"; // For rich variant
 }
 
 export const FormSwitch: React.FC<FormSwitchProps> = ({
@@ -25,6 +26,7 @@ export const FormSwitch: React.FC<FormSwitchProps> = ({
   icon,
   variant = "card",
   expandableContent,
+  expandWhen = "checked",
 }) => {
   // Access field from context - fully typed!
   const field = useFieldContext<boolean>();
@@ -36,6 +38,7 @@ export const FormSwitch: React.FC<FormSwitchProps> = ({
   const errorMessage = extractErrorMessage(errors);
   const checked = field.state.value ?? false;
   const displayHelperText = errorMessage || helperText || description;
+  const isExpanded = expandWhen === "unchecked" ? !checked : checked;
 
   // Rich variant
   if (rich) {
@@ -69,7 +72,7 @@ export const FormSwitch: React.FC<FormSwitchProps> = ({
               )}
             </div>
           </Label>
-          {checked && expandableContent && <div>{expandableContent}</div>}
+          {isExpanded && expandableContent && <div>{expandableContent}</div>}
         </div>
       );
     }
@@ -109,7 +112,7 @@ export const FormSwitch: React.FC<FormSwitchProps> = ({
               </div>
             </div>
           </div>
-          {checked && expandableContent && <div>{expandableContent}</div>}
+          {isExpanded && expandableContent && <div>{expandableContent}</div>}
         </div>
       </div>
     );
