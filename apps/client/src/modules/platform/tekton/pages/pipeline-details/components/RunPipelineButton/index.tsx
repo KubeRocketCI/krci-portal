@@ -1,8 +1,7 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import EditorYAML from "@/core/components/EditorYAML";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
-import { usePipelinePermissions } from "@/k8s/api/groups/Tekton/Pipeline";
-import { usePipelineRunCRUD } from "@/k8s/api/groups/Tekton/PipelineRun";
+import { usePipelineRunCRUD, usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { useTriggerTemplateWatchItem } from "@/k8s/api/groups/Tekton/TriggerTemplate";
 import { PipelineRun, createPipelineRunDraftFromPipeline, pipelineLabels } from "@my-project/shared";
 import { Play } from "lucide-react";
@@ -11,7 +10,7 @@ import { usePipelineWatch } from "../../hooks/data";
 export const RunPipelineButton = () => {
   const pipelineWatch = usePipelineWatch();
   const pipeline = pipelineWatch.query.data;
-  const pipelinePermissions = usePipelinePermissions();
+  const pipelineRunPermissions = usePipelineRunPermissions();
   const { triggerCreatePipelineRun } = usePipelineRunCRUD();
   const openEditorDialog = useDialogOpener(EditorYAML);
 
@@ -54,8 +53,8 @@ export const RunPipelineButton = () => {
         size: "sm",
         onClick: handleClick,
       }}
-      allowed={pipelinePermissions.data.create.allowed}
-      reason={pipelinePermissions.data.create.reason}
+      allowed={pipelineRunPermissions.data.create.allowed}
+      reason={pipelineRunPermissions.data.create.reason}
     >
       <Play size={16} /> Run with params
     </ButtonWithPermission>
