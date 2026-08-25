@@ -12,6 +12,7 @@ import {
   getStageResourceName,
   PipelineRun,
   Stage,
+  stageLabels,
   TriggerTemplate,
 } from "@my-project/shared";
 import { useCDPipelineWatchItem } from "@/k8s/api/groups/KRCI/CDPipeline";
@@ -50,10 +51,14 @@ export const useStageWatch = () => {
   });
 };
 
+// Must stay pipeline-scoped: consumers compare `spec.order` across the returned list.
 export const useStageListWatch = () => {
   const params = routeStageDetails.useParams();
 
   return useStageWatchList({
+    labels: {
+      [stageLabels.cdPipeline]: params.cdPipeline,
+    },
     namespace: params.namespace,
   });
 };
