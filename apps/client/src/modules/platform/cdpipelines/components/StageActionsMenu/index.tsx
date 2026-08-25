@@ -5,78 +5,13 @@ import { useStagePermissions } from "@/k8s/api/groups/KRCI/Stage";
 import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { EditStageDialog } from "../EditStageDialog";
-import { ListItemAction } from "@/core/types/global";
 import { createResourceAction, getResourceProtection, getDisabledState } from "@/core/utils/createResourceAction";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
-import { DefaultPermissionListCheckResult, k8sOperation, k8sStageConfig, Stage } from "@my-project/shared";
+import { k8sOperation, k8sStageConfig } from "@my-project/shared";
 import { Pencil, Trash } from "lucide-react";
 import React from "react";
 import { StageActionsMenuProps } from "./types";
-
-const getStageOrder = (stage: Stage): number => stage.spec.order;
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const createDeleteAction = ({
-  allStages,
-  currentStage,
-  action,
-  permissions,
-}: {
-  allStages: Stage[];
-  currentStage: Stage;
-  action: (stage: Stage) => void;
-  permissions: DefaultPermissionListCheckResult;
-}): ListItemAction | undefined => {
-  if (!currentStage) {
-    return;
-  }
-
-  const deleteProtection = getResourceProtection(currentStage, k8sOperation.delete);
-
-  // CD pipeline could publish artifacts without any stage
-  // so, in case it doesn't have any stage
-  // probably this is something wrong and somebody messed-up CR
-
-  // we don't let user remove last stage
-  if (allStages.length === 0 || allStages.length === 1) {
-    return createResourceAction({
-      type: k8sOperation.delete,
-      label: capitalizeFirstLetter(k8sOperation.delete),
-      item: currentStage,
-      Icon: <Trash size={16} />,
-      disabled: {
-        status: true,
-        reason: "Deployment should have at least one Environment",
-      },
-    });
-  }
-
-  const currentStageOrder = getStageOrder(currentStage);
-  const otherStages = allStages.filter((el) => el.metadata.name !== currentStage.metadata.name);
-  const highestOtherStagesOrder = Math.max(...otherStages.map(getStageOrder));
-
-  if (currentStageOrder > highestOtherStagesOrder) {
-    return createResourceAction({
-      type: k8sOperation.delete,
-      label: capitalizeFirstLetter(k8sOperation.delete),
-      item: currentStage,
-      Icon: <Trash size={16} />,
-      disabled: getDisabledState(deleteProtection, permissions.delete),
-      callback: (stage) => action(stage),
-    });
-  }
-
-  return createResourceAction({
-    type: k8sOperation.delete,
-    label: capitalizeFirstLetter(k8sOperation.delete),
-    item: currentStage,
-    Icon: <Trash size={16} />,
-    disabled: {
-      status: true,
-      reason: "You are able to delete only the last Environment",
-    },
-  });
-};
+import { getStageDeleteDisabledState } from "./utils/getStageDeleteDisabledState";
 
 export const StageActionsMenu = ({ data: { stage, stages }, backRoute, variant }: StageActionsMenuProps) => {
   const openEditStageDialog = useDialogOpener(EditStageDialog);
@@ -84,8 +19,16 @@ export const StageActionsMenu = ({ data: { stage, stages }, backRoute, variant }
   const stagePermissions = useStagePermissions();
 
   const patchProtection = getResourceProtection(stage, k8sOperation.update);
+  const deleteProtection = getResourceProtection(stage, k8sOperation.delete);
 
   const actions = React.useMemo(() => {
+    const deleteDisabled = getStageDeleteDisabledState({
+      allStages: stages,
+      currentStage: stage,
+      deleteProtection,
+      deletePermission: stagePermissions.data.delete,
+    });
+
     return [
       createResourceAction({
         item: stage,
@@ -97,11 +40,13 @@ export const StageActionsMenu = ({ data: { stage, stages }, backRoute, variant }
           openEditStageDialog({ stage });
         },
       }),
-      createDeleteAction({
-        allStages: stages,
-        currentStage: stage,
-        permissions: stagePermissions.data,
-        action: (stage) => {
+      createResourceAction({
+        item: stage,
+        type: k8sOperation.delete,
+        label: capitalizeFirstLetter(k8sOperation.delete),
+        Icon: <Trash size={16} />,
+        disabled: deleteDisabled,
+        callback: (stage) => {
           openDeleteKubeObjectDialog({
             objectName: stage?.spec?.name,
             resourceConfig: k8sStageConfig,
@@ -111,7 +56,7 @@ export const StageActionsMenu = ({ data: { stage, stages }, backRoute, variant }
           });
         },
       }),
-    ].filter((action): action is ListItemAction => action !== undefined);
+    ];
   }, [
     stage,
     stagePermissions.data,
@@ -120,6 +65,7 @@ export const StageActionsMenu = ({ data: { stage, stages }, backRoute, variant }
     openDeleteKubeObjectDialog,
     backRoute,
     patchProtection,
+    deleteProtection,
   ]);
 
   return variant === actionMenuType.inline ? (
