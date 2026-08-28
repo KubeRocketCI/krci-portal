@@ -17,7 +17,6 @@ const baseSchema = z.object({
   [NAMES.GIT_HOST]: z.string().min(1, "Enter the Git server host."),
   [NAMES.GIT_PROVIDER]: gitProviderEnum,
   [NAMES.GIT_USER]: z.string().min(1, "Enter the Git user."),
-  [NAMES.NAME_SSH_KEY_SECRET]: z.string().min(1, "Enter the SSH key secret name."),
   [NAMES.SSH_PORT]: z.coerce.number().int().min(1).max(65535),
   [NAMES.HTTPS_PORT]: z.coerce.number().int().min(1).max(65535),
   [NAMES.SKIP_WEBHOOK_SSL]: z.boolean(),

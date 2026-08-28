@@ -9,6 +9,7 @@ describe("createGitServerSecretDraft", () => {
     it("should create a valid GitHub secret draft", () => {
       const input = {
         gitProvider: gitProvider.github,
+        secretName: "ci-github",
         sshPrivateKey: "-----BEGIN RSA PRIVATE KEY-----\ntest-key\n-----END RSA PRIVATE KEY-----",
         token: "ghp_test_token_123",
       };
@@ -34,6 +35,7 @@ describe("createGitServerSecretDraft", () => {
     it("should throw ZodError when token is missing for GitHub", () => {
       const input = {
         gitProvider: gitProvider.github,
+        secretName: "ci-github",
         sshPrivateKey: "test-key",
       } as any;
 
@@ -45,6 +47,7 @@ describe("createGitServerSecretDraft", () => {
     it("should create a valid GitLab secret draft", () => {
       const input = {
         gitProvider: gitProvider.gitlab,
+        secretName: "ci-gitlab",
         sshPrivateKey: "-----BEGIN RSA PRIVATE KEY-----\ntest-key\n-----END RSA PRIVATE KEY-----",
         token: "glpat-test_token_123",
       };
@@ -56,9 +59,23 @@ describe("createGitServerSecretDraft", () => {
       expect(result.data?.token).toBeDefined();
     });
 
+    it("should use the per-server secret name for a second GitLab server", () => {
+      const input = {
+        gitProvider: gitProvider.gitlab,
+        secretName: "ci-gitlab-second",
+        sshPrivateKey: "test-key",
+        token: "glpat-test_token_123",
+      };
+
+      const result = createGitServerSecretDraft(input);
+
+      expect(result.metadata.name).toBe("ci-gitlab-second");
+    });
+
     it("should throw ZodError when token is missing for GitLab", () => {
       const input = {
         gitProvider: gitProvider.gitlab,
+        secretName: "ci-gitlab",
         sshPrivateKey: "test-key",
       } as any;
 
@@ -70,6 +87,7 @@ describe("createGitServerSecretDraft", () => {
     it("should create a valid Bitbucket secret draft", () => {
       const input = {
         gitProvider: gitProvider.bitbucket,
+        secretName: "ci-bitbucket",
         sshPrivateKey: "-----BEGIN RSA PRIVATE KEY-----\ntest-key\n-----END RSA PRIVATE KEY-----",
         token: "bitbucket_test_token",
       };
@@ -84,6 +102,7 @@ describe("createGitServerSecretDraft", () => {
     it("should throw ZodError when token is missing for Bitbucket", () => {
       const input = {
         gitProvider: gitProvider.bitbucket,
+        secretName: "ci-bitbucket",
         sshPrivateKey: "test-key",
       } as any;
 
@@ -95,6 +114,7 @@ describe("createGitServerSecretDraft", () => {
     it("should create a valid Gerrit secret draft", () => {
       const input = {
         gitProvider: gitProvider.gerrit,
+        secretName: "gerrit-ciuser-sshkey",
         sshPrivateKey: "-----BEGIN RSA PRIVATE KEY-----\ntest-key\n-----END RSA PRIVATE KEY-----",
         sshPublicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...",
       };
@@ -110,6 +130,7 @@ describe("createGitServerSecretDraft", () => {
     it("should throw ZodError when sshPublicKey is missing for Gerrit", () => {
       const input = {
         gitProvider: gitProvider.gerrit,
+        secretName: "gerrit-ciuser-sshkey",
         sshPrivateKey: "test-key",
       } as any;
 
@@ -119,6 +140,7 @@ describe("createGitServerSecretDraft", () => {
     it("should not require token for Gerrit", () => {
       const input = {
         gitProvider: gitProvider.gerrit,
+        secretName: "gerrit-ciuser-sshkey",
         sshPrivateKey: "test-key",
         sshPublicKey: "test-public-key",
       };
@@ -132,6 +154,7 @@ describe("createGitServerSecretDraft", () => {
   describe("validation", () => {
     it("should throw ZodError when gitProvider is missing", () => {
       const input = {
+        secretName: "ci-github",
         sshPrivateKey: "test-key",
         token: "test-token",
       } as any;
@@ -142,15 +165,52 @@ describe("createGitServerSecretDraft", () => {
     it("should throw ZodError when sshPrivateKey is missing", () => {
       const input = {
         gitProvider: gitProvider.github,
+        secretName: "ci-github",
         token: "test-token",
       } as any;
 
       expect(() => createGitServerSecretDraft(input)).toThrow(ZodError);
     });
 
+    it("should throw ZodError when secretName is missing", () => {
+      const input = {
+        gitProvider: gitProvider.github,
+        sshPrivateKey: "test-key",
+        token: "test-token",
+      } as any;
+
+      expect(() => createGitServerSecretDraft(input)).toThrow(ZodError);
+    });
+
+    it("should throw ZodError when secretName is not a valid Kubernetes name", () => {
+      const input = {
+        gitProvider: gitProvider.github,
+        secretName: "Invalid_Secret_Name",
+        sshPrivateKey: "test-key",
+        token: "test-token",
+      };
+
+      expect(() => createGitServerSecretDraft(input)).toThrow(ZodError);
+    });
+
+    it("should enforce DNS-1123 label boundaries around dots in secretName", () => {
+      const base = {
+        gitProvider: gitProvider.github,
+        sshPrivateKey: "test-key",
+        token: "test-token",
+      };
+
+      expect(() => createGitServerSecretDraft({ ...base, secretName: "a..b" })).toThrow(ZodError);
+      expect(() => createGitServerSecretDraft({ ...base, secretName: "a.-b" })).toThrow(ZodError);
+      expect(createGitServerSecretDraft({ ...base, secretName: "ci-gitlab.example" }).metadata.name).toBe(
+        "ci-gitlab.example"
+      );
+    });
+
     it("should throw ZodError for invalid gitProvider", () => {
       const input = {
         gitProvider: "invalid-provider",
+        secretName: "ci-github",
         sshPrivateKey: "test-key",
         token: "test-token",
       } as any;
@@ -161,6 +221,7 @@ describe("createGitServerSecretDraft", () => {
     it("should handle empty strings for token", () => {
       const input = {
         gitProvider: gitProvider.github,
+        secretName: "ci-github",
         sshPrivateKey: "test-key",
         token: "",
       };
@@ -172,20 +233,28 @@ describe("createGitServerSecretDraft", () => {
   });
 
   describe("createGitServerSecretName", () => {
-    it("should return gerrit-ciuser-sshkey for gerrit provider", () => {
-      expect(createGitServerSecretName(gitProvider.gerrit)).toBe("gerrit-ciuser-sshkey");
+    it("should return gerrit-ciuser-sshkey for the default gerrit server", () => {
+      expect(createGitServerSecretName(gitProvider.gerrit, "gerrit")).toBe("gerrit-ciuser-sshkey");
     });
 
-    it("should return ci-github for github provider", () => {
-      expect(createGitServerSecretName(gitProvider.github)).toBe("ci-github");
+    it("should return ci-<name> for a non-default gerrit server", () => {
+      expect(createGitServerSecretName(gitProvider.gerrit, "gerrit-second")).toBe("ci-gerrit-second");
     });
 
-    it("should return ci-gitlab for gitlab provider", () => {
-      expect(createGitServerSecretName(gitProvider.gitlab)).toBe("ci-gitlab");
+    it("should return ci-<name> for the default github server", () => {
+      expect(createGitServerSecretName(gitProvider.github, "github")).toBe("ci-github");
     });
 
-    it("should return ci-bitbucket for bitbucket provider", () => {
-      expect(createGitServerSecretName(gitProvider.bitbucket)).toBe("ci-bitbucket");
+    it("should return ci-<name> for the default gitlab server", () => {
+      expect(createGitServerSecretName(gitProvider.gitlab, "gitlab")).toBe("ci-gitlab");
+    });
+
+    it("should return ci-<name> for a second gitlab server", () => {
+      expect(createGitServerSecretName(gitProvider.gitlab, "gitlab-second")).toBe("ci-gitlab-second");
+    });
+
+    it("should return ci-<name> for the default bitbucket server", () => {
+      expect(createGitServerSecretName(gitProvider.bitbucket, "bitbucket")).toBe("ci-bitbucket");
     });
   });
 
@@ -193,6 +262,7 @@ describe("createGitServerSecretDraft", () => {
     it("should trim and add newline to SSH private key", () => {
       const input = {
         gitProvider: gitProvider.github,
+        secretName: "ci-github",
         sshPrivateKey: "test-key-with-spaces  ",
         token: "test-token",
       };
@@ -211,6 +281,7 @@ test-key-content
 
       const input = {
         gitProvider: gitProvider.github,
+        secretName: "ci-github",
         sshPrivateKey: sshKey,
         token: "test-token",
       };
@@ -223,6 +294,7 @@ test-key-content
     it("should handle unicode characters in tokens", () => {
       const input = {
         gitProvider: gitProvider.github,
+        secretName: "ci-github",
         sshPrivateKey: "test-key",
         token: "token-with-unicode-日本語",
       };

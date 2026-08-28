@@ -30,7 +30,6 @@ export const CreateGitServerForm: React.FC<{ onClose: () => void }> = ({ onClose
       [NAMES.OVERRIDE_WEBHOOK_URL]: false,
       [NAMES.SSH_PORT]: 22,
       [NAMES.HTTPS_PORT]: 443,
-      [NAMES.NAME_SSH_KEY_SECRET]: createGitServerSecretName(gitProvider.github),
     }),
     []
   );
@@ -49,7 +48,7 @@ export const CreateGitServerForm: React.FC<{ onClose: () => void }> = ({ onClose
             gitHost: values[NAMES.GIT_HOST],
             gitProvider: values[NAMES.GIT_PROVIDER],
             gitUser: values[NAMES.GIT_USER],
-            nameSshKeySecret: values[NAMES.NAME_SSH_KEY_SECRET],
+            nameSshKeySecret: createGitServerSecretName(values[NAMES.GIT_PROVIDER], values[NAMES.NAME]),
             sshPort: values[NAMES.SSH_PORT],
             httpsPort: values[NAMES.HTTPS_PORT],
             skipWebhookSSLVerification: values[NAMES.SKIP_WEBHOOK_SSL],

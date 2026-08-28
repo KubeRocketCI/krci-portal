@@ -1,7 +1,7 @@
 import React from "react";
 import { NAMES } from "../../../../../constants";
 import { useCreateGitServerForm } from "../../../../../providers/form/hooks";
-import { GitProvider as GitProviderType, gitProvider, gitUser, createGitServerSecretName } from "@my-project/shared";
+import { GitProvider as GitProviderType, gitProvider, gitUser } from "@my-project/shared";
 import { GIT_PROVIDER_ICON_MAPPING } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
 import { RESOURCE_ICON_NAMES } from "@/k8s/api/groups/KRCI/Codebase/utils/icon-mappings";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
@@ -44,7 +44,6 @@ export const GitProviderField = () => {
                     : gitUser.BITBUCKET;
 
             form.setFieldValue(NAMES.GIT_USER, user);
-            form.setFieldValue(NAMES.NAME_SSH_KEY_SECRET, createGitServerSecretName(value));
           }
         },
       }}
