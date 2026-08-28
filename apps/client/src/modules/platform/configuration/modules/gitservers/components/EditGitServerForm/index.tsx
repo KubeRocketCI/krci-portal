@@ -10,7 +10,7 @@ import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { useSecretWatchItem } from "@/k8s/api/groups/Core/Secret";
-import { createGitServerSecretName, gitProvider, k8sGitServerConfig, safeDecode } from "@my-project/shared";
+import { gitProvider, k8sGitServerConfig, safeDecode } from "@my-project/shared";
 import { showToast } from "@/core/components/Snackbar";
 import { Separator } from "@/core/components/ui/separator";
 import type { GitServer } from "@my-project/shared";
@@ -47,7 +47,7 @@ export const EditGitServerForm: React.FC<{
     }))
   );
 
-  const secretName = createGitServerSecretName(gitServer?.spec?.gitProvider ?? gitProvider.github);
+  const secretName = gitServer?.spec?.nameSshKeySecret;
   const gitServerSecretWatch = useSecretWatchItem({ name: secretName });
   const gitServerSecret = gitServerSecretWatch.query.data;
 

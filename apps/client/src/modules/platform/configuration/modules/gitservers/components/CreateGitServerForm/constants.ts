@@ -11,7 +11,6 @@ export const NAMES = {
   GIT_HOST: "gitHost",
   GIT_PROVIDER: "gitProvider",
   GIT_USER: "gitUser",
-  NAME_SSH_KEY_SECRET: "nameSshKeySecret",
   SSH_PORT: "sshPort",
   HTTPS_PORT: "httpsPort",
   SKIP_WEBHOOK_SSL: "skipWebhookSSLVerification",

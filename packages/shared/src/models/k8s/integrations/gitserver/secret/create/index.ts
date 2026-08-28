@@ -1,6 +1,7 @@
 import z, { ZodError } from "zod";
 import { GitProvider, gitProvider } from "../../../../groups/KRCI/index.js";
 import { k8sSecretConfig, SecretDraft, secretDraftSchema } from "../../../../groups/Core/index.js";
+import { k8sResourceNameSchema } from "../../../../common/index.js";
 import { SECRET_LABEL_SECRET_TYPE } from "../../../constants.js";
 import { safeEncode } from "../../../../../../utils/index.js";
 
@@ -11,28 +12,36 @@ export const gitUser = {
   BITBUCKET: "git",
 };
 
-export const createGitServerSecretName = (_gitProvider: GitProvider): string => {
-  return _gitProvider === gitProvider.gerrit ? "gerrit-ciuser-sshkey" : `ci-${_gitProvider}`;
+// The default gerrit server keeps its legacy secret name; every other server
+// gets a per-server name so several GitServers of one provider can coexist.
+export const createGitServerSecretName = (_gitProvider: GitProvider, gitServerName: string): string => {
+  return _gitProvider === gitProvider.gerrit && gitServerName === gitProvider.gerrit
+    ? "gerrit-ciuser-sshkey"
+    : `ci-${gitServerName}`;
 };
 
 const createGitServerSecretDraftSchema = z.discriminatedUnion("gitProvider", [
   z.object({
     gitProvider: z.literal(gitProvider.bitbucket),
+    secretName: k8sResourceNameSchema,
     sshPrivateKey: z.string(),
     token: z.string(),
   }),
   z.object({
     gitProvider: z.literal(gitProvider.github),
+    secretName: k8sResourceNameSchema,
     sshPrivateKey: z.string(),
     token: z.string(),
   }),
   z.object({
     gitProvider: z.literal(gitProvider.gitlab),
+    secretName: k8sResourceNameSchema,
     sshPrivateKey: z.string(),
     token: z.string(),
   }),
   z.object({
     gitProvider: z.literal(gitProvider.gerrit),
+    secretName: k8sResourceNameSchema,
     sshPrivateKey: z.string(),
     sshPublicKey: z.string(),
   }),
@@ -75,7 +84,7 @@ export const createGitServerSecretDraft = (input: z.infer<typeof createGitServer
       labels: {
         [SECRET_LABEL_SECRET_TYPE]: "repository",
       },
-      name: createGitServerSecretName(parsedInput.data.gitProvider),
+      name: parsedInput.data.secretName,
     },
     data,
   };

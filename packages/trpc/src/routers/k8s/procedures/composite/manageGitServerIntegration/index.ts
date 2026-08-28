@@ -14,6 +14,7 @@ import {
   editGitServerSecret,
   gitProvider,
   gitProviderEnum,
+  k8sResourceNameSchema,
 } from "@my-project/shared";
 
 const secretInputSchema = z.discriminatedUnion("gitProvider", [
@@ -59,7 +60,7 @@ const manageGitServerIntegrationInputSchema = z.object({
     gitHost: z.string(),
     gitProvider: gitProviderEnum,
     gitUser: z.string(),
-    nameSshKeySecret: z.string(),
+    nameSshKeySecret: k8sResourceNameSchema,
     sshPort: z.number(),
     httpsPort: z.number(),
     skipWebhookSSLVerification: z.boolean(),
@@ -102,15 +103,22 @@ export const k8sManageGitServerIntegrationProcedure = protectedProcedure
         // Secret operation is independent of GitServer mode
         // If currentResource doesn't exist, create new secret (even in overall edit mode)
         if (!secret.currentResource) {
-          // Create new secret (shape matches shared createGitServerSecretDraft discriminated union)
+          // Create new secret (shape matches shared createGitServerSecretDraft discriminated union).
+          // The secret name always mirrors GitServer.spec.nameSshKeySecret.
           const secretDraftInput =
             secret.gitProvider === gitProvider.gerrit
               ? {
                   gitProvider: secret.gitProvider,
+                  secretName: gitServer.nameSshKeySecret,
                   sshPrivateKey: secret.sshPrivateKey,
                   sshPublicKey: secret.sshPublicKey,
                 }
-              : { gitProvider: secret.gitProvider, sshPrivateKey: secret.sshPrivateKey, token: secret.token };
+              : {
+                  gitProvider: secret.gitProvider,
+                  secretName: gitServer.nameSshKeySecret,
+                  sshPrivateKey: secret.sshPrivateKey,
+                  token: secret.token,
+                };
           const secretDraft = createGitServerSecretDraft(secretDraftInput);
 
           updatedSecret = (await k8sClient.createResource(k8sSecretConfig, namespace, secretDraft as Secret)) as Secret;
