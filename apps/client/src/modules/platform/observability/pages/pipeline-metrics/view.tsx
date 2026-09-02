@@ -1,9 +1,9 @@
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { Activity } from "lucide-react";
-import { useMemo, useState } from "react";
-import { TIME_RANGES, TimeRange, PIPELINE_TYPES } from "@my-project/shared";
-import { routePipelineMetrics } from "./route";
+import { useMemo } from "react";
+import { PIPELINE_TYPES } from "@my-project/shared";
+import { usePipelineMetricsFilters } from "./hooks/usePipelineMetricsFilters";
 import { useMetricsData } from "./hooks/useMetricsData";
 import { MetricsOverview } from "./components/MetricsOverview";
 import { PipelineTypeBreakdown } from "./components/PipelineTypeBreakdown";
@@ -12,15 +12,10 @@ import { TimeRangeSelector } from "./components/TimeRangeSelector";
 import { CodebaseSelector } from "./components/CodebaseSelector";
 
 export default function PipelineMetricsPageContent() {
-  const { namespace } = routePipelineMetrics.useParams();
-  const [timeRange, setTimeRange] = useState<TimeRange>(TIME_RANGES.TODAY);
-  const [codebase, setCodebase] = useState<string | undefined>(undefined);
+  const { filters, setCodebase, setTimeRange } = usePipelineMetricsFilters();
+  const { namespace, timeRange, codebase } = filters;
 
-  const { overall, build, review, deploy, isLoading, isError, error } = useMetricsData({
-    namespace,
-    timeRange,
-    codebase,
-  });
+  const { overall, build, review, deploy, isLoading, isError, error } = useMetricsData(filters);
 
   const pipelineMetrics = useMemo(
     () => ({

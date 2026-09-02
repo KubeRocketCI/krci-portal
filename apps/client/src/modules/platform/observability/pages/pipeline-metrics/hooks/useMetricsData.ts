@@ -1,13 +1,8 @@
 import { usePipelineMetrics } from "@/modules/platform/tekton/hooks/usePipelineMetrics";
-import { TimeRange, PIPELINE_TYPES } from "@my-project/shared";
+import { PIPELINE_TYPES } from "@my-project/shared";
+import { PipelineMetricsFilters } from "./usePipelineMetricsFilters";
 
-export interface UseMetricsDataOptions {
-  namespace: string;
-  timeRange: TimeRange;
-  codebase?: string;
-}
-
-export function useMetricsData({ namespace, timeRange, codebase }: UseMetricsDataOptions) {
+export function useMetricsData({ namespace, timeRange, codebase }: PipelineMetricsFilters) {
   const overallMetrics = usePipelineMetrics(namespace, { timeRange, codebase });
   const buildMetrics = usePipelineMetrics(namespace, { timeRange, codebase, pipelineType: PIPELINE_TYPES.BUILD });
   const reviewMetrics = usePipelineMetrics(namespace, { timeRange, codebase, pipelineType: PIPELINE_TYPES.REVIEW });
