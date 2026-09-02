@@ -19,8 +19,13 @@ export function CodebaseSelector({ namespace, value, onChange }: CodebaseSelecto
       label: codebase.metadata.name,
     }));
 
+    // Combobox matches by exact value; a URL codebase may be missing from the watch.
+    if (value && !codebaseOptions.some((option) => option.value === value)) {
+      codebaseOptions.unshift({ value, label: value });
+    }
+
     return [{ value: ALL_CODEBASES_VALUE, label: "All Codebases" }, ...codebaseOptions];
-  }, [codebaseListWatch.data.array]);
+  }, [codebaseListWatch.data.array, value]);
 
   const handleChange = (selected: string | string[]) => {
     const selectedValue = Array.isArray(selected) ? selected[0] : selected;
