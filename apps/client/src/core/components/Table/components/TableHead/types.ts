@@ -11,4 +11,6 @@ export interface TableHeadProps<DataType> {
   handleSelectAllClick?: ((event: React.ChangeEvent<HTMLInputElement>) => void | undefined) | null;
   showExpandColumn?: boolean;
   showSelectionColumn?: boolean;
+  /** Rendered inside each `<th>`. Omit to disable resizing. */
+  renderColumnResizer?: (columnId: string) => React.ReactNode;
 }

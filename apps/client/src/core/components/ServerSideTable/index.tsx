@@ -4,9 +4,12 @@ import { TableBody } from "@/core/components/Table/components/TableBody";
 import { TableHead } from "@/core/components/Table/components/TableHead";
 import { TablePagination } from "@/core/components/Table/components/TablePagination";
 import { TableSettings } from "@/core/components/Table/components/TableSettings";
-import { SORT_DEFAULTS, TABLE_SETTINGS_DEFAULTS } from "@/core/components/Table/constants";
+import { TableColgroup } from "@/core/components/Table/components/TableColgroup";
+import { ColumnResizer } from "@/core/components/Table/components/ColumnResizer";
+import { SORT_DEFAULTS, TABLE_SETTINGS_DEFAULTS, TABLE_WIDTH_DEFAULTS } from "@/core/components/Table/constants";
 import { TableSort } from "@/core/components/Table/types";
 import { useColumnSync } from "@/core/components/Table/hooks/useColumnSync";
+import { useColumnResize } from "@/core/components/Table/hooks/useColumnResize";
 import { useSyncedSortState } from "@/core/components/Table/hooks/useSyncedSortState";
 import { cn } from "@/core/utils/classname";
 import { ServerSideTableProps } from "./types";
@@ -81,6 +84,16 @@ export const ServerSideTable = <DataType,>({
 
   const [sortState, setSortState] = useSyncedSortState<DataType>(sortSettings);
 
+  const resize = useColumnResize({ tableId: id, columns, showExpandColumn: !!expandable });
+
+  const renderColumnResizer = React.useCallback(
+    (columnId: string) => {
+      const resizerProps = resize.getResizerProps(columnId);
+      return resizerProps && <ColumnResizer {...resizerProps} />;
+    },
+    [resize]
+  );
+
   // Check if current page is beyond total pages
   const isPageOutOfBounds = React.useMemo(() => {
     if (!pagination.show || pagination.totalCount === 0) {
@@ -136,12 +149,14 @@ export const ServerSideTable = <DataType,>({
               ))}
           </div>
           <div className="mt-6">
-            {tableSettings.show && <TableSettings id={id} columns={columns} setColumns={setColumns} />}
+            {tableSettings.show && (
+              <TableSettings id={id} columns={columns} setColumns={setColumns} columnWidthReset={resize.reset} />
+            )}
           </div>
         </div>
       </div>
     );
-  }, [isNarrow, slots?.header, tableSettings.show, id, columns, setColumns, outlined]);
+  }, [isNarrow, slots?.header, tableSettings.show, id, columns, setColumns, outlined, resize.reset]);
 
   // Wrap pagination callbacks to convert types
   const handleChangePage = React.useCallback(
@@ -167,13 +182,8 @@ export const ServerSideTable = <DataType,>({
         {renderHeader()}
         <div className={cn(outlined ? "px-5" : "", "py-5")}>
           <div className="border-border w-full overflow-hidden rounded-md border">
-            <TableUI style={{ minWidth: 1360 }}>
-              <colgroup>
-                {expandable && <col key={"expand-chevron"} width="40px" />}
-                {columns.map(
-                  (column) => column.cell.show !== false && <col key={column.id} width={`${column.cell.baseWidth}%`} />
-                )}
-              </colgroup>
+            <TableUI style={{ minWidth: TABLE_WIDTH_DEFAULTS.TABLE_MIN_WIDTH }}>
+              <TableColgroup columns={columns} getColProps={resize.getColProps} showExpandColumn={!!expandable} />
 
               <TableHead
                 columns={columns}
@@ -184,6 +194,7 @@ export const ServerSideTable = <DataType,>({
                 selected={[]}
                 handleSelectAllClick={null}
                 showExpandColumn={!!expandable}
+                renderColumnResizer={renderColumnResizer}
               />
               <TableBody
                 columns={columns}

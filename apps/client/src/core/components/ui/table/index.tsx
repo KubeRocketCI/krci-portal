@@ -2,14 +2,20 @@ import * as React from "react";
 
 import { cn } from "@/core/utils/classname";
 import { useScrollFades } from "@/core/hooks/use-scroll-fades";
+import { TABLE_CONTAINER_SLOT } from "./constants";
 
 function TableUI({ className, ...props }: React.ComponentProps<"table">) {
-  const { scrollRef, showLeftFade, showRightFade } = useScrollFades<HTMLDivElement>();
+  const { scrollRef, contentRef, showLeftFade, showRightFade } = useScrollFades<HTMLDivElement, HTMLTableElement>();
 
   return (
     <div className="relative w-full">
-      <div ref={scrollRef} data-slot="table-container" className="w-full overflow-x-auto">
-        <table data-slot="table" className={cn("w-full table-fixed caption-bottom text-sm", className)} {...props} />
+      <div ref={scrollRef} data-slot={TABLE_CONTAINER_SLOT} className="w-full overflow-x-auto">
+        <table
+          ref={contentRef}
+          data-slot="table"
+          className={cn("w-full table-fixed caption-bottom text-sm", className)}
+          {...props}
+        />
       </div>
       {showLeftFade && (
         <div className="from-card pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r to-transparent" />

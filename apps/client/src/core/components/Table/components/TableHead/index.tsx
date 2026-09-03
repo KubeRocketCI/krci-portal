@@ -16,6 +16,7 @@ export const TableHead = <DataType,>({
   handleSelectAllClick,
   showExpandColumn,
   showSelectionColumn,
+  renderColumnResizer,
 }: TableHeadProps<DataType>) => {
   const handleRequestSort = (column: TableColumn<DataType>) => {
     const _isDesc = isDesc(column.id, sort.sortBy, sort.order);
@@ -98,23 +99,34 @@ export const TableHead = <DataType,>({
                   />
                 </svg>
               )}
-              <span className="text-muted-foreground text-sm font-normal">{label}</span>
+              {/* `min-w-0` lets a flex item shrink below its content, so `truncate` can bite at the column floor. */}
+              <span className="text-muted-foreground min-w-0 truncate text-sm font-normal">{label}</span>
             </>
           );
 
           return show ? (
             <TableHeadUI key={id} className="relative px-3 py-2 align-bottom" {...props}>
+              {/*
+                `overflow-hidden` sits on the label wrapper, not on the `<th>`: the resize
+                handle is centred on the column boundary and overhangs it, so clipping the
+                cell would cut the handle in half.
+              */}
               {isSortable ? (
                 <button
                   type="button"
                   onClick={() => handleRequestSort(column)}
-                  className={`focus-visible:ring-ring flex cursor-pointer flex-row flex-nowrap items-center gap-1 border-none bg-transparent p-0 outline-none hover:opacity-70 focus-visible:ring-2 ${alignJustifyClass}`}
+                  className={`focus-visible:ring-ring flex w-full cursor-pointer flex-row flex-nowrap items-center gap-1 overflow-hidden border-none bg-transparent p-0 outline-none hover:opacity-70 focus-visible:ring-2 ${alignJustifyClass}`}
                 >
                   {content}
                 </button>
               ) : (
-                <div className={`flex flex-row flex-nowrap items-center gap-1 ${alignJustifyClass}`}>{content}</div>
+                <div
+                  className={`flex w-full flex-row flex-nowrap items-center gap-1 overflow-hidden ${alignJustifyClass}`}
+                >
+                  {content}
+                </div>
               )}
+              {renderColumnResizer?.(id)}
             </TableHeadUI>
           ) : null;
         })}

@@ -222,3 +222,13 @@
       "Noto Color Emoji";
   }
 }
+
+/*
+  Set on `document.body` for the duration of a column drag. Paired with
+  `RESIZING_BODY_CLASS` in `core/components/Table/constants.ts`. Unlayered, so it
+  outranks every `@layer` cursor rule; `!important` covers inline cursors.
+*/
+.krci-resizing * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
