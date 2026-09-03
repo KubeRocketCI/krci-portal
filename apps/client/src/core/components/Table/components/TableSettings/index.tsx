@@ -5,40 +5,35 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/core/components/ui/dropdown-menu";
-import { Settings2 } from "lucide-react";
+import { RotateCcw, Settings2 } from "lucide-react";
 import { useTableSettings } from "./hooks/useTableSettings";
 import { TableSettingsProps } from "./types";
 
-export const TableSettings = <DataType,>({ id, columns, setColumns }: TableSettingsProps<DataType>) => {
-  const { saveSettings } = useTableSettings(id);
+export const TableSettings = <DataType,>({
+  id,
+  columns,
+  setColumns,
+  columnWidthReset,
+}: TableSettingsProps<DataType>) => {
+  const { patchColumnSettings } = useTableSettings(id);
 
   const visibleColumnCount = React.useMemo(() => columns.filter((col) => col.cell.show !== false).length, [columns]);
 
   const handleToggleColumn = React.useCallback(
     (columnId: string, checked: boolean) => {
-      setColumns((prev) => {
-        const updatedColumns = prev.map((column) =>
-          column.id === columnId ? { ...column, cell: { ...column.cell, show: checked } } : column
-        );
+      // Written outside the updater: StrictMode double-invokes state updaters.
+      patchColumnSettings({ [columnId]: { show: checked } });
 
-        const settings = updatedColumns.reduce<Record<string, { id: string; show: boolean }>>((acc, column) => {
-          acc[column.id] = {
-            id: column.id,
-            show: column.cell.show !== false,
-          };
-          return acc;
-        }, {});
-
-        saveSettings(settings);
-
-        return updatedColumns;
-      });
+      setColumns((prev) =>
+        prev.map((column) => (column.id === columnId ? { ...column, cell: { ...column.cell, show: checked } } : column))
+      );
     },
-    [setColumns, saveSettings]
+    [setColumns, patchColumnSettings]
   );
 
   return (
@@ -70,6 +65,11 @@ export const TableSettings = <DataType,>({ id, columns, setColumns }: TableSetti
             </DropdownMenuCheckboxItem>
           );
         })}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={columnWidthReset.all} disabled={!columnWidthReset.isAvailable}>
+          <RotateCcw className="h-4 w-4" />
+          Reset column widths
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

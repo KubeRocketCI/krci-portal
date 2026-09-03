@@ -32,12 +32,31 @@ export interface TableColumn<DataType> {
     customSortFn?: (a: DataType, b: DataType) => number;
   };
   cell: {
+    /**
+     * Relative weight, normalised against the visible columns' sum. Not a percent —
+     * column sets are not required to total 100. Only ratios matter: `[16, 8, 12]`
+     * and `[32, 16, 24]` lay out identically.
+     */
     baseWidth: number;
+    /** Resize floor in px. Defaults to `TABLE_WIDTH_DEFAULTS.MIN`. */
+    minWidth?: number;
+    /**
+     * Set to `false` to drop the drag handle. The column still takes its proportional
+     * share and still reflows with the container. Defaults to `true`.
+     */
+    resizable?: boolean;
     show?: boolean;
     isFixed?: boolean;
     colSpan?: number;
     props?: TableCellProps;
   };
+}
+
+export interface ColumnResizeReset {
+  /** Restores every column to its seed width and clears persisted widths. */
+  all: () => void;
+  /** True once any column is pinned. Pinning happens at `pointerdown`; a zero-delta release unpins. */
+  isAvailable: boolean;
 }
 
 export interface SortState<DataType> {

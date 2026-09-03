@@ -446,6 +446,35 @@ export const LargeDataset: Story = {
   },
 };
 
+/**
+ * Long run names, which clip at the default column width.
+ *
+ * Drag the right edge of the Run column to widen it: the name becomes readable and its
+ * overflow tooltip disappears once the text fits. Double-click the edge to reset that
+ * column, or use the Columns dropdown to reset every width. Widths persist per table id.
+ */
+export const LongPipelineRunNames: Story = {
+  args: {
+    tableId: "storybook-long-run-names",
+    tableName: "Pipeline Runs",
+    pipelineRuns: Array.from({ length: 12 }, (_, i) =>
+      createMockPipelineRun({
+        name: `customer-portal-frontend-build-main-${(1000000 + i * 7919).toString(16)}-2026-09-0${(i % 9) + 1}-run-${String(i).padStart(4, "0")}`,
+        pipelineType: [pipelineType.build, pipelineType.review][i % 2],
+        status: (["succeeded", "failed", "running"] as const)[i % 3],
+        codebase: "customer-portal-frontend",
+        branch: i % 3 === 0 ? "feature/a-rather-long-branch-name-for-testing" : "main",
+        pipelineName: "customer-portal-frontend-build-npm-nextjs-edp",
+        author: `developer-${(i % 4) + 1}`,
+        startTime: new Date(Date.now() - i * 600000).toISOString(),
+        completionTime: new Date(Date.now() - i * 600000 + 300000).toISOString(),
+      })
+    ),
+    isLoading: false,
+    filterControls: [pipelineRunFilterControlNames.SEARCH, pipelineRunFilterControlNames.STATUS],
+  },
+};
+
 // =============================================================================
 // USAGE CONTEXTS - How the component is used in different parts of the app
 // =============================================================================

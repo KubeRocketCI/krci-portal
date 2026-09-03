@@ -4,15 +4,18 @@ import { TableBody } from "./components/TableBody";
 import { TableHead } from "./components/TableHead";
 import { TablePagination } from "./components/TablePagination";
 import { TableSettings } from "./components/TableSettings";
+import { TableColgroup } from "./components/TableColgroup";
+import { ColumnResizer } from "./components/ColumnResizer";
 import {
   PAGINATION_DEFAULTS,
   SELECTION_DEFAULTS,
   SORT_DEFAULTS,
-  TABLE_CELL_DEFAULTS,
   TABLE_SETTINGS_DEFAULTS,
+  TABLE_WIDTH_DEFAULTS,
 } from "./constants";
 import { useFilteredData } from "./hooks/useFilteredData";
 import { useColumnSync } from "./hooks/useColumnSync";
+import { useColumnResize } from "./hooks/useColumnResize";
 import { useSyncedSortState } from "./hooks/useSyncedSortState";
 import {
   TablePagination as TablePaginationType,
@@ -216,6 +219,21 @@ export const DataTable = <DataType,>({
     filteredData,
   ]);
 
+  const resize = useColumnResize({
+    tableId: id,
+    columns,
+    showExpandColumn: !!expandable,
+    showSelectionColumn: shouldShowSelectionColumn,
+  });
+
+  const renderColumnResizer = React.useCallback(
+    (columnId: string) => {
+      const resizerProps = resize.getResizerProps(columnId);
+      return resizerProps && <ColumnResizer {...resizerProps} />;
+    },
+    [resize]
+  );
+
   const renderHeader = React.useCallback(() => {
     if (!slots?.header && !tableSettings.show) return null;
 
@@ -251,12 +269,14 @@ export const DataTable = <DataType,>({
               ))}
           </div>
           <div className="mt-6">
-            {tableSettings.show && <TableSettings id={id} columns={columns} setColumns={setColumns} />}
+            {tableSettings.show && (
+              <TableSettings id={id} columns={columns} setColumns={setColumns} columnWidthReset={resize.reset} />
+            )}
           </div>
         </div>
       </div>
     );
-  }, [isNarrow, slots?.header, tableSettings.show, id, columns, setColumns, outlined]);
+  }, [isNarrow, slots?.header, tableSettings.show, id, columns, setColumns, outlined, resize.reset]);
 
   return (
     <div
@@ -272,14 +292,13 @@ export const DataTable = <DataType,>({
             </div>
           )}
           <div className="border-border w-full overflow-hidden rounded-md border">
-            <TableUI style={{ minWidth: 1360 }}>
-              <colgroup>
-                {expandable && <col key={"expand-chevron"} width="40px" />}
-                {shouldShowSelectionColumn && <col key={"select-checkbox"} width={`${TABLE_CELL_DEFAULTS.WIDTH}%`} />}
-                {columns.map(
-                  (column) => column.cell.show !== false && <col key={column.id} width={`${column.cell.baseWidth}%`} />
-                )}
-              </colgroup>
+            <TableUI style={{ minWidth: TABLE_WIDTH_DEFAULTS.TABLE_MIN_WIDTH }}>
+              <TableColgroup
+                columns={columns}
+                getColProps={resize.getColProps}
+                showExpandColumn={!!expandable}
+                showSelectionColumn={shouldShowSelectionColumn}
+              />
 
               <TableHead
                 columns={columns}
@@ -291,6 +310,7 @@ export const DataTable = <DataType,>({
                 handleSelectAllClick={_handleSelectAllClick}
                 showExpandColumn={!!expandable}
                 showSelectionColumn={shouldShowSelectionColumn}
+                renderColumnResizer={renderColumnResizer}
               />
               <TableBody
                 columns={columns}

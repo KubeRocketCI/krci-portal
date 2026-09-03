@@ -1,7 +1,13 @@
 import * as React from "react";
 
-export function useScrollFades<T extends HTMLElement>() {
+/**
+ * Fades for a horizontally scrollable region. `contentRef` is optional: attach the
+ * element whose width can change without the container changing width, such as a table
+ * with resized columns. Only attached elements are observed.
+ */
+export function useScrollFades<T extends HTMLElement, C extends HTMLElement = HTMLElement>() {
   const scrollRef = React.useRef<T>(null);
+  const contentRef = React.useRef<C>(null);
   const [showLeftFade, setShowLeftFade] = React.useState(false);
   const [showRightFade, setShowRightFade] = React.useState(false);
 
@@ -21,11 +27,14 @@ export function useScrollFades<T extends HTMLElement>() {
     el.addEventListener("scroll", updateFades, { passive: true });
     const resizeObserver = new ResizeObserver(updateFades);
     resizeObserver.observe(el);
+    if (contentRef.current) {
+      resizeObserver.observe(contentRef.current);
+    }
     return () => {
       el.removeEventListener("scroll", updateFades);
       resizeObserver.disconnect();
     };
   }, [updateFades]);
 
-  return { scrollRef, showLeftFade, showRightFade };
+  return { scrollRef, contentRef, showLeftFade, showRightFade };
 }
