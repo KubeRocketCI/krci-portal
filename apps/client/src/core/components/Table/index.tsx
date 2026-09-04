@@ -52,7 +52,7 @@ export const DataTable = <DataType,>({
   containerProps,
 }: TableProps<DataType>) => {
   const isNarrow = useIsNarrow();
-  const [columns, setColumns] = useColumnSync(_columns, id);
+  const { columns, toggleColumnVisibility } = useColumnSync(_columns, id);
 
   const paginationSettings: TablePaginationType = React.useMemo(
     () => ({
@@ -270,13 +270,17 @@ export const DataTable = <DataType,>({
           </div>
           <div className="mt-6">
             {tableSettings.show && (
-              <TableSettings id={id} columns={columns} setColumns={setColumns} columnWidthReset={resize.reset} />
+              <TableSettings
+                columns={columns}
+                onToggleColumn={toggleColumnVisibility}
+                columnWidthReset={resize.reset}
+              />
             )}
           </div>
         </div>
       </div>
     );
-  }, [isNarrow, slots?.header, tableSettings.show, id, columns, setColumns, outlined, resize.reset]);
+  }, [isNarrow, slots?.header, tableSettings.show, columns, toggleColumnVisibility, outlined, resize.reset]);
 
   return (
     <div

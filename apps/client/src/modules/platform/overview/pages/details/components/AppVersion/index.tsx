@@ -73,7 +73,7 @@ export const AppVersion = ({
         <div className="max-h-35 overflow-y-auto">
           <DataTable
             outlined={false}
-            id={"appVersion"}
+            id={`appVersion-${widgetConfig.id}`}
             data={applicationListWatch.data.array}
             isLoading={applicationListWatch.query.isLoading}
             columns={columns}
