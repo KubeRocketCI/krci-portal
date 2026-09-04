@@ -1,6 +1,4 @@
 import { AuthorAvatar } from "@/core/components/AuthorAvatar";
-import { SavedTableSettings } from "@/core/components/Table/components/TableSettings/types";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { useClusterStore } from "@/k8s/store";
@@ -23,10 +21,8 @@ import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { StatusColumn } from "../components/columns/Status";
 
 export const useColumns = ({
-  tableSettings,
   detailRoutePath,
 }: {
-  tableSettings: SavedTableSettings | undefined;
   /** Override the route path used for row detail links. Defaults to PATH_PIPELINERUN_DETAILS_FULL. */
   detailRoutePath?: string;
 }): TableColumn<PipelineRun>[] => {
@@ -72,7 +68,6 @@ export const useColumns = ({
         },
         cell: {
           baseWidth: 16,
-          ...getSyncedColumnData(tableSettings, columnNames.RUN),
         },
       },
       {
@@ -84,7 +79,6 @@ export const useColumns = ({
         },
         cell: {
           baseWidth: 8,
-          ...getSyncedColumnData(tableSettings, columnNames.STATUS),
         },
       },
       {
@@ -123,7 +117,6 @@ export const useColumns = ({
         },
         cell: {
           baseWidth: 12,
-          ...getSyncedColumnData(tableSettings, columnNames.PIPELINE),
         },
       },
       {
@@ -161,7 +154,6 @@ export const useColumns = ({
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, columnNames.CODEBASE),
         },
       },
       {
@@ -184,7 +176,6 @@ export const useColumns = ({
         },
         cell: {
           baseWidth: 8,
-          ...getSyncedColumnData(tableSettings, columnNames.BRANCH),
         },
       },
       {
@@ -218,7 +209,6 @@ export const useColumns = ({
         },
         cell: {
           baseWidth: 5,
-          ...getSyncedColumnData(tableSettings, columnNames.PULL_REQUEST),
         },
       },
       {
@@ -238,7 +228,6 @@ export const useColumns = ({
         },
         cell: {
           baseWidth: 5,
-          ...getSyncedColumnData(tableSettings, columnNames.AUTHOR),
         },
       },
       {
@@ -262,7 +251,6 @@ export const useColumns = ({
         },
         cell: {
           baseWidth: 6,
-          ...getSyncedColumnData(tableSettings, columnNames.TYPE),
         },
       },
       {
@@ -286,7 +274,6 @@ export const useColumns = ({
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, columnNames.STARTED_AT),
         },
       },
       {
@@ -360,7 +347,6 @@ export const useColumns = ({
         cell: {
           baseWidth: 7,
           props: { align: "right" },
-          ...getSyncedColumnData(tableSettings, columnNames.TIME),
         },
       },
       {
@@ -389,7 +375,6 @@ export const useColumns = ({
         cell: {
           isFixed: true,
           baseWidth: 5,
-          ...getSyncedColumnData(tableSettings, columnNames.DIAGRAM),
         },
       },
       {
@@ -401,10 +386,9 @@ export const useColumns = ({
         cell: {
           isFixed: true,
           baseWidth: 5,
-          ...getSyncedColumnData(tableSettings, columnNames.ACTIONS),
         },
       },
     ],
-    [tableSettings, clusterName, defaultNamespace, openPipelineRunGraphDialog, rowDetailRoute]
+    [clusterName, defaultNamespace, openPipelineRunGraphDialog, rowDetailRoute]
   );
 };

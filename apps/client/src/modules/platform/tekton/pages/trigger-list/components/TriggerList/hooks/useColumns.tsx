@@ -6,9 +6,6 @@ import { Trigger, EventListener } from "@my-project/shared";
 import { TableColumn } from "@/core/components/Table/types";
 import { Button } from "@/core/components/ui/button";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
-import { TABLE } from "@/k8s/constants/tables";
 import { formatTimestamp } from "@/core/utils/date-humanize";
 import { useClusterStore } from "@/k8s/store";
 import { useEventListenerWatchList } from "@/k8s/api/groups/Tekton/EventListener";
@@ -28,8 +25,6 @@ const usedByCount = (t: Trigger, els: EventListener[]): number => {
 };
 
 export function useColumns(): TableColumn<Trigger>[] {
-  const { loadSettings } = useTableSettings(TABLE.TRIGGER_LIST.id);
-  const tableSettings = loadSettings();
   const { namespace: defaultNamespace, clusterName } = useClusterStore(
     useShallow((s) => ({ namespace: s.defaultNamespace, clusterName: s.clusterName }))
   );
@@ -58,31 +53,31 @@ export function useColumns(): TableColumn<Trigger>[] {
             );
           },
         },
-        cell: { isFixed: true, baseWidth: 25, ...getSyncedColumnData(tableSettings, "name") },
+        cell: { isFixed: true, baseWidth: 25 },
       },
       {
         id: "namespace",
         label: "Namespace",
         data: { render: ({ data }) => <span>{data.metadata.namespace}</span> },
-        cell: { baseWidth: 15, ...getSyncedColumnData(tableSettings, "namespace") },
+        cell: { baseWidth: 15 },
       },
       {
         id: "bindings",
         label: "Bindings",
         data: { render: ({ data }) => <span>{bindingsCount(data)}</span> },
-        cell: { baseWidth: 10, ...getSyncedColumnData(tableSettings, "bindings") },
+        cell: { baseWidth: 10 },
       },
       {
         id: "template",
         label: "Template",
         data: { render: ({ data }) => <TextWithTooltip text={templateRef(data)} /> },
-        cell: { baseWidth: 25, ...getSyncedColumnData(tableSettings, "template") },
+        cell: { baseWidth: 25 },
       },
       {
         id: "usedBy",
         label: "Used by",
         data: { render: ({ data }) => <span>{usedByCount(data, els)}</span> },
-        cell: { baseWidth: 10, ...getSyncedColumnData(tableSettings, "usedBy") },
+        cell: { baseWidth: 10 },
       },
       {
         id: "createdAt",
@@ -90,9 +85,9 @@ export function useColumns(): TableColumn<Trigger>[] {
         data: {
           render: ({ data }) => formatTimestamp(data.metadata.creationTimestamp),
         },
-        cell: { isFixed: true, baseWidth: 15, ...getSyncedColumnData(tableSettings, "createdAt") },
+        cell: { isFixed: true, baseWidth: 15 },
       },
     ],
-    [tableSettings, clusterName, defaultNamespace, els]
+    [clusterName, defaultNamespace, els]
   );
 }

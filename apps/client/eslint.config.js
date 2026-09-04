@@ -7,10 +7,19 @@ import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 import { fileURLToPath } from "url";
-import { dirname } from "path";
+import { dirname, join } from "path";
+import { existsSync } from "fs";
+import assert from "node:assert";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// Relative to src/. Verified at load: a moved directory fails lint instead of silently unguarding.
+const TABLE_SETTINGS_DIR = "core/components/Table/components/TableSettings";
+assert(
+  existsSync(join(__dirname, "src", TABLE_SETTINGS_DIR)),
+  `src/${TABLE_SETTINGS_DIR} not found; update TABLE_SETTINGS_DIR`
+);
 
 export default tseslint.config(
   { ignores: ["dist", "storybook-static", ".storybook/**"] },
@@ -45,6 +54,23 @@ export default tseslint.config(
         project: "./tsconfig.node.json",
         tsconfigRootDir: __dirname,
       },
+    },
+  },
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/core/components/Table/**", "src/core/components/ServerSideTable/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: [`**/${TABLE_SETTINGS_DIR}`, `**/${TABLE_SETTINGS_DIR}/**`],
+              message: "Only the table shells read or write table settings. Pass `id` to the table instead.",
+            },
+          ],
+        },
+      ],
     },
   },
   storybook.configs["flat/recommended"]

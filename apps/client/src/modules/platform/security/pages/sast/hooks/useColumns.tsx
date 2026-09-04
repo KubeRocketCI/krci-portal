@@ -1,8 +1,5 @@
 import { useMemo } from "react";
 import { TableColumn } from "@/core/components/Table/types";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
-import { TABLE } from "@/k8s/constants/tables";
 import { ProjectWithMetrics } from "@my-project/shared";
 import { QualityGateBadge } from "../components/QualityGateBadge";
 import { Badge } from "@/core/components/ui/badge";
@@ -13,11 +10,8 @@ import { getRatingLabel, getRatingColorClass } from "../utils";
 
 /**
  * Hook to define columns for the SAST Projects table
- * Includes column settings persistence via localStorage
  */
 export const useColumns = (): TableColumn<ProjectWithMetrics>[] => {
-  const { loadSettings } = useTableSettings(TABLE.SAST_PROJECTS_LIST.id);
-  const tableSettings = loadSettings();
   const { namespace, clusterName } = useParams({ strict: false });
 
   return useMemo(
@@ -44,7 +38,6 @@ export const useColumns = (): TableColumn<ProjectWithMetrics>[] => {
         cell: {
           isFixed: true,
           baseWidth: 25,
-          ...getSyncedColumnData(tableSettings, "name"),
         },
       },
       {
@@ -56,7 +49,6 @@ export const useColumns = (): TableColumn<ProjectWithMetrics>[] => {
         },
         cell: {
           baseWidth: 12,
-          ...getSyncedColumnData(tableSettings, "qualityGate"),
         },
       },
       {
@@ -73,7 +65,6 @@ export const useColumns = (): TableColumn<ProjectWithMetrics>[] => {
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, "visibility"),
         },
       },
       {
@@ -98,7 +89,6 @@ export const useColumns = (): TableColumn<ProjectWithMetrics>[] => {
         },
         cell: {
           baseWidth: 12,
-          ...getSyncedColumnData(tableSettings, "bugs"),
         },
       },
       {
@@ -123,7 +113,6 @@ export const useColumns = (): TableColumn<ProjectWithMetrics>[] => {
         },
         cell: {
           baseWidth: 14,
-          ...getSyncedColumnData(tableSettings, "vulnerabilities"),
         },
       },
       {
@@ -148,7 +137,6 @@ export const useColumns = (): TableColumn<ProjectWithMetrics>[] => {
         },
         cell: {
           baseWidth: 14,
-          ...getSyncedColumnData(tableSettings, "codeSmells"),
         },
       },
       {
@@ -168,7 +156,6 @@ export const useColumns = (): TableColumn<ProjectWithMetrics>[] => {
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, "coverage"),
         },
       },
       {
@@ -188,7 +175,6 @@ export const useColumns = (): TableColumn<ProjectWithMetrics>[] => {
         },
         cell: {
           baseWidth: 12,
-          ...getSyncedColumnData(tableSettings, "duplications"),
         },
       },
       {
@@ -214,10 +200,9 @@ export const useColumns = (): TableColumn<ProjectWithMetrics>[] => {
         },
         cell: {
           baseWidth: 18,
-          ...getSyncedColumnData(tableSettings, "lastAnalysis"),
         },
       },
     ],
-    [tableSettings, namespace, clusterName]
+    [namespace, clusterName]
   );
 };

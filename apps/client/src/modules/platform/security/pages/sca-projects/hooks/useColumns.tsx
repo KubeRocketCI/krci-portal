@@ -1,8 +1,5 @@
 import { useMemo } from "react";
 import { TableColumn } from "@/core/components/Table/types";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
-import { TABLE } from "@/k8s/constants/tables";
 import { ProjectsListData } from "../types";
 import { Badge } from "@/core/components/ui/badge";
 import { VulnerabilityProgressBar } from "../../sca/components/shared/VulnerabilityProgressBar";
@@ -12,11 +9,8 @@ import { PATH_SCA_PROJECT_DETAILS_FULL } from "../../sca-project-details/route";
 
 /**
  * Hook to define columns for the SCA Projects table
- * Includes column settings persistence via localStorage
  */
 export const useColumns = (): TableColumn<ProjectsListData>[] => {
-  const { loadSettings } = useTableSettings(TABLE.SCA_PROJECTS_LIST.id);
-  const tableSettings = loadSettings();
   const { namespace, clusterName } = useParams({ strict: false });
 
   return useMemo(
@@ -39,7 +33,6 @@ export const useColumns = (): TableColumn<ProjectsListData>[] => {
         cell: {
           isFixed: true, // Name column is always visible
           baseWidth: 22,
-          ...getSyncedColumnData(tableSettings, "name"),
         },
       },
       {
@@ -51,7 +44,6 @@ export const useColumns = (): TableColumn<ProjectsListData>[] => {
         },
         cell: {
           baseWidth: 19,
-          ...getSyncedColumnData(tableSettings, "version"),
         },
       },
       {
@@ -63,7 +55,6 @@ export const useColumns = (): TableColumn<ProjectsListData>[] => {
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, "latest"),
         },
       },
       {
@@ -75,7 +66,6 @@ export const useColumns = (): TableColumn<ProjectsListData>[] => {
         },
         cell: {
           baseWidth: 15,
-          ...getSyncedColumnData(tableSettings, "classifier"),
         },
       },
       {
@@ -101,7 +91,6 @@ export const useColumns = (): TableColumn<ProjectsListData>[] => {
         },
         cell: {
           baseWidth: 18,
-          ...getSyncedColumnData(tableSettings, "lastBomImport"),
         },
       },
       {
@@ -113,7 +102,6 @@ export const useColumns = (): TableColumn<ProjectsListData>[] => {
         },
         cell: {
           baseWidth: 13,
-          ...getSyncedColumnData(tableSettings, "lastBomImportFormat"),
         },
       },
       {
@@ -125,7 +113,6 @@ export const useColumns = (): TableColumn<ProjectsListData>[] => {
         },
         cell: {
           baseWidth: 8,
-          ...getSyncedColumnData(tableSettings, "riskScore"),
         },
       },
       {
@@ -139,7 +126,6 @@ export const useColumns = (): TableColumn<ProjectsListData>[] => {
         },
         cell: {
           baseWidth: 8,
-          ...getSyncedColumnData(tableSettings, "active"),
         },
       },
       {
@@ -165,7 +151,6 @@ export const useColumns = (): TableColumn<ProjectsListData>[] => {
         },
         cell: {
           baseWidth: 20,
-          ...getSyncedColumnData(tableSettings, "vulnerabilities"),
         },
       },
       {
@@ -183,10 +168,9 @@ export const useColumns = (): TableColumn<ProjectsListData>[] => {
         cell: {
           baseWidth: 20,
           hidden: true, // Hidden by default, user can show via column settings
-          ...getSyncedColumnData(tableSettings, "policyViolations"),
         },
       },
     ],
-    [tableSettings, namespace, clusterName]
+    [namespace, clusterName]
   );
 };

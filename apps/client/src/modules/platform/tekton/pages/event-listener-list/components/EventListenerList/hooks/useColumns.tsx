@@ -7,9 +7,6 @@ import { TableColumn } from "@/core/components/Table/types";
 import { Button } from "@/core/components/ui/button";
 import { Badge } from "@/core/components/ui/badge";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
-import { TABLE } from "@/k8s/constants/tables";
 import { formatTimestamp } from "@/core/utils/date-humanize";
 import { useClusterStore } from "@/k8s/store";
 import { routeEventListenerDetails } from "@/modules/platform/tekton/pages/event-listener-details/route";
@@ -25,8 +22,6 @@ const address = (el: EventListener): string => el.status?.address?.url ?? "";
 const selectorTerms = (el: EventListener): string[] => labelSelectorTerms(parseLabelSelector(el));
 
 export function useColumns(): TableColumn<EventListener>[] {
-  const { loadSettings } = useTableSettings(TABLE.EVENT_LISTENER_LIST.id);
-  const tableSettings = loadSettings();
   const { namespace: defaultNamespace, clusterName } = useClusterStore(
     useShallow((state) => ({ namespace: state.defaultNamespace, clusterName: state.clusterName }))
   );
@@ -53,13 +48,13 @@ export function useColumns(): TableColumn<EventListener>[] {
             );
           },
         },
-        cell: { isFixed: true, baseWidth: 15, ...getSyncedColumnData(tableSettings, "name") },
+        cell: { isFixed: true, baseWidth: 15 },
       },
       {
         id: "namespace",
         label: "Namespace",
         data: { render: ({ data }) => <span>{data.metadata.namespace}</span> },
-        cell: { baseWidth: 8, ...getSyncedColumnData(tableSettings, "namespace") },
+        cell: { baseWidth: 8 },
       },
       {
         id: "status",
@@ -72,13 +67,13 @@ export function useColumns(): TableColumn<EventListener>[] {
               <Badge className="bg-destructive/10 text-destructive">Degraded</Badge>
             ),
         },
-        cell: { baseWidth: 7, ...getSyncedColumnData(tableSettings, "status") },
+        cell: { baseWidth: 7 },
       },
       {
         id: "triggers",
         label: "Triggers",
         data: { render: ({ data }) => <span>{triggerCount(data)}</span> },
-        cell: { baseWidth: 7, ...getSyncedColumnData(tableSettings, "triggers") },
+        cell: { baseWidth: 7 },
       },
       {
         id: "address",
@@ -86,7 +81,7 @@ export function useColumns(): TableColumn<EventListener>[] {
         data: {
           render: ({ data }) => <TextWithTooltip text={address(data) || "—"} />,
         },
-        cell: { baseWidth: 26, ...getSyncedColumnData(tableSettings, "address") },
+        cell: { baseWidth: 26 },
       },
       {
         id: "labelSelector",
@@ -106,7 +101,7 @@ export function useColumns(): TableColumn<EventListener>[] {
             );
           },
         },
-        cell: { baseWidth: 25, ...getSyncedColumnData(tableSettings, "labelSelector") },
+        cell: { baseWidth: 25 },
       },
       {
         id: "createdAt",
@@ -114,9 +109,9 @@ export function useColumns(): TableColumn<EventListener>[] {
         data: {
           render: ({ data }) => formatTimestamp(data.metadata.creationTimestamp),
         },
-        cell: { isFixed: true, baseWidth: 12, ...getSyncedColumnData(tableSettings, "createdAt") },
+        cell: { isFixed: true, baseWidth: 12 },
       },
     ],
-    [tableSettings, clusterName, defaultNamespace]
+    [clusterName, defaultNamespace]
   );
 }

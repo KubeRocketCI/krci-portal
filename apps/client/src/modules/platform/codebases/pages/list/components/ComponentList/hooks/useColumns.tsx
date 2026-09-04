@@ -1,12 +1,9 @@
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { Badge } from "@/core/components/ui/badge";
 import { Button } from "@/core/components/ui/button";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { getCodebaseStatusIcon } from "@/k8s/api/groups/KRCI/Codebase";
-import { TABLE } from "@/k8s/constants/tables";
 import { useClusterStore } from "@/k8s/store";
 import { ResourceStatusBadge } from "@/k8s/components/ResourceStatusBadge";
 import { CodebaseLanguageIcon } from "@/modules/platform/codebases/components/CodebaseLanguageIcon";
@@ -22,10 +19,7 @@ import { Actions } from "../../ComponentActions";
 import { columnNames } from "../constants";
 
 export const useColumns = (): TableColumn<Codebase>[] => {
-  const { loadSettings } = useTableSettings(TABLE.COMPONENT_LIST.id);
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
-
-  const tableSettings = loadSettings();
 
   return React.useMemo(
     () => [
@@ -53,7 +47,6 @@ export const useColumns = (): TableColumn<Codebase>[] => {
         },
         cell: {
           baseWidth: 20,
-          ...getSyncedColumnData(tableSettings, columnNames.NAME),
         },
       },
       {
@@ -71,7 +64,6 @@ export const useColumns = (): TableColumn<Codebase>[] => {
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, columnNames.STATUS),
         },
       },
       {
@@ -89,7 +81,6 @@ export const useColumns = (): TableColumn<Codebase>[] => {
         },
         cell: {
           baseWidth: 12,
-          ...getSyncedColumnData(tableSettings, columnNames.TYPE),
         },
       },
       {
@@ -100,7 +91,6 @@ export const useColumns = (): TableColumn<Codebase>[] => {
         },
         cell: {
           baseWidth: 12,
-          ...getSyncedColumnData(tableSettings, columnNames.LANGUAGE),
         },
       },
       {
@@ -111,7 +101,6 @@ export const useColumns = (): TableColumn<Codebase>[] => {
         },
         cell: {
           baseWidth: 12,
-          ...getSyncedColumnData(tableSettings, columnNames.FRAMEWORK),
         },
       },
       {
@@ -122,7 +111,6 @@ export const useColumns = (): TableColumn<Codebase>[] => {
         },
         cell: {
           baseWidth: 12,
-          ...getSyncedColumnData(tableSettings, columnNames.BUILD_TOOL),
         },
       },
 
@@ -145,13 +133,12 @@ export const useColumns = (): TableColumn<Codebase>[] => {
         cell: {
           isFixed: true,
           baseWidth: 5,
-          ...getSyncedColumnData(tableSettings, columnNames.ACTIONS),
           props: {
             align: "center",
           },
         },
       },
     ],
-    [clusterName, tableSettings]
+    [clusterName]
   );
 };

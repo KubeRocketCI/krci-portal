@@ -1,8 +1,5 @@
 import { useMemo } from "react";
 import { TableColumn } from "@/core/components/Table/types";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
-import { TABLE } from "@/k8s/constants/tables";
 import { ConsolidatedVulnerabilityImage } from "../types";
 import { Link, useParams } from "@tanstack/react-router";
 import { PATH_TRIVY_VULNERABILITY_DETAILS_FULL } from "../../trivy-vulnerability-details/route";
@@ -15,8 +12,6 @@ import { ChevronRight } from "lucide-react";
  * Groups images by digest+namespace and shows where each image is used.
  */
 export function useColumns(): TableColumn<ConsolidatedVulnerabilityImage>[] {
-  const { loadSettings } = useTableSettings(TABLE.TRIVY_VULNERABILITY_REPORTS_LIST.id);
-  const tableSettings = loadSettings();
   const { clusterName } = useParams({ strict: false });
 
   return useMemo(
@@ -47,7 +42,6 @@ export function useColumns(): TableColumn<ConsolidatedVulnerabilityImage>[] {
         cell: {
           isFixed: true,
           baseWidth: 30,
-          ...getSyncedColumnData(tableSettings, "image"),
         },
       },
       {
@@ -59,7 +53,6 @@ export function useColumns(): TableColumn<ConsolidatedVulnerabilityImage>[] {
         },
         cell: {
           baseWidth: 12,
-          ...getSyncedColumnData(tableSettings, "namespace"),
         },
       },
       {
@@ -78,7 +71,6 @@ export function useColumns(): TableColumn<ConsolidatedVulnerabilityImage>[] {
         },
         cell: {
           baseWidth: 12,
-          ...getSyncedColumnData(tableSettings, "resources"),
         },
       },
       {
@@ -90,7 +82,6 @@ export function useColumns(): TableColumn<ConsolidatedVulnerabilityImage>[] {
         },
         cell: {
           baseWidth: 8,
-          ...getSyncedColumnData(tableSettings, "critical"),
         },
       },
       {
@@ -102,7 +93,6 @@ export function useColumns(): TableColumn<ConsolidatedVulnerabilityImage>[] {
         },
         cell: {
           baseWidth: 8,
-          ...getSyncedColumnData(tableSettings, "high"),
         },
       },
       {
@@ -114,7 +104,6 @@ export function useColumns(): TableColumn<ConsolidatedVulnerabilityImage>[] {
         },
         cell: {
           baseWidth: 8,
-          ...getSyncedColumnData(tableSettings, "medium"),
         },
       },
       {
@@ -126,7 +115,6 @@ export function useColumns(): TableColumn<ConsolidatedVulnerabilityImage>[] {
         },
         cell: {
           baseWidth: 8,
-          ...getSyncedColumnData(tableSettings, "low"),
         },
       },
       {
@@ -138,7 +126,6 @@ export function useColumns(): TableColumn<ConsolidatedVulnerabilityImage>[] {
         },
         cell: {
           baseWidth: 6,
-          ...getSyncedColumnData(tableSettings, "total"),
         },
       },
       {
@@ -166,10 +153,9 @@ export function useColumns(): TableColumn<ConsolidatedVulnerabilityImage>[] {
         },
         cell: {
           baseWidth: 14,
-          ...getSyncedColumnData(tableSettings, "lastScan"),
         },
       },
     ],
-    [tableSettings, clusterName]
+    [clusterName]
   );
 }

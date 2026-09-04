@@ -1,5 +1,4 @@
 import { DataTable } from "@/core/components/Table";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
 import { EmptyList } from "@/core/components/EmptyList";
 import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { Card } from "@/core/components/ui/card";
@@ -44,9 +43,7 @@ export const BranchList = () => {
   const pipelineNamesWatch = usePipelineNamesWatch();
   const pipelineNames = pipelineNamesWatch.data;
 
-  const { loadSettings } = useTableSettings(TABLE.BRANCH_LIST.id);
-  const tableSettings = loadSettings();
-  const columns = useColumns({ tableSettings });
+  const columns = useColumns();
 
   const enrichedBranches: EnrichedBranch[] = React.useMemo(() => {
     const branches = codebaseBranchListWatch.data.array;

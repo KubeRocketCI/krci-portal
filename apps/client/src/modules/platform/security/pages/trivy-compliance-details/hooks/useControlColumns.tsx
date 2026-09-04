@@ -1,8 +1,5 @@
 import { useMemo } from "react";
 import { TableColumn } from "@/core/components/Table/types";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
-import { TABLE } from "@/k8s/constants/tables";
 import { ControlTableRow } from "../types";
 import { SeverityBadge } from "@/modules/platform/security/components/shared/SeverityBadge";
 import { Badge } from "@/core/components/ui/badge";
@@ -14,9 +11,6 @@ import { compareBySeverity } from "@/modules/platform/security/constants/severit
  * Hook to define columns for the Compliance Controls table.
  */
 export function useControlColumns(): TableColumn<ControlTableRow>[] {
-  const { loadSettings } = useTableSettings(TABLE.TRIVY_COMPLIANCE_CONTROLS_LIST.id);
-  const tableSettings = loadSettings();
-
   return useMemo(
     () => [
       {
@@ -28,7 +22,6 @@ export function useControlColumns(): TableColumn<ControlTableRow>[] {
         },
         cell: {
           baseWidth: 12,
-          ...getSyncedColumnData(tableSettings, "id"),
         },
       },
       {
@@ -53,7 +46,6 @@ export function useControlColumns(): TableColumn<ControlTableRow>[] {
         },
         cell: {
           baseWidth: 40,
-          ...getSyncedColumnData(tableSettings, "name"),
         },
       },
       {
@@ -65,7 +57,6 @@ export function useControlColumns(): TableColumn<ControlTableRow>[] {
         },
         cell: {
           baseWidth: 12,
-          ...getSyncedColumnData(tableSettings, "severity"),
         },
       },
       {
@@ -91,7 +82,6 @@ export function useControlColumns(): TableColumn<ControlTableRow>[] {
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, "status"),
         },
       },
       {
@@ -108,10 +98,9 @@ export function useControlColumns(): TableColumn<ControlTableRow>[] {
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, "failures"),
         },
       },
     ],
-    [tableSettings]
+    []
   );
 }

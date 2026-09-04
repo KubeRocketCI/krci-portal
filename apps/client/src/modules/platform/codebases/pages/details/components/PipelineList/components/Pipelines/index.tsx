@@ -13,7 +13,6 @@ import { PipelineRunListFilterValues } from "@/modules/platform/tekton/component
 import { useDebouncedPipelineRunSearch } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter";
 import { routeProjectDetails } from "../../../../route";
 import { TABLE } from "@/k8s/constants/tables";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
 
 /**
  * Merged "Pipelines" tab that combines live K8s PipelineRuns with
@@ -34,9 +33,6 @@ export function Pipelines() {
 function PipelinesContent() {
   const params = routeProjectDetails.useParams();
   const codebaseName = params.name;
-
-  const { loadSettings } = useTableSettings(TABLE.CODEBASE_PIPELINE_RUN_LIST.id);
-  const tableSettings = loadSettings();
 
   const debouncedSearch = useDebouncedPipelineRunSearch();
 
@@ -62,7 +58,6 @@ function PipelinesContent() {
         ]}
         tableId={TABLE.CODEBASE_PIPELINE_RUN_LIST.id}
         tableName={TABLE.CODEBASE_PIPELINE_RUN_LIST.name}
-        tableSettings={tableSettings}
         detailRoutePath={PATH_PIPELINERUN_DETAILS_FULL}
       />
       <HistoryLoadingFooter isHistoryLoading={isHistoryLoading} historyQuery={historyQuery} />

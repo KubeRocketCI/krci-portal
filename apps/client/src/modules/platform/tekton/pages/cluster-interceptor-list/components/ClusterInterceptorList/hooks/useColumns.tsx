@@ -6,9 +6,6 @@ import { ClusterInterceptor, EventListener, Trigger } from "@my-project/shared";
 import { TableColumn } from "@/core/components/Table/types";
 import { Button } from "@/core/components/ui/button";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
-import { TABLE } from "@/k8s/constants/tables";
 import { formatTimestamp } from "@/core/utils/date-humanize";
 import { useClusterStore } from "@/k8s/store";
 import { useEventListenerWatchList } from "@/k8s/api/groups/Tekton/EventListener";
@@ -44,8 +41,6 @@ const usedByCount = (ci: ClusterInterceptor, els: EventListener[], triggers: Tri
 };
 
 export function useColumns(): TableColumn<ClusterInterceptor>[] {
-  const { loadSettings } = useTableSettings(TABLE.CLUSTER_INTERCEPTOR_LIST.id);
-  const tableSettings = loadSettings();
   const { clusterName } = useClusterStore(useShallow((s) => ({ clusterName: s.clusterName })));
   const els = useEventListenerWatchList().data.array;
   const triggers = useTriggerWatchList().data.array;
@@ -69,19 +64,19 @@ export function useColumns(): TableColumn<ClusterInterceptor>[] {
             );
           },
         },
-        cell: { isFixed: true, baseWidth: 30, ...getSyncedColumnData(tableSettings, "name") },
+        cell: { isFixed: true, baseWidth: 30 },
       },
       {
         id: "address",
         label: "Address",
         data: { render: ({ data }) => <TextWithTooltip text={formatAddress(data)} /> },
-        cell: { baseWidth: 40, ...getSyncedColumnData(tableSettings, "address") },
+        cell: { baseWidth: 40 },
       },
       {
         id: "usedBy",
         label: "Used by",
         data: { render: ({ data }) => <span>{usedByCount(data, els, triggers)}</span> },
-        cell: { baseWidth: 15, ...getSyncedColumnData(tableSettings, "usedBy") },
+        cell: { baseWidth: 15 },
       },
       {
         id: "createdAt",
@@ -89,9 +84,9 @@ export function useColumns(): TableColumn<ClusterInterceptor>[] {
         data: {
           render: ({ data }) => formatTimestamp(data.metadata.creationTimestamp),
         },
-        cell: { isFixed: true, baseWidth: 15, ...getSyncedColumnData(tableSettings, "createdAt") },
+        cell: { isFixed: true, baseWidth: 15 },
       },
     ],
-    [tableSettings, clusterName, els, triggers]
+    [clusterName, els, triggers]
   );
 }
