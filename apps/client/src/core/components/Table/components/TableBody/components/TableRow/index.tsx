@@ -109,12 +109,10 @@ export const TableRow = <DataType,>({
           const sortablePaddingClass = getColumnPadding(!!data?.columnSortableValuePath, props?.align || "");
 
           return show ? (
-            <TableCellUI
-              key={id}
-              className={`${paddingClass} ${alignClass} ${sortablePaddingClass} ${id === "description" ? "min-w-0" : ""}`}
-            >
+            <TableCellUI key={id} className={`${paddingClass} ${alignClass} ${sortablePaddingClass} overflow-hidden`}>
+              {/* `min-w-0` on the wrapper and on its child lets content shrink to the column, so `truncate` bites. The cell clips the rest. */}
               <div
-                className={`flex items-center text-sm ${getJustifyClass(props?.align)} ${id === "description" ? "w-full min-w-0" : ""}`}
+                className={`flex w-full min-w-0 items-center text-sm [&>*]:min-w-0 ${getJustifyClass(props?.align)}`}
               >
                 {data.render({ data: item })}
               </div>

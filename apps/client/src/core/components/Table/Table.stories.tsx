@@ -130,6 +130,35 @@ export const HiddenColumn: Story = {
 };
 
 /** `Status` cannot go below 200px. Drag its edge left to see the floor bind. */
+/**
+ * No-wrap text inside a nested flex box, the shape the Pull Request title uses. Drag the
+ * Run edge left: the text must clip at the column edge, never paint over Status.
+ */
+export const NoWrapCellContent: Story = {
+  args: {
+    id: "sb-table-nowrap-cell",
+    columns: [
+      {
+        ...column("name", "Run", 20),
+        data: {
+          render: ({ data }) => (
+            <div className="flex flex-col gap-0.5">
+              <div className="flex items-center gap-2">
+                <span className="truncate font-medium">{data.name}</span>
+              </div>
+              <span className="text-muted-foreground text-xs">by dependabot[bot]</span>
+            </div>
+          ),
+        },
+      },
+      column("status", "Status", 15),
+      column("pipeline", "Pipeline", 30),
+      column("branch", "Branch", 20),
+      column("startedAt", "Started at", 15),
+    ],
+  },
+};
+
 export const CustomMinWidth: Story = {
   args: {
     id: "sb-table-min-width",
