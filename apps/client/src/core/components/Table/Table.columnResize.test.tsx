@@ -3,9 +3,16 @@ import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DataTable } from "./index";
 import { TABLE_WIDTH_DEFAULTS } from "./constants";
-import { TableColumn } from "./types";
-import { COLUMN_RESIZER_SLOT } from "./components/ColumnResizer";
-import { readTableSettings, seedTableSettings } from "./testUtils";
+import {
+  HANDLE_SELECTOR,
+  Row,
+  colFor,
+  column,
+  dragHandle,
+  handleFor,
+  readTableSettings,
+  seedTableSettings,
+} from "./testUtils";
 import { stubResizeObserver } from "@/test/utils/resize-observer";
 
 /**
@@ -24,36 +31,13 @@ vi.mock("@/core/hooks/usePagination", () => ({
 }));
 
 const TABLE_ID = "commitTest";
-const HANDLE_SELECTOR = `th [data-slot="${COLUMN_RESIZER_SLOT}"]`;
 
-type Row = { name: string };
-
-const columns: TableColumn<Row>[] = [
-  { id: "name", label: "Name", data: { render: ({ data }) => data.name }, cell: { baseWidth: 40 } },
-  { id: "status", label: "Status", data: { render: () => "ok" }, cell: { baseWidth: 30 } },
-  { id: "actions", label: "Actions", data: { render: () => "..." }, cell: { baseWidth: 30 } },
-];
+const columns = [column("name", 40), column("status", 30), column("actions", 30)];
 
 const data: Row[] = [{ name: "alpha" }, { name: "beta" }];
 
 const renderTable = () =>
   render(<DataTable<Row> id={TABLE_ID} columns={columns} data={data} pagination={{ show: false }} />);
-
-const colFor = (container: HTMLElement, index: number) =>
-  container.querySelectorAll("col")[index] as HTMLTableColElement;
-
-const handleFor = (container: HTMLElement, index: number) =>
-  container.querySelectorAll(HANDLE_SELECTOR)[index] as HTMLElement;
-
-const dragHandle = (handle: HTMLElement, byPixels: number) => {
-  act(() => {
-    handle.dispatchEvent(new MouseEvent("pointerdown", { clientX: 0, bubbles: true }));
-  });
-  act(() => {
-    document.dispatchEvent(new MouseEvent("pointermove", { clientX: byPixels, bubbles: true }));
-    document.dispatchEvent(new MouseEvent("pointerup", { bubbles: true }));
-  });
-};
 
 describe("column resize commit path", () => {
   beforeEach(() => {

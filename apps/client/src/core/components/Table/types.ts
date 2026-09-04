@@ -45,6 +45,7 @@ export interface TableColumn<DataType> {
      * share and still reflows with the container. Defaults to `true`.
      */
     resizable?: boolean;
+    /** Code default. A saved table-settings entry for this column overrides it in the shell. */
     show?: boolean;
     isFixed?: boolean;
     colSpan?: number;

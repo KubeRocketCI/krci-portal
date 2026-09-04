@@ -11,30 +11,14 @@ import {
   DropdownMenuTrigger,
 } from "@/core/components/ui/dropdown-menu";
 import { RotateCcw, Settings2 } from "lucide-react";
-import { useTableSettings } from "./hooks/useTableSettings";
 import { TableSettingsProps } from "./types";
 
 export const TableSettings = <DataType,>({
-  id,
   columns,
-  setColumns,
+  onToggleColumn,
   columnWidthReset,
 }: TableSettingsProps<DataType>) => {
-  const { patchColumnSettings } = useTableSettings(id);
-
   const visibleColumnCount = React.useMemo(() => columns.filter((col) => col.cell.show !== false).length, [columns]);
-
-  const handleToggleColumn = React.useCallback(
-    (columnId: string, checked: boolean) => {
-      // Written outside the updater: StrictMode double-invokes state updaters.
-      patchColumnSettings({ [columnId]: { show: checked } });
-
-      setColumns((prev) =>
-        prev.map((column) => (column.id === columnId ? { ...column, cell: { ...column.cell, show: checked } } : column))
-      );
-    },
-    [setColumns, patchColumnSettings]
-  );
 
   return (
     <DropdownMenu>
@@ -59,7 +43,7 @@ export const TableSettings = <DataType,>({
               key={column.id}
               checked={isVisible}
               disabled={isFixed}
-              onCheckedChange={(checked) => handleToggleColumn(column.id, checked)}
+              onCheckedChange={(checked) => onToggleColumn(column.id, checked)}
             >
               {column.label}
             </DropdownMenuCheckboxItem>
