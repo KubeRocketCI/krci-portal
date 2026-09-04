@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Box } from "lucide-react";
 import { withAppProviders } from "@sb/index";
 import { DataTable } from "./index";
 import { TableColumn } from "./types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
+import { CellExternalLink } from "./components/CellLink";
 
 /**
  * `.tsx` is excluded from Vitest coverage; these stories are the visual check for the drag.
@@ -18,6 +20,7 @@ type Run = {
   pipeline: string;
   branch: string;
   startedAt: string;
+  attempts: number;
 };
 
 const rows: Run[] = Array.from({ length: 12 }, (_, index) => ({
@@ -26,9 +29,10 @@ const rows: Run[] = Array.from({ length: 12 }, (_, index) => ({
   pipeline: "customer-portal-frontend-build-npm-nextjs-edp",
   branch: index % 3 === 0 ? "feature/a-rather-long-branch-name-for-testing" : "main",
   startedAt: `03 Sep 2026, 1${index % 10}:0${index % 6}`,
+  attempts: (index % 5) + 1,
 }));
 
-const text = (value: string) => <TextWithTooltip text={value} />;
+const text = (value: string | number) => <TextWithTooltip text={value} />;
 
 const column = (
   id: keyof Run,
@@ -155,6 +159,46 @@ export const NoWrapCellContent: Story = {
       column("pipeline", "Pipeline", 30),
       column("branch", "Branch", 20),
       column("startedAt", "Started at", 15),
+    ],
+  },
+};
+
+/** The Run column through `CellExternalLink`. Drag its edge: the ellipsis and tooltip work inside the link. */
+export const CellLinkColumn: Story = {
+  args: {
+    id: "sb-table-cell-link",
+    columns: [
+      {
+        ...column("name", "Run", 40),
+        data: { render: ({ data }) => <CellExternalLink href="#" icon={Box} text={data.name} /> },
+      },
+      column("status", "Status", 15),
+      column("pipeline", "Pipeline", 20),
+      column("branch", "Branch", 15),
+      column("startedAt", "Started at", 10),
+    ],
+  },
+};
+
+/**
+ * Run and Status return raw strings, no `TextWithTooltip` call at the page. Narrow either
+ * one: the shell default clamps and shows a tooltip on its own. Attempts returns a raw
+ * number, right-aligned through `cell.props.align`; the alignment holds at any width.
+ */
+export const PrimitiveCells: Story = {
+  args: {
+    id: "sb-table-primitive-cells",
+    columns: [
+      { id: "name", label: "Run", data: { render: ({ data }) => data.name }, cell: { baseWidth: 40 } },
+      { id: "status", label: "Status", data: { render: ({ data }) => data.status }, cell: { baseWidth: 15 } },
+      column("pipeline", "Pipeline", 20),
+      column("branch", "Branch", 15),
+      {
+        id: "attempts",
+        label: "Attempts",
+        data: { render: ({ data }) => data.attempts },
+        cell: { baseWidth: 10, props: { align: "right" } },
+      },
     ],
   },
 };

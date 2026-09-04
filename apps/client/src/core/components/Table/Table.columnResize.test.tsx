@@ -3,6 +3,7 @@ import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DataTable } from "./index";
 import { TABLE_WIDTH_DEFAULTS } from "./constants";
+import { TableColumn } from "./types";
 import {
   HANDLE_SELECTOR,
   Row,
@@ -147,6 +148,31 @@ describe("column resize commit path", () => {
       expect(cell.className).toContain("overflow-hidden");
       expect(cell.firstElementChild?.className).toContain("min-w-0");
     }
+  });
+
+  it("wraps a string return in a clamped <p>, but leaves an element return untouched", () => {
+    const stringVsElementColumns: TableColumn<Row>[] = [
+      { ...column("text", 40), data: { render: ({ data }) => data.name } },
+      { ...column("element", 40), data: { render: () => <span>ok</span> } },
+    ];
+
+    const { container } = render(
+      <DataTable<Row> id="stringVsElement" columns={stringVsElementColumns} data={data} pagination={{ show: false }} />
+    );
+
+    const [textCell, elementCell] = container.querySelectorAll("tbody tr:first-child td");
+    expect(textCell.querySelector("p.line-clamp-1")).not.toBeNull();
+    expect(elementCell.querySelector("p.line-clamp-1")).toBeNull();
+  });
+
+  it('renders a render() return of 0 as the text "0"', () => {
+    const numberColumns: TableColumn<Row>[] = [{ ...column("count", 40), data: { render: () => 0 } }];
+
+    const { container } = render(
+      <DataTable<Row> id="numberZero" columns={numberColumns} data={data} pagination={{ show: false }} />
+    );
+
+    expect(container.querySelector("tbody td")?.textContent).toBe("0");
   });
 
   it("toggles the resizing class on the body for the duration of a drag", () => {

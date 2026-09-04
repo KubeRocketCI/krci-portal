@@ -26,7 +26,9 @@ export const makeStatusColumn = <T extends KubeObjectBase>(
       const icon = getStatusIcon(resource);
       return (
         <div className="flex items-center gap-1.5">
-          <StatusIcon Icon={icon.component} color={icon.color} isSpinning={icon.isSpinning} width={14} />
+          <span className="flex shrink-0">
+            <StatusIcon Icon={icon.component} color={icon.color} isSpinning={icon.isSpinning} width={14} />
+          </span>
           <span className="text-sm">{getStatusLabel(resource)}</span>
         </div>
       );
@@ -49,7 +51,7 @@ export const namespaceColumn: TableColumn<KubeObjectBase> = {
   id: "namespace",
   label: "Namespace",
   data: {
-    render: ({ data }) => <TextWithTooltip text={data.metadata?.namespace ?? "—"} />,
+    render: ({ data }) => <TextWithTooltip text={data.metadata?.namespace} />,
     columnSortableValuePath: "metadata.namespace",
   },
   cell: { baseWidth: 15 },

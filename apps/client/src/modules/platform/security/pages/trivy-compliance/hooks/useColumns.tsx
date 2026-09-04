@@ -48,7 +48,7 @@ export function useColumns(): TableColumn<ConsolidatedComplianceReport>[] {
           render: ({ data }) => (
             <span
               className={cn(
-                "inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium uppercase",
+                "inline-flex shrink-0 items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap uppercase",
                 getComplianceTypeBadgeClasses(data.type)
               )}
             >

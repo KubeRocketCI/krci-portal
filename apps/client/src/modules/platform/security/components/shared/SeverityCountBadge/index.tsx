@@ -42,13 +42,13 @@ export function SeverityCountBadge({ count, severity, showZeroAsBadge = false, c
   const classes = getSeverityBadgeClasses(severity);
 
   if (count === 0 && !showZeroAsBadge) {
-    return <span className="text-muted-foreground text-sm">0</span>;
+    return <span className="text-muted-foreground shrink-0 text-sm whitespace-nowrap">0</span>;
   }
 
   return (
     <span
       className={cn(
-        "inline-flex min-w-[2rem] items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium",
+        "inline-flex min-w-[2rem] shrink-0 items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap",
         classes.combined,
         className
       )}

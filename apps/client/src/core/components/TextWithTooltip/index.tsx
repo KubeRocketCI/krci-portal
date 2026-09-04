@@ -3,8 +3,18 @@ import { cn } from "@/core/utils/classname";
 import React from "react";
 import { TextWithTooltipProps } from "./types";
 
-export const TextWithTooltip = ({ text, className, maxLineAmount = 1 }: TextWithTooltipProps) => {
+/** Tailwind needs literal class names; a template string does not generate them. */
+const CLAMP_CLASSES = {
+  1: "line-clamp-1",
+  2: "line-clamp-2",
+  3: "line-clamp-3",
+} as const;
+
+export function TextWithTooltip({ text, className, maxLineAmount = 1, fallback = "—" }: TextWithTooltipProps) {
+  const value = text === null || text === undefined || text === "" ? fallback : String(text);
+
   const [isOverflowed, setIsOverflowed] = React.useState(false);
+  const [wantsOpen, setWantsOpen] = React.useState(false);
   const textRef = React.useRef<HTMLParagraphElement | null>(null);
   const observerRef = React.useRef<ResizeObserver | null>(null);
 
@@ -14,10 +24,7 @@ export const TextWithTooltip = ({ text, className, maxLineAmount = 1 }: TextWith
     setIsOverflowed(node.offsetWidth < node.scrollWidth || node.offsetHeight < node.scrollHeight);
   }, []);
 
-  /**
-   * Ref callback, not an effect: flipping `isOverflowed` moves the `<p>` between the root
-   * and the `Tooltip` trigger, so React remounts it. The observer re-attaches to the new node.
-   */
+  /** The `<p>` is always mounted, so the ref only ever attaches once per element instance. */
   const setTextRef = React.useCallback(
     (node: HTMLParagraphElement | null) => {
       observerRef.current?.disconnect();
@@ -25,7 +32,6 @@ export const TextWithTooltip = ({ text, className, maxLineAmount = 1 }: TextWith
       if (!node) return;
       observerRef.current = new ResizeObserver(measure);
       observerRef.current.observe(node);
-      measure();
     },
     [measure]
   );
@@ -34,20 +40,16 @@ export const TextWithTooltip = ({ text, className, maxLineAmount = 1 }: TextWith
 
   React.useEffect(() => {
     measure();
-  }, [text, maxLineAmount, className, measure]);
+  }, [value, maxLineAmount, className, measure]);
 
-  const Content = (
-    <p
-      ref={setTextRef}
-      className={cn("text-sm", "wrap-break-word", "text-inherit", `line-clamp-${maxLineAmount}`, className)}
-    >
-      {text}
-    </p>
+  return (
+    <Tooltip title={value} open={isOverflowed && wantsOpen} onOpenChange={setWantsOpen}>
+      <p
+        ref={setTextRef}
+        className={cn("text-sm", "wrap-break-word", "text-inherit", CLAMP_CLASSES[maxLineAmount], className)}
+      >
+        {value}
+      </p>
+    </Tooltip>
   );
-
-  if (isOverflowed) {
-    return <Tooltip title={text}>{Content}</Tooltip>;
-  }
-
-  return Content;
-};
+}
