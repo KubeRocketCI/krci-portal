@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DataTable } from "./index";
+import { TableColumn } from "./types";
 import { Row, colFor, column, dragHandle, handleFor, readTableSettings, seedTableSettings } from "./testUtils";
 import { stubResizeObserver } from "@/test/utils/resize-observer";
 
@@ -54,6 +55,22 @@ describe("column visibility restore path", () => {
 
     expect(statusHeader()).toBeNull();
     expect(container.querySelectorAll("col")).toHaveLength(2);
+  });
+
+  it("does not call render() for a hidden column", () => {
+    seedTableSettings({ [TABLE_ID]: { status: { id: "status", show: false } } });
+    const renderStatus = vi.fn(() => "status");
+    const spiedColumns: TableColumn<Row>[] = [
+      column("name", 40),
+      { ...column("status", 30), data: { render: renderStatus } },
+      column("actions", 30),
+    ];
+
+    renderTable({ columns: spiedColumns });
+
+    // `name` and `actions` both render the row's name; hidden `status` renders nothing.
+    expect(screen.getAllByText("alpha")).toHaveLength(2);
+    expect(renderStatus).not.toHaveBeenCalled();
   });
 
   it("keeps a column hidden from the dropdown across a remount", async () => {

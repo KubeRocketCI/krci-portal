@@ -1,10 +1,11 @@
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createMemoryHistory, createRootRoute, createRouter, RouterProvider } from "@tanstack/react-router";
+import { RouterProvider } from "@tanstack/react-router";
 import { TRPCContext } from "@/core/providers/trpc/context";
 import { trpcHttpClient } from "@/core/providers/trpc/http-client";
 import { useClusterStore } from "@/k8s/store";
 import { createTestQueryClient } from "./query-client";
+import { createTestRouter } from "./router";
 import { TEST_CLUSTER_NAME, TEST_NAMESPACE, TEST_ALLOWED_NAMESPACES } from "./constants";
 
 // Context to pass content to the router's root component
@@ -14,19 +15,6 @@ const ContentContext = React.createContext<React.ReactNode>(null);
 const TestRoot = () => {
   const content = React.useContext(ContentContext);
   return <>{content}</>;
-};
-
-// Create router with the TestRoot component
-const createTestRouter = () => {
-  const rootRoute = createRootRoute({
-    component: TestRoot,
-  });
-
-  return createRouter({
-    routeTree: rootRoute,
-    history: createMemoryHistory({ initialEntries: ["/"] }),
-    defaultPreload: false,
-  });
 };
 
 /**
@@ -126,7 +114,7 @@ export const TestProviders: React.FC<React.PropsWithChildren<TestProvidersOption
   queryClient: providedQueryClient,
 }) => {
   // Create router once per render
-  const router = React.useMemo(() => createTestRouter(), []);
+  const router = React.useMemo(() => createTestRouter(TestRoot), []);
 
   // Create or use provided query client
   const queryClient = React.useMemo(() => {

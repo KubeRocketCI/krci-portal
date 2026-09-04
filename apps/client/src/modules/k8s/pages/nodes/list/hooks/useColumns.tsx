@@ -1,9 +1,6 @@
 import { useMemo } from "react";
-import { Link } from "@tanstack/react-router";
-import { Button } from "@/core/components/ui/button";
-import { TextWithTooltip } from "@/core/components/TextWithTooltip";
-import { Tooltip } from "@/core/components/ui/tooltip";
-import { formatTimestamp, formatUnixTimestamp } from "@/core/utils/date-humanize";
+import { CellLink } from "@/core/components/Table/components/CellLink";
+import { ageColumn } from "@/modules/k8s/registry/descriptors/columnHelpers";
 import { useClusterStore } from "@/k8s/store";
 import { PATH_K8S_NODE_DETAIL_FULL } from "../../detail/route";
 import type { TableColumn } from "@/core/components/Table/types";
@@ -27,11 +24,11 @@ export function useColumns(): TableColumn<Node>[] {
         label: "Name",
         data: {
           render: ({ data }) => (
-            <Button variant="link" asChild className="w-full justify-start p-0">
-              <Link to={PATH_K8S_NODE_DETAIL_FULL} params={{ clusterName, name: data.metadata?.name ?? "" }}>
-                <TextWithTooltip text={data.metadata?.name ?? "—"} />
-              </Link>
-            </Button>
+            <CellLink
+              to={PATH_K8S_NODE_DETAIL_FULL}
+              params={{ clusterName, name: data.metadata?.name ?? "" }}
+              text={data.metadata?.name}
+            />
           ),
           columnSortableValuePath: "metadata.name",
         },
@@ -85,23 +82,7 @@ export function useColumns(): TableColumn<Node>[] {
         },
         cell: { baseWidth: 12 },
       },
-      {
-        id: "age",
-        label: "Created at",
-        data: {
-          render: ({ data }) => {
-            const ts = data.metadata?.creationTimestamp;
-            if (!ts) return "—";
-            return (
-              <Tooltip title={formatUnixTimestamp(ts)} delayDuration={500}>
-                <span className="text-sm">{formatTimestamp(ts)}</span>
-              </Tooltip>
-            );
-          },
-          columnSortableValuePath: "metadata.creationTimestamp",
-        },
-        cell: { baseWidth: 13 },
-      },
+      ageColumn,
     ],
     [clusterName]
   );

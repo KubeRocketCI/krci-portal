@@ -1,27 +1,13 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ResourceTable } from "./index";
+import { renderWithRouter } from "@/test/utils/router";
 import type { ResourceDescriptor } from "../../registry/types";
 import type { TableColumn } from "@/core/components/Table/types";
 import type { KubeObjectBase } from "@my-project/shared";
 
-// Capture rendered `to` props from Link so test assertions can check the route.
-vi.mock("@tanstack/react-router", async (orig) => ({
-  ...(await (orig as () => Promise<Record<string, unknown>>)()),
-  useNavigate: () => () => {},
-  useParams: () => ({}),
-  Link: ({ children, to, params }: { children: React.ReactNode; to?: string; params?: Record<string, string> }) => {
-    // Build a deterministic href from the `to` template + `params` so tests can
-    // assert on the exact URL without relying on TanStack Router internals.
-    let href = to ?? "";
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        href = href.replace(`$${key}`, encodeURIComponent(value));
-      });
-    }
-    return <a href={href}>{children}</a>;
-  },
-}));
+// The name column is a `CellLink`. Its `href` resolves from `to` + `params`; the destination path need
+// not be registered on the test router.
 
 vi.mock("@/core/components/Table", () => ({
   DataTable: ({ data, columns }: { data: unknown[]; columns: TableColumn<unknown>[] }) => (
@@ -92,9 +78,9 @@ describe("ResourceTable", () => {
     ],
   };
 
-  it("renders a row per item", () => {
-    render(<ResourceTable items={items} descriptor={descriptor} isLoading={false} error={null} />);
-    expect(screen.getByText("alpha")).toBeInTheDocument();
+  it("renders a row per item", async () => {
+    renderWithRouter(<ResourceTable items={items} descriptor={descriptor} isLoading={false} error={null} />);
+    expect(await screen.findByText("alpha")).toBeInTheDocument();
     expect(screen.getByText("beta")).toBeInTheDocument();
   });
 
@@ -149,11 +135,11 @@ describe("ResourceTable", () => {
       ],
     };
 
-    it("routes the name link to PATH_K8S_CR_DETAIL_NS_FULL for namespaced CR with printer columns", () => {
-      render(<ResourceTable items={crItems} descriptor={crDescriptor} isLoading={false} error={null} />);
+    it("routes the name link to PATH_K8S_CR_DETAIL_NS_FULL for namespaced CR with printer columns", async () => {
+      renderWithRouter(<ResourceTable items={crItems} descriptor={crDescriptor} isLoading={false} error={null} />);
 
       // The name "pr-1" should be rendered as a link
-      const link = screen.getByRole("link", { name: "pr-1" });
+      const link = await screen.findByRole("link", { name: "pr-1" });
       expect(link).toBeInTheDocument();
 
       // The href must use the CR namespaced detail route pattern:

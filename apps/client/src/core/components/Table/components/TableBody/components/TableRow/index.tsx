@@ -6,6 +6,7 @@ import { TABLE_CELL_DEFAULTS } from "@/core/components/Table/constants";
 import { ChevronRight, ChevronDown } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
 import { cn } from "@/core/utils/classname";
+import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 
 export const TableRow = <DataType,>({
   item,
@@ -99,6 +100,8 @@ export const TableRow = <DataType,>({
         )}
         {columns.map(({ id, data, cell }) => {
           const show = cell?.show ?? TABLE_CELL_DEFAULTS.SHOW;
+          if (!show) return null;
+
           const props = {
             ...TABLE_CELL_DEFAULTS.PROPS,
             ...cell?.props,
@@ -108,16 +111,24 @@ export const TableRow = <DataType,>({
           const paddingClass = "py-2 px-3";
           const sortablePaddingClass = getColumnPadding(!!data?.columnSortableValuePath, props?.align || "");
 
-          return show ? (
+          const rendered = data.render({ data: item });
+          const content =
+            typeof rendered === "string" || typeof rendered === "number" ? (
+              <TextWithTooltip text={rendered} />
+            ) : (
+              rendered
+            );
+
+          return (
             <TableCellUI key={id} className={`${paddingClass} ${alignClass} ${sortablePaddingClass} overflow-hidden`}>
               {/* `min-w-0` on the wrapper and on its child lets content shrink to the column, so `truncate` bites. The cell clips the rest. */}
               <div
                 className={`flex w-full min-w-0 items-center text-sm [&>*]:min-w-0 ${getJustifyClass(props?.align)}`}
               >
-                {data.render({ data: item })}
+                {content}
               </div>
             </TableCellUI>
-          ) : null;
+          );
         })}
       </TableRowUI>
       {isExpandable && isExpanded && expandedContent && (

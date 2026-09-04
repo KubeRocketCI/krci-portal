@@ -47,23 +47,28 @@ export interface TooltipProps {
   placement?: "top" | "right" | "bottom" | "left";
   className?: string;
   delayDuration?: number;
+  /** Controlled open state. Omit both for hover and focus driven open. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
-  ({ title, children, placement = "top", className, delayDuration = 0 }) => {
-    const side = placement;
-
-    return (
-      <TooltipProvider delayDuration={delayDuration}>
-        <TooltipPrimitive.Root data-slot="tooltip">
-          <TooltipTrigger asChild>{children}</TooltipTrigger>
-          <TooltipContent side={side} sideOffset={5} className={className}>
-            {typeof title === "string" ? <p>{title}</p> : title}
-          </TooltipContent>
-        </TooltipPrimitive.Root>
-      </TooltipProvider>
-    );
-  }
-);
-
-Tooltip.displayName = "Tooltip";
+export function Tooltip({
+  title,
+  children,
+  placement = "top",
+  className,
+  delayDuration = 0,
+  open,
+  onOpenChange,
+}: TooltipProps) {
+  return (
+    <TooltipProvider delayDuration={delayDuration}>
+      <TooltipPrimitive.Root data-slot="tooltip" open={open} onOpenChange={onOpenChange}>
+        <TooltipTrigger asChild>{children}</TooltipTrigger>
+        <TooltipContent side={placement} sideOffset={5} className={className}>
+          {typeof title === "string" ? <p>{title}</p> : title}
+        </TooltipContent>
+      </TooltipPrimitive.Root>
+    </TooltipProvider>
+  );
+}

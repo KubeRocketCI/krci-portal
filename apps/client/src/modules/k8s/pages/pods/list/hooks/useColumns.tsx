@@ -1,9 +1,6 @@
 import { useMemo } from "react";
-import { Link } from "@tanstack/react-router";
-import { Button } from "@/core/components/ui/button";
-import { TextWithTooltip } from "@/core/components/TextWithTooltip";
-import { Tooltip } from "@/core/components/ui/tooltip";
-import { formatTimestamp, formatUnixTimestamp } from "@/core/utils/date-humanize";
+import { CellLink } from "@/core/components/Table/components/CellLink";
+import { ageColumn, namespaceColumn } from "@/modules/k8s/registry/descriptors/columnHelpers";
 import { useClusterStore } from "@/k8s/store";
 import { PATH_K8S_POD_DETAIL_FULL } from "../../detail/route";
 import type { TableColumn } from "@/core/components/Table/types";
@@ -19,32 +16,21 @@ export function useColumns(): TableColumn<Pod>[] {
         label: "Name",
         data: {
           render: ({ data }) => (
-            <Button variant="link" asChild className="w-full justify-start p-0">
-              <Link
-                to={PATH_K8S_POD_DETAIL_FULL}
-                params={{
-                  clusterName,
-                  namespace: data.metadata?.namespace ?? "",
-                  name: data.metadata?.name ?? "",
-                }}
-              >
-                <TextWithTooltip text={data.metadata?.name ?? "—"} />
-              </Link>
-            </Button>
+            <CellLink
+              to={PATH_K8S_POD_DETAIL_FULL}
+              params={{
+                clusterName,
+                namespace: data.metadata?.namespace ?? "",
+                name: data.metadata?.name ?? "",
+              }}
+              text={data.metadata?.name}
+            />
           ),
           columnSortableValuePath: "metadata.name",
         },
         cell: { baseWidth: 20 },
       },
-      {
-        id: "namespace",
-        label: "Namespace",
-        data: {
-          render: ({ data }) => <TextWithTooltip text={data.metadata?.namespace ?? "—"} />,
-          columnSortableValuePath: "metadata.namespace",
-        },
-        cell: { baseWidth: 12 },
-      },
+      { ...namespaceColumn, cell: { ...namespaceColumn.cell, baseWidth: 12 } },
       {
         id: "status",
         label: "Status",
@@ -87,23 +73,7 @@ export function useColumns(): TableColumn<Pod>[] {
         },
         cell: { baseWidth: 15 },
       },
-      {
-        id: "age",
-        label: "Created at",
-        data: {
-          render: ({ data }) => {
-            const ts = data.metadata?.creationTimestamp;
-            if (!ts) return "—";
-            return (
-              <Tooltip title={formatUnixTimestamp(ts)} delayDuration={500}>
-                <span className="text-sm">{formatTimestamp(ts)}</span>
-              </Tooltip>
-            );
-          },
-          columnSortableValuePath: "metadata.creationTimestamp",
-        },
-        cell: { baseWidth: 13 },
-      },
+      ageColumn,
     ],
     [clusterName]
   );
