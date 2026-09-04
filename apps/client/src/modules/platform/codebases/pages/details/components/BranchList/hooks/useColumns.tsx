@@ -1,8 +1,6 @@
 import { CopyButton } from "@/core/components/CopyButton";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { StatusIcon } from "@/core/components/StatusIcon";
-import { SavedTableSettings } from "@/core/components/Table/components/TableSettings/types";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { Badge } from "@/core/components/ui/badge";
@@ -57,11 +55,7 @@ function getStatusBadgeVariant(status: string | undefined): BadgeProps["variant"
   return (status && statusBadgeVariants[status]) || "neutral";
 }
 
-export const useColumns = ({
-  tableSettings,
-}: {
-  tableSettings: SavedTableSettings | undefined;
-}): TableColumn<EnrichedBranch>[] => {
+export const useColumns = (): TableColumn<EnrichedBranch>[] => {
   const codebaseWatchQuery = useCodebaseWatch();
   const codebase = codebaseWatchQuery.query.data;
   const gitServerByCodebaseWatch = useGitServerWatch();
@@ -170,7 +164,6 @@ export const useColumns = ({
         cell: {
           isFixed: true,
           baseWidth: 20,
-          ...getSyncedColumnData(tableSettings, columnNames.BRANCH),
         },
       },
       {
@@ -208,7 +201,6 @@ export const useColumns = ({
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, columnNames.STATUS),
         },
       },
       {
@@ -275,7 +267,6 @@ export const useColumns = ({
         },
         cell: {
           baseWidth: 20,
-          ...getSyncedColumnData(tableSettings, columnNames.LAST_BUILD),
         },
       },
       {
@@ -290,7 +281,6 @@ export const useColumns = ({
         },
         cell: {
           baseWidth: 12,
-          ...getSyncedColumnData(tableSettings, columnNames.VERSION),
         },
       },
       {
@@ -309,7 +299,6 @@ export const useColumns = ({
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, columnNames.BUILD),
         },
       },
       {
@@ -327,16 +316,8 @@ export const useColumns = ({
         cell: {
           baseWidth: 6,
           isFixed: true,
-          ...getSyncedColumnData(tableSettings, columnNames.ACTIONS),
         },
       },
     ];
-  }, [
-    codebaseWatchQuery.query.isLoading,
-    clusterName,
-    defaultNamespace,
-    tableSettings,
-    getGitRepoBranchLink,
-    createPinnedSortFn,
-  ]);
+  }, [codebaseWatchQuery.query.isLoading, clusterName, defaultNamespace, getGitRepoBranchLink, createPinnedSortFn]);
 };

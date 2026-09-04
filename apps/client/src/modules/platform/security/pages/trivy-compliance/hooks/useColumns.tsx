@@ -1,8 +1,5 @@
 import { useMemo } from "react";
 import { TableColumn } from "@/core/components/Table/types";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
-import { TABLE } from "@/k8s/constants/tables";
 import { ConsolidatedComplianceReport, getComplianceTypeBadgeClasses, getPassRateColorClass } from "../types";
 import { Link, useParams } from "@tanstack/react-router";
 import { PATH_TRIVY_COMPLIANCE_DETAILS_FULL } from "../../trivy-compliance-details/route";
@@ -14,8 +11,6 @@ import { ChevronRight } from "lucide-react";
  * Hook to define columns for the Cluster Compliance Reports table.
  */
 export function useColumns(): TableColumn<ConsolidatedComplianceReport>[] {
-  const { loadSettings } = useTableSettings(TABLE.TRIVY_COMPLIANCE_REPORTS_LIST.id);
-  const tableSettings = loadSettings();
   const { clusterName } = useParams({ strict: false });
 
   return useMemo(
@@ -43,7 +38,6 @@ export function useColumns(): TableColumn<ConsolidatedComplianceReport>[] {
         cell: {
           isFixed: true,
           baseWidth: 35,
-          ...getSyncedColumnData(tableSettings, "title"),
         },
       },
       {
@@ -64,7 +58,6 @@ export function useColumns(): TableColumn<ConsolidatedComplianceReport>[] {
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, "type"),
         },
       },
       {
@@ -76,7 +69,6 @@ export function useColumns(): TableColumn<ConsolidatedComplianceReport>[] {
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, "version"),
         },
       },
       {
@@ -90,7 +82,6 @@ export function useColumns(): TableColumn<ConsolidatedComplianceReport>[] {
         },
         cell: {
           baseWidth: 8,
-          ...getSyncedColumnData(tableSettings, "passCount"),
         },
       },
       {
@@ -109,7 +100,6 @@ export function useColumns(): TableColumn<ConsolidatedComplianceReport>[] {
         },
         cell: {
           baseWidth: 8,
-          ...getSyncedColumnData(tableSettings, "failCount"),
         },
       },
       {
@@ -123,7 +113,6 @@ export function useColumns(): TableColumn<ConsolidatedComplianceReport>[] {
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, "passRate"),
         },
       },
       {
@@ -148,10 +137,9 @@ export function useColumns(): TableColumn<ConsolidatedComplianceReport>[] {
         },
         cell: {
           baseWidth: 12,
-          ...getSyncedColumnData(tableSettings, "actions"),
         },
       },
     ],
-    [tableSettings, clusterName]
+    [clusterName]
   );
 }

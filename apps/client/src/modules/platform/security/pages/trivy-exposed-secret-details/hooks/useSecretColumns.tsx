@@ -1,17 +1,11 @@
 import { useMemo } from "react";
 import { TableColumn } from "@/core/components/Table/types";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
-import { TABLE } from "@/k8s/constants/tables";
 import { SeverityBadge } from "@/modules/platform/security/components/shared/SeverityBadge";
 import { Badge } from "@/core/components/ui/badge";
 import { ExposedSecretWithId } from "../types";
 import { compareBySeverity } from "@/modules/platform/security/constants/severity";
 
 export function useSecretColumns(): TableColumn<ExposedSecretWithId>[] {
-  const { loadSettings } = useTableSettings(TABLE.TRIVY_EXPOSED_SECRETS_LIST.id);
-  const tableSettings = loadSettings();
-
   return useMemo(
     () => [
       {
@@ -24,7 +18,6 @@ export function useSecretColumns(): TableColumn<ExposedSecretWithId>[] {
         cell: {
           isFixed: true,
           baseWidth: 18,
-          ...getSyncedColumnData(tableSettings, "ruleID"),
         },
       },
       {
@@ -40,7 +33,6 @@ export function useSecretColumns(): TableColumn<ExposedSecretWithId>[] {
         },
         cell: {
           baseWidth: 22,
-          ...getSyncedColumnData(tableSettings, "title"),
         },
       },
       {
@@ -61,7 +53,6 @@ export function useSecretColumns(): TableColumn<ExposedSecretWithId>[] {
         },
         cell: {
           baseWidth: 15,
-          ...getSyncedColumnData(tableSettings, "category"),
         },
       },
       {
@@ -74,7 +65,6 @@ export function useSecretColumns(): TableColumn<ExposedSecretWithId>[] {
         },
         cell: {
           baseWidth: 12,
-          ...getSyncedColumnData(tableSettings, "severity"),
         },
       },
       {
@@ -90,7 +80,6 @@ export function useSecretColumns(): TableColumn<ExposedSecretWithId>[] {
         },
         cell: {
           baseWidth: 20,
-          ...getSyncedColumnData(tableSettings, "target"),
         },
       },
       {
@@ -105,10 +94,9 @@ export function useSecretColumns(): TableColumn<ExposedSecretWithId>[] {
         },
         cell: {
           baseWidth: 13,
-          ...getSyncedColumnData(tableSettings, "match"),
         },
       },
     ],
-    [tableSettings]
+    []
   );
 }

@@ -1,8 +1,5 @@
 import { useMemo } from "react";
 import { TableColumn } from "@/core/components/Table/types";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
-import { TABLE } from "@/k8s/constants/tables";
 import { SeverityBadge } from "@/modules/platform/security/components/shared/SeverityBadge";
 import { Badge } from "@/core/components/ui/badge";
 import { CheckCircle, XCircle } from "lucide-react";
@@ -13,9 +10,6 @@ import { compareBySeverity } from "@/modules/platform/security/constants/severit
  * Hook to define columns for the Configuration Audit Checks table.
  */
 export function useCheckColumns(): TableColumn<AuditCheckWithId>[] {
-  const { loadSettings } = useTableSettings(TABLE.TRIVY_CONFIG_AUDIT_CHECKS_LIST.id);
-  const tableSettings = loadSettings();
-
   return useMemo(
     () => [
       {
@@ -28,7 +22,6 @@ export function useCheckColumns(): TableColumn<AuditCheckWithId>[] {
         cell: {
           isFixed: true,
           baseWidth: 15,
-          ...getSyncedColumnData(tableSettings, "checkID"),
         },
       },
       {
@@ -44,7 +37,6 @@ export function useCheckColumns(): TableColumn<AuditCheckWithId>[] {
         },
         cell: {
           baseWidth: 35,
-          ...getSyncedColumnData(tableSettings, "title"),
         },
       },
       {
@@ -65,7 +57,6 @@ export function useCheckColumns(): TableColumn<AuditCheckWithId>[] {
         },
         cell: {
           baseWidth: 25,
-          ...getSyncedColumnData(tableSettings, "category"),
         },
       },
       {
@@ -78,7 +69,6 @@ export function useCheckColumns(): TableColumn<AuditCheckWithId>[] {
         },
         cell: {
           baseWidth: 12,
-          ...getSyncedColumnData(tableSettings, "severity"),
         },
       },
       {
@@ -108,10 +98,9 @@ export function useCheckColumns(): TableColumn<AuditCheckWithId>[] {
         },
         cell: {
           baseWidth: 12,
-          ...getSyncedColumnData(tableSettings, "status"),
         },
       },
     ],
-    [tableSettings]
+    []
   );
 }

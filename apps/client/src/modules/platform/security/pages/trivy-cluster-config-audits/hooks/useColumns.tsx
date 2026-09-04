@@ -1,8 +1,5 @@
 import { useMemo } from "react";
 import { TableColumn } from "@/core/components/Table/types";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
-import { TABLE } from "@/k8s/constants/tables";
 import { ClusterConfigAuditReport } from "@my-project/shared";
 import { Link, useParams } from "@tanstack/react-router";
 import { PATH_TRIVY_CLUSTER_CONFIG_AUDIT_DETAILS_FULL } from "../../trivy-cluster-config-audit-details/route";
@@ -11,8 +8,6 @@ import { Eye } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
 
 export function useColumns(): TableColumn<ClusterConfigAuditReport>[] {
-  const { loadSettings } = useTableSettings(TABLE.TRIVY_CLUSTER_CONFIG_AUDIT_REPORTS_LIST.id);
-  const tableSettings = loadSettings();
   const { clusterName } = useParams({ strict: false });
 
   return useMemo(
@@ -40,7 +35,6 @@ export function useColumns(): TableColumn<ClusterConfigAuditReport>[] {
         cell: {
           isFixed: true,
           baseWidth: 30,
-          ...getSyncedColumnData(tableSettings, "name"),
         },
       },
       {
@@ -54,7 +48,6 @@ export function useColumns(): TableColumn<ClusterConfigAuditReport>[] {
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, "critical"),
         },
       },
       {
@@ -66,7 +59,6 @@ export function useColumns(): TableColumn<ClusterConfigAuditReport>[] {
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, "high"),
         },
       },
       {
@@ -78,7 +70,6 @@ export function useColumns(): TableColumn<ClusterConfigAuditReport>[] {
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, "medium"),
         },
       },
       {
@@ -90,7 +81,6 @@ export function useColumns(): TableColumn<ClusterConfigAuditReport>[] {
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, "low"),
         },
       },
       {
@@ -109,7 +99,6 @@ export function useColumns(): TableColumn<ClusterConfigAuditReport>[] {
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, "totalChecks"),
         },
       },
       {
@@ -133,10 +122,9 @@ export function useColumns(): TableColumn<ClusterConfigAuditReport>[] {
         },
         cell: {
           baseWidth: 5,
-          ...getSyncedColumnData(tableSettings, "actions"),
         },
       },
     ],
-    [tableSettings, clusterName]
+    [clusterName]
   );
 }

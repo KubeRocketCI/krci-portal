@@ -8,9 +8,6 @@ import { PipelineGraphDialog } from "@/modules/platform/tekton/dialogs/PipelineG
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { VectorSquare } from "lucide-react";
 import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { TABLE } from "@/k8s/constants/tables";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { routePipelineDetails } from "@/modules/platform/tekton/pages/pipeline-details/route";
@@ -19,9 +16,6 @@ import { Actions } from "../components/Actions";
 
 export function useColumns(): TableColumn<Pipeline>[] {
   const openPipelineGraphDialog = useDialogOpener(PipelineGraphDialog);
-
-  const { loadSettings } = useTableSettings(TABLE.PIPELINE_LIST.id);
-  const tableSettings = loadSettings();
 
   const { namespace: defaultNamespace, clusterName } = useClusterStore(
     useShallow((state) => ({
@@ -62,7 +56,6 @@ export function useColumns(): TableColumn<Pipeline>[] {
         cell: {
           isFixed: true,
           baseWidth: 40,
-          ...getSyncedColumnData(tableSettings, "name"),
         },
       },
       {
@@ -78,7 +71,6 @@ export function useColumns(): TableColumn<Pipeline>[] {
         cell: {
           isFixed: false,
           baseWidth: 50,
-          ...getSyncedColumnData(tableSettings, "description"),
         },
       },
       {
@@ -107,7 +99,6 @@ export function useColumns(): TableColumn<Pipeline>[] {
         cell: {
           isFixed: true,
           baseWidth: 5,
-          ...getSyncedColumnData(tableSettings, "diagram"),
         },
       },
       {
@@ -119,10 +110,9 @@ export function useColumns(): TableColumn<Pipeline>[] {
         cell: {
           isFixed: true,
           baseWidth: 5,
-          ...getSyncedColumnData(tableSettings, "actions"),
         },
       },
     ],
-    [openPipelineGraphDialog, tableSettings, clusterName, defaultNamespace]
+    [openPipelineGraphDialog, clusterName, defaultNamespace]
   );
 }

@@ -1,8 +1,5 @@
 import { useMemo } from "react";
 import { TableColumn } from "@/core/components/Table/types";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
-import { TABLE } from "@/k8s/constants/tables";
 import { ClusterVulnerabilityReport } from "@my-project/shared";
 import { Link, useParams } from "@tanstack/react-router";
 import { PATH_TRIVY_CLUSTER_VULNERABILITY_DETAILS_FULL } from "../../trivy-cluster-vulnerability-details/route";
@@ -11,8 +8,6 @@ import { Eye } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
 
 export function useColumns(): TableColumn<ClusterVulnerabilityReport>[] {
-  const { loadSettings } = useTableSettings(TABLE.TRIVY_CLUSTER_VULNERABILITY_REPORTS_LIST.id);
-  const tableSettings = loadSettings();
   const { clusterName } = useParams({ strict: false });
 
   return useMemo(
@@ -44,7 +39,6 @@ export function useColumns(): TableColumn<ClusterVulnerabilityReport>[] {
         cell: {
           isFixed: true,
           baseWidth: 30,
-          ...getSyncedColumnData(tableSettings, "imageName"),
         },
       },
       {
@@ -58,7 +52,6 @@ export function useColumns(): TableColumn<ClusterVulnerabilityReport>[] {
         },
         cell: {
           baseWidth: 8,
-          ...getSyncedColumnData(tableSettings, "critical"),
         },
       },
       {
@@ -70,7 +63,6 @@ export function useColumns(): TableColumn<ClusterVulnerabilityReport>[] {
         },
         cell: {
           baseWidth: 8,
-          ...getSyncedColumnData(tableSettings, "high"),
         },
       },
       {
@@ -82,7 +74,6 @@ export function useColumns(): TableColumn<ClusterVulnerabilityReport>[] {
         },
         cell: {
           baseWidth: 8,
-          ...getSyncedColumnData(tableSettings, "medium"),
         },
       },
       {
@@ -94,7 +85,6 @@ export function useColumns(): TableColumn<ClusterVulnerabilityReport>[] {
         },
         cell: {
           baseWidth: 8,
-          ...getSyncedColumnData(tableSettings, "low"),
         },
       },
       {
@@ -108,7 +98,6 @@ export function useColumns(): TableColumn<ClusterVulnerabilityReport>[] {
         },
         cell: {
           baseWidth: 8,
-          ...getSyncedColumnData(tableSettings, "unknown"),
         },
       },
       {
@@ -120,7 +109,6 @@ export function useColumns(): TableColumn<ClusterVulnerabilityReport>[] {
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, "osFamily"),
         },
       },
       {
@@ -148,7 +136,6 @@ export function useColumns(): TableColumn<ClusterVulnerabilityReport>[] {
         },
         cell: {
           baseWidth: 14,
-          ...getSyncedColumnData(tableSettings, "lastUpdated"),
         },
       },
       {
@@ -172,10 +159,9 @@ export function useColumns(): TableColumn<ClusterVulnerabilityReport>[] {
         },
         cell: {
           baseWidth: 5,
-          ...getSyncedColumnData(tableSettings, "actions"),
         },
       },
     ],
-    [tableSettings, clusterName]
+    [clusterName]
   );
 }

@@ -7,7 +7,7 @@ import { stubResizeObserver } from "@/test/utils/resize-observer";
 
 /**
  * DOM-level coverage of saved visibility: asserts on `<th>` presence through the real
- * shell and the real Columns dropdown, with no page-level `getSyncedColumnData` wiring.
+ * shell and the real Columns dropdown.
  */
 
 // Reads router state, which this test does not stand up.

@@ -1,7 +1,4 @@
 import { TableColumn } from "@/core/components/Table/types";
-import { TABLE } from "@/k8s/constants/tables";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { columnNames } from "../../../constants";
 import { IngressColumnLive } from "../../columns/IngressLive";
 import { IngressHeadColumn } from "../../columns/IngressHead";
@@ -16,9 +13,6 @@ import { ValuesOverrideConfigurationColumn } from "../../columns/ValuesOverrideC
 import { ValuesOverrideConfigurationHeadColumn } from "../../columns/ValuesOverrideConfigurationHead";
 
 export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
-  const { loadSettings } = useTableSettings(TABLE.STAGE_APPLICATION_LIST_PREVIEW.id);
-  const tableSettings = loadSettings();
-
   const stageWatch = useStageWatch();
 
   const stage = stageWatch.query.data;
@@ -45,7 +39,6 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
       },
       cell: {
         baseWidth: 25,
-        ...getSyncedColumnData(tableSettings, columnNames.NAME),
       },
     },
     {
@@ -56,7 +49,6 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
       },
       cell: {
         baseWidth: 35,
-        ...getSyncedColumnData(tableSettings, columnNames.STATUS),
       },
     },
     {
@@ -69,7 +61,6 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
       },
       cell: {
         baseWidth: 25,
-        ...getSyncedColumnData(tableSettings, columnNames.DEPLOYED_VERSION),
       },
     },
     {
@@ -82,7 +73,6 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
       },
       cell: {
         baseWidth: 15,
-        ...getSyncedColumnData(tableSettings, columnNames.VALUES_OVERRIDE),
       },
     },
     ...(shouldShowPodsColumn
@@ -97,7 +87,6 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
             },
             cell: {
               baseWidth: 10,
-              ...getSyncedColumnData(tableSettings, columnNames.PODS),
               props: {
                 align: "center",
               },
@@ -115,7 +104,6 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
       },
       cell: {
         baseWidth: 10,
-        ...getSyncedColumnData(tableSettings, columnNames.INGRESS),
         props: {
           align: "center",
         },

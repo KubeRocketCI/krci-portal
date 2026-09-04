@@ -1,11 +1,8 @@
 import { useMemo } from "react";
 import { TableColumn } from "@/core/components/Table/types";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { Badge } from "@/core/components/ui/badge";
 import { Button } from "@/core/components/ui/button";
 import { GitFusionPullRequest } from "@my-project/shared";
-import { TABLE_ID } from "../constants";
 
 import type { BadgeProps } from "@/core/components/ui/badge";
 
@@ -25,9 +22,6 @@ function formatDate(dateString: string): string {
 }
 
 export function useColumns(): TableColumn<GitFusionPullRequest>[] {
-  const { loadSettings } = useTableSettings(TABLE_ID);
-  const tableSettings = loadSettings();
-
   return useMemo(
     () => [
       {
@@ -46,7 +40,6 @@ export function useColumns(): TableColumn<GitFusionPullRequest>[] {
         cell: {
           isFixed: true,
           baseWidth: 6,
-          ...getSyncedColumnData(tableSettings, "number"),
         },
       },
       {
@@ -71,7 +64,6 @@ export function useColumns(): TableColumn<GitFusionPullRequest>[] {
         cell: {
           isFixed: true,
           baseWidth: 40,
-          ...getSyncedColumnData(tableSettings, "title"),
         },
       },
       {
@@ -83,7 +75,6 @@ export function useColumns(): TableColumn<GitFusionPullRequest>[] {
         },
         cell: {
           baseWidth: 10,
-          ...getSyncedColumnData(tableSettings, "state"),
         },
       },
       {
@@ -101,7 +92,6 @@ export function useColumns(): TableColumn<GitFusionPullRequest>[] {
         },
         cell: {
           baseWidth: 30,
-          ...getSyncedColumnData(tableSettings, "branches"),
         },
       },
       {
@@ -113,10 +103,9 @@ export function useColumns(): TableColumn<GitFusionPullRequest>[] {
         },
         cell: {
           baseWidth: 14,
-          ...getSyncedColumnData(tableSettings, "updated"),
         },
       },
     ],
-    [tableSettings]
+    []
   );
 }

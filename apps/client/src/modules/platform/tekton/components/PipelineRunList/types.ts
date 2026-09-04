@@ -1,4 +1,3 @@
-import { SavedTableSettings } from "@/core/components/Table/components/TableSettings/types";
 import { TablePagination } from "@/core/components/Table/types";
 import { RequestError, ValueOf } from "@/core/types/global";
 import { PipelineRun, PipelineType } from "@my-project/shared";
@@ -15,7 +14,6 @@ export interface PipelineRunListProps {
   tableName: string;
   pipelineRuns: PipelineRun[];
   isLoading: boolean;
-  tableSettings?: SavedTableSettings;
   blockerError?: RequestError;
   errors?: RequestError[] | null;
   pipelineRunTypes?: FilterTypeWithOptionAll<PipelineType>[];

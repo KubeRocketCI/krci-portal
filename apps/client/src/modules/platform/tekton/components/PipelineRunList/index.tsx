@@ -39,7 +39,6 @@ export const PipelineRunList = ({
     pipelineRunFilterControlNames.PIPELINE_TYPE,
     pipelineRunFilterControlNames.NAMESPACES,
   ],
-  tableSettings,
   detailRoutePath,
 }: PipelineRunListProps) => {
   const { selected, setSelected, handleSelectRowClick, handleSelectAllClick } = useSelection();
@@ -52,7 +51,6 @@ export const PipelineRunList = ({
   }, [setSelected]);
 
   const columns = useColumns({
-    tableSettings,
     detailRoutePath,
   });
 

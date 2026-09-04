@@ -64,6 +64,15 @@ describe("useColumnSync", () => {
       expect(visibility(result).status).toBe(true);
     });
 
+    it("ignores settings saved under another table id", () => {
+      seedTableSettings({ [OTHER_TABLE_ID]: { status: { id: "status", show: false } } });
+
+      const { result } = renderSync();
+
+      expect(visibility(result).status).toBe(true);
+      expect(result.current.columns).toBe(columns);
+    });
+
     it("ignores a saved entry for an id that is not a column", () => {
       seedTableSettings({ [TABLE_ID]: { gone: { id: "gone", show: false } } });
 

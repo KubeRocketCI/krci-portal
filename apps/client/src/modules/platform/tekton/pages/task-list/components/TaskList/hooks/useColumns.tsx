@@ -6,9 +6,6 @@ import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { routeTaskDetails } from "@/modules/platform/tekton/pages/task-details/route";
 import { Link } from "@tanstack/react-router";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
-import { TABLE } from "@/k8s/constants/tables";
 import { Actions } from "../components/Actions";
 import { Button } from "@/core/components/ui/button";
 
@@ -19,10 +16,6 @@ export function useColumns(): TableColumn<Task>[] {
       clusterName: state.clusterName,
     }))
   );
-
-  const { loadSettings } = useTableSettings(TABLE.TASK_LIST.id);
-
-  const tableSettings = loadSettings();
 
   return React.useMemo(
     () => [
@@ -52,7 +45,6 @@ export function useColumns(): TableColumn<Task>[] {
         },
         cell: {
           baseWidth: 25,
-          ...getSyncedColumnData(tableSettings, "name"),
         },
       },
       {
@@ -63,7 +55,6 @@ export function useColumns(): TableColumn<Task>[] {
         },
         cell: {
           baseWidth: 50,
-          ...getSyncedColumnData(tableSettings, "description"),
         },
       },
       {
@@ -86,7 +77,6 @@ export function useColumns(): TableColumn<Task>[] {
         cell: {
           isFixed: true,
           baseWidth: 25,
-          ...getSyncedColumnData(tableSettings, "createdAt"),
         },
       },
       {
@@ -98,10 +88,9 @@ export function useColumns(): TableColumn<Task>[] {
         cell: {
           isFixed: true,
           baseWidth: 5,
-          ...getSyncedColumnData(tableSettings, "actions"),
         },
       },
     ],
-    [clusterName, defaultNamespace, tableSettings]
+    [clusterName, defaultNamespace]
   );
 }

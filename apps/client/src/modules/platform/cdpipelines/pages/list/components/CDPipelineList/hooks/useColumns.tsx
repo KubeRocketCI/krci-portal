@@ -1,10 +1,7 @@
-import { useTableSettings } from "@/core/components/Table/components/TableSettings/hooks/useTableSettings";
 import { Actions } from "../../Actions";
 import { columnNames } from "../constants";
-import { TABLE } from "@/k8s/constants/tables";
 import { getCDPipelineStatusIcon } from "@/k8s/api/groups/KRCI/CDPipeline";
 import React from "react";
-import { getSyncedColumnData } from "@/core/components/Table/components/TableSettings/utils";
 import { CDPipeline } from "@my-project/shared";
 import { TableColumn } from "@/core/components/Table/types";
 import { Badge } from "@/core/components/ui/badge";
@@ -33,8 +30,6 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
       defaultNamespace: state.defaultNamespace,
     }))
   );
-  const { loadSettings } = useTableSettings(TABLE.CDPIPELINE_LIST.id);
-  const tableSettings = loadSettings();
 
   return React.useMemo(
     () =>
@@ -69,7 +64,6 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
           },
           cell: {
             baseWidth: 15,
-            ...getSyncedColumnData(tableSettings, columnNames.NAME),
           },
         },
         {
@@ -87,7 +81,6 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
           },
           cell: {
             baseWidth: 15,
-            ...getSyncedColumnData(tableSettings, columnNames.STATUS),
           },
         },
         {
@@ -99,7 +92,6 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
           },
           cell: {
             baseWidth: 30,
-            ...getSyncedColumnData(tableSettings, columnNames.DESCRIPTION),
           },
         },
         {
@@ -191,7 +183,6 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
           },
           cell: {
             baseWidth: 45,
-            ...getSyncedColumnData(tableSettings, columnNames.APPLICATIONS),
           },
         },
         {
@@ -203,10 +194,9 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
           cell: {
             isFixed: true,
             baseWidth: 5,
-            ...getSyncedColumnData(tableSettings, columnNames.ACTIONS),
           },
         },
       ] as TableColumn<CDPipeline>[],
-    [clusterName, defaultNamespace, tableSettings]
+    [clusterName, defaultNamespace]
   );
 };
