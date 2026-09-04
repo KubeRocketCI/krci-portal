@@ -138,6 +138,17 @@ describe("column resize commit path", () => {
     expect(await screen.findByText("Reset column widths")).not.toHaveAttribute("aria-disabled", "true");
   });
 
+  it("clips each data cell to its column and lets its content shrink", () => {
+    const { container } = renderTable();
+    const cells = Array.from(container.querySelectorAll("tbody td"));
+
+    expect(cells.length).toBeGreaterThan(0);
+    for (const cell of cells) {
+      expect(cell.className).toContain("overflow-hidden");
+      expect(cell.firstElementChild?.className).toContain("min-w-0");
+    }
+  });
+
   it("toggles the resizing class on the body for the duration of a drag", () => {
     const { container } = renderTable();
     const handle = handleFor(container, 0);
