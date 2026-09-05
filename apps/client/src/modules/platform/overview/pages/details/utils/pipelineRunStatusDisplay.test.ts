@@ -1,13 +1,18 @@
 import { describe, expect, test } from "vitest";
-import { PipelineRun } from "@my-project/shared";
-import { CheckCircle2, CircleSlash, XCircle, PlayCircle, Clock } from "lucide-react";
+import { PipelineRun, tektonResultAnnotations } from "@my-project/shared";
+import { CheckCircle2, CircleSlash, XCircle, PlayCircle, HelpCircle } from "lucide-react";
 import { getStatusDisplay } from "./pipelineRunStatusDisplay";
 
-const makeRun = (status: string, reason?: string): PipelineRun =>
+const makeRun = (status: string, reason?: string, opts?: { archived?: boolean }): PipelineRun =>
   ({
-    metadata: { name: "x", namespace: "ns", labels: {}, annotations: {} },
+    metadata: {
+      name: "x",
+      namespace: "ns",
+      labels: {},
+      annotations: opts?.archived ? { [tektonResultAnnotations.historySource]: "true" } : {},
+    },
     spec: {},
-    status: { conditions: [{ status, reason }] },
+    status: { conditions: [{ type: "Succeeded", status, reason }] },
   }) as unknown as PipelineRun;
 
 describe("getStatusDisplay", () => {
@@ -35,30 +40,27 @@ describe("getStatusDisplay", () => {
     });
   });
 
-  test.each(["Cancelled", "CancelledRunningFinally", "StoppedRunningFinally"])(
-    "cancelled run (%s, status False) is neutral, not a failure",
-    (reason) => {
-      expect(getStatusDisplay(makeRun("False", reason))).toEqual({
-        label: "Cancelled",
-        variant: "neutral",
-        icon: CircleSlash,
-      });
-    }
-  );
-
-  test("stopping run (Unknown + PipelineRunStopping) is treated as cancelled", () => {
-    expect(getStatusDisplay(makeRun("Unknown", "PipelineRunStopping"))).toEqual({
+  test("cancelled run (False, Cancelled)", () => {
+    expect(getStatusDisplay(makeRun("False", "Cancelled"))).toEqual({
       label: "Cancelled",
       variant: "neutral",
       icon: CircleSlash,
     });
   });
 
-  test("unknown reason falls back to pending", () => {
-    expect(getStatusDisplay(makeRun("Unknown", "SomethingElse"))).toEqual({
-      label: "Pending",
+  test("cancelling run (Unknown, CancelledRunningFinally)", () => {
+    expect(getStatusDisplay(makeRun("Unknown", "CancelledRunningFinally"))).toEqual({
+      label: "Cancelling",
       variant: "neutral",
-      icon: Clock,
+      icon: CircleSlash,
+    });
+  });
+
+  test("archived record with Unknown and no reason is unknown, not pending", () => {
+    expect(getStatusDisplay(makeRun("Unknown", undefined, { archived: true }))).toEqual({
+      label: "Unknown",
+      variant: "neutral",
+      icon: HelpCircle,
     });
   });
 });

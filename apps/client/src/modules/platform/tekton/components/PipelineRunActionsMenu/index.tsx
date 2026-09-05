@@ -12,13 +12,12 @@ import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
 import {
   createGracefulCancelPipelineRun,
   createRerunPipelineRun,
-  getPipelineRunStatus,
   isHistoryPipelineRun,
+  isPipelineRunInProgress,
   k8sOperation,
   normalizeHistoryPipelineRun,
   parseRecordName,
   PipelineRun,
-  pipelineRunReason,
 } from "@my-project/shared";
 import { OctagonX, Redo2, Trash } from "lucide-react";
 import React from "react";
@@ -105,8 +104,7 @@ export const PipelineRunActionsMenu = ({
 
     const isHistoryItem = isHistoryPipelineRun(pipelineRun);
 
-    const status = getPipelineRunStatus(pipelineRun);
-    const isInProgress = status.reason === pipelineRunReason.started || status.reason === pipelineRunReason.running;
+    const isInProgress = isPipelineRunInProgress(pipelineRun);
 
     return [
       !hideStopAction && !isHistoryItem && isInProgress

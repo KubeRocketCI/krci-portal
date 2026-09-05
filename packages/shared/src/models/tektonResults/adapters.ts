@@ -156,8 +156,8 @@ export function normalizeHistoryTaskRun(decoded: DecodedTaskRun): TaskRun {
 // finalize `summary.status` (left UNKNOWN), the true SUCCESS/FAILURE lives only in
 // the heavyweight record blob (surfaced on the detail page). For the lightweight
 // list we render it as a neutral, terminal "Unknown" — never an active "Running"
-// spinner. Omitting the reason is load-bearing: isPipelineRunInProgress (which
-// getStatusIcon uses) only spins an "unknown"-status run when a reason is present.
+// spinner. getPipelineRunStatus classifies any run stamped with the historySource
+// annotation as `unknown` when its condition is Unknown, regardless of reason.
 const RESULT_STATUS_MAP: Record<TektonResultStatus, { status: string; reason?: string }> = {
   SUCCESS: { status: pipelineRunStatus.true, reason: pipelineRunReason.succeeded },
   FAILURE: { status: pipelineRunStatus.false, reason: pipelineRunReason.failed },

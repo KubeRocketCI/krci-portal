@@ -6,20 +6,12 @@ import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { Badge } from "@/core/components/ui/badge";
 import { Button } from "@/core/components/ui/button";
 import { getCodebaseBranchStatusIcon } from "@/k8s/api/groups/KRCI/CodebaseBranch";
-import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
+import { getPipelineRunStatusDisplay } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
 import { LinkCreationService } from "@/k8s/services/link-creation";
 import { useClusterStore } from "@/k8s/store";
 import { PATH_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-details/route";
 import { useCodebaseWatch, useGitServerWatch } from "../../../hooks/data";
-import {
-  checkIsDefaultBranch,
-  codebaseBranchStatus,
-  getPipelineRunReasonLabel,
-  getPipelineRunStatus,
-  isPipelineRunCancelledReason,
-  pipelineRunReason,
-  type PipelineRunReason,
-} from "@my-project/shared";
+import { checkIsDefaultBranch, codebaseBranchStatus, getPipelineRunStatus } from "@my-project/shared";
 import { Link } from "@tanstack/react-router";
 import { GitBranch, Pin, SquareArrowOutUpRight } from "lucide-react";
 import React from "react";
@@ -29,13 +21,6 @@ import { StaleBadge } from "../components/StaleBadge";
 import { PipelineActionsGroup } from "../components/PipelineActionsGroup";
 import { columnNames } from "../constants";
 import { EnrichedBranch } from "../types";
-
-function formatBuildStatusText(reason: PipelineRunReason | undefined): string {
-  if (!reason) return "Unknown";
-  if (reason === pipelineRunReason.running) return "In progress";
-  if (isPipelineRunCancelledReason(reason)) return getPipelineRunReasonLabel(reason);
-  return reason.charAt(0).toUpperCase() + reason.slice(1);
-}
 
 function formatBranchStatusText(status: string | undefined): string {
   if (!status) return "Unknown";
@@ -225,20 +210,18 @@ export const useColumns = (): TableColumn<EnrichedBranch>[] => {
               }
               return <span className="text-muted-foreground text-sm">No builds</span>;
             }
-            const icon = getPipelineRunStatusIcon(pr);
-            const { reason } = getPipelineRunStatus(pr);
-            const statusText = formatBuildStatusText(reason);
+            const statusDisplay = getPipelineRunStatusDisplay(getPipelineRunStatus(pr));
             const { name, namespace, creationTimestamp } = pr.metadata;
             const buildTime = creationTimestamp ? new Date(creationTimestamp).toLocaleString() : null;
             return (
               <div className="flex items-start gap-1.5">
                 <div className="shrink-0 pt-0.5">
                   <StatusIcon
-                    Icon={icon.component}
-                    color={icon.color}
-                    isSpinning={icon.isSpinning}
+                    Icon={statusDisplay.component}
+                    color={statusDisplay.color}
+                    isSpinning={statusDisplay.isSpinning}
                     width={14}
-                    Title={statusText}
+                    Title={statusDisplay.label}
                   />
                 </div>
                 <div className="min-w-0">

@@ -8,17 +8,12 @@ import { useCodebaseWatchList } from "@/k8s/api/groups/KRCI/Codebase";
 import {
   PipelineRun,
   pipelineRunLabels,
-  pipelineRunStatus,
+  pipelineRunPhase,
   PipelineType,
   getPipelineRunAnnotation,
   tektonResultAnnotations,
 } from "@my-project/shared";
-
-const pipelineRunStatusLabels: Record<string, string> = {
-  [pipelineRunStatus.true]: "Succeeded",
-  [pipelineRunStatus.false]: "Failed",
-  [pipelineRunStatus.unknown]: "Running / Pending",
-};
+import { PipelineRunStatusFilterValue } from "@/modules/platform/tekton/utils/pipelineRunStatusFilter";
 import React from "react";
 import { CODEBASE_DIVIDER_VALUE, pipelineRunFilterControlNames } from "./constants";
 import { usePipelineRunFilter } from "./hooks/usePipelineRunFilter";
@@ -26,6 +21,14 @@ import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { Label } from "@/core/components/ui/label";
 import { X } from "lucide-react";
+
+/** Filter options: the coarse phases the UI exposes, minus `cancelling`/`unknown` (see utils/pipelineRunStatusFilter.ts). */
+const pipelineRunStatusFilterLabels: Record<Exclude<PipelineRunStatusFilterValue, "all">, string> = {
+  [pipelineRunPhase["in-progress"]]: "Running / Pending",
+  [pipelineRunPhase.succeeded]: "Succeeded",
+  [pipelineRunPhase.failed]: "Failed",
+  [pipelineRunPhase.cancelled]: "Cancelled",
+};
 
 export const PipelineRunFilter = ({
   pipelineRuns,
@@ -78,11 +81,7 @@ export const PipelineRunFilter = ({
   const statusOptions: SelectOption[] = React.useMemo(
     () => [
       { label: "All", value: "all" },
-      ...Object.values(pipelineRunStatus).map((v) => ({
-        label: pipelineRunStatusLabels[v] ?? capitalizeFirstLetter(String(v)),
-        value: String(v),
-      })),
-      { label: "Cancelled", value: "cancelled" },
+      ...Object.entries(pipelineRunStatusFilterLabels).map(([value, label]) => ({ label, value })),
     ],
     []
   );

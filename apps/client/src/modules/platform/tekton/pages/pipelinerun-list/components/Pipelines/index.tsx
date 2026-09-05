@@ -5,13 +5,13 @@ import { HistoryLoadingFooter } from "@/modules/platform/tekton/components/Histo
 import { FilterProvider } from "@/core/providers/Filter/provider";
 import {
   CODEBASE_DIVIDER_VALUE,
-  defaultPipelineRunFilterValues,
-  matchFunctions,
   pipelineRunFilterControlNames,
+  pipelineRunFilterProviderProps,
 } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
 import {
   useDebouncedPipelineRunSearch,
   usePipelineRunFilter,
+  useSelectedPipelineRunStatus,
 } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter";
 import { useStore } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
@@ -28,7 +28,7 @@ const TABLE_NAME = "Unified Pipeline Run List";
  */
 export function Pipelines() {
   return (
-    <FilterProvider matchFunctions={matchFunctions} syncWithUrl defaultValues={defaultPipelineRunFilterValues}>
+    <FilterProvider {...pipelineRunFilterProviderProps}>
       <PipelinesContent />
     </FilterProvider>
   );
@@ -49,7 +49,7 @@ function PipelinesContent() {
   }, [navigate]);
 
   const pipelineType = useStore(form.store, (s) => s.values.pipelineType);
-  const status = useStore(form.store, (s) => s.values.status);
+  const status = useSelectedPipelineRunStatus();
   const codebases = useStore(form.store, (s) => s.values.codebases);
 
   // Guard against a crafted URL injecting the sentinel into URL-synced filter state.

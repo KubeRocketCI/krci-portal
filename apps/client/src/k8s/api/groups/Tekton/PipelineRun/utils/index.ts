@@ -1,1 +1,2 @@
-export { getStatusIcon as getPipelineRunStatusIcon } from "./getStatusIcon";
+export { getStatusDisplay as getPipelineRunStatusDisplay } from "./getStatusDisplay";
+export { comparePipelineRunPhase } from "./comparePipelineRunPhase";

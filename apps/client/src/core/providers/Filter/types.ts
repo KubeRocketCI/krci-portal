@@ -14,6 +14,12 @@ export interface FilterProviderProps<Item, Values extends FilterValueMap> {
   defaultValues: Values;
   matchFunctions: MatchFunctions<Item, Values>;
   syncWithUrl?: boolean;
+  /**
+   * Applied to the merged URL values (only when `syncWithUrl`), before they
+   * become the form's initial values. Use it to translate a legacy URL
+   * vocabulary onto current filter values.
+   */
+  normalizeUrlValues?: (values: Partial<Values>) => Partial<Values>;
 }
 
 // Internal helper to capture the form type

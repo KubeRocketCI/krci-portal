@@ -23,6 +23,7 @@ vi.mock("@/modules/platform/tekton/pages/pipelinerun-details/route", () => ({
 
 vi.mock("@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter", () => ({
   useDebouncedPipelineRunSearch: () => "",
+  useSelectedPipelineRunStatus: () => "cancelled",
 }));
 
 vi.mock("@/core/providers/Filter/provider", () => ({
@@ -61,5 +62,12 @@ describe("stage-details Pipelines tab", () => {
       [pipelineRunLabels.cdPipeline]: "tekton",
       [pipelineRunLabels.cdStage]: getStageResourceName("tekton", "dev"),
     });
+  });
+
+  it("passes the filter's status value to useUnifiedPipelineRunList so history requests carry it too", () => {
+    render(<Pipelines />);
+
+    const [opts] = mockUseUnifiedPipelineRunList.mock.calls[0] as [{ status: string }];
+    expect(opts.status).toBe("cancelled");
   });
 });

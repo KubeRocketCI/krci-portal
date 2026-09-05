@@ -7,7 +7,7 @@ import {
   CODEBASE_COMMON_FRAMEWORKS,
   CODEBASE_COMMON_BUILD_TOOLS,
 } from "@/k8s/api/groups/KRCI/Codebase/configs/mappings";
-import { getDeployedVersion, getPipelineRunStatus, pipelineRunReason } from "@my-project/shared";
+import { getDeployedVersion, isPipelineRunBlocking } from "@my-project/shared";
 import { mapEvery } from "@/core/utils/mapEvery";
 import { useApplicationCRUD } from "@/k8s/api/groups/ArgoCD/Application";
 import {
@@ -51,11 +51,7 @@ export const useButtonsEnabledMap = () => {
       return false;
     }
 
-    const status = getPipelineRunStatus(latestNewDeployPipelineRun);
-
-    const isRunning = status.reason === pipelineRunReason.running;
-
-    return !latestNewDeployPipelineRun?.status || isRunning;
+    return isPipelineRunBlocking(latestNewDeployPipelineRun);
   }, [pipelineRunsWatch.data?.deploy]);
 
   const {

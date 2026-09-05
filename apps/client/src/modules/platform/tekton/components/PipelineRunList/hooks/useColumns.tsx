@@ -11,6 +11,7 @@ import { PipelineRun, pipelineRunLabels, tektonResultAnnotations, getPipelineRun
 import { Link } from "@tanstack/react-router";
 import { VectorSquare } from "lucide-react";
 import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
+import { comparePipelineRunPhase } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { PATH_PIPELINE_DETAILS_FULL } from "../../../pages/pipeline-details/route";
@@ -74,7 +75,7 @@ export const useColumns = ({
         id: columnNames.STATUS,
         label: "Status",
         data: {
-          columnSortableValuePath: "status.conditions[0].status",
+          customSortFn: comparePipelineRunPhase,
           render: ({ data }) => <StatusColumn pipelineRun={data} />,
         },
         cell: {

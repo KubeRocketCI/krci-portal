@@ -1,11 +1,6 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { usePipelineRunCRUD, usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
-import {
-  createGracefulCancelPipelineRun,
-  getPipelineRunStatus,
-  isHistoryPipelineRun,
-  pipelineRunReason,
-} from "@my-project/shared";
+import { createGracefulCancelPipelineRun, isHistoryPipelineRun, isPipelineRunInProgress } from "@my-project/shared";
 import { OctagonX } from "lucide-react";
 import { usePipelineRunContext } from "../../providers/PipelineRun/hooks";
 
@@ -19,8 +14,7 @@ export const StopPipelineRunButton = () => {
     return null;
   }
 
-  const status = getPipelineRunStatus(pipelineRun);
-  const isInProgress = status.reason === pipelineRunReason.started || status.reason === pipelineRunReason.running;
+  const isInProgress = isPipelineRunInProgress(pipelineRun);
 
   // Only show button when pipeline run is in progress
   if (!isInProgress) {

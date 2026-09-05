@@ -1,15 +1,19 @@
-import { MatchFunctions, createSearchMatchFunction } from "@/core/providers/Filter";
+import { FilterProviderProps, MatchFunctions, createSearchMatchFunction } from "@/core/providers/Filter";
 import {
   PipelineRun,
   pipelineRunLabels,
-  pipelineRunStatus,
+  pipelineRunPhase,
   getPipelineRunStatus,
   getPipelineRunAnnotation,
   tektonResultAnnotations,
   isHistoryPipelineRun,
-  isPipelineRunCancelledReason,
 } from "@my-project/shared";
 import { isCodebaseInPayloadType } from "@/modules/platform/tekton/utils/celFilters";
+import {
+  normalizePipelineRunStatusFilterValue,
+  resolvePipelineRunStatusFilter,
+  type PipelineRunStatusFilterValue,
+} from "@/modules/platform/tekton/utils/pipelineRunStatusFilter";
 import { PipelineRunListFilterValues } from "./types";
 
 export const pipelineRunFilterControlNames = {
@@ -32,6 +36,25 @@ export const defaultPipelineRunFilterValues: PipelineRunListFilterValues = {
   [pipelineRunFilterControlNames.NAMESPACES]: [],
   [pipelineRunFilterControlNames.STATUS]: "all",
   [pipelineRunFilterControlNames.PIPELINE_TYPE]: "all",
+};
+
+/**
+ * `normalizeUrlValues` for the PipelineRun filter. The `status` key is
+ * delegated to `normalizePipelineRunStatusFilterValue`, which is the source
+ * of truth for the legacy-value mapping and the valid option list.
+ */
+export const normalizePipelineRunFilterUrlValues = (
+  values: Partial<PipelineRunListFilterValues>
+): Partial<PipelineRunListFilterValues> => {
+  const rawStatus = values[pipelineRunFilterControlNames.STATUS] as string | undefined;
+  if (rawStatus === undefined) {
+    return values;
+  }
+
+  return {
+    ...values,
+    [pipelineRunFilterControlNames.STATUS]: normalizePipelineRunStatusFilterValue(rawStatus),
+  };
 };
 
 export const matchFunctions: MatchFunctions<PipelineRun, PipelineRunListFilterValues> = {
@@ -75,33 +98,18 @@ export const matchFunctions: MatchFunctions<PipelineRun, PipelineRunListFilterVa
     if (!itemBranch) return false;
     return value.includes(itemBranch);
   },
-  [pipelineRunFilterControlNames.STATUS]: (item, value) => {
-    if (value === "all") {
-      return true;
-    }
+  [pipelineRunFilterControlNames.STATUS]: (item, value: PipelineRunStatusFilterValue) => {
+    const { livePhases } = resolvePipelineRunStatusFilter(value);
+    if (!livePhases) return true;
 
-    const status = getPipelineRunStatus(item);
-    // A cancelled/stopped run is treated as its own category regardless of the
-    // underlying condition status (it can be "False" once cancelled or "Unknown"
-    // while stopping), matching how it is rendered everywhere else.
-    const isCancelled = isPipelineRunCancelledReason(status.reason);
-
-    if (value === "cancelled") {
-      return isCancelled;
-    }
-
-    if (isCancelled) {
+    // A history record from Tekton Results is archived => terminal; its
+    // summary may be an unfinalized "in-progress" but the run itself is
+    // never actually running, so exclude it.
+    if (livePhases.has(pipelineRunPhase["in-progress"]) && isHistoryPipelineRun(item)) {
       return false;
     }
 
-    // "Running / Pending" (status "unknown") is a live-only state. A history run
-    // from Tekton Results is archived => terminal; its summary may be an
-    // unfinalized "unknown" but it is never actually running, so exclude it.
-    if (value === pipelineRunStatus.unknown && isHistoryPipelineRun(item)) {
-      return false;
-    }
-
-    return status.status === value;
+    return livePhases.has(getPipelineRunStatus(item).phase);
   },
   [pipelineRunFilterControlNames.PIPELINE_TYPE]: (item, value) => {
     if (value === "all") {
@@ -115,4 +123,15 @@ export const matchFunctions: MatchFunctions<PipelineRun, PipelineRunListFilterVa
     if (arrayValue.length === 0) return true;
     return arrayValue.includes(item.metadata.namespace!);
   },
+};
+
+/** Shared `FilterProvider` wiring for every PipelineRun list mount. */
+export const pipelineRunFilterProviderProps: Omit<
+  FilterProviderProps<PipelineRun, PipelineRunListFilterValues>,
+  "children"
+> = {
+  matchFunctions,
+  defaultValues: defaultPipelineRunFilterValues,
+  syncWithUrl: true,
+  normalizeUrlValues: normalizePipelineRunFilterUrlValues,
 };

@@ -2,15 +2,16 @@ import { PipelineRunList } from "@/modules/platform/tekton/components/PipelineRu
 import { PATH_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-details/route";
 import { useUnifiedPipelineRunList } from "@/modules/platform/tekton/hooks/useUnifiedPipelineRunList";
 import { HistoryLoadingFooter } from "@/modules/platform/tekton/components/HistoryLoadingFooter";
-import { PipelineRun, pipelineRunLabels, pipelineType } from "@my-project/shared";
+import { pipelineRunLabels, pipelineType } from "@my-project/shared";
 import { FilterProvider } from "@/core/providers/Filter/provider";
 import {
-  defaultPipelineRunFilterValues,
-  matchFunctions,
   pipelineRunFilterControlNames,
+  pipelineRunFilterProviderProps,
 } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
-import { PipelineRunListFilterValues } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/types";
-import { useDebouncedPipelineRunSearch } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter";
+import {
+  useDebouncedPipelineRunSearch,
+  useSelectedPipelineRunStatus,
+} from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter";
 import { routeProjectDetails } from "../../../../route";
 import { TABLE } from "@/k8s/constants/tables";
 
@@ -20,11 +21,7 @@ import { TABLE } from "@/k8s/constants/tables";
  */
 export function Pipelines() {
   return (
-    <FilterProvider<PipelineRun, PipelineRunListFilterValues>
-      matchFunctions={matchFunctions}
-      syncWithUrl
-      defaultValues={defaultPipelineRunFilterValues}
-    >
+    <FilterProvider {...pipelineRunFilterProviderProps}>
       <PipelinesContent />
     </FilterProvider>
   );
@@ -35,6 +32,7 @@ function PipelinesContent() {
   const codebaseName = params.name;
 
   const debouncedSearch = useDebouncedPipelineRunSearch();
+  const status = useSelectedPipelineRunStatus();
 
   const { mergedPipelineRuns, isLoading, isHistoryLoading, historyQuery } = useUnifiedPipelineRunList({
     labels: {
@@ -42,6 +40,7 @@ function PipelinesContent() {
     },
     enabled: !!codebaseName,
     searchTerm: debouncedSearch,
+    status,
   });
 
   return (
