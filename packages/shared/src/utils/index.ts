@@ -10,3 +10,4 @@ export * from "./stripTrailingSlash.js";
 export * from "./httpsUrl.js";
 export * from "./tryParseJsonArray.js";
 export * from "./sortByName.js";
+export * from "./capitalizeFirstLetter.js";

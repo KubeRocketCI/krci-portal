@@ -4,7 +4,7 @@ import {
   buildPipelineRunNameFilter,
   buildAnnotationsFilter,
   buildNameSearchFilter,
-  buildStatusFilter,
+  buildSummaryStatusClause,
   buildPipelineTypeFilter,
   buildCodebaseFilter,
 } from "./celFilters";
@@ -160,29 +160,13 @@ describe("buildNameSearchFilter", () => {
   });
 });
 
-describe("buildStatusFilter", () => {
-  test("returns undefined for 'all'", () => {
-    expect(buildStatusFilter("all")).toBeUndefined();
+describe("buildSummaryStatusClause", () => {
+  test("builds a single equality clause for one int", () => {
+    expect(buildSummaryStatusClause([1])).toBe("summary.status == 1");
   });
 
-  test("returns undefined for empty string", () => {
-    expect(buildStatusFilter("")).toBeUndefined();
-  });
-
-  test("returns undefined for unrecognized value", () => {
-    expect(buildStatusFilter("bogus")).toBeUndefined();
-  });
-
-  test("maps 'true' (Succeeded) to summary.status == 1", () => {
-    expect(buildStatusFilter("true")).toBe("summary.status == 1");
-  });
-
-  test("maps 'false' (Failed) to OR of FAILURE / CANCELLED / TIMEOUT enum ints", () => {
-    expect(buildStatusFilter("false")).toBe("(summary.status == 2 || summary.status == 3 || summary.status == 4)");
-  });
-
-  test("maps 'unknown' (Pending/Running) to summary.status == 0", () => {
-    expect(buildStatusFilter("unknown")).toBe("summary.status == 0");
+  test("builds an OR clause in parentheses for multiple ints", () => {
+    expect(buildSummaryStatusClause([2, 3])).toBe("(summary.status == 2 || summary.status == 3)");
   });
 });
 

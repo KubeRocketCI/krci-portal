@@ -33,12 +33,17 @@ export const pipelineRunReasonEnum = z.enum([
   "running",
   "pipelinerunpending",
   "resolvingpipelineref",
+  "resolvingtaskref",
+  "pending",
   "pipelineruntimeoutrunningfinally",
-  // status "Unknown"/"False" — cancelled/stopped family (rendered neutrally, not as failures)
+  // status "Unknown" — winds down after a cancel or a plain task failure; in-progress
   "pipelinerunstopping",
+  // status "Unknown" — graceful cancel winding down; cancelling
   "cancelledrunningfinally",
   "stoppedrunningfinally",
+  // status "False" — cancelled (pipelineruncancelled is the pre-2019 Tekton value)
   "cancelled",
+  "pipelineruncancelled",
   // status "True" — success
   "succeeded",
   "completed",
@@ -49,6 +54,24 @@ export const pipelineRunReasonEnum = z.enum([
 ]);
 
 export const pipelineRunStatusEnum = z.enum(["true", "false", "unknown"]);
+
+// Coarse classification derived by getPipelineRunStatus from the `Succeeded`
+// condition. Status-authoritative: reason only disambiguates within a status.
+// in-progress: live run whose condition is Unknown or absent (Tekton IsDone
+//   treats a nil condition as Unknown); includes PipelineRunStopping.
+// cancelling: live run, Unknown with a cancel-family reason; finally tasks may run.
+// cancelled: False with reason Cancelled (or the pre-2019 PipelineRunCancelled).
+// succeeded: True. failed: False with any other reason.
+// unknown: no input, or an archived Tekton Results record whose summary the
+//   watcher could not map (historySource annotation).
+export const pipelineRunPhaseEnum = z.enum([
+  "in-progress",
+  "cancelling",
+  "cancelled",
+  "succeeded",
+  "failed",
+  "unknown",
+]);
 
 const intOrStringSchema = z
   .union([z.number().int(), z.string()])
@@ -474,7 +497,9 @@ const statusSchema = z.object({
         .object({
           lastTransitionTime: z.string().optional(),
           message: z.string().optional(),
-          reason: pipelineRunReasonEnum.optional(),
+          // Tekton emits reasons beyond pipelineRunReasonEnum's known list; the
+          // enum types only the ones the portal branches on for labels/families.
+          reason: z.string().optional(),
           severity: z.string().optional(),
           status: z.string(),
           type: z.string(),

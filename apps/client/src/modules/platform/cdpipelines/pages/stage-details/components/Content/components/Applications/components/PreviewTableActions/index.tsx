@@ -7,7 +7,7 @@ import {
   createArgoApplicationsByNameMap,
 } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
-import { getPipelineRunStatus, pipelineRunReason } from "@my-project/shared";
+import { isPipelineRunBlocking } from "@my-project/shared";
 import { Copy, CopyCheck } from "lucide-react";
 import React from "react";
 import { CleanButton } from "./components/CleanButton";
@@ -80,11 +80,7 @@ export const PreviewTableActions = ({ toggleMode }: PreviewTableActionsProps) =>
       return false;
     }
 
-    const status = getPipelineRunStatus(latestNewCleanPipelineRun);
-
-    const isRunning = status.reason === pipelineRunReason.running;
-
-    return !latestNewCleanPipelineRun?.status || isRunning;
+    return isPipelineRunBlocking(latestNewCleanPipelineRun);
   }, [pipelineRunsWatch.data?.clean]);
 
   const latestDeployPipelineRunIsRunning = React.useMemo(() => {
@@ -94,11 +90,7 @@ export const PreviewTableActions = ({ toggleMode }: PreviewTableActionsProps) =>
       return false;
     }
 
-    const status = getPipelineRunStatus(latestNewDeployPipelineRun);
-
-    const isRunning = status.reason === pipelineRunReason.running;
-
-    return !latestNewDeployPipelineRun?.status || isRunning;
+    return isPipelineRunBlocking(latestNewDeployPipelineRun);
   }, [pipelineRunsWatch.data?.deploy]);
 
   return (

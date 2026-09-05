@@ -20,9 +20,8 @@ import { Tooltip } from "@/core/components/ui/tooltip";
 import {
   ApplicationPayload,
   createDeployPipelineRunDraft,
-  getPipelineRunStatus,
+  isPipelineRunBlocking,
   k8sOperation,
-  pipelineRunReason,
 } from "@my-project/shared";
 import { Check } from "lucide-react";
 import React from "react";
@@ -82,11 +81,7 @@ export const ConfigurationTableActions = ({ toggleMode }: ConfigurationTableActi
       return false;
     }
 
-    const status = getPipelineRunStatus(latestNewDeployPipelineRun);
-
-    const isRunning = status.reason === pipelineRunReason.running;
-
-    return !latestNewDeployPipelineRun?.status || isRunning;
+    return isPipelineRunBlocking(latestNewDeployPipelineRun);
   }, [pipelineRunsWatch.data?.deploy]);
 
   const handleClickDeploy = React.useCallback(async () => {

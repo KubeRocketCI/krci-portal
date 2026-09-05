@@ -1,6 +1,10 @@
 import {
+  getPipelineRunStatus,
+  isPipelineRunPendingReason,
   pipelineLabels,
   pipelineRunLabels,
+  pipelineRunPhase,
+  pipelineRunReason,
   type Pipeline,
   type PipelineRun,
   type PipelineRunDraft,
@@ -127,11 +131,10 @@ export function projectPipelineRunRow(pr: PipelineRun | undefined | null): Pipel
   }
 
   const labels = pr.metadata?.labels ?? {};
-  const succeededCondition = pr.status?.conditions?.find((c) => c.type === "Succeeded");
 
   return {
     name: pr.metadata?.name ?? "",
-    status: deriveStatus(succeededCondition),
+    status: projectStatus(pr),
     project: labels[pipelineRunLabels.codebase] ?? "",
     pr: labels[pipelineRunLabels.changeNumber] ?? "",
     author: labels[pipelineRunLabels.gitAuthor] ?? "",
@@ -141,37 +144,34 @@ export function projectPipelineRunRow(pr: PipelineRun | undefined | null): Pipel
   };
 }
 
-interface PipelineRunCondition {
-  type?: string;
-  status?: string;
-  reason?: string;
-}
-
 /**
- * Derive a user-facing status string from a PipelineRun condition.
- * Returns "Pending" when no condition is present (a freshly-created run
- * lacks status until the controller schedules it).
+ * Map `getPipelineRunStatus().phase` to the row's wire `status` string.
+ * This row is a public OpenAPI contract (`POST /v1/pipelineruns/start`);
+ * these strings must not change.
+ *
+ * A live run with status Unknown and no reason maps to "Pending". The
+ * controller's `MarkRunning` always attaches a reason, so this case does
+ * not occur in practice.
  */
-export function deriveStatus(c: PipelineRunCondition | undefined): string {
-  if (!c) {
-    return "Pending";
-  }
+function projectStatus(pr: PipelineRun): string {
+  const { phase, reason } = getPipelineRunStatus(pr);
 
-  switch (c.status) {
-    case "True":
+  switch (phase) {
+    case pipelineRunPhase.succeeded:
       return "Succeeded";
-    case "False":
-      switch (c.reason) {
-        case "Cancelled":
-        case "PipelineRunCancelled":
-          return "Cancelled";
-        case "PipelineRunTimeout":
-          return "Timeout";
-        default:
-          return "Failed";
-      }
-    default:
-      return "Running";
+    case pipelineRunPhase.failed:
+      return reason === pipelineRunReason.pipelineruntimeout ? "Timeout" : "Failed";
+    case pipelineRunPhase.cancelled:
+    case pipelineRunPhase.cancelling:
+      return "Cancelled";
+    case pipelineRunPhase["in-progress"]:
+      return reason === undefined || isPipelineRunPendingReason(reason) ? "Pending" : "Running";
+    case pipelineRunPhase.unknown:
+      return "Pending";
+    default: {
+      const _exhaustiveCheck: never = phase;
+      throw new Error(`Unhandled PipelineRun phase: ${_exhaustiveCheck as string}`);
+    }
   }
 }
 

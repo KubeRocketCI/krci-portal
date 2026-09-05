@@ -295,7 +295,7 @@ export const FilteredByStatusSuccess: Story = {
       pipelineRunFilterControlNames.CODEBASES,
     ],
     defaultFilterValues: {
-      [pipelineRunFilterControlNames.STATUS]: "true", // "true" = success in PipelineRunStatus
+      [pipelineRunFilterControlNames.STATUS]: "succeeded",
     },
   },
 };
@@ -315,7 +315,7 @@ export const FilteredByStatusFailed: Story = {
       pipelineRunFilterControlNames.CODEBASES,
     ],
     defaultFilterValues: {
-      [pipelineRunFilterControlNames.STATUS]: "false", // "false" = failed in PipelineRunStatus
+      [pipelineRunFilterControlNames.STATUS]: "failed",
     },
   },
 };

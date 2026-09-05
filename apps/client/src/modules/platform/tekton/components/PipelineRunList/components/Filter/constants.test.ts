@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { PipelineRun, pipelineRunLabels, pipelineType, tektonResultAnnotations } from "@my-project/shared";
-import { matchFunctions, pipelineRunFilterControlNames } from "./constants";
+import { matchFunctions, normalizePipelineRunFilterUrlValues, pipelineRunFilterControlNames } from "./constants";
 
 const codebasesMatch = matchFunctions[pipelineRunFilterControlNames.CODEBASES]!;
 const statusMatch = matchFunctions[pipelineRunFilterControlNames.STATUS]!;
@@ -36,8 +36,19 @@ const makeRunWithCondition = (status: string, reason?: string, isHistory?: boole
     metadata: { name: "x", namespace: "ns", labels: {}, annotations },
     spec: {},
     status: {
-      conditions: [{ status, reason }],
+      conditions: [{ type: "Succeeded", status, reason }],
     },
+  } as unknown as PipelineRun;
+};
+
+const makeRunWithNoCondition = (isHistory?: boolean): PipelineRun => {
+  const annotations: Record<string, string> = {};
+  if (isHistory) annotations[tektonResultAnnotations.historySource] = "true";
+
+  return {
+    metadata: { name: "x", namespace: "ns", labels: {}, annotations },
+    spec: {},
+    status: {},
   } as unknown as PipelineRun;
 };
 
@@ -100,51 +111,90 @@ describe("matchFunctions.codebases", () => {
 });
 
 describe("matchFunctions.status", () => {
-  test("'all' matches every status", () => {
+  test("'all' matches every phase", () => {
     expect(statusMatch(makeRunWithCondition("True"), "all")).toBe(true);
     expect(statusMatch(makeRunWithCondition("False", "Failed"), "all")).toBe(true);
     expect(statusMatch(makeRunWithCondition("False", "Cancelled"), "all")).toBe(true);
     expect(statusMatch(makeRunWithCondition("Unknown", "Running"), "all")).toBe(true);
   });
 
-  test("'true' matches only succeeded runs", () => {
-    expect(statusMatch(makeRunWithCondition("True"), "true")).toBe(true);
-    expect(statusMatch(makeRunWithCondition("False", "Failed"), "true")).toBe(false);
+  test("'succeeded' matches only succeeded runs", () => {
+    expect(statusMatch(makeRunWithCondition("True"), "succeeded")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("False", "Failed"), "succeeded")).toBe(false);
   });
 
-  test("'unknown' matches only running/pending runs", () => {
-    expect(statusMatch(makeRunWithCondition("Unknown", "Running"), "unknown")).toBe(true);
-    expect(statusMatch(makeRunWithCondition("False", "Failed"), "unknown")).toBe(false);
+  test("'in-progress' matches only running/pending live runs", () => {
+    expect(statusMatch(makeRunWithCondition("Unknown", "Running"), "in-progress")).toBe(true);
+    expect(statusMatch(makeRunWithNoCondition(), "in-progress")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("False", "Failed"), "in-progress")).toBe(false);
   });
 
-  test("'unknown' excludes archived history runs (terminal, never actually running)", () => {
+  test("'in-progress' excludes archived history runs (terminal, never actually running)", () => {
     const historyUnknown = makeRunWithCondition("Unknown", undefined, true);
-    expect(statusMatch(historyUnknown, "unknown")).toBe(false);
-    // Same condition status, but live => genuinely running.
-    expect(statusMatch(makeRunWithCondition("Unknown", "Running"), "unknown")).toBe(true);
+    expect(statusMatch(historyUnknown, "in-progress")).toBe(false);
+    // Same condition status, but live => genuinely in progress.
+    expect(statusMatch(makeRunWithCondition("Unknown", "Running"), "in-progress")).toBe(true);
   });
 
-  test("a stopping run (Unknown + PipelineRunStopping) counts as cancelled, not unknown", () => {
-    // Regression: Tekton reports an in-flight stop as condition status "Unknown".
-    // It renders as grey "Cancelled" everywhere, so the filter must agree.
-    expect(statusMatch(makeRunWithCondition("Unknown", "PipelineRunStopping"), "cancelled")).toBe(true);
-    expect(statusMatch(makeRunWithCondition("Unknown", "PipelineRunStopping"), "unknown")).toBe(false);
+  test("a stopping run (Unknown + PipelineRunStopping) counts as in-progress, not cancelled", () => {
+    expect(statusMatch(makeRunWithCondition("Unknown", "PipelineRunStopping"), "in-progress")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("Unknown", "PipelineRunStopping"), "cancelled")).toBe(false);
   });
 
-  test("'false' matches failed runs but excludes cancelled/stopped runs", () => {
-    expect(statusMatch(makeRunWithCondition("False", "Failed"), "false")).toBe(true);
-    expect(statusMatch(makeRunWithCondition("False", "Cancelled"), "false")).toBe(false);
-    expect(statusMatch(makeRunWithCondition("False", "CancelledRunningFinally"), "false")).toBe(false);
-    expect(statusMatch(makeRunWithCondition("False", "StoppedRunningFinally"), "false")).toBe(false);
-    expect(statusMatch(makeRunWithCondition("False", "PipelineRunStopping"), "false")).toBe(false);
+  test("a cancelling run (Unknown + a cancel-family reason) counts as cancelled, not in-progress", () => {
+    expect(statusMatch(makeRunWithCondition("Unknown", "CancelledRunningFinally"), "cancelled")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("Unknown", "CancelledRunningFinally"), "in-progress")).toBe(false);
+    expect(statusMatch(makeRunWithCondition("Unknown", "StoppedRunningFinally"), "cancelled")).toBe(true);
   });
 
-  test("'cancelled' matches only cancelled/stopped runs", () => {
+  test("'failed' matches failed runs but excludes cancelled/stopped runs", () => {
+    expect(statusMatch(makeRunWithCondition("False", "Failed"), "failed")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("False", "Cancelled"), "failed")).toBe(false);
+    expect(statusMatch(makeRunWithCondition("False", "PipelineRunCancelled"), "failed")).toBe(false);
+  });
+
+  test("'cancelled' matches the terminal cancelled phase and the live cancelling phase", () => {
     expect(statusMatch(makeRunWithCondition("False", "Cancelled"), "cancelled")).toBe(true);
-    expect(statusMatch(makeRunWithCondition("False", "CancelledRunningFinally"), "cancelled")).toBe(true);
-    expect(statusMatch(makeRunWithCondition("False", "StoppedRunningFinally"), "cancelled")).toBe(true);
-    expect(statusMatch(makeRunWithCondition("False", "PipelineRunStopping"), "cancelled")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("False", "PipelineRunCancelled"), "cancelled")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("Unknown", "CancelledRunningFinally"), "cancelled")).toBe(true);
+    expect(statusMatch(makeRunWithCondition("Unknown", "StoppedRunningFinally"), "cancelled")).toBe(true);
     expect(statusMatch(makeRunWithCondition("False", "Failed"), "cancelled")).toBe(false);
     expect(statusMatch(makeRunWithCondition("True"), "cancelled")).toBe(false);
+  });
+});
+
+describe("normalizePipelineRunFilterUrlValues", () => {
+  test("leaves values unchanged when status is absent", () => {
+    expect(normalizePipelineRunFilterUrlValues({ search: "x" })).toEqual({ search: "x" });
+  });
+
+  test("maps legacy 'true' to 'succeeded'", () => {
+    expect(normalizePipelineRunFilterUrlValues({ status: "true" as never })).toEqual({ status: "succeeded" });
+  });
+
+  test("maps legacy 'false' to 'failed'", () => {
+    expect(normalizePipelineRunFilterUrlValues({ status: "false" as never })).toEqual({ status: "failed" });
+  });
+
+  test("maps legacy 'unknown' to 'in-progress'", () => {
+    expect(normalizePipelineRunFilterUrlValues({ status: "unknown" as never })).toEqual({ status: "in-progress" });
+  });
+
+  test("passes through current phase-based values unchanged", () => {
+    for (const status of ["all", "in-progress", "succeeded", "failed", "cancelled"] as const) {
+      expect(normalizePipelineRunFilterUrlValues({ status })).toEqual({ status });
+    }
+  });
+
+  test("falls back to 'all' for a value outside the option list", () => {
+    expect(normalizePipelineRunFilterUrlValues({ status: "cancelling" as never })).toEqual({ status: "all" });
+    expect(normalizePipelineRunFilterUrlValues({ status: "bogus" as never })).toEqual({ status: "all" });
+  });
+
+  test("preserves other filter values while normalizing status", () => {
+    expect(normalizePipelineRunFilterUrlValues({ status: "true" as never, search: "keep-me" })).toEqual({
+      status: "succeeded",
+      search: "keep-me",
+    });
   });
 });

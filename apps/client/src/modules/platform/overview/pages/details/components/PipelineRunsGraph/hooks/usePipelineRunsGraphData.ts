@@ -1,10 +1,5 @@
 import { usePipelineRunWatchList } from "@/k8s/api/groups/Tekton/PipelineRun";
-import {
-  getPipelineRunStatus,
-  isPipelineRunCancelledReason,
-  pipelineRunReason,
-  pipelineRunStatus,
-} from "@my-project/shared";
+import { getPipelineRunStatus, pipelineRunPhase } from "@my-project/shared";
 import React from "react";
 
 interface GraphData {
@@ -33,32 +28,30 @@ export const usePipelineRunsGraphData = () => {
 
     return pipelineRunListWatch.data.array.reduce<GraphData>(
       (acc, cur) => {
-        const { status, reason } = getPipelineRunStatus(cur);
+        const { phase } = getPipelineRunStatus(cur);
 
-        const _status = status.toLowerCase();
-        const _reason = reason?.toLowerCase() ?? "";
-
-        if (isPipelineRunCancelledReason(reason)) {
-          acc.cancelled++;
-          acc.total++;
-          return acc;
-        }
-
-        switch (_status) {
-          case pipelineRunStatus.unknown:
-            if (_reason === pipelineRunReason.started || _reason === pipelineRunReason.running) {
-              acc.inProgress++;
-            }
+        switch (phase) {
+          case pipelineRunPhase["in-progress"]:
+            acc.inProgress++;
             break;
-          case pipelineRunStatus.true:
+          // `cancelling` is grouped with `cancelled`, matching the list filter.
+          case pipelineRunPhase.cancelling:
+          case pipelineRunPhase.cancelled:
+            acc.cancelled++;
+            break;
+          case pipelineRunPhase.succeeded:
             acc.ok++;
             break;
-          case pipelineRunStatus.false:
+          case pipelineRunPhase.failed:
             acc.error++;
             break;
-          default:
+          case pipelineRunPhase.unknown:
             acc.unknown++;
             break;
+          default: {
+            const _exhaustiveCheck: never = phase;
+            throw new Error(`Unhandled PipelineRun phase: ${_exhaustiveCheck}`);
+          }
         }
 
         acc.total++;

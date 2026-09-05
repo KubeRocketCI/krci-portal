@@ -8,11 +8,10 @@ import { Button } from "@/core/components/ui/button";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { formatDuration, formatTimestamp } from "@/core/utils/date-humanize";
 import { useCodebaseBranchWatchItem } from "@/k8s/api/groups/KRCI/CodebaseBranch";
-import { getPipelineRunStatusIcon } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
+import { getPipelineRunStatusDisplay } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
 import {
-  getPipelineRunReasonLabel,
   getPipelineRunStatus,
-  isPipelineRunCancelledReason,
+  pipelineRunPhase,
   PipelineRun,
   pipelineRunLabels,
   tektonResultAnnotations,
@@ -86,7 +85,7 @@ function HeaderMetadata() {
   }
 
   const pipelineRunStatus = getPipelineRunStatus(pipelineRun);
-  const pipelineRunStatusIcon = getPipelineRunStatusIcon(pipelineRun);
+  const pipelineRunStatusDisplay = getPipelineRunStatusDisplay(pipelineRunStatus);
 
   // Get codebase from annotations first, then fallback to labels
   const codebaseFromAnnotation = getPipelineRunAnnotation(pipelineRun, tektonResultAnnotations.codebase);
@@ -101,7 +100,7 @@ function HeaderMetadata() {
   const startedAt = pipelineRunStatus.startTime ? formatTimestamp(pipelineRunStatus.startTime) : null;
 
   const activeDuration = pipelineRunStatus.startTime
-    ? formatDuration(pipelineRunStatus.startTime, pipelineRunStatus.completionTime || undefined)
+    ? formatDuration(pipelineRunStatus.startTime, pipelineRunStatus.completionTime)
     : null;
 
   return (
@@ -112,15 +111,15 @@ function HeaderMetadata() {
           <span className="text-muted-foreground text-sm">Status:</span>
           <Badge
             className="h-6"
-            style={{ backgroundColor: `${pipelineRunStatusIcon.color}15`, color: pipelineRunStatusIcon.color }}
+            style={{ backgroundColor: `${pipelineRunStatusDisplay.color}15`, color: pipelineRunStatusDisplay.color }}
           >
             <StatusIcon
-              Icon={pipelineRunStatusIcon.component}
-              isSpinning={pipelineRunStatusIcon.isSpinning}
-              color={pipelineRunStatusIcon.color}
+              Icon={pipelineRunStatusDisplay.component}
+              isSpinning={pipelineRunStatusDisplay.isSpinning}
+              color={pipelineRunStatusDisplay.color}
               width={12}
             />
-            <span className="capitalize">{getPipelineRunReasonLabel(pipelineRunStatus.reason)}</span>
+            <span>{pipelineRunStatusDisplay.label}</span>
           </Badge>
         </div>
 
@@ -238,15 +237,13 @@ function HeaderMetadata() {
         )}
       </div>
 
-      {pipelineRunStatus.status === "false" &&
-        !isPipelineRunCancelledReason(pipelineRunStatus.reason) &&
-        pipelineRunStatus.message !== "No message" && (
-          <div className="flex w-full items-center gap-2">
-            <AlertCircle className="text-muted-foreground size-4 shrink-0" />
-            <span className="text-muted-foreground shrink-0 text-sm">Error:</span>
-            <span className="text-foreground text-sm break-all">{pipelineRunStatus.message}</span>
-          </div>
-        )}
+      {pipelineRunStatus.phase === pipelineRunPhase.failed && pipelineRunStatus.message !== "No message" && (
+        <div className="flex w-full items-center gap-2">
+          <AlertCircle className="text-muted-foreground size-4 shrink-0" />
+          <span className="text-muted-foreground shrink-0 text-sm">Error:</span>
+          <span className="text-foreground text-sm break-all">{pipelineRunStatus.message}</span>
+        </div>
+      )}
     </div>
   );
 }

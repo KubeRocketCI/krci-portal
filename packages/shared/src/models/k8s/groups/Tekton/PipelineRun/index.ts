@@ -1,5 +1,17 @@
 export * from "./utils/index.js";
-export * from "./constants.js";
+// Explicit list. pipelineRunStatus (raw condition status) stays internal to this folder.
+export {
+  k8sPipelineRunConfig,
+  pipelineRunReason,
+  pipelineRunSpecStatus,
+  pipelineRunPhase,
+  pipelineRunCancelledReasons,
+  pipelineRunCancellingReasons,
+  isPipelineRunCancelledReason,
+  isPipelineRunCancellingReason,
+  pipelineRunPendingReasons,
+  isPipelineRunPendingReason,
+} from "./constants.js";
 export * from "./schema.js";
 export * from "./types.js";
 export * from "./labels.js";

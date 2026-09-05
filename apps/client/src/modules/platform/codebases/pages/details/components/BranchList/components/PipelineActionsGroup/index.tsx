@@ -15,10 +15,9 @@ import {
   ciTool,
   createBuildPipelineRunDraft,
   createSecurityPipelineRunDraft,
-  getPipelineRunStatus,
   GitLabPipelineVariable,
+  isPipelineRunBlocking,
   PipelineRun,
-  pipelineRunReason,
   stripLeadingSlash,
 } from "@my-project/shared";
 import { ChevronDown, LoaderCircle, Play, Shield } from "lucide-react";
@@ -264,11 +263,9 @@ export function PipelineActionsGroup({
   }, [securityPipelineRunData, triggerCreatePipelineRun]);
 
   // Status checks
-  const latestBuildStatus = getPipelineRunStatus(latestBuildPipelineRun);
-  const latestBuildIsRunning = latestBuildStatus.reason === pipelineRunReason.running;
+  const latestBuildIsRunning = isPipelineRunBlocking(latestBuildPipelineRun);
 
-  const latestSecurityStatus = getPipelineRunStatus(latestSecurityPipelineRun);
-  const latestSecurityIsRunning = latestSecurityStatus.reason === pipelineRunReason.running;
+  const latestSecurityIsRunning = isPipelineRunBlocking(latestSecurityPipelineRun);
 
   const codebaseBranchStatusIsOk = codebaseBranch?.status?.status === CUSTOM_RESOURCE_STATUS.CREATED;
 

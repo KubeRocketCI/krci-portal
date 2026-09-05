@@ -6,11 +6,13 @@ import { getStageResourceName, pipelineRunLabels, pipelineType } from "@my-proje
 import { routeStageDetails } from "../../../../../../route";
 import { FilterProvider } from "@/core/providers/Filter/provider";
 import {
-  defaultPipelineRunFilterValues,
-  matchFunctions,
   pipelineRunFilterControlNames,
+  pipelineRunFilterProviderProps,
 } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
-import { useDebouncedPipelineRunSearch } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter";
+import {
+  useDebouncedPipelineRunSearch,
+  useSelectedPipelineRunStatus,
+} from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter";
 
 const TABLE_ID = "stage-pipelines-unified";
 const TABLE_NAME = "Unified Pipeline Run List";
@@ -21,7 +23,7 @@ const TABLE_NAME = "Unified Pipeline Run List";
  */
 export function Pipelines() {
   return (
-    <FilterProvider matchFunctions={matchFunctions} syncWithUrl defaultValues={defaultPipelineRunFilterValues}>
+    <FilterProvider {...pipelineRunFilterProviderProps}>
       <PipelinesContent />
     </FilterProvider>
   );
@@ -31,6 +33,7 @@ function PipelinesContent() {
   const params = routeStageDetails.useParams();
 
   const debouncedSearch = useDebouncedPipelineRunSearch();
+  const status = useSelectedPipelineRunStatus();
 
   const { mergedPipelineRuns, isLoading, isHistoryLoading, historyQuery } = useUnifiedPipelineRunList({
     labels: {
@@ -38,6 +41,7 @@ function PipelinesContent() {
       [pipelineRunLabels.cdStage]: getStageResourceName(params.cdPipeline, params.stage),
     },
     searchTerm: debouncedSearch,
+    status,
   });
 
   return (

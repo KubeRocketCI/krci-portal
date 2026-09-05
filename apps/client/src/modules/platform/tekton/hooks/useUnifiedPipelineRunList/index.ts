@@ -1,21 +1,18 @@
 import { usePipelineRunWatchList } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { useClusterStore } from "@/k8s/store";
-import {
-  PipelineRun,
-  TektonResult,
-  normalizeResultToPipelineRun,
-  pipelineRunLabels,
-  pipelineRunStatus,
-} from "@my-project/shared";
+import { PipelineRun, TektonResult, normalizeResultToPipelineRun, pipelineRunLabels } from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
 import {
   buildAnnotationsFilter,
   buildCodebaseFilter,
   buildNameSearchFilter,
   buildPipelineTypeFilter,
-  buildStatusFilter,
   isCodebaseInPayloadType,
 } from "@/modules/platform/tekton/utils/celFilters";
+import {
+  PipelineRunStatusFilterValue,
+  resolvePipelineRunStatusFilter,
+} from "@/modules/platform/tekton/utils/pipelineRunStatusFilter";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -41,9 +38,10 @@ interface HistoryPage {
  *
  * @param searchTerm - Debounced search term for server-side name filtering via Tekton Results CEL.
  *
- * @param status - K8s condition status value ("true" | "false" | "unknown" | "all").
- *   Translated to Tekton Results `summary.status` CEL filter for history.
- *   Live K8s items are filtered in-memory by the FilterProvider matchFunction.
+ * @param status - PipelineRun status filter value. Resolved via
+ *   `resolvePipelineRunStatusFilter` into a Tekton Results `summary.status` CEL
+ *   filter for history, plus whether history should be queried at all. Live
+ *   K8s items are filtered in-memory by the FilterProvider matchFunction.
  *
  * @param pipelineType - Pipeline type label value (e.g. "build", "review", "deploy").
  *   Applied as a K8s label selector for the live watch and as a CEL annotation filter for history.
@@ -56,7 +54,7 @@ interface UseUnifiedPipelineRunListOptions {
   labels?: Record<string, string>;
   enabled?: boolean;
   searchTerm?: string;
-  status?: string;
+  status?: PipelineRunStatusFilterValue;
   pipelineType?: string;
   codebases?: string[];
 }
@@ -118,24 +116,20 @@ export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOpt
     queryOptions: { enabled },
   });
 
+  const statusFilter = React.useMemo(() => resolvePipelineRunStatusFilter(status ?? "all"), [status]);
+
   // Derive CEL filter from all active filter values for the Tekton Results history query.
   // Changing any filter resets pagination (queryKey changes → page 1 of filtered results).
   const celFilter = React.useMemo(() => {
     const labelFilter = labels && Object.keys(labels).length > 0 ? buildAnnotationsFilter(labels) : undefined;
     const nameFilter = searchTerm ? buildNameSearchFilter(searchTerm) : undefined;
-    const statusFilter = buildStatusFilter(status ?? "");
     const typeFilter = buildPipelineTypeFilter(pipelineType ?? "");
     const codebaseFilter = buildCodebaseFilter(codebases ?? [], pipelineType);
-    const parts = [labelFilter, nameFilter, statusFilter, typeFilter, codebaseFilter].filter(Boolean);
+    const parts = [labelFilter, nameFilter, statusFilter.historyFilter, typeFilter, codebaseFilter].filter(Boolean);
     return parts.length > 0 ? parts.join(" && ") : undefined;
-  }, [labels, searchTerm, status, pipelineType, codebases]);
+  }, [labels, searchTerm, statusFilter, pipelineType, codebases]);
 
-  // "Running / Pending" (status "unknown") is a live-only state: the Tekton Results
-  // `results` table stores only archived (terminal) runs, so history can never
-  // contribute a genuinely running run. Skip the history query for this filter —
-  // otherwise it returns terminal runs whose summary was never finalized ("unknown")
-  // that would masquerade as running, and wastes a full page on rows that never show.
-  const historyEnabled = enabled && status !== pipelineRunStatus.unknown;
+  const historyEnabled = enabled && statusFilter.historyEnabled;
 
   const historyQuery = useInfiniteQuery<HistoryPage, Error>({
     queryKey: ["tektonResults", "pipelineRunResults", clusterName, namespace, celFilter],

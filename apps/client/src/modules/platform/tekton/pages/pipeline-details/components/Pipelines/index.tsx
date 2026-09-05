@@ -6,11 +6,13 @@ import { pipelineRunLabels } from "@my-project/shared";
 import { routePipelineDetails } from "../../route";
 import { FilterProvider } from "@/core/providers/Filter/provider";
 import {
-  defaultPipelineRunFilterValues,
-  matchFunctions,
   pipelineRunFilterControlNames,
+  pipelineRunFilterProviderProps,
 } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
-import { useDebouncedPipelineRunSearch } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter";
+import {
+  useDebouncedPipelineRunSearch,
+  useSelectedPipelineRunStatus,
+} from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter";
 import { TABLE } from "@/k8s/constants/tables";
 
 /**
@@ -19,7 +21,7 @@ import { TABLE } from "@/k8s/constants/tables";
  */
 export function Pipelines() {
   return (
-    <FilterProvider matchFunctions={matchFunctions} syncWithUrl defaultValues={defaultPipelineRunFilterValues}>
+    <FilterProvider {...pipelineRunFilterProviderProps}>
       <PipelinesContent />
     </FilterProvider>
   );
@@ -28,12 +30,14 @@ export function Pipelines() {
 function PipelinesContent() {
   const params = routePipelineDetails.useParams();
   const debouncedSearch = useDebouncedPipelineRunSearch();
+  const status = useSelectedPipelineRunStatus();
 
   const { mergedPipelineRuns, isLoading, isHistoryLoading, historyQuery } = useUnifiedPipelineRunList({
     labels: {
       [pipelineRunLabels.pipeline]: params.name,
     },
     searchTerm: debouncedSearch,
+    status,
   });
 
   return (

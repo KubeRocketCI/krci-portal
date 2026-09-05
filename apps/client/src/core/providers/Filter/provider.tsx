@@ -10,6 +10,7 @@ export const FilterProvider = <Item, Values extends FilterValueMap>({
   defaultValues,
   matchFunctions,
   syncWithUrl = false,
+  normalizeUrlValues,
 }: FilterProviderProps<Item, Values>) => {
   const navigate = useNavigate();
   // Always call useSearch unconditionally to follow React Hooks rules
@@ -56,8 +57,12 @@ export const FilterProvider = <Item, Values extends FilterValueMap>({
       }
     });
 
-    return mergedValues;
-  }, [defaultValues, searchParams, syncWithUrl, filterKeys]);
+    if (!normalizeUrlValues) {
+      return mergedValues;
+    }
+
+    return { ...mergedValues, ...normalizeUrlValues(mergedValues) };
+  }, [defaultValues, searchParams, syncWithUrl, filterKeys, normalizeUrlValues]);
 
   const [filterFunction, setFilterFunction] = useState<(item: Item) => boolean>(() =>
     createFilterFunction(initialValues)

@@ -3,13 +3,30 @@ import type { Pipeline, PipelineRun, PipelineRunDraft } from "@my-project/shared
 import {
   EMPTY_START_ROW,
   deriveDuration,
-  deriveStatus,
   getTriggerTemplateLabel,
   mergeLabels,
   mergeParams,
   prepareStartDraft,
   projectPipelineRunRow,
 } from "./helpers.js";
+
+/** Build a minimal PipelineRun with a single `Succeeded` condition. */
+function prWithCondition(
+  condition: { status?: string; reason?: string; type?: string } | undefined,
+  extraConditionsFirst = false
+): PipelineRun {
+  const conditions = condition
+    ? [
+        ...(extraConditionsFirst ? [{ type: "SomeOtherType", status: "True" }] : []),
+        { type: "Succeeded", ...condition },
+      ]
+    : [];
+
+  return {
+    metadata: { name: "x", namespace: "edp", labels: {} },
+    status: condition ? { conditions } : {},
+  } as unknown as PipelineRun;
+}
 
 describe("mergeParams", () => {
   it("returns sorted defaults when no overrides", () => {
@@ -139,7 +156,10 @@ describe("projectPipelineRunRow", () => {
           "app.edp.epam.com/gitauthor": "alice",
         },
       },
-      status: { conditions: [{ type: "Succeeded", status: "Unknown" }], startTime: "2026-01-01T00:00:00Z" },
+      status: {
+        conditions: [{ type: "Succeeded", status: "Unknown", reason: "Started" }],
+        startTime: "2026-01-01T00:00:00Z",
+      },
     } as unknown as PipelineRun;
 
     const row = projectPipelineRunRow(pr);
@@ -166,29 +186,60 @@ describe("projectPipelineRunRow", () => {
   });
 });
 
-describe("deriveStatus", () => {
-  it("Pending when no condition", () => {
-    expect(deriveStatus(undefined)).toBe("Pending");
+describe("projectPipelineRunRow: status derivation", () => {
+  it("no condition -> Pending", () => {
+    const pr = prWithCondition(undefined);
+    expect(projectPipelineRunRow(pr).status).toBe("Pending");
   });
 
-  it("Succeeded on True", () => {
-    expect(deriveStatus({ status: "True" })).toBe("Succeeded");
+  it("{Unknown, Started} -> Running", () => {
+    const pr = prWithCondition({ status: "Unknown", reason: "Started" });
+    expect(projectPipelineRunRow(pr).status).toBe("Running");
   });
 
-  it("Failed on False default reason", () => {
-    expect(deriveStatus({ status: "False", reason: "TaskRunFailed" })).toBe("Failed");
+  it("{Unknown, PipelineRunPending} -> Pending", () => {
+    const pr = prWithCondition({ status: "Unknown", reason: "PipelineRunPending" });
+    expect(projectPipelineRunRow(pr).status).toBe("Pending");
   });
 
-  it("Cancelled on PipelineRunCancelled", () => {
-    expect(deriveStatus({ status: "False", reason: "PipelineRunCancelled" })).toBe("Cancelled");
+  it("{True, Succeeded} -> Succeeded", () => {
+    const pr = prWithCondition({ status: "True", reason: "Succeeded" });
+    expect(projectPipelineRunRow(pr).status).toBe("Succeeded");
   });
 
-  it("Timeout on PipelineRunTimeout", () => {
-    expect(deriveStatus({ status: "False", reason: "PipelineRunTimeout" })).toBe("Timeout");
+  it("{False, Failed} -> Failed", () => {
+    const pr = prWithCondition({ status: "False", reason: "Failed" });
+    expect(projectPipelineRunRow(pr).status).toBe("Failed");
   });
 
-  it("Running on Unknown / other", () => {
-    expect(deriveStatus({ status: "Unknown" })).toBe("Running");
+  it("{False, PipelineRunTimeout} -> Timeout", () => {
+    const pr = prWithCondition({ status: "False", reason: "PipelineRunTimeout" });
+    expect(projectPipelineRunRow(pr).status).toBe("Timeout");
+  });
+
+  it("{False, Cancelled} -> Cancelled", () => {
+    const pr = prWithCondition({ status: "False", reason: "Cancelled" });
+    expect(projectPipelineRunRow(pr).status).toBe("Cancelled");
+  });
+
+  it("{False, PipelineRunCancelled} -> Cancelled (legacy pre-2019 Tekton reason)", () => {
+    const pr = prWithCondition({ status: "False", reason: "PipelineRunCancelled" });
+    expect(projectPipelineRunRow(pr).status).toBe("Cancelled");
+  });
+
+  it("{Unknown, CancelledRunningFinally} -> Cancelled", () => {
+    const pr = prWithCondition({ status: "Unknown", reason: "CancelledRunningFinally" });
+    expect(projectPipelineRunRow(pr).status).toBe("Cancelled");
+  });
+
+  it("classifies from the Succeeded condition when it is not first in the array", () => {
+    const pr = prWithCondition({ status: "True", reason: "Succeeded" }, true);
+    expect(projectPipelineRunRow(pr).status).toBe("Succeeded");
+  });
+
+  it("Pending on Unknown without a reason", () => {
+    const pr = prWithCondition({ status: "Unknown" });
+    expect(projectPipelineRunRow(pr).status).toBe("Pending");
   });
 });
 
