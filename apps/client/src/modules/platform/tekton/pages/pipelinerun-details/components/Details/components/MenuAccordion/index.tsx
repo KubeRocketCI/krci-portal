@@ -1,22 +1,17 @@
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { getStepStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun/utils/getStepStatusIcon";
-import { ApprovalTask, approvalTaskAction, getTaskRunStepStatus, Task, TaskRun } from "@my-project/shared";
+import { approvalTaskAction, getTaskRunStepStatus } from "@my-project/shared";
+import { PipelineRunTaskData } from "@/modules/platform/tekton/pages/pipelinerun-details/hooks/types";
 import React from "react";
 import { cn } from "@/core/utils/classname";
 import { formatDuration } from "@/core/utils/date-humanize";
-import { approvalTaskBackground, getApprovalTaskOrTaskRunStatusIcon, updateUnexecutedSteps } from "./utils";
+import { approvalTaskBackground, updateUnexecutedSteps } from "./utils";
+import { getPipelineTaskStatusDisplay } from "@/modules/platform/tekton/utils/getPipelineTaskStatusDisplay";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 export interface MenuAccordionBaseProps {
   taskRunName: string;
-  pipelineRunTasksByNameMap: Map<
-    string,
-    {
-      approvalTask?: ApprovalTask;
-      taskRun?: TaskRun;
-      task?: Task;
-    }
-  >;
+  pipelineRunTasksByNameMap: Map<string, PipelineRunTaskData>;
   queryParamTaskRun: string | undefined;
   queryParamStep: string | undefined;
   onNavigate: (taskRunName: string, taskRunStepName?: string) => void;
@@ -31,11 +26,10 @@ export function MenuAccordionView({
 }: MenuAccordionBaseProps) {
   const pipelineRunTaskData = pipelineRunTasksByNameMap.get(taskRunName);
 
-  const approvalTask = pipelineRunTaskData?.approvalTask;
   const taskRun = pipelineRunTaskData?.taskRun;
   const task = pipelineRunTaskData?.task;
 
-  const taskStatusIcon = getApprovalTaskOrTaskRunStatusIcon(approvalTask, taskRun);
+  const taskStatusDisplay = getPipelineTaskStatusDisplay(pipelineRunTaskData ?? {});
 
   const taskSteps = updateUnexecutedSteps(
     taskRun?.status?.steps ?? task?.spec?.steps ?? taskRun?.status?.taskSpec?.steps
@@ -77,9 +71,9 @@ export function MenuAccordionView({
       >
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <StatusIcon
-            Icon={taskStatusIcon.component}
-            color={taskStatusIcon.color}
-            isSpinning={taskStatusIcon.isSpinning}
+            Icon={taskStatusDisplay.component}
+            color={taskStatusDisplay.color}
+            isSpinning={taskStatusDisplay.isSpinning}
             width={16}
           />
           <span className="text-foreground truncate text-sm">{taskRunName}</span>

@@ -1,5 +1,6 @@
 import { usePipelineRunWatchItem } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { useTaskRunWatchList } from "@/k8s/api/groups/Tekton/TaskRun";
+import { useCustomRunWatchList } from "@/k8s/api/groups/Tekton/CustomRun";
 import { useTaskWatchList } from "@/k8s/api/groups/Tekton/Task";
 import { useApprovalTaskWatchList } from "@/k8s/api/groups/KRCI/ApprovalTask";
 import { useTRPCClient } from "@/core/providers/trpc";
@@ -8,11 +9,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useShallow } from "zustand/react/shallow";
 import {
   ApprovalTask,
+  DecodedCustomRun,
   DecodedTaskRun,
   PipelineRun,
   TaskRun,
   approvalTaskLabels,
+  customRunLabels,
   getPipelineRunTaskGraphDefinitions,
+  normalizeHistoryCustomRuns,
   normalizeHistoryPipelineRun,
   normalizeHistoryTaskRuns,
   parseRecordName,
@@ -63,6 +67,12 @@ export function useUnifiedPipelineRunData({ namespace, name }: UnifiedPipelineRu
   const approvalTasksWatch = useApprovalTaskWatchList({
     namespace,
     labels: { [approvalTaskLabels.parentPipelineRun]: name },
+    queryOptions: { enabled: hasLivePipelineRun },
+  });
+
+  const customRunsWatch = useCustomRunWatchList({
+    namespace,
+    labels: { [customRunLabels.pipelineRun]: name },
     queryOptions: { enabled: hasLivePipelineRun },
   });
 
@@ -121,6 +131,17 @@ export function useUnifiedPipelineRunData({ namespace, name }: UnifiedPipelineRu
     staleTime: Infinity,
   });
 
+  const historyCustomRunsQuery = useQuery({
+    queryKey: ["tektonResults", "unifiedCustomRuns", clusterName, namespace, resultUid],
+    queryFn: () =>
+      trpc.tektonResults.getCustomRunRecords.query({
+        namespace,
+        resultUid: resultUid!,
+      }),
+    enabled: historyPREnabled,
+    staleTime: Infinity,
+  });
+
   // ── Step 5: Normalize and merge ───────────────────────────────────────────
 
   // Determine the resolved PipelineRun (live or history)
@@ -141,6 +162,14 @@ export function useUnifiedPipelineRunData({ namespace, name }: UnifiedPipelineRu
         ? normalizeHistoryTaskRuns(historyTaskRunsQuery.data.taskRuns as DecodedTaskRun[])
         : undefined,
     [historyTaskRunsQuery.data?.taskRuns]
+  );
+
+  const historyCustomRuns = React.useMemo(
+    () =>
+      historyCustomRunsQuery.data?.customRuns
+        ? normalizeHistoryCustomRuns(historyCustomRunsQuery.data.customRuns as DecodedCustomRun[])
+        : undefined,
+    [historyCustomRunsQuery.data?.customRuns]
   );
 
   const isLive = !!livePipelineRun && !k8sNotFound;
@@ -178,6 +207,7 @@ export function useUnifiedPipelineRunData({ namespace, name }: UnifiedPipelineRu
       tasks: isLive ? tasksWatch.data.array : undefined,
       taskRuns: taskRunsArray,
       approvalTasks: approvalTasksArray,
+      customRuns: isLive ? customRunsWatch.data.array : (historyCustomRuns ?? []),
       childReferences: resolvedPipelineRun?.status?.childReferences,
     });
   }, [
@@ -187,18 +217,30 @@ export function useUnifiedPipelineRunData({ namespace, name }: UnifiedPipelineRu
     tasksWatch.data.array,
     taskRunsWatch.data.array,
     approvalTasksWatch.data.array,
+    customRunsWatch.data.array,
     historyTaskRuns,
+    historyCustomRuns,
   ]);
 
   // Loading state
   const liveIsLoading =
     !k8sNotFound &&
-    [pipelineRunWatch.isLoading, taskRunsWatch.isLoading, tasksWatch.isLoading, approvalTasksWatch.isLoading].some(
-      Boolean
-    );
+    [
+      pipelineRunWatch.isLoading,
+      taskRunsWatch.isLoading,
+      tasksWatch.isLoading,
+      approvalTasksWatch.isLoading,
+      customRunsWatch.isLoading,
+    ].some(Boolean);
 
   const historyIsLoading =
-    k8sNotFound && [tektonSearch.isLoading, historyPRQuery.isLoading, historyTaskRunsQuery.isLoading].some(Boolean);
+    k8sNotFound &&
+    [
+      tektonSearch.isLoading,
+      historyPRQuery.isLoading,
+      historyTaskRunsQuery.isLoading,
+      historyCustomRunsQuery.isLoading,
+    ].some(Boolean);
 
   const isLoading = [liveIsLoading, historyIsLoading].some(Boolean);
   const isReady = (isLive || isHistory) && !isLoading;

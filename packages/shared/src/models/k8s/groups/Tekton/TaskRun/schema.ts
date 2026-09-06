@@ -361,23 +361,46 @@ const cloudEventDeliverySchema = z.object({
 
 export const statusSchema = z.enum(["true", "false", "unknown"]);
 
+// Known reasons, lowercased. Each drives the cancelled family or a label. Others fall through.
 export const reasonSchema = z.enum([
+  // status "Unknown" — in progress
   "started",
   "running",
   "taskrunpending",
+  "pending",
   "toberetried",
+  "resolvingtaskref",
+  "resolvingstepactionref",
+  "pullimagefailed",
+  "exceedednoderesources",
+  "exceededresourcequota",
+  // status "False" — cancelled
   "taskruncancelled",
-  "succeeded",
-  "failed",
+  "customruncancelled",
+  // status "False" — failed
   "taskruntimeout",
+  "customruntimedout",
   "taskrunimagepullfailed",
+  "failureignored",
+  "taskrunvalidationfailed",
+  "taskvalidationfailed",
+  "taskrunresolutionfailed",
+  "taskrunresultlargerthanallowedlimit",
+  "stepoom",
+  "sidecaroom",
+  "initcontaineroom",
+  "podevicted",
 ]);
+
+// Set by getTaskRunStatus from the `Succeeded` condition. No `cancelling`: Tekton never
+// pairs a cancel reason with status Unknown.
+export const taskRunPhaseEnum = z.enum(["in-progress", "cancelled", "succeeded", "failed", "unknown"]);
 
 const conditionSchema = z
   .object({
     lastTransitionTime: z.string().optional(),
     message: z.string().optional(),
-    reason: reasonSchema.optional(),
+    reason: z.string().optional(),
     severity: z.string().optional(),
     status: statusSchema,
     type: z.string(),

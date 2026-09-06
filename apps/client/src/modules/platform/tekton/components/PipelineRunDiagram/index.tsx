@@ -1,5 +1,4 @@
-import { getApprovalTaskStatusIcon } from "@/k8s/api/groups/KRCI/ApprovalTask/utils";
-import { getTaskRunStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun/utils";
+import { getPipelineTaskStatusDisplay } from "@/modules/platform/tekton/utils/getPipelineTaskStatusDisplay";
 import { ToggleButton, ToggleButtonGroup } from "@/core/components/ui/toggle-button-group";
 import { PipelineRun } from "@my-project/shared";
 import {
@@ -19,7 +18,8 @@ import "@xyflow/react/dist/style.css";
 import React from "react";
 import { useUnifiedPipelineRunData } from "../../pages/pipelinerun-details/hooks/data";
 import { PipelineRunTaskNode } from "./components/PipelineRunTaskNode";
-import { PipelineRunTaskCombinedData, usePipelineRunGraphData } from "./hooks/usePipelineRunGraphData";
+import { usePipelineRunGraphData } from "./hooks/usePipelineRunGraphData";
+import { PipelineRunTaskData } from "@/modules/platform/tekton/pages/pipelinerun-details/hooks/types";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 
 const nodeTypes = {
@@ -64,7 +64,7 @@ const PipelineRunDiagramDataWrapper: React.FC<{
 
 export const PipelineRunDiagramView: React.FC<{
   pipelineRun: PipelineRun;
-  pipelineRunTasksByNameMap: Map<string, PipelineRunTaskCombinedData>;
+  pipelineRunTasksByNameMap: Map<string, PipelineRunTaskData>;
   namespace: string;
 }> = ({ pipelineRun, pipelineRunTasksByNameMap, namespace }) => {
   const [viewMode, setViewMode] = React.useState<"vertical" | "horizontal">("horizontal");
@@ -125,16 +125,7 @@ export const PipelineRunDiagramView: React.FC<{
       const targetNode = flowNodes.find((node) => node.id === edge.target);
       if (!targetNode) return edge;
 
-      // Get status color from target node
-      let statusColor = "#666"; // default gray
-
-      if (targetNode.data.approvalTask) {
-        const statusData = getApprovalTaskStatusIcon(targetNode.data.approvalTask);
-        statusColor = statusData.color;
-      } else if (targetNode.data.taskRun) {
-        const statusData = getTaskRunStatusIcon(targetNode.data.taskRun);
-        statusColor = statusData.color;
-      }
+      const statusColor = getPipelineTaskStatusDisplay(targetNode.data).color;
 
       return {
         ...edge,

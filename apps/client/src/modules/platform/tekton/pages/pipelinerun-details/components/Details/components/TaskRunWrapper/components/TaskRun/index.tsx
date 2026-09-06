@@ -1,27 +1,23 @@
 import { useTabs } from "./hooks/useTabs";
 import { TaskRunProps } from "./types";
-import { getTaskRunStatus, taskRunLabels } from "@my-project/shared";
+import { taskRunLabels } from "@my-project/shared";
 import { humanize } from "@/core/utils/date-humanize";
 import { useTabsContext } from "@/core/providers/Tabs/hooks";
 import { Tabs } from "@/core/providers/Tabs/components/Tabs";
 import { Card } from "@/core/components/ui/card";
 import { StatusIcon } from "@/core/components/StatusIcon";
-import { getTaskRunStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun";
-import { STATUS_COLOR } from "@/k8s/constants/colors";
+import { getPipelineTaskStatusDisplay } from "@/modules/platform/tekton/utils/getPipelineTaskStatusDisplay";
 import { Badge } from "@/core/components/ui/badge";
-import { Timer, Clock, ShieldQuestion } from "lucide-react";
+import { Timer, Clock } from "lucide-react";
 import { getTaskDescription } from "../../../../../../../../utils/getTaskDescription";
 
 export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
-  const { taskRun, task, pipelineRunTask } = pipelineRunTaskData;
-  const taskRunName = taskRun?.metadata?.labels?.[taskRunLabels.pipelineTask] ?? pipelineRunTask?.name;
-  const taskRunStatus = getTaskRunStatus(taskRun);
-  const taskRunStatusIcon = taskRun
-    ? getTaskRunStatusIcon(taskRun)
-    : { component: ShieldQuestion, color: STATUS_COLOR.UNKNOWN };
+  const { run, task, pipelineRunTask } = pipelineRunTaskData;
+  const taskRunName = run?.metadata?.labels?.[taskRunLabels.pipelineTask] ?? pipelineRunTask?.name;
+  const taskRunStatusDisplay = getPipelineTaskStatusDisplay(pipelineRunTaskData);
 
-  const completionTime = taskRun?.status?.completionTime || "";
-  const startTime = taskRun?.status?.startTime || "";
+  const completionTime = run?.status?.completionTime || "";
+  const startTime = run?.status?.startTime || "";
 
   const duration =
     startTime && completionTime
@@ -55,7 +51,7 @@ export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
       })
     : null;
 
-  const tabs = useTabs({ taskRun, task, pipelineRunTask });
+  const tabs = useTabs({ taskRun: run, task, pipelineRunTask });
   const taskDescription = getTaskDescription(
     pipelineRunTaskData.task,
     pipelineRunTaskData.taskRun,
@@ -69,9 +65,9 @@ export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
         <div className="mb-3 flex items-start justify-between">
           <div className="flex gap-3">
             <StatusIcon
-              Icon={taskRunStatusIcon.component}
-              color={taskRunStatusIcon.color}
-              isSpinning={taskRunStatusIcon.isSpinning}
+              Icon={taskRunStatusDisplay.component}
+              color={taskRunStatusDisplay.color}
+              isSpinning={taskRunStatusDisplay.isSpinning}
               width={20}
             />
             <div>
@@ -80,7 +76,7 @@ export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
             </div>
           </div>
           <Badge variant="outline" className="text-sm">
-            {taskRunStatus.reason}
+            {taskRunStatusDisplay.label}
           </Badge>
         </div>
 

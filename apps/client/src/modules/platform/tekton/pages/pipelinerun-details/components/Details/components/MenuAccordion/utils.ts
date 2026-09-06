@@ -1,12 +1,7 @@
-import { getApprovalTaskStatusIcon } from "@/k8s/api/groups/KRCI/ApprovalTask";
-import { getTaskRunStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun";
-import { STATUS_COLOR } from "@/k8s/constants/colors";
-import { K8sResourceStatusIcon } from "@/k8s/types";
-import { TaskRunStepState, ApprovalTask, TaskRun, taskRunStepStatusReason } from "@my-project/shared";
-import { ShieldQuestion } from "lucide-react";
+import { TaskRunStepState, taskRunStepStatusReason } from "@my-project/shared";
 
 export const approvalTaskBackground =
-  "repeating-linear-gradient(45deg, rgba(96, 96, 96, 0.15), rgba(96, 96, 96, 0.15) 10px, rgba(70, 70, 70, 0.15) 10px, rgba(70, 70, 70, 0.15) 20px);";
+  "repeating-linear-gradient(45deg, rgba(96, 96, 96, 0.15), rgba(96, 96, 96, 0.15) 10px, rgba(70, 70, 70, 0.15) 10px, rgba(70, 70, 70, 0.15) 20px)";
 
 export function updateUnexecutedSteps(steps: TaskRunStepState[] | undefined) {
   if (!steps) {
@@ -26,21 +21,3 @@ export function updateUnexecutedSteps(steps: TaskRunStepState[] | undefined) {
     return step;
   });
 }
-
-export const getApprovalTaskOrTaskRunStatusIcon = (
-  approvalTask: ApprovalTask | undefined,
-  taskRun: TaskRun | undefined
-): K8sResourceStatusIcon => {
-  if (approvalTask) {
-    return getApprovalTaskStatusIcon(approvalTask);
-  }
-
-  if (taskRun) {
-    return getTaskRunStatusIcon(taskRun);
-  }
-
-  return {
-    component: ShieldQuestion,
-    color: STATUS_COLOR.UNKNOWN,
-  };
-};

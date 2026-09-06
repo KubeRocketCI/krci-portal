@@ -22,3 +22,7 @@ export const tektonResultAnnotations = {
   /** Log reference annotation added by Tekton Results Watcher */
   tektonLogRef: "results.tekton.dev/log",
 } as const;
+
+/** True for an object loaded from Tekton Results history. Both normalizers stamp it. */
+export const isHistoryRecord = (run: { metadata?: { annotations?: Record<string, string> } } | undefined): boolean =>
+  run?.metadata?.annotations?.[tektonResultAnnotations.historySource] === "true";

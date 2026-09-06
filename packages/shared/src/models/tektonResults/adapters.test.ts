@@ -3,6 +3,7 @@ import {
   normalizeHistoryPipelineRun,
   normalizeHistoryTaskRun,
   normalizeHistoryTaskRuns,
+  normalizeHistoryCustomRun,
   normalizeResultToPipelineRun,
 } from "./adapters.js";
 import type { DecodedPipelineRun, DecodedTaskRun, TektonResult } from "./types.js";
@@ -846,5 +847,43 @@ describe("normalizeResultToPipelineRun", () => {
     expect(result.metadata.name).toBe("valid-name");
     expect(result.spec.pipelineRef).toBeUndefined();
     expect(result.metadata.labels[pipelineRunLabels.codebase]).toBeUndefined();
+  });
+});
+
+describe("normalizeHistoryCustomRun", () => {
+  it("stamps the history annotation, keeps labels, and lowercases the reason", () => {
+    const result = normalizeHistoryCustomRun({
+      apiVersion: "tekton.dev/v1beta1",
+      kind: "CustomRun",
+      metadata: {
+        name: "run-1-approve",
+        namespace: "krci",
+        uid: "cr-uid",
+        labels: { "tekton.dev/pipelineTask": "approve" },
+      },
+      spec: { customRef: { apiVersion: "edp.epam.com/v1alpha1", kind: "ApprovalTask", name: "approve" } },
+      status: {
+        conditions: [{ type: "Succeeded", status: "True", reason: "Approved" }],
+        startTime: "2026-09-06T18:00:00Z",
+        completionTime: "2026-09-06T18:00:05Z",
+      },
+    });
+
+    expect(result.metadata.annotations?.[tektonResultAnnotations.historySource]).toBe("true");
+    expect(result.metadata.labels?.["tekton.dev/pipelineTask"]).toBe("approve");
+    expect(result.status?.conditions?.[0]?.reason).toBe("approved");
+    expect(result.status?.completionTime).toBe("2026-09-06T18:00:05Z");
+  });
+
+  it("leaves status undefined when the record has none", () => {
+    const result = normalizeHistoryCustomRun({
+      apiVersion: "tekton.dev/v1beta1",
+      kind: "CustomRun",
+      metadata: { name: "run-1-approve", namespace: "krci", uid: "cr-uid" },
+      spec: {},
+    });
+
+    expect(result.status).toBeUndefined();
+    expect(result.metadata.creationTimestamp).toBe("");
   });
 });

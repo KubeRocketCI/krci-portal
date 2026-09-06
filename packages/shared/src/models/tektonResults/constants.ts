@@ -135,6 +135,8 @@ export type GroupByTimeField = (typeof GROUP_BY_TIME_FIELDS)[keyof typeof GROUP_
  */
 export const RECORD_TYPES = {
   PIPELINE_RUN: "tekton.dev/v1.PipelineRun",
+  TASK_RUN: "tekton.dev/v1.TaskRun",
+  CUSTOM_RUN: "tekton.dev/v1beta1.CustomRun",
 } as const;
 
 export type RecordType = (typeof RECORD_TYPES)[keyof typeof RECORD_TYPES];
