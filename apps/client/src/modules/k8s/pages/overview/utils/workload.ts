@@ -1,6 +1,6 @@
 import type { KubeObjectBase } from "@my-project/shared";
 import { resourceRegistry } from "@/modules/k8s/registry";
-import type { DonutSlice } from "../components/DonutChart";
+import type { DonutSlice } from "@/core/components/charts/DonutChart";
 import { severityColor } from "./status-color";
 
 export type WorkloadKind = "deployments" | "statefulsets" | "daemonsets" | "jobs" | "cronjobs";

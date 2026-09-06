@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/c
 import { STATUS_COLOR } from "@/k8s/constants/colors";
 import type { Pod } from "@my-project/shared";
 import type { UseWatchListResult } from "@/k8s/api/hooks/useWatch/types";
-import { DonutCardBody, type DonutSlice } from "./DonutChart";
+import { DonutCardBody, type DonutSlice } from "@/core/components/charts/DonutChart";
 import { POD_PHASE_COLOR } from "../utils/status-color";
 
 const PHASE_ORDER = ["Running", "Pending", "Succeeded", "Failed", "Unknown"];

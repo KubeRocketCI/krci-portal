@@ -51,7 +51,7 @@ export function useColumns(): TableColumn<Task>[] {
         id: "description",
         label: "Description",
         data: {
-          render: ({ data: { spec } }) => <TextWithTooltip text={spec?.description || ""} maxLineAmount={3} />,
+          render: ({ data: { spec } }) => <TextWithTooltip text={spec?.description} maxLineAmount={3} />,
         },
         cell: {
           baseWidth: 50,
