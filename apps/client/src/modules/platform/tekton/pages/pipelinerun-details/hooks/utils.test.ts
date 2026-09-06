@@ -1,4 +1,13 @@
-import { ApprovalTask, approvalTaskLabels, PipelineTask, Task, TaskRun, taskRunLabels } from "@my-project/shared";
+import {
+  ApprovalTask,
+  approvalTaskLabels,
+  CustomRun,
+  customRunLabels,
+  PipelineTask,
+  Task,
+  TaskRun,
+  taskRunLabels,
+} from "@my-project/shared";
 import { describe, expect, it } from "vitest";
 import { buildPipelineRunTasksByNameMap, buildTaskRunIndex, findTaskRunForPipelineTask } from "./utils";
 
@@ -115,5 +124,23 @@ describe("buildPipelineRunTasksByNameMap", () => {
 
     expect(map.size).toBe(1);
     expect(map.has("sonar")).toBe(true);
+  });
+});
+
+describe("buildPipelineRunTasksByNameMap with CustomRuns", () => {
+  const makeCustomRun = (name: string, pipelineTaskLabel: string): CustomRun =>
+    ({ metadata: { name, labels: { [customRunLabels.pipelineTask]: pipelineTaskLabel } } }) as unknown as CustomRun;
+
+  it("resolves a task's run to its TaskRun, else to its CustomRun by the pipelineTask label", () => {
+    const result = buildPipelineRunTasksByNameMap({
+      allPipelineTasks: [makePipelineTask("approve"), makePipelineTask("build")],
+      taskRuns: [makeTaskRun(`${PIPELINE_RUN_NAME}-build`, "build")],
+      approvalTasks: [],
+      customRuns: [makeCustomRun(`${PIPELINE_RUN_NAME}-approve`, "approve")],
+    });
+
+    expect(result.get("approve")?.taskRun).toBeUndefined();
+    expect(result.get("approve")?.run?.metadata?.name).toBe(`${PIPELINE_RUN_NAME}-approve`);
+    expect(result.get("build")?.run?.metadata?.name).toBe(`${PIPELINE_RUN_NAME}-build`);
   });
 });

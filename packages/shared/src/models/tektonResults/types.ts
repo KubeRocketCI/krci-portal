@@ -63,8 +63,8 @@ export interface TektonResultsQueryParams {
   orderBy?: string;
 }
 
-// PipelineRun metadata from decoded record data
-export interface DecodedPipelineRunMetadata {
+// Metadata of any decoded record
+export interface DecodedRecordMetadata {
   name: string;
   namespace: string;
   uid: string;
@@ -75,8 +75,8 @@ export interface DecodedPipelineRunMetadata {
   generation?: number;
 }
 
-// PipelineRun condition
-export interface DecodedPipelineRunCondition {
+// Condition of any decoded record
+export interface DecodedCondition {
   type: string;
   status: string;
   reason?: string;
@@ -94,7 +94,7 @@ export interface DecodedChildReference {
 
 // PipelineRun status from decoded record data
 export interface DecodedPipelineRunStatus {
-  conditions?: DecodedPipelineRunCondition[];
+  conditions?: DecodedCondition[];
   startTime?: string;
   completionTime?: string;
   childReferences?: DecodedChildReference[];
@@ -171,7 +171,7 @@ export interface DecodedPipelineRunSpec {
 export interface DecodedPipelineRun {
   apiVersion: string;
   kind: string;
-  metadata: DecodedPipelineRunMetadata;
+  metadata: DecodedRecordMetadata;
   spec: DecodedPipelineRunSpec;
   status: DecodedPipelineRunStatus;
 }
@@ -199,19 +199,10 @@ export interface DecodedTaskRunStepState {
   results?: Array<{ name: string; type?: string; value: unknown }>;
 }
 
-// TaskRun condition from decoded record
-export interface DecodedTaskRunCondition {
-  type: string;
-  status: string;
-  reason?: string;
-  message?: string;
-  lastTransitionTime?: string;
-}
-
 // TaskRun status from decoded record
 export interface DecodedTaskRunStatus {
   podName: string;
-  conditions?: DecodedTaskRunCondition[];
+  conditions?: DecodedCondition[];
   steps?: DecodedTaskRunStepState[];
   startTime?: string;
   completionTime?: string;
@@ -238,23 +229,11 @@ export interface DecodedTaskRunStatus {
   }>;
 }
 
-// TaskRun metadata from decoded record
-export interface DecodedTaskRunMetadata {
-  name: string;
-  namespace: string;
-  uid: string;
-  labels?: Record<string, string>;
-  annotations?: Record<string, string>;
-  creationTimestamp?: string;
-  resourceVersion?: string;
-  generation?: number;
-}
-
 // Full decoded TaskRun structure from Tekton Results record
 export interface DecodedTaskRun {
   apiVersion: string;
   kind: string;
-  metadata: DecodedTaskRunMetadata;
+  metadata: DecodedRecordMetadata;
   spec: {
     params?: Array<{ name: string; value: unknown }>;
     taskRef?: { name?: string; kind?: string; apiVersion?: string; resolver?: string };
@@ -263,6 +242,22 @@ export interface DecodedTaskRun {
     workspaces?: Array<{ name: string; [key: string]: unknown }>;
   };
   status: DecodedTaskRunStatus;
+}
+
+// CustomRun (tekton.dev/v1beta1) from a decoded record. Only what the portal classifies.
+export interface DecodedCustomRun {
+  apiVersion: string;
+  kind: string;
+  metadata: DecodedRecordMetadata;
+  spec: {
+    customRef?: { apiVersion?: string; kind?: string; name?: string };
+    params?: Array<{ name: string; value: unknown }>;
+  };
+  status?: {
+    conditions?: DecodedCondition[];
+    startTime?: string;
+    completionTime?: string;
+  };
 }
 
 // Decoded Log record from Tekton Results

@@ -4,7 +4,7 @@ import { ApprovalTask, approvalTaskAction } from "@my-project/shared";
 import { CircleCheck, CircleSlash, CircleX, Clock, ShieldQuestion } from "lucide-react";
 
 export const getStatusIcon = (resource: ApprovalTask): K8sResourceStatusIcon => {
-  const status = resource.spec.action;
+  const status = resource.spec?.action;
 
   if (status === undefined) {
     return {

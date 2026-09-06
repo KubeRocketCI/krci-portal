@@ -2,6 +2,7 @@ import React from "react";
 import { Edge, Node, Position } from "@xyflow/react";
 import {
   ApprovalTask,
+  CustomRun,
   getPipelineRunTaskGraphDefinitions,
   PipelineRun,
   PipelineTask,
@@ -9,6 +10,7 @@ import {
   TaskRun,
 } from "@my-project/shared";
 import { getLayoutedElements } from "../../PipelineDiagram/utils/layoutUtils";
+import { PipelineRunTaskData } from "@/modules/platform/tekton/pages/pipelinerun-details/hooks/types";
 
 export interface PipelineRunTaskNodeData extends Record<string, unknown> {
   name: string;
@@ -16,6 +18,7 @@ export interface PipelineRunTaskNodeData extends Record<string, unknown> {
   pipelineRunName: string;
   taskRun?: TaskRun;
   approvalTask?: ApprovalTask;
+  run?: TaskRun | CustomRun;
   task?: Task;
   pipelineTask: PipelineTask;
   isFinally?: boolean;
@@ -25,16 +28,9 @@ export interface PipelineRunTaskNodeData extends Record<string, unknown> {
 export type MyNode = Node<PipelineRunTaskNodeData, "taskNode">;
 export type MyEdge = Edge;
 
-export interface PipelineRunTaskCombinedData {
-  pipelineRunTask: PipelineTask;
-  task?: Task;
-  taskRun?: TaskRun;
-  approvalTask?: ApprovalTask;
-}
-
 export const usePipelineRunGraphData = (
   pipelineRun: PipelineRun | undefined,
-  tasksByNameMap: Map<string, PipelineRunTaskCombinedData> | undefined,
+  tasksByNameMap: Map<string, PipelineRunTaskData> | undefined,
   namespace: string,
   direction: "TB" | "LR" = "TB"
 ): { nodes: MyNode[]; edges: MyEdge[] } => {
@@ -101,6 +97,7 @@ export const usePipelineRunGraphData = (
             pipelineRunName: pipelineRun.metadata.name,
             taskRun: taskData?.taskRun,
             approvalTask: taskData?.approvalTask,
+            run: taskData?.run,
             task: taskData?.task,
             pipelineTask: task,
             isFinally,

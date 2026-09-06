@@ -4,14 +4,10 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 /**
- * Enforces the PipelineRun classification seam.
- * `apps/client/src` and `packages/trpc/src` must derive a run's state through
- * `getPipelineRunStatus().phase`, not by reading `conditions[0]`/`conditions.at(0)`
- * or comparing a condition's `type` to `"Succeeded"` directly. New hits fail the
- * build; `ALLOWLIST` exists for pre-existing exceptions only.
- *
- * The guard only scans files that mention `PipelineRun`; other resources'
- * conditions (Pod, TaskRun standalone views, etc.) are out of scope.
+ * Tekton run classification seam.
+ * Files under `apps/client/src` and `packages/trpc/src` that mention PipelineRun or TaskRun
+ * must not read `conditions[0]`, `conditions.at(0)`, or compare a condition `type` to "Succeeded".
+ * Use getPipelineRunStatus().phase or getTaskRunStatus().phase.
  */
 
 const CLASSIFICATION_PATTERN = /conditions\??\.\[0\]|conditions\[0\]|conditions\??\.at\(0\)|type === ["']Succeeded["']/;
@@ -20,22 +16,7 @@ const SCAN_ROOTS = ["apps/client/src", "packages/trpc/src"];
 
 const SKIP_DIRS = new Set(["node_modules", "dist"]);
 
-/** File gate token. Only files whose content contains this are scanned. */
-const RESOURCE_GATE = "PipelineRun";
-
-/** Files that read TaskRun conditions inside PipelineRun views. */
-const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
-  {
-    path: "apps/client/src/modules/platform/tekton/components/PipelineRunDiagram/components/PipelineRunTaskNode.tsx",
-    reason:
-      "TaskRun has no phase classifier yet (see getPipelineRunStatus for PipelineRun); remove once TaskRun gets the same seam.",
-  },
-  {
-    path: "apps/client/src/modules/platform/tekton/pages/pipelinerun-details/components/Details/index.tsx",
-    reason:
-      "TaskRun has no phase classifier yet (see getPipelineRunStatus for PipelineRun); remove once TaskRun gets the same seam.",
-  },
-];
+const RESOURCE_GATE = /pipelinerun|taskrun/i;
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 
@@ -86,10 +67,9 @@ function findClassificationHits(): Hit[] {
   for (const root of SCAN_ROOTS) {
     for (const file of listSourceFiles(path.join(repoRoot, root))) {
       const relPath = toRepoRelativePath(file);
-      if (ALLOWLIST.some((entry) => entry.path === relPath)) continue;
 
       const content = readFileSync(file, "utf8");
-      if (!content.includes(RESOURCE_GATE)) continue;
+      if (!RESOURCE_GATE.test(content)) continue;
 
       const lines = content.split("\n");
       lines.forEach((line, index) => {
@@ -104,12 +84,12 @@ function findClassificationHits(): Hit[] {
   return hits;
 }
 
-describe("PipelineRun classification seam", () => {
-  it("classifies PipelineRuns only through getPipelineRunStatus", () => {
+describe("Tekton run classification seam", () => {
+  it("classifies Tekton runs only through their phase classifier", () => {
     const hits = findClassificationHits();
     const message = [
       ...hits.map((hit) => `${hit.path}:${hit.line}: ${hit.text}`),
-      "Classify PipelineRuns through getPipelineRunStatus().phase",
+      "Classify runs through getPipelineRunStatus().phase or getTaskRunStatus().phase",
     ].join("\n");
 
     expect(hits, message).toEqual([]);

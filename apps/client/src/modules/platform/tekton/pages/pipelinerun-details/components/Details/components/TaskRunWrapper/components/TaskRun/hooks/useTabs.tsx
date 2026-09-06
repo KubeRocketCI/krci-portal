@@ -1,4 +1,4 @@
-import { TaskRun, Task, PipelineTask } from "@my-project/shared";
+import { CustomRun, TaskRun, Task, PipelineTask } from "@my-project/shared";
 import React from "react";
 import { Settings, CheckCircle, Info } from "lucide-react";
 import { TabContent } from "../../../../TabContent";
@@ -10,7 +10,7 @@ export const useTabs = ({
   task,
   pipelineRunTask,
 }: {
-  taskRun: TaskRun | undefined;
+  taskRun: TaskRun | CustomRun | undefined;
   task?: Task;
   pipelineRunTask?: PipelineTask;
 }) => {
@@ -67,7 +67,7 @@ export const useTabs = ({
           <CodeEditor
             content={
               taskRunIsLoaded
-                ? taskRun?.status
+                ? (taskRun?.status ?? {})
                 : task?.spec?.steps
                   ? { steps: task.spec.steps.map((el) => el.name) }
                   : buildPendingTaskSummary(pipelineRunTask)

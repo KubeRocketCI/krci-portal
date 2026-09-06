@@ -8,6 +8,7 @@ import {
   getTaskListProcedure,
   getTaskRunLogsProcedure,
   getTaskRunRecordsProcedure,
+  getCustomRunRecordsProcedure,
   getPipelineRunResultsProcedure,
 } from "./procedures/index.js";
 
@@ -19,6 +20,7 @@ export const tektonResultsRouter = t.router({
   getTaskList: getTaskListProcedure,
   getTaskRunLogs: getTaskRunLogsProcedure,
   getTaskRunRecords: getTaskRunRecordsProcedure,
+  getCustomRunRecords: getCustomRunRecordsProcedure,
   getPipelineRunResults: getPipelineRunResultsProcedure,
   getSummary: getSummaryProcedure,
 });

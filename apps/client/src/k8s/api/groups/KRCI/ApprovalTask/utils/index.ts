@@ -1,1 +1,1 @@
-export { getStatusIcon as getApprovalTaskStatusIcon } from "./getStatusIcon";
+export { getStatusDisplay as getApprovalTaskStatusDisplay } from "./getStatusDisplay";

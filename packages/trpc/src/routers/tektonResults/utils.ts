@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
-import { decodeTektonRecordData, TektonResultRecord } from "@my-project/shared";
+import { decodeTektonRecordData, type RecordType, TektonResultRecord } from "@my-project/shared";
+import { createTektonResultsClient } from "../../clients/tektonResults/index.js";
 
 /**
  * Decode an array of Tekton Result records into typed objects.
@@ -25,4 +26,20 @@ export function decodeRecords<T>(records: TektonResultRecord[], entityLabel: str
   }
 
   return decoded;
+}
+
+/** All records of one data type within a result, decoded. One page covers a pipeline's runs. */
+export async function listDecodedRecords<T>(
+  namespace: string,
+  resultUid: string,
+  dataType: RecordType,
+  entityLabel: string
+): Promise<T[]> {
+  const client = createTektonResultsClient(namespace);
+  const recordsResponse = await client.listRecords(resultUid, {
+    filter: `data_type == '${dataType}'`,
+    pageSize: 50,
+  });
+
+  return decodeRecords<T>(recordsResponse?.records || [], entityLabel);
 }

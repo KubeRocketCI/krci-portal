@@ -1,6 +1,6 @@
 import React from "react";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
-import { PipelineTask, pipelineRunReason } from "@my-project/shared";
+import { PipelineTask } from "@my-project/shared";
 import { Card } from "@/core/components/ui/card";
 import { router } from "@/core/router";
 import { routePipelineRunDetails, routeSearchTabName, PATH_PIPELINERUN_DETAILS_FULL } from "../../route";
@@ -8,6 +8,7 @@ import { usePipelineRunContext } from "../../providers/PipelineRun/hooks";
 import { MenuAccordionView } from "./components/MenuAccordion";
 import { UnifiedTaskRunWrapper } from "./components/UnifiedTaskRunWrapper";
 import { UnifiedTaskRunStepWrapper } from "./components/UnifiedTaskRunStepWrapper";
+import { countSucceededTaskRuns } from "./countSucceededTaskRuns";
 
 export function Details() {
   const params = routePipelineRunDetails.useParams();
@@ -35,17 +36,10 @@ export function Details() {
     }
   }, [queryParamTaskRun, firstTaskName, isLoading, params.clusterName, params.namespace, params.name]);
 
-  const tasksCompletedCount = React.useMemo(() => {
-    let completed = 0;
-    pipelineRunTasksByNameMap.forEach((data) => {
-      const taskRun = data.taskRun;
-      const reason = taskRun?.status?.conditions?.[0]?.reason;
-      if (reason?.toLowerCase() === pipelineRunReason.succeeded) {
-        completed++;
-      }
-    });
-    return completed;
-  }, [pipelineRunTasksByNameMap]);
+  const tasksCompletedCount = React.useMemo(
+    () => countSucceededTaskRuns(pipelineRunTasksByNameMap),
+    [pipelineRunTasksByNameMap]
+  );
 
   const handleNavigate = React.useCallback(
     (taskRunName: string, taskRunStepName?: string) => {

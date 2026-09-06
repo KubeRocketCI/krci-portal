@@ -1,6 +1,8 @@
 import {
   ApprovalTask,
   approvalTaskLabels,
+  CustomRun,
+  customRunLabels,
   buildTaskRunNameByPipelineTaskMap,
   PipelineRunChildReference,
   PipelineTask,
@@ -57,15 +59,20 @@ export const buildPipelineRunTasksByNameMap = (params: {
   tasks?: Task[];
   taskRuns: TaskRun[];
   approvalTasks: ApprovalTask[];
+  customRuns?: CustomRun[];
   childReferences?: PipelineRunChildReference[];
 }): Map<string, PipelineRunTaskData> => {
-  const { allPipelineTasks, tasks = [], taskRuns, approvalTasks, childReferences } = params;
+  const { allPipelineTasks, tasks = [], taskRuns, approvalTasks, customRuns = [], childReferences } = params;
 
   // `tasks` is the namespace-wide Task list, so scanning it per pipeline task was the dominant cost.
   const taskByName = indexByKey(tasks, (task) => task.metadata?.name);
   const approvalTaskByPipelineTask = indexByKey(
     approvalTasks,
     (approvalTask) => approvalTask.metadata?.labels?.[approvalTaskLabels.pipelineTask]
+  );
+  const customRunByPipelineTask = indexByKey(
+    customRuns,
+    (customRun) => customRun.metadata?.labels?.[customRunLabels.pipelineTask]
   );
   const taskRunIndex = buildTaskRunIndex(taskRuns, childReferences);
 
@@ -75,12 +82,15 @@ export const buildPipelineRunTasksByNameMap = (params: {
     if (!pipelineTask.name) continue;
 
     const taskRefName = pipelineTask.taskRef?.name;
+    const taskRun = findTaskRunForPipelineTask(taskRunIndex, pipelineTask.name);
+    const customRun = customRunByPipelineTask.get(pipelineTask.name);
 
     result.set(pipelineTask.name, {
       pipelineRunTask: pipelineTask,
       task: taskRefName ? taskByName.get(taskRefName) : undefined,
-      taskRun: findTaskRunForPipelineTask(taskRunIndex, pipelineTask.name),
+      taskRun,
       approvalTask: approvalTaskByPipelineTask.get(pipelineTask.name),
+      run: taskRun ?? customRun,
     });
   }
 

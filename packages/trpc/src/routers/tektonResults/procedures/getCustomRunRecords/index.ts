@@ -1,15 +1,15 @@
 import { z } from "zod";
-import { type DecodedTaskRun, RECORD_TYPES, taskRunRecordsOutputSchema } from "@my-project/shared";
+import { type DecodedCustomRun, customRunRecordsOutputSchema, RECORD_TYPES } from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { listDecodedRecords } from "../../utils.js";
 import { tektonInputSchemas } from "../../../../schemas/tektonInput.js";
 
-/** All TaskRun records of a PipelineRun result. Feeds the task tree, diagram and steps of an archived run. */
-export const getTaskRunRecordsProcedure = protectedProcedure
+/** All CustomRun records of a PipelineRun result. Custom tasks such as the KRCI ApprovalTask run as CustomRuns. */
+export const getCustomRunRecordsProcedure = protectedProcedure
   .meta({
     openapi: {
       method: "GET",
-      path: "/v1/pipeline-runs/{resultUid}/task-runs",
+      path: "/v1/pipeline-runs/{resultUid}/custom-runs",
       protect: true,
       tags: ["tekton-results"],
     },
@@ -20,12 +20,12 @@ export const getTaskRunRecordsProcedure = protectedProcedure
       resultUid: tektonInputSchemas.uuid,
     })
   )
-  .output(taskRunRecordsOutputSchema)
+  .output(customRunRecordsOutputSchema)
   .query(async ({ input }) => ({
-    taskRuns: await listDecodedRecords<DecodedTaskRun>(
+    customRuns: await listDecodedRecords<DecodedCustomRun>(
       input.namespace,
       input.resultUid,
-      RECORD_TYPES.TASK_RUN,
-      "TaskRun"
+      RECORD_TYPES.CUSTOM_RUN,
+      "CustomRun"
     ),
   }));

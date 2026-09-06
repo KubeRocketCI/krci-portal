@@ -11,7 +11,16 @@
 
 import type { PipelineRun } from "../k8s/groups/Tekton/PipelineRun/types.js";
 import type { TaskRun } from "../k8s/groups/Tekton/TaskRun/types.js";
-import type { DecodedPipelineRun, DecodedTaskRun, TektonResult, TektonResultStatus } from "./types.js";
+import type { CustomRun } from "../k8s/groups/Tekton/CustomRun/types.js";
+import type {
+  DecodedCondition,
+  DecodedCustomRun,
+  DecodedPipelineRun,
+  DecodedRecordMetadata,
+  DecodedTaskRun,
+  TektonResult,
+  TektonResultStatus,
+} from "./types.js";
 import { tektonResultAnnotations } from "./annotations.js";
 import { pipelineRunLabels } from "../k8s/groups/Tekton/PipelineRun/labels.js";
 import { RESULT_ANNOTATIONS_KEY } from "../k8s/groups/Tekton/PipelineRun/utils/resultAnnotations/index.js";
@@ -21,41 +30,34 @@ import {
   pipelineRunStatus,
 } from "../k8s/groups/Tekton/PipelineRun/constants.js";
 
-/**
- * Normalize a decoded PipelineRun from Tekton Results to a K8s PipelineRun type.
- *
- * The decoded data has the same structure as the K8s CR. This adapter ensures:
- * - Required metadata fields have safe defaults (creationTimestamp, uid)
- * - Labels include the required `pipelineType` key
- * - Status conditions reason is lowercased to match the K8s enum
- */
-export function normalizeHistoryPipelineRun(decoded: DecodedPipelineRun): PipelineRun {
-  const labels = decoded.metadata.labels ?? {};
-  const annotations = {
-    ...decoded.metadata.annotations,
-    [tektonResultAnnotations.historySource]: "true",
+/** K8s-shaped metadata for an archived record. Stamped with the history annotation. */
+function normalizeHistoryMetadata(metadata: DecodedRecordMetadata, startTime: string | undefined) {
+  return {
+    name: metadata.name,
+    namespace: metadata.namespace,
+    uid: metadata.uid,
+    creationTimestamp: metadata.creationTimestamp ?? startTime ?? "",
+    resourceVersion: metadata.resourceVersion,
+    generation: metadata.generation,
+    labels: metadata.labels ?? {},
+    annotations: {
+      ...metadata.annotations,
+      [tektonResultAnnotations.historySource]: "true",
+    },
   };
+}
 
-  const conditions = decoded.status?.conditions?.map((c) => ({
-    ...c,
-    reason: c.reason?.toLowerCase(),
-  }));
+/** Condition reasons lowercased to match the shared enums. */
+function normalizeHistoryConditions(conditions: DecodedCondition[] | undefined) {
+  return conditions?.map((c) => ({ ...c, reason: c.reason?.toLowerCase() }));
+}
 
-  // The decoded Tekton Results data is structurally identical to K8s PipelineRun CR.
-  // We build the object with safe defaults for required fields and assert at the boundary.
+/** Archived PipelineRun as a K8s PipelineRun. The decoded shape is structurally identical; asserted at the boundary. */
+export function normalizeHistoryPipelineRun(decoded: DecodedPipelineRun): PipelineRun {
   const normalized = {
     apiVersion: decoded.apiVersion,
     kind: decoded.kind,
-    metadata: {
-      name: decoded.metadata.name,
-      namespace: decoded.metadata.namespace,
-      uid: decoded.metadata.uid,
-      creationTimestamp: decoded.metadata.creationTimestamp ?? decoded.status?.startTime ?? "",
-      resourceVersion: decoded.metadata.resourceVersion,
-      generation: decoded.metadata.generation,
-      labels,
-      annotations,
-    },
+    metadata: normalizeHistoryMetadata(decoded.metadata, decoded.status?.startTime),
     spec: {
       pipelineRef: decoded.spec.pipelineRef,
       // Inline pipeline spec — required for history rows where only spec (not status) retained task list
@@ -73,7 +75,7 @@ export function normalizeHistoryPipelineRun(decoded: DecodedPipelineRun): Pipeli
       ? {
           startTime: decoded.status.startTime,
           completionTime: decoded.status.completionTime,
-          conditions,
+          conditions: normalizeHistoryConditions(decoded.status.conditions),
           pipelineSpec: decoded.status.pipelineSpec,
           childReferences: decoded.status.childReferences,
           results: decoded.status.results,
@@ -98,27 +100,10 @@ export function normalizeHistoryTaskRuns(decodedTaskRuns: DecodedTaskRun[]): Tas
  * Normalize a single decoded TaskRun from Tekton Results to a K8s TaskRun type.
  */
 export function normalizeHistoryTaskRun(decoded: DecodedTaskRun): TaskRun {
-  const labels = decoded.metadata.labels ?? {};
-  const annotations = decoded.metadata.annotations ?? {};
-
-  const conditions = decoded.status?.conditions?.map((c) => ({
-    ...c,
-    reason: c.reason?.toLowerCase(),
-  }));
-
   const normalized = {
     apiVersion: decoded.apiVersion,
     kind: decoded.kind,
-    metadata: {
-      name: decoded.metadata.name,
-      namespace: decoded.metadata.namespace,
-      uid: decoded.metadata.uid,
-      creationTimestamp: decoded.metadata.creationTimestamp ?? decoded.status?.startTime ?? "",
-      resourceVersion: decoded.metadata.resourceVersion,
-      generation: decoded.metadata.generation,
-      labels,
-      annotations,
-    },
+    metadata: normalizeHistoryMetadata(decoded.metadata, decoded.status?.startTime),
     spec: {
       params: decoded.spec.params,
       taskRef: decoded.spec.taskRef,
@@ -129,7 +114,7 @@ export function normalizeHistoryTaskRun(decoded: DecodedTaskRun): TaskRun {
     status: decoded.status
       ? {
           podName: decoded.status.podName,
-          conditions,
+          conditions: normalizeHistoryConditions(decoded.status.conditions),
           steps: decoded.status.steps,
           startTime: decoded.status.startTime,
           completionTime: decoded.status.completionTime,
@@ -144,6 +129,33 @@ export function normalizeHistoryTaskRun(decoded: DecodedTaskRun): TaskRun {
   };
 
   return normalized as unknown as TaskRun;
+}
+
+/** Archived CustomRuns as K8s CustomRuns. */
+export function normalizeHistoryCustomRuns(decodedCustomRuns: DecodedCustomRun[]): CustomRun[] {
+  return decodedCustomRuns.map(normalizeHistoryCustomRun);
+}
+
+/** Archived CustomRun as a K8s CustomRun. Stamped with the history annotation like TaskRuns. */
+export function normalizeHistoryCustomRun(decoded: DecodedCustomRun): CustomRun {
+  const normalized = {
+    apiVersion: decoded.apiVersion,
+    kind: decoded.kind,
+    metadata: normalizeHistoryMetadata(decoded.metadata, decoded.status?.startTime),
+    spec: {
+      customRef: decoded.spec.customRef,
+      params: decoded.spec.params,
+    },
+    status: decoded.status
+      ? {
+          conditions: normalizeHistoryConditions(decoded.status.conditions),
+          startTime: decoded.status.startTime,
+          completionTime: decoded.status.completionTime,
+        }
+      : undefined,
+  };
+
+  return normalized as unknown as CustomRun;
 }
 
 // ---------------------------------------------------------------------------

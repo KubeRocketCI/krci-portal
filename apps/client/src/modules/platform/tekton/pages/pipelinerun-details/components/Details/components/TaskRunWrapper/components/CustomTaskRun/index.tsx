@@ -1,4 +1,3 @@
-import { useCustomRunWatchItem } from "@/k8s/api/groups/Tekton/CustomRun";
 import { useResourceCRUDMutation } from "@/k8s/api/hooks/useResourceCRUDMutation";
 import { useDialogContext } from "@/core/providers/Dialog/hooks";
 import { Tabs } from "@/core/providers/Tabs/components/Tabs";
@@ -8,10 +7,8 @@ import {
   ApprovalTask,
   ApprovalTaskAction,
   approvalTaskAction,
-  getTaskRunStatus,
   k8sApprovalTaskConfig,
   k8sOperation,
-  TaskRun,
   taskRunLabels,
 } from "@my-project/shared";
 import { CheckLine, MessageSquareMore, XCircle, Timer, Clock } from "lucide-react";
@@ -24,8 +21,7 @@ import { useAuth } from "@/core/auth/provider";
 import { Card } from "@/core/components/ui/card";
 import { Badge } from "@/core/components/ui/badge";
 import { StatusIcon } from "@/core/components/StatusIcon";
-import { getApprovalTaskStatusIcon } from "@/k8s/api/groups/KRCI/ApprovalTask";
-import { STATUS_COLOR } from "@/k8s/constants/colors";
+import { getPipelineTaskStatusDisplay } from "@/modules/platform/tekton/utils/getPipelineTaskStatusDisplay";
 import { getTaskDescription } from "../../../../../../../../utils/getTaskDescription";
 
 const updateApprovalTask = ({
@@ -55,31 +51,13 @@ const updateApprovalTask = ({
 };
 
 export const CustomTaskRun = ({ pipelineRunTaskData }: CustomTaskRunProps) => {
-  const { approvalTask } = pipelineRunTaskData;
+  const { approvalTask, run: customTaskRun } = pipelineRunTaskData;
 
   const isPending = approvalTask?.spec?.action === approvalTaskAction.Pending;
 
-  const taskRunMetadataName = approvalTask?.metadata?.ownerReferences?.[0]?.name;
-
-  const customTaskRunWatch = useCustomRunWatchItem({
-    name: taskRunMetadataName!,
-    namespace: approvalTask?.metadata?.namespace,
-    queryOptions: {
-      enabled: !!taskRunMetadataName && !!approvalTask?.metadata?.namespace,
-    },
-  });
-
-  const customTaskRun = customTaskRunWatch.query.data;
-
   const taskRunName = customTaskRun?.metadata?.labels?.[taskRunLabels.pipelineTask];
 
-  const taskRunStatus = customTaskRun
-    ? getTaskRunStatus(customTaskRun as TaskRun)
-    : { status: "Unknown", reason: "Unknown" };
-
-  const approvalTaskStatusIcon = approvalTask
-    ? getApprovalTaskStatusIcon(approvalTask)
-    : { component: Clock, color: STATUS_COLOR.IN_PROGRESS };
+  const status = getPipelineTaskStatusDisplay(pipelineRunTaskData);
 
   const completionTime = customTaskRun?.status?.completionTime || "";
   const startTime = customTaskRun?.status?.startTime || "";
@@ -196,12 +174,7 @@ export const CustomTaskRun = ({ pipelineRunTaskData }: CustomTaskRunProps) => {
       <div className="border-b px-6 py-4">
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <StatusIcon
-              Icon={approvalTaskStatusIcon.component}
-              color={approvalTaskStatusIcon.color}
-              isSpinning={approvalTaskStatusIcon.isSpinning}
-              width={20}
-            />
+            <StatusIcon Icon={status.component} color={status.color} isSpinning={status.isSpinning} width={20} />
             <div>
               <h3 className="text-foreground text-lg font-medium">Task: {taskRunName}</h3>
               {taskDescription && <p className="text-muted-foreground mt-0.5 text-sm">{taskDescription}</p>}
@@ -215,7 +188,7 @@ export const CustomTaskRun = ({ pipelineRunTaskData }: CustomTaskRunProps) => {
               </>
             )}
             <Badge variant="outline" className="text-sm">
-              {taskRunStatus?.reason || approvalTask?.spec?.action}
+              {status.label}
             </Badge>
           </div>
         </div>

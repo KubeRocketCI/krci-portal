@@ -3,9 +3,8 @@ import { Handle, Position } from "@xyflow/react";
 import { Badge } from "@/core/components/ui/badge";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { StatusIcon } from "@/core/components/StatusIcon";
-import { getTaskRunStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun/utils";
 import { getStepStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun/utils/getStepStatusIcon";
-import { getApprovalTaskStatusIcon } from "@/k8s/api/groups/KRCI/ApprovalTask/utils";
+import { getPipelineTaskStatusDisplay } from "@/modules/platform/tekton/utils/getPipelineTaskStatusDisplay";
 import { humanize } from "@/core/utils/date-humanize";
 import { PipelineRunTaskNodeData } from "../hooks/usePipelineRunGraphData";
 import { getTaskRunStepStatus } from "@my-project/shared";
@@ -29,23 +28,9 @@ export const PipelineRunTaskNode: React.FC<{
   );
 
   const displayName = data.name;
-  const hasTaskRun = !!data.taskRun;
+  const hasRun = !!data.run;
 
-  // Get status icon and color
-  const getStatusData = () => {
-    if (data.approvalTask) {
-      return getApprovalTaskStatusIcon(data.approvalTask);
-    }
-    if (data.taskRun) {
-      return getTaskRunStatusIcon(data.taskRun);
-    }
-    return {
-      component: null,
-      color: "#9ca3af", // gray-400 equivalent
-    };
-  };
-
-  const statusData = getStatusData();
+  const statusData = getPipelineTaskStatusDisplay(data);
 
   // Get duration
   const getDuration = () => {
@@ -67,20 +52,8 @@ export const PipelineRunTaskNode: React.FC<{
     });
   };
 
-  // Get status text
-  const getStatusText = () => {
-    if (data.approvalTask) {
-      return data.approvalTask.spec.action || "Unknown";
-    }
-    if (data.taskRun?.status?.conditions?.[0]) {
-      const condition = data.taskRun.status.conditions[0];
-      return condition.reason || condition.status || "Unknown";
-    }
-    return "Not Started";
-  };
-
   const duration = getDuration();
-  const statusText = getStatusText();
+  const statusText = statusData.label;
   const taskDescription = getTaskDescription(data.task, data.taskRun);
 
   const tooltipContent = (
@@ -181,7 +154,7 @@ export const PipelineRunTaskNode: React.FC<{
 
           {/* Status icon and task name */}
           <div className="mb-2 flex w-full items-center gap-2">
-            {hasTaskRun ? (
+            {hasRun ? (
               <Button variant="link" asChild className="h-auto min-w-0 shrink overflow-hidden p-0">
                 <Link
                   to={routePipelineRunDetails.fullPath}

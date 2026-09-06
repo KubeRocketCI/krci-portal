@@ -131,3 +131,30 @@ export const taskRunRecordsOutputSchema = z
     taskRuns: z.array(decodedTaskRunSchema),
   })
   .openapi({ ref: "TaskRunRecordsResponse" });
+
+const decodedCustomRunSchema = z
+  .object({
+    apiVersion: z.string(),
+    kind: z.string(),
+    metadata: decodedTaskRunMetadataSchema,
+    spec: z.object({
+      customRef: z
+        .object({ apiVersion: z.string().optional(), kind: z.string().optional(), name: z.string().optional() })
+        .optional(),
+      params: z.array(z.object({ name: z.string(), value: z.unknown() })).optional(),
+    }),
+    status: z
+      .object({
+        conditions: z.array(decodedTaskRunConditionSchema).optional(),
+        startTime: z.string().optional(),
+        completionTime: z.string().optional(),
+      })
+      .optional(),
+  })
+  .openapi({ ref: "CustomRun" });
+
+export const customRunRecordsOutputSchema = z
+  .object({
+    customRuns: z.array(decodedCustomRunSchema),
+  })
+  .openapi({ ref: "CustomRunRecordsResponse" });
