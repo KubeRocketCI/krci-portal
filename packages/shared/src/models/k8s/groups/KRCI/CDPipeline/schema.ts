@@ -1,7 +1,8 @@
 import z from "zod";
 import { kubeObjectBaseDraftSchema, kubeObjectBaseSchema } from "../../../common/index.js";
+import { krciStatusEnum } from "../common/index.js";
 
-export const cdPipelineStatusEnum = z.enum(["created", "initialized", "in_progress", "failed"]);
+export const cdPipelineStatusEnum = krciStatusEnum;
 
 export const cdPipelineResultEnum = z.enum(["success", "error"]);
 

@@ -4,6 +4,9 @@ import { krciCommonLabels } from "./labels.js";
 
 export const ciToolEnum = z.enum(["tekton", "gitlab"]);
 
+// status.status values the UI maps for Codebase, CodebaseBranch, CDPipeline and Stage.
+export const krciStatusEnum = z.enum(["created", "initialized", "in_progress", "failed"]);
+
 export const krciConfigMapNamesEnum = z.enum(["edp-config", "krci-config"]);
 
 export const gitProviderEnum = z.enum(["gerrit", "github", "gitlab", "bitbucket"]);
