@@ -1,18 +1,7 @@
 import { describe, expect, test } from "vitest";
-import { cdPipelineStatus, codebaseBranchStatus, codebaseStatus, stageStatus } from "@my-project/shared";
 import { countKrciStatuses } from "./countKrciStatuses";
 
 const item = (status?: string) => (status === undefined ? {} : { status: { status } });
-
-describe("KRCI status enums", () => {
-  test("all four resources still share one status enum", () => {
-    const shared = Object.keys(codebaseStatus).sort();
-
-    expect(Object.keys(codebaseBranchStatus).sort()).toEqual(shared);
-    expect(Object.keys(cdPipelineStatus).sort()).toEqual(shared);
-    expect(Object.keys(stageStatus).sort()).toEqual(shared);
-  });
-});
 
 describe("countKrciStatuses", () => {
   test("buckets each shared KRCI status and folds initialized into in progress", () => {

@@ -7,13 +7,13 @@ import {
 } from "../../../common/index.js";
 import { secretDraftSchema, secretSchema } from "../../Core/index.js";
 import { codebaseLabels } from "./labels.js";
-import { ciToolEnum, krciCommonLabelsSchema } from "../common/index.js";
+import { ciToolEnum, krciCommonLabelsSchema, krciStatusEnum } from "../common/index.js";
 
 export const codebaseTypeEnum = z.enum(["application", "autotest", "library", "infrastructure", "system"]);
 
 export const codebaseCreationStrategyEnum = z.enum(["create", "clone", "import"]);
 
-export const codebaseStatusEnum = z.enum(["created", "initialized", "in_progress", "failed"]);
+export const codebaseStatusEnum = krciStatusEnum;
 
 export const codebaseDeploymentScriptEnum = z.enum(["helm-chart", "rpm-package"]);
 

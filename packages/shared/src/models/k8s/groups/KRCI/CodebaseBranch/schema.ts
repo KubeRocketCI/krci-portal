@@ -6,9 +6,9 @@ import {
   kubeObjectMetadataSchema,
 } from "../../../common/index.js";
 import { codebaseBranchLabels } from "./labels.js";
-import { krciCommonLabelsSchema } from "../common/index.js";
+import { krciCommonLabelsSchema, krciStatusEnum } from "../common/index.js";
 
-export const codebaseBranchStatusEnum = z.enum(["created", "initialized", "in_progress", "failed"]);
+export const codebaseBranchStatusEnum = krciStatusEnum;
 
 export const codebaseBranchResultEnum = z.enum(["success", "error"]);
 

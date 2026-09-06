@@ -1,4 +1,4 @@
-import { codebaseStatus as krciStatus } from "@my-project/shared";
+import { krciStatus } from "@my-project/shared";
 import type { LoadedResourceHealth } from "./statusSegments";
 
 interface KrciStatusHolder {

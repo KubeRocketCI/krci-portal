@@ -6,9 +6,9 @@ import {
   kubeObjectMetadataSchema,
 } from "../../../common/index.js";
 import { stageLabels } from "./labels.js";
-import { krciCommonLabelsSchema } from "../common/index.js";
+import { krciCommonLabelsSchema, krciStatusEnum } from "../common/index.js";
 
-export const stageStatusEnum = z.enum(["created", "initialized", "in_progress", "failed"]);
+export const stageStatusEnum = krciStatusEnum;
 
 export const stageResultEnum = z.enum(["success", "error"]);
 
