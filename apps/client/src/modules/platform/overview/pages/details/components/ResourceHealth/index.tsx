@@ -1,124 +1,109 @@
-import { CHART_STATUS_COLOR } from "@/k8s/constants/colors";
-import { Loader2 } from "lucide-react";
+import { DonutChart, DonutLegend } from "@/core/components/charts/DonutChart";
+import { Skeleton } from "@/core/components/ui/skeleton";
+import { Tooltip } from "@/core/components/ui/tooltip";
+import { STATUS_COLOR } from "@/k8s/constants/colors";
+import { getK8sErrorMessage } from "@/k8s/api/utils/getK8sErrorMessage";
+import { TriangleAlert } from "lucide-react";
+import { Fragment } from "react";
 import { DashboardCard } from "@/modules/platform/overview/components/DashboardCard";
-import { useCodebasesGraphData } from "../CodebasesGraph/hooks/useCodebasesGraphData";
-import { useCodebaseBranchesGraphData } from "../CodebaseBranchesGraph/hooks/useCodebaseBranchesGraphData";
-import { usePipelineRunsGraphData } from "../PipelineRunsGraph/hooks/usePipelineRunsGraphData";
-import { useCDPipelinesGraphData } from "../CDPipelinesGraph/hooks/useCDPipelinesGraphData";
-import { useStagesGraphData } from "../StagesGraph/hooks/useStagesGraphData";
+import {
+  useCDPipelinesHealth,
+  useCodebaseBranchesHealth,
+  useCodebasesHealth,
+  useStagesHealth,
+} from "../../hooks/useResourceHealth";
+import { usePipelineRunsHealth } from "../../hooks/usePipelineRunsHealth";
+import { describeStatusSlices, toResourceTileState, type ResourceTileState } from "../../utils/statusSegments";
 
-const DONUT_RADIUS = 20;
-const DONUT_CIRCUMFERENCE = 2 * Math.PI * DONUT_RADIUS;
-const DONUT_OFFSET = DONUT_CIRCUMFERENCE / 4;
+const DONUT_SIZE = 56;
+const DONUT_THICKNESS = 7;
 
-function CompactDonut({ ok, failed, total, size = 56 }: { ok: number; failed: number; total: number; size?: number }) {
-  // Validate data integrity
-  if (total === 0 || ok + failed > total || ok < 0 || failed < 0) {
-    // Handle invalid data by showing just the total
+function TileGraphic({ label, state }: { label: string; state: ResourceTileState }) {
+  if (state.kind === "error") {
+    const errorMessage = getK8sErrorMessage(state.error);
+
     return (
-      <svg width={size} height={size} viewBox="0 0 48 48" className="shrink-0">
-        <circle cx="24" cy="24" r={DONUT_RADIUS} fill="none" className="stroke-border" strokeWidth="6" />
-        <text x="24" y="27" textAnchor="middle" fontSize="10" className="fill-foreground" fontWeight="600">
-          {total}
-        </text>
-      </svg>
+      <Tooltip title={errorMessage}>
+        <div
+          role="img"
+          tabIndex={0}
+          aria-label={`${label}: could not be loaded. ${errorMessage}`}
+          className="focus-visible:ring-ring flex items-center justify-center rounded-full focus-visible:ring-2 focus-visible:outline-none"
+          style={{ width: DONUT_SIZE, height: DONUT_SIZE }}
+        >
+          <TriangleAlert size={24} color={STATUS_COLOR.UNKNOWN} />
+        </div>
+      </Tooltip>
     );
   }
 
-  const okLen = (ok / total) * DONUT_CIRCUMFERENCE;
-  const failLen = (failed / total) * DONUT_CIRCUMFERENCE;
+  if (state.kind === "loading") {
+    return <Skeleton className="rounded-full" style={{ width: DONUT_SIZE, height: DONUT_SIZE }} />;
+  }
 
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" className="shrink-0">
-      <circle cx="24" cy="24" r={DONUT_RADIUS} fill="none" className="stroke-border" strokeWidth="6" />
-      {okLen > 0 && (
-        <circle
-          cx="24"
-          cy="24"
-          r={DONUT_RADIUS}
-          fill="none"
-          stroke={CHART_STATUS_COLOR.SUCCESS}
-          strokeWidth="6"
-          strokeDasharray={`${okLen} ${DONUT_CIRCUMFERENCE - okLen}`}
-          strokeDashoffset={DONUT_OFFSET}
+    <Tooltip
+      title={
+        state.slices.length > 0 ? <DonutLegend slices={state.slices} /> : <p>No {label.toLowerCase()} to report.</p>
+      }
+    >
+      <div
+        role="img"
+        tabIndex={0}
+        aria-label={describeStatusSlices(label, state.total, state.slices)}
+        className="focus-visible:ring-ring rounded-full focus-visible:ring-2 focus-visible:outline-none"
+      >
+        <DonutChart
+          data={state.slices}
+          size={DONUT_SIZE}
+          thickness={DONUT_THICKNESS}
+          centerValue={state.total}
+          centerValueClassName="text-sm"
         />
-      )}
-      {failLen > 0 && (
-        <circle
-          cx="24"
-          cy="24"
-          r={DONUT_RADIUS}
-          fill="none"
-          stroke={CHART_STATUS_COLOR.ERROR}
-          strokeWidth="6"
-          strokeDasharray={`${failLen} ${DONUT_CIRCUMFERENCE - failLen}`}
-          strokeDashoffset={DONUT_OFFSET - okLen}
-        />
-      )}
-      <text x="24" y="27" textAnchor="middle" fontSize="10" className="fill-foreground" fontWeight="600">
-        {total}
-      </text>
-    </svg>
+      </div>
+    </Tooltip>
   );
 }
 
-interface ResourceItemProps {
-  label: string;
-  ok: number;
-  failed: number;
-  total: number;
-  isLoading: boolean;
-}
-
-function ResourceItem({ label, ok, failed, total, isLoading }: ResourceItemProps) {
+function ResourceTile({ label, state }: { label: string; state: ResourceTileState }) {
   return (
-    <div className="hover:bg-muted/50 flex cursor-pointer flex-col items-center rounded-lg p-3 transition-colors">
-      {isLoading ? (
-        <div className="flex size-14 items-center justify-center">
-          <Loader2 className="text-muted-foreground size-5 animate-spin" />
-        </div>
-      ) : (
-        <CompactDonut ok={ok} failed={failed} total={total} />
-      )}
+    <div className="flex flex-col items-center p-3">
+      <TileGraphic label={label} state={state} />
       <p className="text-foreground mt-2 text-center text-xs font-medium">{label}</p>
-      {!isLoading && (
-        <div className="mt-1 flex items-center gap-2 text-xs">
-          <span style={{ color: CHART_STATUS_COLOR.SUCCESS }}>{ok}</span>
-          <span className="text-muted-foreground">/</span>
-          <span style={{ color: CHART_STATUS_COLOR.ERROR }}>{failed}</span>
-        </div>
+      {state.kind === "ready" && (
+        <p aria-hidden className="mt-1 flex items-center gap-1 text-xs">
+          {state.countRow.map((slice, index) => (
+            <Fragment key={slice.name}>
+              {index > 0 && <span className="text-muted-foreground">/</span>}
+              <span style={{ color: slice.color }}>{slice.value}</span>
+            </Fragment>
+          ))}
+        </p>
       )}
     </div>
   );
 }
 
 export function ResourceHealth() {
-  const codebases = useCodebasesGraphData();
-  const branches = useCodebaseBranchesGraphData();
-  const pipelines = usePipelineRunsGraphData();
-  const cdPipelines = useCDPipelinesGraphData();
-  const stages = useStagesGraphData();
+  const codebases = useCodebasesHealth();
+  const branches = useCodebaseBranchesHealth();
+  const pipelines = usePipelineRunsHealth();
+  const cdPipelines = useCDPipelinesHealth();
+  const stages = useStagesHealth();
 
   const resources = [
-    { label: "Codebases", data: codebases.graphData, isLoading: codebases.isLoading },
-    { label: "Branches", data: branches.graphData, isLoading: branches.isLoading },
-    { label: "Pipelines", data: pipelines.graphData, isLoading: pipelines.isLoading },
-    { label: "CD Pipelines", data: cdPipelines.graphData, isLoading: cdPipelines.isLoading },
-    { label: "Stages", data: stages.graphData, isLoading: stages.isLoading },
+    { label: "Codebases", result: codebases },
+    { label: "Branches", result: branches },
+    { label: "Pipelines", result: pipelines },
+    { label: "CD Pipelines", result: cdPipelines },
+    { label: "Stages", result: stages },
   ];
 
   return (
     <DashboardCard title="Resource Health">
       <div className="grid grid-cols-5 gap-4">
-        {resources.map((resource) => (
-          <ResourceItem
-            key={resource.label}
-            label={resource.label}
-            ok={resource.data.ok ?? 0}
-            failed={resource.data.error ?? 0}
-            total={resource.data.total ?? 0}
-            isLoading={resource.isLoading}
-          />
+        {resources.map(({ label, result }) => (
+          <ResourceTile key={label} label={label} state={toResourceTileState(result)} />
         ))}
       </div>
     </DashboardCard>

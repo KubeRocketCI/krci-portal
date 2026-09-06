@@ -28,18 +28,28 @@ export const useColumns = (): TableColumn<Application>[] => {
           render: ({ data: { metadata } }) => {
             const CDPipelineName = metadata?.labels?.[applicationLabels.pipeline];
 
+            const content = (
+              <>
+                <ENTITY_ICON.deployment className="text-muted-foreground/70" />
+                <TextWithTooltip text={CDPipelineName} />
+              </>
+            );
+
+            if (!CDPipelineName) {
+              return <div className="text-muted-foreground flex items-center gap-1.5 px-3 text-sm">{content}</div>;
+            }
+
             return (
               <Button variant="link" asChild size="sm">
                 <Link
                   to={routeCDPipelineDetails.fullPath}
                   params={{
                     clusterName,
-                    name: CDPipelineName!,
+                    name: CDPipelineName,
                     namespace,
                   }}
                 >
-                  <ENTITY_ICON.deployment className="text-muted-foreground/70" />
-                  <TextWithTooltip text={CDPipelineName || ""} />
+                  {content}
                 </Link>
               </Button>
             );
@@ -64,18 +74,26 @@ export const useColumns = (): TableColumn<Application>[] => {
             const CDPipelineName = metadata?.labels?.[applicationLabels.pipeline];
             const stageName = metadata?.labels?.[applicationLabels.stage];
 
+            if (!CDPipelineName || !stageName) {
+              return (
+                <div className="text-muted-foreground px-3 text-sm">
+                  <TextWithTooltip text={stageName} className="font-medium" />
+                </div>
+              );
+            }
+
             return (
               <Button variant="link" asChild>
                 <Link
                   to={routeStageDetails.fullPath}
                   params={{
                     clusterName,
-                    cdPipeline: CDPipelineName!,
-                    stage: stageName!,
+                    cdPipeline: CDPipelineName,
+                    stage: stageName,
                     namespace,
                   }}
                 >
-                  <TextWithTooltip text={stageName || ""} className="font-medium" />
+                  <TextWithTooltip text={stageName} className="font-medium" />
                 </Link>
               </Button>
             );

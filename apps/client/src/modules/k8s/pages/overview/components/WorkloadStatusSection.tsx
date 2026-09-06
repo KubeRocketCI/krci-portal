@@ -6,7 +6,7 @@ import type { KubeObjectBase } from "@my-project/shared";
 import type { UseWatchListResult } from "@/k8s/api/hooks/useWatch/types";
 import type { WorkloadResults } from "../hooks/useClusterOverview";
 import { bucketWorkload, WORKLOAD_KINDS, type WorkloadKind } from "../utils/workload";
-import { DonutCardBody } from "./DonutChart";
+import { DonutCardBody } from "@/core/components/charts/DonutChart";
 
 interface WorkloadStatusSectionProps {
   clusterName: string;

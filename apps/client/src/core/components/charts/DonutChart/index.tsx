@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
-import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
+import { Cell, Pie, PieChart } from "recharts";
+import { cn } from "@/core/utils/classname";
 import { Skeleton } from "@/core/components/ui/skeleton";
-import { STATUS_COLOR } from "@/k8s/constants/colors";
+
+/** Empty-ring colour. Not a status colour. */
+const EMPTY_RING_COLOR = "var(--border)";
 
 export interface DonutSlice {
   name: string;
@@ -17,43 +20,52 @@ interface DonutChartProps {
   thickness?: number;
   centerValue?: ReactNode;
   centerLabel?: ReactNode;
+  /** Smaller text scale for small rings. */
+  centerValueClassName?: string;
 }
 
-/** A zero total renders one neutral ring so the widget never collapses to an empty box. */
-export function DonutChart({ data, size = 116, thickness = 14, centerValue, centerLabel }: DonutChartProps) {
+/** Zero total renders one neutral ring. */
+export function DonutChart({
+  data,
+  size = 116,
+  thickness = 14,
+  centerValue,
+  centerLabel,
+  centerValueClassName = "text-xl",
+}: DonutChartProps) {
   const total = data.reduce((sum, slice) => sum + slice.value, 0);
   const slices: DonutSlice[] =
-    total > 0 ? data.filter((slice) => slice.value > 0) : [{ name: "None", value: 1, color: STATUS_COLOR.UNKNOWN }];
+    total > 0 ? data.filter((slice) => slice.value > 0) : [{ name: "None", value: 1, color: EMPTY_RING_COLOR }];
 
   const outerRadius = size / 2;
   const innerRadius = outerRadius - thickness;
 
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={slices}
-            dataKey="value"
-            nameKey="name"
-            cx="50%"
-            cy="50%"
-            innerRadius={innerRadius}
-            outerRadius={outerRadius}
-            paddingAngle={total > 0 ? 2 : 0}
-            stroke="none"
-            isAnimationActive={false}
-          >
-            {slices.map((slice, index) => (
-              <Cell key={`cell-${index}`} fill={slice.color} />
-            ))}
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>
+      <PieChart width={size} height={size}>
+        <Pie
+          data={slices}
+          dataKey="value"
+          nameKey="name"
+          cx="50%"
+          cy="50%"
+          innerRadius={innerRadius}
+          outerRadius={outerRadius}
+          paddingAngle={total > 0 ? 2 : 0}
+          stroke="none"
+          isAnimationActive={false}
+        >
+          {slices.map((slice, index) => (
+            <Cell key={`cell-${index}`} fill={slice.color} />
+          ))}
+        </Pie>
+      </PieChart>
       {(centerValue != null || centerLabel != null) && (
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
           {centerValue != null && (
-            <span className="text-foreground text-xl leading-none font-semibold tabular-nums">{centerValue}</span>
+            <span className={cn("text-foreground leading-none font-semibold tabular-nums", centerValueClassName)}>
+              {centerValue}
+            </span>
           )}
           {centerLabel != null && (
             <span className="text-muted-foreground mt-0.5 text-[10px] tracking-wide uppercase">{centerLabel}</span>
@@ -64,18 +76,19 @@ export function DonutChart({ data, size = 116, thickness = 14, centerValue, cent
   );
 }
 
+/** Inherits the surface colour. Renders inside the inverted tooltip. */
 export function DonutLegend({ slices }: { slices: DonutSlice[] }) {
   return (
     <ul className="flex flex-col gap-1">
       {slices.map((slice, index) => (
         <li key={`${slice.name}-${index}`} className="flex items-center gap-1.5 text-xs">
           <span
-            className="inline-block h-2 w-2 shrink-0 rounded-full"
+            className="inline-block h-2 w-2 shrink-0 rounded-full ring-1 ring-current/20 ring-inset"
             style={{ backgroundColor: slice.color }}
             aria-hidden
           />
-          <span className="text-muted-foreground truncate">{slice.name}</span>
-          <span className="text-foreground ml-auto tabular-nums">{slice.value}</span>
+          <span className="truncate opacity-70">{slice.name}</span>
+          <span className="ml-auto tabular-nums">{slice.value}</span>
         </li>
       ))}
     </ul>
