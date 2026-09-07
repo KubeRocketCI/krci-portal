@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DataTable } from "./index";
-import { TableColumn } from "./types";
+import { DataTableClientProps, TableColumn } from "./types";
 import { Row, colFor, column, dragHandle, handleFor, readTableSettings, seedTableSettings } from "./testUtils";
 import { stubResizeObserver } from "@/test/utils/resize-observer";
 
@@ -27,7 +27,7 @@ const columns = [column("name", 40), column("status", 30), column("actions", 30)
 
 const data: Row[] = [{ name: "alpha" }, { name: "beta" }];
 
-const renderTable = (props: Partial<React.ComponentProps<typeof DataTable<Row>>> = {}) =>
+const renderTable = (props: Partial<DataTableClientProps<Row>> = {}) =>
   render(<DataTable<Row> id={TABLE_ID} columns={columns} data={data} pagination={{ show: false }} {...props} />);
 
 const statusHeader = () => screen.queryByRole("columnheader", { name: /status/i });

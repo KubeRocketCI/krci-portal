@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/core/components/ui/card";
 import { TabButton } from "@/core/components/TabButton";
 import { IssueSeverity } from "@my-project/shared";
-import { ServerSideTable } from "@/core/components/ServerSideTable";
+import { DataTable } from "@/core/components/Table";
 import { useProjectIssues } from "../../hooks/useProjectIssues";
 import { useIssuesColumns } from "../../hooks/useIssuesColumns";
 import { IssueFilters } from "./IssueFilters";
@@ -83,8 +83,9 @@ export function IssuesSection({ projectKey }: IssuesSectionProps) {
           ))}
         </div>
 
-        <ServerSideTable
+        <DataTable
           id="sast-issues-table"
+          mode="server"
           data={data?.issues || []}
           columns={columns}
           isLoading={isLoading}
@@ -96,15 +97,16 @@ export function IssuesSection({ projectKey }: IssuesSectionProps) {
             expandedRowRender: (issue) => <IssueDetailContent issue={issue} components={data?.components} />,
           }}
           slots={{
-            header: <IssueFilters severities={severityFilter} onSeveritiesChange={handleSeveritiesChange} />,
+            header: {
+              component: <IssueFilters severities={severityFilter} onSeveritiesChange={handleSeveritiesChange} />,
+            },
           }}
           pagination={{
             show: true,
             page,
             rowsPerPage: ISSUES_PAGE_SIZE,
-            totalCount: data?.total || 0,
+            totalCount: data?.total,
             onPageChange: handlePageChange,
-            onRowsPerPageChange: () => {},
           }}
           settings={{
             show: true,

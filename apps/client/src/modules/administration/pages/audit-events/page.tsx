@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, type ChangeEvent } from "react";
 import { ShieldCheck } from "lucide-react";
 import { EmptyList } from "@/core/components/EmptyList";
 import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import { DataTable } from "@/core/components/Table";
-import { TablePagination } from "@/core/components/Table/components/TablePagination";
 import { FilterProvider } from "@/core/providers/Filter";
 import { usePagination } from "@/core/hooks/usePagination";
 import type { KrciAuditEvent } from "@my-project/shared";
@@ -27,9 +26,6 @@ function AdminAuditEventsContent() {
   const columns = useColumns();
   const filterValues = useDebouncedAuditEventFilterValues();
 
-  // Server-driven pagination: page/perPage go to krci-audit; the DataTable's own client
-  // pager is disabled (it renders just the returned page) and the footer pager below is
-  // sized off the server's true total, so trails larger than one page page properly.
   const { page, rowsPerPage, handleChangePage, handleChangeRowsPerPage } = usePagination({
     initialPage: 0,
     initialRowsPerPage: AUDIT_EVENTS_DEFAULT_PER_PAGE,
@@ -51,27 +47,15 @@ function AdminAuditEventsContent() {
     }
   }, [filterKey, page, handleChangePage]);
 
-  const tableSlots = useMemo(
-    () => ({
-      header: {
-        component: <AuditEventFilter />,
-      },
-      footer: {
-        component: (
-          <div className="m-0 px-5 pb-5">
-            <TablePagination
-              dataCount={total}
-              page={page}
-              rowsPerPage={perPage}
-              handleChangePage={handleChangePage}
-              handleChangeRowsPerPage={handleChangeRowsPerPage}
-            />
-          </div>
-        ),
-      },
-    }),
-    [total, page, perPage, handleChangePage, handleChangeRowsPerPage]
+  const handlePageChange = useCallback((nextPage: number) => handleChangePage(null, nextPage), [handleChangePage]);
+
+  // Same synthetic event the ui pager builds; `usePagination` parses `target.value`.
+  const handleRowsPerPageChange = useCallback(
+    (rows: number) => handleChangeRowsPerPage({ target: { value: String(rows) } } as ChangeEvent<HTMLInputElement>),
+    [handleChangeRowsPerPage]
   );
+
+  const tableSlots = useMemo(() => ({ header: { component: <AuditEventFilter /> } }), []);
 
   return (
     <PageWrapper breadcrumbs={[{ label: "Administration" }, { label: "Audit Events" }]}>
@@ -82,12 +66,19 @@ function AdminAuditEventsContent() {
       >
         <DataTable<KrciAuditEvent>
           id={TABLE_ID_ADMIN_AUDIT_EVENTS}
+          mode="server"
           data={events}
           columns={columns}
           isLoading={isLoading}
           errors={error ? [error] : null}
           slots={tableSlots}
-          pagination={{ show: false }}
+          pagination={{
+            page,
+            rowsPerPage: perPage,
+            totalCount: total,
+            onPageChange: handlePageChange,
+            onRowsPerPageChange: handleRowsPerPageChange,
+          }}
           emptyListComponent={<EmptyList customText="No audit events found" />}
         />
       </PageContentWrapper>

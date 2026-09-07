@@ -3,6 +3,7 @@ import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createSonarQubeClient } from "../../../../clients/sonarqube/index.js";
 import {
   sonarqubeProjectsQueryParamsSchema,
+  projectsWithMetricsResponseSchema,
   ProjectWithMetrics,
   SonarQubeProject,
   SONARQUBE_METRIC_KEYS,
@@ -25,6 +26,7 @@ const SONARQUBE_SEARCH_MAX_OFFSET = 10_000;
  */
 export const getProjectsProcedure = protectedProcedure
   .input(sonarqubeProjectsQueryParamsSchema)
+  .output(projectsWithMetricsResponseSchema)
   .query(async ({ input }) => {
     const client = createSonarQubeClient();
 

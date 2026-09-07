@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { ServerSideTable } from "@/core/components/ServerSideTable";
+import { DataTable } from "@/core/components/Table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { Label } from "@/core/components/ui/label";
 import { Switch } from "@/core/components/ui/switch";
@@ -38,7 +38,7 @@ export function ProjectComponents({ projectUuid }: ProjectComponentsProps) {
   });
 
   const components = data?.components || [];
-  const totalCount = data?.totalCount || 0;
+  const totalCount = data?.totalCount;
 
   const handlePageChange = useCallback(
     (newPage: number) => {
@@ -75,7 +75,7 @@ export function ProjectComponents({ projectUuid }: ProjectComponentsProps) {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Components ({totalCount})</CardTitle>
+            <CardTitle>{typeof totalCount === "number" ? `Components (${totalCount})` : "Components"}</CardTitle>
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
                 <Switch
@@ -117,8 +117,9 @@ export function ProjectComponents({ projectUuid }: ProjectComponentsProps) {
               No components found for this project.
             </div>
           )}
-          <ServerSideTable
+          <DataTable
             id="project-components-table"
+            mode="server"
             data={components}
             columns={columns}
             isLoading={isLoading}

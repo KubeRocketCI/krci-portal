@@ -1,5 +1,5 @@
 import { EmptyList } from "@/core/components/EmptyList";
-import { ServerSideTable } from "@/core/components/ServerSideTable";
+import { DataTable } from "@/core/components/Table";
 import { Button } from "@/core/components/ui/button";
 import { Card } from "@/core/components/ui/card";
 import { useTRPCClient } from "@/core/providers/trpc";
@@ -68,15 +68,16 @@ export function PullRequestList() {
   });
 
   const pullRequests: GitFusionPullRequest[] = query.data?.data || [];
-  const totalCount = query.data?.pagination?.total || 0;
+  const totalCount = query.data?.pagination.total;
 
   return (
     <Card className="space-y-5 p-6" data-tour="pull-requests-table">
       <div className="flex items-center justify-between">
         <h3 className="text-foreground text-xl font-semibold">Pull Requests</h3>
       </div>
-      <ServerSideTable
+      <DataTable
         id={TABLE_ID}
+        mode="server"
         data={pullRequests}
         columns={columns}
         isLoading={codebaseWatch.query.isLoading || query.isFetching}
@@ -96,20 +97,22 @@ export function PullRequestList() {
           ),
         }}
         slots={{
-          header: (
-            <div className="col-span-12 flex items-center gap-2">
-              {STATE_TABS.map((tab) => (
-                <Button
-                  key={tab.value}
-                  variant={state === tab.value ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleStateChange(tab.value)}
-                >
-                  {tab.label}
-                </Button>
-              ))}
-            </div>
-          ),
+          header: {
+            component: (
+              <div className="col-span-12 flex items-center gap-2">
+                {STATE_TABS.map((tab) => (
+                  <Button
+                    key={tab.value}
+                    variant={state === tab.value ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleStateChange(tab.value)}
+                  >
+                    {tab.label}
+                  </Button>
+                ))}
+              </div>
+            ),
+          },
         }}
         pagination={{
           show: true,
@@ -117,9 +120,6 @@ export function PullRequestList() {
           rowsPerPage: PER_PAGE,
           totalCount,
           onPageChange: setPage,
-          onRowsPerPageChange: () => {
-            // Fixed page size, no-op
-          },
         }}
         settings={{
           show: true,

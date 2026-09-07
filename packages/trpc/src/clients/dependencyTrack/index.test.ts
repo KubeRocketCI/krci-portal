@@ -115,4 +115,47 @@ describe("DependencyTrackClient", () => {
     });
     expect(client).toBeInstanceOf(DependencyTrackClient);
   });
+
+  describe("x-total-count", () => {
+    const client = new DependencyTrackClient({
+      apiBaseURL: "https://dt.example.com",
+      apiKey: "key",
+    });
+
+    function stubListResponse(headers?: HeadersInit) {
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("[]", { status: 200, headers })));
+    }
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it("getProjects reads totalCount from the x-total-count header", async () => {
+      stubListResponse({ "x-total-count": "42" });
+
+      await expect(client.getProjects({ pageNumber: 0, pageSize: 25 })).resolves.toEqual({
+        projects: [],
+        totalCount: 42,
+      });
+    });
+
+    it("getProjects throws when x-total-count is absent", async () => {
+      stubListResponse();
+
+      await expect(client.getProjects({ pageNumber: 0, pageSize: 25 })).rejects.toThrow(
+        "Dependency Track response has no valid X-Total-Count header (got null)"
+      );
+    });
+
+    it.each(["42broken", "1.5", "-1", "", "NaN"])(
+      "getProjects throws for a malformed x-total-count (%j)",
+      async (raw) => {
+        stubListResponse({ "x-total-count": raw });
+
+        await expect(client.getProjects({ pageNumber: 0, pageSize: 25 })).rejects.toThrow(
+          `Dependency Track response has no valid X-Total-Count header (got ${JSON.stringify(raw)})`
+        );
+      }
+    );
+  });
 });

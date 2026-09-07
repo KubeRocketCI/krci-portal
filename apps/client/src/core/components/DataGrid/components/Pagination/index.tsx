@@ -2,7 +2,8 @@ import { TablePagination as TablePaginationComponent } from "@/core/components/u
 import { PaginationProps } from "./types";
 
 export const Pagination = ({
-  dataCount,
+  totalCount,
+  pageItemCount,
   page,
   rowsPerPage,
   handleChangePage,
@@ -10,7 +11,8 @@ export const Pagination = ({
 }: PaginationProps) => {
   return (
     <TablePaginationComponent
-      dataCount={dataCount}
+      totalCount={totalCount}
+      pageItemCount={pageItemCount}
       page={page}
       rowsPerPage={rowsPerPage}
       handleChangePage={handleChangePage}

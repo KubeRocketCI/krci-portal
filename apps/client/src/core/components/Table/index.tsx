@@ -18,51 +18,77 @@ import { useColumnSync } from "./hooks/useColumnSync";
 import { useColumnResize } from "./hooks/useColumnResize";
 import { useSyncedSortState } from "./hooks/useSyncedSortState";
 import {
-  TablePagination as TablePaginationType,
+  DataTableClientProps,
   TableProps,
   TableSelection,
   TableSettings as TableSettingsType,
   TableSort,
 } from "./types";
 import { usePagination } from "@/core/hooks/usePagination";
+import { isKnownTotal } from "@/core/components/ui/table-pagination/utils";
 import { useIsNarrow } from "@/core/hooks/use-narrow";
 import { cn } from "@/core/utils/classname";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/core/components/ui/sheet";
 import { Button } from "@/core/components/ui/button";
 import { SlidersHorizontal } from "lucide-react";
 
-export const DataTable = <DataType,>({
-  id,
-  data,
-  columns: _columns,
-  isLoading = false,
-  blockerError,
-  errors,
-  sort,
-  selection,
-  pagination,
-  emptyListComponent,
-  filterFunction,
-  handleRowClick,
-  expandable,
-  blockerComponent,
-  slots,
-  settings,
-  outlined = true,
-  containerProps,
-}: TableProps<DataType>) => {
+/** Router-backed page state. Client mode only. */
+type ClientPager = ReturnType<typeof usePagination>;
+
+type TableShellProps<DataType> = TableProps<DataType> & { clientPager: ClientPager | null };
+
+/**
+ * `usePagination` reads the router, so only the client-mode tree mounts it. Server mode
+ * takes `page` and `rowsPerPage` from the caller and renders the shell without it.
+ */
+export const DataTable = <DataType,>(props: TableProps<DataType>) => {
+  if (props.mode === "server") {
+    return <TableShell<DataType> {...props} clientPager={null} />;
+  }
+
+  return <ClientPagedTable<DataType> {...props} />;
+};
+
+const ClientPagedTable = <DataType,>(props: DataTableClientProps<DataType>) => {
+  const clientPager = usePagination({
+    initialPage: props.pagination?.initialPage ?? PAGINATION_DEFAULTS.INITIAL_PAGE,
+    initialRowsPerPage: props.pagination?.rowsPerPage ?? PAGINATION_DEFAULTS.ROWS_PER_PAGE,
+  });
+
+  return <TableShell<DataType> {...props} clientPager={clientPager} />;
+};
+
+const TableShell = <DataType,>(props: TableShellProps<DataType>) => {
+  const {
+    id,
+    data,
+    columns: _columns,
+    isLoading = false,
+    blockerError,
+    errors,
+    sort,
+    emptyListComponent,
+    handleRowClick,
+    expandable,
+    blockerComponent,
+    slots,
+    settings,
+    outlined = true,
+    containerProps,
+    clientPager,
+  } = props;
+
+  // Narrow through `props.mode` explicitly; a destructured discriminant does not narrow its siblings.
+  const isServerMode = props.mode === "server";
+  const serverPagination = props.mode === "server" ? props.pagination : undefined;
+  const clientPagination = props.mode === "server" ? undefined : props.pagination;
+  const selection = props.mode === "server" ? undefined : props.selection;
+  const filterFunction = props.mode === "server" ? undefined : props.filterFunction;
+
   const isNarrow = useIsNarrow();
   const { columns, toggleColumnVisibility } = useColumnSync(_columns, id);
 
-  const paginationSettings: TablePaginationType = React.useMemo(
-    () => ({
-      show: pagination?.show ?? PAGINATION_DEFAULTS.SHOW,
-      rowsPerPage: pagination?.rowsPerPage ?? PAGINATION_DEFAULTS.ROWS_PER_PAGE,
-      initialPage: pagination?.initialPage ?? PAGINATION_DEFAULTS.INITIAL_PAGE,
-      reflectInURL: pagination?.reflectInURL ?? PAGINATION_DEFAULTS.REFLECT_IN_URL,
-    }),
-    [pagination?.initialPage, pagination?.reflectInURL, pagination?.rowsPerPage, pagination?.show]
-  );
+  const showPager = (serverPagination ? serverPagination.show : clientPagination?.show) ?? PAGINATION_DEFAULTS.SHOW;
 
   const sortSettings: TableSort = React.useMemo(
     () => ({
@@ -98,15 +124,8 @@ export const DataTable = <DataType,>({
     [settings?.show]
   );
 
-  const {
-    page,
-    rowsPerPage: _rowsPerPage,
-    handleChangeRowsPerPage,
-    handleChangePage,
-  } = usePagination({
-    initialPage: paginationSettings.initialPage!,
-    initialRowsPerPage: paginationSettings.rowsPerPage!,
-  });
+  const clientPage = clientPager?.page ?? 0;
+  const clientRowsPerPage = clientPager?.rowsPerPage ?? PAGINATION_DEFAULTS.ROWS_PER_PAGE;
 
   const [sortState, setSortState] = useSyncedSortState<DataType>(sortSettings);
 
@@ -121,34 +140,61 @@ export const DataTable = <DataType,>({
   const isFilteredDataLoading = filteredData === null;
 
   const isEmptyFilterResult = React.useMemo(() => {
+    if (isServerMode) {
+      return false;
+    }
     if (isLoading && isFilteredDataLoading) {
       return false;
     }
 
     return !!data?.length && !filteredData?.length;
-  }, [data, isLoading, isFilteredDataLoading, filteredData]);
+  }, [isServerMode, data, isLoading, isFilteredDataLoading, filteredData]);
 
-  // When pagination is hidden, ignore any stray `?page=N` from the URL and render the
-  // full dataset in one slice. The `_rowsPerPage` floor keeps skeleton row count sensible
-  // while filteredData is null.
-  const paginationHidden = paginationSettings.show === false;
-  const effectivePage = paginationHidden ? 0 : page;
-  const effectiveRowsPerPage = paginationHidden ? Math.max(filteredData?.length ?? 0, _rowsPerPage) : _rowsPerPage;
+  // Server mode: `data` is the page, rendered in one slice from row 0. The `rowsPerPage`
+  // floor sets the skeleton row count while `data` is empty and loading.
+  // Client mode with the pager hidden: ignore any stray `?page=N` from the URL and render
+  // the full dataset in one slice. The `clientRowsPerPage` floor keeps skeleton row count
+  // sensible while filteredData is null.
+  const paginationHidden = !showPager;
+  const effectivePage = isServerMode || paginationHidden ? 0 : clientPage;
+  let effectiveRowsPerPage = clientRowsPerPage;
+  if (serverPagination) {
+    effectiveRowsPerPage = data.length || serverPagination.rowsPerPage;
+  } else if (paginationHidden) {
+    effectiveRowsPerPage = Math.max(filteredData?.length ?? 0, clientRowsPerPage);
+  }
 
   const isPageOutOfBounds = React.useMemo(() => {
+    if (serverPagination) {
+      // Known total only: a cursor page and an unknown total have no bound to check.
+      const { totalCount } = serverPagination;
+      if (paginationHidden || !isKnownTotal(totalCount) || totalCount === 0) {
+        return false;
+      }
+      return serverPagination.page >= Math.ceil(totalCount / serverPagination.rowsPerPage);
+    }
+
     if (paginationHidden || !filteredData || filteredData.length === 0) {
       return false;
     }
-    return page >= Math.ceil(filteredData.length / _rowsPerPage);
-  }, [filteredData, page, _rowsPerPage, paginationHidden]);
+    return clientPage >= Math.ceil(filteredData.length / clientRowsPerPage);
+  }, [serverPagination, filteredData, clientPage, clientRowsPerPage, paginationHidden]);
 
-  const activePage = filteredData !== null && filteredData.length < effectiveRowsPerPage ? 0 : effectivePage;
+  const activePage =
+    isServerMode || (filteredData !== null && filteredData.length < effectiveRowsPerPage) ? 0 : effectivePage;
 
   const paginatedData = React.useMemo(() => {
     if (!filteredData) {
       return {
         items: [],
         count: 0,
+      };
+    }
+
+    if (isServerMode) {
+      return {
+        items: filteredData,
+        count: filteredData.length,
       };
     }
 
@@ -161,7 +207,7 @@ export const DataTable = <DataType,>({
       items,
       count: items?.length,
     };
-  }, [effectivePage, filteredData, effectiveRowsPerPage]);
+  }, [isServerMode, effectivePage, filteredData, effectiveRowsPerPage]);
 
   const selectableRowCount = React.useMemo(
     () => selectionSettings.isRowSelectable && paginatedData.items.filter(selectionSettings.isRowSelectable).length,
@@ -232,6 +278,24 @@ export const DataTable = <DataType,>({
       return resizerProps && <ColumnResizer {...resizerProps} />;
     },
     [resize]
+  );
+
+  // Forwards the new size only. The caller's size callback owns the page reset.
+  const onServerPageChange = serverPagination?.onPageChange;
+  const onServerRowsPerPageChange = serverPagination?.onRowsPerPageChange;
+
+  const handleServerChangePage = React.useCallback(
+    (_event: unknown, nextPage: number) => {
+      onServerPageChange?.(nextPage);
+    },
+    [onServerPageChange]
+  );
+
+  const handleServerChangeRowsPerPage = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      onServerRowsPerPageChange?.(parseInt(event.target.value, 10));
+    },
+    [onServerRowsPerPageChange]
   );
 
   const renderHeader = React.useCallback(() => {
@@ -343,15 +407,32 @@ export const DataTable = <DataType,>({
             </TableUI>
           </div>
         </div>
-        {paginationSettings.show && (
+        {showPager && (
           <div className="m-0 px-5 pb-5">
-            <TablePagination
-              dataCount={filteredData && filteredData.length}
-              page={activePage}
-              rowsPerPage={_rowsPerPage}
-              handleChangePage={handleChangePage}
-              handleChangeRowsPerPage={handleChangeRowsPerPage}
-            />
+            {serverPagination ? (
+              <TablePagination
+                totalCount={serverPagination.totalCount}
+                hasNextPage={serverPagination.hasNextPage}
+                pageItemCount={data.length}
+                page={serverPagination.page}
+                rowsPerPage={serverPagination.rowsPerPage}
+                handleChangePage={handleServerChangePage}
+                handleChangeRowsPerPage={handleServerChangeRowsPerPage}
+                showRowsPerPage={Boolean(serverPagination.onRowsPerPageChange)}
+              />
+            ) : (
+              clientPager && (
+                <TablePagination
+                  totalCount={filteredData?.length}
+                  pageItemCount={paginatedData.count}
+                  page={activePage}
+                  rowsPerPage={clientRowsPerPage}
+                  handleChangePage={clientPager.handleChangePage}
+                  handleChangeRowsPerPage={clientPager.handleChangeRowsPerPage}
+                  showRowsPerPage
+                />
+              )
+            )}
           </div>
         )}
         {slots?.footer && slots.footer.component}
