@@ -15,6 +15,7 @@ export default defineConfig({
         "**/coverage/**",
         "**/.storybook/**",
         "**/__mocks__/**",
+        "**/__fixtures__/**",
         "**/eslint.config.js",
         "**/.eslintrc*",
 

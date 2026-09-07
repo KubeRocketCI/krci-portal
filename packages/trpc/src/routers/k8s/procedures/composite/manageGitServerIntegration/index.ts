@@ -1,21 +1,20 @@
 import { z } from "zod";
-import { protectedProcedure } from "../../../../../procedures/protected/index.js";
-import { K8sClient } from "../../../../../clients/k8s/index.js";
-import { handleK8sError } from "../../../utils/handleK8sError/index.js";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors/index.js";
 import {
-  k8sGitServerConfig,
-  k8sSecretConfig,
-  GitServer,
-  Secret,
   createGitServerDraft,
   createGitServerSecretDraft,
   editGitServer,
   editGitServerSecret,
   gitProvider,
   gitProviderEnum,
+  k8sGitServerConfig,
   k8sResourceNameSchema,
+  k8sSecretConfig,
 } from "@my-project/shared";
+import type { GitServer, Secret } from "@my-project/shared";
+import {
+  createManageIntegrationProcedure,
+  integrationInputBaseSchema,
+} from "../utils/createManageIntegrationProcedure/index.js";
 
 const secretInputSchema = z.discriminatedUnion("gitProvider", [
   z.object({
@@ -44,13 +43,7 @@ const secretInputSchema = z.discriminatedUnion("gitProvider", [
   }),
 ]);
 
-/**
- * Input schema for manageGitServerIntegration composite operation
- */
-const manageGitServerIntegrationInputSchema = z.object({
-  clusterName: z.string(),
-  namespace: z.string(),
-  mode: z.enum(["create", "edit"]),
+const manageGitServerIntegrationInputSchema = integrationInputBaseSchema.extend({
   dirtyFields: z.object({
     gitServer: z.boolean(),
     secret: z.boolean(),
@@ -66,142 +59,56 @@ const manageGitServerIntegrationInputSchema = z.object({
     skipWebhookSSLVerification: z.boolean(),
     tektonDisabled: z.boolean().optional(),
     webhookUrl: z.string().optional(),
-    currentResource: z.any().optional(), // Required for edit mode
+    currentResource: z.any().optional(),
   }),
   secret: secretInputSchema,
 });
 
 export type ManageGitServerIntegrationInput = z.infer<typeof manageGitServerIntegrationInputSchema>;
 
-/**
- * Composite procedure to manage Git Server integration (GitServer + Secret)
- *
- * Handles both create and edit modes with dirty field tracking.
- * Only updates resources that have been modified (dirty).
- *
- * **Fail-fast behavior:** Operations execute sequentially. If any operation fails,
- * execution stops and returns an error. Changes that succeeded remain (no rollback).
- * User can retry - idempotent operations will skip resources that are already correct.
- */
-export const k8sManageGitServerIntegrationProcedure = protectedProcedure
-  .input(manageGitServerIntegrationInputSchema)
-  .mutation(async ({ input, ctx }) => {
-    const k8sClient = new K8sClient(ctx.session);
+type GitServerSecretSlice = z.infer<typeof secretInputSchema>;
+type GitServerSlice = ManageGitServerIntegrationInput["gitServer"];
 
-    if (!k8sClient.KubeConfig) {
-      throw ERROR_K8S_CLIENT_NOT_INITIALIZED;
-    }
+const gitServerSecretKeys = (secret: GitServerSecretSlice) =>
+  secret.gitProvider === gitProvider.gerrit
+    ? { gitProvider: secret.gitProvider, sshPrivateKey: secret.sshPrivateKey, sshPublicKey: secret.sshPublicKey }
+    : { gitProvider: secret.gitProvider, sshPrivateKey: secret.sshPrivateKey, token: secret.token };
 
-    const { namespace, mode, dirtyFields, gitServer, secret } = input;
+const gitServerSpec = (gitServer: GitServerSlice) => ({
+  gitHost: gitServer.gitHost,
+  gitProvider: gitServer.gitProvider,
+  gitUser: gitServer.gitUser,
+  nameSshKeySecret: gitServer.nameSshKeySecret,
+  sshPort: gitServer.sshPort,
+  httpsPort: gitServer.httpsPort,
+  skipWebhookSSLVerification: gitServer.skipWebhookSSLVerification,
+  tektonDisabled: gitServer.tektonDisabled,
+  webhookUrl: gitServer.webhookUrl,
+});
 
-    try {
-      let updatedSecret: Secret | undefined;
-      let updatedGitServer: GitServer | undefined;
-
-      // Step 1: Handle Secret operations
-      if (dirtyFields.secret) {
-        // Secret operation is independent of GitServer mode
-        // If currentResource doesn't exist, create new secret (even in overall edit mode)
-        if (!secret.currentResource) {
-          // Create new secret (shape matches shared createGitServerSecretDraft discriminated union).
-          // The secret name always mirrors GitServer.spec.nameSshKeySecret.
-          const secretDraftInput =
-            secret.gitProvider === gitProvider.gerrit
-              ? {
-                  gitProvider: secret.gitProvider,
-                  secretName: gitServer.nameSshKeySecret,
-                  sshPrivateKey: secret.sshPrivateKey,
-                  sshPublicKey: secret.sshPublicKey,
-                }
-              : {
-                  gitProvider: secret.gitProvider,
-                  secretName: gitServer.nameSshKeySecret,
-                  sshPrivateKey: secret.sshPrivateKey,
-                  token: secret.token,
-                };
-          const secretDraft = createGitServerSecretDraft(secretDraftInput);
-
-          updatedSecret = (await k8sClient.createResource(k8sSecretConfig, namespace, secretDraft as Secret)) as Secret;
-        } else {
-          // Edit existing secret
-          const secretEditInput =
-            secret.gitProvider === gitProvider.gerrit
-              ? {
-                  gitProvider: secret.gitProvider,
-                  sshPrivateKey: secret.sshPrivateKey,
-                  sshPublicKey: secret.sshPublicKey,
-                }
-              : { gitProvider: secret.gitProvider, sshPrivateKey: secret.sshPrivateKey, token: secret.token };
-          const editedSecret = editGitServerSecret(secret.currentResource as Secret, secretEditInput);
-
-          updatedSecret = (await k8sClient.replaceResource(
-            k8sSecretConfig,
-            editedSecret.metadata.name,
-            namespace,
-            editedSecret as Secret
-          )) as Secret;
-        }
-      }
-
-      // Step 2: Handle GitServer operations
-      if (dirtyFields.gitServer) {
-        if (mode === "create") {
-          // Create new gitserver
-          const gitServerDraft = createGitServerDraft({
-            name: gitServer.name,
-            gitHost: gitServer.gitHost,
-            gitProvider: gitServer.gitProvider,
-            gitUser: gitServer.gitUser,
-            nameSshKeySecret: gitServer.nameSshKeySecret,
-            sshPort: gitServer.sshPort,
-            httpsPort: gitServer.httpsPort,
-            skipWebhookSSLVerification: gitServer.skipWebhookSSLVerification,
-            tektonDisabled: gitServer.tektonDisabled,
-            webhookUrl: gitServer.webhookUrl,
-          });
-
-          updatedGitServer = (await k8sClient.createResource(
-            k8sGitServerConfig,
-            namespace,
-            gitServerDraft as GitServer
-          )) as GitServer;
-        } else {
-          // Edit existing gitserver
-          if (!gitServer.currentResource) {
-            throw new Error("currentResource is required for gitServer in edit mode");
-          }
-
-          const editedGitServer = editGitServer(gitServer.currentResource as GitServer, {
-            gitHost: gitServer.gitHost,
-            gitProvider: gitServer.gitProvider,
-            gitUser: gitServer.gitUser,
-            nameSshKeySecret: gitServer.nameSshKeySecret,
-            sshPort: gitServer.sshPort,
-            httpsPort: gitServer.httpsPort,
-            skipWebhookSSLVerification: gitServer.skipWebhookSSLVerification,
-            tektonDisabled: gitServer.tektonDisabled,
-            webhookUrl: gitServer.webhookUrl,
-          });
-
-          updatedGitServer = (await k8sClient.replaceResource(
-            k8sGitServerConfig,
-            editedGitServer.metadata.name,
-            namespace,
-            editedGitServer as GitServer
-          )) as GitServer;
-        }
-      }
-
-      return {
-        success: true,
-        data: {
-          secret: updatedSecret,
-          gitServer: updatedGitServer,
-          message: `Successfully ${mode === "create" ? "created" : "updated"} Git Server integration`,
-        },
-      };
-    } catch (error) {
-      console.error("Git Server integration operation failed:", error);
-      throw handleK8sError(error);
-    }
-  });
+export const k8sManageGitServerIntegrationProcedure = createManageIntegrationProcedure({
+  inputSchema: manageGitServerIntegrationInputSchema,
+  label: "Git Server integration",
+  steps: [
+    {
+      // An edit of an existing GitServer may still have to create the SSH secret for the first time.
+      branchOn: "currentResource",
+      key: "secret",
+      resourceConfig: k8sSecretConfig,
+      // Reads the gitServer slice regardless of its dirty flag; the client always sends it whole.
+      createDraft: (secret, input) =>
+        createGitServerSecretDraft({
+          ...gitServerSecretKeys(secret),
+          secretName: input.gitServer.nameSshKeySecret,
+        }) as Secret,
+      edit: (currentResource: Secret, secret) => editGitServerSecret(currentResource, gitServerSecretKeys(secret)),
+    },
+    {
+      key: "gitServer",
+      resourceConfig: k8sGitServerConfig,
+      createDraft: (gitServer) =>
+        createGitServerDraft({ name: gitServer.name, ...gitServerSpec(gitServer) }) as GitServer,
+      edit: (currentResource: GitServer, gitServer) => editGitServer(currentResource, gitServerSpec(gitServer)),
+    },
+  ],
+});
