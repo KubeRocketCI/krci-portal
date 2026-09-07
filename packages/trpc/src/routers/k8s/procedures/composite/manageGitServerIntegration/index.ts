@@ -13,6 +13,7 @@ import {
 import type { GitServer, Secret } from "@my-project/shared";
 import {
   createManageIntegrationProcedure,
+  currentResourceSchema,
   integrationInputBaseSchema,
 } from "../utils/createManageIntegrationProcedure/index.js";
 
@@ -21,25 +22,25 @@ const secretInputSchema = z.discriminatedUnion("gitProvider", [
     gitProvider: z.literal(gitProvider.bitbucket),
     sshPrivateKey: z.string(),
     token: z.string(),
-    currentResource: z.any().optional(),
+    currentResource: currentResourceSchema,
   }),
   z.object({
     gitProvider: z.literal(gitProvider.github),
     sshPrivateKey: z.string(),
     token: z.string(),
-    currentResource: z.any().optional(),
+    currentResource: currentResourceSchema,
   }),
   z.object({
     gitProvider: z.literal(gitProvider.gitlab),
     sshPrivateKey: z.string(),
     token: z.string(),
-    currentResource: z.any().optional(),
+    currentResource: currentResourceSchema,
   }),
   z.object({
     gitProvider: z.literal(gitProvider.gerrit),
     sshPrivateKey: z.string(),
     sshPublicKey: z.string(),
-    currentResource: z.any().optional(),
+    currentResource: currentResourceSchema,
   }),
 ]);
 
@@ -59,7 +60,7 @@ const manageGitServerIntegrationInputSchema = integrationInputBaseSchema.extend(
     skipWebhookSSLVerification: z.boolean(),
     tektonDisabled: z.boolean().optional(),
     webhookUrl: z.string().optional(),
-    currentResource: z.any().optional(),
+    currentResource: currentResourceSchema,
   }),
   secret: secretInputSchema,
 });

@@ -7,6 +7,7 @@ import {
 import type { Secret } from "@my-project/shared";
 import {
   createManageIntegrationProcedure,
+  currentResourceSchema,
   integrationInputBaseSchema,
 } from "../utils/createManageIntegrationProcedure/index.js";
 import { integrationQuickLinkSchema, integrationQuickLinkStep } from "../utils/integrationQuickLinkStep/index.js";
@@ -21,7 +22,7 @@ const manageChatAssistantIntegrationInputSchema = integrationInputBaseSchema.ext
     apiUrl: z.string(),
     token: z.string(),
     assistantId: z.string(),
-    currentResource: z.any().optional(),
+    currentResource: currentResourceSchema,
   }),
 });
 

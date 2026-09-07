@@ -14,13 +14,14 @@ import {
 import type { ConfigMap, Secret, ServiceAccount } from "@my-project/shared";
 import {
   createManageIntegrationProcedure,
+  currentResourceSchema,
   integrationInputBaseSchema,
 } from "../utils/createManageIntegrationProcedure/index.js";
 
 const registryAccountSchema = z.object({
   user: z.string(),
   password: z.string(),
-  currentResource: z.any().optional(),
+  currentResource: currentResourceSchema,
 });
 
 const manageRegistryIntegrationInputSchema = integrationInputBaseSchema.extend({
@@ -35,14 +36,14 @@ const manageRegistryIntegrationInputSchema = integrationInputBaseSchema.extend({
     registrySpace: z.string(),
     registryEndpoint: z.string().optional(),
     awsRegion: z.string().optional(),
-    currentResource: z.any().optional(),
+    currentResource: currentResourceSchema,
   }),
   pullAccountSecret: registryAccountSchema,
   pushAccountSecret: registryAccountSchema.optional(),
   serviceAccount: z
     .object({
       irsaRoleArn: z.string(),
-      currentResource: z.any().optional(),
+      currentResource: currentResourceSchema,
     })
     .optional(),
 });
