@@ -10,6 +10,7 @@ import {
 import type { JiraServer, Secret } from "@my-project/shared";
 import {
   createManageIntegrationProcedure,
+  currentResourceSchema,
   integrationInputBaseSchema,
 } from "../utils/createManageIntegrationProcedure/index.js";
 import { integrationQuickLinkSchema, integrationQuickLinkStep } from "../utils/integrationQuickLinkStep/index.js";
@@ -22,13 +23,13 @@ const manageJiraIntegrationInputSchema = integrationInputBaseSchema.extend({
   }),
   jiraServer: z.object({
     url: z.string(),
-    currentResource: z.any().optional(),
+    currentResource: currentResourceSchema,
   }),
   quickLink: integrationQuickLinkSchema,
   secret: z.object({
     username: z.string(),
     password: z.string(),
-    currentResource: z.any().optional(),
+    currentResource: currentResourceSchema,
   }),
 });
 

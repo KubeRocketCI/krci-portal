@@ -1,13 +1,14 @@
 import { z } from "zod";
 import { k8sSecretConfig } from "@my-project/shared";
 import type { Secret, SecretDraft } from "@my-project/shared";
+import { currentResourceSchema } from "../createManageIntegrationProcedure/index.js";
 import type { IntegrationInput, IntegrationStep } from "../createManageIntegrationProcedure/index.js";
 
 /** ArgoCD, DefectDojo, DependencyTrack and SonarQube all authenticate with a token and a URL. */
 export const integrationTokenUrlSecretSchema = z.object({
   token: z.string(),
   url: z.string(),
-  currentResource: z.any().optional(),
+  currentResource: currentResourceSchema,
 });
 
 export type IntegrationTokenUrlSecretSlice = z.infer<typeof integrationTokenUrlSecretSchema>;

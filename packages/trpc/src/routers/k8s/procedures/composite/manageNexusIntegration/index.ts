@@ -3,6 +3,7 @@ import { createNexusIntegrationSecretDraft, editNexusIntegrationSecret, k8sSecre
 import type { Secret } from "@my-project/shared";
 import {
   createManageIntegrationProcedure,
+  currentResourceSchema,
   integrationInputBaseSchema,
 } from "../utils/createManageIntegrationProcedure/index.js";
 import { integrationQuickLinkSchema, integrationQuickLinkStep } from "../utils/integrationQuickLinkStep/index.js";
@@ -17,7 +18,7 @@ const manageNexusIntegrationInputSchema = integrationInputBaseSchema.extend({
     username: z.string(),
     password: z.string(),
     url: z.string(),
-    currentResource: z.any().optional(),
+    currentResource: currentResourceSchema,
   }),
 });
 

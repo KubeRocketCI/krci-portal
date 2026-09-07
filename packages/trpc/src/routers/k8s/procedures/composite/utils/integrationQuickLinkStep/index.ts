@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { editQuickLinkURL, httpsUrlSchema, k8sQuickLinkConfig } from "@my-project/shared";
 import type { QuickLink } from "@my-project/shared";
+import { currentResourceSchema } from "../createManageIntegrationProcedure/index.js";
 import type { IntegrationInput, IntegrationStep } from "../createManageIntegrationProcedure/index.js";
 
 /** The QuickLink slice is identical across integrations; `externalUrl` is https-only. */
@@ -8,7 +9,7 @@ export const integrationQuickLinkSchema = z
   .object({
     name: z.string(),
     externalUrl: httpsUrlSchema,
-    currentResource: z.any().optional(),
+    currentResource: currentResourceSchema,
   })
   .optional();
 

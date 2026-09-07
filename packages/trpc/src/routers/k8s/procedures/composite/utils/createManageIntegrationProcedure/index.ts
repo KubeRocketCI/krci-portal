@@ -1,11 +1,12 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import type { TRPCMutationProcedure } from "@trpc/server";
 import type { OpenApiMeta } from "trpc-to-openapi";
 import { capitalizeFirstLetter } from "@my-project/shared";
 import type { K8sResourceConfig, KubeObjectBase } from "@my-project/shared";
 import { protectedProcedure } from "../../../../../../procedures/protected/index.js";
 import { getInitializedK8sClient } from "../../../../utils/getInitializedK8sClient/index.js";
-import { handleK8sError } from "../../../../utils/handleK8sError/index.js";
+import { rethrowOrHandleK8sError } from "../../../../utils/handleK8sError/index.js";
 
 export const integrationModeSchema = z.enum(["create", "edit"]);
 
@@ -27,7 +28,6 @@ export type IntegrationInput = {
   dirtyFields: Record<string, boolean>;
 };
 
-/** `currentResource` is the live object the edit path patches. */
 export type IntegrationResourceSlice = { currentResource?: unknown };
 
 /** Field names that are at once an input slice, a `dirtyFields` flag and a result key. */
@@ -79,6 +79,17 @@ type AnyIntegrationStep<TInput extends IntegrationInput> = {
 }[IntegrationStepKey<TInput>];
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
+/**
+ * A live resource the client echoes back. Absent on the create path. Only the name is
+ * checked: the factory needs it to address the replace call, and a stricter shape would
+ * reject a live object carrying server-side additions. `passthrough` keeps every other
+ * field, including `resourceVersion`, so the replace is not rejected as a conflict.
+ */
+export const currentResourceSchema = z
+  .object({ metadata: z.object({ name: z.string().min(1) }).passthrough() })
+  .passthrough()
+  .optional();
+
 type IntegrationResult<TSteps extends readonly { key: string }[]> = {
   success: true;
   data: Record<TSteps[number]["key"], KubeObjectBase | undefined> & { message: string };
@@ -124,8 +135,11 @@ export function createManageIntegrationProcedure<
             continue;
           }
 
+          const currentResource = slice.currentResource;
+          const hasCurrentResource = currentResource !== undefined;
+
           if (step.createDraft) {
-            const create = step.branchOn === "currentResource" ? !slice.currentResource : mode === "create";
+            const create = step.branchOn === "currentResource" ? !hasCurrentResource : mode === "create";
 
             if (create) {
               written[step.key as ResultKey] = await k8sClient.createResource(
@@ -139,11 +153,14 @@ export function createManageIntegrationProcedure<
             continue;
           }
 
-          if (!slice.currentResource) {
-            throw new Error(`currentResource is required to edit ${step.key}`);
+          if (!hasCurrentResource) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `currentResource is required to edit ${step.key}`,
+            });
           }
 
-          const edited = step.edit(slice.currentResource, slice as never, input) as KubeObjectBase;
+          const edited = step.edit(currentResource, slice as never, input) as KubeObjectBase;
           written[step.key as ResultKey] = await k8sClient.replaceResource(
             step.resourceConfig,
             edited.metadata.name,
@@ -153,7 +170,7 @@ export function createManageIntegrationProcedure<
         }
       } catch (error) {
         console.error(`${capitalizeFirstLetter(config.label)} operation failed:`, error);
-        throw handleK8sError(error);
+        rethrowOrHandleK8sError(error);
       }
 
       return {

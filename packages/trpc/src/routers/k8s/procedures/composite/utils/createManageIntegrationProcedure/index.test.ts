@@ -1,10 +1,11 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { describe, it, expect, vi, beforeEach, afterEach, Mock } from "vitest";
 import { k8sConfigMapConfig, k8sSecretConfig } from "@my-project/shared";
 import { K8sClient } from "../../../../../../clients/k8s/index.js";
 import { createMockedContext } from "../../../../../../__mocks__/context.js";
 import { t } from "../../../../../../trpc.js";
-import { createManageIntegrationProcedure } from "./index.js";
+import { createManageIntegrationProcedure, currentResourceSchema } from "./index.js";
 
 vi.mock("../../../../../../clients/k8s/index.js", () => ({
   K8sClient: vi.fn(),
@@ -28,10 +29,10 @@ const inputSchema = z.object({
     editOnly: z.boolean(),
     provisioned: z.boolean(),
   }),
-  byMode: z.object({ value: z.string(), currentResource: z.any().optional() }),
-  byResource: z.object({ value: z.string(), currentResource: z.any().optional() }),
-  editOnly: z.object({ value: z.string(), currentResource: z.any().optional() }).optional(),
-  provisioned: z.object({ value: z.string(), currentResource: z.any().optional() }).optional(),
+  byMode: z.object({ value: z.string(), currentResource: currentResourceSchema }),
+  byResource: z.object({ value: z.string(), currentResource: currentResourceSchema }),
+  editOnly: z.object({ value: z.string(), currentResource: currentResourceSchema }).optional(),
+  provisioned: z.object({ value: z.string(), currentResource: currentResourceSchema }).optional(),
 });
 
 type TestInput = z.infer<typeof inputSchema>;
@@ -98,6 +99,15 @@ describe("createManageIntegrationProcedure", () => {
   afterEach(() => vi.clearAllMocks());
 
   const call = (input: unknown) => caller(mockContext).manageTest(input as TestInput);
+
+  const rejection = async (input: unknown) => {
+    let caught: unknown;
+    await call(input).catch((error) => {
+      caught = error;
+    });
+    expect(caught, "expected the call to reject").toBeInstanceOf(TRPCError);
+    return caught as TRPCError;
+  };
 
   describe("step gating", () => {
     it("writes nothing when no field is dirty", async () => {
@@ -240,6 +250,37 @@ describe("createManageIntegrationProcedure", () => {
           editOnly: { value: "c" },
         })
       ).rejects.toThrow("currentResource is required to edit editOnly");
+    });
+
+    it("reports a missing currentResource as a client error", async () => {
+      const error = await rejection({
+        ...baseInput,
+        dirtyFields: { ...baseInput.dirtyFields, byMode: true },
+      });
+
+      expect(error.code).toBe("BAD_REQUEST");
+      expect(editResource).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ["an empty object", {}],
+      ["metadata without a name", { metadata: {} }],
+      ["null", null],
+      ["false", false],
+      ["an empty string", ""],
+      ["zero", 0],
+    ])("rejects %s at the input boundary", async (_label, malformed) => {
+      const error = await rejection({
+        ...baseInput,
+        dirtyFields: { ...baseInput.dirtyFields, byResource: true },
+        byResource: { value: "b", currentResource: malformed },
+      });
+
+      expect(error.code).toBe("BAD_REQUEST");
+      expect(createDraft).not.toHaveBeenCalled();
+      expect(editResource).not.toHaveBeenCalled();
+      expect(k8s.createResource).not.toHaveBeenCalled();
+      expect(k8s.replaceResource).not.toHaveBeenCalled();
     });
 
     it("names an editOnly step in the missing currentResource error", async () => {
