@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { ServerSideTable } from "@/core/components/ServerSideTable";
+import { DataTable } from "@/core/components/Table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { useServices } from "../../hooks/useServices";
 import { useServicesColumns } from "../../hooks/useServicesColumns";
@@ -31,7 +31,7 @@ export function ProjectServices({ projectUuid }: ProjectServicesProps) {
   });
 
   const services = data?.services || [];
-  const totalCount = data?.totalCount || 0;
+  const totalCount = data?.totalCount;
 
   const handlePageChange = useCallback(
     (newPage: number) => {
@@ -67,7 +67,7 @@ export function ProjectServices({ projectUuid }: ProjectServicesProps) {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Services ({totalCount})</CardTitle>
+          <CardTitle>{typeof totalCount === "number" ? `Services (${totalCount})` : "Services"}</CardTitle>
         </CardHeader>
         <CardContent>
           {error && (
@@ -80,8 +80,9 @@ export function ProjectServices({ projectUuid }: ProjectServicesProps) {
               No services found for this project.
             </div>
           )}
-          <ServerSideTable
+          <DataTable
             id="project-services-table"
+            mode="server"
             data={services}
             columns={columns}
             isLoading={isLoading}

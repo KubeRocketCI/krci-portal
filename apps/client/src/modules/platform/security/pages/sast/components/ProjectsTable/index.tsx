@@ -1,4 +1,4 @@
-import { ServerSideTable } from "@/core/components/ServerSideTable";
+import { DataTable } from "@/core/components/Table";
 import { TABLE } from "@/k8s/constants/tables";
 import { useColumns } from "../../hooks/useColumns";
 import { useProjects } from "../../hooks/useProjects";
@@ -14,14 +14,7 @@ interface ProjectsTableProps {
   onSearchChange: (searchTerm: string) => void;
 }
 
-/**
- * SAST Projects table component using ServerSideTable
- * Features:
- * - Server-side pagination (fetches only current page)
- * - Server-side search (searches across all projects)
- * - Client-side sorting (on current page data)
- * - Column visibility settings (persisted to localStorage)
- */
+/** SAST projects list on `DataTable` in server mode: paging and search run on the server; sort applies to the visible page. */
 export function ProjectsTable({
   page,
   pageSize,
@@ -40,21 +33,22 @@ export function ProjectsTable({
   });
 
   return (
-    <ServerSideTable
+    <DataTable
       id={TABLE.SAST_PROJECTS_LIST.id}
+      mode="server"
       data={data?.projects || []}
       columns={columns}
       isLoading={isLoading}
       blockerError={isError ? (error as Error) : undefined}
       emptyListComponent={<EmptyList customText="No SonarQube projects found" />}
       slots={{
-        header: <ProjectsFilter searchTerm={searchTerm} onSearchChange={onSearchChange} />,
+        header: { component: <ProjectsFilter searchTerm={searchTerm} onSearchChange={onSearchChange} /> },
       }}
       pagination={{
         show: true,
         page,
         rowsPerPage: pageSize,
-        totalCount: data?.paging?.total || 0,
+        totalCount: data?.paging?.total,
         onPageChange,
         onRowsPerPageChange: onPageSizeChange,
       }}

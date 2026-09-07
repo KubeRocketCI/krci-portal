@@ -58,7 +58,7 @@ export default tseslint.config(
   },
   {
     files: ["src/**/*.{ts,tsx}"],
-    ignores: ["src/core/components/Table/**", "src/core/components/ServerSideTable/**"],
+    ignores: ["src/core/components/Table/**"],
     rules: {
       "no-restricted-imports": [
         "error",

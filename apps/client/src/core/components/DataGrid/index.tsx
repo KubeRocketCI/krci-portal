@@ -132,7 +132,8 @@ export const DataGrid = <DataType = KubeObjectBase,>({
       {showPagination && data?.length > _rowsPerPage && (
         <div>
           <Pagination
-            dataCount={readyData && readyData.length}
+            totalCount={readyData?.length}
+            pageItemCount={readyData?.length ?? 0}
             page={page}
             rowsPerPage={_rowsPerPage}
             handleChangePage={handleChangePage}

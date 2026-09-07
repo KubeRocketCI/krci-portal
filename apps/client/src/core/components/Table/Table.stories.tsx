@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { useState } from "react";
 import { Box } from "lucide-react";
 import { withAppProviders } from "@sb/index";
 import { DataTable } from "./index";
@@ -255,4 +256,56 @@ export const Loading: Story = {
 
 export const Empty: Story = {
   args: { id: "sb-table-empty", data: [] },
+};
+
+/** Server mode: the page is rendered unsliced; the pager is driven by `totalCount`. */
+export const ServerMode: Story = {
+  args: { id: "sb-table-server" },
+  render: ({ id }) => {
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    return (
+      <DataTable<Run>
+        id={id}
+        columns={balanced}
+        mode="server"
+        data={rows.slice(0, 10)}
+        pagination={{ page, rowsPerPage, totalCount: 120, onPageChange: setPage, onRowsPerPageChange: setRowsPerPage }}
+      />
+    );
+  },
+};
+
+/** Cursor API: no First and Last; Next stops when `hasNextPage` is false. */
+export const ServerModeCursor: Story = {
+  args: { id: "sb-table-server-cursor" },
+  render: ({ id }) => {
+    const [page, setPage] = useState(0);
+
+    return (
+      <DataTable<Run>
+        id={id}
+        columns={balanced}
+        mode="server"
+        data={rows.slice(0, 10)}
+        pagination={{ page, rowsPerPage: 10, hasNextPage: page < 3, onPageChange: setPage }}
+      />
+    );
+  },
+};
+
+/** No total yet: skeleton rows, the range reads `…`, Next and Last are disabled. */
+export const ServerModeLoading: Story = {
+  args: { id: "sb-table-server-loading" },
+  render: ({ id }) => (
+    <DataTable<Run>
+      id={id}
+      columns={balanced}
+      mode="server"
+      data={[]}
+      isLoading
+      pagination={{ page: 0, rowsPerPage: 10, totalCount: undefined, onPageChange: () => {} }}
+    />
+  ),
 };

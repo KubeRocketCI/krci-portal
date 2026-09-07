@@ -97,21 +97,36 @@ export interface TableExpandable<DataType> {
   getRowId: (row: DataType) => string | number;
 }
 
-export interface TableProps<DataType = unknown> {
+/**
+ * How a server-paged caller reports the size of the result set. A total-based API sets
+ * `totalCount` (`undefined` while it loads); a cursor-based API sets `hasNextPage`.
+ */
+export type ServerTotal =
+  | { totalCount: number | undefined; hasNextPage?: never }
+  | { totalCount?: never; hasNextPage: boolean };
+
+export type ServerTablePagination = {
+  show?: boolean;
+  /** 0-indexed. Owned by the caller. */
+  page: number;
+  rowsPerPage: number;
+  onPageChange: (page: number) => void;
+  /** Receives the new page size. Must also reset the page to 0; the table emits no separate page change. */
+  onRowsPerPageChange?: (rowsPerPage: number) => void;
+} & ServerTotal;
+
+export interface TableBaseProps<DataType> {
   id: string;
   data: DataType[];
   columns: TableColumn<DataType>[];
   isLoading?: boolean;
   name?: string;
   sort?: TableSort;
-  selection?: TableSelection<DataType>;
-  pagination?: TablePagination;
   settings?: TableSettings;
   blockerComponent?: React.ReactNode;
   emptyListComponent?: React.ReactNode;
   blockerError?: Error | null;
   errors?: Error[] | null;
-  filterFunction?: (el: DataType) => boolean;
   handleRowClick?: (event: React.MouseEvent<HTMLTableRowElement>, row: DataType) => void;
   expandable?: TableExpandable<DataType>;
   slots?: {
@@ -130,3 +145,24 @@ export interface TableProps<DataType = unknown> {
   /** HTML attributes to pass to the root container element (e.g., data-tour for PageGuide) */
   containerProps?: PropsWithHTMLDataAttrs;
 }
+
+/** `data` is the full set. The shell filters, sorts and slices it. */
+export interface DataTableClientProps<DataType> extends TableBaseProps<DataType> {
+  mode?: "client";
+  pagination?: TablePagination;
+  selection?: TableSelection<DataType>;
+  filterFunction?: (el: DataType) => boolean;
+}
+
+/** `data` is one page. The caller owns `page` and `rowsPerPage`; the shell renders the page unsliced. */
+export interface DataTableServerProps<DataType> extends TableBaseProps<DataType> {
+  mode: "server";
+  pagination: ServerTablePagination;
+  /** Applies to the visible page only. */
+  sort?: TableSort;
+  selection?: never;
+  filterFunction?: never;
+}
+
+/** `mode` is fixed per table instance; changing it remounts the shell and resets in-memory sort and column state. */
+export type TableProps<DataType = unknown> = DataTableClientProps<DataType> | DataTableServerProps<DataType>;

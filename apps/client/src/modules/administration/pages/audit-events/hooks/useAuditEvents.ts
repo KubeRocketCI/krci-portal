@@ -10,7 +10,8 @@ export const AUDIT_EVENTS_MAX_PER_PAGE = 100;
 
 interface UseAuditEventsResult {
   events: KrciAuditEvent[];
-  total: number;
+  /** `undefined` until the first response arrives. */
+  total?: number;
   isLoading: boolean;
   error: Error | null;
 }
@@ -60,7 +61,7 @@ export function useAuditEvents(
 
   return {
     events: data?.data ?? [],
-    total: data?.pagination.total ?? 0,
+    total: data?.pagination.total,
     isLoading,
     error: error as Error | null,
   };

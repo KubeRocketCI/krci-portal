@@ -1,4 +1,4 @@
-import { ServerSideTable } from "@/core/components/ServerSideTable";
+import { DataTable } from "@/core/components/Table";
 import { TABLE } from "@/k8s/constants/tables";
 import { useColumns } from "../../hooks/useColumns";
 import { useProjects } from "../../hooks/useProjects";
@@ -14,14 +14,7 @@ interface ProjectsListProps {
   onSearchChange: (searchTerm: string) => void;
 }
 
-/**
- * SCA Projects list component using ServerSideTable
- * Features:
- * - Server-side pagination (fetches only current page)
- * - Server-side search (searches across all pages)
- * - Client-side sorting (on current page data)
- * - Column visibility settings (persisted to localStorage)
- */
+/** SCA projects list on `DataTable` in server mode: paging and search run on the server; sort applies to the visible page. */
 export function ProjectsList({
   page,
   pageSize,
@@ -40,21 +33,22 @@ export function ProjectsList({
   });
 
   return (
-    <ServerSideTable
+    <DataTable
       id={TABLE.SCA_PROJECTS_LIST.id}
+      mode="server"
       data={data?.projects || []}
       columns={columns}
       isLoading={isLoading}
       blockerError={isError ? (error as Error) : undefined}
       emptyListComponent={<EmptyList customText="No projects found" />}
       slots={{
-        header: <ProjectsFilter searchTerm={searchTerm} onSearchChange={onSearchChange} />,
+        header: { component: <ProjectsFilter searchTerm={searchTerm} onSearchChange={onSearchChange} /> },
       }}
       pagination={{
         show: true,
         page,
         rowsPerPage: pageSize,
-        totalCount: data?.totalCount || 0,
+        totalCount: data?.totalCount,
         onPageChange,
         onRowsPerPageChange: onPageSizeChange,
       }}

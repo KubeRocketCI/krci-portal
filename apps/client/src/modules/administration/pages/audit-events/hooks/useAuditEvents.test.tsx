@@ -116,4 +116,15 @@ describe("useAuditEvents", () => {
     await waitFor(() => expect(result.current.events).toHaveLength(1));
     expect(result.current.total).toBe(1);
   });
+
+  it("leaves total undefined until the first response arrives", async () => {
+    mockQuery.mockReturnValue(new Promise(() => {}));
+
+    const { Wrapper } = makeWrapper();
+    const { result } = renderHook(() => useAuditEvents(defaultAuditEventFilterValues), { wrapper: Wrapper });
+
+    await waitFor(() => expect(mockQuery).toHaveBeenCalled());
+    expect(result.current.events).toEqual([]);
+    expect(result.current.total).toBeUndefined();
+  });
 });

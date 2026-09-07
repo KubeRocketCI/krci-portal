@@ -206,11 +206,14 @@ export class DependencyTrackClient {
     }
   }
 
-  /**
-   * Extract total count from response headers
-   */
+  /** `X-Total-Count` of a paginated list response. Throws unless it is a non-negative safe integer. */
   private getTotalCount(headers: Headers): number {
-    return parseInt(headers.get("x-total-count") || "0", 10);
+    const raw = headers.get("x-total-count");
+    const parsed = raw !== null && /^\d+$/.test(raw) ? Number(raw) : Number.NaN;
+    if (!Number.isSafeInteger(parsed)) {
+      throw new Error(`Dependency Track response has no valid X-Total-Count header (got ${JSON.stringify(raw)})`);
+    }
+    return parsed;
   }
 
   private async handleErrorResponse(response: Response, url: string): Promise<never> {
