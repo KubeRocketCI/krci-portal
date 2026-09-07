@@ -1,107 +1,34 @@
 import { z } from "zod";
-import { protectedProcedure } from "../../../../../procedures/protected/index.js";
-import { K8sClient } from "../../../../../clients/k8s/index.js";
-import { handleK8sError } from "../../../utils/handleK8sError/index.js";
-import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors/index.js";
+import { createDependencyTrackIntegrationSecretDraft, editDependencyTrackIntegrationSecret } from "@my-project/shared";
 import {
-  k8sSecretConfig,
-  createDependencyTrackIntegrationSecretDraft,
-  editDependencyTrackIntegrationSecret,
-  Secret,
-  k8sQuickLinkConfig,
-  editQuickLinkURL,
-  QuickLink,
-  httpsUrlSchema,
-} from "@my-project/shared";
+  createManageIntegrationProcedure,
+  integrationInputBaseSchema,
+} from "../utils/createManageIntegrationProcedure/index.js";
+import { integrationQuickLinkSchema, integrationQuickLinkStep } from "../utils/integrationQuickLinkStep/index.js";
+import {
+  integrationTokenUrlSecretSchema,
+  integrationTokenUrlSecretStep,
+} from "../utils/integrationTokenUrlSecretStep/index.js";
 
-const manageDependencyTrackIntegrationInputSchema = z.object({
-  clusterName: z.string(),
-  namespace: z.string(),
-  mode: z.enum(["create", "edit"]),
+const manageDependencyTrackIntegrationInputSchema = integrationInputBaseSchema.extend({
   dirtyFields: z.object({
     quickLink: z.boolean(),
     secret: z.boolean(),
   }),
-  quickLink: z
-    .object({
-      name: z.string(),
-      externalUrl: httpsUrlSchema,
-      currentResource: z.any().optional(),
-    })
-    .optional(),
-  secret: z.object({
-    token: z.string(),
-    url: z.string(),
-    currentResource: z.any().optional(),
-  }),
+  quickLink: integrationQuickLinkSchema,
+  secret: integrationTokenUrlSecretSchema,
 });
 
 export type ManageDependencyTrackIntegrationInput = z.infer<typeof manageDependencyTrackIntegrationInputSchema>;
 
-export const k8sManageDependencyTrackIntegrationProcedure = protectedProcedure
-  .input(manageDependencyTrackIntegrationInputSchema)
-  .mutation(async ({ input, ctx }) => {
-    const k8sClient = new K8sClient(ctx.session);
-
-    if (!k8sClient.KubeConfig) {
-      throw ERROR_K8S_CLIENT_NOT_INITIALIZED;
-    }
-
-    const { namespace, mode, dirtyFields, quickLink, secret } = input;
-
-    try {
-      let updatedSecret: Secret | undefined;
-      let updatedQuickLink: QuickLink | undefined;
-
-      if (dirtyFields.secret) {
-        if (mode === "create") {
-          const secretDraft = createDependencyTrackIntegrationSecretDraft({
-            token: secret.token,
-            url: secret.url,
-          });
-          updatedSecret = (await k8sClient.createResource(k8sSecretConfig, namespace, secretDraft)) as Secret;
-        } else {
-          if (!secret.currentResource) {
-            throw new Error("currentResource is required for secret in edit mode");
-          }
-          const editedSecret = editDependencyTrackIntegrationSecret(secret.currentResource as Secret, {
-            token: secret.token,
-            url: secret.url,
-          });
-          updatedSecret = (await k8sClient.replaceResource(
-            k8sSecretConfig,
-            editedSecret.metadata.name,
-            namespace,
-            editedSecret
-          )) as Secret;
-        }
-      }
-
-      if (dirtyFields.quickLink && mode === "edit" && quickLink) {
-        if (!quickLink.currentResource) {
-          throw new Error("currentResource is required for quickLink in edit mode");
-        }
-        const editedQuickLink = editQuickLinkURL(quickLink.currentResource as QuickLink, {
-          url: quickLink.externalUrl,
-        });
-        updatedQuickLink = (await k8sClient.replaceResource(
-          k8sQuickLinkConfig,
-          editedQuickLink.metadata.name,
-          namespace,
-          editedQuickLink
-        )) as QuickLink;
-      }
-
-      return {
-        success: true,
-        data: {
-          secret: updatedSecret,
-          quickLink: updatedQuickLink,
-          message: `Successfully ${mode === "create" ? "created" : "updated"} DependencyTrack integration`,
-        },
-      };
-    } catch (error) {
-      console.error("DependencyTrack integration operation failed:", error);
-      throw handleK8sError(error);
-    }
-  });
+export const k8sManageDependencyTrackIntegrationProcedure = createManageIntegrationProcedure({
+  inputSchema: manageDependencyTrackIntegrationInputSchema,
+  label: "DependencyTrack integration",
+  steps: [
+    integrationTokenUrlSecretStep({
+      createDraft: createDependencyTrackIntegrationSecretDraft,
+      edit: editDependencyTrackIntegrationSecret,
+    }),
+    integrationQuickLinkStep,
+  ],
+});

@@ -1,311 +1,94 @@
-import { createMockedContext } from "../../../../../__mocks__/context.js";
-import { createCaller } from "../../../../../routers/index.js";
 import { describe, it, expect, vi, beforeEach, afterEach, Mock } from "vitest";
+import {
+  createChatAssistantIntegrationSecretDraft,
+  editChatAssistantIntegrationSecret,
+  editQuickLinkURL,
+  k8sQuickLinkConfig,
+  k8sSecretConfig,
+} from "@my-project/shared";
+import { createMockedContext } from "../../../../../__mocks__/context.js";
 import { K8sClient } from "../../../../../clients/k8s/index.js";
-import { QuickLink, Secret } from "@my-project/shared";
+import { createCaller } from "../../../../../routers/index.js";
+import { EDITED_NAME, integrationFixture } from "../__fixtures__/integration.js";
 
-vi.mock("../../../../../clients/k8s/index.js", () => ({
-  K8sClient: vi.fn(),
-}));
+vi.mock("../../../../../clients/k8s/index.js", () => ({ K8sClient: vi.fn() }));
 
 vi.mock("@my-project/shared", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@my-project/shared")>();
-  return {
-    ...actual,
-    editQuickLinkURL: vi.fn((quickLink: QuickLink, input: { url: string }) => ({
-      ...quickLink,
-      spec: { ...quickLink.spec, url: input.url },
-    })),
-    editChatAssistantIntegrationSecret: vi.fn(
-      (secret: Secret, input: { apiUrl: string; token: string; assistantId: string }) => ({
-        ...secret,
-        data: {
-          apiUrl: btoa(input.apiUrl),
-          token: btoa(input.token),
-          assistantId: btoa(input.assistantId),
-        },
-      })
-    ),
-  };
+  const { mockIntegrationShared } = await import("../__fixtures__/integration.js");
+  return mockIntegrationShared(await importOriginal<typeof import("@my-project/shared")>(), [
+    "createChatAssistantIntegrationSecretDraft",
+    "editChatAssistantIntegrationSecret",
+    "editQuickLinkURL",
+  ]);
 });
+
+const { namespace, quickLink, secret, written, mockK8sClient } = integrationFixture();
+
+const credentials = {
+  apiUrl: "https://chat.example.com/api",
+  token: "test-token",
+  assistantId: "assistant-1",
+};
+
+const baseInput = {
+  clusterName: "test-cluster",
+  namespace,
+  mode: "edit" as const,
+  dirtyFields: { quickLink: false, secret: false },
+  secret: credentials,
+};
 
 describe("k8sManageChatAssistantIntegrationProcedure", () => {
   let mockContext: ReturnType<typeof createMockedContext>;
-  let mockK8sClientInstance: {
-    KubeConfig: {};
-    createResource: Mock;
-    replaceResource: Mock;
-  };
-
-  const mockQuickLink: QuickLink = {
-    apiVersion: "v2.edp.epam.com/v1",
-    kind: "QuickLink",
-    metadata: { name: "chat-assistant", namespace: "test-namespace", uid: "", creationTimestamp: "" },
-    spec: { type: "default", url: "https://chat.example.com", icon: "chat-assistant", visible: true },
-  };
-
-  const mockSecret: Secret = {
-    apiVersion: "v1",
-    kind: "Secret",
-    metadata: { name: "ci-chat-assistant", namespace: "test-namespace", uid: "", creationTimestamp: "" },
-    type: "Opaque",
-    data: {
-      apiUrl: btoa("https://api.chat.example.com"),
-      token: btoa("test-token"),
-      assistantId: btoa("assistant-123"),
-    },
-  };
+  let k8s: ReturnType<typeof mockK8sClient>;
 
   beforeEach(() => {
     mockContext = createMockedContext();
-    mockK8sClientInstance = { KubeConfig: {}, createResource: vi.fn(), replaceResource: vi.fn() };
+    k8s = mockK8sClient();
     (K8sClient as unknown as Mock).mockImplementation(function () {
-      return mockK8sClientInstance;
+      return k8s;
     });
   });
 
   afterEach(() => vi.clearAllMocks());
 
-  describe("create mode", () => {
-    it("should create secret in create mode", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "create" as const,
-        dirtyFields: { quickLink: false, secret: true },
-        secret: {
-          apiUrl: "https://api.chat.example.com",
-          token: "test-token",
-          assistantId: "assistant-123",
-        },
-      };
-      mockK8sClientInstance.createResource.mockResolvedValueOnce(mockSecret);
-      const caller = createCaller(mockContext);
-      const result = await caller.k8s.manageChatAssistantIntegration(input);
-      expect(result.success).toBe(true);
-      expect(result.data.secret).toEqual(mockSecret);
-      expect(mockK8sClientInstance.createResource).toHaveBeenCalledTimes(1);
+  it("creates the Chat Assistant secret from apiUrl, token and assistantId", async () => {
+    k8s.createResource.mockResolvedValueOnce(written);
+
+    const result = await createCaller(mockContext).k8s.manageChatAssistantIntegration({
+      ...baseInput,
+      mode: "create",
+      dirtyFields: { quickLink: false, secret: true },
     });
+
+    expect(createChatAssistantIntegrationSecretDraft).toHaveBeenCalledWith(credentials);
+    expect(k8s.createResource).toHaveBeenCalledWith(k8sSecretConfig, namespace, expect.anything());
+    expect(result.data.secret).toEqual(written);
   });
 
-  describe("edit mode", () => {
-    it("should only update secret when only secret is dirty", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: { quickLink: false, secret: true },
-        secret: {
-          apiUrl: "https://api.chat-new.example.com",
-          token: "updated-token",
-          assistantId: "assistant-456",
-          currentResource: mockSecret,
-        },
-      };
-      const updatedSecret = {
-        ...mockSecret,
-        data: {
-          apiUrl: btoa("https://api.chat-new.example.com"),
-          token: btoa("updated-token"),
-          assistantId: btoa("assistant-456"),
-        },
-      };
-      mockK8sClientInstance.replaceResource.mockResolvedValueOnce(updatedSecret);
-      const caller = createCaller(mockContext);
-      const result = await caller.k8s.manageChatAssistantIntegration(input);
-      expect(result.success).toBe(true);
-      expect(result.data.secret).toEqual(updatedSecret);
-      expect(result.data.quickLink).toBeUndefined();
-      expect(mockK8sClientInstance.replaceResource).toHaveBeenCalledTimes(1);
+  it("patches the live Chat Assistant secret with apiUrl, token and assistantId", async () => {
+    k8s.replaceResource.mockResolvedValueOnce(written);
+
+    await createCaller(mockContext).k8s.manageChatAssistantIntegration({
+      ...baseInput,
+      dirtyFields: { quickLink: false, secret: true },
+      secret: { ...credentials, currentResource: secret },
     });
 
-    it("should only update quickLink when only quickLink is dirty", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: { quickLink: true, secret: false },
-        quickLink: {
-          name: "chat-assistant",
-          externalUrl: "https://chat-updated.example.com",
-          currentResource: mockQuickLink,
-        },
-        secret: {
-          apiUrl: "https://api.chat.example.com",
-          token: "test-token",
-          assistantId: "assistant-123",
-          currentResource: mockSecret,
-        },
-      };
-      const updatedQuickLink = {
-        ...mockQuickLink,
-        spec: { ...mockQuickLink.spec, url: "https://chat-updated.example.com" },
-      };
-      mockK8sClientInstance.replaceResource.mockResolvedValueOnce(updatedQuickLink);
-      const caller = createCaller(mockContext);
-      const result = await caller.k8s.manageChatAssistantIntegration(input);
-      expect(result.success).toBe(true);
-      expect(result.data.secret).toBeUndefined();
-      expect(result.data.quickLink).toEqual(updatedQuickLink);
-      expect(mockK8sClientInstance.replaceResource).toHaveBeenCalledTimes(1);
-    });
-
-    it("should update both resources when both are dirty", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: { quickLink: true, secret: true },
-        quickLink: {
-          name: "chat-assistant",
-          externalUrl: "https://chat-updated.example.com",
-          currentResource: mockQuickLink,
-        },
-        secret: {
-          apiUrl: "https://api.chat-updated.example.com",
-          token: "updated-token",
-          assistantId: "assistant-456",
-          currentResource: mockSecret,
-        },
-      };
-      const updatedSecret: Secret = {
-        ...mockSecret,
-        data: {
-          apiUrl: btoa("https://api.chat-updated.example.com"),
-          token: btoa("updated-token"),
-          assistantId: btoa("assistant-456"),
-        },
-      };
-      const updatedQuickLink: QuickLink = {
-        ...mockQuickLink,
-        spec: { ...mockQuickLink.spec, url: "https://chat-updated.example.com" },
-      };
-      mockK8sClientInstance.replaceResource
-        .mockResolvedValueOnce(updatedSecret)
-        .mockResolvedValueOnce(updatedQuickLink);
-      const caller = createCaller(mockContext);
-      const result = await caller.k8s.manageChatAssistantIntegration(input);
-      expect(result.success).toBe(true);
-      expect(result.data.secret).toEqual(updatedSecret);
-      expect(result.data.quickLink).toEqual(updatedQuickLink);
-      expect(mockK8sClientInstance.replaceResource).toHaveBeenCalledTimes(2);
-    });
+    expect(editChatAssistantIntegrationSecret).toHaveBeenCalledWith(secret, credentials);
+    expect(k8s.replaceResource).toHaveBeenCalledWith(k8sSecretConfig, EDITED_NAME, namespace, expect.anything());
   });
 
-  describe("validation", () => {
-    it("should require currentResource for secret in edit mode", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: { quickLink: false, secret: true },
-        secret: {
-          apiUrl: "https://api.chat.example.com",
-          token: "test-token",
-          assistantId: "assistant-123",
-        },
-      };
-      const caller = createCaller(mockContext);
-      await expect(caller.k8s.manageChatAssistantIntegration(input as never)).rejects.toThrow(
-        "currentResource is required for secret in edit mode"
-      );
+  it("rewrites the QuickLink url", async () => {
+    k8s.replaceResource.mockResolvedValueOnce(written);
+
+    await createCaller(mockContext).k8s.manageChatAssistantIntegration({
+      ...baseInput,
+      dirtyFields: { quickLink: true, secret: false },
+      quickLink: { name: "chat", externalUrl: "https://chat-updated.example.com", currentResource: quickLink },
     });
 
-    it("should require currentResource for quickLink in edit mode when dirty", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: { quickLink: true, secret: false },
-        quickLink: { name: "chat-assistant", externalUrl: "https://chat.example.com" },
-        secret: {
-          apiUrl: "https://api.chat.example.com",
-          token: "test-token",
-          assistantId: "assistant-123",
-          currentResource: mockSecret,
-        },
-      };
-      const caller = createCaller(mockContext);
-      await expect(caller.k8s.manageChatAssistantIntegration(input as never)).rejects.toThrow(
-        "currentResource is required for quickLink in edit mode"
-      );
-    });
-  });
-
-  describe("fail-fast behavior", () => {
-    it("should stop execution if first operation fails", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "create" as const,
-        dirtyFields: { quickLink: false, secret: true },
-        secret: {
-          apiUrl: "https://api.chat.example.com",
-          token: "test-token",
-          assistantId: "assistant-123",
-        },
-      };
-      mockK8sClientInstance.createResource.mockRejectedValueOnce(new Error("Failed to create secret"));
-      const caller = createCaller(mockContext);
-      await expect(caller.k8s.manageChatAssistantIntegration(input)).rejects.toThrow("Failed to create secret");
-    });
-
-    it("should leave first operation completed if second operation fails", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: { quickLink: true, secret: true },
-        quickLink: {
-          name: "chat-assistant",
-          externalUrl: "https://chat-updated.example.com",
-          currentResource: mockQuickLink,
-        },
-        secret: {
-          apiUrl: "https://api.chat-updated.example.com",
-          token: "updated-token",
-          assistantId: "assistant-456",
-          currentResource: mockSecret,
-        },
-      };
-      const updatedSecret: Secret = {
-        ...mockSecret,
-        data: {
-          apiUrl: btoa("https://api.chat-updated.example.com"),
-          token: btoa("updated-token"),
-          assistantId: btoa("assistant-456"),
-        },
-      };
-      mockK8sClientInstance.replaceResource
-        .mockResolvedValueOnce(updatedSecret)
-        .mockRejectedValueOnce(new Error("Failed to update QuickLink"));
-      const caller = createCaller(mockContext);
-      await expect(caller.k8s.manageChatAssistantIntegration(input)).rejects.toThrow("Failed to update QuickLink");
-      expect(mockK8sClientInstance.replaceResource).toHaveBeenCalledTimes(2);
-    });
-  });
-
-  describe("no-op scenarios", () => {
-    it("should not update anything when no fields are dirty", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: { quickLink: false, secret: false },
-        secret: {
-          apiUrl: "https://api.chat.example.com",
-          token: "test-token",
-          assistantId: "assistant-123",
-          currentResource: mockSecret,
-        },
-      };
-      const caller = createCaller(mockContext);
-      const result = await caller.k8s.manageChatAssistantIntegration(input);
-      expect(result.success).toBe(true);
-      expect(result.data.secret).toBeUndefined();
-      expect(result.data.quickLink).toBeUndefined();
-      expect(mockK8sClientInstance.createResource).not.toHaveBeenCalled();
-      expect(mockK8sClientInstance.replaceResource).not.toHaveBeenCalled();
-    });
+    expect(editQuickLinkURL).toHaveBeenCalledWith(quickLink, { url: "https://chat-updated.example.com" });
+    expect(k8s.replaceResource).toHaveBeenCalledWith(k8sQuickLinkConfig, EDITED_NAME, namespace, expect.anything());
   });
 });

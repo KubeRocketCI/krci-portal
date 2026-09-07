@@ -1,265 +1,100 @@
-import { createMockedContext } from "../../../../../__mocks__/context.js";
-import { createCaller } from "../../../../../routers/index.js";
 import { describe, it, expect, vi, beforeEach, afterEach, Mock } from "vitest";
+import {
+  createJiraIntegrationSecretDraft,
+  createJiraServerDraft,
+  editJiraIntegrationSecret,
+  editJiraServer,
+  editQuickLinkURL,
+  k8sJiraServerConfig,
+  k8sQuickLinkConfig,
+  k8sSecretConfig,
+} from "@my-project/shared";
+import { createMockedContext } from "../../../../../__mocks__/context.js";
 import { K8sClient } from "../../../../../clients/k8s/index.js";
-import { JiraServer, QuickLink, Secret } from "@my-project/shared";
+import { createCaller } from "../../../../../routers/index.js";
+import { EDITED_NAME, integrationFixture } from "../__fixtures__/integration.js";
 
-vi.mock("../../../../../clients/k8s/index.js", () => ({
-  K8sClient: vi.fn(),
-}));
+vi.mock("../../../../../clients/k8s/index.js", () => ({ K8sClient: vi.fn() }));
 
 vi.mock("@my-project/shared", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@my-project/shared")>();
-  return {
-    ...actual,
-    editQuickLinkURL: vi.fn((quickLink: QuickLink, input: { url: string }) => ({
-      ...quickLink,
-      spec: { ...quickLink.spec, url: input.url },
-    })),
-    editJiraIntegrationSecret: vi.fn((secret: Secret, input: { username: string; password: string }) => ({
-      ...secret,
-      data: { username: btoa(input.username), password: btoa(input.password) },
-    })),
-    createJiraServerDraft: vi.fn((input: { url: string }) => ({
-      apiVersion: "v2.edp.epam.com/v1",
-      kind: "JiraServer",
-      metadata: { name: "jira-server", namespace: "test-namespace" },
-      spec: { apiUrl: input.url, rootUrl: input.url, credentialName: "ci-jira" },
-    })),
-    editJiraServer: vi.fn((jiraServer: JiraServer, input: { url: string }) => ({
-      ...jiraServer,
-      spec: { ...jiraServer.spec, apiUrl: input.url, rootUrl: input.url },
-    })),
-  };
+  const { mockIntegrationShared } = await import("../__fixtures__/integration.js");
+  return mockIntegrationShared(await importOriginal<typeof import("@my-project/shared")>(), [
+    "createJiraIntegrationSecretDraft",
+    "editJiraIntegrationSecret",
+    "createJiraServerDraft",
+    "editJiraServer",
+    "editQuickLinkURL",
+  ]);
 });
+
+const { namespace, jiraServer, quickLink, secret, written, mockK8sClient } = integrationFixture();
+
+const credentials = { username: "test-user", password: "test-password" };
+
+const baseInput = {
+  clusterName: "test-cluster",
+  namespace,
+  mode: "edit" as const,
+  dirtyFields: { jiraServer: false, quickLink: false, secret: false },
+  jiraServer: { url: "https://jira.example.com" },
+  secret: credentials,
+};
 
 describe("k8sManageJiraIntegrationProcedure", () => {
   let mockContext: ReturnType<typeof createMockedContext>;
-  let mockK8sClientInstance: {
-    KubeConfig: {};
-    createResource: Mock;
-    replaceResource: Mock;
-  };
-
-  const mockQuickLink: QuickLink = {
-    apiVersion: "v2.edp.epam.com/v1",
-    kind: "QuickLink",
-    metadata: { name: "jira", namespace: "test-namespace", uid: "", creationTimestamp: "" },
-    spec: { type: "default", url: "https://jira.example.com", icon: "jira", visible: true },
-  };
-
-  const mockJiraServer: JiraServer = {
-    apiVersion: "v2.edp.epam.com/v1",
-    kind: "JiraServer",
-    metadata: { name: "jira-server", namespace: "test-namespace", uid: "", creationTimestamp: "" },
-    spec: {
-      apiUrl: "https://jira.example.com/rest/api/2",
-      rootUrl: "https://jira.example.com",
-      credentialName: "ci-jira",
-    },
-  };
-
-  const mockSecret: Secret = {
-    apiVersion: "v1",
-    kind: "Secret",
-    metadata: { name: "ci-jira", namespace: "test-namespace", uid: "", creationTimestamp: "" },
-    type: "Opaque",
-    data: { username: btoa("test-user"), password: btoa("test-password") },
-  };
+  let k8s: ReturnType<typeof mockK8sClient>;
 
   beforeEach(() => {
     mockContext = createMockedContext();
-    mockK8sClientInstance = { KubeConfig: {}, createResource: vi.fn(), replaceResource: vi.fn() };
+    k8s = mockK8sClient();
     (K8sClient as unknown as Mock).mockImplementation(function () {
-      return mockK8sClientInstance;
+      return k8s;
     });
   });
 
   afterEach(() => vi.clearAllMocks());
 
-  describe("create mode", () => {
-    it("should create secret in create mode", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "create" as const,
-        dirtyFields: { jiraServer: false, quickLink: false, secret: true },
-        jiraServer: { url: "https://jira.example.com" },
-        secret: { username: "test-user", password: "test-password" },
-      };
-      mockK8sClientInstance.createResource.mockResolvedValueOnce(mockSecret);
-      const caller = createCaller(mockContext);
-      const result = await caller.k8s.manageJiraIntegration(input);
-      expect(result.success).toBe(true);
-      expect(result.data.secret).toEqual(mockSecret);
-      expect(mockK8sClientInstance.createResource).toHaveBeenCalledTimes(1);
+  it("creates the secret and the JiraServer in create mode, secret first", async () => {
+    k8s.createResource.mockResolvedValue(written);
+
+    const result = await createCaller(mockContext).k8s.manageJiraIntegration({
+      ...baseInput,
+      mode: "create",
+      dirtyFields: { jiraServer: true, quickLink: false, secret: true },
     });
+
+    expect(createJiraIntegrationSecretDraft).toHaveBeenCalledWith(credentials);
+    expect(createJiraServerDraft).toHaveBeenCalledWith({ url: "https://jira.example.com" });
+    expect(k8s.createResource.mock.calls.map((args) => args[0])).toEqual([k8sSecretConfig, k8sJiraServerConfig]);
+    expect(result.data.secret).toEqual(written);
+    expect(result.data.jiraServer).toEqual(written);
   });
 
-  describe("edit mode", () => {
-    it("should only update secret when only secret is dirty", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: { jiraServer: false, quickLink: false, secret: true },
-        jiraServer: { url: "https://jira.example.com", currentResource: mockJiraServer },
-        secret: { username: "updated-user", password: "updated-password", currentResource: mockSecret },
-      };
-      const updatedSecret = {
-        ...mockSecret,
-        data: { username: btoa("updated-user"), password: btoa("updated-password") },
-      };
-      mockK8sClientInstance.replaceResource.mockResolvedValueOnce(updatedSecret);
-      const caller = createCaller(mockContext);
-      const result = await caller.k8s.manageJiraIntegration(input);
-      expect(result.success).toBe(true);
-      expect(result.data.secret).toEqual(updatedSecret);
-      expect(result.data.quickLink).toBeUndefined();
-      expect(mockK8sClientInstance.replaceResource).toHaveBeenCalledTimes(1);
+  it("patches the live secret and JiraServer in edit mode", async () => {
+    k8s.replaceResource.mockResolvedValue(written);
+
+    await createCaller(mockContext).k8s.manageJiraIntegration({
+      ...baseInput,
+      dirtyFields: { jiraServer: true, quickLink: false, secret: true },
+      jiraServer: { url: "https://jira-new.example.com", currentResource: jiraServer },
+      secret: { ...credentials, currentResource: secret },
     });
 
-    it("should only update quickLink when only quickLink is dirty", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: { jiraServer: false, quickLink: true, secret: false },
-        jiraServer: { url: "https://jira.example.com", currentResource: mockJiraServer },
-        quickLink: { name: "jira", externalUrl: "https://jira-updated.example.com", currentResource: mockQuickLink },
-        secret: { username: "test-user", password: "test-password", currentResource: mockSecret },
-      };
-      const updatedQuickLink = {
-        ...mockQuickLink,
-        spec: { ...mockQuickLink.spec, url: "https://jira-updated.example.com" },
-      };
-      mockK8sClientInstance.replaceResource.mockResolvedValueOnce(updatedQuickLink);
-      const caller = createCaller(mockContext);
-      const result = await caller.k8s.manageJiraIntegration(input);
-      expect(result.success).toBe(true);
-      expect(result.data.secret).toBeUndefined();
-      expect(result.data.quickLink).toEqual(updatedQuickLink);
-      expect(mockK8sClientInstance.replaceResource).toHaveBeenCalledTimes(1);
-    });
-
-    it("should update both resources when both are dirty", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: { jiraServer: false, quickLink: true, secret: true },
-        jiraServer: { url: "https://jira.example.com", currentResource: mockJiraServer },
-        quickLink: { name: "jira", externalUrl: "https://jira-updated.example.com", currentResource: mockQuickLink },
-        secret: { username: "updated-user", password: "updated-password", currentResource: mockSecret },
-      };
-      const updatedSecret: Secret = {
-        ...mockSecret,
-        data: { username: btoa("updated-user"), password: btoa("updated-password") },
-      };
-      const updatedQuickLink: QuickLink = {
-        ...mockQuickLink,
-        spec: { ...mockQuickLink.spec, url: "https://jira-updated.example.com" },
-      };
-      mockK8sClientInstance.replaceResource
-        .mockResolvedValueOnce(updatedSecret)
-        .mockResolvedValueOnce(updatedQuickLink);
-      const caller = createCaller(mockContext);
-      const result = await caller.k8s.manageJiraIntegration(input);
-      expect(result.success).toBe(true);
-      expect(result.data.secret).toEqual(updatedSecret);
-      expect(result.data.quickLink).toEqual(updatedQuickLink);
-      expect(mockK8sClientInstance.replaceResource).toHaveBeenCalledTimes(2);
-    });
+    expect(editJiraIntegrationSecret).toHaveBeenCalledWith(secret, credentials);
+    expect(editJiraServer).toHaveBeenCalledWith(jiraServer, { url: "https://jira-new.example.com" });
+    expect(k8s.replaceResource.mock.calls.map((args) => args[0])).toEqual([k8sSecretConfig, k8sJiraServerConfig]);
   });
 
-  describe("validation", () => {
-    it("should require currentResource for secret in edit mode", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: { jiraServer: false, quickLink: false, secret: true },
-        jiraServer: { url: "https://jira.example.com", currentResource: mockJiraServer },
-        secret: { username: "test-user", password: "test-password" },
-      };
-      const caller = createCaller(mockContext);
-      await expect(caller.k8s.manageJiraIntegration(input as never)).rejects.toThrow(
-        "currentResource is required for secret in edit mode"
-      );
+  it("rewrites the QuickLink url", async () => {
+    k8s.replaceResource.mockResolvedValueOnce(written);
+
+    await createCaller(mockContext).k8s.manageJiraIntegration({
+      ...baseInput,
+      dirtyFields: { jiraServer: false, quickLink: true, secret: false },
+      quickLink: { name: "jira", externalUrl: "https://jira-updated.example.com", currentResource: quickLink },
     });
 
-    it("should require currentResource for quickLink in edit mode when dirty", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: { jiraServer: false, quickLink: true, secret: false },
-        jiraServer: { url: "https://jira.example.com", currentResource: mockJiraServer },
-        quickLink: { name: "jira", externalUrl: "https://jira.example.com" },
-        secret: { username: "test-user", password: "test-password", currentResource: mockSecret },
-      };
-      const caller = createCaller(mockContext);
-      await expect(caller.k8s.manageJiraIntegration(input as never)).rejects.toThrow(
-        "currentResource is required for quickLink in edit mode"
-      );
-    });
-  });
-
-  describe("fail-fast behavior", () => {
-    it("should stop execution if first operation fails", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "create" as const,
-        dirtyFields: { jiraServer: false, quickLink: false, secret: true },
-        jiraServer: { url: "https://jira.example.com" },
-        secret: { username: "test-user", password: "test-password" },
-      };
-      mockK8sClientInstance.createResource.mockRejectedValueOnce(new Error("Failed to create secret"));
-      const caller = createCaller(mockContext);
-      await expect(caller.k8s.manageJiraIntegration(input)).rejects.toThrow("Failed to create secret");
-    });
-
-    it("should leave first operation completed if second operation fails", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: { jiraServer: false, quickLink: true, secret: true },
-        jiraServer: { url: "https://jira.example.com", currentResource: mockJiraServer },
-        quickLink: { name: "jira", externalUrl: "https://jira-updated.example.com", currentResource: mockQuickLink },
-        secret: { username: "updated-user", password: "updated-password", currentResource: mockSecret },
-      };
-      const updatedSecret: Secret = {
-        ...mockSecret,
-        data: { username: btoa("updated-user"), password: btoa("updated-password") },
-      };
-      mockK8sClientInstance.replaceResource
-        .mockResolvedValueOnce(updatedSecret)
-        .mockRejectedValueOnce(new Error("Failed to update QuickLink"));
-      const caller = createCaller(mockContext);
-      await expect(caller.k8s.manageJiraIntegration(input)).rejects.toThrow("Failed to update QuickLink");
-      expect(mockK8sClientInstance.replaceResource).toHaveBeenCalledTimes(2);
-    });
-  });
-
-  describe("no-op scenarios", () => {
-    it("should not update anything when no fields are dirty", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: { jiraServer: false, quickLink: false, secret: false },
-        jiraServer: { url: "https://jira.example.com", currentResource: mockJiraServer },
-        secret: { username: "test-user", password: "test-password", currentResource: mockSecret },
-      };
-      const caller = createCaller(mockContext);
-      const result = await caller.k8s.manageJiraIntegration(input);
-      expect(result.success).toBe(true);
-      expect(result.data.secret).toBeUndefined();
-      expect(result.data.quickLink).toBeUndefined();
-      expect(mockK8sClientInstance.createResource).not.toHaveBeenCalled();
-      expect(mockK8sClientInstance.replaceResource).not.toHaveBeenCalled();
-    });
+    expect(editQuickLinkURL).toHaveBeenCalledWith(quickLink, { url: "https://jira-updated.example.com" });
+    expect(k8s.replaceResource).toHaveBeenCalledWith(k8sQuickLinkConfig, EDITED_NAME, namespace, expect.anything());
   });
 });

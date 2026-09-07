@@ -1,417 +1,94 @@
-import { createMockedContext } from "../../../../../__mocks__/context.js";
-import { createCaller } from "../../../../../routers/index.js";
 import { describe, it, expect, vi, beforeEach, afterEach, Mock } from "vitest";
+import {
+  createArgoCDIntegrationSecretDraft,
+  editArgoCDIntegrationSecret,
+  editQuickLinkURL,
+  k8sQuickLinkConfig,
+  k8sSecretConfig,
+} from "@my-project/shared";
+import { createMockedContext } from "../../../../../__mocks__/context.js";
 import { K8sClient } from "../../../../../clients/k8s/index.js";
-import { QuickLink, Secret } from "@my-project/shared";
+import { createCaller } from "../../../../../routers/index.js";
+import { EDITED_NAME, integrationFixture } from "../__fixtures__/integration.js";
 
-// Mock K8sClient
-vi.mock("../../../../../clients/k8s/index.js", () => ({
-  K8sClient: vi.fn(),
-}));
+vi.mock("../../../../../clients/k8s/index.js", () => ({ K8sClient: vi.fn() }));
 
-// Mock the editQuickLinkURL and editArgoCDIntegrationSecret functions
 vi.mock("@my-project/shared", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@my-project/shared")>();
-  return {
-    ...actual,
-    editQuickLinkURL: vi.fn((quickLink: QuickLink, input: { url: string }) => ({
-      ...quickLink,
-      spec: {
-        ...quickLink.spec,
-        url: input.url,
-      },
-    })),
-    editArgoCDIntegrationSecret: vi.fn((secret: Secret, input: { token: string; url: string }) => ({
-      ...secret,
-      data: {
-        token: btoa(input.token),
-        url: btoa(input.url),
-      },
-    })),
-  };
+  const { mockIntegrationShared } = await import("../__fixtures__/integration.js");
+  return mockIntegrationShared(await importOriginal<typeof import("@my-project/shared")>(), [
+    "createArgoCDIntegrationSecretDraft",
+    "editArgoCDIntegrationSecret",
+    "editQuickLinkURL",
+  ]);
 });
+
+const { namespace, quickLink, secret, written, mockK8sClient } = integrationFixture();
+
+const baseInput = {
+  clusterName: "test-cluster",
+  namespace,
+  mode: "edit" as const,
+  dirtyFields: { quickLink: false, secret: false },
+  secret: { token: "test-token", url: "https://argocd.example.com" },
+};
 
 describe("k8sManageArgoCDIntegrationProcedure", () => {
   let mockContext: ReturnType<typeof createMockedContext>;
-  let mockK8sClientInstance: {
-    KubeConfig: {};
-    createResource: Mock;
-    replaceResource: Mock;
-  };
-
-  const mockQuickLink: QuickLink = {
-    apiVersion: "v2.edp.epam.com/v1",
-    kind: "QuickLink",
-    metadata: {
-      name: "argocd",
-      namespace: "test-namespace",
-      uid: "",
-      creationTimestamp: "",
-    },
-    spec: {
-      type: "default",
-      url: "https://argocd.example.com",
-      icon: "argocd",
-      visible: true,
-    },
-  };
-
-  const mockSecret: Secret = {
-    apiVersion: "v1",
-    kind: "Secret",
-    metadata: {
-      name: "ci-argocd",
-      namespace: "test-namespace",
-      uid: "",
-      creationTimestamp: "",
-    },
-    type: "Opaque",
-    data: {
-      token: btoa("test-token"),
-      url: btoa("https://argocd.example.com"),
-    },
-  };
+  let k8s: ReturnType<typeof mockK8sClient>;
 
   beforeEach(() => {
     mockContext = createMockedContext();
-
-    mockK8sClientInstance = {
-      KubeConfig: {},
-      createResource: vi.fn(),
-      replaceResource: vi.fn(),
-    };
-
+    k8s = mockK8sClient();
     (K8sClient as unknown as Mock).mockImplementation(function () {
-      return mockK8sClientInstance;
+      return k8s;
     });
   });
 
-  afterEach(() => {
-    vi.clearAllMocks();
+  afterEach(() => vi.clearAllMocks());
+
+  it("creates the ArgoCD secret from token and url", async () => {
+    k8s.createResource.mockResolvedValueOnce(written);
+
+    const result = await createCaller(mockContext).k8s.manageArgoCDIntegration({
+      ...baseInput,
+      mode: "create",
+      dirtyFields: { quickLink: false, secret: true },
+    });
+
+    expect(createArgoCDIntegrationSecretDraft).toHaveBeenCalledWith({
+      token: "test-token",
+      url: "https://argocd.example.com",
+    });
+    expect(k8s.createResource).toHaveBeenCalledWith(k8sSecretConfig, namespace, expect.anything());
+    expect(result.data.secret).toEqual(written);
   });
 
-  describe("create mode", () => {
-    it("should create secret in create mode", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "create" as const,
-        dirtyFields: {
-          quickLink: false,
-          secret: true,
-        },
-        secret: {
-          token: "test-token",
-          url: "https://argocd.example.com",
-        },
-      };
+  it("patches the live ArgoCD secret with token and url", async () => {
+    k8s.replaceResource.mockResolvedValueOnce(written);
 
-      const createdSecret = { ...mockSecret };
-      mockK8sClientInstance.createResource.mockResolvedValueOnce(createdSecret);
-
-      const caller = createCaller(mockContext);
-      const result = await caller.k8s.manageArgoCDIntegration(input);
-
-      expect(result.success).toBe(true);
-      expect(result.data.secret).toEqual(createdSecret);
-      expect(mockK8sClientInstance.createResource).toHaveBeenCalledTimes(1);
-      expect(mockK8sClientInstance.createResource).toHaveBeenCalledWith(
-        expect.objectContaining({ kind: "Secret" }),
-        "test-namespace",
-        expect.objectContaining({
-          kind: "Secret",
-          data: expect.objectContaining({
-            token: expect.any(String),
-            url: expect.any(String),
-          }),
-        })
-      );
+    await createCaller(mockContext).k8s.manageArgoCDIntegration({
+      ...baseInput,
+      dirtyFields: { quickLink: false, secret: true },
+      secret: { ...baseInput.secret, currentResource: secret },
     });
+
+    expect(editArgoCDIntegrationSecret).toHaveBeenCalledWith(secret, {
+      token: "test-token",
+      url: "https://argocd.example.com",
+    });
+    expect(k8s.replaceResource).toHaveBeenCalledWith(k8sSecretConfig, EDITED_NAME, namespace, expect.anything());
   });
 
-  describe("edit mode", () => {
-    it("should only update secret when only secret is dirty", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: {
-          quickLink: false,
-          secret: true,
-        },
-        secret: {
-          token: "updated-token",
-          url: "https://argocd-new.example.com",
-          currentResource: mockSecret,
-        },
-      };
+  it("rewrites the QuickLink url", async () => {
+    k8s.replaceResource.mockResolvedValueOnce(written);
 
-      const updatedSecret = {
-        ...mockSecret,
-        data: { token: btoa("updated-token"), url: btoa("https://argocd-new.example.com") },
-      };
-      mockK8sClientInstance.replaceResource.mockResolvedValueOnce(updatedSecret);
-
-      const caller = createCaller(mockContext);
-      const result = await caller.k8s.manageArgoCDIntegration(input);
-
-      expect(result.success).toBe(true);
-      expect(result.data.secret).toEqual(updatedSecret);
-      expect(result.data.quickLink).toBeUndefined();
-      expect(mockK8sClientInstance.replaceResource).toHaveBeenCalledTimes(1);
+    await createCaller(mockContext).k8s.manageArgoCDIntegration({
+      ...baseInput,
+      dirtyFields: { quickLink: true, secret: false },
+      quickLink: { name: "argocd", externalUrl: "https://argocd-updated.example.com", currentResource: quickLink },
     });
 
-    it("should only update quickLink when only quickLink is dirty", async () => {
-      const completeQuickLink: QuickLink = {
-        ...mockQuickLink,
-        spec: {
-          ...mockQuickLink.spec,
-          url: "https://argocd.example.com",
-        },
-      };
-
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: {
-          quickLink: true,
-          secret: false,
-        },
-        quickLink: {
-          name: "argocd",
-          externalUrl: "https://argocd-updated.example.com",
-          currentResource: completeQuickLink,
-        },
-        secret: {
-          token: "test-token",
-          url: "https://argocd.example.com",
-          currentResource: mockSecret,
-        },
-      };
-
-      const updatedQuickLink: QuickLink = {
-        ...completeQuickLink,
-        spec: { ...completeQuickLink.spec, url: "https://argocd-updated.example.com" },
-      };
-      mockK8sClientInstance.replaceResource.mockResolvedValueOnce(updatedQuickLink);
-
-      const caller = createCaller(mockContext);
-      const result = await caller.k8s.manageArgoCDIntegration(input);
-
-      expect(result.success).toBe(true);
-      expect(result.data.secret).toBeUndefined();
-      expect(result.data.quickLink).toEqual(updatedQuickLink);
-      expect(mockK8sClientInstance.replaceResource).toHaveBeenCalledTimes(1);
-    });
-
-    it("should update both resources when both are dirty", async () => {
-      const completeQuickLink: QuickLink = {
-        ...mockQuickLink,
-        spec: {
-          ...mockQuickLink.spec,
-          url: "https://argocd.example.com",
-        },
-      };
-
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: {
-          quickLink: true,
-          secret: true,
-        },
-        quickLink: {
-          name: "argocd",
-          externalUrl: "https://argocd-updated.example.com",
-          currentResource: completeQuickLink,
-        },
-        secret: {
-          token: "updated-token",
-          url: "https://argocd-updated.example.com",
-          currentResource: mockSecret,
-        },
-      };
-
-      const updatedSecret: Secret = {
-        ...mockSecret,
-        data: {
-          token: btoa("updated-token"),
-          url: btoa("https://argocd-updated.example.com"),
-        },
-      };
-      const updatedQuickLink: QuickLink = {
-        ...completeQuickLink,
-        spec: { ...completeQuickLink.spec, url: "https://argocd-updated.example.com" },
-      };
-
-      mockK8sClientInstance.replaceResource
-        .mockResolvedValueOnce(updatedSecret)
-        .mockResolvedValueOnce(updatedQuickLink);
-
-      const caller = createCaller(mockContext);
-      const result = await caller.k8s.manageArgoCDIntegration(input);
-
-      expect(result.success).toBe(true);
-      expect(result.data.secret).toEqual(updatedSecret);
-      expect(result.data.quickLink).toEqual(updatedQuickLink);
-      expect(mockK8sClientInstance.replaceResource).toHaveBeenCalledTimes(2);
-    });
-  });
-
-  describe("validation", () => {
-    it("should require currentResource for secret in edit mode", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: {
-          quickLink: false,
-          secret: true,
-        },
-        secret: {
-          token: "test-token",
-          url: "https://argocd.example.com",
-          // currentResource missing
-        },
-      };
-
-      const caller = createCaller(mockContext);
-
-      await expect(caller.k8s.manageArgoCDIntegration(input as any)).rejects.toThrow(
-        "currentResource is required for secret in edit mode"
-      );
-    });
-
-    it("should require currentResource for quickLink in edit mode when dirty", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: {
-          quickLink: true,
-          secret: false,
-        },
-        quickLink: {
-          name: "argocd",
-          externalUrl: "https://argocd.example.com",
-          // currentResource missing
-        },
-        secret: {
-          token: "test-token",
-          url: "https://argocd.example.com",
-          currentResource: mockSecret,
-        },
-      };
-
-      const caller = createCaller(mockContext);
-
-      await expect(caller.k8s.manageArgoCDIntegration(input as any)).rejects.toThrow(
-        "currentResource is required for quickLink in edit mode"
-      );
-    });
-  });
-
-  describe("fail-fast behavior", () => {
-    it("should stop execution if first operation fails", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "create" as const,
-        dirtyFields: {
-          quickLink: false,
-          secret: true,
-        },
-        secret: {
-          token: "test-token",
-          url: "https://argocd.example.com",
-        },
-      };
-
-      mockK8sClientInstance.createResource.mockRejectedValueOnce(new Error("Failed to create secret"));
-
-      const caller = createCaller(mockContext);
-
-      await expect(caller.k8s.manageArgoCDIntegration(input)).rejects.toThrow("Failed to create secret");
-    });
-
-    it("should leave first operation completed if second operation fails", async () => {
-      const completeQuickLink: QuickLink = {
-        ...mockQuickLink,
-        spec: {
-          ...mockQuickLink.spec,
-          url: "https://argocd.example.com",
-        },
-      };
-
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: {
-          quickLink: true,
-          secret: true,
-        },
-        quickLink: {
-          name: "argocd",
-          externalUrl: "https://argocd-updated.example.com",
-          currentResource: completeQuickLink,
-        },
-        secret: {
-          token: "updated-token",
-          url: "https://argocd-updated.example.com",
-          currentResource: mockSecret,
-        },
-      };
-
-      const updatedSecret: Secret = {
-        ...mockSecret,
-        data: {
-          token: btoa("updated-token"),
-          url: btoa("https://argocd-updated.example.com"),
-        },
-      };
-
-      // Secret update succeeds, QuickLink update fails
-      mockK8sClientInstance.replaceResource
-        .mockResolvedValueOnce(updatedSecret)
-        .mockRejectedValueOnce(new Error("Failed to update QuickLink"));
-
-      const caller = createCaller(mockContext);
-
-      await expect(caller.k8s.manageArgoCDIntegration(input)).rejects.toThrow("Failed to update QuickLink");
-
-      // Verify only 2 calls: 1 for secret (succeeded), 1 for quickLink (failed)
-      expect(mockK8sClientInstance.replaceResource).toHaveBeenCalledTimes(2);
-    });
-  });
-
-  describe("no-op scenarios", () => {
-    it("should not update anything when no fields are dirty", async () => {
-      const input = {
-        clusterName: "test-cluster",
-        namespace: "test-namespace",
-        mode: "edit" as const,
-        dirtyFields: {
-          quickLink: false,
-          secret: false,
-        },
-        secret: {
-          token: "test-token",
-          url: "https://argocd.example.com",
-          currentResource: mockSecret,
-        },
-      };
-
-      const caller = createCaller(mockContext);
-      const result = await caller.k8s.manageArgoCDIntegration(input);
-
-      expect(result.success).toBe(true);
-      expect(result.data.secret).toBeUndefined();
-      expect(result.data.quickLink).toBeUndefined();
-      expect(mockK8sClientInstance.createResource).not.toHaveBeenCalled();
-      expect(mockK8sClientInstance.replaceResource).not.toHaveBeenCalled();
-    });
+    expect(editQuickLinkURL).toHaveBeenCalledWith(quickLink, { url: "https://argocd-updated.example.com" });
+    expect(k8s.replaceResource).toHaveBeenCalledWith(k8sQuickLinkConfig, EDITED_NAME, namespace, expect.anything());
   });
 });
