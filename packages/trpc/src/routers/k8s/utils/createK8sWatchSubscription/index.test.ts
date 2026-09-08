@@ -1,7 +1,7 @@
 import { describe, expect, test, vi, beforeEach } from "vitest";
 import { createK8sWatchSubscription, WatchEvent } from "./index.js";
 import type { Watch } from "@kubernetes/client-node";
-import type { KubeObjectBase } from "@my-project/shared";
+import { K8sApiError, type KubeObjectBase } from "@my-project/shared";
 
 // Mock dependencies
 vi.mock("../handleK8sError/index.js", () => ({
@@ -76,7 +76,8 @@ describe("createK8sWatchSubscription", () => {
     );
   });
 
-  test("handles watch errors", async () => {
+  // Drives the generator until the done callback makes it throw, and returns what it threw.
+  const emitDoneError = async (err: unknown) => {
     const generator = createK8sWatchSubscription(mockWatch, {
       watchUrl: "/api/v1/pods",
       watchOptions: { resourceVersion: "1000" },
@@ -87,18 +88,22 @@ describe("createK8sWatchSubscription", () => {
         for await (const _event of generator) {
           // Should not reach here
         }
-      } catch (err) {
-        return err;
+      } catch (thrown) {
+        return thrown;
       }
     })();
 
     // Wait a bit for watch to be set up
     await new Promise((resolve) => setTimeout(resolve, 10));
 
-    // Emit an error
-    errorCallback(new Error("Watch error"));
+    errorCallback(err as Error);
 
-    const error = await consumerPromise;
+    return consumerPromise;
+  };
+
+  test("handles watch errors", async () => {
+    const error = await emitDoneError(new Error("Watch error"));
+
     expect(error).toBeInstanceOf(Error);
     expect((error as Error).message).toBe("Watch error");
   });
@@ -417,5 +422,60 @@ describe("createK8sWatchSubscription", () => {
     expect(events[0].type).toBe("ADDED");
     expect(events[1].type).toBe("MODIFIED");
     expect(events[2].type).toBe("DELETED");
+  });
+
+  describe("preserves the HTTP status of a watch error", () => {
+    // handleK8sError is mocked to identity above, so the generator surfaces the
+    // error this module emits. The real mapper is imported to assert the code
+    // that reaches the wire.
+    const mapToTRPCError = async (error: unknown) => {
+      const { handleK8sError } =
+        await vi.importActual<typeof import("../handleK8sError/index.js")>("../handleK8sError/index.js");
+      return handleK8sError(error);
+    };
+
+    const withStatusCode = (message: string, statusCode: number) => Object.assign(new Error(message), { statusCode });
+
+    test("a watch on a type the cluster does not serve maps to NOT_FOUND", async () => {
+      const error = await emitDoneError(withStatusCode("Not Found", 404));
+
+      expect(error).toBeInstanceOf(K8sApiError);
+      expect((error as K8sApiError).statusCode).toBe(404);
+      expect((error as K8sApiError).statusText).toBe("Not Found");
+      expect((await mapToTRPCError(error)).code).toBe("NOT_FOUND");
+    });
+
+    test("a watch denied by RBAC maps to FORBIDDEN", async () => {
+      const error = await emitDoneError(withStatusCode("Forbidden", 403));
+
+      expect(error).toBeInstanceOf(K8sApiError);
+      expect((error as K8sApiError).statusCode).toBe(403);
+      expect((await mapToTRPCError(error)).code).toBe("FORBIDDEN");
+    });
+
+    test("reads a numeric code from a K8s Status object", async () => {
+      const error = await emitDoneError(Object.assign(new Error("Not Found"), { code: 404 }));
+
+      expect(error).toBeInstanceOf(K8sApiError);
+      expect((error as K8sApiError).statusCode).toBe(404);
+    });
+
+    test("an error without a status is emitted unchanged and maps to INTERNAL_SERVER_ERROR", async () => {
+      const original = new Error("Watch stream failed");
+      const error = await emitDoneError(original);
+
+      expect(error).toBe(original);
+      expect(error).not.toBeInstanceOf(K8sApiError);
+      expect((await mapToTRPCError(error)).code).toBe("INTERNAL_SERVER_ERROR");
+    });
+
+    test("does not read a string transport code as a status", async () => {
+      const original = Object.assign(new Error("socket hang up"), { code: "ECONNRESET" });
+      const error = await emitDoneError(original);
+
+      expect(error).toBe(original);
+      expect(error).not.toBeInstanceOf(K8sApiError);
+      expect((await mapToTRPCError(error)).code).toBe("INTERNAL_SERVER_ERROR");
+    });
   });
 });
