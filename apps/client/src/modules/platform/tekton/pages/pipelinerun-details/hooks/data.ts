@@ -27,7 +27,7 @@ import {
 import React from "react";
 import { RequestError } from "@/core/types/global";
 import { buildPipelineRunNameFilter, SINGLE_RECORD_LOOKUP_PAGE_SIZE } from "../../../utils/celFilters";
-import { isK8sNotFoundError } from "../../../utils/isK8sNotFoundError";
+import { isK8sNotFoundError } from "@/k8s/api/utils/k8sNotFoundError";
 import { buildPipelineRunTasksByNameMap } from "./utils";
 import { routePipelineRunDetails } from "../route";
 import type { UnifiedPipelineRunData, UnifiedSource } from "../providers/PipelineRun/types";

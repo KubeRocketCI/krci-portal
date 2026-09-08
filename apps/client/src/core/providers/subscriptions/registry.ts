@@ -164,7 +164,7 @@ type WatchItemParams = {
   name: string;
 };
 
-type ItemEventHandler<I extends KubeObjectBase> = (data: I) => void;
+type ItemEventHandler<I extends KubeObjectBase> = (event: WatchEvent<I>) => void;
 
 type ItemRegistryEntry<I extends KubeObjectBase> = {
   refCount: number;
@@ -250,16 +250,16 @@ class WatchItemRegistry {
         name,
       },
       {
-        onData: (value: { data?: KubeObjectBase }) => {
-          const data = value.data as I | undefined;
-          if (!data?.metadata?.uid) {
+        onData: (value: { type: string; data?: KubeObjectBase }) => {
+          const event = value as WatchEvent<I>;
+          if (!event.data?.metadata?.name) {
             return;
           }
 
           // Emit event to all handlers
           entry.handlers.forEach((handler) => {
             try {
-              handler(data);
+              handler(event);
             } catch (error) {
               console.error(`[WatchItemRegistry] Handler error`, {
                 queryKey: id,

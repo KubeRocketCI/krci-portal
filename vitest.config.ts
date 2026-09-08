@@ -90,7 +90,6 @@ export default defineConfig({
         "**/queryClient.ts",
         "**/http-client.ts",
         "**/navigationConfig.ts",
-        "**/registry.ts",
 
         // ============================================
         // BARREL EXPORTS - Specific Patterns Only
