@@ -1,5 +1,4 @@
 import { TRPCError } from "@trpc/server";
-import type { TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc";
 import {
   GitFusionRepositoryListResponse,
   GitFusionOrganizationListResponse,
@@ -10,28 +9,10 @@ import {
   GitFusionPipelineJobTrace,
   GitLabPipelineResponse,
   GitLabPipelineVariable,
-  stripTrailingSlash,
 } from "@my-project/shared";
-
-// =============================================================================
-// Constants
-// =============================================================================
+import { createHttpService, withTRPCErrors, type HttpService } from "../http/index.js";
 
 const DEFAULT_TIMEOUT_MS = 30_000; // 30 seconds
-
-const HTTP_STATUS_TO_TRPC_CODE: Record<number, TRPC_ERROR_CODE_KEY> = {
-  400: "BAD_REQUEST",
-  401: "FORBIDDEN", // Not UNAUTHORIZED — that triggers frontend login redirect; GitFusion 401 means the git provider token is invalid, not the portal session
-  403: "FORBIDDEN",
-  404: "NOT_FOUND",
-  408: "TIMEOUT",
-  409: "CONFLICT",
-  429: "TOO_MANY_REQUESTS",
-};
-
-function getTRPCErrorCode(httpStatusCode: number): TRPC_ERROR_CODE_KEY {
-  return HTTP_STATUS_TO_TRPC_CODE[httpStatusCode] ?? "INTERNAL_SERVER_ERROR";
-}
 
 // =============================================================================
 // Configuration
@@ -90,22 +71,15 @@ export interface GitFusionClientConfig {
 }
 
 /**
- * Client for GitFusion API.
+ * Client for the GitFusion API.
  *
- * Features:
- * - Type-safe responses from shared types
- * - Configurable timeout with AbortController
- * - No authentication (protected by network policies)
- * - Standardized error handling
- *
- * Security Model:
- * - GitFusion runs in trusted cluster environment
- * - Network policies restrict access to portal pods only
- * - GitFusion uses K8s-stored tokens to authenticate with git providers
+ * Security model:
+ * - GitFusion runs in the trusted cluster; network policies restrict access to portal pods only
+ * - The portal sends no auth headers; GitFusion authenticates to git providers with K8s-stored tokens
+ * - A 401 here is relayed from the git provider (the stored token is invalid), not a GitFusion auth failure
  */
 export class GitFusionClient {
-  private readonly apiBaseURL: string;
-  private readonly timeoutMs: number;
+  private readonly http: HttpService;
 
   constructor(clientConfig: GitFusionClientConfig) {
     const { apiBaseURL, timeoutMs = DEFAULT_TIMEOUT_MS } = clientConfig;
@@ -114,97 +88,16 @@ export class GitFusionClient {
       throw new Error("GitFusion API base URL is not configured");
     }
 
-    // Remove trailing slash if present
-    this.apiBaseURL = stripTrailingSlash(apiBaseURL);
-    this.timeoutMs = timeoutMs;
-  }
-
-  /**
-   * Build query string from params object
-   */
-  private buildQueryString(params: Record<string, unknown>): string {
-    const queryParams = new URLSearchParams();
-
-    for (const [key, value] of Object.entries(params)) {
-      if (value === undefined || value === null || value === "") continue;
-
-      if (typeof value === "boolean") {
-        queryParams.append(key, value ? "true" : "false");
-      } else {
-        queryParams.append(key, String(value));
-      }
-    }
-
-    return queryParams.toString();
-  }
-
-  /**
-   * Build endpoint URL with optional query string
-   */
-  private buildEndpoint(path: string, params?: Record<string, unknown>): string {
-    if (!params) return path;
-    const queryString = this.buildQueryString(params);
-    return queryString ? `${path}?${queryString}` : path;
-  }
-
-  /**
-   * Fetch JSON from GitFusion API endpoint
-   * No authentication headers - GitFusion is protected by network policies
-   */
-  private async fetchJson<T>(endpoint: string, init?: RequestInit): Promise<T> {
-    const url = `${this.apiBaseURL}${endpoint}`;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
-
-    try {
-      const response = await fetch(url, {
-        method: init?.method ?? "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        signal: controller.signal,
-        body: init?.body,
-      });
-
-      if (!response.ok) {
-        await this.handleErrorResponse(response, url);
-      }
-
-      return (await response.json()) as T;
-    } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") {
-        throw new TRPCError({
-          code: "TIMEOUT",
-          message: `GitFusion API request timed out after ${this.timeoutMs}ms`,
-        });
-      }
-      throw error;
-    } finally {
-      clearTimeout(timeoutId);
-    }
-  }
-
-  private async handleErrorResponse(response: Response, url: string): Promise<never> {
-    let errorText = "";
-    try {
-      errorText = await response.text();
-    } catch {
-      errorText = "Unable to read error response";
-    }
-
-    const errorMessage = `GitFusion API request failed: ${response.status} ${response.statusText}`;
-
-    console.error(`[GitFusion] Error - URL: ${url}`);
-    console.error(`[GitFusion] Status: ${response.status} ${response.statusText}`);
-    if (errorText) {
-      console.error(`[GitFusion] Response Body: ${errorText}`);
-    }
-
-    throw new TRPCError({
-      code: getTRPCErrorCode(response.status),
-      message: errorText ? `${errorMessage}\nResponse: ${errorText}` : errorMessage,
-    });
+    // Wrapped: the GitFusion procedures do not catch, so the upstream status must reach the
+    // browser as a tRPC code.
+    this.http = withTRPCErrors(
+      createHttpService({
+        name: "GitFusion",
+        baseURL: apiBaseURL,
+        timeoutMs,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
   }
 
   /**
@@ -219,12 +112,9 @@ export class GitFusionClient {
    * const repos = await client.getRepositories("github-main", "my-org");
    */
   async getRepositories(gitServer: string, owner: string): Promise<GitFusionRepositoryListResponse> {
-    const endpoint = this.buildEndpoint("/api/v1/repositories", {
-      gitServer,
-      owner,
+    return this.http.json<GitFusionRepositoryListResponse>("/api/v1/repositories", {
+      query: { gitServer, owner },
     });
-
-    return this.fetchJson<GitFusionRepositoryListResponse>(endpoint);
   }
 
   /**
@@ -238,11 +128,9 @@ export class GitFusionClient {
    * const orgs = await client.getOrganizations("github-main");
    */
   async getOrganizations(gitServer: string): Promise<GitFusionOrganizationListResponse> {
-    const endpoint = this.buildEndpoint("/api/v1/user/organizations", {
-      gitServer,
+    return this.http.json<GitFusionOrganizationListResponse>("/api/v1/user/organizations", {
+      query: { gitServer },
     });
-
-    return this.fetchJson<GitFusionOrganizationListResponse>(endpoint);
   }
 
   /**
@@ -258,13 +146,9 @@ export class GitFusionClient {
    * const branches = await client.getBranches("github-main", "my-org", "my-repo");
    */
   async getBranches(gitServer: string, owner: string, repoName: string): Promise<GitFusionBranchListResponse> {
-    const endpoint = this.buildEndpoint("/api/v1/branches", {
-      gitServer,
-      owner,
-      repoName,
+    return this.http.json<GitFusionBranchListResponse>("/api/v1/branches", {
+      query: { gitServer, owner, repoName },
     });
-
-    return this.fetchJson<GitFusionBranchListResponse>(endpoint);
   }
 
   /**
@@ -286,16 +170,9 @@ export class GitFusionClient {
     page?: number,
     perPage?: number
   ): Promise<GitFusionPullRequestListResponse> {
-    const endpoint = this.buildEndpoint("/api/v1/pull-requests", {
-      gitServer,
-      owner,
-      repoName,
-      state,
-      page,
-      perPage,
+    return this.http.json<GitFusionPullRequestListResponse>("/api/v1/pull-requests", {
+      query: { gitServer, owner, repoName, state, page, perPage },
     });
-
-    return this.fetchJson<GitFusionPullRequestListResponse>(endpoint);
   }
 
   /**
@@ -309,11 +186,8 @@ export class GitFusionClient {
    * await client.invalidateCache("branches");
    */
   async invalidateCache(endpoint: string): Promise<void> {
-    const url = this.buildEndpoint("/api/v1/cache/invalidate", {
-      endpoint,
-    });
-
-    await this.fetchJson<void>(url, {
+    await this.http.json<void>("/api/v1/cache/invalidate", {
+      query: { endpoint },
       method: "DELETE",
     });
   }
@@ -324,16 +198,16 @@ export class GitFusionClient {
     project: string,
     opts?: { ref?: string; status?: string; page?: number; perPage?: number }
   ): Promise<GitFusionPipelineListResponse> {
-    const endpoint = this.buildEndpoint("/api/v1/pipelines", {
-      gitServer,
-      project,
-      ref: opts?.ref,
-      status: opts?.status,
-      page: opts?.page,
-      perPage: opts?.perPage,
+    return this.http.json<GitFusionPipelineListResponse>("/api/v1/pipelines", {
+      query: {
+        gitServer,
+        project,
+        ref: opts?.ref,
+        status: opts?.status,
+        page: opts?.page,
+        perPage: opts?.perPage,
+      },
     });
-
-    return this.fetchJson<GitFusionPipelineListResponse>(endpoint);
   }
 
   /** List the jobs of a CI/CD pipeline (provider-agnostic; GitLab today). */
@@ -342,24 +216,16 @@ export class GitFusionClient {
     project: string,
     pipelineId: string
   ): Promise<GitFusionPipelineJobListResponse> {
-    const endpoint = this.buildEndpoint("/api/v1/pipeline-jobs", {
-      gitServer,
-      project,
-      pipelineId,
+    return this.http.json<GitFusionPipelineJobListResponse>("/api/v1/pipeline-jobs", {
+      query: { gitServer, project, pipelineId },
     });
-
-    return this.fetchJson<GitFusionPipelineJobListResponse>(endpoint);
   }
 
   /** Get the trace (log) of a CI/CD pipeline job. */
   async getJobTrace(gitServer: string, project: string, jobId: string): Promise<GitFusionPipelineJobTrace> {
-    const endpoint = this.buildEndpoint("/api/v1/pipeline-job-trace", {
-      gitServer,
-      project,
-      jobId,
+    return this.http.json<GitFusionPipelineJobTrace>("/api/v1/pipeline-job-trace", {
+      query: { gitServer, project, jobId },
     });
-
-    return this.fetchJson<GitFusionPipelineJobTrace>(endpoint);
   }
 
   /**
@@ -386,21 +252,13 @@ export class GitFusionClient {
     ref: string,
     variables?: GitLabPipelineVariable[]
   ): Promise<GitLabPipelineResponse> {
-    const params: Record<string, unknown> = {
-      gitServer,
-      project,
-      ref,
-    };
+    const query: Record<string, unknown> = { gitServer, project, ref };
 
     // GitFusion expects variables as a JSON string
     if (variables && variables.length > 0) {
-      params.variables = JSON.stringify(variables);
+      query.variables = JSON.stringify(variables);
     }
 
-    const endpoint = this.buildEndpoint("/api/v1/trigger-pipeline", params);
-
-    return this.fetchJson<GitLabPipelineResponse>(endpoint, {
-      method: "POST",
-    });
+    return this.http.json<GitLabPipelineResponse>("/api/v1/trigger-pipeline", { query, method: "POST" });
   }
 }

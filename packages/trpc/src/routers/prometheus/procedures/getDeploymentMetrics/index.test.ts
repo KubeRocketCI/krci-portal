@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createMockedContext } from "../../../../__mocks__/context.js";
+import { HttpTimeoutError } from "../../../../clients/http/index.js";
 
 const mockListResource = vi.fn();
 const mockRangeQuery = vi.fn();
@@ -243,7 +244,7 @@ describe("prometheus.getDeploymentMetrics", () => {
     mockListResource.mockResolvedValueOnce({
       items: [{ metadata: { name: "p", labels: { "app.kubernetes.io/instance": "test-app" } } }],
     });
-    mockRangeQuery.mockRejectedValueOnce(new Error("Prometheus request timed out after 10000ms"));
+    mockRangeQuery.mockRejectedValueOnce(new HttpTimeoutError("Prometheus", 10000, true));
 
     const caller = await getCaller();
     await expect(caller.prometheus.getDeploymentMetrics(validInput)).rejects.toMatchObject({

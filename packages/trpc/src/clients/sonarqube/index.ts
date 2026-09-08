@@ -11,8 +11,8 @@ import {
   BatchMeasuresResponse,
   IssuesQueryParams,
   IssuesSearchResponse,
-  stripTrailingSlash,
 } from "@my-project/shared";
+import { createHttpService, HttpStatusError, type HttpService } from "../http/index.js";
 
 // =============================================================================
 // Configuration
@@ -91,19 +91,9 @@ export interface SonarScope {
   branch?: string;
 }
 
-/**
- * Client for SonarQube API.
- *
- * Features:
- * - Type-safe responses from shared types
- * - Configurable timeout with AbortController
- * - Token authentication via Authorization header
- * - Standardized error handling
- */
+/** Client for the SonarQube API. Authenticates with a token in the `Authorization` header. */
 export class SonarQubeClient {
-  private readonly apiBaseURL: string;
-  private readonly token: string;
-  private readonly timeoutMs: number;
+  private readonly http: HttpService;
 
   constructor(clientConfig: SonarQubeClientConfig) {
     const { apiBaseURL, token, timeoutMs = DEFAULT_TIMEOUT_MS } = clientConfig;
@@ -116,90 +106,13 @@ export class SonarQubeClient {
       throw new Error("SonarQube API token is not configured");
     }
 
-    // Remove trailing slash if present
-    this.apiBaseURL = stripTrailingSlash(apiBaseURL);
-    this.token = token;
-    this.timeoutMs = timeoutMs;
-  }
-
-  /**
-   * Build query string from params object
-   */
-  private buildQueryString(params: Record<string, unknown>): string {
-    const queryParams = new URLSearchParams();
-
-    for (const [key, value] of Object.entries(params)) {
-      if (value === undefined || value === null || value === "") continue;
-
-      if (typeof value === "boolean") {
-        queryParams.append(key, value ? "true" : "false");
-      } else {
-        queryParams.append(key, String(value));
-      }
-    }
-
-    return queryParams.toString();
-  }
-
-  /**
-   * Build endpoint URL with optional query string
-   */
-  private buildEndpoint(path: string, params?: Record<string, unknown>): string {
-    if (!params) return path;
-    const queryString = this.buildQueryString(params);
-    return queryString ? `${path}?${queryString}` : path;
-  }
-
-  /**
-   * Fetch JSON from SonarQube API endpoint
-   * Uses Basic Authentication with token as username and empty password
-   */
-  private async fetchJson<T>(endpoint: string): Promise<T> {
-    const url = `${this.apiBaseURL}${endpoint}`;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
-
-    try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          // SonarQube uses Basic Authentication: token as username, empty password
-          Authorization: `Basic ${Buffer.from(`${this.token}:`).toString("base64")}`,
-        },
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        await this.handleErrorResponse(response, url);
-      }
-
-      return (await response.json()) as T;
-    } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") {
-        throw new Error(`SonarQube API request timed out after ${this.timeoutMs}ms`);
-      }
-      throw error;
-    } finally {
-      clearTimeout(timeoutId);
-    }
-  }
-
-  private async handleErrorResponse(response: Response, url: string): Promise<never> {
-    let errorText = "";
-    try {
-      errorText = await response.text();
-    } catch {
-      errorText = "Unable to read error response";
-    }
-
-    const errorMessage = `SonarQube API request failed: ${response.status} ${response.statusText}`;
-    const fullError = errorText ? `${errorMessage}\nResponse: ${errorText}` : errorMessage;
-
-    console.error(`[SonarQube] Error - URL: ${url}`);
-    console.error(`[SonarQube] Status: ${response.status} ${response.statusText}`);
-
-    throw new Error(fullError);
+    this.http = createHttpService({
+      name: "SonarQube",
+      baseURL: apiBaseURL,
+      timeoutMs,
+      // SonarQube uses Basic Authentication: token as username, empty password
+      headers: { Authorization: `Basic ${Buffer.from(`${token}:`).toString("base64")}` },
+    });
   }
 
   /**
@@ -217,14 +130,9 @@ export class SonarQubeClient {
    * });
    */
   async getProjects(params: SonarQubeProjectsQueryParams): Promise<ProjectsSearchResponse> {
-    const endpoint = this.buildEndpoint("/api/components/search", {
-      qualifiers: "TRK",
-      p: params.page,
-      ps: params.pageSize,
-      q: params.searchTerm,
+    return this.http.json<ProjectsSearchResponse>("/api/components/search", {
+      query: { qualifiers: "TRK", p: params.page, ps: params.pageSize, q: params.searchTerm },
     });
-
-    return this.fetchJson<ProjectsSearchResponse>(endpoint);
   }
 
   /**
@@ -237,16 +145,12 @@ export class SonarQubeClient {
    * @returns Component data, or null if not found
    */
   async getComponent(componentKey: string, scope?: SonarScope): Promise<ComponentShowResponse | null> {
-    const endpoint = this.buildEndpoint("/api/components/show", {
-      component: componentKey,
-      pullRequest: scope?.pullRequest,
-      branch: scope?.branch,
-    });
-
     try {
-      return await this.fetchJson<ComponentShowResponse>(endpoint);
+      return await this.http.json<ComponentShowResponse>("/api/components/show", {
+        query: { component: componentKey, pullRequest: scope?.pullRequest, branch: scope?.branch },
+      });
     } catch (error) {
-      if (error instanceof Error && error.message.includes("404")) {
+      if (error instanceof HttpStatusError && error.status === 404) {
         return null;
       }
       throw error;
@@ -270,14 +174,14 @@ export class SonarQubeClient {
     metricKeys: readonly string[] = SONARQUBE_METRIC_KEYS,
     scope?: SonarScope
   ): Promise<MeasuresComponentResponse> {
-    const endpoint = this.buildEndpoint("/api/measures/component", {
-      component: componentKey,
-      metricKeys: metricKeys.join(","),
-      pullRequest: scope?.pullRequest,
-      branch: scope?.branch,
+    return this.http.json<MeasuresComponentResponse>("/api/measures/component", {
+      query: {
+        component: componentKey,
+        metricKeys: metricKeys.join(","),
+        pullRequest: scope?.pullRequest,
+        branch: scope?.branch,
+      },
     });
-
-    return this.fetchJson<MeasuresComponentResponse>(endpoint);
   }
 
   /**
@@ -298,12 +202,9 @@ export class SonarQubeClient {
     componentKeys: string[],
     metricKeys: readonly string[] = SONARQUBE_METRIC_KEYS
   ): Promise<BatchMeasuresResponse> {
-    const endpoint = this.buildEndpoint("/api/measures/search", {
-      projectKeys: componentKeys.join(","),
-      metricKeys: metricKeys.join(","),
+    return this.http.json<BatchMeasuresResponse>("/api/measures/search", {
+      query: { projectKeys: componentKeys.join(","), metricKeys: metricKeys.join(",") },
     });
-
-    return this.fetchJson<BatchMeasuresResponse>(endpoint);
   }
 
   /**
@@ -318,13 +219,9 @@ export class SonarQubeClient {
    * const status = await client.getQualityGateStatus("my-project");
    */
   async getQualityGateStatus(projectKey: string, scope?: SonarScope): Promise<QualityGateStatusResponse> {
-    const endpoint = this.buildEndpoint("/api/qualitygates/project_status", {
-      projectKey,
-      pullRequest: scope?.pullRequest,
-      branch: scope?.branch,
+    return this.http.json<QualityGateStatusResponse>("/api/qualitygates/project_status", {
+      query: { projectKey, pullRequest: scope?.pullRequest, branch: scope?.branch },
     });
-
-    return this.fetchJson<QualityGateStatusResponse>(endpoint);
   }
 
   /**
@@ -344,21 +241,21 @@ export class SonarQubeClient {
    * });
    */
   async getIssues(params: IssuesQueryParams): Promise<IssuesSearchResponse> {
-    const endpoint = this.buildEndpoint("/api/issues/search", {
-      componentKeys: params.componentKeys,
-      resolved: params.resolved,
-      types: params.types,
-      severities: params.severities,
-      statuses: params.statuses,
-      p: params.p,
-      ps: params.ps,
-      s: params.s,
-      asc: params.asc,
-      pullRequest: params.pullRequest,
-      branch: params.branch,
+    return this.http.json<IssuesSearchResponse>("/api/issues/search", {
+      query: {
+        componentKeys: params.componentKeys,
+        resolved: params.resolved,
+        types: params.types,
+        severities: params.severities,
+        statuses: params.statuses,
+        p: params.p,
+        ps: params.ps,
+        s: params.s,
+        asc: params.asc,
+        pullRequest: params.pullRequest,
+        branch: params.branch,
+      },
     });
-
-    return this.fetchJson<IssuesSearchResponse>(endpoint);
   }
 
   /**

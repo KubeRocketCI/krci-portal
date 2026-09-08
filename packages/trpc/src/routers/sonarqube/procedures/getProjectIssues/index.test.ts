@@ -1,6 +1,11 @@
 import { createMockedContext } from "../../../../__mocks__/context.js";
 import { createCaller } from "../../../../routers/index.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { HttpStatusError } from "../../../../clients/http/index.js";
+
+function sonarError(status: number, statusText: string, body = "") {
+  return new HttpStatusError({ service: "SonarQube", url: "https://sonar.example/api", status, statusText, body });
+}
 
 const mockGetIssues = vi.fn();
 
@@ -134,7 +139,7 @@ describe("sonarqube.getProjectIssues", () => {
   });
 
   it("should throw NOT_FOUND with branch message on Sonar 404 (branch)", async () => {
-    mockGetIssues.mockRejectedValueOnce(new Error("SonarQube API request failed: 404 Not Found"));
+    mockGetIssues.mockRejectedValueOnce(sonarError(404, "Not Found"));
 
     const caller = createCaller(mockContext);
     await expect(
@@ -159,7 +164,7 @@ describe("sonarqube.getProjectIssues", () => {
   });
 
   it("should throw NOT_FOUND on Sonar 404", async () => {
-    mockGetIssues.mockRejectedValueOnce(new Error("SonarQube API request failed: 404 Not Found"));
+    mockGetIssues.mockRejectedValueOnce(sonarError(404, "Not Found"));
 
     const caller = createCaller(mockContext);
     await expect(caller.sonarqube.getProjectIssues({ componentKeys: "nope", p: 1, ps: 25 })).rejects.toMatchObject({
@@ -169,7 +174,7 @@ describe("sonarqube.getProjectIssues", () => {
   });
 
   it("should throw INTERNAL_SERVER_ERROR on Sonar 5xx", async () => {
-    mockGetIssues.mockRejectedValueOnce(new Error("SonarQube API request failed: 500 Internal Server Error"));
+    mockGetIssues.mockRejectedValueOnce(sonarError(500, "Internal Server Error"));
 
     const caller = createCaller(mockContext);
     await expect(caller.sonarqube.getProjectIssues({ componentKeys: "err", p: 1, ps: 25 })).rejects.toMatchObject({

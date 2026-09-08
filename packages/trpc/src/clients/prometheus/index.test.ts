@@ -107,7 +107,9 @@ describe("PrometheusClient.rangeQuery URL shape", () => {
   });
 });
 
-describe("PrometheusClient timeout & errors", () => {
+// The transport contract (status mapping, abort attribution, query serialization) is asserted once
+// in clients/http/index.test.ts. What is left here is the wiring: this client's own timeout budget.
+describe("PrometheusClient timeout wiring", () => {
   let originalFetch: typeof globalThis.fetch;
 
   beforeEach(() => {
@@ -134,35 +136,6 @@ describe("PrometheusClient timeout & errors", () => {
     const { PrometheusClient } = await import("./index.js");
     const client = new PrometheusClient({ baseURL: "http://x", timeoutMs: 10 });
     await expect(client.rangeQuery({ query: "x", start: 0, end: 1, step: 1 })).rejects.toThrow(/timed out/i);
-  });
-
-  it("rangeQuery rejects with status text on non-2xx", async () => {
-    globalThis.fetch = vi
-      .fn()
-      .mockResolvedValue(
-        new Response("bad query", { status: 400, statusText: "Bad Request" })
-      ) as unknown as typeof globalThis.fetch;
-
-    const { PrometheusClient } = await import("./index.js");
-    const client = new PrometheusClient({ baseURL: "http://x", timeoutMs: 500 });
-    await expect(client.rangeQuery({ query: "x", start: 0, end: 1, step: 1 })).rejects.toThrow(/400 Bad Request/);
-  });
-
-  it("instantQuery rejects with timeout message when fetch hangs past timeoutMs", async () => {
-    globalThis.fetch = vi.fn(
-      (_url: string, init: { signal?: AbortSignal } = {}) =>
-        new Promise((_resolve, reject) => {
-          init.signal?.addEventListener("abort", () => {
-            const err = new Error("aborted");
-            err.name = "AbortError";
-            reject(err);
-          });
-        })
-    ) as unknown as typeof globalThis.fetch;
-
-    const { PrometheusClient } = await import("./index.js");
-    const client = new PrometheusClient({ baseURL: "http://x", timeoutMs: 10 });
-    await expect(client.instantQuery({ query: "x" })).rejects.toThrow(/timed out/i);
   });
 });
 

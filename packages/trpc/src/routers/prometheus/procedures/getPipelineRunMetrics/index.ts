@@ -8,6 +8,7 @@ import {
 } from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createPrometheusClient } from "../../../../clients/prometheus/index.js";
+import { HttpTimeoutError } from "../../../../clients/http/index.js";
 import {
   buildPipelineRunPromQLQueries,
   combineTaskRatioSeries,
@@ -74,7 +75,7 @@ export const getPipelineRunMetricsProcedure = protectedProcedure
       sharedAbort.abort();
       if (error instanceof TRPCError) throw error;
       const message = error instanceof Error ? error.message : String(error);
-      if (/timed out/i.test(message)) {
+      if (error instanceof HttpTimeoutError) {
         throw new TRPCError({ code: "GATEWAY_TIMEOUT", message, cause: error });
       }
       throw new TRPCError({
