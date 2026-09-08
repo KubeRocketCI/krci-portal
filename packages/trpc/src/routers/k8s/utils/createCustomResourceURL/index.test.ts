@@ -189,4 +189,24 @@ describe("createCustomResourceURL", () => {
 
     expect(result).toBe("/api/v1/persistentvolumes");
   });
+
+  test("ignores the namespace for a cluster-scoped custom resource with a group", () => {
+    const resourceConfig: K8sResourceConfig = {
+      apiVersion: "example.io/v1",
+      group: "example.io",
+      version: "v1",
+      kind: "Widget",
+      singularName: "widget",
+      pluralName: "widgets",
+      clusterScoped: true,
+    };
+
+    const result = createCustomResourceURL({
+      resourceConfig,
+      namespace: "default",
+      name: "my-widget",
+    });
+
+    expect(result).toBe("/apis/example.io/v1/widgets/my-widget");
+  });
 });
