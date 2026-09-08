@@ -1,4 +1,15 @@
+import { TRPCClientError } from "@trpc/client";
 import type { RequestError } from "@/core/types/global";
+
+/**
+ * Build the error a K8s GET raises for a name that does not exist. Use it when the
+ * absence is known without asking the server, so callers cannot tell the two apart.
+ */
+export function createK8sNotFoundError(message: string): RequestError {
+  return TRPCClientError.from({
+    error: { code: -32004, message, data: { code: "NOT_FOUND", httpStatus: 404 } },
+  });
+}
 
 /**
  * Detect K8s 404 from a tRPC error.

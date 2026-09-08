@@ -8,13 +8,17 @@ import React, { useEffect, useEffectEvent } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { getK8sWatchItemQueryCacheKey, getK8sWatchListQueryCacheKey } from "../query-keys";
 import { useWatchRegistries } from "@/core/providers/subscriptions";
-import { UseWatchItemResult, CustomKubeObjectList } from "../types";
+import { UseWatchItemResult, CustomKubeObjectList, MSG_TYPE, WatchEvent } from "../types";
 import { refetchOnWindowFocusIfStale } from "../utils";
+import { createK8sNotFoundError, isK8sNotFoundError } from "@/k8s/api/utils/k8sNotFoundError";
 
 type OptionalQueryOptions<I extends KubeObjectBase> = Omit<
   UseQueryOptions<I | undefined, RequestError>,
-  "queryKey" | "queryFn" | "initialData" | "placeholderData"
->;
+  "queryKey" | "queryFn" | "initialData" | "placeholderData" | "enabled"
+> & {
+  /** Gates the watch as well as the query, so it takes no resolver form. */
+  enabled?: boolean;
+};
 
 export interface UseWatchItemParams<I extends KubeObjectBase> {
   resourceConfig: K8sResourceConfig;
@@ -58,6 +62,8 @@ export const useWatchItem = <I extends KubeObjectBase>({
     [clusterName, _namespace, resourceConfig.group, resourceConfig.pluralName]
   );
 
+  const isEnabled = !!name && (queryOptions?.enabled ?? true);
+
   const query = useQuery<I | undefined, RequestError>({
     queryKey,
     queryFn: async () => {
@@ -82,25 +88,59 @@ export const useWatchItem = <I extends KubeObjectBase>({
     refetchOnWindowFocus: refetchOnWindowFocusIfStale,
     refetchOnMount: false,
     refetchOnReconnect: false,
-    enabled: !!name && (queryOptions?.enabled ?? true),
     ...queryOptions,
+    // After the spread: a GET needs a name whatever the caller asked for.
+    enabled: isEnabled,
   });
 
   // Stable event handler using useEffectEvent
-  const onDataUpdate = useEffectEvent((data: I) => {
-    queryClient.setQueryData<I>(queryKey, transform ? transform(data) : data);
+  const onWatchEvent = useEffectEvent((event: WatchEvent<I>) => {
+    if (event.type === MSG_TYPE.DELETED) {
+      // The list cache seeds `initialData`. Leaving the entry there re-seeds the
+      // deleted object on the next mount.
+      queryClient.setQueryData<CustomKubeObjectList<I>>(listQueryKey, (listData) => {
+        if (!listData?.items.has(name!)) return listData;
+
+        const items = new Map(listData.items);
+        items.delete(name!);
+        return { ...listData, items };
+      });
+      // A GET already in flight resolves after this write and would restore the object.
+      // Silent, so the cancellation itself reaches no caller.
+      queryClient.cancelQueries({ queryKey, exact: true }, { revert: false, silent: true });
+      // Settle on the state a name that never existed reaches. Callers read `error` to
+      // tell gone from loading, and `setQueryData` cannot clear data: it reads
+      // `undefined` as "no change".
+      queryClient
+        .getQueryCache()
+        .find<I | undefined, RequestError>({ queryKey, exact: true })
+        ?.setState({
+          status: "error",
+          error: createK8sNotFoundError(`${resourceConfig.pluralName} "${name}" not found`),
+          data: undefined,
+          // No data, so no time it is current as of. Keeping the old stamp would read as
+          // fresh and disarm the focus refetch that covers a dead socket.
+          dataUpdatedAt: 0,
+          errorUpdatedAt: Date.now(),
+          fetchStatus: "idle",
+        });
+      return;
+    }
+
+    queryClient.setQueryData<I>(queryKey, transform ? transform(event.data) : event.data);
   });
 
-  // Register subscription and handle WebSocket events
-  // Note: We intentionally do NOT include resourceVersion in dependencies.
-  // Kubernetes Watch continues from the initial resourceVersion automatically.
-  // Restarting subscriptions on every resourceVersion change causes excessive start/stop cycles.
   const { watchItemRegistry } = useWatchRegistries();
 
-  // Register handler - this should happen as soon as query is successful
+  // A 404 settles the query as well. The object may still be created while the page is
+  // open, and the watch is the only way to see it appear.
+  const hasSettled = query.isSuccess || isK8sNotFoundError(query.error);
+
+  // Register handler - this should happen as soon as the query settles.
+  // Note: the item itself is NOT a dependency. Re-registering on every event tears the
+  // subscription down and opens a new one for each update.
   useEffect(() => {
-    // Don't register until user is authenticated and registry is available
-    if (!name || !query.isSuccess || !query.data || !isAuthenticated || !watchItemRegistry) return;
+    if (!isEnabled || !name || !hasSettled || !isAuthenticated || !watchItemRegistry) return;
 
     const params = {
       clusterName,
@@ -109,13 +149,13 @@ export const useWatchItem = <I extends KubeObjectBase>({
       name,
     };
 
-    const unregister = watchItemRegistry.register<I>(queryKey, params, onDataUpdate);
+    const unregister = watchItemRegistry.register<I>(queryKey, params, onWatchEvent);
 
     return unregister;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    query.isSuccess,
-    query.data,
+    isEnabled,
+    hasSettled,
     isAuthenticated,
     watchItemRegistry,
     name,
@@ -125,19 +165,19 @@ export const useWatchItem = <I extends KubeObjectBase>({
     queryKey,
   ]);
 
-  // Start subscription once resourceVersion becomes available
+  // Start subscription once the query settles.
+  // Note: resourceVersion is a dependency only so an absent object upgrades to its own
+  // version once created. An already running subscription is reused, never restarted.
   useEffect(() => {
-    // Don't start subscriptions until user is authenticated, registry is available, and resourceVersion exists
-    if (!name || !query.isSuccess || !query.data || !isAuthenticated || !watchItemRegistry) return;
+    if (!isEnabled || !name || !hasSettled || !isAuthenticated || !watchItemRegistry) return;
 
-    const resourceVersion = query.data.metadata?.resourceVersion;
-    if (resourceVersion) {
-      watchItemRegistry.startSubscription<I>(queryKey, resourceVersion);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // An empty resourceVersion starts the watch from the current state, so an object
+    // that does not exist yet is still observed until it is created.
+    watchItemRegistry.startSubscription<I>(queryKey, query.data?.metadata?.resourceVersion ?? "");
   }, [
-    query.isSuccess,
-    query.data?.metadata?.resourceVersion, // Watch for resourceVersion to become available
+    isEnabled,
+    hasSettled,
+    query.data?.metadata?.resourceVersion,
     isAuthenticated,
     watchItemRegistry,
     name,
