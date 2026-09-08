@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createSonarQubeClient } from "../../../../clients/sonarqube/index.js";
+import { HttpStatusError } from "../../../../clients/http/index.js";
 import {
   sonarqubeProjectsQueryParamsSchema,
   projectsWithMetricsResponseSchema,
@@ -48,7 +49,7 @@ export const getProjectsProcedure = protectedProcedure
       projectsResponse = await client.getProjects(input);
     } catch (error) {
       // Defensive: if SonarQube's offset limit changes, still handle 400 as "empty".
-      if (error instanceof Error && /:\s*400\b/.test(error.message)) {
+      if (error instanceof HttpStatusError && error.status === 400) {
         return {
           projects: [],
           paging: { pageIndex: page, pageSize, total: 0 },

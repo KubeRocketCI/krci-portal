@@ -1,6 +1,11 @@
 import { createMockedContext } from "../../../../__mocks__/context.js";
 import { createCaller } from "../../../../routers/index.js";
+import { HttpStatusError } from "../../../../clients/http/index.js";
 import { afterEach, beforeEach, describe, expect, it, vi, Mock } from "vitest";
+
+function upstreamError(status: number, statusText: string, body = "") {
+  return new HttpStatusError({ service: "SonarQube", url: "https://sonar.example/api", status, statusText, body });
+}
 
 const mockGetProjects = vi.fn();
 const mockGetBatchMeasures = vi.fn();
@@ -88,9 +93,7 @@ describe("sonarqube.getProjects", () => {
 
   it("returns empty page when SonarQube responds with 400 (belt-and-braces for limit drift)", async () => {
     mockGetProjects.mockRejectedValueOnce(
-      new Error(
-        'SonarQube API request failed: 400 Bad Request\nResponse: {"errors":[{"msg":"Can return only the first 10000 results"}]}'
-      )
+      upstreamError(400, "Bad Request", '{"errors":[{"msg":"Can return only the first 10000 results"}]}')
     );
 
     const caller = createCaller(mockContext);
@@ -101,8 +104,19 @@ describe("sonarqube.getProjects", () => {
     expect(result.paging).toEqual({ pageIndex: 10, pageSize: 50, total: 0 });
   });
 
+  it("does not short-circuit on a 503 whose body mentions 400", async () => {
+    mockGetProjects.mockRejectedValueOnce(
+      upstreamError(503, "Service Unavailable", '{"errors":[{"msg":"upstream returned 400 earlier"}]}')
+    );
+
+    const caller = createCaller(mockContext);
+    await expect(caller.sonarqube.getProjects({ page: 1, pageSize: 50 })).rejects.toMatchObject({
+      code: "INTERNAL_SERVER_ERROR",
+    });
+  });
+
   it("maps non-400 upstream failure to INTERNAL_SERVER_ERROR", async () => {
-    mockGetProjects.mockRejectedValueOnce(new Error("SonarQube API request failed: 503 Service Unavailable"));
+    mockGetProjects.mockRejectedValueOnce(upstreamError(503, "Service Unavailable"));
 
     const caller = createCaller(mockContext);
     await expect(caller.sonarqube.getProjects({ page: 1, pageSize: 50 })).rejects.toMatchObject({

@@ -17,7 +17,9 @@ import {
   FindingsResponse,
   ViolationsQueryParams,
   ViolationsResponse,
+  stripTrailingSlash,
 } from "@my-project/shared";
+import { createHttpService, HttpStatusError, type HttpService } from "../http/index.js";
 
 // =============================================================================
 // Constants
@@ -95,19 +97,9 @@ export interface DependencyTrackClientConfig {
   timeoutMs?: number;
 }
 
-/**
- * Client for Dependency Track API.
- *
- * Features:
- * - Type-safe responses from shared types
- * - Configurable timeout with AbortController
- * - API key authentication via X-Api-Key header
- * - Standardized error handling
- */
+/** Client for the Dependency Track API. Authenticates with an API key in the `X-Api-Key` header. */
 export class DependencyTrackClient {
-  private readonly apiBaseURL: string;
-  private readonly apiKey: string;
-  private readonly timeoutMs: number;
+  private readonly http: HttpService;
 
   constructor(clientConfig: DependencyTrackClientConfig) {
     const { apiBaseURL, apiKey, timeoutMs = DEFAULT_TIMEOUT_MS } = clientConfig;
@@ -120,90 +112,12 @@ export class DependencyTrackClient {
       throw new Error("Dependency Track API key is not configured");
     }
 
-    this.apiBaseURL = apiBaseURL;
-    this.apiKey = apiKey;
-    this.timeoutMs = timeoutMs;
-  }
-
-  private get apiBase(): string {
-    return `${this.apiBaseURL}/api/${DEPENDENCY_TRACK_API_VERSION}`;
-  }
-
-  /**
-   * Build query string from params object, handling DT API's 1-indexed pagination
-   */
-  private buildQueryString(params: Record<string, unknown>): string {
-    const queryParams = new URLSearchParams();
-
-    for (const [key, value] of Object.entries(params)) {
-      if (value === undefined || value === null || value === "") continue;
-
-      // DT API uses 1-indexed page numbers, so add 1 to our 0-indexed page
-      if (key === "pageNumber") {
-        queryParams.append(key, String((value as number) + 1));
-      } else if (typeof value === "boolean") {
-        queryParams.append(key, value ? "true" : "false");
-      } else {
-        queryParams.append(key, String(value));
-      }
-    }
-
-    return queryParams.toString();
-  }
-
-  /**
-   * Build endpoint URL with optional query string
-   */
-  private buildEndpoint(path: string, params?: Record<string, unknown>): string {
-    if (!params) return path;
-    const queryString = this.buildQueryString(params);
-    return queryString ? `${path}?${queryString}` : path;
-  }
-
-  private async fetchJson<T>(endpoint: string, includeHeaders?: false, signal?: AbortSignal): Promise<T>;
-  private async fetchJson<T>(
-    endpoint: string,
-    includeHeaders: true,
-    signal?: AbortSignal
-  ): Promise<{ data: T; headers: Headers }>;
-  private async fetchJson<T>(
-    endpoint: string,
-    includeHeaders?: boolean,
-    signal?: AbortSignal
-  ): Promise<T | { data: T; headers: Headers }> {
-    const url = `${this.apiBase}${endpoint}`;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
-
-    // Combine the per-request timeout signal with an optional caller-supplied
-    // signal (e.g. sourced from req.signal on client disconnect). AbortSignal.any
-    // aborts as soon as the first of the two fires — requires Node >= 20.3.
-    const combinedSignal = signal !== undefined ? AbortSignal.any([controller.signal, signal]) : controller.signal;
-
-    try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "X-Api-Key": this.apiKey,
-        },
-        signal: combinedSignal,
-      });
-
-      if (!response.ok) {
-        await this.handleErrorResponse(response, url);
-      }
-
-      const data = (await response.json()) as T;
-      return includeHeaders ? { data, headers: response.headers } : data;
-    } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") {
-        throw new Error(`Dependency Track API request timed out after ${this.timeoutMs}ms`);
-      }
-      throw error;
-    } finally {
-      clearTimeout(timeoutId);
-    }
+    this.http = createHttpService({
+      name: "Dependency Track",
+      baseURL: `${stripTrailingSlash(apiBaseURL)}/api/${DEPENDENCY_TRACK_API_VERSION}`,
+      timeoutMs,
+      headers: { "X-Api-Key": apiKey },
+    });
   }
 
   /** `X-Total-Count` of a paginated list response. Throws unless it is a non-negative safe integer. */
@@ -214,26 +128,6 @@ export class DependencyTrackClient {
       throw new Error(`Dependency Track response has no valid X-Total-Count header (got ${JSON.stringify(raw)})`);
     }
     return parsed;
-  }
-
-  private async handleErrorResponse(response: Response, url: string): Promise<never> {
-    let errorText = "";
-    try {
-      errorText = await response.text();
-    } catch {
-      errorText = "Unable to read error response";
-    }
-
-    const errorMessage = `Dependency Track API request failed: ${response.status} ${response.statusText}`;
-    const fullError = errorText ? `${errorMessage}\nResponse: ${errorText}` : errorMessage;
-
-    console.error(`[DependencyTrack] Error - URL: ${url}`);
-    console.error(`[DependencyTrack] Status: ${response.status} ${response.statusText}`);
-    if (errorText) {
-      console.error(`[DependencyTrack] Response Body: ${errorText}`);
-    }
-
-    throw new Error(fullError);
   }
 
   /**
@@ -247,7 +141,7 @@ export class DependencyTrackClient {
    * const metrics = await client.getPortfolioMetrics(90);
    */
   async getPortfolioMetrics(days: number): Promise<PortfolioMetricsResponse> {
-    return this.fetchJson<PortfolioMetricsResponse>(`/metrics/portfolio/${days}/days`);
+    return this.http.json<PortfolioMetricsResponse>(`/metrics/portfolio/${days}/days`);
   }
 
   /**
@@ -266,19 +160,19 @@ export class DependencyTrackClient {
    * });
    */
   async getProjects(params: ProjectsQueryParams): Promise<ProjectsResponse> {
-    const endpoint = this.buildEndpoint("/project", {
-      pageNumber: params.pageNumber,
-      pageSize: params.pageSize,
-      sortName: params.sortName,
-      sortOrder: params.sortOrder,
-      excludeInactive: params.excludeInactive || undefined,
-      onlyRoot: params.onlyRoot || undefined,
-      tag: params.tag,
-      classifier: params.classifier,
-      searchText: params.searchTerm, // API expects 'searchText'
+    const { data, headers } = await this.http.jsonWithHeaders<DependencyTrackProject[]>("/project", {
+      query: {
+        pageNumber: toApiPageNumber(params.pageNumber),
+        pageSize: params.pageSize,
+        sortName: params.sortName,
+        sortOrder: params.sortOrder,
+        excludeInactive: params.excludeInactive || undefined,
+        onlyRoot: params.onlyRoot || undefined,
+        tag: params.tag,
+        classifier: params.classifier,
+        searchText: params.searchTerm, // API expects 'searchText'
+      },
     });
-
-    const { data, headers } = await this.fetchJson<DependencyTrackProject[]>(endpoint, true);
 
     return {
       projects: data,
@@ -297,7 +191,7 @@ export class DependencyTrackClient {
    * const project = await client.getProject("550e8400-e29b-41d4-a716-446655440000");
    */
   async getProject(uuid: string): Promise<DependencyTrackProject> {
-    return this.fetchJson<DependencyTrackProject>(`/project/${uuid}`);
+    return this.http.json<DependencyTrackProject>(`/project/${uuid}`);
   }
 
   /**
@@ -322,16 +216,11 @@ export class DependencyTrackClient {
    */
   async getProjectByNameAndVersion(name: string, version: string): Promise<DependencyTrackProject | null> {
     try {
-      const endpoint = this.buildEndpoint("/project/lookup", {
-        name,
-        version,
-      });
-
-      return await this.fetchJson<DependencyTrackProject>(endpoint);
+      return await this.http.json<DependencyTrackProject>("/project/lookup", { query: { name, version } });
     } catch (error) {
       // DependencyTrack returns 404 if project with exact name+version not found
       // We handle this gracefully by returning null instead of throwing
-      if (error instanceof Error && error.message.includes("404")) {
+      if (error instanceof HttpStatusError && error.status === 404) {
         return null;
       }
       // Re-throw other errors (network issues, 500s, etc.)
@@ -354,7 +243,7 @@ export class DependencyTrackClient {
     uuid: string,
     days: number = DEFAULT_PORTFOLIO_METRICS_DAYS
   ): Promise<PortfolioMetricsResponse> {
-    return this.fetchJson<PortfolioMetricsResponse>(`/metrics/project/${uuid}/days/${days}`);
+    return this.http.json<PortfolioMetricsResponse>(`/metrics/project/${uuid}/days/${days}`);
   }
 
   /**
@@ -374,16 +263,20 @@ export class DependencyTrackClient {
    * });
    */
   async getComponents(uuid: string, params: ComponentsQueryParams, signal?: AbortSignal): Promise<ComponentsResponse> {
-    const endpoint = this.buildEndpoint(`/component/project/${uuid}`, {
-      pageNumber: params.pageNumber,
-      pageSize: params.pageSize,
-      sortName: params.sortName,
-      sortOrder: params.sortOrder,
-      onlyOutdated: params.onlyOutdated,
-      onlyDirect: params.onlyDirect,
-    });
-
-    const { data, headers } = await this.fetchJson<DependencyTrackComponent[]>(endpoint, true, signal);
+    const { data, headers } = await this.http.jsonWithHeaders<DependencyTrackComponent[]>(
+      `/component/project/${uuid}`,
+      {
+        query: {
+          pageNumber: toApiPageNumber(params.pageNumber),
+          pageSize: params.pageSize,
+          sortName: params.sortName,
+          sortOrder: params.sortOrder,
+          onlyOutdated: params.onlyOutdated,
+          onlyDirect: params.onlyDirect,
+        },
+        signal,
+      }
+    );
 
     return {
       components: data,
@@ -408,14 +301,14 @@ export class DependencyTrackClient {
    * });
    */
   async getServices(uuid: string, params: ServicesQueryParams): Promise<ServicesResponse> {
-    const endpoint = this.buildEndpoint(`/service/project/${uuid}`, {
-      pageNumber: params.pageNumber,
-      pageSize: params.pageSize,
-      sortName: params.sortName,
-      sortOrder: params.sortOrder,
+    const { data, headers } = await this.http.jsonWithHeaders<DependencyTrackService[]>(`/service/project/${uuid}`, {
+      query: {
+        pageNumber: toApiPageNumber(params.pageNumber),
+        pageSize: params.pageSize,
+        sortName: params.sortName,
+        sortOrder: params.sortOrder,
+      },
     });
-
-    const { data, headers } = await this.fetchJson<DependencyTrackService[]>(endpoint, true);
 
     return {
       services: data,
@@ -434,7 +327,7 @@ export class DependencyTrackClient {
    * const graph = await client.getDependencyGraph("550e8400-e29b-41d4-a716-446655440000");
    */
   async getDependencyGraph(uuid: string): Promise<DependencyGraphResponse> {
-    return this.fetchJson<DependencyGraphResponse>(`/dependencyGraph/project/${uuid}/directDependencies`);
+    return this.http.json<DependencyGraphResponse>(`/dependencyGraph/project/${uuid}/directDependencies`);
   }
 
   /**
@@ -451,12 +344,9 @@ export class DependencyTrackClient {
    * });
    */
   async getFindingsByProject(uuid: string, params: FindingsQueryParams): Promise<FindingsResponse> {
-    const endpoint = this.buildEndpoint(`/finding/project/${uuid}`, {
-      suppressed: params.suppressed,
-      source: params.source,
+    return this.http.json<FindingsResponse>(`/finding/project/${uuid}`, {
+      query: { suppressed: params.suppressed, source: params.source },
     });
-
-    return this.fetchJson<FindingsResponse>(endpoint);
   }
 
   /**
@@ -472,12 +362,17 @@ export class DependencyTrackClient {
    * });
    */
   async getViolationsByProject(uuid: string, params: ViolationsQueryParams): Promise<ViolationsResponse> {
-    const endpoint = this.buildEndpoint(`/violation/project/${uuid}`, {
-      suppressed: params.suppressed,
-      pageNumber: params.pageNumber,
-      pageSize: params.pageSize,
+    return this.http.json<ViolationsResponse>(`/violation/project/${uuid}`, {
+      query: {
+        suppressed: params.suppressed,
+        pageNumber: toApiPageNumber(params.pageNumber),
+        pageSize: params.pageSize,
+      },
     });
-
-    return this.fetchJson<ViolationsResponse>(endpoint);
   }
+}
+
+/** Dependency Track pages are 1-indexed; the portal counts from 0. */
+function toApiPageNumber(pageNumber: number | undefined): number | undefined {
+  return pageNumber === undefined ? undefined : pageNumber + 1;
 }

@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createPrometheusClient } from "../../../../clients/prometheus/index.js";
+import { HttpTimeoutError } from "../../../../clients/http/index.js";
 import { escapeRegex } from "../getDeploymentMetrics/utils.js";
 import { aggregateExposure } from "./utils.js";
 
@@ -67,7 +68,7 @@ export const getExposureMetricsProcedure = protectedProcedure
     } catch (error) {
       if (error instanceof TRPCError) throw error;
       const message = error instanceof Error ? error.message : String(error);
-      if (/timed out/i.test(message)) {
+      if (error instanceof HttpTimeoutError) {
         throw new TRPCError({ code: "GATEWAY_TIMEOUT", message, cause: error });
       }
       throw new TRPCError({

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TRPCError } from "@trpc/server";
 import { createMockedContext } from "../../../../__mocks__/context.js";
+import { HttpTimeoutError } from "../../../../clients/http/index.js";
 
 const mockInstantQuery = vi.fn();
 const mockCreatePrometheusClient = vi.fn(() => ({ instantQuery: mockInstantQuery }));
@@ -118,7 +119,7 @@ describe("prometheus.getExposureMetrics", () => {
   });
 
   it("maps timeout messages to GATEWAY_TIMEOUT", async () => {
-    mockInstantQuery.mockRejectedValueOnce(new Error("Prometheus request timed out after 10000ms"));
+    mockInstantQuery.mockRejectedValueOnce(new HttpTimeoutError("Prometheus", 10000, true));
 
     const caller = await getCaller();
     await expect(caller.prometheus.getExposureMetrics(validInput)).rejects.toMatchObject({

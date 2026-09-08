@@ -1,6 +1,11 @@
 import { createMockedContext } from "../../../../__mocks__/context.js";
 import { createCaller } from "../../../../routers/index.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { HttpStatusError } from "../../../../clients/http/index.js";
+
+function sonarError(status: number, statusText: string, body = "") {
+  return new HttpStatusError({ service: "SonarQube", url: "https://sonar.example/api", status, statusText, body });
+}
 
 const mockGetQualityGateStatus = vi.fn();
 
@@ -71,7 +76,7 @@ describe("sonarqube.getQualityGateDetails", () => {
   });
 
   it("should throw NOT_FOUND with branch message on Sonar 404 (branch)", async () => {
-    mockGetQualityGateStatus.mockRejectedValueOnce(new Error("SonarQube API request failed: 404 Not Found"));
+    mockGetQualityGateStatus.mockRejectedValueOnce(sonarError(404, "Not Found"));
 
     const caller = createCaller(mockContext);
     await expect(
@@ -107,7 +112,7 @@ describe("sonarqube.getQualityGateDetails", () => {
   });
 
   it("should throw NOT_FOUND on Sonar 404 (project)", async () => {
-    mockGetQualityGateStatus.mockRejectedValueOnce(new Error("SonarQube API request failed: 404 Not Found"));
+    mockGetQualityGateStatus.mockRejectedValueOnce(sonarError(404, "Not Found"));
 
     const caller = createCaller(mockContext);
     await expect(caller.sonarqube.getQualityGateDetails({ projectKey: "nope" })).rejects.toMatchObject({
@@ -117,7 +122,7 @@ describe("sonarqube.getQualityGateDetails", () => {
   });
 
   it("should throw NOT_FOUND with pull-request message on Sonar 404 (PR)", async () => {
-    mockGetQualityGateStatus.mockRejectedValueOnce(new Error("SonarQube API request failed: 404 Not Found"));
+    mockGetQualityGateStatus.mockRejectedValueOnce(sonarError(404, "Not Found"));
 
     const caller = createCaller(mockContext);
     await expect(
@@ -129,7 +134,7 @@ describe("sonarqube.getQualityGateDetails", () => {
   });
 
   it("should throw INTERNAL_SERVER_ERROR on Sonar 5xx", async () => {
-    mockGetQualityGateStatus.mockRejectedValueOnce(new Error("SonarQube API request failed: 503 Service Unavailable"));
+    mockGetQualityGateStatus.mockRejectedValueOnce(sonarError(503, "Service Unavailable"));
 
     const caller = createCaller(mockContext);
     await expect(caller.sonarqube.getQualityGateDetails({ projectKey: "err" })).rejects.toMatchObject({

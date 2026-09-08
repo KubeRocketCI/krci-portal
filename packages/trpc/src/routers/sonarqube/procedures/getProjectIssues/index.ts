@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createSonarQubeClient } from "../../../../clients/sonarqube/index.js";
+import { HttpStatusError } from "../../../../clients/http/index.js";
 import { issuesQueryParamsSchema, issuesSearchResponseSchema } from "@my-project/shared";
 import { notFoundMessage } from "../../utils.js";
 
@@ -27,7 +28,7 @@ export const getProjectIssuesProcedure = protectedProcedure
         throw error;
       }
       console.error(`[SonarQube] Failed to fetch issues for ${input.componentKeys}:`, error);
-      if (error instanceof Error && /:\s*404\b/.test(error.message)) {
+      if (error instanceof HttpStatusError && error.status === 404) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: notFoundMessage(input.componentKeys, input.pullRequest, input.branch),
