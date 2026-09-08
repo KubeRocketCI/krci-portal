@@ -1,9 +1,23 @@
 import { Watch } from "@kubernetes/client-node";
-import { KubeObjectBase } from "@my-project/shared";
+import { K8sApiError, KubeObjectBase } from "@my-project/shared";
 import { handleK8sError } from "../handleK8sError/index.js";
 import { createEventQueue, yieldEvents } from "../../../../utils/createEventQueue/index.js";
 
 export type WatchEvent = { type: string; data: KubeObjectBase };
+
+/**
+ * Reads the HTTP status off a watch error. `@kubernetes/client-node` reports a
+ * non-200 watch response as a plain Error carrying `statusCode`; a K8s Status
+ * object carries `code`. Both must be numeric — a transport failure surfaced on
+ * the same callback carries a string `code` (ENOTFOUND, ECONNRESET), which is
+ * not a status.
+ */
+function readHttpStatus(error: unknown): number | undefined {
+  const { statusCode, code } = (error ?? {}) as { statusCode?: unknown; code?: unknown };
+  if (typeof statusCode === "number") return statusCode;
+  if (typeof code === "number") return code;
+  return undefined;
+}
 
 export interface K8sWatchOptions {
   watchUrl: string;
@@ -74,17 +88,23 @@ export async function* createK8sWatchSubscription(
           queue.emit({ type, data: obj });
         },
         (err) => {
-          if (err) {
-            const statusCode = (err as { statusCode?: number }).statusCode ?? (err as { code?: number }).code;
-            if (statusCode === 410) {
-              currentResourceVersion = "";
-              queue.abort();
-            } else {
-              queue.emitError(err);
-            }
-          } else {
+          if (!err) {
             queue.abort();
+            return;
           }
+          const statusCode = readHttpStatus(err);
+          if (statusCode === 410) {
+            currentResourceVersion = "";
+            queue.abort();
+            return;
+          }
+          // handleK8sError maps a K8sApiError by status; a plain Error maps to
+          // INTERNAL_SERVER_ERROR and the 404/403 is lost.
+          queue.emitError(
+            statusCode === undefined
+              ? err
+              : new K8sApiError(statusCode, (err as { message?: string }).message ?? "", "")
+          );
         }
       );
 
