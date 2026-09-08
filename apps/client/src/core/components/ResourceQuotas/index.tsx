@@ -76,7 +76,6 @@ export const ResourceQuotas = () => {
   // Tenant/Namespace Quota
   const tenantWatch = useTenantWatchItem({
     name: `edp-workload-${defaultNamespace}`,
-    namespace: defaultNamespace,
   });
 
   const namespacesQuota = React.useMemo(() => {
