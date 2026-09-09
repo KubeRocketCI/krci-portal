@@ -84,7 +84,6 @@ export interface TablePagination {
   show?: boolean;
   rowsPerPage?: number;
   initialPage?: number;
-  reflectInURL?: boolean;
 }
 
 export interface TableSettings {
