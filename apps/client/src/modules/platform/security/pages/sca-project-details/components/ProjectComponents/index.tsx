@@ -7,6 +7,7 @@ import { useComponents } from "../../hooks/useComponents";
 import { useComponentsColumns } from "../../hooks/useComponentsColumns";
 import { routeSCAProjectDetails, PATH_SCA_PROJECT_DETAILS_FULL, Search } from "../../route";
 import { router } from "@/core/router";
+import { getDefaultRowsPerPage, setDefaultRowsPerPage } from "@/core/services/table-preferences";
 
 interface ProjectComponentsProps {
   projectUuid: string;
@@ -20,9 +21,7 @@ export function ProjectComponents({ projectUuid }: ProjectComponentsProps) {
   const urlPage = search.page;
   const page = urlPage !== undefined ? urlPage - 1 : 0;
 
-  // Get default rowsPerPage from localStorage settings or use 25
-  const defaultRowsPerPage = JSON.parse(localStorage.getItem("settings") || "{}")?.tableDefaultRowsPerPage || 25;
-  const pageSize = search.rowsPerPage ?? defaultRowsPerPage;
+  const pageSize = search.rowsPerPage ?? getDefaultRowsPerPage(25);
 
   const [onlyOutdated, setOnlyOutdated] = useState(false);
   const [onlyDirect, setOnlyDirect] = useState(false);
@@ -55,10 +54,7 @@ export function ProjectComponents({ projectUuid }: ProjectComponentsProps) {
 
   const handlePageSizeChange = useCallback(
     (newPageSize: number) => {
-      // Update localStorage only on user interaction
-      const settings = JSON.parse(localStorage.getItem("settings") || "{}");
-      settings.tableDefaultRowsPerPage = newPageSize;
-      localStorage.setItem("settings", JSON.stringify(settings));
+      setDefaultRowsPerPage(newPageSize);
 
       // Update URL - reset to page 1 (1-indexed)
       router.navigate({

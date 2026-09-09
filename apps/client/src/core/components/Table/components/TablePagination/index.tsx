@@ -1,4 +1,6 @@
+import React from "react";
 import { TablePagination as TablePaginationComponent } from "@/core/components/ui/table-pagination";
+import { getRowsPerPageOptions } from "@/core/services/table-preferences";
 import { TablePaginationProps } from "./types";
 
 export const TablePagination = ({
@@ -11,9 +13,8 @@ export const TablePagination = ({
   handleChangeRowsPerPage,
   showRowsPerPage,
 }: TablePaginationProps) => {
-  const rowsPerPageOptions = JSON.parse(localStorage.getItem("settings") || "{}")?.tableRowsPerPageOptions || [
-    10, 20, 25, 50, 100,
-  ];
+  // Nothing writes the options field, so a re-read yields the same list.
+  const rowsPerPageOptions = React.useMemo(getRowsPerPageOptions, []);
 
   return (
     <TablePaginationComponent
