@@ -7,4 +7,5 @@ export const k8sClientTrafficPolicyConfig = {
   kind: "ClientTrafficPolicy",
   singularName: "clienttrafficpolicy",
   pluralName: "clienttrafficpolicies",
+  mayBeAbsent: true,
 } as const satisfies K8sResourceConfig;

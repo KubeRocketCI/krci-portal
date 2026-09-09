@@ -7,14 +7,18 @@ import { useQuery, useQueryClient, UseQueryOptions } from "@tanstack/react-query
 import React, { useEffect, useMemo, useEffectEvent } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { getK8sWatchListQueryCacheKey } from "../query-keys";
+import { useAvailabilityGate } from "../useResourceAvailability";
 import { useWatchRegistries } from "@/core/providers/subscriptions";
 import { CustomKubeObjectList, UseWatchListResult, k8sListInitialData, MSG_TYPE } from "../types";
 import { refetchOnWindowFocusIfStale } from "../utils";
 
 type OptionalQueryOptions<I extends KubeObjectBase> = Omit<
   UseQueryOptions<CustomKubeObjectList<I>, RequestError>,
-  "queryKey" | "queryFn" | "initialData" | "placeholderData"
->;
+  "queryKey" | "queryFn" | "initialData" | "placeholderData" | "enabled"
+> & {
+  /** Gates the watch and capability discovery as well as the query, so it takes no resolver form. */
+  enabled?: boolean;
+};
 
 export interface UseWatchListParams<I extends KubeObjectBase> {
   resourceConfig: K8sResourceConfig;
@@ -47,6 +51,9 @@ export const useWatchList = <I extends KubeObjectBase>({
   // Otherwise, use provided namespace or fallback to stored namespace
   const _namespace = resourceConfig.clusterScoped ? undefined : (namespace ?? storedNamespace);
   const queryClient = useQueryClient();
+
+  const callerEnabled = queryOptions?.enabled ?? true;
+  const { availability, notServed, isEnabled } = useAvailabilityGate(resourceConfig, callerEnabled);
 
   const queryKey = React.useMemo(
     () =>
@@ -86,6 +93,8 @@ export const useWatchList = <I extends KubeObjectBase>({
     placeholderData: k8sListInitialData as CustomKubeObjectList<I>,
     refetchOnWindowFocus: refetchOnWindowFocusIfStale,
     ...queryOptions,
+    // After the spread: an unserved type is never fetched, whatever the caller asked for.
+    enabled: isEnabled,
   });
 
   // Stable event handler using useEffectEvent
@@ -141,11 +150,11 @@ export const useWatchList = <I extends KubeObjectBase>({
   // Restarting subscriptions on every resourceVersion change causes excessive start/stop cycles.
   const { watchListRegistry } = useWatchRegistries();
 
-  // Register handler - this should happen as soon as query is successful
+  // Register handler as soon as the query is successful. `isSuccess` is also true for a
+  // disabled query showing placeholder data, so the gate is checked as well.
   useEffect(
     () => {
-      // Don't register until user is authenticated and registry is available
-      if (!query.isSuccess || !isAuthenticated || !watchListRegistry) return;
+      if (!isEnabled || !query.isSuccess || !isAuthenticated || !watchListRegistry) return;
 
       const params = {
         clusterName,
@@ -160,6 +169,7 @@ export const useWatchList = <I extends KubeObjectBase>({
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
+      isEnabled,
       query.isSuccess,
       isAuthenticated,
       watchListRegistry,
@@ -174,14 +184,14 @@ export const useWatchList = <I extends KubeObjectBase>({
 
   // Start subscription once resourceVersion becomes available
   useEffect(() => {
-    // Don't start subscriptions until user is authenticated, registry is available, and resourceVersion exists
-    if (!query.isSuccess || !isAuthenticated || !watchListRegistry) return;
+    if (!isEnabled || !query.isSuccess || !isAuthenticated || !watchListRegistry) return;
 
     const resourceVersion = query.data?.metadata?.resourceVersion;
     if (resourceVersion) {
       watchListRegistry.startSubscription<I>(queryKey, resourceVersion);
     }
   }, [
+    isEnabled,
     query.isSuccess,
     query.data?.metadata?.resourceVersion, // Watch for resourceVersion to become available
     isAuthenticated,
@@ -208,8 +218,11 @@ export const useWatchList = <I extends KubeObjectBase>({
     query,
     resourceVersion: query.data?.metadata?.resourceVersion,
     isEmpty: query.data?.items.size === 0,
-    isLoading: query.isPending || query.isPlaceholderData,
+    // An unserved type has settled: a disabled query keeps showing placeholder data,
+    // which would otherwise read as a permanent loading state.
+    isLoading: notServed ? false : query.isPending || query.isPlaceholderData,
     isReady: query.isSuccess && !query.isPlaceholderData,
+    availability,
     error: query.error,
   };
 };

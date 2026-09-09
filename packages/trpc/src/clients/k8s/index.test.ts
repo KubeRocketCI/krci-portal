@@ -231,6 +231,69 @@ describe("K8sClient", () => {
     });
   });
 
+  describe("fetchDiscoveryDocument", () => {
+    const mockFetchApiPath = (client: K8sClient) => vi.spyOn(client, "fetchApiPath" as never) as unknown as Mock;
+
+    it("requests /api/<version> for the core group", async () => {
+      const client = new K8sClient(validSession);
+      const spy = mockFetchApiPath(client);
+      spy.mockResolvedValue({ resources: [] } as never);
+
+      await client.fetchDiscoveryDocument("", "v1");
+
+      expect(spy).toHaveBeenCalledWith("/api/v1");
+    });
+
+    it("requests /apis/<group>/<version> for a named group", async () => {
+      const client = new K8sClient(validSession);
+      const spy = mockFetchApiPath(client);
+      spy.mockResolvedValue({ resources: [] } as never);
+
+      await client.fetchDiscoveryDocument("capsule.clastix.io", "v1beta2");
+
+      expect(spy).toHaveBeenCalledWith("/apis/capsule.clastix.io/v1beta2");
+    });
+
+    it("reports an absent group as not served rather than throwing", async () => {
+      const client = new K8sClient(validSession);
+      mockFetchApiPath(client).mockRejectedValue(new K8sApiError(404, "Not Found", "") as never);
+
+      await expect(client.fetchDiscoveryDocument("capsule.clastix.io", "v1beta2")).resolves.toEqual({
+        status: "absent",
+      });
+    });
+
+    it("propagates a denied discovery instead of reporting absence", async () => {
+      const client = new K8sClient(validSession);
+      mockFetchApiPath(client).mockRejectedValue(new K8sApiError(403, "Forbidden", "") as never);
+
+      await expect(client.fetchDiscoveryDocument("capsule.clastix.io", "v1beta2")).rejects.toBeInstanceOf(K8sApiError);
+    });
+
+    it("throws on a malformed document rather than reporting every plural absent", async () => {
+      const client = new K8sClient(validSession);
+      mockFetchApiPath(client).mockResolvedValue({ kind: "APIResourceList" } as never);
+
+      await expect(client.fetchDiscoveryDocument("gateway.networking.k8s.io", "v1")).rejects.toThrow(
+        '"resources" is not an array'
+      );
+    });
+
+    it("drops subresources from the served list", async () => {
+      const client = new K8sClient(validSession);
+      mockFetchApiPath(client).mockResolvedValue({
+        resources: [
+          { name: "pods", namespaced: true, kind: "Pod" },
+          { name: "pods/log", namespaced: true, kind: "Pod" },
+        ],
+      } as never);
+
+      const document = await client.fetchDiscoveryDocument("", "v1");
+
+      expect(document).toEqual({ status: "served", resources: [{ name: "pods", namespaced: true, kind: "Pod" }] });
+    });
+  });
+
   it("leaves KubeConfig null if current context is not found", () => {
     vi.mocked(KubeConfig).mockImplementationOnce(function () {
       return {

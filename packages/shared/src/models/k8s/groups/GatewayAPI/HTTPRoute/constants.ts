@@ -7,4 +7,5 @@ export const k8sHTTPRouteConfig = {
   kind: "HTTPRoute",
   singularName: "httproute",
   pluralName: "httproutes",
+  mayBeAbsent: true,
 } as const satisfies K8sResourceConfig;

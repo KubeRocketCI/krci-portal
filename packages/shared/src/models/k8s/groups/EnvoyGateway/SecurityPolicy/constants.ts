@@ -7,4 +7,5 @@ export const k8sSecurityPolicyConfig = {
   kind: "SecurityPolicy",
   singularName: "securitypolicy",
   pluralName: "securitypolicies",
+  mayBeAbsent: true,
 } as const satisfies K8sResourceConfig;

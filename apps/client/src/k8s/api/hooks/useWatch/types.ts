@@ -1,6 +1,7 @@
 import { KubeObjectBase } from "@my-project/shared";
 import { UseQueryResult } from "@tanstack/react-query";
 import { RequestError } from "@/core/types/global";
+import { ResourceAvailability } from "./useResourceAvailability";
 
 // ============================================================================
 // Common Types
@@ -30,6 +31,7 @@ export interface UseWatchItemResult<I extends KubeObjectBase> {
   resourceVersion: string | undefined;
   isLoading: boolean; // True during initial fetch (no cached data)
   isReady: boolean; // True when data is successfully loaded
+  availability: ResourceAvailability; // "served" unless the type declares mayBeAbsent
 }
 
 // ============================================================================
@@ -48,6 +50,7 @@ export interface UseWatchListResult<I extends KubeObjectBase> {
   isEmpty: boolean;
   isLoading: boolean; // True during initial fetch (no cached data)
   isReady: boolean; // True when data is successfully loaded
+  availability: ResourceAvailability; // "served" unless the type declares mayBeAbsent
   error: RequestError | null; // Convenience flag for table components
 }
 
