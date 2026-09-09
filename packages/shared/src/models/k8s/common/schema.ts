@@ -34,6 +34,12 @@ export const k8sResourceConfigSchema = z.object({
   labels: stringDictSchema.optional(),
   /** Indicates whether this resource is cluster-scoped (no namespace) */
   clusterScoped: z.boolean().optional(),
+  /**
+   * The cluster is not guaranteed to serve this type; discover before watching.
+   * Set on every type an optional add-on owns. Omitting it keeps the direct
+   * GET/watch path, so an omission costs the optimisation, never the feature.
+   */
+  mayBeAbsent: z.boolean().optional(),
 });
 
 const kubeOwnerReferenceSchema = z.object({

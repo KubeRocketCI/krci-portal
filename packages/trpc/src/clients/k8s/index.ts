@@ -15,6 +15,15 @@ type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 export type PatchType = "strategic" | "merge" | "json";
 export type PatchSubresource = "scale" | "status";
 
+/** One type entry of a discovery document. */
+export interface DiscoveredResource {
+  name: string;
+  namespaced: boolean;
+  kind: string;
+}
+
+export type DiscoveryDocument = { status: "served"; resources: DiscoveredResource[] } | { status: "absent" };
+
 // SelfSubjectReview response shape (authentication.k8s.io/v1). The generated
 // V1SelfSubjectReview / V1UserInfo types are not re-exported from
 // @kubernetes/client-node's top-level index, so we declare minimal
@@ -356,20 +365,54 @@ export class K8sClient {
   }
 
   /**
-   * Discover pluralName and scope for a given apiVersion + kind via the K8s discovery API.
+   * Fetch the discovery document for one group/version.
+   *
+   * Core group is `group: ""` and lives at /api/<version>; everything else at
+   * /apis/<group>/<version>. A 404 means the group/version is not served — a
+   * normal state for an optional add-on, so it is reported, not thrown. Every
+   * other failure (401, 403, 5xx, timeout, malformed body) throws.
    */
-  async discoverResource(apiVersion: string, kind: string): Promise<{ pluralName: string; namespaced: boolean }> {
+  async fetchDiscoveryDocument(group: string, version: string): Promise<DiscoveryDocument> {
     if (!this.KubeConfig) {
       throw new Error("KubeConfig is not initialized");
     }
 
-    const path = apiVersion === "v1" ? `/api/v1` : `/apis/${apiVersion}`;
+    const path = group ? `/apis/${group}/${version}` : `/api/${version}`;
 
-    const resourceList = await this.fetchApiPath<{
-      resources?: Array<{ name: string; namespaced: boolean; kind: string }>;
-    }>(path);
+    let document: { resources?: unknown };
+    try {
+      document = await this.fetchApiPath<{ resources?: unknown }>(path);
+    } catch (error) {
+      if (error instanceof K8sApiError && error.statusCode === 404) {
+        return { status: "absent" };
+      }
+      throw error;
+    }
 
-    const resource = resourceList.resources?.find((r) => r.kind === kind && !r.name.includes("/"));
+    // fetchApiPath casts its JSON unchecked. An unvalidated body would scan as an
+    // empty resource list and report every plural absent.
+    if (!Array.isArray(document.resources)) {
+      throw new Error(`Malformed discovery document at ${path}: "resources" is not an array`);
+    }
+
+    const resources = (document.resources as DiscoveredResource[]).filter(
+      // Subresources ("pods/log") are not types.
+      (resource) => typeof resource?.name === "string" && !resource.name.includes("/")
+    );
+
+    return { status: "served", resources };
+  }
+
+  /**
+   * Discover pluralName and scope for a given apiVersion + kind via the K8s discovery API.
+   */
+  async discoverResource(apiVersion: string, kind: string): Promise<{ pluralName: string; namespaced: boolean }> {
+    const [group, version] = apiVersion.includes("/") ? apiVersion.split("/") : ["", apiVersion];
+
+    const document = await this.fetchDiscoveryDocument(group, version);
+
+    const resource =
+      document.status === "served" ? document.resources.find((candidate) => candidate.kind === kind) : undefined;
 
     if (!resource) {
       throw new Error(`Resource kind "${kind}" not found in apiVersion "${apiVersion}"`);

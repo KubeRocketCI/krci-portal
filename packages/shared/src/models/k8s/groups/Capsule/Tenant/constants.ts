@@ -8,4 +8,5 @@ export const k8sTenantConfig = {
   singularName: "tenant",
   pluralName: "tenants",
   clusterScoped: true,
+  mayBeAbsent: true,
 } as const satisfies K8sResourceConfig;

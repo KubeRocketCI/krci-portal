@@ -4,15 +4,20 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 import { useWatchItem } from "./index";
 import { MSG_TYPE, WatchEvent } from "../types";
-import { getK8sWatchItemQueryCacheKey, getK8sWatchListQueryCacheKey } from "../query-keys";
+import {
+  getK8sDiscoveryDocumentQueryCacheKey,
+  getK8sWatchItemQueryCacheKey,
+  getK8sWatchListQueryCacheKey,
+} from "../query-keys";
 import { isK8sNotFoundError } from "@/k8s/api/utils/k8sNotFoundError";
 import { refetchOnWindowFocusIfStale } from "../utils";
 import { createTestQueryClient } from "@/test/utils";
 import type { K8sResourceConfig, KubeObjectBase } from "@my-project/shared";
 import type { RequestError } from "@/core/types/global";
 
-const { mockGetQuery, mockRegistry, watchHandlers } = vi.hoisted(() => ({
+const { mockGetQuery, mockDiscoveryQuery, mockRegistry, watchHandlers } = vi.hoisted(() => ({
   mockGetQuery: vi.fn(),
+  mockDiscoveryQuery: vi.fn(),
   mockRegistry: {
     register: vi.fn(),
     startSubscription: vi.fn(),
@@ -21,7 +26,9 @@ const { mockGetQuery, mockRegistry, watchHandlers } = vi.hoisted(() => ({
 }));
 
 vi.mock("@/core/providers/trpc", () => ({
-  useTRPCClient: () => ({ k8s: { get: { query: mockGetQuery } } }),
+  useTRPCClient: () => ({
+    k8s: { get: { query: mockGetQuery }, discoveryDocument: { query: mockDiscoveryQuery } },
+  }),
 }));
 
 vi.mock("@/core/auth/provider", () => ({
@@ -297,5 +304,140 @@ describe("useWatchItem", () => {
     emit({ type: MSG_TYPE.MODIFIED, data: secret });
 
     await waitFor(() => expect(result.current.data?.kind).toBe("Transformed"));
+  });
+});
+
+const tenantConfig: K8sResourceConfig = {
+  apiVersion: "capsule.clastix.io/v1beta2",
+  group: "capsule.clastix.io",
+  version: "v1beta2",
+  kind: "Tenant",
+  singularName: "tenant",
+  pluralName: "tenants",
+  clusterScoped: true,
+  mayBeAbsent: true,
+};
+
+const tenant = {
+  apiVersion: "capsule.clastix.io/v1beta2",
+  kind: "Tenant",
+  metadata: { name: "edp-workload-test-ns", resourceVersion: "100" },
+} as unknown as KubeObjectBase;
+
+const served = { status: "served" as const, plurals: ["tenants", "capsuleconfigurations"] };
+const notServed = { status: "not-served" as const, plurals: [] as string[] };
+const discoveryKey = getK8sDiscoveryDocumentQueryCacheKey("test-cluster", "capsule.clastix.io", "v1beta2");
+
+const tenantName = "edp-workload-test-ns";
+
+const renderGatedItem = (name: string | undefined, queryOptions?: { enabled?: boolean }) => {
+  const queryClient = createTestQueryClient();
+  const wrapper = ({ children }: { children: React.ReactNode }) =>
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
+
+  return {
+    ...renderHook(() => useWatchItem<KubeObjectBase>({ resourceConfig: tenantConfig, name, queryOptions }), {
+      wrapper,
+    }),
+    queryClient,
+  };
+};
+
+// Lets the effects flush so a "not called" assertion is not merely early.
+const settle = () => act(async () => {});
+
+describe("useWatchItem capability gate", () => {
+  beforeEach(() => {
+    mockGetQuery.mockResolvedValue(tenant);
+  });
+
+  it("runs neither the GET nor the subscription when the type is not served", async () => {
+    mockDiscoveryQuery.mockResolvedValue(notServed);
+
+    const { result } = renderGatedItem(tenantName);
+
+    await waitFor(() => expect(result.current.availability).toBe("not-served"));
+    await settle();
+    expect(mockGetQuery).not.toHaveBeenCalled();
+    expect(mockRegistry.register).not.toHaveBeenCalled();
+    expect(mockRegistry.startSubscription).not.toHaveBeenCalled();
+  });
+
+  it("settles instead of loading forever when the type is not served", async () => {
+    mockDiscoveryQuery.mockResolvedValue(notServed);
+
+    const { result } = renderGatedItem(tenantName);
+
+    await waitFor(() => expect(result.current.availability).toBe("not-served"));
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.isReady).toBe(false);
+    expect(result.current.data).toBeUndefined();
+    expect(result.current.query.error).toBeNull();
+  });
+
+  it("keeps loading while discovery is still pending", async () => {
+    mockDiscoveryQuery.mockReturnValue(new Promise(() => {}));
+
+    const { result } = renderGatedItem(tenantName);
+
+    await settle();
+    expect(result.current.availability).toBe("pending");
+    expect(result.current.isLoading).toBe(true);
+    expect(mockGetQuery).not.toHaveBeenCalled();
+  });
+
+  it("fails open and fetches when discovery could not answer", async () => {
+    mockDiscoveryQuery.mockRejectedValue({ data: { httpStatus: 403 } });
+
+    const { result } = renderGatedItem(tenantName);
+
+    await waitFor(() => expect(result.current.availability).toBe("unknown"));
+    await waitFor(() => expect(result.current.data).toEqual(tenant));
+  });
+
+  it("fetches and watches normally when the type is served", async () => {
+    mockDiscoveryQuery.mockResolvedValue(served);
+
+    const { result } = renderGatedItem(tenantName);
+
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+    expect(result.current.availability).toBe("served");
+    await waitFor(() => expect(mockRegistry.startSubscription).toHaveBeenCalledWith(expect.anything(), "100"));
+  });
+
+  it("reopens once discovery reports the type served", async () => {
+    mockDiscoveryQuery.mockResolvedValueOnce(notServed).mockResolvedValueOnce(served);
+
+    const { result, queryClient } = renderGatedItem(tenantName);
+
+    await waitFor(() => expect(result.current.availability).toBe("not-served"));
+
+    await act(async () => {
+      await queryClient.invalidateQueries({ queryKey: discoveryKey });
+    });
+
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+    await waitFor(() => expect(mockRegistry.startSubscription).toHaveBeenCalledTimes(1));
+  });
+
+  it("discovers nothing while the caller disables the hook", async () => {
+    mockDiscoveryQuery.mockResolvedValue(served);
+
+    const { result } = renderGatedItem(tenantName, { enabled: false });
+
+    await settle();
+    expect(mockDiscoveryQuery).not.toHaveBeenCalled();
+    expect(mockGetQuery).not.toHaveBeenCalled();
+    expect(result.current.availability).toBe("served");
+  });
+
+  it("discovers nothing without a name", async () => {
+    mockDiscoveryQuery.mockResolvedValue(served);
+
+    renderGatedItem(undefined);
+
+    await settle();
+    expect(mockDiscoveryQuery).not.toHaveBeenCalled();
+    expect(mockGetQuery).not.toHaveBeenCalled();
   });
 });

@@ -133,8 +133,9 @@ export function NetworkingLive() {
     );
   }
 
-  // Only gateway + httproute errors drive the tab-level error states.
-  // 404 → CRD absent; 403 → RBAC denied.
+  // Only gateway + httproute drive the tab-level error states.
+  // Absence comes from capability discovery; 403 still comes from the request.
+  const gatewayApiAbsent = gatewayWatch.availability === "not-served" || httpRouteWatch.availability === "not-served";
   const gatewayHttpStatus = gatewayWatch.query.error?.data?.httpStatus;
   const httpRouteHttpStatus = httpRouteWatch.query.error?.data?.httpStatus;
 
@@ -143,7 +144,8 @@ export function NetworkingLive() {
   // surfaced as the crd-absent banner promises.
   const ingressOnlyData = { ...data, gateways: [], httpRoutes: [], policies: [] };
 
-  if (gatewayHttpStatus === 404 || httpRouteHttpStatus === 404) {
+  // A 404 still reaches here when discovery could not answer and the watch ran anyway.
+  if (gatewayApiAbsent || gatewayHttpStatus === 404 || httpRouteHttpStatus === 404) {
     return <Networking state="crd-absent" sampleData={false} data={ingressOnlyData} />;
   }
 

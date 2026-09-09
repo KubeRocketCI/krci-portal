@@ -90,6 +90,8 @@ export function useK8sResourceListPoll<T extends KubeObjectBase>(
     // their empty state instead of showing a spinner forever.
     isLoading: enabled && (query.isPending || query.isPlaceholderData),
     isReady: query.isSuccess && !query.isPlaceholderData,
+    // Polling does not run capability discovery; callers pass types the cluster serves.
+    availability: "served",
     error: query.error,
   };
 }

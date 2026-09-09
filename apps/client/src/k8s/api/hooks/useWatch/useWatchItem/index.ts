@@ -11,6 +11,7 @@ import { useWatchRegistries } from "@/core/providers/subscriptions";
 import { UseWatchItemResult, CustomKubeObjectList, MSG_TYPE, WatchEvent } from "../types";
 import { refetchOnWindowFocusIfStale } from "../utils";
 import { createK8sNotFoundError, isK8sNotFoundError } from "@/k8s/api/utils/k8sNotFoundError";
+import { useAvailabilityGate } from "../useResourceAvailability";
 
 type OptionalQueryOptions<I extends KubeObjectBase> = Omit<
   UseQueryOptions<I | undefined, RequestError>,
@@ -62,7 +63,8 @@ export const useWatchItem = <I extends KubeObjectBase>({
     [clusterName, _namespace, resourceConfig.group, resourceConfig.pluralName]
   );
 
-  const isEnabled = !!name && (queryOptions?.enabled ?? true);
+  const callerEnabled = !!name && (queryOptions?.enabled ?? true);
+  const { availability, notServed, isEnabled } = useAvailabilityGate(resourceConfig, callerEnabled);
 
   const query = useQuery<I | undefined, RequestError>({
     queryKey,
@@ -191,7 +193,10 @@ export const useWatchItem = <I extends KubeObjectBase>({
     data: query.data,
     query,
     resourceVersion: query.data?.metadata?.resourceVersion,
-    isLoading: query.isPending,
+    // An unserved type has settled: a disabled query stays pending, which would
+    // otherwise read as a permanent loading state.
+    isLoading: notServed ? false : query.isPending,
     isReady: query.isSuccess,
+    availability,
   };
 };

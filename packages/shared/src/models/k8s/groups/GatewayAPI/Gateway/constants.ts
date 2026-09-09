@@ -7,4 +7,5 @@ export const k8sGatewayConfig = {
   kind: "Gateway",
   singularName: "gateway",
   pluralName: "gateways",
+  mayBeAbsent: true,
 } as const satisfies K8sResourceConfig;

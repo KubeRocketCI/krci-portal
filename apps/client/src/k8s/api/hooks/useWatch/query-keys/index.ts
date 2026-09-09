@@ -68,6 +68,12 @@ export function getK8sAccessibleCustomResourcesQueryCacheKey(clusterName: string
   return ["k8s:accessibleCustomResources", clusterName, namespace];
 }
 
+export function getK8sDiscoveryDocumentQueryCacheKey(clusterName: string, group: string, version: string): string[] {
+  // Keyed per group/version so every plural in one document shares a single request.
+  // `clusterName` makes a cluster switch a natural miss rather than a stale hit.
+  return ["k8s:discoveryDocument", clusterName, group, version];
+}
+
 export function getK8sListPollQueryCacheKey(
   clusterName: string,
   namespace: string | undefined,
