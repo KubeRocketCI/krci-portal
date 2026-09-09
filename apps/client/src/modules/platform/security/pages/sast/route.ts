@@ -17,8 +17,8 @@ export const routeSAST = createRoute({
   validateSearch: (search: Record<string, unknown>): Search => {
     return z
       .object({
-        page: z.number().optional(),
-        rowsPerPage: z.number().optional(),
+        page: z.number().int().positive().optional(),
+        rowsPerPage: z.number().int().positive().optional(),
       })
       .parse(search);
   },

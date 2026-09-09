@@ -19,8 +19,8 @@ export const routeTrivyExposedSecrets = createRoute({
     return z
       .object({
         namespace: z.string().optional(),
-        page: z.number().optional(),
-        rowsPerPage: z.number().optional(),
+        page: z.number().int().positive().optional(),
+        rowsPerPage: z.number().int().positive().optional(),
       })
       .parse(search);
   },
