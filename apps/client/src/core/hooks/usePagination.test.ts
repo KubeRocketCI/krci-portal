@@ -222,6 +222,29 @@ describe("usePagination", () => {
       expect(result_url).toEqual({ rowsPerPage: 50, page: 1 });
     });
 
+    it("should preserve sibling settings when changing rows per page", async () => {
+      const { useSearch } = await import("@tanstack/react-router");
+      vi.mocked(useSearch).mockReturnValue({});
+
+      localStorage.setItem(
+        "settings",
+        JSON.stringify({ tableRowsPerPageOptions: [5, 15], tableDefaultRowsPerPage: 10 })
+      );
+
+      const { result } = renderHook(() => usePagination({ initialPage: 0, initialRowsPerPage: 25 }));
+
+      act(() => {
+        result.current.handleChangeRowsPerPage({
+          target: { value: "50" },
+        } as React.ChangeEvent<HTMLInputElement>);
+      });
+
+      expect(JSON.parse(localStorage.getItem("settings") || "{}")).toEqual({
+        tableRowsPerPageOptions: [5, 15],
+        tableDefaultRowsPerPage: 50,
+      });
+    });
+
     it("should reset to page 1 when changing rows per page", async () => {
       const { useSearch } = await import("@tanstack/react-router");
       vi.mocked(useSearch).mockReturnValue({ page: 5 }); // User is on URL page 5

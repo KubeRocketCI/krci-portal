@@ -5,6 +5,7 @@ import { useState, useCallback } from "react";
 import { ProjectsList } from "./components/ProjectsList";
 import { routeSCAProjects } from "./route";
 import { router } from "@/core/router";
+import { getDefaultRowsPerPage, setDefaultRowsPerPage } from "@/core/services/table-preferences";
 import { PATH_SCA_PROJECTS_FULL } from "./route";
 
 export default function SCAProjectsPageContent() {
@@ -15,9 +16,7 @@ export default function SCAProjectsPageContent() {
   const urlPage = search.page;
   const page = urlPage !== undefined ? urlPage - 1 : 0;
 
-  // Get default rowsPerPage from localStorage settings or use 25
-  const defaultRowsPerPage = JSON.parse(localStorage.getItem("settings") || "{}")?.tableDefaultRowsPerPage || 25;
-  const pageSize = search.rowsPerPage ?? defaultRowsPerPage;
+  const pageSize = search.rowsPerPage ?? getDefaultRowsPerPage(25);
 
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -36,10 +35,7 @@ export default function SCAProjectsPageContent() {
 
   const handlePageSizeChange = useCallback(
     (newPageSize: number) => {
-      // Update localStorage only on user interaction
-      const settings = JSON.parse(localStorage.getItem("settings") || "{}");
-      settings.tableDefaultRowsPerPage = newPageSize;
-      localStorage.setItem("settings", JSON.stringify(settings));
+      setDefaultRowsPerPage(newPageSize);
 
       // Update URL - reset to page 1 (1-indexed)
       router.navigate({
