@@ -1,8 +1,6 @@
 import React from "react";
-import MonacoEditor from "@monaco-editor/react";
 import * as yaml from "js-yaml";
-import { LoadingSpinner } from "../ui/LoadingSpinner";
-import { useMonacoTheme } from "@/core/hooks/useTheme";
+import { MonacoEditor, type MonacoEditorProps } from "./monaco";
 
 export type CodeEditorChangeHandler = (text: string, json: object | null, error?: Error) => void;
 
@@ -13,7 +11,7 @@ export type CodeEditorProps = {
   height?: string | number;
   readOnly?: boolean;
   theme?: string;
-  options?: Record<string, unknown>;
+  options?: MonacoEditorProps["options"];
   serialize?: (input: unknown) => string;
   parse?: (text: string) => object;
   fitParent?: boolean; // New prop to enable responsive behavior
@@ -41,9 +39,6 @@ const CodeEditor = React.forwardRef<CodeEditorHandle, CodeEditorProps>(
     },
     ref
   ) => {
-    const monacoTheme = useMonacoTheme();
-    const resolvedTheme = theme ?? monacoTheme;
-
     const [text, setText] = React.useState<string>("");
     const [error, setError] = React.useState<Error | null>(null);
     const [calculatedHeight, setCalculatedHeight] = React.useState<number>(500);
@@ -152,49 +147,30 @@ const CodeEditor = React.forwardRef<CodeEditorHandle, CodeEditorProps>(
     // Determine the height to use - if fitParent is true, use calculated pixel height
     const editorHeight = fitParent ? calculatedHeight : height;
 
-    if (fitParent) {
-      return (
-        <div
-          ref={containerRef}
-          style={{
-            height: "100%",
-            width: "100%",
-            overflow: "hidden", // Prevent any scrollbars that might affect measurement
-          }}
-        >
-          <MonacoEditor
-            height={editorHeight}
-            language={language}
-            value={text}
-            onChange={handleChange}
-            theme={resolvedTheme}
-            options={{
-              readOnly,
-              minimap: { enabled: false },
-              automaticLayout: true, // Enables automatic layout resizing
-              ...(options ?? {}),
-            }}
-            loading={<LoadingSpinner />}
-          />
-        </div>
-      );
-    }
-
-    return (
+    const editor = (
       <MonacoEditor
         height={editorHeight}
         language={language}
         value={text}
         onChange={handleChange}
-        theme={resolvedTheme}
-        options={{
-          readOnly,
-          minimap: { enabled: false },
-          automaticLayout: true, // Enables automatic layout resizing
-          ...(options ?? {}),
-        }}
-        loading={<LoadingSpinner />}
+        theme={theme}
+        options={{ readOnly, ...options }}
       />
+    );
+
+    if (!fitParent) return editor;
+
+    return (
+      <div
+        ref={containerRef}
+        style={{
+          height: "100%",
+          width: "100%",
+          overflow: "hidden", // Prevent any scrollbars that might affect measurement
+        }}
+      >
+        {editor}
+      </div>
     );
   }
 );

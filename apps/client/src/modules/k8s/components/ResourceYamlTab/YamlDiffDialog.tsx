@@ -1,6 +1,5 @@
-import { DiffEditor } from "@monaco-editor/react";
+import { MonacoDiffEditor } from "@/core/components/CodeEditor/monaco";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
-import { useMonacoTheme } from "@/core/hooks/useTheme";
 import { removeStatusField } from "./removeStatusField";
 
 interface Props {
@@ -11,8 +10,6 @@ interface Props {
 }
 
 export function YamlDiffDialog({ open, onClose, current, draft }: Props) {
-  const monacoTheme = useMonacoTheme();
-
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-4xl">
@@ -20,12 +17,11 @@ export function YamlDiffDialog({ open, onClose, current, draft }: Props) {
           <DialogTitle>Preview changes</DialogTitle>
         </DialogHeader>
         <div className="h-[60vh]">
-          <DiffEditor
+          <MonacoDiffEditor
             language="yaml"
-            theme={monacoTheme}
             original={removeStatusField(current)}
             modified={removeStatusField(draft)}
-            options={{ renderSideBySide: true, readOnly: true, minimap: { enabled: false } }}
+            options={{ renderSideBySide: true, readOnly: true }}
           />
         </div>
       </DialogContent>

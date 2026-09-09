@@ -20,6 +20,21 @@ assert(
   existsSync(join(__dirname, "src", TABLE_SETTINGS_DIR)),
   `src/${TABLE_SETTINGS_DIR} not found; update TABLE_SETTINGS_DIR`
 );
+const MONACO_DIR = "core/components/CodeEditor/monaco";
+assert(existsSync(join(__dirname, "src", MONACO_DIR)), `src/${MONACO_DIR} not found; update MONACO_DIR`);
+
+const TABLE_SETTINGS_IMPORT = {
+  group: [`**/${TABLE_SETTINGS_DIR}`, `**/${TABLE_SETTINGS_DIR}/**`],
+  message: "Only the table shells read or write table settings. Pass `id` to the table instead.",
+};
+const MONACO_IMPORT = {
+  group: ["@monaco-editor/*", "monaco-editor", "monaco-editor/**"],
+  message: `Render editors through src/${MONACO_DIR}; it bundles Monaco and applies the shared defaults.`,
+};
+
+// Flat config replaces a rule wholesale rather than merging, so each exempt directory
+// must restate the patterns it is still subject to.
+const restrictImports = (...patterns) => ({ "no-restricted-imports": ["error", { patterns }] });
 
 export default tseslint.config(
   { ignores: ["dist", "storybook-static", ".storybook/**"] },
@@ -58,20 +73,15 @@ export default tseslint.config(
   },
   {
     files: ["src/**/*.{ts,tsx}"],
-    ignores: ["src/core/components/Table/**"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            {
-              group: [`**/${TABLE_SETTINGS_DIR}`, `**/${TABLE_SETTINGS_DIR}/**`],
-              message: "Only the table shells read or write table settings. Pass `id` to the table instead.",
-            },
-          ],
-        },
-      ],
-    },
+    rules: restrictImports(TABLE_SETTINGS_IMPORT, MONACO_IMPORT),
+  },
+  {
+    files: ["src/core/components/Table/**"],
+    rules: restrictImports(MONACO_IMPORT),
+  },
+  {
+    files: [`src/${MONACO_DIR}/**`],
+    rules: restrictImports(TABLE_SETTINGS_IMPORT),
   },
   storybook.configs["flat/recommended"]
 );
