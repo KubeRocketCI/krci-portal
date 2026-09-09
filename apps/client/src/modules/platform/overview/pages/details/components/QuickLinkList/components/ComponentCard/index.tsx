@@ -6,7 +6,7 @@ import { QuickLinkActionsMenu } from "@/modules/platform/configuration/modules/q
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { EllipsisVertical, ExternalLink } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { sanitizeSvgBase64 } from "@/core/utils/sanitizeSvg";
+import { SvgBase64Icon } from "@/core/components/SvgBase64Icon";
 
 export const ComponentCard = ({ component }: ComponentCardProps) => {
   const {
@@ -31,13 +31,12 @@ export const ComponentCard = ({ component }: ComponentCardProps) => {
     }
   }, [url]);
 
-  const sanitizedIcon = sanitizeSvgBase64(icon);
   const [open, setOpen] = React.useState(false);
 
   const linkContent = (
     <>
       <span className="block size-8 shrink-0">
-        <img src={`data:image/svg+xml;base64,${sanitizedIcon}`} alt="" className="size-full" />
+        <SvgBase64Icon icon={icon} label={name} />
       </span>
       <div className="min-w-0 flex-1">
         <TextWithTooltip text={name} className="text-foreground text-sm" />

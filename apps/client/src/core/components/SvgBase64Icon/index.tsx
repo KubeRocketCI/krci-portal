@@ -1,21 +1,42 @@
+import React from "react";
+import { decodeSvgIcon } from "@/core/utils/svgIcon";
+import { cn } from "@/core/utils/classname";
 import { errorBase64Icon } from "./constants";
-import { getIconClasses, getIconStyle } from "./styles";
-import { sanitizeSvgBase64 } from "@/core/utils/sanitizeSvg";
 
-export const SvgBase64Icon = ({ width, height, icon }: { width: number; height: number; icon: string }) => {
-  const sanitizedIcon = sanitizeSvgBase64(icon);
+const FALLBACK_SRC = `data:image/svg+xml;base64,${errorBase64Icon}`;
+
+interface SvgBase64IconProps {
+  icon: string | undefined;
+  className?: string;
+  /** Names the owning resource in the warning logged for an unusable icon. */
+  label?: string;
+}
+
+export const SvgBase64Icon = ({ icon, className, label }: SvgBase64IconProps) => {
+  const result = decodeSvgIcon(icon);
+  const reason = result.status === "invalid" ? result.reason : undefined;
+
+  React.useEffect(() => {
+    if (reason) {
+      console.warn(`Unusable SVG icon${label ? ` on "${label}"` : ""}: ${reason}.`, icon?.slice(0, 64));
+    }
+  }, [reason, label, icon]);
+
+  if (result.status === "absent") {
+    return null;
+  }
 
   return (
-    <div className={getIconClasses()} style={getIconStyle(width, height)}>
-      <img
-        src={`data:image/svg+xml;base64,${sanitizedIcon}`}
-        alt=""
-        onError={({ currentTarget }) => {
-          currentTarget.onerror = null;
-          currentTarget.src = `data:image/svg+xml;base64,${errorBase64Icon}`;
-          currentTarget.title = "Icon is broken";
-        }}
-      />
-    </div>
+    <img
+      src={result.status === "ok" ? result.src : FALLBACK_SRC}
+      alt=""
+      title={reason && `Icon is broken: ${reason}`}
+      className={cn("h-full w-full", className)}
+      onError={({ currentTarget }) => {
+        currentTarget.onerror = null;
+        currentTarget.src = FALLBACK_SRC;
+        currentTarget.title = "Icon is broken";
+      }}
+    />
   );
 };
