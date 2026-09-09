@@ -6,7 +6,7 @@ import { SquareArrowOutUpRight } from "lucide-react";
 import type { VariantProps } from "class-variance-authority";
 import { buttonVariants } from "@/core/components/ui/button";
 import { cn } from "@/core/utils/classname";
-import { sanitizeSvgBase64 } from "@/core/utils/sanitizeSvg";
+import { SvgBase64Icon } from "@/core/components/SvgBase64Icon";
 
 const stopPropagation = (e: React.SyntheticEvent) => e.stopPropagation();
 
@@ -43,8 +43,7 @@ const renderIcon = (icon: React.ReactElement | string | undefined) => {
   if (!icon) return null;
 
   if (typeof icon === "string") {
-    const sanitized = sanitizeSvgBase64(icon);
-    return <img src={`data:image/svg+xml;base64,${sanitized}`} className="h-4 w-4" alt="" />;
+    return <SvgBase64Icon icon={icon} className="h-4 w-4" />;
   }
 
   return icon;

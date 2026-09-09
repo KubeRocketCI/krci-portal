@@ -3,7 +3,7 @@ import { NAMES } from "../../../names";
 import { useCurrentDialog } from "../../../providers/CurrentDialog/hooks";
 import { SvgBase64Icon } from "@/core/components/SvgBase64Icon";
 import { useStore } from "@tanstack/react-form";
-import { validateSvgBase64 } from "@/core/utils/sanitizeSvg";
+import { validateSvgIcon } from "@/core/utils/svgIcon";
 
 export const Icon = () => {
   const form = useQuickLinkForm();
@@ -25,13 +25,7 @@ export const Icon = () => {
             onChange: ({ value }) => {
               if (!value) return "Paste the SVG code for the icon, encoded in base64 format.";
 
-              // Validate SVG for security issues
-              const validationError = validateSvgBase64(value);
-              if (validationError) {
-                return validationError;
-              }
-
-              return undefined;
+              return validateSvgIcon(value);
             },
           }}
         >
@@ -46,8 +40,8 @@ export const Icon = () => {
           )}
         </form.AppField>
       </div>
-      <div className="w-1/4">
-        <SvgBase64Icon width={100} height={100} icon={iconValue} />
+      <div className="flex w-1/4 items-center justify-center">
+        <SvgBase64Icon icon={iconValue} className="size-[100px]" />
       </div>
     </div>
   );
