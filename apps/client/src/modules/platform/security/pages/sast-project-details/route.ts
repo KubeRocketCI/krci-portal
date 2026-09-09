@@ -25,8 +25,8 @@ export const routeSASTProjectDetails = createRoute({
     const parsed = z
       .object({
         tab: routeSearchTabSchema.optional(),
-        page: z.number().optional(),
-        rowsPerPage: z.number().optional(),
+        page: z.number().int().positive().optional(),
+        rowsPerPage: z.number().int().positive().optional(),
       })
       .parse(search);
 

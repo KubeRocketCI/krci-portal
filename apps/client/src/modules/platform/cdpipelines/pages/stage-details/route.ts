@@ -45,8 +45,8 @@ export const routeStageDetails = createRoute({
       .object({
         tab: routeSearchTabSchema.optional(),
         applicationsMode: applicationsModeSchema.optional(),
-        page: z.number().optional(),
-        rowsPerPage: z.number().optional(),
+        page: z.number().int().positive().optional(),
+        rowsPerPage: z.number().int().positive().optional(),
         apps: z.string().optional(),
         range: z.enum(METRIC_RANGE_VALUES).optional(),
         autoRefresh: z.coerce.boolean().optional(),
