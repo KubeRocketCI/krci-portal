@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react";
 import yaml from "js-yaml";
-import { Editor } from "@monaco-editor/react";
+import { MonacoEditor } from "@/core/components/CodeEditor/monaco";
 import { GitCompare, RefreshCw, Save } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
-import { useMonacoTheme } from "@/core/hooks/useTheme";
 import { useK8sUpdate } from "../../hooks/useK8sUpdate";
 import { usePermissions } from "@/k8s/api/hooks/usePermissions";
 import { YamlDiffDialog } from "./YamlDiffDialog";
@@ -27,7 +26,6 @@ export function ResourceYamlTab({ item, config }: Props) {
   });
   const canUpdate = perms.data?.update;
   const { mutate, isPending } = useK8sUpdate(config);
-  const monacoTheme = useMonacoTheme();
 
   const handleSave = () => {
     let body: unknown;
@@ -56,14 +54,7 @@ export function ResourceYamlTab({ item, config }: Props) {
           <GitCompare size={14} className="mr-1.5" /> Preview changes
         </Button>
       </div>
-      <Editor
-        language="yaml"
-        theme={monacoTheme}
-        value={draft}
-        onChange={(v) => setDraft(v ?? "")}
-        height="60vh"
-        options={{ minimap: { enabled: false } }}
-      />
+      <MonacoEditor language="yaml" value={draft} onChange={(v) => setDraft(v ?? "")} height="60vh" />
       <YamlDiffDialog open={diffOpen} onClose={() => setDiffOpen(false)} current={initialYaml} draft={draft} />
     </div>
   );

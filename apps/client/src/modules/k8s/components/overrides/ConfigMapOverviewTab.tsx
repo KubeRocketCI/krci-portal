@@ -1,4 +1,4 @@
-import { Editor } from "@monaco-editor/react";
+import { MonacoEditor } from "@/core/components/CodeEditor/monaco";
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { formatRelativeTime, formatTimestamp } from "@/core/utils/date-humanize/utils";
@@ -68,12 +68,12 @@ export function ConfigMapOverviewTab({ item }: { item: KubeObjectBase }) {
                     <details key={k} className="bg-muted/30 rounded border">
                       <summary className="cursor-pointer px-3 py-2 font-mono text-sm">{k}</summary>
                       <div className="border-t">
-                        <Editor
+                        <MonacoEditor
                           language="yaml"
                           theme="vs-light"
                           value={v}
                           height="240px"
-                          options={{ readOnly: true, minimap: { enabled: false } }}
+                          options={{ readOnly: true }}
                         />
                       </div>
                     </details>
