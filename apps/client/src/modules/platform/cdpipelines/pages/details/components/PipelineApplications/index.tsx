@@ -28,6 +28,8 @@ import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { PodLogsDialog } from "../../../../dialogs/PodLogs";
 import { PodExecDialog } from "../../../../dialogs/PodExec";
 
+const DEFAULT_SORT = { sortBy: "name", order: "asc" } as const;
+
 const TABLE_ID = "pipelineApplicationsList";
 
 const useColumns = (
@@ -283,6 +285,7 @@ export const PipelineApplications = () => {
       data={pipelineApplications}
       isLoading={isLoading}
       columns={columns}
+      sort={DEFAULT_SORT}
       containerProps={{ "data-tour": "deployment-applications-tab" }}
       settings={{
         show: false,

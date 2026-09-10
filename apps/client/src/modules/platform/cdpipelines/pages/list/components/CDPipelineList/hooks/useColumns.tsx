@@ -11,7 +11,6 @@ import { routeCDPipelineDetails } from "../../../../details/route";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { sortByName } from "@/core/utils/sortByName";
 import { routeProjectDetails } from "@/modules/platform/codebases/pages/details/route";
 import { Button } from "@/core/components/ui/button";
 import {
@@ -60,7 +59,6 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
                 </Button>
               );
             },
-            customSortFn: (a, b) => sortByName(a.metadata.name, b.metadata.name),
           },
           cell: {
             baseWidth: 15,

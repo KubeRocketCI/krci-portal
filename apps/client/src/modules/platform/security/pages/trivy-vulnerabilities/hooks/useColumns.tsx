@@ -59,7 +59,7 @@ export function useColumns(): TableColumn<ConsolidatedVulnerabilityImage>[] {
         id: "resources",
         label: "Resources",
         data: {
-          customSortFn: (a, b) => a.resources.length - b.resources.length,
+          columnSortableValue: (row) => row.resources.length,
           render: ({ data }) => (
             <div className="flex items-center gap-1">
               <Badge variant="outline" className="text-xs">

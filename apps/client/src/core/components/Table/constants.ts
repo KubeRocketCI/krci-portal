@@ -4,11 +4,6 @@ export const SORT_ORDERS = {
   DESC: "desc",
 } as const;
 
-export const SORT_DEFAULTS = {
-  ORDER: SORT_ORDERS.DESC,
-  SORT_BY: "name",
-};
-
 export const PAGINATION_DEFAULTS = {
   SHOW: true,
   INITIAL_PAGE: 0,

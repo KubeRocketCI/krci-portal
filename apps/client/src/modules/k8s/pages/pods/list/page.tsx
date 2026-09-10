@@ -18,6 +18,8 @@ import { defaultPodFilterValues, matchFunctions } from "./components/PodFilter/c
 import { usePodFilter } from "./components/PodFilter/hooks/usePodFilter";
 import { useColumns } from "./hooks/useColumns";
 
+const DEFAULT_SORT = { sortBy: "name", order: "asc" } as const;
+
 export default function K8sPodsListPage() {
   return (
     <FilterProvider matchFunctions={matchFunctions} syncWithUrl defaultValues={defaultPodFilterValues}>
@@ -59,6 +61,7 @@ function K8sPodsListContent() {
           id={TABLE_ID_K8S_PODS}
           data={items}
           columns={columns}
+          sort={DEFAULT_SORT}
           isLoading={result.isLoading}
           errors={errors}
           filterFunction={filterFunction}

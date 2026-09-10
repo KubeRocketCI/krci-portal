@@ -63,7 +63,6 @@ export function useCheckColumns(): TableColumn<AuditCheckWithId>[] {
         id: "severity",
         label: "Severity",
         data: {
-          columnSortableValuePath: "severity",
           customSortFn: (a, b) => compareBySeverity(a.severity, b.severity),
           render: ({ data }) => <SeverityBadge severity={data.severity} />,
         },

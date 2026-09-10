@@ -1,5 +1,6 @@
 import React from "react";
 import { TableColumn } from "../types";
+import { isColumnVisible } from "../utils";
 import { SavedTableSettings } from "../components/TableSettings/types";
 import { useTableSettings } from "../components/TableSettings/hooks/useTableSettings";
 
@@ -18,7 +19,7 @@ const applySavedVisibility = <DataType>(
   let changed = false;
   const next = columns.map((column) => {
     const show = saved[column.id]?.show;
-    if (typeof show !== "boolean" || show === (column.cell.show ?? true)) {
+    if (typeof show !== "boolean" || show === isColumnVisible(column)) {
       return column;
     }
     changed = true;

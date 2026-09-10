@@ -9,6 +9,8 @@ import { useColumns } from "./hooks/useColumns";
 import { TriggerFilter } from "../TriggerFilter";
 import { useTriggerFilter } from "../TriggerFilter/hooks/useFilter";
 
+const DEFAULT_SORT = { sortBy: "name", order: "asc" } as const;
+
 export const TriggerList = () => {
   const columns = useColumns();
   // permissions.isFetched is used as a loading-state synchronizer to align
@@ -35,6 +37,7 @@ export const TriggerList = () => {
       data={watch.data.array}
       errors={[]}
       columns={columns}
+      sort={DEFAULT_SORT}
       emptyListComponent={renderEmptyList}
       filterFunction={filterFunction}
       slots={tableSlots}

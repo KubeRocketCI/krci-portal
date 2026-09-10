@@ -12,6 +12,8 @@ import { useColumns } from "./hooks/useColumns";
 import { ClusterInterceptorFilter } from "../ClusterInterceptorFilter";
 import { useClusterInterceptorFilter } from "../ClusterInterceptorFilter/hooks/useFilter";
 
+const DEFAULT_SORT = { sortBy: "name", order: "asc" } as const;
+
 export const ClusterInterceptorList = () => {
   const columns = useColumns();
   // permissions.isFetched is used as a loading-state synchronizer to align
@@ -38,6 +40,7 @@ export const ClusterInterceptorList = () => {
       data={watch.data.array}
       errors={[]}
       columns={columns}
+      sort={DEFAULT_SORT}
       emptyListComponent={renderEmptyList}
       filterFunction={filterFunction}
       slots={tableSlots}

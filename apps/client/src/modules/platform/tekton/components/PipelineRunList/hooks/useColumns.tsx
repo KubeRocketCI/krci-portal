@@ -11,7 +11,7 @@ import { PipelineRun, pipelineRunLabels, tektonResultAnnotations, getPipelineRun
 import { Link } from "@tanstack/react-router";
 import { VectorSquare } from "lucide-react";
 import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
-import { comparePipelineRunPhase } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
+import { comparePipelineRunPhase, getPipelineRunStartTime } from "@/k8s/api/groups/Tekton/PipelineRun/utils";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { PATH_PIPELINE_DETAILS_FULL } from "../../../pages/pipeline-details/route";
@@ -258,7 +258,8 @@ export const useColumns = ({
         id: columnNames.STARTED_AT,
         label: "Started at",
         data: {
-          columnSortableValuePath: "status.startTime",
+          // Sorts queued runs by creation time; the cell still shows "-" until Tekton starts them.
+          columnSortableValue: getPipelineRunStartTime,
           render: ({ data }) => {
             const startTime = data?.status?.startTime;
 

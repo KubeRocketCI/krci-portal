@@ -41,9 +41,8 @@ export function useColumns({
         id: gitlabCIPipelineColumnNames.PIPELINE,
         label: "Pipeline",
         data: {
-          // Pipeline ids are numeric strings; sort them numerically so #10 ranks after #9
-          // (the shared columnSortableValuePath sort is lexicographic, which would mis-order them).
-          customSortFn: (a, b) => Number(a.id) - Number(b.id),
+          // Pipeline ids are numeric strings; compare them as numbers so #10 ranks after #9.
+          columnSortableValue: (row) => Number(row.id),
           render: ({ data }) => (
             <Tooltip title="View pipeline logs" delayDuration={500}>
               <Button
