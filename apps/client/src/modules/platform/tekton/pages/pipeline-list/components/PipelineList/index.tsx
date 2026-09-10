@@ -7,6 +7,8 @@ import { useColumns } from "./hooks/useColumns";
 import { PipelineFilter } from "../PipelineFilter";
 import { usePipelineFilter } from "../PipelineFilter/hooks/useFilter";
 
+const DEFAULT_SORT = { sortBy: "name", order: "asc" } as const;
+
 export const PipelineList = () => {
   const columns = useColumns();
 
@@ -42,6 +44,7 @@ export const PipelineList = () => {
       columns={columns}
       emptyListComponent={renderEmptyList}
       filterFunction={filterFunction}
+      sort={DEFAULT_SORT}
       slots={tableSlots}
     />
   );

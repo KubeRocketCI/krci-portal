@@ -8,6 +8,8 @@ import { useTaskWatchList } from "@/k8s/api/groups/Tekton/Task";
 import { TaskFilter } from "../TaskFilter";
 import { useTaskFilter } from "../TaskFilter/hooks/useFilter";
 
+const DEFAULT_SORT = { sortBy: "name", order: "asc" } as const;
+
 export const TaskList = () => {
   const columns = useColumns();
 
@@ -41,6 +43,7 @@ export const TaskList = () => {
       columns={columns}
       emptyListComponent={renderEmptyList}
       filterFunction={filterFunction}
+      sort={DEFAULT_SORT}
       slots={tableSlots}
     />
   );

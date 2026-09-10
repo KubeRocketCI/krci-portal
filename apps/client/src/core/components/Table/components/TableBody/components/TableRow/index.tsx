@@ -3,6 +3,7 @@ import React from "react";
 import { TableCellUI, TableRowUI } from "@/core/components/ui/table";
 import { TableRowProps } from "./types";
 import { TABLE_CELL_DEFAULTS } from "@/core/components/Table/constants";
+import { isColumnVisible } from "@/core/components/Table/utils";
 import { ChevronRight, ChevronDown } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
 import { cn } from "@/core/utils/classname";
@@ -98,9 +99,9 @@ export const TableRow = <DataType,>({
             />
           </TableCellUI>
         )}
-        {columns.map(({ id, data, cell }) => {
-          const show = cell?.show ?? TABLE_CELL_DEFAULTS.SHOW;
-          if (!show) return null;
+        {columns.map((column) => {
+          const { id, data, cell } = column;
+          if (!isColumnVisible(column)) return null;
 
           const props = {
             ...TABLE_CELL_DEFAULTS.PROPS,

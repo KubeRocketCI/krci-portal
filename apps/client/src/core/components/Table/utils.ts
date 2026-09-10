@@ -1,47 +1,8 @@
-import get from "lodash/get";
-import { ValueOf } from "@/core/types/global";
-import { SORT_ORDERS } from "./constants";
+import { TABLE_CELL_DEFAULTS } from "./constants";
+import type { TableColumn } from "./types";
 
-export const createSortFunction =
-  (sortOrder: ValueOf<typeof SORT_ORDERS>, columnSortableValuePath: string | string[]) => (a: unknown, b: unknown) => {
-    const aProperty = get(a, columnSortableValuePath)?.toString().toLowerCase() || "";
-    const bProperty = get(b, columnSortableValuePath)?.toString().toLowerCase() || "";
-
-    if (sortOrder === SORT_ORDERS.DESC) {
-      return aProperty < bProperty ? -1 : 1;
-    } else if (sortOrder === SORT_ORDERS.ASC) {
-      return aProperty > bProperty ? -1 : 1;
-    } else {
-      return 0;
-    }
-  };
-
-export const createCustomSortFunction = <DataType>(
-  sortOrder: ValueOf<typeof SORT_ORDERS>,
-  customSortFn: ((a: DataType, b: DataType) => number) | undefined
-) => {
-  if (!customSortFn) {
-    return () => 0;
-  }
-
-  return (a: DataType, b: DataType) => {
-    if (sortOrder === SORT_ORDERS.DESC) {
-      return customSortFn(a, b);
-    } else if (sortOrder === SORT_ORDERS.ASC) {
-      return customSortFn(b, a);
-    } else {
-      return 0;
-    }
-  };
-};
-
-export const isDesc = (columnId: string, sortBy: string, sortOrder: ValueOf<typeof SORT_ORDERS>) =>
-  sortBy === columnId && sortOrder === SORT_ORDERS.DESC;
-export const isAsc = (columnId: string, sortBy: string, sortOrder: ValueOf<typeof SORT_ORDERS>) =>
-  sortBy === columnId && sortOrder === SORT_ORDERS.ASC;
-
-export const getSortOrder = (isDesc: boolean, isAsc: boolean) =>
-  isDesc ? SORT_ORDERS.ASC : isAsc ? SORT_ORDERS.UNSET : SORT_ORDERS.DESC;
+/** Visibility after saved settings are applied. Hidden columns stay in `columns`; they render nothing. */
+export const isColumnVisible = <DataType>({ cell }: TableColumn<DataType>) => cell?.show ?? TABLE_CELL_DEFAULTS.SHOW;
 
 export const getFlexPropertyByTextAlign = (textAlign: string) => {
   switch (textAlign) {

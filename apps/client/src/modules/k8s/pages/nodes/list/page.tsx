@@ -14,6 +14,8 @@ import { defaultNodeFilterValues, matchFunctions } from "./components/NodeFilter
 import { useNodeFilter } from "./components/NodeFilter/hooks/useNodeFilter";
 import { useColumns } from "./hooks/useColumns";
 
+const DEFAULT_SORT = { sortBy: "name", order: "asc" } as const;
+
 export default function K8sNodesListPage() {
   return (
     <FilterProvider matchFunctions={matchFunctions} syncWithUrl defaultValues={defaultNodeFilterValues}>
@@ -49,6 +51,7 @@ function K8sNodesListContent() {
           id={TABLE_ID_K8S_NODES}
           data={items}
           columns={columns}
+          sort={DEFAULT_SORT}
           isLoading={result.isLoading}
           blockerError={(result.error as Error) ?? null}
           filterFunction={filterFunction}

@@ -6,24 +6,12 @@ import { TablePagination } from "./components/TablePagination";
 import { TableSettings } from "./components/TableSettings";
 import { TableColgroup } from "./components/TableColgroup";
 import { ColumnResizer } from "./components/ColumnResizer";
-import {
-  PAGINATION_DEFAULTS,
-  SELECTION_DEFAULTS,
-  SORT_DEFAULTS,
-  TABLE_SETTINGS_DEFAULTS,
-  TABLE_WIDTH_DEFAULTS,
-} from "./constants";
+import { PAGINATION_DEFAULTS, SELECTION_DEFAULTS, TABLE_SETTINGS_DEFAULTS, TABLE_WIDTH_DEFAULTS } from "./constants";
 import { useFilteredData } from "./hooks/useFilteredData";
 import { useColumnSync } from "./hooks/useColumnSync";
 import { useColumnResize } from "./hooks/useColumnResize";
-import { useSyncedSortState } from "./hooks/useSyncedSortState";
-import {
-  DataTableClientProps,
-  TableProps,
-  TableSelection,
-  TableSettings as TableSettingsType,
-  TableSort,
-} from "./types";
+import { useTableSort } from "./hooks/useTableSort";
+import { DataTableClientProps, TableProps, TableSelection, TableSettings as TableSettingsType } from "./types";
 import { usePagination } from "@/core/hooks/usePagination";
 import { isKnownTotal } from "@/core/components/ui/table-pagination/utils";
 import { useIsNarrow } from "@/core/hooks/use-narrow";
@@ -67,6 +55,7 @@ const TableShell = <DataType,>(props: TableShellProps<DataType>) => {
     blockerError,
     errors,
     sort,
+    isRowPinned,
     emptyListComponent,
     handleRowClick,
     expandable,
@@ -89,14 +78,6 @@ const TableShell = <DataType,>(props: TableShellProps<DataType>) => {
   const { columns, toggleColumnVisibility } = useColumnSync(_columns, id);
 
   const showPager = (serverPagination ? serverPagination.show : clientPagination?.show) ?? PAGINATION_DEFAULTS.SHOW;
-
-  const sortSettings: TableSort = React.useMemo(
-    () => ({
-      order: sort?.order ?? SORT_DEFAULTS.ORDER,
-      sortBy: sort?.sortBy ?? SORT_DEFAULTS.SORT_BY,
-    }),
-    [sort?.order, sort?.sortBy]
-  );
 
   const selectionSettings: TableSelection<DataType> = React.useMemo(
     () => ({
@@ -127,14 +108,14 @@ const TableShell = <DataType,>(props: TableShellProps<DataType>) => {
   const clientPage = clientPager?.page ?? 0;
   const clientRowsPerPage = clientPager?.rowsPerPage ?? PAGINATION_DEFAULTS.ROWS_PER_PAGE;
 
-  const [sortState, setSortState] = useSyncedSortState<DataType>(sortSettings);
+  const sortController = useTableSort<DataType>(columns, sort, isRowPinned);
 
   const filteredData = useFilteredData<DataType>({
     data,
     isLoading,
     error: blockerError,
     filterFunction,
-    sort: sortState,
+    comparator: sortController.comparator,
   });
 
   const isFilteredDataLoading = filteredData === null;
@@ -370,8 +351,9 @@ const TableShell = <DataType,>(props: TableShellProps<DataType>) => {
 
               <TableHead
                 columns={columns}
-                sort={sortState}
-                setSort={setSortState}
+                sortBy={sortController.sortBy}
+                order={sortController.order}
+                onSort={sortController.requestSort}
                 rowCount={paginatedData?.count}
                 selectableRowCount={selectableRowCount}
                 selected={validSelected}

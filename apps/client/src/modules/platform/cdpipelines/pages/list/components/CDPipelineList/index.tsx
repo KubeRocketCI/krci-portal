@@ -9,6 +9,9 @@ import { useColumns } from "./hooks/useColumns";
 import { CDPipelineListProps } from "./types";
 import { routeCDPipelineCreate } from "../../../create/route";
 import { routeCDPipelineList } from "../../route";
+import { columnNames } from "./constants";
+
+const DEFAULT_SORT = { sortBy: columnNames.NAME, order: "asc" } as const;
 
 export const CDPipelineList = ({ blockerComponent }: CDPipelineListProps) => {
   const columns = useColumns();
@@ -62,6 +65,7 @@ export const CDPipelineList = ({ blockerComponent }: CDPipelineListProps) => {
       errors={[]}
       columns={columns}
       filterFunction={filterFunction}
+      sort={DEFAULT_SORT}
       blockerComponent={blockerComponent}
       emptyListComponent={renderEmptyList}
       slots={tableSlots}

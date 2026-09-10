@@ -1,11 +1,13 @@
 import React from "react";
-import { SortState, TableColumn } from "../../types";
+import { SortOrder, TableColumn } from "../../types";
 
 export interface TableHeadProps<DataType> {
   columns: TableColumn<DataType>[];
   rowCount: number;
-  sort: SortState<DataType>;
-  setSort: React.Dispatch<React.SetStateAction<SortState<DataType>>>;
+  /** Column id of the active sort. Undefined while unsorted. */
+  sortBy: string | undefined;
+  order: SortOrder;
+  onSort: (columnId: string) => void;
   selectableRowCount?: number;
   selected?: string[];
   handleSelectAllClick?: ((event: React.ChangeEvent<HTMLInputElement>) => void | undefined) | null;

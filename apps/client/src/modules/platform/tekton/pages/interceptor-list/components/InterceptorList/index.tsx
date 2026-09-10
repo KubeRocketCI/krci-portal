@@ -9,6 +9,8 @@ import { useColumns } from "./hooks/useColumns";
 import { InterceptorFilter } from "../InterceptorFilter";
 import { useInterceptorFilter } from "../InterceptorFilter/hooks/useFilter";
 
+const DEFAULT_SORT = { sortBy: "name", order: "asc" } as const;
+
 export const InterceptorList = () => {
   const columns = useColumns();
   // permissions.isFetched is used as a loading-state synchronizer to align
@@ -37,6 +39,7 @@ export const InterceptorList = () => {
       data={watch.data.array}
       errors={[]}
       columns={columns}
+      sort={DEFAULT_SORT}
       emptyListComponent={renderEmptyList}
       filterFunction={filterFunction}
       slots={tableSlots}

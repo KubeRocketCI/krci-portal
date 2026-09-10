@@ -45,6 +45,12 @@ export const BranchList = () => {
 
   const columns = useColumns();
 
+  const defaultBranchName = codebase?.spec.defaultBranch;
+  const isRowPinned = React.useCallback(
+    (row: EnrichedBranch) => row.codebaseBranch.spec.branchName === defaultBranchName,
+    [defaultBranchName]
+  );
+
   const enrichedBranches: EnrichedBranch[] = React.useMemo(() => {
     const branches = codebaseBranchListWatch.data.array;
     const allPipelineRuns = [...codebasePipelineRunListWatch.data.array].sort(sortKubeObjectByCreationTimestamp);
@@ -89,6 +95,7 @@ export const BranchList = () => {
           name={TABLE.BRANCH_LIST.name}
           data={enrichedBranches}
           columns={columns}
+          isRowPinned={isRowPinned}
           isLoading={isLoading}
           emptyListComponent={<EmptyList missingItemName="branches" />}
           settings={{ show: false }}

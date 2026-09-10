@@ -15,8 +15,11 @@ import { routeProjectCreate } from "../../../create/route";
 import { CodebaseFilter } from "../CodebaseFilter";
 import { useCodebaseFilter } from "../CodebaseFilter/hooks/useFilter";
 import { ComponentMultiDeletion } from "./components/ComponentMultiDeletion";
+import { columnNames } from "./constants";
 import { useColumns } from "./hooks/useColumns";
 import { useSelection } from "./hooks/useSelection";
+
+const DEFAULT_SORT = { sortBy: columnNames.NAME, order: "asc" } as const;
 
 export const ComponentList = () => {
   const columns = useColumns();
@@ -140,6 +143,7 @@ export const ComponentList = () => {
             isLoading={codebaseListWatch.isLoading}
             errors={formattedErrors}
             columns={columns}
+            sort={DEFAULT_SORT}
             containerProps={{ "data-tour": "projects-table" }}
             selection={{
               selected,

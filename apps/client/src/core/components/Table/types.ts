@@ -15,6 +15,39 @@ export type TableCellProps = React.HTMLAttributes<HTMLTableCellElement> & {
   scope?: "col" | "row" | "colgroup" | "rowgroup";
 };
 
+/** A column declares at most one sort key. Declaring none leaves the column unsortable. */
+type ColumnSortKey<DataType> =
+  | {
+      /** Lodash path to the sort key. */
+      columnSortableValuePath: string | string[];
+      columnSortableValue?: never;
+      customSortFn?: never;
+    }
+  | {
+      /**
+       * Sort key for a value that is computed rather than read from a path — a fallback
+       * between fields, a derived rank, a length. Compared exactly like a path value.
+       */
+      columnSortableValue: (row: DataType) => unknown;
+      columnSortableValuePath?: never;
+      customSortFn?: never;
+    }
+  | {
+      /**
+       * Ascending comparator. Reach for it only when rows compare pairwise, with no single sort key.
+       * Descending negates the whole result: no direction-invariant rules such as pinning or grouping.
+       * Pinning is the table's `isRowPinned`.
+       */
+      customSortFn: (a: DataType, b: DataType) => number;
+      columnSortableValuePath?: never;
+      columnSortableValue?: never;
+    }
+  | {
+      columnSortableValuePath?: never;
+      columnSortableValue?: never;
+      customSortFn?: never;
+    };
+
 export interface TableColumn<DataType> {
   id: string;
   label: string | React.ReactElement;
@@ -28,9 +61,7 @@ export interface TableColumn<DataType> {
         selectionLength: number;
       };
     }) => React.ReactElement | string | number | undefined | null;
-    columnSortableValuePath?: string | string[];
-    customSortFn?: (a: DataType, b: DataType) => number;
-  };
+  } & ColumnSortKey<DataType>;
   cell: {
     /**
      * Relative weight, normalised against the visible columns' sum. Not a percent —
@@ -60,14 +91,11 @@ export interface ColumnResizeReset {
   isAvailable: boolean;
 }
 
-export interface SortState<DataType> {
-  order: ValueOf<typeof SORT_ORDERS>;
-  sortFn: (a: DataType, b: DataType) => number;
-  sortBy: string;
-}
+export type SortOrder = ValueOf<typeof SORT_ORDERS>;
 
 export interface TableSort {
-  order: ValueOf<typeof SORT_ORDERS>;
+  order: SortOrder;
+  /** A `columns[].id`, not a data path. Unmatched ids render the table unsorted. */
   sortBy: string;
 }
 
@@ -120,7 +148,13 @@ export interface TableBaseProps<DataType> {
   columns: TableColumn<DataType>[];
   isLoading?: boolean;
   name?: string;
+  /** Omit for source order. Set it only when the named column is known to exist. */
   sort?: TableSort;
+  /**
+   * Rows that rank first under every column, both directions and an unset sort.
+   * Memoize it: a new identity re-sorts.
+   */
+  isRowPinned?: (row: DataType) => boolean;
   settings?: TableSettings;
   blockerComponent?: React.ReactNode;
   emptyListComponent?: React.ReactNode;

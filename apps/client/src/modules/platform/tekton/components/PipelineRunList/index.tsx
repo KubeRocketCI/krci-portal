@@ -14,6 +14,10 @@ import { useColumns } from "./hooks/useColumns";
 import { useSelection } from "./hooks/useSelection";
 import { PipelineRunListProps } from "./types";
 import { pipelineRunFilterControlNames } from "./components/Filter/constants";
+import { columnNames } from "./constants";
+
+/** Newest first: a run the user just triggered lands at the top, queued or already started. */
+const DEFAULT_SORT = { sortBy: columnNames.STARTED_AT, order: "desc" } as const;
 
 export const PipelineRunList = ({
   tableId,
@@ -86,6 +90,7 @@ export const PipelineRunList = ({
         isLoading={isLoading}
         emptyListComponent={<EmptyList missingItemName={"pipeline runs"} />}
         filterFunction={filterFunction}
+        sort={DEFAULT_SORT}
         pagination={pagination}
         selection={{
           selected,
