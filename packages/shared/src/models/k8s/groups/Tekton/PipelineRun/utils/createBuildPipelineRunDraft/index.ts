@@ -8,6 +8,49 @@ import { TriggerTemplate } from "../../../TriggerTemplate/types.js";
 import { RESULT_ANNOTATIONS_KEY, createResultAnnotations } from "../resultAnnotations/index.js";
 import { applyTaskRunServiceAccount } from "../resolveTaskRunServiceAccount/index.js";
 
+/** Inputs the seeded params are computed from. */
+interface BuildParamSources {
+  gitSourceUrl: string;
+  codebaseName: string;
+  codebaseBranchName: string;
+  codebaseBranchMetadataName: string;
+  gitFullRepositoryName: string;
+  commitMessagePattern: string;
+}
+
+interface BuildParamSeed {
+  /** `true`: derived from project identity or source; callers of the build API may not override it. */
+  managed: boolean;
+  value: (sources: BuildParamSources) => string;
+}
+
+/**
+ * Params the builder overwrites when the TriggerTemplate declares them.
+ * Every entry declares `managed`; `BUILD_MANAGED_PARAM_NAMES` and the published
+ * `x-krci-managed-params` extension derive from it. Key order is the published order.
+ */
+const BUILD_PARAM_SEEDS = {
+  "git-source-url": { managed: true, value: (s) => s.gitSourceUrl },
+  "git-source-revision": { managed: true, value: (s) => s.codebaseBranchName },
+  targetBranch: { managed: true, value: (s) => s.codebaseBranchName },
+  CODEBASE_NAME: { managed: true, value: (s) => s.codebaseName },
+  CODEBASEBRANCH_NAME: { managed: true, value: (s) => s.codebaseBranchMetadataName },
+  gitfullrepositoryname: { managed: true, value: (s) => s.gitFullRepositoryName },
+  changeNumber: { managed: true, value: () => "1" },
+  patchsetNumber: { managed: true, value: () => "1" },
+  COMMIT_MESSAGE_PATTERN: { managed: false, value: (s) => s.commitMessagePattern },
+  COMMIT_MESSAGE: { managed: false, value: () => "" },
+} satisfies Record<string, BuildParamSeed>;
+
+type SeededParamName = keyof typeof BUILD_PARAM_SEEDS;
+
+const isSeededParam = (name: string): name is SeededParamName => Object.hasOwn(BUILD_PARAM_SEEDS, name);
+
+/** Params callers of the build API may not override. Derived from `BUILD_PARAM_SEEDS`. */
+export const BUILD_MANAGED_PARAM_NAMES: readonly SeededParamName[] = (
+  Object.keys(BUILD_PARAM_SEEDS) as SeededParamName[]
+).filter((name) => BUILD_PARAM_SEEDS[name].managed);
+
 export const createBuildPipelineRunDraft = ({
   codebase,
   codebaseBranch,
@@ -79,43 +122,21 @@ export const createBuildPipelineRunDraft = ({
     createResultAnnotations(codebaseBranchName, gitUrlPathWithoutSlashAtStart)
   );
 
+  const sources: BuildParamSources = {
+    gitSourceUrl:
+      codebaseGitServer === gitProvider.gerrit
+        ? `ssh://${gitUser}@${gitHost}:${sshPort}/${gitUrlPathWithoutSlashAtStart}`
+        : `${gitUser}@${gitHost}:${gitUrlPathWithoutSlashAtStart}`,
+    codebaseName,
+    codebaseBranchName,
+    codebaseBranchMetadataName,
+    gitFullRepositoryName: gitUrlPathWithoutSlashAtStart,
+    commitMessagePattern: codebase.spec.commitMessagePattern ?? "",
+  };
+
   for (const param of base.spec.params || []) {
-    switch (param.name) {
-      case "git-source-url":
-        param.value =
-          codebaseGitServer === gitProvider.gerrit
-            ? `ssh://${gitUser}@${gitHost}:${sshPort}/${gitUrlPathWithoutSlashAtStart}`
-            : `${gitUser}@${gitHost}:${gitUrlPathWithoutSlashAtStart}`;
-        break;
-      case "git-source-revision":
-        param.value = codebaseBranchName;
-        break;
-      case "targetBranch":
-        param.value = codebaseBranchName;
-        break;
-      case "CODEBASE_NAME":
-        param.value = codebaseName;
-        break;
-      case "CODEBASEBRANCH_NAME":
-        param.value = codebaseBranchMetadataName;
-        break;
-      case "changeNumber":
-        param.value = "1";
-        break;
-      case "patchsetNumber":
-        param.value = "1";
-        break;
-      case "COMMIT_MESSAGE_PATTERN":
-        param.value = codebase.spec.commitMessagePattern ?? "";
-        break;
-      case "COMMIT_MESSAGE":
-        param.value = "";
-        break;
-      case "gitfullrepositoryname":
-        param.value = gitUrlPathWithoutSlashAtStart;
-        break;
-      default:
-        break;
+    if (isSeededParam(param.name)) {
+      param.value = BUILD_PARAM_SEEDS[param.name].value(sources);
     }
   }
 
