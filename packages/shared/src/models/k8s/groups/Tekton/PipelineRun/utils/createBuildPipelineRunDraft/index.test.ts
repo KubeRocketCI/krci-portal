@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { createBuildPipelineRunDraft } from "./index.js";
+import { BUILD_MANAGED_PARAM_NAMES, createBuildPipelineRunDraft } from "./index.js";
 import { Codebase, CodebaseBranch, GitServer } from "../../../../KRCI/index.js";
 import { vi, Mock, describe, it, expect } from "vitest";
 import { PipelineRun } from "../../types.js";
@@ -512,5 +512,75 @@ describe("createBuildPipelineRunDraft ServiceAccount resolution", () => {
     });
 
     expect(object.spec.taskRunTemplate?.serviceAccountName).toBeUndefined();
+  });
+});
+
+describe("BUILD_MANAGED_PARAM_NAMES", () => {
+  const SENTINEL = "unchanged-template-value";
+
+  // Every param name BUILD_PARAM_SEEDS seeds, managed and unmanaged.
+  const BUILDER_HANDLED_PARAM_NAMES = [
+    "git-source-url",
+    "git-source-revision",
+    "targetBranch",
+    "CODEBASE_NAME",
+    "CODEBASEBRANCH_NAME",
+    "gitfullrepositoryname",
+    "changeNumber",
+    "patchsetNumber",
+    "COMMIT_MESSAGE",
+    "COMMIT_MESSAGE_PATTERN",
+  ] as const;
+
+  const buildDraftFromSentinelTemplate = () =>
+    createBuildPipelineRunDraft({
+      codebase: mockCodebase,
+      codebaseBranch: mockCodebaseBranch as unknown as CodebaseBranch,
+      pipelineRunTemplate: {
+        ...structuredClone(mockPipelineRunTemplate),
+        spec: {
+          ...structuredClone(mockPipelineRunTemplate.spec),
+          params: BUILDER_HANDLED_PARAM_NAMES.map((name) => ({ name, value: SENTINEL })),
+        },
+      } as unknown as PipelineRun,
+      gitServer: {
+        spec: { gitHost: "github.com", gitUser: "git", sshPort: 22 },
+      } as GitServer,
+    });
+
+  const paramValue = (draft: PipelineRun, name: string) => draft.spec.params?.find((p) => p.name === name)?.value;
+
+  it("is exactly the eight identity and source param names", () => {
+    expect([...BUILD_MANAGED_PARAM_NAMES].sort()).toEqual(
+      [
+        "CODEBASEBRANCH_NAME",
+        "CODEBASE_NAME",
+        "changeNumber",
+        "git-source-revision",
+        "git-source-url",
+        "gitfullrepositoryname",
+        "patchsetNumber",
+        "targetBranch",
+      ].sort()
+    );
+  });
+
+  it("every managed name is overwritten by the builder", () => {
+    const draft = buildDraftFromSentinelTemplate();
+
+    for (const name of BUILD_MANAGED_PARAM_NAMES) {
+      expect(paramValue(draft, name), name).toBeDefined();
+      expect(paramValue(draft, name), name).not.toBe(SENTINEL);
+    }
+  });
+
+  it("excludes the commit-message params even though the builder overwrites them", () => {
+    const draft = buildDraftFromSentinelTemplate();
+    const managed: readonly string[] = BUILD_MANAGED_PARAM_NAMES;
+
+    expect(managed).not.toContain("COMMIT_MESSAGE");
+    expect(managed).not.toContain("COMMIT_MESSAGE_PATTERN");
+    expect(paramValue(draft, "COMMIT_MESSAGE")).not.toBe(SENTINEL);
+    expect(paramValue(draft, "COMMIT_MESSAGE_PATTERN")).not.toBe(SENTINEL);
   });
 });
