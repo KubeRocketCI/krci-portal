@@ -1,5 +1,6 @@
-import { K8sApiError } from "@my-project/shared";
+import { K8sApiError, type K8sResourceConfig } from "@my-project/shared";
 import { TRPCError } from "@trpc/server";
+import { K8sClient } from "../../clients/k8s/index.js";
 import { handleK8sError } from "../k8s/utils/handleK8sError/index.js";
 
 /**
@@ -41,4 +42,51 @@ export async function getResourceOrThrowNotFound<T>(
 
     throw handleK8sError(error);
   }
+}
+
+/** `getResource` wrapper: 404 yields `undefined`; any other error goes through `handleK8sError`. */
+export async function getResourceOrUndefined<T>(fetch: () => Promise<T>): Promise<T | undefined> {
+  try {
+    return await fetch();
+  } catch (error) {
+    if (error instanceof K8sApiError && error.statusCode === 404) {
+      return undefined;
+    }
+
+    throw handleK8sError(error);
+  }
+}
+
+/**
+ * Complete list of the resources matching `labelSelector`.
+ *
+ * No `limit` is sent: the apiserver returns the full set. A non-empty
+ * `metadata.continue` marks a partial list; throws `list_truncated` in that
+ * case. Never returns a partial list.
+ */
+export async function listCompleteOrThrow<T>(
+  k8sClient: K8sClient,
+  resourceConfig: K8sResourceConfig,
+  namespace: string,
+  labelSelector: string
+): Promise<T[]> {
+  let list;
+
+  try {
+    list = await k8sClient.listResource(resourceConfig, namespace, labelSelector);
+  } catch (error) {
+    throw handleK8sError(error);
+  }
+
+  const continueToken = (list.metadata as { continue?: string } | undefined)?.continue;
+
+  if (continueToken) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: `${resourceConfig.kind} list in namespace '${namespace}' was truncated`,
+      cause: { source: "validation" as const, reason: "list_truncated" },
+    });
+  }
+
+  return (list.items ?? []) as unknown as T[];
 }
