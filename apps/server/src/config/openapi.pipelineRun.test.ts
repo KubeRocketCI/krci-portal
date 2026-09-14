@@ -339,125 +339,108 @@ describe("POST /rest/v1/pipelineruns/build", () => {
     });
   });
 
-  it("managed param override — BAD_REQUEST carries the reason and the static phrase", async () => {
-    stubCaller.pipelineRun.build.mockRejectedValue(
-      new TRPCError({
+  const REJECTIONS: Array<{
+    name: string;
+    error: { code: TRPCError["code"]; message: string; reason?: string };
+    payload: Record<string, unknown>;
+    status: number;
+    phrase: string;
+    mustNotLeak: string[];
+  }> = [
+    {
+      name: "managed param override",
+      error: {
         code: "BAD_REQUEST",
         message:
           "param 'git-source-url' is derived from the codebase and branch and cannot be overridden",
-        cause: { source: "validation", reason: "managed_param_override" },
-      })
-    );
-
-    const res = await app.inject({
-      method: "POST",
-      url: "/rest/v1/pipelineruns/build",
+        reason: "managed_param_override",
+      },
       payload: {
         ...BUILD_PAYLOAD,
         params: { "git-source-url": "ssh://evil/repo" },
       },
-    });
-
-    expect(res.statusCode).toBe(400);
-    const body = res.json<{
-      error: { code: string; reason?: string; message: string };
-    }>();
-    expect(body.error.reason).toBe("managed_param_override");
-    expect(body.error.message).toBe("Bad Request");
-    expect(res.body).not.toContain("evil");
-  });
-
-  it("branch not found — NOT_FOUND surfaces the reason but never the branch name", async () => {
-    stubCaller.pipelineRun.build.mockRejectedValue(
-      new TRPCError({
+      status: 400,
+      phrase: "Bad Request",
+      mustNotLeak: ["evil"],
+    },
+    {
+      name: "branch not found",
+      error: {
         code: "NOT_FOUND",
         message: "branch 'ghost' of codebase 'my-app' not found",
-        cause: { source: "validation", reason: "codebase_branch_not_found" },
-      })
-    );
-
-    const res = await app.inject({
-      method: "POST",
-      url: "/rest/v1/pipelineruns/build",
+        reason: "codebase_branch_not_found",
+      },
       payload: { ...BUILD_PAYLOAD, branch: "ghost" },
-    });
-
-    expect(res.statusCode).toBe(404);
-    const body = res.json<{
-      error: { code: string; reason?: string; message: string };
-    }>();
-    expect(body.error.code).toBe("NOT_FOUND");
-    expect(body.error.reason).toBe("codebase_branch_not_found");
-    expect(body.error.message).toBe("Not Found");
-    expect(res.body).not.toContain("codebase 'my-app' not found");
-  });
-
-  it("build already running — CONFLICT surfaces build_in_progress", async () => {
-    stubCaller.pipelineRun.build.mockRejectedValue(
-      new TRPCError({
+      status: 404,
+      phrase: "Not Found",
+      mustNotLeak: ["codebase 'my-app' not found"],
+    },
+    {
+      name: "build already running",
+      error: {
         code: "CONFLICT",
         message:
           "a build is already running for branch 'main' of codebase 'my-app'",
-        cause: { source: "validation", reason: "build_in_progress" },
-      })
-    );
-
-    const res = await app.inject({
-      method: "POST",
-      url: "/rest/v1/pipelineruns/build",
+        reason: "build_in_progress",
+      },
       payload: BUILD_PAYLOAD,
-    });
-
-    expect(res.statusCode).toBe(409);
-    const body = res.json<{
-      error: { code: string; reason?: string; message: string };
-    }>();
-    expect(body.error.reason).toBe("build_in_progress");
-    expect(body.error.message).toBe("Conflict");
-  });
-
-  it("truncated list — INTERNAL_SERVER_ERROR surfaces list_truncated", async () => {
-    stubCaller.pipelineRun.build.mockRejectedValue(
-      new TRPCError({
+      status: 409,
+      phrase: "Conflict",
+      mustNotLeak: [],
+    },
+    {
+      name: "truncated list",
+      error: {
         code: "INTERNAL_SERVER_ERROR",
         message: "CodebaseBranch list in namespace 'edp' was truncated",
-        cause: { source: "validation", reason: "list_truncated" },
-      })
-    );
-
-    const res = await app.inject({
-      method: "POST",
-      url: "/rest/v1/pipelineruns/build",
+        reason: "list_truncated",
+      },
       payload: BUILD_PAYLOAD,
-    });
-
-    expect(res.statusCode).toBe(500);
-    const body = res.json<{
-      error: { code: string; reason?: string; message: string };
-    }>();
-    expect(body.error.reason).toBe("list_truncated");
-    expect(body.error.message).toBe("Internal Server Error");
-  });
-
-  it("error response omits reason when cause does not provide one", async () => {
-    stubCaller.pipelineRun.build.mockRejectedValue(
-      new TRPCError({ code: "FORBIDDEN", message: "internal detail" })
-    );
-
-    const res = await app.inject({
-      method: "POST",
-      url: "/rest/v1/pipelineruns/build",
+      status: 500,
+      phrase: "Internal Server Error",
+      mustNotLeak: [],
+    },
+    {
+      name: "cause without a reason",
+      error: { code: "FORBIDDEN", message: "internal detail" },
       payload: BUILD_PAYLOAD,
-    });
+      status: 403,
+      phrase: "Forbidden",
+      mustNotLeak: ["internal detail"],
+    },
+  ];
 
-    expect(res.statusCode).toBe(403);
-    const body = res.json<{
-      error: { code: string; reason?: string; message: string };
-    }>();
-    expect(body.error.reason).toBeUndefined();
-    expect(body.error.message).toBe("Forbidden");
-    expect(res.body).not.toContain("internal detail");
-  });
+  it.each(REJECTIONS)(
+    "$name — HTTP $status carries the reason and the static phrase only",
+    async ({ error, payload, status, phrase, mustNotLeak }) => {
+      stubCaller.pipelineRun.build.mockRejectedValue(
+        new TRPCError({
+          code: error.code,
+          message: error.message,
+          cause: error.reason
+            ? { source: "validation", reason: error.reason }
+            : undefined,
+        })
+      );
+
+      const res = await app.inject({
+        method: "POST",
+        url: "/rest/v1/pipelineruns/build",
+        payload,
+      });
+
+      expect(res.statusCode).toBe(status);
+      const body = res.json<{
+        error: { code: string; reason?: string; message: string };
+      }>();
+      expect(body.error.code).toBe(error.code);
+      expect(body.error.reason).toBe(error.reason);
+      expect(body.error.message).toBe(phrase);
+      for (const secret of mustNotLeak) {
+        expect(res.body).not.toContain(secret);
+      }
+    }
+  );
 });
 
 describe("GET /rest/v1/openapi.json", () => {
