@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { BUILD_MANAGED_PARAM_NAMES } from "@my-project/shared";
 import Fastify, { type FastifyInstance } from "fastify";
 import { TRPCError } from "@trpc/server";
 import type { DBSessionStore } from "@/clients/db-session-store/index.js";
@@ -456,5 +457,32 @@ describe("POST /rest/v1/pipelineruns/build", () => {
     expect(body.error.reason).toBeUndefined();
     expect(body.error.message).toBe("Forbidden");
     expect(res.body).not.toContain("internal detail");
+  });
+});
+
+describe("GET /rest/v1/openapi.json", () => {
+  it("publishes the build managed params on the live document", async () => {
+    const app = buildFastify();
+    await app.ready();
+
+    try {
+      const res = await app.inject({
+        method: "GET",
+        url: "/rest/v1/openapi.json",
+      });
+      expect(res.statusCode).toBe(200);
+
+      const doc = res.json();
+      const paramsSchema =
+        doc.paths?.["/v1/pipelineruns/build"]?.post?.requestBody?.content?.[
+          "application/json"
+        ]?.schema?.properties?.params;
+
+      expect(paramsSchema?.["x-krci-managed-params"]).toEqual([
+        ...BUILD_MANAGED_PARAM_NAMES,
+      ]);
+    } finally {
+      await app.close();
+    }
   });
 });

@@ -1,7 +1,22 @@
 import { STATUS_CODES } from "node:http";
 import { TRPCError } from "@trpc/server";
 import { getHTTPStatusCodeFromError } from "@trpc/server/http";
-import type { OpenAPIObject } from "trpc-to-openapi";
+import type { generateOpenApiDocument, OpenAPIObject } from "trpc-to-openapi";
+
+/** Options for `generateOpenApiDocument`. Shared by the generator script, the dev server's live document, and tests. */
+export const OPENAPI_DOCUMENT_OPTIONS = {
+  title: "KubeRocketCI Portal API",
+  version: "1.0.0",
+  baseUrl: "/rest",
+  securitySchemes: {
+    bearerAuth: {
+      type: "http",
+      scheme: "bearer",
+      bearerFormat: "JWT",
+      description: "OIDC idToken",
+    },
+  },
+} satisfies Parameters<typeof generateOpenApiDocument>[1];
 
 const ERROR_SCHEMA_PREFIX = "error.";
 

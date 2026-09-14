@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
-import type { OpenAPIObject } from "trpc-to-openapi";
-import { rewriteErrorEnvelopeSchemas } from "./index.js";
+import { generateOpenApiDocument, type OpenAPIObject } from "trpc-to-openapi";
+import { BUILD_MANAGED_PARAM_NAMES } from "@my-project/shared";
+import { appRouter } from "../../routers/index.js";
+import { OPENAPI_DOCUMENT_OPTIONS, rewriteErrorEnvelopeSchemas } from "./index.js";
 
 interface RewrittenSchema {
   type: string;
@@ -123,5 +125,37 @@ describe("rewriteErrorEnvelopeSchemas", () => {
     const schema = doc.components.schemas["error.UNKNOWN_CUSTOM_CODE"] as unknown as RewrittenSchema;
     expect(schema.example.error.code).toBe("UNKNOWN_CUSTOM_CODE");
     expect(schema.example.error.message).toBe("Internal Server Error");
+  });
+});
+
+describe("generated document", () => {
+  const generate = () => generateOpenApiDocument(appRouter, OPENAPI_DOCUMENT_OPTIONS);
+
+  interface BuildOperation {
+    security: Array<Record<string, string[]>>;
+    requestBody: {
+      content: Record<string, { schema: { properties: Record<string, Record<string, unknown>> } }>;
+    };
+  }
+
+  const buildOperation = (doc: ReturnType<typeof generate>) =>
+    doc.paths?.["/v1/pipelineruns/build"]?.post as unknown as BuildOperation;
+
+  it("exposes the build operation behind bearerAuth", () => {
+    expect(buildOperation(generate()).security).toEqual([{ bearerAuth: [] }]);
+  });
+
+  it("declares the statuses each PipelineRun procedure raises itself", () => {
+    const doc = generate();
+    const statuses = (path: string) => Object.keys(doc.paths?.[path]?.post?.responses ?? {});
+
+    expect(statuses("/v1/pipelineruns/build")).toEqual(["200", "400", "401", "403", "404", "409", "500"]);
+    expect(statuses("/v1/pipelineruns/start")).toEqual(["200", "400", "401", "403", "404", "500"]);
+  });
+
+  it("carries the managed param names on the build input's params schema", () => {
+    const paramsSchema = buildOperation(generate()).requestBody.content["application/json"].schema.properties.params;
+
+    expect(paramsSchema["x-krci-managed-params"]).toEqual([...BUILD_MANAGED_PARAM_NAMES]);
   });
 });
