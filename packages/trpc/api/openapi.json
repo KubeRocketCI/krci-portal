@@ -689,6 +689,232 @@
               }
             }
           },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pipelineruns/build": {
+      "post": {
+        "operationId": "pipelineRun-build",
+        "tags": [
+          "pipelinerun"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "namespace": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+                    "minLength": 1,
+                    "maxLength": 253
+                  },
+                  "codebase": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+                    "minLength": 1,
+                    "maxLength": 253
+                  },
+                  "branch": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 253
+                  },
+                  "params": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "x-krci-managed-params": [
+                      "git-source-url",
+                      "git-source-revision",
+                      "targetBranch",
+                      "CODEBASE_NAME",
+                      "CODEBASEBRANCH_NAME",
+                      "gitfullrepositoryname",
+                      "changeNumber",
+                      "patchsetNumber"
+                    ]
+                  },
+                  "dryRun": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                },
+                "required": [
+                  "namespace",
+                  "codebase"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "created"
+                          ]
+                        },
+                        "row": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "type": "string"
+                            },
+                            "project": {
+                              "type": "string"
+                            },
+                            "pr": {
+                              "type": "string"
+                            },
+                            "author": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string"
+                            },
+                            "started": {
+                              "type": "string"
+                            },
+                            "duration": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "name",
+                            "status",
+                            "project",
+                            "pr",
+                            "author",
+                            "type",
+                            "started",
+                            "duration"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "row"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "dryRun"
+                          ]
+                        },
+                        "manifest": {
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "manifest"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authorization not provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.CONFLICT"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error",
             "content": {
@@ -2487,6 +2713,45 @@
         "required": [
           "customRuns"
         ]
+      },
+      "error.CONFLICT": {
+        "type": "object",
+        "title": "CONFLICT error envelope (409)",
+        "description": "REST error envelope emitted by handleTRPCError. `message` is the static HTTP status phrase; `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "tRPC error code (string literal)",
+                "example": "CONFLICT"
+              },
+              "reason": {
+                "type": "string",
+                "description": "Stable machine-readable disambiguator (omitted when none applies)"
+              },
+              "message": {
+                "type": "string",
+                "description": "Static HTTP status phrase",
+                "example": "Conflict"
+              }
+            }
+          }
+        },
+        "example": {
+          "error": {
+            "code": "CONFLICT",
+            "message": "Conflict"
+          }
+        }
       }
     }
   }
