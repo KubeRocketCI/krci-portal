@@ -89,6 +89,54 @@ export function mergeLabels(
   return out;
 }
 
+/** Kubernetes object names are capped at 63 chars; the apiserver appends 5 to `generateName`. */
+const MAX_GENERATE_NAME_LENGTH = 63 - 5;
+
+/** Cut `prefix` to the name budget, keeping its trailing dash when it has one. */
+function fitGenerateName(prefix: string): string {
+  if (prefix.length <= MAX_GENERATE_NAME_LENGTH) {
+    return prefix;
+  }
+
+  return prefix.endsWith("-")
+    ? `${prefix.slice(0, MAX_GENERATE_NAME_LENGTH - 1)}-`
+    : prefix.slice(0, MAX_GENERATE_NAME_LENGTH);
+}
+
+/**
+ * Clone of `draft` with `metadata.name` removed, `metadata.generateName` set
+ * to `prefix` cut to the 58-char budget, and `metadata.namespace` pinned to
+ * `namespace`. The input draft is not mutated.
+ */
+export function withGenerateName<T extends object>(draft: T, prefix: string, namespace: string): T {
+  const cloned = structuredClone(draft) as Record<string, unknown>;
+
+  const metadata = (cloned.metadata ?? {}) as Record<string, unknown>;
+  delete metadata.name;
+  metadata.generateName = fitGenerateName(prefix);
+  metadata.namespace = namespace;
+  cloned.metadata = metadata;
+
+  return cloned as T;
+}
+
+/**
+ * Replace `spec.params` with `userParams` merged over the draft's own
+ * (user wins, sorted). Mutates and returns `draft`.
+ */
+export function mergeDraftParams<T extends object>(
+  draft: T,
+  userParams: Readonly<Record<string, string>> | undefined
+): T {
+  const target = draft as Record<string, unknown>;
+  const spec = (target.spec ?? {}) as Record<string, unknown>;
+  const defaults = Array.isArray(spec.params) ? (spec.params as PipelineParam[]) : undefined;
+  spec.params = mergeParams(defaults, userParams);
+  target.spec = spec;
+
+  return draft;
+}
+
 /**
  * Clone the helper-built draft and apply the start procedure's pre-create
  * mutations:
@@ -107,21 +155,12 @@ export function prepareStartDraft(
   userParams: Readonly<Record<string, string>> | undefined,
   userLabels: Readonly<Record<string, string>> | undefined
 ): PipelineRunDraft {
-  const cloned = structuredClone(baseDraft) as unknown as Record<string, unknown>;
+  const cloned = withGenerateName(baseDraft, `${pipelineName}-run-`, namespace) as unknown as Record<string, unknown>;
 
-  const metadata = (cloned.metadata ?? {}) as Record<string, unknown>;
-  delete metadata.name;
-  metadata.generateName = `${pipelineName}-run-`;
-  metadata.namespace = namespace;
+  const metadata = cloned.metadata as Record<string, unknown>;
   metadata.labels = mergeLabels(metadata.labels as Record<string, string | undefined> | undefined, userLabels);
-  cloned.metadata = metadata;
 
-  const spec = (cloned.spec ?? {}) as Record<string, unknown>;
-  const defaults = Array.isArray(spec.params) ? (spec.params as PipelineParam[]) : undefined;
-  spec.params = mergeParams(defaults, userParams);
-  cloned.spec = spec;
-
-  return cloned as unknown as PipelineRunDraft;
+  return mergeDraftParams(cloned, userParams) as unknown as PipelineRunDraft;
 }
 
 /** Project a created PipelineRun into the start-procedure row shape. */

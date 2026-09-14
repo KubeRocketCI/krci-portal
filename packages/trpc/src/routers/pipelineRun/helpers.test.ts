@@ -4,10 +4,12 @@ import {
   EMPTY_START_ROW,
   deriveDuration,
   getTriggerTemplateLabel,
+  mergeDraftParams,
   mergeLabels,
   mergeParams,
   prepareStartDraft,
   projectPipelineRunRow,
+  withGenerateName,
 } from "./helpers.js";
 
 /** Build a minimal PipelineRun with a single `Succeeded` condition. */
@@ -78,6 +80,55 @@ describe("mergeLabels", () => {
 
   it("returns {} when both inputs are empty", () => {
     expect(mergeLabels(undefined, undefined)).toEqual({});
+  });
+});
+
+describe("withGenerateName", () => {
+  const draft: { metadata: Record<string, string> } = { metadata: { name: "old", namespace: "other" } };
+
+  it("swaps name for generateName, pins the namespace and leaves the input untouched", () => {
+    const got = withGenerateName(draft, "foo-run-", "edp");
+
+    expect(got.metadata).toEqual({ generateName: "foo-run-", namespace: "edp" });
+    expect(draft.metadata).toEqual({ name: "old", namespace: "other" });
+  });
+
+  it("cuts a long prefix to 58 chars so the apiserver suffix keeps the name within 63", () => {
+    const prefix = `build-${"x".repeat(70)}-`;
+    const got = withGenerateName(draft, prefix, "edp");
+
+    expect(got.metadata.generateName).toBe(`build-${"x".repeat(51)}-`);
+    expect(got.metadata.generateName).toHaveLength(58);
+  });
+
+  it("cuts a long prefix without a trailing dash at 58 chars", () => {
+    expect(withGenerateName(draft, "y".repeat(70), "edp").metadata.generateName).toBe("y".repeat(58));
+  });
+});
+
+describe("mergeDraftParams", () => {
+  it("merges user params over the draft params in place and returns the draft", () => {
+    const draft = {
+      spec: {
+        params: [
+          { name: "b", value: "1" },
+          { name: "a", value: "0" },
+        ],
+      },
+    };
+
+    const got = mergeDraftParams(draft, { b: "2", c: "3" });
+
+    expect(got).toBe(draft);
+    expect(draft.spec.params).toEqual([
+      { name: "a", value: "0" },
+      { name: "b", value: "2" },
+      { name: "c", value: "3" },
+    ]);
+  });
+
+  it("creates spec.params when the draft has none", () => {
+    expect(mergeDraftParams({}, { a: "1" })).toEqual({ spec: { params: [{ name: "a", value: "1" }] } });
   });
 });
 

@@ -7,7 +7,7 @@ import {
   type PipelineRun,
   type TriggerTemplate,
 } from "@my-project/shared";
-import { pipelineRunStartRowSchema } from "../../../../schemas/pipelineRunStartRow.js";
+import { startOutputSchema } from "../../../../schemas/pipelineRunStartOutput.js";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { K8sClient } from "../../../../clients/k8s/index.js";
@@ -27,21 +27,6 @@ const startInputSchema = z
     dryRun: z.boolean().optional().default(false),
   })
   .strict();
-
-/**
- * Discriminated by `kind`:
- *   - `created` — apiserver assigned a name; `row` carries the projected list
- *     entry.
- *   - `dryRun` — no resource was created; `manifest` is the rendered PipelineRun
- *     resource as a JSON object (not a serialised string — consumers parse
- *     once at the transport layer).
- */
-const manifestSchema = z.record(z.string(), z.unknown());
-
-const startOutputSchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("created"), row: pipelineRunStartRowSchema }).strict(),
-  z.object({ kind: z.literal("dryRun"), manifest: manifestSchema }).strict(),
-]);
 
 export const pipelineRunStartProcedure = protectedProcedure
   .meta({ openapi: { method: "POST", path: "/v1/pipelineruns/start", protect: true, tags: ["pipelinerun"] } })
