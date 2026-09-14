@@ -1,22 +1,10 @@
 import { appRouter } from "../src/routers/index.js";
-import { rewriteErrorEnvelopeSchemas } from "../src/utils/openapi/index.js";
+import { OPENAPI_DOCUMENT_OPTIONS, rewriteErrorEnvelopeSchemas } from "../src/utils/openapi/index.js";
 import { generateOpenApiDocument } from "trpc-to-openapi";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve, dirname, relative, isAbsolute } from "node:path";
 
-const doc = generateOpenApiDocument(appRouter, {
-  title: "KubeRocketCI Portal API",
-  version: "1.0.0",
-  baseUrl: "/rest",
-  securitySchemes: {
-    bearerAuth: {
-      type: "http",
-      scheme: "bearer",
-      bearerFormat: "JWT",
-      description: "OIDC idToken",
-    },
-  },
-});
+const doc = generateOpenApiDocument(appRouter, OPENAPI_DOCUMENT_OPTIONS);
 
 rewriteErrorEnvelopeSchemas(doc);
 

@@ -27,13 +27,28 @@ const buildInputSchema = z
     codebase: tektonInputSchemas.k8sName,
     // Git branch name, not a Kubernetes name: `/` is legal and common.
     branch: z.string().min(1).max(253).optional(),
-    params: z.record(tektonInputSchemas.paramName, z.string()).optional(),
+    // Read by CLI pre-validation to reject a managed --param locally.
+    params: z
+      .record(tektonInputSchemas.paramName, z.string())
+      .openapi({ "x-krci-managed-params": [...BUILD_MANAGED_PARAM_NAMES] })
+      .optional(),
     dryRun: z.boolean().optional().default(false),
   })
   .strict();
 
 export const pipelineRunBuildProcedure = protectedProcedure
-  .meta({ openapi: { method: "POST", path: "/v1/pipelineruns/build", protect: true, tags: ["pipelinerun"] } })
+  .meta({
+    openapi: {
+      method: "POST",
+      path: "/v1/pipelineruns/build",
+      protect: true,
+      tags: ["pipelinerun"],
+      // Statuses this procedure raises itself; K8s API failures pass through
+      // handleK8sError with their own status and are not listed.
+      // trpc-to-openapi's POST default omits 404 and 409.
+      errorResponses: [400, 401, 403, 404, 409, 500],
+    },
+  })
   .input(buildInputSchema)
   .output(startOutputSchema)
   .mutation(async ({ input, ctx }): Promise<z.infer<typeof startOutputSchema>> => {

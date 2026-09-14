@@ -1,9 +1,10 @@
 import {
   appRouter,
   createCaller,
-  type CustomSession,
   createContext,
+  OPENAPI_DOCUMENT_OPTIONS,
   rewriteErrorEnvelopeSchemas,
+  type CustomSession,
   type RouterInput,
   UNKNOWN_ERROR_PHRASE,
 } from "@my-project/trpc";
@@ -849,19 +850,10 @@ export function registerOpenApi(
   // ---------------------------------------------------------------------------
 
   if (process.env.NODE_ENV !== "production") {
-    const openApiDocument = generateOpenApiDocument(appRouter, {
-      title: "KubeRocketCI Portal API",
-      version: "1.0.0",
-      baseUrl: "/rest",
-      securitySchemes: {
-        bearerAuth: {
-          type: "http",
-          scheme: "bearer",
-          bearerFormat: "JWT",
-          description: "OIDC idToken",
-        },
-      },
-    });
+    const openApiDocument = generateOpenApiDocument(
+      appRouter,
+      OPENAPI_DOCUMENT_OPTIONS
+    );
 
     rewriteErrorEnvelopeSchemas(openApiDocument);
 

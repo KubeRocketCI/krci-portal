@@ -29,7 +29,18 @@ const startInputSchema = z
   .strict();
 
 export const pipelineRunStartProcedure = protectedProcedure
-  .meta({ openapi: { method: "POST", path: "/v1/pipelineruns/start", protect: true, tags: ["pipelinerun"] } })
+  .meta({
+    openapi: {
+      method: "POST",
+      path: "/v1/pipelineruns/start",
+      protect: true,
+      tags: ["pipelinerun"],
+      // Statuses this procedure raises itself; K8s API failures pass through
+      // handleK8sError with their own status and are not listed.
+      // trpc-to-openapi's POST default omits 404.
+      errorResponses: [400, 401, 403, 404, 500],
+    },
+  })
   .input(startInputSchema)
   .output(startOutputSchema)
   .mutation(async ({ input, ctx }): Promise<z.infer<typeof startOutputSchema>> => {
