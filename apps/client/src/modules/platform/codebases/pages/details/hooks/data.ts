@@ -14,6 +14,7 @@ import {
   createReviewPipelineRef,
   createSecurityPipelineRef,
   pipelineRunLabels,
+  triggerTemplateName,
 } from "@my-project/shared";
 import { routeProjectDetails } from "../route";
 import { useQuery } from "@tanstack/react-query";
@@ -89,7 +90,7 @@ export const useBuildTriggerTemplateWatch = () => {
   const gitServerByCodebase = gitServerByCodebaseWatch.query.data;
 
   return useTriggerTemplateWatchItem({
-    name: `${gitServerByCodebase?.spec?.gitProvider}-build-template`,
+    name: triggerTemplateName(gitServerByCodebase?.spec?.gitProvider, "build"),
     namespace: params.namespace,
     queryOptions: {
       enabled: !!gitServerByCodebase?.spec?.gitProvider,
@@ -104,7 +105,7 @@ export const useSecurityTriggerTemplateWatch = () => {
   const gitServerByCodebase = gitServerByCodebaseWatch.query.data;
 
   return useTriggerTemplateWatchItem({
-    name: `${gitServerByCodebase?.spec?.gitProvider}-security-template`,
+    name: triggerTemplateName(gitServerByCodebase?.spec?.gitProvider, "security"),
     namespace: params.namespace,
     queryOptions: {
       enabled: !!gitServerByCodebase?.spec?.gitProvider,
