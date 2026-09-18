@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 
-// Note: Global error handling is done in the tRPC client (trpc.ts) via customFetch
+// Session-expiry redirects: core/providers/trpc/authErrorLink.ts.
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -10,11 +10,9 @@ export const queryClient = new QueryClient({
       retry: 0,
       refetchOnMount: false, // Avoid refetching when remounting
       refetchOnReconnect: true, // Refetch if the app regains connection
-      // Note: Global error handling is done in the tRPC client (trpc.ts) via customFetch
     },
     mutations: {
-      retry: 0, // Retry mutations once on failure
-      // Note: Global error handling is done in the tRPC client (trpc.ts) via customFetch
+      retry: 0,
     },
   },
 });
