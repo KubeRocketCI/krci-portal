@@ -4,8 +4,6 @@ import { LearnMoreLink } from "@/core/components/LearnMoreLink";
 import { Card } from "@/core/components/ui/card";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import { TABLE } from "@/k8s/constants/tables";
-import { useDialogContext } from "@/core/providers/Dialog/hooks";
-import { CreateCodebaseBranchDialog } from "@/modules/platform/codebases/components/CreateCodebaseBranchDialog";
 import {
   pipelineRunLabels,
   pipelineType,
@@ -13,14 +11,10 @@ import {
   sortCodebaseBranchesWithDefaultFirst,
 } from "@my-project/shared";
 import React from "react";
-import {
-  useCodebaseBranchListWatch,
-  useCodebaseWatch,
-  useCodebasePipelineRunListWatch,
-  usePipelineNamesWatch,
-} from "../../hooks/data";
+import { useCodebaseBranchListWatch, useCodebaseWatch, useCodebasePipelineRunListWatch } from "../../hooks/data";
 import { BranchListActions } from "./components/BranchListActions";
 import { useColumns } from "./hooks/useColumns";
+import { useOpenCreateBranchDialog } from "./hooks/useOpenCreateBranchDialog";
 import { EnrichedBranch } from "./types";
 
 export const BranchList = () => {
@@ -29,19 +23,7 @@ export const BranchList = () => {
 
   const codebaseBranchListWatch = useCodebaseBranchListWatch();
   const codebasePipelineRunListWatch = useCodebasePipelineRunListWatch();
-
-  // Find the actual default branch based on codebase.spec.defaultBranch
-  const defaultBranch = React.useMemo(() => {
-    const found = codebaseBranchListWatch.data.array.find(
-      (branch) => branch.spec.branchName === codebase?.spec.defaultBranch
-    );
-    // Fallback to first branch if default branch is not found
-    return found || codebaseBranchListWatch.data.array[0];
-  }, [codebaseBranchListWatch.data.array, codebase?.spec.defaultBranch]);
-
-  const { setDialog } = useDialogContext();
-  const pipelineNamesWatch = usePipelineNamesWatch();
-  const pipelineNames = pipelineNamesWatch.data;
+  const openCreateBranchDialog = useOpenCreateBranchDialog();
 
   const columns = useColumns();
 
@@ -55,7 +37,6 @@ export const BranchList = () => {
     const branches = codebaseBranchListWatch.data.array;
     const allPipelineRuns = [...codebasePipelineRunListWatch.data.array].sort(sortKubeObjectByCreationTimestamp);
 
-    // Sort branches with default branch first
     const sortedBranches = sortCodebaseBranchesWithDefaultFirst(branches, codebase?.spec.defaultBranch);
 
     return sortedBranches.map((codebaseBranch) => {
@@ -77,9 +58,6 @@ export const BranchList = () => {
     });
   }, [codebaseBranchListWatch.data.array, codebasePipelineRunListWatch.data.array, codebase?.spec.defaultBranch]);
 
-  const isLoading = !codebaseBranchListWatch.query.isFetched;
-  const hasBranches = codebaseBranchListWatch.data.array.length > 0;
-
   return (
     <Card className="space-y-4 p-6" data-tour="branches-table">
       <div className="flex items-center justify-between">
@@ -89,35 +67,18 @@ export const BranchList = () => {
         </div>
         <BranchListActions />
       </div>
-      {hasBranches ? (
-        <DataTable<EnrichedBranch>
-          id={TABLE.BRANCH_LIST.id}
-          name={TABLE.BRANCH_LIST.name}
-          data={enrichedBranches}
-          columns={columns}
-          isRowPinned={isRowPinned}
-          isLoading={isLoading}
-          emptyListComponent={<EmptyList missingItemName="branches" />}
-          settings={{ show: false }}
-          outlined={false}
-        />
-      ) : (
-        <EmptyList
-          missingItemName="branches"
-          handleClick={() =>
-            setDialog(CreateCodebaseBranchDialog, {
-              codebaseBranches: codebaseBranchListWatch.data.array,
-              codebase: codebase!,
-              defaultBranch: defaultBranch!,
-              pipelines: {
-                review: pipelineNames?.reviewPipelineName || "",
-                build: pipelineNames?.buildPipelineName || "",
-                security: pipelineNames?.securityPipelineName || "",
-              },
-            })
-          }
-        />
-      )}
+      <DataTable<EnrichedBranch>
+        id={TABLE.BRANCH_LIST.id}
+        name={TABLE.BRANCH_LIST.name}
+        data={enrichedBranches}
+        columns={columns}
+        isRowPinned={isRowPinned}
+        isLoading={codebaseBranchListWatch.isLoading}
+        blockerError={codebaseBranchListWatch.error}
+        emptyListComponent={<EmptyList missingItemName="branches" handleClick={openCreateBranchDialog} />}
+        settings={{ show: false }}
+        outlined={false}
+      />
     </Card>
   );
 };
