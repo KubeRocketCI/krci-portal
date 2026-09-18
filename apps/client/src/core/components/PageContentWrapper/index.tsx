@@ -7,6 +7,11 @@ import { TabButton } from "../TabButton";
 import { Info } from "lucide-react";
 import { cn } from "@/core/utils/classname";
 import { useScrollFades } from "@/core/hooks/use-scroll-fades";
+import { TabPanel } from "@/core/providers/Tabs/components/Tabs/components/TabPanel";
+import { getTabKey, useVisitedTabs } from "@/core/providers/Tabs/components/Tabs/hooks/useVisitedTabs";
+import type { Tab } from "@/core/providers/Tabs/components/Tabs/types";
+
+const NO_TABS: Tab[] = [];
 
 export const PageContentWrapper: React.FC<PageContentWrapperProps> = ({
   icon: Icon,
@@ -26,6 +31,7 @@ export const PageContentWrapper: React.FC<PageContentWrapperProps> = ({
   children,
 }) => {
   const { scrollRef: tabsScrollRef, showLeftFade, showRightFade } = useScrollFades<HTMLDivElement>();
+  const { activeTabIdx, isVisited } = useVisitedTabs(tabs ?? NO_TABS, activeTab);
 
   const hasTabs = tabs && tabs.length > 0;
   const hasHeader = title || description || actions || extraLinks || hasTabs;
@@ -82,7 +88,7 @@ export const PageContentWrapper: React.FC<PageContentWrapperProps> = ({
                       key={`tab::${idx}`}
                       label={tab.label}
                       icon={tab.icon}
-                      isActive={activeTab === idx}
+                      isActive={activeTabIdx === idx}
                       disabled={tab.disabled}
                       tourHighlight={tourHighlight}
                       tabId={tab.id}
@@ -109,12 +115,13 @@ export const PageContentWrapper: React.FC<PageContentWrapperProps> = ({
         {hasTabs && (
           <div className="mt-6 flex min-w-0 grow flex-col">
             {tabs.map((tab, idx) => (
-              <div
-                key={`tab-content::${idx}`}
-                className={cn("flex min-w-0 grow flex-col", activeTab !== idx && "hidden")}
-              >
-                {tab.component}
-              </div>
+              <TabPanel
+                key={`tab-content::${getTabKey(tab, idx)}`}
+                tab={tab}
+                isActive={activeTabIdx === idx}
+                isVisited={isVisited(tab, idx)}
+                className="flex min-w-0 grow flex-col"
+              />
             ))}
           </div>
         )}

@@ -5,6 +5,12 @@ export interface Tab {
   icon?: React.ReactElement;
   disabled?: boolean;
   onClick?: () => void;
+  /**
+   * Default: inactive content sits in a hidden `<Activity>`; state kept, effects, queries and watches paused.
+   * `true`: mounted on first activation, CSS-hidden while inactive, effects keep running.
+   * Use for content that owns a live session (pod shell, log stream).
+   */
+  persistent?: boolean;
 }
 
 export interface TourHighlight {
