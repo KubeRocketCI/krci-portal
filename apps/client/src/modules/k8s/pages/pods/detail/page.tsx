@@ -130,12 +130,14 @@ export default function K8sPodDetailPage() {
       id: "logs",
       label: "Logs",
       onClick: () => setTab("logs"),
+      persistent: true,
       component: <LogsTab pod={item} container={container} />,
     },
     {
       id: "shell",
       label: "Shell",
       onClick: () => setTab("shell"),
+      persistent: true,
       component: <ShellTab pod={item} container={container} />,
     },
   ];

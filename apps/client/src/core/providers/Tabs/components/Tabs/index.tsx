@@ -1,8 +1,11 @@
-import { cn } from "@/core/utils/classname";
 import { TabButton } from "@/core/components/TabButton";
+import { TabPanel } from "./components/TabPanel";
+import { getTabKey, useVisitedTabs } from "./hooks/useVisitedTabs";
 import { TabsProps } from "./types";
 
 export const Tabs = ({ tabs, activeTabIdx, handleChangeTab, dataTour, tourHighlight }: TabsProps) => {
+  const { isVisited } = useVisitedTabs(tabs, activeTabIdx);
+
   return (
     <div className="flex min-h-0 flex-1 flex-col rounded-[0.3125rem]">
       <div className="bg-card border-b">
@@ -27,14 +30,15 @@ export const Tabs = ({ tabs, activeTabIdx, handleChangeTab, dataTour, tourHighli
         </div>
       </div>
       <div className="relative mt-6 flex h-full min-w-0 flex-col">
-        {tabs.map(({ component }, idx) => {
-          const isActive = activeTabIdx === idx;
-          return (
-            <div key={`tab-content::${idx}`} className={cn("flex h-full min-w-0 flex-col", !isActive && "hidden")}>
-              {component}
-            </div>
-          );
-        })}
+        {tabs.map((tab, idx) => (
+          <TabPanel
+            key={`tab-content::${getTabKey(tab, idx)}`}
+            tab={tab}
+            isActive={activeTabIdx === idx}
+            isVisited={isVisited(tab, idx)}
+            className="flex h-full min-w-0 flex-col"
+          />
+        ))}
       </div>
     </div>
   );
