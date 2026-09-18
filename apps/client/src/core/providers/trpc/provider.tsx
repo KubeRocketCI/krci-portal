@@ -5,7 +5,7 @@ import { createTRPCClient, createWSClient, httpBatchStreamLink, splitLink, wsLin
 import { AuthContext } from "../../auth/provider/context";
 import { TRPCContext } from "./context";
 import { trpcHttpClient } from "./http-client";
-import { customFetch } from "./utils";
+import { authErrorLink, sessionFetch } from "./sessionGuards";
 
 /**
  * Provider that creates a tRPC client with WebSocket support when authenticated.
@@ -29,6 +29,7 @@ export const TRPCProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Create client with WebSocket support for subscriptions
         clientRef.current = createTRPCClient<AppRouter>({
           links: [
+            authErrorLink,
             splitLink({
               condition: (op) => op.type === "subscription",
               true: wsLink({
@@ -38,14 +39,8 @@ export const TRPCProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }),
               false: httpBatchStreamLink({
                 url: "/api",
-                headers: { credentials: "include" },
                 maxItems: 10,
-                fetch: async (url, options) => {
-                  return customFetch(url, {
-                    ...options,
-                    credentials: "include",
-                  });
-                },
+                fetch: sessionFetch,
               }),
             }),
           ],
