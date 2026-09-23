@@ -60,20 +60,17 @@ export interface UseWatchListResult<I extends KubeObjectBase> {
 
 export interface WatchListMultipleData<I extends KubeObjectBase> {
   array: I[]; // all items merged
-  map: Map<string, I>; // key = "namespace/name"
-  byNamespace: Map<string, WatchListData<I>>; // per-namespace data
+  map: Map<string, I>; // key = "namespace/name"; cluster-scoped: "/name"
 }
 
 export interface UseWatchListMultipleResult<I extends KubeObjectBase> {
-  data: WatchListMultipleData<I>;
-  queries: UseQueryResult<CustomKubeObjectList<I>, RequestError>[];
-  query: UseQueryResult<WatchListMultipleData<I>, RequestError>;
-  dataVersion: string | undefined;
-  errors: RequestError[];
+  data: WatchListMultipleData<I>; // holds every loaded namespace whenever isLoading is false
+  errors: RequestError[]; // per-namespace failures; the other namespaces still load
   error: RequestError | null; // Convenience: first per-namespace error, for table components
   isEmpty: boolean;
-  isLoading: boolean;
-  isReady: boolean;
+  isLoading: boolean; // True while any namespace has no data yet; false once the type is not served
+  isReady: boolean; // True when every namespace is successfully loaded
+  availability: ResourceAvailability; // "served" unless the type declares mayBeAbsent
 }
 
 // ============================================================================

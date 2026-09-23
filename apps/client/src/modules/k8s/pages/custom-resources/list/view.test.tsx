@@ -96,12 +96,12 @@ const defaultCrd = {
 
 const baseWatchResult = (items: unknown[]) => ({
   data: { array: items, map: new Map() },
-  query: { isSuccess: true, isPlaceholderData: false, error: null },
-  resourceVersion: "1",
+  errors: [],
+  error: null,
   isEmpty: items.length === 0,
   isLoading: false,
   isReady: true,
-  error: null,
+  availability: "served",
 });
 
 beforeEach(() => {

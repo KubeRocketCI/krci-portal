@@ -193,12 +193,16 @@ describe("hook-creators", () => {
 
   describe("createUseWatchListMultipleHook", () => {
     it("should create a hook that calls useWatchListMultiple with resource config", () => {
-      const mockList = [{ metadata: { name: "item1" } }];
+      const item = { metadata: { name: "item1", namespace: "default" } };
+      const mockList = { array: [item], map: new Map([["default/item1", item]]) };
       vi.mocked(useWatchListMultiple).mockReturnValue({
         data: mockList,
-        isLoading: false,
-        isError: false,
+        errors: [],
         error: null,
+        isEmpty: false,
+        isLoading: false,
+        isReady: true,
+        availability: "served",
       } as never);
 
       const useWatchListMultipleHook = createUseWatchListMultipleHook(mockResourceConfig);
@@ -212,20 +216,23 @@ describe("hook-creators", () => {
 
     it("should pass through optional params", () => {
       vi.mocked(useWatchListMultiple).mockReturnValue({
-        data: [],
-        isLoading: false,
-        isError: false,
+        data: { array: [], map: new Map() },
+        errors: [],
         error: null,
+        isEmpty: true,
+        isLoading: false,
+        isReady: true,
+        availability: "served",
       } as never);
 
       const useWatchListMultipleHook = createUseWatchListMultipleHook(mockResourceConfig);
-      const params = { namespaces: ["default", "test"], enabled: true };
+      const params = { namespaces: ["default", "test"], queryOptions: { enabled: true } };
       renderHook(() => useWatchListMultipleHook(params));
 
       expect(useWatchListMultiple).toHaveBeenCalledWith({
         resourceConfig: mockResourceConfig,
         namespaces: ["default", "test"],
-        enabled: true,
+        queryOptions: { enabled: true },
       });
     });
   });
