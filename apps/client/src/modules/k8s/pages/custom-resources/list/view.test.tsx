@@ -34,8 +34,10 @@ vi.mock("@/modules/k8s/components/ResourceTable", () => ({
   ResourceTable: ({
     items,
     descriptor,
+    errors,
   }: {
     items: { metadata?: { name?: string; namespace?: string; [k: string]: unknown }; [k: string]: unknown }[];
+    errors?: Error[];
     descriptor: {
       columns: (renderName: (item: unknown) => React.ReactNode) => {
         id: string;
@@ -52,6 +54,9 @@ vi.mock("@/modules/k8s/components/ResourceTable", () => ({
     });
     return (
       <table>
+        {errors?.map((error, idx) => (
+          <caption key={idx}>{error.message}</caption>
+        ))}
         <thead>
           <tr>
             {cols.map((col) => (
@@ -139,5 +144,44 @@ describe("CRListView", () => {
     vi.mocked(useCRDByGVR).mockReturnValueOnce({ crd: undefined, isLoading: true, error: null });
     render(<CRListView />);
     expect(screen.getByText(/Loading CRD/i)).toBeInTheDocument();
+  });
+
+  it("shows Loading… while a namespace list is still loading", () => {
+    vi.mocked(useCRListMulti).mockReturnValue({
+      ...baseWatchResult([]),
+      isEmpty: true,
+      isLoading: true,
+      isReady: false,
+    } as never);
+    render(<CRListView />);
+    expect(screen.getByText("Loading…")).toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  it("renders the accessible namespaces and the error when one namespace fails", () => {
+    const forbidden = { message: 'pipelineruns.tekton.dev is forbidden in namespace "restricted"' };
+    vi.mocked(useCRListMulti).mockReturnValue({
+      ...baseWatchResult([{ metadata: { name: "pr-1", namespace: "dev" }, status: { phase: "Running" } }]),
+      errors: [forbidden],
+      error: forbidden,
+      isReady: false,
+    } as never);
+    render(<CRListView />);
+    expect(screen.queryByText("Loading…")).not.toBeInTheDocument();
+    expect(screen.getByText("pr-1")).toBeInTheDocument();
+    expect(screen.getByText(forbidden.message)).toBeInTheDocument();
+  });
+
+  it("renders the error instead of loading forever when every namespace fails", () => {
+    const forbidden = { message: 'pipelineruns.tekton.dev is forbidden in namespace "dev"' };
+    vi.mocked(useCRListMulti).mockReturnValue({
+      ...baseWatchResult([]),
+      errors: [forbidden],
+      error: forbidden,
+      isReady: false,
+    } as never);
+    render(<CRListView />);
+    expect(screen.queryByText("Loading…")).not.toBeInTheDocument();
+    expect(screen.getByText(forbidden.message)).toBeInTheDocument();
   });
 });

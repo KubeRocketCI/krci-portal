@@ -85,11 +85,14 @@ function CRListInner({
     frozenAutoColsRef.current = null;
   }, [search.namespace]);
 
+  // Settled: every namespace loaded or failed. Failures render through `watch.errors`.
+  const isSettled = !watch.isLoading;
+
   // Dep on the item count so the memo re-runs when the list goes 0 → nonzero.
-  const watchDataLength = watch.isReady ? (watch.data.array as KubeObjectBase[]).length : 0;
+  const watchDataLength = isSettled ? (watch.data.array as KubeObjectBase[]).length : 0;
   const autoMultiSelectCols = useMemo<PrinterColMeta[]>(() => {
     if (frozenAutoColsRef.current !== null) return frozenAutoColsRef.current;
-    if (!watch.isReady) return [];
+    if (!isSettled) return [];
     const items = watch.data.array as KubeObjectBase[];
     // Do not freeze yet when the snapshot is empty — wait for the first non-empty tick.
     if (items.length === 0) return [];
@@ -106,7 +109,7 @@ function CRListInner({
     frozenAutoColsRef.current = result;
     return result;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [watch.isReady, watchDataLength, crd, version]);
+  }, [isSettled, watchDataLength, crd, version]);
 
   // Memoize so watch ticks don't churn FilterProvider and fire URL-sync spuriously.
   const defaultValues = useMemo(
@@ -116,7 +119,7 @@ function CRListInner({
 
   const matchFunctions = useMemo(() => buildCRListMatchFunctions(autoMultiSelectCols), [autoMultiSelectCols]);
 
-  if (!watch.isReady) {
+  if (!isSettled) {
     return (
       <PageWrapper breadcrumbs={[{ label: "Cluster" }, { label: "Custom Resources" }, { label: descriptor.label }]}>
         <PageContentWrapper icon={Puzzle} title={descriptor.label}>
