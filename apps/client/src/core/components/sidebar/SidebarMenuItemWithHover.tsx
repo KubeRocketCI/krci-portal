@@ -7,7 +7,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/colla
 import { cn } from "../../utils/classname";
 import { SidebarMenuContent } from "./SidebarMenuContent";
 import { usePinnedItems } from "@/core/hooks/usePinnedItems";
-import { createPinConfig, isNavGroupActiveForPathname } from "./utils";
+import { createPinTarget, isNavGroupActiveForPathname } from "./utils";
 import type { NavItem, SimpleNavItem, NavSubGroupItem, NavCollapsibleSubGroupItem, NavGroupItem } from "./types";
 import type { RouteParams } from "@/core/router/types";
 
@@ -63,11 +63,11 @@ export function SidebarMenuItemWithHover({
     ("groupRoute" in item && item.groupRoute?.id) || ("children" in item && item.children ? item.title : "");
   const isOpen = isMenuOpen(groupId);
 
-  // Calculate pin config for simple items (at top level to satisfy hooks rules)
+  // Calculate pin target for simple items (at top level to satisfy hooks rules)
   const isSimpleItem = "route" in item && item.route;
   const simpleItem = isSimpleItem ? (item as SimpleNavItem) : null;
-  const pinConfig = simpleItem ? createPinConfig(simpleItem.title, simpleItem.route) : null;
-  const pinned = pinConfig ? isPinned(pinConfig.key) : false;
+  const pinTarget = simpleItem ? createPinTarget(simpleItem.title, simpleItem.route) : null;
+  const pinned = pinTarget ? isPinned(pinTarget) : false;
 
   const handleToggle = useCallback(() => {
     if (groupId) {
@@ -92,11 +92,11 @@ export function SidebarMenuItemWithHover({
     (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      if (pinConfig) {
-        togglePin(pinConfig);
+      if (pinTarget) {
+        togglePin(pinTarget);
       }
     },
-    [togglePin, pinConfig]
+    [togglePin, pinTarget]
   );
 
   // Must be called unconditionally before any early return to satisfy rules-of-hooks.

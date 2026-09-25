@@ -119,13 +119,20 @@ export type PageIconType = keyof typeof PAGE_ICONS;
 
 /**
  * Map from route path to icon type.
- * Used to derive iconType when creating pin configs from navigation items.
+ * Used to derive the icon type of a pinned page from its route path.
  */
 export const PATH_TO_ICON_TYPE: Record<string, PageIconType> = {
   // Top-level pages
   "/c/$clusterName/overview/$namespace": "overview",
   "/c/$clusterName/projects": "projects",
   "/c/$clusterName/cdpipelines": "deployments",
+
+  // Detail pages
+  "/c/$clusterName/projects/$namespace/$name": "project",
+  "/c/$clusterName/cdpipelines/$namespace/$name": "deployment",
+  "/c/$clusterName/cdpipelines/$namespace/$cdPipeline/stages/$stage": "stage",
+  "/c/$clusterName/security/sca/projects/$namespace/$projectUuid": "sca-project",
+  "/c/$clusterName/security/sast/projects/$namespace/$projectKey": "sast-project",
 
   // CI/CD Pipelines
   "/c/$clusterName/cicd/pipelineruns": "pipelineruns",

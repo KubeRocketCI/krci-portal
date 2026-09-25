@@ -132,10 +132,7 @@ export default function SCAProjectDetailsPageContent({ searchTabIdx }: { searchT
         title={title}
         enableCopyTitle={false}
         pinConfig={{
-          key: `sca-project:${namespace}/${projectUuid}`,
           label: project?.name || projectUuid,
-          type: "sca-project",
-          iconType: "sca-project",
           route: {
             to: PATH_SCA_PROJECT_DETAILS_FULL,
             params: { clusterName, namespace, projectUuid },

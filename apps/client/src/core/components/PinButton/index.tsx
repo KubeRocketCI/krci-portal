@@ -1,16 +1,16 @@
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { usePinnedItems } from "@/core/hooks/usePinnedItems";
-import type { PinnedPage } from "@/core/hooks/usePinnedItems";
+import type { PinTarget } from "@/core/hooks/usePinnedItems";
 import { Pin } from "lucide-react";
 
 interface PinButtonProps {
-  pinConfig: PinnedPage;
+  pinConfig: PinTarget;
 }
 
 export function PinButton({ pinConfig }: PinButtonProps) {
   const { isPinned, togglePin } = usePinnedItems();
-  const pinned = isPinned(pinConfig.key);
+  const pinned = isPinned(pinConfig);
 
   return (
     <Tooltip title={pinned ? "Unpin from sidebar" : "Pin to sidebar"}>

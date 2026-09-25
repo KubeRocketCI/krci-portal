@@ -1,6 +1,6 @@
 import { LucideIcon } from "lucide-react";
 import React from "react";
-import type { PinnedPage } from "@/core/hooks/usePinnedItems";
+import type { PinTarget } from "@/core/hooks/usePinnedItems";
 import type { Tab, TourHighlight } from "@/core/providers/Tabs/components/Tabs/types";
 
 export interface PageContentWrapperProps {
@@ -9,7 +9,7 @@ export interface PageContentWrapperProps {
   titleTooltip?: string | React.ReactElement;
   description?: string | React.ReactElement;
   enableCopyTitle?: boolean;
-  pinConfig?: PinnedPage;
+  pinConfig?: PinTarget;
   actions?: React.ReactNode;
   extraLinks?: React.ReactNode;
   subHeader?: React.ReactNode;
