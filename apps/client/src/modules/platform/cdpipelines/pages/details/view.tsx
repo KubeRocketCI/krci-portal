@@ -47,10 +47,7 @@ export default function CDPipelineDetailsPageContent({ searchTabIdx }: { searchT
         title={name}
         enableCopyTitle
         pinConfig={{
-          key: `deployment:${namespace}/${name}`,
           label: name,
-          type: "deployment",
-          iconType: "deployment",
           route: {
             to: PATH_CDPIPELINE_DETAILS_FULL,
             params: { clusterName, namespace, name },

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { LOCAL_STORAGE_SERVICE } from "@/core/services/local-storage";
 import { LS_KEY_SIDEBAR_PINNED_ITEMS } from "@/core/services/local-storage/keys";
-import { PATH_TO_ICON_TYPE } from "@/core/constants/page-icons";
+import { PATH_TO_ICON_TYPE, getIconTypeFromPath } from "@/core/constants/page-icons";
 import type { PageIconType } from "@/core/constants/page-icons";
 import { buildPinKey } from "@/core/utils/pinKey";
 
@@ -52,9 +52,23 @@ export type PinnedPageType =
   | "config-gitservers"
   | "config-jira";
 
-export interface PinnedPage {
+/**
+ * What a caller passes to pin, unpin, or query a page. The pin's identity,
+ * icon, and type are derived from `route`; callers never supply them.
+ */
+export interface PinTarget {
+  label: string;
+  route: {
+    to: string;
+    params: Record<string, string>;
+  };
+}
+
+/** A pinned page as stored and listed. Built only by this module. */
+export interface PinnedPage extends PinTarget {
   /**
-   * Unique, cluster-agnostic key for this pinned page.
+   * Unique, cluster-agnostic key for this pinned page, always
+   * `buildPinKey(route.to, route.params)`.
    *
    * Format:
    *   - No identifying params (or only `clusterName`):
@@ -66,14 +80,9 @@ export interface PinnedPage {
    *     e.g. `page:/c/$clusterName/k8s/cr/$group/$version/$plural?group=apps&plural=mycrds&version=v1`
    */
   key: string;
-  label: string;
   type: PinnedPageType;
   /** Icon type from PAGE_ICONS registry. Optional for backwards compatibility. */
   iconType?: PageIconType;
-  route: {
-    to: string;
-    params: Record<string, string>;
-  };
 }
 
 /**
@@ -99,7 +108,7 @@ export function migratePinnedItems(items: PinnedPage[]): PinnedPage[] {
     // First resolve any iconType backfill; the key update is applied once below.
     let updated = item;
     if (!item.iconType) {
-      // Derive iconType from the route path via the canonical map (shared with createPinConfig).
+      // Derive iconType from the route path via the canonical map (shared with toPinnedPage).
       const iconType = PATH_TO_ICON_TYPE[item.route.to];
       if (iconType) {
         updated = { ...item, iconType, type: iconType as PinnedPageType };
@@ -109,8 +118,7 @@ export function migratePinnedItems(items: PinnedPage[]): PinnedPage[] {
       }
     }
 
-    // Apply the recomputed key in a single place, preserving the original
-    // reference when nothing changed so callers can detect no-ops by identity.
+    // Apply the recomputed key in a single place; reuse the original reference when nothing changed.
     return recomputedKey !== updated.key ? { ...updated, key: recomputedKey } : updated;
   });
 
@@ -123,26 +131,33 @@ export function migratePinnedItems(items: PinnedPage[]): PinnedPage[] {
   });
 }
 
-let listeners: Array<() => void> = [];
-const rawSnapshot = LOCAL_STORAGE_SERVICE.getItem(LS_KEY_SIDEBAR_PINNED_ITEMS) ?? [];
-let cachedSnapshot: PinnedPage[] = migratePinnedItems(rawSnapshot);
-
-// Persist migrated items back to localStorage only when something actually changed:
-// either an iconType was backfilled, a key was recomputed, or a duplicate was removed.
-// `migratePinnedItems` returns the original element reference for items it leaves
-// untouched and a fresh object only for items it changes, so reference inequality
-// detects any modification without recomputing keys a second time. A length change
-// means a duplicate was dropped; index comparison is only valid once lengths match.
-const needsMigration =
-  cachedSnapshot.length !== rawSnapshot.length || cachedSnapshot.some((item, i) => item !== rawSnapshot[i]);
-
-if (needsMigration && cachedSnapshot.length > 0) {
-  LOCAL_STORAGE_SERVICE.setItem(LS_KEY_SIDEBAR_PINNED_ITEMS, cachedSnapshot);
+function isStoredPinnedPage(item: unknown): item is PinnedPage {
+  return typeof (item as PinnedPage | null)?.route?.to === "string";
 }
 
-function emitChange() {
-  const raw = LOCAL_STORAGE_SERVICE.getItem(LS_KEY_SIDEBAR_PINNED_ITEMS) ?? [];
-  cachedSnapshot = migratePinnedItems(raw);
+/** Stored pins in normalized form. Non-array values and entries without a route read as absent. */
+function readPinnedPages(): PinnedPage[] {
+  const raw: unknown = LOCAL_STORAGE_SERVICE.getItem(LS_KEY_SIDEBAR_PINNED_ITEMS);
+  return Array.isArray(raw) ? migratePinnedItems(raw.filter(isStoredPinnedPage)) : [];
+}
+
+function toPinnedPage({ label, route }: PinTarget): PinnedPage {
+  const iconType = getIconTypeFromPath(route.to);
+  return {
+    key: buildPinKey(route.to, route.params),
+    label,
+    type: iconType as PinnedPageType,
+    iconType,
+    route: { to: route.to, params: route.params },
+  };
+}
+
+let listeners: Array<() => void> = [];
+let cachedSnapshot: PinnedPage[] = readPinnedPages();
+
+function commit(next: PinnedPage[]) {
+  LOCAL_STORAGE_SERVICE.setItem(LS_KEY_SIDEBAR_PINNED_ITEMS, next);
+  cachedSnapshot = next;
   for (const listener of listeners) {
     listener();
   }
@@ -160,8 +175,11 @@ function getSnapshot(): PinnedPage[] {
 }
 
 /**
- * Hook to manage pinned sidebar pages in localStorage with reactive updates.
- * Each pinned page stores its key, label, type, and navigation route.
+ * Pinned sidebar pages backed by localStorage, with reactive updates.
+ *
+ * - Identity of a pin is `buildPinKey(route.to, route.params)`; `clusterName` is ignored.
+ * - `togglePin` re-reads storage, so entries written by other tabs or in legacy formats are matched.
+ * - Every write persists the normalized list.
  */
 export function usePinnedItems() {
   const pinnedPages = useSyncExternalStore(subscribe, getSnapshot);
@@ -169,14 +187,16 @@ export function usePinnedItems() {
   // Index keys into a Set so each row's lookup is O(1); the sidebar calls isPinned
   // once per row, so a linear scan here would be O(rows × pins) on every render.
   const pinnedKeys = useMemo(() => new Set(pinnedPages.map((p) => p.key)), [pinnedPages]);
-  const isPinned = useCallback((key: string) => pinnedKeys.has(key), [pinnedKeys]);
+  const isPinned = useCallback(
+    (target: PinTarget) => pinnedKeys.has(buildPinKey(target.route.to, target.route.params)),
+    [pinnedKeys]
+  );
 
-  const togglePin = useCallback((page: PinnedPage) => {
-    const current: PinnedPage[] = LOCAL_STORAGE_SERVICE.getItem(LS_KEY_SIDEBAR_PINNED_ITEMS) ?? [];
+  const togglePin = useCallback((target: PinTarget) => {
+    const page = toPinnedPage(target);
+    const current = readPinnedPages();
     const exists = current.some((p) => p.key === page.key);
-    const updated = exists ? current.filter((p) => p.key !== page.key) : [...current, page];
-    LOCAL_STORAGE_SERVICE.setItem(LS_KEY_SIDEBAR_PINNED_ITEMS, updated);
-    emitChange();
+    commit(exists ? current.filter((p) => p.key !== page.key) : [...current, page]);
   }, []);
 
   return { pinnedPages, isPinned, togglePin };

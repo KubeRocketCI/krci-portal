@@ -32,10 +32,7 @@ export const Content = () => {
       title={params.stage}
       enableCopyTitle
       pinConfig={{
-        key: `stage:${params.namespace}/${params.cdPipeline}/${params.stage}`,
         label: params.stage,
-        type: "stage",
-        iconType: "stage",
         route: {
           to: PATH_CDPIPELINE_STAGE_DETAILS_FULL,
           params: {

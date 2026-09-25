@@ -5,16 +5,18 @@
  *   - No identifying params (or only `clusterName`): `page:<path>`
  *   - With identifying params:                        `page:<path>?<k1>=<v1>&<k2>=<v2>`
  *
+ * Identifying params are those declared as `$param` segments in `path`; any
+ * other param (e.g. a `namespace` passed to a cluster-wide page) is ignored.
  * `clusterName` is always excluded so that pins are cluster-agnostic (a page
  * pinned on cluster "dev" stays pinned when the user switches to "prod").
- * Remaining params are sorted by key name to ensure deterministic output
+ * Identifying params are sorted by key name to ensure deterministic output
  * regardless of object insertion order. Keys and values are percent-encoded
  * so distinct param sets can never serialize to the same key (e.g. a value
  * containing `&` or `=`). Current K8s params are DNS-constrained, so encoding
  * is an identity transform for every key that exists today.
  *
  * Examples:
- *   buildPinKey("/c/$clusterName/cicd/pipelines", { clusterName: "dev" })
+ *   buildPinKey("/c/$clusterName/cicd/pipelines", { clusterName: "dev", namespace: "krci" })
  *   → "page:/c/$clusterName/cicd/pipelines"
  *
  *   buildPinKey("/c/$clusterName/k8s/$kind", { clusterName: "dev", kind: "deployments" })
@@ -24,8 +26,15 @@
  *   → "page:/c/$clusterName/k8s/cr/$group/$version/$plural?group=apps&plural=mycrds&version=v1"
  */
 export function buildPinKey(path: string, params: Record<string, string> = {}): string {
+  const pathParams = new Set(
+    path
+      .split("/")
+      .filter((segment) => segment.startsWith("$"))
+      .map((segment) => segment.slice(1))
+  );
+
   const identifying = Object.entries(params)
-    .filter(([key]) => key !== "clusterName")
+    .filter(([key]) => key !== "clusterName" && pathParams.has(key))
     .sort(([a], [b]) => a.localeCompare(b));
 
   if (identifying.length === 0) {

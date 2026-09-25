@@ -24,6 +24,26 @@ describe("buildPinKey", () => {
     });
   });
 
+  describe("params that are not path segments", () => {
+    it("ignores a namespace passed to a cluster-wide page", () => {
+      expect(buildPinKey("/c/$clusterName/projects", { clusterName: "dev", namespace: "krci" })).toBe(
+        "page:/c/$clusterName/projects"
+      );
+    });
+
+    it("yields the same key for a cluster-wide page across namespaces", () => {
+      const a = buildPinKey("/c/$clusterName/cicd/pipelines", { clusterName: "dev", namespace: "team-a" });
+      const b = buildPinKey("/c/$clusterName/cicd/pipelines", { clusterName: "dev", namespace: "team-b" });
+      expect(a).toBe(b);
+    });
+
+    it("keeps namespace when the path declares it", () => {
+      expect(buildPinKey("/c/$clusterName/overview/$namespace", { clusterName: "dev", namespace: "krci" })).toBe(
+        "page:/c/$clusterName/overview/$namespace?namespace=krci"
+      );
+    });
+  });
+
   describe("generic K8s list route parameterised by kind", () => {
     it("produces distinct keys for different kinds", () => {
       const deployments = buildPinKey("/c/$clusterName/k8s/$kind", {
