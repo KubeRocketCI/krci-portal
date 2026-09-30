@@ -12,6 +12,7 @@ import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { Card } from "@/core/components/ui/card";
 import { Badge, type BadgeProps } from "@/core/components/ui/badge";
 import { StatusIcon } from "@/core/components/StatusIcon";
+import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { PipelinePreview } from "@/core/components/PipelinePreview";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { codebaseType, codebaseVersioning } from "@my-project/shared";
@@ -167,7 +168,7 @@ export const Overview = () => {
           </div>
           <div className="text-foreground text-lg font-semibold capitalize">{codebase.status?.status || "Unknown"}</div>
           {codebase.status?.detailedMessage && (
-            <div className="text-muted-foreground mt-1 truncate text-xs">{codebase.status.detailedMessage}</div>
+            <TextWithTooltip text={codebase.status.detailedMessage} className="text-muted-foreground mt-1 text-xs" />
           )}
         </Card>
 

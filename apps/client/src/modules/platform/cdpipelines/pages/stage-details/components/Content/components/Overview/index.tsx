@@ -5,6 +5,7 @@ import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { Badge } from "@/core/components/ui/badge";
 import { Card } from "@/core/components/ui/card";
 import { ScrollCopyText } from "@/core/components/ScrollCopyText";
+import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { TriggerTemplatePipelinePreview } from "@/core/components/TriggerTemplatePipelinePreview";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import {
@@ -79,7 +80,7 @@ export const Overview = () => {
           </div>
           <div className="text-foreground text-lg font-semibold capitalize">{stage.status?.status || "Unknown"}</div>
           {stage.status?.detailed_message && (
-            <div className="text-muted-foreground mt-1 truncate text-xs">{stage.status.detailed_message}</div>
+            <TextWithTooltip text={stage.status.detailed_message} className="text-muted-foreground mt-1 text-xs" />
           )}
         </Card>
 

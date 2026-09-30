@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { Separator } from "@/core/components/ui/separator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/core/components/ui/accordion";
 import { Badge } from "@/core/components/ui/badge";
+import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import type { NetGateway, NetHTTPRoute, NetIngress, NetPolicy, NetRouteFilter } from "../types";
 import { aggregateFilters, deriveHTTPRouteURLs } from "../utils";
 import { InlineCode } from "./InlineCode";
@@ -140,9 +141,11 @@ export function DetailDrawer({ resource, gateways, policies, onClose }: DetailDr
                       <p className="text-muted-foreground mb-1 text-xs">Parent: {pc.parentName}</p>
                       <div className="flex flex-wrap gap-1.5">
                         {pc.conditions.map((c) => (
-                          <div key={c.type} className="flex items-center gap-2">
+                          <div key={c.type} className="flex min-w-0 items-center gap-2">
                             <StatusPill condition={c} resourceGeneration={resource.generation} />
-                            {c.message && <span className="text-muted-foreground truncate text-xs">{c.message}</span>}
+                            {c.message && (
+                              <TextWithTooltip text={c.message} className="text-muted-foreground text-xs" />
+                            )}
                           </div>
                         ))}
                       </div>
