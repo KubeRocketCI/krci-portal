@@ -18,7 +18,5 @@ export interface PipelineRunListProps {
   errors?: RequestError[] | null;
   pipelineRunTypes?: FilterTypeWithOptionAll<PipelineType>[];
   filterControls?: ValueOf<typeof pipelineRunFilterControlNames>[];
-  /** Override the route path used for row detail links. Defaults to PATH_PIPELINERUN_DETAILS_FULL. */
-  detailRoutePath?: string;
   pagination?: TablePagination;
 }
