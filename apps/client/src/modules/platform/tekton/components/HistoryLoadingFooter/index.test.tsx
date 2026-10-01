@@ -4,13 +4,20 @@ import userEvent from "@testing-library/user-event";
 import type { HistoryQuery } from "../../hooks/useUnifiedPipelineRunList";
 import { HistoryLoadingFooter } from "./index";
 
-function renderFooter(visibleHistoryCount: number, query: Partial<Record<string, unknown>> = {}) {
+interface RenderOptions {
+  visibleHistoryCount: number;
+  isHistoryLoading?: boolean;
+  query?: Partial<Record<string, unknown>>;
+}
+
+function renderFooter({ visibleHistoryCount, isHistoryLoading = false, query = {} }: RenderOptions) {
   const historyQuery = {
     data: { pages: [{ results: [], nextPageToken: "next" }] },
     hasNextPage: true,
     isError: false,
     isFetchingNextPage: false,
     fetchNextPage: vi.fn(() => new Promise(() => {})),
+    refetch: vi.fn(),
     ...query,
   } as unknown as HistoryQuery;
 
@@ -18,7 +25,7 @@ function renderFooter(visibleHistoryCount: number, query: Partial<Record<string,
     historyQuery,
     ...render(
       <HistoryLoadingFooter
-        isHistoryLoading={false}
+        isHistoryLoading={isHistoryLoading}
         historyQuery={historyQuery}
         visibleHistoryCount={visibleHistoryCount}
       />
@@ -27,35 +34,41 @@ function renderFooter(visibleHistoryCount: number, query: Partial<Record<string,
 }
 
 describe("HistoryLoadingFooter", () => {
-  it("shows the visible history count while older pages remain", () => {
-    renderFooter(2);
+  it("offers to load older runs while pages remain", () => {
+    renderFooter({ visibleHistoryCount: 2 });
 
     expect(screen.getByRole("button", { name: "Load older runs" })).toBeInTheDocument();
-    expect(screen.getByText("Showing 2 from history")).toBeInTheDocument();
   });
 
-  it("omits the history count while no history row is shown", () => {
-    renderFooter(0);
+  it("reports the archive end when history rows are shown", () => {
+    renderFooter({ visibleHistoryCount: 2, query: { hasNextPage: false } });
 
-    expect(screen.getByRole("button", { name: "Load older runs" })).toBeInTheDocument();
-    expect(screen.queryByText(/from history/)).not.toBeInTheDocument();
-  });
-
-  it("reports the visible history count at the end of the archive", () => {
-    renderFooter(2, { hasNextPage: false });
-
-    expect(screen.getByText("End of history · showing 2 from history")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("All runs loaded");
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 
-  it("renders nothing at the end of the archive when no history row is shown", () => {
-    const { container } = renderFooter(0, { hasNextPage: false });
+  it("renders nothing when the archive contributed nothing and is exhausted", () => {
+    const { container } = renderFooter({ visibleHistoryCount: 0, query: { hasNextPage: false } });
 
     expect(container).toBeEmptyDOMElement();
   });
 
+  it("shows a loading line while history loads", () => {
+    renderFooter({ visibleHistoryCount: 0, isHistoryLoading: true });
+
+    expect(screen.getByRole("status")).toHaveTextContent("Loading older runs…");
+  });
+
+  it("offers a retry when history fails", async () => {
+    const { historyQuery } = renderFooter({ visibleHistoryCount: 0, query: { isError: true } });
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Older runs didn't load");
+    await userEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(historyQuery.refetch).toHaveBeenCalledTimes(1);
+  });
+
   it("disables the button while older runs load", async () => {
-    const { historyQuery } = renderFooter(2);
+    const { historyQuery } = renderFooter({ visibleHistoryCount: 2 });
 
     await userEvent.click(screen.getByRole("button", { name: "Load older runs" }));
 

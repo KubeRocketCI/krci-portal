@@ -6,14 +6,13 @@ import { useLoadOlderRuns } from "./hooks/useLoadOlderRuns";
 interface HistoryLoadingFooterProps {
   isHistoryLoading: boolean;
   historyQuery: HistoryQuery;
-  /** History rows the table renders, after deduplication against live runs and client-side filters. */
+  /** History rows the table renders after client-side filters. Drives the "Load older runs" baseline. */
   visibleHistoryCount: number;
 }
 
 /**
- * Footer for the unified pipeline run list. Pages deeper into the Tekton Results
- * archive below the live runs, following the conventional "load more" layout --
- * the action on top, a quiet status line beneath it.
+ * Archive action for the unified pipeline run list, right-aligned where the table pager would sit.
+ * Renders nothing when the archive has nothing to offer and nothing to report.
  */
 export function HistoryLoadingFooter({
   isHistoryLoading,
@@ -23,48 +22,49 @@ export function HistoryLoadingFooter({
   const { isError, hasNextPage, refetch } = historyQuery;
   const { loadOlderRuns, isLoadingOlderRuns } = useLoadOlderRuns({ historyQuery, visibleHistoryCount });
 
-  if (isHistoryLoading) {
-    return (
-      <div className="text-muted-foreground flex items-center justify-center gap-2 py-3 text-sm" role="status">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        Loading pipeline run history…
-      </div>
-    );
-  }
+  const content = (() => {
+    if (isHistoryLoading) {
+      return (
+        <span className="text-muted-foreground flex items-center gap-2 text-sm" role="status">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Loading older runs…
+        </span>
+      );
+    }
 
-  if (isError) {
-    return (
-      <div className="flex flex-col items-center gap-1.5 py-3" role="alert">
-        <Button variant="outline" size="sm" onClick={() => refetch()}>
-          <RotateCw className="h-4 w-4" />
-          Retry
-        </Button>
-        <p className="text-destructive text-sm">Couldn't load older runs. Showing live data only.</p>
-      </div>
-    );
-  }
+    if (isError) {
+      return (
+        <span className="flex items-center gap-3" role="alert">
+          <span className="text-destructive text-sm">Older runs didn't load</span>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            <RotateCw className="h-4 w-4" />
+            Retry
+          </Button>
+        </span>
+      );
+    }
 
-  if (hasNextPage) {
-    return (
-      <div className="flex flex-col items-center gap-1.5 py-3">
+    if (hasNextPage) {
+      return (
         <Button variant="outline" size="sm" onClick={loadOlderRuns} disabled={isLoadingOlderRuns}>
           {isLoadingOlderRuns ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronDown className="h-4 w-4" />}
           {isLoadingOlderRuns ? "Loading…" : "Load older runs"}
         </Button>
-        {visibleHistoryCount > 0 && (
-          <p className="text-muted-foreground text-xs">Showing {visibleHistoryCount} from history</p>
-        )}
-      </div>
-    );
-  }
+      );
+    }
 
-  if (visibleHistoryCount > 0) {
-    return (
-      <p className="text-muted-foreground py-3 text-center text-xs">
-        End of history · showing {visibleHistoryCount} from history
-      </p>
-    );
-  }
+    if (visibleHistoryCount > 0) {
+      return (
+        <span className="text-muted-foreground text-sm" role="status">
+          All runs loaded
+        </span>
+      );
+    }
 
-  return null;
+    return null;
+  })();
+
+  if (!content) return null;
+
+  return <div className="flex min-h-8 items-center justify-end px-5 pb-5">{content}</div>;
 }

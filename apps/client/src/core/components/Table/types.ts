@@ -165,6 +165,8 @@ export interface TableBaseProps<DataType> {
   slots?: {
     header?: {
       component: React.ReactElement;
+      /** Rendered on its own line between the filters and the table, outside the narrow-screen sheet. */
+      summary?: React.ReactNode;
       /** HTML attributes to pass to the header wrapper element (e.g., data-tour for PageGuide) */
       slotProps?: PropsWithHTMLDataAttrs;
     };
