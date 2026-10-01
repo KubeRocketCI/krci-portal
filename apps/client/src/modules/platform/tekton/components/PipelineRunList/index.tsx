@@ -15,6 +15,7 @@ import { useSelection } from "./hooks/useSelection";
 import { PipelineRunListProps } from "./types";
 import { pipelineRunFilterControlNames } from "./components/Filter/constants";
 import { columnNames } from "./constants";
+import { VisibleRunCount } from "./components/VisibleRunCount";
 
 /** Newest first: a run the user just triggered lands at the top, queued or already started. */
 const DEFAULT_SORT = { sortBy: columnNames.STARTED_AT, order: "desc" } as const;
@@ -61,6 +62,11 @@ export const PipelineRunList = ({
 
   const { filterFunction } = usePipelineRunFilter();
 
+  // Same predicate DataTable applies. With the pager hidden the table renders every filtered row, so the
+  // count equals the rows on screen; with the pager shown its "of N" label already carries the total.
+  const showCount = pagination?.show === false && !isLoading;
+  const visibleCount = React.useMemo(() => pipelineRuns.filter(filterFunction).length, [pipelineRuns, filterFunction]);
+
   const tableSlots = React.useMemo(() => {
     return {
       header: {
@@ -71,9 +77,10 @@ export const PipelineRunList = ({
             filterControls={filterControls}
           />
         ),
+        summary: showCount ? <VisibleRunCount count={visibleCount} /> : undefined,
       },
     };
-  }, [pipelineRuns, pipelineRunTypes, filterControls]);
+  }, [pipelineRuns, pipelineRunTypes, filterControls, showCount, visibleCount]);
 
   return (
     <>

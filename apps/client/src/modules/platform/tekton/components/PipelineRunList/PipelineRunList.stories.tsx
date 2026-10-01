@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect } from "storybook/test";
 import { PipelineRunList } from "./index";
 import { FilterProvider } from "@/core/providers/Filter/provider";
 import {
@@ -227,6 +228,7 @@ export const Default: Story = {
     tableName: "Pipeline Runs",
     pipelineRuns: generateMockPipelineRuns(),
     isLoading: false,
+    pagination: { show: false },
     pipelineRunTypes: [
       pipelineType.review,
       pipelineType.build,
@@ -244,6 +246,27 @@ export const Default: Story = {
       pipelineRunFilterControlNames.NAMESPACES,
     ],
   },
+  play: async ({ canvas, args }) => {
+    const runs = args.pipelineRuns as PipelineRun[];
+    await expect(canvas.getByTestId("pipeline-run-count")).toHaveTextContent(`${runs.length} runs`);
+  },
+};
+
+/**
+ * Paginated list - the pager's "of N" label carries the total, so no count line is rendered
+ */
+export const Paginated: Story = {
+  args: {
+    tableId: "storybook-pipeline-run-list-paginated",
+    tableName: "Pipeline Runs",
+    pipelineRuns: generateMockPipelineRuns(),
+    isLoading: false,
+    filterControls: [pipelineRunFilterControlNames.STATUS, pipelineRunFilterControlNames.PIPELINE_TYPE],
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.queryByTestId("pipeline-run-count")).not.toBeInTheDocument();
+    await expect(canvas.getByTestId("table-pagination-range")).toBeInTheDocument();
+  },
 };
 
 /**
@@ -255,11 +278,15 @@ export const Loading: Story = {
     tableName: "Pipeline Runs",
     pipelineRuns: [],
     isLoading: true,
+    pagination: { show: false },
     filterControls: [
       pipelineRunFilterControlNames.CODEBASES,
       pipelineRunFilterControlNames.STATUS,
       pipelineRunFilterControlNames.PIPELINE_TYPE,
     ],
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.queryByTestId("pipeline-run-count")).not.toBeInTheDocument();
   },
 };
 
@@ -289,6 +316,7 @@ export const FilteredByStatusSuccess: Story = {
     tableName: "Pipeline Runs",
     pipelineRuns: generateMockPipelineRuns(),
     isLoading: false,
+    pagination: { show: false },
     filterControls: [
       pipelineRunFilterControlNames.STATUS,
       pipelineRunFilterControlNames.PIPELINE_TYPE,
@@ -297,6 +325,11 @@ export const FilteredByStatusSuccess: Story = {
     defaultFilterValues: {
       [pipelineRunFilterControlNames.STATUS]: "succeeded",
     },
+  },
+  play: async ({ canvas, args }) => {
+    const runs = args.pipelineRuns as PipelineRun[];
+    const succeeded = runs.filter((run) => matchFunctions.status?.(run, "succeeded") ?? false).length;
+    await expect(canvas.getByTestId("pipeline-run-count")).toHaveTextContent(`${succeeded} runs`);
   },
 };
 

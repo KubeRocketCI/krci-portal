@@ -323,6 +323,7 @@ const TableShell = <DataType,>(props: TableShellProps<DataType>) => {
             )}
           </div>
         </div>
+        {slots?.header?.summary && <div className="mt-3">{slots.header.summary}</div>}
       </div>
     );
   }, [isNarrow, slots?.header, tableSettings.show, columns, toggleColumnVisibility, outlined, resize.reset]);
