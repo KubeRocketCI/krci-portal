@@ -43,7 +43,6 @@ export const PipelineRunList = ({
     pipelineRunFilterControlNames.PIPELINE_TYPE,
     pipelineRunFilterControlNames.NAMESPACES,
   ],
-  detailRoutePath,
 }: PipelineRunListProps) => {
   const { selected, setSelected, handleSelectRowClick, handleSelectAllClick } = useSelection();
   const pipelineRunPermissions = usePipelineRunPermissions();
@@ -54,9 +53,7 @@ export const PipelineRunList = ({
     setSelected([]);
   }, [setSelected]);
 
-  const columns = useColumns({
-    detailRoutePath,
-  });
+  const columns = useColumns();
 
   const onDeleteClick = React.useCallback(() => {
     setDeleteDialogOpen(true);

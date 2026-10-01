@@ -19,23 +19,12 @@ import { useShallow } from "zustand/react/shallow";
 
 const HISTORY_PAGE_SIZE = 50;
 
-interface HistoryPage {
+export interface HistoryPage {
   results: TektonResult[];
   nextPageToken?: string;
 }
 
 /**
- * Options for the unified pipeline run list hook.
- *
- * @param labels - K8s label selectors for filtering live PipelineRuns (via watch)
- *   and history PipelineRuns (auto-converted to a CEL filter for Tekton Results).
- *   The same label keys work for both because Tekton Results stores the labels
- *   as Result-level annotations, so `annotations["key"]` matches K8s labels.
- *   When undefined/empty, all PipelineRuns in the namespace are fetched.
- *
- * @param enabled - Whether the K8s watch and history queries are enabled.
- *   Defaults to true. Set to false to defer data fetching (e.g., waiting for route params).
- *
  * @param searchTerm - Debounced search term for server-side name filtering via Tekton Results CEL.
  *
  * @param status - PipelineRun status filter value. Resolved via
@@ -49,14 +38,30 @@ interface HistoryPage {
  * @param codebases - List of codebase names to filter by.
  *   Applied as a CEL annotation OR-filter for history.
  *   Live K8s items with a single codebase also get a label selector.
+ *
+ * @param namespaces - History covers the default namespace only; a selection without it
+ *   disables the history query. Live K8s items are filtered in-memory by the FilterProvider
+ *   matchFunction.
  */
-interface UseUnifiedPipelineRunListOptions {
-  labels?: Record<string, string>;
-  enabled?: boolean;
+export interface PipelineRunQueryFilters {
   searchTerm?: string;
   status?: PipelineRunStatusFilterValue;
   pipelineType?: string;
   codebases?: string[];
+  namespaces?: string[];
+}
+
+/**
+ * @param labels - Label selectors for the live watch; converted to a CEL annotations filter for history.
+ *   Tekton Results stores PipelineRun labels as Result annotations, so `annotations["key"]` matches
+ *   the label key. Empty: all PipelineRuns in the namespace.
+ *
+ * @param enabled - Gates the K8s watch and the history query, e.g. until route params resolve.
+ *   Defaults to true.
+ */
+interface UseUnifiedPipelineRunListOptions extends PipelineRunQueryFilters {
+  labels?: Record<string, string>;
+  enabled?: boolean;
 }
 
 /**
@@ -72,6 +77,8 @@ export interface UseUnifiedPipelineRunListResult {
   /** The underlying infinite query for history data -- exposes pagination, error states, etc. */
   historyQuery: ReturnType<typeof useInfiniteQuery<HistoryPage, Error>>;
 }
+
+export type HistoryQuery = UseUnifiedPipelineRunListResult["historyQuery"];
 
 /**
  * Shared hook that merges live K8s PipelineRuns with historical Tekton Results PipelineRuns.
@@ -91,7 +98,7 @@ export interface UseUnifiedPipelineRunListResult {
  * 5. Concatenate live + filtered history, sorted by creation time (newest first)
  */
 export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOptions): UseUnifiedPipelineRunListResult {
-  const { labels, enabled = true, searchTerm, status, pipelineType, codebases } = options ?? {};
+  const { labels, enabled = true, searchTerm, status, pipelineType, codebases, namespaces } = options ?? {};
   const trpc = useTRPCClient();
   const { namespace, clusterName } = useClusterStore(
     useShallow((state) => ({
@@ -129,10 +136,12 @@ export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOpt
     return parts.length > 0 ? parts.join(" && ") : undefined;
   }, [labels, searchTerm, statusFilter, pipelineType, codebases]);
 
-  const historyEnabled = enabled && statusFilter.historyEnabled;
+  const historyEnabled =
+    enabled && statusFilter.historyEnabled && (!namespaces?.length || namespaces.includes(namespace));
 
+  // Key includes `historyEnabled`: filter states with and without history can share a CEL filter.
   const historyQuery = useInfiniteQuery<HistoryPage, Error>({
-    queryKey: ["tektonResults", "pipelineRunResults", clusterName, namespace, celFilter],
+    queryKey: ["tektonResults", "pipelineRunResults", clusterName, namespace, celFilter, historyEnabled],
     queryFn: ({ pageParam }) => {
       return trpc.tektonResults.getPipelineRunResults.query({
         namespace,

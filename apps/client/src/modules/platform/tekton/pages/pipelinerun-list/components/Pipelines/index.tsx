@@ -1,19 +1,5 @@
-import { PipelineRunList } from "@/modules/platform/tekton/components/PipelineRunList";
-import { PATH_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-details/route";
-import { useUnifiedPipelineRunList } from "@/modules/platform/tekton/hooks/useUnifiedPipelineRunList";
-import { HistoryLoadingFooter } from "@/modules/platform/tekton/components/HistoryLoadingFooter";
-import { FilterProvider } from "@/core/providers/Filter/provider";
-import {
-  CODEBASE_DIVIDER_VALUE,
-  pipelineRunFilterControlNames,
-  pipelineRunFilterProviderProps,
-} from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
-import {
-  useDebouncedPipelineRunSearch,
-  usePipelineRunFilter,
-  useSelectedPipelineRunStatus,
-} from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter";
-import { useStore } from "@tanstack/react-form";
+import { UnifiedPipelineRunList } from "@/modules/platform/tekton/components/UnifiedPipelineRunList";
+import { pipelineRunFilterControlNames } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
 import { useNavigate } from "@tanstack/react-router";
 import React from "react";
 
@@ -27,16 +13,6 @@ const TABLE_NAME = "Unified Pipeline Run List";
  * No label filter on K8s watch and no CEL filter on history -- shows all pipeline runs.
  */
 export function Pipelines() {
-  return (
-    <FilterProvider {...pipelineRunFilterProviderProps}>
-      <PipelinesContent />
-    </FilterProvider>
-  );
-}
-
-function PipelinesContent() {
-  const debouncedSearch = useDebouncedPipelineRunSearch();
-  const { form } = usePipelineRunFilter();
   const navigate = useNavigate();
 
   React.useEffect(() => {
@@ -48,38 +24,18 @@ function PipelinesContent() {
     });
   }, [navigate]);
 
-  const pipelineType = useStore(form.store, (s) => s.values.pipelineType);
-  const status = useSelectedPipelineRunStatus();
-  const codebases = useStore(form.store, (s) => s.values.codebases);
-
-  // Guard against a crafted URL injecting the sentinel into URL-synced filter state.
-  const sanitizedCodebases = React.useMemo(() => codebases.filter((c) => c !== CODEBASE_DIVIDER_VALUE), [codebases]);
-
-  const { mergedPipelineRuns, isLoading, isHistoryLoading, historyQuery } = useUnifiedPipelineRunList({
-    searchTerm: debouncedSearch,
-    pipelineType,
-    status,
-    codebases: sanitizedCodebases,
-  });
-
   return (
-    <div className="flex flex-col gap-2">
-      <PipelineRunList
-        tableId={TABLE_ID}
-        tableName={TABLE_NAME}
-        pipelineRuns={mergedPipelineRuns}
-        isLoading={isLoading}
-        filterControls={[
-          pipelineRunFilterControlNames.SEARCH,
-          pipelineRunFilterControlNames.CODEBASES,
-          pipelineRunFilterControlNames.STATUS,
-          pipelineRunFilterControlNames.PIPELINE_TYPE,
-          pipelineRunFilterControlNames.NAMESPACES,
-        ]}
-        detailRoutePath={PATH_PIPELINERUN_DETAILS_FULL}
-        pagination={{ show: false }}
-      />
-      <HistoryLoadingFooter isHistoryLoading={isHistoryLoading} historyQuery={historyQuery} />
-    </div>
+    <UnifiedPipelineRunList
+      tableId={TABLE_ID}
+      tableName={TABLE_NAME}
+      filterControls={[
+        pipelineRunFilterControlNames.SEARCH,
+        pipelineRunFilterControlNames.CODEBASES,
+        pipelineRunFilterControlNames.STATUS,
+        pipelineRunFilterControlNames.PIPELINE_TYPE,
+        pipelineRunFilterControlNames.NAMESPACES,
+      ]}
+      pagination={{ show: false }}
+    />
   );
 }

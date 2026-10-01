@@ -3,31 +3,13 @@ import { render } from "@testing-library/react";
 import { getStageResourceName, pipelineRunLabels } from "@my-project/shared";
 import { Pipelines } from "./index";
 
-const mockUseUnifiedPipelineRunList = vi.fn();
+const mockUnifiedPipelineRunList = vi.fn();
 
-vi.mock("@/modules/platform/tekton/hooks/useUnifiedPipelineRunList", () => ({
-  useUnifiedPipelineRunList: (opts: unknown) => mockUseUnifiedPipelineRunList(opts),
-}));
-
-vi.mock("@/modules/platform/tekton/components/PipelineRunList", () => ({
-  PipelineRunList: () => null,
-}));
-
-vi.mock("@/modules/platform/tekton/components/HistoryLoadingFooter", () => ({
-  HistoryLoadingFooter: () => null,
-}));
-
-vi.mock("@/modules/platform/tekton/pages/pipelinerun-details/route", () => ({
-  PATH_PIPELINERUN_DETAILS_FULL: "/c/$clusterName/pipelineruns/$namespace/$name",
-}));
-
-vi.mock("@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter", () => ({
-  useDebouncedPipelineRunSearch: () => "",
-  useSelectedPipelineRunStatus: () => "cancelled",
-}));
-
-vi.mock("@/core/providers/Filter/provider", () => ({
-  FilterProvider: ({ children }: { children: React.ReactNode }) => children,
+vi.mock("@/modules/platform/tekton/components/UnifiedPipelineRunList", () => ({
+  UnifiedPipelineRunList: (props: unknown) => {
+    mockUnifiedPipelineRunList(props);
+    return null;
+  },
 }));
 
 vi.mock("../../../../../../route", () => ({
@@ -43,31 +25,18 @@ vi.mock("../../../../../../route", () => ({
 
 describe("stage-details Pipelines tab", () => {
   beforeEach(() => {
-    mockUseUnifiedPipelineRunList.mockReset();
-    mockUseUnifiedPipelineRunList.mockReturnValue({
-      mergedPipelineRuns: [],
-      isLoading: false,
-      isHistoryLoading: false,
-      historyQuery: { isLoading: false },
-    });
+    mockUnifiedPipelineRunList.mockReset();
   });
 
   it("filters by app.edp.epam.com/cdstage (not /stage) so operator-created runs appear", () => {
     render(<Pipelines />);
 
-    expect(mockUseUnifiedPipelineRunList).toHaveBeenCalledTimes(1);
-    const [opts] = mockUseUnifiedPipelineRunList.mock.calls[0] as [{ labels: Record<string, string> }];
+    expect(mockUnifiedPipelineRunList).toHaveBeenCalledTimes(1);
+    const [props] = mockUnifiedPipelineRunList.mock.calls[0] as [{ labels: Record<string, string> }];
 
-    expect(opts.labels).toEqual({
+    expect(props.labels).toEqual({
       [pipelineRunLabels.cdPipeline]: "tekton",
       [pipelineRunLabels.cdStage]: getStageResourceName("tekton", "dev"),
     });
-  });
-
-  it("passes the filter's status value to useUnifiedPipelineRunList so history requests carry it too", () => {
-    render(<Pipelines />);
-
-    const [opts] = mockUseUnifiedPipelineRunList.mock.calls[0] as [{ status: string }];
-    expect(opts.status).toBe("cancelled");
   });
 });

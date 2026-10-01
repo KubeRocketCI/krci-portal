@@ -1,10 +1,13 @@
 import { Button } from "@/core/components/ui/button";
 import { ChevronDown, Loader2, RotateCw } from "lucide-react";
-import type { UseUnifiedPipelineRunListResult } from "../../hooks/useUnifiedPipelineRunList";
+import type { HistoryQuery } from "../../hooks/useUnifiedPipelineRunList";
+import { useLoadOlderRuns } from "./hooks/useLoadOlderRuns";
 
 interface HistoryLoadingFooterProps {
   isHistoryLoading: boolean;
-  historyQuery: UseUnifiedPipelineRunListResult["historyQuery"];
+  historyQuery: HistoryQuery;
+  /** History rows the table renders, after deduplication against live runs and client-side filters. */
+  visibleHistoryCount: number;
 }
 
 /**
@@ -12,12 +15,13 @@ interface HistoryLoadingFooterProps {
  * archive below the live runs, following the conventional "load more" layout --
  * the action on top, a quiet status line beneath it.
  */
-export function HistoryLoadingFooter({ isHistoryLoading, historyQuery }: HistoryLoadingFooterProps) {
-  const { data, isError, hasNextPage, isFetchingNextPage, fetchNextPage, refetch } = historyQuery;
-
-  // Derived here so callers don't have to thread a count prop; the reduce is over a
-  // handful of pages, so a plain const is cheaper than memoizing it.
-  const historyCount = data?.pages.reduce((total, page) => total + page.results.length, 0) ?? 0;
+export function HistoryLoadingFooter({
+  isHistoryLoading,
+  historyQuery,
+  visibleHistoryCount,
+}: HistoryLoadingFooterProps) {
+  const { isError, hasNextPage, refetch } = historyQuery;
+  const { loadOlderRuns, isLoadingOlderRuns } = useLoadOlderRuns({ historyQuery, visibleHistoryCount });
 
   if (isHistoryLoading) {
     return (
@@ -43,19 +47,22 @@ export function HistoryLoadingFooter({ isHistoryLoading, historyQuery }: History
   if (hasNextPage) {
     return (
       <div className="flex flex-col items-center gap-1.5 py-3">
-        <Button variant="outline" size="sm" onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
-          {isFetchingNextPage ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronDown className="h-4 w-4" />}
-          {isFetchingNextPage ? "Loading…" : "Load older runs"}
+        <Button variant="outline" size="sm" onClick={loadOlderRuns} disabled={isLoadingOlderRuns}>
+          {isLoadingOlderRuns ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronDown className="h-4 w-4" />}
+          {isLoadingOlderRuns ? "Loading…" : "Load older runs"}
         </Button>
-        {historyCount > 0 && <p className="text-muted-foreground text-xs">Showing {historyCount} from history</p>}
+        {visibleHistoryCount > 0 && (
+          <p className="text-muted-foreground text-xs">Showing {visibleHistoryCount} from history</p>
+        )}
       </div>
     );
   }
 
-  // Reached the end of the archive -- text-only closure (only when history exists).
-  if (historyCount > 0) {
+  if (visibleHistoryCount > 0) {
     return (
-      <p className="text-muted-foreground py-3 text-center text-xs">End of history · {historyCount} archived runs</p>
+      <p className="text-muted-foreground py-3 text-center text-xs">
+        End of history · showing {visibleHistoryCount} from history
+      </p>
     );
   }
 

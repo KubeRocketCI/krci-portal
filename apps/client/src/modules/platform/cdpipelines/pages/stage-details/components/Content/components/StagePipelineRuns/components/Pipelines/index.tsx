@@ -1,18 +1,7 @@
-import { PipelineRunList } from "@/modules/platform/tekton/components/PipelineRunList";
-import { PATH_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-details/route";
-import { useUnifiedPipelineRunList } from "@/modules/platform/tekton/hooks/useUnifiedPipelineRunList";
-import { HistoryLoadingFooter } from "@/modules/platform/tekton/components/HistoryLoadingFooter";
+import { UnifiedPipelineRunList } from "@/modules/platform/tekton/components/UnifiedPipelineRunList";
+import { pipelineRunFilterControlNames } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
 import { getStageResourceName, pipelineRunLabels, pipelineType } from "@my-project/shared";
 import { routeStageDetails } from "../../../../../../route";
-import { FilterProvider } from "@/core/providers/Filter/provider";
-import {
-  pipelineRunFilterControlNames,
-  pipelineRunFilterProviderProps,
-} from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
-import {
-  useDebouncedPipelineRunSearch,
-  useSelectedPipelineRunStatus,
-} from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/hooks/usePipelineRunFilter";
 
 const TABLE_ID = "stage-pipelines-unified";
 const TABLE_NAME = "Unified Pipeline Run List";
@@ -22,44 +11,22 @@ const TABLE_NAME = "Unified Pipeline Run List";
  * historical Tekton Results PipelineRuns for a specific stage.
  */
 export function Pipelines() {
-  return (
-    <FilterProvider {...pipelineRunFilterProviderProps}>
-      <PipelinesContent />
-    </FilterProvider>
-  );
-}
-
-function PipelinesContent() {
   const params = routeStageDetails.useParams();
 
-  const debouncedSearch = useDebouncedPipelineRunSearch();
-  const status = useSelectedPipelineRunStatus();
-
-  const { mergedPipelineRuns, isLoading, isHistoryLoading, historyQuery } = useUnifiedPipelineRunList({
-    labels: {
-      [pipelineRunLabels.cdPipeline]: params.cdPipeline,
-      [pipelineRunLabels.cdStage]: getStageResourceName(params.cdPipeline, params.stage),
-    },
-    searchTerm: debouncedSearch,
-    status,
-  });
-
   return (
-    <div className="flex flex-col gap-2">
-      <PipelineRunList
-        tableId={TABLE_ID}
-        tableName={TABLE_NAME}
-        pipelineRuns={mergedPipelineRuns}
-        isLoading={isLoading}
-        pipelineRunTypes={[pipelineType.deploy, pipelineType.clean]}
-        filterControls={[
-          pipelineRunFilterControlNames.SEARCH,
-          pipelineRunFilterControlNames.PIPELINE_TYPE,
-          pipelineRunFilterControlNames.STATUS,
-        ]}
-        detailRoutePath={PATH_PIPELINERUN_DETAILS_FULL}
-      />
-      <HistoryLoadingFooter isHistoryLoading={isHistoryLoading} historyQuery={historyQuery} />
-    </div>
+    <UnifiedPipelineRunList
+      tableId={TABLE_ID}
+      tableName={TABLE_NAME}
+      labels={{
+        [pipelineRunLabels.cdPipeline]: params.cdPipeline,
+        [pipelineRunLabels.cdStage]: getStageResourceName(params.cdPipeline, params.stage),
+      }}
+      pipelineRunTypes={[pipelineType.deploy, pipelineType.clean]}
+      filterControls={[
+        pipelineRunFilterControlNames.SEARCH,
+        pipelineRunFilterControlNames.PIPELINE_TYPE,
+        pipelineRunFilterControlNames.STATUS,
+      ]}
+    />
   );
 }

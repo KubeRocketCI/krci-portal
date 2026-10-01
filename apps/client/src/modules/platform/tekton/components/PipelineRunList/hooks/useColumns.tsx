@@ -21,12 +21,7 @@ import { PipelineRunGraphDialog } from "../../../dialogs/PipelineRunGraph";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { StatusColumn } from "../components/columns/Status";
 
-export const useColumns = ({
-  detailRoutePath,
-}: {
-  /** Override the route path used for row detail links. Defaults to PATH_PIPELINERUN_DETAILS_FULL. */
-  detailRoutePath?: string;
-}): TableColumn<PipelineRun>[] => {
+export const useColumns = (): TableColumn<PipelineRun>[] => {
   const { namespace: defaultNamespace, clusterName } = useClusterStore(
     useShallow((state) => ({
       namespace: state.defaultNamespace,
@@ -35,8 +30,6 @@ export const useColumns = ({
   );
 
   const openPipelineRunGraphDialog = useDialogOpener(PipelineRunGraphDialog);
-
-  const rowDetailRoute = detailRoutePath ?? PATH_PIPELINERUN_DETAILS_FULL;
 
   return React.useMemo(
     () => [
@@ -53,7 +46,7 @@ export const useColumns = ({
             return (
               <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal">
                 <Link
-                  to={rowDetailRoute}
+                  to={PATH_PIPELINERUN_DETAILS_FULL}
                   params={{
                     clusterName,
                     namespace: namespace || defaultNamespace,
@@ -391,6 +384,6 @@ export const useColumns = ({
         },
       },
     ],
-    [clusterName, defaultNamespace, openPipelineRunGraphDialog, rowDetailRoute]
+    [clusterName, defaultNamespace, openPipelineRunGraphDialog]
   );
 };
