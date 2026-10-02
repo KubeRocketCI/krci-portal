@@ -5,11 +5,13 @@ import { DataTable } from "@/core/components/Table";
 import { useRowSelection } from "@/core/components/Table/hooks/useRowSelection";
 import { usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { getKubeObjectUid } from "@/k8s/utils/getKubeObjectUid";
+import { useStopPipelineRuns } from "@/modules/platform/tekton/hooks/useStopPipelineRuns";
 import { Tooltip } from "@/core/components/ui/tooltip";
-import { isHistoryPipelineRun, pipelineType } from "@my-project/shared";
-import { Trash } from "lucide-react";
+import { isHistoryPipelineRun, isPipelineRunStoppable, pipelineType, type PipelineRun } from "@my-project/shared";
+import { OctagonX, Trash } from "lucide-react";
 import React from "react";
 import { DeletionDialog } from "./components/DeleteDialog";
+import { StopPipelineRunsDialog } from "./components/StopPipelineRunsDialog";
 import { PipelineRunFilter } from "./components/Filter";
 import { usePipelineRunFilter } from "./components/Filter/hooks/usePipelineRunFilter";
 import { useColumns } from "./hooks/useColumns";
@@ -46,10 +48,14 @@ export const PipelineRunList = ({
     pipelineRunFilterControlNames.NAMESPACES,
   ],
 }: PipelineRunListProps) => {
-  const { selection, selectedRows, clearSelection } = useRowSelection(pipelineRuns, getKubeObjectUid);
+  const { selection, selectedRows, clearSelection, deselectRows } = useRowSelection(pipelineRuns, getKubeObjectUid);
   const pipelineRunPermissions = usePipelineRunPermissions();
+  const { stop, isPending: isStopPending, permission: stopPermission } = useStopPipelineRuns();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [stopTarget, setStopTarget] = React.useState<PipelineRun[]>();
+
+  const stoppableCount = React.useMemo(() => selectedRows.filter(isPipelineRunStoppable).length, [selectedRows]);
 
   const columns = useColumns();
 
@@ -102,6 +108,19 @@ export const PipelineRunList = ({
                 <div className="min-w-[150px]">
                   <p className="text-base">{selectedCount} item(s) selected</p>
                 </div>
+                <ButtonWithPermission
+                  ButtonProps={{
+                    size: "sm",
+                    variant: "outline",
+                    onClick: () => setStopTarget(selectedRows),
+                    disabled: !stoppableCount || isStopPending,
+                  }}
+                  reason={stopPermission.reason}
+                  allowed={stopPermission.allowed}
+                >
+                  <OctagonX size={16} />
+                  Stop {stoppableCount}
+                </ButtonWithPermission>
                 <ConditionalWrapper
                   condition={pipelineRunPermissions.data.delete.allowed}
                   wrapper={(children) => (
@@ -139,6 +158,15 @@ export const PipelineRunList = ({
           open={deleteDialogOpen}
           handleClose={() => setDeleteDialogOpen(false)}
           onDelete={clearSelection}
+        />
+      )}
+      {stopTarget && (
+        <StopPipelineRunsDialog
+          pipelineRuns={stopTarget}
+          stop={stop}
+          open
+          onOpenChange={(open) => !open && setStopTarget(undefined)}
+          onStopped={deselectRows}
         />
       )}
     </>

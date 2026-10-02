@@ -8,42 +8,12 @@ import {
   toPipelineRunRef,
   type PipelineRun,
 } from "@my-project/shared";
-import type { RouterOutput } from "@my-project/trpc";
 import React from "react";
+import { describeStopOutcome, type StopPipelineRunsOutput } from "./outcome";
 
-export type StopPipelineRunsOutput = RouterOutput["pipelineRun"]["stop"];
-export type PipelineRunStopOutcome = StopPipelineRunsOutput["results"][number];
-type PipelineRunStopReason = NonNullable<PipelineRunStopOutcome["reason"]>;
-
-export const pipelineRunStopReasonLabels: Record<PipelineRunStopReason, string> = {
-  already_done: "already finished",
-  already_stopping: "already stopping",
-  not_found: "not found",
-  forbidden: "no permission",
-  error: "Kubernetes API error",
-};
-
+export type { PipelineRunStopOutcome, StopPipelineRunsOutput } from "./outcome";
 const describeRuns = (runs: readonly PipelineRun[]) =>
   runs.length === 1 ? `PipelineRun ${runs[0].metadata.name}` : `${runs.length} PipelineRuns`;
-
-const describeOutcome = (runs: readonly PipelineRun[], { results, summary }: StopPipelineRunsOutput) => {
-  if (results.length === 1) {
-    const [{ name, result, reason }] = results;
-    const reasonLabel = reason ? pipelineRunStopReasonLabels[reason] : "";
-
-    if (result === "stopping") return `PipelineRun ${name} is stopping`;
-    if (result === "skipped") return `PipelineRun ${name} was not stopped: ${reasonLabel}`;
-    return `Failed to stop PipelineRun ${name}: ${reasonLabel}`;
-  }
-
-  return [
-    `Stopping ${summary.stopping} of ${runs.length} PipelineRuns`,
-    summary.skipped ? `${summary.skipped} skipped` : "",
-    summary.failed ? `${summary.failed} failed` : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
-};
 
 const outcomeSeverity = ({ summary }: StopPipelineRunsOutput): Severity => {
   if (summary.failed) return summary.stopping ? "warning" : "error";
@@ -91,7 +61,7 @@ export function useStopPipelineRuns() {
     },
     messages: {
       loading: (runs) => `Stopping ${describeRuns(runs)}…`,
-      success: describeOutcome,
+      success: (_, output) => describeStopOutcome(output),
       error: (runs) => `Failed to stop ${describeRuns(runs)}`,
     },
     successSeverity: (_, output) => outcomeSeverity(output),
