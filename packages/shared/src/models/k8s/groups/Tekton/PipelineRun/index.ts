@@ -5,6 +5,7 @@ export {
   pipelineRunReason,
   pipelineRunSpecStatus,
   pipelineRunPhase,
+  pipelineRunStopSkipReason,
   pipelineRunCancelledReasons,
   pipelineRunCancellingReasons,
   isPipelineRunCancelledReason,

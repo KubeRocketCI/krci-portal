@@ -1,8 +1,15 @@
 import z from "zod";
-import { pipelineRunDraftSchema, pipelineRunPhaseEnum, pipelineRunReasonEnum, pipelineRunSchema } from "./index.js";
+import {
+  pipelineRunDraftSchema,
+  pipelineRunPhaseEnum,
+  pipelineRunReasonEnum,
+  pipelineRunSchema,
+  pipelineRunStopSkipReasonEnum,
+} from "./index.js";
 
 export type PipelineRunReason = z.infer<typeof pipelineRunReasonEnum>;
 export type PipelineRunPhase = z.infer<typeof pipelineRunPhaseEnum>;
+export type PipelineRunStopSkipReason = z.infer<typeof pipelineRunStopSkipReasonEnum>;
 
 export type PipelineRun = z.infer<typeof pipelineRunSchema>;
 export type PipelineRunDraft = z.infer<typeof pipelineRunDraftSchema>;

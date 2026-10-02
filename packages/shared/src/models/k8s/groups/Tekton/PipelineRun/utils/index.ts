@@ -5,6 +5,7 @@ export * from "./createDeployPipelineRunDraft/index.js";
 export * from "./createPipelineRunDraftFromPipeline/index.js";
 export * from "./createRerunPipelineRun/index.js";
 export * from "./createGracefulCancelPipelineRun/index.js";
+export * from "./planPipelineRunStop/index.js";
 export * from "./getPipelineRunStatus/index.js";
 export * from "./getPipelineRunStatusLabel/index.js";
 export * from "./isPipelineRunInProgress/index.js";
