@@ -61,54 +61,45 @@ export const PreviewTable = () => {
           handleSelectAll: handleClickSelectAll,
           handleSelectRow: handleClickSelectRow,
           renderSelectionInfo: (selectionLength) => (
-            <div className="flex flex-row items-center justify-between">
-              <div
-                style={{
-                  visibility: selectionLength ? "visible" : "hidden",
-                  pointerEvents: selectionLength ? "auto" : "none",
-                }}
-              >
-                <div className="flex flex-row items-center gap-4">
-                  <div className="min-w-38">
-                    <p className="text-base">{selectionLength} item(s) selected</p>
-                  </div>
-                  {applicationPermissions.data?.delete.allowed ? (
-                    <Tooltip title="Uninstall selected applications">
-                      <div className="text-secondary-foreground">
-                        <ButtonWithPermission
-                          ButtonProps={{
-                            size: "sm",
-                            variant: "outline",
-                            onClick: handleClickDelete,
-                            disabled: !selectionLength || !buttonsEnabledMap.uninstall,
-                          }}
-                          allowed={applicationPermissions.data?.delete.allowed}
-                          reason={applicationPermissions.data?.delete.reason}
-                        >
-                          <Trash size={16} />
-                          Delete
-                        </ButtonWithPermission>
-                      </div>
-                    </Tooltip>
-                  ) : (
-                    <div className="text-secondary-foreground">
-                      <ButtonWithPermission
-                        ButtonProps={{
-                          size: "sm",
-                          variant: "outline",
-                          onClick: handleClickDelete,
-                          disabled: !selectionLength || !buttonsEnabledMap.uninstall,
-                        }}
-                        allowed={applicationPermissions.data?.delete.allowed}
-                        reason={applicationPermissions.data?.delete.reason}
-                      >
-                        <Trash size={16} />
-                        Delete
-                      </ButtonWithPermission>
-                    </div>
-                  )}
-                </div>
+            <div className="flex flex-row items-center gap-4">
+              <div className="min-w-38">
+                <p className="text-base">{selectionLength} item(s) selected</p>
               </div>
+              {applicationPermissions.data?.delete.allowed ? (
+                <Tooltip title="Uninstall selected applications">
+                  <div className="text-secondary-foreground">
+                    <ButtonWithPermission
+                      ButtonProps={{
+                        size: "sm",
+                        variant: "outline",
+                        onClick: handleClickDelete,
+                        disabled: !buttonsEnabledMap.uninstall,
+                      }}
+                      allowed={applicationPermissions.data?.delete.allowed}
+                      reason={applicationPermissions.data?.delete.reason}
+                    >
+                      <Trash size={16} />
+                      Delete
+                    </ButtonWithPermission>
+                  </div>
+                </Tooltip>
+              ) : (
+                <div className="text-secondary-foreground">
+                  <ButtonWithPermission
+                    ButtonProps={{
+                      size: "sm",
+                      variant: "outline",
+                      onClick: handleClickDelete,
+                      disabled: !buttonsEnabledMap.uninstall,
+                    }}
+                    allowed={applicationPermissions.data?.delete.allowed}
+                    reason={applicationPermissions.data?.delete.reason}
+                  >
+                    <Trash size={16} />
+                    Delete
+                  </ButtonWithPermission>
+                </div>
+              )}
             </div>
           ),
         }}

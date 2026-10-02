@@ -103,49 +103,46 @@ export const PipelineRunList = ({
           ...selection,
           isRowSelectable: (row) => !isHistoryPipelineRun(row),
           renderSelectionInfo: (selectedCount: number) => (
-            <div className={selectedCount ? "visible" : "pointer-events-none invisible"}>
-              <div className="flex flex-row items-center gap-4">
-                <div className="min-w-[150px]">
-                  <p className="text-base">{selectedCount} item(s) selected</p>
-                </div>
-                <ButtonWithPermission
-                  ButtonProps={{
-                    size: "sm",
-                    variant: "outline",
-                    onClick: () => setStopTarget(selectedRows),
-                    disabled: !stoppableCount || isStopPending,
-                  }}
-                  reason={stopPermission.reason}
-                  allowed={stopPermission.allowed}
-                >
-                  <OctagonX size={16} />
-                  Stop {stoppableCount}
-                </ButtonWithPermission>
-                <ConditionalWrapper
-                  condition={pipelineRunPermissions.data.delete.allowed}
-                  wrapper={(children) => (
-                    <Tooltip title={"Delete selected PipelineRuns"}>
-                      <div>{children}</div>
-                    </Tooltip>
-                  )}
-                >
-                  <div className="text-secondary-700">
-                    <ButtonWithPermission
-                      ButtonProps={{
-                        size: "sm",
-                        variant: "outline",
-                        onClick: onDeleteClick,
-                        disabled: !selectedCount,
-                      }}
-                      reason={pipelineRunPermissions.data.delete.reason}
-                      allowed={pipelineRunPermissions.data.delete.allowed}
-                    >
-                      <Trash size={16} />
-                      Delete
-                    </ButtonWithPermission>
-                  </div>
-                </ConditionalWrapper>
+            <div className="flex flex-row items-center gap-4">
+              <div className="min-w-[150px]">
+                <p className="text-base">{selectedCount} item(s) selected</p>
               </div>
+              <ButtonWithPermission
+                ButtonProps={{
+                  size: "sm",
+                  variant: "outline",
+                  onClick: () => setStopTarget(selectedRows),
+                  disabled: !stoppableCount || isStopPending,
+                }}
+                reason={stopPermission.reason}
+                allowed={stopPermission.allowed}
+              >
+                <OctagonX size={16} />
+                Stop {stoppableCount}
+              </ButtonWithPermission>
+              <ConditionalWrapper
+                condition={pipelineRunPermissions.data.delete.allowed}
+                wrapper={(children) => (
+                  <Tooltip title={"Delete selected PipelineRuns"}>
+                    <div>{children}</div>
+                  </Tooltip>
+                )}
+              >
+                <div className="text-secondary-700">
+                  <ButtonWithPermission
+                    ButtonProps={{
+                      size: "sm",
+                      variant: "outline",
+                      onClick: onDeleteClick,
+                    }}
+                    reason={pipelineRunPermissions.data.delete.reason}
+                    allowed={pipelineRunPermissions.data.delete.allowed}
+                  >
+                    <Trash size={16} />
+                    Delete
+                  </ButtonWithPermission>
+                </div>
+              </ConditionalWrapper>
             </div>
           ),
         }}
