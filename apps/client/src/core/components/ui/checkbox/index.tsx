@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
-import { CheckIcon } from "lucide-react";
+import { CheckIcon, MinusIcon } from "lucide-react";
 
 import { cn } from "@/core/utils/classname";
 
@@ -15,7 +15,7 @@ export const Checkbox = React.forwardRef<React.ElementRef<typeof CheckboxPrimiti
         ref={ref}
         data-slot="checkbox"
         className={cn(
-          "peer border-input data-[state=checked]:bg-primary data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-foreground data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 size-4 shrink-0 rounded-[4px] border shadow-xs outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
+          "peer group/checkbox border-input data-[state=checked]:bg-primary data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-foreground data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 size-4 shrink-0 rounded-[4px] border shadow-xs outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
           invalid &&
             "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
           className
@@ -27,7 +27,8 @@ export const Checkbox = React.forwardRef<React.ElementRef<typeof CheckboxPrimiti
           data-slot="checkbox-indicator"
           className="flex items-center justify-center text-current transition-none"
         >
-          <CheckIcon className="size-3.5" />
+          <CheckIcon className="size-3.5 group-data-[state=indeterminate]/checkbox:hidden" />
+          <MinusIcon className="hidden size-3.5 group-data-[state=indeterminate]/checkbox:block" />
         </CheckboxPrimitive.Indicator>
       </CheckboxPrimitive.Root>
     );
