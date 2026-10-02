@@ -152,40 +152,35 @@ export const ComponentList = () => {
               isRowSelected: (row) => selected.indexOf(row.metadata.name) !== -1,
               isRowSelectable: (row) => row.spec.type !== codebaseType.system,
               renderSelectionInfo: (selectionLength) => (
-                <div className="flex items-center justify-between">
-                  <div className={selectionLength ? "visible" : "pointer-events-none invisible"}>
-                    <div className="flex items-center gap-2">
-                      <div className="min-w-38">
-                        <p>{selectionLength} item(s) selected</p>
-                      </div>
-                      <ConditionalWrapper
-                        condition={codebasePermissions.data.delete.allowed}
-                        wrapper={(children) => (
-                          <Tooltip title={"Delete selected projects"}>
-                            <div>{children}</div>
-                          </Tooltip>
-                        )}
-                      >
-                        <div className="text-secondary-700">
-                          <ButtonWithPermission
-                            ButtonProps={{
-                              size: "sm",
-                              variant: "outline",
-                              disabled: !selectionLength,
-                              onClick: () => {
-                                setDeleteDialogOpen(true);
-                              },
-                            }}
-                            allowed={codebasePermissions.data.delete.allowed}
-                            reason={codebasePermissions.data.delete.reason}
-                          >
-                            <Trash />
-                            Delete
-                          </ButtonWithPermission>
-                        </div>
-                      </ConditionalWrapper>
-                    </div>
+                <div className="flex items-center gap-2">
+                  <div className="min-w-38">
+                    <p>{selectionLength} item(s) selected</p>
                   </div>
+                  <ConditionalWrapper
+                    condition={codebasePermissions.data.delete.allowed}
+                    wrapper={(children) => (
+                      <Tooltip title={"Delete selected projects"}>
+                        <div>{children}</div>
+                      </Tooltip>
+                    )}
+                  >
+                    <div className="text-secondary-700">
+                      <ButtonWithPermission
+                        ButtonProps={{
+                          size: "sm",
+                          variant: "outline",
+                          onClick: () => {
+                            setDeleteDialogOpen(true);
+                          },
+                        }}
+                        allowed={codebasePermissions.data.delete.allowed}
+                        reason={codebasePermissions.data.delete.reason}
+                      >
+                        <Trash />
+                        Delete
+                      </ButtonWithPermission>
+                    </div>
+                  </ConditionalWrapper>
                 </div>
               ),
             }}

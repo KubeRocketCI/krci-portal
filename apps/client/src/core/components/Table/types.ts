@@ -105,6 +105,7 @@ export interface TableSelection<DataType> {
   isRowSelected?: (row: DataType) => boolean;
   handleSelectAll?: (event: React.ChangeEvent<HTMLInputElement>, paginatedItems: DataType[]) => void;
   handleSelectRow?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, row: DataType) => void;
+  /** Selection bar content. Called only while `selectedCount` >= 1; the table owns the bar visibility and spacing. */
   renderSelectionInfo?: (selectedCount: number) => React.ReactElement;
 }
 

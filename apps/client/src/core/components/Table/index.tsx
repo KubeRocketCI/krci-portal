@@ -335,11 +335,9 @@ const TableShell = <DataType,>(props: TableShellProps<DataType>) => {
     >
       <div className="flex flex-col gap-2">
         {renderHeader()}
-        <div className={cn(outlined ? "px-5" : "", validSelectedCount > 0 ? "py-5" : "py-0")}>
+        <div className={cn(outlined && "px-5")}>
           {selectionSettings.renderSelectionInfo && validSelectedCount > 0 && (
-            <div className="bg-muted flex items-center justify-between px-5">
-              <div className="py-4">{selectionSettings.renderSelectionInfo(validSelectedCount)}</div>
-            </div>
+            <div className="bg-muted px-5 py-4">{selectionSettings.renderSelectionInfo(validSelectedCount)}</div>
           )}
           <div className="border-border w-full overflow-hidden rounded-md border">
             <TableUI style={{ minWidth: TABLE_WIDTH_DEFAULTS.TABLE_MIN_WIDTH }}>
