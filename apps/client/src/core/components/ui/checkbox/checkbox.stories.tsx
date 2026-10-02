@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect } from "storybook/test";
 import { Checkbox } from "./index";
 
 const meta = {
@@ -23,6 +24,19 @@ export const Checked: Story = {
     const [checked, setChecked] = useState(true);
     //@ts-expect-error TEMPORARY
     return <Checkbox checked={checked} onCheckedChange={setChecked} />;
+  },
+};
+
+/** Partial selection, e.g. a table header with some rows selected: shows a minus. */
+export const Indeterminate: Story = {
+  args: {
+    checked: "indeterminate",
+  },
+  play: async ({ canvas }) => {
+    const checkbox = canvas.getByRole("checkbox");
+    await expect(checkbox).toHaveAttribute("data-state", "indeterminate");
+    await expect(checkbox.querySelector(".lucide-minus")).toBeVisible();
+    await expect(checkbox.querySelector(".lucide-check")).not.toBeVisible();
   },
 };
 
