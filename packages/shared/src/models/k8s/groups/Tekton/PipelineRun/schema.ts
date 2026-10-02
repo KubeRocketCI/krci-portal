@@ -73,6 +73,9 @@ export const pipelineRunPhaseEnum = z.enum([
   "unknown",
 ]);
 
+// Outcome of stopping one run. Public REST contract: values must not change.
+export const pipelineRunStopResultEnum = z.enum(["stopping", "skipped", "failed"]);
+
 // Reasons planPipelineRunStop skips a run. snake_case: part of the public REST contract.
 export const pipelineRunStopSkipReasonEnum = z.enum(["already_done", "already_stopping"]);
 

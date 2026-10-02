@@ -4,11 +4,13 @@ import {
   pipelineRunPhaseEnum,
   pipelineRunReasonEnum,
   pipelineRunSchema,
+  pipelineRunStopResultEnum,
   pipelineRunStopSkipReasonEnum,
 } from "./index.js";
 
 export type PipelineRunReason = z.infer<typeof pipelineRunReasonEnum>;
 export type PipelineRunPhase = z.infer<typeof pipelineRunPhaseEnum>;
+export type PipelineRunStopResult = z.infer<typeof pipelineRunStopResultEnum>;
 export type PipelineRunStopSkipReason = z.infer<typeof pipelineRunStopSkipReasonEnum>;
 
 export type PipelineRun = z.infer<typeof pipelineRunSchema>;

@@ -14,6 +14,7 @@ const stubCaller = vi.hoisted(() => ({
   pipelineRun: {
     start: vi.fn(),
     build: vi.fn(),
+    stop: vi.fn(),
   },
 }));
 
@@ -443,8 +444,71 @@ describe("POST /rest/v1/pipelineruns/build", () => {
   );
 });
 
+const STOP_PAYLOAD = {
+  runs: [
+    { namespace: "edp", name: "run-a" },
+    { namespace: "edp", name: "run-b" },
+  ],
+};
+
+describe("POST /rest/v1/pipelineruns/stop", () => {
+  let app: FastifyInstance;
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    app = buildFastify();
+    await app.ready();
+  });
+
+  afterEach(async () => {
+    await app.close();
+  });
+
+  it("forwards the runs to caller.pipelineRun.stop and returns per-run outcomes with HTTP 200", async () => {
+    const output = {
+      results: [
+        { namespace: "edp", name: "run-a", result: "stopping" },
+        {
+          namespace: "edp",
+          name: "run-b",
+          result: "failed",
+          reason: "forbidden",
+        },
+      ],
+      summary: { stopping: 1, skipped: 0, failed: 1 },
+    };
+    stubCaller.pipelineRun.stop.mockResolvedValue(output);
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/rest/v1/pipelineruns/stop",
+      payload: STOP_PAYLOAD,
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual(output);
+    expect(stubCaller.pipelineRun.stop).toHaveBeenCalledWith(STOP_PAYLOAD);
+  });
+
+  it("invalid input — BAD_REQUEST → HTTP 400 with the static phrase only", async () => {
+    stubCaller.pipelineRun.stop.mockRejectedValue(
+      new TRPCError({ code: "BAD_REQUEST", message: "Invalid name" })
+    );
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/rest/v1/pipelineruns/stop",
+      payload: { runs: [] },
+    });
+
+    expect(res.statusCode).toBe(400);
+    const body = res.json<{ error: { code: string; message: string } }>();
+    expect(body.error).toEqual({ code: "BAD_REQUEST", message: "Bad Request" });
+  });
+});
+
 describe("GET /rest/v1/openapi.json", () => {
-  it("publishes the build managed params on the live document", async () => {
+  async function getOpenApiDocument() {
     const app = buildFastify();
     await app.ready();
 
@@ -454,18 +518,43 @@ describe("GET /rest/v1/openapi.json", () => {
         url: "/rest/v1/openapi.json",
       });
       expect(res.statusCode).toBe(200);
-
-      const doc = res.json();
-      const paramsSchema =
-        doc.paths?.["/v1/pipelineruns/build"]?.post?.requestBody?.content?.[
-          "application/json"
-        ]?.schema?.properties?.params;
-
-      expect(paramsSchema?.["x-krci-managed-params"]).toEqual([
-        ...BUILD_MANAGED_PARAM_NAMES,
-      ]);
+      return res.json();
     } finally {
       await app.close();
     }
+  }
+
+  it("publishes the stop outcome as a flat object for generated clients", async () => {
+    const doc = await getOpenApiDocument();
+    const outcomeSchema =
+      doc.paths?.["/v1/pipelineruns/stop"]?.post?.responses?.["200"]?.content?.[
+        "application/json"
+      ]?.schema?.properties?.results?.items;
+
+    expect(outcomeSchema?.oneOf).toBeUndefined();
+    expect(outcomeSchema?.properties?.result?.enum).toEqual([
+      "stopping",
+      "skipped",
+      "failed",
+    ]);
+    expect(outcomeSchema?.properties?.reason?.enum).toEqual([
+      "already_done",
+      "already_stopping",
+      "not_found",
+      "forbidden",
+      "error",
+    ]);
+  });
+
+  it("publishes the build managed params on the live document", async () => {
+    const doc = await getOpenApiDocument();
+    const paramsSchema =
+      doc.paths?.["/v1/pipelineruns/build"]?.post?.requestBody?.content?.[
+        "application/json"
+      ]?.schema?.properties?.params;
+
+    expect(paramsSchema?.["x-krci-managed-params"]).toEqual([
+      ...BUILD_MANAGED_PARAM_NAMES,
+    ]);
   });
 });

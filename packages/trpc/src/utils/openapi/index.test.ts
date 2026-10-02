@@ -151,6 +151,7 @@ describe("generated document", () => {
 
     expect(statuses("/v1/pipelineruns/build")).toEqual(["200", "400", "401", "403", "404", "409", "500"]);
     expect(statuses("/v1/pipelineruns/start")).toEqual(["200", "400", "401", "403", "404", "500"]);
+    expect(statuses("/v1/pipelineruns/stop")).toEqual(["200", "400", "401", "500"]);
   });
 
   it("carries the managed param names on the build input's params schema", () => {

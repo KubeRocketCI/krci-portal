@@ -218,6 +218,19 @@ export function registerOpenApi(
     }
   );
 
+  // POST /rest/v1/pipelineruns/stop (protected)
+  fastify.post<{ Body: RouterInput["pipelineRun"]["stop"] }>(
+    "/rest/v1/pipelineruns/stop",
+    async (req, res) => {
+      try {
+        const caller = await buildCaller(req, res);
+        return await caller.pipelineRun.stop(req.body);
+      } catch (error) {
+        return handleTRPCError(error, res);
+      }
+    }
+  );
+
   // ---------------------------------------------------------------------------
   // Tekton Results
   // ---------------------------------------------------------------------------
