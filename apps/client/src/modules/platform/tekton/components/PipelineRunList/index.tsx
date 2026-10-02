@@ -2,7 +2,9 @@ import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { EmptyList } from "@/core/components/EmptyList";
 import { DataTable } from "@/core/components/Table";
+import { useRowSelection } from "@/core/components/Table/hooks/useRowSelection";
 import { usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
+import { getKubeObjectUid } from "@/k8s/utils/getKubeObjectUid";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { isHistoryPipelineRun, pipelineType } from "@my-project/shared";
 import { Trash } from "lucide-react";
@@ -11,7 +13,6 @@ import { DeletionDialog } from "./components/DeleteDialog";
 import { PipelineRunFilter } from "./components/Filter";
 import { usePipelineRunFilter } from "./components/Filter/hooks/usePipelineRunFilter";
 import { useColumns } from "./hooks/useColumns";
-import { useSelection } from "./hooks/useSelection";
 import { PipelineRunListProps } from "./types";
 import { pipelineRunFilterControlNames } from "./components/Filter/constants";
 import { columnNames } from "./constants";
@@ -45,14 +46,10 @@ export const PipelineRunList = ({
     pipelineRunFilterControlNames.NAMESPACES,
   ],
 }: PipelineRunListProps) => {
-  const { selected, setSelected, handleSelectRowClick, handleSelectAllClick } = useSelection();
+  const { selection, selectedRows, clearSelection } = useRowSelection(pipelineRuns, getKubeObjectUid);
   const pipelineRunPermissions = usePipelineRunPermissions();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
-
-  const onDelete = React.useCallback(() => {
-    setSelected([]);
-  }, [setSelected]);
 
   const columns = useColumns();
 
@@ -97,10 +94,7 @@ export const PipelineRunList = ({
         sort={DEFAULT_SORT}
         pagination={pagination}
         selection={{
-          selected,
-          handleSelectAll: handleSelectAllClick,
-          handleSelectRow: handleSelectRowClick,
-          isRowSelected: (row) => selected.indexOf(row.metadata.name) !== -1,
+          ...selection,
           isRowSelectable: (row) => !isHistoryPipelineRun(row),
           renderSelectionInfo: (selectedCount: number) => (
             <div className={selectedCount ? "visible" : "pointer-events-none invisible"}>
@@ -141,11 +135,10 @@ export const PipelineRunList = ({
       />
       {deleteDialogOpen && (
         <DeletionDialog
-          items={pipelineRuns}
-          selected={selected}
+          pipelineRuns={selectedRows}
           open={deleteDialogOpen}
           handleClose={() => setDeleteDialogOpen(false)}
-          onDelete={onDelete}
+          onDelete={clearSelection}
         />
       )}
     </>

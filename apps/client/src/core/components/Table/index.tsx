@@ -190,36 +190,36 @@ const TableShell = <DataType,>(props: TableShellProps<DataType>) => {
     };
   }, [isServerMode, effectivePage, filteredData, effectiveRowsPerPage]);
 
-  const selectableRowCount = React.useMemo(
-    () => selectionSettings.isRowSelectable && paginatedData.items.filter(selectionSettings.isRowSelectable).length,
+  const selectablePageItems = React.useMemo(
+    () =>
+      selectionSettings.isRowSelectable
+        ? paginatedData.items.filter(selectionSettings.isRowSelectable)
+        : paginatedData.items,
     [paginatedData.items, selectionSettings.isRowSelectable]
   );
 
+  // Current page only.
+  const selectedPageItemCount = React.useMemo(
+    () => (selectionSettings.isRowSelected ? selectablePageItems.filter(selectionSettings.isRowSelected).length : 0),
+    [selectablePageItems, selectionSettings.isRowSelected]
+  );
+
   const validSelectedCount = React.useMemo(() => {
-    if (!selectionSettings.selected?.length || !data?.length || !selectionSettings.isRowSelected) {
-      return selectionSettings.selected?.length || 0;
+    if (!selectionSettings.isRowSelected) {
+      return selectionSettings.selected?.length ?? 0;
     }
 
-    return data.filter((item) => selectionSettings.isRowSelected?.(item)).length;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return data?.filter(selectionSettings.isRowSelected).length ?? 0;
   }, [selectionSettings.selected, selectionSettings.isRowSelected, data]);
-
-  const validSelected = React.useMemo(
-    () => (validSelectedCount > 0 ? Array(validSelectedCount).fill("") : []),
-    [validSelectedCount]
-  );
 
   const _handleSelectAllClick = React.useMemo(() => {
     if (!selectionSettings.handleSelectAll || !filteredData || !filteredData.length) {
       return null;
     }
 
-    const selectableItems = selectionSettings.isRowSelectable
-      ? paginatedData.items.filter(selectionSettings.isRowSelectable)
-      : paginatedData.items;
-
-    return (event: React.ChangeEvent<HTMLInputElement>) => selectionSettings.handleSelectAll?.(event, selectableItems);
-  }, [selectionSettings, filteredData, paginatedData.items]);
+    return (event: React.ChangeEvent<HTMLInputElement>) =>
+      selectionSettings.handleSelectAll?.(event, selectablePageItems);
+  }, [selectionSettings, filteredData, selectablePageItems]);
 
   const shouldShowSelectionColumn = React.useMemo(() => {
     // Only show selection column when we have actual data rows to display
@@ -335,10 +335,10 @@ const TableShell = <DataType,>(props: TableShellProps<DataType>) => {
     >
       <div className="flex flex-col gap-2">
         {renderHeader()}
-        <div className={cn(outlined ? "px-5" : "", validSelected.length > 0 ? "py-5" : "py-0")}>
-          {selectionSettings.renderSelectionInfo && validSelected.length > 0 && (
+        <div className={cn(outlined ? "px-5" : "", validSelectedCount > 0 ? "py-5" : "py-0")}>
+          {selectionSettings.renderSelectionInfo && validSelectedCount > 0 && (
             <div className="bg-muted flex items-center justify-between px-5">
-              <div className="py-4">{selectionSettings.renderSelectionInfo(validSelected.length)}</div>
+              <div className="py-4">{selectionSettings.renderSelectionInfo(validSelectedCount)}</div>
             </div>
           )}
           <div className="border-border w-full overflow-hidden rounded-md border">
@@ -355,9 +355,8 @@ const TableShell = <DataType,>(props: TableShellProps<DataType>) => {
                 sortBy={sortController.sortBy}
                 order={sortController.order}
                 onSort={sortController.requestSort}
-                rowCount={paginatedData?.count}
-                selectableRowCount={selectableRowCount}
-                selected={validSelected}
+                selectableRowCount={selectablePageItems.length}
+                selectedRowCount={selectedPageItemCount}
                 handleSelectAllClick={_handleSelectAllClick}
                 showExpandColumn={!!expandable}
                 showSelectionColumn={shouldShowSelectionColumn}

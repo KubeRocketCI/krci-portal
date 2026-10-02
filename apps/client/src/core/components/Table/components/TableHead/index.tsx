@@ -4,7 +4,7 @@ import { cn } from "@/core/utils/classname";
 import React from "react";
 import { SORT_ORDERS, TABLE_CELL_DEFAULTS } from "../../constants";
 import { isColumnSortable } from "../../sort";
-import { isColumnVisible } from "../../utils";
+import { getSelectAllState, isColumnVisible } from "../../utils";
 import { TableHeadProps } from "./types";
 
 /** Centred triangles. The active column shows one; an inactive sortable column shows both, dimmed. */
@@ -16,28 +16,24 @@ export const TableHead = <DataType,>({
   sortBy,
   order,
   onSort,
-  rowCount,
   selectableRowCount,
-  selected,
+  selectedRowCount,
   handleSelectAllClick,
   showExpandColumn,
   showSelectionColumn,
   renderColumnResizer,
 }: TableHeadProps<DataType>) => {
-  const selectedLength = React.useMemo(() => selected?.length, [selected]);
-
-  const selectedAllIndeterminate = !!selectedLength && selectedLength > 0 && selectedLength < rowCount;
-  const selectAllChecked = selectedLength === selectableRowCount || selectedLength === rowCount;
+  const selectAllState = getSelectAllState(selectableRowCount ?? 0, selectedRowCount ?? 0);
 
   const handleCheckboxChange = React.useCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (_checked: boolean) => {
       if (typeof handleSelectAllClick === "function") {
-        const shouldSelectAll = !selectAllChecked;
+        const shouldSelectAll = selectAllState !== true;
         handleSelectAllClick({ target: { checked: shouldSelectAll } } as React.ChangeEvent<HTMLInputElement>);
       }
     },
-    [handleSelectAllClick, selectAllChecked]
+    [handleSelectAllClick, selectAllState]
   );
 
   return (
@@ -52,10 +48,7 @@ export const TableHead = <DataType,>({
           <TableHeadUI className="relative px-1 py-2 align-bottom">
             {!!handleSelectAllClick && !!selectableRowCount && (
               <div className="flex flex-row flex-nowrap items-center justify-center">
-                <Checkbox
-                  checked={selectedAllIndeterminate ? "indeterminate" : selectAllChecked}
-                  onCheckedChange={handleCheckboxChange}
-                />
+                <Checkbox checked={selectAllState} onCheckedChange={handleCheckboxChange} />
               </div>
             )}
           </TableHeadUI>

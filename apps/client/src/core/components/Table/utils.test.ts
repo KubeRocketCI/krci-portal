@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { getFlexPropertyByTextAlign } from "./utils";
+import { getFlexPropertyByTextAlign, getSelectAllState } from "./utils";
+
+describe("getSelectAllState", () => {
+  it.each([
+    [0, 0, false],
+    [3, 0, false],
+    [3, 1, "indeterminate"],
+    [3, 3, true],
+  ] as const)("returns %s selectable / %s selected → %s", (selectable, selected, expected) => {
+    expect(getSelectAllState(selectable, selected)).toBe(expected);
+  });
+});
 
 describe("getFlexPropertyByTextAlign", () => {
   it("should return 'center' for center", () => {
