@@ -928,6 +928,175 @@
         }
       }
     },
+    "/v1/pipelineruns/stop": {
+      "post": {
+        "operationId": "pipelineRun-stop",
+        "tags": [
+          "pipelinerun"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "runs": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "namespace": {
+                          "type": "string",
+                          "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+                          "minLength": 1,
+                          "maxLength": 253
+                        },
+                        "name": {
+                          "type": "string",
+                          "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+                          "minLength": 1,
+                          "maxLength": 253
+                        }
+                      },
+                      "required": [
+                        "namespace",
+                        "name"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 100
+                  }
+                },
+                "required": [
+                  "runs"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "namespace": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+                            "minLength": 1,
+                            "maxLength": 253
+                          },
+                          "name": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+                            "minLength": 1,
+                            "maxLength": 253
+                          },
+                          "result": {
+                            "type": "string",
+                            "enum": [
+                              "stopping",
+                              "skipped",
+                              "failed"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string",
+                            "enum": [
+                              "already_done",
+                              "already_stopping",
+                              "not_found",
+                              "forbidden",
+                              "error"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "namespace",
+                          "name",
+                          "result"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "summary": {
+                      "type": "object",
+                      "properties": {
+                        "stopping": {
+                          "type": "integer"
+                        },
+                        "skipped": {
+                          "type": "integer"
+                        },
+                        "failed": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "stopping",
+                        "skipped",
+                        "failed"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "results",
+                    "summary"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authorization not provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/pipeline-runs/{resultUid}/logs": {
       "get": {
         "operationId": "tektonResults-getPipelineRunLogs",

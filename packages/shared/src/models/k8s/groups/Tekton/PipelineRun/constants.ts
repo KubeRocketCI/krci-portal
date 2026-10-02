@@ -4,6 +4,7 @@ import {
   pipelineRunReasonEnum,
   pipelineRunSpecStatusEnum,
   pipelineRunStatusEnum,
+  pipelineRunStopResultEnum,
   pipelineRunStopSkipReasonEnum,
 } from "./schema.js";
 import { pipelineRunLabels } from "./labels.js";
@@ -26,6 +27,7 @@ export const pipelineRunStatus = pipelineRunStatusEnum.enum;
 /** Values for PipelineRun spec.status — used to cancel or pause a run. */
 export const pipelineRunSpecStatus = pipelineRunSpecStatusEnum.enum;
 export const pipelineRunPhase = pipelineRunPhaseEnum.enum;
+export const pipelineRunStopResult = pipelineRunStopResultEnum.enum;
 export const pipelineRunStopSkipReason = pipelineRunStopSkipReasonEnum.enum;
 
 /**
