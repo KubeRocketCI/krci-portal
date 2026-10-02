@@ -4,6 +4,7 @@ import {
   pipelineRunReasonEnum,
   pipelineRunSpecStatusEnum,
   pipelineRunStatusEnum,
+  pipelineRunStopSkipReasonEnum,
 } from "./schema.js";
 import { pipelineRunLabels } from "./labels.js";
 
@@ -25,6 +26,7 @@ export const pipelineRunStatus = pipelineRunStatusEnum.enum;
 /** Values for PipelineRun spec.status — used to cancel or pause a run. */
 export const pipelineRunSpecStatus = pipelineRunSpecStatusEnum.enum;
 export const pipelineRunPhase = pipelineRunPhaseEnum.enum;
+export const pipelineRunStopSkipReason = pipelineRunStopSkipReasonEnum.enum;
 
 /**
  * Reasons for a condition status "False" that mean a run was cancelled by a

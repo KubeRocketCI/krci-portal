@@ -73,6 +73,9 @@ export const pipelineRunPhaseEnum = z.enum([
   "unknown",
 ]);
 
+// Reasons planPipelineRunStop skips a run. snake_case: part of the public REST contract.
+export const pipelineRunStopSkipReasonEnum = z.enum(["already_done", "already_stopping"]);
+
 const intOrStringSchema = z
   .union([z.number().int(), z.string()])
   .refine(
