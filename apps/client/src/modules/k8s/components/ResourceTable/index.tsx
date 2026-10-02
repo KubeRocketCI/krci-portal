@@ -2,10 +2,12 @@ import { useCallback, useMemo, useState } from "react";
 import { Box, Trash } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
 import { DataTable } from "@/core/components/Table";
+import { useRowSelection } from "@/core/components/Table/hooks/useRowSelection";
 import { CellLink } from "@/core/components/Table/components/CellLink";
 import { EmptyList } from "@/core/components/EmptyList";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { useClusterStore } from "@/k8s/store";
+import { getKubeObjectUid } from "@/k8s/utils/getKubeObjectUid";
 import {
   PATH_K8S_DETAIL_CLUSTER_FULL,
   PATH_K8S_DETAIL_NS_FULL,
@@ -106,7 +108,6 @@ export function ResourceTable<T extends KubeObjectBase>({
   slots,
 }: Props<T>) {
   const clusterName = useClusterStore((s) => s.clusterName) ?? "";
-  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const columns = useMemo(
@@ -114,37 +115,7 @@ export function ResourceTable<T extends KubeObjectBase>({
     [descriptor, clusterName]
   );
 
-  const isRowSelected = useCallback((item: KubeObjectBase) => selected.has(item.metadata?.uid ?? ""), [selected]);
-
-  const handleSelectRow = useCallback((_e: React.MouseEvent<HTMLButtonElement>, item: KubeObjectBase) => {
-    const uid = item.metadata?.uid ?? "";
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(uid)) next.delete(uid);
-      else next.add(uid);
-      return next;
-    });
-  }, []);
-
-  const handleSelectAll = useCallback((_e: React.ChangeEvent<HTMLInputElement>, paginatedItems: KubeObjectBase[]) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      const allSelected = paginatedItems.every((i) => next.has(i.metadata?.uid ?? ""));
-      if (allSelected) {
-        paginatedItems.forEach((i) => next.delete(i.metadata?.uid ?? ""));
-      } else {
-        paginatedItems.forEach((i) => next.add(i.metadata?.uid ?? ""));
-      }
-      return next;
-    });
-  }, []);
-
-  const selectedUids = useMemo(() => Array.from(selected), [selected]);
-
-  const selectedItems = useMemo(
-    () => (items as KubeObjectBase[]).filter((i) => selected.has(i.metadata?.uid ?? "")),
-    [items, selected]
-  );
+  const { selection, selectedRows, clearSelection } = useRowSelection(items as KubeObjectBase[], getKubeObjectUid);
 
   const renderSelectionInfo = useCallback(
     (selectionLength: number) => (
@@ -185,13 +156,7 @@ export function ResourceTable<T extends KubeObjectBase>({
               }
             : undefined
         }
-        selection={{
-          selected: selectedUids,
-          isRowSelected,
-          handleSelectRow,
-          handleSelectAll,
-          renderSelectionInfo,
-        }}
+        selection={{ ...selection, renderSelectionInfo }}
         emptyListComponent={
           <EmptyList
             icon={<Box width={64} height={64} className="text-muted-foreground" />}
@@ -205,11 +170,11 @@ export function ResourceTable<T extends KubeObjectBase>({
           kill an in-flight deletion dialog. */}
       {deleteDialogOpen && (
         <BatchDeleteDialog
-          items={selectedItems}
+          items={selectedRows}
           config={descriptor.config}
           open={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}
-          onDeleted={() => setSelected(new Set())}
+          onDeleted={clearSelection}
         />
       )}
     </>

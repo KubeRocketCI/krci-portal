@@ -16,34 +16,16 @@ import React from "react";
 const CONFIRM_TEXT_VALUE = "confirm";
 
 export const DeletionDialog = ({
-  items,
-  selected,
+  pipelineRuns,
   handleClose,
   open,
   onDelete,
 }: {
-  items: PipelineRun[];
-  selected: string[];
+  pipelineRuns: PipelineRun[];
   open: boolean;
   handleClose: () => void;
   onDelete: () => void;
 }) => {
-  const itemsByNameMap: Map<string, PipelineRun> | null = React.useMemo(() => {
-    if (items === null) {
-      return null;
-    }
-
-    return new Map(items.map((item) => [item.metadata.name, item]));
-  }, [items]);
-
-  const selectedPipelineRuns = React.useMemo(() => {
-    if (selected === null || !itemsByNameMap) {
-      return null;
-    }
-
-    return selected.map((name) => itemsByNameMap.get(name));
-  }, [itemsByNameMap, selected]);
-
   const [value, setValue] = React.useState("");
 
   const deletionDisabled = value !== CONFIRM_TEXT_VALUE;
@@ -61,15 +43,11 @@ export const DeletionDialog = ({
   );
 
   const handleDelete = () => {
-    if (deletionDisabled || !selectedPipelineRuns) {
+    if (deletionDisabled) {
       return;
     }
 
-    selectedPipelineRuns.forEach((pipelineRun: PipelineRun | undefined) => {
-      if (!pipelineRun) {
-        return;
-      }
-
+    pipelineRuns.forEach((pipelineRun) => {
       resourceDeleteMutation.mutate({
         resource: pipelineRun,
         resourceConfig: k8sPipelineRunConfig,
