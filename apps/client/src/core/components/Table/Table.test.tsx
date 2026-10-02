@@ -312,3 +312,73 @@ describe("DataTable - columns prop sync", () => {
     expect(afterRerender).toBe(initiallyRendered);
   });
 });
+
+describe("DataTable - selection bar", () => {
+  const columns = [
+    {
+      id: "name",
+      label: "Name",
+      data: { render: ({ data }: { data: { id: number; name: string } }) => data.name },
+      cell: { show: true, baseWidth: 50 },
+    },
+  ];
+
+  const data = [
+    { id: 1, name: "first" },
+    { id: 2, name: "second" },
+  ];
+
+  it("renders the selected count and the caller's actions while a row is selected", () => {
+    render(
+      <DataTable
+        id="selection-table"
+        data={data}
+        columns={columns}
+        selection={{
+          selected: ["1"],
+          isRowSelected: (row) => row.id === 1,
+          renderSelectionActions: (selectedCount) => <button>Act on {selectedCount}</button>,
+        }}
+      />
+    );
+
+    expect(screen.getByText("1 item(s) selected")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Act on 1" })).toBeInTheDocument();
+  });
+
+  it("renders no selection bar while no row is selected", () => {
+    render(
+      <DataTable
+        id="selection-table"
+        data={data}
+        columns={columns}
+        selection={{
+          selected: [],
+          isRowSelected: () => false,
+          renderSelectionActions: () => <button>Act</button>,
+        }}
+      />
+    );
+
+    expect(screen.queryByText(/item\(s\) selected/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Act" })).not.toBeInTheDocument();
+  });
+
+  it("renders no selection bar while the selected rows are gone from the data", () => {
+    render(
+      <DataTable
+        id="selection-table"
+        data={[]}
+        columns={columns}
+        selection={{
+          selected: ["1", "2"],
+          isRowSelected: () => true,
+          renderSelectionActions: () => <button>Act</button>,
+        }}
+      />
+    );
+
+    expect(screen.queryByText(/item\(s\) selected/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Act" })).not.toBeInTheDocument();
+  });
+});

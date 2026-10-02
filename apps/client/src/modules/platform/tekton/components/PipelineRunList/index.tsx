@@ -102,11 +102,8 @@ export const PipelineRunList = ({
         selection={{
           ...selection,
           isRowSelectable: (row) => !isHistoryPipelineRun(row),
-          renderSelectionInfo: (selectedCount: number) => (
-            <div className="flex flex-row items-center gap-4">
-              <div className="min-w-[150px]">
-                <p className="text-base">{selectedCount} item(s) selected</p>
-              </div>
+          renderSelectionActions: () => (
+            <>
               <ButtonWithPermission
                 ButtonProps={{
                   size: "sm",
@@ -143,7 +140,7 @@ export const PipelineRunList = ({
                   </ButtonWithPermission>
                 </div>
               </ConditionalWrapper>
-            </div>
+            </>
           ),
         }}
         slots={tableSlots}
