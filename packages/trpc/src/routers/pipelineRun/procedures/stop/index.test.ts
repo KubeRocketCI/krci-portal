@@ -2,7 +2,7 @@ import { createMockedContext } from "../../../../__mocks__/context.js";
 import { createCaller } from "../../../../routers/index.js";
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { K8sClient } from "../../../../clients/k8s/index.js";
-import { PIPELINE_RUN_STOP_MAX_RUNS } from "../../../../schemas/pipelineRunStop.js";
+import { PIPELINE_RUN_STOP_MAX_RUNS } from "@my-project/shared";
 
 vi.mock("../../../../clients/k8s/index.js", () => ({
   K8sClient: vi.fn(),

@@ -1,6 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
 import { createRerunPipelineRun } from "./index.js";
-import { createGracefulCancelPipelineRun } from "../createGracefulCancelPipelineRun/index.js";
 import { PipelineRun } from "../../types.js";
 import { vi, Mock, describe, expect, it } from "vitest";
 
@@ -157,19 +156,19 @@ describe("testing createRerunPipelineRun", () => {
   });
 
   it("should not carry over the queue-cancel-reason annotation of the stopped run", () => {
-    const object = createRerunPipelineRun(
-      createGracefulCancelPipelineRun({
-        apiVersion: "tekton.dev/v1",
-        kind: "PipelineRun",
-        metadata: {
-          name: "test-pipeline-run",
-          namespace: "edp",
-        },
-        spec: {
-          pipelineRef: { name: "test-build-pipeline" },
-        },
-      } as unknown as PipelineRun)
-    );
+    const object = createRerunPipelineRun({
+      apiVersion: "tekton.dev/v1",
+      kind: "PipelineRun",
+      metadata: {
+        name: "test-pipeline-run",
+        namespace: "edp",
+        annotations: { "app.edp.epam.com/queue-cancel-reason": "user-cancelled" },
+      },
+      spec: {
+        pipelineRef: { name: "test-build-pipeline" },
+        status: "CancelledRunFinally",
+      },
+    } as unknown as PipelineRun);
 
     expect(object.metadata.annotations).not.toHaveProperty("app.edp.epam.com/queue-cancel-reason");
   });

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { showToast } from "@/core/components/Snackbar";
+import type { Severity } from "@/core/utils/severity";
 
 export interface UseK8sActionMutationOptions<TInput, TOutput> {
   mutationKey: string;
@@ -9,6 +10,8 @@ export interface UseK8sActionMutationOptions<TInput, TOutput> {
     success: (input: TInput, output: TOutput) => string;
     error: (input: TInput, err: Error) => string;
   };
+  /** Severity of the toast for a resolved `mutationFn`. Defaults to `success`. */
+  successSeverity?: (input: TInput, output: TOutput) => Severity;
   /**
    * Query-key prefixes to invalidate on success. Each entry is matched as a TanStack
    * Query prefix (queries whose key starts with this array are invalidated).
@@ -28,7 +31,9 @@ export function useK8sActionMutation<TInput, TOutput>(options: UseK8sActionMutat
       let output: TOutput;
       try {
         output = await options.mutationFn(input);
-        showToast(options.messages.success(input, output), "success", { id: loadingId });
+        showToast(options.messages.success(input, output), options.successSeverity?.(input, output) ?? "success", {
+          id: loadingId,
+        });
       } catch (rawErr) {
         const err = rawErr instanceof Error ? rawErr : new Error(String(rawErr));
         showToast(options.messages.error(input, err), "error", {

@@ -7,6 +7,7 @@ export {
   pipelineRunPhase,
   pipelineRunStopResult,
   pipelineRunStopSkipReason,
+  PIPELINE_RUN_STOP_MAX_RUNS,
   pipelineRunCancelledReasons,
   pipelineRunCancellingReasons,
   isPipelineRunCancelledReason,
