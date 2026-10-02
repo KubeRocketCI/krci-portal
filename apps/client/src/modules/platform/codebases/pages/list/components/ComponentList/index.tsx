@@ -2,6 +2,7 @@ import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
 import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { EmptyList } from "@/core/components/EmptyList";
 import { DataTable } from "@/core/components/Table";
+import { useRowSelection } from "@/core/components/Table/hooks/useRowSelection";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { useCodebasePermissions, useCodebaseWatchListMultiple } from "@/k8s/api/groups/KRCI/Codebase";
 import { useGitServerPermissions, useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
@@ -17,9 +18,10 @@ import { useCodebaseFilter } from "../CodebaseFilter/hooks/useFilter";
 import { ComponentMultiDeletion } from "./components/ComponentMultiDeletion";
 import { columnNames } from "./constants";
 import { useColumns } from "./hooks/useColumns";
-import { useSelection } from "./hooks/useSelection";
 
 const DEFAULT_SORT = { sortBy: columnNames.NAME, order: "asc" } as const;
+
+const getCodebaseName = (codebase: Codebase) => codebase.metadata.name;
 
 export const ComponentList = () => {
   const columns = useColumns();
@@ -119,7 +121,7 @@ export const ComponentList = () => {
     noGitServers,
   ]);
 
-  const { selected, setSelected, handleSelectAllClick, handleSelectRowClick } = useSelection();
+  const { selection, clearSelection } = useRowSelection(codebaseListWatch.data.array, getCodebaseName);
 
   const tableSlots = React.useMemo(
     () => ({
@@ -146,42 +148,34 @@ export const ComponentList = () => {
             sort={DEFAULT_SORT}
             containerProps={{ "data-tour": "projects-table" }}
             selection={{
-              selected,
-              handleSelectAll: handleSelectAllClick,
-              handleSelectRow: handleSelectRowClick,
-              isRowSelected: (row) => selected.indexOf(row.metadata.name) !== -1,
+              ...selection,
               isRowSelectable: (row) => row.spec.type !== codebaseType.system,
-              renderSelectionInfo: (selectionLength) => (
-                <div className="flex items-center gap-2">
-                  <div className="min-w-38">
-                    <p>{selectionLength} item(s) selected</p>
+              renderSelectionActions: () => (
+                <ConditionalWrapper
+                  condition={codebasePermissions.data.delete.allowed}
+                  wrapper={(children) => (
+                    <Tooltip title={"Delete selected projects"}>
+                      <div>{children}</div>
+                    </Tooltip>
+                  )}
+                >
+                  <div className="text-secondary-700">
+                    <ButtonWithPermission
+                      ButtonProps={{
+                        size: "sm",
+                        variant: "outline",
+                        onClick: () => {
+                          setDeleteDialogOpen(true);
+                        },
+                      }}
+                      allowed={codebasePermissions.data.delete.allowed}
+                      reason={codebasePermissions.data.delete.reason}
+                    >
+                      <Trash />
+                      Delete
+                    </ButtonWithPermission>
                   </div>
-                  <ConditionalWrapper
-                    condition={codebasePermissions.data.delete.allowed}
-                    wrapper={(children) => (
-                      <Tooltip title={"Delete selected projects"}>
-                        <div>{children}</div>
-                      </Tooltip>
-                    )}
-                  >
-                    <div className="text-secondary-700">
-                      <ButtonWithPermission
-                        ButtonProps={{
-                          size: "sm",
-                          variant: "outline",
-                          onClick: () => {
-                            setDeleteDialogOpen(true);
-                          },
-                        }}
-                        allowed={codebasePermissions.data.delete.allowed}
-                        reason={codebasePermissions.data.delete.reason}
-                      >
-                        <Trash />
-                        Delete
-                      </ButtonWithPermission>
-                    </div>
-                  </ConditionalWrapper>
-                </div>
+                </ConditionalWrapper>
               ),
             }}
             filterFunction={filterFunction}
@@ -196,10 +190,10 @@ export const ComponentList = () => {
           handleClose={() => setDeleteDialogOpen(false)}
           onDelete={() => {
             setDeleteDialogOpen(false);
-            setSelected([]);
+            clearSelection();
           }}
           components={codebaseListWatch.data.array}
-          selected={selected}
+          selected={selection.selected}
         />
       )}
     </>

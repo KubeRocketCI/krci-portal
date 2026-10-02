@@ -1,6 +1,8 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
+import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
 import { ConfirmDialog } from "@/core/components/Confirm";
 import { DataTable } from "@/core/components/Table";
+import { useRowSelection } from "@/core/components/Table/hooks/useRowSelection";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { useApplicationPermissions, useApplicationCRUD } from "@/k8s/api/groups/ArgoCD/Application";
 import { TABLE } from "@/k8s/constants/tables";
@@ -10,10 +12,11 @@ import {
 } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { useColumns } from "./hooks/useColumns";
-import { useSelection } from "../../hooks/useSelection";
 import { Trash } from "lucide-react";
 import React from "react";
 import { useButtonsEnabledMap } from "../../hooks/useButtonsEnabled";
+
+const getAppCodebaseName = (row: StageAppCodebaseCombinedData) => row.appCodebase.metadata.name;
 
 export const PreviewTable = () => {
   const stageAppCodebasesCombinedData = useStageAppCodebasesCombinedData();
@@ -23,29 +26,30 @@ export const PreviewTable = () => {
 
   const columns = useColumns();
 
-  const { selected, setSelected, handleClickSelectAll, handleClickSelectRow } = useSelection();
+  const { selection, selectedRows, clearSelection } = useRowSelection(
+    stageAppCodebasesCombinedData.stageAppCodebasesCombinedData,
+    getAppCodebaseName
+  );
   const buttonsEnabledMap = useButtonsEnabledMap();
   const openConfirmDialog = useDialogOpener(ConfirmDialog);
 
   const handleClickDelete = React.useCallback(() => {
-    const toDelete = selected;
+    const toDelete = selectedRows;
     openConfirmDialog({
       text:
         toDelete.length === 1
           ? "Are you sure you want to uninstall the selected application?"
           : `Are you sure you want to uninstall ${toDelete.length} selected applications?`,
       actionCallback: async () => {
-        const { stageAppCodebasesCombinedDataByApplicationName } = stageAppCodebasesCombinedData;
-        toDelete.forEach((appCodebaseName) => {
-          const row = stageAppCodebasesCombinedDataByApplicationName.get(appCodebaseName);
-          if (row?.application) {
-            triggerDeleteApplication({ data: { application: row.application } });
+        toDelete.forEach(({ application }) => {
+          if (application) {
+            triggerDeleteApplication({ data: { application } });
           }
         });
-        setSelected([]);
+        clearSelection();
       },
     });
-  }, [openConfirmDialog, selected, stageAppCodebasesCombinedData, setSelected, triggerDeleteApplication]);
+  }, [openConfirmDialog, selectedRows, clearSelection, triggerDeleteApplication]);
 
   return (
     <>
@@ -56,51 +60,28 @@ export const PreviewTable = () => {
         data={stageAppCodebasesCombinedData.stageAppCodebasesCombinedData}
         columns={columns}
         selection={{
-          selected,
-          isRowSelected: (row) => selected.indexOf(row.appCodebase.metadata.name) !== -1,
-          handleSelectAll: handleClickSelectAll,
-          handleSelectRow: handleClickSelectRow,
-          renderSelectionInfo: (selectionLength) => (
-            <div className="flex flex-row items-center gap-4">
-              <div className="min-w-38">
-                <p className="text-base">{selectionLength} item(s) selected</p>
+          ...selection,
+          renderSelectionActions: () => (
+            <ConditionalWrapper
+              condition={!!applicationPermissions.data?.delete.allowed}
+              wrapper={(children) => <Tooltip title="Uninstall selected applications">{children}</Tooltip>}
+            >
+              <div className="text-secondary-foreground">
+                <ButtonWithPermission
+                  ButtonProps={{
+                    size: "sm",
+                    variant: "outline",
+                    onClick: handleClickDelete,
+                    disabled: !buttonsEnabledMap.uninstall,
+                  }}
+                  allowed={applicationPermissions.data?.delete.allowed}
+                  reason={applicationPermissions.data?.delete.reason}
+                >
+                  <Trash size={16} />
+                  Delete
+                </ButtonWithPermission>
               </div>
-              {applicationPermissions.data?.delete.allowed ? (
-                <Tooltip title="Uninstall selected applications">
-                  <div className="text-secondary-foreground">
-                    <ButtonWithPermission
-                      ButtonProps={{
-                        size: "sm",
-                        variant: "outline",
-                        onClick: handleClickDelete,
-                        disabled: !buttonsEnabledMap.uninstall,
-                      }}
-                      allowed={applicationPermissions.data?.delete.allowed}
-                      reason={applicationPermissions.data?.delete.reason}
-                    >
-                      <Trash size={16} />
-                      Delete
-                    </ButtonWithPermission>
-                  </div>
-                </Tooltip>
-              ) : (
-                <div className="text-secondary-foreground">
-                  <ButtonWithPermission
-                    ButtonProps={{
-                      size: "sm",
-                      variant: "outline",
-                      onClick: handleClickDelete,
-                      disabled: !buttonsEnabledMap.uninstall,
-                    }}
-                    allowed={applicationPermissions.data?.delete.allowed}
-                    reason={applicationPermissions.data?.delete.reason}
-                  >
-                    <Trash size={16} />
-                    Delete
-                  </ButtonWithPermission>
-                </div>
-              )}
-            </div>
+            </ConditionalWrapper>
           ),
         }}
         settings={{

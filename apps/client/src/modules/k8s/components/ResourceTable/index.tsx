@@ -117,16 +117,11 @@ export function ResourceTable<T extends KubeObjectBase>({
 
   const { selection, selectedRows, clearSelection } = useRowSelection(items as KubeObjectBase[], getKubeObjectUid);
 
-  const renderSelectionInfo = useCallback(
+  const renderSelectionActions = useCallback(
     (selectionLength: number) => (
-      <div className="flex items-center gap-2">
-        <div className="min-w-38">
-          <p>{selectionLength} item(s) selected</p>
-        </div>
-        <Button variant="outline" size="sm" onClick={() => setDeleteDialogOpen(true)}>
-          <Trash size={14} className="mr-1.5" /> Delete {selectionLength}
-        </Button>
-      </div>
+      <Button variant="outline" size="sm" onClick={() => setDeleteDialogOpen(true)}>
+        <Trash size={14} className="mr-1.5" /> Delete {selectionLength}
+      </Button>
     ),
     []
   );
@@ -156,7 +151,7 @@ export function ResourceTable<T extends KubeObjectBase>({
               }
             : undefined
         }
-        selection={{ ...selection, renderSelectionInfo }}
+        selection={{ ...selection, renderSelectionActions }}
         emptyListComponent={
           <EmptyList
             icon={<Box width={64} height={64} className="text-muted-foreground" />}

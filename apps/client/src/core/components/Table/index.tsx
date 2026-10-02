@@ -86,14 +86,14 @@ const TableShell = <DataType,>(props: TableShellProps<DataType>) => {
       isRowSelected: selection?.isRowSelected,
       handleSelectAll: selection?.handleSelectAll,
       handleSelectRow: selection?.handleSelectRow,
-      renderSelectionInfo: selection?.renderSelectionInfo,
+      renderSelectionActions: selection?.renderSelectionActions,
     }),
     [
       selection?.handleSelectAll,
       selection?.handleSelectRow,
       selection?.isRowSelectable,
       selection?.isRowSelected,
-      selection?.renderSelectionInfo,
+      selection?.renderSelectionActions,
       selection?.selected,
     ]
   );
@@ -336,8 +336,13 @@ const TableShell = <DataType,>(props: TableShellProps<DataType>) => {
       <div className="flex flex-col gap-2">
         {renderHeader()}
         <div className={cn(outlined && "px-5")}>
-          {selectionSettings.renderSelectionInfo && validSelectedCount > 0 && (
-            <div className="bg-muted px-5 py-4">{selectionSettings.renderSelectionInfo(validSelectedCount)}</div>
+          {selectionSettings.renderSelectionActions && validSelectedCount > 0 && (
+            <div className="bg-muted flex items-center gap-4 px-5 py-4">
+              <p className="min-w-38 text-base">{validSelectedCount} item(s) selected</p>
+              <div className="flex items-center gap-2">
+                {selectionSettings.renderSelectionActions(validSelectedCount)}
+              </div>
+            </div>
           )}
           <div className="border-border w-full overflow-hidden rounded-md border">
             <TableUI style={{ minWidth: TABLE_WIDTH_DEFAULTS.TABLE_MIN_WIDTH }}>
