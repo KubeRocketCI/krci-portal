@@ -121,6 +121,30 @@ describe("useK8sActionMutation", () => {
     });
   });
 
+  it("uses successSeverity for the toast of a resolved mutation", async () => {
+    const { result } = renderHook(
+      () =>
+        useK8sActionMutation<{ name: string }, { failed: number }>({
+          mutationKey: "test",
+          mutationFn: async () => ({ failed: 1 }),
+          messages: {
+            loading: ({ name }) => `Doing ${name}…`,
+            success: ({ name }) => `${name} partly done`,
+            error: ({ name }) => `${name} failed`,
+          },
+          successSeverity: (_, output) => (output.failed ? "warning" : "success"),
+          invalidationKeys: () => [],
+        }),
+      { wrapper: makeWrapper(queryClient) }
+    );
+
+    await act(async () => {
+      await result.current.mutateAsync({ name: "foo" });
+    });
+
+    expect(showToast).toHaveBeenCalledWith("foo partly done", "warning", expect.objectContaining({ id: "toast-id" }));
+  });
+
   it("shows loading -> error toast with err.message in description on failure", async () => {
     const { result } = renderHook(
       () =>

@@ -1,8 +1,10 @@
-import { pipelineRunStopResultEnum, pipelineRunStopSkipReasonEnum } from "@my-project/shared";
+import {
+  PIPELINE_RUN_STOP_MAX_RUNS,
+  pipelineRunStopResultEnum,
+  pipelineRunStopSkipReasonEnum,
+} from "@my-project/shared";
 import { z } from "zod";
 import { tektonInputSchemas } from "./tektonInput.js";
-
-export const PIPELINE_RUN_STOP_MAX_RUNS = 100;
 
 const pipelineRunRefSchema = z
   .object({

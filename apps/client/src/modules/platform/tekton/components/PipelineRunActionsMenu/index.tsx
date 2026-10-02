@@ -9,11 +9,11 @@ import { createResourceAction } from "@/core/utils/createResourceAction";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { usePipelineRunCRUD, usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { actionMenuType } from "@/k8s/constants/actionMenuTypes";
+import { useStopPipelineRuns } from "@/modules/platform/tekton/hooks/useStopPipelineRuns";
 import {
-  createGracefulCancelPipelineRun,
   createRerunPipelineRun,
   isHistoryPipelineRun,
-  isPipelineRunInProgress,
+  isPipelineRunStoppable,
   k8sOperation,
   normalizeHistoryPipelineRun,
   parseRecordName,
@@ -85,7 +85,8 @@ export const PipelineRunActionsMenu = ({
   const pipelineRunPermissions = usePipelineRunPermissions();
   const trpc = useTRPCClient();
 
-  const { triggerCreatePipelineRun, triggerDeletePipelineRun, triggerPatchPipelineRun } = usePipelineRunCRUD();
+  const { triggerCreatePipelineRun, triggerDeletePipelineRun } = usePipelineRunCRUD();
+  const { stop, permission: stopPermission } = useStopPipelineRuns();
 
   const onDelete = React.useCallback(() => {
     if (!backRoute) {
@@ -104,23 +105,18 @@ export const PipelineRunActionsMenu = ({
 
     const isHistoryItem = isHistoryPipelineRun(pipelineRun);
 
-    const isInProgress = isPipelineRunInProgress(pipelineRun);
-
     return [
-      !hideStopAction && !isHistoryItem && isInProgress
+      !hideStopAction && isPipelineRunStoppable(pipelineRun)
         ? createResourceAction({
-            type: k8sOperation.update,
+            type: k8sOperation.patch,
             label: "Stop run",
             Icon: <OctagonX size={16} />,
             item: pipelineRun,
             disabled: {
-              status: !pipelineRunPermissions.data.update.allowed,
-              reason: pipelineRunPermissions.data.update.reason,
+              status: !stopPermission.allowed,
+              reason: stopPermission.reason,
             },
-            callback: (pipelineRun) => {
-              const newPipelineRun = createGracefulCancelPipelineRun(pipelineRun);
-              triggerPatchPipelineRun({ data: { pipelineRun: newPipelineRun } });
-            },
+            callback: (pipelineRun) => void stop([pipelineRun]),
           })
         : undefined,
       createResourceAction({
@@ -199,12 +195,12 @@ export const PipelineRunActionsMenu = ({
     trpc,
     pipelineRunPermissions.data.create.allowed,
     pipelineRunPermissions.data.create.reason,
-    pipelineRunPermissions.data.update.allowed,
-    pipelineRunPermissions.data.update.reason,
+    stopPermission.allowed,
+    stopPermission.reason,
     pipelineRunPermissions.data.delete.allowed,
     pipelineRunPermissions.data.delete.reason,
     triggerCreatePipelineRun,
-    triggerPatchPipelineRun,
+    stop,
     openEditorDialog,
     triggerDeletePipelineRun,
     onDelete,

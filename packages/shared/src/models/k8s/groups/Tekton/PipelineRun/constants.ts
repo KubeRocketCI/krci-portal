@@ -29,6 +29,8 @@ export const pipelineRunSpecStatus = pipelineRunSpecStatusEnum.enum;
 export const pipelineRunPhase = pipelineRunPhaseEnum.enum;
 export const pipelineRunStopResult = pipelineRunStopResultEnum.enum;
 export const pipelineRunStopSkipReason = pipelineRunStopSkipReasonEnum.enum;
+/** Maximum runs per `pipelineRun.stop` request. */
+export const PIPELINE_RUN_STOP_MAX_RUNS = 100;
 
 /**
  * Reasons for a condition status "False" that mean a run was cancelled by a

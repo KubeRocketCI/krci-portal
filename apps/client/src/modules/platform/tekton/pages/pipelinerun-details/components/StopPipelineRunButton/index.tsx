@@ -1,45 +1,27 @@
 import { ButtonWithPermission } from "@/core/components/ButtonWithPermission";
-import { usePipelineRunCRUD, usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
-import { createGracefulCancelPipelineRun, isHistoryPipelineRun, isPipelineRunInProgress } from "@my-project/shared";
+import { useStopPipelineRuns } from "@/modules/platform/tekton/hooks/useStopPipelineRuns";
+import { isPipelineRunStoppable } from "@my-project/shared";
 import { OctagonX } from "lucide-react";
 import { usePipelineRunContext } from "../../providers/PipelineRun/hooks";
 
 export const StopPipelineRunButton = () => {
-  const unifiedData = usePipelineRunContext();
-  const pipelineRun = unifiedData.pipelineRun;
-  const pipelineRunPermissions = usePipelineRunPermissions();
-  const { triggerPatchPipelineRun } = usePipelineRunCRUD();
+  const { pipelineRun } = usePipelineRunContext();
+  const { stop, isPending, permission } = useStopPipelineRuns();
 
-  if (!pipelineRun || isHistoryPipelineRun(pipelineRun)) {
+  if (!pipelineRun || !isPipelineRunStoppable(pipelineRun)) {
     return null;
   }
-
-  const isInProgress = isPipelineRunInProgress(pipelineRun);
-
-  // Only show button when pipeline run is in progress
-  if (!isInProgress) {
-    return null;
-  }
-
-  const handleClick = () => {
-    if (!pipelineRun) {
-      return;
-    }
-
-    const newPipelineRun = createGracefulCancelPipelineRun(pipelineRun);
-
-    triggerPatchPipelineRun({ data: { pipelineRun: newPipelineRun } });
-  };
 
   return (
     <ButtonWithPermission
       ButtonProps={{
         variant: "outline",
         size: "sm",
-        onClick: handleClick,
+        onClick: () => void stop([pipelineRun]),
+        disabled: isPending,
       }}
-      allowed={pipelineRunPermissions.data.update.allowed}
-      reason={pipelineRunPermissions.data.update.reason}
+      allowed={permission.allowed}
+      reason={permission.reason}
     >
       <OctagonX size={16} /> Stop run
     </ButtonWithPermission>
