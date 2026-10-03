@@ -1,7 +1,7 @@
 import { useTRPCClient } from "@/core/providers/trpc";
 import type { Severity } from "@/core/utils/severity";
 import { usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
-import { useK8sActionMutation } from "@/modules/k8s/hooks/useK8sActionMutation";
+import { useK8sActionMutation, type UseK8sActionMutationOptions } from "@/modules/k8s/hooks/useK8sActionMutation";
 import {
   PIPELINE_RUN_STOP_MAX_RUNS,
   summarizePipelineRunStop,
@@ -12,6 +12,12 @@ import React from "react";
 import { describeStopOutcome, type StopPipelineRunsOutput } from "./outcome";
 
 export type { PipelineRunStopOutcome, StopPipelineRunsOutput } from "./outcome";
+
+export interface UseStopPipelineRunsOptions {
+  /** Success reporting of `stop`; see `UseK8sActionMutationOptions.report`. Defaults to `toast`. */
+  report?: UseK8sActionMutationOptions<readonly PipelineRun[], StopPipelineRunsOutput>["report"];
+}
+
 const describeRuns = (runs: readonly PipelineRun[]) =>
   runs.length === 1 ? `PipelineRun ${runs[0].metadata.name}` : `${runs.length} PipelineRuns`;
 
@@ -24,14 +30,14 @@ const outcomeSeverity = ({ summary }: StopPipelineRunsOutput): Severity => {
  * Stops PipelineRuns gracefully through `pipelineRun.stop`.
  *
  * - `stop` sends runs in sequential requests of up to `PIPELINE_RUN_STOP_MAX_RUNS`.
- * - `stop` shows one toast and resolves to the per-run outcomes; it resolves to `undefined`
- *   when the first request fails, after an error toast.
+ * - `stop` resolves to the per-run outcomes and, with `report: "toast"`, summarises them in one
+ *   toast; it resolves to `undefined` when the first request fails, after an error toast.
  * - A later failed request stops the batch; its runs and the unsent ones are `failed` with
  *   reason `error`.
  * - `permission` is the `patch` permission on PipelineRuns.
  * - No query invalidation: PipelineRun lists and details are watch-driven.
  */
-export function useStopPipelineRuns() {
+export function useStopPipelineRuns({ report }: UseStopPipelineRunsOptions = {}) {
   const trpc = useTRPCClient();
   const permissions = usePipelineRunPermissions();
 
@@ -65,6 +71,7 @@ export function useStopPipelineRuns() {
       error: (runs) => `Failed to stop ${describeRuns(runs)}`,
     },
     successSeverity: (_, output) => outcomeSeverity(output),
+    report,
     invalidationKeys: () => [],
   });
 

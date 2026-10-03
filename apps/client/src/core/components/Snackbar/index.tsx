@@ -112,6 +112,9 @@ const CustomToast = ({
   );
 };
 
+/** Removes a toast by the id `showToast` returned. */
+export const dismissToast = (id: string | number) => toast.dismiss(id);
+
 // Helper to show toast with optional links
 export const showToast = (message: string, variant: ToastVariant, options?: ToastOptions) => {
   const { route, externalLink, description, onNavigate, ...sonnerOptions } = options || {};

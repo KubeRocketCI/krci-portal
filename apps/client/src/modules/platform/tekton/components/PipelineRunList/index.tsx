@@ -50,7 +50,7 @@ export const PipelineRunList = ({
 }: PipelineRunListProps) => {
   const { selection, selectedRows, clearSelection, deselectRows } = useRowSelection(pipelineRuns, getKubeObjectUid);
   const pipelineRunPermissions = usePipelineRunPermissions();
-  const { stop, isPending: isStopPending, permission: stopPermission } = useStopPipelineRuns();
+  const { stop, isPending: isStopPending, permission: stopPermission } = useStopPipelineRuns({ report: "none" });
 
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [stopTarget, setStopTarget] = React.useState<PipelineRun[]>();
@@ -115,7 +115,7 @@ export const PipelineRunList = ({
                 allowed={stopPermission.allowed}
               >
                 <OctagonX size={16} />
-                Stop {stoppableCount}
+                Stop
               </ButtonWithPermission>
               <ConditionalWrapper
                 condition={pipelineRunPermissions.data.delete.allowed}

@@ -27,8 +27,8 @@ const finishedRun = createMockPipelineRun({
 const selectedRuns = [...runningRuns, finishedRun];
 const [stoppingRun, skippedRun, failedRun] = runningRuns;
 
-const stopLabel = `Stop ${runningRuns.length}`;
-const confirmPrompt = `Stop ${runningRuns.length} of ${selectedRuns.length} selected PipelineRuns?`;
+const stopLabel = "Stop";
+const title = "Stop Pipelines";
 
 const respond = (results: PipelineRunStopOutcome[]): StopPipelineRunsOutput => ({
   results,
@@ -61,15 +61,18 @@ type Story = StoryObj<typeof meta>;
 /** Stoppable runs are listed; finished ones are counted as skipped. */
 export const Confirm: Story = {
   play: async () => {
-    await expect(await screen.findByText(confirmPrompt)).toBeInTheDocument();
+    await expect(await screen.findByRole("heading", { name: title })).toBeInTheDocument();
     await expect(
       screen.getByText(`${selectedRuns.length - runningRuns.length} already finished or stopping will be skipped.`)
     ).toBeInTheDocument();
     await expect(screen.getByRole("button", { name: stopLabel })).toBeEnabled();
+    await expect(
+      screen.getByText("Cleanup tasks finish first, so runs stay in Cancelling for a moment.")
+    ).toBeInTheDocument();
   },
 };
 
-/** Stop is locked and Cancel is hidden while the request runs. */
+/** Stop and Cancel are disabled and Escape does not close while the request runs. */
 export const InFlight: Story = {
   args: {
     stop: fn<StopPipelineRunsDialogProps["stop"]>(() => new Promise(() => {})),
@@ -78,8 +81,9 @@ export const InFlight: Story = {
     await userEvent.click(await screen.findByRole("button", { name: stopLabel }));
 
     await expect(await screen.findByRole("button", { name: "Stopping…" })).toBeDisabled();
-    await expect(screen.queryByRole("button", { name: "Cancel" })).not.toBeInTheDocument();
-    await expect(screen.getByText(confirmPrompt)).toBeInTheDocument();
+    await expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
+    await userEvent.keyboard("{Escape}");
+    await expect(args.onOpenChange).not.toHaveBeenCalled();
     await expect(args.stop).toHaveBeenCalledTimes(1);
   },
 };
@@ -121,7 +125,7 @@ export const RequestFailed: Story = {
 
     await waitFor(() => expect(args.stop).toHaveBeenCalledTimes(1));
     await expect(await screen.findByRole("button", { name: stopLabel })).toBeEnabled();
-    await expect(screen.getByText(confirmPrompt)).toBeInTheDocument();
+    await expect(screen.queryByRole("button", { name: "Done" })).not.toBeInTheDocument();
     await expect(args.onStopped).not.toHaveBeenCalled();
   },
 };
@@ -132,6 +136,6 @@ export const NothingToStop: Story = {
     pipelineRuns: [finishedRun],
   },
   play: async () => {
-    await expect(await screen.findByRole("button", { name: "Stop 0" })).toBeDisabled();
+    await expect(await screen.findByRole("button", { name: stopLabel })).toBeDisabled();
   },
 };
