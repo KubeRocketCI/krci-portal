@@ -6,9 +6,10 @@ import { useK8sActionMutation } from "./useK8sActionMutation";
 
 vi.mock("@/core/components/Snackbar", () => ({
   showToast: vi.fn().mockReturnValue("toast-id"),
+  dismissToast: vi.fn(),
 }));
 
-import { showToast } from "@/core/components/Snackbar";
+import { dismissToast, showToast } from "@/core/components/Snackbar";
 
 function makeWrapper(queryClient: QueryClient) {
   return ({ children }: { children: React.ReactNode }) =>
@@ -143,6 +144,63 @@ describe("useK8sActionMutation", () => {
     });
 
     expect(showToast).toHaveBeenCalledWith("foo partly done", "warning", expect.objectContaining({ id: "toast-id" }));
+  });
+
+  it("dismisses the loading toast without a success toast when report is none", async () => {
+    const { result } = renderHook(
+      () =>
+        useK8sActionMutation<{ name: string }, { ok: true }>({
+          mutationKey: "test",
+          mutationFn: async () => ({ ok: true }),
+          messages: {
+            loading: ({ name }) => `Doing ${name}…`,
+            success: ({ name }) => `${name} done`,
+            error: ({ name }) => `${name} failed`,
+          },
+          report: "none",
+          invalidationKeys: () => [],
+        }),
+      { wrapper: makeWrapper(queryClient) }
+    );
+
+    await act(async () => {
+      await result.current.mutateAsync({ name: "foo" });
+    });
+
+    expect(showToast).toHaveBeenCalledTimes(1);
+    expect(showToast).toHaveBeenCalledWith("Doing foo…", "loading");
+    expect(dismissToast).toHaveBeenCalledWith("toast-id");
+  });
+
+  it("still shows the error toast when report is none", async () => {
+    const { result } = renderHook(
+      () =>
+        useK8sActionMutation<{ name: string }, never>({
+          mutationKey: "test",
+          mutationFn: async () => {
+            throw new Error("boom");
+          },
+          messages: {
+            loading: ({ name }) => `Doing ${name}…`,
+            success: () => "ok",
+            error: ({ name }) => `${name} failed`,
+          },
+          report: "none",
+          invalidationKeys: () => [],
+        }),
+      { wrapper: makeWrapper(queryClient) }
+    );
+
+    await act(async () => {
+      await result.current.mutateAsync({ name: "foo" }).catch(() => {});
+    });
+
+    expect(dismissToast).not.toHaveBeenCalled();
+    expect(showToast).toHaveBeenCalledWith(
+      "foo failed",
+      "error",
+      expect.objectContaining({ id: "toast-id", description: "boom" })
+    );
   });
 
   it("shows loading -> error toast with err.message in description on failure", async () => {

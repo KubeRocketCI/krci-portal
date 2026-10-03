@@ -45,7 +45,7 @@ export interface StopPipelineRunsDialogProps {
  * Confirms, stops and reports a batch of PipelineRuns.
  *
  * - Confirm: lists the stoppable runs and counts the skipped ones.
- * - Stopping: the dialog can be closed; the request continues.
+ * - Stopping: the dialog cannot be closed.
  * - Results: one row per run, failed first. A failed request returns to confirm.
  */
 export function StopPipelineRunsDialog({
@@ -68,8 +68,12 @@ export function StopPipelineRunsDialog({
 
   const handleStop = async () => {
     setIsStopping(true);
-    const result = await stop(stoppableRuns);
-    setIsStopping(false);
+    let result: StopPipelineRunsOutput | undefined;
+    try {
+      result = await stop(stoppableRuns);
+    } finally {
+      setIsStopping(false);
+    }
 
     if (!result) return;
 
@@ -79,15 +83,11 @@ export function StopPipelineRunsDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(next) => !isStopping && onOpenChange(next)}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Stop PipelineRuns</DialogTitle>
-          <DialogDescription>
-            {output
-              ? describeStopOutcome(output)
-              : `Stop ${stoppableRuns.length} of ${pipelineRuns.length} selected PipelineRuns?`}
-          </DialogDescription>
+          <DialogTitle>Stop Pipelines</DialogTitle>
+          {output && <DialogDescription>{describeStopOutcome(output)}</DialogDescription>}
         </DialogHeader>
         <DialogBody>
           {sortedResults ? (
@@ -122,7 +122,9 @@ export function StopPipelineRunsDialog({
                   );
                 })}
               </ul>
-              <p className="text-muted-foreground">Finally tasks still run, so runs show Cancelling until they end.</p>
+              <p className="text-muted-foreground">
+                Cleanup tasks finish first, so runs stay in Cancelling for a moment.
+              </p>
             </div>
           )}
         </DialogBody>
@@ -131,13 +133,11 @@ export function StopPipelineRunsDialog({
             <Button onClick={() => onOpenChange(false)}>Done</Button>
           ) : (
             <>
-              {!isStopping && (
-                <Button variant="ghost" onClick={() => onOpenChange(false)}>
-                  Cancel
-                </Button>
-              )}
+              <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={isStopping}>
+                Cancel
+              </Button>
               <Button onClick={handleStop} disabled={isStopping || stoppableRuns.length === 0}>
-                {isStopping ? "Stopping…" : `Stop ${stoppableRuns.length}`}
+                {isStopping ? "Stopping…" : "Stop"}
               </Button>
             </>
           )}
