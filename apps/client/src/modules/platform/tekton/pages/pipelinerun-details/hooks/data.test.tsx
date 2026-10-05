@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { TRPCClientError } from "@trpc/client";
 import React from "react";
 import type { K8sResourceConfig } from "@my-project/shared";
 import { createTestQueryClient } from "@/test/utils";
 import { createK8sNotFoundError } from "@/k8s/api/utils/k8sNotFoundError";
+import { deferred } from "@/k8s/api/hooks/useWatch/testUtils";
 import { useUnifiedPipelineRunData } from "./data";
 
 const { trpc, registry } = vi.hoisted(() => ({
@@ -97,10 +98,16 @@ beforeEach(() => {
 });
 
 describe("useUnifiedPipelineRunData, live run", () => {
-  it("never lists Tasks", async () => {
-    trpc.k8s.get.query.mockResolvedValue(pipelineRun);
+  it("starts the run lists together with the PipelineRun request and never lists Tasks", async () => {
+    const pipelineRunRequest = deferred<typeof pipelineRun>();
+    trpc.k8s.get.query.mockReturnValue(pipelineRunRequest.promise);
 
     const { result } = renderData();
+
+    await waitFor(() => expect(listedPlurals()).toEqual(["taskruns", "approvaltasks", "customruns"]));
+    expect(result.current.isLoading).toBe(true);
+
+    await act(async () => pipelineRunRequest.resolve(pipelineRun));
 
     await waitFor(() => expect(result.current.isReady).toBe(true));
     expect(result.current.source).toBe("live");
