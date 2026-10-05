@@ -54,25 +54,23 @@ export function useUnifiedPipelineRunData({ namespace, name }: UnifiedPipelineRu
 
   const k8sNotFound = !pipelineRunWatch.isLoading && isK8sNotFoundError(pipelineRunWatch.query.error);
 
-  // Live TaskRuns, ApprovalTasks and CustomRuns (only fetched when K8s PipelineRun exists)
-  const hasLivePipelineRun = !k8sNotFound && !pipelineRunWatch.isLoading;
-
+  // Run lists start with the PipelineRun GET and stop on a 404.
   const taskRunsWatch = useTaskRunWatchList({
     namespace,
     labels: { [taskRunLabels.parentPipelineRun]: name },
-    queryOptions: { enabled: hasLivePipelineRun },
+    queryOptions: { enabled: !k8sNotFound },
   });
 
   const approvalTasksWatch = useApprovalTaskWatchList({
     namespace,
     labels: { [approvalTaskLabels.parentPipelineRun]: name },
-    queryOptions: { enabled: hasLivePipelineRun },
+    queryOptions: { enabled: !k8sNotFound },
   });
 
   const customRunsWatch = useCustomRunWatchList({
     namespace,
     labels: { [customRunLabels.pipelineRun]: name },
-    queryOptions: { enabled: hasLivePipelineRun },
+    queryOptions: { enabled: !k8sNotFound },
   });
 
   // ── Step 2: On K8s 404, search Tekton Results ─────────────────────────────
