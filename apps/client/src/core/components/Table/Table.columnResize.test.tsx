@@ -15,6 +15,8 @@ import {
   seedTableSettings,
 } from "./testUtils";
 import { stubResizeObserver } from "@/test/utils/resize-observer";
+import { renderInActivity } from "@/test/utils/activity";
+import { TABLE_CONTAINER_SLOT } from "@/core/components/ui/table/constants";
 
 /**
  * DOM-level coverage of the commit path: asserts on `<col>` style, not hook state.
@@ -189,5 +191,28 @@ describe("column resize commit path", () => {
       document.dispatchEvent(new MouseEvent("pointerup", { bubbles: true }));
     });
     expect(document.body.classList.contains("krci-resizing")).toBe(false);
+  });
+
+  describe("inside <Activity>", () => {
+    it("observes the container again when a hidden tab is shown", () => {
+      const resizeObserver = stubResizeObserver();
+      const { container, reshow } = renderInActivity(() => (
+        <DataTable<Row> id={TABLE_ID} columns={columns} data={data} pagination={{ show: false }} />
+      ));
+      const tableContainer = container.querySelector<HTMLElement>(`[data-slot="${TABLE_CONTAINER_SLOT}"]`)!;
+      const observersBefore = resizeObserver.callbacks.length;
+
+      reshow();
+
+      const widthBefore = colFor(container, 0).style.width;
+      act(() => {
+        Object.defineProperty(tableContainer, "clientWidth", { value: 4000, configurable: true });
+        for (const callback of resizeObserver.callbacks.slice(observersBefore)) {
+          callback([], {} as ResizeObserver);
+        }
+      });
+
+      expect(colFor(container, 0).style.width).not.toBe(widthBefore);
+    });
   });
 });

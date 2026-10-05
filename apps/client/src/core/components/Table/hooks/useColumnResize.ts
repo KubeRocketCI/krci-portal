@@ -305,9 +305,12 @@ export const useColumnResize = <DataType>({
     [resetAllColumnWidths, pinned]
   );
 
+  // Cleared container lets the `<col>` ref callback observe again when a hidden <Activity> tab is shown.
   React.useEffect(
     () => () => {
       observerRef.current?.disconnect();
+      observerRef.current = null;
+      containerRef.current = null;
       endDragRef.current?.();
     },
     []
