@@ -89,10 +89,15 @@ export const Variables = () => {
   const isDirty = useStore(form.store, (state) => state.isDirty);
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
 
+  // Reset on a new snapshot only; effects also run on hidden <Activity> re-show.
+  const appliedSnapshotRef = React.useRef(configDataSnapshot);
   React.useEffect(() => {
+    if (appliedSnapshotRef.current === configDataSnapshot) {
+      return;
+    }
+    appliedSnapshotRef.current = configDataSnapshot;
     form.reset({ variables: initialVariables });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- configDataSnapshot is stable dependency to avoid infinite loop
-  }, [configDataSnapshot]);
+  }, [configDataSnapshot, form, initialVariables]);
 
   const updateVariables = React.useCallback(
     (updater: (prev: Variable[]) => Variable[]) => {
