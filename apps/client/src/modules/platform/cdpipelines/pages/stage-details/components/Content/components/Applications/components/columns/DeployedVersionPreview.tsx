@@ -8,24 +8,15 @@ import { Link } from "@tanstack/react-router";
 import { CircleCheck, Fingerprint, SquareArrowOutUpRight } from "lucide-react";
 import React from "react";
 import { Button } from "@/core/components/ui/button";
+import { useCopyFeedback } from "@/core/hooks/useCopyFeedback";
 
 const ImageDigestCopyIcon = ({ value }: { value: string }) => {
-  const [copied, setCopied] = React.useState(false);
-  const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  React.useEffect(
-    () => () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    },
-    []
-  );
+  const { copied, markCopied } = useCopyFeedback();
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     navigator.clipboard.writeText(value);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setCopied(true);
-    timeoutRef.current = setTimeout(() => setCopied(false), 2000);
+    markCopied();
   };
 
   return (

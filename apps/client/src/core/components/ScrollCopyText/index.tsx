@@ -2,6 +2,7 @@ import { Button } from "@/core/components/ui/button";
 import { Copy, CopyCheck } from "lucide-react";
 import React from "react";
 import { cn } from "@/core/utils/classname";
+import { useCopyFeedback } from "@/core/hooks/useCopyFeedback";
 
 interface ScrollCopyTextProps {
   text: string;
@@ -10,8 +11,7 @@ interface ScrollCopyTextProps {
 }
 
 export const ScrollCopyText = ({ text, className, showFromEnd = false }: ScrollCopyTextProps) => {
-  const [showCopied, setShowCopied] = React.useState<boolean>(false);
-  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const { copied, markCopied } = useCopyFeedback();
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const [showLeftFade, setShowLeftFade] = React.useState(false);
   const [showRightFade, setShowRightFade] = React.useState(false);
@@ -47,26 +47,10 @@ export const ScrollCopyText = ({ text, className, showFromEnd = false }: ScrollC
     };
   }, [updateFades, text, showFromEnd]);
 
-  React.useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-
   const handleClickCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
     navigator.clipboard.writeText(text);
-
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    setShowCopied(true);
-    timeoutRef.current = setTimeout(() => {
-      setShowCopied(false);
-    }, 2000);
+    markCopied();
   };
 
   return (
@@ -98,7 +82,7 @@ export const ScrollCopyText = ({ text, className, showFromEnd = false }: ScrollC
           className="bg-muted hover:bg-muted/80 min-w-0 shrink-0 p-0"
           tabIndex={-1}
         >
-          {showCopied ? <CopyCheck size={12} /> : <Copy size={12} />}
+          {copied ? <CopyCheck size={12} /> : <Copy size={12} />}
         </Button>
       </div>
     </div>

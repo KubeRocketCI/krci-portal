@@ -10,6 +10,7 @@ import { PodExecDialog } from "@/modules/platform/cdpipelines/dialogs/PodExec";
 import { StageDeploymentCards } from "@/modules/platform/cdpipelines/components/StageDeploymentCards";
 import { useDialogOpener } from "@/core/providers/Dialog/hooks";
 import { applicationLabels, systemQuickLink } from "@my-project/shared";
+import { useCopyFeedback } from "@/core/hooks/useCopyFeedback";
 import { useCodebaseApplicationsWatch, useCodebaseStagesWatch, useQuickLinksUrlListWatch } from "../../hooks/data";
 import { routeProjectDetails } from "../../route";
 import { useColumns } from "./hooks/useColumns";
@@ -101,14 +102,11 @@ export const DeploymentStatusWidget = () => {
       .join("\n======\n");
   }, [pipelineDeployments, params.name, clusterName]);
 
-  const [isCopied, setIsCopied] = React.useState(false);
-  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const { copied: isCopied, markCopied } = useCopyFeedback();
 
   const handleCopy = () => {
     navigator.clipboard.writeText(copyText);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setIsCopied(true);
-    timeoutRef.current = setTimeout(() => setIsCopied(false), 2000);
+    markCopied();
   };
 
   // Expandable row renderer
