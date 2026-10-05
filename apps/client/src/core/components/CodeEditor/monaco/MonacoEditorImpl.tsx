@@ -4,7 +4,7 @@ import { DiffEditor, Editor, type DiffEditorProps, type EditorProps } from "@mon
 import type { editor } from "monaco-editor";
 import { useMonacoTheme } from "@/core/hooks/useTheme";
 import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
-import { useRemountKey } from "./hooks/useRemountKey";
+import { useRemountKey } from "@/core/hooks/useRemountKey";
 
 // Floor for every editor in the portal; caller options win.
 const MONACO_EDITOR_DEFAULTS: editor.IEditorOptions = {

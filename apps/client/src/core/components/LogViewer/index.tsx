@@ -7,6 +7,7 @@ import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { useTheme } from "@/core/hooks/useTheme";
+import { useRemountKey } from "@/core/hooks/useRemountKey";
 
 export interface LogViewerProps {
   /** Log content for static mode (one-time render). Ignored when streaming=true. */
@@ -200,6 +201,8 @@ export const LogViewer = forwardRef<LogViewerRef, LogViewerProps>(
     ref
   ) => {
     const theme = useTheme();
+    // Static LazyLog appends `text` again in componentDidMount, which runs on every hidden <Activity> re-show.
+    const remountKey = useRemountKey();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const lazyLogRef = useRef<any>(null);
     const [hasStreamContent, setHasStreamContent] = useState(false);
@@ -369,7 +372,9 @@ export const LogViewer = forwardRef<LogViewerRef, LogViewerProps>(
                   {...lazyLogProps}
                 />
               ) : (
-                hasContent && <LazyLog key={theme} ref={lazyLogRef} text={content || ""} {...lazyLogProps} />
+                hasContent && (
+                  <LazyLog key={`${theme}-${remountKey}`} ref={lazyLogRef} text={content || ""} {...lazyLogProps} />
+                )
               )}
             </div>
           </Card>

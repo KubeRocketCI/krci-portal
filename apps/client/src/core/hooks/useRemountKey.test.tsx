@@ -1,9 +1,8 @@
-import { Activity, useEffect, useRef } from "react";
-import { render, screen } from "@testing-library/react";
+import { useEffect, useRef } from "react";
+import { screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { renderInActivity } from "@/test/utils/activity";
 import { useRemountKey } from "./useRemountKey";
-
-type Mode = "visible" | "hidden";
 
 // Mirrors @monaco-editor/react: creates once, disposes in cleanup, keeps the ref and reuses it on reconnect.
 function DisposingChild({ log }: { log: string[] }) {
@@ -45,18 +44,7 @@ function Host({ log }: { log: string[] }) {
 
 const renderHost = () => {
   const log: string[] = [];
-  const ui = (mode: Mode) => (
-    <Activity mode={mode}>
-      <Host log={log} />
-    </Activity>
-  );
-  const view = render(ui("visible"));
-  const setMode = (mode: Mode) => view.rerender(ui(mode));
-  const reshow = () => {
-    setMode("hidden");
-    setMode("visible");
-  };
-  return { log, setMode, reshow };
+  return { log, ...renderInActivity(() => <Host log={log} />) };
 };
 
 describe("useRemountKey", () => {

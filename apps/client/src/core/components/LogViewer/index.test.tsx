@@ -2,16 +2,19 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
+import { renderInActivity } from "@/test/utils/activity";
 import { LogViewer } from "./index";
 
 // Capture the props LazyLog is rendered with, and expose a fake virtua
 // list handle via `listRef` so the scroll controls have something to call.
 const scrollTo = vi.fn();
 const lazyLogProps: Record<string, unknown>[] = [];
+let lazyLogInstances = 0;
 
 vi.mock("@melloware/react-logviewer", () => ({
   LazyLog: React.forwardRef<unknown, Record<string, unknown>>(function MockLazyLog(props, ref) {
     lazyLogProps.push(props);
+    React.useState(() => ++lazyLogInstances);
     React.useImperativeHandle(ref, () => ({
       listRef: { current: { scrollTo, scrollSize: 5000 } },
       appendLines: vi.fn(),
@@ -26,6 +29,26 @@ vi.mock("@/core/hooks/useTheme", () => ({ useTheme: () => "light" }));
 beforeEach(() => {
   scrollTo.mockClear();
   lazyLogProps.length = 0;
+  lazyLogInstances = 0;
+});
+
+describe("LogViewer inside <Activity>", () => {
+  it("mounts a fresh static LazyLog when a hidden tab is shown", () => {
+    const { reshow } = renderInActivity(() => <LogViewer content={"a\nb"} />);
+    expect(lazyLogInstances).toBe(1);
+
+    reshow();
+
+    expect(lazyLogInstances).toBe(2);
+  });
+
+  it("keeps the streaming LazyLog instance when a hidden tab is shown", () => {
+    const { reshow } = renderInActivity(() => <LogViewer streaming />);
+
+    reshow();
+
+    expect(lazyLogInstances).toBe(1);
+  });
 });
 
 describe("LogViewer scroll controls", () => {
