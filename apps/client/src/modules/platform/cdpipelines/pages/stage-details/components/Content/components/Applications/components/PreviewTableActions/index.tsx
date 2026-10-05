@@ -10,6 +10,7 @@ import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-de
 import { isPipelineRunBlocking } from "@my-project/shared";
 import { Copy, CopyCheck } from "lucide-react";
 import React from "react";
+import { useCopyFeedback } from "@/core/hooks/useCopyFeedback";
 import { CleanButton } from "./components/CleanButton";
 import { ConfigureDeployButton } from "./components/ConfigureDeployButton";
 import { PreviewTableActionsProps } from "./types";
@@ -63,14 +64,11 @@ export const PreviewTableActions = ({ toggleMode }: PreviewTableActionsProps) =>
     argoAppsByName,
   ]);
 
-  const [isCopied, setIsCopied] = React.useState(false);
-  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const { copied: isCopied, markCopied } = useCopyFeedback();
 
   const handleCopy = () => {
     navigator.clipboard.writeText(copyText);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setIsCopied(true);
-    timeoutRef.current = setTimeout(() => setIsCopied(false), 2000);
+    markCopied();
   };
 
   const latestCleanPipelineRunIsRunning = React.useMemo(() => {

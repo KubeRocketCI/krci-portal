@@ -1,21 +1,14 @@
-import React from "react";
 import { Button } from "@/core/components/ui/button";
 import { TooltipRoot, TooltipTrigger, TooltipContent } from "@/core/components/ui/tooltip";
 import { Check, Copy, ExternalLink } from "lucide-react";
+import { useCopyFeedback } from "@/core/hooks/useCopyFeedback";
 
 interface CopyToClipboardButtonProps {
   getValue: () => string;
 }
 
 export const CopyToClipboardButton = ({ getValue }: CopyToClipboardButtonProps) => {
-  const [copied, setCopied] = React.useState(false);
-  const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  React.useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
+  const { copied, markCopied } = useCopyFeedback();
 
   const handleCopy = async () => {
     const value = getValue();
@@ -23,9 +16,7 @@ export const CopyToClipboardButton = ({ getValue }: CopyToClipboardButtonProps) 
 
     try {
       await navigator.clipboard.writeText(value);
-      setCopied(true);
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = setTimeout(() => setCopied(false), 2000);
+      markCopied();
     } catch {
       // Silently fail
     }
