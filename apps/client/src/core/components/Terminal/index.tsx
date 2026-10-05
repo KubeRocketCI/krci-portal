@@ -70,10 +70,6 @@ export const Terminal = forwardRef<TerminalRef, TerminalProps>(
 
     // Initialize terminal
     const initializeTerminal = (containerElement: HTMLDivElement) => {
-      if (terminalRef.current) {
-        terminalRef.current.terminal.dispose();
-      }
-
       const terminal = new XTerminal({
         allowProposedApi: true,
         theme: { ...defaultTheme, ...theme },
@@ -144,8 +140,20 @@ export const Terminal = forwardRef<TerminalRef, TerminalProps>(
       return () => {
         terminal.dispose();
         window.removeEventListener("resize", handleResize);
+        terminalRef.current = null;
       };
     };
+
+    const initializeTerminalRef = useRef(initializeTerminal);
+    useEffect(() => {
+      initializeTerminalRef.current = initializeTerminal;
+    });
+
+    // Rebuilt whenever effects connect (mount, hidden <Activity> re-show); prop changes do not recreate xterm.
+    useEffect(() => {
+      if (!containerRef.current) return;
+      return initializeTerminalRef.current(containerRef.current);
+    }, []);
 
     // Update terminal content when content changes
     useEffect(() => {
@@ -291,12 +299,7 @@ export const Terminal = forwardRef<TerminalRef, TerminalProps>(
 
         {/* Terminal Display */}
         <div
-          ref={(element) => {
-            if (element && !terminalRef.current) {
-              containerRef.current = element;
-              initializeTerminal(element);
-            }
-          }}
+          ref={containerRef}
           className="w-full"
           style={{
             height: showToolbar ? "calc(100% - 48px)" : "100%",
