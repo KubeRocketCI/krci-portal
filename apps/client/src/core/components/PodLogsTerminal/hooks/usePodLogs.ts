@@ -14,6 +14,11 @@ interface UsePodLogsParams {
   enabled?: boolean;
   /** Called with new log lines during streaming (follow=true). Bypasses state accumulation. */
   onStreamLines?: (lines: string[]) => void;
+  /**
+   * Called before every subscription start: first start, retry, and effect reconnect (hidden `<Activity>` shown again).
+   * Each subscription replays the last `tailLines` lines; drop lines received from the previous one.
+   */
+  onStreamStart?: () => void;
 }
 
 interface UsePodLogsResult {
@@ -24,7 +29,7 @@ interface UsePodLogsResult {
 }
 
 /** How often (ms) buffered subscription chunks are flushed. */
-const FLUSH_INTERVAL_MS = 500;
+export const FLUSH_INTERVAL_MS = 500;
 
 function isContainerNotReadyError(message: string): boolean {
   return (
@@ -47,6 +52,7 @@ export const usePodLogs = ({
   previous = false,
   enabled = true,
   onStreamLines,
+  onStreamStart,
 }: UsePodLogsParams): UsePodLogsResult => {
   const trpc = useTRPCClient();
   const [subscriptionError, setSubscriptionError] = useState<Error | null>(null);
@@ -58,6 +64,11 @@ export const usePodLogs = ({
   useEffect(() => {
     onStreamLinesRef.current = onStreamLines;
   }, [onStreamLines]);
+
+  const onStreamStartRef = useRef(onStreamStart);
+  useEffect(() => {
+    onStreamStartRef.current = onStreamStart;
+  }, [onStreamStart]);
 
   // Buffer for throttling subscription chunks.
   const bufferRef = useRef<string[]>([]);
@@ -142,6 +153,8 @@ export const usePodLogs = ({
 
     const startSubscription = () => {
       loadingCleared = false;
+      bufferRef.current = [];
+      onStreamStartRef.current?.();
       setIsSubscriptionLoading(true);
       setSubscriptionError(null);
 
@@ -209,7 +222,6 @@ export const usePodLogs = ({
         clearInterval(flushTimerRef.current);
         flushTimerRef.current = null;
       }
-      bufferRef.current = [];
       if (subscriptionRef.current) {
         subscriptionRef.current.unsubscribe();
         subscriptionRef.current = null;
@@ -230,7 +242,6 @@ export const usePodLogs = ({
 
   // Reset on parameter change
   useEffect(() => {
-    bufferRef.current = [];
     setSubscriptionError(null);
   }, [namespace, podName, container, clusterName, timestamps, follow]);
 

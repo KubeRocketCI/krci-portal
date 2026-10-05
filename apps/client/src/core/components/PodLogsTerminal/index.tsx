@@ -89,32 +89,31 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
     [logsTimestamps]
   );
 
-  // Clear LogViewer when parameters change (pod, container, timestamps toggle)
-  const prevParamsRef = useRef({ podName: "", container: "", timestamps: true });
+  const resetStream = useCallback(() => {
+    logViewerRef.current?.clear();
+    rawLinesRef.current = [];
+    hasStreamContentRef.current = false;
+    setHasStreamContent(false);
+  }, []);
+
+  // Pod or container switch drops the previous lines; a pod that is not ready starts no stream to reset them.
+  const activePodName = activePod?.metadata?.name || "";
+  const prevTargetRef = useRef({ podName: activePodName, container: activeContainer });
   useEffect(() => {
-    const podName = activePod?.metadata?.name || "";
-    const prev = prevParamsRef.current;
-    if (prev.podName !== podName || prev.container !== activeContainer || prev.timestamps !== logsTimestamps) {
-      const savedLines = rawLinesRef.current;
-      logViewerRef.current?.clear();
-      rawLinesRef.current = [];
+    const prev = prevTargetRef.current;
+    if (prev.podName === activePodName && prev.container === activeContainer) return;
+    prevTargetRef.current = { podName: activePodName, container: activeContainer };
+    resetStream();
+  }, [activePodName, activeContainer, resetStream]);
 
-      // If only timestamps changed and we have raw lines, re-append with new formatting
-      if (prev.podName === podName && prev.container === activeContainer && prev.timestamps !== logsTimestamps) {
-        if (savedLines.length > 0) {
-          const reformatted = savedLines.map((line) => formatLogText(line, logsTimestamps));
-          logViewerRef.current?.appendLines(reformatted);
-          rawLinesRef.current = savedLines;
-        }
-      } else {
-        // Pod or container changed — reset stream content flag
-        hasStreamContentRef.current = false;
-        setHasStreamContent(false);
-      }
-
-      prevParamsRef.current = { podName, container: activeContainer, timestamps: logsTimestamps };
-    }
-  }, [activePod?.metadata?.name, activeContainer, logsTimestamps]);
+  // Timestamps are display-only: re-format the kept raw lines; no new stream.
+  const prevTimestampsRef = useRef(logsTimestamps);
+  useEffect(() => {
+    if (prevTimestampsRef.current === logsTimestamps) return;
+    prevTimestampsRef.current = logsTimestamps;
+    logViewerRef.current?.clear();
+    logViewerRef.current?.appendLines(rawLinesRef.current.map((line) => formatLogText(line, logsTimestamps)));
+  }, [logsTimestamps]);
 
   // Get logs using the hook
   const { logs, isLoading, error } = usePodLogs({
@@ -128,6 +127,7 @@ export const PodLogsTerminal: React.FC<PodLogsProps> = ({
     previous,
     enabled: podReadyForLogs,
     onStreamLines: follow ? handleStreamLines : undefined,
+    onStreamStart: follow ? resetStream : undefined,
   });
 
   // Available containers - memoized
