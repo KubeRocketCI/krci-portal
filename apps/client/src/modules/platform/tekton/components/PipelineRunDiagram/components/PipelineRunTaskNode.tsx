@@ -9,6 +9,7 @@ import { humanize } from "@/core/utils/date-humanize";
 import { PipelineRunTaskNodeData } from "../hooks/usePipelineRunGraphData";
 import { getTaskRunStepStatus } from "@my-project/shared";
 import { getTaskDescription } from "../../../utils/getTaskDescription";
+import { usePipelineTaskSpec } from "@/modules/platform/tekton/pages/pipelinerun-details/hooks/usePipelineTaskSpec";
 import { ListOrdered, Timer } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/core/components/ui/button";
@@ -16,51 +17,38 @@ import { routePipelineRunDetails } from "@/modules/platform/tekton/pages/pipelin
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 
-export const PipelineRunTaskNode: React.FC<{
-  data: PipelineRunTaskNodeData;
-  sourcePosition?: Position;
-  targetPosition?: Position;
-}> = ({ data, sourcePosition, targetPosition }) => {
-  const { clusterName } = useClusterStore(
-    useShallow((state) => ({
-      clusterName: state.clusterName,
-    }))
-  );
+const getDuration = (data: PipelineRunTaskNodeData) => {
+  if (!data.taskRun?.status?.startTime) return null;
 
-  const displayName = data.name;
-  const hasRun = !!data.run;
+  const startTime = new Date(data.taskRun.status.startTime).getTime();
+  const endTime = data.taskRun.status?.completionTime
+    ? new Date(data.taskRun.status.completionTime).getTime()
+    : new Date().getTime();
+
+  return humanize(endTime - startTime, {
+    language: "en-mini",
+    spacer: "",
+    delimiter: " ",
+    fallbacks: ["en"],
+    largest: 2,
+    round: true,
+    units: ["d", "h", "m", "s"],
+  });
+};
+
+/** Mounted only while the tooltip is open. A pending task reads its Task on mount. */
+const PipelineRunTaskNodeTooltipContent: React.FC<{ data: PipelineRunTaskNodeData }> = ({ data }) => {
+  const { taskSpec } = usePipelineTaskSpec(data);
 
   const statusData = getPipelineTaskStatusDisplay(data);
+  const duration = getDuration(data);
+  const taskDescription = getTaskDescription(taskSpec, data.pipelineTask);
 
-  // Get duration
-  const getDuration = () => {
-    if (!data.taskRun?.status?.startTime) return null;
-
-    const startTime = new Date(data.taskRun.status.startTime).getTime();
-    const endTime = data.taskRun.status?.completionTime
-      ? new Date(data.taskRun.status.completionTime).getTime()
-      : new Date().getTime();
-
-    return humanize(endTime - startTime, {
-      language: "en-mini",
-      spacer: "",
-      delimiter: " ",
-      fallbacks: ["en"],
-      largest: 2,
-      round: true,
-      units: ["d", "h", "m", "s"],
-    });
-  };
-
-  const duration = getDuration();
-  const statusText = statusData.label;
-  const taskDescription = getTaskDescription(data.task, data.taskRun);
-
-  const tooltipContent = (
+  return (
     <div className="space-y-2">
       {/* Task name + status in one row */}
       <div className="my-2 mb-4 flex items-center gap-4">
-        <p className="text-sm font-semibold break-all">{displayName}</p>
+        <p className="text-sm font-semibold break-all">{data.name}</p>
         <div className="flex items-center gap-2">
           {statusData.component && (
             <StatusIcon
@@ -70,7 +58,7 @@ export const PipelineRunTaskNode: React.FC<{
               width={14}
             />
           )}
-          <span className="text-xs font-medium">{statusText}</span>
+          <span className="text-xs font-medium">{statusData.label}</span>
         </div>
       </div>
 
@@ -125,6 +113,22 @@ export const PipelineRunTaskNode: React.FC<{
       )}
     </div>
   );
+};
+
+export const PipelineRunTaskNode: React.FC<{
+  data: PipelineRunTaskNodeData;
+  sourcePosition?: Position;
+  targetPosition?: Position;
+}> = ({ data, sourcePosition, targetPosition }) => {
+  const { clusterName } = useClusterStore(
+    useShallow((state) => ({
+      clusterName: state.clusterName,
+    }))
+  );
+
+  const hasRun = !!data.run;
+
+  const statusData = getPipelineTaskStatusDisplay(data);
 
   return (
     <>
@@ -137,7 +141,7 @@ export const PipelineRunTaskNode: React.FC<{
         }}
       />
 
-      <Tooltip title={tooltipContent} placement="top">
+      <Tooltip title={<PipelineRunTaskNodeTooltipContent data={data} />} placement="top">
         <div
           className="bg-background relative flex h-16 w-48 cursor-default flex-col items-center justify-center rounded-md p-6"
           style={{
@@ -168,11 +172,11 @@ export const PipelineRunTaskNode: React.FC<{
                   }}
                   className="text-foreground hover:text-primary text-sm font-semibold"
                 >
-                  <span className="truncate">{displayName}</span>
+                  <span className="truncate">{data.name}</span>
                 </Link>
               </Button>
             ) : (
-              <p className="text-foreground min-w-0 truncate text-sm font-semibold">{displayName}</p>
+              <p className="text-foreground min-w-0 truncate text-sm font-semibold">{data.name}</p>
             )}
           </div>
 

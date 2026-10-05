@@ -10,9 +10,11 @@ import { getPipelineTaskStatusDisplay } from "@/modules/platform/tekton/utils/ge
 import { Badge } from "@/core/components/ui/badge";
 import { Timer, Clock } from "lucide-react";
 import { getTaskDescription } from "../../../../../../../../utils/getTaskDescription";
+import { usePipelineTaskSpec } from "../../../../../../hooks/usePipelineTaskSpec";
 
 export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
-  const { run, task, pipelineRunTask } = pipelineRunTaskData;
+  const { run, pipelineRunTask } = pipelineRunTaskData;
+  const { taskSpec } = usePipelineTaskSpec(pipelineRunTaskData);
   const taskRunName = run?.metadata?.labels?.[taskRunLabels.pipelineTask] ?? pipelineRunTask?.name;
   const taskRunStatusDisplay = getPipelineTaskStatusDisplay(pipelineRunTaskData);
 
@@ -51,12 +53,8 @@ export const TaskRun = ({ pipelineRunTaskData }: TaskRunProps) => {
       })
     : null;
 
-  const tabs = useTabs({ taskRun: run, task, pipelineRunTask });
-  const taskDescription = getTaskDescription(
-    pipelineRunTaskData.task,
-    pipelineRunTaskData.taskRun,
-    pipelineRunTaskData.pipelineRunTask
-  );
+  const tabs = useTabs({ taskRun: run, taskSpec, pipelineRunTask });
+  const taskDescription = getTaskDescription(taskSpec, pipelineRunTask);
   const { activeTab, handleChangeTab } = useTabsContext();
 
   return (
