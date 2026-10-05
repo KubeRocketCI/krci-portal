@@ -16,7 +16,8 @@ import {
 const taskData = (podName?: string): PipelineRunTaskData =>
   ({
     pipelineRunTask: { name: "irrelevant" },
-    task: undefined,
+    taskSpec: undefined,
+    pendingTaskRef: undefined,
     taskRun: podName ? ({ status: { podName } } as PipelineRunTaskData["taskRun"]) : undefined,
     approvalTask: undefined,
   }) as PipelineRunTaskData;

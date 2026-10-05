@@ -6,11 +6,10 @@ import {
   buildTaskRunNameByPipelineTaskMap,
   PipelineRunChildReference,
   PipelineTask,
-  Task,
   TaskRun,
   taskRunLabels,
 } from "@my-project/shared";
-import type { PipelineRunTaskData } from "./types";
+import type { PipelineRunTaskData, TaskSpec } from "./types";
 
 /** Keeps the first item per key, so lookups resolve as the equivalent Array.prototype.find would have. */
 const indexByKey = <T>(items: T[], keyOf: (item: T) => string | undefined): Map<string, T> => {
@@ -54,18 +53,45 @@ export const findTaskRunForPipelineTask = (index: TaskRunIndex, pipelineTaskName
   return taskRunName ? index.byName.get(taskRunName) : undefined;
 };
 
+/**
+ * Returns the Task name only for a ref to a namespaced Task.
+ * Resolver, bundle, ClusterTask and custom task (`apiVersion`) refs return undefined.
+ */
+export const getNamespacedTaskRefName = (taskRef: PipelineTask["taskRef"]): string | undefined => {
+  if (!taskRef?.name || taskRef.resolver || taskRef.bundle || taskRef.apiVersion) return undefined;
+  if (taskRef.kind && taskRef.kind !== "Task") return undefined;
+
+  return taskRef.name;
+};
+
+/** The Task a pipeline task runs: its ref name, else the pipeline task name (inline spec, resolver). */
+export const getTaskName = (pipelineTask: PipelineTask | undefined): string =>
+  pipelineTask?.taskRef?.name || pipelineTask?.name || "";
+
+/** The TaskRun exists and is not finished, but Tekton has not written its spec snapshot yet. */
+export const isAwaitingTaskSpec = (data: Partial<Pick<PipelineRunTaskData, "taskRun" | "taskSpec">>): boolean =>
+  !!data.taskRun && !data.taskSpec && !data.taskRun.status?.completionTime;
+
+/** Steps exist, or a spec that holds them can still arrive. */
+export const canHaveSteps = (
+  data: Partial<Pick<PipelineRunTaskData, "taskRun" | "taskSpec" | "pendingTaskRef">>
+): boolean =>
+  !!data.taskRun?.status?.steps?.length ||
+  !!data.taskSpec?.steps?.length ||
+  !!data.pendingTaskRef ||
+  isAwaitingTaskSpec(data);
+
 export const buildPipelineRunTasksByNameMap = (params: {
   allPipelineTasks: PipelineTask[];
-  tasks?: Task[];
   taskRuns: TaskRun[];
   approvalTasks: ApprovalTask[];
   customRuns?: CustomRun[];
   childReferences?: PipelineRunChildReference[];
+  /** Namespace of a live PipelineRun. Without it, no task gets a `pendingTaskRef`. */
+  liveNamespace?: string;
 }): Map<string, PipelineRunTaskData> => {
-  const { allPipelineTasks, tasks = [], taskRuns, approvalTasks, customRuns = [], childReferences } = params;
+  const { allPipelineTasks, taskRuns, approvalTasks, customRuns = [], childReferences, liveNamespace } = params;
 
-  // `tasks` is the namespace-wide Task list, so scanning it per pipeline task was the dominant cost.
-  const taskByName = indexByKey(tasks, (task) => task.metadata?.name);
   const approvalTaskByPipelineTask = indexByKey(
     approvalTasks,
     (approvalTask) => approvalTask.metadata?.labels?.[approvalTaskLabels.pipelineTask]
@@ -81,16 +107,19 @@ export const buildPipelineRunTasksByNameMap = (params: {
   for (const pipelineTask of allPipelineTasks) {
     if (!pipelineTask.name) continue;
 
-    const taskRefName = pipelineTask.taskRef?.name;
     const taskRun = findTaskRunForPipelineTask(taskRunIndex, pipelineTask.name);
-    const customRun = customRunByPipelineTask.get(pipelineTask.name);
+    const run = taskRun ?? customRunByPipelineTask.get(pipelineTask.name);
+    const taskSpec: TaskSpec | undefined = taskRun?.status?.taskSpec ?? pipelineTask.taskSpec;
+    const pendingTaskName = !run && !taskSpec ? getNamespacedTaskRefName(pipelineTask.taskRef) : undefined;
 
     result.set(pipelineTask.name, {
       pipelineRunTask: pipelineTask,
-      task: taskRefName ? taskByName.get(taskRefName) : undefined,
+      taskSpec,
+      pendingTaskRef:
+        liveNamespace && pendingTaskName ? { namespace: liveNamespace, name: pendingTaskName } : undefined,
       taskRun,
       approvalTask: approvalTaskByPipelineTask.get(pipelineTask.name),
-      run: taskRun ?? customRun,
+      run,
     });
   }
 

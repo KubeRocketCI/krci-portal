@@ -1,7 +1,6 @@
 import { usePipelineRunWatchItem } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { useTaskRunWatchList } from "@/k8s/api/groups/Tekton/TaskRun";
 import { useCustomRunWatchList } from "@/k8s/api/groups/Tekton/CustomRun";
-import { useTaskWatchList } from "@/k8s/api/groups/Tekton/Task";
 import { useApprovalTaskWatchList } from "@/k8s/api/groups/KRCI/ApprovalTask";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
@@ -55,7 +54,7 @@ export function useUnifiedPipelineRunData({ namespace, name }: UnifiedPipelineRu
 
   const k8sNotFound = !pipelineRunWatch.isLoading && isK8sNotFoundError(pipelineRunWatch.query.error);
 
-  // Live TaskRuns, Tasks, and ApprovalTasks (only fetched when K8s PipelineRun exists)
+  // Live TaskRuns, ApprovalTasks and CustomRuns (only fetched when K8s PipelineRun exists)
   const hasLivePipelineRun = !k8sNotFound && !pipelineRunWatch.isLoading;
 
   const taskRunsWatch = useTaskRunWatchList({
@@ -73,11 +72,6 @@ export function useUnifiedPipelineRunData({ namespace, name }: UnifiedPipelineRu
   const customRunsWatch = useCustomRunWatchList({
     namespace,
     labels: { [customRunLabels.pipelineRun]: name },
-    queryOptions: { enabled: hasLivePipelineRun },
-  });
-
-  const tasksWatch = useTaskWatchList({
-    namespace,
     queryOptions: { enabled: hasLivePipelineRun },
   });
 
@@ -196,7 +190,7 @@ export function useUnifiedPipelineRunData({ namespace, name }: UnifiedPipelineRu
   );
 
   // Build the tasks-by-name map
-  // For live: use K8s watches. For history: use normalized data (no Task/ApprovalTask defs available).
+  // For live: use K8s watches. For history: use normalized data (no ApprovalTasks available).
   const pipelineRunTasksByNameMap = React.useMemo(() => {
     const taskRunsArray: TaskRun[] = isLive ? taskRunsWatch.data.array : (historyTaskRuns ?? []);
 
@@ -204,17 +198,17 @@ export function useUnifiedPipelineRunData({ namespace, name }: UnifiedPipelineRu
 
     return buildPipelineRunTasksByNameMap({
       allPipelineTasks: pipelineRunTasks.allTasks,
-      tasks: isLive ? tasksWatch.data.array : undefined,
       taskRuns: taskRunsArray,
       approvalTasks: approvalTasksArray,
       customRuns: isLive ? customRunsWatch.data.array : (historyCustomRuns ?? []),
       childReferences: resolvedPipelineRun?.status?.childReferences,
+      liveNamespace: isLive ? namespace : undefined,
     });
   }, [
     isLive,
+    namespace,
     pipelineRunTasks.allTasks,
     resolvedPipelineRun?.status?.childReferences,
-    tasksWatch.data.array,
     taskRunsWatch.data.array,
     approvalTasksWatch.data.array,
     customRunsWatch.data.array,
@@ -225,13 +219,9 @@ export function useUnifiedPipelineRunData({ namespace, name }: UnifiedPipelineRu
   // Loading state
   const liveIsLoading =
     !k8sNotFound &&
-    [
-      pipelineRunWatch.isLoading,
-      taskRunsWatch.isLoading,
-      tasksWatch.isLoading,
-      approvalTasksWatch.isLoading,
-      customRunsWatch.isLoading,
-    ].some(Boolean);
+    [pipelineRunWatch.isLoading, taskRunsWatch.isLoading, approvalTasksWatch.isLoading, customRunsWatch.isLoading].some(
+      Boolean
+    );
 
   const historyIsLoading =
     k8sNotFound &&

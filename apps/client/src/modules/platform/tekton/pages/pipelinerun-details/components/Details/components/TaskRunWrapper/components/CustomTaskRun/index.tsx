@@ -165,7 +165,7 @@ export const CustomTaskRun = ({ pipelineRunTaskData }: CustomTaskRunProps) => {
     [handleClickApproveOrReject, setDialog]
   );
 
-  const taskDescription = getTaskDescription(pipelineRunTaskData.task, pipelineRunTaskData.taskRun);
+  const taskDescription = getTaskDescription(pipelineRunTaskData.taskSpec, pipelineRunTaskData.pipelineRunTask);
 
   const { activeTab, handleChangeTab } = useTabsContext();
 

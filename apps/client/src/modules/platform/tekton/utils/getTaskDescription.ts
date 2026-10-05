@@ -1,11 +1,8 @@
-import type { PipelineTask, Task, TaskRun } from "@my-project/shared";
+import type { PipelineTask, Task } from "@my-project/shared";
 
 /**
- * Returns the task description from the Task resource, from the
- * TaskRun's embedded taskSpec (populated by the Tekton controller),
- * or from the PipelineTask definition in the pipeline spec.
- * Falls back to empty string when no source has a description.
+ * Returns the description of the task spec, else of the pipeline task, else an empty string.
  */
-export function getTaskDescription(task?: Task, taskRun?: TaskRun, pipelineTask?: PipelineTask): string {
-  return task?.spec?.description || taskRun?.status?.taskSpec?.description || pipelineTask?.description || "";
+export function getTaskDescription(taskSpec?: Task["spec"], pipelineTask?: PipelineTask): string {
+  return taskSpec?.description || pipelineTask?.description || "";
 }

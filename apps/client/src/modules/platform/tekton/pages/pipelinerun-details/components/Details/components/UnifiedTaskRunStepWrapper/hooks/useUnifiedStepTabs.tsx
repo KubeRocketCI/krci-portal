@@ -1,7 +1,7 @@
 import CodeEditor from "@/core/components/CodeEditor";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { Badge } from "@/core/components/ui/badge";
-import { Task, TaskRun, getTaskRunStepStatus } from "@my-project/shared";
+import { TaskRun, getTaskRunStepStatus } from "@my-project/shared";
 import { getStepStatusIcon } from "@/k8s/api/groups/Tekton/TaskRun/utils/getStepStatusIcon";
 import { capitalizeFirstLetter } from "@/core/utils/format/capitalizeFirstLetter";
 import { formatDuration, formatTimestamp } from "@/core/utils/date-humanize";
@@ -11,6 +11,7 @@ import { TabContent } from "../../TabContent";
 import { UnifiedTaskRunLogs } from "../../../../../../../components/UnifiedTaskRunLogs";
 import type { UnifiedTaskRunLogsProps } from "../../../../../../../components/UnifiedTaskRunLogs";
 import { usePipelineRunContext } from "../../../../../providers/PipelineRun/hooks";
+import type { TaskSpec } from "../../../../../hooks/types";
 
 /**
  * Unified step tabs hook.
@@ -18,24 +19,20 @@ import { usePipelineRunContext } from "../../../../../providers/PipelineRun/hook
  */
 export function useUnifiedStepTabs({
   taskRun,
-  task,
+  taskSpec,
   stepName,
   taskName,
 }: {
   taskRun: TaskRun | undefined;
-  task: Task | undefined;
+  taskSpec: TaskSpec | undefined;
   stepName: string;
   taskName: string;
 }) {
   const { source, resultUid, pipelineRun } = usePipelineRunContext();
 
-  const details = taskRun
-    ? taskRun?.status?.taskSpec?.steps.find((el: { name: string }) => el.name === stepName)
-    : task?.spec?.steps?.find((el: { name: string }) => el.name === stepName);
+  const details = taskSpec?.steps?.find((el) => el.name === stepName);
 
-  const step = taskRun
-    ? taskRun?.status?.steps?.find((s) => s?.name === stepName)
-    : task?.spec?.steps?.find((s) => s?.name === stepName);
+  const step = taskRun ? taskRun.status?.steps?.find((s) => s?.name === stepName) : details;
 
   const namespace = pipelineRun?.metadata?.namespace || "";
   const taskRunName = taskRun?.metadata?.name || "";
@@ -144,7 +141,7 @@ export function useUnifiedStepTabs({
                 </div>
               )}
             </div>
-            <CodeEditor content={details} />
+            {details && <CodeEditor content={details} />}
           </TabContent>
         ),
       },

@@ -1,4 +1,5 @@
-import { CustomRun, TaskRun, Task, PipelineTask } from "@my-project/shared";
+import { CustomRun, TaskRun, PipelineTask } from "@my-project/shared";
+import type { TaskSpec } from "../../../../../../../hooks/types";
 import React from "react";
 import { Settings, CheckCircle, Info } from "lucide-react";
 import { TabContent } from "../../../../TabContent";
@@ -7,11 +8,11 @@ import { NameValueTable } from "@/core/components/NameValueTable";
 
 export const useTabs = ({
   taskRun,
-  task,
+  taskSpec,
   pipelineRunTask,
 }: {
   taskRun: TaskRun | CustomRun | undefined;
-  task?: Task;
+  taskSpec?: TaskSpec;
   pipelineRunTask?: PipelineTask;
 }) => {
   const results = taskRun?.status?.results;
@@ -68,15 +69,15 @@ export const useTabs = ({
             content={
               taskRunIsLoaded
                 ? (taskRun?.status ?? {})
-                : task?.spec?.steps
-                  ? { steps: task.spec.steps.map((el) => el.name) }
+                : taskSpec?.steps
+                  ? { steps: taskSpec.steps.map((el) => el.name) }
                   : buildPendingTaskSummary(pipelineRunTask)
             }
           />
         ),
       },
     ];
-  }, [hasParams, hasResults, results, task, params, taskRun?.status, taskRunIsLoaded, pipelineRunTask]);
+  }, [hasParams, hasResults, results, taskSpec, params, taskRun?.status, taskRunIsLoaded, pipelineRunTask]);
 };
 
 /**

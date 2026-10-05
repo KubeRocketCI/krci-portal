@@ -1,4 +1,6 @@
 import type { PipelineRunTaskData } from "../../../../hooks/types";
+import { usePipelineTaskSpec } from "../../../../hooks/usePipelineTaskSpec";
+import { getTaskName } from "../../../../hooks/utils";
 import { TaskRunStepView } from "../TaskRunStepView";
 import { useUnifiedStepTabs } from "./hooks/useUnifiedStepTabs";
 
@@ -13,11 +15,12 @@ interface UnifiedTaskRunStepWrapperProps {
  * For live data, logs stream from pods. For history, logs come from Tekton Results.
  */
 export function UnifiedTaskRunStepWrapper({ pipelineRunTaskData, stepName }: UnifiedTaskRunStepWrapperProps) {
+  const { taskSpec } = usePipelineTaskSpec(pipelineRunTaskData);
   const tabs = useUnifiedStepTabs({
     taskRun: pipelineRunTaskData?.taskRun,
     stepName: stepName,
-    task: pipelineRunTaskData?.task,
-    taskName: pipelineRunTaskData?.task?.metadata?.name || "",
+    taskSpec,
+    taskName: getTaskName(pipelineRunTaskData?.pipelineRunTask),
   });
 
   return <TaskRunStepView tabs={tabs} tabsContextId="unified-pipeline-details-page-inner-taskrun-step" />;

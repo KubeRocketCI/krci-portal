@@ -6,11 +6,14 @@ import {
   getPipelineRunTaskGraphDefinitions,
   PipelineRun,
   PipelineTask,
-  Task,
   TaskRun,
 } from "@my-project/shared";
 import { getLayoutedElements } from "../../PipelineDiagram/utils/layoutUtils";
-import { PipelineRunTaskData } from "@/modules/platform/tekton/pages/pipelinerun-details/hooks/types";
+import {
+  NamespacedTaskRef,
+  PipelineRunTaskData,
+  TaskSpec,
+} from "@/modules/platform/tekton/pages/pipelinerun-details/hooks/types";
 
 export interface PipelineRunTaskNodeData extends Record<string, unknown> {
   name: string;
@@ -19,7 +22,8 @@ export interface PipelineRunTaskNodeData extends Record<string, unknown> {
   taskRun?: TaskRun;
   approvalTask?: ApprovalTask;
   run?: TaskRun | CustomRun;
-  task?: Task;
+  taskSpec?: TaskSpec;
+  pendingTaskRef?: NamespacedTaskRef;
   pipelineTask: PipelineTask;
   isFinally?: boolean;
   isIsolated?: boolean;
@@ -98,7 +102,8 @@ export const usePipelineRunGraphData = (
             taskRun: taskData?.taskRun,
             approvalTask: taskData?.approvalTask,
             run: taskData?.run,
-            task: taskData?.task,
+            taskSpec: taskData?.taskSpec,
+            pendingTaskRef: taskData?.pendingTaskRef,
             pipelineTask: task,
             isFinally,
             isIsolated: isIsolated && !isFinally, // Don't mark finally tasks as isolated
