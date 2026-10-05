@@ -23,6 +23,8 @@ type FlattenedSeries = {
   points: Array<{ t: number; v: number }>;
 };
 
+const NO_HIDDEN_PODS: ReadonlySet<string> = new Set();
+
 function flatten(data: MetricChartProps["data"], selectedApps?: ReadonlySet<string>): FlattenedSeries[] {
   const out: FlattenedSeries[] = [];
   for (const entry of data) {
@@ -78,10 +80,13 @@ export const MetricChart = React.memo(function MetricChart({
         .join("|"),
     [flat]
   );
-  const [hiddenPods, setHiddenPods] = React.useState<ReadonlySet<string>>(() => new Set());
-  React.useEffect(() => {
-    setHiddenPods(new Set());
-  }, [podKey]);
+  // Reset during render only; effects also run on hidden <Activity> re-show.
+  const [hiddenPods, setHiddenPods] = React.useState<ReadonlySet<string>>(NO_HIDDEN_PODS);
+  const [hiddenPodsKey, setHiddenPodsKey] = React.useState(podKey);
+  if (hiddenPodsKey !== podKey) {
+    setHiddenPodsKey(podKey);
+    setHiddenPods(NO_HIDDEN_PODS);
+  }
 
   const visible = React.useMemo(
     () => (hiddenPods.size === 0 ? flat : flat.filter((s) => !hiddenPods.has(s.key))),
