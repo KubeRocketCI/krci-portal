@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { WatchItemRegistry } from "./registry";
+import { WatchItemRegistry, WatchListRegistry } from "./registry";
 import { MSG_TYPE } from "@/k8s/api/hooks/useWatch/types";
 import type { KubeObjectBase } from "@my-project/shared";
 
@@ -92,5 +92,48 @@ describe("WatchItemRegistry", () => {
     unregister();
 
     expect(unsubscribe).toHaveBeenCalledTimes(1);
+  });
+});
+
+const listQueryKey = ["k8s:watchList", "test-cluster", "test-ns", "", "secrets"];
+
+const listParams = {
+  clusterName: "test-cluster",
+  namespace: "test-ns",
+  resourceConfig: { pluralName: "secrets" },
+} as unknown as Parameters<WatchListRegistry["register"]>[1];
+
+const setupListRegistry = () => {
+  const registry = new WatchListRegistry();
+  const subscribe = vi.fn(() => ({ unsubscribe: vi.fn() }));
+
+  registry.setTRPCClient({ k8s: { watchList: { subscribe } } } as never);
+
+  return { registry, subscribe };
+};
+
+describe("WatchListRegistry", () => {
+  it("forwards names to watchList.subscribe", () => {
+    const { registry, subscribe } = setupListRegistry();
+    const names = ["ci-sonarqube", "ci-nexus"];
+
+    registry.register(listQueryKey, { ...listParams, names }, vi.fn());
+    registry.startSubscription(listQueryKey, "100");
+
+    expect(subscribe).toHaveBeenCalledWith(
+      expect.objectContaining({ names, resourceVersion: "100" }),
+      expect.anything()
+    );
+  });
+
+  it("omits names when params has none", () => {
+    const { registry, subscribe } = setupListRegistry();
+
+    registry.register(listQueryKey, listParams, vi.fn());
+    registry.startSubscription(listQueryKey, "100");
+
+    expect(subscribe).toHaveBeenCalledTimes(1);
+    const [input] = subscribe.mock.calls[0] as unknown as [Record<string, unknown>];
+    expect(input.names).toBeUndefined();
   });
 });

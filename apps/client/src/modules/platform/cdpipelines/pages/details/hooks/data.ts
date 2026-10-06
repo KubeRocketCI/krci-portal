@@ -33,7 +33,8 @@ export const useStageListWatch = () => {
   });
 };
 
-export const useAppCodebaseListWatch = () => {
+/** `names`: the pipeline's `spec.applications`. Disabled until known. */
+export const useAppCodebaseListWatch = (names: string[] | undefined) => {
   const params = routeCDPipelineDetails.useParams();
 
   return useCodebaseWatchList({
@@ -41,17 +42,19 @@ export const useAppCodebaseListWatch = () => {
       [codebaseLabels.codebaseType]: codebaseType.application,
     },
     namespace: params.namespace,
+    names,
+    queryOptions: { enabled: !!names },
   });
 };
 
-// Watches all CodebaseBranches in the namespace. A label selector can't OR over multiple
-// codebases (each app is a separate codebase), and N per-app watches would be costlier
-// than one namespace-scoped watch.
-export const useCodebaseBranchListWatch = () => {
+/** `names`: the pipeline's `spec.inputDockerStreams` (CodebaseBranch names). Disabled until known. */
+export const useCodebaseBranchListWatch = (names: string[] | undefined) => {
   const params = routeCDPipelineDetails.useParams();
 
   return useCodebaseBranchWatchList({
     namespace: params.namespace,
+    names,
+    queryOptions: { enabled: !!names },
   });
 };
 

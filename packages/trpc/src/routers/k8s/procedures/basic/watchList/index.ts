@@ -1,12 +1,13 @@
 import { protectedProcedure } from "../../../../../procedures/protected/index.js";
 import { Watch } from "@kubernetes/client-node";
-import { k8sResourceConfigSchema } from "@my-project/shared";
+import { k8sResourceConfigSchema, k8sResourceNameSchema } from "@my-project/shared";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors/index.js";
 import { createCustomResourceURL } from "../../../utils/createCustomResourceURL/index.js";
 import { K8sClient } from "../../../../../clients/k8s/index.js";
 import { createK8sWatchSubscription } from "../../../utils/createK8sWatchSubscription/index.js";
+import { filterWatchEventsByName } from "../../../utils/filterWatchEventsByName/index.js";
 
 export const k8sWatchListProcedure = protectedProcedure
   .input(
@@ -16,6 +17,7 @@ export const k8sWatchListProcedure = protectedProcedure
       resourceConfig: k8sResourceConfigSchema,
       resourceVersion: z.string(),
       labels: z.record(z.string()).optional().default({}),
+      names: z.array(k8sResourceNameSchema).min(1).max(100).optional(),
     })
   )
   .subscription(async function* ({ input, ctx, signal }) {
@@ -26,7 +28,7 @@ export const k8sWatchListProcedure = protectedProcedure
     }
 
     const watch = new Watch(k8sClient.KubeConfig);
-    const { namespace, resourceConfig, resourceVersion, labels } = input;
+    const { namespace, resourceConfig, resourceVersion, labels, names } = input;
 
     const watchUrl = createCustomResourceURL({
       resourceConfig,
@@ -34,11 +36,13 @@ export const k8sWatchListProcedure = protectedProcedure
       labels,
     });
 
-    yield* createK8sWatchSubscription(watch, {
+    const source = createK8sWatchSubscription(watch, {
       watchUrl,
       watchOptions: {
         resourceVersion,
       },
       signal,
     });
+
+    yield* names ? filterWatchEventsByName(source, new Set(names)) : source;
   });

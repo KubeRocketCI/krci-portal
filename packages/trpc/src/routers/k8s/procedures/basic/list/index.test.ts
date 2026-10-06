@@ -296,4 +296,85 @@ describe("k8sListProcedure", () => {
     await expect(caller.k8s.list({ ...base, fieldSelector: "not a selector" })).rejects.toThrowError();
     await expect(caller.k8s.list({ ...base, fieldSelector: "x".repeat(513) })).rejects.toThrowError();
   });
+
+  describe("names", () => {
+    const base = {
+      clusterName: "test-cluster",
+      namespace: "test-namespace",
+      resourceConfig: {
+        group: "v2.edp.epam.com",
+        version: "v1",
+        pluralName: "codebases",
+        kind: "Codebase",
+        singularName: "codebase",
+        apiVersion: "v2.edp.epam.com/v1",
+      },
+      labels: {},
+    };
+
+    const mockResponse = {
+      apiVersion: "v2.edp.epam.com/v1",
+      kind: "CodebaseList",
+      metadata: { resourceVersion: "4242", continue: "" },
+      items: [
+        { metadata: { name: "app-a", namespace: "test-namespace" } },
+        { metadata: { name: "app-b", namespace: "test-namespace" } },
+        { metadata: { name: "app-c", namespace: "test-namespace" } },
+      ],
+    };
+
+    it("forwards only items whose name is in names", async () => {
+      mockK8sClientInstance.listResource.mockResolvedValueOnce(mockResponse);
+
+      const caller = createCaller(mockContext);
+      const result = await caller.k8s.list({ ...base, names: ["app-c", "app-a", "missing"] });
+
+      expect(result.items.map((item) => item.metadata.name)).toEqual(["app-a", "app-c"]);
+    });
+
+    it("returns all items when names is omitted", async () => {
+      mockK8sClientInstance.listResource.mockResolvedValueOnce(mockResponse);
+
+      const caller = createCaller(mockContext);
+      const result = await caller.k8s.list(base);
+
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("rejects an empty names array", async () => {
+      const caller = createCaller(mockContext);
+
+      await expect(caller.k8s.list({ ...base, names: [] })).rejects.toThrowError();
+      expect(mockK8sClientInstance.listResource).not.toHaveBeenCalled();
+    });
+
+    it("rejects more than 100 names", async () => {
+      const names = Array.from({ length: 101 }, (_, i) => `app-${i}`);
+      const caller = createCaller(mockContext);
+
+      await expect(caller.k8s.list({ ...base, names })).rejects.toThrowError();
+      expect(mockK8sClientInstance.listResource).not.toHaveBeenCalled();
+    });
+
+    it("rejects a name that is not DNS-1123", async () => {
+      const caller = createCaller(mockContext);
+
+      await expect(caller.k8s.list({ ...base, names: ["App_A"] })).rejects.toThrowError();
+      await expect(caller.k8s.list({ ...base, names: ["-leading-dash"] })).rejects.toThrowError();
+      await expect(caller.k8s.list({ ...base, names: ["a".repeat(254)] })).rejects.toThrowError();
+      expect(mockK8sClientInstance.listResource).not.toHaveBeenCalled();
+    });
+
+    it("keeps metadata.resourceVersion when filtering", async () => {
+      mockK8sClientInstance.listResource.mockResolvedValueOnce(mockResponse);
+
+      const caller = createCaller(mockContext);
+      const result = await caller.k8s.list({ ...base, names: ["app-b"] });
+
+      expect(result.metadata).toEqual(mockResponse.metadata);
+      expect(result.apiVersion).toBe(mockResponse.apiVersion);
+      expect(result.kind).toBe(mockResponse.kind);
+      expect(result.items).toHaveLength(1);
+    });
+  });
 });

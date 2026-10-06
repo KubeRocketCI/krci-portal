@@ -1,38 +1,25 @@
-import { Application, Codebase, GitProvider } from "@my-project/shared";
+import { Application, Codebase } from "@my-project/shared";
 import { useTypedFormContext } from "../../hooks/useTypedFormContext";
+import { GitOpsValuesLink } from "../../hooks/useGitOpsValuesLink";
 import { ResourceIconLink } from "@/core/components/ResourceIconLink";
 import { Switch } from "@/core/components/ui/switch";
-import { LinkCreationService } from "@/k8s/services/link-creation";
 import { VALUES_OVERRIDE_POSTFIX } from "@/modules/platform/cdpipelines/pages/stage-details/constants";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { SquareArrowOutUpRight, TriangleAlert } from "lucide-react";
-import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
-import React from "react";
-import { useGitOpsCodebaseWatch, useGitServersWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
 
 export const ValuesOverrideConfigurationColumn = ({
   application,
   appCodebase,
+  gitOpsValuesLink,
 }: {
   application: Application;
   appCodebase: Codebase;
+  gitOpsValuesLink: GitOpsValuesLink;
 }) => {
-  const params = routeStageDetails.useParams();
-  const gitOpsCodebaseWatch = useGitOpsCodebaseWatch();
-  const gitServerListWatch = useGitServersWatch();
-
-  const gitOpsCodebase = gitOpsCodebaseWatch.data;
-
   const form = useTypedFormContext();
   const fieldName = `${appCodebase.metadata.name}${VALUES_OVERRIDE_POSTFIX}` as const;
 
   const currentResourceValue = application ? Object.hasOwn(application?.spec, "sources") : false;
-
-  const gitOpsGitServer = React.useMemo(() => {
-    return gitServerListWatch.data.array?.find(
-      (gitServer) => gitServer.metadata.name === gitOpsCodebase?.spec.gitServer
-    );
-  }, [gitOpsCodebase?.spec.gitServer, gitServerListWatch.data.array]);
 
   return (
     <form.Field name={fieldName}>
@@ -53,16 +40,10 @@ export const ValuesOverrideConfigurationColumn = ({
               </div>
             )}
           </div>
-          {gitOpsCodebase?.status?.gitWebUrl && (
+          {gitOpsValuesLink && (
             <ResourceIconLink
               tooltip="Go to the Source Code"
-              href={LinkCreationService.git.createGitOpsValuesYamlFileLink(
-                gitOpsCodebase?.status?.gitWebUrl,
-                params.cdPipeline,
-                params.stage,
-                appCodebase.metadata.name,
-                gitOpsGitServer?.spec.gitProvider as GitProvider
-              )}
+              href={gitOpsValuesLink(appCodebase.metadata.name)}
               icon={<SquareArrowOutUpRight className="text-muted-foreground/70" size={16} />}
               name="source code"
             />

@@ -1,6 +1,11 @@
-import { ResourceLabels } from "@my-project/shared";
+import { ResourceLabels, sortByName } from "@my-project/shared";
 
 const CLUSTER_SCOPE_KEY = "__cluster__";
+
+/** Order-independent key segment for a `names` filter. */
+export function serializeWatchListNames(names: string[]): string {
+  return [...names].sort(sortByName).join(",");
+}
 
 export function getK8sItemPermissionsQueryCacheKey(
   clusterName: string,
@@ -18,7 +23,8 @@ export function getK8sWatchListQueryCacheKey(
   namespace: string | undefined,
   group: string,
   resourcePlural: string,
-  labels?: ResourceLabels
+  labels?: ResourceLabels,
+  names?: string[]
 ): (string | undefined)[] {
   const nsKey = namespace ?? CLUSTER_SCOPE_KEY;
   const hasLabels = labels && Object.keys(labels).length > 0;
@@ -26,11 +32,17 @@ export function getK8sWatchListQueryCacheKey(
   // `group` is part of resource identity: a CRD whose plural collides with a
   // built-in (e.g. `pods.mycompany.io` vs core `pods`) or another CRD must not
   // share a watch cache entry.
+  const key = ["k8s:watchList", clusterName, nsKey, group, resourcePlural];
+
   if (hasLabels) {
-    return ["k8s:watchList", clusterName, nsKey, group, resourcePlural, Object.entries(labels).toString()];
+    key.push(Object.entries(labels).toString());
   }
 
-  return ["k8s:watchList", clusterName, nsKey, group, resourcePlural];
+  if (names && names.length > 0) {
+    key.push(`names=${serializeWatchListNames(names)}`);
+  }
+
+  return key;
 }
 
 export function getK8sWatchItemQueryCacheKey(
