@@ -8,7 +8,6 @@ import {
 } from "@my-project/trpc";
 import FastifyCookie from "@fastify/cookie";
 import FastifySession from "@fastify/session";
-import FastifyStatic from "@fastify/static";
 import FastifyWebsocket from "@fastify/websocket";
 import {
   fastifyTRPCPlugin,
@@ -20,6 +19,7 @@ import { fromMonorepoRoot } from "@/paths";
 import { maskEnvValue } from "../env-utils";
 import { registerOpenApi } from "../openapi";
 import { registerInternalEventsRoute } from "../internalEvents";
+import { registerClientApp } from "../clientApp";
 
 export class ProductionFastifyServer {
   fastify: FastifyInstance;
@@ -89,23 +89,9 @@ export class ProductionFastifyServer {
       fromMonorepoRoot("/apps/client/dist");
     console.log("Serving static files from:", publicPath);
 
-    this.fastify.register(FastifyStatic, {
+    registerClientApp(this.fastify, {
       root: publicPath,
-      prefix: "/",
-      index: "index.html",
-      wildcard: false, // Avoid interfering with API routes
-      setHeaders: (res) => {
-        res.setHeader("Cache-Control", "public, max-age=0");
-      },
-    });
-
-    // Fallback for SPA routes: Serve index.html for non-API routes
-    this.fastify.get("/*", (req, reply) => {
-      if (!req.url.startsWith(process.env.API_PREFIX!)) {
-        reply.sendFile("index.html", publicPath);
-      } else {
-        reply.status(404).send({ error: "Not Found" });
-      }
+      apiPrefix: process.env.API_PREFIX!,
     });
 
     registerInternalEventsRoute(this.fastify, { notificationsStore });
