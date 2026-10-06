@@ -13,7 +13,7 @@ import { Card } from "@/core/components/ui/card";
 import { Badge, type BadgeProps } from "@/core/components/ui/badge";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
-import { PipelinePreview } from "@/core/components/PipelinePreview";
+import { PipelinePreview } from "@/modules/platform/tekton/components/PipelinePreview";
 import { UseSpriteSymbol } from "@/core/components/sprites/K8sRelatedIconsSVGSprite";
 import { codebaseType, codebaseVersioning } from "@my-project/shared";
 import { Code2, Wrench, GitBranch, LucideIcon } from "lucide-react";

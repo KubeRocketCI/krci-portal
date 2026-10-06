@@ -6,7 +6,7 @@ import { Badge } from "@/core/components/ui/badge";
 import { Card } from "@/core/components/ui/card";
 import { ScrollCopyText } from "@/core/components/ScrollCopyText";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
-import { TriggerTemplatePipelinePreview } from "@/core/components/TriggerTemplatePipelinePreview";
+import { TriggerTemplatePipelinePreview } from "@/modules/platform/tekton/components/TriggerTemplatePipelinePreview";
 import { StatusIcon } from "@/core/components/StatusIcon";
 import {
   applicationHealthStatus,
