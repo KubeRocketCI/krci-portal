@@ -354,6 +354,8 @@ export const useColumns = (): TableColumn<PipelineRun>[] => {
                 <Button
                   variant="ghost"
                   size="icon"
+                  onPointerEnter={PipelineRunGraphDialog.preload}
+                  onFocus={PipelineRunGraphDialog.preload}
                   onClick={() =>
                     openPipelineRunGraphDialog({
                       pipelineRunName: data.metadata.name,

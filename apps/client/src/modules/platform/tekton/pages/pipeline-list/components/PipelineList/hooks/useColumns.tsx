@@ -83,6 +83,8 @@ export function useColumns(): TableColumn<Pipeline>[] {
                 <Button
                   variant="ghost"
                   size="icon"
+                  onPointerEnter={PipelineGraphDialog.preload}
+                  onFocus={PipelineGraphDialog.preload}
                   onClick={() =>
                     openPipelineGraphDialog({
                       pipelineName: data.metadata.name,

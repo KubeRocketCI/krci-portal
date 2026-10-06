@@ -51,7 +51,6 @@ export const ReviewPipeline = ({ defaultPipeline }: ReviewPipelineProps) => {
             onClick={() => {
               if (!currentPipeline) return;
               setDialog(PipelineGraphDialog, {
-                pipeline: currentPipeline,
                 pipelineName: currentPipeline.metadata.name,
               });
             }}

@@ -1,6 +1,7 @@
 import React, { Suspense } from "react";
 import { DialogContext } from "./context";
 import { DialogProps, DialogProviderState } from "./types";
+import { DialogLoadingShell } from "./components/DialogLoadingShell";
 
 export const DialogContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [dialogs, setDialogs] = React.useState<DialogProviderState>({});
@@ -19,6 +20,9 @@ export const DialogContextProvider: React.FC<{ children: React.ReactNode }> = ({
   const setDialog = React.useCallback(
     <Props,>(component: React.ComponentType<DialogProps<Props>>, props: Props) => {
       const key = component.displayName || component.name;
+      if (import.meta.env.DEV && !key) {
+        throw new Error("Dialog components must set displayName (or be a named function); it is the provider key.");
+      }
       const Component = component;
 
       const entry: DialogProviderState[string] = {
@@ -44,11 +48,11 @@ export const DialogContextProvider: React.FC<{ children: React.ReactNode }> = ({
   const mapEntries = React.useMemo(
     () =>
       Object.entries(dialogs).map(([key, { renderDialog }]) => (
-        <Suspense key={key} fallback={"Loading..."}>
+        <Suspense key={key} fallback={<DialogLoadingShell onClose={() => closeDialog(key)} />}>
           {renderDialog()}
         </Suspense>
       )),
-    [dialogs]
+    [dialogs, closeDialog]
   );
 
   // Stable identities: `setDialog` and `closeDialog` never change, so consumers may list them as deps.
