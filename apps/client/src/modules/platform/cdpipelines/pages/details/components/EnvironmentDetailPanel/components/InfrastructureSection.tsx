@@ -1,7 +1,7 @@
 import { Cpu, Server, Database, Workflow, Trash2, Shield } from "lucide-react";
 import { Stage, stageQualityGateType } from "@my-project/shared";
 import { ScrollCopyText } from "@/core/components/ScrollCopyText";
-import { TriggerTemplatePipelinePreview } from "@/core/components/TriggerTemplatePipelinePreview";
+import { TriggerTemplatePipelinePreview } from "@/modules/platform/tekton/components/TriggerTemplatePipelinePreview";
 import { routeCDPipelineDetails } from "../../../route";
 
 interface InfrastructureSectionProps {

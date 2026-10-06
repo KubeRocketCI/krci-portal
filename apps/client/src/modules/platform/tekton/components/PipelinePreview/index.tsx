@@ -33,6 +33,8 @@ export const PipelinePreview = ({ pipelineName, namespace, clusterName }: Pipeli
       <Button
         variant="ghost"
         size="icon"
+        onPointerEnter={PipelineGraphDialog.preload}
+        onFocus={PipelineGraphDialog.preload}
         onClick={() =>
           openPipelineGraphDialog({
             pipelineName,
