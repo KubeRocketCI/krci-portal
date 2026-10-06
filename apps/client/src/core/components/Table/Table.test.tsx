@@ -270,15 +270,7 @@ describe("DataTable - columns prop sync", () => {
     expect(updatedColumns.map((c: { id: string }) => c.id)).toEqual(["name", "provisioner"]);
   });
 
-  it("does NOT resync local column state on parent re-render with a fresh array reference but identical column ids", async () => {
-    const { usePagination } = await import("@/core/hooks/usePagination");
-    vi.mocked(usePagination).mockReturnValue({
-      page: 0,
-      rowsPerPage: 25,
-      handleChangePage: vi.fn(),
-      handleChangeRowsPerPage: vi.fn(),
-    });
-
+  it("passes a fresh same-id columns array through to TableHead, so render closures follow the parent", () => {
     const columnsInitial = [
       {
         id: "name",
@@ -287,8 +279,6 @@ describe("DataTable - columns prop sync", () => {
         cell: { show: true, baseWidth: 50 },
       },
     ];
-    // Identical column ids, identical shape — but a brand new array reference,
-    // simulating a parent re-render that rebuilds the columns inline.
     const columnsFreshReference = [
       {
         id: "name",
@@ -301,15 +291,10 @@ describe("DataTable - columns prop sync", () => {
     tableHeadColumnsSpy.mockClear();
 
     const { rerender } = render(<DataTable id="test-table" data={[]} columns={columnsInitial} />);
-    const initiallyRendered = tableHeadColumnsSpy.mock.calls.at(-1)?.[0];
+    expect(tableHeadColumnsSpy.mock.calls.at(-1)?.[0]).toBe(columnsInitial);
 
     rerender(<DataTable id="test-table" data={[]} columns={columnsFreshReference} />);
-    const afterRerender = tableHeadColumnsSpy.mock.calls.at(-1)?.[0];
-
-    // TableHead must still receive the initial array reference: if the effect
-    // had fired on every new `_columns` reference, user-applied TableSettings
-    // visibility toggles would be wiped on every parent refetch.
-    expect(afterRerender).toBe(initiallyRendered);
+    expect(tableHeadColumnsSpy.mock.calls.at(-1)?.[0]).toBe(columnsFreshReference);
   });
 });
 

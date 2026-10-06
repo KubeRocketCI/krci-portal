@@ -105,15 +105,22 @@ describe("useColumnSync", () => {
   });
 
   describe("re-sync", () => {
-    it("keeps state and a toggle across a fresh array with the same ids", () => {
+    it("keeps a toggle across a fresh array with the same ids", () => {
       const { result, rerender } = renderSync();
       act(() => result.current.toggleColumnVisibility("status", false));
-      const toggled = result.current.columns;
 
       rerender({ columns: columns.map((c) => ({ ...c })), id: TABLE_ID });
 
-      expect(result.current.columns).toBe(toggled);
       expect(visibility(result).status).toBe(false);
+    });
+
+    it("uses the fresh column objects of a same-id array, so render closures follow the parent's data", () => {
+      const { result, rerender } = renderSync();
+      const fresh = columns.map((c) => ({ ...c, data: { ...c.data, render: () => "fresh" } }));
+
+      rerender({ columns: fresh, id: TABLE_ID });
+
+      expect(result.current.columns.map((c) => c.data.render)).toEqual(fresh.map((c) => c.data.render));
     });
 
     it("re-reads the new table's settings on a table id change and drops the old table's toggle", () => {
