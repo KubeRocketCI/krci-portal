@@ -26,6 +26,7 @@ import { useConfigMapWatchItem } from "@/k8s/api/groups/Core/ConfigMap";
 import { useTriggerTemplateWatchItem } from "@/k8s/api/groups/Tekton/TriggerTemplate";
 import { routeStageDetails } from "../route";
 import {
+  collectStageImageStreamNames,
   getVerifiedImageStream,
   normalizeStreamNameSet,
   resolveInputImageStream,
@@ -145,22 +146,45 @@ export const useDeployPipelineRunTemplateWatch = () => {
   return useWatchStageTriggerTemplatePipelineRun(stageWatch.query.data?.spec.triggerTemplate, params.namespace);
 };
 
+// Name-filtered to the pipeline's applications; one query key shared by every consumer on the page.
 export const useCodebasesWatch = () => {
   const params = routeStageDetails.useParams();
+  const cdPipelineWatch = useCDPipelineWatch();
+  const names = cdPipelineWatch.data?.spec.applications;
 
   return useCodebaseWatchList({
     namespace: params.namespace,
     labels: {
       [codebaseLabels.codebaseType]: codebaseType.application,
     },
+    names,
+    queryOptions: { enabled: !!names },
   });
 };
 
+// Name-filtered to the streams the tab can show (see collectStageImageStreamNames).
+// Names depend on the previous stage, so the list waits for the pipeline's Stage list.
 export const useCodebaseImageStreamsWatch = () => {
   const params = routeStageDetails.useParams();
+  const cdPipelineWatch = useCDPipelineWatch();
+  const stageWatch = useStageWatch();
+  const stageListWatch = useStageListWatch();
+
+  const cdPipeline = cdPipelineWatch.data;
+  const stage = stageWatch.data;
+  const stages = stageListWatch.data.array;
+  const stagesReady = stageListWatch.isReady;
+
+  const names = React.useMemo(
+    () =>
+      cdPipeline && stage && stagesReady ? collectStageImageStreamNames({ cdPipeline, stage, stages }) : undefined,
+    [cdPipeline, stage, stages, stagesReady]
+  );
 
   return useCodebaseImageStreamWatchList({
     namespace: params.namespace,
+    names,
+    queryOptions: { enabled: !!names },
   });
 };
 
@@ -200,7 +224,6 @@ export const createArgoApplicationsByNameMap = (applications: Application[]): Ma
 export interface StageAppCodebaseCombinedData {
   appCodebase: Codebase;
   appCodebaseImageStream: CodebaseImageStream | undefined;
-  appCodebaseImageStreamList: CodebaseImageStream[];
   appCodebaseVerifiedImageStream: CodebaseImageStream | undefined;
   application: Application | undefined;
   toPromote: boolean;
@@ -249,21 +272,16 @@ const processAppCodebase = (
 ): StageAppCodebaseCombinedData => {
   const appName = appCodebase.metadata.name;
 
-  const appCodebaseImageStreamList = imageStreams.filter(({ spec: { codebase } }) => codebase === appName);
+  const appImageStreams = imageStreams.filter(({ spec: { codebase } }) => codebase === appName);
 
   const isPromote = cdPipelineAppsToPromoteSet.has(appName);
 
-  const appCodebaseVerifiedImageStream = getVerifiedImageStream(
-    appCodebaseImageStreamList,
-    cdPipelineName,
-    stageName,
-    appName
-  );
+  const appCodebaseVerifiedImageStream = getVerifiedImageStream(appImageStreams, cdPipelineName, stageName, appName);
 
   const application = findArgoApplicationByCodebaseName(argoApplications, appName);
 
   const appCodebaseImageStream = resolveInputImageStream({
-    imageStreams: appCodebaseImageStreamList,
+    imageStreams: appImageStreams,
     stageOrder,
     inputDockerStreamsSet: cdPipelineInputDockerStreamsSet,
     stages,
@@ -274,7 +292,6 @@ const processAppCodebase = (
   return {
     appCodebase,
     appCodebaseImageStream,
-    appCodebaseImageStreamList,
     appCodebaseVerifiedImageStream,
     application,
     toPromote: cdPipelineApplicationToPromoteListSet.has(appName),

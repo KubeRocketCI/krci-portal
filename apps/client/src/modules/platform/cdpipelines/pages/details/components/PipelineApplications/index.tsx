@@ -174,27 +174,32 @@ export const PipelineApplications = () => {
   const argoAppsWatch = usePipelineArgoApplicationListWatch();
   const quickLinksUrlListWatch = useQuickLinksUrlListWatch();
   const cdPipelineWatch = useCDPipelineWatch();
-  const codebaseBranchListWatch = useCodebaseBranchListWatch();
-  const { data: pipelineApplications, isLoading: isPipelineAppsLoading } = usePipelineAppCodebases();
-  const { data: sortedStages, isLoading: isSortedStagesLoading } = useSortedStages();
 
-  // Resolve each application's branch via inputDockerStreams (CodebaseBranch metadata.name).
-  const branchByAppName = React.useMemo(() => {
-    const map = new Map<string, CodebaseBranch>();
+  // Each application's CodebaseBranch name, from inputDockerStreams. Unmatched apps yield "".
+  const appBranches = React.useMemo(() => {
     const cdPipeline = cdPipelineWatch.data;
-    if (!cdPipeline) return map;
-
-    const branchesByName = new Map<string, CodebaseBranch>();
-    for (const branch of codebaseBranchListWatch.data.array) {
-      branchesByName.set(branch.metadata.name, branch);
-    }
-
-    const appBranches = buildInitialApplicationBranches(
+    if (!cdPipeline) return undefined;
+    return buildInitialApplicationBranches(
       cdPipeline.spec.applications ?? [],
       cdPipeline.spec.inputDockerStreams ?? []
     );
+  }, [cdPipelineWatch.data]);
+
+  const branchNames = React.useMemo(
+    () => appBranches?.map(({ appBranch }) => appBranch).filter((name) => name !== ""),
+    [appBranches]
+  );
+
+  const codebaseBranchListWatch = useCodebaseBranchListWatch(branchNames);
+  const { data: pipelineApplications, isLoading: isPipelineAppsLoading } = usePipelineAppCodebases();
+  const { data: sortedStages, isLoading: isSortedStagesLoading } = useSortedStages();
+
+  const branchByAppName = React.useMemo(() => {
+    const map = new Map<string, CodebaseBranch>();
+    if (!appBranches) return map;
+
     for (const { appName, appBranch } of appBranches) {
-      const branch = branchesByName.get(appBranch);
+      const branch = codebaseBranchListWatch.data.map.get(appBranch);
       if (!branch) continue;
       // Validate ownership: prefix matching in buildInitialApplicationBranches can
       // misroute an orphan stream (from a deleted app) to a shorter-named sibling.
@@ -206,7 +211,7 @@ export const PipelineApplications = () => {
     }
 
     return map;
-  }, [cdPipelineWatch.data, codebaseBranchListWatch.data.array]);
+  }, [appBranches, codebaseBranchListWatch.data.map]);
 
   // Group Argo applications by app name and stage
   const argoAppsByAppAndStage = React.useMemo(() => {
@@ -243,7 +248,11 @@ export const PipelineApplications = () => {
   );
 
   const isLoading =
-    isPipelineAppsLoading || isSortedStagesLoading || argoAppsWatch.isLoading || codebaseBranchListWatch.isLoading;
+    cdPipelineWatch.isLoading ||
+    isPipelineAppsLoading ||
+    isSortedStagesLoading ||
+    argoAppsWatch.isLoading ||
+    codebaseBranchListWatch.isLoading;
 
   // Expandable row renderer
   const expandedRowRender = React.useCallback(

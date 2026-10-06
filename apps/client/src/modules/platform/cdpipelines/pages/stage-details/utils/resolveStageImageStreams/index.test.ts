@@ -1,6 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { CodebaseImageStream, Stage } from "@my-project/shared";
-import { findPreviousStage, getVerifiedImageStream, normalizeStreamNameSet, resolveInputImageStream } from "./index";
+import { CDPipeline, CodebaseImageStream, Stage } from "@my-project/shared";
+import {
+  collectStageImageStreamNames,
+  findPreviousStage,
+  getVerifiedImageStream,
+  normalizeStreamNameSet,
+  resolveInputImageStream,
+  verifiedStreamName,
+} from "./index";
 
 const makeStage = (cdPipeline: string, name: string, order: number): Stage =>
   ({ spec: { cdPipeline, name, order } }) as unknown as Stage;
@@ -120,5 +127,67 @@ describe("resolveInputImageStream", () => {
       isPromote: false,
     });
     expect(result?.metadata.name).toBe("test-go-app-main");
+  });
+});
+
+describe("verifiedStreamName", () => {
+  it("builds <pipeline>-<stage>-<codebase>-verified", () => {
+    expect(verifiedStreamName("demo", "qa", "test-go-app")).toBe("demo-qa-test-go-app-verified");
+  });
+});
+
+describe("collectStageImageStreamNames", () => {
+  const makePipeline = (spec: Partial<CDPipeline["spec"]>): CDPipeline =>
+    ({
+      metadata: { name: "demo" },
+      spec: { applications: [], inputDockerStreams: [], applicationsToPromote: [], ...spec },
+    }) as unknown as CDPipeline;
+
+  const stages = [makeStage("other", "sit", 0), makeStage("demo", "dev", 0), makeStage("demo", "qa", 1)];
+
+  const pipeline = makePipeline({
+    applications: ["app-a", "app-b"],
+    inputDockerStreams: ["app-a-main", "app-b-release.1"],
+    applicationsToPromote: ["app-a"],
+  });
+
+  it("order 0: build streams plus own verified names", () => {
+    const names = collectStageImageStreamNames({ cdPipeline: pipeline, stage: stages[1], stages });
+    expect(names).toEqual(["app-a-main", "app-b-release-1", "demo-dev-app-a-verified", "demo-dev-app-b-verified"]);
+  });
+
+  it("order 1: adds the previous stage's verified name for promoted applications only", () => {
+    const names = collectStageImageStreamNames({ cdPipeline: pipeline, stage: stages[2], stages });
+    expect(names).toContain("demo-dev-app-a-verified");
+    expect(names).not.toContain("demo-dev-app-b-verified");
+    expect(names).toContain("demo-qa-app-a-verified");
+    expect(names).toContain("demo-qa-app-b-verified");
+  });
+
+  it("skips previous-stage names when the pipeline has no previous stage", () => {
+    const names = collectStageImageStreamNames({
+      cdPipeline: pipeline,
+      stage: stages[2],
+      stages: [stages[0], stages[2]],
+    });
+    expect(names).toEqual(["app-a-main", "app-b-release-1", "demo-qa-app-a-verified", "demo-qa-app-b-verified"]);
+  });
+
+  it("normalizes dots in inputDockerStreams", () => {
+    const names = collectStageImageStreamNames({ cdPipeline: pipeline, stage: stages[1], stages });
+    expect(names).toContain("app-b-release-1");
+    expect(names).not.toContain("app-b-release.1");
+  });
+
+  it("dedupes repeated names", () => {
+    const duplicated = makePipeline({ applications: ["app-a"], inputDockerStreams: ["app-a-main", "app-a-main"] });
+    const names = collectStageImageStreamNames({ cdPipeline: duplicated, stage: stages[1], stages });
+    expect(names).toEqual(["app-a-main", "demo-dev-app-a-verified"]);
+  });
+
+  it("returns only verified names when inputDockerStreams is absent", () => {
+    const noStreams = makePipeline({ applications: ["app-a"], inputDockerStreams: undefined });
+    const names = collectStageImageStreamNames({ cdPipeline: noStreams, stage: stages[1], stages });
+    expect(names).toEqual(["demo-dev-app-a-verified"]);
   });
 });

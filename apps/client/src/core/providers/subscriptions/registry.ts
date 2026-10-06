@@ -10,6 +10,7 @@ type WatchListParams = {
   namespace?: string;
   resourceConfig: K8sResourceConfig;
   labels?: Record<string, string>;
+  names?: string[];
 };
 
 type ListEventHandler<I extends KubeObjectBase> = (event: WatchEvent<I>) => void;
@@ -91,7 +92,7 @@ class WatchListRegistry {
       return;
     }
 
-    const { clusterName, namespace, resourceConfig, labels } = entry.params;
+    const { clusterName, namespace, resourceConfig, labels, names } = entry.params;
 
     entry.subscription = this.trpcClient.k8s.watchList.subscribe(
       {
@@ -99,6 +100,7 @@ class WatchListRegistry {
         resourceConfig,
         namespace,
         labels,
+        names,
         resourceVersion,
       },
       {
@@ -129,6 +131,7 @@ class WatchListRegistry {
             clusterName,
             namespace,
             labels: JSON.stringify(labels),
+            names,
           });
           // Clear subscription to allow restart on next startSubscription call
           entry.subscription = null;

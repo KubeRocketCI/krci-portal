@@ -1,3 +1,4 @@
+import React from "react";
 import { TableColumn } from "@/core/components/Table/types";
 import { columnNames } from "../../../constants";
 import { IngressColumnLive } from "../../columns/IngressLive";
@@ -11,103 +12,112 @@ import { DeployedVersionConfigurationColumn } from "../../columns/DeployedVersio
 import { DeployedVersionConfigurationHeadColumn } from "../../columns/DeployedVersionConfigurationHead";
 import { ValuesOverrideConfigurationColumn } from "../../columns/ValuesOverrideConfiguration";
 import { ValuesOverrideConfigurationHeadColumn } from "../../columns/ValuesOverrideConfigurationHead";
+import { useGitOpsValuesLink } from "../../../hooks/useGitOpsValuesLink";
 
 export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
   const stageWatch = useStageWatch();
+  const gitOpsValuesLink = useGitOpsValuesLink();
 
   const stage = stageWatch.query.data;
 
   const shouldShowPodsColumn = stage?.spec.clusterName === inClusterName;
 
-  return [
-    {
-      id: columnNames.EMPTY,
-      label: "",
-      data: {
-        render: () => null,
-      },
-      cell: {
-        show: true,
-        baseWidth: 5,
-      },
-    },
-    {
-      id: columnNames.NAME,
-      label: "Application",
-      data: {
-        render: ({ data: { appCodebase } }) => <NameColumn appCodebase={appCodebase} />,
-      },
-      cell: {
-        baseWidth: 25,
-      },
-    },
-    {
-      id: columnNames.STATUS,
-      label: "Status",
-      data: {
-        render: ({ data: { application } }) => <StatusColumn application={application} />,
-      },
-      cell: {
-        baseWidth: 35,
-      },
-    },
-    {
-      id: columnNames.DEPLOYED_VERSION,
-      label: <DeployedVersionConfigurationHeadColumn />,
-      data: {
-        render: ({ data }) => {
-          return <DeployedVersionConfigurationColumn stageAppCodebasesCombinedData={data} />;
+  return React.useMemo(
+    () => [
+      {
+        id: columnNames.EMPTY,
+        label: "",
+        data: {
+          render: () => null,
+        },
+        cell: {
+          show: true,
+          baseWidth: 5,
         },
       },
-      cell: {
-        baseWidth: 25,
+      {
+        id: columnNames.NAME,
+        label: "Application",
+        data: {
+          render: ({ data: { appCodebase } }) => <NameColumn appCodebase={appCodebase} />,
+        },
+        cell: {
+          baseWidth: 25,
+        },
       },
-    },
-    {
-      id: columnNames.VALUES_OVERRIDE,
-      label: <ValuesOverrideConfigurationHeadColumn />,
-      data: {
-        render: ({ data: { application, appCodebase } }) => (
-          <ValuesOverrideConfigurationColumn application={application!} appCodebase={appCodebase} />
-        ),
+      {
+        id: columnNames.STATUS,
+        label: "Status",
+        data: {
+          render: ({ data: { application } }) => <StatusColumn application={application} />,
+        },
+        cell: {
+          baseWidth: 35,
+        },
       },
-      cell: {
-        baseWidth: 15,
+      {
+        id: columnNames.DEPLOYED_VERSION,
+        label: <DeployedVersionConfigurationHeadColumn />,
+        data: {
+          render: ({ data }) => {
+            return <DeployedVersionConfigurationColumn stageAppCodebasesCombinedData={data} />;
+          },
+        },
+        cell: {
+          baseWidth: 25,
+        },
       },
-    },
-    ...(shouldShowPodsColumn
-      ? ([
-          {
-            id: columnNames.PODS,
-            label: "Pods",
-            data: {
-              render: ({ data: { appCodebase, application } }) => (
-                <PodsColumn appCodebase={appCodebase} application={application} />
-              ),
-            },
-            cell: {
-              baseWidth: 10,
-              props: {
-                align: "center",
+      {
+        id: columnNames.VALUES_OVERRIDE,
+        label: <ValuesOverrideConfigurationHeadColumn />,
+        data: {
+          render: ({ data: { application, appCodebase } }) => (
+            <ValuesOverrideConfigurationColumn
+              application={application!}
+              appCodebase={appCodebase}
+              gitOpsValuesLink={gitOpsValuesLink}
+            />
+          ),
+        },
+        cell: {
+          baseWidth: 15,
+        },
+      },
+      ...(shouldShowPodsColumn
+        ? ([
+            {
+              id: columnNames.PODS,
+              label: "Pods",
+              data: {
+                render: ({ data: { appCodebase, application } }) => (
+                  <PodsColumn appCodebase={appCodebase} application={application} />
+                ),
+              },
+              cell: {
+                baseWidth: 10,
+                props: {
+                  align: "center",
+                },
               },
             },
+          ] as TableColumn<StageAppCodebaseCombinedData>[])
+        : []),
+      {
+        id: columnNames.INGRESS,
+        label: <IngressHeadColumn />,
+        data: {
+          render: ({ data: { application, appCodebase } }) => (
+            <IngressColumnLive application={application} appName={appCodebase.metadata.name} />
+          ),
+        },
+        cell: {
+          baseWidth: 10,
+          props: {
+            align: "center",
           },
-        ] as TableColumn<StageAppCodebaseCombinedData>[])
-      : []),
-    {
-      id: columnNames.INGRESS,
-      label: <IngressHeadColumn />,
-      data: {
-        render: ({ data: { application, appCodebase } }) => (
-          <IngressColumnLive application={application} appName={appCodebase.metadata.name} />
-        ),
-      },
-      cell: {
-        baseWidth: 10,
-        props: {
-          align: "center",
         },
       },
-    },
-  ];
+    ],
+    [shouldShowPodsColumn, gitOpsValuesLink]
+  );
 };

@@ -6,7 +6,7 @@ import { K8sResourceConfig, KubeObjectBase, ResourceLabels } from "@my-project/s
 import { useQuery, useQueryClient, UseQueryOptions } from "@tanstack/react-query";
 import React, { useEffect, useMemo, useEffectEvent } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { getK8sWatchListQueryCacheKey } from "../query-keys";
+import { getK8sWatchListQueryCacheKey, serializeWatchListNames } from "../query-keys";
 import { useAvailabilityGate } from "../useResourceAvailability";
 import { useWatchRegistries } from "@/core/providers/subscriptions";
 import { CustomKubeObjectList, UseWatchListResult, k8sListInitialData, MSG_TYPE } from "../types";
@@ -20,9 +20,17 @@ type OptionalQueryOptions<I extends KubeObjectBase> = Omit<
   enabled?: boolean;
 };
 
+/** Maximum number of `names` sent as a server-side filter; larger sets request the unfiltered list. */
+export const WATCH_LIST_NAMES_LIMIT = 100;
+
 export interface UseWatchListParams<I extends KubeObjectBase> {
   resourceConfig: K8sResourceConfig;
   labels?: ResourceLabels;
+  /**
+   * Server-side filter on `metadata.name`.
+   * Above {@link WATCH_LIST_NAMES_LIMIT} entries, or empty, the unfiltered list is requested.
+   */
+  names?: string[];
   namespace?: string;
   queryOptions?: OptionalQueryOptions<I>;
   /**
@@ -35,6 +43,7 @@ export interface UseWatchListParams<I extends KubeObjectBase> {
 export const useWatchList = <I extends KubeObjectBase>({
   resourceConfig,
   labels,
+  names,
   namespace,
   queryOptions,
   transform,
@@ -55,9 +64,19 @@ export const useWatchList = <I extends KubeObjectBase>({
   const callerEnabled = queryOptions?.enabled ?? true;
   const { availability, notServed, isEnabled } = useAvailabilityGate(resourceConfig, callerEnabled);
 
+  const effectiveNames = names && names.length > 0 && names.length <= WATCH_LIST_NAMES_LIMIT ? names : undefined;
+  const namesKey = effectiveNames ? serializeWatchListNames(effectiveNames) : undefined;
+
   const queryKey = React.useMemo(
     () =>
-      getK8sWatchListQueryCacheKey(clusterName, _namespace, resourceConfig.group, resourceConfig.pluralName, labels),
+      getK8sWatchListQueryCacheKey(
+        clusterName,
+        _namespace,
+        resourceConfig.group,
+        resourceConfig.pluralName,
+        labels,
+        effectiveNames
+      ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       _namespace,
@@ -65,6 +84,7 @@ export const useWatchList = <I extends KubeObjectBase>({
       resourceConfig.group,
       resourceConfig.pluralName,
       labels ? JSON.stringify(labels) : undefined,
+      namesKey,
     ]
   );
 
@@ -76,6 +96,7 @@ export const useWatchList = <I extends KubeObjectBase>({
         resourceConfig,
         namespace: _namespace,
         labels,
+        names: effectiveNames,
       });
 
       const itemsMap = new Map(data.items.map((item) => [item.metadata.name!, item as I]));
@@ -161,6 +182,7 @@ export const useWatchList = <I extends KubeObjectBase>({
         namespace: _namespace,
         resourceConfig,
         labels,
+        names: effectiveNames,
       };
 
       const unregister = watchListRegistry.register<I>(queryKey, params, onWatchEvent);
@@ -178,6 +200,7 @@ export const useWatchList = <I extends KubeObjectBase>({
       resourceConfig.pluralName,
       // eslint-disable-next-line react-hooks/exhaustive-deps
       labels ? JSON.stringify(labels) : undefined,
+      namesKey,
       queryKey,
     ]
   );
@@ -201,6 +224,7 @@ export const useWatchList = <I extends KubeObjectBase>({
     resourceConfig.pluralName,
     // eslint-disable-next-line react-hooks/exhaustive-deps
     labels ? JSON.stringify(labels) : undefined,
+    namesKey,
     queryKey,
   ]);
 

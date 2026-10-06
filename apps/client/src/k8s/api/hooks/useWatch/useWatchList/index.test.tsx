@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
-import { useWatchList } from "./index";
+import { useWatchList, WATCH_LIST_NAMES_LIMIT } from "./index";
 import { getK8sDiscoveryDocumentQueryCacheKey } from "../query-keys";
 import { createTestQueryClient } from "@/test/utils";
 import type { K8sResourceConfig, KubeObjectBase } from "@my-project/shared";
@@ -11,7 +11,7 @@ const { mockListQuery, mockDiscoveryQuery, mockRegistry } = vi.hoisted(() => ({
   mockListQuery: vi.fn(),
   mockDiscoveryQuery: vi.fn(),
   mockRegistry: {
-    register: vi.fn(() => vi.fn()),
+    register: vi.fn<(queryKey: unknown, params: unknown, handler: unknown) => () => void>(() => vi.fn()),
     startSubscription: vi.fn(),
   },
 }));
@@ -71,13 +71,17 @@ const served = { status: "served" as const, plurals: ["gateways", "httproutes"] 
 const notServed = { status: "not-served" as const, plurals: [] as string[] };
 const discoveryKey = getK8sDiscoveryDocumentQueryCacheKey("test-cluster", "gateway.networking.k8s.io", "v1");
 
-const renderWatchList = (resourceConfig: K8sResourceConfig = gatewayConfig, queryOptions?: { enabled?: boolean }) => {
-  const queryClient = createTestQueryClient();
+const renderWatchList = (
+  resourceConfig: K8sResourceConfig = gatewayConfig,
+  queryOptions?: { enabled?: boolean },
+  names?: string[],
+  queryClient = createTestQueryClient()
+) => {
   const wrapper = ({ children }: { children: React.ReactNode }) =>
     React.createElement(QueryClientProvider, { client: queryClient }, children);
 
   return {
-    ...renderHook(() => useWatchList<KubeObjectBase>({ resourceConfig, queryOptions }), { wrapper }),
+    ...renderHook(() => useWatchList<KubeObjectBase>({ resourceConfig, queryOptions, names }), { wrapper }),
     queryClient,
   };
 };
@@ -181,5 +185,68 @@ describe("useWatchList capability gate", () => {
     await waitFor(() => expect(result.current.isReady).toBe(true));
     expect(mockDiscoveryQuery).not.toHaveBeenCalled();
     expect(result.current.availability).toBe("served");
+  });
+});
+
+describe("useWatchList names filter", () => {
+  const names = ["app-b", "app-a"];
+
+  it("sends names to k8s.list and the registry", async () => {
+    const { result } = renderWatchList(podConfig, undefined, names);
+
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+    expect(mockListQuery).toHaveBeenCalledWith(expect.objectContaining({ names }));
+    expect(mockRegistry.register).toHaveBeenCalledWith(
+      expect.arrayContaining(["names=app-a,app-b"]),
+      expect.objectContaining({ names }),
+      expect.any(Function)
+    );
+  });
+
+  it("omits names above WATCH_LIST_NAMES_LIMIT", async () => {
+    const tooMany = Array.from({ length: WATCH_LIST_NAMES_LIMIT + 1 }, (_, index) => `app-${index}`);
+
+    const { result } = renderWatchList(podConfig, undefined, tooMany);
+
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+    expect(mockListQuery).toHaveBeenCalledWith(expect.objectContaining({ names: undefined }));
+    expect(mockRegistry.register).toHaveBeenCalledWith(
+      ["k8s:watchList", "test-cluster", "test-ns", "", "pods"],
+      expect.objectContaining({ names: undefined }),
+      expect.any(Function)
+    );
+  });
+
+  it("omits names for an empty array", async () => {
+    const { result } = renderWatchList(podConfig, undefined, []);
+
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+    expect(mockListQuery).toHaveBeenCalledWith(expect.objectContaining({ names: undefined }));
+    expect(mockRegistry.register).toHaveBeenCalledWith(
+      ["k8s:watchList", "test-cluster", "test-ns", "", "pods"],
+      expect.objectContaining({ names: undefined }),
+      expect.any(Function)
+    );
+  });
+
+  it("does not list while enabled is false", async () => {
+    renderWatchList(podConfig, { enabled: false }, names);
+
+    await settle();
+    expect(mockListQuery).not.toHaveBeenCalled();
+    expect(mockRegistry.register).not.toHaveBeenCalled();
+  });
+
+  it("same names in different order share a query key", async () => {
+    const queryClient = createTestQueryClient();
+
+    const first = renderWatchList(podConfig, undefined, ["app-a", "app-b"], queryClient);
+    const second = renderWatchList(podConfig, undefined, ["app-b", "app-a"], queryClient);
+
+    await waitFor(() => expect(first.result.current.isReady).toBe(true));
+    await waitFor(() => expect(second.result.current.isReady).toBe(true));
+    expect(mockListQuery).toHaveBeenCalledTimes(1);
+    expect(mockRegistry.register).toHaveBeenCalledTimes(2);
+    expect(mockRegistry.register.mock.calls[0][0]).toEqual(mockRegistry.register.mock.calls[1][0]);
   });
 });

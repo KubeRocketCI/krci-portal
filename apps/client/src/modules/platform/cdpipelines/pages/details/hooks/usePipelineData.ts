@@ -4,7 +4,7 @@ import { useCDPipelineWatch, useAppCodebaseListWatch, useStageListWatch } from "
 
 export const usePipelineAppCodebases = () => {
   const cdPipelineWatch = useCDPipelineWatch();
-  const appCodebaseListWatch = useAppCodebaseListWatch();
+  const appCodebaseListWatch = useAppCodebaseListWatch(cdPipelineWatch.data?.spec.applications);
 
   const data = useMemo(() => {
     const cdPipeline = cdPipelineWatch.data;

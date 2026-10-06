@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../errors/index.js";
 import { createLabelSelectorString } from "../../../utils/createLabelSelectorString/index.js";
-import { k8sResourceConfigSchema } from "@my-project/shared";
+import { k8sResourceConfigSchema, k8sResourceNameSchema } from "@my-project/shared";
 import { handleK8sError } from "../../../utils/handleK8sError/index.js";
 import { K8sClient } from "../../../../../clients/k8s/index.js";
 
@@ -53,6 +53,7 @@ export const k8sListProcedure = protectedProcedure
       labels: z.record(z.string()).optional().default({}),
       limit: z.number().int().positive().max(1000).optional(),
       fieldSelector: z.string().max(512).regex(K8S_FIELD_SELECTOR_REGEX, "Invalid fieldSelector").optional(),
+      names: z.array(k8sResourceNameSchema).min(1).max(100).optional(),
     })
   )
   .output(k8sListOutputSchema)
@@ -64,12 +65,23 @@ export const k8sListProcedure = protectedProcedure
         throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
       }
 
-      const { namespace, resourceConfig, labels, limit, fieldSelector } = input;
+      const { namespace, resourceConfig, labels, limit, fieldSelector, names } = input;
 
-      return await k8sClient.listResource(resourceConfig, namespace, createLabelSelectorString(labels), {
+      const list = await k8sClient.listResource(resourceConfig, namespace, createLabelSelectorString(labels), {
         limit,
         fieldSelector,
       });
+
+      if (!names) {
+        return list;
+      }
+
+      const allowedNames = new Set(names);
+
+      return {
+        ...list,
+        items: list.items.filter((item) => allowedNames.has(item.metadata.name)),
+      };
     } catch (error) {
       throw handleK8sError(error);
     }
