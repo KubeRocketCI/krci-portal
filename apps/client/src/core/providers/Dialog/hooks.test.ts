@@ -1,6 +1,6 @@
 import React from "react";
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { DialogContextProvider } from "./provider";
 import { useDialogContext, useDialogOpener } from "./hooks";
 import { DialogProps, DialogState } from "./types";
@@ -45,6 +45,23 @@ describe("useDialogOpener", () => {
 });
 
 describe("DialogContextProvider", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("throws in development when the component has no displayName or name", () => {
+    const { result } = renderHook(() => useDialogContext(), { wrapper });
+
+    expect(() => act(() => result.current.setDialog(() => null, {}))).toThrow(/displayName/);
+  });
+
+  it("does not throw outside development for a component without a key", () => {
+    vi.stubEnv("DEV", false);
+    const { result } = renderHook(() => useDialogContext(), { wrapper });
+
+    expect(() => act(() => result.current.setDialog(() => null, {}))).not.toThrow();
+  });
+
   it("keeps setDialog and closeDialog identities across dialog state changes", () => {
     const { result } = renderHook(() => useDialogContext(), { wrapper });
     const { setDialog, closeDialog } = result.current;

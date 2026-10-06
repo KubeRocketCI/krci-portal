@@ -51,7 +51,6 @@ export const BuildPipeline = ({ defaultPipeline }: BuildPipelineProps) => {
             onClick={() => {
               if (!currentPipeline) return;
               setDialog(PipelineGraphDialog, {
-                pipeline: currentPipeline,
                 pipelineName: currentPipeline.metadata.name,
               });
             }}

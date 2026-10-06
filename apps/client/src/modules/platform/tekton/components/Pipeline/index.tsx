@@ -29,6 +29,8 @@ export const Pipeline = ({ pipelineName, namespace }: { pipelineName: string; na
       <Button
         variant="ghost"
         size="icon"
+        onPointerEnter={PipelineGraphDialog.preload}
+        onFocus={PipelineGraphDialog.preload}
         onClick={() =>
           openPipelineGraphDialog({
             pipelineName,
