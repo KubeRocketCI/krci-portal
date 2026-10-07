@@ -1,12 +1,16 @@
 import { Suspense } from "react";
 import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
-import { lazyNamed } from "@/core/utils/lazyNamed";
+import { lazyPreloadable } from "@/core/utils/lazyPreloadable";
+import { useVulnerabilitiesTabData } from "./hooks/useVulnerabilitiesTabData";
 import { VulnerabilitiesTabProps } from "./types";
 
-// Content chunk (includes recharts) loads on first visit of the tab. Keep static chart imports out of this file.
-const LazyContent = lazyNamed(() => import("./VulnerabilitiesTabContent"), "VulnerabilitiesTabContent");
+// Content chunk (includes recharts) loads on first visit of the tab or on `VulnerabilitiesTab.preload()`.
+// Keep chart imports out of this file and of `hooks/`.
+const LazyContent = lazyPreloadable(() => import("./VulnerabilitiesTabContent"), "VulnerabilitiesTabContent");
 
 export function VulnerabilitiesTab(props: VulnerabilitiesTabProps) {
+  const data = useVulnerabilitiesTabData(props);
+
   return (
     <div data-tour="dependencies-widget">
       <Suspense
@@ -16,8 +20,10 @@ export function VulnerabilitiesTab(props: VulnerabilitiesTabProps) {
           </div>
         }
       >
-        <LazyContent {...props} />
+        <LazyContent namespace={props.namespace} clusterName={props.clusterName} {...data} />
       </Suspense>
     </div>
   );
 }
+
+VulnerabilitiesTab.preload = LazyContent.preload;

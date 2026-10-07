@@ -9,31 +9,21 @@ import { PATH_CONFIG_DEPENDENCY_TRACK_FULL } from "@/modules/platform/configurat
 import { PATH_SCA_PROJECT_DETAILS_FULL } from "@/modules/platform/security/pages/sca-project-details/route";
 import { VulnerabilityTrendChart } from "@/modules/platform/security/pages/sca/components/shared/VulnerabilityTrendChart";
 import { SeverityCallout } from "@/modules/platform/security/pages/sca-project-details/components/SeverityCallout";
-import { useProjectMetrics } from "@/modules/platform/security/pages/sca-project-details/hooks/useProjectMetrics";
 import { getRiskScoreBadgeVariant } from "@/modules/platform/security/components/dependencytrack/DependencyTrackMetricsWidget/utils";
 import { DependencyTrackMetricsList } from "@/modules/platform/security/components/dependencytrack/DependencyTrackMetricsList";
-import { useDependencyTrackProject } from "@/modules/platform/security/components/dependencytrack/DependencyTrackMetricsWidget/hooks/useDependencyTrackProject";
-import { VulnerabilitiesTabProps } from "./types";
+import { VulnerabilitiesTabContentProps } from "./types";
 
-/** SCA (DependencyTrack) overview of the codebase. */
+/** SCA (DependencyTrack) overview of the codebase. Data comes from the tab wrapper (`useVulnerabilitiesTabData`). */
 export function VulnerabilitiesTabContent({
-  codebaseName,
-  defaultBranch,
   namespace,
   clusterName,
-}: VulnerabilitiesTabProps) {
-  const {
-    data: project,
-    isLoading,
-    error,
-  } = useDependencyTrackProject({
-    projectName: codebaseName,
-    defaultBranch,
-  });
-
+  project,
+  isLoading,
+  error,
+  portfolioMetrics,
+  isMetricsLoading,
+}: VulnerabilitiesTabContentProps) {
   const projectUuid = project?.uuid;
-
-  const { data: portfolioMetrics, isLoading: isMetricsLoading } = useProjectMetrics(projectUuid || "", 90);
 
   const metrics = project?.metrics;
   const lastBomImport = project?.lastBomImport ? new Date(project.lastBomImport).toLocaleString() : "Never";
