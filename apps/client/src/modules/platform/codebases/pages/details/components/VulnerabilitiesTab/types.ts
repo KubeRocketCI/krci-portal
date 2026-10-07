@@ -1,3 +1,5 @@
+import type { VulnerabilitiesTabData } from "./hooks/useVulnerabilitiesTabData";
+
 export interface VulnerabilitiesTabProps {
   /**
    * Codebase name (used as DependencyTrack projectName)
@@ -19,3 +21,6 @@ export interface VulnerabilitiesTabProps {
    */
   clusterName: string;
 }
+
+export type VulnerabilitiesTabContentProps = Pick<VulnerabilitiesTabProps, "namespace" | "clusterName"> &
+  VulnerabilitiesTabData;
