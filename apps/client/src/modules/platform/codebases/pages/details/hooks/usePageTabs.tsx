@@ -3,7 +3,6 @@ import { Info, GitBranch, GitPullRequest, Shield, AlertTriangle } from "lucide-r
 import { ciTool } from "@my-project/shared";
 import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import { router } from "@/core/router";
-import { useIdleCallback } from "@/core/hooks/useIdleCallback";
 import { BranchList } from "../components/BranchList";
 import { PullRequestList } from "../components/PullRequestList";
 import { Overview } from "../components/Overview";
@@ -21,9 +20,6 @@ export const usePageTabs = () => {
   const codebaseWatch = useCodebaseWatch();
   const codebase = codebaseWatch.query.data;
   const defaultBranch = codebase?.spec?.defaultBranch;
-
-  // Dependencies tab chunk (recharts) loads off the critical path.
-  useIdleCallback(VulnerabilitiesTab.preload, !!defaultBranch);
 
   const handleTabNavigate = React.useCallback(
     (tab: RouteSearchTab) => {

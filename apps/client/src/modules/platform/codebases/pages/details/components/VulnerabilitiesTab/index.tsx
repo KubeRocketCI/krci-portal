@@ -4,8 +4,7 @@ import { lazyPreloadable } from "@/core/utils/lazyPreloadable";
 import { useVulnerabilitiesTabData } from "./hooks/useVulnerabilitiesTabData";
 import { VulnerabilitiesTabProps } from "./types";
 
-// Content chunk (includes recharts) loads on first visit of the tab or on `VulnerabilitiesTab.preload()`.
-// Keep chart imports out of this file and of `hooks/`.
+// Content chunk (includes recharts) loads on first visit of the tab. Keep chart imports out of this file and of `hooks/`.
 const LazyContent = lazyPreloadable(() => import("./VulnerabilitiesTabContent"), "VulnerabilitiesTabContent");
 
 export function VulnerabilitiesTab(props: VulnerabilitiesTabProps) {
@@ -25,5 +24,3 @@ export function VulnerabilitiesTab(props: VulnerabilitiesTabProps) {
     </div>
   );
 }
-
-VulnerabilitiesTab.preload = LazyContent.preload;
