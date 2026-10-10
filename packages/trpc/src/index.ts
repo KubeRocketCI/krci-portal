@@ -5,8 +5,24 @@ export type { TRPCContext, CustomSession } from "./context/types.js";
 export { createContext } from "./context/create.js";
 export { appRouter, createCaller } from "./routers/index.js";
 
-export { OPENAPI_DOCUMENT_OPTIONS, rewriteErrorEnvelopeSchemas, UNKNOWN_ERROR_PHRASE } from "./utils/openapi/index.js";
+export {
+  httpStatusPhrase,
+  OPENAPI_DOCUMENT_OPTIONS,
+  rewriteErrorEnvelopeSchemas,
+  UNKNOWN_ERROR_PHRASE,
+} from "./utils/openapi/index.js";
 
 export { createEventQueue, yieldEvents } from "./utils/createEventQueue/index.js";
 
 export { notificationEventBus } from "./clients/eventBus/index.js";
+
+export {
+  HttpError,
+  HttpStatusError,
+  HttpTimeoutError,
+  HttpCancelledError,
+  HttpNetworkError,
+  HttpNotConfiguredError,
+  findHttpError,
+  notConfiguredError,
+} from "./clients/http/index.js";

@@ -6,7 +6,6 @@ import {
   clampPageSize,
   componentMatchesSeverity,
   fetchAllComponents,
-  isScaNotConfiguredError,
   latestMetricsSnapshot,
   paginate,
   parseBoolQuery,
@@ -223,63 +222,6 @@ describe("classifyBranchResolution", () => {
         });
       })
     ).rejects.toThrow("upstream exploded");
-  });
-});
-
-describe("isScaNotConfiguredError", () => {
-  it("returns true for DEPENDENCY_TRACK_URL cause discriminator", () => {
-    const err = new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "DEPENDENCY_TRACK_URL environment variable is not configured",
-      cause: { kind: "sca_not_configured", missing: "DEPENDENCY_TRACK_URL" },
-    });
-    expect(isScaNotConfiguredError(err)).toBe(true);
-  });
-
-  it("returns true for DEPENDENCY_TRACK_API_KEY cause discriminator", () => {
-    const err = new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message:
-        "DEPENDENCY_TRACK_API_KEY environment variable is not configured",
-      cause: {
-        kind: "sca_not_configured",
-        missing: "DEPENDENCY_TRACK_API_KEY",
-      },
-    });
-    expect(isScaNotConfiguredError(err)).toBe(true);
-  });
-
-  it("returns false for INTERNAL_SERVER_ERROR without the cause discriminator", () => {
-    // An unrelated INTERNAL_SERVER_ERROR must not be classified as 503.
-    const err = new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "DEPENDENCY_TRACK_URL environment variable is not configured",
-    });
-    expect(isScaNotConfiguredError(err)).toBe(false);
-  });
-
-  it("returns false when cause.kind differs", () => {
-    const err = new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "some other config error",
-      cause: { kind: "other_error" },
-    });
-    expect(isScaNotConfiguredError(err)).toBe(false);
-  });
-
-  it("rejects unrelated TRPCErrors", () => {
-    const err = new TRPCError({ code: "UNAUTHORIZED", message: "auth" });
-    expect(isScaNotConfiguredError(err)).toBe(false);
-  });
-
-  it("rejects plain Errors and non-errors", () => {
-    expect(
-      isScaNotConfiguredError(
-        new Error("DEPENDENCY_TRACK_URL is not configured")
-      )
-    ).toBe(false);
-    expect(isScaNotConfiguredError(undefined)).toBe(false);
-    expect(isScaNotConfiguredError("boom")).toBe(false);
   });
 });
 

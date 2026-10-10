@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import {
   DEFAULT_TIMEOUT_MS,
   SONARQUBE_METRIC_KEYS,
@@ -12,7 +11,7 @@ import {
   IssuesQueryParams,
   IssuesSearchResponse,
 } from "@my-project/shared";
-import { createHttpService, HttpStatusError, type HttpService } from "../http/index.js";
+import { createHttpService, HttpStatusError, notConfiguredError, type HttpService } from "../http/index.js";
 
 // =============================================================================
 // Configuration
@@ -39,6 +38,8 @@ function loadConfig(): SonarQubeConfig {
 // Load config once at module initialization
 const config = loadConfig();
 
+const SERVICE_NAME = "SonarQube";
+
 // =============================================================================
 // Factory Function
 // =============================================================================
@@ -51,17 +52,11 @@ const config = loadConfig();
  */
 export function createSonarQubeClient(): SonarQubeClient {
   if (!config.apiBaseURL) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "SONAR_HOST_URL environment variable is not configured",
-    });
+    throw notConfiguredError(SERVICE_NAME, "SONAR_HOST_URL");
   }
 
   if (!config.token) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "SONAR_TOKEN environment variable is not configured",
-    });
+    throw notConfiguredError(SERVICE_NAME, "SONAR_TOKEN");
   }
 
   return new SonarQubeClient({
@@ -107,7 +102,7 @@ export class SonarQubeClient {
     }
 
     this.http = createHttpService({
-      name: "SonarQube",
+      name: SERVICE_NAME,
       baseURL: apiBaseURL,
       timeoutMs,
       // SonarQube uses Basic Authentication: token as username, empty password

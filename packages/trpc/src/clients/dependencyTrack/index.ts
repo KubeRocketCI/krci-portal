@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import {
   PortfolioMetricsResponse,
   DEPENDENCY_TRACK_API_VERSION,
@@ -19,13 +18,14 @@ import {
   ViolationsResponse,
   stripTrailingSlash,
 } from "@my-project/shared";
-import { createHttpService, HttpStatusError, type HttpService } from "../http/index.js";
+import { createHttpService, HttpStatusError, notConfiguredError, type HttpService } from "../http/index.js";
 
 // =============================================================================
 // Constants
 // =============================================================================
 
 const DEFAULT_TIMEOUT_MS = 30_000; // 30 seconds
+const SERVICE_NAME = "Dependency-Track";
 
 // =============================================================================
 // Configuration
@@ -65,19 +65,11 @@ const config = loadConfig();
  */
 export function createDependencyTrackClient(): DependencyTrackClient {
   if (!config.apiBaseURL) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "DEPENDENCY_TRACK_URL environment variable is not configured",
-      cause: { kind: "sca_not_configured", missing: "DEPENDENCY_TRACK_URL" },
-    });
+    throw notConfiguredError(SERVICE_NAME, "DEPENDENCY_TRACK_URL");
   }
 
   if (!config.apiKey) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "DEPENDENCY_TRACK_API_KEY environment variable is not configured",
-      cause: { kind: "sca_not_configured", missing: "DEPENDENCY_TRACK_API_KEY" },
-    });
+    throw notConfiguredError(SERVICE_NAME, "DEPENDENCY_TRACK_API_KEY");
   }
 
   return new DependencyTrackClient({
@@ -105,15 +97,15 @@ export class DependencyTrackClient {
     const { apiBaseURL, apiKey, timeoutMs = DEFAULT_TIMEOUT_MS } = clientConfig;
 
     if (!apiBaseURL) {
-      throw new Error("Dependency Track API base URL is not configured");
+      throw new Error(`${SERVICE_NAME} API base URL is not configured`);
     }
 
     if (!apiKey) {
-      throw new Error("Dependency Track API key is not configured");
+      throw new Error(`${SERVICE_NAME} API key is not configured`);
     }
 
     this.http = createHttpService({
-      name: "Dependency Track",
+      name: SERVICE_NAME,
       baseURL: `${stripTrailingSlash(apiBaseURL)}/api/${DEPENDENCY_TRACK_API_VERSION}`,
       timeoutMs,
       headers: { "X-Api-Key": apiKey },
@@ -125,7 +117,7 @@ export class DependencyTrackClient {
     const raw = headers.get("x-total-count");
     const parsed = raw !== null && /^\d+$/.test(raw) ? Number(raw) : Number.NaN;
     if (!Number.isSafeInteger(parsed)) {
-      throw new Error(`Dependency Track response has no valid X-Total-Count header (got ${JSON.stringify(raw)})`);
+      throw new Error(`${SERVICE_NAME} response has no valid X-Total-Count header (got ${JSON.stringify(raw)})`);
     }
     return parsed;
   }

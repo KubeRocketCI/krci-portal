@@ -1785,10 +1785,13 @@
             }
           },
           "502": {
-            "description": "Upstream Dep-Track failure"
+            "description": "Dependency-Track returned an error response; REST error envelope with code BAD_GATEWAY"
           },
           "503": {
-            "description": "Dep-Track integration not configured"
+            "description": "Dependency-Track integration not configured, or Dependency-Track unreachable; REST error envelope with code SERVICE_UNAVAILABLE"
+          },
+          "504": {
+            "description": "Dependency-Track request timed out; REST error envelope with code GATEWAY_TIMEOUT"
           }
         }
       }
@@ -1964,10 +1967,13 @@
             }
           },
           "502": {
-            "description": "Upstream Dep-Track failure"
+            "description": "Dependency-Track returned an error response; REST error envelope with code BAD_GATEWAY"
           },
           "503": {
-            "description": "Dep-Track integration not configured"
+            "description": "Dependency-Track integration not configured, or Dependency-Track unreachable; REST error envelope with code SERVICE_UNAVAILABLE"
+          },
+          "504": {
+            "description": "Dependency-Track request timed out; REST error envelope with code GATEWAY_TIMEOUT"
           }
         }
       }
@@ -2083,7 +2089,7 @@
       "error.INTERNAL_SERVER_ERROR": {
         "type": "object",
         "title": "INTERNAL_SERVER_ERROR error envelope (500)",
-        "description": "REST error envelope emitted by handleTRPCError. `message` is the static HTTP status phrase; `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
+        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
         "required": [
           "error"
         ],
@@ -2106,7 +2112,7 @@
               },
               "message": {
                 "type": "string",
-                "description": "Static HTTP status phrase",
+                "description": "Static per status; per status and integration for 503 not configured",
                 "example": "Internal Server Error"
               }
             }
@@ -2122,7 +2128,7 @@
       "error.UNAUTHORIZED": {
         "type": "object",
         "title": "UNAUTHORIZED error envelope (401)",
-        "description": "REST error envelope emitted by handleTRPCError. `message` is the static HTTP status phrase; `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
+        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
         "required": [
           "error"
         ],
@@ -2145,7 +2151,7 @@
               },
               "message": {
                 "type": "string",
-                "description": "Static HTTP status phrase",
+                "description": "Static per status; per status and integration for 503 not configured",
                 "example": "Unauthorized"
               }
             }
@@ -2161,7 +2167,7 @@
       "error.FORBIDDEN": {
         "type": "object",
         "title": "FORBIDDEN error envelope (403)",
-        "description": "REST error envelope emitted by handleTRPCError. `message` is the static HTTP status phrase; `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
+        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
         "required": [
           "error"
         ],
@@ -2184,7 +2190,7 @@
               },
               "message": {
                 "type": "string",
-                "description": "Static HTTP status phrase",
+                "description": "Static per status; per status and integration for 503 not configured",
                 "example": "Forbidden"
               }
             }
@@ -2200,7 +2206,7 @@
       "error.BAD_REQUEST": {
         "type": "object",
         "title": "BAD_REQUEST error envelope (400)",
-        "description": "REST error envelope emitted by handleTRPCError. `message` is the static HTTP status phrase; `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
+        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
         "required": [
           "error"
         ],
@@ -2223,7 +2229,7 @@
               },
               "message": {
                 "type": "string",
-                "description": "Static HTTP status phrase",
+                "description": "Static per status; per status and integration for 503 not configured",
                 "example": "Bad Request"
               }
             }
@@ -2239,7 +2245,7 @@
       "error.NOT_FOUND": {
         "type": "object",
         "title": "NOT_FOUND error envelope (404)",
-        "description": "REST error envelope emitted by handleTRPCError. `message` is the static HTTP status phrase; `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
+        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
         "required": [
           "error"
         ],
@@ -2262,7 +2268,7 @@
               },
               "message": {
                 "type": "string",
-                "description": "Static HTTP status phrase",
+                "description": "Static per status; per status and integration for 503 not configured",
                 "example": "Not Found"
               }
             }
@@ -2886,7 +2892,7 @@
       "error.CONFLICT": {
         "type": "object",
         "title": "CONFLICT error envelope (409)",
-        "description": "REST error envelope emitted by handleTRPCError. `message` is the static HTTP status phrase; `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
+        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
         "required": [
           "error"
         ],
@@ -2909,7 +2915,7 @@
               },
               "message": {
                 "type": "string",
-                "description": "Static HTTP status phrase",
+                "description": "Static per status; per status and integration for 503 not configured",
                 "example": "Conflict"
               }
             }

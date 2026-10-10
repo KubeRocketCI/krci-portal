@@ -1,7 +1,18 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { createHttpService, withTRPCErrors, HttpStatusError, HttpTimeoutError, HttpCancelledError } from "./index.js";
+import {
+  createHttpService,
+  withTRPCErrors,
+  findHttpError,
+  HttpError,
+  HttpStatusError,
+  HttpTimeoutError,
+  HttpCancelledError,
+  HttpNetworkError,
+  HttpNotConfiguredError,
+  notConfiguredError,
+} from "./index.js";
 
 const BASE = "https://svc.example.com";
 
@@ -201,10 +212,102 @@ describe("createHttpService cancellation", () => {
     await expect(makeService({ timeoutMs: 25 }).json("/things")).rejects.toBeInstanceOf(HttpTimeoutError);
   });
 
-  it("passes a network failure through untouched", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("fetch failed")));
+  it("reports a socket failure as HttpNetworkError keeping the runtime error as the cause", async () => {
+    const socketError = new TypeError("fetch failed");
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(socketError));
 
-    await expect(makeService().json("/things")).rejects.toThrow("fetch failed");
+    const error = (await makeService()
+      .json("/things")
+      .catch((caught: unknown) => caught)) as HttpNetworkError;
+
+    expect(error).toBeInstanceOf(HttpNetworkError);
+    expect(error.service).toBe("TestService");
+    expect(error.cause).toBe(socketError);
+  });
+
+  it("passes a failure that is neither transport nor abort through untouched", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("boom")));
+
+    const error = await makeService()
+      .json("/things")
+      .catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error).not.toBeInstanceOf(HttpError);
+  });
+
+  it("reports a socket dropped while reading the body as HttpNetworkError", async () => {
+    const socketError = Object.assign(new Error("other side closed"), { code: "UND_ERR_SOCKET" });
+    stubFetch(
+      new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.error(new TypeError("terminated", { cause: socketError }));
+          },
+        })
+      )
+    );
+
+    await expect(makeService().json("/things")).rejects.toBeInstanceOf(HttpNetworkError);
+  });
+
+  it("passes a TypeError that is not a connection failure through untouched", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Headers.append: invalid value")));
+
+    const error = await makeService()
+      .json("/things")
+      .catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(TypeError);
+    expect(error).not.toBeInstanceOf(HttpError);
+  });
+});
+
+describe("findHttpError", () => {
+  const httpError = new HttpNetworkError("TestService");
+
+  it("returns the error itself when it is an HttpError", () => {
+    expect(findHttpError(httpError)).toBe(httpError);
+  });
+
+  it("walks through TRPCError wrappers", () => {
+    const inner = new TRPCError({ code: "INTERNAL_SERVER_ERROR", cause: httpError });
+    const outer = new TRPCError({ code: "INTERNAL_SERVER_ERROR", cause: inner });
+
+    expect(findHttpError(outer)).toBe(httpError);
+  });
+
+  it("walks an arbitrarily long chain", () => {
+    let chain: Error = httpError;
+    for (let i = 0; i < 20; i += 1) {
+      chain = new Error(`level ${i}`, { cause: chain });
+    }
+
+    expect(findHttpError(chain)).toBe(httpError);
+  });
+
+  it("terminates on a cause cycle", () => {
+    const a = new Error("a");
+    const b = new Error("b", { cause: a });
+    a.cause = b;
+
+    expect(findHttpError(a)).toBeUndefined();
+  });
+
+  it.each([undefined, null, "boom", { cause: httpError }])("returns undefined for non-Error input %j", (input) => {
+    expect(findHttpError(input)).toBeUndefined();
+  });
+});
+
+describe("notConfiguredError", () => {
+  it("names the variable in the message and the service in the cause", () => {
+    const error = notConfiguredError("SonarQube", "SONAR_TOKEN");
+
+    expect(error).toBeInstanceOf(TRPCError);
+    expect(error.code).toBe("INTERNAL_SERVER_ERROR");
+    expect(error.message).toBe("SONAR_TOKEN environment variable is not configured");
+    expect(error.cause).toBeInstanceOf(HttpNotConfiguredError);
+    expect((error.cause as HttpNotConfiguredError).service).toBe("SonarQube");
   });
 });
 
@@ -274,14 +377,14 @@ describe("withTRPCErrors", () => {
     expect(error).not.toBeInstanceOf(TRPCError);
   });
 
-  it("passes a network failure through untouched", async () => {
+  it("passes a network failure through as HttpNetworkError, not TRPCError", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("fetch failed")));
 
     const error = await wrapped()
       .json("/things")
       .catch((caught: unknown) => caught);
 
-    expect(error).toBeInstanceOf(TypeError);
+    expect(error).toBeInstanceOf(HttpNetworkError);
     expect(error).not.toBeInstanceOf(TRPCError);
   });
 });
