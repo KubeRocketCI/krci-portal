@@ -38,8 +38,7 @@ export class LocalFastifyServer {
     this.fastify = Fastify({
       logger: false,
       maxParamLength: 5000,
-      // Mirror prod's requestTimeout so dev/prod divergence doesn't mask handler
-      // deadline bugs. 30 s matches the production ceiling; CLI timeout is 45 s.
+      // Same Node `server.requestTimeout` as production.
       requestTimeout: 30_000,
     });
   }

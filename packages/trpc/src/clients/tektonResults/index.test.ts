@@ -20,6 +20,17 @@ describe("createTektonResultsClient", () => {
     expect(() => createTektonResultsClient("default")).toThrow("TEKTON_RESULTS_URL");
   });
 
+  it("attaches an HttpNotConfiguredError cause when TEKTON_RESULTS_URL is missing", async () => {
+    delete process.env.TEKTON_RESULTS_URL;
+    const { createTektonResultsClient } = await import("./index.js");
+
+    expect(() => createTektonResultsClient("default")).toThrow(
+      expect.objectContaining({
+        cause: expect.objectContaining({ name: "HttpNotConfiguredError", service: "Tekton Results" }),
+      })
+    );
+  });
+
   it("should return client when env is configured", async () => {
     process.env.TEKTON_RESULTS_URL = "https://tekton-results.example.com";
     const { createTektonResultsClient } = await import("./index.js");

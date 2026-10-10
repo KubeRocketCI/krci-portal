@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import {
   TektonResultsListResponse,
   TektonRecordsListResponse,
@@ -8,13 +7,14 @@ import {
   TektonSummaryResponse,
   stripTrailingSlash,
 } from "@my-project/shared";
-import { createHttpService, type HttpService } from "../http/index.js";
+import { createHttpService, notConfiguredError, type HttpService } from "../http/index.js";
 
 // =============================================================================
 // Constants
 // =============================================================================
 
 const DEFAULT_TIMEOUT_MS = 30_000; // 30 seconds
+const SERVICE_NAME = "Tekton Results";
 const TEKTON_RESULTS_API_VERSION = "v1alpha2";
 
 // =============================================================================
@@ -53,10 +53,7 @@ const config = loadConfig();
  */
 export function createTektonResultsClient(namespace: string): TektonResultsClient {
   if (!config.apiBaseURL) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "TEKTON_RESULTS_URL environment variable is not configured",
-    });
+    throw notConfiguredError(SERVICE_NAME, "TEKTON_RESULTS_URL");
   }
 
   return new TektonResultsClient({
@@ -94,7 +91,7 @@ export class TektonResultsClient {
 
     this.parent = parent;
     this.http = createHttpService({
-      name: "Tekton Results",
+      name: SERVICE_NAME,
       baseURL: `${stripTrailingSlash(apiBaseURL)}/apis/results.tekton.dev/${TEKTON_RESULTS_API_VERSION}`,
       timeoutMs,
     });

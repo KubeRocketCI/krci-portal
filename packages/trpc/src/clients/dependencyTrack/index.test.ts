@@ -21,7 +21,7 @@ describe("createDependencyTrackClient", () => {
     expect(() => createDependencyTrackClient()).toThrow("DEPENDENCY_TRACK_URL");
   });
 
-  it("attaches sca_not_configured cause when DEPENDENCY_TRACK_URL is missing", async () => {
+  it("attaches an HttpNotConfiguredError cause when DEPENDENCY_TRACK_URL is missing", async () => {
     delete process.env.DEPENDENCY_TRACK_URL;
     const { createDependencyTrackClient } = await import("./index.js");
 
@@ -35,12 +35,7 @@ describe("createDependencyTrackClient", () => {
     expect(caught).toBeInstanceOf(TRPCError);
     const trpcErr = caught as TRPCError;
     expect(trpcErr.code).toBe("INTERNAL_SERVER_ERROR");
-    // TRPCError wraps plain objects in an UnknownCauseError instance, so use
-    // objectContaining rather than a deep-equality check on the constructor.
-    expect(trpcErr.cause).toMatchObject({
-      kind: "sca_not_configured",
-      missing: "DEPENDENCY_TRACK_URL",
-    });
+    expect(trpcErr.cause).toMatchObject({ name: "HttpNotConfiguredError", service: "Dependency-Track" });
   });
 
   it("should throw when DEPENDENCY_TRACK_API_KEY is not set", async () => {
@@ -51,7 +46,7 @@ describe("createDependencyTrackClient", () => {
     expect(() => createDependencyTrackClient()).toThrow("DEPENDENCY_TRACK_API_KEY");
   });
 
-  it("attaches sca_not_configured cause when DEPENDENCY_TRACK_API_KEY is missing", async () => {
+  it("attaches an HttpNotConfiguredError cause when DEPENDENCY_TRACK_API_KEY is missing", async () => {
     process.env.DEPENDENCY_TRACK_URL = "https://dt.example.com";
     delete process.env.DEPENDENCY_TRACK_API_KEY;
     const { createDependencyTrackClient } = await import("./index.js");
@@ -66,12 +61,7 @@ describe("createDependencyTrackClient", () => {
     expect(caught).toBeInstanceOf(TRPCError);
     const trpcErr = caught as TRPCError;
     expect(trpcErr.code).toBe("INTERNAL_SERVER_ERROR");
-    // TRPCError wraps plain objects in an UnknownCauseError instance, so use
-    // objectContaining rather than a deep-equality check on the constructor.
-    expect(trpcErr.cause).toMatchObject({
-      kind: "sca_not_configured",
-      missing: "DEPENDENCY_TRACK_API_KEY",
-    });
+    expect(trpcErr.cause).toMatchObject({ name: "HttpNotConfiguredError", service: "Dependency-Track" });
   });
 
   it("should return client when env is configured", async () => {
@@ -143,7 +133,7 @@ describe("DependencyTrackClient", () => {
       stubListResponse();
 
       await expect(client.getProjects({ pageNumber: 0, pageSize: 25 })).rejects.toThrow(
-        "Dependency Track response has no valid X-Total-Count header (got null)"
+        "Dependency-Track response has no valid X-Total-Count header (got null)"
       );
     });
 
@@ -153,7 +143,7 @@ describe("DependencyTrackClient", () => {
         stubListResponse({ "x-total-count": raw });
 
         await expect(client.getProjects({ pageNumber: 0, pageSize: 25 })).rejects.toThrow(
-          `Dependency Track response has no valid X-Total-Count header (got ${JSON.stringify(raw)})`
+          `Dependency-Track response has no valid X-Total-Count header (got ${JSON.stringify(raw)})`
         );
       }
     );

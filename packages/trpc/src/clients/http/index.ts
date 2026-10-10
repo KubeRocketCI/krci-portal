@@ -83,12 +83,54 @@ export class HttpCancelledError extends HttpError {
   }
 }
 
+/** The connection failed or dropped: DNS, refused, reset, socket closed while reading the body. */
+export class HttpNetworkError extends HttpError {
+  constructor(service: string, options?: ErrorOptions) {
+    super(service, `${service} is unreachable`, options);
+  }
+}
+
+/** The service has no base URL or credentials in the environment. */
+export class HttpNotConfiguredError extends HttpError {
+  constructor(service: string, options?: ErrorOptions) {
+    super(service, `${service} integration is not configured`, options);
+  }
+}
+
+/** First `HttpError` on the `cause` chain. Cycles terminate. */
+export function findHttpError(error: unknown): HttpError | undefined {
+  const seen = new Set<unknown>();
+  let current: unknown = error;
+  while (current instanceof Error && !seen.has(current)) {
+    if (current instanceof HttpError) {
+      return current;
+    }
+    seen.add(current);
+    current = current.cause;
+  }
+  return undefined;
+}
+
+/**
+ * The error a client factory throws when its environment is incomplete.
+ *
+ * The tRPC message names the variable for the browser; the `HttpNotConfiguredError` cause carries
+ * the service name for the REST layer.
+ */
+export function notConfiguredError(service: string, envVar: string): TRPCError {
+  return new TRPCError({
+    code: "INTERNAL_SERVER_ERROR",
+    message: `${envVar} environment variable is not configured`,
+    cause: new HttpNotConfiguredError(service),
+  });
+}
+
 /**
  * Rethrow transport failures as `TRPCError`s carrying an upstream-derived code.
  *
  * Opt in only for services whose procedures do not catch, so the upstream status reaches the
- * browser as a tRPC code. Everything that is not an `HttpError` — a `ZodError` from `schema`, a
- * network `TypeError` — passes through untouched.
+ * browser as a tRPC code. `HttpNetworkError`, `HttpNotConfiguredError` and everything that is not
+ * an `HttpError` (a `ZodError` from `schema`) pass through untouched.
  */
 export function withTRPCErrors(http: HttpService): HttpService {
   return {
@@ -149,9 +191,10 @@ export interface JsonRequestOptions<T> extends RequestOptions {
  * - non-2xx → `HttpStatusError`
  * - deadline expired → `HttpTimeoutError`
  * - caller aborted → `HttpCancelledError`
+ * - connection failed → `HttpNetworkError`
  * - `schema` mismatch → the `ZodError`, unwrapped
  *
- * All four are framework-neutral. Wrap with `withTRPCErrors` for services whose procedures pass
+ * Each is framework-neutral. Wrap with `withTRPCErrors` for services whose procedures pass
  * the upstream status through to the browser as a tRPC code.
  */
 export interface HttpService {
@@ -195,7 +238,15 @@ export function createHttpService(config: HttpServiceConfig): HttpService {
 
       return await read(response);
     } catch (error) {
-      if (error instanceof HttpError || !isAbortError(error)) {
+      if (error instanceof HttpError) {
+        throw error;
+      }
+
+      if (isTransportFailure(error)) {
+        throw new HttpNetworkError(name, { cause: error });
+      }
+
+      if (!isAbortError(error)) {
         throw error;
       }
 
@@ -273,6 +324,20 @@ async function buildStatusError(service: string, url: string, response: Response
     statusText: response.statusText,
     body,
   });
+}
+
+/**
+ * undici reports a connection or socket failure as a TypeError ("fetch failed" before headers,
+ * "terminated" while reading the body) whose cause is the system or undici error carrying a `code`.
+ * An unparsable base URL also carries a code (`ERR_INVALID_URL`) and is reported as unreachable.
+ * A TypeError without a coded cause (bad header name or value) passes through.
+ */
+function isTransportFailure(error: unknown): boolean {
+  if (!(error instanceof TypeError)) {
+    return false;
+  }
+  const code = (error.cause as { code?: unknown } | undefined)?.code;
+  return error.message === "fetch failed" || typeof code === "string";
 }
 
 function isAbortError(error: unknown): boolean {

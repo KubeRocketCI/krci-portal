@@ -6,7 +6,6 @@ import {
   rewriteErrorEnvelopeSchemas,
   type CustomSession,
   type RouterInput,
-  UNKNOWN_ERROR_PHRASE,
 } from "@my-project/trpc";
 import {
   k8sCodebaseConfig,
@@ -17,7 +16,6 @@ import {
   clampPageSize,
   componentMatchesSeverity,
   fetchAllComponents,
-  isScaNotConfiguredError,
   latestMetricsSnapshot,
   paginate,
   parseBoolQuery,
@@ -30,10 +28,8 @@ import {
   type ResolvedBranch,
   type ScaSeverity,
 } from "./sca-helpers.js";
-import { TRPCError } from "@trpc/server";
-import { getHTTPStatusCodeFromError } from "@trpc/server/http";
+import { sendRestError } from "./rest-errors.js";
 import { generateOpenApiDocument } from "trpc-to-openapi";
-import { STATUS_CODES } from "node:http";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import type { DBSessionStore } from "@/clients/db-session-store";
 
@@ -101,39 +97,6 @@ export function registerOpenApi(
     return createCaller(ctx);
   }
 
-  /**
-   * Maps TRPCError codes to proper HTTP status codes.
-   * Without this, Fastify's default error handler returns 500 for all
-   * tRPC errors (e.g. UNAUTHORIZED would surface as HTTP 500 instead of 401).
-   * TODO: this helper can be deleted once fastifyTRPCOpenApiPlugin handles
-   * error mapping natively.
-   *
-   * If a procedure attaches `cause.reason` (a stable, machine-readable tag),
-   * it is surfaced verbatim so REST clients can disambiguate same-status
-   * errors without parsing the human message. The verbatim `error.message`
-   * is never exposed.
-   */
-  function handleTRPCError(error: unknown, res: FastifyReply): never {
-    if (error instanceof TRPCError) {
-      const httpStatus = getHTTPStatusCodeFromError(error);
-      // Derive both fields from safe, static sources — never expose error.message or stack.
-      // `code` is a tRPC enum literal (e.g. "UNAUTHORIZED"); `message` is the HTTP status phrase.
-      const code: string = error.code;
-      const message = STATUS_CODES[httpStatus] ?? UNKNOWN_ERROR_PHRASE;
-      const reason = extractCauseReason(error.cause);
-      res.status(httpStatus).send({
-        error: reason ? { code, reason, message } : { code, message },
-      });
-    }
-    throw error;
-  }
-
-  function extractCauseReason(cause: unknown): string | undefined {
-    if (typeof cause !== "object" || cause === null) return undefined;
-    const value = (cause as { reason?: unknown }).reason;
-    return typeof value === "string" ? value : undefined;
-  }
-
   // ---------------------------------------------------------------------------
   // Configuration
   // ---------------------------------------------------------------------------
@@ -144,7 +107,7 @@ export function registerOpenApi(
       const caller = await buildCaller(req, res);
       return await caller.config.oidc();
     } catch (error) {
-      return handleTRPCError(error, res);
+      return sendRestError(error, req, res);
     }
   });
 
@@ -154,7 +117,7 @@ export function registerOpenApi(
       const caller = await buildCaller(req, res);
       return await caller.config.get();
     } catch (error) {
-      return handleTRPCError(error, res);
+      return sendRestError(error, req, res);
     }
   });
 
@@ -170,7 +133,7 @@ export function registerOpenApi(
         const caller = await buildCaller(req, res);
         return await caller.k8s.list(req.body);
       } catch (error) {
-        return handleTRPCError(error, res);
+        return sendRestError(error, req, res);
       }
     }
   );
@@ -183,7 +146,7 @@ export function registerOpenApi(
         const caller = await buildCaller(req, res);
         return await caller.k8s.get(req.body);
       } catch (error) {
-        return handleTRPCError(error, res);
+        return sendRestError(error, req, res);
       }
     }
   );
@@ -200,7 +163,7 @@ export function registerOpenApi(
         const caller = await buildCaller(req, res);
         return await caller.pipelineRun.start(req.body);
       } catch (error) {
-        return handleTRPCError(error, res);
+        return sendRestError(error, req, res);
       }
     }
   );
@@ -213,7 +176,7 @@ export function registerOpenApi(
         const caller = await buildCaller(req, res);
         return await caller.pipelineRun.build(req.body);
       } catch (error) {
-        return handleTRPCError(error, res);
+        return sendRestError(error, req, res);
       }
     }
   );
@@ -226,7 +189,7 @@ export function registerOpenApi(
         const caller = await buildCaller(req, res);
         return await caller.pipelineRun.stop(req.body);
       } catch (error) {
-        return handleTRPCError(error, res);
+        return sendRestError(error, req, res);
       }
     }
   );
@@ -254,7 +217,7 @@ export function registerOpenApi(
         filter: filter || undefined,
       });
     } catch (error) {
-      return handleTRPCError(error, res);
+      return sendRestError(error, req, res);
     }
   });
 
@@ -271,7 +234,7 @@ export function registerOpenApi(
         recordUid: req.query.recordUid,
       });
     } catch (error) {
-      return handleTRPCError(error, res);
+      return sendRestError(error, req, res);
     }
   });
 
@@ -287,7 +250,7 @@ export function registerOpenApi(
         resultUid: req.params.resultUid,
       });
     } catch (error) {
-      return handleTRPCError(error, res);
+      return sendRestError(error, req, res);
     }
   });
 
@@ -305,7 +268,7 @@ export function registerOpenApi(
         stepName: req.query.stepName || undefined,
       });
     } catch (error) {
-      return handleTRPCError(error, res);
+      return sendRestError(error, req, res);
     }
   });
 
@@ -354,7 +317,7 @@ export function registerOpenApi(
         searchTerm: searchTerm || undefined,
       });
     } catch (error) {
-      return handleTRPCError(error, res);
+      return sendRestError(error, req, res);
     }
   });
 
@@ -379,7 +342,7 @@ export function registerOpenApi(
         branch: branch || undefined,
       });
     } catch (error) {
-      return handleTRPCError(error, res);
+      return sendRestError(error, req, res);
     }
   });
 
@@ -404,7 +367,7 @@ export function registerOpenApi(
         branch: branch || undefined,
       });
     } catch (error) {
-      return handleTRPCError(error, res);
+      return sendRestError(error, req, res);
     }
   });
 
@@ -465,40 +428,13 @@ export function registerOpenApi(
         ps: parsedPs,
       });
     } catch (error) {
-      return handleTRPCError(error, res);
+      return sendRestError(error, req, res);
     }
   });
 
   // ---------------------------------------------------------------------------
   // Dependency-Track — view proxies for `krci sca`
   // ---------------------------------------------------------------------------
-
-  // Attempt to classify a thrown error. TRPCErrors (e.g. UNAUTHORIZED) go
-  // through `handleTRPCError` so the caller gets the correct status. Any other
-  // error originating from the Dep-Track client is translated to 502 Bad
-  // Gateway; upstream-unconfigured TRPCErrors (INTERNAL_SERVER_ERROR whose
-  // message mentions the DT env vars) are translated to 503.
-  const handleScaError = (error: unknown, res: FastifyReply): never => {
-    if (isScaNotConfiguredError(error)) {
-      res.status(503).send({
-        error: {
-          code: "SERVICE_UNAVAILABLE",
-          message: "Dependency-Track integration is not configured",
-        },
-      });
-      throw error;
-    }
-    if (error instanceof TRPCError) {
-      return handleTRPCError(error, res);
-    }
-    // Non-TRPCError thrown from DT client (network / 5xx / timeout) → 502.
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Dependency-Track request failed";
-    res.status(502).send({ error: { code: "BAD_GATEWAY", message } });
-    throw error;
-  };
 
   // Resolves the Dep-Track `version` value for a given codebase. When the
   // caller supplies `branch`, that value is returned verbatim. When `branch`
@@ -585,7 +521,7 @@ export function registerOpenApi(
         totalCount: result.totalCount ?? 0,
       };
     } catch (error) {
-      return handleScaError(error, res);
+      return sendRestError(error, req, res);
     }
   });
 
@@ -636,7 +572,7 @@ export function registerOpenApi(
         metrics: latestMetrics,
       };
     } catch (error) {
-      return handleScaError(error, res);
+      return sendRestError(error, req, res);
     }
   });
 
@@ -717,10 +653,8 @@ export function registerOpenApi(
       };
 
       if (parsedSeverity) {
-        // req.signal fires on client disconnect (tab closed, CLI Ctrl-C) and
-        // when Fastify's requestTimeout (30 s) fires. Threading it into
-        // fetchAllComponents ensures the auto-paging loop stops promptly rather
-        // than continuing to issue Dep-Track requests for a gone connection.
+        // req.signal fires on client disconnect (tab closed, CLI Ctrl-C).
+        // fetchAllComponents stops paging Dep-Track for a gone connection.
         const { items: all, truncated } = await fetchAllComponents<
           DtComponents[number]
         >(
@@ -782,7 +716,7 @@ export function registerOpenApi(
         truncated: false,
       };
     } catch (error) {
-      return handleScaError(error, res);
+      return sendRestError(error, req, res);
     }
   });
 
@@ -854,7 +788,7 @@ export function registerOpenApi(
         truncated,
       };
     } catch (error) {
-      return handleScaError(error, res);
+      return sendRestError(error, req, res);
     }
   });
 

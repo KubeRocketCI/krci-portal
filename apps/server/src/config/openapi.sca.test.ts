@@ -12,6 +12,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Fastify, { type FastifyInstance } from "fastify";
 import { TRPCError } from "@trpc/server";
+import {
+  HttpNetworkError,
+  HttpNotConfiguredError,
+  HttpStatusError,
+  HttpTimeoutError,
+} from "@my-project/trpc";
 import type { DBSessionStore } from "@/clients/db-session-store/index.js";
 import {
   createMockedDBSessionStore,
@@ -41,6 +47,9 @@ const stubCaller = vi.hoisted(() => ({
   k8s: {
     get: vi.fn(),
   },
+  sonarqube: {
+    getProject: vi.fn(),
+  },
 }));
 
 vi.mock("@my-project/trpc", async (importActual) => {
@@ -53,6 +62,16 @@ vi.mock("@my-project/trpc", async (importActual) => {
     createCaller: vi.fn().mockReturnValue(stubCaller),
   };
 });
+
+// Drops queued implementations (mockResolvedValue, mockRejectedValue) so a
+// stub configured in one describe block cannot answer a later test.
+function resetStubCaller(): void {
+  for (const group of Object.values(stubCaller)) {
+    for (const fn of Object.values(group)) {
+      fn.mockReset();
+    }
+  }
+}
 
 // Import AFTER mocks are declared so Vitest resolves the mocked module.
 import { registerOpenApi } from "./openapi.js";
@@ -132,6 +151,7 @@ describe("GET /rest/v1/sca/list", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    resetStubCaller();
     app = buildFastify();
     await app.ready();
   });
@@ -175,6 +195,7 @@ describe("GET /rest/v1/sca/get", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    resetStubCaller();
     app = buildFastify();
     await app.ready();
   });
@@ -225,12 +246,11 @@ describe("GET /rest/v1/sca/get", () => {
   });
 
   it("returns 503 when Dep-Track is not configured", async () => {
-    stubCaller.k8s.get.mockResolvedValue({ spec: { defaultBranch: "main" } });
     stubCaller.dependencyTrack.getProjectByNameAndVersion.mockRejectedValue(
       new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "DEPENDENCY_TRACK_URL environment variable is not configured",
-        cause: { kind: "sca_not_configured", missing: "DEPENDENCY_TRACK_URL" },
+        cause: new HttpNotConfiguredError("Dependency-Track"),
       })
     );
 
@@ -240,8 +260,12 @@ describe("GET /rest/v1/sca/get", () => {
     });
 
     expect(res.statusCode).toBe(503);
-    const body = res.json<{ error: { code: string } }>();
-    expect(body.error.code).toBe("SERVICE_UNAVAILABLE");
+    expect(res.json()).toEqual({
+      error: {
+        code: "SERVICE_UNAVAILABLE",
+        message: "Dependency-Track integration is not configured",
+      },
+    });
   });
 
   it("returns 404 when codebase CR does not exist", async () => {
@@ -260,11 +284,187 @@ describe("GET /rest/v1/sca/get", () => {
   });
 });
 
+// Planted in every upstream-derived field of the stubbed errors. Must never
+// appear in a response body.
+const SENTINEL = "SENTINEL-LEAK";
+
+/** Mirrors tRPC wrapping a thrown non-TRPCError inside a procedure. */
+function wrappedByTrpc(cause: unknown): TRPCError {
+  return new TRPCError({
+    code: "INTERNAL_SERVER_ERROR",
+    message: SENTINEL,
+    cause,
+  });
+}
+
+describe("GET /rest/v1/sca/get — upstream failures", () => {
+  let app: FastifyInstance;
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    resetStubCaller();
+    app = buildFastify();
+    await app.ready();
+  });
+
+  afterEach(async () => {
+    await app.close();
+  });
+
+  async function getWithFailure(error: unknown) {
+    stubCaller.dependencyTrack.getProjectByNameAndVersion.mockRejectedValue(
+      error
+    );
+    return app.inject({
+      method: "GET",
+      url: "/rest/v1/sca/get?codebase=my-service&branch=main",
+    });
+  }
+
+  it.each([401, 403, 500])(
+    "returns 502 BAD_GATEWAY on an upstream %i",
+    async (status) => {
+      const res = await getWithFailure(
+        wrappedByTrpc(
+          new HttpStatusError({
+            service: "Dependency-Track",
+            url: `https://${SENTINEL}/api/v1/project/lookup`,
+            status,
+            statusText: SENTINEL,
+            body: `{"detail":"${SENTINEL}"}`,
+          })
+        )
+      );
+
+      expect(res.statusCode).toBe(502);
+      expect(res.json()).toEqual({
+        error: { code: "BAD_GATEWAY", message: "Bad Gateway" },
+      });
+      expect(res.body).not.toContain(SENTINEL);
+    }
+  );
+
+  it("returns 503 SERVICE_UNAVAILABLE when Dep-Track is unreachable", async () => {
+    const res = await getWithFailure(
+      wrappedByTrpc(
+        new HttpNetworkError("Dependency-Track", {
+          cause: new TypeError(`fetch failed ${SENTINEL}`),
+        })
+      )
+    );
+
+    expect(res.statusCode).toBe(503);
+    expect(res.json()).toEqual({
+      error: { code: "SERVICE_UNAVAILABLE", message: "Service Unavailable" },
+    });
+    expect(res.body).not.toContain(SENTINEL);
+  });
+
+  it("returns 504 GATEWAY_TIMEOUT when Dep-Track times out", async () => {
+    const res = await getWithFailure(
+      wrappedByTrpc(new HttpTimeoutError("Dependency-Track", 30_000, true))
+    );
+
+    expect(res.statusCode).toBe(504);
+    expect(res.json()).toEqual({
+      error: { code: "GATEWAY_TIMEOUT", message: "Gateway Timeout" },
+    });
+    expect(res.body).not.toContain(SENTINEL);
+  });
+
+  it("keeps 500 for a Portal defect wrapped by tRPC", async () => {
+    const res = await getWithFailure(wrappedByTrpc(new Error(SENTINEL)));
+
+    expect(res.statusCode).toBe(500);
+    expect(res.json()).toEqual({
+      error: {
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Internal Server Error",
+      },
+    });
+    expect(res.body).not.toContain(SENTINEL);
+  });
+
+  it("answers the static 500 envelope for an error that escapes tRPC entirely", async () => {
+    const res = await getWithFailure(new Error(SENTINEL));
+
+    expect(res.statusCode).toBe(500);
+    expect(res.json()).toEqual({
+      error: {
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Internal Server Error",
+      },
+    });
+    expect(res.body).not.toContain(SENTINEL);
+  });
+});
+
+describe("GET /rest/v1/sonar/get — upstream failures", () => {
+  let app: FastifyInstance;
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    resetStubCaller();
+    app = buildFastify();
+    await app.ready();
+  });
+
+  afterEach(async () => {
+    await app.close();
+  });
+
+  it("returns 503 when SonarQube is not configured", async () => {
+    stubCaller.sonarqube.getProject.mockRejectedValue(
+      new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "SONAR_HOST_URL environment variable is not configured",
+        cause: new HttpNotConfiguredError("SonarQube"),
+      })
+    );
+
+    const res = await app.inject({
+      method: "GET",
+      url: "/rest/v1/sonar/get?projectKey=my-service",
+    });
+
+    expect(res.statusCode).toBe(503);
+    expect(res.json()).toEqual({
+      error: {
+        code: "SERVICE_UNAVAILABLE",
+        message: "SonarQube integration is not configured",
+      },
+    });
+  });
+
+  it("returns 502 when SonarQube answers with an error", async () => {
+    stubCaller.sonarqube.getProject.mockRejectedValue(
+      wrappedByTrpc(
+        new HttpStatusError({
+          service: "SonarQube",
+          url: `https://${SENTINEL}/api/components/show`,
+          status: 500,
+          statusText: SENTINEL,
+          body: SENTINEL,
+        })
+      )
+    );
+
+    const res = await app.inject({
+      method: "GET",
+      url: "/rest/v1/sonar/get?projectKey=my-service",
+    });
+
+    expect(res.statusCode).toBe(502);
+    expect(res.body).not.toContain(SENTINEL);
+  });
+});
+
 describe("GET /rest/v1/sca/components", () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    resetStubCaller();
     app = buildFastify();
     await app.ready();
   });
@@ -535,6 +735,7 @@ describe("GET /rest/v1/sca/components — request abort cancels severity loop", 
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    resetStubCaller();
     capturedRaw = null;
 
     app = Fastify({ logger: false });
@@ -625,6 +826,7 @@ describe("GET /rest/v1/sca/findings", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    resetStubCaller();
     app = buildFastify();
     await app.ready();
     stubCaller.k8s.get.mockResolvedValue({ spec: { defaultBranch: "main" } });

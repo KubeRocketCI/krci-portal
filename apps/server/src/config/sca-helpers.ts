@@ -231,23 +231,6 @@ export function paginate<T>(
 }
 
 /**
- * Matches the "Dep-Track env var X is not configured" TRPCError emitted by
- * `createDependencyTrackClient()`. Used by the REST handlers to translate that
- * specific INTERNAL_SERVER_ERROR into HTTP 503 Service Unavailable.
- *
- * Detection strategy: check the typed `cause.kind` discriminator attached to
- * the error at throw-site. The regex fallback is intentionally removed — it was
- * fragile and tied to message text. Any older callers that relied on the regex
- * now use the same structured cause path since both throw-sites were updated.
- */
-export function isScaNotConfiguredError(error: unknown): boolean {
-  if (!(error instanceof TRPCError)) return false;
-  if (error.code !== "INTERNAL_SERVER_ERROR") return false;
-  const cause = error.cause as Record<string, unknown> | null | undefined;
-  return cause?.kind === "sca_not_configured";
-}
-
-/**
  * The shape of a single upstream page response for components. Generic so this
  * module stays free of any Fastify / caller dependency — the caller injects the
  * concrete upstream function via `fetchPage`.
@@ -263,7 +246,7 @@ export interface ComponentFetchPage<T> {
  *   a) the collected length reaches `totalCount` reported by upstream, or
  *   b) an upstream page returns an empty batch (upstream has stopped yielding), or
  *   c) `maxPages` iterations are exhausted (safety cap), or
- *   d) the optional `signal` fires (client disconnect / Fastify requestTimeout).
+ *   d) the optional `signal` fires (client disconnect).
  *
  * Returns `{ items, truncated }` where `truncated` is `true` iff the loop
  * exited via the safety cap while more data was still reported upstream.

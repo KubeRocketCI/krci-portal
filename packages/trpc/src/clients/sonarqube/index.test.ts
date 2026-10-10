@@ -19,6 +19,17 @@ describe("createSonarQubeClient", () => {
     expect(() => createSonarQubeClient()).toThrow("SONAR_HOST_URL");
   });
 
+  it("attaches an HttpNotConfiguredError cause when SONAR_HOST_URL is missing", async () => {
+    delete process.env.SONAR_HOST_URL;
+    const { createSonarQubeClient } = await import("./index.js");
+
+    expect(() => createSonarQubeClient()).toThrow(
+      expect.objectContaining({
+        cause: expect.objectContaining({ name: "HttpNotConfiguredError", service: "SonarQube" }),
+      })
+    );
+  });
+
   it("should throw when SONAR_TOKEN is not set", async () => {
     process.env.SONAR_HOST_URL = "https://sonar.example.com";
     delete process.env.SONAR_TOKEN;

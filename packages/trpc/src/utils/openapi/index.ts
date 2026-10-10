@@ -22,14 +22,19 @@ const ERROR_SCHEMA_PREFIX = "error.";
 
 /**
  * Fallback `error.message` when an HTTP status has no canonical phrase.
- * Imported by `handleTRPCError` so the wire payload and the OpenAPI example
- * never drift.
+ * Shared with `restErrorResponse` (apps/server/src/config/rest-errors.ts).
  */
 export const UNKNOWN_ERROR_PHRASE = "Unknown error";
 
+/** Envelope `message` for a status. Node has no phrase for 499. */
+export function httpStatusPhrase(status: number): string {
+  if (status === 499) return "Client Closed Request";
+  return STATUS_CODES[status] ?? UNKNOWN_ERROR_PHRASE;
+}
+
 const ENVELOPE_DESCRIPTION =
-  "REST error envelope emitted by handleTRPCError. `message` is the static HTTP " +
-  "status phrase; `reason` (when present) is a stable machine-readable disambiguator " +
+  "REST error envelope emitted by sendRestError. `message` is static per status " +
+  "(per status and integration for 503 not configured); `reason` (when present) is a stable machine-readable disambiguator " +
   "that consumers should key off rather than parsing the human message.";
 
 const REASON_PROPERTY_SCHEMA = {
@@ -39,7 +44,7 @@ const REASON_PROPERTY_SCHEMA = {
 
 /**
  * Rewrites every `error.<CODE>` schema in an OpenAPI document so it describes
- * the REST envelope that `handleTRPCError` (apps/server/src/config/openapi.ts)
+ * the REST envelope that `sendRestError` (apps/server/src/config/rest-errors.ts)
  * actually emits:
  *
  *   { error: { code, reason?, message } }
@@ -62,12 +67,12 @@ export function rewriteErrorEnvelopeSchemas(doc: OpenAPIObject): void {
     if (!name.startsWith(ERROR_SCHEMA_PREFIX)) continue;
 
     const trpcCode = name.slice(ERROR_SCHEMA_PREFIX.length);
-    // Derive status/phrase exactly as handleTRPCError does
-    // (apps/server/src/config/openapi.ts) so example.message matches the wire.
+    // Derive status/phrase exactly as restErrorResponse does
+    // (apps/server/src/config/rest-errors.ts) so example.message matches the wire.
     // The cast is safe at runtime: getHTTPStatusCodeFromError falls back to 500
     // for any code not in TRPC_ERROR_CODES_BY_KEY.
     const httpStatus = getHTTPStatusCodeFromError(new TRPCError({ code: trpcCode as TRPCError["code"] }));
-    const phrase = STATUS_CODES[httpStatus] ?? UNKNOWN_ERROR_PHRASE;
+    const phrase = httpStatusPhrase(httpStatus);
 
     schemas[name] = {
       type: "object",
@@ -87,7 +92,7 @@ export function rewriteErrorEnvelopeSchemas(doc: OpenAPIObject): void {
             reason: REASON_PROPERTY_SCHEMA,
             message: {
               type: "string",
-              description: "Static HTTP status phrase",
+              description: "Static per status; per status and integration for 503 not configured",
               example: phrase,
             },
           },
