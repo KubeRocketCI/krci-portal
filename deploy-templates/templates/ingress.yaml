@@ -38,11 +38,9 @@ spec:
   {{- end }}
   rules:
     {{- range .Values.ingress.hosts }}
-    # if .host = edpDefault then we need to use
-    # {{ $fullName }}-{{ $.Release.Namespace }}.{{ $.Values.ingress.dnsWildcard }}
-    # otherwise we need to use {{ .host }}
+    {{- /* 'edpDefault' is a sentinel for the default host; any other value is used as-is */ -}}
     {{- if eq .host "edpDefault" }}
-    - host: {{ $fullName }}-{{ $.Release.Namespace }}.{{ $.Values.ingress.dnsWildcard }}
+    - host: {{ include "krci-portal.defaultHost" (dict "root" $) }}
     {{- else }}
     - host: {{ .host | quote }}
     {{- end }}
