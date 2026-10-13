@@ -4,7 +4,6 @@ HTTPRoute" error. */ -}}
 {{- if .Values.httproute.enabled -}}
 {{- $fullName := include "krci-portal.fullname" . -}}
 {{- $svcPort := .Values.service.port -}}
-{{- $dnsWildcard := coalesce .Values.httproute.dnsWildcard .Values.ingress.dnsWildcard "" -}}
 {{- if not .Values.httproute.parentRefs -}}
 {{- fail "httproute.parentRefs must contain at least one Gateway reference" -}}
 {{- end -}}
@@ -24,14 +23,9 @@ spec:
   {{- if .Values.httproute.hostnames }}
   hostnames:
     {{- range .Values.httproute.hostnames }}
-    {{- /* 'edpDefault' is a sentinel: renders <fullname>-<namespace>.<dnsWildcard> — the
-    same host the Ingress template renders for its 'edpDefault', so the HTTPRoute takes
-    over exactly the host the Ingress serves; otherwise the literal hostname is used as-is */ -}}
+    {{- /* 'edpDefault' is a sentinel for the default host; any other value is used as-is */ -}}
     {{- if eq . "edpDefault" }}
-    {{- if not $dnsWildcard }}
-    {{- fail "httproute.dnsWildcard (or ingress.dnsWildcard) must be set when using the 'edpDefault' hostname" }}
-    {{- end }}
-    - {{ $fullName }}-{{ $.Release.Namespace }}.{{ $dnsWildcard }}
+    - {{ include "krci-portal.defaultHost" (dict "root" $ "wildcard" $.Values.httproute.dnsWildcard) }}
     {{- else }}
     - {{ . | quote }}
     {{- end }}

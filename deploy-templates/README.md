@@ -56,9 +56,10 @@ A Helm chart for KubeRocketCI Portal
 | eso.vault.role | string | `"krci-portal"` | Vault role for the Kubernetes authentication method. |
 | eso.vault.server | string | `"http://vault.vault:8200"` | Vault server URL. |
 | fullnameOverride | string | `"krci-portal"` | Override the full name of the chart |
+| global.dnsWildCard | string | `""` | a cluster DNS wildcard name |
 | httproute | object | `{"annotations":{},"dnsWildcard":"","enabled":false,"hostnames":["edpDefault"],"matches":[{"path":{"type":"PathPrefix","value":"/"}}],"parentRefs":[{"name":"main-gateway","namespace":"envoy-gateway-system"}]}` | HTTPRoute (Gateway API / Envoy Gateway) configuration. Alternative to `ingress` for clusters migrating from nginx-ingress to Envoy Gateway. When enabled, an HTTPRoute is created and attached to the referenced Gateway alongside the (optional) nginx Ingress, which stays as the instant rollback path. Disabled by default (enable per environment via values). Enable only on clusters that serve the Gateway API — if the CRDs are absent the resource fails at apply time with a clear "no matches for kind HTTPRoute" error. |
 | httproute.annotations | object | `{}` | Annotations to add to the HTTPRoute |
-| httproute.dnsWildcard | string | `""` | Cluster-wide DNS wildcard domain (e.g. `apps.cluster.example.com`). Used to build the default hostname as `<fullname>-<namespace>.<dnsWildcard>` when `hostnames` contains `edpDefault`. Required when using the `edpDefault` hostname sentinel. |
+| httproute.dnsWildcard | string | `""` | Cluster-wide DNS wildcard domain (e.g. `apps.cluster.example.com`). Used to build the default hostname as `<fullname>-<namespace>.<dnsWildcard>` when `hostnames` contains `edpDefault`. Falls back to `ingress.dnsWildcard`, then to `global.dnsWildCard`, when empty. If all three are empty, a `hostnames` entry `edpDefault` fails the render. |
 | httproute.enabled | bool | `false` | Enable HTTPRoute (Gateway API) resource. Enable only on clusters that serve the Gateway API (`gateway.networking.k8s.io`); the nginx Ingress above stays as the rollback path. |
 | httproute.hostnames | list | `["edpDefault"]` | Hostnames for the route. 'edpDefault' renders `<fullname>-<namespace>.<dnsWildcard>` — the same host the Ingress template renders, so the route takes over exactly the Ingress host. |
 | httproute.matches | list | `[{"path":{"type":"PathPrefix","value":"/"}}]` | Path matches for the route rule |
@@ -71,7 +72,7 @@ A Helm chart for KubeRocketCI Portal
 | ingress | object | `{"annotations":{},"className":"","dnsWildcard":"","enabled":false,"hosts":[{"host":"edpDefault","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}],"tls":[]}` | Ingress configuration |
 | ingress.annotations | object | `{}` | Ingress annotations |
 | ingress.className | string | `""` | Ingress class name |
-| ingress.dnsWildcard | string | `""` | DNS wildcard for the cluster |
+| ingress.dnsWildcard | string | `""` | DNS wildcard domain. Used to build the default host as `<fullname>-<namespace>.<dnsWildcard>` when `hosts` contains `edpDefault`. Falls back to `global.dnsWildCard` when empty. If both are empty, a `hosts` entry `edpDefault` fails the render. |
 | ingress.enabled | bool | `false` | Enable ingress |
 | ingress.hosts | list | `[{"host":"edpDefault","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Ingress hosts configuration |
 | ingress.tls | list | `[]` | TLS configuration |

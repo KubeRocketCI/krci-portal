@@ -2,6 +2,10 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+global:
+  # -- a cluster DNS wildcard name
+  dnsWildCard: ""
+
 # -- Number of replicas for the deployment
 replicaCount: 1
 
@@ -119,7 +123,7 @@ service:
 ingress:
   # -- Enable ingress
   enabled: false
-  # -- DNS wildcard for the cluster
+  # -- DNS wildcard domain. Used to build the default host as `<fullname>-<namespace>.<dnsWildcard>` when `hosts` contains `edpDefault`. Falls back to `global.dnsWildCard` when empty. If both are empty, a `hosts` entry `edpDefault` fails the render.
   dnsWildcard: ""
   # -- Ingress class name
   className: ""
@@ -129,7 +133,7 @@ ingress:
     # kubernetes.io/tls-acme: "true"
   # -- Ingress hosts configuration
   hosts:
-    # If need to use specific host, define host value below. By default when set 'edpDefault' FQDN: <CODEBASE_NAME>-<CODEBASE_NAMESPACE>.<CLUSTER_DNS_WILDCARD>
+    # To use a specific host, set it below. 'edpDefault' renders the default host described at `dnsWildcard` above.
     - host: edpDefault
       paths:
         - path: /
@@ -150,7 +154,7 @@ ingress:
 httproute:
   # -- Enable HTTPRoute (Gateway API) resource. Enable only on clusters that serve the Gateway API (`gateway.networking.k8s.io`); the nginx Ingress above stays as the rollback path.
   enabled: false
-  # -- Cluster-wide DNS wildcard domain (e.g. `apps.cluster.example.com`). Used to build the default hostname as `<fullname>-<namespace>.<dnsWildcard>` when `hostnames` contains `edpDefault`. Required when using the `edpDefault` hostname sentinel.
+  # -- Cluster-wide DNS wildcard domain (e.g. `apps.cluster.example.com`). Used to build the default hostname as `<fullname>-<namespace>.<dnsWildcard>` when `hostnames` contains `edpDefault`. Falls back to `ingress.dnsWildcard`, then to `global.dnsWildCard`, when empty. If all three are empty, a `hostnames` entry `edpDefault` fails the render.
   dnsWildcard: ""
   # -- Annotations to add to the HTTPRoute
   annotations: {}
