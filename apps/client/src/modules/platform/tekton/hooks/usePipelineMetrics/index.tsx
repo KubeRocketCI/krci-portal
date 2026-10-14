@@ -18,6 +18,7 @@ import {
   TektonResultsPipelineType,
   DEFAULT_SUMMARY_METRICS,
   GroupBy,
+  isSafeCELStringContent,
 } from "@my-project/shared";
 import {
   buildTimeRangeFilter,
@@ -98,11 +99,12 @@ export function usePipelineMetrics(namespace: string, options: UsePipelineMetric
   } = options;
 
   // Build filter expression
+  const codebaseIsSafe = !codebase || isSafeCELStringContent(codebase);
   const filter = combineFilters(
     buildPipelineRunTypeFilter(),
     buildTimeRangeFilter(timeRange),
     pipelineType ? buildPipelineTypeFilter(pipelineType) : undefined,
-    codebase ? buildCodebaseFilter(codebase) : undefined
+    codebase && codebaseIsSafe ? buildCodebaseFilter(codebase) : undefined
   );
 
   return useQuery<TektonSummaryResponse, Error, NormalizedPipelineMetrics>({
@@ -114,7 +116,7 @@ export function usePipelineMetrics(namespace: string, options: UsePipelineMetric
         groupBy,
         filter,
       }),
-    enabled: enabled && Boolean(namespace),
+    enabled: enabled && Boolean(namespace) && codebaseIsSafe,
     staleTime: DEFAULT_STALE_TIME,
     refetchInterval,
     select: (data): NormalizedPipelineMetrics => {

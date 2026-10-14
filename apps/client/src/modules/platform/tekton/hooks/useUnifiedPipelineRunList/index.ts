@@ -1,6 +1,12 @@
 import { usePipelineRunWatchList } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { useClusterStore } from "@/k8s/store";
-import { PipelineRun, TektonResult, normalizeResultToPipelineRun, pipelineRunLabels } from "@my-project/shared";
+import {
+  PipelineRun,
+  TektonResult,
+  isSafeCELStringContent,
+  normalizeResultToPipelineRun,
+  pipelineRunLabels,
+} from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
 import {
   buildAnnotationsFilter,
@@ -125,6 +131,11 @@ export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOpt
 
   const statusFilter = React.useMemo(() => resolvePipelineRunStatusFilter(status ?? "all"), [status]);
 
+  // Free-text search is the only user-typed CEL input. An unsafe term disables
+  // the history query entirely rather than dropping the clause, which would
+  // widen results to every run.
+  const searchTermIsSafe = isSafeCELStringContent(searchTerm?.trim() ?? "");
+
   // Derive CEL filter from all active filter values for the Tekton Results history query.
   // Changing any filter resets pagination (queryKey changes → page 1 of filtered results).
   const celFilter = React.useMemo(() => {
@@ -137,7 +148,10 @@ export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOpt
   }, [labels, searchTerm, statusFilter, pipelineType, codebases]);
 
   const historyEnabled =
-    enabled && statusFilter.historyEnabled && (!namespaces?.length || namespaces.includes(namespace));
+    enabled &&
+    searchTermIsSafe &&
+    statusFilter.historyEnabled &&
+    (!namespaces?.length || namespaces.includes(namespace));
 
   // Key includes `historyEnabled`: filter states with and without history can share a CEL filter.
   const historyQuery = useInfiniteQuery<HistoryPage, Error>({
