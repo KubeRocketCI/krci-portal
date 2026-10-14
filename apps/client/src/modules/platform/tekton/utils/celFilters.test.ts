@@ -1,6 +1,5 @@
 import { describe, expect, test } from "vitest";
 import {
-  escapeCELString,
   buildPipelineRunNameFilter,
   buildAnnotationsFilter,
   buildNameSearchFilter,
@@ -8,35 +7,6 @@ import {
   buildPipelineTypeFilter,
   buildCodebaseFilter,
 } from "./celFilters";
-
-describe("escapeCELString", () => {
-  test("returns valid K8s names unchanged", () => {
-    expect(escapeCELString("my-pipeline-dev")).toBe("my-pipeline-dev");
-    expect(escapeCELString("pipeline123")).toBe("pipeline123");
-    expect(escapeCELString("my.pipeline")).toBe("my.pipeline");
-  });
-
-  test("escapes single quotes", () => {
-    expect(escapeCELString("name'injection")).toBe("name\\'injection");
-  });
-
-  test("escapes backslashes", () => {
-    expect(escapeCELString("name\\value")).toBe("name\\\\value");
-  });
-
-  test("escapes backslash before single quote", () => {
-    expect(escapeCELString("a\\'b")).toBe("a\\\\\\'b");
-  });
-
-  test("handles empty string", () => {
-    expect(escapeCELString("")).toBe("");
-  });
-
-  test("neutralizes CEL injection attempt", () => {
-    const malicious = "x' || true || '";
-    expect(escapeCELString(malicious)).toBe("x\\' || true || \\'");
-  });
-});
 
 describe("buildPipelineRunNameFilter", () => {
   test("builds CEL filter for PipelineRun name", () => {
@@ -67,10 +37,8 @@ describe("buildPipelineRunNameFilter", () => {
     expect(result).toBe("data.metadata.name == '' && data_type == 'tekton.dev/v1.PipelineRun'");
   });
 
-  test("escapes names with single quotes", () => {
-    const result = buildPipelineRunNameFilter("name'with-quote");
-
-    expect(result).toBe("data.metadata.name == 'name\\'with-quote' && data_type == 'tekton.dev/v1.PipelineRun'");
+  test("throws for names containing a single quote", () => {
+    expect(() => buildPipelineRunNameFilter("name'with-quote")).toThrow();
   });
 });
 
@@ -98,20 +66,20 @@ describe("buildAnnotationsFilter", () => {
     );
   });
 
-  test("escapes single quotes in annotation values", () => {
-    const result = buildAnnotationsFilter({
-      "app.edp.epam.com/codebase": "name'with-quote",
-    });
-
-    expect(result).toBe(`annotations["app.edp.epam.com/codebase"] == 'name\\'with-quote'`);
+  test("throws when an annotation value contains a single quote", () => {
+    expect(() =>
+      buildAnnotationsFilter({
+        "app.edp.epam.com/codebase": "name'with-quote",
+      })
+    ).toThrow();
   });
 
-  test("escapes backslashes in annotation values", () => {
-    const result = buildAnnotationsFilter({
-      "app.edp.epam.com/codebase": "name\\value",
-    });
-
-    expect(result).toBe(`annotations["app.edp.epam.com/codebase"] == 'name\\\\value'`);
+  test("throws when an annotation value contains a backslash", () => {
+    expect(() =>
+      buildAnnotationsFilter({
+        "app.edp.epam.com/codebase": "name\\value",
+      })
+    ).toThrow();
   });
 
   test("handles typical K8s label selectors", () => {
@@ -147,16 +115,16 @@ describe("buildNameSearchFilter", () => {
     expect(result).toBe(`annotations["object.metadata.name"].contains('deploy')`);
   });
 
-  test("escapes single quotes in search term", () => {
-    const result = buildNameSearchFilter("name'injection");
-
-    expect(result).toBe(`annotations["object.metadata.name"].contains('name\\'injection')`);
+  test("returns undefined for a search term with a single quote", () => {
+    expect(buildNameSearchFilter("name'injection")).toBeUndefined();
   });
 
-  test("escapes backslashes in search term", () => {
-    const result = buildNameSearchFilter("name\\value");
+  test("returns undefined for a search term with a backslash", () => {
+    expect(buildNameSearchFilter("name\\value")).toBeUndefined();
+  });
 
-    expect(result).toBe(`annotations["object.metadata.name"].contains('name\\\\value')`);
+  test("returns undefined for a CEL injection attempt", () => {
+    expect(buildNameSearchFilter("x' || true || '")).toBeUndefined();
   });
 });
 
@@ -187,8 +155,8 @@ describe("buildPipelineTypeFilter", () => {
     expect(buildPipelineTypeFilter("review")).toBe(`annotations["app.edp.epam.com/pipelinetype"] == 'review'`);
   });
 
-  test("escapes single quotes in the value (defense in depth)", () => {
-    expect(buildPipelineTypeFilter("name'inj")).toBe(`annotations["app.edp.epam.com/pipelinetype"] == 'name\\'inj'`);
+  test("throws when the value contains a single quote", () => {
+    expect(() => buildPipelineTypeFilter("name'inj")).toThrow();
   });
 });
 
@@ -225,7 +193,7 @@ describe("buildCodebaseFilter", () => {
     );
   });
 
-  test("escapes single quotes in codebase name", () => {
-    expect(buildCodebaseFilter(["name'inj"], "build")).toBe(`annotations["app.edp.epam.com/codebase"] == 'name\\'inj'`);
+  test("throws when a codebase name contains a single quote", () => {
+    expect(() => buildCodebaseFilter(["name'inj"], "build")).toThrow();
   });
 });

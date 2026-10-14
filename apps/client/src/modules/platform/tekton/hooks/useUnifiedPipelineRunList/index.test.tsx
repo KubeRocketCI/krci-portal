@@ -83,4 +83,22 @@ describe("useUnifiedPipelineRunList", () => {
     expect(result.current.historyQuery.hasNextPage).toBe(false);
     expect(mocks.getPipelineRunResults).toHaveBeenCalledTimes(1);
   });
+
+  it("disables history for an unsafe search term instead of widening the query", async () => {
+    const { result } = renderUnifiedList({ searchTerm: "x' || true || '" });
+
+    await waitFor(() => expect(result.current.isHistoryLoading).toBe(false));
+
+    expect(result.current.mergedPipelineRuns).toHaveLength(0);
+    expect(mocks.getPipelineRunResults).not.toHaveBeenCalled();
+  });
+
+  it("queries history and builds a name filter for a safe search term", async () => {
+    const { result } = renderUnifiedList({ searchTerm: "my-build" });
+
+    await waitFor(() => expect(result.current.mergedPipelineRuns).toHaveLength(1));
+    expect(mocks.getPipelineRunResults).toHaveBeenCalledWith(
+      expect.objectContaining({ filter: expect.stringContaining("my-build") })
+    );
+  });
 });

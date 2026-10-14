@@ -1,15 +1,4 @@
-import { pipelineType, tektonResultAnnotations } from "@my-project/shared";
-
-/**
- * Escape a value for safe interpolation into a CEL string literal.
- * Prevents CEL expression injection via crafted URL parameters.
- *
- * In practice this is a no-op for valid K8s resource names (which only
- * contain [a-z0-9-.]) but guards against malicious input from URL params.
- */
-export function escapeCELString(value: string): string {
-  return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-}
+import { isSafeCELStringContent, pipelineType, tektonResultAnnotations, toCELStringLiteral } from "@my-project/shared";
 
 const PIPELINE_RUN_DATA_TYPE = "data_type == 'tekton.dev/v1.PipelineRun'";
 
@@ -17,7 +6,7 @@ const PIPELINE_RUN_DATA_TYPE = "data_type == 'tekton.dev/v1.PipelineRun'";
 export const SINGLE_RECORD_LOOKUP_PAGE_SIZE = 6;
 
 export const buildPipelineRunNameFilter = (pipelineRunName: string): string => {
-  return `data.metadata.name == '${escapeCELString(pipelineRunName)}' && ${PIPELINE_RUN_DATA_TYPE}`;
+  return `data.metadata.name == ${toCELStringLiteral(pipelineRunName)} && ${PIPELINE_RUN_DATA_TYPE}`;
 };
 
 // ---------------------------------------------------------------------------
@@ -28,7 +17,7 @@ export const buildPipelineRunNameFilter = (pipelineRunName: string): string => {
 
 /** Build a CEL annotation equality clause: `annotations["key"] == 'value'` */
 function buildAnnotationClause(annotationKey: string, value: string): string {
-  return `annotations["${annotationKey}"] == '${escapeCELString(value)}'`;
+  return `annotations["${annotationKey}"] == ${toCELStringLiteral(value)}`;
 }
 
 /** Join CEL clauses with `||`. A single clause is returned bare; several are wrapped in parentheses. */
@@ -59,12 +48,14 @@ export function buildAnnotationsFilter(annotations: Record<string, string>): str
 
 /**
  * Build a CEL filter that matches PipelineRun names containing the search term.
- * Returns undefined when the search term is empty.
+ * Returns undefined when the search term is empty, whitespace-only, or carries
+ * content unsafe for a CEL string literal. Callers disable the history query on
+ * the unsafe case; dropping the clause alone would widen results to every run.
  */
 export function buildNameSearchFilter(searchTerm: string): string | undefined {
   const trimmed = searchTerm.trim();
-  if (!trimmed) return undefined;
-  return `annotations["${tektonResultAnnotations.objectMetadataName}"].contains('${escapeCELString(trimmed)}')`;
+  if (!trimmed || !isSafeCELStringContent(trimmed)) return undefined;
+  return `annotations["${tektonResultAnnotations.objectMetadataName}"].contains(${toCELStringLiteral(trimmed)})`;
 }
 
 // ---------------------------------------------------------------------------

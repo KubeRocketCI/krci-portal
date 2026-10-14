@@ -18,6 +18,7 @@ import {
   TIME_RANGES,
   getTimeRangeStartTimestamp,
   getUtcMidnightToday,
+  isSafeCELStringContent,
 } from "@my-project/shared";
 import {
   buildPipelineRunTypeFilter,
@@ -149,10 +150,11 @@ export function usePipelineActivityChart(namespace: string, options: UsePipeline
   const granularity = GRANULARITY_MAP[timeRange];
   const startTimestamp = getTimeRangeStartTimestamp(timeRange);
 
+  const codebaseIsSafe = !codebase || isSafeCELStringContent(codebase);
   const filter = combineFilters(
     buildPipelineRunTypeFilter(),
     buildTimeRangeFilter(timeRange),
-    codebase ? buildCodebaseFilter(codebase) : undefined
+    codebase && codebaseIsSafe ? buildCodebaseFilter(codebase) : undefined
   );
 
   return useQuery<TektonSummaryResponse, Error, ChartDataPoint[]>({
@@ -164,7 +166,7 @@ export function usePipelineActivityChart(namespace: string, options: UsePipeline
         groupBy: granularity,
         filter,
       }),
-    enabled: enabled && Boolean(namespace),
+    enabled: enabled && Boolean(namespace) && codebaseIsSafe,
     staleTime: QUERY_STALE_TIME,
     refetchInterval,
     select: (data): ChartDataPoint[] => fillGaps(data.summary || [], startTimestamp, granularity),
