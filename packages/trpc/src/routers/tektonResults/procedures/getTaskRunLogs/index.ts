@@ -1,5 +1,11 @@
 import { z } from "zod";
-import { decodeTektonRecordData, parseRecordName, DecodedLogRecord, TektonResultTaskLogs } from "@my-project/shared";
+import {
+  decodeTektonRecordData,
+  parseRecordName,
+  toCELStringLiteral,
+  DecodedLogRecord,
+  TektonResultTaskLogs,
+} from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createTektonResultsClient } from "../../../../clients/tektonResults/index.js";
 import { tektonInputSchemas } from "../../../../schemas/tektonInput.js";
@@ -39,7 +45,7 @@ export const getTaskRunLogsProcedure = protectedProcedure
     try {
       // List log records for this TaskRun
       const logsResponse = await client.listRecords(resultUid, {
-        filter: `data_type == 'results.tekton.dev/v1alpha3.Log' && data.spec.resource.name == '${taskRunName}'`,
+        filter: `data_type == 'results.tekton.dev/v1alpha3.Log' && data.spec.resource.name == ${toCELStringLiteral(taskRunName)}`,
         pageSize: 10,
       });
 

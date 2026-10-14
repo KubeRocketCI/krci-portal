@@ -1,13 +1,14 @@
 import { z } from "zod";
-import { decodeTektonRecordData, parseRecordName, DecodedPipelineRun, DecodedLogRecord } from "@my-project/shared";
+import {
+  decodeTektonRecordData,
+  parseRecordName,
+  toCELStringLiteral,
+  DecodedPipelineRun,
+  DecodedLogRecord,
+} from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createTektonResultsClient } from "../../../../clients/tektonResults/index.js";
 import { tektonInputSchemas } from "../../../../schemas/tektonInput.js";
-
-/** Escape a value for safe interpolation into a CEL string literal. */
-function escapeCELString(value: string): string {
-  return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-}
 
 // ANSI escape codes for terminal styling (supported by xterm.js)
 // Using 256-color palette with darker colors for better contrast on white backgrounds
@@ -80,7 +81,7 @@ async function processTaskRunLogs(
 
   // List log records for this TaskRun
   const logsResponse = await client.listRecords(resultUid, {
-    filter: `data_type == 'results.tekton.dev/v1alpha3.Log' && data.spec.resource.name == '${escapeCELString(taskRunName)}'`,
+    filter: `data_type == 'results.tekton.dev/v1alpha3.Log' && data.spec.resource.name == ${toCELStringLiteral(taskRunName)}`,
     pageSize: 10,
   });
 

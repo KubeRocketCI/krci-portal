@@ -74,6 +74,32 @@ describe("tektonResults.getPipelineRunLogs", () => {
     expect(result.logs).toBe("No logs available for this PipelineRun");
   });
 
+  it("isolates a childRef name carrying a quote to a per-task error and keeps it out of any filter", async () => {
+    const childRefs = [
+      { pipelineTaskName: "task-1", name: "taskrun-1" },
+      { pipelineTaskName: "evil-task", name: "evil'name" },
+    ];
+    const pipelineRunData = Buffer.from(JSON.stringify({ status: { childReferences: childRefs } })).toString("base64");
+    mockGetRecord.mockResolvedValueOnce({ data: { value: pipelineRunData } });
+    mockListRecords.mockResolvedValue({ records: [] });
+
+    const caller = createCaller(mockContext);
+    const result = await caller.tektonResults.getPipelineRunLogs({
+      namespace: "default",
+      resultUid: "a0a0a0a0-b1b1-c2c2-d3d3-e4e4e4e4e4e4",
+      recordUid: "b1b1b1b1-c2c2-d3d3-e4e4-f5f5f5f5f5f5",
+    });
+
+    expect(result.logs).toContain("evil-task");
+    expect(result.logs).toContain("cannot be rendered as a CEL string literal");
+
+    expect(mockListRecords).toHaveBeenCalledTimes(1);
+    expect(mockListRecords.mock.calls[0]?.[1]?.filter).toContain("'taskrun-1'");
+    for (const call of mockListRecords.mock.calls) {
+      expect(call?.[1]?.filter).not.toContain("evil'name");
+    }
+  });
+
   it("should throw on client error", async () => {
     mockGetRecord.mockRejectedValueOnce(new Error("Connection refused"));
 

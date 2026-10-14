@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { validateCELFilter } from "@my-project/shared";
 
 /**
  * Zod schemas for Tekton / Kubernetes input validation, shared across routers
@@ -56,23 +57,22 @@ export const tektonInputSchemas = {
    */
   k8sLabelValue: z.string().regex(/^([A-Za-z0-9]([-A-Za-z0-9_.]{0,61}[A-Za-z0-9])?)?$/, "Invalid label value"),
   /**
-   * CEL filter expression: allows alphanumeric, whitespace, and common CEL
-   * operators/punctuation. Rejects shell metacharacters, backticks, and `@`
-   * to prevent injection when the value is interpolated into filter strings.
-   *
-   * Defense-in-depth: the Tekton Results backend compiles CEL via cel-go and
-   * converts the AST to SQL, but string literals are interpolated into SQL
-   * without parameterization. This regex blocks characters that could escape
-   * the SQL string context.
+   * CEL filter sent to Tekton Results, validated by the shared `validateCELFilter`.
+   * Tekton Results feeds the filter to cel2sql unescaped, so a quote inside a
+   * string literal is a SQL-injection vector. Empty and undefined pass; length
+   * limit is `CEL_FILTER_MAX_LENGTH`.
    */
   celFilter: z
     .string()
     .optional()
-    .refine(
-      (val) => {
-        if (!val) return true;
-        return /^[a-zA-Z0-9\s_.\[\]()'",!=<>&|+\-*/%:]+$/.test(val);
-      },
-      { message: "Invalid filter: contains disallowed characters" }
-    ),
+    .superRefine((val, ctx) => {
+      if (val === undefined) return;
+      const result = validateCELFilter(val);
+      if (!result.valid) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `${result.message} (position ${result.position})`,
+        });
+      }
+    }),
 } as const;

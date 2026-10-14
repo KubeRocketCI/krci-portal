@@ -90,6 +90,35 @@ describe("tektonResults.getTaskRunLogs", () => {
     expect(result.error).toBe("Network error");
   });
 
+  it("composes the filter with a safe CEL string literal for the TaskRun name", async () => {
+    mockListRecords.mockResolvedValueOnce({ records: [] });
+
+    const caller = createCaller(mockContext);
+    await caller.tektonResults.getTaskRunLogs({
+      namespace: "test-ns",
+      resultUid: "a0a0a0a0-b1b1-c2c2-d3d3-e4e4e4e4e4e4",
+      taskRunName: "run-build-abc",
+    });
+
+    expect(mockListRecords.mock.calls[0]?.[1]?.filter).toBe(
+      "data_type == 'results.tekton.dev/v1alpha3.Log' && data.spec.resource.name == 'run-build-abc'"
+    );
+  });
+
+  it("rejects a TaskRun name carrying a quote before any request", async () => {
+    const caller = createCaller(mockContext);
+
+    await expect(
+      caller.tektonResults.getTaskRunLogs({
+        namespace: "test-ns",
+        resultUid: "a0a0a0a0-b1b1-c2c2-d3d3-e4e4e4e4e4e4",
+        taskRunName: "evil'name",
+      })
+    ).rejects.toThrow();
+
+    expect(mockListRecords).not.toHaveBeenCalled();
+  });
+
   describe("stepName filtering", () => {
     const multiStepLogs = [
       "[prepare] 2026/03/08 12:15:48 Entrypoint initialization",

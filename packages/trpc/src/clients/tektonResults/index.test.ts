@@ -1,5 +1,18 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { TRPCError } from "@trpc/server";
 import { TektonResultsClient } from "./index.js";
+
+const mockJson = vi.fn();
+const mockJsonWithHeaders = vi.fn();
+const mockText = vi.fn();
+
+vi.mock("../http/index.js", async (importOriginal) => {
+  const original = await importOriginal<Record<string, unknown>>();
+  return {
+    ...original,
+    createHttpService: () => ({ json: mockJson, jsonWithHeaders: mockJsonWithHeaders, text: mockText }),
+  };
+});
 
 const originalEnv = process.env;
 
@@ -70,5 +83,52 @@ describe("TektonResultsClient", () => {
       parent: "default",
     });
     expect(client).toBeInstanceOf(TektonResultsClient);
+  });
+});
+
+describe("TektonResultsClient filter choke point", () => {
+  function newClient(): TektonResultsClient {
+    return new TektonResultsClient({ apiBaseURL: "https://tekton.example.com", parent: "default" });
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockJson.mockResolvedValue({});
+  });
+
+  it("rejects a scope-escape filter on listResults without issuing the request", async () => {
+    const client = newClient();
+
+    await expect(client.listResults({ filter: ") || summary.type == 'tekton.dev/v1.TaskRun'" })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
+    expect(mockJson).not.toHaveBeenCalled();
+  });
+
+  it("rejects a backslash-injected literal on listRecords without issuing the request", async () => {
+    const client = newClient();
+
+    await expect(client.listRecords("-", { filter: "data.name == 'a\\'b'" })).rejects.toBeInstanceOf(TRPCError);
+    expect(mockJson).not.toHaveBeenCalled();
+  });
+
+  it("rejects an unbalanced filter on getSummary without issuing the request", async () => {
+    const client = newClient();
+
+    await expect(client.getSummary({ filter: "summary.status == 1)" })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
+    expect(mockJson).not.toHaveBeenCalled();
+  });
+
+  it("forwards a valid filter to the transport", async () => {
+    const client = newClient();
+
+    await client.listResults({ filter: "summary.type == 'tekton.dev/v1.PipelineRun'" });
+
+    expect(mockJson).toHaveBeenCalledTimes(1);
+    expect(mockJson.mock.calls[0]?.[1]?.query).toMatchObject({
+      filter: "summary.type == 'tekton.dev/v1.PipelineRun'",
+    });
   });
 });
