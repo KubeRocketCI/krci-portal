@@ -76,7 +76,7 @@ export interface GitFusionClientConfig {
  * Security model:
  * - GitFusion runs in the trusted cluster; network policies restrict access to portal pods only
  * - The portal sends no auth headers; GitFusion authenticates to git providers with K8s-stored tokens
- * - A 401 here is relayed from the git provider (the stored token is invalid), not a GitFusion auth failure
+ * - A 502 here means the git provider rejected the stored token, not a GitFusion auth failure
  */
 export class GitFusionClient {
   private readonly http: HttpService;

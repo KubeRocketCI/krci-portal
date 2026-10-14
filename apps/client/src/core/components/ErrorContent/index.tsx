@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/core/components/ui/dialog";
+import { cn } from "@/core/utils/classname";
 import { SearchX, TriangleAlert } from "lucide-react";
 import React from "react";
 
@@ -23,6 +24,9 @@ export const ErrorContent = ({
   extraInfoLink?: string;
 }) => {
   const [open, setOpen] = React.useState<boolean>(false);
+  const requestId = error?.data?.requestId;
+  const httpStatus = error?.data?.httpStatus;
+  const centered = httpStatus === 403 || httpStatus === 404;
 
   const handleClose = () => {
     setOpen(false);
@@ -33,7 +37,7 @@ export const ErrorContent = ({
   };
 
   const renderError = React.useCallback(() => {
-    switch (error?.data?.httpStatus) {
+    switch (httpStatus) {
       case 403:
         return (
           <div
@@ -64,14 +68,27 @@ export const ErrorContent = ({
             </div>
           </div>
         );
+      case 500:
+      case 502:
+        return "Something went wrong. Contact your administrator.";
+      case 408:
+      case 429:
+      case 503:
+      case 504:
+        return "The service is temporarily unavailable. Please try again later.";
       default:
         return "Oops! Something went wrong. Please try again later.";
     }
-  }, [error?.data?.httpStatus, orientation]);
+  }, [httpStatus, orientation]);
 
   return (
     <div className={outlined ? "border-border w-full border-t border-b p-3" : "w-full"}>
       <div>{renderError()}</div>
+      {requestId && (
+        <p className={cn("text-muted-foreground mt-1 text-sm break-all", centered && "text-center")}>
+          Request ID: {requestId}
+        </p>
+      )}
       <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
         <DialogContent>
           <DialogHeader>
