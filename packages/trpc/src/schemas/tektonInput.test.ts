@@ -46,14 +46,23 @@ describe("tektonInputSchemas.celFilter", () => {
     expect(tektonInputSchemas.celFilter.parse(undefined)).toBeUndefined();
   });
 
+  it("accepts an empty string", () => {
+    expect(tektonInputSchemas.celFilter.parse("")).toBe("");
+  });
+
   it("accepts a typical CEL expression", () => {
     const expr = "data_type == 'results.tekton.dev/v1alpha3.Log' && data.spec.resource.name == 'foo'";
     expect(tektonInputSchemas.celFilter.parse(expr)).toBe(expr);
   });
 
-  it("rejects shell metacharacters that could escape the SQL string context", () => {
-    expect(() => tektonInputSchemas.celFilter.parse("foo`bar`")).toThrow();
-    expect(() => tektonInputSchemas.celFilter.parse("foo@bar")).toThrow();
-    expect(() => tektonInputSchemas.celFilter.parse("foo;DROP TABLE x")).toThrow();
+  it("rejects a quote escaped into a string literal, reporting the violation and position", () => {
+    const result = tektonInputSchemas.celFilter.safeParse("data.metadata.name == 'name\\'injection'");
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const message = result.error.issues[0].message;
+      expect(message).toContain("string literals must not contain");
+      expect(message).toMatch(/\(position \d+\)$/);
+    }
   });
 });

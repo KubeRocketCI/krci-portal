@@ -107,7 +107,20 @@ describe("tektonResults.getPipelineRunResults", () => {
     await expect(
       caller.tektonResults.getPipelineRunResults({
         namespace: "test-ns",
-        filter: "annotations['foo@bar'] == 'baz'",
+        filter: "annotations['foo'] == 'ba\\'z'",
+      })
+    ).rejects.toThrow();
+
+    expect(mockListResults).not.toHaveBeenCalled();
+  });
+
+  it("should reject a scope-escape filter and never call listResults", async () => {
+    const caller = createCaller(mockContext);
+
+    await expect(
+      caller.tektonResults.getPipelineRunResults({
+        namespace: "test-ns",
+        filter: ") || summary.type == 'tekton.dev/v1.TaskRun'",
       })
     ).rejects.toThrow();
 

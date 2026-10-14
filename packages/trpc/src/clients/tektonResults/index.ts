@@ -6,7 +6,9 @@ import {
   TektonSummaryQueryParams,
   TektonSummaryResponse,
   stripTrailingSlash,
+  validateCELFilter,
 } from "@my-project/shared";
+import { TRPCError } from "@trpc/server";
 import { createHttpService, notConfiguredError, type HttpService } from "../http/index.js";
 
 // =============================================================================
@@ -97,8 +99,25 @@ export class TektonResultsClient {
     });
   }
 
+  /**
+   * Last gate before a filter leaves for Tekton Results. Validates the final,
+   * server-composed string, so a filter assembled from non-schema input (record
+   * names, scope-guard combines) still cannot carry a delimiter into cel2sql.
+   */
+  private assertFilterSafe(filter: string | undefined): void {
+    if (filter === undefined) return;
+    const result = validateCELFilter(filter);
+    if (!result.valid) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: `Invalid Tekton Results filter: ${result.message} (position ${result.position})`,
+      });
+    }
+  }
+
   async listResults(params: TektonResultsQueryParams = {}): Promise<TektonResultsListResponse> {
     const { filter, pageSize, pageToken, orderBy } = params;
+    this.assertFilterSafe(filter);
 
     return this.http.json<TektonResultsListResponse>(`/parents/${this.parent}/results`, {
       query: { filter, page_size: pageSize, page_token: pageToken, order_by: orderBy },
@@ -110,6 +129,7 @@ export class TektonResultsClient {
     params: TektonResultsQueryParams = {}
   ): Promise<TektonRecordsListResponse> {
     const { filter, pageSize, pageToken, orderBy } = params;
+    this.assertFilterSafe(filter);
 
     return this.http.json<TektonRecordsListResponse>(`/parents/${this.parent}/results/${resultUid}/records`, {
       query: { filter, page_size: pageSize, page_token: pageToken, order_by: orderBy },
@@ -147,6 +167,7 @@ export class TektonResultsClient {
    */
   async getSummary(params: TektonSummaryQueryParams = {}): Promise<TektonSummaryResponse> {
     const { summary, groupBy, filter, orderBy } = params;
+    this.assertFilterSafe(filter);
 
     return this.http.json<TektonSummaryResponse>(`/parents/${this.parent}/results/-/records/summary`, {
       query: { summary, group_by: groupBy, filter, order_by: orderBy },
