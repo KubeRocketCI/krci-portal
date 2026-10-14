@@ -18,6 +18,9 @@ const STATUS_TO_TRPC_CODE: Record<number, TRPC_ERROR_CODE_KEY> = {
   408: "TIMEOUT",
   409: "CONFLICT",
   429: "TOO_MANY_REQUESTS",
+  502: "BAD_GATEWAY",
+  503: "SERVICE_UNAVAILABLE",
+  504: "GATEWAY_TIMEOUT",
 };
 
 /**
@@ -43,6 +46,8 @@ export interface HttpStatusErrorInit {
   status: number;
   statusText: string;
   body: string;
+  /** The `X-Request-Id` response header. */
+  requestId?: string;
 }
 
 /**
@@ -50,12 +55,14 @@ export interface HttpStatusErrorInit {
  *
  * Branch on `status`, never on `message`. The response body is kept in `body` and logged
  * server-side; it is never put in `message`, which tRPC forwards verbatim to the browser.
+ * `requestId` reaches the browser as `data.requestId`.
  */
 export class HttpStatusError extends HttpError {
   readonly url: string;
   readonly status: number;
   readonly statusText: string;
   readonly body: string;
+  readonly requestId?: string;
 
   constructor(init: HttpStatusErrorInit, options?: ErrorOptions) {
     super(init.service, `${init.service} request failed: ${init.status} ${init.statusText}`, options);
@@ -63,6 +70,7 @@ export class HttpStatusError extends HttpError {
     this.status = init.status;
     this.statusText = init.statusText;
     this.body = init.body;
+    this.requestId = init.requestId;
   }
 }
 
@@ -323,6 +331,7 @@ async function buildStatusError(service: string, url: string, response: Response
     status: response.status,
     statusText: response.statusText,
     body,
+    requestId: response.headers.get("x-request-id") || undefined,
   });
 }
 

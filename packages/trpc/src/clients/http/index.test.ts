@@ -159,6 +159,45 @@ describe("createHttpService non-2xx responses", () => {
     expect(error.body).toContain("s3cret");
   });
 
+  it("carries the X-Request-Id response header as requestId", async () => {
+    stubFetch(
+      new Response("upstream rejected the token", {
+        status: 502,
+        statusText: "Bad Gateway",
+        headers: { "X-Request-Id": "gf-pod/abc123-000042" },
+      })
+    );
+
+    const error = (await makeService()
+      .json("/things")
+      .catch((caught: unknown) => caught)) as HttpStatusError;
+
+    expect(error).toBeInstanceOf(HttpStatusError);
+    expect(error.requestId).toBe("gf-pod/abc123-000042");
+    expect(error.message).not.toContain("gf-pod/abc123-000042");
+  });
+
+  it("leaves requestId undefined without an X-Request-Id response header", async () => {
+    stubFetch(new Response("bad token", { status: 401, statusText: "Unauthorized" }));
+
+    const error = (await makeService()
+      .json("/things")
+      .catch((caught: unknown) => caught)) as HttpStatusError;
+
+    expect(error).toBeInstanceOf(HttpStatusError);
+    expect(error.requestId).toBeUndefined();
+  });
+
+  it("leaves requestId undefined for an empty X-Request-Id response header", async () => {
+    stubFetch(new Response("nope", { status: 500, headers: { "X-Request-Id": "" } }));
+
+    const error = (await makeService()
+      .json("/things")
+      .catch((caught: unknown) => caught)) as HttpStatusError;
+
+    expect(error.requestId).toBeUndefined();
+  });
+
   it("is not a TRPCError, so router catch blocks can classify it themselves", async () => {
     stubFetch(new Response("nope", { status: 500 }));
 
@@ -326,7 +365,9 @@ describe("withTRPCErrors", () => {
     [429, "TOO_MANY_REQUESTS"],
     [418, "INTERNAL_SERVER_ERROR"],
     [500, "INTERNAL_SERVER_ERROR"],
-    [503, "INTERNAL_SERVER_ERROR"],
+    [502, "BAD_GATEWAY"],
+    [503, "SERVICE_UNAVAILABLE"],
+    [504, "GATEWAY_TIMEOUT"],
   ])("maps status %i to the tRPC code %s", async (status, code) => {
     stubFetch(new Response("nope", { status }));
 
