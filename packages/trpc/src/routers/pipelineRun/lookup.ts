@@ -1,6 +1,7 @@
 import { K8sApiError, type K8sResourceConfig } from "@my-project/shared";
 import { TRPCError } from "@trpc/server";
 import { K8sClient } from "../../clients/k8s/index.js";
+import { type RestErrorReason, validationCause } from "../../utils/restErrorReason/index.js";
 import { handleK8sError } from "../k8s/utils/handleK8sError/index.js";
 
 /**
@@ -10,7 +11,7 @@ import { handleK8sError } from "../k8s/utils/handleK8sError/index.js";
  * body so clients can branch on it without parsing the verbatim message
  * (which is replaced with a static status phrase at the REST boundary).
  */
-export function k8sNotFoundCause(error: K8sApiError, reason: string) {
+export function k8sNotFoundCause(error: K8sApiError, reason: RestErrorReason) {
   return {
     source: "k8s" as const,
     reason,
@@ -27,7 +28,7 @@ export function k8sNotFoundCause(error: K8sApiError, reason: string) {
 export async function getResourceOrThrowNotFound<T>(
   fetch: () => Promise<T>,
   message: string,
-  reason: string
+  reason: RestErrorReason
 ): Promise<T> {
   try {
     return await fetch();
@@ -84,7 +85,7 @@ export async function listCompleteOrThrow<T>(
     throw new TRPCError({
       code: "INTERNAL_SERVER_ERROR",
       message: `${resourceConfig.kind} list in namespace '${namespace}' was truncated`,
-      cause: { source: "validation" as const, reason: "list_truncated" },
+      cause: validationCause("list_truncated"),
     });
   }
 

@@ -8,6 +8,7 @@ import {
   HttpNotConfiguredError,
   HttpStatusError,
   HttpTimeoutError,
+  REST_ERROR_REASONS,
 } from "@my-project/trpc";
 import { restErrorResponse, sendRestError } from "./rest-errors.js";
 
@@ -95,13 +96,23 @@ describe("restErrorResponse — upstream failures", () => {
     });
   });
 
-  it("reports the upstream error on the response for the caller to log", () => {
-    const upstream = statusError(500);
+  it("maps not-configured for an unknown service to a generic 503 and logs it", () => {
+    const error = wrapped(new HttpNotConfiguredError(SENTINEL));
 
-    expect(restErrorResponse(wrapped(upstream))?.upstream).toBe(upstream);
+    expect(restErrorResponse(error)).toEqual({
+      status: 503,
+      body: {
+        error: { code: "SERVICE_UNAVAILABLE", message: "Service Unavailable" },
+      },
+      shouldLog: true,
+    });
+  });
+
+  it("logs upstream failures but not tRPC client errors", () => {
+    expect(restErrorResponse(wrapped(statusError(500))).shouldLog).toBe(true);
     expect(
-      restErrorResponse(new TRPCError({ code: "NOT_FOUND" }))?.upstream
-    ).toBeUndefined();
+      restErrorResponse(new TRPCError({ code: "NOT_FOUND" })).shouldLog
+    ).toBe(false);
   });
 
   it.each([
@@ -117,6 +128,7 @@ describe("restErrorResponse — upstream failures", () => {
       expect(result).toEqual({
         status,
         body: { error: { code, message: STATUS_CODES[status] } },
+        shouldLog: false,
       });
     }
   );
@@ -131,6 +143,7 @@ describe("restErrorResponse — upstream failures", () => {
           message: "Client Closed Request",
         },
       },
+      shouldLog: false,
     });
   });
 
@@ -195,10 +208,11 @@ describe("restErrorResponse — tRPC errors", () => {
     expect(restErrorResponse(error)).toEqual({
       status: 401,
       body: { error: { code: "UNAUTHORIZED", message: "Unauthorized" } },
+      shouldLog: false,
     });
   });
 
-  it("passes a string cause.reason through", () => {
+  it("passes a public reason tag through", () => {
     const error = new TRPCError({
       code: "NOT_FOUND",
       message: SENTINEL,
@@ -246,6 +260,70 @@ describe("restErrorResponse — tRPC errors", () => {
           message: "Internal Server Error",
         },
       },
+      shouldLog: true,
+    });
+  });
+
+  it.each(REST_ERROR_REASONS)("keeps the public reason %s", (reason) => {
+    const error = new TRPCError({
+      code: "BAD_REQUEST",
+      message: SENTINEL,
+      cause: { source: "validation", reason },
+    });
+
+    expect(restErrorResponse(error).body).toEqual({
+      error: { code: "BAD_REQUEST", reason, message: "Bad Request" },
+    });
+  });
+
+  it.each([
+    ["a plain cause", { reason: SENTINEL }],
+    [
+      "a K8s ApiException-shaped cause",
+      {
+        kind: "Status",
+        status: "Failure",
+        message: SENTINEL,
+        reason: SENTINEL,
+        code: 404,
+        source: "k8s",
+      },
+    ],
+    [
+      "an upstream-response-shaped cause",
+      {
+        source: "k8s",
+        statusCode: 404,
+        statusText: SENTINEL,
+        responseBody: `{"reason":"${SENTINEL}"}`,
+        reason: SENTINEL,
+      },
+    ],
+    ["a K8s StatusReason", { source: "k8s", reason: "NotFound" }],
+  ])("drops a reason outside the public list from %s", (_name, cause) => {
+    for (const code of ["NOT_FOUND", "INTERNAL_SERVER_ERROR"] as const) {
+      const body = restErrorResponse(
+        new TRPCError({ code, message: SENTINEL, cause })
+      ).body;
+
+      expect(body.error).not.toHaveProperty("reason");
+      expect(JSON.stringify(body)).not.toContain(SENTINEL);
+    }
+  });
+
+  it("maps an unknown tRPC code to a static 500", () => {
+    const error = new TRPCError({ code: "NOT_FOUND", message: SENTINEL });
+    Object.defineProperty(error, "code", { value: SENTINEL });
+
+    expect(restErrorResponse(error)).toEqual({
+      status: 500,
+      body: {
+        error: {
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Internal Server Error",
+        },
+      },
+      shouldLog: true,
     });
   });
 });
@@ -262,6 +340,7 @@ describe("restErrorResponse — unmapped input", () => {
             message: "Internal Server Error",
           },
         },
+        shouldLog: true,
       });
     }
   );
@@ -273,7 +352,7 @@ describe("sendRestError", () => {
       status: vi.fn().mockReturnThis(),
       send: vi.fn().mockReturnThis(),
     };
-    const req = { log: { error: vi.fn() } };
+    const req = { log: { error: vi.fn(), warn: vi.fn() } };
     return {
       res,
       req,
@@ -336,5 +415,36 @@ describe("sendRestError", () => {
 
     expect(res.status).toHaveBeenCalledWith(503);
     expect(req.log.error).not.toHaveBeenCalled();
+  });
+
+  it("warns about an unregistered reason and leaves it out of the body", () => {
+    const { res, req, call } = stubs();
+
+    call(
+      new TRPCError({
+        code: "CONFLICT",
+        cause: { source: "validation", reason: "new_tag" },
+      })
+    );
+
+    expect(res.send).toHaveBeenCalledWith({
+      error: { code: "CONFLICT", message: "Conflict" },
+    });
+    expect(req.log.warn).toHaveBeenCalledWith(
+      { reason: "new_tag" },
+      expect.any(String)
+    );
+  });
+
+  it.each([
+    ["a public reason", { reason: "build_in_progress" }],
+    ["a non-string reason", { reason: 42 }],
+    ["no reason", { source: "k8s" }],
+  ])("does not warn for %s", (_name, cause) => {
+    const { req, call } = stubs();
+
+    call(new TRPCError({ code: "CONFLICT", cause }));
+
+    expect(req.log.warn).not.toHaveBeenCalled();
   });
 });

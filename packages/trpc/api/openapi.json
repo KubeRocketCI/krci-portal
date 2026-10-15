@@ -2089,7 +2089,7 @@
       "error.INTERNAL_SERVER_ERROR": {
         "type": "object",
         "title": "INTERNAL_SERVER_ERROR error envelope (500)",
-        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
+        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a public machine-readable tag from a fixed set that consumers should key off rather than parsing the human message.",
         "required": [
           "error"
         ],
@@ -2108,7 +2108,24 @@
               },
               "reason": {
                 "type": "string",
-                "description": "Stable machine-readable disambiguator (omitted when none applies)"
+                "description": "Public machine-readable tag from the fixed set in `x-krci-reasons` (omitted when none applies). Unlisted values are never sent.",
+                "x-krci-reasons": [
+                  "branch_not_specified",
+                  "build_in_progress",
+                  "build_pipeline_not_configured",
+                  "build_template_misconfigured",
+                  "codebase_branch_ambiguous",
+                  "codebase_branch_not_found",
+                  "codebase_branch_not_ready",
+                  "codebase_not_found",
+                  "git_server_not_found",
+                  "gitlab_ci_not_supported",
+                  "list_truncated",
+                  "malformed_trigger_template_label",
+                  "managed_param_override",
+                  "pipeline_not_found",
+                  "trigger_template_not_found"
+                ]
               },
               "message": {
                 "type": "string",
@@ -2128,7 +2145,7 @@
       "error.UNAUTHORIZED": {
         "type": "object",
         "title": "UNAUTHORIZED error envelope (401)",
-        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
+        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a public machine-readable tag from a fixed set that consumers should key off rather than parsing the human message.",
         "required": [
           "error"
         ],
@@ -2147,7 +2164,24 @@
               },
               "reason": {
                 "type": "string",
-                "description": "Stable machine-readable disambiguator (omitted when none applies)"
+                "description": "Public machine-readable tag from the fixed set in `x-krci-reasons` (omitted when none applies). Unlisted values are never sent.",
+                "x-krci-reasons": [
+                  "branch_not_specified",
+                  "build_in_progress",
+                  "build_pipeline_not_configured",
+                  "build_template_misconfigured",
+                  "codebase_branch_ambiguous",
+                  "codebase_branch_not_found",
+                  "codebase_branch_not_ready",
+                  "codebase_not_found",
+                  "git_server_not_found",
+                  "gitlab_ci_not_supported",
+                  "list_truncated",
+                  "malformed_trigger_template_label",
+                  "managed_param_override",
+                  "pipeline_not_found",
+                  "trigger_template_not_found"
+                ]
               },
               "message": {
                 "type": "string",
@@ -2167,7 +2201,7 @@
       "error.FORBIDDEN": {
         "type": "object",
         "title": "FORBIDDEN error envelope (403)",
-        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
+        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a public machine-readable tag from a fixed set that consumers should key off rather than parsing the human message.",
         "required": [
           "error"
         ],
@@ -2186,7 +2220,24 @@
               },
               "reason": {
                 "type": "string",
-                "description": "Stable machine-readable disambiguator (omitted when none applies)"
+                "description": "Public machine-readable tag from the fixed set in `x-krci-reasons` (omitted when none applies). Unlisted values are never sent.",
+                "x-krci-reasons": [
+                  "branch_not_specified",
+                  "build_in_progress",
+                  "build_pipeline_not_configured",
+                  "build_template_misconfigured",
+                  "codebase_branch_ambiguous",
+                  "codebase_branch_not_found",
+                  "codebase_branch_not_ready",
+                  "codebase_not_found",
+                  "git_server_not_found",
+                  "gitlab_ci_not_supported",
+                  "list_truncated",
+                  "malformed_trigger_template_label",
+                  "managed_param_override",
+                  "pipeline_not_found",
+                  "trigger_template_not_found"
+                ]
               },
               "message": {
                 "type": "string",
@@ -2206,7 +2257,7 @@
       "error.BAD_REQUEST": {
         "type": "object",
         "title": "BAD_REQUEST error envelope (400)",
-        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
+        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a public machine-readable tag from a fixed set that consumers should key off rather than parsing the human message.",
         "required": [
           "error"
         ],
@@ -2225,7 +2276,24 @@
               },
               "reason": {
                 "type": "string",
-                "description": "Stable machine-readable disambiguator (omitted when none applies)"
+                "description": "Public machine-readable tag from the fixed set in `x-krci-reasons` (omitted when none applies). Unlisted values are never sent.",
+                "x-krci-reasons": [
+                  "branch_not_specified",
+                  "build_in_progress",
+                  "build_pipeline_not_configured",
+                  "build_template_misconfigured",
+                  "codebase_branch_ambiguous",
+                  "codebase_branch_not_found",
+                  "codebase_branch_not_ready",
+                  "codebase_not_found",
+                  "git_server_not_found",
+                  "gitlab_ci_not_supported",
+                  "list_truncated",
+                  "malformed_trigger_template_label",
+                  "managed_param_override",
+                  "pipeline_not_found",
+                  "trigger_template_not_found"
+                ]
               },
               "message": {
                 "type": "string",
@@ -2245,7 +2313,7 @@
       "error.NOT_FOUND": {
         "type": "object",
         "title": "NOT_FOUND error envelope (404)",
-        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
+        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a public machine-readable tag from a fixed set that consumers should key off rather than parsing the human message.",
         "required": [
           "error"
         ],
@@ -2264,7 +2332,24 @@
               },
               "reason": {
                 "type": "string",
-                "description": "Stable machine-readable disambiguator (omitted when none applies)"
+                "description": "Public machine-readable tag from the fixed set in `x-krci-reasons` (omitted when none applies). Unlisted values are never sent.",
+                "x-krci-reasons": [
+                  "branch_not_specified",
+                  "build_in_progress",
+                  "build_pipeline_not_configured",
+                  "build_template_misconfigured",
+                  "codebase_branch_ambiguous",
+                  "codebase_branch_not_found",
+                  "codebase_branch_not_ready",
+                  "codebase_not_found",
+                  "git_server_not_found",
+                  "gitlab_ci_not_supported",
+                  "list_truncated",
+                  "malformed_trigger_template_label",
+                  "managed_param_override",
+                  "pipeline_not_found",
+                  "trigger_template_not_found"
+                ]
               },
               "message": {
                 "type": "string",
@@ -2892,7 +2977,7 @@
       "error.CONFLICT": {
         "type": "object",
         "title": "CONFLICT error envelope (409)",
-        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a stable machine-readable disambiguator that consumers should key off rather than parsing the human message.",
+        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a public machine-readable tag from a fixed set that consumers should key off rather than parsing the human message.",
         "required": [
           "error"
         ],
@@ -2911,7 +2996,24 @@
               },
               "reason": {
                 "type": "string",
-                "description": "Stable machine-readable disambiguator (omitted when none applies)"
+                "description": "Public machine-readable tag from the fixed set in `x-krci-reasons` (omitted when none applies). Unlisted values are never sent.",
+                "x-krci-reasons": [
+                  "branch_not_specified",
+                  "build_in_progress",
+                  "build_pipeline_not_configured",
+                  "build_template_misconfigured",
+                  "codebase_branch_ambiguous",
+                  "codebase_branch_not_found",
+                  "codebase_branch_not_ready",
+                  "codebase_not_found",
+                  "git_server_not_found",
+                  "gitlab_ci_not_supported",
+                  "list_truncated",
+                  "malformed_trigger_template_label",
+                  "managed_param_override",
+                  "pipeline_not_found",
+                  "trigger_template_not_found"
+                ]
               },
               "message": {
                 "type": "string",

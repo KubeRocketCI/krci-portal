@@ -17,6 +17,7 @@ import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { tektonInputSchemas } from "../../../../schemas/tektonInput.js";
 import { getTriggerTemplateLabel, prepareStartDraft, projectPipelineRunRow } from "../../helpers.js";
 import { getResourceOrThrowNotFound } from "../../lookup.js";
+import { validationCause } from "../../../../utils/restErrorReason/index.js";
 
 const startInputSchema = z
   .object({
@@ -67,7 +68,7 @@ export const pipelineRunStartProcedure = protectedProcedure
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: `pipeline '${input.pipeline}' has malformed TriggerTemplate label`,
-          cause: { source: "validation" as const, reason: "malformed_trigger_template_label" },
+          cause: validationCause("malformed_trigger_template_label"),
         });
       }
 

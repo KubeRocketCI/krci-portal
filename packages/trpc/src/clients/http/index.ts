@@ -98,10 +98,43 @@ export class HttpNetworkError extends HttpError {
   }
 }
 
+/** Integrations whose client factory reports "not configured". Named in the REST 503 envelope. */
+export const INTEGRATIONS = ["Dependency-Track", "SonarQube", "Tekton Results"] as const;
+
+export type Integration = (typeof INTEGRATIONS)[number];
+
+/**
+ * Canonical integration name for an untrusted value, or `undefined`.
+ *
+ * Returns literals, never the input value. Each case must match an entry of `INTEGRATIONS`; the unit
+ * test enforces it.
+ */
+export function toIntegration(value: unknown): Integration | undefined {
+  switch (value) {
+    case "Dependency-Track":
+      return "Dependency-Track";
+    case "SonarQube":
+      return "SonarQube";
+    case "Tekton Results":
+      return "Tekton Results";
+    default:
+      return undefined;
+  }
+}
+
+function formatNotConfigured(service: string): string {
+  return `${service} integration is not configured`;
+}
+
+/** REST 503 message for an integration that is not configured. */
+export function notConfiguredMessage(service: Integration): string {
+  return formatNotConfigured(service);
+}
+
 /** The service has no base URL or credentials in the environment. */
 export class HttpNotConfiguredError extends HttpError {
   constructor(service: string, options?: ErrorOptions) {
-    super(service, `${service} integration is not configured`, options);
+    super(service, formatNotConfigured(service), options);
   }
 }
 
@@ -125,7 +158,7 @@ export function findHttpError(error: unknown): HttpError | undefined {
  * The tRPC message names the variable for the browser; the `HttpNotConfiguredError` cause carries
  * the service name for the REST layer.
  */
-export function notConfiguredError(service: string, envVar: string): TRPCError {
+export function notConfiguredError(service: Integration, envVar: string): TRPCError {
   return new TRPCError({
     code: "INTERNAL_SERVER_ERROR",
     message: `${envVar} environment variable is not configured`,

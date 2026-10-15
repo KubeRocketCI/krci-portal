@@ -25,4 +25,8 @@ export {
   HttpNotConfiguredError,
   findHttpError,
   notConfiguredError,
+  notConfiguredMessage,
+  toIntegration,
 } from "./clients/http/index.js";
+
+export { REST_ERROR_REASONS, toRestErrorReason, type RestErrorReason } from "./utils/restErrorReason/index.js";

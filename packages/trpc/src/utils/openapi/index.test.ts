@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { generateOpenApiDocument, type OpenAPIObject } from "trpc-to-openapi";
 import { BUILD_MANAGED_PARAM_NAMES } from "@my-project/shared";
 import { appRouter } from "../../routers/index.js";
+import { REST_ERROR_REASONS } from "../restErrorReason/index.js";
 import { OPENAPI_DOCUMENT_OPTIONS, rewriteErrorEnvelopeSchemas } from "./index.js";
 
 interface RewrittenSchema {
@@ -13,7 +14,7 @@ interface RewrittenSchema {
       required: string[];
       properties: {
         code: { example: string };
-        reason: { description: string };
+        reason: { description: string; "x-krci-reasons": string[] };
         message: { example: string };
       };
     };
@@ -60,6 +61,7 @@ describe("rewriteErrorEnvelopeSchemas", () => {
     expect(bad.properties.error.properties.code.example).toBe("BAD_REQUEST");
     expect(bad.properties.error.properties.message.example).toBe("Bad Request");
     expect(typeof bad.properties.error.properties.reason.description).toBe("string");
+    expect(bad.properties.error.properties.reason["x-krci-reasons"]).toEqual([...REST_ERROR_REASONS]);
     // The legacy top-level `issues` field is gone after the rewrite.
     expect((bad.properties as Record<string, unknown>).issues).toBeUndefined();
     expect(bad.example.error.code).toBe("BAD_REQUEST");

@@ -11,7 +11,9 @@ import {
   HttpCancelledError,
   HttpNetworkError,
   HttpNotConfiguredError,
+  INTEGRATIONS,
   notConfiguredError,
+  toIntegration,
 } from "./index.js";
 
 const BASE = "https://svc.example.com";
@@ -347,6 +349,16 @@ describe("notConfiguredError", () => {
     expect(error.message).toBe("SONAR_TOKEN environment variable is not configured");
     expect(error.cause).toBeInstanceOf(HttpNotConfiguredError);
     expect((error.cause as HttpNotConfiguredError).service).toBe("SonarQube");
+  });
+});
+
+describe("toIntegration", () => {
+  it.each(INTEGRATIONS)("maps %s to itself", (service) => {
+    expect(toIntegration(service)).toBe(service);
+  });
+
+  it.each(["SENTINEL-LEAK", "sonarqube", "", 1, null, undefined])("rejects %j", (value) => {
+    expect(toIntegration(value)).toBeUndefined();
   });
 });
 
