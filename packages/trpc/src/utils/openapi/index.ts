@@ -2,6 +2,7 @@ import { STATUS_CODES } from "node:http";
 import { TRPCError } from "@trpc/server";
 import { getHTTPStatusCodeFromError } from "@trpc/server/http";
 import type { generateOpenApiDocument, OpenAPIObject } from "trpc-to-openapi";
+import { REST_ERROR_REASONS } from "../restErrorReason/index.js";
 
 /** Options for `generateOpenApiDocument`. Shared by the generator script, the dev server's live document, and tests. */
 export const OPENAPI_DOCUMENT_OPTIONS = {
@@ -34,12 +35,15 @@ export function httpStatusPhrase(status: number): string {
 
 const ENVELOPE_DESCRIPTION =
   "REST error envelope emitted by sendRestError. `message` is static per status " +
-  "(per status and integration for 503 not configured); `reason` (when present) is a stable machine-readable disambiguator " +
-  "that consumers should key off rather than parsing the human message.";
+  "(per status and integration for 503 not configured); `reason` (when present) is a public machine-readable tag " +
+  "from a fixed set that consumers should key off rather than parsing the human message.";
 
 const REASON_PROPERTY_SCHEMA = {
   type: "string",
-  description: "Stable machine-readable disambiguator (omitted when none applies)",
+  description:
+    "Public machine-readable tag from the fixed set in `x-krci-reasons` (omitted when none applies). " +
+    "Unlisted values are never sent.",
+  "x-krci-reasons": [...REST_ERROR_REASONS],
 } as const;
 
 /**

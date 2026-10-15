@@ -17,6 +17,7 @@ import {
 } from "@my-project/shared";
 import { TRPCError } from "@trpc/server";
 import { K8sClient } from "../../clients/k8s/index.js";
+import { validationCause } from "../../utils/restErrorReason/index.js";
 import { getResourceOrThrowNotFound, getResourceOrUndefined, listCompleteOrThrow } from "./lookup.js";
 
 export interface ResolveBuildDraftInput {
@@ -55,7 +56,7 @@ export async function resolveBuildDraft(
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: `codebase '${codebaseName}' builds via GitLab CI, which this endpoint does not trigger`,
-      cause: { source: "validation" as const, reason: "gitlab_ci_not_supported" },
+      cause: validationCause("gitlab_ci_not_supported"),
     });
   }
 
@@ -65,7 +66,7 @@ export async function resolveBuildDraft(
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: `codebase '${codebaseName}' has no default branch`,
-      cause: { source: "validation" as const, reason: "branch_not_specified" },
+      cause: validationCause("branch_not_specified"),
     });
   }
 
@@ -85,7 +86,7 @@ export async function resolveBuildDraft(
     throw new TRPCError({
       code: "NOT_FOUND",
       message: `branch '${branchName}' of codebase '${codebaseName}' not found`,
-      cause: { source: "validation" as const, reason: "codebase_branch_not_found" },
+      cause: validationCause("codebase_branch_not_found"),
     });
   }
 
@@ -95,7 +96,7 @@ export async function resolveBuildDraft(
     throw new TRPCError({
       code: "CONFLICT",
       message: `branch '${branchName}' of codebase '${codebaseName}' matches more than one CodebaseBranch`,
-      cause: { source: "validation" as const, reason: "codebase_branch_ambiguous" },
+      cause: validationCause("codebase_branch_ambiguous"),
     });
   }
 
@@ -106,7 +107,7 @@ export async function resolveBuildDraft(
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: `branch '${branchName}' of codebase '${codebaseName}' has no build pipeline configured`,
-      cause: { source: "validation" as const, reason: "build_pipeline_not_configured" },
+      cause: validationCause("build_pipeline_not_configured"),
     });
   }
 
@@ -131,7 +132,7 @@ export async function resolveBuildDraft(
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: `build TriggerTemplate for codebase '${codebaseName}' carries no resourcetemplates`,
-      cause: { source: "validation" as const, reason: "build_template_misconfigured" },
+      cause: validationCause("build_template_misconfigured"),
     });
   }
 

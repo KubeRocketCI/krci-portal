@@ -18,6 +18,7 @@ import { handleK8sError } from "../../../k8s/utils/handleK8sError/index.js";
 import { mergeDraftParams, projectPipelineRunRow, withGenerateName } from "../../helpers.js";
 import { listCompleteOrThrow } from "../../lookup.js";
 import { resolveBuildDraft } from "../../resolveBuild.js";
+import { validationCause } from "../../../../utils/restErrorReason/index.js";
 
 const MANAGED_PARAM_NAMES: ReadonlySet<string> = new Set(BUILD_MANAGED_PARAM_NAMES);
 
@@ -61,7 +62,7 @@ export const pipelineRunBuildProcedure = protectedProcedure
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: `param '${managedParam}' is derived from the codebase and branch and cannot be overridden`,
-        cause: { source: "validation" as const, reason: "managed_param_override" },
+        cause: validationCause("managed_param_override"),
       });
     }
 
@@ -98,7 +99,7 @@ export const pipelineRunBuildProcedure = protectedProcedure
       throw new TRPCError({
         code: "CONFLICT",
         message: `branch '${codebaseBranch.spec.branchName}' of codebase '${input.codebase}' is not ready`,
-        cause: { source: "validation" as const, reason: "codebase_branch_not_ready" },
+        cause: validationCause("codebase_branch_not_ready"),
       });
     }
 
@@ -117,7 +118,7 @@ export const pipelineRunBuildProcedure = protectedProcedure
       throw new TRPCError({
         code: "CONFLICT",
         message: `a build is already running for branch '${codebaseBranch.spec.branchName}' of codebase '${input.codebase}'`,
-        cause: { source: "validation" as const, reason: "build_in_progress" },
+        cause: validationCause("build_in_progress"),
       });
     }
 
