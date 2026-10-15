@@ -37,7 +37,7 @@ export class LocalFastifyServer {
 
     this.fastify = Fastify({
       logger: false,
-      maxParamLength: 5000,
+      routerOptions: { maxParamLength: 5000 },
       // Same Node `server.requestTimeout` as production.
       requestTimeout: 30_000,
     });
