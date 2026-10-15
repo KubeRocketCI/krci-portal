@@ -39,7 +39,7 @@ export class ProductionFastifyServer {
     this.fastify = Fastify({
       logger: true,
       trustProxy: true,
-      maxParamLength: 5000,
+      routerOptions: { maxParamLength: 5000 },
       // Node `server.requestTimeout`: the whole request must arrive within
       // 30 s, else 408. Upstream deadlines are per HTTP client (`timeoutMs`)
       // and surface as 504 through `restErrorResponse`.
