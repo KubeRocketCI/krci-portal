@@ -46,10 +46,10 @@ export function registerClientApp(
     prefix: "/",
     index: "index.html",
     wildcard: false,
-    // @fastify/send writes "public, max-age=0" after setHeaders unless cacheControl is false.
+    // The plugin writes "public, max-age=0" after setHeaders unless cacheControl is false.
     cacheControl: false,
-    setHeaders: (res, filePath) => {
-      res.setHeader("Cache-Control", cacheControlFor(filePath));
+    setHeaders: (reply, filePath) => {
+      reply.header("Cache-Control", cacheControlFor(filePath));
     },
   });
 

@@ -17,7 +17,7 @@
     "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^11.0.0",
     "@fastify/session": "^11.1.0",
-    "@fastify/static": "^9.1.1",
+    "@fastify/static": "^10.1.5",
     "@fastify/websocket": "^11.0.2",
     "@my-project/shared": "workspace:*",
     "@my-project/trpc": "workspace:*",
