@@ -2,6 +2,9 @@
   "name": "@my-project/server",
   "types": "./dist/router.d.ts",
   "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
