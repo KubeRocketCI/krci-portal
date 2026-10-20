@@ -2,6 +2,120 @@
 ## [Unreleased]
 
 
+<a name="v0.9.0"></a>
+## [v0.9.0] - 2026-10-20
+### Features
+
+- add CEL filter validator and literal builder
+- stop selected PipelineRuns from the list
+- stop PipelineRuns in batch through pipelineRun.stop
+- plan PipelineRun stop as a graceful merge patch
+- publish the build managed params in the OpenAPI document
+- expose POST /rest/v1/pipelineruns/build
+- add the pipelineRun.build procedure
+- discover whether the cluster serves an optional type before watching it
+- one table shell with a server pagination mode
+- one behaviour for text in table cells
+- let users resize table columns by dragging the header edge
+- drive pipeline metrics filters from the URL
+- derive the git server secret name from the server name
+
+### Bug Fixes
+
+- Match the Capsule quota annotation by key prefix
+- Strip the pipeline-reported annotation when re-running a PipelineRun
+- Match Capsule 0.14 tenant label in the resource quota indicator
+- Fall back to global.dnsWildCard for the default host
+- move maxParamLength under routerOptions to drop the FSTDEP022 warning
+- bump the Node base image to 22.23.3 for [@fastify](https://github.com/fastify)/static 10
+- update vulnerable dependencies and adapt to [@fastify](https://github.com/fastify)/static 10
+- build the REST error envelope from allow-listed constants
+- show the request id and actionable text for GitFusion errors
+- validate CEL filters at the tRPC boundary and results client
+- map upstream transport failures on REST routes to 502/503/504
+- restore the Codebase Dependencies tab preload
+- stop preloading the Codebase Dependencies tab chunk
+- derive table columns from the current prop instead of freezing them in state
+- dispose the terminal on unmount
+- hide open overlays of a hidden tab
+- reset copy confirmations when a tab is hidden
+- follow container resizes in tables after a tab re-show
+- keep metric series hidden from the legend after a tab re-show
+- keep unsaved stage variables when the tab is shown again
+- clear the live log view before each log stream replay
+- show static step logs once after the tab is shown again
+- recreate Monaco editors when their tab is shown again
+- align the stop dialog with the platform's action dialogs
+- show a minus for a partly selected table page
+- stop the table jumping when rows are selected
+- key PipelineRun selection by uid
+- stop PipelineRuns with the patch verb
+- show the number of PipelineRuns the list displays
+- count only shown archive rows in the PipelineRun history footer
+- Show full status and condition messages on hover
+- derive pin identity inside the pin store
+- show custom resources when an allowed namespace fails to list
+- derive multi-namespace list rows in the same render as their loading state
+- detect session expiry in a tRPC link instead of buffering streamed batches
+- keep the branch table loading until the branch watch is ready
+- mount tab content on first visit and pause hidden tabs
+- build a table's sort from the column, not from its id
+- serve Monaco and fonts from the bundle for air-gapped clusters
+- reject a page or page size the pager cannot render
+- keep a corrupt table preference from taking the page down
+- report and recover from an undecodable SVG icon
+- address the Capsule Tenant as a cluster-scoped resource
+- preserve the HTTP status of a watch error
+- let the item watch report an absent object
+- validate the live resource at the input boundary
+- classify TaskRun state through one shared phase
+- draw every counted state in Resource Health
+- classify PipelineRun state through one shared phase
+- clip table cell content to its column
+- give dialog openers a stable identity
+- restore saved column visibility in the table shell
+- allow deleting the last Environment of a CD pipeline
+- offer Next.js as a JavaScript library framework
+- check PipelineRun create permission when running a pipeline
+- show the Cluster Certificate field when TLS verification is enabled
+
+### Code Refactoring
+
+- build client CEL filters through the shared validator
+- preload the Codebase Dependencies tab and start its requests on mount
+- move the pipeline preview widgets to the Tekton module
+- load the Codebase Dependencies tab on first visit
+- load terminal, logs and pipeline graph dialogs on first open
+- load only the named Codebases, CodebaseBranches and CodebaseImageStreams on the Applications tabs
+- cache hashed client assets and return 404 for missing ones
+- start the run lists with the PipelineRun request
+- stop listing all Tasks on the PipelineRun details page
+- render the selected count in the table
+- share the TriggerTemplate naming convention
+- share the PipelineRun start output shape
+- export the build draft's managed param names
+- one HTTP transport behind the integration clients
+- one factory behind the integration mutations
+- one shared KRCI status enum
+- read column visibility only in the table shell
+
+### Testing
+
+- cover the pipelineRun.build contract
+
+### Routine
+
+- bump Go to 1.26.9
+- add the build operation to the published API document
+- drop the table's unread URL pagination option
+- ignore the Storybook build output in eslint
+- Update current development version
+
+### Documentation
+
+- update portal CEL filter convention
+
+
 <a name="v0.8.0"></a>
 ## [v0.8.0] - 2026-08-10
 ### Features
@@ -479,7 +593,8 @@
 - Setup initial code ([#1](https://github.com/KubeRocketCI/krci-portal/issues/1))
 
 
-[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.9.0...HEAD
+[v0.9.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.8.0...v0.9.0
 [v0.8.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.7.0...v0.8.0
 [v0.7.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.6.0...v0.7.0
 [v0.6.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.5.0...v0.6.0
