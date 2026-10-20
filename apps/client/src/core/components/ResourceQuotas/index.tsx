@@ -5,8 +5,8 @@ import { useClusterStore } from "@/k8s/store";
 import { useResourceQuotaWatchList } from "@/k8s/api/groups/Core/ResourceQuota";
 import { useStageWatchList } from "@/k8s/api/groups/KRCI/Stage";
 import { useTenantWatchItem } from "@/k8s/api/groups/Capsule/Tenant";
-import { RESOURCE_QUOTA_LABEL_TENANT, inClusterName } from "@my-project/shared";
-import { parseResourceQuota } from "./utils";
+import { inClusterName } from "@my-project/shared";
+import { parseResourceQuota, selectTenantResourceQuotas } from "./utils";
 import { CircleProgress } from "./components/CircleProgress";
 import { RQItem } from "./components/RQItem";
 import { ParsedQuotas } from "./types";
@@ -18,27 +18,29 @@ export const ResourceQuotas = () => {
   const defaultNamespace = useClusterStore(useShallow((state) => state.defaultNamespace));
 
   // Global Resource Quotas
+  // Capsule versions label tenant quotas with different keys, and a label selector cannot OR keys.
   const globalRQsWatch = useResourceQuotaWatchList({
     namespace: defaultNamespace,
-    labels: {
-      [RESOURCE_QUOTA_LABEL_TENANT]: defaultNamespace,
-    },
   });
 
   const globalRQs = React.useMemo(() => {
-    if (!globalRQsWatch.isReady || globalRQsWatch.data.array.length === 0) {
+    const tenantQuotas = globalRQsWatch.isReady
+      ? selectTenantResourceQuotas(globalRQsWatch.data.array, defaultNamespace)
+      : [];
+
+    if (tenantQuotas.length === 0) {
       return {
         quotas: {},
         highestUsedQuota: null,
       };
     }
 
-    const useAnnotations = Object.keys(globalRQsWatch.data.array[0]?.metadata?.annotations || {}).some((key) =>
+    const useAnnotations = Object.keys(tenantQuotas[0]?.metadata?.annotations || {}).some((key) =>
       key.includes("quota.capsule.clastix.io")
     );
 
-    return parseResourceQuota(globalRQsWatch.data.array, useAnnotations);
-  }, [globalRQsWatch.isReady, globalRQsWatch.data.array]);
+    return parseResourceQuota(tenantQuotas, useAnnotations);
+  }, [globalRQsWatch.isReady, globalRQsWatch.data.array, defaultNamespace]);
 
   // Find first in-cluster Stage
   const stagesWatch = useStageWatchList({

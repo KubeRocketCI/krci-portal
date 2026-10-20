@@ -9,4 +9,8 @@ export const k8sResourceQuotaConfig = {
   pluralName: "resourcequotas",
 } as const satisfies K8sResourceConfig;
 
-export const RESOURCE_QUOTA_LABEL_TENANT = "capsule.clastix.io/tenant";
+// Capsule >= 0.14 sets this label on the ResourceQuotas it manages.
+export const RESOURCE_QUOTA_LABEL_TENANT = "projectcapsule.dev/tenant";
+
+// Capsule < 0.14 sets this label; Capsule >= 0.14 removes it.
+export const RESOURCE_QUOTA_LABEL_TENANT_LEGACY = "capsule.clastix.io/tenant";
