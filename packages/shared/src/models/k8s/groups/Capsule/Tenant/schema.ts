@@ -202,7 +202,7 @@ const TenantSpecSchema = z.object({
 const TenantStatusSchema = z.object({
   namespaces: z.array(z.string()).optional(),
   size: z.number(),
-  state: z.enum(["Cordoned", "Active"]).default("Active"),
+  state: z.enum(["Cordoned", "Active", "Terminating"]).default("Active"),
 });
 
 // Main Tenant schema
