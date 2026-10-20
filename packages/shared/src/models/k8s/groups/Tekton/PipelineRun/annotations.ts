@@ -6,6 +6,11 @@ export const pipelineRunAnnotations = {
    * stale value disguises a genuine failure as a cancellation.
    */
   queueCancelReason: "app.edp.epam.com/queue-cancel-reason",
+  /**
+   * Set to "true" once the run has been reported. Must be stripped on rerun
+   * (see `createRerunPipelineRun`) or the new run is not reported.
+   */
+  pipelineReported: "app.edp.epam.com/pipeline-reported",
 } as const;
 
 /**
