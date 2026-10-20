@@ -6,7 +6,7 @@ import { useResourceQuotaWatchList } from "@/k8s/api/groups/Core/ResourceQuota";
 import { useStageWatchList } from "@/k8s/api/groups/KRCI/Stage";
 import { useTenantWatchItem } from "@/k8s/api/groups/Capsule/Tenant";
 import { inClusterName } from "@my-project/shared";
-import { parseResourceQuota, selectTenantResourceQuotas } from "./utils";
+import { hasCapsuleQuotaAnnotations, parseResourceQuota, selectTenantResourceQuotas } from "./utils";
 import { CircleProgress } from "./components/CircleProgress";
 import { RQItem } from "./components/RQItem";
 import { ParsedQuotas } from "./types";
@@ -35,9 +35,7 @@ export const ResourceQuotas = () => {
       };
     }
 
-    const useAnnotations = Object.keys(tenantQuotas[0]?.metadata?.annotations || {}).some((key) =>
-      key.includes("quota.capsule.clastix.io")
-    );
+    const useAnnotations = hasCapsuleQuotaAnnotations(tenantQuotas[0]);
 
     return parseResourceQuota(tenantQuotas, useAnnotations);
   }, [globalRQsWatch.isReady, globalRQsWatch.data.array, defaultNamespace]);
@@ -68,9 +66,7 @@ export const ResourceQuotas = () => {
       };
     }
 
-    const useAnnotations = Object.keys(stageRQsWatch.data.array[0]?.metadata?.annotations || {}).some((key) =>
-      key.includes("quota.capsule.clastix.io")
-    );
+    const useAnnotations = hasCapsuleQuotaAnnotations(stageRQsWatch.data.array[0]);
 
     return parseResourceQuota(stageRQsWatch.data.array, useAnnotations);
   }, [stageRQsWatch.isReady, stageRQsWatch.data.array]);
