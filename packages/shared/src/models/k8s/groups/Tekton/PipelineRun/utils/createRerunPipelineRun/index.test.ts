@@ -173,6 +173,24 @@ describe("testing createRerunPipelineRun", () => {
     expect(object.metadata.annotations).not.toHaveProperty("app.edp.epam.com/queue-cancel-reason");
   });
 
+  it("should not carry over the pipeline-reported annotation of the original run", () => {
+    const object = createRerunPipelineRun({
+      apiVersion: "tekton.dev/v1",
+      kind: "PipelineRun",
+      metadata: {
+        name: "test-pipeline-run",
+        namespace: "edp",
+        annotations: { "app.edp.epam.com/pipeline-reported": "true", "keep/me": "yes" },
+      },
+      spec: {
+        pipelineRef: { name: "test-build-pipeline" },
+      },
+    } as unknown as PipelineRun);
+
+    expect(object.metadata.annotations).not.toHaveProperty("app.edp.epam.com/pipeline-reported");
+    expect(object.metadata.annotations).toHaveProperty("keep/me", "yes");
+  });
+
   // Losing tekton.dev/pipeline off the cached run blanks the Pipeline name on the
   // details page that rendered the menu.
   it("should not mutate the labels or annotations of the original pipeline run", () => {

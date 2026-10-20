@@ -17,16 +17,15 @@ const removeSystemLabels = (labels: Record<string, string> | undefined) => {
 };
 
 /*
-  Exact keys, not a prefix list like the labels above: `tekton.dev/v1beta1TaskRuns`
-  has to go (it makes the new run adopt the original TaskRuns' status instead of
-  executing), but `tekton.dev/v1beta1Resources` is required for pipelines using
-  PipelineResources. Revisit once v1beta1 is fully removed from Tekton.
+  Exact keys, not prefixes: `tekton.dev/v1beta1TaskRuns` is stripped (it makes the
+  new run adopt the original TaskRuns' status instead of executing);
+  `tekton.dev/v1beta1Resources` is kept (required by pipelines using
+  PipelineResources). Revisit once v1beta1 is removed from Tekton.
 
-  Listed here only if a consumer *reads* the annotation to decide something, so a
-  stale value corrupts the decision — a leftover queueCancelReason makes the
-  reporter disguise a genuine failure of the rerun as a cancellation. The other
+  Add a key only if a consumer reads the annotation to decide something
+  (queueCancelReason, pipelineReported; see annotations.ts). The other
   tekton-pipeline-queue annotations (queue, queue-lane, queue-admitted-at) are
-  recorded facts nothing branches on, so they are deliberately left alone.
+  informational and are kept.
   */
 const EPHEMERAL_ANNOTATION_KEYS = [
   "tekton.dev/v1beta1TaskRuns",
@@ -36,6 +35,7 @@ const EPHEMERAL_ANNOTATION_KEYS = [
   tektonResultAnnotations.tektonLogRef,
   tektonResultAnnotations.historySource,
   pipelineRunAnnotations.queueCancelReason,
+  pipelineRunAnnotations.pipelineReported,
 ];
 
 const removeEphemeralAnnotations = (annotations: Record<string, string> | undefined) => {
@@ -74,8 +74,8 @@ const generateNewPipelineRunPayload = ({ pipelineRun, rerun }: { pipelineRun: Pi
     return generateName || `${name}-`;
   }
 
-  // Cloned, not aliased: callers pass the object straight out of the watch cache,
-  // so the stripping below would otherwise delete keys off the live PipelineRun.
+  // Clone annotations and labels: callers pass the watch-cache object, and the
+  // stripping below mutates in place.
   // @ts-ignore
   payload.metadata = {
     annotations: structuredClone(annotations) ?? {},
