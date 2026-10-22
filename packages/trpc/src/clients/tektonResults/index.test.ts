@@ -5,14 +5,23 @@ import { TektonResultsClient } from "./index.js";
 const mockJson = vi.fn();
 const mockJsonWithHeaders = vi.fn();
 const mockText = vi.fn();
+const mockCreateHttpService = vi.fn();
+const mockReadServiceAccountToken = vi.fn();
 
 vi.mock("../http/index.js", async (importOriginal) => {
   const original = await importOriginal<Record<string, unknown>>();
   return {
     ...original,
-    createHttpService: () => ({ json: mockJson, jsonWithHeaders: mockJsonWithHeaders, text: mockText }),
+    createHttpService: (config: unknown) => {
+      mockCreateHttpService(config);
+      return { json: mockJson, jsonWithHeaders: mockJsonWithHeaders, text: mockText };
+    },
   };
 });
+
+vi.mock("./serviceAccountToken.js", () => ({
+  readServiceAccountToken: () => mockReadServiceAccountToken(),
+}));
 
 const originalEnv = process.env;
 
@@ -20,10 +29,13 @@ describe("createTektonResultsClient", () => {
   beforeEach(() => {
     vi.resetModules();
     process.env = { ...originalEnv };
+    mockCreateHttpService.mockClear();
+    mockReadServiceAccountToken.mockReset().mockReturnValue(null);
   });
 
   afterEach(() => {
     process.env = originalEnv;
+    vi.restoreAllMocks();
   });
 
   it("should throw when TEKTON_RESULTS_URL is not set", async () => {
@@ -54,6 +66,76 @@ describe("createTektonResultsClient", () => {
     expect(typeof client.listResults).toBe("function");
     expect(typeof client.getRecord).toBe("function");
   });
+
+  it("sends the ServiceAccount token as a Bearer over HTTPS", async () => {
+    process.env.TEKTON_RESULTS_URL = "https://tekton-results.example.com";
+    mockReadServiceAccountToken.mockReturnValue("the-sa-token");
+    const { createTektonResultsClient } = await import("./index.js");
+
+    createTektonResultsClient("my-namespace");
+
+    expect(mockCreateHttpService).toHaveBeenCalledWith(
+      expect.objectContaining({ headers: { Authorization: "Bearer the-sa-token" } })
+    );
+  });
+
+  it("omits the Authorization header and warns once when the URL is not HTTPS", async () => {
+    process.env.TEKTON_RESULTS_URL = "http://tekton-results.example.com";
+    mockReadServiceAccountToken.mockReturnValue("the-sa-token");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const { createTektonResultsClient } = await import("./index.js");
+
+    createTektonResultsClient("my-namespace");
+    createTektonResultsClient("my-namespace");
+
+    expect(mockCreateHttpService).toHaveBeenCalledWith(expect.objectContaining({ headers: undefined }));
+    expect(warn).toHaveBeenCalledTimes(1);
+  });
+
+  it("omits the Authorization header and warns once when no token is mounted", async () => {
+    process.env.TEKTON_RESULTS_URL = "https://tekton-results.example.com";
+    mockReadServiceAccountToken.mockReturnValue(null);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const { createTektonResultsClient } = await import("./index.js");
+
+    createTektonResultsClient("my-namespace");
+    createTektonResultsClient("my-namespace");
+
+    expect(mockCreateHttpService).toHaveBeenCalledWith(expect.objectContaining({ headers: undefined }));
+    expect(warn).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(["HTTPS://tekton-results.example.com", "  https://tekton-results.example.com\n"])(
+    "sends the Bearer for an https URL with any case or surrounding whitespace (%j)",
+    async (url) => {
+      process.env.TEKTON_RESULTS_URL = url;
+      mockReadServiceAccountToken.mockReturnValue("the-sa-token");
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      const { createTektonResultsClient } = await import("./index.js");
+
+      createTektonResultsClient("my-namespace");
+
+      expect(mockCreateHttpService).toHaveBeenCalledWith(
+        expect.objectContaining({ headers: { Authorization: "Bearer the-sa-token" } })
+      );
+      expect(warn).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each(["tekton-results.example.com", "https//tekton-results.example.com", "ftp://tekton-results.example.com"])(
+    "omits the Authorization header for a URL that is not https (%j)",
+    async (url) => {
+      process.env.TEKTON_RESULTS_URL = url;
+      mockReadServiceAccountToken.mockReturnValue("the-sa-token");
+      vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      const { createTektonResultsClient } = await import("./index.js");
+
+      createTektonResultsClient("my-namespace");
+
+      expect(mockCreateHttpService).toHaveBeenCalledWith(expect.objectContaining({ headers: undefined }));
+      expect(mockReadServiceAccountToken).not.toHaveBeenCalled();
+    }
+  );
 });
 
 describe("TektonResultsClient", () => {

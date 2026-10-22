@@ -1,0 +1,25 @@
+{{- $rbac := (.Values.tektonResults | default dict).rbac | default dict }}
+{{- if $rbac.enabled }}
+{{- $serviceAccountName := include "krci-portal.serviceAccountName" . }}
+{{- if eq $serviceAccountName "default" }}
+{{- fail "tektonResults.rbac needs a dedicated ServiceAccount: set serviceAccount.name or serviceAccount.create, or set tektonResults.rbac.enabled=false" }}
+{{- end }}
+{{- if and .Values.serviceAccount.create (not .Values.serviceAccount.automount) }}
+{{- fail "tektonResults.rbac needs the ServiceAccount token in the pod: set serviceAccount.automount=true, or set tektonResults.rbac.enabled=false" }}
+{{- end }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "krci-portal.fullname" . }}-tekton-results
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "krci-portal.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ $serviceAccountName }}
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tekton-results-readonly
+{{- end }}

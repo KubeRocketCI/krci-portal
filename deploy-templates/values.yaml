@@ -43,7 +43,12 @@ configEnv:
   OIDC_CLIENT_ID: portal
   OIDC_SCOPE: openid profile email
   OIDC_CODE_CHALLENGE_METHOD: S256
-  TEKTON_RESULTS_URL: https://tekton-results.example.com
+  # TEKTON_RESULTS_URL is the Tekton Results API endpoint. Must be https://: the portal sends its own
+  # ServiceAccount token as Bearer over HTTPS only (keep `serviceAccount.automount` on). Over http://
+  # the requests carry no token. Use the in-cluster Service: the host that terminates TLS receives a
+  # token that is also valid against the Kubernetes API.
+  TEKTON_RESULTS_URL: https://tekton-results-api-service.tekton-pipelines.svc:8080
+  # NODE_EXTRA_CA_CERTS: /etc/tekton-results-ca/ca.crt
   # DEPENDENCY_TRACK_URL is used by the backend API client to communicate with Dependency Track.
   # DEPENDENCY_TRACK_WEB_URL is an optional override for browser-facing links. When the internal
   # API endpoint differs from the public URL, set DEPENDENCY_TRACK_WEB_URL to the public URL.
@@ -208,18 +213,25 @@ autoscaling:
   # -- Target memory utilization percentage (optional)
   # targetMemoryUtilizationPercentage: 80
 
+# -- Read access of the portal's ServiceAccount to Tekton Results of the release namespace.
+tektonResults:
+  rbac:
+    # -- Bind the portal's ServiceAccount to the `tekton-results-readonly` ClusterRole in the release namespace. All portal users can read Results of that namespace. Turn on when the Results API verifies tokens (https:// TEKTON_RESULTS_URL, CA trusted with NODE_EXTRA_CA_CERTS).
+    enabled: false
+
 # -- Additional volumes on the output Deployment definition.
 volumes: []
-# - name: foo
-#   secret:
-#     secretName: mysecret
-#     optional: false
+# Tekton Results CA: `ca.crt` of Secret `tekton-results-tls` in `tekton-pipelines`. Copy only `ca.crt`
+# into a ConfigMap in the release namespace; never copy `tekton-results-ca-key-pair` (CA private key).
+#   - name: tekton-results-ca
+#     configMap:
+#       name: tekton-results-ca
 
 # -- Additional volumeMounts on the output Deployment definition.
 volumeMounts: []
-# - name: foo
-#   mountPath: "/etc/foo"
-#   readOnly: true
+#   - name: tekton-results-ca
+#     mountPath: /etc/tekton-results-ca
+#     readOnly: true
 
 # -- Persistence for the SQLite session/events database. A ReadWriteOnce PVC mounted at the server's DB directory (`/app/db`) keeps sessions across pod restarts (RWO forces the Recreate strategy). Removed on `helm uninstall` — no retention policy.
 persistence:

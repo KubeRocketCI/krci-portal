@@ -5,11 +5,13 @@ import {
   TektonResultRecord,
   TektonSummaryQueryParams,
   TektonSummaryResponse,
+  isHttpsUrl,
   stripTrailingSlash,
   validateCELFilter,
 } from "@my-project/shared";
 import { TRPCError } from "@trpc/server";
 import { createHttpService, notConfiguredError, type HttpService } from "../http/index.js";
+import { readServiceAccountToken } from "./serviceAccountToken.js";
 
 // =============================================================================
 // Constants
@@ -34,7 +36,7 @@ interface TektonResultsConfig {
  */
 function loadConfig(): TektonResultsConfig {
   return {
-    apiBaseURL: process.env.TEKTON_RESULTS_URL || "",
+    apiBaseURL: (process.env.TEKTON_RESULTS_URL || "").trim(),
     timeoutMs: DEFAULT_TIMEOUT_MS,
   };
 }
@@ -62,7 +64,32 @@ export function createTektonResultsClient(namespace: string): TektonResultsClien
     apiBaseURL: config.apiBaseURL,
     parent: namespace,
     timeoutMs: config.timeoutMs,
+    headers: authorizationHeaders(config.apiBaseURL),
   });
+}
+
+const warned = new Set<string>();
+
+function warnOnce(message: string): void {
+  if (warned.has(message)) return;
+  warned.add(message);
+  console.warn(message);
+}
+
+/** Bearer token is the portal's own ServiceAccount token, sent over HTTPS only. Access follows the RoleBinding of that ServiceAccount. */
+function authorizationHeaders(apiBaseURL: string): Record<string, string> | undefined {
+  if (!isHttpsUrl(apiBaseURL)) {
+    warnOnce(`[${SERVICE_NAME}] TEKTON_RESULTS_URL is not an https:// URL: the ServiceAccount token is not sent`);
+    return undefined;
+  }
+
+  const token = readServiceAccountToken();
+  if (!token) {
+    warnOnce(`[${SERVICE_NAME}] No ServiceAccount token mounted: requests are sent unauthenticated`);
+    return undefined;
+  }
+
+  return { Authorization: `Bearer ${token}` };
 }
 
 // =============================================================================
@@ -73,6 +100,7 @@ export interface TektonResultsClientConfig {
   apiBaseURL: string;
   parent: string;
   timeoutMs?: number;
+  headers?: Record<string, string>;
 }
 
 /** Client for the Tekton Results API. Every path is scoped to `parent` (the namespace). */
@@ -81,7 +109,7 @@ export class TektonResultsClient {
   private readonly http: HttpService;
 
   constructor(clientConfig: TektonResultsClientConfig) {
-    const { apiBaseURL, parent, timeoutMs = DEFAULT_TIMEOUT_MS } = clientConfig;
+    const { apiBaseURL, parent, timeoutMs = DEFAULT_TIMEOUT_MS, headers } = clientConfig;
 
     if (!apiBaseURL) {
       throw new Error("Tekton Results API base URL is not configured");
@@ -96,6 +124,7 @@ export class TektonResultsClient {
       name: SERVICE_NAME,
       baseURL: `${stripTrailingSlash(apiBaseURL)}/apis/results.tekton.dev/${TEKTON_RESULTS_API_VERSION}`,
       timeoutMs,
+      headers,
     });
   }
 
