@@ -18,13 +18,7 @@ import {
   HttpStatusError,
   HttpTimeoutError,
 } from "@my-project/trpc";
-import type { DBSessionStore } from "@/clients/db-session-store/index.js";
-import {
-  createMockedDBSessionStore,
-  createMockedNotificationsStore,
-} from "@my-project/trpc/__mocks__/context.js";
-import { mockSession } from "@my-project/trpc/__mocks__/session.js";
-import type { CustomSession } from "@my-project/trpc";
+import { createRegisterOpenApiOptions } from "./__fixtures__/registerOpenApiOptions.js";
 import { SCA_PAGE_SIZE_MAX_PAGES } from "./sca-helpers.js";
 
 // ---------------------------------------------------------------------------
@@ -80,23 +74,6 @@ import { registerOpenApi } from "./openapi.js";
 // Helpers
 // ---------------------------------------------------------------------------
 
-// `registerOpenApi` accepts DBSessionStore (a concrete class). In tests we
-// never reach any code path that calls methods on the store because createCaller
-// is fully mocked, so a cast is safe here.
-const MOCK_SESSION_STORE = createMockedDBSessionStore(
-  mockSession as unknown as CustomSession
-) as unknown as DBSessionStore;
-
-const MOCK_NOTIFICATIONS_STORE = createMockedNotificationsStore();
-
-const MOCK_OIDC_CONFIG = {
-  issuerURL: "https://oidc.example.com",
-  clientID: "client-id",
-  clientSecret: "client-secret",
-  scope: "openid",
-  codeChallengeMethod: "S256",
-};
-
 function buildFastify(): FastifyInstance {
   const app = Fastify({ logger: false });
 
@@ -107,12 +84,7 @@ function buildFastify(): FastifyInstance {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   app.decorateRequest("session", null as any);
 
-  registerOpenApi(app, {
-    sessionStore: MOCK_SESSION_STORE,
-    notificationsStore: MOCK_NOTIFICATIONS_STORE,
-    oidcConfig: MOCK_OIDC_CONFIG,
-    portalUrl: "http://localhost:8000",
-  });
+  registerOpenApi(app, createRegisterOpenApiOptions());
 
   return app;
 }
@@ -751,12 +723,7 @@ describe("GET /rest/v1/sca/components — request abort cancels severity loop", 
       void req.signal;
     });
 
-    registerOpenApi(app, {
-      sessionStore: MOCK_SESSION_STORE,
-      notificationsStore: MOCK_NOTIFICATIONS_STORE,
-      oidcConfig: MOCK_OIDC_CONFIG,
-      portalUrl: "http://localhost:8000",
-    });
+    registerOpenApi(app, createRegisterOpenApiOptions());
 
     await app.ready();
   });

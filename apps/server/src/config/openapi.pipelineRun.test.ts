@@ -2,13 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BUILD_MANAGED_PARAM_NAMES } from "@my-project/shared";
 import Fastify, { type FastifyInstance } from "fastify";
 import { TRPCError } from "@trpc/server";
-import type { DBSessionStore } from "@/clients/db-session-store/index.js";
-import {
-  createMockedDBSessionStore,
-  createMockedNotificationsStore,
-} from "@my-project/trpc/__mocks__/context.js";
-import { mockSession } from "@my-project/trpc/__mocks__/session.js";
-import type { CustomSession } from "@my-project/trpc";
+import { createRegisterOpenApiOptions } from "./__fixtures__/registerOpenApiOptions.js";
 
 const stubCaller = vi.hoisted(() => ({
   pipelineRun: {
@@ -29,31 +23,12 @@ vi.mock("@my-project/trpc", async (importActual) => {
 
 import { registerOpenApi } from "./openapi.js";
 
-const MOCK_SESSION_STORE = createMockedDBSessionStore(
-  mockSession as unknown as CustomSession
-) as unknown as DBSessionStore;
-
-const MOCK_NOTIFICATIONS_STORE = createMockedNotificationsStore();
-
-const MOCK_OIDC_CONFIG = {
-  issuerURL: "https://oidc.example.com",
-  clientID: "client-id",
-  clientSecret: "client-secret",
-  scope: "openid",
-  codeChallengeMethod: "S256",
-};
-
 function buildFastify(): FastifyInstance {
   const app = Fastify({ logger: false });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   app.decorateRequest("session", null as any);
 
-  registerOpenApi(app, {
-    sessionStore: MOCK_SESSION_STORE,
-    notificationsStore: MOCK_NOTIFICATIONS_STORE,
-    oidcConfig: MOCK_OIDC_CONFIG,
-    portalUrl: "http://localhost:8000",
-  });
+  registerOpenApi(app, createRegisterOpenApiOptions());
 
   return app;
 }
