@@ -83,13 +83,15 @@ Create the name of the secretstore to use
 
 {{/*
 Host of the 'edpDefault' sentinel: <fullname>-<namespace>.<wildcard>. The Ingress and the HTTPRoute both
-render it, so the route serves exactly the Ingress host. The wildcard is the first non-empty of .wildcard
-(the caller's own value), ingress.dnsWildcard and global.dnsWildCard. The global map is absent when a
-release reuses values stored by a chart version that did not declare it.
+render it. The wildcard is the first non-empty of .wildcard (the caller's own value, named in the error by
+.wildcardKey), ingress.dnsWildcard and global.dnsWildCard. The global map is absent when a release reuses
+values stored by a chart version that did not declare it.
 */}}
 {{- define "krci-portal.defaultHost" -}}
 {{- $global := .root.Values.global | default dict -}}
-{{- $wildcard := required "the 'edpDefault' host needs a DNS wildcard: set global.dnsWildCard or ingress.dnsWildcard" (coalesce .wildcard .root.Values.ingress.dnsWildcard $global.dnsWildCard) -}}
+{{- $keys := list .wildcardKey "ingress.dnsWildcard" "global.dnsWildCard" | compact -}}
+{{- $message := printf "the 'edpDefault' host needs a DNS wildcard: set %s or %s" (join ", " (initial $keys)) (last $keys) -}}
+{{- $wildcard := required $message (coalesce .wildcard .root.Values.ingress.dnsWildcard $global.dnsWildCard) -}}
 {{- printf "%s-%s.%s" (include "krci-portal.fullname" .root) .root.Release.Namespace $wildcard -}}
 {{- end -}}
 

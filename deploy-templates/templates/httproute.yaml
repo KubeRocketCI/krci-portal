@@ -25,7 +25,7 @@ spec:
     {{- range .Values.httproute.hostnames }}
     {{- /* 'edpDefault' is a sentinel for the default host; any other value is used as-is */ -}}
     {{- if eq . "edpDefault" }}
-    - {{ include "krci-portal.defaultHost" (dict "root" $ "wildcard" $.Values.httproute.dnsWildcard) }}
+    - {{ include "krci-portal.defaultHost" (dict "root" $ "wildcard" $.Values.httproute.dnsWildcard "wildcardKey" "httproute.dnsWildcard") }}
     {{- else }}
     - {{ . | quote }}
     {{- end }}
