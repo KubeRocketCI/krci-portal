@@ -42,7 +42,7 @@ A Helm chart for KubeRocketCI Portal
 | configEnv.PROMETHEUS_URL | string | `"http://prometheus.monitoring.svc:9090"` |  |
 | configEnv.SERVER_PORT | int | `3000` |  |
 | configEnv.SONAR_HOST_URL | string | `"https://sonar.example.com/"` |  |
-| configEnv.TEKTON_RESULTS_URL | string | `"https://tekton-results.example.com"` |  |
+| configEnv.TEKTON_RESULTS_URL | string | `"https://tekton-results-api-service.tekton-pipelines.svc:8080"` |  |
 | eso.apiVersion | string | `"external-secrets.io/v1"` | Defines API version for the ExternalSecret resource. |
 | eso.aws | object | `{"region":"eu-central-1","roleArn":"arn:aws:iam::012345678910:role/AWSIRSA_Shared_ExternalSecretOperatorAccess"}` | AWS configuration (if provider is `aws`). |
 | eso.aws.region | string | `"eu-central-1"` | AWS region. |
@@ -100,6 +100,8 @@ A Helm chart for KubeRocketCI Portal
 | serviceAccount.automount | bool | `true` | Automatically mount a ServiceAccount's API credentials? |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
 | serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
+| tektonResults | object | `{"rbac":{"enabled":false}}` | Read access of the portal's ServiceAccount to Tekton Results of the release namespace. |
+| tektonResults.rbac.enabled | bool | `false` | Bind the portal's ServiceAccount to the `tekton-results-readonly` ClusterRole in the release namespace. All portal users can read Results of that namespace. Turn on when the Results API verifies tokens (https:// TEKTON_RESULTS_URL, CA trusted with NODE_EXTRA_CA_CERTS). |
 | tolerations | list | `[]` | Tolerations for pod assignment https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/ |
 | volumeMounts | list | `[]` | Additional volumeMounts on the output Deployment definition. |
 | volumes | list | `[]` | Additional volumes on the output Deployment definition. |

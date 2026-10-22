@@ -116,7 +116,7 @@ To run the KubeRocketCI Portal, follow the steps below:
    - **`PORTAL_URL`** — Public URL of the portal (e.g. `http://localhost:5173` for dev). Must match the OIDC redirect URI registered in your IdP.
    - **`OIDC_ISSUER_URL`**, **`OIDC_CLIENT_ID`**, **`OIDC_CLIENT_SECRET`**, **`OIDC_SCOPE`** — OIDC provider settings (e.g. Keycloak); required for authentication.
    - **`SERVER_SECRET`** — Session signing secret (minimum 32 characters).
-   - **`TEKTON_RESULTS_URL`** — Tekton Results API URL for pipeline run data.
+   - **`TEKTON_RESULTS_URL`** — Tekton Results API URL for pipeline run data. Use `https://`: the portal sends its ServiceAccount token over HTTPS only, and requests over `http://` carry no token.
    - **`DEFAULT_CLUSTER_NAME`**, **`DEFAULT_CLUSTER_NAMESPACE`** — Target Kubernetes cluster and namespace when using cluster features.
 
    For production deployment, configure [deploy-templates/values.yaml](deploy-templates/values.yaml); see [deploy-templates/README.md](deploy-templates/README.md) for all options.

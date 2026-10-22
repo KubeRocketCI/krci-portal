@@ -6,7 +6,7 @@ KubeRocketCI Portal — monorepo for a Kubernetes CI/CD platform UI.
 
 - All tRPC endpoints use `protectedProcedure` (never `publicProcedure`)
 - All tRPC inputs validated with Zod schemas (no raw string params)
-- K8s API calls use `idToken` as bearer — never service account tokens
+- K8s API calls use `idToken` as bearer — never service account tokens (except Tekton Results client)
 - **SA token login** is the one sanctioned exception to both rules above: the pre-session `loginWithServiceAccountToken` `publicProcedure` passes a raw SA token as the K8s bearer via `K8sClient.fromToken()` → `getSelfSubjectReview()` to validate it (that call *is* the auth step); every other K8s call still uses the session `idToken`, so don't flag it.
 - CEL filter strings: validate with the shared `validateCELFilter` and build literals with `toCELStringLiteral` (`packages/shared` tektonResults); the tRPC `celFilter` schema and the Tekton Results client both run the validator
 - Mutation pattern: `structuredClone()` + mutate (not functional filter); `no-param-reassign` is OFF
