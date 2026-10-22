@@ -10,6 +10,7 @@ import {
 import {
   k8sCodebaseConfig,
   type INotificationsStore,
+  type ISessionStore,
 } from "@my-project/shared";
 import {
   classifyBranchResolution,
@@ -29,9 +30,9 @@ import {
   type ScaSeverity,
 } from "./sca-helpers.js";
 import { sendRestError } from "./rest-errors.js";
+import { TRPCError } from "@trpc/server";
 import { generateOpenApiDocument } from "trpc-to-openapi";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import type { DBSessionStore } from "@/clients/db-session-store";
 
 /**
  * The element type of the `components` array returned by the DependencyTrack
@@ -55,8 +56,8 @@ interface OidcConfig {
   codeChallengeMethod: string;
 }
 
-interface RegisterOpenApiOptions {
-  sessionStore: DBSessionStore;
+export interface RegisterOpenApiOptions {
+  sessionStore: ISessionStore;
   notificationsStore: INotificationsStore;
   oidcConfig: OidcConfig;
   portalUrl: string;
@@ -246,6 +247,22 @@ export function registerOpenApi(
     try {
       const caller = await buildCaller(req, res);
       return await caller.tektonResults.getTaskRunRecords({
+        namespace: req.query.namespace,
+        resultUid: req.params.resultUid,
+      });
+    } catch (error) {
+      return sendRestError(error, req, res);
+    }
+  });
+
+  // GET /rest/v1/pipeline-runs/:resultUid/custom-runs (protected)
+  fastify.get<{
+    Params: { resultUid: string };
+    Querystring: { namespace: string };
+  }>("/rest/v1/pipeline-runs/:resultUid/custom-runs", async (req, res) => {
+    try {
+      const caller = await buildCaller(req, res);
+      return await caller.tektonResults.getCustomRunRecords({
         namespace: req.query.namespace,
         resultUid: req.params.resultUid,
       });
@@ -885,4 +902,13 @@ export function registerOpenApi(
 
     fastify.get("/rest/v1/openapi.json", async () => openApiDocument);
   }
+
+  // ---------------------------------------------------------------------------
+  // Unknown paths
+  // ---------------------------------------------------------------------------
+
+  // The router prefers this route to the SPA fallback `/*`.
+  fastify.all("/rest/*", async (req, res) =>
+    sendRestError(new TRPCError({ code: "NOT_FOUND" }), req, res)
+  );
 }

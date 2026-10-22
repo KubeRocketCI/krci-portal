@@ -1,4 +1,4 @@
-// Error envelope for the hand-written `/rest/v1/*` routes in `openapi.ts`.
+// Error envelope for the hand-written `/rest/*` routes in `openapi.ts`.
 
 import {
   findHttpError,
