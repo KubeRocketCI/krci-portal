@@ -1,7 +1,7 @@
 import React from "react";
 import { Form } from "./components/Form";
 import { FormActions } from "./components/FormActions";
-import { clusterType, ClusterType, createClusterSecretDraft } from "@my-project/shared";
+import { createClusterSecretDraft } from "@my-project/shared";
 import { ClusterSecretFormProvider } from "./providers/form/provider";
 import { createDefaultValues } from "./providers/form/constants";
 import { ClusterSecretDataProvider } from "./providers/data/provider";
@@ -14,8 +14,6 @@ export interface CreateClusterSecretFormProps {
 }
 
 export const CreateClusterSecretForm: React.FC<CreateClusterSecretFormProps> = ({ onClose }) => {
-  const [activeClusterType, setActiveClusterType] = React.useState<ClusterType>(clusterType.bearer);
-
   const { triggerCreateSecret } = useSecretCRUD();
   const secretPermissions = useSecretPermissions();
 
@@ -25,10 +23,19 @@ export const CreateClusterSecretForm: React.FC<CreateClusterSecretFormProps> = (
         return;
       }
 
-      const { clusterName, clusterHost, clusterToken, clusterCertificate, skipTLSVerify, roleARN, caData } = values;
+      const {
+        clusterType,
+        clusterName,
+        clusterHost,
+        clusterToken,
+        clusterCertificate,
+        skipTLSVerify,
+        roleARN,
+        caData,
+      } = values;
 
       const secretDraft = createClusterSecretDraft({
-        clusterType: activeClusterType,
+        clusterType,
         clusterName,
         clusterHost,
         clusterToken,
@@ -47,7 +54,7 @@ export const CreateClusterSecretForm: React.FC<CreateClusterSecretFormProps> = (
         },
       });
     },
-    [activeClusterType, onClose, secretPermissions.data.create.allowed, triggerCreateSecret]
+    [onClose, secretPermissions.data.create.allowed, triggerCreateSecret]
   );
 
   const formData = React.useMemo(
@@ -64,7 +71,7 @@ export const CreateClusterSecretForm: React.FC<CreateClusterSecretFormProps> = (
     <ClusterSecretDataProvider formData={formData}>
       <ClusterSecretFormProvider defaultValues={createDefaultValues} onSubmit={handleSubmit}>
         <div className="flex flex-col gap-4">
-          <Form activeClusterType={activeClusterType} setActiveClusterType={setActiveClusterType} />
+          <Form />
           <FormActions />
         </div>
       </ClusterSecretFormProvider>

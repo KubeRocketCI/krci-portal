@@ -9,15 +9,7 @@ export const ClusterName = () => {
   const { mode, ownerReference } = useClusterSecretData();
 
   return (
-    <form.AppField
-      name={CLUSTER_FORM_NAMES.CLUSTER_NAME}
-      validators={{
-        onChange: ({ value }) => {
-          if (!value) return "Enter a name for the cluster.";
-          return undefined;
-        },
-      }}
-    >
+    <form.AppField name={CLUSTER_FORM_NAMES.CLUSTER_NAME}>
       {(field) => (
         <field.FormTextField
           label="Cluster Name"
