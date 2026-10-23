@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { TableColumn } from "@/core/components/Table/types";
+import { labelSortPath } from "@/core/components/Table/sort";
 import { RbacAssessmentReport, rbacAssessmentReportLabels } from "@my-project/shared";
 import { Link, useParams } from "@tanstack/react-router";
 import { PATH_TRIVY_RBAC_ASSESSMENT_DETAILS_FULL } from "../../trivy-rbac-assessment-details/route";
@@ -45,7 +46,7 @@ export function useColumns(): TableColumn<RbacAssessmentReport>[] {
         id: "resourceKind",
         label: "Resource Kind",
         data: {
-          columnSortableValuePath: `metadata.labels.${rbacAssessmentReportLabels.resourceKind}`,
+          columnSortableValuePath: labelSortPath(rbacAssessmentReportLabels.resourceKind),
           render: ({ data }) => {
             const resourceKind = data.metadata?.labels?.[rbacAssessmentReportLabels.resourceKind] || "-";
             return (

@@ -74,6 +74,9 @@ const compareDefined = (a: SortKey, b: SortKey): number => {
 export const isColumnSortable = <DataType>({ data }: TableColumn<DataType>) =>
   !!data.columnSortableValue || !!data.columnSortableValuePath || !!data.customSortFn;
 
+/** Path to a label value. The label key stays one key although it contains dots. */
+export const labelSortPath = (key: string): string[] => ["metadata", "labels", key];
+
 /** Reads whichever key-shaped sort the column declares. The type keeps the two mutually exclusive. */
 const sortKeyAccessor = <DataType>({ data }: TableColumn<DataType>): ((row: DataType) => unknown) | undefined => {
   if (data.columnSortableValue) {
