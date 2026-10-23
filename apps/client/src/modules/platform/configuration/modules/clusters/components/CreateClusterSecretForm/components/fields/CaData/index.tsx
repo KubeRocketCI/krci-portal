@@ -8,15 +8,7 @@ export const CaData = () => {
   const { mode, ownerReference } = useClusterSecretData();
 
   return (
-    <form.AppField
-      name={CLUSTER_FORM_NAMES.CA_DATA}
-      validators={{
-        onChange: ({ value }) => {
-          if (!value) return "Enter Certificate Authority Data.";
-          return undefined;
-        },
-      }}
-    >
+    <form.AppField name={CLUSTER_FORM_NAMES.CA_DATA}>
       {(field) => (
         <field.FormTextField
           label="Certificate Authority Data"

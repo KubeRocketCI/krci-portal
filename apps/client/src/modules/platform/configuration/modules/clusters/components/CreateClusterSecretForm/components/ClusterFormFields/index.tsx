@@ -1,6 +1,5 @@
 import React from "react";
 import { CaData, ClusterHost, ClusterName, ClusterToken, ClusterTypeField, RoleARN, SkipTLSVerify } from "../fields";
-import { FieldEvent } from "@/core/types/forms";
 import { clusterType, ClusterType } from "@my-project/shared";
 import { Separator } from "@/core/components/ui/separator";
 import { Boxes, Shield } from "lucide-react";
@@ -8,7 +7,7 @@ import { FormSection } from "@/core/components/FormSection";
 
 interface ClusterFormFieldsProps {
   activeClusterType: ClusterType;
-  onClusterTypeChange: (event: FieldEvent<ClusterType>) => void;
+  onClusterTypeChange: (value: ClusterType) => void;
 }
 
 export function ClusterFormFields({ activeClusterType, onClusterTypeChange }: ClusterFormFieldsProps) {
