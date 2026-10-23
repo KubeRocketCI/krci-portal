@@ -1,5 +1,6 @@
 import { AuthorAvatar } from "@/core/components/AuthorAvatar";
 import { TableColumn } from "@/core/components/Table/types";
+import { labelSortPath } from "@/core/components/Table/sort";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { useClusterStore } from "@/k8s/store";
 import { formatTimestamp, formatUnixTimestamp, formatDuration } from "@/core/utils/date-humanize";
@@ -117,7 +118,7 @@ export const useColumns = (): TableColumn<PipelineRun>[] => {
         id: columnNames.CODEBASE,
         label: "Project",
         data: {
-          columnSortableValuePath: `metadata.labels.${pipelineRunLabels.codebase}`,
+          columnSortableValuePath: labelSortPath(pipelineRunLabels.codebase),
           render: ({ data }) => {
             const {
               metadata: { namespace, labels },
@@ -228,7 +229,7 @@ export const useColumns = (): TableColumn<PipelineRun>[] => {
         id: columnNames.TYPE,
         label: "Type",
         data: {
-          columnSortableValuePath: `metadata.labels.${pipelineRunLabels.pipelineType}`,
+          columnSortableValuePath: labelSortPath(pipelineRunLabels.pipelineType),
           render: ({ data }) => {
             const pipelineType = data.metadata.labels?.[pipelineRunLabels.pipelineType];
 

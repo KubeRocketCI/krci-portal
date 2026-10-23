@@ -18,7 +18,7 @@ export type TableCellProps = React.HTMLAttributes<HTMLTableCellElement> & {
 /** A column declares at most one sort key. Declaring none leaves the column unsortable. */
 type ColumnSortKey<DataType> =
   | {
-      /** Lodash path to the sort key. */
+      /** Lodash path to the sort key. A dotted key, such as a label key, is one array element: `labelSortPath(key)`. */
       columnSortableValuePath: string | string[];
       columnSortableValue?: never;
       customSortFn?: never;

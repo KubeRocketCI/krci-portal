@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { createColumnComparator, getNextSortOrder, isColumnSortable } from "./sort";
+import { createColumnComparator, getNextSortOrder, isColumnSortable, labelSortPath } from "./sort";
 import { SORT_ORDERS } from "./constants";
 import type { TableColumn } from "./types";
 
 interface Row {
-  metadata: { name: string; startTime?: string | null };
+  metadata: { name: string; startTime?: string | null; labels?: Record<string, string> };
   count?: number;
 }
 
@@ -95,6 +95,20 @@ describe("createColumnComparator", () => {
     const rows = [makeRow("a", "85.3"), makeRow("b", "85.25"), makeRow("c", "9.5")];
 
     expect(sortNames(rows, createColumnComparator(measured, SORT_ORDERS.ASC))).toEqual(["c", "b", "a"]);
+  });
+
+  it("sorts by a label whose key contains dots in both directions, unlabelled rows last", () => {
+    const codebaseLabel = "app.edp.epam.com/codebase";
+    const byCodebase = column({ columnSortableValuePath: labelSortPath(codebaseLabel) });
+    const labelled = (name: string, codebase: string): Row => ({
+      metadata: { name, labels: { [codebaseLabel]: codebase } },
+    });
+    const runs = [labelled("b", "beta"), makeRow("unlabelled"), labelled("c", "gamma"), labelled("a", "alpha")];
+    const ascending = createColumnComparator(byCodebase, SORT_ORDERS.ASC);
+    const descending = createColumnComparator(byCodebase, SORT_ORDERS.DESC);
+
+    expect(sortNames(runs, ascending)).toEqual(["a", "b", "c", "unlabelled"]);
+    expect(sortNames(runs, descending)).toEqual(["c", "b", "a", "unlabelled"]);
   });
 
   it("ranks rows with no value last in ascending order", () => {
