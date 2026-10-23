@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { TableColumn } from "@/core/components/Table/types";
+import { labelSortPath } from "@/core/components/Table/sort";
 import { InfraAssessmentReport, infraAssessmentReportLabels } from "@my-project/shared";
 import { Link, useParams } from "@tanstack/react-router";
 import { PATH_TRIVY_INFRA_ASSESSMENT_DETAILS_FULL } from "../../trivy-infra-assessment-details/route";
@@ -46,7 +47,7 @@ export function useColumns(): TableColumn<InfraAssessmentReport>[] {
         id: "resourceKind",
         label: "Resource Kind",
         data: {
-          columnSortableValuePath: `metadata.labels.${infraAssessmentReportLabels.resourceKind}`,
+          columnSortableValuePath: labelSortPath(infraAssessmentReportLabels.resourceKind),
           render: ({ data }) => {
             const resourceKind = data.metadata?.labels?.[infraAssessmentReportLabels.resourceKind] || "-";
             return (

@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { TableColumn } from "@/core/components/Table/types";
+import { labelSortPath } from "@/core/components/Table/sort";
 import { ConfigAuditReport, configAuditReportLabels } from "@my-project/shared";
 import { Link, useParams } from "@tanstack/react-router";
 import { PATH_TRIVY_CONFIG_AUDIT_DETAILS_FULL } from "../../trivy-config-audit-details/route";
@@ -49,7 +50,7 @@ export function useColumns(): TableColumn<ConfigAuditReport>[] {
         id: "resourceKind",
         label: "Resource Kind",
         data: {
-          columnSortableValuePath: `metadata.labels.${configAuditReportLabels.resourceKind}`,
+          columnSortableValuePath: labelSortPath(configAuditReportLabels.resourceKind),
           render: ({ data }) => {
             const resourceKind = data.metadata?.labels?.[configAuditReportLabels.resourceKind] || "-";
             return (
