@@ -100,8 +100,9 @@ A Helm chart for KubeRocketCI Portal
 | serviceAccount.automount | bool | `true` | Automatically mount a ServiceAccount's API credentials? |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
 | serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
-| tektonResults | object | `{"rbac":{"enabled":false}}` | Read access of the portal's ServiceAccount to Tekton Results of the release namespace. |
-| tektonResults.rbac.enabled | bool | `false` | Bind the portal's ServiceAccount to the `tekton-results-readonly` ClusterRole in the release namespace. All portal users can read Results of that namespace. Turn on when the Results API verifies tokens (https:// TEKTON_RESULTS_URL, CA trusted with NODE_EXTRA_CA_CERTS). |
+| tektonResults | object | `{"caCert":"","rbac":{"enabled":false}}` | Read access of the portal's ServiceAccount to Tekton Results of the release namespace. |
+| tektonResults.caCert | string | `""` | PEM of the CA that signs the Tekton Results API certificate: `ca.crt` of Secret `tekton-results-tls` in `tekton-pipelines`. When set, the chart creates a ConfigMap, mounts it, and sets NODE_EXTRA_CA_CERTS; a change restarts the portal. Public certificate only: the render fails on a private key. |
+| tektonResults.rbac.enabled | bool | `false` | Bind the portal's ServiceAccount to the `tekton-results-readonly` ClusterRole in the release namespace. All portal users can read Results of that namespace. Turn on when the Results API verifies tokens (https:// TEKTON_RESULTS_URL, `tektonResults.caCert` set). |
 | tolerations | list | `[]` | Tolerations for pod assignment https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/ |
 | volumeMounts | list | `[]` | Additional volumeMounts on the output Deployment definition. |
 | volumes | list | `[]` | Additional volumes on the output Deployment definition. |

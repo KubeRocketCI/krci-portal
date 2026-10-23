@@ -105,3 +105,17 @@ Return the appropriate apiVersion for External Secrets
     {{- print "external-secrets.io/v1beta1" -}}
   {{- end -}}
 {{- end -}}
+
+{{/*
+Tekton Results CA certificate (PEM), trimmed. Empty when not set.
+*/}}
+{{- define "krci-portal.tektonResultsCaCert" -}}
+{{- (.Values.tektonResults | default dict).caCert | default "" | trim -}}
+{{- end }}
+
+{{/*
+Directory of the mounted Tekton Results CA certificate.
+*/}}
+{{- define "krci-portal.tektonResultsCaDir" -}}
+/etc/tekton-results-ca
+{{- end }}

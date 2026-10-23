@@ -1,0 +1,17 @@
+{{- with include "krci-portal.tektonResultsCaCert" . }}
+{{- if contains "PRIVATE KEY" . }}
+{{- fail "tektonResults.caCert must hold only the public CA certificate, not a private key" }}
+{{- end }}
+{{- if not (contains "BEGIN CERTIFICATE" .) }}
+{{- fail "tektonResults.caCert must be a PEM certificate (-----BEGIN CERTIFICATE-----)" }}
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "krci-portal.fullname" $ }}-tekton-results-ca
+  labels:
+    {{- include "krci-portal.labels" $ | nindent 4 }}
+data:
+  ca.crt: |
+    {{- . | nindent 4 }}
+{{- end }}
