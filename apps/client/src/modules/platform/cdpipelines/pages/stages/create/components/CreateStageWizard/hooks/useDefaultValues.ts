@@ -28,10 +28,9 @@ const defaultQualityGate = {
 
 interface UseDefaultValuesParams {
   triggerTemplateList: TriggerTemplate[];
-  stagesQuantity: number;
 }
 
-export const useDefaultValues = ({ triggerTemplateList, stagesQuantity }: UseDefaultValuesParams) => {
+export const useDefaultValues = ({ triggerTemplateList }: UseDefaultValuesParams) => {
   const { namespace, cdPipeline: cdPipelineName } = useSafeStageCreateParams();
 
   const { defaultNamespace } = useClusterStore(
@@ -51,7 +50,6 @@ export const useDefaultValues = ({ triggerTemplateList, stagesQuantity }: UseDef
 
   return React.useMemo(
     () => ({
-      [NAMES.order]: stagesQuantity,
       [NAMES.triggerType]: stageTriggerType.Manual,
       [NAMES.sourceLibraryName]: "default",
       [NAMES.sourceType]: stageSourceType.default,
@@ -66,7 +64,7 @@ export const useDefaultValues = ({ triggerTemplateList, stagesQuantity }: UseDef
       [NAMES.name]: "",
       [NAMES.description]: "",
     }),
-    [cdPipelineName, cleanTriggerTemplate, deployTriggerTemplate, effectiveNamespace, stagesQuantity]
+    [cdPipelineName, cleanTriggerTemplate, deployTriggerTemplate, effectiveNamespace]
   );
 };
 
