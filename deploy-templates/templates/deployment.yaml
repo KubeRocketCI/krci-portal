@@ -21,6 +21,9 @@ spec:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/portal-config.yaml") . | sha256sum | trunc 63 }}
         checksum/secret: {{ include (print $.Template.BasePath "/external-secrets/externalsecret-portal-secret.yaml") . | sha256sum | trunc 63 }}
+        {{- with include "krci-portal.tektonResultsCaCert" . }}
+        checksum/tekton-results-ca: {{ . | sha256sum | trunc 63 }}
+        {{- end }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 6 }}
         {{- end }}
@@ -51,6 +54,11 @@ spec:
           envFrom:
             {{- toYaml . | nindent 10 }}
           {{- end }}
+          {{- if include "krci-portal.tektonResultsCaCert" . }}
+          env:
+            - name: NODE_EXTRA_CA_CERTS
+              value: {{ include "krci-portal.tektonResultsCaDir" . }}/ca.crt
+          {{- end }}
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
@@ -61,22 +69,32 @@ spec:
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- if or .Values.persistence.enabled .Values.volumeMounts }}
+          {{- if or .Values.persistence.enabled .Values.volumeMounts (include "krci-portal.tektonResultsCaCert" .) }}
           volumeMounts:
             {{- if .Values.persistence.enabled }}
             - name: data
               mountPath: {{ include "krci-portal.dbMountPath" . }}
             {{- end }}
+            {{- if include "krci-portal.tektonResultsCaCert" . }}
+            - name: tekton-results-ca
+              mountPath: {{ include "krci-portal.tektonResultsCaDir" . }}
+              readOnly: true
+            {{- end }}
             {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
-      {{- if or .Values.persistence.enabled .Values.volumes }}
+      {{- if or .Values.persistence.enabled .Values.volumes (include "krci-portal.tektonResultsCaCert" .) }}
       volumes:
         {{- if .Values.persistence.enabled }}
         - name: data
           persistentVolumeClaim:
             claimName: {{ .Values.persistence.existingClaim | default (include "krci-portal.fullname" .) }}
+        {{- end }}
+        {{- if include "krci-portal.tektonResultsCaCert" . }}
+        - name: tekton-results-ca
+          configMap:
+            name: {{ include "krci-portal.fullname" . }}-tekton-results-ca
         {{- end }}
         {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
