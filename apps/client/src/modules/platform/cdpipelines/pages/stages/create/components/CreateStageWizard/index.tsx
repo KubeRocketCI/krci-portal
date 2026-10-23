@@ -31,7 +31,7 @@ export const CreateStageWizard: React.FC = () => {
     triggerTemplatesIsLoading,
     triggerTemplateList,
   } = useCDPipelineData();
-  const defaultValues = useDefaultValues({ triggerTemplateList, stagesQuantity: otherStages.length });
+  const defaultValues = useDefaultValues({ triggerTemplateList });
   const {
     triggerCreateStage,
     mutations: { stageCreateMutation },
@@ -53,7 +53,7 @@ export const CreateStageWizard: React.FC = () => {
         cdPipeline: values.cdPipeline,
         namespace: values.deployNamespace,
         clusterName: values.cluster,
-        order: values.order,
+        order: otherStages.length,
         source: {
           type: values.sourceType as "default" | "library",
           library: {
@@ -81,7 +81,7 @@ export const CreateStageWizard: React.FC = () => {
         },
       });
     },
-    [triggerCreateStage]
+    [otherStages.length, triggerCreateStage]
   );
 
   const onSubmitError = React.useCallback((error: unknown) => {

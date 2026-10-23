@@ -6,32 +6,23 @@ import { Link } from "@tanstack/react-router";
 import { NAMES } from "../../names";
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
 import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
-import { PATH_STAGE_CREATE_FULL } from "../../../../route";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
-import { useWizardStore } from "../../store";
-import { router } from "@/core/router";
 import { useCreateStageForm } from "../../providers/form/hooks";
 import { useSafeStageCreateParams } from "../../hooks/useSafeStageCreateParams";
+import { useCreateAnother } from "../../hooks/useCreateAnother";
 
 export const Success: React.FC = () => {
   const form = useCreateStageForm();
   const name = useStore(form.store, (state) => state.values[NAMES.name]);
   const { namespace, cdPipeline } = useSafeStageCreateParams();
+  const handleCreateAnother = useCreateAnother();
 
   const { clusterName } = useClusterStore(
     useShallow((state) => ({
       clusterName: state.clusterName,
     }))
   );
-
-  const handleCreateAnother = React.useCallback(() => {
-    useWizardStore.getState().reset();
-    router.navigate({
-      to: PATH_STAGE_CREATE_FULL,
-      params: { clusterName, namespace, cdPipeline },
-    });
-  }, [clusterName, namespace, cdPipeline]);
 
   return (
     <div className="space-y-4">
@@ -86,6 +77,7 @@ export const Success: React.FC = () => {
               size="sm"
               className="flex h-auto flex-col items-center gap-1.5 py-3"
               onClick={handleCreateAnother}
+              type="button"
             >
               <Sparkles className="text-muted-foreground h-4 w-4" />
               <div className="flex flex-col">
