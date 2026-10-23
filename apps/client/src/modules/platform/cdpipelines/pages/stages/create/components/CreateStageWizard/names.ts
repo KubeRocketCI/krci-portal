@@ -90,7 +90,6 @@ const coreFields = {
   sourceLibraryName: z.string().default("default"),
   sourceType: z.string().default("default"),
   triggerType: z.string(),
-  order: z.number(),
   cdPipeline: z.string(),
   cluster: z.string().min(1, "Select cluster"),
   triggerTemplate: z.string().min(1, "Select Deploy Pipeline template"),
