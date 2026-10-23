@@ -1,12 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Fastify, { type FastifyInstance } from "fastify";
-import type { DBSessionStore } from "@/clients/db-session-store/index.js";
-import {
-  createMockedDBSessionStore,
-  createMockedNotificationsStore,
-} from "@my-project/trpc/__mocks__/context.js";
-import { mockSession } from "@my-project/trpc/__mocks__/session.js";
-import type { CustomSession } from "@my-project/trpc";
+import { createMockedNotificationsStore } from "@my-project/trpc/__mocks__/context.js";
+import { createRegisterOpenApiOptions } from "./__fixtures__/registerOpenApiOptions.js";
 
 const stubCaller = vi.hoisted(() => ({}));
 
@@ -24,18 +19,6 @@ import { notificationEventSchema } from "@my-project/shared";
 import { registerOpenApi } from "./openapi.js";
 import { registerInternalEventsRoute } from "./internalEvents.js";
 import sensorGoldenPayload from "./__fixtures__/argo-events-notification.json";
-
-const MOCK_SESSION_STORE = createMockedDBSessionStore(
-  mockSession as unknown as CustomSession
-) as unknown as DBSessionStore;
-
-const MOCK_OIDC_CONFIG = {
-  issuerURL: "https://oidc.example.com",
-  clientID: "client-id",
-  clientSecret: "client-secret",
-  scope: "openid",
-  codeChallengeMethod: "S256",
-};
 
 const VALID_EVENT = {
   id: "evt-1",
@@ -59,10 +42,8 @@ function buildFastify(
 
   // registerOpenApi serves /rest/v1/openapi.json for the contract test below.
   registerOpenApi(app, {
-    sessionStore: MOCK_SESSION_STORE,
+    ...createRegisterOpenApiOptions(),
     notificationsStore,
-    oidcConfig: MOCK_OIDC_CONFIG,
-    portalUrl: "http://localhost:8000",
   });
 
   return app;
