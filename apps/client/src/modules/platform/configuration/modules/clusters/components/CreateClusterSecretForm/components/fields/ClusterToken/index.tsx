@@ -9,15 +9,7 @@ export const ClusterToken = () => {
   const { mode, ownerReference } = useClusterSecretData();
 
   return (
-    <form.AppField
-      name={CLUSTER_FORM_NAMES.CLUSTER_TOKEN}
-      validators={{
-        onChange: ({ value }) => {
-          if (!value) return "Provide the cluster token.";
-          return undefined;
-        },
-      }}
-    >
+    <form.AppField name={CLUSTER_FORM_NAMES.CLUSTER_TOKEN}>
       {(field) => (
         <field.FormTextField
           label="Cluster Token"

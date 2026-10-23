@@ -1,21 +1,13 @@
-import React from "react";
-import { FieldEvent } from "@/core/types/forms";
-import { ClusterType } from "@my-project/shared";
+import { CLUSTER_FORM_NAMES } from "../../constants";
+import { useClusterSecretForm } from "../../providers/form/hooks";
 import { ClusterFormFields } from "../ClusterFormFields";
 
-export const Form = ({
-  activeClusterType,
-  setActiveClusterType,
-}: {
-  activeClusterType: ClusterType;
-  setActiveClusterType: React.Dispatch<React.SetStateAction<ClusterType>>;
-}) => {
-  const onClusterChange = React.useCallback(
-    (event: FieldEvent<ClusterType>) => {
-      setActiveClusterType(event.target.value);
-    },
-    [setActiveClusterType]
-  );
+export const Form = () => {
+  const form = useClusterSecretForm();
 
-  return <ClusterFormFields activeClusterType={activeClusterType} onClusterTypeChange={onClusterChange} />;
+  return (
+    <form.AppField name={CLUSTER_FORM_NAMES.CLUSTER_TYPE}>
+      {(field) => <ClusterFormFields activeClusterType={field.state.value} onClusterTypeChange={field.handleChange} />}
+    </form.AppField>
+  );
 };
