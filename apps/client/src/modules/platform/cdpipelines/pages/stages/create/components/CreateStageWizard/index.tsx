@@ -41,6 +41,12 @@ export const CreateStageWizard: React.FC = () => {
 
   const onSubmit = React.useCallback(
     async (values: CreateStageFormValues) => {
+      // A Stage with a deletionTimestamp stays in the list until its finalizers finish and does not count.
+      const otherOrders = otherStages
+        .filter((stage) => !stage.metadata.deletionTimestamp)
+        .map((stage) => stage.spec.order);
+      const order = otherOrders.length > 0 ? Math.max(...otherOrders) + 1 : 0;
+
       const newStage = createStageDraftObject({
         name: values.name,
         description: values.description,
@@ -53,7 +59,7 @@ export const CreateStageWizard: React.FC = () => {
         cdPipeline: values.cdPipeline,
         namespace: values.deployNamespace,
         clusterName: values.cluster,
-        order: otherStages.length,
+        order,
         source: {
           type: values.sourceType as "default" | "library",
           library: {
@@ -81,7 +87,7 @@ export const CreateStageWizard: React.FC = () => {
         },
       });
     },
-    [otherStages.length, triggerCreateStage]
+    [otherStages, triggerCreateStage]
   );
 
   const onSubmitError = React.useCallback((error: unknown) => {
