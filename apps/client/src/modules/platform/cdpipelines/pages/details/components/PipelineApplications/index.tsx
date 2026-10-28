@@ -48,7 +48,7 @@ const useColumns = (
         data: {
           columnSortableValuePath: "metadata.name",
           render: ({ data }) => (
-            <Button variant="link" asChild className="h-auto justify-start p-0 text-sm font-medium">
+            <Button variant="link" asChild className="h-auto justify-start p-0 text-sm font-medium has-[>svg]:px-0">
               <Link
                 to={PATH_PROJECT_DETAILS_FULL}
                 params={{

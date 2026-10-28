@@ -72,6 +72,16 @@ export const TableHead = <DataType,>({
 
           const content = (
             <>
+              {/* `min-w-0` lets a flex item shrink below its content, so `truncate` can bite at the column floor. */}
+              <span
+                className={cn(
+                  "min-w-0 truncate text-sm",
+                  isActiveSort ? "text-foreground font-medium" : "text-muted-foreground font-normal"
+                )}
+              >
+                {label}
+              </span>
+              {/* After the label, so a sortable cell and its header label start at the same left edge. */}
               {isSortable && (
                 <svg viewBox="0 0 18 18" width={16} height={16} aria-hidden className="block h-4 w-4 shrink-0">
                   {isActiveSort ? (
@@ -84,15 +94,6 @@ export const TableHead = <DataType,>({
                   )}
                 </svg>
               )}
-              {/* `min-w-0` lets a flex item shrink below its content, so `truncate` can bite at the column floor. */}
-              <span
-                className={cn(
-                  "min-w-0 truncate text-sm",
-                  isActiveSort ? "text-foreground font-medium" : "text-muted-foreground font-normal"
-                )}
-              >
-                {label}
-              </span>
             </>
           );
 

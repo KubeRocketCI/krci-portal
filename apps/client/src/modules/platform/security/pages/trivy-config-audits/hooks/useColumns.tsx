@@ -7,6 +7,9 @@ import { SeverityCountBadge } from "@/modules/platform/security/components/share
 import { Badge } from "@/core/components/ui/badge";
 import { Eye } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
+import { createResourceNameGetter } from "../../../utils/createResourceNameGetter";
+
+const getResourceName = createResourceNameGetter(configAuditReportLabels.resourceName);
 
 /**
  * Hook to define columns for the Config Audit Reports table.
@@ -20,10 +23,9 @@ export function useColumns(): TableColumn<ConfigAuditReport>[] {
         id: "resourceName",
         label: "Resource Name",
         data: {
-          columnSortableValuePath: "metadata.name",
+          columnSortableValue: getResourceName,
           render: ({ data }) => {
-            const resourceName =
-              data.metadata?.labels?.[configAuditReportLabels.resourceName] || data.metadata?.name || "-";
+            const resourceName = getResourceName(data) || "-";
 
             return (
               <Link

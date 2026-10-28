@@ -7,6 +7,9 @@ import { SeverityCountBadge } from "@/modules/platform/security/components/share
 import { Badge } from "@/core/components/ui/badge";
 import { Eye } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
+import { createResourceNameGetter } from "../../../utils/createResourceNameGetter";
+
+const getResourceName = createResourceNameGetter(rbacAssessmentReportLabels.resourceName);
 
 export function useColumns(): TableColumn<RbacAssessmentReport>[] {
   const { clusterName } = useParams({ strict: false });
@@ -17,10 +20,9 @@ export function useColumns(): TableColumn<RbacAssessmentReport>[] {
         id: "resourceName",
         label: "Resource Name",
         data: {
-          columnSortableValuePath: "metadata.name",
+          columnSortableValue: getResourceName,
           render: ({ data }) => {
-            const resourceName =
-              data.metadata?.labels?.[rbacAssessmentReportLabels.resourceName] || data.metadata?.name || "-";
+            const resourceName = getResourceName(data) || "-";
             return (
               <Link
                 to={PATH_TRIVY_RBAC_ASSESSMENT_DETAILS_FULL}

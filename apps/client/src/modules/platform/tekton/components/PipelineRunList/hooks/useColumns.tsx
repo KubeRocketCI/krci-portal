@@ -44,7 +44,7 @@ export const useColumns = (): TableColumn<PipelineRun>[] => {
             } = data;
 
             return (
-              <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal">
+              <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal has-[>svg]:px-0">
                 <Link
                   to={PATH_PIPELINERUN_DETAILS_FULL}
                   params={{
@@ -93,7 +93,7 @@ export const useColumns = (): TableColumn<PipelineRun>[] => {
             }
 
             return (
-              <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal">
+              <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal has-[>svg]:px-0">
                 <Link
                   to={PATH_PIPELINE_DETAILS_FULL}
                   params={{
@@ -130,7 +130,7 @@ export const useColumns = (): TableColumn<PipelineRun>[] => {
             }
 
             return (
-              <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal">
+              <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal has-[>svg]:px-0">
                 <Link
                   to={PATH_PROJECT_DETAILS_FULL}
                   params={{
