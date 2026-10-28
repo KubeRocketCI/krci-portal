@@ -1,6 +1,8 @@
+const nameCollator = new Intl.Collator(undefined, { sensitivity: "accent" });
+
 export const sortByName = (a?: string, b?: string): number => {
   if (a && b) {
-    return a.localeCompare(b, undefined, { sensitivity: "accent" });
+    return nameCollator.compare(a, b);
   }
 
   if (a && !b) {

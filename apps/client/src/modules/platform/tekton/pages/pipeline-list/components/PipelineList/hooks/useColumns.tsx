@@ -37,7 +37,7 @@ export function useColumns(): TableColumn<Pipeline>[] {
             } = data;
 
             return (
-              <Button variant="link" asChild className="p-0">
+              <Button variant="link" asChild className="p-0 has-[>svg]:px-0">
                 <Link
                   to={routePipelineDetails.fullPath}
                   params={{
