@@ -1,10 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render } from "@testing-library/react";
+import type { Stage } from "@my-project/shared";
 import type { CreateStageFormInstance } from "./providers/form/context";
 
 const mocks = vi.hoisted(() => ({
   form: null as CreateStageFormInstance | null,
-  stageCount: 0,
+  otherStages: [] as Stage[],
   triggerCreateStage: vi.fn(),
 }));
 
@@ -21,7 +22,7 @@ vi.mock("./hooks/useDefaultValues", async (importOriginal) => ({
   useCDPipelineData: () => ({
     cdPipelineIsLoading: false,
     cdPipelineError: null,
-    otherStages: Array.from({ length: mocks.stageCount }),
+    otherStages: mocks.otherStages,
     otherStagesIsLoading: false,
     triggerTemplatesIsLoading: false,
     triggerTemplateList: [],
@@ -48,22 +49,60 @@ vi.mock("./components/BasicConfiguration", async () => {
 import { CreateStageWizard } from "./index";
 import { NAMES } from "./names";
 
+const makeStage = (name: string, order: number, deletionTimestamp?: string): Stage =>
+  ({ metadata: { name, deletionTimestamp }, spec: { order } }) as unknown as Stage;
+
+const stagesAt = (...orders: number[]): Stage[] => orders.map((order, index) => makeStage(`s${index}`, order));
+
+const terminatingStageAt = (order: number): Stage => makeStage("terminating", order, "2026-01-01T00:00:00Z");
+
+const fillRequiredFields = (form: CreateStageFormInstance) => {
+  act(() => {
+    form.setFieldValue(NAMES.name, "s2");
+    form.setFieldValue(NAMES.triggerTemplate, "deploy");
+    form.setFieldValue(NAMES.cleanTemplate, "clean");
+  });
+};
+
+const submittedOrder = (): number => {
+  const [{ data }] = mocks.triggerCreateStage.mock.calls[0];
+  return data.stage.spec.order;
+};
+
 describe("CreateStageWizard", () => {
-  it("creates the Stage with the Stage count at submit as its order", async () => {
-    mocks.stageCount = 1;
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it.each<[string, number, Stage[]]>([
+    ["no other Stages", 0, []],
+    ["other Stages at orders 0, 1, 2", 3, stagesAt(0, 1, 2)],
+    ["other Stages at orders 0, 0, 0", 1, stagesAt(0, 0, 0)],
+    ["other Stages at orders 0, 2", 3, stagesAt(0, 2)],
+    ["other Stages at orders 0, 2, 1 in that list order", 3, stagesAt(0, 2, 1)],
+    ["other Stages at orders 0, 1 and a terminating Stage at order 2", 2, [...stagesAt(0, 1), terminatingStageAt(2)]],
+    ["only a terminating Stage at order 0", 0, [terminatingStageAt(0)]],
+  ])("with %s the new Stage gets order %s", async (_, expected, stages) => {
+    mocks.otherStages = stages;
+    render(<CreateStageWizard />);
+    const form = mocks.form!;
+    fillRequiredFields(form);
+
+    await act(() => form.handleSubmit());
+
+    expect(submittedOrder()).toBe(expected);
+  });
+
+  it("uses the Stage list at submit when it changed after the form was touched", async () => {
+    mocks.otherStages = stagesAt(0);
     const { rerender } = render(<CreateStageWizard />);
     const form = mocks.form!;
-    act(() => {
-      form.setFieldValue(NAMES.name, "s2");
-      form.setFieldValue(NAMES.triggerTemplate, "deploy");
-      form.setFieldValue(NAMES.cleanTemplate, "clean");
-    });
+    fillRequiredFields(form);
 
-    mocks.stageCount = 2;
+    mocks.otherStages = stagesAt(0, 1);
     rerender(<CreateStageWizard />);
     await act(() => form.handleSubmit());
 
-    const [{ data }] = mocks.triggerCreateStage.mock.calls[0];
-    expect(data.stage.spec.order).toBe(2);
+    expect(submittedOrder()).toBe(2);
   });
 });
