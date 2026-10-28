@@ -44,7 +44,7 @@ export const useColumns = (): TableColumn<CDPipeline>[] => {
               },
             }) => {
               return (
-                <Button variant="link" asChild>
+                <Button variant="link" asChild className="has-[>svg]:px-0">
                   <Link
                     to={routeCDPipelineDetails.fullPath}
                     params={{

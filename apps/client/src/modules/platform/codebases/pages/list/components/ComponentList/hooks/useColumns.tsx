@@ -34,7 +34,7 @@ export const useColumns = (): TableColumn<Codebase>[] => {
             },
           }) => {
             return (
-              <Button variant="link" asChild className="px-4 py-0">
+              <Button variant="link" asChild className="p-0">
                 <Link to={routeProjectDetails.fullPath} params={{ clusterName, namespace: namespace!, name }}>
                   <span className="flex items-center gap-2">
                     <ENTITY_ICON.project className="text-muted-foreground/70" />

@@ -70,31 +70,48 @@ export const TableHead = <DataType,>({
           const alignJustifyClass =
             props?.align === "center" ? "justify-center" : props?.align === "right" ? "justify-end" : "justify-start";
 
-          const content = (
-            <>
-              {isSortable && (
-                <svg viewBox="0 0 18 18" width={16} height={16} aria-hidden className="block h-4 w-4 shrink-0">
-                  {isActiveSort ? (
-                    <path d={isAscending ? ARROW_UP : ARROW_DOWN} className="fill-foreground" />
-                  ) : (
-                    <>
-                      <path d="M5.25 7.5L9 3.75L12.75 7.5H5.25Z" className="fill-muted-foreground" />
-                      <path d="M5.25 10.5L9 14.25L12.75 10.5H5.25Z" className="fill-muted-foreground" />
-                    </>
-                  )}
-                </svg>
+          const labelElement = (
+            // `min-w-0` lets a flex item shrink below its content, so `truncate` can bite at the column floor.
+            <span
+              className={cn(
+                "min-w-0 truncate text-sm",
+                isActiveSort ? "text-foreground font-medium" : "text-muted-foreground font-normal"
               )}
-              {/* `min-w-0` lets a flex item shrink below its content, so `truncate` can bite at the column floor. */}
-              <span
-                className={cn(
-                  "min-w-0 truncate text-sm",
-                  isActiveSort ? "text-foreground font-medium" : "text-muted-foreground font-normal"
-                )}
-              >
-                {label}
-              </span>
-            </>
+            >
+              {label}
+            </span>
           );
+
+          const sortIcon = isSortable && (
+            <svg viewBox="0 0 18 18" width={16} height={16} aria-hidden className="block h-4 w-4 shrink-0">
+              {isActiveSort ? (
+                <path d={isAscending ? ARROW_UP : ARROW_DOWN} className="fill-foreground" />
+              ) : (
+                <>
+                  <path d="M5.25 7.5L9 3.75L12.75 7.5H5.25Z" className="fill-muted-foreground" />
+                  <path d="M5.25 10.5L9 14.25L12.75 10.5H5.25Z" className="fill-muted-foreground" />
+                </>
+              )}
+            </svg>
+          );
+
+          // The label sits on the edge the cell content aligns to; the icon takes the opposite side.
+          // Centered: an icon-sized spacer before the label keeps the label on the cell's center line.
+          const content =
+            props?.align === "right" ? (
+              <>
+                {sortIcon}
+                {labelElement}
+              </>
+            ) : (
+              <>
+                {isSortable && props?.align === "center" && (
+                  <span aria-hidden data-slot="sort-icon-spacer" className="block h-4 w-4 shrink-0" />
+                )}
+                {labelElement}
+                {sortIcon}
+              </>
+            );
 
           return show ? (
             <TableHeadUI key={id} className="relative px-3 py-2 align-bottom" aria-sort={ariaSort} {...props}>

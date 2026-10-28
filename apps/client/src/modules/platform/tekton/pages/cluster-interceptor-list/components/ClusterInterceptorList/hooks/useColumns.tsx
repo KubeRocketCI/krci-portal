@@ -55,7 +55,7 @@ export function useColumns(): TableColumn<ClusterInterceptor>[] {
           render: ({ data }) => {
             const { name } = data.metadata;
             return (
-              <Button variant="link" asChild className="p-0">
+              <Button variant="link" asChild className="p-0 has-[>svg]:px-0">
                 <Link to={routeClusterInterceptorDetails.fullPath} params={{ clusterName, name }}>
                   <Globe className="text-muted-foreground/70 size-4" />
                   <TextWithTooltip text={name} />

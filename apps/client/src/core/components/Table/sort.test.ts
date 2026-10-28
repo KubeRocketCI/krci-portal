@@ -228,6 +228,23 @@ describe("createColumnComparator with isPinned", () => {
   });
 });
 
+describe("text collation", () => {
+  const ordered = (names: string[]) =>
+    sortNames(
+      names.map((name) => makeRow(name)),
+      createColumnComparator(nameColumn, SORT_ORDERS.ASC)
+    );
+
+  it("ranks digits inside names numerically", () => {
+    expect(ordered(["item-10", "item-2", "item-1"])).toEqual(["item-1", "item-2", "item-10"]);
+  });
+
+  it("ignores case and accents between otherwise equal names, keeping source order", () => {
+    expect(ordered(["apple", "Apple", "äpple"])).toEqual(["apple", "Apple", "äpple"]);
+    expect(ordered(["äpple", "Apple", "apple"])).toEqual(["äpple", "Apple", "apple"]);
+  });
+});
+
 describe("getNextSortOrder", () => {
   it("starts a newly clicked column at ASC", () => {
     expect(getNextSortOrder(SORT_ORDERS.DESC, false)).toBe(SORT_ORDERS.ASC);

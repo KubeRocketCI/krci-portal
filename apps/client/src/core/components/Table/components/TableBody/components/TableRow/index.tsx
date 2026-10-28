@@ -42,15 +42,6 @@ export const TableRow = <DataType,>({
       : {};
   };
 
-  const getColumnPadding = React.useCallback((hasSortableValue: boolean, textAlign: string) => {
-    // 18px is the width of the arrow icon + 1.6px is the padding between the icon and the text
-    // 18 + 1.6 = 19.6px ≈ 20px = pl-5
-    if (hasSortableValue && textAlign !== "center") {
-      return "pl-5";
-    }
-    return "";
-  }, []);
-
   const getJustifyClass = (align?: string) => {
     switch (align) {
       case "center":
@@ -110,7 +101,6 @@ export const TableRow = <DataType,>({
 
           const alignClass = props?.align === "center" ? "text-center" : props?.align === "right" ? "text-right" : "";
           const paddingClass = "py-2 px-3";
-          const sortablePaddingClass = getColumnPadding(!!data?.columnSortableValuePath, props?.align || "");
 
           const rendered = data.render({ data: item });
           const content =
@@ -121,7 +111,7 @@ export const TableRow = <DataType,>({
             );
 
           return (
-            <TableCellUI key={id} className={`${paddingClass} ${alignClass} ${sortablePaddingClass} overflow-hidden`}>
+            <TableCellUI key={id} className={`${paddingClass} ${alignClass} overflow-hidden`}>
               {/* `min-w-0` on the wrapper and on its child lets content shrink to the column, so `truncate` bites. The cell clips the rest. */}
               <div
                 className={`flex w-full min-w-0 items-center text-sm [&>*]:min-w-0 ${getJustifyClass(props?.align)}`}
