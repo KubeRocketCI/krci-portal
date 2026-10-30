@@ -47,7 +47,7 @@ export function useColumns({
             <Tooltip title="View pipeline logs" delayDuration={500}>
               <Button
                 variant="link"
-                className="w-full justify-start gap-1 p-0 whitespace-normal"
+                className="w-full justify-start gap-1 p-0 whitespace-normal has-[>svg]:px-0"
                 onClick={() => openLogs(data)}
               >
                 <ENTITY_ICON.pipelineRun className="text-muted-foreground/70 size-4 shrink-0" />
@@ -75,7 +75,7 @@ export function useColumns({
               data: {
                 columnSortableValuePath: "codebaseName",
                 render: ({ data }) => (
-                  <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal">
+                  <Button variant="link" asChild className="w-full justify-start p-0 whitespace-normal has-[>svg]:px-0">
                     <Link
                       to={PATH_PROJECT_DETAILS_FULL}
                       params={{ name: data.codebaseName, namespace: data.namespace, clusterName }}

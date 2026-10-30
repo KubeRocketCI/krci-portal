@@ -59,6 +59,12 @@ const compareMissing = (a: SortKey, b: SortKey): number | null => {
   return a.missing ? 1 : -1;
 };
 
+/**
+ * One collator for every comparison: `localeCompare` with options builds a collator on each call.
+ * `numeric` keeps `item-2` ahead of `item-10`; `base` ignores case and accents.
+ */
+const textCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+
 /** Ascending. Numbers compare numerically, timestamps chronologically, everything else by locale. */
 const compareDefined = (a: SortKey, b: SortKey): number => {
   if (a.number !== null && b.number !== null) {
@@ -67,8 +73,7 @@ const compareDefined = (a: SortKey, b: SortKey): number => {
   if (a.time !== null && b.time !== null) {
     return a.time - b.time;
   }
-  // `numeric` keeps `item-2` ahead of `item-10`; `base` sensitivity is case-insensitive.
-  return a.text.localeCompare(b.text, undefined, { numeric: true, sensitivity: "base" });
+  return textCollator.compare(a.text, b.text);
 };
 
 export const isColumnSortable = <DataType>({ data }: TableColumn<DataType>) =>

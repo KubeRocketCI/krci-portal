@@ -41,7 +41,7 @@ export function useColumns(): TableColumn<Trigger>[] {
           render: ({ data }) => {
             const { name, namespace } = data.metadata;
             return (
-              <Button variant="link" asChild className="p-0">
+              <Button variant="link" asChild className="p-0 has-[>svg]:px-0">
                 <Link
                   to={routeTriggerDetails.fullPath}
                   params={{ clusterName, namespace: namespace || defaultNamespace, name }}

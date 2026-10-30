@@ -190,4 +190,35 @@ describe("DataTable sorting", () => {
     expect(header(/^name$/i)).toHaveAttribute("aria-sort", "descending");
     expect(renderedNames()).toEqual(["gamma", "beta", "alpha"]);
   });
+
+  it("pads the cells of a sortable column like those of a plain one, whatever the sort key kind", () => {
+    const kinds: TableColumn<Run>[] = [
+      {
+        id: "byPath",
+        label: "By path",
+        data: { render: ({ data }) => data.name, columnSortableValuePath: "name" },
+        cell: { baseWidth: 25 },
+      },
+      {
+        id: "byValue",
+        label: "By value",
+        data: { render: ({ data }) => data.name, columnSortableValue: (row) => row.name },
+        cell: { baseWidth: 25 },
+      },
+      {
+        id: "byComparator",
+        label: "By comparator",
+        data: { render: ({ data }) => data.name, customSortFn: (a, b) => a.name.localeCompare(b.name) },
+        cell: { baseWidth: 25 },
+      },
+      { id: "plain", label: "Plain", data: { render: ({ data }) => data.name }, cell: { baseWidth: 25 } },
+    ];
+    renderTable({ columns: kinds });
+
+    const cells = within(screen.getAllByRole("row")[1]).getAllByRole("cell");
+    for (const cell of cells) {
+      expect(cell).toHaveClass("px-3");
+      expect(cell.className).not.toMatch(/\bpl-\d/);
+    }
+  });
 });
