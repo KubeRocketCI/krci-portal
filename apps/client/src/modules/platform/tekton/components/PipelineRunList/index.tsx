@@ -7,7 +7,7 @@ import { usePipelineRunPermissions } from "@/k8s/api/groups/Tekton/PipelineRun";
 import { getKubeObjectUid } from "@/k8s/utils/getKubeObjectUid";
 import { useStopPipelineRuns } from "@/modules/platform/tekton/hooks/useStopPipelineRuns";
 import { Tooltip } from "@/core/components/ui/tooltip";
-import { isHistoryPipelineRun, isPipelineRunStoppable, pipelineType, type PipelineRun } from "@my-project/shared";
+import { isPipelineRunStoppable, pipelineType, type PipelineRun } from "@my-project/shared";
 import { OctagonX, Trash } from "lucide-react";
 import React from "react";
 import { DeletionDialog } from "./components/DeleteDialog";
@@ -101,7 +101,6 @@ export const PipelineRunList = ({
         pagination={pagination}
         selection={{
           ...selection,
-          isRowSelectable: (row) => !isHistoryPipelineRun(row),
           renderSelectionActions: () => (
             <>
               <ButtonWithPermission

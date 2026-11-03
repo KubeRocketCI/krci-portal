@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect } from "storybook/test";
+import { expect, screen, userEvent, within } from "storybook/test";
 import { PipelineRunList } from "./index";
 import { FilterProvider } from "@/core/providers/Filter/provider";
 import {
@@ -8,6 +8,7 @@ import {
   pipelineType,
   createMockPipelineRun,
   k8sPipelineRunConfig,
+  tektonResultAnnotations,
 } from "@my-project/shared";
 import {
   defaultPipelineRunFilterValues,
@@ -152,6 +153,47 @@ const generateMockPipelineRuns = (): PipelineRun[] => [
     startTime: new Date(Date.now() - 4800000).toISOString(),
     completionTime: new Date(Date.now() - 4700000).toISOString(),
   }),
+];
+
+// A run loaded from Tekton Results: the Kubernetes resource is gone, only the archived record remains.
+const asArchived = (run: PipelineRun): PipelineRun => ({
+  ...run,
+  metadata: {
+    ...run.metadata,
+    annotations: { ...run.metadata.annotations, [tektonResultAnnotations.historySource]: "true" },
+  },
+});
+
+// Live and archived Security runs, as seen once older runs have been removed from the cluster.
+const generateMixedSecurityRuns = (): PipelineRun[] => [
+  createMockPipelineRun({
+    name: "security-live-recent",
+    pipelineType: pipelineType.security,
+    status: "succeeded",
+    codebase: "my-app",
+    startTime: new Date(Date.now() - 600000).toISOString(),
+    completionTime: new Date(Date.now() - 500000).toISOString(),
+  }),
+  asArchived(
+    createMockPipelineRun({
+      name: "security-archived-old-1",
+      pipelineType: pipelineType.security,
+      status: "succeeded",
+      codebase: "my-app",
+      startTime: new Date(Date.now() - 86400000).toISOString(),
+      completionTime: new Date(Date.now() - 86300000).toISOString(),
+    })
+  ),
+  asArchived(
+    createMockPipelineRun({
+      name: "security-archived-old-2",
+      pipelineType: pipelineType.security,
+      status: "failed",
+      codebase: "my-app",
+      startTime: new Date(Date.now() - 172800000).toISOString(),
+      completionTime: new Date(Date.now() - 172700000).toISOString(),
+    })
+  ),
 ];
 
 // Content wrapper component for FilterProvider
@@ -564,6 +606,79 @@ export const UsageContextBranchDetails: Story = {
     isLoading: false,
     pipelineRunTypes: [pipelineType.review, pipelineType.build],
     filterControls: [pipelineRunFilterControlNames.PIPELINE_TYPE, pipelineRunFilterControlNames.STATUS],
+  },
+};
+
+const mixedSecurityArgs: Story["args"] = {
+  tableId: "storybook-pipeline-run-list-archived",
+  tableName: "Pipeline Runs",
+  pipelineRuns: generateMixedSecurityRuns(),
+  isLoading: false,
+  pagination: { show: false },
+  defaultFilterValues: { [pipelineRunFilterControlNames.PIPELINE_TYPE]: pipelineType.security },
+};
+
+const selectRun = async (canvas: ReturnType<typeof within>, name: string) => {
+  const row = canvas.getByText(name).closest("tr") as HTMLElement;
+  await userEvent.click(within(row).getByRole("checkbox"));
+};
+
+/**
+ * Archived runs (Tekton Results records) can be selected like live ones, also under a type filter.
+ */
+export const ArchivedRunsSelectable: Story = {
+  args: mixedSecurityArgs,
+  play: async ({ canvas }) => {
+    for (const checkbox of await canvas.findAllByRole("checkbox")) {
+      await expect(checkbox).toBeEnabled();
+    }
+
+    await selectRun(canvas, "security-archived-old-1");
+
+    const row = canvas.getByText("security-archived-old-1").closest("tr") as HTMLElement;
+    await expect(within(row).getByRole("checkbox")).toBeChecked();
+  },
+};
+
+/**
+ * Only archived runs selected: nothing can be deleted from the cluster, so the dialog explains why and blocks Delete.
+ */
+export const DeleteOnlyArchivedSelected: Story = {
+  args: mixedSecurityArgs,
+  play: async ({ canvas }) => {
+    await selectRun(canvas, "security-archived-old-1");
+    await selectRun(canvas, "security-archived-old-2");
+    await userEvent.click(await canvas.findByRole("button", { name: "Delete" }));
+
+    const dialog = within(await screen.findByRole("dialog"));
+    await expect(dialog.getByTestId("delete-archived-only")).toHaveTextContent(
+      "archived history records. They cannot be deleted from the cluster."
+    );
+
+    await userEvent.type(dialog.getByRole("textbox"), "confirm");
+    await expect(dialog.getByRole("button", { name: "Delete" })).toBeDisabled();
+  },
+};
+
+/**
+ * Live and archived runs selected: the dialog states how many are deleted and how many are skipped.
+ */
+export const DeleteMixedSelection: Story = {
+  args: mixedSecurityArgs,
+  play: async ({ canvas }) => {
+    await selectRun(canvas, "security-live-recent");
+    await selectRun(canvas, "security-archived-old-1");
+    await selectRun(canvas, "security-archived-old-2");
+    await userEvent.click(await canvas.findByRole("button", { name: "Delete" }));
+
+    const dialog = within(await screen.findByRole("dialog"));
+    await expect(dialog.getByTestId("delete-summary")).toHaveTextContent(
+      "1 live run will be deleted. 2 archived runs will be skipped"
+    );
+
+    await expect(dialog.getByRole("button", { name: "Delete" })).toBeDisabled();
+    await userEvent.type(dialog.getByRole("textbox"), "confirm");
+    await expect(dialog.getByRole("button", { name: "Delete" })).toBeEnabled();
   },
 };
 
