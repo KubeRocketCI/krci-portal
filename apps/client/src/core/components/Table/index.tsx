@@ -83,12 +83,14 @@ const TableShell = <DataType,>(props: TableShellProps<DataType>) => {
     () => ({
       selected: selection?.selected ?? [],
       isRowSelectable: selection?.isRowSelectable ?? SELECTION_DEFAULTS.IS_ROW_SELECTABLE,
+      getRowUnselectableReason: selection?.getRowUnselectableReason,
       isRowSelected: selection?.isRowSelected,
       handleSelectAll: selection?.handleSelectAll,
       handleSelectRow: selection?.handleSelectRow,
       renderSelectionActions: selection?.renderSelectionActions,
     }),
     [
+      selection?.getRowUnselectableReason,
       selection?.handleSelectAll,
       selection?.handleSelectRow,
       selection?.isRowSelectable,

@@ -115,6 +115,7 @@ export const TableBody = <DataType,>({
           {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, idx: number) => {
             const _isSelected = selection?.isRowSelected ? isSelectedRow(selection.isRowSelected, row) : false;
             const _isSelectable = selection?.isRowSelectable ? selection?.isRowSelectable(row) : true;
+            const unselectableReason = !_isSelectable ? selection?.getRowUnselectableReason?.(row) : undefined;
 
             const rowId = expandable?.getRowId(row);
             const isExpanded = rowId !== undefined && expandable?.expandedRowIds?.has(rowId);
@@ -127,6 +128,7 @@ export const TableBody = <DataType,>({
                 columns={columns}
                 isRowSelected={_isSelected}
                 isRowSelectable={_isSelectable}
+                unselectableReason={unselectableReason}
                 handleRowClick={handleRowClick}
                 handleSelectRowClick={selection?.handleSelectRow}
                 isExpandable={!!expandable}
