@@ -23,6 +23,8 @@ import { VisibleRunCount } from "./components/VisibleRunCount";
 /** Newest first: a run the user just triggered lands at the top, queued or already started. */
 const DEFAULT_SORT = { sortBy: columnNames.STARTED_AT, order: "desc" } as const;
 
+const ARCHIVED_RUN_HINT = "PipelineRun is archived";
+
 export const PipelineRunList = ({
   tableId,
   tableName,
@@ -102,6 +104,7 @@ export const PipelineRunList = ({
         selection={{
           ...selection,
           isRowSelectable: (row) => !isHistoryPipelineRun(row),
+          getRowUnselectableReason: (row) => (isHistoryPipelineRun(row) ? ARCHIVED_RUN_HINT : undefined),
           renderSelectionActions: () => (
             <>
               <ButtonWithPermission

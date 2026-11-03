@@ -102,6 +102,8 @@ export interface TableSort {
 export interface TableSelection<DataType> {
   selected?: string[];
   isRowSelectable?: (row: DataType) => boolean;
+  /** Tooltip text on a row's disabled checkbox. */
+  getRowUnselectableReason?: (row: DataType) => string | undefined;
   isRowSelected?: (row: DataType) => boolean;
   handleSelectAll?: (event: React.ChangeEvent<HTMLInputElement>, paginatedItems: DataType[]) => void;
   handleSelectRow?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, row: DataType) => void;

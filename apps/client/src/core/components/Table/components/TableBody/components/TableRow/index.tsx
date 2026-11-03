@@ -8,6 +8,8 @@ import { ChevronRight, ChevronDown } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
 import { cn } from "@/core/utils/classname";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
+import { ConditionalWrapper } from "@/core/components/ConditionalWrapper";
+import { Tooltip } from "@/core/components/ui/tooltip";
 
 export const TableRow = <DataType,>({
   item,
@@ -16,6 +18,7 @@ export const TableRow = <DataType,>({
   handleSelectRowClick,
   isRowSelected,
   isRowSelectable,
+  unselectableReason,
   isExpandable,
   isExpanded,
   onToggleExpand,
@@ -76,18 +79,34 @@ export const TableRow = <DataType,>({
         )}
         {!!handleSelectRowClick && (
           <TableCellUI className="px-1 py-2 text-center">
-            <Checkbox
-              checked={isRowSelected}
-              onCheckedChange={(checked) => {
-                const syntheticEvent = {
-                  currentTarget: { checked },
-                  stopPropagation: () => {},
-                  preventDefault: () => {},
-                } as unknown as React.MouseEvent<HTMLButtonElement>;
-                handleSelectRowClick(syntheticEvent, item);
-              }}
-              disabled={!isRowSelectable}
-            />
+            <ConditionalWrapper
+              condition={!!unselectableReason}
+              wrapper={(children) => (
+                <Tooltip title={unselectableReason}>
+                  <span
+                    tabIndex={0}
+                    className="focus-visible:ring-ring inline-flex cursor-not-allowed rounded-[4px] focus-visible:ring-2 focus-visible:outline-none"
+                  >
+                    {children}
+                  </span>
+                </Tooltip>
+              )}
+            >
+              <Checkbox
+                aria-label={unselectableReason}
+                className={unselectableReason ? "pointer-events-none" : undefined}
+                checked={isRowSelected}
+                onCheckedChange={(checked) => {
+                  const syntheticEvent = {
+                    currentTarget: { checked },
+                    stopPropagation: () => {},
+                    preventDefault: () => {},
+                  } as unknown as React.MouseEvent<HTMLButtonElement>;
+                  handleSelectRowClick(syntheticEvent, item);
+                }}
+                disabled={!isRowSelectable}
+              />
+            </ConditionalWrapper>
           </TableCellUI>
         )}
         {columns.map((column) => {

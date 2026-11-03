@@ -6,6 +6,8 @@ export interface TableRowProps<DataType> {
   columns: TableColumn<DataType>[];
   isRowSelected?: boolean;
   isRowSelectable?: boolean;
+  /** Tooltip text and accessible name of the disabled checkbox. */
+  unselectableReason?: string;
   handleRowClick?: (event: React.MouseEvent<HTMLTableRowElement>, row: DataType) => void;
   handleSelectRowClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, row: DataType) => void;
   isExpandable?: boolean;

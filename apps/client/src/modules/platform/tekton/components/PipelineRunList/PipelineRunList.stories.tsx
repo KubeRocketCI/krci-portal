@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect } from "storybook/test";
+import { expect, screen, userEvent, within } from "storybook/test";
 import { PipelineRunList } from "./index";
 import { FilterProvider } from "@/core/providers/Filter/provider";
 import {
@@ -8,6 +8,7 @@ import {
   pipelineType,
   createMockPipelineRun,
   k8sPipelineRunConfig,
+  tektonResultAnnotations,
 } from "@my-project/shared";
 import {
   defaultPipelineRunFilterValues,
@@ -505,6 +506,65 @@ export const LongPipelineRunNames: Story = {
     ),
     isLoading: false,
     filterControls: [pipelineRunFilterControlNames.SEARCH, pipelineRunFilterControlNames.STATUS],
+  },
+};
+
+const ARCHIVED_RUN_HINT = "PipelineRun is archived";
+
+const liveRun = createMockPipelineRun({
+  name: "my-app-build-live",
+  pipelineType: pipelineType.build,
+  status: "succeeded",
+  codebase: "my-app",
+  pipelineName: "build-pipeline",
+  startTime: new Date(Date.now() - 600000).toISOString(),
+  completionTime: new Date(Date.now() - 300000).toISOString(),
+});
+
+const archivedRunBase = createMockPipelineRun({
+  name: "my-app-build-archived",
+  pipelineType: pipelineType.build,
+  status: "succeeded",
+  codebase: "my-app",
+  pipelineName: "build-pipeline",
+  startTime: new Date(Date.now() - 86400000).toISOString(),
+  completionTime: new Date(Date.now() - 86100000).toISOString(),
+});
+
+const archivedRun: PipelineRun = {
+  ...archivedRunBase,
+  metadata: {
+    ...archivedRunBase.metadata,
+    annotations: {
+      ...archivedRunBase.metadata.annotations,
+      [tektonResultAnnotations.historySource]: "true",
+    },
+  },
+};
+
+/**
+ * Live and archived runs. The archived run's checkbox is disabled and explains why on hover and focus.
+ */
+export const WithArchivedRun: Story = {
+  args: {
+    tableId: "storybook-archived-run",
+    tableName: "Pipeline Runs",
+    pipelineRuns: [liveRun, archivedRun],
+    isLoading: false,
+    pagination: { show: false },
+    filterControls: [],
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const liveCheckbox = within(canvas.getByRole("row", { name: /my-app-build-live/ })).getByRole("checkbox");
+    await expect(liveCheckbox).toBeEnabled();
+
+    const archivedCheckbox = canvas.getByRole("checkbox", { name: ARCHIVED_RUN_HINT });
+    await expect(archivedCheckbox).toBeDisabled();
+
+    await userEvent.hover(archivedCheckbox.parentElement!);
+    await expect(await screen.findByRole("tooltip")).toHaveTextContent(ARCHIVED_RUN_HINT);
   },
 };
 
