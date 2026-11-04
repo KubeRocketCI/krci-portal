@@ -22,7 +22,6 @@ export const FormActions = () => {
 
   const isDirty = useStore(form.store, (state) => state.isDirty);
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
-  const canSubmit = useStore(form.store, (state) => state.canSubmit);
 
   const {
     mutations: { secretEditMutation },
@@ -138,7 +137,7 @@ export const FormActions = () => {
             type="button"
             size="sm"
             variant="default"
-            disabled={isLoading || !isDirty || !secretPermissions.data.update.allowed || !canSubmit}
+            disabled={isLoading || !isDirty || !secretPermissions.data.update.allowed}
             onClick={() => form.handleSubmit()}
           >
             Save

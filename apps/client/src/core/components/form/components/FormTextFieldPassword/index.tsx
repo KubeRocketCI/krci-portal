@@ -1,6 +1,7 @@
 import React from "react";
 import { InputPassword } from "@/core/components/ui/input-password";
 import { useFieldContext } from "../../form-context";
+import { extractErrorMessage } from "../../utils/extractErrorMessage";
 
 export interface FormTextFieldPasswordProps {
   label?: string;
@@ -23,8 +24,9 @@ export const FormTextFieldPassword: React.FC<FormTextFieldPasswordProps> = ({
   const fieldId = React.useId();
 
   const value = (field.state.value ?? "") as string;
-  const hasError = field.state.meta.errors?.length > 0;
-  const errorMessage = field.state.meta.errors?.[0];
+  const errors = field.state.meta.errors;
+  const hasError = field.state.meta.isTouched && errors.length > 0;
+  const errorMessage = extractErrorMessage(errors);
 
   return (
     <InputPassword

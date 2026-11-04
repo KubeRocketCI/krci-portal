@@ -48,6 +48,40 @@ export interface HttpStatusErrorInit {
   body: string;
   /** The `X-Request-Id` response header. */
   requestId?: string;
+  /** The `detail` of a problem+json body. Set only for services with `exposeProblemDetail`. */
+  problemDetail?: string;
+}
+
+const MAX_PROBLEM_DETAIL_LENGTH = 300;
+
+/**
+ * The `detail` of an RFC 7807 `application/problem+json` body, or undefined for any other response.
+ * Longer than 300 characters: cut at a code point and ended with "…".
+ */
+export function parseProblemDetail(body: string, contentType?: string): string | undefined {
+  if (!contentType?.toLowerCase().includes("application/problem+json")) {
+    return undefined;
+  }
+
+  let detail: unknown;
+  try {
+    detail = (JSON.parse(body) as { detail?: unknown } | null)?.detail;
+  } catch {
+    return undefined;
+  }
+
+  if (typeof detail !== "string" || !detail.trim()) {
+    return undefined;
+  }
+
+  const codePoints = Array.from(detail.trim());
+  if (codePoints.length <= MAX_PROBLEM_DETAIL_LENGTH) {
+    return codePoints.join("");
+  }
+  return `${codePoints
+    .slice(0, MAX_PROBLEM_DETAIL_LENGTH - 1)
+    .join("")
+    .trimEnd()}…`;
 }
 
 /**
@@ -55,7 +89,8 @@ export interface HttpStatusErrorInit {
  *
  * Branch on `status`, never on `message`. The response body is kept in `body` and logged
  * server-side; it is never put in `message`, which tRPC forwards verbatim to the browser.
- * `requestId` reaches the browser as `data.requestId`.
+ * `requestId` reaches the browser as `data.requestId`. `problemDetail` reaches it as
+ * `data.problemDetail` when the tRPC status is 4xx.
  */
 export class HttpStatusError extends HttpError {
   readonly url: string;
@@ -63,6 +98,7 @@ export class HttpStatusError extends HttpError {
   readonly statusText: string;
   readonly body: string;
   readonly requestId?: string;
+  readonly problemDetail?: string;
 
   constructor(init: HttpStatusErrorInit, options?: ErrorOptions) {
     super(init.service, `${init.service} request failed: ${init.status} ${init.statusText}`, options);
@@ -71,6 +107,7 @@ export class HttpStatusError extends HttpError {
     this.statusText = init.statusText;
     this.body = init.body;
     this.requestId = init.requestId;
+    this.problemDetail = init.problemDetail;
   }
 }
 
@@ -209,6 +246,11 @@ export interface HttpServiceConfig {
   timeoutMs: number;
   /** Sent on every request. May override the default `Accept`. */
   headers?: Record<string, string>;
+  /**
+   * Forward the `detail` of a problem+json error body to the browser as `data.problemDetail`.
+   * Default: false. Enable only for a service whose `detail` texts are written for end users.
+   */
+  exposeProblemDetail?: boolean;
 }
 
 export interface RequestOptions {
@@ -274,7 +316,7 @@ export function createHttpService(config: HttpServiceConfig): HttpService {
       });
 
       if (!response.ok) {
-        throw await buildStatusError(name, url, response);
+        throw await buildStatusError(name, url, response, config.exposeProblemDetail ?? false);
       }
 
       return await read(response);
@@ -344,7 +386,12 @@ function appendQuery(path: string, query?: Record<string, unknown>): string {
   return queryString ? `${path}?${queryString}` : path;
 }
 
-async function buildStatusError(service: string, url: string, response: Response): Promise<HttpStatusError> {
+async function buildStatusError(
+  service: string,
+  url: string,
+  response: Response,
+  exposeProblemDetail: boolean
+): Promise<HttpStatusError> {
   let body = "";
   try {
     body = await response.text();
@@ -365,6 +412,9 @@ async function buildStatusError(service: string, url: string, response: Response
     statusText: response.statusText,
     body,
     requestId: response.headers.get("x-request-id") || undefined,
+    problemDetail: exposeProblemDetail
+      ? parseProblemDetail(body, response.headers.get("content-type") || undefined)
+      : undefined,
   });
 }
 

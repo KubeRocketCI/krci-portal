@@ -2,7 +2,14 @@ import { z } from "zod";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { createGitFusionClient } from "../../../../clients/gitfusion/index.js";
 import { K8sClient } from "../../../../clients/k8s/index.js";
-import { k8sCodebaseConfig, type Codebase, type KubeObjectListBase } from "@my-project/shared";
+import {
+  gitProvider,
+  k8sCodebaseConfig,
+  k8sGitServerConfig,
+  type Codebase,
+  type GitServer,
+  type KubeObjectListBase,
+} from "@my-project/shared";
 import { TRPCError } from "@trpc/server";
 import { ERROR_K8S_CLIENT_NOT_INITIALIZED } from "../../../k8s/errors/index.js";
 import { handleK8sError } from "../../../k8s/utils/handleK8sError/index.js";
@@ -16,6 +23,9 @@ const PRS_PER_REPO = 3;
  * Server-side aggregation: lists Codebase CRDs via K8s API, then fetches
  * open PRs per repo via GitFusion. Returns a compact summary for the
  * dashboard overview widget.
+ *
+ * Gerrit codebases are skipped: GitFusion has no pull requests for Gerrit.
+ * GitServer list failure: no codebase is skipped.
  */
 export const getOpenPullRequestsSummaryProcedure = protectedProcedure
   .input(
@@ -32,6 +42,13 @@ export const getOpenPullRequestsSummaryProcedure = protectedProcedure
     if (!k8sClient.KubeConfig) {
       throw new TRPCError(ERROR_K8S_CLIENT_NOT_INITIALIZED);
     }
+
+    const gitServersRequest = (
+      k8sClient.listResource(k8sGitServerConfig, namespace) as unknown as Promise<KubeObjectListBase<GitServer>>
+    ).then(
+      (list) => list.items ?? [],
+      () => [] as GitServer[]
+    );
 
     let codebases: Codebase[];
     try {
@@ -65,7 +82,15 @@ export const getOpenPullRequestsSummaryProcedure = protectedProcedure
 
     let totalOpen = 0;
 
-    const codebasesToProcess = codebases.slice(0, MAX_CODEBASES);
+    const gerritServerNames = new Set(
+      (await gitServersRequest)
+        .filter((gitServer) => gitServer.spec.gitProvider === gitProvider.gerrit)
+        .map((gitServer) => gitServer.metadata.name)
+    );
+
+    const codebasesToProcess = codebases
+      .filter((codebase) => !gerritServerNames.has(codebase.spec.gitServer))
+      .slice(0, MAX_CODEBASES);
 
     const results = await Promise.allSettled(
       codebasesToProcess.map(async (codebase) => {

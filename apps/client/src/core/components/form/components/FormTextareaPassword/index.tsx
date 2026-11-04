@@ -1,5 +1,6 @@
 import React from "react";
 import { useFieldContext } from "../../form-context";
+import { extractErrorMessage } from "../../utils/extractErrorMessage";
 import { TextareaPassword } from "@/core/components/ui/textarea-password";
 
 export interface FormTextareaPasswordProps {
@@ -28,8 +29,8 @@ export const FormTextareaPassword: React.FC<FormTextareaPasswordProps> = ({
 
   const fieldId = React.useId();
   const errors = field.state.meta.errors;
-  const hasError = errors.length > 0;
-  const errorMessage = errors[0] as string | undefined;
+  const hasError = field.state.meta.isTouched && errors.length > 0;
+  const errorMessage = extractErrorMessage(errors);
   const fieldValue = field.state.value ?? "";
 
   return (

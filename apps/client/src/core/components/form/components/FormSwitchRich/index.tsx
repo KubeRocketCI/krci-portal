@@ -3,6 +3,7 @@ import { Switch } from "@/core/components/ui/switch";
 import { Label } from "@/core/components/ui/label";
 import { cn } from "@/core/utils/classname";
 import { useFieldContext } from "../../form-context";
+import { extractErrorMessage } from "../../utils/extractErrorMessage";
 
 export interface FormSwitchRichProps {
   label?: string;
@@ -26,8 +27,9 @@ export const FormSwitchRich: React.FC<FormSwitchRichProps> = ({
 
   const value = field.state.value as boolean | undefined;
   const isChecked = !!value;
-  const hasError = field.state.meta.errors?.length > 0;
-  const errorMessage = field.state.meta.errors?.[0];
+  const errors = field.state.meta.errors;
+  const hasError = field.state.meta.isTouched && errors.length > 0;
+  const errorMessage = hasError ? extractErrorMessage(errors) : undefined;
   const displayHelperText = errorMessage || helperText;
 
   const handleChange = (checked: boolean) => {

@@ -1,6 +1,6 @@
 import React from "react";
 import { useAppForm } from "@/core/components/form";
-import { clusterSecretFormSchema } from "../../../../schema";
+import { editClusterSecretFormSchema } from "../../../../schema";
 import type { ManageClusterSecretValues } from "../../types";
 
 // Internal hook to create the form with proper typing
@@ -12,7 +12,7 @@ function useCreateClusterSecretForm(
   return useAppForm({
     defaultValues,
     validators: {
-      onChange: clusterSecretFormSchema,
+      onChange: editClusterSecretFormSchema,
     },
     onSubmit: async ({ value }) => {
       await onSubmit(value);

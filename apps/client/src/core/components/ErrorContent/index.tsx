@@ -26,6 +26,7 @@ export const ErrorContent = ({
   const [open, setOpen] = React.useState<boolean>(false);
   const requestId = error?.data?.requestId;
   const httpStatus = error?.data?.httpStatus;
+  const problemDetail = error?.data?.problemDetail;
   const centered = httpStatus === 403 || httpStatus === 404;
 
   const handleClose = () => {
@@ -77,9 +78,20 @@ export const ErrorContent = ({
       case 504:
         return "The service is temporarily unavailable. Please try again later.";
       default:
+        // problemDetail: set by the server for 4xx answers only. Shown without a retry hint.
+        if (problemDetail) {
+          return (
+            <div className="flex flex-row items-center gap-2">
+              <span className="text-muted-foreground text-sm">{problemDetail}</span>
+              <Button variant="link" onClick={handleOpen} className="h-auto p-0 text-sm">
+                More details
+              </Button>
+            </div>
+          );
+        }
         return "Oops! Something went wrong. Please try again later.";
     }
-  }, [httpStatus, orientation]);
+  }, [httpStatus, orientation, problemDetail]);
 
   return (
     <div className={outlined ? "border-border w-full border-t border-b p-3" : "w-full"}>

@@ -11,11 +11,16 @@ interface FakeErrorInit {
   code: TRPC_ERROR_CODE_KEY;
   message: string;
   requestId?: string;
+  problemDetail?: string;
 }
 
-function createRequestError({ httpStatus, code, message, requestId }: FakeErrorInit): RequestError {
+function createRequestError({ httpStatus, code, message, requestId, problemDetail }: FakeErrorInit): RequestError {
   return TRPCClientError.from({
-    error: { code: TRPC_ERROR_CODES_BY_KEY[code], message, data: { code, httpStatus, requestId } },
+    error: {
+      code: TRPC_ERROR_CODES_BY_KEY[code],
+      message,
+      data: { code, httpStatus, requestId, problemDetail },
+    },
   });
 }
 
@@ -76,6 +81,40 @@ export const ServiceUnavailableWithoutRequestId: Story = {
     const canvas = within(canvasElement);
     await expect(canvas.getByText("The service is temporarily unavailable. Please try again later.")).toBeVisible();
     await expect(canvas.queryByText(/Request ID:/)).not.toBeInTheDocument();
+  },
+};
+
+export const BadRequestWithProblemDetail: Story = {
+  args: {
+    error: createRequestError({
+      httpStatus: 400,
+      code: "BAD_REQUEST",
+      message: "GitFusion request failed: 400 Bad Request",
+      requestId: "gf-pod/abc123-000043",
+      problemDetail: "The operation is not supported for this git server.",
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText("The operation is not supported for this git server.")).toBeVisible();
+    await expect(canvas.queryByText(/try again later/i)).not.toBeInTheDocument();
+    await expect(canvas.getByText("Request ID: gf-pod/abc123-000043")).toBeVisible();
+    await userEvent.click(canvas.getByRole("button", { name: "More details" }));
+    await expect(await screen.findByText("GitFusion request failed: 400 Bad Request")).toBeVisible();
+  },
+};
+
+export const BadRequestWithoutProblemDetail: Story = {
+  args: {
+    error: createRequestError({
+      httpStatus: 400,
+      code: "BAD_REQUEST",
+      message: "Sonar request failed: 400 Bad Request",
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText("Oops! Something went wrong. Please try again later.")).toBeVisible();
   },
 };
 
