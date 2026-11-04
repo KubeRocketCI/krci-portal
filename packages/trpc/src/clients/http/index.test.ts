@@ -161,6 +161,102 @@ describe("createHttpService non-2xx responses", () => {
     expect(error.body).toContain("s3cret");
   });
 
+  describe("problemDetail", () => {
+    const problemBody = JSON.stringify({
+      type: "about:blank",
+      title: "Bad Request",
+      status: 400,
+      detail: "The operation is not supported for this git server.",
+    });
+
+    async function failWith(response: Response, exposeProblemDetail = true): Promise<HttpStatusError> {
+      stubFetch(response);
+      return (await makeService({ exposeProblemDetail })
+        .json("/things")
+        .catch((caught: unknown) => caught)) as HttpStatusError;
+    }
+
+    it("carries the detail of a problem+json body and keeps it out of the message", async () => {
+      const error = await failWith(
+        new Response(problemBody, {
+          status: 400,
+          statusText: "Bad Request",
+          headers: { "Content-Type": "application/problem+json" },
+        })
+      );
+
+      expect(error.problemDetail).toBe("The operation is not supported for this git server.");
+      expect(error.message).toBe("TestService request failed: 400 Bad Request");
+    });
+
+    it("is undefined for a service without exposeProblemDetail", async () => {
+      const error = await failWith(
+        new Response(problemBody, {
+          status: 400,
+          statusText: "Bad Request",
+          headers: { "Content-Type": "application/problem+json" },
+        }),
+        false
+      );
+
+      expect(error.problemDetail).toBeUndefined();
+    });
+
+    it("ignores a body that is not declared as problem+json", async () => {
+      const error = await failWith(
+        new Response(problemBody, {
+          status: 400,
+          statusText: "Bad Request",
+          headers: { "Content-Type": "application/json" },
+        })
+      );
+
+      expect(error.problemDetail).toBeUndefined();
+    });
+
+    it.each([
+      ["invalid JSON", "not json"],
+      ["a missing detail", JSON.stringify({ title: "Bad Request" })],
+      ["a non-string detail", JSON.stringify({ detail: { nested: true } })],
+      ["a blank detail", JSON.stringify({ detail: "   " })],
+    ])("is undefined for %s", async (_, body) => {
+      const error = await failWith(
+        new Response(body, {
+          status: 400,
+          statusText: "Bad Request",
+          headers: { "Content-Type": "application/problem+json" },
+        })
+      );
+
+      expect(error.problemDetail).toBeUndefined();
+    });
+
+    it("truncates a very long detail", async () => {
+      const error = await failWith(
+        new Response(JSON.stringify({ detail: "x".repeat(1000) }), {
+          status: 400,
+          statusText: "Bad Request",
+          headers: { "Content-Type": "application/problem+json; charset=utf-8" },
+        })
+      );
+
+      expect(Array.from(error.problemDetail ?? "")).toHaveLength(300);
+      expect(error.problemDetail?.endsWith("…")).toBe(true);
+    });
+
+    it("truncates at a code point boundary", async () => {
+      const error = await failWith(
+        new Response(JSON.stringify({ detail: "😀".repeat(400) }), {
+          status: 400,
+          statusText: "Bad Request",
+          headers: { "Content-Type": "application/problem+json" },
+        })
+      );
+
+      expect(error.problemDetail).toBe(`${"😀".repeat(299)}…`);
+    });
+  });
+
   it("carries the X-Request-Id response header as requestId", async () => {
     stubFetch(
       new Response("upstream rejected the token", {

@@ -4,11 +4,11 @@ import { Button } from "@/core/components/ui/button";
 import { Card } from "@/core/components/ui/card";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
-import { GitFusionPullRequest } from "@my-project/shared";
+import { GitFusionPullRequest, gitProvider } from "@my-project/shared";
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
-import { useCodebaseWatch } from "../../hooks/data";
+import { useCodebaseWatch, useGitServerWatch } from "../../hooks/data";
 import { TABLE_ID } from "./constants";
 import { useColumns } from "./hooks/useColumns";
 
@@ -35,6 +35,10 @@ export function PullRequestList() {
 
   const codebaseWatch = useCodebaseWatch();
   const codebase = codebaseWatch.query.data;
+
+  const gitServerWatch = useGitServerWatch();
+  const gitServerProvider = gitServerWatch.query.data?.spec.gitProvider;
+  const isGerrit = gitServerProvider === gitProvider.gerrit;
 
   const codebaseGitUrlPath = codebase?.spec.gitUrlPath || "";
   const codebaseGitServer = codebase?.spec.gitServer || "";
@@ -64,7 +68,8 @@ export function PullRequestList() {
         namespace: defaultNamespace,
         clusterName,
       }),
-    enabled: !!codebaseGitServer && !!codebaseOwner && !!codebaseRepoName,
+    // GitFusion has no pull requests for Gerrit; the provider is known only once the GitServer loads.
+    enabled: !!gitServerProvider && !isGerrit && !!codebaseGitServer && !!codebaseOwner && !!codebaseRepoName,
   });
 
   const pullRequests: GitFusionPullRequest[] = query.data?.data || [];
@@ -75,57 +80,64 @@ export function PullRequestList() {
       <div className="flex items-center justify-between">
         <h3 className="text-foreground text-xl font-semibold">Pull Requests</h3>
       </div>
-      <DataTable
-        id={TABLE_ID}
-        mode="server"
-        data={pullRequests}
-        columns={columns}
-        isLoading={codebaseWatch.query.isLoading || query.isFetching}
-        blockerError={query.error ? (query.error as Error) : undefined}
-        emptyListComponent={<EmptyList missingItemName={`${state} pull requests`} />}
-        expandable={{
-          getRowId: (row) => row.id,
-          expandedRowIds,
-          onExpandedRowsChange: setExpandedRowIds,
-          expandedRowRender: (row) => (
-            <div className="space-y-2">
-              <span className="text-sm font-medium">Description</span>
-              <p className="text-muted-foreground text-sm whitespace-pre-wrap">
-                {row.description || "No description provided."}
-              </p>
-            </div>
-          ),
-        }}
-        slots={{
-          header: {
-            component: (
-              <div className="col-span-12 flex items-center gap-2">
-                {STATE_TABS.map((tab) => (
-                  <Button
-                    key={tab.value}
-                    variant={state === tab.value ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleStateChange(tab.value)}
-                  >
-                    {tab.label}
-                  </Button>
-                ))}
+      {isGerrit ? (
+        <EmptyList
+          customText="Pull Requests are not supported for Gerrit projects."
+          description="Gerrit uses Changes for code review. Open them in Gerrit."
+        />
+      ) : (
+        <DataTable
+          id={TABLE_ID}
+          mode="server"
+          data={pullRequests}
+          columns={columns}
+          isLoading={codebaseWatch.query.isLoading || gitServerWatch.query.isLoading || query.isFetching}
+          blockerError={(query.error ?? gitServerWatch.query.error ?? undefined) as Error | undefined}
+          emptyListComponent={<EmptyList missingItemName={`${state} pull requests`} />}
+          expandable={{
+            getRowId: (row) => row.id,
+            expandedRowIds,
+            onExpandedRowsChange: setExpandedRowIds,
+            expandedRowRender: (row) => (
+              <div className="space-y-2">
+                <span className="text-sm font-medium">Description</span>
+                <p className="text-muted-foreground text-sm whitespace-pre-wrap">
+                  {row.description || "No description provided."}
+                </p>
               </div>
             ),
-          },
-        }}
-        pagination={{
-          show: true,
-          page,
-          rowsPerPage: PER_PAGE,
-          totalCount,
-          onPageChange: setPage,
-        }}
-        settings={{
-          show: true,
-        }}
-        outlined={false}
-      />
+          }}
+          slots={{
+            header: {
+              component: (
+                <div className="col-span-12 flex items-center gap-2">
+                  {STATE_TABS.map((tab) => (
+                    <Button
+                      key={tab.value}
+                      variant={state === tab.value ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleStateChange(tab.value)}
+                    >
+                      {tab.label}
+                    </Button>
+                  ))}
+                </div>
+              ),
+            },
+          }}
+          pagination={{
+            show: true,
+            page,
+            rowsPerPage: PER_PAGE,
+            totalCount,
+            onPageChange: setPage,
+          }}
+          settings={{
+            show: true,
+          }}
+          outlined={false}
+        />
+      )}
     </Card>
   );
 }

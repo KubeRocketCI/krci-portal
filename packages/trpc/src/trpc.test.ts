@@ -40,6 +40,49 @@ describe("formatError", () => {
     expect(result.data.code).toBe("FORBIDDEN");
   });
 
+  describe("problemDetail", () => {
+    const detail = "The operation is not supported for this git server.";
+
+    function statusError(status: number) {
+      return new HttpStatusError({
+        service: "GitFusion",
+        url: "https://gitfusion.example.com/api/v1/pull-requests",
+        status,
+        statusText: "Status",
+        body: JSON.stringify({ detail }),
+        problemDetail: detail,
+      });
+    }
+
+    function shapeWith(httpStatus: number): TRPCDefaultErrorShape {
+      return { ...baseShape, data: { ...baseShape.data, httpStatus } };
+    }
+
+    it("is exposed when the tRPC status is 4xx", () => {
+      const result = formatError({ shape: shapeWith(400), error: { cause: statusError(400) } });
+
+      expect(result.data.problemDetail).toBe(detail);
+    });
+
+    it("is withheld for a 5xx answer", () => {
+      const result = formatError({ shape: shapeWith(500), error: { cause: statusError(500) } });
+
+      expect(result.data.problemDetail).toBeUndefined();
+    });
+
+    it("is withheld for an upstream 4xx that maps to a tRPC 500", () => {
+      const result = formatError({ shape: shapeWith(500), error: { cause: statusError(422) } });
+
+      expect(result.data.problemDetail).toBeUndefined();
+    });
+
+    it("is undefined for a non-HTTP cause", () => {
+      const result = formatError({ shape: baseShape, error: { cause: new Error("boom") } });
+
+      expect(result.data.problemDetail).toBeUndefined();
+    });
+  });
+
   describe("requestId", () => {
     function statusError(requestId?: string) {
       return new HttpStatusError({

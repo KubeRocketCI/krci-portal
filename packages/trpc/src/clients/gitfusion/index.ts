@@ -96,6 +96,7 @@ export class GitFusionClient {
         baseURL: apiBaseURL,
         timeoutMs,
         headers: { "Content-Type": "application/json" },
+        exposeProblemDetail: true,
       })
     );
   }

@@ -3,7 +3,9 @@ import z from "zod";
 // DNS-1123 subdomain: required for any Kubernetes resource name.
 export const k8sResourceNamePattern = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
 
-export const k8sResourceNameSchema = z.string().min(1).max(253).regex(k8sResourceNamePattern, {
+export const K8S_RESOURCE_NAME_MAX_LENGTH = 253;
+
+export const k8sResourceNameSchema = z.string().min(1).max(K8S_RESOURCE_NAME_MAX_LENGTH).regex(k8sResourceNamePattern, {
   message: "Must be a valid Kubernetes resource name (lowercase letters, numbers, '-', '.').",
 });
 

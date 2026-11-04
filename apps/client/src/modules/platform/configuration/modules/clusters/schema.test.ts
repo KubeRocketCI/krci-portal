@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { clusterType } from "@my-project/shared";
-import { clusterSecretFormSchema } from "./schema";
+import { clusterSecretFormSchema, editClusterSecretFormSchema } from "./schema";
 import { createDefaultValues } from "./components/CreateClusterSecretForm/providers/form/constants";
 import type { ManageClusterSecretValues } from "./components/CreateClusterSecretForm/types";
 
@@ -53,6 +53,25 @@ describe("clusterSecretFormSchema", () => {
       expect(fieldErrors[field]?.[0]).toBe(message);
     });
 
+    it.each(["My Cluster", "Cluster", "my_cluster", "-cluster", "cluster-", "my cluster 1"])(
+      "rejects the invalid Kubernetes name %j",
+      (clusterName) => {
+        const fieldErrors = getFieldErrors({ ...validBearer, clusterName });
+
+        expect(Object.keys(fieldErrors)).toEqual(["clusterName"]);
+        expect(fieldErrors.clusterName?.[0]).toContain("lowercase letters");
+      }
+    );
+
+    it.each(["c1", "my-cluster", "eks.prod-1"])("accepts the valid Kubernetes name %j", (clusterName) => {
+      expect(getFieldErrors({ ...validBearer, clusterName })).toEqual({});
+    });
+
+    it("rejects a name whose Secret name would exceed 253 characters", () => {
+      expect(Object.keys(getFieldErrors({ ...validBearer, clusterName: "a".repeat(246) }))).toEqual(["clusterName"]);
+      expect(getFieldErrors({ ...validBearer, clusterName: "a".repeat(245) })).toEqual({});
+    });
+
     it("rejects a host without HTTPS", () => {
       expect(getFieldErrors({ ...validBearer, clusterHost: "http://c1.example.com" })).toEqual({
         clusterHost: ["Enter a valid URL with HTTPS protocol."],
@@ -90,6 +109,19 @@ describe("clusterSecretFormSchema", () => {
       const values = { ...createDefaultValues, clusterType: clusterType.irsa };
 
       expect(Object.keys(getFieldErrors(values)).sort()).toEqual(["caData", "clusterHost", "clusterName", "roleARN"]);
+    });
+  });
+
+  describe("Edit form", () => {
+    it("keeps accepting an existing cluster whose read-only name is not a Kubernetes name", () => {
+      const values = { ...validBearer, clusterName: "Legacy Cluster_1" };
+
+      expect(editClusterSecretFormSchema.safeParse(values).success).toBe(true);
+      expect(clusterSecretFormSchema.safeParse(values).success).toBe(false);
+    });
+
+    it("still requires a name", () => {
+      expect(editClusterSecretFormSchema.safeParse({ ...validBearer, clusterName: "" }).success).toBe(false);
     });
   });
 });

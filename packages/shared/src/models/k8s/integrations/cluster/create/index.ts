@@ -2,7 +2,7 @@ import z, { ZodError } from "zod";
 import { Secret, SecretDraft, secretDraftSchema } from "../../../groups/Core/index.js";
 import { SECRET_LABEL_CLUSTER_TYPE, SECRET_LABEL_SECRET_TYPE } from "../../constants.js";
 import { safeDecode, safeEncode, parseConfigJson } from "../../../../../utils/index.js";
-import { clusterType, clusterTypeEnum, ClusterType } from "../types.js";
+import { clusterType, clusterTypeEnum, ClusterType, getClusterSecretName } from "../types.js";
 
 export { clusterType, clusterTypeEnum };
 export type { ClusterType };
@@ -37,7 +37,7 @@ export const createClusterSecretDraft = (input: CreateClusterSecretDraftInput): 
 
   let draft: SecretDraft;
 
-  const clusterMetadataName = `${input.clusterName}-cluster`;
+  const clusterMetadataName = getClusterSecretName(input.clusterName);
 
   if (input.clusterType === clusterType.bearer) {
     draft = {

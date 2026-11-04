@@ -18,6 +18,11 @@ export function formatError({ shape, error }: { shape: TRPCDefaultErrorShape; er
       ...shape.data,
       source: (error.cause as Record<string, unknown> | undefined)?.source as string | undefined,
       requestId: httpError instanceof HttpStatusError ? httpError.requestId : undefined,
+      // Keyed on the tRPC status the browser sees, not the upstream one. 5xx: withheld.
+      problemDetail:
+        httpError instanceof HttpStatusError && shape.data.httpStatus >= 400 && shape.data.httpStatus < 500
+          ? httpError.problemDetail
+          : undefined,
     },
   };
 }

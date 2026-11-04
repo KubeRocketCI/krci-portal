@@ -1,6 +1,6 @@
 import React from "react";
 import { useAppForm } from "@/core/components/form";
-import { clusterSecretFormSchema } from "../../../../schema";
+import { editClusterSecretFormSchema } from "../../../../schema";
 import { ClusterSecretFormContext } from "./context";
 import type { ClusterSecretFormProviderProps } from "./types";
 
@@ -16,7 +16,7 @@ export const ClusterSecretFormProvider: React.FC<ClusterSecretFormProviderProps>
   const form = useAppForm({
     defaultValues,
     validators: {
-      onChange: clusterSecretFormSchema,
+      onChange: editClusterSecretFormSchema,
     },
     onSubmit: async ({ value }) => {
       await onSubmit(value);
