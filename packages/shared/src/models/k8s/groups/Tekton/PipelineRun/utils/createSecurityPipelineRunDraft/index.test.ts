@@ -89,6 +89,27 @@ describe("createSecurityPipelineRunDraft", () => {
     expect(gitSourceUrl?.value).toBe("git@github.com:test-repo");
   });
 
+  it("should use ssh.bitbucket.org in git-source-url for Bitbucket Cloud", () => {
+    const bitbucketGitServer = {
+      spec: {
+        gitHost: "bitbucket.org",
+        gitProvider: "bitbucket",
+        gitUser: "git",
+        sshPort: 22,
+      },
+    } as unknown as GitServer;
+
+    const result = createSecurityPipelineRunDraft({
+      codebase: mockCodebase,
+      codebaseBranch: mockCodebaseBranch,
+      pipelineRunTemplate: mockPipelineRunTemplate,
+      gitServer: bitbucketGitServer,
+    });
+
+    const gitSourceUrl = result.spec.params?.find((p) => p.name === "git-source-url");
+    expect(gitSourceUrl?.value).toBe("git@ssh.bitbucket.org:test-repo");
+  });
+
   it("should set git-source-url with ssh:// prefix for Gerrit provider", () => {
     const gerritCodebase = {
       ...mockCodebase,

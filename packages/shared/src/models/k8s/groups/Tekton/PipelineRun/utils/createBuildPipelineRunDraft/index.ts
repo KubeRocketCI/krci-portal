@@ -1,5 +1,5 @@
 import { truncateName, createRandomString, stripLeadingSlash } from "../../../../../../../utils/index.js";
-import { Codebase, GitServer, CodebaseBranch, gitProvider } from "../../../../KRCI/index.js";
+import { Codebase, GitServer, CodebaseBranch, gitProvider, getGitServerSSHHost } from "../../../../KRCI/index.js";
 import { PipelineRun } from "../../types.js";
 import { pipelineRunLabels } from "../../labels.js";
 import { pipelineType } from "../../../Pipeline/constants.js";
@@ -77,8 +77,10 @@ export const createBuildPipelineRunDraft = ({
   } = codebaseBranch;
 
   const {
-    spec: { gitUser, gitHost, sshPort },
+    spec: { gitUser, sshPort },
   } = gitServer;
+
+  const gitHost = getGitServerSSHHost(gitServer.spec);
 
   const base = structuredClone(pipelineRunTemplate);
 

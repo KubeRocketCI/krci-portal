@@ -378,6 +378,7 @@ describe("testing createBuildPipelineRunDraft", () => {
       gitServer: {
         spec: {
           gitHost: "bitbucket.org",
+          gitProvider: "bitbucket",
           gitUser: "git",
           sshPort: 22,
         },
@@ -412,7 +413,7 @@ describe("testing createBuildPipelineRunDraft", () => {
         params: [
           {
             name: "git-source-url",
-            value: "ssh://git@bitbucket.org:22/test-git-url-path",
+            value: "ssh://git@ssh.bitbucket.org:22/test-git-url-path",
           },
           {
             name: "git-source-revision",
