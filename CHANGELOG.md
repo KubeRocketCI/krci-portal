@@ -1,6 +1,35 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Routine
+
+- Update current development version
+
+
+<a name="v0.10.0"></a>
+## [v0.10.0] - 2026-11-07
+### Features
+
+- Mount the Tekton Results CA from a chart value
+
+### Bug Fixes
+
+- Use ssh.bitbucket.org in PipelineRun source URLs for Bitbucket Cloud
+- Show the reason when forms and Pull Requests fail without one
+- Explain why archived PipelineRuns can't be selected
+- Align table cells, sort Resource Name by shown name
+- Set the new Stage order to the highest existing order plus one
+- Sort table columns by label keys that contain dots
+- Disable Save while a required cluster field is empty
+- Take the Stage order at submit and reset the wizard form
+- Name every wildcard value the default host reads in its error
+- Answer unknown REST paths with a JSON 404, serve custom-runs
+- authenticate to Tekton Results with the portal ServiceAccount token
+
+### Routine
+
+- Update current development version
+
 
 <a name="v0.9.0"></a>
 ## [v0.9.0] - 2026-10-20
@@ -394,6 +423,7 @@
 ## v0.1.0 - 2026-03-27
 ### Features
 
+- Enable CHANGELOG.md generation
 - Improve project details page
 - Improve ScrollCopyText component
 - Add deployment submit review step
@@ -593,7 +623,8 @@
 - Setup initial code ([#1](https://github.com/KubeRocketCI/krci-portal/issues/1))
 
 
-[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/KubeRocketCI/krci-portal/compare/v0.10.0...HEAD
+[v0.10.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.9.0...v0.10.0
 [v0.9.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.8.0...v0.9.0
 [v0.8.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.7.0...v0.8.0
 [v0.7.0]: https://github.com/KubeRocketCI/krci-portal/compare/v0.6.0...v0.7.0
