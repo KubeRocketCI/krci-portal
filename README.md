@@ -1,6 +1,6 @@
 # KubeRocketCI Portal
 
-[![Version](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square)](https://github.com/KubeRocketCI/krci-portal)
+[![Version](https://img.shields.io/badge/Version-0.10.0-informational?style=flat-square)](https://github.com/KubeRocketCI/krci-portal)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.txt)
 
 > **KRCI Portal** is a modern web-based user interface for [KubeRocketCI](https://docs.kuberocketci.io/), providing a comprehensive platform for managing CI/CD pipelines, codebases, and deployment flows in Kubernetes environments.
