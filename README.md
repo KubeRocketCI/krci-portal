@@ -93,7 +93,7 @@ krci-portal/
 
 Before installing KRCI Portal, ensure you have:
 
-- Node.js 18+ and pnpm 10+
+- Node.js 22.14+ and pnpm 11+
 - Kubernetes cluster
 - Access to the cluster with appropriate RBAC permissions
 - (Optional) KubeRocketCI and [operators](https://operatorhub.io/?keyword=edp) installed
