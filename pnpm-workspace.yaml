@@ -57,9 +57,9 @@ overrides:
   baseline-browser-mapping: ">=2.11.0"
   moment: ">=2.31.0"
 
-# Install-script allowlist: only better-sqlite3 (a native binding) may run build
-# scripts. Everything else is blocked — malicious postinstall is the #1 attack vector.
+# Dependency build scripts. Default: blocked.
+# better-sqlite3: keep false. The package ships prebuilt bindings; the image has no build toolchain.
 allowBuilds:
-  better-sqlite3: true
+  better-sqlite3: false
   esbuild: false
   sonar-scanner: false
