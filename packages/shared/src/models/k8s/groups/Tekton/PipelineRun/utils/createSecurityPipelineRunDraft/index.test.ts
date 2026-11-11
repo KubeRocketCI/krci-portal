@@ -122,6 +122,7 @@ describe("createSecurityPipelineRunDraft", () => {
     const gerritGitServer = {
       spec: {
         gitHost: "gerrit.example.com",
+        gitProvider: "gerrit",
         gitUser: "gerrit-user",
         sshPort: 29418,
       },
@@ -243,6 +244,35 @@ describe("createSecurityPipelineRunDraft", () => {
       "app.edp.epam.com/git-avatar": "",
       "app.edp.epam.com/git-change-url": "",
     });
+  });
+});
+
+describe("createSecurityPipelineRunDraft git-source-url by provider", () => {
+  const gitSourceUrl = (draft: PipelineRun) => draft.spec.params?.find((p) => p.name === "git-source-url")?.value;
+
+  const buildDraft = (codebaseGitServerName: string, gitServerSpec: Record<string, unknown>) => {
+    const codebase = structuredClone(mockCodebase);
+    codebase.spec.gitServer = codebaseGitServerName;
+    codebase.spec.gitUrlPath = "/test-git-url-path";
+
+    return createSecurityPipelineRunDraft({
+      codebase,
+      codebaseBranch: mockCodebaseBranch,
+      pipelineRunTemplate: mockPipelineRunTemplate,
+      gitServer: { spec: gitServerSpec } as unknown as GitServer,
+    });
+  };
+
+  it("uses the ssh:// URL for a Gerrit server with a custom name", () => {
+    const draft = buildDraft("gerrit-prod", { gitProvider: "gerrit", gitHost: "h", gitUser: "u", sshPort: 29418 });
+
+    expect(gitSourceUrl(draft)).toBe("ssh://u@h:29418/test-git-url-path");
+  });
+
+  it("uses the scp URL for a non-Gerrit server named gerrit", () => {
+    const draft = buildDraft("gerrit", { gitProvider: "gitlab", gitHost: "h", gitUser: "git", sshPort: 22 });
+
+    expect(gitSourceUrl(draft)).toBe("git@h:test-git-url-path");
   });
 });
 

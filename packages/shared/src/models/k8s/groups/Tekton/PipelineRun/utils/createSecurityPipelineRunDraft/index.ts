@@ -25,7 +25,7 @@ export function createSecurityPipelineRunDraft({
 }): PipelineRun {
   const {
     metadata: { name: codebaseName },
-    spec: { gitUrlPath: codebaseGitUrlPath, gitServer: codebaseGitServer },
+    spec: { gitUrlPath: codebaseGitUrlPath },
   } = codebase;
 
   const {
@@ -75,7 +75,7 @@ export function createSecurityPipelineRunDraft({
     switch (param.name) {
       case "git-source-url":
         param.value =
-          codebaseGitServer === gitProvider.gerrit
+          gitServer.spec.gitProvider === gitProvider.gerrit
             ? `ssh://${gitUser}@${gitHost}:${sshPort}/${gitUrlPathWithoutSlashAtStart}`
             : `${gitUser}@${gitHost}:${gitUrlPathWithoutSlashAtStart}`;
         break;
