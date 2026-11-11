@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import { PageContentWrapper } from "./index";
@@ -113,5 +113,155 @@ describe("PageContentWrapper tabs", () => {
 
     expect(onClickB).toHaveBeenCalledTimes(1);
     expect(onTabChange).toHaveBeenCalledWith(expect.anything(), 1);
+  });
+});
+
+const ROW_RECT = { left: 0, right: 300, width: 300 } as DOMRect;
+
+describe("PageContentWrapper tab row scrolling", () => {
+  let scrollLeft: number;
+  let geometry: { clientWidth: number; scrollWidth: number };
+  let frames: FrameRequestCallback[];
+
+  const setReducedMotion = (matches: boolean) => {
+    vi.mocked(window.matchMedia).mockImplementation(
+      (query: string) =>
+        ({
+          matches,
+          media: query,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        }) as unknown as MediaQueryList
+    );
+  };
+
+  const getRow = () => screen.getByRole("button", { name: "Tab A" }).parentElement as HTMLElement;
+
+  const getFades = () => Array.from(getRow().parentElement!.querySelectorAll(".bg-gradient-to-r, .bg-gradient-to-l"));
+
+  const movePointer = (clientX: number, pointerType = "mouse") => {
+    const event = new MouseEvent("pointermove", { clientX, bubbles: true });
+    Object.defineProperty(event, "pointerType", { value: pointerType });
+    act(() => {
+      getRow().dispatchEvent(event);
+    });
+  };
+
+  const runFrame = (timestamp: number) => {
+    const frame = frames.shift();
+    act(() => frame?.(timestamp));
+  };
+
+  beforeEach(() => {
+    scrollLeft = 0;
+    geometry = { clientWidth: 300, scrollWidth: 900 };
+    frames = [];
+
+    stubResizeObserver();
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockImplementation(() => geometry.clientWidth);
+    vi.spyOn(HTMLElement.prototype, "scrollWidth", "get").mockImplementation(() => geometry.scrollWidth);
+    vi.spyOn(HTMLElement.prototype, "scrollLeft", "get").mockImplementation(() => scrollLeft);
+    vi.spyOn(HTMLElement.prototype, "scrollLeft", "set").mockImplementation((value: number) => {
+      scrollLeft = value;
+    });
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(ROW_RECT);
+    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => frames.push(callback));
+    vi.stubGlobal("cancelAnimationFrame", () => {
+      frames = [];
+    });
+    vi.spyOn(performance, "now").mockReturnValue(0);
+    vi.mocked(Element.prototype.scrollIntoView).mockClear();
+    setReducedMotion(false);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it("scrolls right while a mouse rests near the right edge and stops after leaving", () => {
+    render(<PageContentWrapper tabs={buildTabs(probe(), probe())} activeTab={0} />);
+
+    movePointer(300);
+    runFrame(100);
+    expect(scrollLeft).toBeCloseTo(30);
+
+    act(() => {
+      getRow().dispatchEvent(new Event("pointerleave"));
+    });
+    expect(frames).toHaveLength(0);
+  });
+
+  it("scrolls when the row mounts after the first render", () => {
+    const tabs = buildTabs(probe(), probe());
+    const { rerender } = render(<PageContentWrapper title="Details" tabs={[]} />);
+
+    rerender(<PageContentWrapper title="Details" tabs={tabs} activeTab={0} />);
+    movePointer(300);
+
+    expect(frames).toHaveLength(1);
+  });
+
+  it("shows the right fade when the row mounts after the first render", () => {
+    const tabs = buildTabs(probe(), probe());
+    const { rerender } = render(<PageContentWrapper title="Details" tabs={[]} />);
+
+    rerender(<PageContentWrapper title="Details" tabs={tabs} activeTab={0} />);
+
+    expect(getFades()).toHaveLength(1);
+    expect(getFades()[0]).toHaveClass("bg-gradient-to-l");
+  });
+
+  it("does not scroll when the tabs fit", () => {
+    geometry = { clientWidth: 900, scrollWidth: 900 };
+    render(<PageContentWrapper tabs={buildTabs(probe(), probe())} activeTab={0} />);
+
+    movePointer(900);
+
+    expect(frames).toHaveLength(0);
+    expect(scrollLeft).toBe(0);
+    expect(getFades()).toHaveLength(0);
+  });
+
+  it("does not scroll under reduced motion", () => {
+    setReducedMotion(true);
+    render(<PageContentWrapper tabs={buildTabs(probe(), probe())} activeTab={0} />);
+
+    movePointer(300);
+
+    expect(frames).toHaveLength(0);
+    expect(scrollLeft).toBe(0);
+  });
+
+  it("scrolls the active tab into view", () => {
+    render(<PageContentWrapper tabs={buildTabs(probe(), probe())} activeTab={2} />);
+
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({
+      inline: "nearest",
+      block: "nearest",
+      behavior: "smooth",
+    });
+    expect(vi.mocked(Element.prototype.scrollIntoView).mock.contexts.at(-1)).toBe(
+      screen.getByRole("button", { name: "Tab C" })
+    );
+  });
+
+  it("does not scroll the active tab into view when the tabs fit", () => {
+    geometry = { clientWidth: 900, scrollWidth: 900 };
+
+    render(<PageContentWrapper tabs={buildTabs(probe(), probe())} activeTab={2} />);
+
+    expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
+  });
+
+  it("scrolls a focused tab into view", () => {
+    render(<PageContentWrapper tabs={buildTabs(probe(), probe())} activeTab={0} />);
+    vi.mocked(Element.prototype.scrollIntoView).mockClear();
+
+    act(() => screen.getByRole("button", { name: "Tab B" }).focus());
+
+    expect(vi.mocked(Element.prototype.scrollIntoView).mock.contexts.at(-1)).toBe(
+      screen.getByRole("button", { name: "Tab B" })
+    );
   });
 });

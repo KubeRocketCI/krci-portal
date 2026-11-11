@@ -6,6 +6,7 @@ import { PinButton } from "../PinButton";
 import { TabButton } from "../TabButton";
 import { Info } from "lucide-react";
 import { cn } from "@/core/utils/classname";
+import { useEdgeScroll } from "@/core/hooks/use-edge-scroll";
 import { useScrollFades } from "@/core/hooks/use-scroll-fades";
 import { TabPanel } from "@/core/providers/Tabs/components/Tabs/components/TabPanel";
 import { getTabKey, useVisitedTabs } from "@/core/providers/Tabs/components/Tabs/hooks/useVisitedTabs";
@@ -30,8 +31,14 @@ export const PageContentWrapper: React.FC<PageContentWrapperProps> = ({
   tourHighlight,
   children,
 }) => {
-  const { scrollRef: tabsScrollRef, showLeftFade, showRightFade } = useScrollFades<HTMLDivElement>();
+  const {
+    scrollRef: tabsScrollRef,
+    scrollElement: tabsElement,
+    showLeftFade,
+    showRightFade,
+  } = useScrollFades<HTMLDivElement>();
   const { activeTabIdx, isVisited } = useVisitedTabs(tabs ?? NO_TABS, activeTab);
+  useEdgeScroll(tabsElement, { activeIndex: activeTabIdx, itemCount: tabs?.length ?? 0 });
 
   const hasTabs = tabs && tabs.length > 0;
   const hasHeader = title || description || actions || extraLinks || hasTabs;
@@ -100,10 +107,16 @@ export const PageContentWrapper: React.FC<PageContentWrapperProps> = ({
                   ))}
                 </div>
                 {showLeftFade && (
-                  <div className="from-card pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r to-transparent" />
+                  <div
+                    aria-hidden="true"
+                    className="from-card pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r to-transparent"
+                  />
                 )}
                 {showRightFade && (
-                  <div className="from-card pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l to-transparent" />
+                  <div
+                    aria-hidden="true"
+                    className="from-card pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l to-transparent"
+                  />
                 )}
               </div>
             )}
