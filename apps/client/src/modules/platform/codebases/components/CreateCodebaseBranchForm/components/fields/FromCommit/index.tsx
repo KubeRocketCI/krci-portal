@@ -1,12 +1,9 @@
-import { useTRPCClient } from "@/core/providers/trpc";
-import { useClusterStore } from "@/k8s/store";
-import { useQuery } from "@tanstack/react-query";
 import React from "react";
-import { useShallow } from "zustand/react/shallow";
 import { useCreateCodebaseBranchForm } from "../../../providers/form/hooks";
 import { CODEBASE_BRANCH_FORM_NAMES } from "../../../constants";
 import { useStore } from "@tanstack/react-form";
 import type { Codebase, CodebaseBranch } from "@my-project/shared";
+import { useBranchDiscovery } from "../../../hooks/useBranchDiscovery";
 
 const FROM_TYPE_OPTIONS = [
   {
@@ -25,38 +22,12 @@ interface FromCommitProps {
 }
 
 export const FromCommit = ({ codebase, defaultBranch }: FromCommitProps) => {
-  const trpc = useTRPCClient();
   const form = useCreateCodebaseBranchForm();
 
   const releaseValue = useStore(form.store, (state) => state.values.release);
   const fromType = useStore(form.store, (state) => state.values.fromType) || "branch";
 
-  const { clusterName, defaultNamespace } = useClusterStore(
-    useShallow((state) => ({
-      clusterName: state.clusterName,
-      defaultNamespace: state.defaultNamespace,
-    }))
-  );
-
-  const codebaseGitUrlPath = codebase.spec.gitUrlPath;
-  const codebaseGitServer = codebase.spec.gitServer;
-  const codebaseRepoName = codebaseGitUrlPath.split("/").at(-1) || "";
-  const codebaseOwner = codebaseGitUrlPath.split("/").filter(Boolean).slice(0, -1).join("/");
-
-  const query = useQuery({
-    queryKey: ["branchList", codebaseGitServer, codebaseOwner, codebaseRepoName],
-    queryFn: () =>
-      trpc.gitfusion.getBranchList.query({
-        gitServer: codebaseGitServer,
-        owner: codebaseOwner,
-        repoName: codebaseRepoName,
-        namespace: defaultNamespace,
-        clusterName,
-      }),
-    enabled: !!codebaseGitServer && !!codebaseOwner && !!codebaseRepoName,
-    staleTime: 0,
-    refetchOnMount: true,
-  });
+  const { isEnabled: canUseBranchDiscovery, isLoading, helperText, query } = useBranchDiscovery(codebase);
 
   const defaultBranchName = defaultBranch?.spec.branchName;
 
@@ -72,7 +43,7 @@ export const FromCommit = ({ codebase, defaultBranch }: FromCommitProps) => {
       return [defaultBranchOption];
     }
 
-    if (query.isLoading || query.isError || !query.data) {
+    if (!canUseBranchDiscovery || query.isLoading || query.isError || !query.data) {
       return [defaultBranchOption];
     }
 
@@ -82,9 +53,15 @@ export const FromCommit = ({ codebase, defaultBranch }: FromCommitProps) => {
         value: branch.name,
       })) || [defaultBranchOption]
     );
-  }, [releaseValue, defaultBranch, query.isLoading, query.isError, query.data, defaultBranchOption]);
-
-  const helperText = query.isError ? "Branches auto-discovery could not be performed." : " ";
+  }, [
+    releaseValue,
+    defaultBranch,
+    canUseBranchDiscovery,
+    query.isLoading,
+    query.isError,
+    query.data,
+    defaultBranchOption,
+  ]);
 
   const fromTypeOptions = React.useMemo(() => {
     return FROM_TYPE_OPTIONS.map((option) => ({
@@ -124,9 +101,9 @@ export const FromCommit = ({ codebase, defaultBranch }: FromCommitProps) => {
                 placeholder="Select branch name"
                 tooltipText="The new branch will be created starting from the selected branch. If this field is empty, the Default branch will be used."
                 options={branchesOptions}
-                disabled={query.isLoading}
+                disabled={isLoading}
                 helperText={helperText}
-                loading={query.isLoading}
+                loading={isLoading}
                 freeSolo={true}
               />
             )}
