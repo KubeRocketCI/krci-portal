@@ -32,6 +32,7 @@ export const configRouter = t.router({
         defaultNamespace: z.string(),
         sonarWebUrl: z.string(),
         dependencyTrackWebUrl: z.string(),
+        defectDojoWebUrl: z.string(),
       })
     )
     .query(() => {
@@ -39,12 +40,17 @@ export const configRouter = t.router({
       const defaultNamespace = process.env.DEFAULT_CLUSTER_NAMESPACE || "";
       const sonarWebUrl = process.env.SONAR_WEB_URL || process.env.SONAR_HOST_URL || "";
       const dependencyTrackWebUrl = process.env.DEPENDENCY_TRACK_WEB_URL || process.env.DEPENDENCY_TRACK_URL || "";
+      const isDefectDojoConfigured = Boolean(
+        process.env.DEFECTDOJO_URL && process.env.DEFECTDOJO_API_KEY && process.env.DEFECTDOJO_WEB_URL
+      );
+      const defectDojoWebUrl = isDefectDojoConfigured ? (process.env.DEFECTDOJO_WEB_URL ?? "") : "";
 
       return {
         clusterName,
         defaultNamespace,
         sonarWebUrl,
         dependencyTrackWebUrl,
+        defectDojoWebUrl,
       };
     }),
 });

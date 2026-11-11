@@ -9,6 +9,8 @@ import {
 } from "@my-project/trpc";
 import {
   k8sCodebaseConfig,
+  SECURITY_FINDINGS_PAGE_MAX,
+  securityScopeSchema,
   type INotificationsStore,
   type ISessionStore,
 } from "@my-project/shared";
@@ -30,6 +32,7 @@ import {
   type ScaSeverity,
 } from "./sca-helpers.js";
 import { sendRestError } from "./rest-errors.js";
+import { parseSecuritySeverityQuery } from "./security-helpers.js";
 import { TRPCError } from "@trpc/server";
 import { generateOpenApiDocument } from "trpc-to-openapi";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
@@ -804,6 +807,113 @@ export function registerOpenApi(
         items,
         truncated,
       };
+    } catch (error) {
+      return sendRestError(error, req, res);
+    }
+  });
+
+  // ---------------------------------------------------------------------------
+  // Security — DefectDojo summaries
+  // ---------------------------------------------------------------------------
+
+  // GET /rest/v1/security/get (protected) — proxies security.getCodebaseSummary
+  fastify.get<{
+    Querystring: {
+      codebase: string;
+    };
+  }>("/rest/v1/security/get", async (req, res) => {
+    try {
+      const { codebase } = req.query;
+      if (!codebase) {
+        return res.code(400).send({ error: "codebase is required" });
+      }
+
+      const caller = await buildCaller(req, res);
+      return await caller.security.getCodebaseSummary({ codebase });
+    } catch (error) {
+      return sendRestError(error, req, res);
+    }
+  });
+
+  // GET /rest/v1/security/env (protected) — proxies security.getEnvironmentSummary
+  fastify.get<{
+    Querystring: {
+      cdPipeline: string;
+      stage: string;
+    };
+  }>("/rest/v1/security/env", async (req, res) => {
+    try {
+      const { cdPipeline, stage } = req.query;
+      if (!cdPipeline) {
+        return res.code(400).send({ error: "cdPipeline is required" });
+      }
+      if (!stage) {
+        return res.code(400).send({ error: "stage is required" });
+      }
+
+      const caller = await buildCaller(req, res);
+      return await caller.security.getEnvironmentSummary({ cdPipeline, stage });
+    } catch (error) {
+      return sendRestError(error, req, res);
+    }
+  });
+
+  // GET /rest/v1/security/findings (protected) — proxies security.listFindings
+  fastify.get<{
+    Querystring: {
+      codebase: string;
+      scope?: string;
+      environment?: string;
+      severity?: string | string[];
+      page?: string;
+      pageSize?: string;
+    };
+  }>("/rest/v1/security/findings", async (req, res) => {
+    try {
+      const { codebase, scope, environment, severity, page, pageSize } =
+        req.query;
+      if (!codebase) {
+        return res.code(400).send({ error: "codebase is required" });
+      }
+
+      const parsedScope = securityScopeSchema.safeParse(scope);
+      if (!parsedScope.success) {
+        return res.code(400).send({ error: "scope must be ci or runtime" });
+      }
+
+      const parsedSeverity = parseSecuritySeverityQuery(severity);
+      if (parsedSeverity === "invalid") {
+        return res.code(400).send({
+          error:
+            "severity must be a comma-separated list of critical|high|medium|low|unassigned",
+        });
+      }
+
+      const parsedPage = parsePositiveIntQuery(page);
+      const parsedPageSize = parsePositiveIntQuery(pageSize);
+      if (parsedPage === "invalid") {
+        return res.code(400).send({ error: "page must be a positive integer" });
+      }
+      if (parsedPageSize === "invalid") {
+        return res
+          .code(400)
+          .send({ error: "pageSize must be a positive integer" });
+      }
+      if (parsedPage !== undefined && parsedPage > SECURITY_FINDINGS_PAGE_MAX) {
+        return res.code(400).send({
+          error: `page must be at most ${SECURITY_FINDINGS_PAGE_MAX}`,
+        });
+      }
+
+      const caller = await buildCaller(req, res);
+      return await caller.security.listFindings({
+        codebase,
+        scope: parsedScope.data,
+        environment: environment === "" ? undefined : environment,
+        severity: parsedSeverity,
+        page: parsedPage,
+        pageSize: parsedPageSize,
+      });
     } catch (error) {
       return sendRestError(error, req, res);
     }

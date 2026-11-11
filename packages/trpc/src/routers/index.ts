@@ -9,6 +9,7 @@ import { krciAuditRouter } from "./krciAudit/index.js";
 import { notificationsRouter } from "./notifications/index.js";
 import { prometheusRouter } from "./prometheus/index.js";
 import { pipelineRunRouter } from "./pipelineRun/index.js";
+import { securityRouter } from "./security/index.js";
 import { sonarqubeRouter } from "./sonarqube/index.js";
 import { tektonResultsRouter } from "./tektonResults/index.js";
 
@@ -22,6 +23,7 @@ export const appRouter = t.router({
   notifications: notificationsRouter,
   prometheus: prometheusRouter,
   pipelineRun: pipelineRunRouter,
+  security: securityRouter,
   sonarqube: sonarqubeRouter,
   tektonResults: tektonResultsRouter,
 });

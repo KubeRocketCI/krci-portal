@@ -54,6 +54,14 @@ configEnv:
   # If not set, DEPENDENCY_TRACK_URL is used for both.
   DEPENDENCY_TRACK_URL: https://deptrack.example.com
   # DEPENDENCY_TRACK_WEB_URL: https://deptrack-public.example.com
+  # DEFECTDOJO_URL is used by the backend API client to read security findings from DefectDojo.
+  # The API token is read from DEFECTDOJO_API_KEY, which belongs in the secret wired via `extraEnvFrom`.
+  # DEFECTDOJO_WEB_URL is the browser-facing address of DefectDojo, used for every link to it. It is required.
+  # While DEFECTDOJO_URL, DEFECTDOJO_API_KEY or DEFECTDOJO_WEB_URL is empty, the security endpoints answer 503
+  # and the portal hides the Security tab and column.
+  # Runtime findings are read only from tests tagged `krci-tenant:<DEFAULT_CLUSTER_NAMESPACE>`.
+  DEFECTDOJO_URL: ""
+  DEFECTDOJO_WEB_URL: ""
   GITFUSION_URL: http://gitfusion.krci:8080
   # KRCI_AUDIT_URL is used by the backend to read the audit trail (krci-audit) for
   # the "Triggered By" field and the admin Audit Events view.
