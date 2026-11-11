@@ -2,18 +2,9 @@ import z from "zod";
 import { gitProvider, gitProviderEnum } from "@my-project/shared";
 import { NAMES } from "./constants";
 
-const nameRequirementRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-
 export { NAMES } from "./constants";
 
 const baseSchema = z.object({
-  [NAMES.NAME]: z
-    .string()
-    .min(2, "Name must be at least 2 characters.")
-    .regex(
-      nameRequirementRegex,
-      "Name must contain only lowercase letters, numbers, and dashes. It cannot start or end with a dash."
-    ),
   [NAMES.GIT_HOST]: z.string().min(1, "Enter the Git server host."),
   [NAMES.GIT_PROVIDER]: gitProviderEnum,
   [NAMES.GIT_USER]: z.string().min(1, "Enter the Git user."),

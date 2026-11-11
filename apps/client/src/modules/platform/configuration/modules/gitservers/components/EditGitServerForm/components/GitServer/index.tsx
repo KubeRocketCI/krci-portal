@@ -3,7 +3,6 @@ import {
   GitProviderField,
   HostName,
   HTTPSPort,
-  Name,
   OverrideWebhookURL,
   SkipWebHookSSL,
   SSHPort,
@@ -17,11 +16,8 @@ export const GitServerForm: React.FC<{ ownerReference: string | undefined }> = (
   return (
     <FormSection icon={Boxes} title="Server Configuration">
       <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-6">
+        <div className="col-span-12">
           <GitProviderField />
-        </div>
-        <div className="col-span-6">
-          <Name />
         </div>
         <div className="col-span-12">
           <div className="grid grid-cols-12 gap-4">
