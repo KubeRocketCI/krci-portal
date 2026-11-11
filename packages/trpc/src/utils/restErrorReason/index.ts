@@ -22,6 +22,7 @@ export const REST_ERROR_REASONS = [
   "malformed_trigger_template_label",
   "managed_param_override",
   "pipeline_not_found",
+  "stage_not_found",
   "trigger_template_not_found",
 ] as const;
 
@@ -68,6 +69,8 @@ export function toRestErrorReason(value: unknown): RestErrorReason | undefined {
       return "managed_param_override";
     case "pipeline_not_found":
       return "pipeline_not_found";
+    case "stage_not_found":
+      return "stage_not_found";
     case "trigger_template_not_found":
       return "trigger_template_not_found";
     default:
