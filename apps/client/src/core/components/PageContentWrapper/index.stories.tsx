@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useEffect, useState } from "react";
 import { Box, GitBranch, Info, Terminal } from "lucide-react";
+import { expect, waitFor, within } from "storybook/test";
 import { withAppProviders } from "@sb/index";
 import { PageContentWrapper } from "./index";
 import type { Tab } from "@/core/providers/Tabs/components/Tabs/types";
@@ -78,4 +79,51 @@ export const WithTabs: Story = {
 
 export const WithPersistentTab: Story = {
   render: () => <LifecycleDemo persistentShell />,
+};
+
+const MANY_TAB_LABELS = [
+  "Overview",
+  "Branches",
+  "Dependencies",
+  "Code Quality",
+  "Pull Requests",
+  "Deployments",
+  "Environments",
+  "Security",
+  "Settings",
+];
+
+function ManyTabsDemo() {
+  const [activeTab, setActiveTab] = useState(0);
+
+  const tabs: Tab[] = MANY_TAB_LABELS.map((label) => ({
+    id: label.toLowerCase().replace(/\s+/g, "-"),
+    label,
+    component: <div className="p-4 text-sm">{label} content</div>,
+  }));
+
+  return (
+    <div style={{ width: 480 }}>
+      <PageContentWrapper
+        icon={Box}
+        title="narrow-demo"
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={(_, idx) => setActiveTab(idx)}
+      />
+    </div>
+  );
+}
+
+/** The tabs do not fit: the row scrolls without a scrollbar, the right fade shows, and a mouse near an edge scrolls it. */
+export const NarrowWithManyTabs: Story = {
+  render: () => <ManyTabsDemo />,
+  play: async ({ canvasElement }) => {
+    const row = within(canvasElement).getByRole("button", { name: "Overview" }).parentElement as HTMLElement;
+
+    await waitFor(() => {
+      expect(row.scrollWidth).toBeGreaterThan(row.clientWidth);
+      expect(row.parentElement?.querySelector(".bg-gradient-to-l")).not.toBeNull();
+    });
+  },
 };
