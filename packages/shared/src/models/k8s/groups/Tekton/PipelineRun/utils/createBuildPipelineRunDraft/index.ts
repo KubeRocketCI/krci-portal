@@ -68,7 +68,7 @@ export const createBuildPipelineRunDraft = ({
 }): PipelineRun => {
   const {
     metadata: { name: codebaseName },
-    spec: { gitUrlPath: codebaseGitUrlPath, buildTool: codebaseBuildTool, gitServer: codebaseGitServer },
+    spec: { gitUrlPath: codebaseGitUrlPath, buildTool: codebaseBuildTool },
   } = codebase;
 
   const {
@@ -126,7 +126,7 @@ export const createBuildPipelineRunDraft = ({
 
   const sources: BuildParamSources = {
     gitSourceUrl:
-      codebaseGitServer === gitProvider.gerrit
+      gitServer.spec.gitProvider === gitProvider.gerrit
         ? `ssh://${gitUser}@${gitHost}:${sshPort}/${gitUrlPathWithoutSlashAtStart}`
         : `${gitUser}@${gitHost}:${gitUrlPathWithoutSlashAtStart}`,
     codebaseName,
