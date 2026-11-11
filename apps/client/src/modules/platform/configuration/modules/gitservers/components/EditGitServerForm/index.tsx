@@ -17,7 +17,6 @@ import type { GitServer } from "@my-project/shared";
 import type { AnyFormApi } from "@tanstack/react-form";
 
 const GIT_SERVER_FIELDS = [
-  NAMES.NAME,
   NAMES.GIT_HOST,
   NAMES.GIT_PROVIDER,
   NAMES.GIT_USER,
@@ -59,7 +58,6 @@ export const EditGitServerForm: React.FC<{
 
   const defaultValues = React.useMemo<Partial<EditGitServerFormValues>>(() => {
     const base: Partial<EditGitServerFormValues> = {
-      [NAMES.NAME]: gitServer.metadata.name,
       [NAMES.GIT_HOST]: gitServer.spec?.gitHost ?? "",
       [NAMES.GIT_PROVIDER]: gitServer.spec?.gitProvider ?? gitProvider.github,
       [NAMES.GIT_USER]: gitServer.spec?.gitUser ?? "",
@@ -108,7 +106,7 @@ export const EditGitServerForm: React.FC<{
           mode: "edit",
           dirtyFields: { gitServer: gitServerDirty, secret: secretDirty },
           gitServer: {
-            name: values[NAMES.NAME],
+            name: gitServer.metadata.name,
             gitHost: values[NAMES.GIT_HOST],
             gitProvider: values[NAMES.GIT_PROVIDER],
             gitUser: values[NAMES.GIT_USER],

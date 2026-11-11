@@ -7,7 +7,6 @@ export const FORM_NAMES = {
 } as const;
 
 export const NAMES = {
-  NAME: "name",
   GIT_HOST: "gitHost",
   GIT_PROVIDER: "gitProvider",
   GIT_USER: "gitUser",
@@ -25,7 +24,7 @@ export const NAMES = {
 
 /**
  * FormGuide configuration for Git Server editing
- * Note: Excludes gitProvider and name fields which are disabled in edit mode
+ * Note: Excludes gitProvider field which is disabled in edit mode
  */
 export const FORM_GUIDE_CONFIG: Record<number, FormGuideFieldDescription[]> = {
   0: [
