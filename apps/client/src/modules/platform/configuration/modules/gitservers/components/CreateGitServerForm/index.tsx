@@ -8,6 +8,10 @@ import { useTRPCClient } from "@/core/providers/trpc";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { createGitServerSecretName, gitProvider } from "@my-project/shared";
+import { useGitServerWatchList } from "@/k8s/api/groups/KRCI/GitServer";
+import { getUsedGitProviders } from "@/modules/platform/configuration/modules/gitservers/utils/getUsedGitProviders";
+import { getDefaultGitProvider } from "./utils/getDefaultGitProvider";
+import { getDefaultGitUser } from "./utils/getDefaultGitUser";
 import { showToast } from "@/core/components/Snackbar";
 import { Separator } from "@/core/components/ui/separator";
 
@@ -22,20 +26,45 @@ export const CreateGitServerForm: React.FC<{ onClose: () => void }> = ({ onClose
     }))
   );
 
+  const gitServersWatch = useGitServerWatchList();
+
+  // Stays undefined while the list loads, when it fails, or when every provider already has a Git Server.
+  const defaultGitProvider = React.useMemo(() => {
+    if (gitServersWatch.isLoading || gitServersWatch.error) {
+      return undefined;
+    }
+
+    return getDefaultGitProvider(getUsedGitProviders(gitServersWatch.data.array));
+  }, [gitServersWatch.data.array, gitServersWatch.isLoading, gitServersWatch.error]);
+
   const defaultValues = React.useMemo<Partial<CreateGitServerFormValues>>(
     () => ({
-      [NAMES.GIT_PROVIDER]: gitProvider.github,
+      [NAMES.GIT_PROVIDER]: defaultGitProvider,
+      [NAMES.GIT_USER]: defaultGitProvider ? getDefaultGitUser(defaultGitProvider) : undefined,
       [NAMES.SKIP_WEBHOOK_SSL]: false,
       [NAMES.TEKTON_DISABLED]: false,
       [NAMES.OVERRIDE_WEBHOOK_URL]: false,
       [NAMES.SSH_PORT]: 22,
       [NAMES.HTTPS_PORT]: 443,
     }),
-    []
+    [defaultGitProvider]
   );
 
   const handleSubmit = React.useCallback(
     async (values: CreateGitServerFormValues) => {
+      if (gitServersWatch.isLoading || gitServersWatch.error) {
+        showToast("Existing Git Servers could not be checked.", "error", {
+          duration: 10000,
+          description: gitServersWatch.error?.message,
+        });
+        return;
+      }
+
+      if (getUsedGitProviders(gitServersWatch.data.array).has(values[NAMES.GIT_PROVIDER])) {
+        showToast("A Git Server for this provider already exists.", "error", { duration: 10000 });
+        return;
+      }
+
       const loadingToastId = showToast("Creating Git Server integration", "loading");
       try {
         const result = await trpc.k8s.manageGitServerIntegration.mutate({
@@ -44,11 +73,11 @@ export const CreateGitServerForm: React.FC<{ onClose: () => void }> = ({ onClose
           mode: "create",
           dirtyFields: { gitServer: true, secret: true },
           gitServer: {
-            name: values[NAMES.NAME],
+            name: values[NAMES.GIT_PROVIDER],
             gitHost: values[NAMES.GIT_HOST],
             gitProvider: values[NAMES.GIT_PROVIDER],
             gitUser: values[NAMES.GIT_USER],
-            nameSshKeySecret: createGitServerSecretName(values[NAMES.GIT_PROVIDER], values[NAMES.NAME]),
+            nameSshKeySecret: createGitServerSecretName(values[NAMES.GIT_PROVIDER], values[NAMES.GIT_PROVIDER]),
             sshPort: values[NAMES.SSH_PORT],
             httpsPort: values[NAMES.HTTPS_PORT],
             skipWebhookSSLVerification: values[NAMES.SKIP_WEBHOOK_SSL],
@@ -91,7 +120,15 @@ export const CreateGitServerForm: React.FC<{ onClose: () => void }> = ({ onClose
         throw error;
       }
     },
-    [clusterName, defaultNamespace, trpc, onClose]
+    [
+      clusterName,
+      defaultNamespace,
+      trpc,
+      onClose,
+      gitServersWatch.data.array,
+      gitServersWatch.isLoading,
+      gitServersWatch.error,
+    ]
   );
 
   const handleSubmitError = React.useCallback((error: unknown) => {

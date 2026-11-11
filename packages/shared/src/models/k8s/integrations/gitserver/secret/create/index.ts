@@ -12,8 +12,7 @@ export const gitUser = {
   BITBUCKET: "git",
 };
 
-// The default gerrit server keeps its legacy secret name; every other server
-// gets a per-server name so several GitServers of one provider can coexist.
+// A Gerrit server named gerrit uses the legacy gerrit-ciuser-sshkey secret; every other server uses ci-<name>.
 export const createGitServerSecretName = (_gitProvider: GitProvider, gitServerName: string): string => {
   return _gitProvider === gitProvider.gerrit && gitServerName === gitProvider.gerrit
     ? "gerrit-ciuser-sshkey"
