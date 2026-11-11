@@ -13,10 +13,14 @@ import { pageDescription } from "./constants";
 import { FORM_GUIDE_CONFIG } from "./components/CreateGitServerForm/constants";
 import { EDP_USER_GUIDE } from "@/k8s/constants/docs-urls";
 import type { GitServer } from "@my-project/shared";
+import { getUsedGitProviders } from "./utils/getUsedGitProviders";
+import { getDefaultGitProvider } from "./components/CreateGitServerForm/utils/getDefaultGitProvider";
 
 export default function GitserversConfigurationPage() {
   const gitServerWatch = useGitServerWatchList();
   const gitServers = gitServerWatch.data.array;
+
+  const allProvidersUsed = React.useMemo(() => !getDefaultGitProvider(getUsedGitProviders(gitServers)), [gitServers]);
 
   const secretPermissions = useSecretPermissions();
   const gitServerPermissions = useGitServerPermissions();
@@ -86,11 +90,13 @@ export default function GitserversConfigurationPage() {
         isOpen: isCreateDialogOpen,
         onOpen: handleOpenCreateDialog,
         onClose: handleCloseCreateDialog,
-        isDisabled: gitServerWatch.query.isLoading,
-        permission: {
-          allowed: secretPermissions.data.create.allowed && gitServerPermissions.data.create.allowed,
-          reason: secretPermissions.data.create.reason || gitServerPermissions.data.create.reason,
-        },
+        isDisabled: gitServerWatch.query.isLoading || !!gitServerWatch.query.error,
+        permission: allProvidersUsed
+          ? { allowed: false, reason: "Every Git provider already has a Git Server." }
+          : {
+              allowed: secretPermissions.data.create.allowed && gitServerPermissions.data.create.allowed,
+              reason: secretPermissions.data.create.reason || gitServerPermissions.data.create.reason,
+            },
       }}
       pageDescription={pageDescription}
       formGuideConfig={FORM_GUIDE_CONFIG}

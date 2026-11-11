@@ -7,7 +7,6 @@ export const FORM_NAMES = {
 } as const;
 
 export const NAMES = {
-  NAME: "name",
   GIT_HOST: "gitHost",
   GIT_PROVIDER: "gitProvider",
   GIT_USER: "gitUser",
@@ -29,11 +28,6 @@ export const FORM_GUIDE_CONFIG: Record<number, FormGuideFieldDescription[]> = {
       label: "Git Provider",
       description:
         "Select the Git provider for this server (GitHub, GitLab, Gerrit, or Bitbucket). This determines the authentication method and available features.",
-    },
-    {
-      fieldName: "name",
-      label: "Name",
-      description: "A unique identifier for this Git server. Used internally and shown throughout the platform.",
     },
     {
       fieldName: "gitHost",
