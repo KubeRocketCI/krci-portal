@@ -8,14 +8,23 @@ import { IngressColumnLive } from "../../columns/IngressLive";
 import { IngressHeadColumn } from "../../columns/IngressHead";
 import { NameColumn } from "../../columns/Name";
 import { PodsColumn } from "../../columns/Pods";
+import { SecurityColumn } from "../../columns/Security";
 import { StatusColumn } from "../../columns/Status";
 import { ValuesOverridePreviewColumn } from "../../columns/ValuesOverridePreview";
 import { ValuesOverridePreviewHeadColumn } from "../../columns/ValuesOverridePreviewHead";
 import { useGitOpsValuesLink } from "../../../hooks/useGitOpsValuesLink";
+import { useStageSecuritySummary } from "../../../hooks/useStageSecuritySummary";
+import { findEnvironmentApplication } from "@/modules/platform/security/components/defectdojo/utils";
 
 export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
   const stageWatch = useStageWatch();
   const gitOpsValuesLink = useGitOpsValuesLink();
+  const {
+    isConfigured: isSecurityConfigured,
+    summary: securitySummary,
+    isLoading: isSecurityLoading,
+    error: securityError,
+  } = useStageSecuritySummary();
 
   const stage = stageWatch.query.data;
 
@@ -86,6 +95,26 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
             },
           ] as TableColumn<StageAppCodebaseCombinedData>[])
         : []),
+      ...(isSecurityConfigured
+        ? ([
+            {
+              id: columnNames.SECURITY,
+              label: "Security",
+              data: {
+                render: ({ data: { appCodebase } }) => (
+                  <SecurityColumn
+                    application={findEnvironmentApplication(securitySummary, appCodebase.metadata.name)}
+                    isLoading={isSecurityLoading}
+                    error={securityError}
+                  />
+                ),
+              },
+              cell: {
+                baseWidth: 25,
+              },
+            },
+          ] as TableColumn<StageAppCodebaseCombinedData>[])
+        : []),
       {
         id: columnNames.INGRESS,
         label: <IngressHeadColumn />,
@@ -102,6 +131,6 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
         },
       },
     ],
-    [shouldShowPodsColumn, gitOpsValuesLink]
+    [shouldShowPodsColumn, gitOpsValuesLink, isSecurityConfigured, securitySummary, isSecurityLoading, securityError]
   );
 };

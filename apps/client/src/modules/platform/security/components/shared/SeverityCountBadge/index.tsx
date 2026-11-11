@@ -12,6 +12,10 @@ export interface SeverityCountBadgeProps {
    */
   severity: string;
   /**
+   * Text shown instead of `count`, e.g. a compact number. The badge stays tabular.
+   */
+  displayValue?: string;
+  /**
    * Whether to show 0 as a badge or as plain text
    * @default false (shows "0" as muted text when count is 0)
    */
@@ -38,7 +42,13 @@ export interface SeverityCountBadgeProps {
  * // Shows 0 as a badge
  * <SeverityCountBadge count={0} severity="medium" showZeroAsBadge />
  */
-export function SeverityCountBadge({ count, severity, showZeroAsBadge = false, className }: SeverityCountBadgeProps) {
+export function SeverityCountBadge({
+  count,
+  displayValue,
+  severity,
+  showZeroAsBadge = false,
+  className,
+}: SeverityCountBadgeProps) {
   const classes = getSeverityBadgeClasses(severity);
 
   if (count === 0 && !showZeroAsBadge) {
@@ -48,12 +58,12 @@ export function SeverityCountBadge({ count, severity, showZeroAsBadge = false, c
   return (
     <span
       className={cn(
-        "inline-flex min-w-[2rem] shrink-0 items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap",
+        "inline-flex min-w-[2rem] shrink-0 items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap tabular-nums",
         classes.combined,
         className
       )}
     >
-      {count}
+      {displayValue ?? count}
     </span>
   );
 }

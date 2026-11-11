@@ -31,6 +31,7 @@ describe("useClusterStore", () => {
       allowedNamespaces: [MOCK_DEFAULT_NAMESPACE],
       sonarWebUrl: "",
       dependencyTrackWebUrl: "",
+      defectDojoWebUrl: "",
     });
   });
 
@@ -321,6 +322,18 @@ describe("useClusterStore", () => {
 
       const state = useClusterStore.getState();
       expect(state.sonarWebUrl).toBe("");
+    });
+  });
+
+  describe("setDefectDojoWebUrl", () => {
+    it("should initialize defectDojoWebUrl as empty string", () => {
+      expect(useClusterStore.getState().defectDojoWebUrl).toBe("");
+    });
+
+    it("should update defectDojoWebUrl", () => {
+      useClusterStore.getState().setDefectDojoWebUrl("https://defectdojo.example.com");
+
+      expect(useClusterStore.getState().defectDojoWebUrl).toBe("https://defectdojo.example.com");
     });
   });
 

@@ -21,6 +21,8 @@ interface ClusterStore {
   setSonarWebUrl: (newSonarWebUrl: string) => void;
   dependencyTrackWebUrl: string;
   setDependencyTrackWebUrl: (newDependencyTrackWebUrl: string) => void;
+  defectDojoWebUrl: string;
+  setDefectDojoWebUrl: (newDefectDojoWebUrl: string) => void;
 }
 
 const LOCAL_STORAGE_KEY = "cluster_settings";
@@ -140,6 +142,11 @@ export const useClusterStore = create<ClusterStore>((set, get) => {
     dependencyTrackWebUrl: "",
     setDependencyTrackWebUrl: (newDependencyTrackWebUrl) => {
       set({ dependencyTrackWebUrl: newDependencyTrackWebUrl });
+    },
+
+    defectDojoWebUrl: "",
+    setDefectDojoWebUrl: (newDefectDojoWebUrl) => {
+      set({ defectDojoWebUrl: newDefectDojoWebUrl });
     },
   };
 });

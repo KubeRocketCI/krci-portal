@@ -12,5 +12,6 @@ export const columnNames = {
   VALUES_OVERRIDE: "valuesOverride",
   PODS: "pods",
   INGRESS: "ingress",
+  SECURITY: "security",
   EMPTY: "empty",
 } as const;

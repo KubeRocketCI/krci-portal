@@ -1,5 +1,5 @@
 import React from "react";
-import { Info, GitBranch, GitPullRequest, Shield, AlertTriangle } from "lucide-react";
+import { Info, GitBranch, GitPullRequest, Shield, ShieldAlert, AlertTriangle } from "lucide-react";
 import { ciTool } from "@my-project/shared";
 import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import { router } from "@/core/router";
@@ -9,10 +9,12 @@ import { PullRequestList } from "../components/PullRequestList";
 import { Overview } from "../components/Overview";
 import { PipelineList } from "../components/PipelineList";
 import { DeploymentStatusWidget } from "../components/DeploymentStatusWidget";
+import { SecurityFindingsTab } from "../components/SecurityFindingsTab";
 import { SecurityTab } from "../components/SecurityTab";
 import { VulnerabilitiesTab } from "../components/VulnerabilitiesTab";
 import { CodebaseGitLabCIPipelineList } from "@/modules/platform/gitlabci/components/CodebaseGitLabCIPipelineList";
 import type { Tab } from "@/core/providers/Tabs/components/Tabs/types";
+import { useDefectDojoWebUrl } from "@/modules/platform/security/components/defectdojo/hooks/useDefectDojoWebUrl";
 import { useCodebaseWatch } from "../hooks/data";
 import { routeProjectDetails, RouteSearchTab, routeSearchTabSchema, PATH_PROJECT_DETAILS_FULL } from "../route";
 
@@ -21,6 +23,7 @@ export const usePageTabs = () => {
   const codebaseWatch = useCodebaseWatch();
   const codebase = codebaseWatch.query.data;
   const defaultBranch = codebase?.spec?.defaultBranch;
+  const hasFindingsTab = !!useDefectDojoWebUrl();
 
   // Dependencies tab chunk (recharts) loads off the critical path.
   useIdleCallback(VulnerabilitiesTab.preload, !!defaultBranch);
@@ -84,6 +87,17 @@ export const usePageTabs = () => {
           />
         ) : null,
       },
+      ...(hasFindingsTab
+        ? [
+            {
+              label: "Security",
+              icon: <ShieldAlert className="size-4" />,
+              id: routeSearchTabSchema.enum.findings,
+              onClick: () => handleTabNavigate(routeSearchTabSchema.enum.findings),
+              component: <SecurityFindingsTab codebaseName={params.name} />,
+            },
+          ]
+        : []),
       {
         label: "Pull Requests",
         icon: <GitPullRequest className="size-4" />,
@@ -103,5 +117,5 @@ export const usePageTabs = () => {
     return tabs;
     // `codebase` is referentially stable across polls (React Query structural sharing), so
     // depending on the whole object is cheap and avoids enumerating individual spec fields.
-  }, [handleTabNavigate, params.name, params.namespace, params.clusterName, codebase, defaultBranch]);
+  }, [handleTabNavigate, params.name, params.namespace, params.clusterName, codebase, defaultBranch, hasFindingsTab]);
 };

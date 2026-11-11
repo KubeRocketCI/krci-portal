@@ -1,12 +1,24 @@
-import { RouteSearchTab, routeSearchTabSchema } from "./route";
+import type { RouteSearchTab } from "./route";
 
-// Indices must match the tab order in usePageTabs.
-export const tabNameToIndexMap: Record<RouteSearchTab, number> = {
-  [routeSearchTabSchema.enum.overview]: 0,
-  [routeSearchTabSchema.enum.branches]: 1,
-  [routeSearchTabSchema.enum.pipelines]: 2,
-  [routeSearchTabSchema.enum.security]: 3,
-  [routeSearchTabSchema.enum.vulnerabilities]: 4,
-  [routeSearchTabSchema.enum.code]: 5,
-  [routeSearchTabSchema.enum.deployments]: 6,
-};
+/** Tab ids in display order. Must match the tab order in usePageTabs. */
+const TAB_ORDER: RouteSearchTab[] = [
+  "overview",
+  "branches",
+  "pipelines",
+  "security",
+  "vulnerabilities",
+  "findings",
+  "code",
+  "deployments",
+];
+
+/**
+ * Index of the tab in the tab bar. The `findings` tab exists only while DefectDojo is configured;
+ * without it `?tab=findings` falls back to Overview.
+ */
+export function getTabIndex(tab: RouteSearchTab | undefined, hasFindingsTab: boolean): number {
+  const visibleTabs = hasFindingsTab ? TAB_ORDER : TAB_ORDER.filter((id) => id !== "findings");
+  const index = tab ? visibleTabs.indexOf(tab) : 0;
+
+  return index === -1 ? 0 : index;
+}

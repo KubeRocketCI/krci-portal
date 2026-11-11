@@ -15,6 +15,9 @@ import { useColumns } from "./hooks/useColumns";
 import { Trash } from "lucide-react";
 import React from "react";
 import { useButtonsEnabledMap } from "../../hooks/useButtonsEnabled";
+import { useOtherCodebases } from "../../hooks/useOtherCodebases";
+import { useStageSecuritySummary } from "../../hooks/useStageSecuritySummary";
+import { SecurityOtherLines } from "../SecurityOtherLines";
 
 const getAppCodebaseName = (row: StageAppCodebaseCombinedData) => row.appCodebase.metadata.name;
 
@@ -25,6 +28,8 @@ export const PreviewTable = () => {
   const { triggerDeleteApplication } = useApplicationCRUD();
 
   const columns = useColumns();
+  const { summary } = useStageSecuritySummary();
+  const otherCodebases = useOtherCodebases(summary);
 
   const { selection, selectedRows, clearSelection } = useRowSelection(
     stageAppCodebasesCombinedData.stageAppCodebasesCombinedData,
@@ -89,6 +94,7 @@ export const PreviewTable = () => {
         }}
         outlined={false}
       />
+      <SecurityOtherLines codebases={otherCodebases} workloads={summary?.other} />
     </>
   );
 };

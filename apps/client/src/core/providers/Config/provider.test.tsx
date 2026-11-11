@@ -12,6 +12,7 @@ const {
   mockSetAllowedNamespaces,
   mockSetSonarWebUrl,
   mockSetDependencyTrackWebUrl,
+  mockSetDefectDojoWebUrl,
   mockClusterStore,
 } = vi.hoisted(() => {
   const mockSetClusterName = vi.fn();
@@ -19,6 +20,7 @@ const {
   const mockSetAllowedNamespaces = vi.fn();
   const mockSetSonarWebUrl = vi.fn();
   const mockSetDependencyTrackWebUrl = vi.fn();
+  const mockSetDefectDojoWebUrl = vi.fn();
   const mockClusterStore = {
     clusterName: null as string | null,
     clusterNameResolved: true,
@@ -28,6 +30,7 @@ const {
     setAllowedNamespaces: mockSetAllowedNamespaces,
     setSonarWebUrl: mockSetSonarWebUrl,
     setDependencyTrackWebUrl: mockSetDependencyTrackWebUrl,
+    setDefectDojoWebUrl: mockSetDefectDojoWebUrl,
   };
   const mockTrpcClient = {
     config: {
@@ -43,6 +46,7 @@ const {
     mockSetAllowedNamespaces,
     mockSetSonarWebUrl,
     mockSetDependencyTrackWebUrl,
+    mockSetDefectDojoWebUrl,
     mockClusterStore,
   };
 });
@@ -138,6 +142,7 @@ describe("ConfigProvider", () => {
         defaultNamespace: "default",
         sonarWebUrl: "https://sonar.example.com",
         dependencyTrackWebUrl: "https://dependency-track.example.com",
+        defectDojoWebUrl: "https://defectdojo.example.com",
       };
 
       mockTrpcClient.config.get.query.mockResolvedValue(mockConfig);
@@ -154,6 +159,7 @@ describe("ConfigProvider", () => {
         expect(mockSetAllowedNamespaces).not.toHaveBeenCalled();
         expect(mockSetSonarWebUrl).toHaveBeenCalledWith("https://sonar.example.com");
         expect(mockSetDependencyTrackWebUrl).toHaveBeenCalledWith("https://dependency-track.example.com");
+        expect(mockSetDefectDojoWebUrl).toHaveBeenCalledWith("https://defectdojo.example.com");
       });
     });
 

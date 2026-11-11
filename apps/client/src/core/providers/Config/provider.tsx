@@ -14,6 +14,7 @@ export const ConfigProvider = ({ children }: React.PropsWithChildren) => {
   const setDefaultNamespace = useClusterStore((state) => state.setDefaultNamespace);
   const setSonarWebUrl = useClusterStore((state) => state.setSonarWebUrl);
   const setDependencyTrackWebUrl = useClusterStore((state) => state.setDependencyTrackWebUrl);
+  const setDefectDojoWebUrl = useClusterStore((state) => state.setDefectDojoWebUrl);
 
   const configQuery = useQuery({
     queryKey: ["server.config"],
@@ -28,7 +29,13 @@ export const ConfigProvider = ({ children }: React.PropsWithChildren) => {
       return;
     }
 
-    const { clusterName: serverClusterName, defaultNamespace, sonarWebUrl, dependencyTrackWebUrl } = configQuery.data;
+    const {
+      clusterName: serverClusterName,
+      defaultNamespace,
+      sonarWebUrl,
+      dependencyTrackWebUrl,
+      defectDojoWebUrl,
+    } = configQuery.data;
 
     if (!clusterName) {
       setClusterName(serverClusterName);
@@ -44,7 +51,16 @@ export const ConfigProvider = ({ children }: React.PropsWithChildren) => {
 
     setSonarWebUrl(sonarWebUrl);
     setDependencyTrackWebUrl(dependencyTrackWebUrl);
-  }, [configQuery.data, clusterName, setClusterName, setDefaultNamespace, setSonarWebUrl, setDependencyTrackWebUrl]);
+    setDefectDojoWebUrl(defectDojoWebUrl);
+  }, [
+    configQuery.data,
+    clusterName,
+    setClusterName,
+    setDefaultNamespace,
+    setSonarWebUrl,
+    setDependencyTrackWebUrl,
+    setDefectDojoWebUrl,
+  ]);
 
   if (configQuery.isLoading && !configQuery.isError) {
     return <LoadingProgressBar />;
