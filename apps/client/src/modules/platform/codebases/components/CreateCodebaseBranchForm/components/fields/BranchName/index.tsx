@@ -2,14 +2,15 @@ import { Button } from "@/core/components/ui/button";
 import React from "react";
 import { BranchNameProps } from "./types";
 import { CODEBASE_BRANCH_FORM_NAMES } from "../../../constants";
-import { createVersioningString, getVersionAndPostfixFromVersioningString, gitProvider } from "@my-project/shared";
+import { createVersioningString, getVersionAndPostfixFromVersioningString } from "@my-project/shared";
 import { useCreateCodebaseBranchForm } from "../../../providers/form/hooks";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { useTRPCClient } from "@/core/providers/trpc";
 import { RotateCw } from "lucide-react";
 import { useStore } from "@tanstack/react-form";
+import { useBranchDiscovery } from "../../../hooks/useBranchDiscovery";
 
 export const BranchName = ({ codebase, defaultBranchVersion }: BranchNameProps) => {
   const trpc = useTRPCClient();
@@ -22,27 +23,7 @@ export const BranchName = ({ codebase, defaultBranchVersion }: BranchNameProps) 
     }))
   );
 
-  const codebaseGitUrlPath = codebase.spec.gitUrlPath;
-  const codebaseGitServer = codebase.spec.gitServer;
-  const codebaseRepoName = codebaseGitUrlPath.split("/").at(-1) || "";
-  const codebaseOwner = codebaseGitUrlPath.split("/").filter(Boolean).slice(0, -1).join("/");
-
-  const canLoadBranches = !!codebaseGitServer && !!codebaseOwner && !!codebaseRepoName;
-
-  const query = useQuery({
-    queryKey: ["branchList", codebaseGitServer, codebaseOwner, codebaseRepoName],
-    queryFn: () =>
-      trpc.gitfusion.getBranchList.query({
-        gitServer: codebaseGitServer,
-        owner: codebaseOwner,
-        repoName: codebaseRepoName,
-        namespace: defaultNamespace,
-        clusterName,
-      }),
-    enabled: canLoadBranches,
-    staleTime: 0,
-    refetchOnMount: true,
-  });
+  const { isGerrit, isEnabled: canUseBranchDiscovery, isLoading, helperText, query } = useBranchDiscovery(codebase);
 
   const invalidateBranchListCacheMutation = useMutation({
     mutationKey: ["invalidateBranchListCacheMutation", defaultNamespace],
@@ -54,11 +35,7 @@ export const BranchName = ({ codebase, defaultBranchVersion }: BranchNameProps) 
   });
 
   const branchesOptions = React.useMemo(() => {
-    if (query.isLoading || query.isError || !query.data) {
-      return [];
-    }
-
-    if (codebaseGitServer === gitProvider.gerrit) {
+    if (isGerrit) {
       return [
         {
           label: codebase.spec.defaultBranch,
@@ -67,13 +44,17 @@ export const BranchName = ({ codebase, defaultBranchVersion }: BranchNameProps) 
       ];
     }
 
+    if (query.isLoading || query.isError || !query.data) {
+      return [];
+    }
+
     return (
       query.data.data?.map((branch: { name: string }) => ({
         label: branch.name,
         value: branch.name,
       })) || []
     );
-  }, [query.isLoading, query.isError, query.data, codebaseGitServer, codebase.spec.defaultBranch]);
+  }, [isGerrit, query.isLoading, query.isError, query.data, codebase.spec.defaultBranch]);
 
   const releaseFieldValue = useStore(form.store, (state) => state.values.release);
 
@@ -100,8 +81,6 @@ export const BranchName = ({ codebase, defaultBranchVersion }: BranchNameProps) 
     });
   }, [invalidateBranchListCacheMutation, query]);
 
-  const helperText = query.isError ? "Branches auto-discovery could not be performed." : " ";
-
   return (
     <div>
       <form.AppField
@@ -118,15 +97,15 @@ export const BranchName = ({ codebase, defaultBranchVersion }: BranchNameProps) 
             options={branchesOptions}
             disabled={releaseFieldValue}
             freeSolo={true}
-            loading={query.isLoading}
+            loading={isLoading}
             helperText={helperText}
             suffix={
-              canLoadBranches ? (
+              canUseBranchDiscovery ? (
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={handleRefreshBranches}
-                  disabled={invalidateBranchListCacheMutation.isPending || query.isLoading}
+                  disabled={invalidateBranchListCacheMutation.isPending || isLoading}
                   title="Refresh branches"
                   className="text-inherit"
                 >
