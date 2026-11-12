@@ -6,9 +6,10 @@ export const PATH_PIPELINERUNS_FULL = "/c/$clusterName/cicd/pipelineruns" as con
 export const ROUTE_ID_PIPELINERUNS = "/_layout/c/$clusterName/cicd/pipelineruns" as const;
 
 // Filter params (search, status, pipelineType, codebases, namespaces) are read by
-// FilterProvider via `useSearch({ strict: false })`, so the route schema does not
-// declare them. The page no longer paginates client-side, so legacy
-// `page` / `rowsPerPage` params are stripped from the URL on mount inside Pipelines.
+// FilterProvider via `useSearch({ strict: false })`, and `view` (active saved view id)
+// by PipelineRunViewTabs, so the route schema does not declare them. The page no longer
+// paginates client-side, so legacy `page` / `rowsPerPage` params are stripped from the URL
+// on mount inside Pipelines.
 export type Search = Record<string, unknown>;
 
 export const routePipelineRunList = createRoute({
