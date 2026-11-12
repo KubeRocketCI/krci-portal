@@ -10,7 +10,7 @@ import { routeCDPipelineCreate } from "@/modules/platform/cdpipelines/pages/crea
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { useWizardStore } from "../../store";
-import { gitProvider } from "@my-project/shared";
+import { useGitServerWatchItem } from "@/k8s/api/groups/KRCI/GitServer";
 import { useCreateCodebaseForm } from "../../providers/form/hooks";
 
 export const Success: React.FC = () => {
@@ -38,13 +38,8 @@ export const Success: React.FC = () => {
     return name || "repository";
   }, [repositoryOwner, repositoryName, gitUrlPath, name]);
 
-  const gitServerHost = React.useMemo(() => {
-    if (gitServer === gitProvider.github) return "github.com";
-    if (gitServer === gitProvider.gitlab) return "gitlab.com";
-    if (gitServer === gitProvider.gerrit) return "gerrit.local";
-    if (gitServer === gitProvider.bitbucket) return "bitbucket.org";
-    return "git.example.com";
-  }, [gitServer]);
+  const gitServerWatch = useGitServerWatchItem({ name: gitServer });
+  const gitServerHost = gitServerWatch.data?.spec?.gitHost;
 
   const handleCreateAnother = () => {
     useWizardStore.getState().reset();
@@ -73,7 +68,7 @@ export const Success: React.FC = () => {
             <div className="text-foreground text-sm font-medium">Repository created at:</div>
           </div>
           <code className="border-primary/30 bg-card text-foreground inline-block rounded border px-3 py-1.5 text-sm">
-            {gitServerHost}/{repositoryPath}
+            {gitServerHost ? `${gitServerHost}/${repositoryPath}` : repositoryPath}
           </code>
         </div>
 
