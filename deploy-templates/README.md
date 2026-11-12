@@ -89,7 +89,7 @@ A Helm chart for KubeRocketCI Portal
 | podAnnotations | object | `{}` | Pod annotations |
 | podLabels | object | `{}` | Pod labels |
 | podSecurityContext | object | `{"fsGroup":1000,"runAsGroup":1000,"runAsNonRoot":true,"runAsUser":1000,"seccompProfile":{"type":"RuntimeDefault"}}` | Pod security context. `fsGroup` chowns the persistence volume to this GID on mount so the non-root container can write the SQLite database. |
-| readinessProbe | object | `{"initialDelaySeconds":20,"tcpSocket":{"port":"http"}}` | Readiness probe configuration |
+| readinessProbe | object | `{"initialDelaySeconds":10,"tcpSocket":{"port":"http"}}` | Readiness probe configuration |
 | replicaCount | int | `1` | Number of replicas for the deployment |
 | resources | object | `{}` | Resource limits and requests |
 | securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]}}` | Container security context |
