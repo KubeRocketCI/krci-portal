@@ -17,6 +17,8 @@ export interface UnifiedPipelineRunListProps extends Pick<
 > {
   labels?: Record<string, string>;
   enabled?: boolean;
+  /** Rendered above the list inside the FilterProvider, so it can read and apply filter values. */
+  filterHeaderSlot?: React.ReactNode;
 }
 
 /** Every filter value applies to both the live watch and the history query. */
@@ -28,7 +30,12 @@ export function UnifiedPipelineRunList(props: UnifiedPipelineRunListProps) {
   );
 }
 
-function UnifiedPipelineRunListContent({ labels, enabled, ...listProps }: UnifiedPipelineRunListProps) {
+function UnifiedPipelineRunListContent({
+  labels,
+  enabled,
+  filterHeaderSlot,
+  ...listProps
+}: UnifiedPipelineRunListProps) {
   const queryFilters = usePipelineRunQueryFilters();
   const { filterFunction } = usePipelineRunFilter();
 
@@ -46,6 +53,7 @@ function UnifiedPipelineRunListContent({ labels, enabled, ...listProps }: Unifie
 
   return (
     <div className="flex flex-col gap-2">
+      {filterHeaderSlot}
       <PipelineRunList {...listProps} pipelineRuns={mergedPipelineRuns} isLoading={isLoading} />
       <HistoryLoadingFooter
         isHistoryLoading={isHistoryLoading}

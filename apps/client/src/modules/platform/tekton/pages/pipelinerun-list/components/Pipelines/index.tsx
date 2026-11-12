@@ -1,10 +1,14 @@
 import { UnifiedPipelineRunList } from "@/modules/platform/tekton/components/UnifiedPipelineRunList";
-import { pipelineRunFilterControlNames } from "@/modules/platform/tekton/components/PipelineRunList/components/Filter/constants";
 import { useNavigate } from "@tanstack/react-router";
 import React from "react";
+import {
+  PIPELINERUN_LIST_FILTER_CONTROLS,
+  PIPELINERUN_LIST_TABLE_ID,
+  PIPELINERUN_LIST_TABLE_NAME,
+} from "../../constants";
+import { PipelineRunViewTabs } from "../PipelineRunViewTabs";
 
-const TABLE_ID = "pipelineruns-unified";
-const TABLE_NAME = "Unified Pipeline Run List";
+const FILTER_CONTROLS = [...PIPELINERUN_LIST_FILTER_CONTROLS];
 
 /**
  * Merged "Pipelines" tab that combines live K8s PipelineRuns with
@@ -26,16 +30,11 @@ export function Pipelines() {
 
   return (
     <UnifiedPipelineRunList
-      tableId={TABLE_ID}
-      tableName={TABLE_NAME}
-      filterControls={[
-        pipelineRunFilterControlNames.SEARCH,
-        pipelineRunFilterControlNames.CODEBASES,
-        pipelineRunFilterControlNames.STATUS,
-        pipelineRunFilterControlNames.PIPELINE_TYPE,
-        pipelineRunFilterControlNames.NAMESPACES,
-      ]}
+      tableId={PIPELINERUN_LIST_TABLE_ID}
+      tableName={PIPELINERUN_LIST_TABLE_NAME}
+      filterControls={FILTER_CONTROLS}
       pagination={{ show: false }}
+      filterHeaderSlot={<PipelineRunViewTabs />}
     />
   );
 }
