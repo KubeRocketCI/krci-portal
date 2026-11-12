@@ -1,7 +1,8 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FilterContext } from "./context";
-import { FilterContextValue, FilterProviderProps, FilterValueMap } from "./types";
+import { ApplyFilterValuesOptions, FilterContextValue, FilterProviderProps, FilterValueMap } from "./types";
+import { getNonDefaultFilterValues } from "./utils";
 import { useAppForm } from "@/core/components/form";
 import { useStore } from "@tanstack/react-form";
 
@@ -38,11 +39,14 @@ export const FilterProvider = <Item, Values extends FilterValueMap>({
     [matchFunctions]
   );
 
-  // Keep track of whether we're initializing to avoid unnecessary URL updates
-  const isInitializing = useRef(true);
+  // Set while reset/applyValues replace the form state; they write the URL themselves.
+  const isReplacingValues = useRef(false);
 
-  // Initialize values from URL if syncWithUrl is enabled
-  const initialValues = useMemo(() => {
+  // Filter URL writes still in flight. URL changes seen meanwhile are this provider's own echoes.
+  const pendingUrlWrites = useRef(0);
+
+  // Filter values as read from the URL (defaults when not URL-synced).
+  const urlValues = useMemo(() => {
     if (!syncWithUrl) {
       return defaultValues;
     }
@@ -64,6 +68,9 @@ export const FilterProvider = <Item, Values extends FilterValueMap>({
     return { ...mergedValues, ...normalizeUrlValues(mergedValues) };
   }, [defaultValues, searchParams, syncWithUrl, filterKeys, normalizeUrlValues]);
 
+  // The form is seeded once; later URL changes reach it through the URL → form effect below.
+  const [initialValues] = useState(urlValues);
+
   const [filterFunction, setFilterFunction] = useState<(item: Item) => boolean>(() =>
     createFilterFunction(initialValues)
   );
@@ -72,85 +79,102 @@ export const FilterProvider = <Item, Values extends FilterValueMap>({
     defaultValues: initialValues,
   });
 
-  // Subscribe to form changes using useEffect for proper cleanup
-  useEffect(() => {
-    const unsubscribe = form.store.subscribe(() => {
-      const values = form.store.state.values;
+  // Last values acted on; store events that do not change values (focus, touched meta) are ignored.
+  const lastValues = useRef<Values>(form.store.state.values);
 
-      // Update filterFunction based on current form values
-      setFilterFunction(() => createFilterFunction(values));
-
-      // Sync with URL if enabled (skip during initialization)
-      if (syncWithUrl && !isInitializing.current) {
-        // Create a clean object with only non-default values
-        const filterParams: Record<string, unknown> = {};
-
-        filterKeys.forEach((key) => {
-          const currentValue = values[key as keyof Values];
-          const defaultValue = defaultValues[key as keyof Values];
-
-          // Only include values that differ from defaults
-          if (Array.isArray(currentValue)) {
-            if (currentValue.length > 0) {
-              filterParams[key] = currentValue;
-            }
-          } else if (typeof currentValue === "string") {
-            if (currentValue !== "" && currentValue !== defaultValue) {
-              filterParams[key] = currentValue;
-            }
-          } else if (currentValue !== defaultValue) {
-            filterParams[key] = currentValue;
-          }
-        });
-
-        // Preserve unrelated search params (e.g. tab, pipelinesTab) by merging
-        void navigate({
-          search: ((prev: Record<string, unknown>) => {
-            const preserved = { ...prev };
-            filterKeys.forEach((key) => {
-              delete preserved[key];
-            });
-            return { ...preserved, ...filterParams };
-          }) as never,
-          replace: true,
-        }).catch(() => {
-          // Ignore navigation errors
-        });
-      }
-
-      // Mark initialization as complete after first change
-      if (isInitializing.current) {
-        isInitializing.current = false;
-      }
-    });
-
-    return unsubscribe;
-  }, [form.store, createFilterFunction, syncWithUrl, defaultValues, filterKeys, navigate]);
-
-  // Reset function
-  const reset = useCallback(() => {
-    form.reset();
-
-    // form.reset() doesn't trigger onChange listener, so manually handle side effects:
-    // 1. Update filterFunction immediately (no debounce on reset for better UX)
-    setFilterFunction(() => createFilterFunction(defaultValues));
-
-    // 2. Clear only filter-related URL params, preserve others (e.g. tab)
-    if (syncWithUrl) {
+  // Replaces the filter params in the URL; params owned by others (e.g. tab, view) are kept.
+  const writeFilterParams = useCallback(
+    (filterParams: Partial<Values>, options?: ApplyFilterValuesOptions) => {
+      pendingUrlWrites.current += 1;
       void navigate({
         search: ((prev: Record<string, unknown>) => {
           const preserved = { ...prev };
           filterKeys.forEach((key) => {
             delete preserved[key];
           });
-          return preserved;
+          return { ...preserved, ...filterParams, ...options?.search };
         }) as never,
-        replace: true,
-      }).catch(() => {
-        // Ignore navigation errors
-      });
+        replace: options?.replace ?? true,
+      })
+        .catch(() => {
+          // Ignore navigation errors
+        })
+        .finally(() => {
+          pendingUrlWrites.current -= 1;
+        });
+    },
+    [filterKeys, navigate]
+  );
+
+  // Form → filterFunction and URL.
+  useEffect(() => {
+    const unsubscribe = form.store.subscribe(() => {
+      const values = form.store.state.values;
+      if (isReplacingValues.current || values === lastValues.current) {
+        return;
+      }
+      lastValues.current = values;
+
+      setFilterFunction(() => createFilterFunction(values));
+
+      if (syncWithUrl) {
+        writeFilterParams(getNonDefaultFilterValues(values, defaultValues, filterKeys));
+      }
+    });
+
+    return unsubscribe;
+  }, [form.store, createFilterFunction, syncWithUrl, defaultValues, filterKeys, writeFilterParams]);
+
+  const replaceValues = useCallback(
+    (values: Values) => {
+      isReplacingValues.current = true;
+      try {
+        // keepDefaultValues: a later reset() must still return to the provider defaults.
+        form.reset(values, { keepDefaultValues: true });
+      } finally {
+        isReplacingValues.current = false;
+      }
+      lastValues.current = form.store.state.values;
+      setFilterFunction(() => createFilterFunction(values));
+    },
+    [form, createFilterFunction]
+  );
+
+  // URL → form: browser Back/Forward and links that change filter params while mounted.
+  useEffect(() => {
+    if (!syncWithUrl || pendingUrlWrites.current > 0) {
+      return;
     }
-  }, [form, createFilterFunction, defaultValues, filterKeys, syncWithUrl, navigate]);
+
+    const fromUrl = JSON.stringify(getNonDefaultFilterValues(urlValues, defaultValues, filterKeys));
+    const fromForm = JSON.stringify(getNonDefaultFilterValues(form.store.state.values, defaultValues, filterKeys));
+
+    if (fromUrl !== fromForm) {
+      replaceValues(urlValues);
+    }
+  }, [urlValues, syncWithUrl, defaultValues, filterKeys, form, replaceValues]);
+
+  const reset = useCallback(() => {
+    replaceValues(defaultValues);
+
+    if (syncWithUrl) {
+      writeFilterParams({});
+    }
+  }, [replaceValues, defaultValues, syncWithUrl, writeFilterParams]);
+
+  const applyValues = useCallback(
+    (values: Partial<Values>, options?: ApplyFilterValuesOptions) => {
+      const merged = { ...defaultValues, ...values };
+      const next = normalizeUrlValues ? { ...merged, ...normalizeUrlValues(merged) } : merged;
+
+      replaceValues(next);
+
+      if (syncWithUrl) {
+        writeFilterParams(getNonDefaultFilterValues(next, defaultValues, filterKeys), options);
+      }
+    },
+    [defaultValues, normalizeUrlValues, replaceValues, syncWithUrl, writeFilterParams, filterKeys]
+  );
 
   const isDefaultValue = useStore(form.store, (state) => {
     const vals = state.values as Record<string, unknown>;
@@ -167,9 +191,10 @@ export const FilterProvider = <Item, Values extends FilterValueMap>({
       form,
       filterFunction,
       reset,
+      applyValues,
       isDefaultValue,
     }),
-    [form, filterFunction, reset, isDefaultValue]
+    [form, filterFunction, reset, applyValues, isDefaultValue]
   );
 
   return (
