@@ -28,6 +28,10 @@ declare global {
       DEPENDENCY_TRACK_API_KEY: string;
       DEPENDENCY_TRACK_WEB_URL?: string;
 
+      DEFECTDOJO_URL: string;
+      DEFECTDOJO_API_KEY: string;
+      DEFECTDOJO_WEB_URL: string;
+
       GITFUSION_URL: string;
 
       KRCI_AUDIT_URL: string;

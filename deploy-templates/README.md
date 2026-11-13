@@ -30,6 +30,8 @@ A Helm chart for KubeRocketCI Portal
 | configEnv.API_PREFIX | string | `"/api"` |  |
 | configEnv.DEFAULT_CLUSTER_NAME | string | `"core"` |  |
 | configEnv.DEFAULT_CLUSTER_NAMESPACE | string | `"krci"` |  |
+| configEnv.DEFECTDOJO_URL | string | `""` |  |
+| configEnv.DEFECTDOJO_WEB_URL | string | `""` |  |
 | configEnv.DEPENDENCY_TRACK_URL | string | `"https://deptrack.example.com"` |  |
 | configEnv.DEPLOY_CLIENT_DIST_DIR | string | `"/app/static"` |  |
 | configEnv.GITFUSION_URL | string | `"http://gitfusion.krci:8080"` |  |

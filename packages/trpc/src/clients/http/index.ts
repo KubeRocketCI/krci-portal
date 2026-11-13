@@ -136,7 +136,7 @@ export class HttpNetworkError extends HttpError {
 }
 
 /** Integrations whose client factory reports "not configured". Named in the REST 503 envelope. */
-export const INTEGRATIONS = ["Dependency-Track", "SonarQube", "Tekton Results"] as const;
+export const INTEGRATIONS = ["Dependency-Track", "DefectDojo", "SonarQube", "Tekton Results"] as const;
 
 export type Integration = (typeof INTEGRATIONS)[number];
 
@@ -150,6 +150,8 @@ export function toIntegration(value: unknown): Integration | undefined {
   switch (value) {
     case "Dependency-Track":
       return "Dependency-Track";
+    case "DefectDojo":
+      return "DefectDojo";
     case "SonarQube":
       return "SonarQube";
     case "Tekton Results":

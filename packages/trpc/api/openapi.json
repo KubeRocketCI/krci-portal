@@ -72,13 +72,17 @@
                     },
                     "dependencyTrackWebUrl": {
                       "type": "string"
+                    },
+                    "defectDojoWebUrl": {
+                      "type": "string"
                     }
                   },
                   "required": [
                     "clusterName",
                     "defaultNamespace",
                     "sonarWebUrl",
-                    "dependencyTrackWebUrl"
+                    "dependencyTrackWebUrl",
+                    "defectDojoWebUrl"
                   ]
                 }
               }
@@ -2074,6 +2078,880 @@
           }
         }
       }
+    },
+    "/v1/security/get": {
+      "get": {
+        "operationId": "security-getCodebaseSummary",
+        "tags": [
+          "security"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "codebase",
+            "description": "Codebase (KubeRocketCI Codebase CR) name.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+              "minLength": 1,
+              "maxLength": 63,
+              "description": "Codebase (KubeRocketCI Codebase CR) name."
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "OK",
+                        "NONE"
+                      ]
+                    },
+                    "codebase": {
+                      "type": "string"
+                    },
+                    "ci": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "code",
+                              "image"
+                            ]
+                          },
+                          "engagement": {
+                            "type": "string"
+                          },
+                          "branch": {
+                            "type": "string"
+                          },
+                          "image": {
+                            "type": "string"
+                          },
+                          "tag": {
+                            "type": "string"
+                          },
+                          "tools": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "counts": {
+                            "type": "object",
+                            "properties": {
+                              "critical": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "high": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "medium": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "low": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "unassigned": {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            },
+                            "required": [
+                              "critical",
+                              "high",
+                              "medium",
+                              "low",
+                              "unassigned"
+                            ]
+                          },
+                          "updated": {
+                            "type": "string"
+                          },
+                          "link": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "engagement",
+                          "tools",
+                          "counts",
+                          "link"
+                        ]
+                      }
+                    },
+                    "runtime": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "environment": {
+                            "type": "string",
+                            "description": "`<cdPipeline>/<stage>`"
+                          },
+                          "workloads": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "versions": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "tools": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "counts": {
+                            "type": "object",
+                            "properties": {
+                              "critical": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "high": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "medium": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "low": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "unassigned": {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            },
+                            "required": [
+                              "critical",
+                              "high",
+                              "medium",
+                              "low",
+                              "unassigned"
+                            ]
+                          },
+                          "updated": {
+                            "type": "string"
+                          },
+                          "link": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "environment",
+                          "workloads",
+                          "versions",
+                          "tools",
+                          "counts",
+                          "link"
+                        ]
+                      }
+                    },
+                    "link": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "codebase",
+                    "ci",
+                    "runtime"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authorization not provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "DEFAULT_CLUSTER_NAMESPACE is not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.PRECONDITION_FAILED"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "DefectDojo returned an error response; REST error envelope with code BAD_GATEWAY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_GATEWAY"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "DefectDojo integration not configured, or DefectDojo unreachable; REST error envelope with code SERVICE_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.SERVICE_UNAVAILABLE"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "DefectDojo request timed out; REST error envelope with code GATEWAY_TIMEOUT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.GATEWAY_TIMEOUT"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/security/env": {
+      "get": {
+        "operationId": "security-getEnvironmentSummary",
+        "tags": [
+          "security"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cdPipeline",
+            "description": "CDPipeline name.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+              "minLength": 1,
+              "maxLength": 63,
+              "description": "CDPipeline name."
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "stage",
+            "description": "Stage name within the CDPipeline.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+              "minLength": 1,
+              "maxLength": 63,
+              "description": "Stage name within the CDPipeline."
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "OK",
+                        "NONE"
+                      ]
+                    },
+                    "environment": {
+                      "type": "string",
+                      "description": "`<cdPipeline>/<stage>`"
+                    },
+                    "applications": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "codebase": {
+                            "type": "string"
+                          },
+                          "workloads": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "versions": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "counts": {
+                            "type": "object",
+                            "properties": {
+                              "critical": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "high": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "medium": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "low": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "unassigned": {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            },
+                            "required": [
+                              "critical",
+                              "high",
+                              "medium",
+                              "low",
+                              "unassigned"
+                            ]
+                          },
+                          "updated": {
+                            "type": "string"
+                          },
+                          "link": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "codebase",
+                          "workloads",
+                          "versions",
+                          "counts",
+                          "link"
+                        ]
+                      }
+                    },
+                    "other": {
+                      "type": "object",
+                      "properties": {
+                        "counts": {
+                          "type": "object",
+                          "properties": {
+                            "critical": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "high": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "medium": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "low": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "unassigned": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "critical",
+                            "high",
+                            "medium",
+                            "low",
+                            "unassigned"
+                          ]
+                        },
+                        "workloads": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "updated": {
+                          "type": "string"
+                        },
+                        "link": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "counts",
+                        "workloads",
+                        "link"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "environment",
+                    "applications"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authorization not provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "DEFAULT_CLUSTER_NAMESPACE is not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.PRECONDITION_FAILED"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "DefectDojo returned an error response; REST error envelope with code BAD_GATEWAY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_GATEWAY"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "DefectDojo integration not configured, or DefectDojo unreachable; REST error envelope with code SERVICE_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.SERVICE_UNAVAILABLE"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "DefectDojo request timed out; REST error envelope with code GATEWAY_TIMEOUT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.GATEWAY_TIMEOUT"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/security/findings": {
+      "get": {
+        "operationId": "security-listFindings",
+        "tags": [
+          "security"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "codebase",
+            "description": "Codebase (KubeRocketCI Codebase CR) name.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+              "minLength": 1,
+              "maxLength": 63,
+              "description": "Codebase (KubeRocketCI Codebase CR) name."
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "scope",
+            "description": "CI or runtime findings. Runtime findings are those of tests tagged with the tenant of the portal.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ci",
+                "runtime"
+              ],
+              "description": "CI or runtime findings. Runtime findings are those of tests tagged with the tenant of the portal."
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "environment",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?\\/[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+              "maxLength": 127
+            }
+          },
+          {
+            "in": "query",
+            "name": "severity",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "critical",
+                  "high",
+                  "medium",
+                  "low",
+                  "unassigned"
+                ]
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "description": "1-based page number, at most 1000.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 1,
+              "description": "1-based page number, at most 1000."
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "OK",
+                        "NONE"
+                      ]
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "severity": {
+                            "type": "string",
+                            "enum": [
+                              "critical",
+                              "high",
+                              "medium",
+                              "low",
+                              "unassigned"
+                            ]
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "vulnId": {
+                            "type": "string"
+                          },
+                          "component": {
+                            "type": "string"
+                          },
+                          "version": {
+                            "type": "string"
+                          },
+                          "fixedVersion": {
+                            "type": "string"
+                          },
+                          "scope": {
+                            "type": "string",
+                            "enum": [
+                              "ci",
+                              "runtime"
+                            ]
+                          },
+                          "environment": {
+                            "type": "string"
+                          },
+                          "workload": {
+                            "type": "string"
+                          },
+                          "branch": {
+                            "type": "string"
+                          },
+                          "engagement": {
+                            "type": "string"
+                          },
+                          "link": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "severity",
+                          "title",
+                          "component",
+                          "version",
+                          "scope",
+                          "engagement",
+                          "link"
+                        ]
+                      }
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "pageSize": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "items",
+                    "totalCount",
+                    "page",
+                    "pageSize"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authorization not provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "DEFAULT_CLUSTER_NAMESPACE is not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.PRECONDITION_FAILED"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "DefectDojo returned an error response; REST error envelope with code BAD_GATEWAY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_GATEWAY"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "DefectDojo integration not configured, or DefectDojo unreachable; REST error envelope with code SERVICE_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.SERVICE_UNAVAILABLE"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "DefectDojo request timed out; REST error envelope with code GATEWAY_TIMEOUT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.GATEWAY_TIMEOUT"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3027,6 +3905,230 @@
           "error": {
             "code": "CONFLICT",
             "message": "Conflict"
+          }
+        }
+      },
+      "error.PRECONDITION_FAILED": {
+        "type": "object",
+        "title": "PRECONDITION_FAILED error envelope (412)",
+        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a public machine-readable tag from a fixed set that consumers should key off rather than parsing the human message.",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "tRPC error code (string literal)",
+                "example": "PRECONDITION_FAILED"
+              },
+              "reason": {
+                "type": "string",
+                "description": "Public machine-readable tag from the fixed set in `x-krci-reasons` (omitted when none applies). Unlisted values are never sent.",
+                "x-krci-reasons": [
+                  "branch_not_specified",
+                  "build_in_progress",
+                  "build_pipeline_not_configured",
+                  "build_template_misconfigured",
+                  "codebase_branch_ambiguous",
+                  "codebase_branch_not_found",
+                  "codebase_branch_not_ready",
+                  "codebase_not_found",
+                  "git_server_not_found",
+                  "gitlab_ci_not_supported",
+                  "list_truncated",
+                  "malformed_trigger_template_label",
+                  "managed_param_override",
+                  "pipeline_not_found",
+                  "trigger_template_not_found"
+                ]
+              },
+              "message": {
+                "type": "string",
+                "description": "Static per status; per status and integration for 503 not configured",
+                "example": "Precondition Failed"
+              }
+            }
+          }
+        },
+        "example": {
+          "error": {
+            "code": "PRECONDITION_FAILED",
+            "message": "Precondition Failed"
+          }
+        }
+      },
+      "error.BAD_GATEWAY": {
+        "type": "object",
+        "title": "BAD_GATEWAY error envelope (502)",
+        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a public machine-readable tag from a fixed set that consumers should key off rather than parsing the human message.",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "tRPC error code (string literal)",
+                "example": "BAD_GATEWAY"
+              },
+              "reason": {
+                "type": "string",
+                "description": "Public machine-readable tag from the fixed set in `x-krci-reasons` (omitted when none applies). Unlisted values are never sent.",
+                "x-krci-reasons": [
+                  "branch_not_specified",
+                  "build_in_progress",
+                  "build_pipeline_not_configured",
+                  "build_template_misconfigured",
+                  "codebase_branch_ambiguous",
+                  "codebase_branch_not_found",
+                  "codebase_branch_not_ready",
+                  "codebase_not_found",
+                  "git_server_not_found",
+                  "gitlab_ci_not_supported",
+                  "list_truncated",
+                  "malformed_trigger_template_label",
+                  "managed_param_override",
+                  "pipeline_not_found",
+                  "trigger_template_not_found"
+                ]
+              },
+              "message": {
+                "type": "string",
+                "description": "Static per status; per status and integration for 503 not configured",
+                "example": "Bad Gateway"
+              }
+            }
+          }
+        },
+        "example": {
+          "error": {
+            "code": "BAD_GATEWAY",
+            "message": "Bad Gateway"
+          }
+        }
+      },
+      "error.SERVICE_UNAVAILABLE": {
+        "type": "object",
+        "title": "SERVICE_UNAVAILABLE error envelope (503)",
+        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a public machine-readable tag from a fixed set that consumers should key off rather than parsing the human message.",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "tRPC error code (string literal)",
+                "example": "SERVICE_UNAVAILABLE"
+              },
+              "reason": {
+                "type": "string",
+                "description": "Public machine-readable tag from the fixed set in `x-krci-reasons` (omitted when none applies). Unlisted values are never sent.",
+                "x-krci-reasons": [
+                  "branch_not_specified",
+                  "build_in_progress",
+                  "build_pipeline_not_configured",
+                  "build_template_misconfigured",
+                  "codebase_branch_ambiguous",
+                  "codebase_branch_not_found",
+                  "codebase_branch_not_ready",
+                  "codebase_not_found",
+                  "git_server_not_found",
+                  "gitlab_ci_not_supported",
+                  "list_truncated",
+                  "malformed_trigger_template_label",
+                  "managed_param_override",
+                  "pipeline_not_found",
+                  "trigger_template_not_found"
+                ]
+              },
+              "message": {
+                "type": "string",
+                "description": "Static per status; per status and integration for 503 not configured",
+                "example": "Service Unavailable"
+              }
+            }
+          }
+        },
+        "example": {
+          "error": {
+            "code": "SERVICE_UNAVAILABLE",
+            "message": "Service Unavailable"
+          }
+        }
+      },
+      "error.GATEWAY_TIMEOUT": {
+        "type": "object",
+        "title": "GATEWAY_TIMEOUT error envelope (504)",
+        "description": "REST error envelope emitted by sendRestError. `message` is static per status (per status and integration for 503 not configured); `reason` (when present) is a public machine-readable tag from a fixed set that consumers should key off rather than parsing the human message.",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "tRPC error code (string literal)",
+                "example": "GATEWAY_TIMEOUT"
+              },
+              "reason": {
+                "type": "string",
+                "description": "Public machine-readable tag from the fixed set in `x-krci-reasons` (omitted when none applies). Unlisted values are never sent.",
+                "x-krci-reasons": [
+                  "branch_not_specified",
+                  "build_in_progress",
+                  "build_pipeline_not_configured",
+                  "build_template_misconfigured",
+                  "codebase_branch_ambiguous",
+                  "codebase_branch_not_found",
+                  "codebase_branch_not_ready",
+                  "codebase_not_found",
+                  "git_server_not_found",
+                  "gitlab_ci_not_supported",
+                  "list_truncated",
+                  "malformed_trigger_template_label",
+                  "managed_param_override",
+                  "pipeline_not_found",
+                  "trigger_template_not_found"
+                ]
+              },
+              "message": {
+                "type": "string",
+                "description": "Static per status; per status and integration for 503 not configured",
+                "example": "Gateway Timeout"
+              }
+            }
+          }
+        },
+        "example": {
+          "error": {
+            "code": "GATEWAY_TIMEOUT",
+            "message": "Gateway Timeout"
           }
         }
       }
