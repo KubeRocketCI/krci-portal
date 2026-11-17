@@ -3,11 +3,9 @@ import React from "react";
 import { PageContentWrapperProps } from "./types";
 import { CopyButton } from "../CopyButton";
 import { PinButton } from "../PinButton";
-import { TabButton } from "../TabButton";
+import { TabBar } from "../TabBar";
 import { Info } from "lucide-react";
 import { cn } from "@/core/utils/classname";
-import { useEdgeScroll } from "@/core/hooks/use-edge-scroll";
-import { useScrollFades } from "@/core/hooks/use-scroll-fades";
 import { TabPanel } from "@/core/providers/Tabs/components/Tabs/components/TabPanel";
 import { getTabKey, useVisitedTabs } from "@/core/providers/Tabs/components/Tabs/hooks/useVisitedTabs";
 import type { Tab } from "@/core/providers/Tabs/components/Tabs/types";
@@ -31,14 +29,7 @@ export const PageContentWrapper: React.FC<PageContentWrapperProps> = ({
   tourHighlight,
   children,
 }) => {
-  const {
-    scrollRef: tabsScrollRef,
-    scrollElement: tabsElement,
-    showLeftFade,
-    showRightFade,
-  } = useScrollFades<HTMLDivElement>();
   const { activeTabIdx, isVisited } = useVisitedTabs(tabs ?? NO_TABS, activeTab);
-  useEdgeScroll(tabsElement, { activeIndex: activeTabIdx, itemCount: tabs?.length ?? 0 });
 
   const hasTabs = tabs && tabs.length > 0;
   const hasHeader = title || description || actions || extraLinks || hasTabs;
@@ -83,42 +74,13 @@ export const PageContentWrapper: React.FC<PageContentWrapperProps> = ({
             {subHeader && <div className="mb-3">{subHeader}</div>}
 
             {hasTabs && (
-              <div className="relative">
-                <div
-                  ref={tabsScrollRef}
-                  className="flex gap-0 overflow-x-auto"
-                  style={{ scrollbarWidth: "none" }}
-                  {...(tabDataTour && { "data-tour": tabDataTour })}
-                >
-                  {tabs.map((tab, idx) => (
-                    <TabButton
-                      key={`tab::${idx}`}
-                      label={tab.label}
-                      icon={tab.icon}
-                      isActive={activeTabIdx === idx}
-                      disabled={tab.disabled}
-                      tourHighlight={tourHighlight}
-                      tabId={tab.id}
-                      onClick={() => {
-                        tab.onClick?.();
-                        onTabChange?.({} as React.ChangeEvent<object>, idx);
-                      }}
-                    />
-                  ))}
-                </div>
-                {showLeftFade && (
-                  <div
-                    aria-hidden="true"
-                    className="from-card pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r to-transparent"
-                  />
-                )}
-                {showRightFade && (
-                  <div
-                    aria-hidden="true"
-                    className="from-card pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l to-transparent"
-                  />
-                )}
-              </div>
+              <TabBar
+                tabs={tabs}
+                activeIndex={activeTabIdx}
+                onChange={(idx) => onTabChange?.({} as React.ChangeEvent<object>, idx)}
+                dataTour={tabDataTour}
+                tourHighlight={tourHighlight}
+              />
             )}
           </div>
         </div>

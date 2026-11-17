@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Package, AlertTriangle, ScrollText, Terminal, SquareArrowOutUpRight, RefreshCw } from "lucide-react";
 import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
@@ -50,7 +51,8 @@ export function ApplicationsSection({ stage }: ApplicationsSectionProps) {
   const quickLinksUrlListWatch = useQuickLinksUrlListWatch();
   const { data: pipelineAppCodebases } = usePipelineAppCodebases();
   const argoAppsByAppName = useArgoAppsByAppName(stageArgoAppsWatch.data.array);
-  const { scrollRef, showLeftFade, showRightFade } = useScrollFades<HTMLDivElement>();
+  const [scrollElement, setScrollElement] = useState<HTMLDivElement | null>(null);
+  const { showLeftFade, showRightFade } = useScrollFades(scrollElement);
 
   // Quick links
   const argocdQuickLink = quickLinksUrlListWatch.data?.quickLinkList?.find(
@@ -64,7 +66,7 @@ export function ApplicationsSection({ stage }: ApplicationsSectionProps) {
         <Package className="size-3" /> Deployed Applications
       </h4>
       <div className="relative">
-        <div ref={scrollRef} className="overflow-x-auto">
+        <div ref={setScrollElement} className="overflow-x-auto">
           <div
             className="grid gap-2"
             style={{ gridTemplateColumns: "minmax(10rem, 14rem) 200px auto auto auto", minWidth: 700 }}
