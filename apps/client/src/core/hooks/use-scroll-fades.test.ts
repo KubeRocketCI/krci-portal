@@ -13,6 +13,9 @@ const createContainer = (clientWidth: number, scrollWidth: number) => {
   return container;
 };
 
+const renderFades = (element: HTMLElement | null) =>
+  renderHook(({ el }) => useScrollFades(el), { initialProps: { el: element } });
+
 describe("useScrollFades", () => {
   beforeEach(() => {
     resizeObserver = stubResizeObserver();
@@ -22,71 +25,70 @@ describe("useScrollFades", () => {
     vi.unstubAllGlobals();
   });
 
-  it("starts with both fades hidden and no element", () => {
-    const { result } = renderHook(() => useScrollFades<HTMLDivElement>());
+  it("shows no fades without an element", () => {
+    const { result } = renderFades(null);
 
-    expect(result.current.scrollElement).toBeNull();
-    expect(result.current.showLeftFade).toBe(false);
-    expect(result.current.showRightFade).toBe(false);
+    expect(result.current).toEqual({ showLeftFade: false, showRightFade: false });
   });
 
-  it("observes only the container when no content element is attached", () => {
-    const { result } = renderHook(() => useScrollFades<HTMLDivElement>());
-
-    act(() => result.current.scrollRef(createContainer(400, 400)));
-
-    expect(resizeObserver.observed).toHaveLength(1);
-  });
-
-  it("also observes the children and the content element", () => {
+  it("observes the element and its children", () => {
     const container = createContainer(400, 400);
     const child = document.createElement("span");
     container.appendChild(child);
-    const table = document.createElement("table");
-    const { result } = renderHook(() => useScrollFades<HTMLDivElement, HTMLTableElement>());
 
-    act(() => {
-      result.current.scrollRef(container);
-      result.current.contentRef(table);
+    renderFades(container);
+
+    expect(resizeObserver.observed).toEqual([container, child]);
+  });
+
+  it("observes a child added after mount", async () => {
+    const container = createContainer(400, 400);
+    renderFades(container);
+    const child = document.createElement("span");
+
+    await act(async () => {
+      container.appendChild(child);
     });
 
-    expect(resizeObserver.observed).toContain(container);
     expect(resizeObserver.observed).toContain(child);
-    expect(resizeObserver.observed).toContain(table);
   });
 
   it("shows the right fade once the content overflows the container", () => {
-    const { result } = renderHook(() => useScrollFades<HTMLDivElement>());
+    const { result } = renderFades(createContainer(1000, 1800));
 
-    act(() => result.current.scrollRef(createContainer(1000, 1800)));
-
-    expect(result.current.showRightFade).toBe(true);
-    expect(result.current.showLeftFade).toBe(false);
+    expect(result.current).toEqual({ showLeftFade: false, showRightFade: true });
   });
 
-  it("picks up an element attached after the first render", () => {
-    const { result, rerender } = renderHook(() => useScrollFades<HTMLDivElement>());
-    rerender();
-    expect(result.current.showRightFade).toBe(false);
+  it("shows the left fade after scrolling", () => {
+    const container = createContainer(1000, 1800);
+    const { result } = renderFades(container);
 
-    act(() => result.current.scrollRef(createContainer(700, 1000)));
+    Object.defineProperty(container, "scrollLeft", { value: 800, configurable: true });
+    act(() => {
+      container.dispatchEvent(new Event("scroll"));
+    });
 
-    expect(result.current.scrollElement).not.toBeNull();
+    expect(result.current).toEqual({ showLeftFade: true, showRightFade: false });
+  });
+
+  it("picks up an element passed after the first render", () => {
+    const { result, rerender } = renderFades(null);
+
+    rerender({ el: createContainer(700, 1000) });
+
     expect(result.current.showRightFade).toBe(true);
   });
 
-  it("hides the fades when the element detaches", () => {
-    const { result } = renderHook(() => useScrollFades<HTMLDivElement>());
-    act(() => result.current.scrollRef(createContainer(700, 1000)));
+  it("hides the fades when the element goes away", () => {
+    const { result, rerender } = renderFades(createContainer(700, 1000));
 
-    act(() => result.current.scrollRef(null));
+    rerender({ el: null });
 
-    expect(result.current.showRightFade).toBe(false);
+    expect(result.current).toEqual({ showLeftFade: false, showRightFade: false });
   });
 
   it("disconnects on unmount", () => {
-    const { result, unmount } = renderHook(() => useScrollFades<HTMLDivElement>());
-    act(() => result.current.scrollRef(createContainer(400, 400)));
+    const { unmount } = renderFades(createContainer(400, 400));
 
     unmount();
 

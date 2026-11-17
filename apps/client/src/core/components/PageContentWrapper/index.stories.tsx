@@ -123,7 +123,7 @@ export const NarrowWithManyTabs: Story = {
 
     await waitFor(() => {
       expect(row.scrollWidth).toBeGreaterThan(row.clientWidth);
-      expect(row.parentElement?.querySelector(".bg-gradient-to-l")).not.toBeNull();
+      expect(row.parentElement?.querySelector(".bg-gradient-to-l")).toHaveClass("opacity-100");
     });
   },
 };
