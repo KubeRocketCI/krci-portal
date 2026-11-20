@@ -28,6 +28,14 @@ declare global {
       DEPENDENCY_TRACK_API_KEY: string;
       DEPENDENCY_TRACK_WEB_URL?: string;
 
+      DEFECTDOJO_URL: string;
+      DEFECTDOJO_API_KEY: string;
+      DEFECTDOJO_WEB_URL: string;
+      // Cluster name in the DefectDojo product names `<cluster name>/<namespace>`. Optional; defaults to "in-cluster".
+      DEFECTDOJO_CLUSTER_NAME?: string;
+      // Key of the Namespace label that holds the portal namespace. Optional; empty turns the check off.
+      DEFECTDOJO_TENANT_LABEL?: string;
+
       GITFUSION_URL: string;
 
       KRCI_AUDIT_URL: string;

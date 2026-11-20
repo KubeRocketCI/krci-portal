@@ -40,6 +40,9 @@ describe("config.get", () => {
     process.env.DEFAULT_CLUSTER_NAMESPACE = "default-ns";
     process.env.SONAR_WEB_URL = "https://sonar.example.com";
     process.env.DEPENDENCY_TRACK_WEB_URL = "https://dt.example.com";
+    process.env.DEFECTDOJO_URL = "http://defectdojo.krci:8080";
+    process.env.DEFECTDOJO_API_KEY = "key";
+    process.env.DEFECTDOJO_WEB_URL = "https://dd.example.com";
 
     const mockContext = createMockedContext();
     const caller = createCaller(mockContext);
@@ -51,6 +54,7 @@ describe("config.get", () => {
       defaultNamespace: "default-ns",
       sonarWebUrl: "https://sonar.example.com",
       dependencyTrackWebUrl: "https://dt.example.com",
+      defectDojoWebUrl: "https://dd.example.com",
     });
   });
 
@@ -61,6 +65,9 @@ describe("config.get", () => {
     delete process.env.SONAR_HOST_URL;
     delete process.env.DEPENDENCY_TRACK_WEB_URL;
     delete process.env.DEPENDENCY_TRACK_URL;
+    delete process.env.DEFECTDOJO_WEB_URL;
+    delete process.env.DEFECTDOJO_URL;
+    delete process.env.DEFECTDOJO_API_KEY;
 
     const mockContext = createMockedContext();
     const caller = createCaller(mockContext);
@@ -72,6 +79,7 @@ describe("config.get", () => {
       defaultNamespace: "",
       sonarWebUrl: "",
       dependencyTrackWebUrl: "",
+      defectDojoWebUrl: "",
     });
   });
 
@@ -97,5 +105,58 @@ describe("config.get", () => {
     const result = await caller.config.get();
 
     expect(result.dependencyTrackWebUrl).toBe("https://dt-url.example.com");
+  });
+
+  it.each([
+    ["DEFECTDOJO_WEB_URL", { DEFECTDOJO_URL: "https://dd-api.example.com", DEFECTDOJO_API_KEY: "key" }],
+    ["DEFECTDOJO_URL", { DEFECTDOJO_API_KEY: "key", DEFECTDOJO_WEB_URL: "https://dd.example.com" }],
+    [
+      "DEFECTDOJO_API_KEY",
+      { DEFECTDOJO_URL: "https://dd-api.example.com", DEFECTDOJO_WEB_URL: "https://dd.example.com" },
+    ],
+  ])("should hide the DefectDojo link when %s is not set", async (_missing, env) => {
+    delete process.env.DEFECTDOJO_URL;
+    delete process.env.DEFECTDOJO_API_KEY;
+    delete process.env.DEFECTDOJO_WEB_URL;
+    Object.assign(process.env, env);
+
+    const caller = createCaller(createMockedContext());
+
+    const result = await caller.config.get();
+
+    expect(result.defectDojoWebUrl).toBe("");
+  });
+
+  describe("with DefectDojo configured", () => {
+    beforeEach(() => {
+      process.env.DEFECTDOJO_URL = "https://dd-api.example.com";
+      process.env.DEFECTDOJO_API_KEY = "key";
+      process.env.DEFECTDOJO_WEB_URL = "https://dd.example.com";
+      delete process.env.DEFECTDOJO_CLUSTER_NAME;
+      delete process.env.DEFECTDOJO_TENANT_LABEL;
+    });
+
+    it("should show the DefectDojo link with valid cluster name and tenant label settings", async () => {
+      process.env.DEFECTDOJO_CLUSTER_NAME = "core";
+      process.env.DEFECTDOJO_TENANT_LABEL = "app.edp.epam.com/tenant";
+
+      const result = await createCaller(createMockedContext()).config.get();
+
+      expect(result.defectDojoWebUrl).toBe("https://dd.example.com");
+    });
+
+    it.each([
+      ["DEFECTDOJO_CLUSTER_NAME", "Not A Label"],
+      ["DEFECTDOJO_TENANT_LABEL", "not a key"],
+    ])(
+      "should hide the DefectDojo link when %s is invalid, as the client would fail every call",
+      async (name, value) => {
+        process.env[name] = value;
+
+        const result = await createCaller(createMockedContext()).config.get();
+
+        expect(result.defectDojoWebUrl).toBe("");
+      }
+    );
   });
 });

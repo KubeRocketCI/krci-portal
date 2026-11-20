@@ -1,6 +1,7 @@
 import { t } from "../../trpc.js";
 import { protectedProcedure } from "../../procedures/protected/index.js";
 import { z } from "zod";
+import { isDefectDojoUsable } from "../../clients/defectdojo/index.js";
 
 export const configRouter = t.router({
   /**
@@ -32,6 +33,7 @@ export const configRouter = t.router({
         defaultNamespace: z.string(),
         sonarWebUrl: z.string(),
         dependencyTrackWebUrl: z.string(),
+        defectDojoWebUrl: z.string(),
       })
     )
     .query(() => {
@@ -39,12 +41,14 @@ export const configRouter = t.router({
       const defaultNamespace = process.env.DEFAULT_CLUSTER_NAMESPACE || "";
       const sonarWebUrl = process.env.SONAR_WEB_URL || process.env.SONAR_HOST_URL || "";
       const dependencyTrackWebUrl = process.env.DEPENDENCY_TRACK_WEB_URL || process.env.DEPENDENCY_TRACK_URL || "";
+      const defectDojoWebUrl = isDefectDojoUsable() ? (process.env.DEFECTDOJO_WEB_URL ?? "") : "";
 
       return {
         clusterName,
         defaultNamespace,
         sonarWebUrl,
         dependencyTrackWebUrl,
+        defectDojoWebUrl,
       };
     }),
 });
