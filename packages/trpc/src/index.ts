@@ -16,6 +16,8 @@ export { createEventQueue, yieldEvents } from "./utils/createEventQueue/index.js
 
 export { notificationEventBus } from "./clients/eventBus/index.js";
 
+export { AgentSubstrateSourceError, type AgentSubstrateSource } from "./clients/agentSubstrate/index.js";
+
 export {
   HttpError,
   HttpStatusError,

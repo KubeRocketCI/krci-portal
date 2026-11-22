@@ -22,7 +22,8 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({
                 <div className="text-muted-foreground flex items-center gap-2 text-sm">
                   {breadcrumbs?.map(({ label, route }, index, array) => {
                     const isLast = index === array.length - 1;
-                    const key = `breadcrumb-${label}`;
+                    // Labels are not unique: key by position.
+                    const key = `breadcrumb-${index}`;
 
                     return (
                       <React.Fragment key={key}>

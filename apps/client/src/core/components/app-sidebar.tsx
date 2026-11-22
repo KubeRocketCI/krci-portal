@@ -6,16 +6,16 @@ import { useShallow } from "zustand/react/shallow";
 import { ClusterSwitcher } from "./cluster-switcher";
 import { NavUser } from "./nav-user";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "./ui/sheet";
-import { SidebarGroup, SidebarGroupLabel, SidebarMenu, useSidebar } from "./ui/sidebar";
+import { useSidebar } from "./ui/sidebar";
 import { cn } from "../utils/classname";
 import { useClusterStore } from "../../k8s/store";
-import { useSidebarMenu } from "../hooks/useSidebarMenu";
 import { createNavigationConfig } from "./sidebar/navigationConfig";
-import { SidebarMenuItemWithHover } from "./sidebar/SidebarMenuItemWithHover";
+import { SidebarNavGroup } from "./sidebar/SidebarNavGroup";
 import { SidebarPinnedSection } from "./sidebar/SidebarPinnedSection";
-import { ModeSwitcher, type Mode } from "@/modules/k8s/components/ModeSwitcher";
+import { ModeSwitcher } from "./sidebar/ModeSwitcher";
+import { modeFromPath, type Mode } from "./sidebar/ModeSwitcher/mode";
 import { K8sSidebar } from "@/modules/k8s/components/K8sSidebar";
-import { useMatches } from "@tanstack/react-router";
+import { AgentSidebar } from "@/modules/agent-substrate/components/AgentSidebar";
 import { useHasRole } from "@/core/auth/useHasRole";
 
 const SIDEBAR_WIDTH_MOBILE = "18rem";
@@ -26,7 +26,6 @@ const SIDEBAR_WIDTH_MOBILE = "18rem";
  */
 export function AppSidebar() {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
-  const matches = useMatches();
 
   const { clusterName, defaultNamespace } = useClusterStore(
     useShallow((state) => ({
@@ -40,14 +39,15 @@ export function AppSidebar() {
   const { clusterName: paramClusterName } = useParams({ strict: false }) as { clusterName?: string };
   const activeClusterName = paramClusterName ?? clusterName;
 
-  const mode: Mode = activeClusterName && location.pathname.includes(`/c/${activeClusterName}/k8s`) ? "k8s" : "krci";
+  const mode = modeFromPath(location.pathname, activeClusterName);
 
   const handleModeSelect = (next: Mode) => {
     if (!activeClusterName) return;
-    if (next === "k8s") {
-      navigate({ to: "/c/$clusterName/k8s/overview", params: { clusterName: activeClusterName } });
+    const params = { clusterName: activeClusterName };
+    if (next === "krci") {
+      navigate({ to: "/c/$clusterName", params });
     } else {
-      navigate({ to: "/c/$clusterName", params: { clusterName: activeClusterName } });
+      navigate({ to: `/c/$clusterName/${next}/overview`, params });
     }
   };
 
@@ -68,7 +68,13 @@ export function AppSidebar() {
     [clusterName, defaultNamespace, isAdmin]
   );
 
-  const { isMenuOpen, toggleMenu, openMenu, closeMenusExcept } = useSidebarMenu(nav, matches);
+  const isMinimized = state === "collapsed";
+
+  const renderModeNav = () => {
+    if (mode === "k8s") return <K8sSidebar isMinimized={isMinimized} />;
+    if (mode === "agent") return <AgentSidebar isMinimized={isMinimized} />;
+    return <SidebarNavGroup label="Platform" nav={nav} isMinimized={isMinimized} />;
+  };
 
   if (isMobile) {
     return (
@@ -104,26 +110,7 @@ export function AppSidebar() {
               )}
             >
               <SidebarPinnedSection />
-              {mode === "k8s" ? (
-                <K8sSidebar isMinimized={state === "collapsed"} />
-              ) : (
-                <SidebarGroup>
-                  <SidebarGroupLabel>Platform</SidebarGroupLabel>
-                  <SidebarMenu>
-                    {nav.map((item) => (
-                      <SidebarMenuItemWithHover
-                        key={item.title}
-                        item={item}
-                        isMenuOpen={isMenuOpen}
-                        onToggle={toggleMenu}
-                        onOpenMenu={openMenu}
-                        onNavigate={closeMenusExcept}
-                        isMinimized={state === "collapsed"}
-                      />
-                    ))}
-                  </SidebarMenu>
-                </SidebarGroup>
-              )}
+              {renderModeNav()}
             </div>
             <div data-slot="sidebar-footer" data-sidebar="footer" className={cn("flex flex-col gap-2 p-2")}>
               <NavUser />
@@ -138,7 +125,7 @@ export function AppSidebar() {
     <div
       className="group peer text-sidebar-foreground hidden md:block"
       data-state={state}
-      data-collapsible={state === "collapsed" ? "icon" : ""}
+      data-collapsible={isMinimized ? "icon" : ""}
       data-variant="sidebar"
       data-side="left"
       data-slot="sidebar"
@@ -165,7 +152,7 @@ export function AppSidebar() {
           <div data-slot="sidebar-header" data-sidebar="header" className={cn("flex flex-col gap-2 p-2")}>
             <ClusterSwitcher clusters={clusters} />
             <div className="px-2 py-1 group-data-[collapsible=icon]:px-0">
-              <ModeSwitcher mode={mode} onSelect={handleModeSelect} isMinimized={state === "collapsed"} />
+              <ModeSwitcher mode={mode} onSelect={handleModeSelect} isMinimized={isMinimized} />
             </div>
           </div>
           <SidebarPinnedSection />
@@ -176,26 +163,7 @@ export function AppSidebar() {
               "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden"
             )}
           >
-            {mode === "k8s" ? (
-              <K8sSidebar isMinimized={state === "collapsed"} />
-            ) : (
-              <SidebarGroup>
-                <SidebarGroupLabel>Platform</SidebarGroupLabel>
-                <SidebarMenu>
-                  {nav.map((item) => (
-                    <SidebarMenuItemWithHover
-                      key={item.title}
-                      item={item}
-                      isMenuOpen={isMenuOpen}
-                      onToggle={toggleMenu}
-                      onOpenMenu={openMenu}
-                      onNavigate={closeMenusExcept}
-                      isMinimized={state === "collapsed"}
-                    />
-                  ))}
-                </SidebarMenu>
-              </SidebarGroup>
-            )}
+            {renderModeNav()}
           </div>
           <div data-slot="sidebar-footer" data-sidebar="footer" className={cn("flex flex-col gap-2 p-2")}>
             <NavUser />
