@@ -1,0 +1,388 @@
+{
+  "atespaces": [
+    {
+      "name": "krci-agents",
+      "uid": "cfbd2015-e65a-43f6-9786-647e00612979",
+      "createTime": "2026-11-10T13:30:59.098Z"
+    }
+  ],
+  "actors": [
+    {
+      "atespace": "krci-agents",
+      "name": "issue-2-25",
+      "uid": "bb7b0859-4887-43a2-8355-807ebbe7c75f",
+      "createTime": "2026-11-16T16:19:04.236Z",
+      "updateTime": "2026-11-16T16:52:03.411Z",
+      "actorTemplate": {
+        "atespace": "krci-agents",
+        "name": "issue-2-25"
+      },
+      "state": "suspended",
+      "workerAssignment": null,
+      "crash": null,
+      "snapshots": [
+        {
+          "uuid": "824227f5-3037-4eb4-85c7-e1eae43caabd",
+          "generation": 1,
+          "fidelity": "memory",
+          "locality": null,
+          "durableState": "completed"
+        }
+      ]
+    },
+    {
+      "atespace": "krci-agents",
+      "name": "issue-2-26",
+      "uid": "56d713b7-ad0e-4ae1-b557-a917131c458d",
+      "createTime": "2026-11-16T16:35:32.275Z",
+      "updateTime": "2026-11-16T17:09:19.320Z",
+      "actorTemplate": {
+        "atespace": "krci-agents",
+        "name": "issue-2-26"
+      },
+      "state": "suspended",
+      "workerAssignment": null,
+      "crash": null,
+      "snapshots": [
+        {
+          "uuid": "c9f5fd59-52f3-4a82-a24f-dadf5cb934b1",
+          "generation": 1,
+          "fidelity": "memory",
+          "locality": null,
+          "durableState": "completed"
+        }
+      ]
+    },
+    {
+      "atespace": "krci-agents",
+      "name": "issue-5-3",
+      "uid": "74d21e83-c41f-4a36-b26d-f6496b3f4c85",
+      "createTime": "2026-11-16T16:22:06.438Z",
+      "updateTime": "2026-11-16T16:53:03.421Z",
+      "actorTemplate": {
+        "atespace": "krci-agents",
+        "name": "issue-5-3"
+      },
+      "state": "suspended",
+      "workerAssignment": null,
+      "crash": null,
+      "snapshots": [
+        {
+          "uuid": "31b89d61-41d8-459f-898b-b8a8e4e1a62f",
+          "generation": 1,
+          "fidelity": "memory",
+          "locality": null,
+          "durableState": "completed"
+        }
+      ]
+    },
+    {
+      "atespace": "krci-agents",
+      "name": "issue-5-4",
+      "uid": "2b801245-2678-43c8-915b-ac72e8c6384f",
+      "createTime": "2026-11-16T16:39:18.171Z",
+      "updateTime": "2026-11-16T17:10:11.335Z",
+      "actorTemplate": {
+        "atespace": "krci-agents",
+        "name": "issue-5-4"
+      },
+      "state": "suspended",
+      "workerAssignment": null,
+      "crash": null,
+      "snapshots": [
+        {
+          "uuid": "1a885b18-3b06-473e-b6cd-c614185436c1",
+          "generation": 1,
+          "fidelity": "memory",
+          "locality": null,
+          "durableState": "completed"
+        }
+      ]
+    },
+    {
+      "atespace": "krci-agents",
+      "name": "issue-6-2",
+      "uid": "edb9cdb9-a391-4bbb-ae91-b6b2f2d6816b",
+      "createTime": "2026-11-16T16:23:05.987Z",
+      "updateTime": "2026-11-16T16:53:54.834Z",
+      "actorTemplate": {
+        "atespace": "krci-agents",
+        "name": "issue-6-2"
+      },
+      "state": "suspended",
+      "workerAssignment": null,
+      "crash": null,
+      "snapshots": [
+        {
+          "uuid": "eff2c469-1213-4caa-a206-d9cc3a11965f",
+          "generation": 1,
+          "fidelity": "memory",
+          "locality": null,
+          "durableState": "completed"
+        }
+      ]
+    },
+    {
+      "atespace": "krci-agents",
+      "name": "issue-6-3",
+      "uid": "bf19017d-3a48-4c93-af06-9809c3831f39",
+      "createTime": "2026-11-16T16:40:14.459Z",
+      "updateTime": "2026-11-16T17:11:18.251Z",
+      "actorTemplate": {
+        "atespace": "krci-agents",
+        "name": "issue-6-3"
+      },
+      "state": "suspended",
+      "workerAssignment": null,
+      "crash": null,
+      "snapshots": [
+        {
+          "uuid": "75be7fac-ca2a-45a4-b07c-926cb0937e4f",
+          "generation": 1,
+          "fidelity": "memory",
+          "locality": null,
+          "durableState": "completed"
+        }
+      ]
+    }
+  ],
+  "actorTemplates": [
+    {
+      "atespace": "krci-agents",
+      "name": "issue-2-25",
+      "uid": "7113ff18-b6a8-4f79-82c3-023a990a082a",
+      "containers": [
+        {
+          "name": "claude",
+          "env": [
+            {
+              "name": "PROJECT_ID",
+              "value": "2"
+            },
+            {
+              "name": "PROJECT_PATH",
+              "value": "krci/test-go-app"
+            },
+            {
+              "name": "ISSUE_IID",
+              "value": "25"
+            },
+            {
+              "name": "AGENT_PROFILE",
+              "value": "go"
+            },
+            {
+              "name": "ANTHROPIC_MODEL",
+              "value": "claude-haiku-5-5"
+            }
+          ]
+        }
+      ],
+      "limits": {
+        "cpuMillicores": 1000,
+        "memoryBytes": 2147483648
+      }
+    },
+    {
+      "atespace": "krci-agents",
+      "name": "issue-2-26",
+      "uid": "1ff8b0fa-b43b-4e70-8a65-6ede82bee176",
+      "containers": [
+        {
+          "name": "claude",
+          "env": [
+            {
+              "name": "PROJECT_ID",
+              "value": "2"
+            },
+            {
+              "name": "PROJECT_PATH",
+              "value": "krci/test-go-app"
+            },
+            {
+              "name": "ISSUE_IID",
+              "value": "26"
+            },
+            {
+              "name": "AGENT_PROFILE",
+              "value": "go"
+            },
+            {
+              "name": "ANTHROPIC_MODEL",
+              "value": "claude-haiku-5-5"
+            }
+          ]
+        }
+      ],
+      "limits": {
+        "cpuMillicores": 1000,
+        "memoryBytes": 2147483648
+      }
+    },
+    {
+      "atespace": "krci-agents",
+      "name": "issue-5-3",
+      "uid": "3ccb9eea-59b7-466f-8c30-65e3fffffb63",
+      "containers": [
+        {
+          "name": "claude",
+          "env": [
+            {
+              "name": "PROJECT_ID",
+              "value": "5"
+            },
+            {
+              "name": "PROJECT_PATH",
+              "value": "krci/test-python-app"
+            },
+            {
+              "name": "ISSUE_IID",
+              "value": "3"
+            },
+            {
+              "name": "AGENT_PROFILE",
+              "value": "python"
+            },
+            {
+              "name": "ANTHROPIC_MODEL",
+              "value": "claude-haiku-5-5"
+            }
+          ]
+        }
+      ],
+      "limits": {
+        "cpuMillicores": 1000,
+        "memoryBytes": 2147483648
+      }
+    },
+    {
+      "atespace": "krci-agents",
+      "name": "issue-5-4",
+      "uid": "06998c76-0638-464a-8c17-f24824ad4c9d",
+      "containers": [
+        {
+          "name": "claude",
+          "env": [
+            {
+              "name": "PROJECT_ID",
+              "value": "5"
+            },
+            {
+              "name": "PROJECT_PATH",
+              "value": "krci/test-python-app"
+            },
+            {
+              "name": "ISSUE_IID",
+              "value": "4"
+            },
+            {
+              "name": "AGENT_PROFILE",
+              "value": "python"
+            },
+            {
+              "name": "ANTHROPIC_MODEL",
+              "value": "claude-haiku-5-5"
+            }
+          ]
+        }
+      ],
+      "limits": {
+        "cpuMillicores": 1000,
+        "memoryBytes": 2147483648
+      }
+    },
+    {
+      "atespace": "krci-agents",
+      "name": "issue-6-2",
+      "uid": "efa14310-aeae-4149-9e69-9268605232b1",
+      "containers": [
+        {
+          "name": "claude",
+          "env": [
+            {
+              "name": "PROJECT_ID",
+              "value": "6"
+            },
+            {
+              "name": "PROJECT_PATH",
+              "value": "krci/test-node-app"
+            },
+            {
+              "name": "ISSUE_IID",
+              "value": "2"
+            },
+            {
+              "name": "AGENT_PROFILE",
+              "value": "node"
+            },
+            {
+              "name": "ANTHROPIC_MODEL",
+              "value": "claude-haiku-5-5"
+            }
+          ]
+        }
+      ],
+      "limits": {
+        "cpuMillicores": 1000,
+        "memoryBytes": 2147483648
+      }
+    },
+    {
+      "atespace": "krci-agents",
+      "name": "issue-6-3",
+      "uid": "b5350c39-5792-49b9-bbb4-52b45ff32932",
+      "containers": [
+        {
+          "name": "claude",
+          "env": [
+            {
+              "name": "PROJECT_ID",
+              "value": "6"
+            },
+            {
+              "name": "PROJECT_PATH",
+              "value": "krci/test-node-app"
+            },
+            {
+              "name": "ISSUE_IID",
+              "value": "3"
+            },
+            {
+              "name": "AGENT_PROFILE",
+              "value": "node"
+            },
+            {
+              "name": "ANTHROPIC_MODEL",
+              "value": "claude-haiku-5-5"
+            }
+          ]
+        }
+      ],
+      "limits": {
+        "cpuMillicores": 1000,
+        "memoryBytes": 2147483648
+      }
+    }
+  ],
+  "workers": [
+    {
+      "name": "827d5090-ec64-4031-b30f-c4429922353e",
+      "workerPool": "workers",
+      "workerNamespace": "krci-agents",
+      "workerPod": "workers-b98954c58-h8kx8",
+      "nodeName": "krci-control-plane",
+      "state": "active",
+      "capacity": {
+        "cpuMillicores": 1000,
+        "memoryBytes": 2617245696,
+        "actors": 1000
+      },
+      "allocated": {
+        "cpuMillicores": 0,
+        "memoryBytes": 0,
+        "actors": 0
+      },
+      "sandboxClasses": ["gvisor"]
+    }
+  ]
+}

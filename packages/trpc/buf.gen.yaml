@@ -1,0 +1,13 @@
+# Agent Substrate client code. Input: proto/ateapi/v1/ateapi.proto, a copy of
+# Agent Substrate api/ateapi/v1/ateapi.proto at tag v1.0.1.
+# Regenerate: pnpm --filter=trpc generate:substrate
+version: v2
+inputs:
+  - directory: proto
+plugins:
+  - local: protoc-gen-es
+    out: src/clients/agentSubstrate/grpc/gen
+    opt:
+      - target=ts
+      - import_extension=js
+clean: true

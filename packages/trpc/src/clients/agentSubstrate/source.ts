@@ -73,9 +73,17 @@ export interface SubstrateWorker {
   sandboxClasses: string[];
 }
 
-export type AgentSubstrateSourceErrorKind = "unauthenticated" | "permissionDenied" | "unavailable" | "other";
+export type AgentSubstrateSourceErrorKind =
+  | "unauthenticated"
+  | "permissionDenied"
+  | "unavailable"
+  | "notFound"
+  | "other";
 
-/** The only error an `AgentSubstrateSource` read rejects with. `unavailable` covers network and TLS failures. */
+/**
+ * The only error an `AgentSubstrateSource` read rejects with. `unavailable` covers network and TLS failures.
+ * `notFound`: the named object does not exist.
+ */
 export class AgentSubstrateSourceError extends Error {
   readonly kind: AgentSubstrateSourceErrorKind;
 

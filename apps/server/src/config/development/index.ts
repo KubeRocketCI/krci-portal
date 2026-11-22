@@ -5,6 +5,7 @@ import {
   type AppRouter,
   type CustomSession,
   createContext,
+  createAgentSubstrateSource,
 } from "@my-project/trpc";
 import FastifyCookie from "@fastify/cookie";
 import FastifyCors from "@fastify/cors";
@@ -57,6 +58,7 @@ export class LocalFastifyServer {
     const sessionStore = new DBSessionStore();
     const notificationsStore = new DBNotificationsStore();
     notificationsStore.cleanup();
+    const agentSubstrateSource = createAgentSubstrateSource(process.env);
 
     if (process.env.NODE_ENV === "development") {
       sessionStore.clearAllSessions();
@@ -129,6 +131,7 @@ export class LocalFastifyServer {
               session,
               sessionStore,
               notificationsStore,
+              agentSubstrateSource,
               oidcConfig: {
                 issuerURL: process.env.OIDC_ISSUER_URL ?? "",
                 clientID: process.env.OIDC_CLIENT_ID ?? "",

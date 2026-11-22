@@ -68,6 +68,15 @@ configEnv:
   # When unset, the tab returns PRECONDITION_FAILED.
   # Example (in-cluster): http://prometheus.monitoring.svc:9090
   PROMETHEUS_URL: http://prometheus.monitoring.svc:9090
+  # AGENT_SUBSTRATE_URL turns on the Agent mode (alpha): the Agent Substrate gRPC API, https:// only.
+  # Unset: the Agent pages show "not configured" and the portal makes no Agent Substrate call.
+  # Set: the Deployment mounts a projected ServiceAccount token (audience = URL host) and the
+  # ClusterTrustBundle of signer servicedns.podcert.ate.dev/identity. Needs a dedicated ServiceAccount.
+  # Cluster steps, once:
+  #   1. kubectl label namespace <release-namespace> ate.dev/api-access=true
+  #   2. Bind user:system:serviceaccount:<release-namespace>:<serviceaccount> as global viewer in
+  #      Agent Substrate (kubectl ate create access-policy --global, or update the existing policy).
+  # AGENT_SUBSTRATE_URL: https://api.ate-system.svc:443
 
 # -- Extends envFrom for the Deployment definition.
 # we expect to deserialize key-value pairs from the secret, e.g

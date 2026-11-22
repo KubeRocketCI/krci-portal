@@ -38,6 +38,9 @@ declare global {
 
       DEPLOY_CLIENT_DIST_DIR?: string;
 
+      // Agent Substrate gRPC API, https:// only. Optional: when unset, Agent mode reports "not configured".
+      AGENT_SUBSTRATE_URL?: string;
+
       // Shared secret for POST /rest/v1/internal/events (Argo Events Sensor).
       // Optional: when unset the route responds 503. Read ad-hoc, not part of
       // validateRequiredEnv — same pattern as PROMETHEUS_URL.
