@@ -2,6 +2,12 @@
 
 KubeRocketCI Portal — monorepo for a Kubernetes CI/CD platform UI.
 
+## Agent skills
+
+- Before filing or reading an issue, or opening a PR: `docs/agents/issue-tracker.md` (Jira `EPMDEDP`, PRs on GitHub).
+- Before triage or labeling: `docs/agents/triage-labels.md` (default five labels).
+- Before domain work: `GLOSSARY.md` (its terms go into code names, UI labels and notes), then the ADRs of the area in `docs/adr/` (`docs/agents/domain.md`, single-context).
+
 ## Critical Conventions
 
 - All tRPC endpoints use `protectedProcedure` (never `publicProcedure`)
