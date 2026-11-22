@@ -1,0 +1,73 @@
+[
+  {
+    "key": "demo",
+    "note": null,
+    "portalClusterName": "in-cluster",
+    "cdPipeline": "demo",
+    "namespace": "krci",
+    "environments": [
+      {
+        "stage": "dev",
+        "clusterName": "in-cluster",
+        "namespace": "krci-demo-dev",
+        "applications": [{ "applicationName": "demo-dev-test-go-app", "codebaseName": "test-go-app" }]
+      }
+    ]
+  },
+  {
+    "key": "demo-with-closed",
+    "note": "Illustration: the Application ddcheck-suite does not exist on the testbed. Its name equals the app tag of a closed scan, so its row shows the Not running state.",
+    "portalClusterName": "in-cluster",
+    "cdPipeline": "demo",
+    "namespace": "krci",
+    "environments": [
+      {
+        "stage": "dev",
+        "clusterName": "in-cluster",
+        "namespace": "krci-demo-dev",
+        "applications": [
+          { "applicationName": "demo-dev-test-go-app", "codebaseName": "test-go-app" },
+          { "applicationName": "ddcheck-suite", "codebaseName": "ddcheck-app" }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "no-data",
+    "note": "Illustration: Stage qa does not exist on the testbed. Its namespace has no product in DefectDojo.",
+    "portalClusterName": "in-cluster",
+    "cdPipeline": "demo",
+    "namespace": "krci",
+    "environments": [
+      {
+        "stage": "qa",
+        "clusterName": "in-cluster",
+        "namespace": "krci-demo-qa",
+        "applications": [{ "applicationName": "demo-qa-test-go-app", "codebaseName": "test-go-app" }]
+      }
+    ]
+  },
+  {
+    "key": "dense",
+    "note": "Illustration: the testbed has one Stage. Namespaces without a Stage (krci, krci-security) are rendered as Environments next to the real Stage dev and the missing Stage qa. Their workloads belong to no codebase.",
+    "portalClusterName": "in-cluster",
+    "cdPipeline": "demo",
+    "namespace": "krci",
+    "environments": [
+      {
+        "stage": "dev",
+        "clusterName": "in-cluster",
+        "namespace": "krci-demo-dev",
+        "applications": [{ "applicationName": "demo-dev-test-go-app", "codebaseName": "test-go-app" }]
+      },
+      {
+        "stage": "qa",
+        "clusterName": "in-cluster",
+        "namespace": "krci-demo-qa",
+        "applications": [{ "applicationName": "demo-qa-test-go-app", "codebaseName": "test-go-app" }]
+      },
+      { "stage": "krci", "clusterName": "in-cluster", "namespace": "krci", "applications": [] },
+      { "stage": "krci-security", "clusterName": "in-cluster", "namespace": "krci-security", "applications": [] }
+    ]
+  }
+]

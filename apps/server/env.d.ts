@@ -28,6 +28,13 @@ declare global {
       DEPENDENCY_TRACK_API_KEY: string;
       DEPENDENCY_TRACK_WEB_URL?: string;
 
+      // PROTOTYPE (EPMDEDP-16072): read ad hoc by the prototype DefectDojo client.
+      DEFECTDOJO_URL?: string;
+      DEFECTDOJO_TOKEN?: string;
+      DEFECTDOJO_WEB_URL?: string;
+      DEFECTDOJO_PRODUCT_TYPE?: string;
+      DEFECTDOJO_HOST_HEADER?: string;
+
       GITFUSION_URL: string;
 
       KRCI_AUDIT_URL: string;

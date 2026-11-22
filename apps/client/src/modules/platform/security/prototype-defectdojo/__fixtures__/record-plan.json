@@ -1,0 +1,108 @@
+{
+  "productTagSets": [
+    [],
+    ["k8s-cluster:in-cluster", "k8s-namespace:krci-demo-dev"],
+    ["k8s-cluster:in-cluster", "k8s-namespace:krci"],
+    ["k8s-cluster:in-cluster", "k8s-namespace:krci-security"],
+    ["k8s-cluster:in-cluster", "k8s-namespace:krci-demo-qa"]
+  ],
+  "testTagSets": [
+    ["app.edp.epam.com/codebase:test-go-app", "app.edp.epam.com/tenant:krci"],
+    ["app.edp.epam.com/codebase:test-node-app", "app.edp.epam.com/tenant:krci"],
+    ["app.edp.epam.com/codebase:java-gitlabci-app", "app.edp.epam.com/tenant:krci"],
+    ["k8s-cluster:in-cluster", "k8s-namespace:krci-demo-dev", "app:demo-dev-test-go-app"],
+    ["k8s-cluster:in-cluster", "k8s-namespace:krci-demo-dev"],
+    ["k8s-cluster:in-cluster", "k8s-namespace:krci"],
+    ["k8s-cluster:in-cluster", "k8s-namespace:krci-security"],
+    ["k8s-cluster:in-cluster", "k8s-namespace:krci-demo-qa"]
+  ],
+  "testTagSetsCountsOnly": [["app.edp.epam.com/tenant:krci"]],
+  "testTagSetsListOnly": [["k8s-cluster:in-cluster"]],
+  "calls": [
+    { "procedure": "productSetCounts", "input": { "productIds": [3, 5, 7, 14, 23] } },
+    { "procedure": "productSetCounts", "input": { "productIds": [3, 5, 7, 14, 15, 16, 17, 18, 20, 22, 23] } },
+    {
+      "procedure": "listFindings",
+      "input": {
+        "productTagsAny": ["k8s-cluster:in-cluster"],
+        "active": true,
+        "limit": 25,
+        "offset": 0,
+        "withTest": true
+      }
+    },
+    {
+      "procedure": "listFindings",
+      "input": {
+        "productTagsAny": ["k8s-cluster:in-cluster"],
+        "active": true,
+        "limit": 25,
+        "offset": 25,
+        "withTest": true
+      }
+    },
+    {
+      "procedure": "listFindings",
+      "input": {
+        "productTagsAny": ["k8s-cluster:in-cluster"],
+        "severity": "Critical",
+        "active": true,
+        "limit": 25,
+        "offset": 0,
+        "withTest": true
+      }
+    },
+    {
+      "procedure": "listFindings",
+      "input": {
+        "productTagsAny": ["k8s-cluster:in-cluster"],
+        "active": true,
+        "limit": 10,
+        "offset": 0,
+        "withTest": true
+      }
+    },
+    {
+      "procedure": "listFindings",
+      "input": {
+        "testTagsAll": ["app.edp.epam.com/tenant:krci"],
+        "active": true,
+        "limit": 25,
+        "offset": 0,
+        "withTest": true
+      }
+    },
+    {
+      "procedure": "listFindings",
+      "input": {
+        "testTagsAll": ["app.edp.epam.com/tenant:krci"],
+        "active": true,
+        "limit": 10,
+        "offset": 0,
+        "withTest": true
+      }
+    },
+    {
+      "procedure": "listFindings",
+      "input": {
+        "testTagsAll": ["app.edp.epam.com/tenant:krci"],
+        "scanType": "Gitleaks Scan",
+        "active": true,
+        "limit": 25,
+        "offset": 0,
+        "withTest": true
+      }
+    },
+    {
+      "procedure": "listFindings",
+      "input": {
+        "productTagsAny": ["k8s-cluster:in-cluster"],
+        "runtimeSecretsOnly": true,
+        "active": true,
+        "limit": 25,
+        "offset": 0,
+        "withTest": true
+      }
+    }
+  ]
+}

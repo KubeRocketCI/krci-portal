@@ -8,6 +8,7 @@ import { IngressColumnLive } from "../../columns/IngressLive";
 import { IngressHeadColumn } from "../../columns/IngressHead";
 import { NameColumn } from "../../columns/Name";
 import { PodsColumn } from "../../columns/Pods";
+import { PrototypeSecurityColumn } from "../../columns/PrototypeSecurity";
 import { StatusColumn } from "../../columns/Status";
 import { ValuesOverridePreviewColumn } from "../../columns/ValuesOverridePreview";
 import { ValuesOverridePreviewHeadColumn } from "../../columns/ValuesOverridePreviewHead";
@@ -53,6 +54,17 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
         },
         cell: {
           baseWidth: 25,
+        },
+      },
+      // PROTOTYPE (EPMDEDP-16072): Runtime findings from DefectDojo. Not for main.
+      {
+        id: columnNames.SECURITY,
+        label: "Security",
+        data: {
+          render: ({ data: { appCodebase } }) => <PrototypeSecurityColumn appCodebase={appCodebase} />,
+        },
+        cell: {
+          baseWidth: 20,
         },
       },
       {

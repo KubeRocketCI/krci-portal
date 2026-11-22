@@ -6,10 +6,18 @@ export const PATH_TRIVY_VULNERABILITIES = "trivy/vulnerabilities" as const;
 export const PATH_TRIVY_VULNERABILITIES_FULL = "/c/$clusterName/security/trivy/vulnerabilities" as const;
 export const ROUTE_ID_TRIVY_VULNERABILITIES = "/_layout/c/$clusterName/security/trivy/vulnerabilities" as const;
 
+// PROTOTYPE (EPMDEDP-16072): DefectDojo variant of the page. Not for main.
+export const routeSearchPrototypeVariantSchema = z.enum(["A"]);
+export type RouteSearchPrototypeVariant = z.infer<typeof routeSearchPrototypeVariantSchema>;
+
 export interface Search {
   namespace?: string;
   page?: number;
   rowsPerPage?: number;
+  /** Unset: the page reads Trivy custom resources. */
+  variant?: RouteSearchPrototypeVariant;
+  /** Prototype: comma-separated clusters. Unset: the clusters of the installation's Stages. */
+  clusters?: string;
 }
 
 export const routeTrivyVulnerabilities = createRoute({
@@ -21,6 +29,8 @@ export const routeTrivyVulnerabilities = createRoute({
         namespace: z.string().optional(),
         page: z.number().int().positive().optional(),
         rowsPerPage: z.number().int().positive().optional(),
+        variant: routeSearchPrototypeVariantSchema.optional().catch(undefined),
+        clusters: z.string().optional(),
       })
       .parse(search);
   },

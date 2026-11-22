@@ -12,6 +12,8 @@ export const routeSearchTabSchema = z.enum([
   "pipelines",
   "security",
   "vulnerabilities",
+  // PROTOTYPE (EPMDEDP-16072): throwaway tab. Not for main.
+  "findings",
   "code",
   "deployments",
 ]);
@@ -19,10 +21,18 @@ export const routeSearchTabName = routeSearchTabSchema.enum;
 
 export type RouteSearchTab = z.infer<typeof routeSearchTabSchema>;
 
+// PROTOTYPE (EPMDEDP-16072): variant of the Security Findings tab. Not for main.
+export const routeSearchPrototypeVariantSchema = z.enum(["A", "B", "C"]);
+export type RouteSearchPrototypeVariant = z.infer<typeof routeSearchPrototypeVariantSchema>;
+
 export interface Search {
   tab?: RouteSearchTab;
   page?: number;
   rowsPerPage?: number;
+  variant?: RouteSearchPrototypeVariant;
+  /** Prototype: the Environment the Security Findings tab puts in focus. Both values, or none. */
+  cdPipeline?: string;
+  stage?: string;
 }
 
 export const routeProjectDetails = createRoute({
@@ -34,6 +44,9 @@ export const routeProjectDetails = createRoute({
         tab: routeSearchTabSchema.optional(),
         page: z.number().int().positive().optional(),
         rowsPerPage: z.number().int().positive().optional(),
+        variant: routeSearchPrototypeVariantSchema.optional().catch(undefined),
+        cdPipeline: z.string().optional(),
+        stage: z.string().optional(),
       })
       .parse(search);
 

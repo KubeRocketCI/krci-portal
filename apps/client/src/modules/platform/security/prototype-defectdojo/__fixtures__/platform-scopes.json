@@ -1,0 +1,13 @@
+[
+  {
+    "key": "testbed",
+    "note": null,
+    "portalClusterName": "in-cluster",
+    "installationNamespace": "krci",
+    "stages": [{ "cdPipeline": "demo", "stage": "dev", "clusterName": "in-cluster", "namespace": "krci-demo-dev" }],
+    "applications": [
+      { "applicationName": "demo-dev-test-go-app", "codebaseName": "test-go-app", "cdPipeline": "demo", "stage": "dev" }
+    ],
+    "codebases": ["java-gitlabci-app", "krci-gitops", "test-go-app", "test-node-app", "test-python-app"]
+  }
+]

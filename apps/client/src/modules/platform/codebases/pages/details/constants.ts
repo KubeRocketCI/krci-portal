@@ -7,6 +7,7 @@ export const tabNameToIndexMap: Record<RouteSearchTab, number> = {
   [routeSearchTabSchema.enum.pipelines]: 2,
   [routeSearchTabSchema.enum.security]: 3,
   [routeSearchTabSchema.enum.vulnerabilities]: 4,
-  [routeSearchTabSchema.enum.code]: 5,
-  [routeSearchTabSchema.enum.deployments]: 6,
+  [routeSearchTabSchema.enum.findings]: 5,
+  [routeSearchTabSchema.enum.code]: 6,
+  [routeSearchTabSchema.enum.deployments]: 7,
 };

@@ -16,6 +16,7 @@ import {
 } from "@my-project/shared";
 import KubernetesIcon from "@/assets/icons/k8s/kubernetes.svg?react";
 import { Activity, Zap, Shield, Settings, Workflow } from "lucide-react";
+import { StageSecuritySummary } from "@/modules/platform/cdpipelines/prototype-defectdojo/components/StageSecuritySummary";
 
 export const Overview = () => {
   const params = routeStageDetails.useParams();
@@ -121,6 +122,11 @@ export const Overview = () => {
           <div className="text-foreground text-lg font-semibold">{stage.spec.clusterName}</div>
           <div className="text-muted-foreground mt-1 text-xs">Kubernetes</div>
         </Card>
+      </div>
+
+      {/* PROTOTYPE (EPMDEDP-16072): Runtime findings of the namespace from DefectDojo. Not for main. */}
+      <div className="mb-4">
+        <StageSecuritySummary />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">

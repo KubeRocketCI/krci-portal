@@ -8,6 +8,7 @@ import { STATUS_COLOR } from "@/k8s/constants/colors";
 import { useClusterStore } from "@/k8s/store";
 import { useShallow } from "zustand/react/shallow";
 import { PATH_CDPIPELINE_STAGE_DETAILS_FULL } from "@/modules/platform/cdpipelines/pages/stage-details/route";
+import { PipelineCardSecurity } from "@/modules/platform/cdpipelines/prototype-defectdojo/components/PipelineCardSecurity";
 import { useStageArgoApplicationListWatch } from "../../hooks/data";
 import { usePipelineAppCodebases, useArgoAppsByAppName } from "../../hooks/usePipelineData";
 import { routeCDPipelineDetails } from "../../route";
@@ -109,6 +110,10 @@ export function PipelineEnvironmentCard({ stage, isSelected }: PipelineEnvironme
           <span className="flex items-center gap-1">
             <Shield className="size-3" /> {qualityGates.length} quality gates
           </span>
+        </div>
+        {/* PROTOTYPE (EPMDEDP-16072): Runtime findings of the namespace from DefectDojo. Not for main. */}
+        <div className="mt-2 w-full">
+          <PipelineCardSecurity stage={stage.spec.name} />
         </div>
       </Link>
     </Button>

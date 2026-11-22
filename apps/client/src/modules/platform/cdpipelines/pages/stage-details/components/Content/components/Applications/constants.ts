@@ -12,5 +12,7 @@ export const columnNames = {
   VALUES_OVERRIDE: "valuesOverride",
   PODS: "pods",
   INGRESS: "ingress",
+  // PROTOTYPE (EPMDEDP-16072): throwaway column. Not for main.
+  SECURITY: "security",
   EMPTY: "empty",
 } as const;

@@ -10,6 +10,7 @@ import { useCDPipelineWatch } from "../../hooks/data";
 import { useSortedStages } from "../../hooks/usePipelineData";
 import { routeCDPipelineDetails } from "../../route";
 import { routeStageCreate } from "../../../stages/create/route";
+import { PrototypeDefectDojoProvider } from "@/modules/platform/security/prototype-defectdojo/api/provider";
 
 export const Environments = () => {
   const navigate = useNavigate();
@@ -88,11 +89,14 @@ export const Environments = () => {
     );
   }
 
+  // PROTOTYPE (EPMDEDP-16072): one DefectDojo cache scope for the Environment cards. Not for main.
   return (
-    <div className="space-y-4">
-      <HorizontalEnvironmentFlow stages={filteredStages} selectedEnvironment={selectedEnvironment || null} />
+    <PrototypeDefectDojoProvider cacheScope={`pipeline-${params.name}`}>
+      <div className="space-y-4">
+        <HorizontalEnvironmentFlow stages={filteredStages} selectedEnvironment={selectedEnvironment || null} />
 
-      {selectedStage && <EnvironmentDetailPanel stage={selectedStage} />}
-    </div>
+        {selectedStage && <EnvironmentDetailPanel stage={selectedStage} />}
+      </div>
+    </PrototypeDefectDojoProvider>
   );
 };

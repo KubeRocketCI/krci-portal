@@ -1,0 +1,31 @@
+[
+  {
+    "codebaseName": "java-gitlabci-app",
+    "namespace": "krci",
+    "branches": ["main"],
+    "ownImageNames": ["gitlab.127.0.0.1.nip.io:5050/krci/java-gitlabci-app"],
+    "environments": []
+  },
+  {
+    "codebaseName": "test-go-app",
+    "namespace": "krci",
+    "branches": ["main"],
+    "ownImageNames": ["gitlab.127.0.0.1.nip.io:5050/krci/test-go-app"],
+    "environments": [
+      {
+        "cdPipeline": "demo",
+        "stage": "dev",
+        "applicationName": "demo-dev-test-go-app",
+        "clusterName": "in-cluster",
+        "namespace": "krci-demo-dev"
+      }
+    ]
+  },
+  {
+    "codebaseName": "test-node-app",
+    "namespace": "krci",
+    "branches": ["main"],
+    "ownImageNames": ["gitlab.127.0.0.1.nip.io:5050/krci/test-node-app"],
+    "environments": []
+  }
+]
