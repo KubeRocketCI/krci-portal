@@ -1,3 +1,4 @@
+export * from "./agentSubstrate/index.js";
 export * from "./auth/index.js";
 export * from "./dependencyTrack/index.js";
 export * from "./k8s/index.js";

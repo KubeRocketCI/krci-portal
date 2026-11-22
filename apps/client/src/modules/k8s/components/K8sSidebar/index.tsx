@@ -1,14 +1,11 @@
-import { useMatches, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { SidebarGroup, SidebarGroupLabel, SidebarMenu } from "@/core/components/ui/sidebar";
-import { SidebarMenuItemWithHover } from "@/core/components/sidebar/SidebarMenuItemWithHover";
-import { useSidebarMenu } from "@/core/hooks/useSidebarMenu";
+import { SidebarNavGroup } from "@/core/components/sidebar/SidebarNavGroup";
 import { createK8sNavigationConfig } from "../../constants/nav";
 import { useCRSidebarItems } from "./useCRSidebarItems";
 
 export function K8sSidebar({ isMinimized }: { isMinimized: boolean }) {
   const { clusterName } = useParams({ strict: false }) as { clusterName?: string };
-  const matches = useMatches();
 
   // Show every registered kind in the sidebar. We intentionally do NOT gate visibility
   // on create/update/delete RBAC: most users only have list/get rights (no write verbs),
@@ -22,26 +19,8 @@ export function K8sSidebar({ isMinimized }: { isMinimized: boolean }) {
     () => (clusterName ? createK8sNavigationConfig(clusterName, crSidebarItems) : []),
     [clusterName, crSidebarItems]
   );
-  const { isMenuOpen, toggleMenu, openMenu, closeMenusExcept } = useSidebarMenu(nav, matches);
 
   if (!clusterName) return null;
 
-  return (
-    <SidebarGroup>
-      <SidebarGroupLabel>Kubernetes</SidebarGroupLabel>
-      <SidebarMenu>
-        {nav.map((item) => (
-          <SidebarMenuItemWithHover
-            key={item.title}
-            item={item}
-            isMenuOpen={isMenuOpen}
-            onToggle={toggleMenu}
-            onOpenMenu={openMenu}
-            onNavigate={closeMenusExcept}
-            isMinimized={isMinimized}
-          />
-        ))}
-      </SidebarMenu>
-    </SidebarGroup>
-  );
+  return <SidebarNavGroup label="Kubernetes" nav={nav} isMinimized={isMinimized} />;
 }

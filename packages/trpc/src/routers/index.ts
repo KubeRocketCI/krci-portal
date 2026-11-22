@@ -1,5 +1,6 @@
 import type { inferRouterOutputs, inferRouterInputs } from "@trpc/server";
 import { t } from "../trpc.js";
+import { agentSubstrateRouter } from "./agentSubstrate/index.js";
 import { authRouter } from "./auth/index.js";
 import { configRouter } from "./config/index.js";
 import { dependencyTrackRouter } from "./dependencyTrack/index.js";
@@ -13,6 +14,7 @@ import { sonarqubeRouter } from "./sonarqube/index.js";
 import { tektonResultsRouter } from "./tektonResults/index.js";
 
 export const appRouter = t.router({
+  agentSubstrate: agentSubstrateRouter,
   auth: authRouter,
   config: configRouter,
   dependencyTrack: dependencyTrackRouter,

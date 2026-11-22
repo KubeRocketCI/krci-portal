@@ -2,6 +2,7 @@ import type { FastifySessionObject } from "@fastify/session";
 import type { AuthSource, INotificationsStore, ISessionStore, OIDCUser } from "@my-project/shared";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { OIDCConfig } from "../clients/oidc/index.js";
+import type { AgentSubstrateSource } from "../clients/agentSubstrate/index.js";
 
 // Session type
 export type CustomSession = FastifySessionObject & {
@@ -37,6 +38,8 @@ export interface TRPCContext {
   session: CustomSession;
   sessionStore: ISessionStore;
   notificationsStore: INotificationsStore;
+  /** Absent: Agent Substrate is not configured. */
+  agentSubstrateSource?: AgentSubstrateSource;
   oidcConfig: OIDCConfig;
   portalUrl: string;
 }

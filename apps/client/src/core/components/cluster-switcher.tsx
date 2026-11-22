@@ -1,7 +1,6 @@
 // Note: This switcher currently only displays the active cluster. When in-app
-// cluster switching is added, ensure the destination URL preserves K8s mode if
-// the current path contains "/k8s/" (use `location.pathname.includes("/k8s")`
-// to branch).
+// cluster switching is added, ensure the destination URL preserves the mode
+// (read it with `modeFromPath` from `sidebar/ModeSwitcher/mode`).
 import { ChevronsUpDown, FileUser, Shield } from "lucide-react";
 import type { ElementType } from "react";
 

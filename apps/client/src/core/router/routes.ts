@@ -2,6 +2,7 @@ import { createRoute, redirect } from "@tanstack/react-router";
 import { rootRoute } from "./_root";
 import { useClusterStore } from "@/k8s/store";
 import { requireRole } from "@/core/auth/requireRole";
+import type { ModeSegment } from "@/core/components/sidebar/ModeSwitcher/mode";
 
 // Route path constants
 export const PATH_AUTH = "auth" as const;
@@ -85,19 +86,29 @@ export const routeConfiguration = createRoute({
   path: PATH_CONFIGURATION,
 });
 
+export const PATH_AGENT = "agent" as const;
 export const PATH_K8S = "k8s" as const;
+
+function redirectBareModeToOverview(mode: ModeSegment) {
+  return ({ location, params }: { location: { pathname: string }; params: { clusterName: string } }) => {
+    const bare = `/c/${params.clusterName}/${mode}`;
+    if (location.pathname === bare || location.pathname === `${bare}/`) {
+      throw redirect({
+        to: `/c/$clusterName/${mode}/overview`,
+        params: { clusterName: params.clusterName },
+      });
+    }
+  };
+}
+
+export const routeAgentMode = createRoute({
+  getParentRoute: () => routeCluster,
+  path: PATH_AGENT,
+  beforeLoad: redirectBareModeToOverview(PATH_AGENT),
+});
 
 export const routeK8sMode = createRoute({
   getParentRoute: () => routeCluster,
   path: PATH_K8S,
-  beforeLoad: ({ location, params }) => {
-    const isBareK8s =
-      location.pathname === `/c/${params.clusterName}/k8s` || location.pathname === `/c/${params.clusterName}/k8s/`;
-    if (isBareK8s) {
-      throw redirect({
-        to: "/c/$clusterName/k8s/overview",
-        params: { clusterName: params.clusterName },
-      });
-    }
-  },
+  beforeLoad: redirectBareModeToOverview(PATH_K8S),
 });

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createContext } from "./create.js";
+import { MemoryAgentSubstrateSource } from "../clients/agentSubstrate/index.js";
 
 describe("createContext", () => {
   it("should return context with all provided fields", () => {
@@ -36,5 +37,22 @@ describe("createContext", () => {
       oidcConfig,
       portalUrl,
     });
+  });
+
+  it("forwards the Agent Substrate source", () => {
+    const agentSubstrateSource = new MemoryAgentSubstrateSource();
+
+    const ctx = createContext({
+      req: {} as any,
+      res: {} as any,
+      session: { user: null } as any,
+      sessionStore: {} as any,
+      notificationsStore: {} as any,
+      agentSubstrateSource,
+      oidcConfig: { issuerURL: "", clientID: "", clientSecret: "", scope: "", codeChallengeMethod: "" },
+      portalUrl: "https://portal.example.com",
+    });
+
+    expect(ctx.agentSubstrateSource).toBe(agentSubstrateSource);
   });
 });
