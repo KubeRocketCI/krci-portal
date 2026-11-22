@@ -56,7 +56,7 @@ export class MemoryAgentSubstrateSource implements AgentSubstrateSource {
     return this.read(() => {
       const template = this.fleet.actorTemplates.find((t) => t.atespace === ref.atespace && t.name === ref.name);
       if (!template) {
-        throw new AgentSubstrateSourceError("other", `actor template ${ref.atespace}/${ref.name} not found`);
+        throw new AgentSubstrateSourceError("notFound", `actor template ${ref.atespace}/${ref.name} not found`);
       }
       return template;
     });

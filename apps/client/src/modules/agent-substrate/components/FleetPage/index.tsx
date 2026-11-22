@@ -47,7 +47,7 @@ export function FleetPageView({
       case "notConfigured":
         return <FleetNotConfigured />;
       case "unreachable":
-        return <FleetUnreachable reason={snapshot.reason} message={snapshot.message} />;
+        return <FleetUnreachable reason={snapshot.reason} />;
       case "ready":
         return children?.(snapshot) ?? null;
     }

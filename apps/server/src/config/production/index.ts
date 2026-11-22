@@ -5,6 +5,7 @@ import {
   type AppRouter,
   type CustomSession,
   createContext,
+  createAgentSubstrateSource,
 } from "@my-project/trpc";
 import FastifyCookie from "@fastify/cookie";
 import FastifySession from "@fastify/session";
@@ -61,6 +62,7 @@ export class ProductionFastifyServer {
     const sessionStore = new DBSessionStore();
     const notificationsStore = new DBNotificationsStore();
     notificationsStore.cleanup();
+    const agentSubstrateSource = createAgentSubstrateSource(process.env);
 
     this.fastify.register(FastifyWebsocket, {
       prefix: process.env.API_PREFIX,
@@ -133,6 +135,7 @@ export class ProductionFastifyServer {
               session,
               sessionStore,
               notificationsStore,
+              agentSubstrateSource,
               oidcConfig: {
                 issuerURL: process.env.OIDC_ISSUER_URL ?? "",
                 clientID: process.env.OIDC_CLIENT_ID ?? "",

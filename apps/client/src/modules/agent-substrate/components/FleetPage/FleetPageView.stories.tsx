@@ -57,7 +57,7 @@ export const NotConfigured: Story = {
 
 export const Unreachable: Story = {
   args: {
-    snapshot: { state: "unreachable", reason: "permissionDenied", message: "viewer role is not granted" },
+    snapshot: { state: "unreachable", reason: "permissionDenied" },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

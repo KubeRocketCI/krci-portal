@@ -12,6 +12,8 @@ const UNREACHABLE_REASON_LABEL: Record<FleetUnreachableReason, string> = {
   other: "other error",
 };
 
+const UNREACHABLE_DESCRIPTION = "See the portal server logs for the error.";
+
 export function FleetNotConfigured() {
   return (
     <EmptyList
@@ -22,13 +24,27 @@ export function FleetNotConfigured() {
   );
 }
 
-export function FleetUnreachable({ reason, message }: { reason: FleetUnreachableReason; message: string }) {
+interface FleetUnreachableProps {
+  reason: FleetUnreachableReason;
+}
+
+export function FleetUnreachable({ reason }: FleetUnreachableProps) {
   return (
     <EmptyList
       icon={<Unplug size={64} className="text-muted-foreground" aria-hidden />}
       customText="Agent Substrate is unreachable"
       beforeLinkText={`Reason: ${UNREACHABLE_REASON_LABEL[reason]}`}
-      description={message}
+      description={UNREACHABLE_DESCRIPTION}
+    />
+  );
+}
+
+export function FleetEmpty() {
+  return (
+    <EmptyList
+      icon={<Bot size={64} className="text-muted-foreground" aria-hidden />}
+      customText="Agent Substrate has no atespaces yet"
+      description="Agent Substrate is reachable. Actors appear here once an atespace holds them."
     />
   );
 }

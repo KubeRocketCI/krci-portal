@@ -62,6 +62,7 @@ overrides:
 # Dependency build scripts. Default: blocked.
 # better-sqlite3: keep false. The package ships prebuilt bindings; the image has no build toolchain.
 allowBuilds:
+  "@bufbuild/buf": false
   better-sqlite3: false
   esbuild: false
   sonar-scanner: false

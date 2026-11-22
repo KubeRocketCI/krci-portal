@@ -182,10 +182,10 @@ export const attentionItemSchema = z.discriminatedUnion("kind", [
 
 export const fleetSnapshotSchema = z.discriminatedUnion("state", [
   z.object({ state: z.literal("notConfigured") }),
+  /** The error message stays in the portal server log. */
   z.object({
     state: z.literal("unreachable"),
     reason: fleetUnreachableReasonSchema,
-    message: z.string(),
   }),
   z.object({
     state: z.literal("ready"),

@@ -121,3 +121,33 @@ Directory of the mounted Tekton Results CA certificate.
 {{- define "krci-portal.tektonResultsCaDir" -}}
 /etc/tekton-results-ca
 {{- end }}
+
+{{/*
+configEnv.AGENT_SUBSTRATE_URL, trimmed. Empty when not set.
+*/}}
+{{- define "krci-portal.agentSubstrateUrl" -}}
+{{- (.Values.configEnv | default dict).AGENT_SUBSTRATE_URL | default "" | toString | trim -}}
+{{- end }}
+
+{{/*
+Host of configEnv.AGENT_SUBSTRATE_URL, without the port: the audience of the Agent Substrate token.
+Fails when the URL is not https:// or the release uses the default ServiceAccount.
+*/}}
+{{- define "krci-portal.agentSubstrateHost" -}}
+{{- $url := urlParse (include "krci-portal.agentSubstrateUrl" .) -}}
+{{- $host := (split ":" $url.host)._0 -}}
+{{- if or (ne $url.scheme "https") (not $host) -}}
+{{- fail "configEnv.AGENT_SUBSTRATE_URL must be an https://<host>[:<port>] URL" -}}
+{{- end -}}
+{{- if eq (include "krci-portal.serviceAccountName" .) "default" -}}
+{{- fail "configEnv.AGENT_SUBSTRATE_URL does not work with the default ServiceAccount: set serviceAccount.create or serviceAccount.name" -}}
+{{- end -}}
+{{- $host -}}
+{{- end }}
+
+{{/*
+Mount path of the Agent Substrate token and CA. The portal server reads this fixed path.
+*/}}
+{{- define "krci-portal.agentSubstrateMountPath" -}}
+/var/run/agent-substrate
+{{- end }}
