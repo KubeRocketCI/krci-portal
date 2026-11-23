@@ -3,6 +3,7 @@ import {
   K8sApiError,
   k8sCodebaseConfig,
   k8sGitServerConfig,
+  stripTrailingSlash,
   type Codebase,
   type CodebaseRef,
   type GitServer,
@@ -58,7 +59,7 @@ function repoUrlOf(codebase: Codebase, projectPath: string, gitServer: GitServer
   try {
     const url = new URL(gitWebUrl);
     if ((url.protocol !== "https:" && url.protocol !== "http:") || url.search || url.hash) return null;
-    const pathname = url.pathname.replace(/\/+$/, "");
+    const pathname = stripTrailingSlash(url.pathname);
     if (!pathname.endsWith(suffix)) return null;
 
     const { gitHost, httpsPort } = gitServer.spec;
