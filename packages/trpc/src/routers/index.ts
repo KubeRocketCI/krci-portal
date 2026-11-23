@@ -3,6 +3,7 @@ import { t } from "../trpc.js";
 import { agentSubstrateRouter } from "./agentSubstrate/index.js";
 import { authRouter } from "./auth/index.js";
 import { configRouter } from "./config/index.js";
+import { defectDojoRouter } from "./defectDojo/index.js";
 import { dependencyTrackRouter } from "./dependencyTrack/index.js";
 import { gitfusionRouter } from "./gitfusion/index.js";
 import { k8sRouter } from "./k8s/index.js";
@@ -17,6 +18,7 @@ export const appRouter = t.router({
   agentSubstrate: agentSubstrateRouter,
   auth: authRouter,
   config: configRouter,
+  defectDojo: defectDojoRouter,
   dependencyTrack: dependencyTrackRouter,
   gitfusion: gitfusionRouter,
   k8s: k8sRouter,

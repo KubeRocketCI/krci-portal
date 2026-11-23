@@ -368,7 +368,7 @@ async function decodeJson<T>(response: Response, schema?: ZodType<T>): Promise<T
   return schema ? schema.parse(raw) : (raw as T);
 }
 
-function appendQuery(path: string, query?: Record<string, unknown>): string {
+export function appendQuery(path: string, query?: Record<string, unknown>): string {
   if (!query) {
     return path;
   }
