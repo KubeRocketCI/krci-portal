@@ -9,6 +9,7 @@ KubeRocketCI Portal — monorepo for a Kubernetes CI/CD platform UI.
 - Before domain work: `GLOSSARY.md` (its terms go into code names, UI labels and notes), then the ADRs of the area in `docs/adr/` (`docs/agents/domain.md`, single-context).
 - Before portal code (component, table, filter, form, route, K8s resource, tRPC endpoint, test): load the matching `krci-fullstack` skill; it holds the coding standards. Hand a whole portal feature to the `krci-fullstack:fullstack-dev` agent.
 - Before commit: `krci-general:review` (bugs, conventions, comment hygiene).
+- After a change in `packages/shared` or `packages/trpc`, before `tsc` or a build: `pnpm --filter=shared build && pnpm --filter=trpc build`. trpc reads shared from an injected copy (`injectWorkspacePackages`); a new file in shared needs `pnpm install --frozen-lockfile` first. trpc tests read shared from source.
 
 ## Critical Conventions
 
