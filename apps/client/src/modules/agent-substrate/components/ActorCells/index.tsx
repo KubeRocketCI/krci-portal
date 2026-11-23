@@ -7,16 +7,17 @@ import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { Badge } from "@/core/components/ui/badge";
 import { useClusterStore } from "@/k8s/store";
 import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
-import { ACTOR_STATE_VARIANT, SNAPSHOT_DURABLE_STATE_VARIANT } from "../../constants/actorState";
+import { ACTOR_STATE_ICON, SNAPSHOT_DURABLE_STATE_ICON } from "../../constants/actorState";
 import { PATH_AGENT_ACTOR_DETAIL_FULL } from "../../constants/paths";
 import { issueLabel } from "../../utils/issueLabel";
 import { EmptyValue } from "../EmptyValue";
+import { StateBadge } from "../StateBadge";
 
 /** Actor table rows navigate on click. */
 const stopRowClick = (event: React.MouseEvent) => event.stopPropagation();
 
 export function ActorStateBadge({ state }: { state: ActorState }) {
-  return <Badge variant={ACTOR_STATE_VARIANT[state]}>{state}</Badge>;
+  return <StateBadge label={state} icon={ACTOR_STATE_ICON[state]} />;
 }
 
 export function ActorLink({ actor }: { actor: Pick<ActorRow, "atespace" | "name"> }) {
@@ -60,7 +61,7 @@ export function SnapshotFidelityBadge({ snapshot }: { snapshot: ActorSnapshot })
 }
 
 export function SnapshotDurableStateBadge({ snapshot }: { snapshot: ActorSnapshot }) {
-  return <Badge variant={SNAPSHOT_DURABLE_STATE_VARIANT[snapshot.durableState]}>{snapshot.durableState}</Badge>;
+  return <StateBadge label={snapshot.durableState} icon={SNAPSHOT_DURABLE_STATE_ICON[snapshot.durableState]} />;
 }
 
 export function SnapshotFidelityDurability({ snapshot }: { snapshot: ActorSnapshot | null }) {

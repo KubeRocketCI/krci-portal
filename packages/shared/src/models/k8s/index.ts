@@ -10,6 +10,7 @@ export * from "./groups/Trivy/index.js";
 export * from "./groups/Networking/index.js";
 export * from "./groups/GatewayAPI/index.js";
 export * from "./groups/EnvoyGateway/index.js";
+export * from "./groups/AgentSubstrate/index.js";
 export * from "./groups/Storage/index.js";
 export * from "./groups/ApiExtensions/index.js";
 export * from "./groups/RBAC/index.js";

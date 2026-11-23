@@ -9,8 +9,7 @@ import {
   type GitServer,
   type KubeObjectListBase,
 } from "@my-project/shared";
-import { K8sClient } from "../../../clients/k8s/index.js";
-import type { CustomSession } from "../../../context/types.js";
+import type { K8sClient } from "../../../clients/k8s/index.js";
 
 /** Statuses not logged: the user may not read the resource, or it does not exist. */
 const QUIET_STATUS = new Set([403, 404]);
@@ -113,15 +112,12 @@ async function gitlabServersByName(
  * the same one.
  */
 export async function readCodebaseLinks(
-  session: CustomSession,
+  k8sClient: K8sClient | null,
   namespace: string,
   projectPaths: ReadonlySet<string>
 ): Promise<CodebaseLinks> {
   const links: CodebaseLinks = new Map();
-  if (!namespace || projectPaths.size === 0) return links;
-
-  const k8sClient = new K8sClient(session);
-  if (!k8sClient.KubeConfig) return links;
+  if (!namespace || projectPaths.size === 0 || !k8sClient?.KubeConfig) return links;
 
   const matchesByPath = new Map<string, Codebase[]>();
   for (const codebase of await listCodebases(k8sClient, namespace)) {

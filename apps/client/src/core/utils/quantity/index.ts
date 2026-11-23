@@ -66,6 +66,10 @@ export function formatCores(cores: number): string {
   return cores.toFixed(2);
 }
 
+export function formatMillicores(millicores: number): string {
+  return formatCores(millicores / 1000);
+}
+
 export function formatMemory(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes <= 0) return "0 Mi";
   const gi = bytes / 1024 ** 3;

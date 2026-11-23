@@ -382,7 +382,9 @@
         "memoryBytes": 0,
         "actors": 0
       },
-      "sandboxClasses": ["gvisor"]
+      "sandboxClasses": ["gvisor"],
+      "registered": true,
+      "actorOverhead": null
     }
   ]
 }

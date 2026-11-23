@@ -233,12 +233,35 @@
         "memoryBytes": 0,
         "actors": 0
       },
-      "sandboxClasses": ["gvisor"]
+      "sandboxClasses": ["gvisor"],
+      "registered": true
     }
   ],
   "workerPools": {
-    "access": "ok",
-    "items": []
+    "access": "error",
+    "items": [
+      {
+        "name": "workers",
+        "namespace": "krci-agents",
+        "workers": ["827d5090-ec64-4031-b30f-c4429922353e"],
+        "capacity": {
+          "cpuMillicores": 1000,
+          "memoryBytes": 2617245696,
+          "actors": 1000
+        },
+        "allocated": {
+          "cpuMillicores": 0,
+          "memoryBytes": 0,
+          "actors": 0
+        },
+        "room": 1,
+        "resource": null
+      }
+    ],
+    "roomSize": {
+      "cpuMillicores": 1000,
+      "memoryBytes": 2147483648
+    }
   },
   "needsAttention": []
 }

@@ -2,11 +2,13 @@ import type { QueryClient } from "@tanstack/react-query";
 import {
   ACTOR_STATE_GROUP,
   actorStateGroupSchema,
+  sortByName,
   type ActorRow,
   type ActorStateGroup,
   type Atespace,
   type FleetSnapshot,
   type ReadyFleetSnapshot,
+  type WorkerRow,
 } from "@my-project/shared";
 import { FLEET_QUERY_KEY } from "../hooks/useFleet";
 import testbedFleet from "./fleet.testbed.json";
@@ -30,7 +32,7 @@ export const EMPTY_FLEET: ReadyFleetSnapshot = {
   atespaces: [],
   actors: [],
   workers: [],
-  workerPools: { access: "ok", items: [] },
+  workerPools: { access: "ok", items: [], roomSize: null },
   needsAttention: [],
 };
 
@@ -109,6 +111,60 @@ const actorsByState = Object.fromEntries(actorStateGroupSchema.options.map((grou
 >;
 for (const actor of STORY_ACTORS) actorsByState[ACTOR_STATE_GROUP[actor.state]]++;
 
+const GIB = 1024 ** 3;
+
+const TESTBED_WORKER: WorkerRow = TESTBED_FLEET.workers[0];
+
+export const BUSY_WORKER: WorkerRow = {
+  ...structuredClone(TESTBED_WORKER),
+  name: RUNNING_ACTOR.placement!.worker,
+  pod: RUNNING_ACTOR.placement!.pod,
+  capacity: { cpuMillicores: 4000, memoryBytes: 8 * GIB, actors: 1000 },
+  allocated: { cpuMillicores: 1000, memoryBytes: 2 * GIB, actors: 1 },
+};
+
+export const MICROVM_WORKER: WorkerRow = {
+  ...structuredClone(TESTBED_WORKER),
+  name: "5e2b8c41-7d3a-4f9e-b1c6-0a9d8e7f6c5b",
+  workerPool: "workers-microvm",
+  pod: "workers-microvm-6d4f8b7c9-x2k5p",
+  capacity: { cpuMillicores: 8000, memoryBytes: 16 * GIB, actors: 1000 },
+  allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
+  sandboxClasses: ["microvm"],
+};
+
+const STORY_WORKERS: WorkerRow[] = [TESTBED_WORKER, BUSY_WORKER, MICROVM_WORKER];
+
+/** `room` as `roomOf` (packages/trpc fleet/room.ts) gives it; microVM runtime overhead 4 Mi + 8 Mi per GiB. */
+export const STORY_WORKER_POOLS: ReadyFleetSnapshot["workerPools"] = {
+  access: "ok",
+  items: [
+    {
+      name: "workers",
+      namespace: TESTBED_WORKER.workerNamespace,
+      workers: [TESTBED_WORKER.name, BUSY_WORKER.name].sort(sortByName),
+      capacity: {
+        cpuMillicores: TESTBED_WORKER.capacity.cpuMillicores + BUSY_WORKER.capacity.cpuMillicores,
+        memoryBytes: TESTBED_WORKER.capacity.memoryBytes + BUSY_WORKER.capacity.memoryBytes,
+        actors: TESTBED_WORKER.capacity.actors + BUSY_WORKER.capacity.actors,
+      },
+      allocated: { ...BUSY_WORKER.allocated },
+      room: 1 + 3,
+      resource: { desiredReplicas: 2, readyReplicas: 2, sandboxClass: "gvisor", resolution: "Resolved" },
+    },
+    {
+      name: "workers-microvm",
+      namespace: MICROVM_WORKER.workerNamespace,
+      workers: [MICROVM_WORKER.name],
+      capacity: { ...MICROVM_WORKER.capacity },
+      allocated: { ...MICROVM_WORKER.allocated },
+      room: 7,
+      resource: { desiredReplicas: 1, readyReplicas: 1, sandboxClass: "microvm", resolution: "Resolved" },
+    },
+  ],
+  roomSize: { cpuMillicores: 1000, memoryBytes: 2 * GIB },
+};
+
 export const STORY_FLEET: ReadyFleetSnapshot = {
   ...TESTBED_FLEET,
   summary: {
@@ -117,10 +173,66 @@ export const STORY_FLEET: ReadyFleetSnapshot = {
     agents: STORY_ACTORS.filter(({ agent }) => agent !== null).length,
     actors: STORY_ACTORS.length,
     actorsByState,
+    workers: STORY_WORKERS.length,
+    workersByState: { active: STORY_WORKERS.length, draining: 0, unavailable: 0, unknown: 0 },
   },
   atespaces: STORY_ATESPACES,
   actors: STORY_ACTORS,
+  workers: STORY_WORKERS,
+  workerPools: STORY_WORKER_POOLS,
 };
+
+export const FULL_WORKER_POOL_FLEET: ReadyFleetSnapshot = (() => {
+  const fleet = structuredClone(STORY_FLEET);
+  for (const worker of fleet.workers) worker.allocated = { ...worker.capacity };
+  for (const pool of fleet.workerPools.items) {
+    pool.allocated = { ...pool.capacity };
+    pool.room = 0;
+  }
+  return fleet;
+})();
+
+/** A draining worker adds no room to its worker pool. */
+export const DRAINING_WORKER_FLEET: ReadyFleetSnapshot = (() => {
+  const fleet = structuredClone(STORY_FLEET);
+  fleet.workers.find(({ name }) => name === BUSY_WORKER.name)!.state = "draining";
+  fleet.summary.workersByState = { active: STORY_WORKERS.length - 1, draining: 1, unavailable: 0, unknown: 0 };
+  fleet.workerPools.items[0].room = 1;
+  return fleet;
+})();
+
+/** MICROVM_WORKER active but not registered: its worker pool has no room. */
+export const UNREGISTERED_WORKER_FLEET: ReadyFleetSnapshot = (() => {
+  const fleet = structuredClone(STORY_FLEET);
+  fleet.workers.find(({ name }) => name === MICROVM_WORKER.name)!.registered = false;
+  fleet.workerPools.items.find(({ name }) => name === MICROVM_WORKER.workerPool)!.room = 0;
+  return fleet;
+})();
+
+export const NOT_READY_FLEET: ReadyFleetSnapshot = (() => {
+  const fleet = structuredClone(STORY_FLEET);
+  fleet.workerPools.items[0].resource!.readyReplicas = 1;
+  fleet.workerPools.items.push({
+    name: "workers-spare",
+    namespace: TESTBED_WORKER.workerNamespace,
+    workers: [],
+    capacity: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
+    allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
+    room: 0,
+    resource: { desiredReplicas: 2, readyReplicas: 0, sandboxClass: "gvisor", resolution: null },
+  });
+  return fleet;
+})();
+
+function withWorkerPoolAccess(access: "denied" | "error"): ReadyFleetSnapshot {
+  const fleet = structuredClone(STORY_FLEET);
+  fleet.workerPools.access = access;
+  for (const pool of fleet.workerPools.items) pool.resource = null;
+  return fleet;
+}
+
+export const WORKER_POOLS_DENIED_FLEET = withWorkerPoolAccess("denied");
+export const WORKER_POOLS_ERROR_FLEET = withWorkerPoolAccess("error");
 
 export function seedFleet(snapshot: FleetSnapshot) {
   return (queryClient: QueryClient) => {

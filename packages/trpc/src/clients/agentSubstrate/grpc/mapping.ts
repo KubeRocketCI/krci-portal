@@ -138,6 +138,8 @@ export function toActorTemplate(template: ActorTemplate): SubstrateActorTemplate
 }
 
 export function toWorker(worker: Worker): SubstrateWorker {
+  const [firstClass] = worker.status?.sandboxClasses ?? [];
+  const overhead = firstClass?.defaultRuntime?.actorOverhead;
   return {
     name: worker.metadata?.name ?? "",
     workerPool: worker.workerPool,
@@ -148,5 +150,9 @@ export function toWorker(worker: Worker): SubstrateWorker {
     capacity: resources(worker.status?.capacity),
     allocated: resources(worker.status?.allocated),
     sandboxClasses: (worker.status?.sandboxClasses ?? []).map((sandboxClass) => sandboxClass.sandboxClass),
+    registered: num(worker.status?.registeredEpoch) !== 0 && Boolean(firstClass?.sandboxClass),
+    actorOverhead: overhead
+      ? { memoryBytes: num(overhead.memoryBytes), memoryBytesPerGib: num(overhead.memoryBytesPerGib) }
+      : null,
   };
 }
