@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/c
 import { Skeleton } from "@/core/components/ui/skeleton";
 import type { Node as K8sNode, Pod } from "@my-project/shared";
 import type { UseWatchListResult } from "@/k8s/api/hooks/useWatch/types";
-import { ThresholdBar } from "@/core/components/ThresholdBar";
+import { UsageBar } from "@/core/components/UsageBar";
 import { formatCores, formatMemory } from "@/core/utils/quantity";
 import { computeClusterResources, type ResourceUsage } from "../utils/quantity";
 
@@ -56,32 +56,10 @@ function ResourceBlock({ title, unit, usage, format, loading }: ResourceBlockPro
         </div>
       ) : (
         <>
-          <MetricRow label="Requests" value={usage.requests} max={usage.capacity} format={format} />
-          <MetricRow label="Limits" value={usage.limits} max={usage.capacity} format={format} />
+          <UsageBar label="Requests" value={usage.requests} max={usage.capacity} format={format} showPercent />
+          <UsageBar label="Limits" value={usage.limits} max={usage.capacity} format={format} showPercent />
         </>
       )}
-    </div>
-  );
-}
-
-interface MetricRowProps {
-  label: string;
-  value: number;
-  max: number;
-  format: (value: number) => string;
-}
-
-function MetricRow({ label, value, max, format }: MetricRowProps) {
-  const pct = max > 0 ? (value / max) * 100 : 0;
-  return (
-    <div className="space-y-1">
-      <div className="flex items-baseline justify-between text-xs">
-        <span className="text-muted-foreground">{label}</span>
-        <span className="tabular-nums">
-          {format(value)} / {format(max)} <span className="text-muted-foreground">({Math.round(pct)}%)</span>
-        </span>
-      </div>
-      <ThresholdBar pct={pct} />
     </div>
   );
 }

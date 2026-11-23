@@ -370,6 +370,8 @@ describe("GrpcAgentSubstrateSource", () => {
         capacity: { cpuMillicores: 1000, memoryBytes: 2617245696, actors: 1000 },
         allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
         sandboxClasses: ["gvisor"],
+        registered: false,
+        actorOverhead: null,
       },
       {
         name: "no-status",
@@ -381,7 +383,69 @@ describe("GrpcAgentSubstrateSource", () => {
         capacity: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
         allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
         sandboxClasses: [],
+        registered: false,
+        actorOverhead: null,
       },
+    ]);
+  });
+
+  it("reports a worker as registered only with a registered epoch and a sandbox class", async () => {
+    server = await startServer({
+      listWorkers: () => ({
+        workers: [
+          {
+            metadata: { name: "registered" },
+            status: { registeredEpoch: 1n, sandboxClasses: [{ sandboxClass: "gvisor" }] },
+          },
+          { metadata: { name: "no-epoch" }, status: { sandboxClasses: [{ sandboxClass: "gvisor" }] } },
+          { metadata: { name: "no-class" }, status: { registeredEpoch: 2n } },
+        ],
+      }),
+    });
+    source = new GrpcAgentSubstrateSource({ url: server.url, tokenFile, caFile });
+
+    const workers = await source.listWorkers();
+
+    expect(workers.map(({ name, registered }) => [name, registered])).toEqual([
+      ["registered", true],
+      ["no-epoch", false],
+      ["no-class", false],
+    ]);
+  });
+
+  it("gives the actor overhead of the default runtime of the first sandbox class", async () => {
+    server = await startServer({
+      listWorkers: () => ({
+        workers: [
+          {
+            metadata: { name: "microvm" },
+            status: {
+              sandboxClasses: [
+                {
+                  sandboxClass: "microvm",
+                  defaultRuntime: { actorOverhead: { memoryBytes: 4194304n, memoryBytesPerGib: 8388608n } },
+                },
+                {
+                  sandboxClass: "gvisor",
+                  defaultRuntime: { actorOverhead: { memoryBytes: 1n, memoryBytesPerGib: 1n } },
+                },
+              ],
+            },
+          },
+          {
+            metadata: { name: "gvisor" },
+            status: { sandboxClasses: [{ sandboxClass: "gvisor", defaultRuntime: {} }] },
+          },
+        ],
+      }),
+    });
+    source = new GrpcAgentSubstrateSource({ url: server.url, tokenFile, caFile });
+
+    const workers = await source.listWorkers();
+
+    expect(workers.map(({ name, actorOverhead }) => [name, actorOverhead])).toEqual([
+      ["microvm", { memoryBytes: 4194304, memoryBytesPerGib: 8388608 }],
+      ["gvisor", null],
     ]);
   });
 

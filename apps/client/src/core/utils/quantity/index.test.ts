@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCores, formatMemory, parseCpuToCores, parseMemoryToBytes } from "./index";
+import { formatCores, formatMemory, formatMillicores, parseCpuToCores, parseMemoryToBytes } from "./index";
 
 describe("parseCpuToCores", () => {
   it.each([
@@ -40,6 +40,17 @@ describe("formatCores", () => {
     [12.4, "12"],
   ])("formats %s", (cores, text) => {
     expect(formatCores(cores)).toBe(text);
+  });
+});
+
+describe("formatMillicores", () => {
+  it.each([
+    [0, "0"],
+    [250, "0.25"],
+    [1000, "1.0"],
+    [16000, "16"],
+  ])("formats %s", (millicores, text) => {
+    expect(formatMillicores(millicores)).toBe(text);
   });
 });
 

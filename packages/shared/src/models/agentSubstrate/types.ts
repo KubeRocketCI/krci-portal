@@ -19,6 +19,7 @@ import {
   snapshotFidelitySchema,
   substrateResourcesSchema,
   workerPoolAccessSchema,
+  workerPoolResourceSchema,
   workerPoolRowSchema,
   workerRowSchema,
   workerStateSchema,
@@ -42,6 +43,7 @@ export type RoomSize = z.infer<typeof roomSizeSchema>;
 export type ActorSnapshot = z.infer<typeof actorSnapshotSchema>;
 export type ActorRow = z.infer<typeof actorRowSchema>;
 export type WorkerRow = z.infer<typeof workerRowSchema>;
+export type WorkerPoolResource = z.infer<typeof workerPoolResourceSchema>;
 export type WorkerPoolRow = z.infer<typeof workerPoolRowSchema>;
 export type FleetSummary = z.infer<typeof fleetSummarySchema>;
 export type AttentionItem = z.infer<typeof attentionItemSchema>;

@@ -41,7 +41,7 @@ A set of workers of one size and sandbox class, kept at a desired number of repl
 _Avoid_: pool (alone), node pool
 
 **Room**:
-The number of actors of the largest current actor template size that the workers of a worker pool can still host. No room is room zero: an activation does not start.
+The number of actors of the largest current actor template size that the active workers of a worker pool can still host, runtime overhead included. No actor template with limits: the number of actors that the worker capacity still allows. No room is room zero: an activation does not start.
 _Avoid_: headroom, free capacity, slots
 
 **Snapshot**:

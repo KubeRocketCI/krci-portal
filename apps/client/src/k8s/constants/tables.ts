@@ -183,6 +183,10 @@ export const TABLE = {
     id: "agentActorList",
     name: "Actor List",
   },
+  AGENT_WORKER_POOL_LIST: {
+    id: "agentWorkerPoolList",
+    name: "Worker Pool List",
+  },
   AGENT_ACTOR_SNAPSHOT_LIST: {
     id: "agentActorSnapshotList",
     name: "Actor Snapshot List",

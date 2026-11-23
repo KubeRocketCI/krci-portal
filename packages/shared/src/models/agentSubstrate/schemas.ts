@@ -121,21 +121,30 @@ export const workerRowSchema = z.object({
   capacity: substrateResourcesSchema,
   allocated: substrateResourcesSchema,
   sandboxClasses: z.array(z.string()),
+  /** False until the worker registers with Agent Substrate and reports a sandbox class: it hosts no actor. */
+  registered: z.boolean(),
 });
 
-export const workerPoolRowSchema = z.object({
-  name: z.string(),
-  namespace: z.string(),
+export const workerPoolResourceSchema = z.object({
   desiredReplicas: count,
   readyReplicas: count,
   sandboxClass: z.string().nullable(),
   /** The `Resolved` condition reason. Null when the WorkerPool has no condition yet. */
   resolution: z.string().nullable(),
+});
+
+export const workerPoolRowSchema = z.object({
+  name: z.string(),
+  namespace: z.string(),
+  /** Sorted by name. */
+  workers: z.array(z.string()),
+  /** Sum over the workers. */
   capacity: substrateResourcesSchema,
   allocated: substrateResourcesSchema,
+  /** Actors of the room size that the active, registered workers can still host. */
   room: count,
-  /** Null when no actor template exists: room is then the free actor slots. */
-  roomSize: roomSizeSchema.nullable(),
+  /** Null when `workerPools.access` is not `ok` or no WorkerPool has this name. */
+  resource: workerPoolResourceSchema.nullable(),
 });
 
 function countsBy<T extends [string, ...string[]]>(values: z.ZodEnum<T>) {
@@ -196,7 +205,10 @@ export const fleetSnapshotSchema = z.discriminatedUnion("state", [
     workers: z.array(workerRowSchema),
     workerPools: z.object({
       access: workerPoolAccessSchema,
+      /** By namespace, then name. */
       items: z.array(workerPoolRowSchema),
+      /** The largest CPU and memory limits over the actor templates. Null when no template sets a limit: room counts actors only. */
+      roomSize: roomSizeSchema.nullable(),
     }),
     needsAttention: z.array(attentionItemSchema),
   }),

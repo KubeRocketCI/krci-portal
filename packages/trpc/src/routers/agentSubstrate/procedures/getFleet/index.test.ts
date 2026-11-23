@@ -4,6 +4,7 @@ import {
   K8sApiError,
   k8sCodebaseConfig,
   k8sGitServerConfig,
+  k8sWorkerPoolConfig,
   type ActorState,
   type K8sResourceConfig,
   type ReadyFleetSnapshot,
@@ -77,18 +78,24 @@ function issueTemplate(name: string, projectPath: string, projectId: string, iid
   };
 }
 
+const GIB = 1024 ** 3;
+const MIB = 1024 ** 2;
+
 /** A template that the dispatcher did not make. */
-function plainTemplate(name: string): SubstrateActorTemplate {
+function plainTemplate(
+  name: string,
+  limits: SubstrateActorTemplate["limits"] = { cpuMillicores: 500, memoryBytes: GIB }
+): SubstrateActorTemplate {
   return {
     atespace: ATESPACE,
     name,
     uid: `tpl-${name}`,
     containers: [{ name: "app", env: [{ name: "LOG_LEVEL", value: "debug" }] }],
-    limits: { cpuMillicores: 500, memoryBytes: 1073741824 },
+    limits,
   };
 }
 
-function worker(name: string, state: WorkerState): SubstrateWorker {
+function worker(name: string, state: WorkerState, fields: Partial<SubstrateWorker> = {}): SubstrateWorker {
   return {
     name,
     workerPool: "workers",
@@ -96,9 +103,35 @@ function worker(name: string, state: WorkerState): SubstrateWorker {
     workerPod: `workers-${name}`,
     nodeName: "krci-control-plane",
     state,
-    capacity: { cpuMillicores: 4000, memoryBytes: 8589934592, actors: 1000 },
+    capacity: { cpuMillicores: 4000, memoryBytes: 8 * GIB, actors: 1000 },
     allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
     sandboxClasses: ["gvisor"],
+    registered: true,
+    actorOverhead: null,
+    ...fields,
+  };
+}
+
+function workerPool(
+  namespace: string,
+  name: string,
+  { replicas = 1, readyReplicas = 1, sandboxClass = "gvisor", resolution = "Resolved" as string | null } = {}
+) {
+  return {
+    apiVersion: "ate.dev/v1",
+    kind: "WorkerPool",
+    metadata: { name, namespace, uid: `wp-${name}`, creationTimestamp: "2026-11-10T13:30:35Z" },
+    spec: { replicas, sandboxClasses: [{ name: sandboxClass }] },
+    status: {
+      replicas,
+      readyReplicas,
+      sandboxClasses: [
+        {
+          name: sandboxClass,
+          conditions: resolution ? [{ type: "Resolved", status: "True", reason: resolution }] : [],
+        },
+      ],
+    },
   };
 }
 
@@ -125,18 +158,30 @@ function gitServer(name: string, gitProvider: string, gitHost = `${name}.example
   return { metadata: { name, namespace: PLATFORM_NAMESPACE }, spec: { gitProvider, gitHost, httpsPort } };
 }
 
-/** Answers Codebase list and GitServer reads in PLATFORM_NAMESPACE only. Anything not given answers 403. */
+const forbidden = () => new K8sApiError(403, "Forbidden", "");
+
+/**
+ * Answers Codebase list and GitServer reads in PLATFORM_NAMESPACE (anything not given: 403), and WorkerPool lists by
+ * namespace (a namespace not given: no WorkerPool; no namespace: 403).
+ */
 function stubK8s({
   codebases,
   gitServers = {},
+  workerPools = {},
 }: {
   codebases?: unknown[] | Error;
   gitServers?: Record<string, unknown>;
+  workerPools?: Record<string, unknown[] | Error>;
 }) {
-  const forbidden = () => new K8sApiError(403, "Forbidden", "");
   const list = vi
     .spyOn(K8sClient.prototype, "listResource")
     .mockImplementation(async (config: K8sResourceConfig, namespace?: string) => {
+      if (config === k8sWorkerPoolConfig) {
+        if (!namespace) throw forbidden();
+        const pools = workerPools[namespace] ?? [];
+        if (pools instanceof Error) throw pools;
+        return { items: pools } as never;
+      }
       if (config !== k8sCodebaseConfig || namespace !== PLATFORM_NAMESPACE || codebases === undefined) {
         throw forbidden();
       }
@@ -171,6 +216,7 @@ describe("agentSubstrate.getFleet", () => {
     vi.setSystemTime(START);
     mockContext = createMockedContext();
     consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    stubK8s({});
   });
 
   afterEach(() => {
@@ -731,6 +777,384 @@ describe("agentSubstrate.getFleet", () => {
     expect(getActorTemplate).toHaveBeenCalledTimes(1);
   });
 
+  describe("worker pools and room", () => {
+    function source(fleet: Partial<MemoryFleet>) {
+      return new MemoryAgentSubstrateSource({ atespaces: ATESPACES, ...fleet });
+    }
+
+    async function workerPoolsOf(fleet: Partial<MemoryFleet>) {
+      mockContext.agentSubstrateSource = source(fleet);
+      return (await readyFleet(createCaller(mockContext))).workerPools;
+    }
+
+    it("counts room in the largest CPU and memory limits, bound by CPU on one worker and memory on another", async () => {
+      const pools = await workerPoolsOf({
+        actors: [actor("cpu-heavy", "suspended"), actor("memory-heavy", "running")],
+        actorTemplates: [
+          plainTemplate("cpu-heavy", { cpuMillicores: 2000, memoryBytes: GIB }),
+          plainTemplate("memory-heavy", { cpuMillicores: 500, memoryBytes: 4 * GIB }),
+        ],
+        workers: [
+          worker("w1", "active", { capacity: { cpuMillicores: 8000, memoryBytes: 64 * GIB, actors: 1000 } }),
+          worker("w2", "active", { capacity: { cpuMillicores: 64000, memoryBytes: 12 * GIB, actors: 1000 } }),
+        ],
+      });
+
+      expect(pools.roomSize).toEqual({ cpuMillicores: 2000, memoryBytes: 4 * GIB });
+      expect(pools.items.map(({ name, room }) => [name, room])).toEqual([["workers", 4 + 3]]);
+    });
+
+    it("counts room in actors only when no actor has a template", async () => {
+      const pools = await workerPoolsOf({
+        workers: [
+          worker("w1", "active", {
+            capacity: { cpuMillicores: 1000, memoryBytes: GIB, actors: 10 },
+            allocated: { cpuMillicores: 1000, memoryBytes: GIB, actors: 3 },
+          }),
+        ],
+      });
+
+      expect(pools.roomSize).toBeNull();
+      expect(pools.items[0].room).toBe(7);
+    });
+
+    it("counts room in actors only when the templates set no limits", async () => {
+      const pools = await workerPoolsOf({
+        actors: [actor("unlimited", "suspended")],
+        actorTemplates: [plainTemplate("unlimited", { cpuMillicores: 0, memoryBytes: 0 })],
+        workers: [
+          worker("w1", "active", {
+            capacity: { cpuMillicores: 0, memoryBytes: 0, actors: 10 },
+            allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 2 },
+          }),
+        ],
+      });
+
+      expect(pools.roomSize).toBeNull();
+      expect(pools.items[0].room).toBe(8);
+    });
+
+    it("counts room in actors only, runtime overhead aside, when the templates set no limits", async () => {
+      const pools = await workerPoolsOf({
+        actors: [actor("unlimited", "suspended")],
+        actorTemplates: [plainTemplate("unlimited", { cpuMillicores: 0, memoryBytes: 0 })],
+        workers: [
+          worker("microvm", "active", {
+            capacity: { cpuMillicores: 0, memoryBytes: 0, actors: 10 },
+            actorOverhead: { memoryBytes: 4 * MIB, memoryBytesPerGib: 8 * MIB },
+          }),
+        ],
+      });
+
+      expect(pools.roomSize).toBeNull();
+      expect(pools.items[0].room).toBe(10);
+    });
+
+    it("adds no room for a worker over-allocated in a dimension that the room size does not limit", async () => {
+      const pools = await workerPoolsOf({
+        actors: [actor("memory-only", "suspended")],
+        actorTemplates: [plainTemplate("memory-only", { cpuMillicores: 0, memoryBytes: GIB })],
+        workers: [
+          worker("over-cpu", "active", { allocated: { cpuMillicores: 5000, memoryBytes: 0, actors: 1 } }),
+          worker("within", "active"),
+        ],
+      });
+
+      expect(pools.items[0].room).toBe(8);
+    });
+
+    it("leaves an actor whose template is gone out of the room size", async () => {
+      const pools = await workerPoolsOf({
+        actors: [actor("small", "suspended"), actor("gone", "suspended")],
+        actorTemplates: [plainTemplate("small")],
+        workers: [worker("w1", "active")],
+      });
+
+      expect(pools.roomSize).toEqual({ cpuMillicores: 500, memoryBytes: GIB });
+      expect(pools.items[0].room).toBe(8);
+    });
+
+    it("adds no room for a draining, unavailable, unknown or unregistered worker", async () => {
+      const pools = await workerPoolsOf({
+        actors: [actor("small", "suspended")],
+        actorTemplates: [plainTemplate("small")],
+        workers: [
+          worker("active", "active"),
+          worker("draining", "draining"),
+          worker("unavailable", "unavailable"),
+          worker("unknown", "unknown"),
+          worker("unregistered", "active", { registered: false }),
+        ],
+      });
+
+      expect(pools.items[0].room).toBe(8);
+      expect(pools.items[0].capacity).toEqual({ cpuMillicores: 5 * 4000, memoryBytes: 5 * 8 * GIB, actors: 5 * 1000 });
+    });
+
+    it("adds no room for a worker at its actor capacity or with more allocated than its capacity", async () => {
+      const pools = await workerPoolsOf({
+        actors: [actor("small", "suspended")],
+        actorTemplates: [plainTemplate("small")],
+        workers: [
+          worker("at-actor-capacity", "active", {
+            capacity: { cpuMillicores: 4000, memoryBytes: 8 * GIB, actors: 2 },
+            allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 2 },
+          }),
+          worker("over-allocated", "active", {
+            allocated: { cpuMillicores: 5000, memoryBytes: 9 * GIB, actors: 1 },
+          }),
+        ],
+      });
+
+      expect(pools.items[0].room).toBe(0);
+    });
+
+    it("books the runtime overhead of the worker on top of the memory limit", async () => {
+      const pools = await workerPoolsOf({
+        actors: [actor("issue-2-25", "suspended")],
+        actorTemplates: [issueTemplate("issue-2-25", "krci/test-go-app", "2", "25")],
+        workers: [
+          worker("microvm", "active", {
+            capacity: { cpuMillicores: 8000, memoryBytes: 2 * 2 * GIB, actors: 1000 },
+            sandboxClasses: ["microvm"],
+            actorOverhead: { memoryBytes: 4 * MIB, memoryBytesPerGib: 8 * MIB },
+          }),
+        ],
+      });
+
+      expect(pools.items[0].room).toBe(1);
+    });
+
+    it("gives one row per worker pool with its workers by name, by namespace and then name", async () => {
+      const pools = await workerPoolsOf({
+        workers: [
+          worker("w-b2", "active", { workerPool: "b", workerNamespace: "ns-2" }),
+          worker("w-a1", "active", { workerPool: "a", workerNamespace: "ns-2" }),
+          worker("w-z1", "active", { workerPool: "z", workerNamespace: "ns-1" }),
+          worker("w-b1", "draining", {
+            workerPool: "b",
+            workerNamespace: "ns-2",
+            allocated: { cpuMillicores: 1000, memoryBytes: GIB, actors: 1 },
+          }),
+        ],
+      });
+
+      expect(pools.items.map(({ namespace, name, workers }) => [namespace, name, workers])).toEqual([
+        ["ns-1", "z", ["w-z1"]],
+        ["ns-2", "a", ["w-a1"]],
+        ["ns-2", "b", ["w-b1", "w-b2"]],
+      ]);
+      expect(pools.items[2]).toMatchObject({
+        capacity: { cpuMillicores: 8000, memoryBytes: 16 * GIB, actors: 2000 },
+        allocated: { cpuMillicores: 1000, memoryBytes: GIB, actors: 1 },
+        room: 1000,
+      });
+    });
+
+    it("reads no WorkerPool list when Agent Substrate has no worker", async () => {
+      const { list } = stubK8s({});
+
+      const pools = await workerPoolsOf({});
+
+      expect(list).not.toHaveBeenCalled();
+      expect(pools).toEqual({ access: "ok", items: [], roomSize: null });
+    });
+
+    it("adds the WorkerPool replicas, sandbox class and resolution to the row of its name", async () => {
+      const { list } = stubK8s({
+        workerPools: { [ATESPACE]: [workerPool(ATESPACE, "workers", { replicas: 2, readyReplicas: 1 })] },
+      });
+
+      const pools = await workerPoolsOf({ workers: [worker("w1", "active")] });
+
+      expect(list).toHaveBeenCalledTimes(1);
+      expect(list.mock.calls[0].slice(0, 2)).toEqual([k8sWorkerPoolConfig, ATESPACE]);
+      expect(pools.access).toBe("ok");
+      expect(pools.items).toEqual([
+        {
+          name: "workers",
+          namespace: ATESPACE,
+          workers: ["w1"],
+          capacity: { cpuMillicores: 4000, memoryBytes: 8 * GIB, actors: 1000 },
+          allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
+          room: 1000,
+          resource: { desiredReplicas: 2, readyReplicas: 1, sandboxClass: "gvisor", resolution: "Resolved" },
+        },
+      ]);
+    });
+
+    it("gives a WorkerPool with no worker a row with zero capacity and no room", async () => {
+      stubK8s({
+        workerPools: {
+          [ATESPACE]: [
+            workerPool(ATESPACE, "workers"),
+            workerPool(ATESPACE, "spare", { replicas: 2, readyReplicas: 0, resolution: null }),
+          ],
+        },
+      });
+
+      const pools = await workerPoolsOf({ workers: [worker("w1", "active")] });
+
+      expect(pools.items.map(({ name }) => name)).toEqual(["spare", "workers"]);
+      expect(pools.items[0]).toEqual({
+        name: "spare",
+        namespace: ATESPACE,
+        workers: [],
+        capacity: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
+        allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
+        room: 0,
+        resource: { desiredReplicas: 2, readyReplicas: 0, sandboxClass: "gvisor", resolution: null },
+      });
+    });
+
+    it("keeps capacity and room but no WorkerPool fields when the WorkerPool list is denied, and logs nothing", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      stubK8s({ workerPools: { [ATESPACE]: forbidden() } });
+
+      const pools = await workerPoolsOf({ workers: [worker("w1", "active")] });
+
+      expect(pools.access).toBe("denied");
+      expect(pools.items).toEqual([expect.objectContaining({ name: "workers", room: 1000, resource: null })]);
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    it("reports error and logs a WorkerPool list failure other than 403, with capacity and room kept", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const outage = new K8sApiError(500, "Internal Server Error", "");
+      stubK8s({ workerPools: { [ATESPACE]: outage } });
+
+      const pools = await workerPoolsOf({ workers: [worker("w1", "active")] });
+
+      expect(pools.access).toBe("error");
+      expect(pools.items).toEqual([expect.objectContaining({ name: "workers", room: 1000, resource: null })]);
+      expect(warn).toHaveBeenCalledWith(`[AgentSubstrate] WorkerPool list in namespace ${ATESPACE} failed:`, outage);
+    });
+
+    it("reports denied when one namespace is denied and keeps the WorkerPool fields of the readable one", async () => {
+      const { list } = stubK8s({ workerPools: { "ns-1": [workerPool("ns-1", "a")], "ns-2": forbidden() } });
+
+      const pools = await workerPoolsOf({
+        workers: [
+          worker("w1", "active", { workerPool: "a", workerNamespace: "ns-1" }),
+          worker("w2", "active", { workerPool: "b", workerNamespace: "ns-2" }),
+          worker("w3", "active", { workerPool: "b", workerNamespace: "ns-2" }),
+        ],
+      });
+
+      expect(list).toHaveBeenCalledTimes(2);
+      expect(pools.access).toBe("denied");
+      expect(pools.items.map(({ namespace, resource }) => [namespace, resource?.desiredReplicas ?? null])).toEqual([
+        ["ns-1", 1],
+        ["ns-2", null],
+      ]);
+    });
+
+    it("reports error with no WorkerPool list when the K8s client cannot be set up", async () => {
+      const { list } = stubK8s({ workerPools: { [ATESPACE]: [workerPool(ATESPACE, "workers")] } });
+      mockContext.session.user!.secret.idToken = "";
+
+      const pools = await workerPoolsOf({ workers: [worker("w1", "active")] });
+
+      expect(list).not.toHaveBeenCalled();
+      expect(pools.access).toBe("error");
+      expect(pools.items).toEqual([expect.objectContaining({ name: "workers", room: 1000, resource: null })]);
+    });
+
+    it("reports error over denied when one namespace fails and another is denied", async () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      stubK8s({ workerPools: { "ns-1": new Error("socket hang up"), "ns-2": forbidden() } });
+
+      const pools = await workerPoolsOf({
+        workers: [
+          worker("w1", "active", { workerPool: "a", workerNamespace: "ns-1" }),
+          worker("w2", "active", { workerPool: "b", workerNamespace: "ns-2" }),
+        ],
+      });
+
+      expect(pools.access).toBe("error");
+    });
+
+    it("gives the fleet with WorkerPool access error when the WorkerPool list does not answer in time", async () => {
+      vi.useFakeTimers({ toFake: ["Date", "setTimeout", "clearTimeout"] });
+      vi.setSystemTime(START);
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      vi.spyOn(K8sClient.prototype, "listResource").mockImplementation(() => new Promise(() => {}));
+      mockContext.agentSubstrateSource = source({ workers: [worker("w1", "active")] });
+
+      const pending = readyFleet(createCaller(mockContext));
+      await vi.advanceTimersByTimeAsync(5_000);
+      const fleet = await pending;
+
+      expect(fleet.workerPools.access).toBe("error");
+      expect(fleet.workerPools.items).toEqual([
+        expect.objectContaining({ name: "workers", room: 1000, resource: null }),
+      ]);
+      expect(warn).toHaveBeenCalledWith("[AgentSubstrate] WorkerPool list timed out after 5000 ms");
+    });
+
+    it("treats a 404 WorkerPool list as no WorkerPool, quietly", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      stubK8s({ workerPools: { [ATESPACE]: new K8sApiError(404, "Not Found", "") } });
+
+      const pools = await workerPoolsOf({ workers: [worker("w1", "active")] });
+
+      expect(pools.access).toBe("ok");
+      expect(pools.items).toEqual([expect.objectContaining({ name: "workers", resource: null })]);
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    it("lists no WorkerPools cluster-wide for a worker that names no namespace", async () => {
+      const { list } = stubK8s({ workerPools: { [ATESPACE]: [workerPool(ATESPACE, "workers")] } });
+
+      const pools = await workerPoolsOf({
+        workers: [worker("w1", "active"), worker("w2", "active", { workerPool: "", workerNamespace: "" })],
+      });
+
+      expect(list.mock.calls.map(([config, namespace]) => [config, namespace])).toEqual([
+        [k8sWorkerPoolConfig, ATESPACE],
+      ]);
+      expect(pools.access).toBe("ok");
+    });
+
+    it("keeps listing a worker namespace after its last worker is gone", async () => {
+      const source = new MemoryAgentSubstrateSource({
+        atespaces: ATESPACES,
+        workers: [worker("w1", "active", { workerPool: "edge", workerNamespace: "ns-edge" })],
+      });
+      mockContext.agentSubstrateSource = source;
+      stubK8s({ workerPools: { "ns-edge": [workerPool("ns-edge", "edge", { replicas: 2, readyReplicas: 0 })] } });
+      const caller = createCaller(mockContext);
+
+      await readyFleet(caller);
+      source.setFleet({ workers: [] });
+      vi.setSystemTime(START.getTime() + 5_000);
+      const later = await readyFleet(caller);
+
+      expect(later.workerPools.items).toEqual([
+        expect.objectContaining({
+          namespace: "ns-edge",
+          name: "edge",
+          workers: [],
+          room: 0,
+          resource: expect.objectContaining({ desiredReplicas: 2, readyReplicas: 0 }),
+        }),
+      ]);
+    });
+
+    it("passes on whether a worker is registered", async () => {
+      mockContext.agentSubstrateSource = source({
+        workers: [worker("registered", "active"), worker("unregistered", "active", { registered: false })],
+      });
+
+      const fleet = await readyFleet(createCaller(mockContext));
+
+      expect(fleet.workers.map(({ name, registered }) => [name, registered])).toEqual([
+        ["registered", true],
+        ["unregistered", false],
+      ]);
+    });
+  });
+
   describe("recorded testbed fixtures", () => {
     const memoryFleet: MemoryFleet = JSON.parse(readFileSync(TESTBED_MEMORY_FIXTURE, "utf8"));
     const storybookSnapshot: ReadyFleetSnapshot = JSON.parse(readFileSync(TESTBED_STORYBOOK_FIXTURE, "utf8"));
@@ -755,6 +1179,9 @@ describe("agentSubstrate.getFleet", () => {
 
     it("gives the Storybook snapshot when read through the memory adapter", async () => {
       vi.setSystemTime(new Date(storybookSnapshot.updatedAt));
+      // The recorder runs with no session: the WorkerPool list gives `error`.
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      stubK8s({ workerPools: { [ATESPACE]: new Error("no session") } });
       mockContext.agentSubstrateSource = new MemoryAgentSubstrateSource(memoryFleet);
 
       const fleet = await readyFleet(createCaller(mockContext));

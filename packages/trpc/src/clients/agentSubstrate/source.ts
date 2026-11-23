@@ -71,6 +71,16 @@ export interface SubstrateWorker {
   capacity: SubstrateResources;
   allocated: SubstrateResources;
   sandboxClasses: string[];
+  /** `registeredEpoch` set and a sandbox class reported: the worker can host actors. */
+  registered: boolean;
+  /** Of the default runtime of the first sandbox class. Null when the worker reports none. */
+  actorOverhead: SubstrateRuntimeOverhead | null;
+}
+
+/** Memory a worker uses per actor beyond the actor limits: `memoryBytes` + `memoryBytesPerGib` per GiB of memory limit. */
+export interface SubstrateRuntimeOverhead {
+  memoryBytes: number;
+  memoryBytesPerGib: number;
 }
 
 export type AgentSubstrateSourceErrorKind =

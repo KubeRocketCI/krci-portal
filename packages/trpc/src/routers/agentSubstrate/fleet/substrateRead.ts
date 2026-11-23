@@ -1,4 +1,4 @@
-import type { ActorAgent, FleetUnreachableReason } from "@my-project/shared";
+import { sortByName, type ActorAgent, type FleetUnreachableReason } from "@my-project/shared";
 import {
   AgentSubstrateSourceError,
   type AgentSubstrateSource,
@@ -22,12 +22,20 @@ export const AGENT_ENV = {
   model: "ANTHROPIC_MODEL",
 } as const;
 
+interface TemplateFacts {
+  /** Null on an actor that the dispatcher did not make. */
+  agent: ActorAgent | null;
+  /** Null when the template is gone. */
+  limits: SubstrateActorTemplate["limits"] | null;
+}
+
 export interface SubstrateFleet {
   readAt: string;
   atespaces: SubstrateAtespace[];
-  /** `agent` is null on an actor that the dispatcher did not make. */
-  actors: { actor: SubstrateActor; agent: ActorAgent | null }[];
+  actors: ({ actor: SubstrateActor } & TemplateFacts)[];
   workers: SubstrateWorker[];
+  /** Every worker namespace seen since start, by name: a WorkerPool stays listed after its last worker is gone. */
+  workerNamespaces: string[];
 }
 
 export type SubstrateRead = { ok: true; fleet: SubstrateFleet } | { ok: false; reason: FleetUnreachableReason };
@@ -66,7 +74,8 @@ class SubstrateReader {
   private cached: { at: number; result: SubstrateRead } | null = null;
   private inflight: Promise<SubstrateRead> | null = null;
   /** By actor uid, no time limit. Entries of gone actors are dropped on each read. */
-  private readonly agents = new Map<string, ActorAgent | null>();
+  private readonly templates = new Map<string, TemplateFacts>();
+  private readonly workerNamespaces = new Set<string>();
 
   constructor(private readonly source: AgentSubstrateSource) {}
 
@@ -90,22 +99,35 @@ class SubstrateReader {
 
   private async load(now: number): Promise<SubstrateRead> {
     try {
-      const actorsWithAgents = this.source.listActors().then(async (actors) => {
-        const agents = await mapWithConcurrency(actors, TEMPLATE_READ_CONCURRENCY, (actor) => this.agentOf(actor));
-        return actors.map((actor, index) => ({ actor, agent: agents[index] }));
+      const actorsWithTemplates = this.source.listActors().then(async (actors) => {
+        const facts = await mapWithConcurrency(actors, TEMPLATE_READ_CONCURRENCY, (actor) => this.templateOf(actor));
+        return actors.map((actor, index) => ({ actor, ...facts[index] }));
       });
       const [atespaces, actors, workers] = await Promise.all([
         this.source.listAtespaces(),
-        actorsWithAgents,
+        actorsWithTemplates,
         this.source.listWorkers(),
       ]);
 
       const live = new Set(actors.map(({ actor }) => actor.uid));
-      for (const uid of this.agents.keys()) {
-        if (!live.has(uid)) this.agents.delete(uid);
+      for (const uid of this.templates.keys()) {
+        if (!live.has(uid)) this.templates.delete(uid);
       }
 
-      return { ok: true, fleet: { readAt: new Date(now).toISOString(), atespaces, actors, workers } };
+      for (const { workerNamespace } of workers) {
+        if (workerNamespace) this.workerNamespaces.add(workerNamespace);
+      }
+
+      return {
+        ok: true,
+        fleet: {
+          readAt: new Date(now).toISOString(),
+          atespaces,
+          actors,
+          workers,
+          workerNamespaces: [...this.workerNamespaces].sort(sortByName),
+        },
+      };
     } catch (error) {
       const sourceError = asSourceError(error);
       const reason = sourceError.kind === "notFound" ? "other" : sourceError.kind;
@@ -114,21 +136,22 @@ class SubstrateReader {
     }
   }
 
-  /** A gone template (`notFound`) gives no agent. An actor with no uid is not cached. */
-  private async agentOf(actor: SubstrateActor): Promise<ActorAgent | null> {
-    const cached = actor.uid ? this.agents.get(actor.uid) : undefined;
+  /** A gone template (`notFound`) gives no agent and no limits. An actor with no uid is not cached. */
+  private async templateOf(actor: SubstrateActor): Promise<TemplateFacts> {
+    const cached = actor.uid ? this.templates.get(actor.uid) : undefined;
     if (cached !== undefined) return cached;
 
-    let agent: ActorAgent | null;
+    let facts: TemplateFacts;
     try {
-      agent = agentOfTemplate(await this.source.getActorTemplate(actor.actorTemplate));
+      const template = await this.source.getActorTemplate(actor.actorTemplate);
+      facts = { agent: agentOfTemplate(template), limits: { ...template.limits } };
     } catch (error) {
       const sourceError = asSourceError(error);
       if (sourceError.kind !== "notFound") throw sourceError;
-      agent = null;
+      facts = { agent: null, limits: null };
     }
-    if (actor.uid) this.agents.set(actor.uid, agent);
-    return agent;
+    if (actor.uid) this.templates.set(actor.uid, facts);
+    return facts;
   }
 }
 
