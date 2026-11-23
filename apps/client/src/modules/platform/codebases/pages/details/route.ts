@@ -12,6 +12,7 @@ export const routeSearchTabSchema = z.enum([
   "pipelines",
   "security",
   "vulnerabilities",
+  "findings",
   "code",
   "deployments",
 ]);

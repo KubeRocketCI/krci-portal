@@ -46,6 +46,23 @@ describe("CellLink", () => {
     expect(link).toHaveClass("custom-class");
   });
 
+  it("renders the icon alone for an icon-only link, named by its aria-label", () => {
+    render(<CellExternalLink href="https://example.com/test/7" iconOnly icon={Box} aria-label="Open the test" />);
+
+    const link = screen.getByRole("link", { name: "Open the test" });
+    expect(link).toHaveAttribute("href", "https://example.com/test/7");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link.querySelector("svg")).toHaveClass("shrink-0");
+    expect(link.textContent).toBe("");
+    expect(link).not.toHaveAttribute("iconOnly");
+  });
+
+  it("requires an aria-label for an icon-only link (type-only; never rendered)", () => {
+    // @ts-expect-error An icon-only link has no text to name it: it needs an aria-label.
+    const element = <CellExternalLink href="#" iconOnly icon={Box} />;
+    expect(element).toBeDefined();
+  });
+
   it("locks `params` to the route's own keys (type-only; never rendered)", () => {
     // @ts-expect-error PATH_NODE_DETAIL's params are `clusterName` and `name`, not `wrongName`.
     const element = <CellLink to={PATH_NODE_DETAIL} params={{ clusterName: "c1", wrongName: "widget" }} text="x" />;

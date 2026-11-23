@@ -62,6 +62,7 @@ export function ToggleButtonGroup<T extends string>({
             key={child.key || index}
             size={size}
             variant={isSelected ? "default" : "outline"}
+            aria-pressed={isSelected}
             onClick={handleButtonClick(buttonValue)}
             className={cn(
               "rounded-none border-0",

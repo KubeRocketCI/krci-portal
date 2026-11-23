@@ -502,6 +502,16 @@ describe("getSeverityCounts", () => {
       "GET /api/v2/tests/53/",
     ]);
   });
+
+  it("does not look a test up when the caller knows it exists: a test of a list is counted zero as it is", async () => {
+    const result = await createClient().getSeverityCounts({ testId: 53 }, { testExists: true });
+
+    expect(result).toEqual({
+      state: "data",
+      data: { total: 0, active: 0, severity: { Critical: 0, High: 0, Medium: 0, Low: 0, Info: 0 } },
+    });
+    expect(server.requests.map(({ key }) => key.split("?")[0])).toEqual(["GET /api/v3/findings"]);
+  });
 });
 
 /** Ids of the findings of a result, in the order of the answer. */
@@ -690,6 +700,24 @@ describe("listFindings", () => {
       const result = await createClient().listFindings({ scope: { testId: 41 } });
 
       expect(findingIds(result)).toEqual([1030, 1028, 1031, 1029]);
+    });
+
+    it("lists the findings of every state together when it is asked for any state: duplicates stay out", async () => {
+      const result = await createClient().listFindings({ scope: { testId: 41 }, state: "any" });
+
+      expect(findingIds(result)).toEqual([928, 929, 1030, 930, 931, 1028, 1031, 1029, 1032]);
+      expect(result.state === "data" && result.data.total).toBe(9);
+      expect(result.state === "data" && result.data.findings.map((finding) => finding.active)).toEqual([
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        true,
+        true,
+        false,
+      ]);
     });
 
     it("filters by vulnerability id: one id is found by both scanners of an image, apart", async () => {

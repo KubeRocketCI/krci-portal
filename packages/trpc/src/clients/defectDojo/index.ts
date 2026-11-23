@@ -181,11 +181,12 @@ export class DefectDojoClient {
    * active findings.
    *
    * `noScanData`: an empty set of products, or a test that does not exist. A test or product without findings
-   * counts zero. DefectDojo answers zero for an unknown id as well, so a test with no finding is looked up.
+   * counts zero. DefectDojo answers zero for an unknown id as well, so a test with no finding is looked up, unless
+   * `testExists` says the caller knows it exists, as a test of a list does.
    */
   getSeverityCounts(
     scope: DefectDojoScope,
-    options: { activeOnly?: boolean } = {}
+    options: { activeOnly?: boolean; testExists?: boolean } = {}
   ): Promise<DefectDojoResult<DefectDojoSeverityCounts>> {
     return this.run<DefectDojoSeverityCounts>(async (http) => {
       if (hasNoProducts(scope)) {
@@ -195,7 +196,12 @@ export class DefectDojoClient {
       const answer = await this.get(http, countsRequest(scope, options.activeOnly ?? true), countsAnswerSchema);
       const counts = answer.meta.counts;
 
-      if ("testId" in scope && counts.total === 0 && !(await this.testExists(http, scope.testId))) {
+      if (
+        "testId" in scope &&
+        counts.total === 0 &&
+        !options.testExists &&
+        !(await this.testExists(http, scope.testId))
+      ) {
         return { state: "noScanData" };
       }
 

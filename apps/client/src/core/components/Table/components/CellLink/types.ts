@@ -6,10 +6,24 @@ export interface CellLinkBaseProps extends React.ComponentPropsWithoutRef<"a"> {
   /** `null`, `undefined` and `""` render the `TextWithTooltip` fallback. */
   text: TextWithTooltipProps["text"];
   /** Leading icon. Rendered muted and `shrink-0`. */
-  icon?: React.ComponentType<{ className?: string }>;
+  icon?: CellLinkIcon;
+  /** Renders the icon alone and no text. `CellExternalLink` demands an `aria-label` for it. */
+  iconOnly?: boolean;
 }
 
-/** Props of `CellExternalLink`. `target` and `rel` are fixed; other anchor props pass through. */
-export type CellExternalLinkProps = Omit<CellLinkBaseProps, "children" | "href" | "target" | "rel"> & {
-  href: string;
-};
+type CellLinkIcon = React.ComponentType<{ className?: string }>;
+
+type CellExternalLinkAnchorProps = Omit<
+  CellLinkBaseProps,
+  "children" | "href" | "target" | "rel" | "text" | "icon" | "iconOnly"
+> & { href: string };
+
+/**
+ * Props of `CellExternalLink`. `target` and `rel` are fixed; other anchor props pass through.
+ * A link is named by its `text`; an icon-only link has no text, so it is named by its `aria-label`.
+ */
+export type CellExternalLinkProps = CellExternalLinkAnchorProps &
+  (
+    | { text: CellLinkBaseProps["text"]; icon?: CellLinkIcon; iconOnly?: never }
+    | { iconOnly: true; icon: CellLinkIcon; "aria-label": string; text?: never }
+  );

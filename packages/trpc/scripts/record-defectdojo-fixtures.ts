@@ -221,6 +221,8 @@ await record(findings({ scope: { testId: ownTrivyTest }, state: "mitigated" }));
 await record(findings({ scope: { testId: goSemgrepTest }, state: "falsePositive" }));
 await record(findings({ scope: { testId: ownTrivyTest }, state: "outOfScope" }));
 await record(findings({ scope: { testId: ownGrypeTest }, state: "riskAccepted" }));
+// Every state together.
+await record(findings({ scope: { testId: ownTrivyTest }, state: "any" }));
 // Text filters.
 await record(findings({ scope: { productIds: [goProductId] }, vulnerabilityId: "CVE-2099-1001" }));
 await record(findings({ scope: { testId: ownTrivyTest }, component: "LIBCRYPTO" }));
