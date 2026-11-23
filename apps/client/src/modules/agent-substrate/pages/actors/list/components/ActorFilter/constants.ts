@@ -1,13 +1,7 @@
 import { ACTOR_STATE_GROUP, type ActorRow } from "@my-project/shared";
 import type { MatchFunctions } from "@/core/providers/Filter";
+import { ACTOR_FILTER_NAMES } from "../../../../../constants/actorFilter";
 import type { ActorFilterValues } from "./types";
-
-/** Values are the URL search param names. */
-export const ACTOR_FILTER_NAMES = {
-  ATESPACE: "atespace",
-  ACTOR_STATE: "actorState",
-  CODEBASE: "codebase",
-} as const;
 
 /** `_` cannot be in atespace or Codebase names, so this value cannot collide with one. */
 export const ALL_FILTER_VALUE = "__all__";

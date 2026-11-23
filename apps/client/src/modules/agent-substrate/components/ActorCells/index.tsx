@@ -32,7 +32,7 @@ export function ActorLink({ actor }: { actor: Pick<ActorRow, "atespace" | "name"
   );
 }
 
-export function ActorIssue({ agent }: { agent: ActorAgent | null }) {
+export function ActorIssue({ agent }: { agent: Pick<ActorAgent, "issue"> | null }) {
   if (!agent) return <EmptyValue />;
 
   const label = issueLabel(agent.issue);

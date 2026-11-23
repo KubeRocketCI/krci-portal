@@ -8,6 +8,7 @@ import {
   type ActorState,
   type K8sResourceConfig,
   type ReadyFleetSnapshot,
+  type SnapshotDurableState,
   type WorkerState,
 } from "@my-project/shared";
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from "vitest";
@@ -779,6 +780,291 @@ describe("agentSubstrate.getFleet", () => {
 
     expect(later.summary.agents).toBe(1);
     expect(getActorTemplate).toHaveBeenCalledTimes(1);
+  });
+
+  describe("needs attention", () => {
+    async function needsAttentionOf(fleet: Partial<MemoryFleet>) {
+      mockContext.agentSubstrateSource = new MemoryAgentSubstrateSource({ atespaces: ATESPACES, ...fleet });
+      return (await readyFleet(createCaller(mockContext))).needsAttention;
+    }
+
+    function crashed(name: string, crashTime: string | null, message = "sandbox exited with code 137"): SubstrateActor {
+      return { ...actor(name, "crashed"), crash: { message, crashTime } };
+    }
+
+    const MINUTE = 60_000;
+
+    /** Snapshot generations 1, 2, … in the order of `durableStates`. */
+    function withSnapshots(
+      base: SubstrateActor,
+      updatedMinutesAgo: number,
+      durableStates: SnapshotDurableState[]
+    ): SubstrateActor {
+      return {
+        ...base,
+        updateTime: new Date(START.getTime() - updatedMinutesAgo * MINUTE).toISOString(),
+        snapshots: durableStates.map((durableState, index) => ({
+          uuid: `${base.name}-snap-${index + 1}`,
+          generation: index + 1,
+          fidelity: "memory",
+          locality: "krci-control-plane",
+          durableState,
+        })),
+      };
+    }
+
+    it("gives a crashed actor as an error with its crash message, crash time, issue and agent profile", async () => {
+      vi.stubEnv("DEFAULT_CLUSTER_NAMESPACE", PLATFORM_NAMESPACE);
+      stubK8s({ codebases: [codebase("go-app", "/krci/test-go-app")], gitServers: GITLAB });
+
+      const items = await needsAttentionOf({
+        actors: [crashed("issue-2-25", "2026-11-22T09:40:00.000Z", "out of memory"), actor("issue-2-26", "running")],
+        actorTemplates: [
+          issueTemplate("issue-2-25", "krci/test-go-app", "2", "25"),
+          issueTemplate("issue-2-26", "krci/test-go-app", "2", "26"),
+        ],
+      });
+
+      expect(items).toEqual([
+        {
+          kind: "actorCrashed",
+          severity: "error",
+          atespace: ATESPACE,
+          name: "issue-2-25",
+          message: "out of memory",
+          crashedAt: "2026-11-22T09:40:00.000Z",
+          agent: {
+            issue: {
+              projectPath: "krci/test-go-app",
+              projectId: "2",
+              iid: "25",
+              url: "https://gitlab.example.com/krci/test-go-app/-/issues/25",
+            },
+            agentProfile: "go",
+          },
+        },
+      ]);
+    });
+
+    it("gives a crashed actor that the dispatcher did not make no agent", async () => {
+      const items = await needsAttentionOf({
+        actors: [crashed("debug-shell", null)],
+        actorTemplates: [plainTemplate("debug-shell")],
+      });
+
+      expect(items).toEqual([expect.objectContaining({ kind: "actorCrashed", name: "debug-shell", agent: null })]);
+    });
+
+    it("gives no item when actors, workers and worker pools are healthy", async () => {
+      stubK8s({ workerPools: { [ATESPACE]: [workerPool(ATESPACE, "workers", { replicas: 2, readyReplicas: 2 })] } });
+
+      const items = await needsAttentionOf({
+        actors: [
+          withSnapshots(actor("issue-2-25", "suspended"), 60, ["completed"]),
+          withSnapshots(actor("issue-2-26", "running"), 60, []),
+        ],
+        actorTemplates: [
+          issueTemplate("issue-2-25", "krci/test-go-app", "2", "25"),
+          issueTemplate("issue-2-26", "krci/test-go-app", "2", "26"),
+        ],
+        workers: [worker("w1", "active"), worker("w2", "active")],
+      });
+
+      expect(items).toEqual([]);
+    });
+
+    it("gives a worker pool with fewer ready replicas than desired as an error", async () => {
+      stubK8s({
+        workerPools: {
+          [ATESPACE]: [
+            workerPool(ATESPACE, "workers", { replicas: 2, readyReplicas: 2 }),
+            workerPool(ATESPACE, "spare", { replicas: 3, readyReplicas: 1 }),
+          ],
+        },
+      });
+
+      const items = await needsAttentionOf({ workers: [worker("w1", "active"), worker("w2", "active")] });
+
+      expect(items).toEqual([
+        {
+          kind: "workerPoolNotReady",
+          severity: "error",
+          namespace: ATESPACE,
+          name: "spare",
+          desiredReplicas: 3,
+          readyReplicas: 1,
+        },
+      ]);
+    });
+
+    it("gives the worker pool item of a readable namespace while the WorkerPool list is denied in another", async () => {
+      stubK8s({
+        workerPools: { "ns-1": [workerPool("ns-1", "a", { replicas: 2, readyReplicas: 0 })], "ns-2": forbidden() },
+      });
+
+      const items = await needsAttentionOf({
+        workers: [
+          worker("w1", "active", { workerPool: "a", workerNamespace: "ns-1" }),
+          worker("w2", "active", { workerPool: "b", workerNamespace: "ns-2" }),
+        ],
+      });
+
+      expect(items).toEqual([
+        {
+          kind: "workerPoolNotReady",
+          severity: "error",
+          namespace: "ns-1",
+          name: "a",
+          desiredReplicas: 2,
+          readyReplicas: 0,
+        },
+      ]);
+    });
+
+    it("gives no worker pool item while the WorkerPool list is denied in every namespace", async () => {
+      stubK8s({ workerPools: { [ATESPACE]: forbidden(), "ns-2": forbidden() } });
+
+      const items = await needsAttentionOf({
+        workers: [
+          worker("w1", "active", { workerPool: "workers", workerNamespace: ATESPACE }),
+          worker("w2", "active", { workerPool: "b", workerNamespace: "ns-2" }),
+        ],
+      });
+
+      expect(items).toEqual([]);
+    });
+
+    it("gives an unavailable or unknown worker as an error and a draining worker as a warning, with its worker pool", async () => {
+      const items = await needsAttentionOf({
+        workers: [
+          worker("w-active", "active"),
+          worker("w-draining", "draining", { workerPool: "edge", workerNamespace: "ns-edge" }),
+          worker("w-unavailable", "unavailable"),
+          worker("w-unknown", "unknown"),
+        ],
+      });
+
+      expect(items).toEqual([
+        {
+          kind: "workerNotActive",
+          severity: "error",
+          name: "w-unavailable",
+          state: "unavailable",
+          workerPool: "workers",
+          workerNamespace: ATESPACE,
+        },
+        {
+          kind: "workerNotActive",
+          severity: "error",
+          name: "w-unknown",
+          state: "unknown",
+          workerPool: "workers",
+          workerNamespace: ATESPACE,
+        },
+        {
+          kind: "workerNotActive",
+          severity: "warning",
+          name: "w-draining",
+          state: "draining",
+          workerPool: "edge",
+          workerNamespace: "ns-edge",
+        },
+      ]);
+    });
+
+    it("gives a pending latest snapshot of an actor last changed more than 15 minutes ago as a warning", async () => {
+      const items = await needsAttentionOf({
+        actors: [withSnapshots(actor("issue-2-25", "suspended"), 16, ["completed", "pending"])],
+      });
+
+      expect(items).toEqual([
+        {
+          kind: "snapshotPending",
+          severity: "warning",
+          atespace: ATESPACE,
+          name: "issue-2-25",
+          generation: 2,
+          updatedAt: new Date(START.getTime() - 16 * MINUTE).toISOString(),
+        },
+      ]);
+    });
+
+    it.each([14, 15])(
+      "gives no item for a pending snapshot of an actor last changed %i minutes ago",
+      async (minutesAgo) => {
+        const items = await needsAttentionOf({
+          actors: [withSnapshots(actor("issue-2-25", "suspended"), minutesAgo, ["completed", "pending"])],
+        });
+
+        expect(items).toEqual([]);
+      }
+    );
+
+    it("gives a pending snapshot of an actor whose last change does not parse, with no time, after the timed ones", async () => {
+      const unparsable = { ...withSnapshots(actor("a-no-time", "suspended"), 0, ["pending"]), updateTime: "" };
+
+      const items = await needsAttentionOf({
+        actors: [unparsable, withSnapshots(actor("z-timed", "suspended"), 30, ["pending"])],
+      });
+
+      expect(items.map((item) => [item.kind, item.name])).toEqual([
+        ["snapshotPending", "z-timed"],
+        ["snapshotPending", "a-no-time"],
+      ]);
+      expect(items[1]).toEqual({
+        kind: "snapshotPending",
+        severity: "warning",
+        atespace: ATESPACE,
+        name: "a-no-time",
+        generation: 1,
+        updatedAt: null,
+      });
+    });
+
+    it("gives no item when an older snapshot generation is pending and the latest is durable", async () => {
+      const base = withSnapshots(actor("issue-2-25", "suspended"), 60, ["pending", "completed"]);
+
+      const items = await needsAttentionOf({ actors: [{ ...base, snapshots: [...base.snapshots].reverse() }] });
+
+      expect(items).toEqual([]);
+    });
+
+    it.each(["none", "unknown"] as const)("gives no item when the latest snapshot is %s", async (durableState) => {
+      const items = await needsAttentionOf({
+        actors: [withSnapshots(actor("issue-2-25", "suspended"), 60, ["completed", durableState])],
+      });
+
+      expect(items).toEqual([]);
+    });
+
+    it("orders errors before warnings, then by kind, then oldest first, with an item with no time last by name", async () => {
+      stubK8s({ workerPools: { [ATESPACE]: [workerPool(ATESPACE, "workers", { replicas: 3, readyReplicas: 2 })] } });
+
+      const items = await needsAttentionOf({
+        actors: [
+          crashed("crash-late", "2026-11-22T09:40:00.000Z"),
+          withSnapshots(actor("pending-recent", "suspended"), 20, ["pending"]),
+          crashed("crash-no-time", null),
+          withSnapshots(actor("pending-old", "suspended"), 60, ["pending"]),
+          crashed("crash-early", "2026-11-22T09:00:00.000Z"),
+          crashed("crash-another-no-time", null),
+        ],
+        workers: [worker("w-b", "draining"), worker("w-unavailable", "unavailable"), worker("w-a", "draining")],
+      });
+
+      expect(items.map((item) => [item.severity, item.kind, item.name])).toEqual([
+        ["error", "actorCrashed", "crash-early"],
+        ["error", "actorCrashed", "crash-late"],
+        ["error", "actorCrashed", "crash-another-no-time"],
+        ["error", "actorCrashed", "crash-no-time"],
+        ["error", "workerPoolNotReady", "workers"],
+        ["error", "workerNotActive", "w-unavailable"],
+        ["warning", "workerNotActive", "w-a"],
+        ["warning", "workerNotActive", "w-b"],
+        ["warning", "snapshotPending", "pending-old"],
+        ["warning", "snapshotPending", "pending-recent"],
+      ]);
+    });
   });
 
   describe("worker pools and room", () => {

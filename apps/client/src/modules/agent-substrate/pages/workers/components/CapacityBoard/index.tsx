@@ -17,8 +17,10 @@ import { ActorLink, ActorStateBadge } from "../../../../components/ActorCells";
 import { FleetEmpty } from "../../../../components/FleetStatePanel";
 import { WorkerNotRegisteredBadge, WorkerPoolReadyBadge, WorkerStateBadge } from "../../../../components/WorkerCells";
 import { WorkerPoolAccessNotice } from "../../../../components/WorkerPoolAccessNotice";
+import { useScrollToHashTarget } from "../../../../hooks/useScrollToHashTarget";
 import { hasNoWorkerFleet } from "../../../../utils/hasNoWorkerFleet";
 import { roomLabel } from "../../../../utils/roomLabel";
+import { HASH_TARGET_CLASS, workerAnchor } from "../../../../utils/rowAnchor";
 
 function ResourceBars({ capacity, allocated }: { capacity: SubstrateResources; allocated: SubstrateResources }) {
   return (
@@ -30,13 +32,23 @@ function ResourceBars({ capacity, allocated }: { capacity: SubstrateResources; a
   );
 }
 
-function WorkerBlock({ worker, actors }: { worker: WorkerRow; actors: ActorRow[] }) {
+interface WorkerBlockProps {
+  worker: WorkerRow;
+  actors: ActorRow[];
+  /** The URL fragment names this worker. */
+  isTarget: boolean;
+}
+
+function WorkerBlock({ worker, actors, isTarget }: WorkerBlockProps) {
   return (
     <section
+      id={workerAnchor(worker)}
       aria-label={`Worker ${worker.pod}`}
+      aria-current={isTarget ? "true" : undefined}
       className={cn(
         "flex flex-col gap-3 rounded-lg border p-3",
-        (worker.state !== "active" || !worker.registered) && "border-status-missing/50 border-dashed"
+        (worker.state !== "active" || !worker.registered) && "border-status-missing/50 border-dashed",
+        isTarget && HASH_TARGET_CLASS
       )}
     >
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
@@ -102,9 +114,10 @@ interface WorkerPoolCardProps {
   access: WorkerPoolAccess;
   workersByKey: Map<string, WorkerRow>;
   actorsByWorker: Map<string, ActorRow[]>;
+  target: string | null;
 }
 
-function WorkerPoolCard({ pool, roomSize, access, workersByKey, actorsByWorker }: WorkerPoolCardProps) {
+function WorkerPoolCard({ pool, roomSize, access, workersByKey, actorsByWorker, target }: WorkerPoolCardProps) {
   return (
     <Card role="region" aria-label={`Worker pool ${pool.namespace}/${pool.name}`}>
       <CardHeader className="flex flex-row items-start justify-between gap-4">
@@ -124,14 +137,25 @@ function WorkerPoolCard({ pool, roomSize, access, workersByKey, actorsByWorker }
         {pool.workers.flatMap((name) => {
           const key = workerKey(pool.namespace, pool.name, name);
           const worker = workersByKey.get(key);
-          return worker ? [<WorkerBlock key={name} worker={worker} actors={actorsByWorker.get(key) ?? []} />] : [];
+          if (!worker) return [];
+          return [
+            <WorkerBlock
+              key={name}
+              worker={worker}
+              actors={actorsByWorker.get(key) ?? []}
+              isTarget={workerAnchor(worker) === target}
+            />,
+          ];
         })}
       </CardContent>
     </Card>
   );
 }
 
+/** The worker that the URL fragment names is scrolled into view and highlighted. */
 export function CapacityBoard({ fleet }: { fleet: ReadyFleetSnapshot }) {
+  const target = useScrollToHashTarget(fleet.workers);
+
   const workersByKey = React.useMemo(
     () =>
       new Map(
@@ -168,6 +192,7 @@ export function CapacityBoard({ fleet }: { fleet: ReadyFleetSnapshot }) {
             access={fleet.workerPools.access}
             workersByKey={workersByKey}
             actorsByWorker={actorsByWorker}
+            target={target}
           />
         ))}
       </div>

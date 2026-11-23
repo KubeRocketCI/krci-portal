@@ -6,7 +6,8 @@ import { Button } from "@/core/components/ui/button";
 import { Label } from "@/core/components/ui/label";
 import { useFilterContext } from "@/core/providers/Filter";
 import { ACTOR_STATE_GROUP_LABEL } from "../../../../../constants/actorState";
-import { ACTOR_FILTER_NAMES, ALL_FILTER_VALUE } from "./constants";
+import { ACTOR_FILTER_NAMES } from "../../../../../constants/actorFilter";
+import { ALL_FILTER_VALUE } from "./constants";
 import type { ActorFilterValues } from "./types";
 
 const ALL_OPTION: SelectOption = { label: "All", value: ALL_FILTER_VALUE };

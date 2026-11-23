@@ -6,11 +6,13 @@ import {
   type ActorRow,
   type ActorStateGroup,
   type Atespace,
+  type AttentionItem,
   type FleetSnapshot,
   type ReadyFleetSnapshot,
   type WorkerRow,
 } from "@my-project/shared";
 import { FLEET_QUERY_KEY } from "../hooks/useFleet";
+import { NEEDS_ATTENTION_MAX_ROWS } from "../pages/overview/utils/needsAttention";
 import testbedFleet from "./fleet.testbed.json";
 
 /** `DEFAULT_CLUSTER_NAMESPACE` of the portal: the namespace of the Codebases. */
@@ -165,6 +167,30 @@ export const STORY_WORKER_POOLS: ReadyFleetSnapshot["workerPools"] = {
   roomSize: { cpuMillicores: 1000, memoryBytes: 2 * GIB },
 };
 
+function crashedActorItem(actor: ActorRow): Extract<AttentionItem, { kind: "actorCrashed" }> {
+  return {
+    kind: "actorCrashed",
+    severity: "error",
+    atespace: actor.atespace,
+    name: actor.name,
+    message: actor.crash!.message,
+    crashedAt: actor.crash!.at,
+    agent: actor.agent && { issue: { ...actor.agent.issue }, agentProfile: actor.agent.agentProfile },
+  };
+}
+
+export const CRASHED_ACTOR_ITEM = crashedActorItem(CRASHED_ACTOR);
+
+/** The fleet `updatedAt` is more than 15 minutes after the last change of RUNNING_ACTOR. */
+export const PENDING_SNAPSHOT_ITEM: AttentionItem = {
+  kind: "snapshotPending",
+  severity: "warning",
+  atespace: RUNNING_ACTOR.atespace,
+  name: RUNNING_ACTOR.name,
+  generation: 2,
+  updatedAt: RUNNING_ACTOR.updatedAt,
+};
+
 export const STORY_FLEET: ReadyFleetSnapshot = {
   ...TESTBED_FLEET,
   summary: {
@@ -180,7 +206,75 @@ export const STORY_FLEET: ReadyFleetSnapshot = {
   actors: STORY_ACTORS,
   workers: STORY_WORKERS,
   workerPools: STORY_WORKER_POOLS,
+  needsAttention: [CRASHED_ACTOR_ITEM, PENDING_SNAPSHOT_ITEM],
 };
+
+function storyActor(fleet: ReadyFleetSnapshot, name: string): ActorRow {
+  const actor = fleet.actors.find((row) => row.name === name);
+  if (!actor) throw new Error(`story fleet has no actor ${name}`);
+  return actor;
+}
+
+/** STORY_FLEET with CRASHED_ACTOR suspended and the second snapshot of RUNNING_ACTOR durable. */
+export const HEALTHY_FLEET: ReadyFleetSnapshot = (() => {
+  const fleet = structuredClone(STORY_FLEET);
+  const crashed = storyActor(fleet, CRASHED_ACTOR.name);
+  crashed.state = "suspended";
+  crashed.crash = null;
+  storyActor(fleet, RUNNING_ACTOR.name).snapshots.find(({ generation }) => generation === 2)!.durableState =
+    "completed";
+  fleet.summary.actorsByState.crashed -= 1;
+  fleet.summary.actorsByState.suspended += 1;
+  fleet.needsAttention = [];
+  return fleet;
+})();
+
+export const CRASHED_ACTOR_FLEET: ReadyFleetSnapshot = (() => {
+  const fleet = structuredClone(HEALTHY_FLEET);
+  fleet.actors = fleet.actors.map((actor) =>
+    actor.name === CRASHED_ACTOR.name ? structuredClone(CRASHED_ACTOR) : actor
+  );
+  fleet.summary.actorsByState = { ...STORY_FLEET.summary.actorsByState };
+  fleet.needsAttention = [CRASHED_ACTOR_ITEM];
+  return fleet;
+})();
+
+export const PENDING_SNAPSHOT_FLEET: ReadyFleetSnapshot = (() => {
+  const fleet = structuredClone(HEALTHY_FLEET);
+  fleet.actors = fleet.actors.map((actor) =>
+    actor.name === RUNNING_ACTOR.name ? structuredClone(RUNNING_ACTOR) : actor
+  );
+  fleet.needsAttention = [PENDING_SNAPSHOT_ITEM];
+  return fleet;
+})();
+
+export const MANY_CRASHED_COUNT = NEEDS_ATTENTION_MAX_ROWS + 2;
+
+const FIRST_CRASH_MS = Date.parse("2026-11-22T21:00:00.000Z");
+
+/** MANY_CRASHED_COUNT crashed actors not made by the dispatcher, crashed a minute apart, oldest first. */
+export const MANY_CRASHED_FLEET: ReadyFleetSnapshot = (() => {
+  const fleet = structuredClone(HEALTHY_FLEET);
+  const crashedActors = Array.from({ length: MANY_CRASHED_COUNT }, (_, index): ActorRow => {
+    const name = `crashed-${index + 1}`;
+    return {
+      ...structuredClone(PLAIN_ACTOR),
+      name,
+      uid: `uid-${name}`,
+      actorTemplate: name,
+      state: "crashed",
+      crash: {
+        message: `sandbox ${name} exited with code 1`,
+        at: new Date(FIRST_CRASH_MS + index * 60_000).toISOString(),
+      },
+    };
+  });
+  fleet.actors.push(...crashedActors);
+  fleet.summary.actors += crashedActors.length;
+  fleet.summary.actorsByState.crashed += crashedActors.length;
+  fleet.needsAttention = crashedActors.map(crashedActorItem);
+  return fleet;
+})();
 
 export const FULL_WORKER_POOL_FLEET: ReadyFleetSnapshot = (() => {
   const fleet = structuredClone(STORY_FLEET);
@@ -192,12 +286,55 @@ export const FULL_WORKER_POOL_FLEET: ReadyFleetSnapshot = (() => {
   return fleet;
 })();
 
+function workerNotActiveItem(worker: WorkerRow, state: "draining" | "unavailable"): AttentionItem {
+  return {
+    kind: "workerNotActive",
+    severity: state === "draining" ? "warning" : "error",
+    name: worker.name,
+    state,
+    workerPool: worker.workerPool,
+    workerNamespace: worker.workerNamespace,
+  };
+}
+
 /** A draining worker adds no room to its worker pool. */
 export const DRAINING_WORKER_FLEET: ReadyFleetSnapshot = (() => {
   const fleet = structuredClone(STORY_FLEET);
   fleet.workers.find(({ name }) => name === BUSY_WORKER.name)!.state = "draining";
   fleet.summary.workersByState = { active: STORY_WORKERS.length - 1, draining: 1, unavailable: 0, unknown: 0 };
   fleet.workerPools.items[0].room = 1;
+  fleet.needsAttention = [CRASHED_ACTOR_ITEM, workerNotActiveItem(BUSY_WORKER, "draining"), PENDING_SNAPSHOT_ITEM];
+  return fleet;
+})();
+
+/** DRAINING_WORKER_FLEET with MICROVM_WORKER unavailable: its worker pool has no room. */
+export const WORKERS_NOT_ACTIVE_FLEET: ReadyFleetSnapshot = (() => {
+  const fleet = structuredClone(DRAINING_WORKER_FLEET);
+  fleet.workers.find(({ name }) => name === MICROVM_WORKER.name)!.state = "unavailable";
+  fleet.summary.workersByState = { active: STORY_WORKERS.length - 2, draining: 1, unavailable: 1, unknown: 0 };
+  fleet.workerPools.items.find(({ name }) => name === MICROVM_WORKER.workerPool)!.room = 0;
+  fleet.needsAttention = [
+    CRASHED_ACTOR_ITEM,
+    workerNotActiveItem(MICROVM_WORKER, "unavailable"),
+    workerNotActiveItem(BUSY_WORKER, "draining"),
+    PENDING_SNAPSHOT_ITEM,
+  ];
+  return fleet;
+})();
+
+/** No atespace and no actor; a draining worker. */
+export const NO_ATESPACES_DRAINING_WORKER_FLEET: ReadyFleetSnapshot = (() => {
+  const fleet = structuredClone(DRAINING_WORKER_FLEET);
+  fleet.atespaces = [];
+  fleet.actors = [];
+  fleet.summary = {
+    ...fleet.summary,
+    atespaces: 0,
+    agents: 0,
+    actors: 0,
+    actorsByState: { running: 0, transitional: 0, suspended: 0, crashed: 0, unknown: 0 },
+  };
+  fleet.needsAttention = [workerNotActiveItem(BUSY_WORKER, "draining")];
   return fleet;
 })();
 
@@ -221,6 +358,23 @@ export const NOT_READY_FLEET: ReadyFleetSnapshot = (() => {
     room: 0,
     resource: { desiredReplicas: 2, readyReplicas: 0, sandboxClass: "gvisor", resolution: null },
   });
+  fleet.needsAttention = [
+    CRASHED_ACTOR_ITEM,
+    ...[
+      { name: "workers", readyReplicas: 1 },
+      { name: "workers-spare", readyReplicas: 0 },
+    ].map(
+      ({ name, readyReplicas }): AttentionItem => ({
+        kind: "workerPoolNotReady",
+        severity: "error",
+        namespace: TESTBED_WORKER.workerNamespace,
+        name,
+        desiredReplicas: 2,
+        readyReplicas,
+      })
+    ),
+    PENDING_SNAPSHOT_ITEM,
+  ];
   return fleet;
 })();
 
@@ -233,6 +387,28 @@ function withWorkerPoolAccess(access: "denied" | "error"): ReadyFleetSnapshot {
 
 export const WORKER_POOLS_DENIED_FLEET = withWorkerPoolAccess("denied");
 export const WORKER_POOLS_ERROR_FLEET = withWorkerPoolAccess("error");
+
+/** The WorkerPool list denied in the namespace of workers-microvm; the `workers` WorkerPool read, 1 of 2 ready. */
+export const PARTIAL_WORKER_POOLS_FLEET: ReadyFleetSnapshot = (() => {
+  const fleet = structuredClone(STORY_FLEET);
+  fleet.workerPools.access = "denied";
+  const [workers, microvm] = fleet.workerPools.items;
+  workers.resource!.readyReplicas = 1;
+  microvm.resource = null;
+  fleet.needsAttention = [
+    CRASHED_ACTOR_ITEM,
+    {
+      kind: "workerPoolNotReady",
+      severity: "error",
+      namespace: workers.namespace,
+      name: workers.name,
+      desiredReplicas: 2,
+      readyReplicas: 1,
+    },
+    PENDING_SNAPSHOT_ITEM,
+  ];
+  return fleet;
+})();
 
 export function seedFleet(snapshot: FleetSnapshot) {
   return (queryClient: QueryClient) => {

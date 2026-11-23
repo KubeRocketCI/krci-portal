@@ -22,6 +22,7 @@ export const TableBody = <DataType,>({
   columns,
   data,
   handleRowClick,
+  rowProps,
   selection,
   expandable,
   emptyListComponent,
@@ -130,6 +131,7 @@ export const TableBody = <DataType,>({
                 isRowSelectable={_isSelectable}
                 unselectableReason={unselectableReason}
                 handleRowClick={handleRowClick}
+                rowProps={rowProps?.(row)}
                 handleSelectRowClick={selection?.handleSelectRow}
                 isExpandable={!!expandable}
                 isExpanded={isExpanded}
@@ -199,6 +201,7 @@ export const TableBody = <DataType,>({
     rowsPerPage,
     selection,
     handleRowClick,
+    rowProps,
     expandable,
   ]);
 

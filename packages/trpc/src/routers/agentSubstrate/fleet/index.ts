@@ -15,6 +15,7 @@ import {
 import { K8sClient } from "../../../clients/k8s/index.js";
 import type { TRPCContext } from "../../../context/types.js";
 import { gitlabIssueUrl, readCodebaseLinks, type CodebaseLinks } from "./codebaseLinks.js";
+import { needsAttentionOf } from "./needsAttention.js";
 import { roomOf, roomSizeOf } from "./room.js";
 import { readSubstrate, type SubstrateFleet } from "./substrateRead.js";
 import { readWorkerPools, type WorkerPoolRead } from "./workerPools.js";
@@ -154,15 +155,18 @@ function toReadySnapshot(
   codebaseLinks: CodebaseLinks,
   workerPoolRead: WorkerPoolRead
 ): ReadyFleetSnapshot {
+  const actors = fleet.actors.map(({ actor, agent }) => toActorRow(actor, agent, codebaseLinks));
+  const workers = fleet.workers.map(toWorkerRow);
+  const workerPools = toWorkerPools(fleet, workerPoolRead);
   return {
     state: "ready",
     updatedAt: fleet.readAt,
     summary: summarize(fleet),
     atespaces: fleet.atespaces.map(({ name, uid, createTime }) => ({ name, uid, createdAt: createTime })),
-    actors: fleet.actors.map(({ actor, agent }) => toActorRow(actor, agent, codebaseLinks)),
-    workers: fleet.workers.map(toWorkerRow),
-    workerPools: toWorkerPools(fleet, workerPoolRead),
-    needsAttention: [],
+    actors,
+    workers,
+    workerPools,
+    needsAttention: needsAttentionOf({ actors, workers, workerPools }, fleet.readAt),
   };
 }
 
