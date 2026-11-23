@@ -132,7 +132,7 @@ Use the `!` suffix after the type for breaking changes (e.g. `feat!: change API`
 * Use TypeScript for all new code
 * Follow the existing code style and formatting
 * Use meaningful variable and function names
-* Add JSDoc comments for public APIs
+* Comment only what the code cannot show: a cross-file fact, a constraint, a surprising default
 * Prefer functional programming patterns where appropriate
 * Use strict type checking
 
