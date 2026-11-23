@@ -1,4 +1,4 @@
-import type { ActorRow } from "@my-project/shared";
+import { latestSnapshot, type ActorRow } from "@my-project/shared";
 import type { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { formatTimestamp } from "@/core/utils/date-humanize";
@@ -10,7 +10,6 @@ import {
   SnapshotFidelityDurability,
 } from "../../../../../components/ActorCells";
 import { issueLabel } from "../../../../../utils/issueLabel";
-import { latestSnapshot } from "../../../../../utils/latestSnapshot";
 
 export const actorColumns: TableColumn<ActorRow>[] = [
   {

@@ -48,6 +48,14 @@ _Avoid_: headroom, free capacity, slots
 The saved state of an actor; the durable snapshot is the one a resume or revert restores.
 _Avoid_: checkpoint, backup, image
 
+**Pending snapshot**:
+The latest snapshot of an actor while its durable copy is still being written; a resume now restores an older snapshot.
+_Avoid_: not durable snapshot, uploading snapshot
+
+**Needs attention**:
+A fleet condition an operator acts on: a crashed actor, a worker pool with fewer ready replicas than desired, a worker that is not active, or a pending snapshot. An error stops work now; a warning (a draining worker, a pending snapshot) can clear on its own.
+_Avoid_: alert, issue, problem, incident
+
 ### Agents
 
 **Dispatcher**:

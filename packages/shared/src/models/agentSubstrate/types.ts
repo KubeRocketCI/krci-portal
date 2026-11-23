@@ -9,7 +9,10 @@ import {
   actorStateGroupSchema,
   actorStateSchema,
   atespaceSchema,
+  attentionAgentSchema,
   attentionItemSchema,
+  attentionKindSchema,
+  attentionSeveritySchema,
   codebaseRefSchema,
   fleetSnapshotSchema,
   fleetSummarySchema,
@@ -46,6 +49,9 @@ export type WorkerRow = z.infer<typeof workerRowSchema>;
 export type WorkerPoolResource = z.infer<typeof workerPoolResourceSchema>;
 export type WorkerPoolRow = z.infer<typeof workerPoolRowSchema>;
 export type FleetSummary = z.infer<typeof fleetSummarySchema>;
+export type AttentionSeverity = z.infer<typeof attentionSeveritySchema>;
+export type AttentionKind = z.infer<typeof attentionKindSchema>;
+export type AttentionAgent = z.infer<typeof attentionAgentSchema>;
 export type AttentionItem = z.infer<typeof attentionItemSchema>;
 export type FleetSnapshot = z.infer<typeof fleetSnapshotSchema>;
 export type ReadyFleetSnapshot = Extract<FleetSnapshot, { state: "ready" }>;

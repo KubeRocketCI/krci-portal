@@ -2,11 +2,11 @@ import type { ReactNode } from "react";
 import { render, type RenderResult } from "@testing-library/react";
 import { createMemoryHistory, createRootRoute, createRouter, RouterProvider } from "@tanstack/react-router";
 
-/** A memory router at "/" with one root route that renders `component`. */
-export const createTestRouter = (component: () => ReactNode) =>
+/** A memory router at `initialUrl` with one root route that renders `component` at every path. */
+export const createTestRouter = (component: () => ReactNode, initialUrl = "/") =>
   createRouter({
     routeTree: createRootRoute({ component }),
-    history: createMemoryHistory({ initialEntries: ["/"] }),
+    history: createMemoryHistory({ initialEntries: [initialUrl] }),
     defaultPreload: false,
   });
 

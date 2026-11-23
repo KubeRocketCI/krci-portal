@@ -1,9 +1,10 @@
 import React from "react";
-import { TableColumn } from "../../../../types";
+import { TableColumn, TableRowAttributes } from "../../../../types";
 
 export interface TableRowProps<DataType> {
   item: DataType;
   columns: TableColumn<DataType>[];
+  rowProps?: TableRowAttributes;
   isRowSelected?: boolean;
   isRowSelectable?: boolean;
   /** Tooltip text and accessible name of the disabled checkbox. */

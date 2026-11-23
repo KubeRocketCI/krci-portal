@@ -148,10 +148,14 @@ export type ServerTablePagination = {
   onRowsPerPageChange?: (rowsPerPage: number) => void;
 } & ServerTotal;
 
+/** Attributes of a row's `<tr>`. `className` is merged with the table's row classes. */
+export type TableRowAttributes = Pick<React.HTMLAttributes<HTMLTableRowElement>, "id" | "className" | "aria-current">;
+
 export interface TableBaseProps<DataType> {
   id: string;
   data: DataType[];
   columns: TableColumn<DataType>[];
+  rowProps?: (row: DataType) => TableRowAttributes;
   isLoading?: boolean;
   name?: string;
   /** Omit for source order. Set it only when the named column is known to exist. */

@@ -14,6 +14,7 @@ import { Tooltip } from "@/core/components/ui/tooltip";
 export const TableRow = <DataType,>({
   item,
   columns,
+  rowProps,
   handleRowClick,
   handleSelectRowClick,
   isRowSelected,
@@ -24,7 +25,7 @@ export const TableRow = <DataType,>({
   onToggleExpand,
   expandedContent,
 }: TableRowProps<DataType>) => {
-  const selectableRowProps = (row: DataType, isSelected: boolean) => {
+  const selectableRowProps = (row: DataType, isSelected: boolean): React.HTMLAttributes<HTMLTableRowElement> => {
     // If row is expandable, don't make the whole row clickable (only chevron should expand)
     if (isExpandable) {
       return {
@@ -59,9 +60,11 @@ export const TableRow = <DataType,>({
   const visibleColumnsCount = columns.filter((col) => col.cell?.show !== false).length;
   const totalColumnsCount = visibleColumnsCount + (handleSelectRowClick ? 1 : 0) + (isExpandable ? 1 : 0);
 
+  const selectableProps = selectableRowProps(item, !!isRowSelected);
+
   return (
     <>
-      <TableRowUI {...selectableRowProps(item, !!isRowSelected)}>
+      <TableRowUI {...rowProps} {...selectableProps} className={cn(selectableProps.className, rowProps?.className)}>
         {isExpandable && (
           <TableCellUI className="w-10 px-1 py-2">
             <Button

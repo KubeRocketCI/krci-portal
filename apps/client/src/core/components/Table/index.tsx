@@ -58,6 +58,7 @@ const TableShell = <DataType,>(props: TableShellProps<DataType>) => {
     isRowPinned,
     emptyListComponent,
     handleRowClick,
+    rowProps,
     expandable,
     blockerComponent,
     slots,
@@ -376,6 +377,7 @@ const TableShell = <DataType,>(props: TableShellProps<DataType>) => {
                 selection={selectionSettings}
                 expandable={expandable}
                 handleRowClick={handleRowClick}
+                rowProps={rowProps}
                 emptyListComponent={
                   isPageOutOfBounds ? (
                     <div className="text-muted-foreground py-8 text-center">

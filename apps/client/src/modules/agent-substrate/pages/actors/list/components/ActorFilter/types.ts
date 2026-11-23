@@ -1,4 +1,4 @@
-import type { ACTOR_FILTER_NAMES } from "./constants";
+import type { ACTOR_FILTER_NAMES } from "../../../../../constants/actorFilter";
 
 export type ActorFilterValues = {
   [ACTOR_FILTER_NAMES.ATESPACE]: string;

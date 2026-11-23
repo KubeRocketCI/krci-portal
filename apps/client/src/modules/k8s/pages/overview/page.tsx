@@ -2,13 +2,13 @@ import { LayoutDashboard } from "lucide-react";
 import { useParams } from "@tanstack/react-router";
 import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { PageWrapper } from "@/core/components/PageWrapper";
+import { SectionHeading } from "@/core/components/SectionHeading";
 import { WatchConnectionIndicator } from "@/modules/k8s/components/WatchConnectionIndicator";
 import { useClusterOverview } from "./hooks/useClusterOverview";
 import { CapacityCard } from "./components/CapacityCard";
 import { ClusterInfoBar } from "./components/ClusterInfoBar";
 import { PodPhaseCard } from "./components/PodPhaseCard";
 import { RecentEventsCard } from "./components/RecentEventsCard";
-import { SectionHeading } from "./components/SectionHeading";
 import { StatCards } from "./components/StatCards";
 import { WorkloadStatusSection } from "./components/WorkloadStatusSection";
 

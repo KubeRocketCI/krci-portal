@@ -41,6 +41,9 @@ export interface WithAppProvidersOptions {
    * Custom allowed namespaces. Defaults to STORYBOOK_ALLOWED_NAMESPACES.
    */
   allowedNamespaces?: string[];
+
+  /** The URL the router starts at, search and fragment included. Defaults to "/". */
+  initialUrl?: string;
 }
 
 /**
@@ -81,6 +84,7 @@ export const withAppProviders = (options: WithAppProvidersOptions = {}): Decorat
     seedQueryCache,
     enableMultiNamespace = true,
     allowedNamespaces = STORYBOOK_ALLOWED_NAMESPACES,
+    initialUrl,
   } = options;
 
   return (Story, context) => {
@@ -95,6 +99,7 @@ export const withAppProviders = (options: WithAppProvidersOptions = {}): Decorat
         seedQueryCache={seedQueryCache}
         enableMultiNamespace={enableMultiNamespace}
         allowedNamespaces={allowedNamespaces}
+        initialUrl={initialUrl}
       >
         <div className="p-4">
           <Story />

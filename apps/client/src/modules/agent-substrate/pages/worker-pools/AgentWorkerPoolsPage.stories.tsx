@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
-import { withAppProviders } from "@sb/index";
+import { STORYBOOK_CLUSTER_NAME, withAppProviders } from "@sb/index";
 import {
   NOT_READY_FLEET,
   STORY_FLEET,
@@ -8,7 +8,10 @@ import {
   WORKER_POOLS_ERROR_FLEET,
   seedFleet,
 } from "../../__fixtures__/storyFleet";
+import { workerPoolAnchor } from "../../utils/rowAnchor";
 import AgentWorkerPoolsPage from "./page";
+
+const NAMESPACE = NOT_READY_FLEET.workerPools.items[0].namespace;
 
 const meta = {
   title: "Modules/AgentSubstrate/AgentWorkerPoolsPage",
@@ -79,5 +82,26 @@ export const WorkerPoolsError: Story = {
     await expect(await canvas.findByText("Worker pools cannot be read")).toBeVisible();
     await expect(canvas.getByText(/See the portal server logs for the error\./)).toBeVisible();
     await expect((await rowOf(canvasElement, "workers")).getAllByText("—")).toHaveLength(4);
+  },
+};
+
+/** The Needs attention link of a worker pool opens this URL: its row is first and highlighted. */
+export const LandsOnWorkerPool: Story = {
+  decorators: [
+    withAppProviders({
+      seedQueryCache: seedFleet(NOT_READY_FLEET),
+      initialUrl: `/c/${STORYBOOK_CLUSTER_NAME}/agent/worker-pools#${workerPoolAnchor({ namespace: NAMESPACE, name: "workers-spare" })}`,
+    }),
+  ],
+  play: async ({ canvasElement }) => {
+    const cell = await within(canvasElement).findByText("workers-spare", { selector: "td *" });
+    const row = cell.closest("tr")!;
+
+    await expect(row).toHaveAttribute("id", `worker-pool/${NAMESPACE}/workers-spare`);
+    await expect(row).toHaveAttribute("aria-current", "true");
+    await expect(row.parentElement!.querySelector("tr")).toBe(row);
+    await expect((await rowOf(canvasElement, "workers")).getByText("1/2 ready").closest("tr")).not.toHaveAttribute(
+      "aria-current"
+    );
   },
 };

@@ -60,6 +60,9 @@ export interface TestProvidersOptions {
    * Custom QueryClient instance. If not provided, a new test client will be created.
    */
   queryClient?: QueryClient;
+
+  /** The URL the router starts at, search and fragment included. Defaults to "/". */
+  initialUrl?: string;
 }
 
 /**
@@ -112,9 +115,10 @@ export const TestProviders: React.FC<React.PropsWithChildren<TestProvidersOption
   clusterName = TEST_CLUSTER_NAME,
   defaultNamespace = TEST_NAMESPACE,
   queryClient: providedQueryClient,
+  initialUrl,
 }) => {
   // Create router once per render
-  const router = React.useMemo(() => createTestRouter(TestRoot), []);
+  const [router] = React.useState(() => createTestRouter(TestRoot, initialUrl));
 
   // Create or use provided query client
   const queryClient = React.useMemo(() => {

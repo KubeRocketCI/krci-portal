@@ -143,7 +143,7 @@ export const workerPoolRowSchema = z.object({
   allocated: substrateResourcesSchema,
   /** Actors of the room size that the active, registered workers can still host. */
   room: count,
-  /** Null when `workerPools.access` is not `ok` or no WorkerPool has this name. */
+  /** Null when the WorkerPool list of the namespace was not read or no WorkerPool has this name. */
   resource: workerPoolResourceSchema.nullable(),
 });
 
@@ -161,31 +161,53 @@ export const fleetSummarySchema = z.object({
   workersByState: countsBy(workerStateSchema),
 });
 
+/** `error`: work stops now. `warning`: can clear on its own. */
+export const attentionSeveritySchema = z.enum(["error", "warning"]);
+
+export const attentionKindSchema = z.enum(["actorCrashed", "workerPoolNotReady", "workerNotActive", "snapshotPending"]);
+
+export const attentionAgentSchema = actorAgentSchema.pick({ issue: true, agentProfile: true });
+
 export const attentionItemSchema = z.discriminatedUnion("kind", [
   z.object({
-    kind: z.literal("actorCrashed"),
+    kind: z.literal(attentionKindSchema.enum.actorCrashed),
+    severity: z.literal(attentionSeveritySchema.enum.error),
     atespace: z.string(),
     name: z.string(),
     message: z.string(),
-    at: z.string().nullable(),
+    crashedAt: z.string().nullable(),
+    /** Null on an actor that the dispatcher did not make. */
+    agent: attentionAgentSchema.nullable(),
   }),
   z.object({
-    kind: z.literal("workerPoolNotReady"),
+    kind: z.literal(attentionKindSchema.enum.workerPoolNotReady),
+    severity: z.literal(attentionSeveritySchema.enum.error),
     namespace: z.string(),
     name: z.string(),
     desiredReplicas: count,
     readyReplicas: count,
   }),
+  /** `error` when unavailable or unknown, `warning` when draining. */
   z.object({
-    kind: z.literal("workerNotActive"),
+    kind: z.literal(attentionKindSchema.enum.workerNotActive),
+    severity: attentionSeveritySchema,
     name: z.string(),
-    state: workerStateSchema,
+    state: workerStateSchema.exclude(["active"]),
+    workerPool: z.string(),
+    workerNamespace: z.string(),
   }),
+  /**
+   * The latest snapshot generation of an actor is pending and the actor last changed more than 15 minutes ago, or its
+   * last change does not parse.
+   */
   z.object({
-    kind: z.literal("snapshotNotDurable"),
+    kind: z.literal(attentionKindSchema.enum.snapshotPending),
+    severity: z.literal(attentionSeveritySchema.enum.warning),
     atespace: z.string(),
     name: z.string(),
     generation: count,
+    /** The last change of the actor. Null when it does not parse. */
+    updatedAt: z.string().nullable(),
   }),
 ]);
 
@@ -210,6 +232,7 @@ export const fleetSnapshotSchema = z.discriminatedUnion("state", [
       /** The largest CPU and memory limits over the actor templates. Null when no template sets a limit: room counts actors only. */
       roomSize: roomSizeSchema.nullable(),
     }),
+    /** Errors before warnings, then by kind, then oldest first; an item with no time after the timed ones, by name. */
     needsAttention: z.array(attentionItemSchema),
   }),
 ]);

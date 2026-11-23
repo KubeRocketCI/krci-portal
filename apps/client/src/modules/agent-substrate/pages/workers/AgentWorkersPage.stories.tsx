@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
-import { withAppProviders } from "@sb/index";
+import { STORYBOOK_CLUSTER_NAME, withAppProviders } from "@sb/index";
 import {
   BUSY_WORKER,
   DRAINING_WORKER_FLEET,
@@ -13,6 +13,7 @@ import {
   WORKER_POOLS_DENIED_FLEET,
   seedFleet,
 } from "../../__fixtures__/storyFleet";
+import { workerAnchor } from "../../utils/rowAnchor";
 import AgentWorkersPage from "./page";
 
 const meta = {
@@ -155,5 +156,25 @@ export const NoAtespaces: Story = {
   decorators: [withAppProviders({ seedQueryCache: seedFleet(EMPTY_FLEET) })],
   play: async ({ canvasElement }) => {
     await expect(await within(canvasElement).findByText("Agent Substrate has no atespaces yet")).toBeVisible();
+  },
+};
+
+/** The Needs attention link of a worker opens this URL. */
+export const LandsOnWorker: Story = {
+  decorators: [
+    withAppProviders({
+      seedQueryCache: seedFleet(DRAINING_WORKER_FLEET),
+      initialUrl: `/c/${STORYBOOK_CLUSTER_NAME}/agent/workers#${workerAnchor(BUSY_WORKER)}`,
+    }),
+  ],
+  play: async ({ canvasElement }) => {
+    const workers = await workerPoolCard(within(canvasElement), "workers");
+
+    const target = workers.getByRole("region", { name: `Worker ${BUSY_WORKER.pod}` });
+    await expect(target).toHaveAttribute("id", workerAnchor(BUSY_WORKER));
+    await expect(target).toHaveAttribute("aria-current", "true");
+    await expect(workers.getByRole("region", { name: `Worker ${STORY_FLEET.workers[0].pod}` })).not.toHaveAttribute(
+      "aria-current"
+    );
   },
 };
