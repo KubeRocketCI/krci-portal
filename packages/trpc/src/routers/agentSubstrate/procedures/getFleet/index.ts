@@ -3,7 +3,10 @@ import { fleetSnapshotSchema, type FleetSnapshot } from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { getFleet } from "../../fleet/index.js";
 
-/** Read with the portal ServiceAccount: every signed-in user gets the same fleet. */
+/**
+ * The Agent Substrate read uses the portal ServiceAccount and is the same for every signed-in user. Codebase and issue
+ * link of each agent are per user: read with the user's `idToken`.
+ */
 export const getFleetProcedure = protectedProcedure
   .input(z.object({}).strict())
   .output(fleetSnapshotSchema)

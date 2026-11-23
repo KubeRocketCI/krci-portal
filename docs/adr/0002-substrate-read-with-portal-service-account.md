@@ -11,3 +11,4 @@ This is an exception to the rule that the portal calls Kubernetes with the user'
 ## Consequences
 
 - Per-team visibility needs a portal-side filter (by Codebase RBAC) or per-user Substrate grants. Neither exists in the alpha.
+- Codebases and GitServers are read in the portal's `DEFAULT_CLUSTER_NAMESPACE` with the user's `idToken`. `getFleet` takes no input. Codebases in other namespaces get no link.
