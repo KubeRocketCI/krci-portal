@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/c
 import { Skeleton } from "@/core/components/ui/skeleton";
 import type { Node as K8sNode, Pod } from "@my-project/shared";
 import type { UseWatchListResult } from "@/k8s/api/hooks/useWatch/types";
-import { computeClusterResources, formatCores, formatMemory, type ResourceUsage } from "../utils/quantity";
-import { ThresholdBar } from "./ThresholdBar";
+import { ThresholdBar } from "@/core/components/ThresholdBar";
+import { formatCores, formatMemory } from "@/core/utils/quantity";
+import { computeClusterResources, type ResourceUsage } from "../utils/quantity";
 
 interface CapacityCardProps {
   nodes: UseWatchListResult<K8sNode>;
