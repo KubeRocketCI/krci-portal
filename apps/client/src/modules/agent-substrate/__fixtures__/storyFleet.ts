@@ -26,6 +26,7 @@ export const EMPTY_FLEET: ReadyFleetSnapshot = {
   summary: {
     atespaces: 0,
     agents: 0,
+    agentsByProfile: [],
     actors: 0,
     actorsByState: { running: 0, transitional: 0, suspended: 0, crashed: 0, unknown: 0 },
     workers: 0,
@@ -276,6 +277,21 @@ export const MANY_CRASHED_FLEET: ReadyFleetSnapshot = (() => {
   return fleet;
 })();
 
+/** HEALTHY_FLEET with issue-2-26 on a template that sets no agent profile and issue-6-3 on the java profile. */
+export const SEVERAL_AGENT_PROFILES_FLEET: ReadyFleetSnapshot = (() => {
+  const fleet = structuredClone(HEALTHY_FLEET);
+  storyActor(fleet, "issue-2-26").agent!.agentProfile = null;
+  storyActor(fleet, "issue-6-3").agent!.agentProfile = "java";
+  fleet.summary.agentsByProfile = [
+    { agentProfile: "go", agents: 1 },
+    { agentProfile: "java", agents: 1 },
+    { agentProfile: "node", agents: 1 },
+    { agentProfile: "python", agents: 2 },
+    { agentProfile: null, agents: 1 },
+  ];
+  return fleet;
+})();
+
 export const FULL_WORKER_POOL_FLEET: ReadyFleetSnapshot = (() => {
   const fleet = structuredClone(STORY_FLEET);
   for (const worker of fleet.workers) worker.allocated = { ...worker.capacity };
@@ -331,6 +347,7 @@ export const NO_ATESPACES_DRAINING_WORKER_FLEET: ReadyFleetSnapshot = (() => {
     ...fleet.summary,
     atespaces: 0,
     agents: 0,
+    agentsByProfile: [],
     actors: 0,
     actorsByState: { running: 0, transitional: 0, suspended: 0, crashed: 0, unknown: 0 },
   };
@@ -363,16 +380,14 @@ export const NOT_READY_FLEET: ReadyFleetSnapshot = (() => {
     ...[
       { name: "workers", readyReplicas: 1 },
       { name: "workers-spare", readyReplicas: 0 },
-    ].map(
-      ({ name, readyReplicas }): AttentionItem => ({
-        kind: "workerPoolNotReady",
-        severity: "error",
-        namespace: TESTBED_WORKER.workerNamespace,
-        name,
-        desiredReplicas: 2,
-        readyReplicas,
-      })
-    ),
+    ].map(({ name, readyReplicas }): AttentionItem => ({
+      kind: "workerPoolNotReady",
+      severity: "error",
+      namespace: TESTBED_WORKER.workerNamespace,
+      name,
+      desiredReplicas: 2,
+      readyReplicas,
+    })),
     PENDING_SNAPSHOT_ITEM,
   ];
   return fleet;

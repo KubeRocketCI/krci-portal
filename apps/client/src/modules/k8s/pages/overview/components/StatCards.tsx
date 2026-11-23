@@ -1,10 +1,7 @@
 import { useMemo } from "react";
-import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { AlertCircle, ArrowRight, Box, CircleCheck, Layers, Server, SquareStack } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import { Card, CardContent } from "@/core/components/ui/card";
-import { Skeleton } from "@/core/components/ui/skeleton";
+import { Box, Layers, Server, SquareStack } from "lucide-react";
+import { StatCard, StatHealthLine } from "@/core/components/StatCard";
 import { PATH_K8S_LIST_FULL, PATH_K8S_NODES_FULL, PATH_K8S_PODS_FULL } from "@/modules/k8s/constants/paths";
 import type { KubeObjectBase, Namespace, Node as K8sNode, Pod } from "@my-project/shared";
 import type { UseWatchListResult } from "@/k8s/api/hooks/useWatch/types";
@@ -78,14 +75,14 @@ export function StatCards({ clusterName, nodes, pods, namespaces, workloads }: S
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <Link to={PATH_K8S_NODES_FULL} params={{ clusterName }} className="group block">
-        <StatCardBody
+        <StatCard
           icon={Server}
           label="Nodes"
           value={nodeStats.total}
           loading={nodes.isLoading}
-          health={
+          detail={
             nodeStats.total > 0 ? (
-              <HealthLine
+              <StatHealthLine
                 ok={nodeStats.ready === nodeStats.total}
                 okText={`All ${nodeStats.total} ready`}
                 badText={`${nodeStats.total - nodeStats.ready} not ready`}
@@ -96,14 +93,14 @@ export function StatCards({ clusterName, nodes, pods, namespaces, workloads }: S
       </Link>
 
       <Link to={PATH_K8S_PODS_FULL} params={{ clusterName }} className="group block">
-        <StatCardBody
+        <StatCard
           icon={Box}
           label="Pods"
           value={podStats.total}
           loading={pods.isLoading}
-          health={
+          detail={
             podStats.total > 0 ? (
-              <HealthLine
+              <StatHealthLine
                 ok={podStats.problems === 0}
                 okText={`${podStats.running} running`}
                 badText={`${podStats.problems} not healthy`}
@@ -114,14 +111,14 @@ export function StatCards({ clusterName, nodes, pods, namespaces, workloads }: S
       </Link>
 
       <Link to={PATH_K8S_LIST_FULL} params={{ clusterName, kind: "deployments" }} className="group block">
-        <StatCardBody
+        <StatCard
           icon={Layers}
           label="Workloads"
           value={workloadStats.total}
           loading={WORKLOAD_KINDS.some(({ key }) => workloads[key].isLoading)}
-          health={
+          detail={
             workloadStats.total > 0 ? (
-              <HealthLine
+              <StatHealthLine
                 ok={workloadStats.healthy === workloadStats.total}
                 okText={`${workloadStats.healthy} healthy`}
                 badText={`${workloadStats.total - workloadStats.healthy} degraded`}
@@ -132,14 +129,14 @@ export function StatCards({ clusterName, nodes, pods, namespaces, workloads }: S
       </Link>
 
       <Link to={PATH_K8S_LIST_FULL} params={{ clusterName, kind: "namespaces" }} className="group block">
-        <StatCardBody
+        <StatCard
           icon={SquareStack}
           label="Namespaces"
           value={namespaceStats.total}
           loading={namespaces.isLoading}
-          health={
+          detail={
             namespaceStats.total > 0 ? (
-              <HealthLine
+              <StatHealthLine
                 ok={namespaceStats.terminating === 0}
                 okText="All active"
                 badText={`${namespaceStats.terminating} terminating`}
@@ -149,52 +146,5 @@ export function StatCards({ clusterName, nodes, pods, namespaces, workloads }: S
         />
       </Link>
     </div>
-  );
-}
-
-interface StatCardBodyProps {
-  icon: LucideIcon;
-  label: string;
-  value: number;
-  loading: boolean;
-  health: ReactNode;
-}
-
-function StatCardBody({ icon: Icon, label, value, loading, health }: StatCardBodyProps) {
-  return (
-    <Card className="hover:border-primary/40 h-full transition-colors">
-      <CardContent className="flex items-start gap-3 p-4">
-        <div className="bg-muted rounded-md p-2">
-          <Icon className="text-muted-foreground h-5 w-5" aria-hidden />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-muted-foreground text-xs tracking-wide uppercase">{label}</p>
-          {loading ? (
-            <Skeleton className="mt-1 h-7 w-12" />
-          ) : (
-            <p className="text-2xl font-semibold tabular-nums">{value}</p>
-          )}
-          {!loading && health}
-        </div>
-        <ArrowRight
-          className="text-muted-foreground/0 group-hover:text-muted-foreground mt-1 h-4 w-4 shrink-0 transition-colors"
-          aria-hidden
-        />
-      </CardContent>
-    </Card>
-  );
-}
-
-function HealthLine({ ok, okText, badText }: { ok: boolean; okText: string; badText: string }) {
-  return ok ? (
-    <span className="text-status-success mt-1 flex items-center gap-1 text-xs">
-      <CircleCheck className="h-3.5 w-3.5" aria-hidden />
-      {okText}
-    </span>
-  ) : (
-    <span className="text-status-error mt-1 flex items-center gap-1 text-xs">
-      <AlertCircle className="h-3.5 w-3.5" aria-hidden />
-      {badText}
-    </span>
   );
 }

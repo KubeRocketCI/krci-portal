@@ -4,6 +4,20 @@
   "summary": {
     "atespaces": 1,
     "agents": 6,
+    "agentsByProfile": [
+      {
+        "agentProfile": "go",
+        "agents": 2
+      },
+      {
+        "agentProfile": "node",
+        "agents": 2
+      },
+      {
+        "agentProfile": "python",
+        "agents": 2
+      }
+    ],
     "actors": 6,
     "actorsByState": {
       "running": 0,

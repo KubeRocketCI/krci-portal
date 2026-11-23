@@ -1,4 +1,5 @@
 import type { AttentionItem, AttentionKind, ReadyFleetSnapshot, WorkerPoolAccess } from "@my-project/shared";
+import { plural } from "../../../utils/plural";
 
 /** Rows shown per group; more rows give a "Show all" link. */
 export const NEEDS_ATTENTION_MAX_ROWS = 5;
@@ -57,8 +58,6 @@ export function notCheckedText({ access, read }: WorkerPoolCheck): string | null
   const reason = NOT_CHECKED_REASON[access];
   return read > 0 ? `Some worker pools not checked: ${reason}` : `Worker pools not checked: ${reason}`;
 }
-
-const plural = (count: number, noun: string) => `${count} ${noun}${count === 1 ? "" : "s"}`;
 
 export function checkedText(
   { actors, workers }: { actors: number; workers: number },

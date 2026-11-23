@@ -8,6 +8,7 @@ import {
   actorSnapshotSchema,
   actorStateGroupSchema,
   actorStateSchema,
+  agentProfileCountSchema,
   atespaceSchema,
   attentionAgentSchema,
   attentionItemSchema,
@@ -48,6 +49,7 @@ export type ActorRow = z.infer<typeof actorRowSchema>;
 export type WorkerRow = z.infer<typeof workerRowSchema>;
 export type WorkerPoolResource = z.infer<typeof workerPoolResourceSchema>;
 export type WorkerPoolRow = z.infer<typeof workerPoolRowSchema>;
+export type AgentProfileCount = z.infer<typeof agentProfileCountSchema>;
 export type FleetSummary = z.infer<typeof fleetSummarySchema>;
 export type AttentionSeverity = z.infer<typeof attentionSeveritySchema>;
 export type AttentionKind = z.infer<typeof attentionKindSchema>;
