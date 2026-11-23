@@ -1,37 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { QueryClient } from "@tanstack/react-query";
-import type { FleetSnapshot, FleetUnreachableReason, ReadyFleetSnapshot } from "@my-project/shared";
+import type { FleetUnreachableReason } from "@my-project/shared";
 import { expect, within } from "storybook/test";
 import { withAppProviders } from "@sb/index";
-import testbedFleet from "../../__fixtures__/fleet.testbed.json";
-import { FLEET_QUERY_KEY } from "../../hooks/useFleet";
+import { EMPTY_FLEET, TESTBED_FLEET, seedFleet } from "../../__fixtures__/storyFleet";
 import AgentOverviewPage from "./page";
-
-/** Recorded on the testbed by packages/trpc/scripts/record-agent-substrate-fixtures.ts. */
-const TESTBED_FLEET = testbedFleet as ReadyFleetSnapshot;
-
-const EMPTY_FLEET: ReadyFleetSnapshot = {
-  ...TESTBED_FLEET,
-  summary: {
-    atespaces: 0,
-    agents: 0,
-    actors: 0,
-    actorsByState: { running: 0, transitional: 0, suspended: 0, crashed: 0, unknown: 0 },
-    workers: 0,
-    workersByState: { active: 0, draining: 0, unavailable: 0, unknown: 0 },
-  },
-  atespaces: [],
-  actors: [],
-  workers: [],
-  workerPools: { access: "ok", items: [] },
-  needsAttention: [],
-};
-
-function seedFleet(snapshot: FleetSnapshot) {
-  return (queryClient: QueryClient) => {
-    queryClient.setQueryData(FLEET_QUERY_KEY, snapshot);
-  };
-}
 
 function unreachable(reason: FleetUnreachableReason, label: string): Story {
   return {

@@ -179,6 +179,14 @@ export const TABLE = {
     id: "clusterInterceptorList",
     name: "Cluster Interceptor List",
   },
+  AGENT_ACTOR_LIST: {
+    id: "agentActorList",
+    name: "Actor List",
+  },
+  AGENT_ACTOR_SNAPSHOT_LIST: {
+    id: "agentActorSnapshotList",
+    name: "Actor Snapshot List",
+  },
 } as const;
 
 export const TABLE_ID_K8S_PODS = "k8s-pods" as const;

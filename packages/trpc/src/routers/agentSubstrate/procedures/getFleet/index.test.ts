@@ -1,6 +1,14 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import type { ActorState, ReadyFleetSnapshot, WorkerState } from "@my-project/shared";
+import {
+  K8sApiError,
+  k8sCodebaseConfig,
+  k8sGitServerConfig,
+  type ActorState,
+  type K8sResourceConfig,
+  type ReadyFleetSnapshot,
+  type WorkerState,
+} from "@my-project/shared";
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from "vitest";
 import { createMockedContext } from "../../../../__mocks__/context.js";
 import {
@@ -96,6 +104,58 @@ function worker(name: string, state: WorkerState): SubstrateWorker {
 
 const ATESPACES = [{ name: ATESPACE, uid: "as-1", createTime: "2026-11-10T08:00:00.000Z" }];
 
+/** `DEFAULT_CLUSTER_NAMESPACE` in the Codebase tests. */
+const PLATFORM_NAMESPACE = "krci";
+
+/** `gitWebUrl` defaults to the one the codebase operator writes for a GitLab GitServer on gitlab.example.com. */
+function codebase(
+  name: string,
+  gitUrlPath: string,
+  gitServer = "gitlab",
+  gitWebUrl = `https://gitlab.example.com${gitUrlPath}`
+) {
+  return {
+    metadata: { name, namespace: PLATFORM_NAMESPACE },
+    spec: { gitUrlPath, gitServer },
+    status: { gitWebUrl },
+  };
+}
+
+function gitServer(name: string, gitProvider: string, gitHost = `${name}.example.com`, httpsPort = 443) {
+  return { metadata: { name, namespace: PLATFORM_NAMESPACE }, spec: { gitProvider, gitHost, httpsPort } };
+}
+
+/** Answers Codebase list and GitServer reads in PLATFORM_NAMESPACE only. Anything not given answers 403. */
+function stubK8s({
+  codebases,
+  gitServers = {},
+}: {
+  codebases?: unknown[] | Error;
+  gitServers?: Record<string, unknown>;
+}) {
+  const forbidden = () => new K8sApiError(403, "Forbidden", "");
+  const list = vi
+    .spyOn(K8sClient.prototype, "listResource")
+    .mockImplementation(async (config: K8sResourceConfig, namespace?: string) => {
+      if (config !== k8sCodebaseConfig || namespace !== PLATFORM_NAMESPACE || codebases === undefined) {
+        throw forbidden();
+      }
+      if (codebases instanceof Error) throw codebases;
+      return { items: codebases } as never;
+    });
+  const get = vi
+    .spyOn(K8sClient.prototype, "getResource")
+    .mockImplementation(async (config: K8sResourceConfig, name: string, namespace?: string) => {
+      const server = config === k8sGitServerConfig && namespace === PLATFORM_NAMESPACE ? gitServers[name] : undefined;
+      if (server === undefined) throw forbidden();
+      if (server instanceof Error) throw server;
+      return server as never;
+    });
+  return { list, get };
+}
+
+const GITLAB = { gitlab: gitServer("gitlab", "gitlab") };
+
 async function readyFleet(caller: ReturnType<typeof createCaller>): Promise<ReadyFleetSnapshot> {
   const snapshot = await caller.agentSubstrate.getFleet({});
   if (snapshot.state !== "ready") throw new Error(`expected a ready fleet, got ${snapshot.state}`);
@@ -116,6 +176,7 @@ describe("agentSubstrate.getFleet", () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
   });
 
   it("returns notConfigured with no network call when the context holds no Agent Substrate source", async () => {
@@ -279,6 +340,301 @@ describe("agentSubstrate.getFleet", () => {
 
     expect(fleet.summary.actors).toBe(2);
     expect(fleet.summary.agents).toBe(1);
+  });
+
+  describe("Codebase of an agent", () => {
+    beforeEach(() => {
+      vi.stubEnv("DEFAULT_CLUSTER_NAMESPACE", PLATFORM_NAMESPACE);
+    });
+
+    function goAgentSource() {
+      return new MemoryAgentSubstrateSource({
+        atespaces: ATESPACES,
+        actors: [actor("issue-2-25", "running")],
+        actorTemplates: [issueTemplate("issue-2-25", "krci/test-go-app", "2", "25")],
+      });
+    }
+
+    it("links the Codebase whose gitUrlPath is the project path and the issue under its gitWebUrl", async () => {
+      mockContext.agentSubstrateSource = goAgentSource();
+      stubK8s({
+        codebases: [codebase("other-app", "/krci/other-app"), codebase("go-app", "/krci/test-go-app")],
+        gitServers: GITLAB,
+      });
+
+      const fleet = await readyFleet(createCaller(mockContext));
+
+      expect(fleet.actors[0].agent).toMatchObject({
+        issue: {
+          projectPath: "krci/test-go-app",
+          iid: "25",
+          url: "https://gitlab.example.com/krci/test-go-app/-/issues/25",
+        },
+        codebase: { name: "go-app", namespace: PLATFORM_NAMESPACE },
+      });
+    });
+
+    it("keeps the path prefix and port of gitWebUrl in the issue link", async () => {
+      mockContext.agentSubstrateSource = goAgentSource();
+      stubK8s({
+        codebases: [
+          codebase("go-app", "/krci/test-go-app", "gitlab", "https://git.example.com:8443/gitlab/krci/test-go-app/"),
+        ],
+        gitServers: GITLAB,
+      });
+
+      const fleet = await readyFleet(createCaller(mockContext));
+
+      expect(fleet.actors[0].agent?.issue.url).toBe("https://git.example.com:8443/gitlab/krci/test-go-app/-/issues/25");
+    });
+
+    it.each([
+      [
+        "adds the GitServer HTTPS port to a gitWebUrl on its host with no port",
+        { gitHost: "gitlab.example.com", httpsPort: 8443, gitWebUrl: "https://gitlab.example.com/krci/test-go-app" },
+        "https://gitlab.example.com:8443/krci/test-go-app/-/issues/25",
+      ],
+      [
+        "reads a GitServer gitHost given with a scheme",
+        {
+          gitHost: "https://gitlab.example.com",
+          httpsPort: 8443,
+          gitWebUrl: "https://gitlab.example.com/krci/test-go-app",
+        },
+        "https://gitlab.example.com:8443/krci/test-go-app/-/issues/25",
+      ],
+      [
+        "keeps the port that gitWebUrl names",
+        {
+          gitHost: "gitlab.example.com",
+          httpsPort: 8443,
+          gitWebUrl: "https://gitlab.example.com:9443/krci/test-go-app",
+        },
+        "https://gitlab.example.com:9443/krci/test-go-app/-/issues/25",
+      ],
+      [
+        "adds no port to a gitWebUrl on another host",
+        { gitHost: "gitlab.example.com", httpsPort: 8443, gitWebUrl: "https://git.example.org/krci/test-go-app" },
+        "https://git.example.org/krci/test-go-app/-/issues/25",
+      ],
+      [
+        "adds no port 443",
+        { gitHost: "gitlab.example.com", httpsPort: 443, gitWebUrl: "https://gitlab.example.com/krci/test-go-app" },
+        "https://gitlab.example.com/krci/test-go-app/-/issues/25",
+      ],
+    ])("%s", async (_case, { gitHost, httpsPort, gitWebUrl }, issueUrl) => {
+      mockContext.agentSubstrateSource = goAgentSource();
+      stubK8s({
+        codebases: [codebase("go-app", "/krci/test-go-app", "gitlab", gitWebUrl)],
+        gitServers: { gitlab: gitServer("gitlab", "gitlab", gitHost, httpsPort) },
+      });
+
+      const fleet = await readyFleet(createCaller(mockContext));
+
+      expect(fleet.actors[0].agent?.issue.url).toBe(issueUrl);
+    });
+
+    it.each([
+      ["names another repository", "https://gitlab.example.com/krci/other-app"],
+      ["is not an http(s) URL", "ssh://git@gitlab.example.com/krci/test-go-app"],
+      ["has a query", "https://gitlab.example.com/krci/test-go-app?tab=1"],
+      ["is empty", ""],
+    ])("links the Codebase but not the issue when gitWebUrl %s", async (_case, gitWebUrl) => {
+      mockContext.agentSubstrateSource = goAgentSource();
+      stubK8s({ codebases: [codebase("go-app", "/krci/test-go-app", "gitlab", gitWebUrl)], gitServers: GITLAB });
+
+      const fleet = await readyFleet(createCaller(mockContext));
+
+      expect(fleet.actors[0].agent).toMatchObject({ issue: { url: null }, codebase: { name: "go-app" } });
+    });
+
+    it("gives the project path as text and the issue with no link when the Codebase list is denied", async () => {
+      mockContext.agentSubstrateSource = goAgentSource();
+      const { list } = stubK8s({});
+
+      const fleet = await readyFleet(createCaller(mockContext));
+
+      expect(list).toHaveBeenCalled();
+      expect(fleet.actors[0].agent).toMatchObject({
+        issue: { projectPath: "krci/test-go-app", iid: "25", url: null },
+        codebase: null,
+      });
+    });
+
+    it("logs a Codebase list failure other than 403 on the server and gives text cells", async () => {
+      mockContext.agentSubstrateSource = goAgentSource();
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const outage = new K8sApiError(500, "Internal Server Error", "etcd timeout");
+      stubK8s({ codebases: outage });
+
+      const fleet = await readyFleet(createCaller(mockContext));
+
+      expect(fleet.actors[0].agent).toMatchObject({ issue: { url: null }, codebase: null });
+      expect(warn).toHaveBeenCalledWith("[AgentSubstrate] Codebase list in namespace krci failed:", outage);
+    });
+
+    it("does not log a 403 Codebase list or a 403 GitServer read", async () => {
+      mockContext.agentSubstrateSource = goAgentSource();
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      stubK8s({});
+      await readyFleet(createCaller(mockContext));
+      stubK8s({ codebases: [codebase("go-app", "/krci/test-go-app")] });
+      vi.setSystemTime(START.getTime() + 5_000);
+      await readyFleet(createCaller(mockContext));
+
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    it("gives no Codebase and no issue link, and reads no GitServer, when no Codebase has the project path", async () => {
+      mockContext.agentSubstrateSource = goAgentSource();
+      const { get } = stubK8s({ codebases: [codebase("go-app", "/krci/test-go-app-fork")], gitServers: GITLAB });
+
+      const fleet = await readyFleet(createCaller(mockContext));
+
+      expect(fleet.actors[0].agent).toMatchObject({ issue: { url: null }, codebase: null });
+      expect(get).not.toHaveBeenCalled();
+    });
+
+    it("links the Codebase but not the issue when its GitServer cannot be read", async () => {
+      mockContext.agentSubstrateSource = goAgentSource();
+      stubK8s({ codebases: [codebase("go-app", "/krci/test-go-app")] });
+
+      const fleet = await readyFleet(createCaller(mockContext));
+
+      expect(fleet.actors[0].agent).toMatchObject({
+        issue: { url: null },
+        codebase: { name: "go-app", namespace: PLATFORM_NAMESPACE },
+      });
+    });
+
+    it("links the Codebase but not the issue when its GitServer is not GitLab", async () => {
+      mockContext.agentSubstrateSource = goAgentSource();
+      stubK8s({
+        codebases: [codebase("go-app", "/krci/test-go-app", "github", "https://github.com/krci/test-go-app")],
+        gitServers: { github: gitServer("github", "github") },
+      });
+
+      const fleet = await readyFleet(createCaller(mockContext));
+
+      expect(fleet.actors[0].agent).toMatchObject({
+        issue: { url: null },
+        codebase: { name: "go-app", namespace: PLATFORM_NAMESPACE },
+      });
+    });
+
+    it("reads each GitServer that matching Codebases name once, by name, in DEFAULT_CLUSTER_NAMESPACE", async () => {
+      mockContext.agentSubstrateSource = goAgentSource();
+      const { list, get } = stubK8s({
+        codebases: [codebase("go-app", "/krci/test-go-app"), codebase("go-app-copy", "/krci/test-go-app")],
+        gitServers: GITLAB,
+      });
+
+      const fleet = await readyFleet(createCaller(mockContext));
+
+      expect(new Set(list.mock.calls.map(([, namespace]) => namespace))).toEqual(new Set([PLATFORM_NAMESPACE]));
+      expect(get.mock.calls).toEqual([[k8sGitServerConfig, "gitlab", PLATFORM_NAMESPACE]]);
+      expect(fleet.actors[0].agent?.issue.url).toBe("https://gitlab.example.com/krci/test-go-app/-/issues/25");
+    });
+
+    it("links the first Codebase by name and gives no issue link when matches name different repositories", async () => {
+      mockContext.agentSubstrateSource = goAgentSource();
+      stubK8s({
+        codebases: [
+          codebase(
+            "go-app-mirror",
+            "/krci/test-go-app",
+            "gitlab-mirror",
+            "https://mirror.example.com/krci/test-go-app"
+          ),
+          codebase("go-app", "/krci/test-go-app"),
+        ],
+        gitServers: { ...GITLAB, "gitlab-mirror": gitServer("gitlab-mirror", "gitlab") },
+      });
+
+      const fleet = await readyFleet(createCaller(mockContext));
+
+      expect(fleet.actors[0].agent).toMatchObject({ issue: { url: null }, codebase: { name: "go-app" } });
+    });
+
+    it("reads no Codebase list when no actor serves an issue", async () => {
+      mockContext.agentSubstrateSource = new MemoryAgentSubstrateSource({
+        atespaces: ATESPACES,
+        actors: [actor("debug-shell", "running")],
+        actorTemplates: [plainTemplate("debug-shell")],
+      });
+      const { list } = stubK8s({});
+
+      await readyFleet(createCaller(mockContext));
+
+      expect(list).not.toHaveBeenCalled();
+    });
+
+    it("reads no Codebase list when Agent Substrate is unreachable", async () => {
+      const source = goAgentSource();
+      source.failWith(new AgentSubstrateSourceError("unavailable", "connection refused"));
+      mockContext.agentSubstrateSource = source;
+      const { list } = stubK8s({});
+
+      const result = await createCaller(mockContext).agentSubstrate.getFleet({});
+
+      expect(result.state).toBe("unreachable");
+      expect(list).not.toHaveBeenCalled();
+    });
+
+    it("does not match a Codebase whose gitUrlPath has no leading slash", async () => {
+      mockContext.agentSubstrateSource = goAgentSource();
+      stubK8s({ codebases: [codebase("go-app", "xkrci/test-go-app")], gitServers: GITLAB });
+
+      const fleet = await readyFleet(createCaller(mockContext));
+
+      expect(fleet.actors[0].agent?.codebase).toBeNull();
+    });
+
+    it("reads no Codebase list when DEFAULT_CLUSTER_NAMESPACE is not set", async () => {
+      vi.stubEnv("DEFAULT_CLUSTER_NAMESPACE", "");
+      mockContext.agentSubstrateSource = goAgentSource();
+      const { list } = stubK8s({});
+
+      const fleet = await readyFleet(createCaller(mockContext));
+
+      expect(list).not.toHaveBeenCalled();
+      expect(fleet.actors[0].agent?.codebase).toBeNull();
+    });
+
+    it("gives an actor that the dispatcher did not make no agent while Codebases are readable", async () => {
+      mockContext.agentSubstrateSource = new MemoryAgentSubstrateSource({
+        atespaces: ATESPACES,
+        actors: [actor("debug-shell", "running")],
+        actorTemplates: [plainTemplate("debug-shell")],
+      });
+      stubK8s({ codebases: [codebase("go-app", "/krci/test-go-app")], gitServers: GITLAB });
+
+      const fleet = await readyFleet(createCaller(mockContext));
+
+      expect(fleet.actors[0].agent).toBeNull();
+    });
+
+    it("rejects an input with any key", async () => {
+      mockContext.agentSubstrateSource = goAgentSource();
+
+      await expect(
+        createCaller(mockContext).agentSubstrate.getFleet({ namespaces: ["kube-system"] } as never)
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    });
+  });
+
+  it("passes an actor state that cannot be read as unknown on the row", async () => {
+    mockContext.agentSubstrateSource = new MemoryAgentSubstrateSource({
+      atespaces: ATESPACES,
+      actors: [actor("unreadable", "unknown"), actor("future-state", "transitional")],
+    });
+
+    const fleet = await readyFleet(createCaller(mockContext));
+
+    expect(fleet.actors.map((row) => [row.name, row.state])).toEqual([
+      ["unreadable", "unknown"],
+      ["future-state", "transitional"],
+    ]);
   });
 
   it("keeps the Agent Substrate read for 5 s and reads again after it", async () => {

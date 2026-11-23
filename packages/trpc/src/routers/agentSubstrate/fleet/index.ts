@@ -1,32 +1,34 @@
 import {
+  ACTOR_STATE_GROUP,
   actorStateGroupSchema,
   workerStateSchema,
   type ActorAgent,
   type ActorRow,
-  type ActorState,
-  type ActorStateGroup,
   type FleetSnapshot,
   type FleetSummary,
   type ReadyFleetSnapshot,
   type WorkerRow,
 } from "@my-project/shared";
 import type { TRPCContext } from "../../../context/types.js";
+import { gitlabIssueUrl, readCodebaseLinks, type CodebaseLinks } from "./codebaseLinks.js";
 import { readSubstrate, type SubstrateFleet } from "./substrateRead.js";
 import type { SubstrateActor, SubstrateWorker } from "../../../clients/agentSubstrate/index.js";
 
-const STATE_GROUP: Record<ActorState, ActorStateGroup> = {
-  running: "running",
-  suspended: "suspended",
-  crashed: "crashed",
-  unknown: "unknown",
-  resuming: "transitional",
-  suspending: "transitional",
-  deleting: "transitional",
-  reverting: "transitional",
-  transitional: "transitional",
-};
+/** Codebase and issue URL come from the user's Codebase list: per request, never part of the shared read. */
+function withCodebase(agent: ActorAgent, codebaseLinks: CodebaseLinks): ActorAgent {
+  const { issue } = agent;
+  const link = codebaseLinks.get(issue.projectPath);
+  return {
+    ...agent,
+    issue: {
+      ...issue,
+      url: link?.gitlabRepoUrl ? gitlabIssueUrl(link.gitlabRepoUrl, issue.iid) : null,
+    },
+    codebase: link ? { ...link.codebase } : null,
+  };
+}
 
-function toActorRow(actor: SubstrateActor, agent: ActorAgent | null): ActorRow {
+function toActorRow(actor: SubstrateActor, agent: ActorAgent | null, codebaseLinks: CodebaseLinks): ActorRow {
   const assignment = actor.workerAssignment;
   return {
     atespace: actor.atespace,
@@ -34,7 +36,7 @@ function toActorRow(actor: SubstrateActor, agent: ActorAgent | null): ActorRow {
     uid: actor.uid,
     state: actor.state,
     actorTemplate: actor.actorTemplate.name,
-    agent: agent && structuredClone(agent),
+    agent: agent && withCodebase(agent, codebaseLinks),
     placement: assignment && {
       worker: assignment.worker,
       workerPool: assignment.workerPool,
@@ -70,7 +72,7 @@ function zeroCounts<K extends string>(keys: readonly K[]): Record<K, number> {
 
 function summarize(fleet: SubstrateFleet): FleetSummary {
   const actorsByState = zeroCounts(actorStateGroupSchema.options);
-  for (const { actor } of fleet.actors) actorsByState[STATE_GROUP[actor.state]]++;
+  for (const { actor } of fleet.actors) actorsByState[ACTOR_STATE_GROUP[actor.state]]++;
 
   const workersByState = zeroCounts(workerStateSchema.options);
   for (const worker of fleet.workers) workersByState[worker.state]++;
@@ -85,20 +87,20 @@ function summarize(fleet: SubstrateFleet): FleetSummary {
   };
 }
 
-function toReadySnapshot(fleet: SubstrateFleet): ReadyFleetSnapshot {
+function toReadySnapshot(fleet: SubstrateFleet, codebaseLinks: CodebaseLinks): ReadyFleetSnapshot {
   return {
     state: "ready",
     updatedAt: fleet.readAt,
     summary: summarize(fleet),
     atespaces: fleet.atespaces.map(({ name, uid, createTime }) => ({ name, uid, createdAt: createTime })),
-    actors: fleet.actors.map(({ actor, agent }) => toActorRow(actor, agent)),
+    actors: fleet.actors.map(({ actor, agent }) => toActorRow(actor, agent, codebaseLinks)),
     workers: fleet.workers.map(toWorkerRow),
     workerPools: { access: "ok", items: [] },
     needsAttention: [],
   };
 }
 
-/** No source in the context: not configured, with no network call. */
+/** Codebases are read in `DEFAULT_CLUSTER_NAMESPACE` with the user's `idToken`; unset: no Codebase, no issue link. */
 export async function getFleet(ctx: TRPCContext): Promise<FleetSnapshot> {
   if (!ctx.agentSubstrateSource) {
     return { state: "notConfigured" };
@@ -108,5 +110,8 @@ export async function getFleet(ctx: TRPCContext): Promise<FleetSnapshot> {
   if (!read.ok) {
     return { state: "unreachable", reason: read.reason };
   }
-  return toReadySnapshot(read.fleet);
+
+  const projectPaths = new Set(read.fleet.actors.flatMap(({ agent }) => (agent ? [agent.issue.projectPath] : [])));
+  const codebaseLinks = await readCodebaseLinks(ctx.session, process.env.DEFAULT_CLUSTER_NAMESPACE ?? "", projectPaths);
+  return toReadySnapshot(read.fleet, codebaseLinks);
 }

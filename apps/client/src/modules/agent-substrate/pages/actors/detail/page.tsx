@@ -1,24 +1,16 @@
-import { Bot } from "lucide-react";
-import { useParams } from "@tanstack/react-router";
-import { FleetPage } from "../../../components/FleetPage";
-import { PATH_AGENT_ACTORS_FULL } from "../../../constants/paths";
+import { useNavigate } from "@tanstack/react-router";
+import type { ActorDetailTab } from "../../../constants/tabs";
+import { routeAgentActorDetail } from "./route";
+import { ActorDetailView } from "./view";
 
 export default function AgentActorDetailPage() {
-  const { clusterName, atespace, name } = useParams({ strict: false }) as {
-    clusterName?: string;
-    atespace?: string;
-    name?: string;
+  const { atespace, name } = routeAgentActorDetail.useParams();
+  const { tab = "summary" } = routeAgentActorDetail.useSearch();
+  const navigate = useNavigate({ from: routeAgentActorDetail.fullPath });
+
+  const handleTabChange = (next: ActorDetailTab) => {
+    void navigate({ search: (prev) => ({ ...prev, tab: next }) });
   };
 
-  return (
-    <FleetPage
-      icon={Bot}
-      title={name ?? ""}
-      breadcrumbs={[
-        { label: "Actors", route: { to: PATH_AGENT_ACTORS_FULL, params: { clusterName: clusterName ?? "" } } },
-        { label: atespace ?? "" },
-        { label: name ?? "" },
-      ]}
-    />
-  );
+  return <ActorDetailView atespace={atespace} name={name} tab={tab} onTabChange={handleTabChange} />;
 }
