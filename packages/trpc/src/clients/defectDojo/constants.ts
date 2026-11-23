@@ -1,3 +1,5 @@
+import { DEFECTDOJO_MAX_PAGE_SIZE } from "@my-project/shared";
+
 export const DEFECTDOJO_SERVICE_NAME = "DefectDojo";
 
 /** Product Type read when `DEFECTDOJO_PRODUCT_TYPE` is not set. */
@@ -6,8 +8,8 @@ export const DEFAULT_PRODUCT_TYPE = "KubeRocketCI";
 /** Timeout of one request to DefectDojo. */
 export const DEFECTDOJO_TIMEOUT_MS = 30_000;
 
-/** DefectDojo sets no maximum page size; a findings page is capped here. */
-export const FINDINGS_MAX_PAGE_SIZE = 100;
+/** DefectDojo sets no maximum page size; a findings page is capped here, at the cap the browser is held to. */
+export const FINDINGS_MAX_PAGE_SIZE = DEFECTDOJO_MAX_PAGE_SIZE;
 
 /** Rows per request when a list of products or tests is read completely. */
 export const LIST_PAGE_SIZE = 500;
@@ -17,10 +19,8 @@ export const TEST_TYPE_CACHE_TTL_MS = 10 * 60 * 1000;
 
 export const TEST_TYPE_CACHE_MAX_ENTRIES = 100;
 
-/** Severity names of DefectDojo, most severe first. */
-export const DEFECTDOJO_SEVERITIES = ["Critical", "High", "Medium", "Low", "Info"] as const;
-
-export type DefectDojoSeverity = (typeof DEFECTDOJO_SEVERITIES)[number];
+/** Severity names of DefectDojo, most severe first. The browser reads the same list. */
+export { DEFECTDOJO_SEVERITIES, type DefectDojoSeverity } from "@my-project/shared";
 
 /** Scan types of the findings the portal reads, by level. A test of another scan type has no level. */
 export const DEFECTDOJO_LEVEL_SCAN_TYPES = {
@@ -53,6 +53,9 @@ export const DEFECTDOJO_FINDING_STATES = [
 ] as const;
 
 export type DefectDojoFindingState = (typeof DEFECTDOJO_FINDING_STATES)[number];
+
+/** A findings list is asked for one state, or for `any`: the findings of every state, duplicates apart. */
+export type DefectDojoFindingStateFilter = DefectDojoFindingState | "any";
 
 /** Query parameter that selects each finding state. */
 export const FINDING_STATE_PARAMS = {

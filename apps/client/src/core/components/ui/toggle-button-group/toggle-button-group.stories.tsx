@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
+import { expect, userEvent, within } from "storybook/test";
 import { ToggleButtonGroup, ToggleButton } from "./index";
 
 const meta = {
@@ -30,6 +31,18 @@ export const Default: Story = {
         <ToggleButton value="right">Right</ToggleButton>
       </ToggleButtonGroup>
     );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // The selection is in the accessibility tree, not in the colour alone.
+    await expect(canvas.getByRole("button", { name: "Left" })).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas.getByRole("button", { name: "Center" })).toHaveAttribute("aria-pressed", "false");
+
+    await userEvent.click(canvas.getByRole("button", { name: "Center" }));
+
+    await expect(canvas.getByRole("button", { name: "Center" })).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas.getByRole("button", { name: "Left" })).toHaveAttribute("aria-pressed", "false");
   },
 };
 

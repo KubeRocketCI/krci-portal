@@ -1,5 +1,5 @@
 import { FINDING_STATE_PARAMS } from "./constants.js";
-import type { DefectDojoFindingState, DefectDojoSeverity } from "./constants.js";
+import type { DefectDojoFindingStateFilter, DefectDojoSeverity } from "./constants.js";
 import type { DefectDojoScope } from "./types.js";
 
 /** One GET request to DefectDojo. Values that are `undefined` are not sent. */
@@ -87,7 +87,7 @@ export function countsRequest(scope: DefectDojoScope, activeOnly: boolean): Defe
 
 export interface FindingsRequestFilter {
   scope: DefectDojoScope;
-  state: DefectDojoFindingState;
+  state: DefectDojoFindingStateFilter;
   severities: readonly DefectDojoSeverity[];
   /** Ids of the test types of the wanted scan types. Empty: every scan type. */
   testTypeIds: readonly number[];
@@ -104,7 +104,7 @@ export function findingsRequest(filter: FindingsRequestFilter): DefectDojoReques
     path: "/api/v2/findings/",
     query: {
       ...("testId" in filter.scope ? { test: filter.scope.testId } : { product: filter.scope.productIds.join(",") }),
-      [FINDING_STATE_PARAMS[filter.state]]: true,
+      ...(filter.state === "any" ? {} : { [FINDING_STATE_PARAMS[filter.state]]: true }),
       duplicate: false,
       severity: filter.severities.length > 0 ? filter.severities.join(",") : undefined,
       test__test_type: filter.testTypeIds.length > 0 ? filter.testTypeIds.join(",") : undefined,

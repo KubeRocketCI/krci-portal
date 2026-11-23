@@ -1,5 +1,5 @@
 import React from "react";
-import { Info, GitBranch, GitPullRequest, Shield, AlertTriangle } from "lucide-react";
+import { Info, GitBranch, GitPullRequest, Shield, ShieldAlert, AlertTriangle } from "lucide-react";
 import { ciTool } from "@my-project/shared";
 import { ENTITY_ICON } from "@/k8s/constants/entity-icons";
 import { router } from "@/core/router";
@@ -11,6 +11,7 @@ import { PipelineList } from "../components/PipelineList";
 import { DeploymentStatusWidget } from "../components/DeploymentStatusWidget";
 import { SecurityTab } from "../components/SecurityTab";
 import { VulnerabilitiesTab } from "../components/VulnerabilitiesTab";
+import { SecurityFindingsTab } from "../components/SecurityFindingsTab";
 import { CodebaseGitLabCIPipelineList } from "@/modules/platform/gitlabci/components/CodebaseGitLabCIPipelineList";
 import type { Tab } from "@/core/providers/Tabs/components/Tabs/types";
 import { useCodebaseWatch } from "../hooks/data";
@@ -83,6 +84,13 @@ export const usePageTabs = () => {
             clusterName={params.clusterName}
           />
         ) : null,
+      },
+      {
+        label: "Security Findings",
+        icon: <ShieldAlert className="size-4" />,
+        id: routeSearchTabSchema.enum.findings,
+        onClick: () => handleTabNavigate(routeSearchTabSchema.enum.findings),
+        component: <SecurityFindingsTab codebaseName={params.name} namespace={params.namespace} />,
       },
       {
         label: "Pull Requests",

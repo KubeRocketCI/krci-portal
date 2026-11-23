@@ -1,4 +1,9 @@
-import type { DefectDojoFindingState, DefectDojoLevel, DefectDojoScanType, DefectDojoSeverity } from "./constants.js";
+import type {
+  DefectDojoFindingStateFilter,
+  DefectDojoLevel,
+  DefectDojoScanType,
+  DefectDojoSeverity,
+} from "./constants.js";
 
 export interface DefectDojoClientConfig {
   /** Address the server reads DefectDojo at. Empty: DefectDojo is not configured. */
@@ -113,7 +118,7 @@ export interface DefectDojoTestsFilter {
 export interface DefectDojoFindingsQuery {
   scope: DefectDojoScope;
   /** Default: `active`. */
-  state?: DefectDojoFindingState;
+  state?: DefectDojoFindingStateFilter;
   severities?: readonly DefectDojoSeverity[];
   /** Only findings of tests of these scan types. */
   scanTypes?: readonly DefectDojoScanType[];

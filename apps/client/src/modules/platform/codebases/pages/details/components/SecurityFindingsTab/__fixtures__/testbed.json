@@ -1,0 +1,915 @@
+{
+  "testGoApp": {
+    "summary": {
+      "state": "data",
+      "levels": {
+        "code": {
+          "state": "data",
+          "scans": [
+            {
+              "ref": {
+                "level": "code",
+                "branch": "main",
+                "scanner": "Semgrep JSON Report",
+                "image": null
+              },
+              "ownImage": false,
+              "version": "",
+              "date": "2026-11-23T10:09:17.193799Z",
+              "counts": {
+                "Critical": 0,
+                "High": 1,
+                "Medium": 0,
+                "Low": 1,
+                "Info": 0
+              },
+              "triaged": 1,
+              "testUrl": "https://defectdojo.example.test/test/48",
+              "productUrl": "https://defectdojo.example.test/asset/7"
+            },
+            {
+              "ref": {
+                "level": "code",
+                "branch": "main",
+                "scanner": "Gitleaks Scan",
+                "image": null
+              },
+              "ownImage": false,
+              "version": "",
+              "date": "2026-11-23T10:09:17.537070Z",
+              "counts": {
+                "Critical": 0,
+                "High": 2,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              },
+              "triaged": 0,
+              "testUrl": "https://defectdojo.example.test/test/49",
+              "productUrl": "https://defectdojo.example.test/asset/7"
+            }
+          ],
+          "lastUpload": "2026-11-23T10:09:17.537070Z"
+        },
+        "image": {
+          "state": "data",
+          "scans": [
+            {
+              "ref": {
+                "level": "image",
+                "branch": "main",
+                "scanner": "Trivy Scan",
+                "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app"
+              },
+              "ownImage": true,
+              "version": "main-20261123-090000",
+              "date": "2026-11-23T10:09:17.796534Z",
+              "counts": {
+                "Critical": 1,
+                "High": 2,
+                "Medium": 1,
+                "Low": 0,
+                "Info": 0
+              },
+              "triaged": 5,
+              "testUrl": "https://defectdojo.example.test/test/41",
+              "productUrl": "https://defectdojo.example.test/asset/7"
+            },
+            {
+              "ref": {
+                "level": "image",
+                "branch": "main",
+                "scanner": "Anchore Grype",
+                "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app"
+              },
+              "ownImage": true,
+              "version": "main-20261123-090000",
+              "date": "2026-11-23T10:09:18.118566Z",
+              "counts": {
+                "Critical": 1,
+                "High": 1,
+                "Medium": 1,
+                "Low": 0,
+                "Info": 0
+              },
+              "triaged": 1,
+              "testUrl": "https://defectdojo.example.test/test/50",
+              "productUrl": "https://defectdojo.example.test/asset/7"
+            },
+            {
+              "ref": {
+                "level": "image",
+                "branch": "main",
+                "scanner": "Trivy Scan",
+                "image": "busybox"
+              },
+              "ownImage": false,
+              "version": "",
+              "date": "2026-11-23T13:17:35.378285Z",
+              "counts": {
+                "Critical": 0,
+                "High": 1,
+                "Medium": 1,
+                "Low": 0,
+                "Info": 0
+              },
+              "triaged": 0,
+              "testUrl": "https://defectdojo.example.test/test/51",
+              "productUrl": "https://defectdojo.example.test/asset/7"
+            }
+          ],
+          "lastUpload": "2026-11-23T13:17:35.378285Z"
+        }
+      }
+    },
+    "scanFindings": [
+      {
+        "input": {
+          "namespace": "krci",
+          "name": "test-go-app",
+          "scan": {
+            "level": "code",
+            "branch": "main",
+            "scanner": "Semgrep JSON Report",
+            "image": null
+          }
+        },
+        "output": {
+          "state": "data",
+          "total": 2,
+          "findings": [
+            {
+              "title": "go.lang.security.audit.net.use-tls.use-tls",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": null,
+              "componentVersion": null,
+              "vulnerabilityIds": [],
+              "filePath": "cmd/server/main.go",
+              "line": 17,
+              "fixAvailable": null,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1024"
+            },
+            {
+              "title": "go.lang.best-practice.hidden-goroutine",
+              "severity": "Low",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": null,
+              "componentVersion": null,
+              "vulnerabilityIds": [],
+              "filePath": "internal/worker/pool.go",
+              "line": 88,
+              "fixAvailable": null,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1025"
+            }
+          ]
+        }
+      },
+      {
+        "input": {
+          "namespace": "krci",
+          "name": "test-go-app",
+          "scan": {
+            "level": "code",
+            "branch": "main",
+            "scanner": "Gitleaks Scan",
+            "image": null
+          }
+        },
+        "output": {
+          "state": "data",
+          "total": 2,
+          "findings": [
+            {
+              "title": "Hard Coded Generic API Key Found in config/app.env",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": null,
+              "componentVersion": null,
+              "vulnerabilityIds": [],
+              "filePath": "config/app.env",
+              "line": 3,
+              "fixAvailable": null,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1026"
+            },
+            {
+              "title": "Hard Coded Generic API Key Found in deploy/values.yaml",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": null,
+              "componentVersion": null,
+              "vulnerabilityIds": [],
+              "filePath": "deploy/values.yaml",
+              "line": 21,
+              "fixAvailable": null,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1027"
+            }
+          ]
+        }
+      },
+      {
+        "input": {
+          "namespace": "krci",
+          "name": "test-go-app",
+          "scan": {
+            "level": "image",
+            "branch": "main",
+            "scanner": "Trivy Scan",
+            "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app"
+          }
+        },
+        "output": {
+          "state": "data",
+          "total": 4,
+          "findings": [
+            {
+              "title": "CVE-2099-1001 Openssl 3.3.1-r0",
+              "severity": "Critical",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "openssl",
+              "componentVersion": "3.3.1-r0",
+              "vulnerabilityIds": ["CVE-2099-1001"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app:main-20261123-090000 (alpine 3.20.3)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1030"
+            },
+            {
+              "title": "CVE-2099-1002 Libcrypto3 3.3.1-r0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "libcrypto3",
+              "componentVersion": "3.3.1-r0",
+              "vulnerabilityIds": ["CVE-2099-1002"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app:main-20261123-090000 (alpine 3.20.3)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1028"
+            },
+            {
+              "title": "CVE-2099-1003 Busybox 1.36.1-r0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "busybox",
+              "componentVersion": "1.36.1-r0",
+              "vulnerabilityIds": ["CVE-2099-1003"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app:main-20261123-090000 (alpine 3.20.3)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1031"
+            },
+            {
+              "title": "CVE-2099-1004 Musl 1.2.5-r0",
+              "severity": "Medium",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "musl",
+              "componentVersion": "1.2.5-r0",
+              "vulnerabilityIds": ["CVE-2099-1004"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app:main-20261123-090000 (alpine 3.20.3)",
+              "line": null,
+              "fixAvailable": false,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1029"
+            }
+          ]
+        }
+      },
+      {
+        "input": {
+          "namespace": "krci",
+          "name": "test-go-app",
+          "scan": {
+            "level": "image",
+            "branch": "main",
+            "scanner": "Trivy Scan",
+            "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app"
+          },
+          "severity": "Critical"
+        },
+        "output": {
+          "state": "data",
+          "total": 1,
+          "findings": [
+            {
+              "title": "CVE-2099-1001 Openssl 3.3.1-r0",
+              "severity": "Critical",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "openssl",
+              "componentVersion": "3.3.1-r0",
+              "vulnerabilityIds": ["CVE-2099-1001"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app:main-20261123-090000 (alpine 3.20.3)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1030"
+            }
+          ]
+        }
+      },
+      {
+        "input": {
+          "namespace": "krci",
+          "name": "test-go-app",
+          "scan": {
+            "level": "image",
+            "branch": "main",
+            "scanner": "Trivy Scan",
+            "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app"
+          },
+          "showTriaged": true
+        },
+        "output": {
+          "state": "data",
+          "total": 9,
+          "findings": [
+            {
+              "title": "CVE-2098-01000 Ci-PKG-01-0 1.0.0",
+              "severity": "Critical",
+              "active": false,
+              "mitigated": true,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "ci-pkg-01-0",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2098-01000"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app:1.0.0 (alpine 3.20)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/928"
+            },
+            {
+              "title": "CVE-2098-01001 Ci-PKG-01-1 1.0.0",
+              "severity": "Critical",
+              "active": false,
+              "mitigated": true,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "ci-pkg-01-1",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2098-01001"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app:1.0.0 (alpine 3.20)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/929"
+            },
+            {
+              "title": "CVE-2099-1001 Openssl 3.3.1-r0",
+              "severity": "Critical",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "openssl",
+              "componentVersion": "3.3.1-r0",
+              "vulnerabilityIds": ["CVE-2099-1001"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app:main-20261123-090000 (alpine 3.20.3)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1030"
+            },
+            {
+              "title": "CVE-2098-01002 Ci-PKG-01-2 1.0.0",
+              "severity": "High",
+              "active": false,
+              "mitigated": true,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "ci-pkg-01-2",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2098-01002"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app:1.0.0 (alpine 3.20)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/930"
+            },
+            {
+              "title": "CVE-2098-01003 Ci-PKG-01-3 1.0.0",
+              "severity": "High",
+              "active": false,
+              "mitigated": true,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "ci-pkg-01-3",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2098-01003"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app:1.0.0 (alpine 3.20)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/931"
+            },
+            {
+              "title": "CVE-2099-1002 Libcrypto3 3.3.1-r0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "libcrypto3",
+              "componentVersion": "3.3.1-r0",
+              "vulnerabilityIds": ["CVE-2099-1002"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app:main-20261123-090000 (alpine 3.20.3)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1028"
+            },
+            {
+              "title": "CVE-2099-1003 Busybox 1.36.1-r0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "busybox",
+              "componentVersion": "1.36.1-r0",
+              "vulnerabilityIds": ["CVE-2099-1003"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app:main-20261123-090000 (alpine 3.20.3)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1031"
+            },
+            {
+              "title": "CVE-2099-1004 Musl 1.2.5-r0",
+              "severity": "Medium",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "musl",
+              "componentVersion": "1.2.5-r0",
+              "vulnerabilityIds": ["CVE-2099-1004"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app:main-20261123-090000 (alpine 3.20.3)",
+              "line": null,
+              "fixAvailable": false,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1029"
+            },
+            {
+              "title": "CVE-2099-1005 Zlib 1.3.1-r1",
+              "severity": "Low",
+              "active": false,
+              "mitigated": true,
+              "falsePositive": false,
+              "outOfScope": true,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "zlib",
+              "componentVersion": "1.3.1-r1",
+              "vulnerabilityIds": ["CVE-2099-1005"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app:main-20261123-090000 (alpine 3.20.3)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1032"
+            }
+          ]
+        }
+      },
+      {
+        "input": {
+          "namespace": "krci",
+          "name": "test-go-app",
+          "scan": {
+            "level": "image",
+            "branch": "main",
+            "scanner": "Anchore Grype",
+            "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app"
+          }
+        },
+        "output": {
+          "state": "data",
+          "total": 3,
+          "findings": [
+            {
+              "title": "CVE-2099-1001 in openssl:3.3.1-r0",
+              "severity": "Critical",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "openssl",
+              "componentVersion": "3.3.1-r0",
+              "vulnerabilityIds": ["CVE-2099-1001"],
+              "filePath": "/lib/apk/db/installed",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": "3.3.2-r0",
+              "url": "https://defectdojo.example.test/finding/1033"
+            },
+            {
+              "title": "CVE-2099-1002 in libcrypto3:3.3.1-r0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "libcrypto3",
+              "componentVersion": "3.3.1-r0",
+              "vulnerabilityIds": ["CVE-2099-1002"],
+              "filePath": "/lib/apk/db/installed",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": "3.3.2-r0",
+              "url": "https://defectdojo.example.test/finding/1034"
+            },
+            {
+              "title": "CVE-2099-1006 in curl:8.9.0-r0",
+              "severity": "Medium",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "curl",
+              "componentVersion": "8.9.0-r0",
+              "vulnerabilityIds": ["CVE-2099-1006"],
+              "filePath": "/lib/apk/db/installed",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": "8.9.1-r0",
+              "url": "https://defectdojo.example.test/finding/1035"
+            }
+          ]
+        }
+      },
+      {
+        "input": {
+          "namespace": "krci",
+          "name": "test-go-app",
+          "scan": {
+            "level": "image",
+            "branch": "main",
+            "scanner": "Trivy Scan",
+            "image": "busybox"
+          }
+        },
+        "output": {
+          "state": "data",
+          "total": 2,
+          "findings": [
+            {
+              "title": "CVE-2099-2001 Busybox 1.36.1-r0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "busybox",
+              "componentVersion": "1.36.1-r0",
+              "vulnerabilityIds": ["CVE-2099-2001"],
+              "filePath": "busybox:1.36.1 (alpine 3.20.3)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1037"
+            },
+            {
+              "title": "CVE-2099-2002 Ssl_client 1.36.1-r0",
+              "severity": "Medium",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "ssl_client",
+              "componentVersion": "1.36.1-r0",
+              "vulnerabilityIds": ["CVE-2099-2002"],
+              "filePath": "busybox:1.36.1 (alpine 3.20.3)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1038"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "krciGitops": {
+    "summary": {
+      "state": "data",
+      "levels": {
+        "code": {
+          "state": "clean",
+          "scans": [
+            {
+              "ref": {
+                "level": "code",
+                "branch": "main",
+                "scanner": "Semgrep JSON Report",
+                "image": null
+              },
+              "ownImage": false,
+              "version": "",
+              "date": "2026-11-23T10:09:19.127480Z",
+              "counts": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              },
+              "triaged": 0,
+              "testUrl": "https://defectdojo.example.test/test/53",
+              "productUrl": "https://defectdojo.example.test/asset/11"
+            },
+            {
+              "ref": {
+                "level": "code",
+                "branch": "main",
+                "scanner": "Gitleaks Scan",
+                "image": null
+              },
+              "ownImage": false,
+              "version": "",
+              "date": "2026-11-23T10:09:19.423623Z",
+              "counts": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              },
+              "triaged": 0,
+              "testUrl": "https://defectdojo.example.test/test/54",
+              "productUrl": "https://defectdojo.example.test/asset/11"
+            }
+          ],
+          "lastUpload": "2026-11-23T10:09:19.423623Z"
+        },
+        "image": {
+          "state": "data",
+          "scans": [
+            {
+              "ref": {
+                "level": "image",
+                "branch": "main",
+                "scanner": "Trivy Scan",
+                "image": "gitlab.127.0.0.1.nip.io:5050/krci/krci-gitops"
+              },
+              "ownImage": true,
+              "version": "main-20261123-091500",
+              "date": "2026-11-23T10:09:19.737191Z",
+              "counts": {
+                "Critical": 0,
+                "High": 1,
+                "Medium": 0,
+                "Low": 1,
+                "Info": 0
+              },
+              "triaged": 0,
+              "testUrl": "https://defectdojo.example.test/test/55",
+              "productUrl": "https://defectdojo.example.test/asset/11"
+            }
+          ],
+          "lastUpload": "2026-11-23T10:09:19.737191Z"
+        }
+      }
+    },
+    "scanFindings": [
+      {
+        "input": {
+          "namespace": "krci",
+          "name": "krci-gitops",
+          "scan": {
+            "level": "code",
+            "branch": "main",
+            "scanner": "Semgrep JSON Report",
+            "image": null
+          }
+        },
+        "output": {
+          "state": "data",
+          "total": 0,
+          "findings": []
+        }
+      },
+      {
+        "input": {
+          "namespace": "krci",
+          "name": "krci-gitops",
+          "scan": {
+            "level": "code",
+            "branch": "main",
+            "scanner": "Gitleaks Scan",
+            "image": null
+          }
+        },
+        "output": {
+          "state": "data",
+          "total": 0,
+          "findings": []
+        }
+      },
+      {
+        "input": {
+          "namespace": "krci",
+          "name": "krci-gitops",
+          "scan": {
+            "level": "image",
+            "branch": "main",
+            "scanner": "Trivy Scan",
+            "image": "gitlab.127.0.0.1.nip.io:5050/krci/krci-gitops"
+          }
+        },
+        "output": {
+          "state": "data",
+          "total": 2,
+          "findings": [
+            {
+              "title": "CVE-2099-3001 Git 2.45.0-r0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "git",
+              "componentVersion": "2.45.0-r0",
+              "vulnerabilityIds": ["CVE-2099-3001"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/krci-gitops:main-20261123-091500 (alpine 3.20.3)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1040"
+            },
+            {
+              "title": "CVE-2099-3002 Expat 2.6.2-r0",
+              "severity": "Low",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "expat",
+              "componentVersion": "2.6.2-r0",
+              "vulnerabilityIds": ["CVE-2099-3002"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/krci-gitops:main-20261123-091500 (alpine 3.20.3)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1041"
+            }
+          ]
+        }
+      },
+      {
+        "input": {
+          "namespace": "krci",
+          "name": "krci-gitops",
+          "scan": {
+            "level": "image",
+            "branch": "main",
+            "scanner": "Trivy Scan",
+            "image": "gitlab.127.0.0.1.nip.io:5050/krci/krci-gitops"
+          },
+          "severity": "Critical"
+        },
+        "output": {
+          "state": "data",
+          "total": 0,
+          "findings": []
+        }
+      }
+    ]
+  },
+  "noScanData": {
+    "summary": {
+      "state": "data",
+      "levels": {
+        "code": {
+          "state": "noScanData",
+          "scans": [],
+          "lastUpload": null
+        },
+        "image": {
+          "state": "noScanData",
+          "scans": [],
+          "lastUpload": null
+        }
+      }
+    },
+    "scanFindings": []
+  },
+  "notConfigured": {
+    "summary": {
+      "state": "notConfigured"
+    },
+    "scanFindings": []
+  },
+  "unreachable": {
+    "summary": {
+      "state": "unreachable"
+    },
+    "scanFindings": []
+  }
+}

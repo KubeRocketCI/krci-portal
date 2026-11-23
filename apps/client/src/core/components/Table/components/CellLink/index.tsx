@@ -7,11 +7,11 @@ import type { CellLinkBaseProps, CellExternalLinkProps } from "./types";
 
 /**
  * The "icon plus name that links somewhere" table cell markup. One look for every name
- * column: the primary-coloured button link. `text` is the only content rendered; any
+ * column: the primary-coloured button link. `text` is the only content rendered (none when `iconOnly`); any
  * `children` the router passes through `anchorProps` is overridden by the JSX below.
  */
 const CellLinkBase = React.forwardRef<HTMLAnchorElement, CellLinkBaseProps>(
-  ({ text, icon: Icon, className, ...anchorProps }, ref) => (
+  ({ text, icon: Icon, iconOnly = false, className, ...anchorProps }, ref) => (
     <Button
       data-slot="cell-link"
       variant="link"
@@ -20,7 +20,7 @@ const CellLinkBase = React.forwardRef<HTMLAnchorElement, CellLinkBaseProps>(
     >
       <a ref={ref} {...anchorProps}>
         {Icon && <Icon className="text-muted-foreground/70 shrink-0" />}
-        <TextWithTooltip text={text} />
+        {!iconOnly && <TextWithTooltip text={text} />}
       </a>
     </Button>
   )
@@ -32,5 +32,5 @@ export const CellLink = createLink(CellLinkBase);
 
 /** Opens `href` in a new tab with `rel="noopener noreferrer"`. */
 export function CellExternalLink({ href, ...rest }: CellExternalLinkProps) {
-  return <CellLinkBase href={href} target="_blank" rel="noopener noreferrer" {...rest} />;
+  return <CellLinkBase href={href} target="_blank" rel="noopener noreferrer" text={null} {...rest} />;
 }
