@@ -8,6 +8,7 @@ import {
   type SubstrateWorker,
 } from "../../../clients/agentSubstrate/index.js";
 import { mapWithConcurrency } from "../../../utils/mapWithConcurrency/index.js";
+import { WORKER_NAMESPACES } from "./workerNamespaces.js";
 
 /** One read serves every signed-in user (ADR 0002). */
 const SHARED_READ_TTL_MS = 5_000;
@@ -34,7 +35,10 @@ export interface SubstrateFleet {
   atespaces: SubstrateAtespace[];
   actors: ({ actor: SubstrateActor } & TemplateFacts)[];
   workers: SubstrateWorker[];
-  /** Every worker namespace seen since start, by name: a WorkerPool stays listed after its last worker is gone. */
+  /**
+   * WORKER_NAMESPACES and every worker namespace seen since start, by name: a WorkerPool stays listed after its last
+   * worker is gone.
+   */
   workerNamespaces: string[];
 }
 
@@ -75,7 +79,7 @@ class SubstrateReader {
   private inflight: Promise<SubstrateRead> | null = null;
   /** By actor uid, no time limit. Entries of gone actors are dropped on each read. */
   private readonly templates = new Map<string, TemplateFacts>();
-  private readonly workerNamespaces = new Set<string>();
+  private readonly workerNamespaces = new Set<string>(WORKER_NAMESPACES);
 
   constructor(private readonly source: AgentSubstrateSource) {}
 
