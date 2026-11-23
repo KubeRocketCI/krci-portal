@@ -15,7 +15,7 @@
     "package.json"
   ],
   "scripts": {
-    "build": "tsc --project tsconfig.build.json",
+    "build": "rimraf dist && tsc --project tsconfig.build.json",
     "build:watch": "tsc --project tsconfig.build.json --watch",
     "tsc": "tsc --noEmit",
     "generate:openapi": "tsx scripts/generate-openapi.ts api/openapi.json",
@@ -47,6 +47,7 @@
     "@types/node-fetch": "^2.6.13",
     "@types/openid-client": "^3.7.0",
     "reflect-metadata": "^0.2.2",
+    "rimraf": "^6.1.4",
     "tsx": "^4.19.3",
     "typescript": "^5.8.3"
   }
