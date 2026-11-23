@@ -54,6 +54,16 @@ configEnv:
   # If not set, DEPENDENCY_TRACK_URL is used for both.
   DEPENDENCY_TRACK_URL: https://deptrack.example.com
   # DEPENDENCY_TRACK_WEB_URL: https://deptrack-public.example.com
+  # DEFECTDOJO_URL is used by the backend API client to read security findings from DefectDojo.
+  # The portal reads DefectDojo with its own user: not staff, authorized user of the Product Type below only.
+  # The API token of that user is DEFECTDOJO_TOKEN, which belongs in the secret wired via `extraEnvFrom`.
+  # While DEFECTDOJO_URL or DEFECTDOJO_TOKEN is empty, the portal reports DefectDojo as not configured.
+  # DEFECTDOJO_WEB_URL is an optional override for browser-facing links. If not set, DEFECTDOJO_URL is used for both.
+  # DEFECTDOJO_PRODUCT_TYPE is the name of the Product Type the portal reads: the one the CI pipelines and the
+  # krci-security-operator write to.
+  DEFECTDOJO_URL: ""
+  # DEFECTDOJO_WEB_URL: https://defectdojo-public.example.com
+  DEFECTDOJO_PRODUCT_TYPE: KubeRocketCI
   GITFUSION_URL: http://gitfusion.krci:8080
   # KRCI_AUDIT_URL is used by the backend to read the audit trail (krci-audit) for
   # the "Triggered By" field and the admin Audit Events view.

@@ -28,6 +28,14 @@ declare global {
       DEPENDENCY_TRACK_API_KEY: string;
       DEPENDENCY_TRACK_WEB_URL?: string;
 
+      // DefectDojo read path. Optional: without both the URL and the token the portal reports DefectDojo as "not configured".
+      DEFECTDOJO_URL?: string;
+      DEFECTDOJO_TOKEN?: string;
+      // Base of the links to the DefectDojo web UI. Defaults to DEFECTDOJO_URL.
+      DEFECTDOJO_WEB_URL?: string;
+      // Name of the DefectDojo Product Type the portal reads. Defaults to "KubeRocketCI".
+      DEFECTDOJO_PRODUCT_TYPE?: string;
+
       GITFUSION_URL: string;
 
       KRCI_AUDIT_URL: string;
