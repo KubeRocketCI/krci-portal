@@ -201,6 +201,10 @@ function stubK8s({
 
 const GITLAB = { gitlab: gitServer("gitlab", "gitlab") };
 
+function listedNamespaces(list: ReturnType<typeof stubK8s>["list"], config: K8sResourceConfig) {
+  return list.mock.calls.filter(([listed]) => listed === config).map(([, namespace]) => namespace);
+}
+
 async function readyFleet(caller: ReturnType<typeof createCaller>): Promise<ReadyFleetSnapshot> {
   const snapshot = await caller.agentSubstrate.getFleet({});
   if (snapshot.state !== "ready") throw new Error(`expected a ready fleet, got ${snapshot.state}`);
@@ -577,7 +581,7 @@ describe("agentSubstrate.getFleet", () => {
 
       const fleet = await readyFleet(createCaller(mockContext));
 
-      expect(new Set(list.mock.calls.map(([, namespace]) => namespace))).toEqual(new Set([PLATFORM_NAMESPACE]));
+      expect(new Set(listedNamespaces(list, k8sCodebaseConfig))).toEqual(new Set([PLATFORM_NAMESPACE]));
       expect(get.mock.calls).toEqual([[k8sGitServerConfig, "gitlab", PLATFORM_NAMESPACE]]);
       expect(fleet.actors[0].agent?.issue.url).toBe("https://gitlab.example.com/krci/test-go-app/-/issues/25");
     });
@@ -612,7 +616,7 @@ describe("agentSubstrate.getFleet", () => {
 
       await readyFleet(createCaller(mockContext));
 
-      expect(list).not.toHaveBeenCalled();
+      expect(listedNamespaces(list, k8sCodebaseConfig)).toEqual([]);
     });
 
     it("reads no Codebase list when Agent Substrate is unreachable", async () => {
@@ -643,7 +647,7 @@ describe("agentSubstrate.getFleet", () => {
 
       const fleet = await readyFleet(createCaller(mockContext));
 
-      expect(list).not.toHaveBeenCalled();
+      expect(listedNamespaces(list, k8sCodebaseConfig)).toEqual([]);
       expect(fleet.actors[0].agent?.codebase).toBeNull();
     });
 
@@ -951,13 +955,25 @@ describe("agentSubstrate.getFleet", () => {
       });
     });
 
-    it("reads no WorkerPool list when Agent Substrate has no worker", async () => {
-      const { list } = stubK8s({});
+    it("lists WorkerPools in krci-agents when Agent Substrate has no worker", async () => {
+      const { list } = stubK8s({
+        workerPools: { "krci-agents": [workerPool("krci-agents", "workers", { replicas: 2, readyReplicas: 0 })] },
+      });
 
       const pools = await workerPoolsOf({});
 
-      expect(list).not.toHaveBeenCalled();
-      expect(pools).toEqual({ access: "ok", items: [], roomSize: null });
+      expect(list.mock.calls.map(([config, namespace]) => [config, namespace])).toEqual([
+        [k8sWorkerPoolConfig, "krci-agents"],
+      ]);
+      expect(pools.items).toEqual([
+        expect.objectContaining({
+          namespace: "krci-agents",
+          name: "workers",
+          workers: [],
+          room: 0,
+          resource: expect.objectContaining({ desiredReplicas: 2, readyReplicas: 0 }),
+        }),
+      ]);
     });
 
     it("adds the WorkerPool replicas, sandbox class and resolution to the row of its name", async () => {
@@ -1041,7 +1057,7 @@ describe("agentSubstrate.getFleet", () => {
         ],
       });
 
-      expect(list).toHaveBeenCalledTimes(2);
+      expect(listedNamespaces(list, k8sWorkerPoolConfig)).toEqual(["krci-agents", "ns-1", "ns-2"]);
       expect(pools.access).toBe("denied");
       expect(pools.items.map(({ namespace, resource }) => [namespace, resource?.desiredReplicas ?? null])).toEqual([
         ["ns-1", 1],
