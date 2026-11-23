@@ -5,6 +5,7 @@ import {
   workerStateSchema,
   type ActorAgent,
   type ActorRow,
+  type AgentProfileCount,
   type FleetSnapshot,
   type FleetSummary,
   type ReadyFleetSnapshot,
@@ -78,6 +79,19 @@ function zeroCounts<K extends string>(keys: readonly K[]): Record<K, number> {
   return Object.fromEntries(keys.map((key) => [key, 0])) as Record<K, number>;
 }
 
+function agentsByProfileOf(fleet: SubstrateFleet): AgentProfileCount[] {
+  const counts = new Map<string | null, number>();
+  for (const { agent } of fleet.actors) {
+    if (agent) counts.set(agent.agentProfile, (counts.get(agent.agentProfile) ?? 0) + 1);
+  }
+  return [...counts]
+    .map(([agentProfile, agents]) => ({ agentProfile, agents }))
+    .sort((a, b) => {
+      if (a.agentProfile === null || b.agentProfile === null) return a.agentProfile === null ? 1 : -1;
+      return sortByName(a.agentProfile, b.agentProfile);
+    });
+}
+
 function summarize(fleet: SubstrateFleet): FleetSummary {
   const actorsByState = zeroCounts(actorStateGroupSchema.options);
   for (const { actor } of fleet.actors) actorsByState[ACTOR_STATE_GROUP[actor.state]]++;
@@ -88,6 +102,7 @@ function summarize(fleet: SubstrateFleet): FleetSummary {
   return {
     atespaces: fleet.atespaces.length,
     agents: fleet.actors.filter(({ agent }) => agent !== null).length,
+    agentsByProfile: agentsByProfileOf(fleet),
     actors: fleet.actors.length,
     actorsByState,
     workers: fleet.workers.length,

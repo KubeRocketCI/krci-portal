@@ -6,7 +6,7 @@ import { Button } from "@/core/components/ui/button";
 import { Label } from "@/core/components/ui/label";
 import { useFilterContext } from "@/core/providers/Filter";
 import { ACTOR_STATE_GROUP_LABEL } from "../../../../../constants/actorState";
-import { ACTOR_FILTER_NAMES } from "../../../../../constants/actorFilter";
+import { ACTOR_FILTER_NAMES, agentProfileFilterValue, agentProfileLabel } from "../../../../../constants/actorFilter";
 import { ALL_FILTER_VALUE } from "./constants";
 import type { ActorFilterValues } from "./types";
 
@@ -35,15 +35,25 @@ export function ActorFilter({ atespaces, actors }: ActorFilterProps) {
     return [ALL_OPTION, ...[...names].sort().map((name) => ({ label: name, value: name }))];
   }, [actors]);
 
+  const agentProfileOptions = React.useMemo<SelectOption[]>(() => {
+    const agents = actors.flatMap(({ agent }) => (agent ? [agent] : []));
+    const names = new Set(agents.flatMap(({ agentProfile }) => (agentProfile ? [agentProfile] : [])));
+    const options = [ALL_OPTION, ...[...names].sort().map((name) => ({ label: name, value: name }))];
+    if (agents.some(({ agentProfile }) => agentProfile === null)) {
+      options.push({ label: agentProfileLabel(null), value: agentProfileFilterValue(null) });
+    }
+    return options;
+  }, [actors]);
+
   return (
     <>
-      <div className="col-span-3">
+      <div className="col-span-2">
         <form.AppField name={ACTOR_FILTER_NAMES.ATESPACE}>
           {(field) => <field.FormSelect label="Atespace" options={atespaceOptions} placeholder="Select atespace" />}
         </form.AppField>
       </div>
 
-      <div className="col-span-3">
+      <div className="col-span-2">
         <form.AppField name={ACTOR_FILTER_NAMES.ACTOR_STATE}>
           {(field) => (
             <field.FormSelect label="Actor state" options={actorStateOptions} placeholder="Select actor state" />
@@ -51,9 +61,17 @@ export function ActorFilter({ atespaces, actors }: ActorFilterProps) {
         </form.AppField>
       </div>
 
-      <div className="col-span-3">
+      <div className="col-span-2">
         <form.AppField name={ACTOR_FILTER_NAMES.CODEBASE}>
           {(field) => <field.FormSelect label="Codebase" options={codebaseOptions} placeholder="Select Codebase" />}
+        </form.AppField>
+      </div>
+
+      <div className="col-span-2">
+        <form.AppField name={ACTOR_FILTER_NAMES.AGENT_PROFILE}>
+          {(field) => (
+            <field.FormSelect label="Agent profile" options={agentProfileOptions} placeholder="Select agent profile" />
+          )}
         </form.AppField>
       </div>
 

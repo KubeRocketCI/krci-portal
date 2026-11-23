@@ -54,8 +54,14 @@ function actor(name: string, state: ActorState, template = name): SubstrateActor
   };
 }
 
-/** The template the dispatcher writes for one issue. */
-function issueTemplate(name: string, projectPath: string, projectId: string, iid: string): SubstrateActorTemplate {
+/** The template the dispatcher writes for one issue. `agentProfile` "": the dispatcher set no AGENT_PROFILE. */
+function issueTemplate(
+  name: string,
+  projectPath: string,
+  projectId: string,
+  iid: string,
+  agentProfile = "go"
+): SubstrateActorTemplate {
   return {
     atespace: ATESPACE,
     name,
@@ -70,7 +76,7 @@ function issueTemplate(name: string, projectPath: string, projectId: string, iid
           { name: "ISSUE_IID", value: iid },
           { name: "BOT_USERNAME", value: "krci-bot" },
           { name: "SESSION_ID", value: "0d6c2f5e-session" },
-          { name: "AGENT_PROFILE", value: "go" },
+          { name: "AGENT_PROFILE", value: agentProfile },
           { name: "ANTHROPIC_MODEL", value: "claude-haiku-5-5" },
         ],
       },
@@ -302,6 +308,7 @@ describe("agentSubstrate.getFleet", () => {
     expect(fleet.summary).toEqual({
       atespaces: 0,
       agents: 0,
+      agentsByProfile: [],
       actors: 0,
       actorsByState: { running: 0, transitional: 0, suspended: 0, crashed: 0, unknown: 0 },
       workers: 0,
@@ -327,10 +334,10 @@ describe("agentSubstrate.getFleet", () => {
       actorTemplates: [
         issueTemplate("issue-2-25", "krci/test-go-app", "2", "25"),
         issueTemplate("issue-2-26", "krci/test-go-app", "2", "26"),
-        issueTemplate("issue-5-3", "krci/test-python-app", "5", "3"),
-        issueTemplate("issue-5-4", "krci/test-python-app", "5", "4"),
-        issueTemplate("issue-6-2", "krci/test-node-app", "6", "2"),
-        issueTemplate("issue-6-3", "krci/test-node-app", "6", "3"),
+        issueTemplate("issue-5-3", "krci/test-python-app", "5", "3", "python"),
+        issueTemplate("issue-5-4", "krci/test-python-app", "5", "4", "python"),
+        issueTemplate("issue-6-2", "krci/test-node-app", "6", "2", "node"),
+        issueTemplate("issue-6-3", "krci/test-node-app", "6", "3", "node"),
         plainTemplate("debug-shell"),
         plainTemplate("reverting-one"),
         plainTemplate("future-state"),
@@ -344,6 +351,11 @@ describe("agentSubstrate.getFleet", () => {
     expect(fleet.summary).toEqual({
       atespaces: 1,
       agents: 6,
+      agentsByProfile: [
+        { agentProfile: "go", agents: 2 },
+        { agentProfile: "node", agents: 2 },
+        { agentProfile: "python", agents: 2 },
+      ],
       actors: 10,
       actorsByState: { running: 1, transitional: 5, suspended: 2, crashed: 1, unknown: 1 },
       workers: 4,
@@ -378,6 +390,37 @@ describe("agentSubstrate.getFleet", () => {
     expect(output).not.toContain("gitlab.internal.example");
     expect(output).not.toContain("krci-bot");
     expect(output).not.toContain("LOG_LEVEL");
+  });
+
+  it("counts agents per agent profile by name, agents with no agent profile last, other actors in none", async () => {
+    mockContext.agentSubstrateSource = new MemoryAgentSubstrateSource({
+      atespaces: ATESPACES,
+      actors: [
+        actor("issue-9-1", "running"),
+        actor("issue-2-25", "suspended"),
+        actor("issue-2-26", "crashed"),
+        actor("issue-7-1", "suspended"),
+        actor("debug-shell", "running"),
+        actor("gone-template", "suspended"),
+      ],
+      actorTemplates: [
+        issueTemplate("issue-9-1", "krci/no-profile-app", "9", "1", ""),
+        issueTemplate("issue-2-25", "krci/test-go-app", "2", "25", "python"),
+        issueTemplate("issue-2-26", "krci/test-go-app", "2", "26", "go"),
+        issueTemplate("issue-7-1", "krci/test-java-app", "7", "1", "go-1-26"),
+        plainTemplate("debug-shell"),
+      ],
+    });
+
+    const fleet = await readyFleet(createCaller(mockContext));
+
+    expect(fleet.summary.agents).toBe(4);
+    expect(fleet.summary.agentsByProfile).toEqual([
+      { agentProfile: "go", agents: 1 },
+      { agentProfile: "go-1-26", agents: 1 },
+      { agentProfile: "python", agents: 1 },
+      { agentProfile: null, agents: 1 },
+    ]);
   });
 
   it("counts an actor whose template is gone as an actor but not as an agent", async () => {
