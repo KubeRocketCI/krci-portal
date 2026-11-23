@@ -15,12 +15,25 @@ Issues and specs live in Jira project `EPMDEDP`. Use the `mcp__mcp-atlassian__ji
 - **Blocking**: `jira_create_issue_link` with `link_type: Blocks` (id 12300): the blocker `blocks` the child. After the first link of a session, `jira_get_issue` the child and confirm it shows `is_blocked_by <blocker>`; if reversed, swap `inward_issue_key` and `outward_issue_key` for the rest of the session. Remove a wrong edge with `jira_remove_issue_link`, taking the `link_id` from the issue's `issuelinks`. Also put `Blocked by: <KEY>-<n>, <KEY>-<n>` as the line after `Spec:` in the child description; a blocker can be in any Jira project.
 - **Count open blockers**: read each key in the `Blocked by:` line and the `is_blocked_by` links; a ticket is startable when every blocker is `In review` (its PR is merged) or has `statusCategory = Done`.
 - **Comment**: `jira_add_comment`.
+- **Description edit**: `jira_update_issue` replaces the whole description; send the full text with only the changed lines edited. See **Jira formatting**.
 - **Labels update**: `jira_update_issue` with `fields: {"labels": [...]}`. Send the full list; it replaces the existing labels.
 - **Close** (not done through a PR: `wontfix`, duplicate, obsolete): comment the reason, then `jira_get_transitions` and `jira_transition_issue` to a status in the Done category.
 - **Commit titles**: `EPMDEDP-<n>: <type>: <subject>`, 10 to 85 characters, type one of fix, feat, docs, style, refactor, test, chore; `.github/workflows/pr-validation.yml` checks it. `EPMDEDP-<n>` is the ticket being worked.
 - **Branch names**: `EPMDEDP-<n>/<short-slug>`.
 - **Issue references**: an `EPMDEDP-<n>` prefix in a commit title is the issue reference. Fetch it from Jira, not as a GitHub `#<n>`.
 - **Where keys go**: commit titles, branch names and PR bodies. Never in code, comments, tests or other docs.
+
+## Jira formatting
+
+Descriptions and comments go in as Markdown; the server stores Jira wiki markup and gives it back as Markdown on read. Each round trip converts again.
+
+- Inline code holds no `{`, `}`, `[`, `]`: wiki reads them as macro and link syntax. Name the thing instead: "empty Zod input", "field `namespaces`".
+- `+`, `*`, `_`, `^`, `~`, `-` between words are wiki markup (underline, bold, italic, sup, sub, strike). Write "plus", "times", or put the expression in inline code.
+- Bold: `**word**`, closed. `**word*` turns into italics.
+- Nested list item: two spaces, then `-`.
+- Code fence: no blank line before the closing fence; each round trip adds one.
+- Fenced blocks: no `#` comment lines, heredocs, `->` or `[N]` indices.
+- After an update, read the returned markup: `{{…}}` code, `*…*` bold, `h2.` headings, `**` / `#` lists.
 
 ## Pull requests
 
