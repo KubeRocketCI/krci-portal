@@ -135,8 +135,7 @@ export interface TableExpandable<DataType> {
  * `totalCount` (`undefined` while it loads); a cursor-based API sets `hasNextPage`.
  */
 export type ServerTotal =
-  | { totalCount: number | undefined; hasNextPage?: never }
-  | { totalCount?: never; hasNextPage: boolean };
+  { totalCount: number | undefined; hasNextPage?: never } | { totalCount?: never; hasNextPage: boolean };
 
 export type ServerTablePagination = {
   show?: boolean;

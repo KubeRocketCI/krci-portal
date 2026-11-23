@@ -7,9 +7,7 @@ import DOMPurify from "dompurify";
  * form surfaces it so an author learns their paste was stripped rather than silently altered.
  */
 export type SvgIconDecodeResult =
-  | { status: "absent" }
-  | { status: "ok"; src: string; sanitized: boolean }
-  | { status: "invalid"; reason: string };
+  { status: "absent" } | { status: "ok"; src: string; sanitized: boolean } | { status: "invalid"; reason: string };
 
 const CACHE_LIMIT = 64;
 const cache = new Map<string, SvgIconDecodeResult>();

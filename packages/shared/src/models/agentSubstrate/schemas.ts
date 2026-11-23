@@ -151,10 +151,18 @@ function countsBy<T extends [string, ...string[]]>(values: z.ZodEnum<T>) {
   return z.object(Object.fromEntries(values.options.map((value) => [value, count])) as Record<T[number], z.ZodNumber>);
 }
 
+/** `agentProfile` null: agents whose actor template sets no `AGENT_PROFILE`. */
+export const agentProfileCountSchema = z.object({
+  agentProfile: z.string().nullable(),
+  agents: count,
+});
+
 export const fleetSummarySchema = z.object({
   atespaces: count,
   /** Actors that serve an issue. */
   agents: count,
+  /** By agent profile name, the null agent profile last; only agent profiles with agents. Sums to `agents`. */
+  agentsByProfile: z.array(agentProfileCountSchema),
   actors: count,
   actorsByState: countsBy(actorStateGroupSchema),
   workers: count,

@@ -9,6 +9,7 @@ import {
   CRASHED_ACTOR_FLEET,
   DRAINING_WORKER_FLEET,
   EMPTY_FLEET,
+  FULL_WORKER_POOL_FLEET,
   HEALTHY_FLEET,
   MANY_CRASHED_COUNT,
   MANY_CRASHED_FLEET,
@@ -17,6 +18,7 @@ import {
   NOT_READY_FLEET,
   PENDING_SNAPSHOT_FLEET,
   RUNNING_ACTOR,
+  SEVERAL_AGENT_PROFILES_FLEET,
   TESTBED_FLEET,
   PARTIAL_WORKER_POOLS_FLEET,
   WORKER_POOLS_DENIED_FLEET,
@@ -49,6 +51,28 @@ async function needsAttention(canvasElement: HTMLElement): Promise<Canvas> {
 }
 
 const group = (section: Canvas, title: RegExp) => within(section.getByRole("region", { name: title }));
+
+async function atAGlance(canvasElement: HTMLElement): Promise<Canvas> {
+  return within(await within(canvasElement).findByRole("region", { name: "At a glance" }));
+}
+
+/** The link of a stat card or of a count, by the label it starts with. */
+const countLink = (scope: Canvas, label: string) => scope.getByRole("link", { name: new RegExp(`^${label}`) });
+
+async function expectActorStateCounts(section: Canvas, fleet: ReadyFleetSnapshot) {
+  const strip = group(section, /^Actor state$/);
+  for (const [label, state] of [
+    ["Running", "running"],
+    ["Transitional", "transitional"],
+    ["Suspended", "suspended"],
+    ["Crashed", "crashed"],
+    ["Unknown", "unknown"],
+  ] as const) {
+    const link = countLink(strip, label);
+    await expect(link).toHaveTextContent(`${label}${fleet.summary.actorsByState[state]}`);
+    await expect(link).toHaveAttribute("href", `${AGENT}/actors?actorState=${state}`);
+  }
+}
 
 const meta = {
   title: "Modules/AgentSubstrate/AgentOverviewPage",
@@ -91,13 +115,13 @@ export const Ready: Story = {
     ).toBeVisible();
     await expect(section.getByText("Checked 6 actors and 1 worker.")).toBeVisible();
 
-    const counts = within(within(canvasElement).getByRole("region", { name: "Actor counts" }));
-    const tile = (title: string) => within(counts.getByText(title).parentElement!);
-
-    await expect(tile("Agents").getByText(String(TESTBED_FLEET.summary.agents))).toBeVisible();
-    await expect(tile("Actors").getByText(String(TESTBED_FLEET.summary.actors))).toBeVisible();
-    await expect(tile("Suspended").getByText(String(TESTBED_FLEET.summary.actorsByState.suspended))).toBeVisible();
-    await expect(tile("Crashed").getByText("0")).toBeVisible();
+    const glance = await atAGlance(canvasElement);
+    await expect(countLink(glance, "Agents")).toHaveTextContent("Agents6of 6 actors in 1 atespace");
+    await expect(countLink(glance, "Workers")).toHaveTextContent("Workers1All active");
+    await expect(countLink(glance, "Room")).toHaveTextContent("Room1across 1 worker pool");
+    await expectActorStateCounts(glance, TESTBED_FLEET);
+    const profiles = group(glance, /^Agents by agent profile$/);
+    await expect(profiles.getAllByRole("link").map((link) => link.textContent)).toEqual(["go2", "node2", "python2"]);
   },
 };
 
@@ -113,6 +137,20 @@ export const HealthyFleet: Story = {
       )
     ).toBeVisible();
     await expect(section.queryByRole("region")).toBeNull();
+
+    const glance = await atAGlance(canvasElement);
+    await expect(countLink(glance, "Agents")).toHaveAttribute("href", `${AGENT}/actors`);
+    await expect(countLink(glance, "Agents")).toHaveTextContent(
+      `Agents${HEALTHY_FLEET.summary.agents}of ${HEALTHY_FLEET.summary.actors} actors in 2 atespaces`
+    );
+    await expect(countLink(glance, "Workers")).toHaveAttribute("href", `${AGENT}/workers`);
+    await expect(countLink(glance, "Workers")).toHaveTextContent(`Workers${HEALTHY_FLEET.summary.workers}All active`);
+    await expect(countLink(glance, "Room")).toHaveAttribute("href", `${AGENT}/worker-pools`);
+    await expect(countLink(glance, "Room")).toHaveTextContent("Room11across 2 worker pools");
+    await expectActorStateCounts(glance, HEALTHY_FLEET);
+    await expect(within(countLink(group(glance, /^Actor state$/), "Crashed")).getByText("0")).not.toHaveClass(
+      "text-status-error"
+    );
   },
 };
 
@@ -134,6 +172,12 @@ export const CrashedActor: Story = {
     await expect(crashed.getByText("python")).toBeVisible();
     await expect(canvasElement.querySelector(`time[datetime="${CRASHED_ACTOR_ITEM.crashedAt}"]`)).not.toBeNull();
     await expect(crashed.queryByRole("link", { name: /^Show all/ })).toBeNull();
+
+    const glance = await atAGlance(canvasElement);
+    await expectActorStateCounts(glance, CRASHED_ACTOR_FLEET);
+    const crashedCount = countLink(group(glance, /^Actor state$/), "Crashed");
+    await expect(within(crashedCount).getByText("1")).toHaveClass("text-status-error");
+    await expect(within(crashedCount).getByRole("img", { name: "Needs attention" })).toBeVisible();
   },
 };
 
@@ -172,6 +216,42 @@ export const DrainingWorker: Story = {
     await expect(
       draining.getByText(`Worker pool ${BUSY_WORKER.workerNamespace}/${BUSY_WORKER.workerPool}`)
     ).toBeVisible();
+
+    const workers = countLink(await atAGlance(canvasElement), "Workers");
+    await expect(workers).toHaveTextContent(`Workers${DRAINING_WORKER_FLEET.summary.workers}1 draining`);
+    await expect(within(workers).getByText("1 draining")).toHaveClass("text-status-missing");
+  },
+};
+
+export const NoRoom: Story = {
+  decorators: withFleet(FULL_WORKER_POOL_FLEET),
+  play: async ({ canvasElement }) => {
+    const room = countLink(await atAGlance(canvasElement), "Room");
+
+    await expect(room).toHaveTextContent("Room0across 2 worker pools");
+    await expect(within(room).getByText("0")).toHaveClass("text-status-error");
+    await expect(within(room).getByRole("img", { name: "Needs attention" })).toBeVisible();
+  },
+};
+
+export const SeveralAgentProfiles: Story = {
+  decorators: withFleet(SEVERAL_AGENT_PROFILES_FLEET),
+  play: async ({ canvasElement }) => {
+    const profiles = group(await atAGlance(canvasElement), /^Agents by agent profile$/);
+    const links = profiles.getAllByRole("link");
+
+    await expect(links.map((link) => link.textContent)).toEqual([
+      "go1",
+      "java1",
+      "node1",
+      "python2",
+      "No agent profile1",
+    ]);
+    await expect(countLink(profiles, "java")).toHaveAttribute("href", `${AGENT}/actors?agentProfile=java`);
+    await expect(countLink(profiles, "No agent profile")).toHaveAttribute(
+      "href",
+      `${AGENT}/actors?agentProfile=__none__`
+    );
   },
 };
 
@@ -197,6 +277,9 @@ export const WorkerPoolsDenied: Story = {
     await expect(section.getByText("Worker pools not checked: no access")).toBeVisible();
     await expect(section.getByRole("region", { name: /^Crashed actors/ })).toBeVisible();
     await expect(section.queryByRole("region", { name: /^Worker pools not ready/ })).toBeNull();
+
+    // Room comes from the workers, not from the WorkerPool list.
+    await expect(countLink(await atAGlance(canvasElement), "Room")).toHaveTextContent("Room11across 2 worker pools");
   },
 };
 
@@ -264,5 +347,11 @@ export const NoAtespacesDrainingWorker: Story = {
 
     await expect(within(section).getByRole("region", { name: /^Workers not active \(1\)/ })).toBeVisible();
     await expect(section.compareDocumentPosition(empty) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    const glance = await atAGlance(canvasElement);
+    await expect(countLink(glance, "Workers")).toHaveTextContent("Workers31 draining");
+    await expect(countLink(glance, "Room")).toHaveAttribute("href", `${AGENT}/worker-pools`);
+    await expect(glance.queryByRole("link", { name: /^Agents/ })).toBeNull();
+    await expect(glance.queryByRole("region", { name: "Actor state" })).toBeNull();
   },
 };

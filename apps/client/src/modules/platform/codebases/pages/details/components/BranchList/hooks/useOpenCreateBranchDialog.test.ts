@@ -9,8 +9,7 @@ const dataMocks = vi.hoisted(() => ({
   codebase: undefined as Codebase | undefined,
   branches: [] as CodebaseBranch[],
   pipelineNames: undefined as
-    | { reviewPipelineName: string; buildPipelineName: string; securityPipelineName: string }
-    | undefined,
+    { reviewPipelineName: string; buildPipelineName: string; securityPipelineName: string } | undefined,
 }));
 
 vi.mock("@/modules/platform/codebases/components/CreateCodebaseBranchDialog", () => ({

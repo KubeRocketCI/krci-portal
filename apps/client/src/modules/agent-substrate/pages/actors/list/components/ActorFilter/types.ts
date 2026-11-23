@@ -5,4 +5,5 @@ export type ActorFilterValues = {
   /** `ActorStateGroup`, not `ActorState`. */
   [ACTOR_FILTER_NAMES.ACTOR_STATE]: string;
   [ACTOR_FILTER_NAMES.CODEBASE]: string;
+  [ACTOR_FILTER_NAMES.AGENT_PROFILE]: string;
 };

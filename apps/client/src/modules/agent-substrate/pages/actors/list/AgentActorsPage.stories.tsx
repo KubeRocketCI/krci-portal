@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
-import { withAppProviders } from "@sb/index";
+import { STORYBOOK_CLUSTER_NAME, withAppProviders } from "@sb/index";
 import {
   CRASHED_ACTOR,
   EMPTY_FLEET,
   PLAIN_ACTOR,
   RUNNING_ACTOR,
+  SEVERAL_AGENT_PROFILES_FLEET,
   STORY_FLEET,
   seedFleet,
 } from "../../../__fixtures__/storyFleet";
@@ -107,6 +108,52 @@ export const FilteredByCodebase: Story = {
     await waitFor(() => expect(canvas.queryByRole("link", { name: RUNNING_ACTOR.name })).toBeNull());
     await expect(actorLinks(canvas)).toHaveLength(1);
     await expect(canvas.getByRole("link", { name: CRASHED_ACTOR.name })).toBeVisible();
+  },
+};
+
+export const FilteredByAgentProfile: Story = {
+  decorators: [withAppProviders({ seedQueryCache: seedFleet(SEVERAL_AGENT_PROFILES_FLEET) })],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await pick(canvasElement, "Agent profile", "No agent profile");
+
+    await waitFor(() => expect(canvas.queryByRole("link", { name: RUNNING_ACTOR.name })).toBeNull());
+    await expect(actorLinks(canvas).map((link: HTMLElement) => link.textContent)).toEqual(["issue-2-26"]);
+  },
+};
+
+/** The URL that an agent profile count of the Overview opens. */
+export const FilteredByAgentProfileFromUrl: Story = {
+  decorators: [
+    withAppProviders({
+      seedQueryCache: seedFleet(SEVERAL_AGENT_PROFILES_FLEET),
+      initialUrl: `/c/${STORYBOOK_CLUSTER_NAME}/agent/actors?agentProfile=python`,
+    }),
+  ],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(await canvas.findByRole("combobox", { name: "Agent profile" })).toHaveTextContent("python");
+    await waitFor(() => expect(canvas.queryByRole("link", { name: RUNNING_ACTOR.name })).toBeNull());
+    await expect(actorLinks(canvas).map((link: HTMLElement) => link.textContent)).toEqual(["issue-5-3", "issue-5-4"]);
+  },
+};
+
+/** The URL that an actor state count of the Overview opens. */
+export const FilteredByActorStateFromUrl: Story = {
+  decorators: [
+    withAppProviders({
+      seedQueryCache: seedFleet(STORY_FLEET),
+      initialUrl: `/c/${STORYBOOK_CLUSTER_NAME}/agent/actors?actorState=crashed`,
+    }),
+  ],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(await canvas.findByRole("combobox", { name: "Actor state" })).toHaveTextContent("Crashed");
+    await waitFor(() => expect(canvas.queryByRole("link", { name: RUNNING_ACTOR.name })).toBeNull());
+    await expect(actorLinks(canvas).map((link: HTMLElement) => link.textContent)).toEqual([CRASHED_ACTOR.name]);
   },
 };
 
