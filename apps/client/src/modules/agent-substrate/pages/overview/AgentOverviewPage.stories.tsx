@@ -68,7 +68,6 @@ async function capacity(canvasElement: HTMLElement): Promise<Canvas> {
 const workerPoolCard = (section: Canvas, name: string) =>
   within(section.getByRole("region", { name: `Worker pool krci-agents/${name}` }));
 
-/** The link of a stat card or of a count, by the label it starts with. */
 const countLink = (scope: Canvas, label: string) => scope.getByRole("link", { name: new RegExp(`^${label}`) });
 
 async function expectActorStateCounts(section: Canvas, fleet: ReadyFleet) {
@@ -171,7 +170,7 @@ export const HealthyFleet: Story = {
     await expect(countLink(glance, "Actors")).toHaveTextContent(
       `Actors${HEALTHY_FLEET.summary.actors}${HEALTHY_FLEET.summary.agents} host an agent · in 2 atespaces`
     );
-    await expect(countLink(glance, "Workers")).toHaveAttribute("href", `${AGENT}/workers`);
+    await expect(countLink(glance, "Workers")).toHaveAttribute("href", `${AGENT}/worker-pools?view=grid`);
     await expect(countLink(glance, "Workers")).toHaveTextContent(`Workers${HEALTHY_FLEET.summary.workers}All active`);
     await expect(countLink(glance, "Room")).toHaveAttribute("href", `${AGENT}/worker-pools`);
     await expect(countLink(glance, "Room")).toHaveTextContent("Room11across 2 worker pools");
@@ -239,7 +238,7 @@ export const DrainingWorker: Story = {
     await expect(draining.getByText("draining")).toBeVisible();
     await expect(draining.getByRole("link", { name: BUSY_WORKER.name })).toHaveAttribute(
       "href",
-      `${AGENT}/workers#worker/${BUSY_WORKER.workerNamespace}/${BUSY_WORKER.workerPool}/${BUSY_WORKER.name}`
+      `${AGENT}/worker-pools#worker/${BUSY_WORKER.workerNamespace}/${BUSY_WORKER.workerPool}/${BUSY_WORKER.name}`
     );
     await expect(
       draining.getByText(`Worker pool ${BUSY_WORKER.workerNamespace}/${BUSY_WORKER.workerPool}`)
@@ -479,7 +478,6 @@ export const CapacityNoRoomInFleet: Story = {
   },
 };
 
-/** Rows with no roomState; workers-busy with no limitedBy either. */
 export const CapacityRowsWithoutRoomState: Story = {
   decorators: withFleet(
     (() => {
@@ -506,7 +504,6 @@ export const CapacityRowsWithoutRoomState: Story = {
   },
 };
 
-/** Verdict and bars come from the workers; replicas from the WorkerPool list. */
 export const CapacityWorkerPoolsDenied: Story = {
   decorators: withFleet(WORKER_POOLS_DENIED_FLEET),
   play: async ({ canvasElement }) => {

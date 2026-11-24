@@ -9,6 +9,8 @@ export const VIEW_MODES = {
 
 export type ViewMode = ValueOf<typeof VIEW_MODES>;
 
+export const viewModeStorageKey = (entityID: string) => `VIEW_MODE::${entityID}`;
+
 export interface ViewModeContextProviderValue {
   entityID: string | null;
   viewMode: ViewMode;

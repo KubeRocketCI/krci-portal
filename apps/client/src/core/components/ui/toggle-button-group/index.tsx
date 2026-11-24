@@ -31,11 +31,9 @@ export function ToggleButtonGroup<T extends string>({
 }: ToggleButtonGroupProps<T>) {
   const handleButtonClick = (buttonValue: T) => (event: React.MouseEvent<HTMLElement>) => {
     if (exclusive) {
-      // For exclusive mode, if clicking the same button, don't change (or set to null if needed)
       const newValue = value === buttonValue ? null : buttonValue;
       onChange(event, newValue as T | null);
     } else {
-      // For non-exclusive mode, toggle the value
       onChange(event, buttonValue);
     }
   };
@@ -82,7 +80,6 @@ export function ToggleButtonGroup<T extends string>({
 }
 
 export function ToggleButton<T extends string>({ children }: ToggleButtonProps<T>) {
-  // This component is just a marker - the actual rendering is handled by ToggleButtonGroup
-  // We return a fragment to avoid rendering anything directly
+  // Marker; ToggleButtonGroup renders the buttons.
   return <>{children}</>;
 }

@@ -4,20 +4,16 @@ import { EmptyList } from "@/core/components/EmptyList";
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { cn } from "@/core/utils/classname";
 import { ActorLink, ActorStateBadge } from "../../../../components/ActorCells";
-import { FleetEmpty } from "../../../../components/FleetStatePanel";
 import { ResourceBars } from "../../../../components/ResourceBars";
 import { RoomVerdict } from "../../../../components/RoomVerdict";
 import { WorkerNotRegisteredBadge, WorkerPoolReadyBadge, WorkerStateBadge } from "../../../../components/WorkerCells";
-import { WorkerPoolAccessNotice } from "../../../../components/WorkerPoolAccessNotice";
 import { useScrollToHashTarget } from "../../../../hooks/useScrollToHashTarget";
-import { hasNoWorkerFleet } from "../../../../utils/hasNoWorkerFleet";
 import { fleetRoom } from "../../../../utils/roomLabel";
-import { HASH_TARGET_CLASS, workerAnchor } from "../../../../utils/rowAnchor";
+import { HASH_TARGET_CLASS, workerAnchor, workerPoolAnchor } from "../../../../utils/rowAnchor";
 
 interface WorkerBlockProps {
   worker: WorkerRow;
   actors: ActorRow[];
-  /** The URL fragment names this worker. */
   isTarget: boolean;
 }
 
@@ -109,8 +105,17 @@ function WorkerPoolCard({
   actorsByWorker,
   target,
 }: WorkerPoolCardProps) {
+  const anchor = workerPoolAnchor(workerPool);
+  const isTarget = anchor === target;
+
   return (
-    <Card role="region" aria-label={`Worker pool ${workerPool.namespace}/${workerPool.name}`}>
+    <Card
+      id={anchor}
+      role="region"
+      aria-label={`Worker pool ${workerPool.namespace}/${workerPool.name}`}
+      aria-current={isTarget ? "true" : undefined}
+      className={cn(isTarget && HASH_TARGET_CLASS)}
+    >
       <CardHeader className="flex flex-row items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-2">
           <div className="flex flex-col gap-1">
@@ -144,9 +149,8 @@ function WorkerPoolCard({
   );
 }
 
-/** The worker that the URL fragment names is scrolled into view and highlighted. */
-export function CapacityBoard({ fleet }: { fleet: ReadyFleet }) {
-  const target = useScrollToHashTarget(fleet.workers);
+export function WorkerPoolCards({ fleet }: { fleet: ReadyFleet }) {
+  const target = useScrollToHashTarget(fleet.workerPools.items);
 
   const workersByKey = React.useMemo(
     () =>
@@ -169,27 +173,23 @@ export function CapacityBoard({ fleet }: { fleet: ReadyFleet }) {
     return byWorker;
   }, [fleet.actors]);
 
-  if (hasNoWorkerFleet(fleet)) return <FleetEmpty />;
+  if (fleet.workerPools.items.length === 0) return <EmptyList customText="No worker pools" />;
   const totalRoom = fleetRoom(fleet.workerPools);
 
   return (
-    <>
-      <WorkerPoolAccessNotice access={fleet.workerPools.access} />
-      {fleet.workerPools.items.length === 0 && <EmptyList customText="No workers" />}
-      <div className="grid gap-6 xl:grid-cols-2">
-        {fleet.workerPools.items.map((workerPool) => (
-          <WorkerPoolCard
-            key={`${workerPool.namespace}/${workerPool.name}`}
-            workerPool={workerPool}
-            roomSize={fleet.workerPools.roomSize}
-            totalRoom={totalRoom}
-            access={fleet.workerPools.access}
-            workersByKey={workersByKey}
-            actorsByWorker={actorsByWorker}
-            target={target}
-          />
-        ))}
-      </div>
-    </>
+    <div className="grid gap-6 xl:grid-cols-2">
+      {fleet.workerPools.items.map((workerPool) => (
+        <WorkerPoolCard
+          key={`${workerPool.namespace}/${workerPool.name}`}
+          workerPool={workerPool}
+          roomSize={fleet.workerPools.roomSize}
+          totalRoom={totalRoom}
+          access={fleet.workerPools.access}
+          workersByKey={workersByKey}
+          actorsByWorker={actorsByWorker}
+          target={target}
+        />
+      ))}
+    </div>
   );
 }
