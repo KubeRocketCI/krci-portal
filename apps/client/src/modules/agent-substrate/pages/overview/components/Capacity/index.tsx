@@ -61,7 +61,7 @@ function WorkerPoolCapacity({ workerPool, roomSize, totalRoom, access, clusterNa
   );
 }
 
-/** One card per worker pool. With no worker pool, nothing: At a glance shows room 0 across 0 worker pools. */
+/** Renders nothing with no worker pool; At a glance shows room 0. */
 export function Capacity({ fleet }: { fleet: ReadyFleet }) {
   const headingId = React.useId();
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));

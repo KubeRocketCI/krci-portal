@@ -1,7 +1,6 @@
 import type { AttentionItem, AttentionKind, ReadyFleet, WorkerPoolAccess } from "@my-project/shared";
 import { plural } from "../../../utils/plural";
 
-/** Rows shown per group; more rows give a "Show all" link. */
 export const NEEDS_ATTENTION_MAX_ROWS = 5;
 
 export interface AttentionGroup {
@@ -43,7 +42,6 @@ const NOT_CHECKED_REASON: Record<Exclude<WorkerPoolAccess, "ok">, string> = {
 
 export interface WorkerPoolCheck {
   access: WorkerPoolAccess;
-  /** Worker pools with a read WorkerPool. */
   read: number;
   total: number;
 }
@@ -52,7 +50,6 @@ export function workerPoolCheckOf({ access, items }: ReadyFleet["workerPools"]):
   return { access, read: items.filter(({ resource }) => resource !== null).length, total: items.length };
 }
 
-/** Null when the worker pools are readable. */
 export function notCheckedText({ access, read }: WorkerPoolCheck): string | null {
   if (access === "ok") return null;
   const reason = NOT_CHECKED_REASON[access];

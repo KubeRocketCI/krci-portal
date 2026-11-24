@@ -16,7 +16,7 @@ export function ActorRuntime({ actor }: { actor: ActorRow }) {
           rows={[
             ["Worker", placement?.worker],
             ["Worker pool", placement && `${placement.workerNamespace}/${placement.workerPool}`],
-            ["Pod", placement?.pod],
+            ["Worker pod", placement?.workerPod],
             ["Node", placement?.node],
             ["Sandbox runtime", placement?.sandboxRuntime],
           ]}

@@ -29,9 +29,9 @@ describe("fleetRoom", () => {
 });
 
 describe("roomVerdict", () => {
-  it("gives the room in agents as success", () => {
-    expect(roomVerdict({ roomState: "room", room: 3 }, 3)).toEqual({ tone: "success", text: "Room for 3 agents" });
-    expect(roomVerdict({ roomState: "room", room: 1 }, 4)).toEqual({ tone: "success", text: "Room for 1 agent" });
+  it("gives the room in actors as success", () => {
+    expect(roomVerdict({ roomState: "room", room: 3 }, 3)).toEqual({ tone: "success", text: "Room for 3 actors" });
+    expect(roomVerdict({ roomState: "room", room: 1 }, 4)).toEqual({ tone: "success", text: "Room for 1 actor" });
   });
 
   it("gives a worker pool with no room as a warning while another worker pool has room", () => {
@@ -63,8 +63,8 @@ describe("roomVerdict", () => {
 
   describe("a row from a server that reports no roomState", () => {
     it("gives room from room above zero", () => {
-      expect(roomVerdict({ room: 2, limitedBy: ["cpu"] }, 2)).toEqual({ tone: "success", text: "Room for 2 agents" });
-      expect(roomVerdict({ room: 2 }, 2)).toEqual({ tone: "success", text: "Room for 2 agents" });
+      expect(roomVerdict({ room: 2, limitedBy: ["cpu"] }, 2)).toEqual({ tone: "success", text: "Room for 2 actors" });
+      expect(roomVerdict({ room: 2 }, 2)).toEqual({ tone: "success", text: "Room for 2 actors" });
     });
 
     it("gives no active, registered worker from an empty limitedBy", () => {
@@ -87,7 +87,7 @@ describe("roomVerdict", () => {
         tone: "warning",
         text: "No room",
       });
-      expect(roomVerdict({ room: 1, roomState: unknown }, 1)).toEqual({ tone: "success", text: "Room for 1 agent" });
+      expect(roomVerdict({ room: 1, roomState: unknown }, 1)).toEqual({ tone: "success", text: "Room for 1 actor" });
     });
   });
 });

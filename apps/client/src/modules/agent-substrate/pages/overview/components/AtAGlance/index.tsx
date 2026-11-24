@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "@tanstack/react-router";
-import { Bot, Boxes, Server } from "lucide-react";
+import { Boxes, Package, Server } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import { actorStateGroupSchema, type ReadyFleet } from "@my-project/shared";
 import { SectionHeading } from "@/core/components/SectionHeading";
@@ -17,7 +17,7 @@ import {
   PATH_AGENT_WORKERS_FULL,
 } from "../../../../constants/paths";
 import { fleetRoom } from "../../../../utils/roomLabel";
-import { actorStateSearch, agentProfileSearch, agentsSubText, roomSubText, workersHealth } from "../../utils/atAGlance";
+import { actorStateSearch, actorsSubText, agentProfileSearch, roomSubText, workersHealth } from "../../utils/atAGlance";
 
 const COUNT_LINK_CLASS =
   "hover:bg-muted focus-visible:ring-ring flex min-w-0 flex-col gap-0.5 rounded-md px-3 py-2 focus-visible:ring-2 focus-visible:outline-none";
@@ -86,10 +86,10 @@ export function AtAGlance({ fleet }: { fleet: ReadyFleet }) {
           {hasAtespaces && (
             <Link to={PATH_AGENT_ACTORS_FULL} params={{ clusterName }} className="group block">
               <StatCard
-                icon={Bot}
-                label="Agents"
-                value={summary.agents}
-                detail={<StatSubLine>{agentsSubText(summary)}</StatSubLine>}
+                icon={Package}
+                label="Actors"
+                value={summary.actors}
+                detail={<StatSubLine>{actorsSubText(summary)}</StatSubLine>}
               />
             </Link>
           )}

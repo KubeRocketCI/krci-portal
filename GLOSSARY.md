@@ -12,6 +12,10 @@ Terms shared with the dispatcher match `krci-agent-dispatcher/GLOSSARY.md`.
 The sandbox platform that runs isolated actors on a shared set of workers.
 _Avoid_: Substrate cluster, sandbox service
 
+**Agent mode**:
+The portal mode that shows the Agent Substrate fleet that agents run on.
+_Avoid_: agent view, substrate mode
+
 **Fleet**:
 Everything one Agent Substrate holds at one time: its atespaces, actors, workers and worker pools.
 _Avoid_: cluster, inventory, estate

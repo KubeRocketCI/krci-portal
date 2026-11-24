@@ -50,7 +50,7 @@ function toActorRow(actor: SubstrateActor, agent: ActorAgent | null, codebaseLin
       worker: assignment.worker,
       workerPool: assignment.workerPool,
       workerNamespace: assignment.workerNamespace,
-      pod: assignment.workerPod,
+      workerPod: assignment.workerPod,
       node: assignment.nodeName,
       sandboxRuntime: assignment.sandboxRuntime,
     },

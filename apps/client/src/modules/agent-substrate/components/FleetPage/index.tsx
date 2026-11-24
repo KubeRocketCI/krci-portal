@@ -15,7 +15,6 @@ interface FleetPageProps {
   icon: LucideIcon;
   title: string;
   breadcrumbs: Breadcrumb[];
-  /** Other states render their own panel. */
   children?: (fleet: ReadyFleet) => React.ReactNode;
 }
 

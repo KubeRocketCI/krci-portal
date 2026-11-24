@@ -129,7 +129,7 @@ export const Ready: Story = {
     await expect(section.getByText("Checked 6 actors and 1 worker.")).toBeVisible();
 
     const glance = await atAGlance(canvasElement);
-    await expect(countLink(glance, "Agents")).toHaveTextContent("Agents6of 6 actors in 1 atespace");
+    await expect(countLink(glance, "Actors")).toHaveTextContent("Actors66 host an agent · in 1 atespace");
     await expect(countLink(glance, "Workers")).toHaveTextContent("Workers1All active");
     await expect(countLink(glance, "Room")).toHaveTextContent("Room1across 1 worker pool");
     await expectActorStateCounts(glance, TESTBED_FLEET);
@@ -167,9 +167,9 @@ export const HealthyFleet: Story = {
     await expect(section.queryByRole("region")).toBeNull();
 
     const glance = await atAGlance(canvasElement);
-    await expect(countLink(glance, "Agents")).toHaveAttribute("href", `${AGENT}/actors`);
-    await expect(countLink(glance, "Agents")).toHaveTextContent(
-      `Agents${HEALTHY_FLEET.summary.agents}of ${HEALTHY_FLEET.summary.actors} actors in 2 atespaces`
+    await expect(countLink(glance, "Actors")).toHaveAttribute("href", `${AGENT}/actors`);
+    await expect(countLink(glance, "Actors")).toHaveTextContent(
+      `Actors${HEALTHY_FLEET.summary.actors}${HEALTHY_FLEET.summary.agents} host an agent · in 2 atespaces`
     );
     await expect(countLink(glance, "Workers")).toHaveAttribute("href", `${AGENT}/workers`);
     await expect(countLink(glance, "Workers")).toHaveTextContent(`Workers${HEALTHY_FLEET.summary.workers}All active`);
@@ -388,7 +388,7 @@ export const CapacityOneWorkerPool: Story = {
       `${AGENT}/worker-pools#worker-pool/krci-agents/workers`
     );
     await expect(card.getByText("1 desired, 1 ready")).toBeVisible();
-    await expect(card.getByText("Room for 1 agent")).toHaveClass("text-status-success");
+    await expect(card.getByText("Room for 1 actor")).toHaveClass("text-status-success");
     await expect(card.getByText("at 1.0 CPU, 2.0 Gi · limited by CPU and memory")).toBeVisible();
     for (const label of ["Actors", "CPU", "Memory"]) await expect(card.getByText(label)).toBeVisible();
     await expect(card.getAllByText("(0%)")).toHaveLength(3);
@@ -419,11 +419,11 @@ export const CapacityTwoWorkerPools: Story = {
     await expect(cards[0]).toHaveAccessibleName("Worker pool krci-agents/workers");
     await expect(cards[1]).toHaveAccessibleName("Worker pool krci-agents/workers-microvm");
     const workers = workerPoolCard(section, "workers");
-    await expect(workers.getByText("Room for 4 agents")).toBeVisible();
+    await expect(workers.getByText("Room for 4 actors")).toBeVisible();
     await expect(workers.getByText("2 desired, 2 ready")).toBeVisible();
     await expect(workers.getByText("at 1.0 CPU, 2.0 Gi · limited by CPU and memory")).toBeVisible();
     const microvm = workerPoolCard(section, "workers-microvm");
-    await expect(microvm.getByText("Room for 7 agents")).toBeVisible();
+    await expect(microvm.getByText("Room for 7 actors")).toBeVisible();
     await expect(microvm.getByText("at 1.0 CPU, 2.0 Gi · limited by memory")).toBeVisible();
   },
 };
@@ -446,7 +446,7 @@ export const CapacityRoomStates: Story = {
     const section = await capacity(canvasElement);
 
     for (const [name, text, tone] of [
-      ["workers", "Room for 3 agents", "text-status-success"],
+      ["workers", "Room for 3 actors", "text-status-success"],
       ["workers-busy", "Full", "text-status-missing"],
       ["workers-small", "Too small for the room size", "text-status-missing"],
       ["workers-spare", "No active, registered worker", "text-status-missing"],
@@ -495,7 +495,7 @@ export const CapacityRowsWithoutRoomState: Story = {
     const section = await capacity(canvasElement);
 
     for (const [name, text] of [
-      ["workers", "Room for 3 agents"],
+      ["workers", "Room for 3 actors"],
       ["workers-busy", "No room"],
       ["workers-small", "No room"],
       ["workers-spare", "No active, registered worker"],
@@ -518,7 +518,7 @@ export const CapacityWorkerPoolsDenied: Story = {
     ] as const) {
       const card = workerPoolCard(section, name);
       await expect(card.getByText("no access")).toBeVisible();
-      await expect(card.getByText(`Room for ${room} agents`)).toBeVisible();
+      await expect(card.getByText(`Room for ${room} actors`)).toBeVisible();
       await expect(card.getByText("Memory")).toBeVisible();
     }
   },
@@ -537,7 +537,7 @@ export const NoAtespacesDrainingWorker: Story = {
     const glance = await atAGlance(canvasElement);
     await expect(countLink(glance, "Workers")).toHaveTextContent("Workers31 draining");
     await expect(countLink(glance, "Room")).toHaveAttribute("href", `${AGENT}/worker-pools`);
-    await expect(glance.queryByRole("link", { name: /^Agents/ })).toBeNull();
+    await expect(glance.queryByRole("link", { name: /^Actors/ })).toBeNull();
     await expect(glance.queryByRole("region", { name: "Actor state" })).toBeNull();
   },
 };

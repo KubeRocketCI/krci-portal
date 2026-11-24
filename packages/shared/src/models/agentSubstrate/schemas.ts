@@ -2,10 +2,7 @@ import { z } from "zod";
 
 const count = z.number().int().nonnegative();
 
-/**
- * The Agent Substrate actor states.
- * `transitional`: a state that Agent Substrate does not name. `unknown`: the actor state cannot be read.
- */
+/** `transitional`: a state that Agent Substrate does not name. `unknown`: the actor state cannot be read. */
 export const actorStateSchema = z.enum([
   "resuming",
   "running",
@@ -78,7 +75,7 @@ export const actorPlacementSchema = z.object({
   worker: z.string(),
   workerPool: z.string(),
   workerNamespace: z.string(),
-  pod: z.string(),
+  workerPod: z.string(),
   node: z.string(),
   sandboxRuntime: z.string().nullable(),
 });
@@ -155,9 +152,8 @@ export const workerPoolRowSchema = z.object({
   /** Actors of the room size that the active, registered workers can still host. */
   room: count,
   /**
-   * The resources that bound room on at least one active, registered worker: on a worker, the resources whose free
-   * amount fits the fewest actors of the room size. In the order actors, cpu, memory. Empty when no worker is active
-   * and registered.
+   * Resources that bound room on at least one active, registered worker (per worker: those fitting the fewest
+   * actors). Order: actors, cpu, memory. Empty when no worker is active and registered.
    */
   limitedBy: z.array(roomResourceSchema),
   roomState: roomStateSchema,
