@@ -218,8 +218,7 @@ export const LogViewer = forwardRef<LogViewerRef, LogViewerProps>(
      * a future library version changing or removing it. */
     const getScrollHandle = useCallback(() => {
       const handle = lazyLogRef.current?.listRef?.current as
-        | { scrollTo: (o: number) => void; scrollSize: number }
-        | undefined;
+        { scrollTo: (o: number) => void; scrollSize: number } | undefined;
       return typeof handle?.scrollTo === "function" && typeof handle.scrollSize === "number" ? handle : undefined;
     }, []);
 

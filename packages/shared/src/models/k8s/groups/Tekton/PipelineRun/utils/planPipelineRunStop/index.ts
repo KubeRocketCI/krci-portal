@@ -10,8 +10,7 @@ export interface PipelineRunStopPatch {
 }
 
 export type PipelineRunStopPlan =
-  | { action: "patch"; patch: PipelineRunStopPatch }
-  | { action: "skip"; reason: PipelineRunStopSkipReason };
+  { action: "patch"; patch: PipelineRunStopPatch } | { action: "skip"; reason: PipelineRunStopSkipReason };
 
 const stopRequestedSpecStatuses: ReadonlySet<string> = new Set([
   pipelineRunSpecStatus.Cancelled,

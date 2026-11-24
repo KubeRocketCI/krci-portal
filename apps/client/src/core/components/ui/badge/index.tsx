@@ -42,16 +42,7 @@ export { BadgeRoot, badgeVariants };
 
 export interface BadgeProps extends Omit<React.ComponentProps<"span">, "children"> {
   variant?:
-    | "default"
-    | "secondary"
-    | "destructive"
-    | "outline"
-    | "dark"
-    | "success"
-    | "error"
-    | "warning"
-    | "info"
-    | "neutral";
+    "default" | "secondary" | "destructive" | "outline" | "dark" | "success" | "error" | "warning" | "info" | "neutral";
   children: React.ReactNode;
 }
 

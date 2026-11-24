@@ -101,8 +101,8 @@ importers:
         specifier: ^9.39.2
         version: 9.39.2(jiti@2.6.1)
       prettier:
-        specifier: ^3.5.3
-        version: 3.7.4
+        specifier: ^3.9.10
+        version: 3.9.10
       rimraf:
         specifier: ^6.1.4
         version: 6.1.4
@@ -5220,11 +5220,6 @@ packages:
         optional: true
       prettier-plugin-svelte:
         optional: true
-
-  prettier@3.7.4:
-    resolution: {integrity: sha512-v6UNi1+3hSlVvv8fSaoUbggEM5VErKmmpGA7Pl3HF8V6uKY7rvClBOJlH6yNwQtfTueNkGVpOv/mtWL9L4bgRA==}
-    engines: {node: '>=14'}
-    hasBin: true
 
   prettier@3.9.10:
     resolution: {integrity: sha512-skGHTH1Yb9QvaTC4hWnRTzEYtCpApF0UMBPz+t/0ZPzP8ihefo/btKd+QA7pUE0fEwA1SbS/NmhyEcstdXOIdA==}
@@ -10774,7 +10769,7 @@ snapshots:
       monaco-types: 0.1.1
       monaco-worker-manager: 2.0.1(monaco-editor@0.55.1)
       path-browserify: 1.0.1
-      prettier: 3.7.4
+      prettier: 3.9.10
       vscode-languageserver-textdocument: 1.0.12
       vscode-languageserver-types: 3.17.5
       vscode-uri: 3.1.0
@@ -11028,8 +11023,6 @@ snapshots:
   prettier-plugin-tailwindcss@0.6.14(prettier@3.9.10):
     dependencies:
       prettier: 3.9.10
-
-  prettier@3.7.4: {}
 
   prettier@3.9.10: {}
 

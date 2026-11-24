@@ -44,8 +44,7 @@ function DialogContent({
   const handleInteractOutside = React.useCallback(
     (
       event: React.ComponentProps<typeof DialogPrimitive.Content>["onInteractOutside"] extends
-        | ((e: infer E) => void)
-        | undefined
+        ((e: infer E) => void) | undefined
         ? E
         : never
     ) => {

@@ -32,11 +32,4 @@ export type SeverityLevel = "critical" | "high" | "medium" | "low" | "unassigned
  * Analysis state for findings and violations
  */
 export type AnalysisState =
-  | "NOT_SET"
-  | "APPROVED"
-  | "REJECTED"
-  | "EXPLOITABLE"
-  | "IN_TRIAGE"
-  | "FALSE_POSITIVE"
-  | "NOT_AFFECTED"
-  | "RESOLVED";
+  "NOT_SET" | "APPROVED" | "REJECTED" | "EXPLOITABLE" | "IN_TRIAGE" | "FALSE_POSITIVE" | "NOT_AFFECTED" | "RESOLVED";

@@ -23,8 +23,7 @@ export const Applications: React.FC = () => {
   });
 
   const applications = React.useMemo(() => applicationListWatch.data.array, [applicationListWatch.data.array]) as
-    | Codebase[]
-    | undefined;
+    Codebase[] | undefined;
 
   // Map applications to options for FormCombobox
   const applicationOptions = React.useMemo(() => {

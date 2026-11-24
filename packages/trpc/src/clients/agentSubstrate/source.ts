@@ -84,11 +84,7 @@ export interface SubstrateRuntimeOverhead {
 }
 
 export type AgentSubstrateSourceErrorKind =
-  | "unauthenticated"
-  | "permissionDenied"
-  | "unavailable"
-  | "notFound"
-  | "other";
+  "unauthenticated" | "permissionDenied" | "unavailable" | "notFound" | "other";
 
 /**
  * The only error an `AgentSubstrateSource` read rejects with. `unavailable` covers network and TLS failures.
