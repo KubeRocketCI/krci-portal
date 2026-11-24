@@ -4,11 +4,13 @@ export default defineConfig({
   test: {
     projects: ["apps/*", "packages/*", "scripts"],
     reporters: [process.env.CI ? "verbose" : "dot"],
+    // Console output of a passing test is dropped; a failing test prints its own.
+    silent: "passed-only",
     coverage: {
       // On in `pnpm test:coverage` (--coverage).
       enabled: false,
       provider: "istanbul",
-      reporter: ["text", "lcov", "json"],
+      reporter: ["text-summary", "lcov", "json"],
       exclude: [
         // Standard exclusions
         "**/node_modules/**",
