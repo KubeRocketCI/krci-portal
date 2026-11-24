@@ -136,6 +136,14 @@ export const workerPoolResourceSchema = z.object({
 /** A worker resource that bounds room: `actors` is the actor capacity of the worker. */
 export const roomResourceSchema = z.enum(["actors", "cpu", "memory"]);
 
+/**
+ * Room state of a worker pool, over its active, registered workers.
+ * `room`: room above 0. `full`: room 0; at least one worker fits an actor of the room size when it hosts no actor.
+ * `tooSmall`: room 0; no worker fits an actor of the room size even when it hosts no actor.
+ * `noWorker`: no worker is active and registered.
+ */
+export const roomStateSchema = z.enum(["room", "full", "tooSmall", "noWorker"]);
+
 export const workerPoolRowSchema = z.object({
   name: z.string(),
   namespace: z.string(),
@@ -152,6 +160,7 @@ export const workerPoolRowSchema = z.object({
    * and registered.
    */
   limitedBy: z.array(roomResourceSchema),
+  roomState: roomStateSchema,
   /** Null when the WorkerPool list of the namespace was not read or no WorkerPool has this name. */
   resource: workerPoolResourceSchema.nullable(),
 });

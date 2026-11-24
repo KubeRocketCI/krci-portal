@@ -16,14 +16,8 @@ import {
   PATH_AGENT_WORKER_POOLS_FULL,
   PATH_AGENT_WORKERS_FULL,
 } from "../../../../constants/paths";
-import {
-  actorStateSearch,
-  agentProfileSearch,
-  agentsSubText,
-  fleetRoom,
-  roomSubText,
-  workersHealth,
-} from "../../utils/atAGlance";
+import { fleetRoom } from "../../../../utils/roomLabel";
+import { actorStateSearch, agentProfileSearch, agentsSubText, roomSubText, workersHealth } from "../../utils/atAGlance";
 
 const COUNT_LINK_CLASS =
   "hover:bg-muted focus-visible:ring-ring flex min-w-0 flex-col gap-0.5 rounded-md px-3 py-2 focus-visible:ring-2 focus-visible:outline-none";

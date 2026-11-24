@@ -18,7 +18,7 @@ import { K8sClient } from "../../../clients/k8s/index.js";
 import type { TRPCContext } from "../../../context/types.js";
 import { gitlabIssueUrl, readCodebaseLinks, type CodebaseLinks } from "./codebaseLinks.js";
 import { needsAttentionOf } from "./needsAttention.js";
-import { roomSizeOf, workerRoomOf } from "./room.js";
+import { roomSizeOf, roomStateOf, workerRoomOf, type WorkerRoom } from "./room.js";
 import { readSubstrate, type SubstrateFleet } from "./substrateRead.js";
 import { readWorkerPools, type WorkerPoolRead } from "./workerPools.js";
 import type { SubstrateActor, SubstrateWorker } from "../../../clients/agentSubstrate/index.js";
@@ -128,6 +128,7 @@ function emptyWorkerPoolRow(namespace: string, name: string): WorkerPoolRow {
     allocated: zeroResources(),
     room: 0,
     limitedBy: [],
+    roomState: "noWorker",
     resource: null,
   };
 }
@@ -146,6 +147,7 @@ function toWorkerPools(fleet: SubstrateFleet, workerPoolRead: WorkerPoolRead): R
     return row;
   };
 
+  const workerRooms = new Map<WorkerPoolRow, WorkerRoom[]>();
   for (const worker of fleet.workers) {
     const row = rowOf(worker.workerNamespace, worker.workerPool);
     row.workers.push(worker.name);
@@ -158,13 +160,19 @@ function toWorkerPools(fleet: SubstrateFleet, workerPoolRead: WorkerPoolRead): R
     row.limitedBy = roomResourceSchema.options.filter(
       (resource) => row.limitedBy.includes(resource) || workerRoom.limitedBy.includes(resource)
     );
+    const rooms = workerRooms.get(row);
+    if (rooms) rooms.push(workerRoom);
+    else workerRooms.set(row, [workerRoom]);
   }
   for (const { namespace, name, resource } of workerPoolRead.items) {
     rowOf(namespace, name).resource = resource;
   }
 
   const items = [...rows.values()];
-  for (const row of items) row.workers.sort(sortByName);
+  for (const row of items) {
+    row.workers.sort(sortByName);
+    row.roomState = roomStateOf(workerRooms.get(row) ?? []);
+  }
   items.sort((a, b) => sortByName(a.namespace, b.namespace) || sortByName(a.name, b.name));
   return {
     access: workerPoolRead.access,

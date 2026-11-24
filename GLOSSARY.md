@@ -40,9 +40,17 @@ _Avoid_: runner, slot, node
 A set of workers of one size and sandbox class, kept at a desired number of replicas.
 _Avoid_: pool (alone), node pool
 
+**Room size**:
+The largest CPU limit and the largest memory limit over the current actor templates. The two maxima can come from different templates, so the room size can be larger than any one template. No template sets limits: no room size; room counts actors only.
+_Avoid_: agent size, template size
+
 **Room**:
-The number of actors of the largest current actor template size that the active workers of a worker pool can still host, runtime overhead included. No actor template with limits: the number of actors that the worker capacity still allows. No room is room zero: an activation does not start.
+The number of actors of the room size that the active, registered workers of a worker pool can still host, runtime overhead included. No room size: the number of actors that the worker capacity still allows. Room zero: no active, registered worker can host an actor of the room size; an actor of a smaller template may still fit.
 _Avoid_: headroom, free capacity, slots
+
+**Room state**:
+The state of room in a worker pool. Room: room above zero. Full: room zero; a worker would fit an actor of the room size if it hosted no actor. Too small: room zero; no worker fits one actor of the room size even when it hosts no actor. No worker: no worker is active and registered. A worker pool with no room is a warning while another worker pool has room, and an error, "no room in the fleet", when the fleet has room zero.
+_Avoid_: saturated, exhausted
 
 **Limited by**:
 The worker resources (actor count, CPU, memory) that bound room: on each active, registered worker of a worker pool, the resources whose free amount fits the fewest actors of the room size. Several when workers are bound by different resources or one worker by several. None when no worker is active and registered.

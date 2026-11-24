@@ -20,6 +20,7 @@ import {
   fleetUnreachableReasonSchema,
   roomResourceSchema,
   roomSizeSchema,
+  roomStateSchema,
   snapshotDurableStateSchema,
   snapshotFidelitySchema,
   substrateResourcesSchema,
@@ -46,6 +47,7 @@ export type ActorPlacement = z.infer<typeof actorPlacementSchema>;
 export type ActorCrash = z.infer<typeof actorCrashSchema>;
 export type RoomSize = z.infer<typeof roomSizeSchema>;
 export type RoomResource = z.infer<typeof roomResourceSchema>;
+export type RoomState = z.infer<typeof roomStateSchema>;
 export type ActorSnapshot = z.infer<typeof actorSnapshotSchema>;
 export type ActorRow = z.infer<typeof actorRowSchema>;
 export type WorkerRow = z.infer<typeof workerRowSchema>;

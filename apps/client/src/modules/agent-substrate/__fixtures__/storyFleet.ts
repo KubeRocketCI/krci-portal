@@ -9,6 +9,7 @@ import {
   type AttentionItem,
   type FleetSnapshot,
   type ReadyFleetSnapshot,
+  type WorkerPoolRow,
   type WorkerRow,
 } from "@my-project/shared";
 import { FLEET_QUERY_KEY } from "../hooks/useFleet";
@@ -157,6 +158,7 @@ export const STORY_WORKER_POOLS: ReadyFleetSnapshot["workerPools"] = {
       allocated: { ...BUSY_WORKER.allocated },
       room: 1 + 3,
       limitedBy: ["cpu", "memory"],
+      roomState: "room",
       resource: { desiredReplicas: 2, readyReplicas: 2, sandboxClass: "gvisor", resolution: "Resolved" },
     },
     {
@@ -167,6 +169,7 @@ export const STORY_WORKER_POOLS: ReadyFleetSnapshot["workerPools"] = {
       allocated: { ...MICROVM_WORKER.allocated },
       room: 7,
       limitedBy: ["memory"],
+      roomState: "room",
       resource: { desiredReplicas: 1, readyReplicas: 1, sandboxClass: "microvm", resolution: "Resolved" },
     },
   ],
@@ -304,6 +307,7 @@ export const FULL_WORKER_POOL_FLEET: ReadyFleetSnapshot = (() => {
     pool.allocated = { ...pool.capacity };
     pool.room = 0;
     pool.limitedBy = ["actors", "cpu", "memory"];
+    pool.roomState = "full";
   }
   return fleet;
 })();
@@ -317,6 +321,7 @@ export const ONE_FULL_WORKER_POOL_FLEET: ReadyFleetSnapshot = (() => {
   pool.allocated = { ...worker.allocated };
   pool.room = 0;
   pool.limitedBy = ["memory"];
+  pool.roomState = "full";
   return fleet;
 })();
 
@@ -362,6 +367,7 @@ export const WORKERS_NOT_ACTIVE_FLEET: ReadyFleetSnapshot = (() => {
   const microvm = fleet.workerPools.items.find(({ name }) => name === MICROVM_WORKER.workerPool)!;
   microvm.room = 0;
   microvm.limitedBy = [];
+  microvm.roomState = "noWorker";
   fleet.needsAttention = [
     CRASHED_ACTOR_ITEM,
     workerNotActiveItem(MICROVM_WORKER, "unavailable"),
@@ -395,6 +401,7 @@ export const UNREGISTERED_WORKER_FLEET: ReadyFleetSnapshot = (() => {
   const microvm = fleet.workerPools.items.find(({ name }) => name === MICROVM_WORKER.workerPool)!;
   microvm.room = 0;
   microvm.limitedBy = [];
+  microvm.roomState = "noWorker";
   return fleet;
 })();
 
@@ -409,6 +416,7 @@ export const NOT_READY_FLEET: ReadyFleetSnapshot = (() => {
     allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
     room: 0,
     limitedBy: [],
+    roomState: "noWorker",
     resource: { desiredReplicas: 2, readyReplicas: 0, sandboxClass: "gvisor", resolution: null },
   });
   fleet.needsAttention = [
@@ -458,6 +466,147 @@ export const PARTIAL_WORKER_POOLS_FLEET: ReadyFleetSnapshot = (() => {
     },
     PENDING_SNAPSHOT_ITEM,
   ];
+  return fleet;
+})();
+
+const MIB = 1024 ** 2;
+const AGENTS_NAMESPACE = TESTBED_WORKER.workerNamespace;
+
+/** `allocated` starts at 0; `placedAgent` raises it. */
+function roomStatesWorker(workerPool: string, capacity: WorkerRow["capacity"]): WorkerRow {
+  const name = `${workerPool}-0`;
+  return {
+    ...structuredClone(TESTBED_WORKER),
+    name,
+    workerPool,
+    pod: `${workerPool}-7c9f6-0`,
+    capacity,
+    allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
+  };
+}
+
+/** Books 1 CPU, 2 Gi on `worker`: the room size. */
+function placedAgent(name: string, agentProfile: string, worker: WorkerRow): ActorRow {
+  const actor = testbedActor("issue-2-25");
+  actor.name = name;
+  actor.uid = `uid-${name}`;
+  actor.actorTemplate = name;
+  actor.state = "running";
+  actor.agent!.agentProfile = agentProfile;
+  actor.snapshots = [];
+  actor.placement = {
+    worker: worker.name,
+    workerPool: worker.workerPool,
+    workerNamespace: worker.workerNamespace,
+    pod: worker.pod,
+    node: worker.node,
+    sandboxRuntime: "gvisor",
+  };
+  worker.allocated.actors += 1;
+  worker.allocated.cpuMillicores += 1000;
+  worker.allocated.memoryBytes += 2 * GIB;
+  return actor;
+}
+
+function resourceOf(desiredReplicas: number, readyReplicas: number): WorkerPoolRow["resource"] {
+  return { desiredReplicas, readyReplicas, sandboxClass: "gvisor", resolution: "Resolved" };
+}
+
+/**
+ * One worker pool per room state; room size 1 CPU, 2 Gi:
+ * - `workers`: 4 CPU, 8 Gi, 1 agent; free 3 CPU, 6 Gi fit 3 actors: `room` 3, limited by CPU and memory.
+ * - `workers-busy`: 2 CPU, 4 Gi, 2 agents; nothing free, 1 actor fits when empty: `full`.
+ * - `workers-small`: 0.5 CPU, 448 Mi, no agent; no actor fits even when empty: `tooSmall`.
+ * - `workers-spare`: WorkerPool 1 desired, 0 ready, no worker: `noWorker`.
+ * Fleet room 3: the worker pools with no room are warnings.
+ */
+export const ROOM_STATES_FLEET: ReadyFleetSnapshot = (() => {
+  const roomWorker = roomStatesWorker("workers", { cpuMillicores: 4000, memoryBytes: 8 * GIB, actors: 1000 });
+  const busyWorker = roomStatesWorker("workers-busy", { cpuMillicores: 2000, memoryBytes: 4 * GIB, actors: 1000 });
+  const smallWorker = roomStatesWorker("workers-small", { cpuMillicores: 500, memoryBytes: 448 * MIB, actors: 1000 });
+  const actors = [
+    placedAgent("issue-7-1", "go", roomWorker),
+    placedAgent("issue-7-2", "go", busyWorker),
+    placedAgent("issue-7-3", "python", busyWorker),
+  ];
+  const workers = [roomWorker, busyWorker, smallWorker];
+  const poolOf = (worker: WorkerRow, row: Pick<WorkerPoolRow, "room" | "limitedBy" | "roomState">): WorkerPoolRow => ({
+    name: worker.workerPool,
+    namespace: AGENTS_NAMESPACE,
+    workers: [worker.name],
+    capacity: { ...worker.capacity },
+    allocated: { ...worker.allocated },
+    ...row,
+    resource: resourceOf(1, 1),
+  });
+
+  return {
+    ...TESTBED_FLEET,
+    summary: {
+      ...TESTBED_FLEET.summary,
+      agents: actors.length,
+      agentsByProfile: [
+        { agentProfile: "go", agents: 2 },
+        { agentProfile: "python", agents: 1 },
+      ],
+      actors: actors.length,
+      actorsByState: { running: actors.length, transitional: 0, suspended: 0, crashed: 0, unknown: 0 },
+      workers: workers.length,
+      workersByState: { active: workers.length, draining: 0, unavailable: 0, unknown: 0 },
+    },
+    actors,
+    workers,
+    workerPools: {
+      access: "ok",
+      items: [
+        poolOf(roomWorker, { room: 3, limitedBy: ["cpu", "memory"], roomState: "room" }),
+        poolOf(busyWorker, { room: 0, limitedBy: ["cpu", "memory"], roomState: "full" }),
+        poolOf(smallWorker, { room: 0, limitedBy: ["cpu", "memory"], roomState: "tooSmall" }),
+        {
+          name: "workers-spare",
+          namespace: AGENTS_NAMESPACE,
+          workers: [],
+          capacity: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
+          allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
+          room: 0,
+          limitedBy: [],
+          roomState: "noWorker",
+          resource: resourceOf(1, 0),
+        },
+      ],
+      roomSize: { cpuMillicores: 1000, memoryBytes: 2 * GIB },
+    },
+    needsAttention: [
+      {
+        kind: "workerPoolNotReady",
+        severity: "error",
+        namespace: AGENTS_NAMESPACE,
+        name: "workers-spare",
+        desiredReplicas: 1,
+        readyReplicas: 0,
+      },
+    ],
+  };
+})();
+
+/** ROOM_STATES_FLEET with 3 more agents on `workers`: `full`, fleet room 0, every verdict is an error. */
+export const NO_ROOM_STATES_FLEET: ReadyFleetSnapshot = (() => {
+  const fleet = structuredClone(ROOM_STATES_FLEET);
+  const worker = fleet.workers.find(({ workerPool }) => workerPool === "workers")!;
+  const added = ["issue-7-4", "issue-7-5", "issue-7-6"].map((name) => placedAgent(name, "node", worker));
+  fleet.actors.push(...added);
+  fleet.summary.agents += added.length;
+  fleet.summary.actors += added.length;
+  fleet.summary.actorsByState.running += added.length;
+  fleet.summary.agentsByProfile = [
+    { agentProfile: "go", agents: 2 },
+    { agentProfile: "node", agents: added.length },
+    { agentProfile: "python", agents: 1 },
+  ];
+  const pool = fleet.workerPools.items.find(({ name }) => name === "workers")!;
+  pool.allocated = { ...worker.allocated };
+  pool.room = 0;
+  pool.roomState = "full";
   return fleet;
 })();
 

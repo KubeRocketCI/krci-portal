@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { FleetUnreachableReason, ReadyFleetSnapshot } from "@my-project/shared";
+import type { FleetUnreachableReason, ReadyFleetSnapshot, WorkerPoolRow } from "@my-project/shared";
 import { expect, within } from "storybook/test";
 import { STORYBOOK_CLUSTER_NAME, withAppProviders } from "@sb/index";
 import {
@@ -15,10 +15,12 @@ import {
   MANY_CRASHED_FLEET,
   MICROVM_WORKER,
   NO_ATESPACES_DRAINING_WORKER_FLEET,
+  NO_ROOM_STATES_FLEET,
   NOT_READY_FLEET,
   ONE_FULL_WORKER_POOL_FLEET,
   ONE_WORKER_POOL_FLEET,
   PENDING_SNAPSHOT_FLEET,
+  ROOM_STATES_FLEET,
   RUNNING_ACTOR,
   SEVERAL_AGENT_PROFILES_FLEET,
   TESTBED_FLEET,
@@ -383,7 +385,8 @@ export const CapacityFullWorkerPool: Story = {
   play: async ({ canvasElement }) => {
     const full = workerPoolCard(await capacity(canvasElement), "workers-microvm");
 
-    await expect(full.getByText("Full: the next agent waits")).toHaveClass("text-status-error");
+    // `workers` keeps room: the full worker pool is a warning.
+    await expect(full.getByText("Full")).toHaveClass("text-status-missing");
     await expect(full.getByText("at 1.0 CPU, 2.0 Gi · limited by memory")).toBeVisible();
     await expect(full.getByText("(100%)")).toBeVisible();
     await expect(full.getByText("(50%)")).toBeVisible();
@@ -417,8 +420,74 @@ export const CapacityWorkerPoolNotReady: Story = {
 
     await expect(workerPoolCard(section, "workers").getByText("2 desired, 1 ready")).toHaveClass("text-status-error");
     const spare = workerPoolCard(section, "workers-spare");
-    await expect(spare.getByText("No worker: the next agent waits")).toHaveClass("text-status-error");
-    await expect(spare.getByText("at 1.0 CPU, 2.0 Gi · no active, registered worker")).toBeVisible();
+    await expect(spare.getByText("No active, registered worker")).toHaveClass("text-status-missing");
+    await expect(spare.getByText("at 1.0 CPU, 2.0 Gi")).toBeVisible();
+  },
+};
+
+export const CapacityRoomStates: Story = {
+  decorators: withFleet(ROOM_STATES_FLEET),
+  play: async ({ canvasElement }) => {
+    const section = await capacity(canvasElement);
+
+    for (const [name, text, tone] of [
+      ["workers", "Room for 3 agents", "text-status-success"],
+      ["workers-busy", "Full", "text-status-missing"],
+      ["workers-small", "Too small for the room size", "text-status-missing"],
+      ["workers-spare", "No active, registered worker", "text-status-missing"],
+    ] as const) {
+      await expect(workerPoolCard(section, name).getByText(text)).toHaveClass(tone);
+    }
+    await expect(
+      workerPoolCard(section, "workers-small").getByText("at 1.0 CPU, 2.0 Gi · limited by CPU and memory")
+    ).toBeVisible();
+    await expect(countLink(await atAGlance(canvasElement), "Room")).toHaveTextContent("Room3across 4 worker pools");
+  },
+};
+
+export const CapacityNoRoomInFleet: Story = {
+  decorators: withFleet(NO_ROOM_STATES_FLEET),
+  play: async ({ canvasElement }) => {
+    const section = await capacity(canvasElement);
+
+    for (const [name, text] of [
+      ["workers", "Full: no room in the fleet"],
+      ["workers-busy", "Full: no room in the fleet"],
+      ["workers-small", "Too small for the room size: no room in the fleet"],
+      ["workers-spare", "No active, registered worker: no room in the fleet"],
+    ] as const) {
+      await expect(workerPoolCard(section, name).getByText(text)).toHaveClass("text-status-error");
+    }
+    await expect(within(countLink(await atAGlance(canvasElement), "Room")).getByText("0")).toHaveClass(
+      "text-status-error"
+    );
+  },
+};
+
+/** Rows with no roomState; workers-busy with no limitedBy either. */
+export const CapacityRowsWithoutRoomState: Story = {
+  decorators: withFleet(
+    (() => {
+      const fleet = structuredClone(ROOM_STATES_FLEET);
+      for (const row of fleet.workerPools.items as Partial<WorkerPoolRow>[]) {
+        delete row.roomState;
+        if (row.name === "workers-busy") delete row.limitedBy;
+      }
+      return fleet;
+    })()
+  ),
+  play: async ({ canvasElement }) => {
+    const section = await capacity(canvasElement);
+
+    for (const [name, text] of [
+      ["workers", "Room for 3 agents"],
+      ["workers-busy", "No room"],
+      ["workers-small", "No room"],
+      ["workers-spare", "No active, registered worker"],
+    ] as const) {
+      await expect(workerPoolCard(section, name).getByText(text)).toBeVisible();
+    }
+    await expect(workerPoolCard(section, "workers-busy").getByText("at 1.0 CPU, 2.0 Gi")).toBeVisible();
   },
 };
 

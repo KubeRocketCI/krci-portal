@@ -39,10 +39,6 @@ export function workersHealth({
   };
 }
 
-export function fleetRoom(workerPools: ReadyFleetSnapshot["workerPools"]): number {
-  return workerPools.items.reduce((sum, { room }) => sum + room, 0);
-}
-
 export function roomSubText(workerPools: number): string {
   return `across ${plural(workerPools, "worker pool")}`;
 }
