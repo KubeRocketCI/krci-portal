@@ -86,7 +86,7 @@ export const editPushAccountRegistrySecret = (
         draft.data = {};
       }
 
-      let dockerConfigData: Record<string, any> = {};
+      let dockerConfigData: Record<string, unknown> = {};
 
       switch (validatedInput.registryType) {
         case containerRegistryType.ecr:

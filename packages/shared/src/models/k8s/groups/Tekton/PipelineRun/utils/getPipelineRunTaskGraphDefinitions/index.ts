@@ -28,7 +28,7 @@ export function getPipelineRunTaskGraphDefinitions(
 
   let mainTasks: PipelineTask[] =
     statusSpec?.tasks && statusSpec.tasks.length > 0 ? statusSpec.tasks : (specSpec?.tasks ?? []);
-  let finallyTasks: PipelineTask[] =
+  const finallyTasks: PipelineTask[] =
     statusSpec?.finally && statusSpec.finally.length > 0 ? statusSpec.finally : (specSpec?.finally ?? []);
 
   if (mainTasks.length === 0 && finallyTasks.length === 0 && pipelineRun.status?.childReferences?.length) {

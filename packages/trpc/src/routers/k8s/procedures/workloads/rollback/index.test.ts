@@ -8,7 +8,7 @@ vi.mock("../../../../../clients/k8s/index.js", () => ({ K8sClient: vi.fn() }));
 describe("k8sRollbackDeployment", () => {
   let mockContext: ReturnType<typeof createMockedContext>;
   let mockK8s: {
-    KubeConfig: {};
+    KubeConfig: object;
     getResource: Mock;
     listAllResources: Mock;
     patchResource: Mock;

@@ -1,7 +1,7 @@
 import { createMockedContext } from "../../../../__mocks__/context.js";
 import { createCaller } from "../../../../routers/index.js";
 import { HttpStatusError } from "../../../../clients/http/index.js";
-import { afterEach, beforeEach, describe, expect, it, vi, Mock } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 function upstreamError(status: number, statusText: string, body = "") {
   return new HttpStatusError({ service: "SonarQube", url: "https://sonar.example/api", status, statusText, body });

@@ -49,9 +49,7 @@ describe("parseEnvoyClusterName", () => {
   });
 
   it("returns null for non-string (defensive cast)", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect(parseEnvoyClusterName(undefined as any)).toBeNull();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect(parseEnvoyClusterName(null as any)).toBeNull();
   });
 

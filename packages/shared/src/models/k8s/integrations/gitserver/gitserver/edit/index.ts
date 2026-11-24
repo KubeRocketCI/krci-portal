@@ -19,7 +19,7 @@ const editGitServerSchema = z.object({
 export const editGitServer = (existingGitServer: GitServer, input: z.infer<typeof editGitServerSchema>): GitServer => {
   return editResource(existingGitServer, input, editGitServerSchema, (draft: Draft<GitServer>, validatedInput) => {
     if (!draft.spec) {
-      draft.spec = {} as any;
+      draft.spec = {} as GitServer["spec"];
     }
 
     draft.spec.gitHost = validatedInput.gitHost;

@@ -20,7 +20,7 @@ export const k8sGetApiVersions = protectedProcedure.output(z.string()).query(asy
 
   const groups = apiGroupList.groups || [];
 
-  const authGroup = groups.find((g: any) => g.name === "authorization.k8s.io");
+  const authGroup = groups.find((g) => g.name === "authorization.k8s.io");
 
   return authGroup?.preferredVersion?.version || defaultK8sApiVersion;
 });

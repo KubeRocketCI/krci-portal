@@ -1,6 +1,6 @@
 import { PassThrough } from "stream";
+import type { Exec } from "@kubernetes/client-node";
 
-// Using any for WebSocket type since it comes from kubernetes client-node
 export interface ExecSession {
   sessionId: string;
   namespace: string;
@@ -9,7 +9,7 @@ export interface ExecSession {
   stdinStream: PassThrough;
   stdoutStream: PassThrough;
   stderrStream: PassThrough;
-  websocket?: any; // WebSocket from kubernetes client
+  websocket?: Awaited<ReturnType<Exec["exec"]>>;
   cleanup: () => void;
 }
 

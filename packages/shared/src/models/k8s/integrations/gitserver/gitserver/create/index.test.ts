@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createGitServerDraft } from "./index.js";
 import { ZodError } from "zod";
-import { k8sGitServerConfig, gitProvider } from "../../../../groups/KRCI/index.js";
+import { k8sGitServerConfig } from "../../../../groups/KRCI/index.js";
 
 describe("createGitServerDraft", () => {
   it("should create a valid GitServer draft", () => {

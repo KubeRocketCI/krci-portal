@@ -23,7 +23,7 @@ import { needsAttentionOf } from "./needsAttention.js";
 import { hostsActors, roomSizeOf, selects, workerPoolRoomOf, workerRoomOf } from "./room.js";
 import { readSubstrate, type SubstrateFleet } from "./substrateRead.js";
 import { readWorkerPools, type WorkerPoolRead } from "./workerPools.js";
-import type { SubstrateActor, SubstrateWorker } from "../../../clients/agentSubstrate/index.js";
+import type { SubstrateWorker } from "../../../clients/agentSubstrate/index.js";
 
 /** Codebase and issue URL come from the user's Codebase list: per request, never part of the shared read. */
 function withCodebase(agent: ActorAgent, codebaseLinks: CodebaseLinks): ActorAgent {

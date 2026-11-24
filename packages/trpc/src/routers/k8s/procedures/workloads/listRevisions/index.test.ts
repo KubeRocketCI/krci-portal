@@ -29,7 +29,7 @@ const makeRS = (revision: string, ownerUid = "dep-uid", suffix = "") => ({
 
 describe("k8sListDeploymentRevisions", () => {
   let mockContext: ReturnType<typeof createMockedContext>;
-  let mockK8s: { KubeConfig: {}; getResource: Mock; listAllResources: Mock };
+  let mockK8s: { KubeConfig: object; getResource: Mock; listAllResources: Mock };
 
   beforeEach(() => {
     mockContext = createMockedContext();

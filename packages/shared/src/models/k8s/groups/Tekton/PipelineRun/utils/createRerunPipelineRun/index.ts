@@ -76,13 +76,12 @@ const generateNewPipelineRunPayload = ({ pipelineRun, rerun }: { pipelineRun: Pi
 
   // Clone annotations and labels: callers pass the watch-cache object, and the
   // stripping below mutates in place.
-  // @ts-ignore
   payload.metadata = {
     annotations: structuredClone(annotations) ?? {},
     name: getName(),
     labels: structuredClone(labels) ?? {},
     namespace,
-  };
+  } as PipelineRun["metadata"];
   if (rerun) {
     payload.metadata.labels = payload.metadata.labels || {};
     payload.metadata.labels["dashboard.tekton.dev/rerunOf"] = name;
@@ -92,10 +91,8 @@ const generateNewPipelineRunPayload = ({ pipelineRun, rerun }: { pipelineRun: Pi
 
   removeEphemeralAnnotations(payload.metadata.annotations as Record<string, string>);
 
-  Object.keys(payload.metadata).forEach(
-    (i) =>
-      (payload.metadata as Record<string, any>)[i] === undefined && delete (payload.metadata as Record<string, any>)[i]
-  );
+  const metadata = payload.metadata as Record<string, unknown>;
+  Object.keys(metadata).forEach((i) => metadata[i] === undefined && delete metadata[i]);
 
   delete payload.status;
 
