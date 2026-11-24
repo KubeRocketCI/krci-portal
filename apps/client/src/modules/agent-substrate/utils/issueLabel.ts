@@ -1,3 +1,3 @@
-import type { ActorIssue } from "@my-project/shared";
+import type { AgentIssue } from "@my-project/shared";
 
-export const issueLabel = ({ projectPath, iid }: ActorIssue) => `${projectPath}#${iid}`;
+export const issueLabel = ({ projectPath, iid }: AgentIssue) => `${projectPath}#${iid}`;

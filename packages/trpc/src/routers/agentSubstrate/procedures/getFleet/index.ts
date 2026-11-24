@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { fleetSnapshotSchema, type FleetSnapshot } from "@my-project/shared";
+import { fleetSchema, type Fleet } from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
 import { getFleet } from "../../fleet/index.js";
 
@@ -9,5 +9,5 @@ import { getFleet } from "../../fleet/index.js";
  */
 export const getFleetProcedure = protectedProcedure
   .input(z.object({}).strict())
-  .output(fleetSnapshotSchema)
-  .query(({ ctx }): Promise<FleetSnapshot> => getFleet(ctx));
+  .output(fleetSchema)
+  .query(({ ctx }): Promise<Fleet> => getFleet(ctx));

@@ -5,7 +5,7 @@ import {
   type AttentionItem,
   type AttentionKind,
   type AttentionSeverity,
-  type ReadyFleetSnapshot,
+  type ReadyFleet,
   type WorkerPoolRow,
   type WorkerRow,
 } from "@my-project/shared";
@@ -13,7 +13,7 @@ import {
 interface FleetRows {
   actors: ActorRow[];
   workers: WorkerRow[];
-  workerPools: ReadyFleetSnapshot["workerPools"];
+  workerPools: ReadyFleet["workerPools"];
 }
 
 const SEVERITY_RANK: Record<AttentionSeverity, number> = { error: 0, warning: 1 };

@@ -1,6 +1,6 @@
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
-import type { ReadyFleetSnapshot, RoomSize, WorkerPoolAccess, WorkerPoolRow } from "@my-project/shared";
+import type { ReadyFleet, RoomSize, WorkerPoolAccess, WorkerPoolRow } from "@my-project/shared";
 import { SectionHeading } from "@/core/components/SectionHeading";
 import { CellLink } from "@/core/components/Table/components/CellLink";
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
@@ -14,7 +14,7 @@ import { workerPoolAnchor } from "../../../../utils/rowAnchor";
 import { replicasText } from "../../utils/capacity";
 
 interface WorkerPoolCapacityProps {
-  pool: WorkerPoolRow;
+  workerPool: WorkerPoolRow;
   roomSize: RoomSize | null;
   totalRoom: number;
   access: WorkerPoolAccess;
@@ -22,46 +22,47 @@ interface WorkerPoolCapacityProps {
 }
 
 /** Verdict and bars come from the workers: shown also when the WorkerPool list was not read. */
-function WorkerPoolCapacity({ pool, roomSize, totalRoom, access, clusterName }: WorkerPoolCapacityProps) {
-  const notReady = pool.resource !== null && pool.resource.readyReplicas < pool.resource.desiredReplicas;
+function WorkerPoolCapacity({ workerPool, roomSize, totalRoom, access, clusterName }: WorkerPoolCapacityProps) {
+  const { resource } = workerPool;
+  const notReady = resource !== null && resource.readyReplicas < resource.desiredReplicas;
 
   return (
-    <Card role="region" aria-label={`Worker pool ${pool.namespace}/${pool.name}`}>
+    <Card role="region" aria-label={`Worker pool ${workerPool.namespace}/${workerPool.name}`}>
       <CardHeader className="flex flex-row items-start justify-between gap-4 p-4 pb-2">
         <div className="flex min-w-0 flex-col gap-1">
           <CardTitle className="min-w-0 text-sm font-semibold">
             <CellLink
               to={PATH_AGENT_WORKER_POOLS_FULL}
               params={{ clusterName }}
-              hash={workerPoolAnchor(pool)}
-              text={pool.name}
+              hash={workerPoolAnchor(workerPool)}
+              text={workerPool.name}
             />
           </CardTitle>
-          <span className="text-muted-foreground text-xs">{pool.namespace}</span>
+          <span className="text-muted-foreground text-xs">{workerPool.namespace}</span>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-0.5 text-xs">
           <span className="text-muted-foreground">Replicas</span>
           <span
             className={cn(
               "tabular-nums",
-              !pool.resource && "text-muted-foreground",
+              !resource && "text-muted-foreground",
               notReady && "text-status-error font-medium"
             )}
           >
-            {replicasText(pool.resource, access)}
+            {replicasText(resource, access)}
           </span>
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 p-4 pt-0">
-        <RoomVerdict pool={pool} roomSize={roomSize} totalRoom={totalRoom} />
-        <ResourceBars capacity={pool.capacity} allocated={pool.allocated} showPercent />
+        <RoomVerdict workerPool={workerPool} roomSize={roomSize} totalRoom={totalRoom} />
+        <ResourceBars capacity={workerPool.capacity} allocated={workerPool.allocated} showPercent />
       </CardContent>
     </Card>
   );
 }
 
 /** One card per worker pool. With no worker pool, nothing: At a glance shows room 0 across 0 worker pools. */
-export function Capacity({ fleet }: { fleet: ReadyFleetSnapshot }) {
+export function Capacity({ fleet }: { fleet: ReadyFleet }) {
   const headingId = React.useId();
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
   const { access, items, roomSize } = fleet.workerPools;
@@ -73,10 +74,10 @@ export function Capacity({ fleet }: { fleet: ReadyFleetSnapshot }) {
     <section aria-labelledby={headingId}>
       <SectionHeading id={headingId}>Capacity</SectionHeading>
       <div className="grid gap-4 lg:grid-cols-2">
-        {items.map((pool) => (
+        {items.map((workerPool) => (
           <WorkerPoolCapacity
-            key={`${pool.namespace}/${pool.name}`}
-            pool={pool}
+            key={`${workerPool.namespace}/${workerPool.name}`}
+            workerPool={workerPool}
             roomSize={roomSize}
             totalRoom={totalRoom}
             access={access}

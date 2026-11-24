@@ -1,12 +1,5 @@
 import React from "react";
-import type {
-  ActorRow,
-  ReadyFleetSnapshot,
-  RoomSize,
-  WorkerPoolAccess,
-  WorkerPoolRow,
-  WorkerRow,
-} from "@my-project/shared";
+import type { ActorRow, ReadyFleet, RoomSize, WorkerPoolAccess, WorkerPoolRow, WorkerRow } from "@my-project/shared";
 import { EmptyList } from "@/core/components/EmptyList";
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { cn } from "@/core/utils/classname";
@@ -75,13 +68,13 @@ function WorkerBlock({ worker, actors, isTarget }: WorkerBlockProps) {
   );
 }
 
-function WorkerPoolFacts({ pool, access }: { pool: WorkerPoolRow; access: WorkerPoolAccess }) {
-  if (pool.resource) {
+function WorkerPoolFacts({ workerPool, access }: { workerPool: WorkerPoolRow; access: WorkerPoolAccess }) {
+  if (workerPool.resource) {
     return (
       <div className="flex flex-col items-end gap-1">
-        <WorkerPoolReadyBadge resource={pool.resource} />
-        {pool.resource.sandboxClass && (
-          <span className="text-muted-foreground text-xs">{pool.resource.sandboxClass}</span>
+        <WorkerPoolReadyBadge resource={workerPool.resource} />
+        {workerPool.resource.sandboxClass && (
+          <span className="text-muted-foreground text-xs">{workerPool.resource.sandboxClass}</span>
         )}
       </div>
     );
@@ -98,7 +91,7 @@ const workerKey = (namespace: string, workerPool: string, worker: string) =>
   JSON.stringify([namespace, workerPool, worker]);
 
 interface WorkerPoolCardProps {
-  pool: WorkerPoolRow;
+  workerPool: WorkerPoolRow;
   roomSize: RoomSize | null;
   totalRoom: number;
   access: WorkerPoolAccess;
@@ -108,7 +101,7 @@ interface WorkerPoolCardProps {
 }
 
 function WorkerPoolCard({
-  pool,
+  workerPool,
   roomSize,
   totalRoom,
   access,
@@ -117,24 +110,24 @@ function WorkerPoolCard({
   target,
 }: WorkerPoolCardProps) {
   return (
-    <Card role="region" aria-label={`Worker pool ${pool.namespace}/${pool.name}`}>
+    <Card role="region" aria-label={`Worker pool ${workerPool.namespace}/${workerPool.name}`}>
       <CardHeader className="flex flex-row items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-2">
           <div className="flex flex-col gap-1">
-            <CardTitle className="text-base">Worker pool {pool.name}</CardTitle>
-            <div className="text-muted-foreground text-xs">{pool.namespace}</div>
+            <CardTitle className="text-base">Worker pool {workerPool.name}</CardTitle>
+            <div className="text-muted-foreground text-xs">{workerPool.namespace}</div>
           </div>
-          <RoomVerdict pool={pool} roomSize={roomSize} totalRoom={totalRoom} />
+          <RoomVerdict workerPool={workerPool} roomSize={roomSize} totalRoom={totalRoom} />
         </div>
-        <WorkerPoolFacts pool={pool} access={access} />
+        <WorkerPoolFacts workerPool={workerPool} access={access} />
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <ResourceBars capacity={pool.capacity} allocated={pool.allocated} />
-        {pool.workers.length === 0 && (
+        <ResourceBars capacity={workerPool.capacity} allocated={workerPool.allocated} />
+        {workerPool.workers.length === 0 && (
           <div className="text-muted-foreground text-xs">No worker in this worker pool</div>
         )}
-        {pool.workers.flatMap((name) => {
-          const key = workerKey(pool.namespace, pool.name, name);
+        {workerPool.workers.flatMap((name) => {
+          const key = workerKey(workerPool.namespace, workerPool.name, name);
           const worker = workersByKey.get(key);
           if (!worker) return [];
           return [
@@ -152,7 +145,7 @@ function WorkerPoolCard({
 }
 
 /** The worker that the URL fragment names is scrolled into view and highlighted. */
-export function CapacityBoard({ fleet }: { fleet: ReadyFleetSnapshot }) {
+export function CapacityBoard({ fleet }: { fleet: ReadyFleet }) {
   const target = useScrollToHashTarget(fleet.workers);
 
   const workersByKey = React.useMemo(
@@ -184,10 +177,10 @@ export function CapacityBoard({ fleet }: { fleet: ReadyFleetSnapshot }) {
       <WorkerPoolAccessNotice access={fleet.workerPools.access} />
       {fleet.workerPools.items.length === 0 && <EmptyList customText="No workers" />}
       <div className="grid gap-6 xl:grid-cols-2">
-        {fleet.workerPools.items.map((pool) => (
+        {fleet.workerPools.items.map((workerPool) => (
           <WorkerPoolCard
-            key={`${pool.namespace}/${pool.name}`}
-            pool={pool}
+            key={`${workerPool.namespace}/${workerPool.name}`}
+            workerPool={workerPool}
             roomSize={fleet.workerPools.roomSize}
             totalRoom={totalRoom}
             access={fleet.workerPools.access}

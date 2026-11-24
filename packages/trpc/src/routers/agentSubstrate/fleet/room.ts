@@ -10,8 +10,8 @@ import type { SubstrateWorker } from "../../../clients/agentSubstrate/index.js";
 const GIB = 1n << 30n;
 
 /**
- * The largest CPU limit and the largest memory limit, which may come from different templates.
- * Null when no template sets a CPU or memory limit.
+ * The largest CPU limit and the largest memory limit, which may come from different actor templates.
+ * Null when no actor template sets a CPU or memory limit.
  */
 export function roomSizeOf(limits: (RoomSize | null)[]): RoomSize | null {
   const size = limits.reduce<RoomSize | null>(

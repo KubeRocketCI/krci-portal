@@ -7,7 +7,7 @@ import {
   type ActorStateGroup,
   type Atespace,
   type AttentionItem,
-  type ReadyFleetSnapshot,
+  type ReadyFleet,
   type WorkerPoolRow,
   type WorkerRow,
 } from "@my-project/shared";
@@ -19,9 +19,9 @@ import testbedFleet from "./fleet.testbed.json";
 const PLATFORM_NAMESPACE = "krci";
 
 /** Recorded on the testbed by packages/trpc/scripts/record-agent-substrate-fixtures.ts. */
-export const TESTBED_FLEET = testbedFleet as ReadyFleetSnapshot;
+export const TESTBED_FLEET = testbedFleet as ReadyFleet;
 
-export const EMPTY_FLEET: ReadyFleetSnapshot = {
+export const EMPTY_FLEET: ReadyFleet = {
   ...TESTBED_FLEET,
   summary: {
     atespaces: 0,
@@ -142,7 +142,7 @@ const STORY_WORKERS: WorkerRow[] = [TESTBED_WORKER, BUSY_WORKER, MICROVM_WORKER]
  * `room` and `limitedBy` as packages/trpc fleet/room.ts gives them; microVM runtime overhead 4 Mi + 8 Mi per GiB.
  * `workers`: CPU and memory fit 1 + 3 each. `workers-microvm`: CPU fits 8, memory 7.
  */
-export const STORY_WORKER_POOLS: ReadyFleetSnapshot["workerPools"] = {
+export const STORY_WORKER_POOLS: ReadyFleet["workerPools"] = {
   access: "ok",
   items: [
     {
@@ -199,7 +199,7 @@ export const PENDING_SNAPSHOT_ITEM: AttentionItem = {
   updatedAt: RUNNING_ACTOR.updatedAt,
 };
 
-export const STORY_FLEET: ReadyFleetSnapshot = {
+export const STORY_FLEET: ReadyFleet = {
   ...TESTBED_FLEET,
   summary: {
     ...TESTBED_FLEET.summary,
@@ -217,14 +217,14 @@ export const STORY_FLEET: ReadyFleetSnapshot = {
   needsAttention: [CRASHED_ACTOR_ITEM, PENDING_SNAPSHOT_ITEM],
 };
 
-function storyActor(fleet: ReadyFleetSnapshot, name: string): ActorRow {
+function storyActor(fleet: ReadyFleet, name: string): ActorRow {
   const actor = fleet.actors.find((row) => row.name === name);
   if (!actor) throw new Error(`story fleet has no actor ${name}`);
   return actor;
 }
 
 /** STORY_FLEET with CRASHED_ACTOR suspended and the second snapshot of RUNNING_ACTOR durable. */
-export const HEALTHY_FLEET: ReadyFleetSnapshot = (() => {
+export const HEALTHY_FLEET: ReadyFleet = (() => {
   const fleet = structuredClone(STORY_FLEET);
   const crashed = storyActor(fleet, CRASHED_ACTOR.name);
   crashed.state = "suspended";
@@ -237,7 +237,7 @@ export const HEALTHY_FLEET: ReadyFleetSnapshot = (() => {
   return fleet;
 })();
 
-export const CRASHED_ACTOR_FLEET: ReadyFleetSnapshot = (() => {
+export const CRASHED_ACTOR_FLEET: ReadyFleet = (() => {
   const fleet = structuredClone(HEALTHY_FLEET);
   fleet.actors = fleet.actors.map((actor) =>
     actor.name === CRASHED_ACTOR.name ? structuredClone(CRASHED_ACTOR) : actor
@@ -247,7 +247,7 @@ export const CRASHED_ACTOR_FLEET: ReadyFleetSnapshot = (() => {
   return fleet;
 })();
 
-export const PENDING_SNAPSHOT_FLEET: ReadyFleetSnapshot = (() => {
+export const PENDING_SNAPSHOT_FLEET: ReadyFleet = (() => {
   const fleet = structuredClone(HEALTHY_FLEET);
   fleet.actors = fleet.actors.map((actor) =>
     actor.name === RUNNING_ACTOR.name ? structuredClone(RUNNING_ACTOR) : actor
@@ -261,7 +261,7 @@ export const MANY_CRASHED_COUNT = NEEDS_ATTENTION_MAX_ROWS + 2;
 const FIRST_CRASH_MS = Date.parse("2026-11-22T21:00:00.000Z");
 
 /** MANY_CRASHED_COUNT crashed actors not made by the dispatcher, crashed a minute apart, oldest first. */
-export const MANY_CRASHED_FLEET: ReadyFleetSnapshot = (() => {
+export const MANY_CRASHED_FLEET: ReadyFleet = (() => {
   const fleet = structuredClone(HEALTHY_FLEET);
   const crashedActors = Array.from({ length: MANY_CRASHED_COUNT }, (_, index): ActorRow => {
     const name = `crashed-${index + 1}`;
@@ -285,7 +285,7 @@ export const MANY_CRASHED_FLEET: ReadyFleetSnapshot = (() => {
 })();
 
 /** HEALTHY_FLEET with issue-2-26 on a template that sets no agent profile and issue-6-3 on the java profile. */
-export const SEVERAL_AGENT_PROFILES_FLEET: ReadyFleetSnapshot = (() => {
+export const SEVERAL_AGENT_PROFILES_FLEET: ReadyFleet = (() => {
   const fleet = structuredClone(HEALTHY_FLEET);
   storyActor(fleet, "issue-2-26").agent!.agentProfile = null;
   storyActor(fleet, "issue-6-3").agent!.agentProfile = "java";
@@ -299,33 +299,33 @@ export const SEVERAL_AGENT_PROFILES_FLEET: ReadyFleetSnapshot = (() => {
   return fleet;
 })();
 
-export const FULL_WORKER_POOL_FLEET: ReadyFleetSnapshot = (() => {
+export const FULL_WORKER_POOL_FLEET: ReadyFleet = (() => {
   const fleet = structuredClone(STORY_FLEET);
   for (const worker of fleet.workers) worker.allocated = { ...worker.capacity };
-  for (const pool of fleet.workerPools.items) {
-    pool.allocated = { ...pool.capacity };
-    pool.room = 0;
-    pool.limitedBy = ["actors", "cpu", "memory"];
-    pool.roomState = "full";
+  for (const workerPool of fleet.workerPools.items) {
+    workerPool.allocated = { ...workerPool.capacity };
+    workerPool.room = 0;
+    workerPool.limitedBy = ["actors", "cpu", "memory"];
+    workerPool.roomState = "full";
   }
   return fleet;
 })();
 
 /** STORY_FLEET with workers-microvm at its memory capacity; `workers` keeps its room. */
-export const ONE_FULL_WORKER_POOL_FLEET: ReadyFleetSnapshot = (() => {
+export const ONE_FULL_WORKER_POOL_FLEET: ReadyFleet = (() => {
   const fleet = structuredClone(HEALTHY_FLEET);
   const worker = fleet.workers.find(({ name }) => name === MICROVM_WORKER.name)!;
   worker.allocated = { cpuMillicores: 4000, memoryBytes: worker.capacity.memoryBytes, actors: 4 };
-  const pool = fleet.workerPools.items.find(({ name }) => name === MICROVM_WORKER.workerPool)!;
-  pool.allocated = { ...worker.allocated };
-  pool.room = 0;
-  pool.limitedBy = ["memory"];
-  pool.roomState = "full";
+  const workerPool = fleet.workerPools.items.find(({ name }) => name === MICROVM_WORKER.workerPool)!;
+  workerPool.allocated = { ...worker.allocated };
+  workerPool.room = 0;
+  workerPool.limitedBy = ["memory"];
+  workerPool.roomState = "full";
   return fleet;
 })();
 
 /** The recorded testbed with its WorkerPool read: 1 of 1 ready. */
-export const ONE_WORKER_POOL_FLEET: ReadyFleetSnapshot = (() => {
+export const ONE_WORKER_POOL_FLEET: ReadyFleet = (() => {
   const fleet = structuredClone(TESTBED_FLEET);
   fleet.workerPools.access = "ok";
   fleet.workerPools.items[0].resource = {
@@ -349,7 +349,7 @@ function workerNotActiveItem(worker: WorkerRow, state: "draining" | "unavailable
 }
 
 /** A draining worker adds no room to its worker pool. */
-export const DRAINING_WORKER_FLEET: ReadyFleetSnapshot = (() => {
+export const DRAINING_WORKER_FLEET: ReadyFleet = (() => {
   const fleet = structuredClone(STORY_FLEET);
   fleet.workers.find(({ name }) => name === BUSY_WORKER.name)!.state = "draining";
   fleet.summary.workersByState = { active: STORY_WORKERS.length - 1, draining: 1, unavailable: 0, unknown: 0 };
@@ -359,7 +359,7 @@ export const DRAINING_WORKER_FLEET: ReadyFleetSnapshot = (() => {
 })();
 
 /** DRAINING_WORKER_FLEET with MICROVM_WORKER unavailable: its worker pool has no room. */
-export const WORKERS_NOT_ACTIVE_FLEET: ReadyFleetSnapshot = (() => {
+export const WORKERS_NOT_ACTIVE_FLEET: ReadyFleet = (() => {
   const fleet = structuredClone(DRAINING_WORKER_FLEET);
   fleet.workers.find(({ name }) => name === MICROVM_WORKER.name)!.state = "unavailable";
   fleet.summary.workersByState = { active: STORY_WORKERS.length - 2, draining: 1, unavailable: 1, unknown: 0 };
@@ -377,7 +377,7 @@ export const WORKERS_NOT_ACTIVE_FLEET: ReadyFleetSnapshot = (() => {
 })();
 
 /** No atespace and no actor; a draining worker. */
-export const NO_ATESPACES_DRAINING_WORKER_FLEET: ReadyFleetSnapshot = (() => {
+export const NO_ATESPACES_DRAINING_WORKER_FLEET: ReadyFleet = (() => {
   const fleet = structuredClone(DRAINING_WORKER_FLEET);
   fleet.atespaces = [];
   fleet.actors = [];
@@ -394,7 +394,7 @@ export const NO_ATESPACES_DRAINING_WORKER_FLEET: ReadyFleetSnapshot = (() => {
 })();
 
 /** MICROVM_WORKER active but not registered: its worker pool has no room. */
-export const UNREGISTERED_WORKER_FLEET: ReadyFleetSnapshot = (() => {
+export const UNREGISTERED_WORKER_FLEET: ReadyFleet = (() => {
   const fleet = structuredClone(STORY_FLEET);
   fleet.workers.find(({ name }) => name === MICROVM_WORKER.name)!.registered = false;
   const microvm = fleet.workerPools.items.find(({ name }) => name === MICROVM_WORKER.workerPool)!;
@@ -404,7 +404,7 @@ export const UNREGISTERED_WORKER_FLEET: ReadyFleetSnapshot = (() => {
   return fleet;
 })();
 
-export const NOT_READY_FLEET: ReadyFleetSnapshot = (() => {
+export const NOT_READY_FLEET: ReadyFleet = (() => {
   const fleet = structuredClone(STORY_FLEET);
   fleet.workerPools.items[0].resource!.readyReplicas = 1;
   fleet.workerPools.items.push({
@@ -436,10 +436,10 @@ export const NOT_READY_FLEET: ReadyFleetSnapshot = (() => {
   return fleet;
 })();
 
-function withWorkerPoolAccess(access: "denied" | "error"): ReadyFleetSnapshot {
+function withWorkerPoolAccess(access: "denied" | "error"): ReadyFleet {
   const fleet = structuredClone(STORY_FLEET);
   fleet.workerPools.access = access;
-  for (const pool of fleet.workerPools.items) pool.resource = null;
+  for (const workerPool of fleet.workerPools.items) workerPool.resource = null;
   return fleet;
 }
 
@@ -447,7 +447,7 @@ export const WORKER_POOLS_DENIED_FLEET = withWorkerPoolAccess("denied");
 export const WORKER_POOLS_ERROR_FLEET = withWorkerPoolAccess("error");
 
 /** The WorkerPool list denied in the namespace of workers-microvm; the `workers` WorkerPool read, 1 of 2 ready. */
-export const PARTIAL_WORKER_POOLS_FLEET: ReadyFleetSnapshot = (() => {
+export const PARTIAL_WORKER_POOLS_FLEET: ReadyFleet = (() => {
   const fleet = structuredClone(STORY_FLEET);
   fleet.workerPools.access = "denied";
   const [workers, microvm] = fleet.workerPools.items;
@@ -519,7 +519,7 @@ function resourceOf(desiredReplicas: number, readyReplicas: number): WorkerPoolR
  * - `workers-spare`: WorkerPool 1 desired, 0 ready, no worker: `noWorker`.
  * Fleet room 3: the worker pools with no room are warnings.
  */
-export const ROOM_STATES_FLEET: ReadyFleetSnapshot = (() => {
+export const ROOM_STATES_FLEET: ReadyFleet = (() => {
   const roomWorker = roomStatesWorker("workers", { cpuMillicores: 4000, memoryBytes: 8 * GIB, actors: 1000 });
   const busyWorker = roomStatesWorker("workers-busy", { cpuMillicores: 2000, memoryBytes: 4 * GIB, actors: 1000 });
   const smallWorker = roomStatesWorker("workers-small", { cpuMillicores: 500, memoryBytes: 448 * MIB, actors: 1000 });
@@ -589,7 +589,7 @@ export const ROOM_STATES_FLEET: ReadyFleetSnapshot = (() => {
 })();
 
 /** ROOM_STATES_FLEET with 3 more agents on `workers`: `full`, fleet room 0, every verdict is an error. */
-export const NO_ROOM_STATES_FLEET: ReadyFleetSnapshot = (() => {
+export const NO_ROOM_STATES_FLEET: ReadyFleet = (() => {
   const fleet = structuredClone(ROOM_STATES_FLEET);
   const worker = fleet.workers.find(({ workerPool }) => workerPool === "workers")!;
   const added = ["issue-7-4", "issue-7-5", "issue-7-6"].map((name) => placedAgent(name, "node", worker));
@@ -602,15 +602,15 @@ export const NO_ROOM_STATES_FLEET: ReadyFleetSnapshot = (() => {
     { agentProfile: "node", agents: added.length },
     { agentProfile: "python", agents: 1 },
   ];
-  const pool = fleet.workerPools.items.find(({ name }) => name === "workers")!;
-  pool.allocated = { ...worker.allocated };
-  pool.room = 0;
-  pool.roomState = "full";
+  const workerPool = fleet.workerPools.items.find(({ name }) => name === "workers")!;
+  workerPool.allocated = { ...worker.allocated };
+  workerPool.room = 0;
+  workerPool.roomState = "full";
   return fleet;
 })();
 
-export function seedFleet(snapshot: FleetData) {
+export function seedFleet(fleet: FleetData) {
   return (queryClient: QueryClient) => {
-    queryClient.setQueryData(FLEET_QUERY_KEY, snapshot);
+    queryClient.setQueryData(FLEET_QUERY_KEY, fleet);
   };
 }

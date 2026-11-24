@@ -3,10 +3,10 @@ import type { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { formatTimestamp } from "@/core/utils/date-humanize";
 import {
-  ActorCodebase,
-  ActorIssue,
   ActorLink,
   ActorStateBadge,
+  AgentCodebaseLink,
+  AgentIssueLink,
   SnapshotFidelityDurability,
 } from "../../../../../components/ActorCells";
 import { issueLabel } from "../../../../../utils/issueLabel";
@@ -29,7 +29,7 @@ export const actorColumns: TableColumn<ActorRow>[] = [
     label: "Issue",
     data: {
       columnSortableValue: (row) => (row.agent ? issueLabel(row.agent.issue) : ""),
-      render: ({ data }) => <ActorIssue agent={data.agent} />,
+      render: ({ data }) => <AgentIssueLink agent={data.agent} />,
     },
     cell: { baseWidth: 14 },
   },
@@ -38,7 +38,7 @@ export const actorColumns: TableColumn<ActorRow>[] = [
     label: "Codebase",
     data: {
       columnSortableValue: (row) => row.agent?.codebase?.name ?? row.agent?.issue.projectPath ?? "",
-      render: ({ data }) => <ActorCodebase agent={data.agent} />,
+      render: ({ data }) => <AgentCodebaseLink agent={data.agent} />,
     },
     cell: { baseWidth: 11 },
   },

@@ -51,7 +51,7 @@ export const atespaceSchema = z.object({
   createdAt: z.string(),
 });
 
-export const actorIssueSchema = z.object({
+export const agentIssueSchema = z.object({
   projectPath: z.string(),
   projectId: z.string(),
   iid: z.string(),
@@ -67,7 +67,7 @@ export const codebaseRefSchema = z.object({
 
 /** Null on an actor that the dispatcher did not make. */
 export const actorAgentSchema = z.object({
-  issue: actorIssueSchema,
+  issue: agentIssueSchema,
   codebase: codebaseRefSchema.nullable(),
   agentProfile: z.string().nullable(),
   model: z.string().nullable(),
@@ -237,7 +237,7 @@ export const attentionItemSchema = z.discriminatedUnion("kind", [
   }),
 ]);
 
-export const fleetSnapshotSchema = z.discriminatedUnion("state", [
+export const fleetSchema = z.discriminatedUnion("state", [
   z.object({ state: z.literal("notConfigured") }),
   /** The error message stays in the portal server log. */
   z.object({

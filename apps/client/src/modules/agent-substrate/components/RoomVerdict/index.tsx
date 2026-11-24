@@ -1,17 +1,17 @@
 import type { RoomSize } from "@my-project/shared";
 import { cn } from "@/core/utils/classname";
 import { SEVERITY_ICON, SEVERITY_ICON_COLOR_CLASS } from "@/core/utils/severity";
-import { roomBasisText, roomVerdict, type PoolRoom } from "../../utils/roomLabel";
+import { roomBasisText, roomVerdict, type WorkerPoolRoom } from "../../utils/roomLabel";
 
 interface RoomVerdictProps {
-  pool: PoolRoom;
+  workerPool: WorkerPoolRoom;
   roomSize: RoomSize | null;
   /** Room summed over every worker pool of the fleet. */
   totalRoom: number;
 }
 
-export function RoomVerdict({ pool, roomSize, totalRoom }: RoomVerdictProps) {
-  const verdict = roomVerdict(pool, totalRoom);
+export function RoomVerdict({ workerPool, roomSize, totalRoom }: RoomVerdictProps) {
+  const verdict = roomVerdict(workerPool, totalRoom);
   const Icon = SEVERITY_ICON[verdict.tone];
 
   return (
@@ -20,7 +20,7 @@ export function RoomVerdict({ pool, roomSize, totalRoom }: RoomVerdictProps) {
         <Icon className="size-4 shrink-0" aria-hidden />
         {verdict.text}
       </p>
-      <p className="text-muted-foreground text-xs">{roomBasisText(roomSize, pool.limitedBy)}</p>
+      <p className="text-muted-foreground text-xs">{roomBasisText(roomSize, workerPool.limitedBy)}</p>
     </div>
   );
 }

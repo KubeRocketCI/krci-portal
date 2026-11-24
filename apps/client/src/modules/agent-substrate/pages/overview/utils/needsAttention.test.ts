@@ -76,7 +76,7 @@ describe("groupTitle", () => {
 
 const RESOURCE = { desiredReplicas: 1, readyReplicas: 1, sandboxClass: "gvisor", resolution: "Resolved" };
 
-function pool(name: string, isRead: boolean): WorkerPoolRow {
+function workerPool(name: string, isRead: boolean): WorkerPoolRow {
   const none = { cpuMillicores: 0, memoryBytes: 0, actors: 0 };
   return {
     name,
@@ -91,12 +91,12 @@ function pool(name: string, isRead: boolean): WorkerPoolRow {
   };
 }
 
-const check = (access: WorkerPoolAccess, ...pools: WorkerPoolRow[]) =>
-  workerPoolCheckOf({ access, items: pools, roomSize: null });
+const check = (access: WorkerPoolAccess, ...workerPools: WorkerPoolRow[]) =>
+  workerPoolCheckOf({ access, items: workerPools, roomSize: null });
 
 describe("workerPoolCheckOf", () => {
   it("counts the worker pools with a read WorkerPool among all", () => {
-    expect(check("denied", pool("a", true), pool("b", false), pool("c", false))).toEqual({
+    expect(check("denied", workerPool("a", true), workerPool("b", false), workerPool("c", false))).toEqual({
       access: "denied",
       read: 1,
       total: 3,
@@ -106,17 +106,17 @@ describe("workerPoolCheckOf", () => {
 
 describe("notCheckedText", () => {
   it("says nothing when the worker pools are readable", () => {
-    expect(notCheckedText(check("ok", pool("a", true)))).toBeNull();
+    expect(notCheckedText(check("ok", workerPool("a", true)))).toBeNull();
   });
 
   it("says some worker pools were not checked when one was read", () => {
-    expect(notCheckedText(check("denied", pool("a", true), pool("b", false)))).toBe(
+    expect(notCheckedText(check("denied", workerPool("a", true), workerPool("b", false)))).toBe(
       "Some worker pools not checked: no access"
     );
   });
 
   it("says the worker pools were not checked when none was read", () => {
-    expect(notCheckedText(check("error", pool("a", false)))).toBe("Worker pools not checked: error");
+    expect(notCheckedText(check("error", workerPool("a", false)))).toBe("Worker pools not checked: error");
   });
 });
 
@@ -124,13 +124,13 @@ describe("checkedText", () => {
   const counts = { actors: 7, workers: 1 };
 
   it("counts actors, workers and worker pools when the worker pools are readable", () => {
-    expect(checkedText(counts, check("ok", pool("a", true), pool("b", false)))).toBe(
+    expect(checkedText(counts, check("ok", workerPool("a", true), workerPool("b", false)))).toBe(
       "Checked 7 actors, 1 worker and 2 worker pools."
     );
   });
 
   it("counts the read worker pools among all when some were read", () => {
-    expect(checkedText(counts, check("denied", pool("a", true), pool("b", false)))).toBe(
+    expect(checkedText(counts, check("denied", workerPool("a", true), workerPool("b", false)))).toBe(
       "Checked 7 actors, 1 worker and 1 of 2 worker pools."
     );
   });
@@ -138,7 +138,7 @@ describe("checkedText", () => {
   it.each(["denied", "error"] as const)(
     "counts actors and workers only when access is %s and none was read",
     (access) => {
-      expect(checkedText({ actors: 1, workers: 0 }, check(access, pool("a", false)))).toBe(
+      expect(checkedText({ actors: 1, workers: 0 }, check(access, workerPool("a", false)))).toBe(
         "Checked 1 actor and 0 workers."
       );
     }
@@ -151,13 +151,13 @@ describe("allClearText", () => {
   });
 
   it("says some worker pools were not checked and why when one was read", () => {
-    expect(allClearText(check("denied", pool("a", true), pool("b", false)))).toBe(
+    expect(allClearText(check("denied", workerPool("a", true), workerPool("b", false)))).toBe(
       "Nothing needs attention in actors, workers and the worker pools checked; some worker pools not checked (no access)"
     );
   });
 
   it("says the worker pools were not checked and why when none was read", () => {
-    expect(allClearText(check("denied", pool("a", false)))).toBe(
+    expect(allClearText(check("denied", workerPool("a", false)))).toBe(
       "Nothing needs attention in actors and workers; worker pools not checked (no access)"
     );
     expect(allClearText(check("error"))).toBe(

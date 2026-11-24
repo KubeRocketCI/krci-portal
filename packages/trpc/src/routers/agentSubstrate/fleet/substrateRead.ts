@@ -12,7 +12,7 @@ import { WORKER_NAMESPACES } from "./workerNamespaces.js";
 
 /** One read serves every signed-in user (ADR 0002). */
 const SHARED_READ_TTL_MS = 5_000;
-const TEMPLATE_READ_CONCURRENCY = 8;
+const ACTOR_TEMPLATE_READ_CONCURRENCY = 8;
 
 /** The only actor template env values that leave the server (ADR 0001). */
 export const AGENT_ENV = {
@@ -23,17 +23,17 @@ export const AGENT_ENV = {
   model: "ANTHROPIC_MODEL",
 } as const;
 
-interface TemplateFacts {
+interface ActorTemplateFacts {
   /** Null on an actor that the dispatcher did not make. */
   agent: ActorAgent | null;
-  /** Null when the template is gone. */
+  /** Null when the actor template is gone. */
   limits: SubstrateActorTemplate["limits"] | null;
 }
 
 export interface SubstrateFleet {
   readAt: string;
   atespaces: SubstrateAtespace[];
-  actors: ({ actor: SubstrateActor } & TemplateFacts)[];
+  actors: ({ actor: SubstrateActor } & ActorTemplateFacts)[];
   workers: SubstrateWorker[];
   /**
    * WORKER_NAMESPACES and every worker namespace seen since start, by name: a WorkerPool stays listed after its last
@@ -44,9 +44,9 @@ export interface SubstrateFleet {
 
 export type SubstrateRead = { ok: true; fleet: SubstrateFleet } | { ok: false; reason: FleetUnreachableReason };
 
-/** Null when the template does not name an issue. */
-function agentOfTemplate(template: SubstrateActorTemplate): ActorAgent | null {
-  for (const container of template.containers) {
+/** Null when the actor template does not name an issue. */
+function agentOfActorTemplate(actorTemplate: SubstrateActorTemplate): ActorAgent | null {
+  for (const container of actorTemplate.containers) {
     const env = new Map(container.env.map(({ name, value }) => [name, value]));
     const projectPath = env.get(AGENT_ENV.projectPath);
     const projectId = env.get(AGENT_ENV.projectId);
@@ -78,7 +78,7 @@ class SubstrateReader {
   private cached: { at: number; result: SubstrateRead } | null = null;
   private inflight: Promise<SubstrateRead> | null = null;
   /** By actor uid, no time limit. Entries of gone actors are dropped on each read. */
-  private readonly templates = new Map<string, TemplateFacts>();
+  private readonly actorTemplates = new Map<string, ActorTemplateFacts>();
   private readonly workerNamespaces = new Set<string>(WORKER_NAMESPACES);
 
   constructor(private readonly source: AgentSubstrateSource) {}
@@ -103,19 +103,21 @@ class SubstrateReader {
 
   private async load(now: number): Promise<SubstrateRead> {
     try {
-      const actorsWithTemplates = this.source.listActors().then(async (actors) => {
-        const facts = await mapWithConcurrency(actors, TEMPLATE_READ_CONCURRENCY, (actor) => this.templateOf(actor));
+      const actorsWithActorTemplates = this.source.listActors().then(async (actors) => {
+        const facts = await mapWithConcurrency(actors, ACTOR_TEMPLATE_READ_CONCURRENCY, (actor) =>
+          this.actorTemplateOf(actor)
+        );
         return actors.map((actor, index) => ({ actor, ...facts[index] }));
       });
       const [atespaces, actors, workers] = await Promise.all([
         this.source.listAtespaces(),
-        actorsWithTemplates,
+        actorsWithActorTemplates,
         this.source.listWorkers(),
       ]);
 
       const live = new Set(actors.map(({ actor }) => actor.uid));
-      for (const uid of this.templates.keys()) {
-        if (!live.has(uid)) this.templates.delete(uid);
+      for (const uid of this.actorTemplates.keys()) {
+        if (!live.has(uid)) this.actorTemplates.delete(uid);
       }
 
       for (const { workerNamespace } of workers) {
@@ -140,21 +142,21 @@ class SubstrateReader {
     }
   }
 
-  /** A gone template (`notFound`) gives no agent and no limits. An actor with no uid is not cached. */
-  private async templateOf(actor: SubstrateActor): Promise<TemplateFacts> {
-    const cached = actor.uid ? this.templates.get(actor.uid) : undefined;
+  /** A gone actor template (`notFound`) gives no agent and no limits. An actor with no uid is not cached. */
+  private async actorTemplateOf(actor: SubstrateActor): Promise<ActorTemplateFacts> {
+    const cached = actor.uid ? this.actorTemplates.get(actor.uid) : undefined;
     if (cached !== undefined) return cached;
 
-    let facts: TemplateFacts;
+    let facts: ActorTemplateFacts;
     try {
-      const template = await this.source.getActorTemplate(actor.actorTemplate);
-      facts = { agent: agentOfTemplate(template), limits: { ...template.limits } };
+      const actorTemplate = await this.source.getActorTemplate(actor.actorTemplate);
+      facts = { agent: agentOfActorTemplate(actorTemplate), limits: { ...actorTemplate.limits } };
     } catch (error) {
       const sourceError = asSourceError(error);
       if (sourceError.kind !== "notFound") throw sourceError;
       facts = { agent: null, limits: null };
     }
-    if (actor.uid) this.templates.set(actor.uid, facts);
+    if (actor.uid) this.actorTemplates.set(actor.uid, facts);
     return facts;
   }
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useShallow } from "zustand/react/shallow";
-import type { ActorRow, ReadyFleetSnapshot } from "@my-project/shared";
+import type { ActorRow, ReadyFleet } from "@my-project/shared";
 import { EmptyList } from "@/core/components/EmptyList";
 import { DataTable } from "@/core/components/Table";
 import { useFilterContext } from "@/core/providers/Filter";
@@ -16,7 +16,7 @@ const DEFAULT_SORT = { sortBy: "name", order: "asc" } as const;
 
 const EMPTY_LIST = <EmptyList customText="No actors" />;
 
-export function ActorList({ fleet }: { fleet: ReadyFleetSnapshot }) {
+export function ActorList({ fleet }: { fleet: ReadyFleet }) {
   const { filterFunction } = useFilterContext<ActorRow, ActorFilterValues>();
   const navigate = useNavigate();
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));

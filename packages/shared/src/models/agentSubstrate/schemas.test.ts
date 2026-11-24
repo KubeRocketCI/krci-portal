@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { fleetSnapshotSchema } from "./schemas.js";
+import { fleetSchema } from "./schemas.js";
 
-describe("fleetSnapshotSchema", () => {
-  it("drops an error message from an unreachable snapshot", () => {
-    const result = fleetSnapshotSchema.parse({
+describe("fleetSchema", () => {
+  it("drops an error message from an unreachable fleet", () => {
+    const result = fleetSchema.parse({
       state: "unreachable",
       reason: "unavailable",
       message: "connect ECONNREFUSED 10.96.0.15:443",
@@ -13,7 +13,7 @@ describe("fleetSnapshotSchema", () => {
     expect(result).not.toHaveProperty("message");
   });
 
-  it("rejects an unreachable snapshot without a reason", () => {
-    expect(fleetSnapshotSchema.safeParse({ state: "unreachable" }).success).toBe(false);
+  it("rejects an unreachable fleet without a reason", () => {
+    expect(fleetSchema.safeParse({ state: "unreachable" }).success).toBe(false);
   });
 });

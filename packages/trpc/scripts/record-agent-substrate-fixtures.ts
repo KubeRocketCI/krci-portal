@@ -3,7 +3,7 @@
  *
  * Writes:
  *   src/clients/agentSubstrate/__fixtures__/testbed.json  MemoryFleet for the memory adapter.
- *   apps/client/src/modules/agent-substrate/__fixtures__/fleet.testbed.json  FleetSnapshot for Storybook.
+ *   apps/client/src/modules/agent-substrate/__fixtures__/fleet.testbed.json  Fleet for Storybook.
  *
  * Actor template env: only the AGENT_ENV entries (ADR 0001) are kept, and none that holds an in-cluster address.
  * The script fails when the output holds a SESSION_ID, GITLAB_URL or BOT_USERNAME value or an in-cluster address.
@@ -22,7 +22,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import type { LookupFunction } from "node:net";
 import { dirname, resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { fleetSnapshotSchema } from "@my-project/shared";
+import { fleetSchema } from "@my-project/shared";
 import { format, resolveConfig } from "prettier";
 import { GrpcAgentSubstrateSource } from "../src/clients/agentSubstrate/grpc/index.js";
 import { MemoryAgentSubstrateSource, type MemoryFleet } from "../src/clients/agentSubstrate/memory.js";
@@ -36,7 +36,7 @@ const KEPT_ENV = new Set<string>(Object.values(AGENT_ENV));
 const CHECKED_ENV_NAMES = new Set(CHECKED_ENV);
 
 const MEMORY_FIXTURE = resolve("src/clients/agentSubstrate/__fixtures__/testbed.json");
-const SNAPSHOT_FIXTURE = resolve("../../apps/client/src/modules/agent-substrate/__fixtures__/fleet.testbed.json");
+const STORYBOOK_FIXTURE = resolve("../../apps/client/src/modules/agent-substrate/__fixtures__/fleet.testbed.json");
 
 const { values } = parseArgs({
   options: {
@@ -61,10 +61,13 @@ const lookup: LookupFunction = (_hostname, options, callback) => {
 };
 
 /** Keeps only the AGENT_ENV entries. Records the values of the CHECKED_ENV entries. */
-function scrubTemplate(template: SubstrateActorTemplate, removed: Map<string, string>): SubstrateActorTemplate {
+function scrubActorTemplate(
+  actorTemplate: SubstrateActorTemplate,
+  removed: Map<string, string>
+): SubstrateActorTemplate {
   return {
-    ...template,
-    containers: template.containers.map((container) => ({
+    ...actorTemplate,
+    containers: actorTemplate.containers.map((container) => ({
       ...container,
       env: container.env.filter(({ name, value }) => {
         if (CHECKED_ENV_NAMES.has(name) && value) removed.set(value, name);
@@ -99,21 +102,21 @@ try {
   ]);
   /** CHECKED_ENV value to its env name. */
   const removed = new Map<string, string>();
-  const templates = await Promise.all(actors.map((actor) => source.getActorTemplate(actor.actorTemplate)));
+  const actorTemplates = await Promise.all(actors.map((actor) => source.getActorTemplate(actor.actorTemplate)));
   const fleet: MemoryFleet = {
     atespaces,
     actors,
-    actorTemplates: templates.map((template) => scrubTemplate(template, removed)),
+    actorTemplates: actorTemplates.map((actorTemplate) => scrubActorTemplate(actorTemplate, removed)),
     workers,
   };
 
-  const snapshot = fleetSnapshotSchema.parse(
+  const storybookFleet = fleetSchema.parse(
     await getFleet({ agentSubstrateSource: new MemoryAgentSubstrateSource(fleet) } as unknown as TRPCContext)
   );
 
   for (const [file, data] of [
     [MEMORY_FIXTURE, fleet],
-    [SNAPSHOT_FIXTURE, snapshot],
+    [STORYBOOK_FIXTURE, storybookFleet],
   ] as const) {
     const json = `${JSON.stringify(data, null, 2)}\n`;
     const leaked = [...removed].flatMap(([value, name]) =>

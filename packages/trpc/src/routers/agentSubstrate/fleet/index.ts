@@ -7,9 +7,9 @@ import {
   type ActorAgent,
   type ActorRow,
   type AgentProfileCount,
-  type FleetSnapshot,
+  type Fleet,
   type FleetSummary,
-  type ReadyFleetSnapshot,
+  type ReadyFleet,
   type SubstrateResources,
   type WorkerPoolRow,
   type WorkerRow,
@@ -134,7 +134,7 @@ function emptyWorkerPoolRow(namespace: string, name: string): WorkerPoolRow {
 }
 
 /** Rows: the worker pools that workers name and the WorkerPools that were read. */
-function toWorkerPools(fleet: SubstrateFleet, workerPoolRead: WorkerPoolRead): ReadyFleetSnapshot["workerPools"] {
+function toWorkerPools(fleet: SubstrateFleet, workerPoolRead: WorkerPoolRead): ReadyFleet["workerPools"] {
   const size = roomSizeOf(fleet.actors.map(({ limits }) => limits));
   const rows = new Map<string, WorkerPoolRow>();
   const rowOf = (namespace: string, name: string) => {
@@ -181,11 +181,7 @@ function toWorkerPools(fleet: SubstrateFleet, workerPoolRead: WorkerPoolRead): R
   };
 }
 
-function toReadySnapshot(
-  fleet: SubstrateFleet,
-  codebaseLinks: CodebaseLinks,
-  workerPoolRead: WorkerPoolRead
-): ReadyFleetSnapshot {
+function toReadyFleet(fleet: SubstrateFleet, codebaseLinks: CodebaseLinks, workerPoolRead: WorkerPoolRead): ReadyFleet {
   const actors = fleet.actors.map(({ actor, agent }) => toActorRow(actor, agent, codebaseLinks));
   const workers = fleet.workers.map(toWorkerRow);
   const workerPools = toWorkerPools(fleet, workerPoolRead);
@@ -205,7 +201,7 @@ function toReadySnapshot(
  * Reads with the user's `idToken`: Codebases in `DEFAULT_CLUSTER_NAMESPACE` (unset: no Codebase, no issue link) and
  * WorkerPools in the worker namespaces.
  */
-export async function getFleet(ctx: TRPCContext): Promise<FleetSnapshot> {
+export async function getFleet(ctx: TRPCContext): Promise<Fleet> {
   if (!ctx.agentSubstrateSource) {
     return { state: "notConfigured" };
   }
@@ -224,5 +220,5 @@ export async function getFleet(ctx: TRPCContext): Promise<FleetSnapshot> {
     readCodebaseLinks(k8sClient, codebaseNamespace, projectPaths),
     readWorkerPools(k8sClient, workerNamespaces),
   ]);
-  return toReadySnapshot(read.fleet, codebaseLinks, workerPoolRead);
+  return toReadyFleet(read.fleet, codebaseLinks, workerPoolRead);
 }

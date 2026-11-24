@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { FleetUnreachableReason, ReadyFleetSnapshot, WorkerPoolRow } from "@my-project/shared";
+import type { FleetUnreachableReason, ReadyFleet, WorkerPoolRow } from "@my-project/shared";
 import { expect, within } from "storybook/test";
 import { STORYBOOK_CLUSTER_NAME, withAppProviders } from "@sb/index";
 import {
@@ -49,7 +49,7 @@ function unreachable(reason: FleetUnreachableReason, label: string): Story {
   };
 }
 
-const withFleet = (fleet: ReadyFleetSnapshot) => [withAppProviders({ seedQueryCache: seedFleet(fleet) })];
+const withFleet = (fleet: ReadyFleet) => [withAppProviders({ seedQueryCache: seedFleet(fleet) })];
 
 async function needsAttention(canvasElement: HTMLElement): Promise<Canvas> {
   return within(await within(canvasElement).findByRole("region", { name: "Needs attention" }));
@@ -71,7 +71,7 @@ const workerPoolCard = (section: Canvas, name: string) =>
 /** The link of a stat card or of a count, by the label it starts with. */
 const countLink = (scope: Canvas, label: string) => scope.getByRole("link", { name: new RegExp(`^${label}`) });
 
-async function expectActorStateCounts(section: Canvas, fleet: ReadyFleetSnapshot) {
+async function expectActorStateCounts(section: Canvas, fleet: ReadyFleet) {
   const strip = group(section, /^Actor state$/);
   for (const [label, state] of [
     ["Running", "running"],

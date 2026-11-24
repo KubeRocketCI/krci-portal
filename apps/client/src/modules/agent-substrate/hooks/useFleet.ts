@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { FleetSnapshot, FleetUnreachableReason, ReadyFleetSnapshot } from "@my-project/shared";
+import type { Fleet, FleetUnreachableReason, ReadyFleet } from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
 import type { RequestError } from "@/core/types/global";
 
@@ -15,10 +15,9 @@ export const KEEP_LAST_FLEET_MS = 5 * 60_000;
  * `refreshFailingSince`: epoch ms of the first of those failed refreshes, browser clock.
  */
 export type FleetData =
-  | Exclude<FleetSnapshot, ReadyFleetSnapshot>
-  | (ReadyFleetSnapshot & { refreshFailure?: FleetUnreachableReason; refreshFailingSince?: number });
+  Exclude<Fleet, ReadyFleet> | (ReadyFleet & { refreshFailure?: FleetUnreachableReason; refreshFailingSince?: number });
 
-function keepLastReadyFleet(previous: FleetData | undefined, next: FleetSnapshot): FleetData {
+function keepLastReadyFleet(previous: FleetData | undefined, next: Fleet): FleetData {
   if (next.state !== "unreachable" || previous?.state !== "ready") return next;
   const now = Date.now();
   const since = previous.refreshFailingSince ?? now;

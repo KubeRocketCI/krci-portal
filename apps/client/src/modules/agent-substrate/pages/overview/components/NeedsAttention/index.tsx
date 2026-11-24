@@ -2,12 +2,7 @@ import React from "react";
 import { Link } from "@tanstack/react-router";
 import { CircleAlert, CircleCheck } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
-import {
-  actorStateGroupSchema,
-  type AttentionItem,
-  type AttentionKind,
-  type ReadyFleetSnapshot,
-} from "@my-project/shared";
+import { actorStateGroupSchema, type AttentionItem, type AttentionKind, type ReadyFleet } from "@my-project/shared";
 import { SectionHeading } from "@/core/components/SectionHeading";
 import { CellLink } from "@/core/components/Table/components/CellLink";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
@@ -16,7 +11,7 @@ import { Tooltip } from "@/core/components/ui/tooltip";
 import { cn } from "@/core/utils/classname";
 import { formatRelativeTime, formatUnixTimestamp } from "@/core/utils/date-humanize";
 import { useClusterStore } from "@/k8s/store";
-import { ActorIssue, ActorLink } from "../../../../components/ActorCells";
+import { ActorLink, AgentIssueLink } from "../../../../components/ActorCells";
 import { EmptyValue } from "../../../../components/EmptyValue";
 import { WorkerStateBadge } from "../../../../components/WorkerCells";
 import { ACTOR_FILTER_NAMES } from "../../../../constants/actorFilter";
@@ -104,7 +99,7 @@ function ActorCrashedRow({ item }: { item: ItemOf<"actorCrashed"> }) {
       <div className="flex min-w-0 items-center gap-2">
         <span className="shrink-0">Issue</span>
         <div className="min-w-0 flex-1">
-          <ActorIssue agent={item.agent} />
+          <AgentIssueLink agent={item.agent} />
         </div>
         <span className="shrink-0">Agent profile</span>
         <span className="text-foreground shrink-0">{item.agent?.agentProfile ?? <EmptyValue />}</span>
@@ -245,7 +240,7 @@ function rowKey(item: AttentionItem): string {
 }
 
 /** One group per kind, errors first; at most NEEDS_ATTENTION_MAX_ROWS rows per group. */
-export function NeedsAttention({ fleet }: { fleet: ReadyFleetSnapshot }) {
+export function NeedsAttention({ fleet }: { fleet: ReadyFleet }) {
   const headingId = React.useId();
   const groups = React.useMemo(() => groupAttentionItems(fleet.needsAttention), [fleet.needsAttention]);
   const workerPoolCheck = workerPoolCheckOf(fleet.workerPools);

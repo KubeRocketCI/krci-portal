@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import type React from "react";
-import type { ReadyFleetSnapshot } from "@my-project/shared";
+import type { ReadyFleet } from "@my-project/shared";
 import { ErrorContent } from "@/core/components/ErrorContent";
 import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { PageWrapper } from "@/core/components/PageWrapper";
@@ -16,23 +16,23 @@ interface FleetPageProps {
   title: string;
   breadcrumbs: Breadcrumb[];
   /** Other states render their own panel. */
-  children?: (fleet: ReadyFleetSnapshot) => React.ReactNode;
+  children?: (fleet: ReadyFleet) => React.ReactNode;
 }
 
 /**
  * A failed tRPC read leaves the data as it was and sets `error`: it is the newer failure. An unreachable read becomes a
  * ready fleet with `refreshFailure` in useFleet.
  */
-function staleReasonOf(snapshot: FleetData | undefined, error: RequestError | null): string | undefined {
-  if (error && snapshot) return "Refresh failed";
-  if (snapshot?.state === "ready" && snapshot.refreshFailure) {
-    return `Agent Substrate unreachable: ${unreachableReasonLabel(snapshot.refreshFailure)}`;
+function staleReasonOf(fleet: FleetData | undefined, error: RequestError | null): string | undefined {
+  if (error && fleet) return "Refresh failed";
+  if (fleet?.state === "ready" && fleet.refreshFailure) {
+    return `Agent Substrate unreachable: ${unreachableReasonLabel(fleet.refreshFailure)}`;
   }
   return undefined;
 }
 
 export interface FleetPageViewProps extends FleetPageProps {
-  snapshot?: FleetData;
+  fleet?: FleetData;
   error: RequestError | null;
   /** Epoch ms of the last successful fetch; 0 before it. */
   dataUpdatedAt: number;
@@ -45,24 +45,24 @@ export function FleetPageView({
   title,
   breadcrumbs,
   children,
-  snapshot,
+  fleet,
   error,
   dataUpdatedAt,
   isFetching,
   onRefresh,
 }: FleetPageViewProps) {
   const renderBody = (): React.ReactNode => {
-    if (snapshot === undefined) {
+    if (fleet === undefined) {
       return error ? <ErrorContent error={error} /> : <FleetLoading />;
     }
 
-    switch (snapshot.state) {
+    switch (fleet.state) {
       case "notConfigured":
         return <FleetNotConfigured />;
       case "unreachable":
-        return <FleetUnreachable reason={snapshot.reason} />;
+        return <FleetUnreachable reason={fleet.reason} />;
       case "ready":
-        return children?.(snapshot) ?? null;
+        return children?.(fleet) ?? null;
     }
   };
 
@@ -71,8 +71,8 @@ export function FleetPageView({
       breadcrumbs={[{ label: "Agent Substrate" }, ...breadcrumbs]}
       headerSlot={
         <FleetFreshness
-          updatedAt={snapshot?.state === "ready" ? snapshot.updatedAt : dataUpdatedAt}
-          staleReason={staleReasonOf(snapshot, error)}
+          updatedAt={fleet?.state === "ready" ? fleet.updatedAt : dataUpdatedAt}
+          staleReason={staleReasonOf(fleet, error)}
           isFetching={isFetching}
           onRefresh={onRefresh}
         />
@@ -86,16 +86,16 @@ export function FleetPageView({
 }
 
 export function FleetPage(props: FleetPageProps) {
-  const fleet = useFleet();
+  const query = useFleet();
 
   return (
     <FleetPageView
       {...props}
-      snapshot={fleet.data}
-      error={fleet.error}
-      dataUpdatedAt={fleet.dataUpdatedAt}
-      isFetching={fleet.isFetching}
-      onRefresh={() => void fleet.refetch()}
+      fleet={query.data}
+      error={query.error}
+      dataUpdatedAt={query.dataUpdatedAt}
+      isFetching={query.isFetching}
+      onRefresh={() => void query.refetch()}
     />
   );
 }
