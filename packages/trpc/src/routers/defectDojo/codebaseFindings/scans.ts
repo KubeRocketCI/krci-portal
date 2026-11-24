@@ -7,17 +7,20 @@ import {
   type DefectDojoTestsFilter,
 } from "../../../clients/defectDojo/index.js";
 import type { CodebaseFacts } from "./facts.js";
-
-/** Keys of the tags the CI security scan writes on its tests. */
-const TAG_KEY = {
-  codebase: "app.edp.epam.com/codebase",
-  tenant: "app.edp.epam.com/tenant",
-  ociImage: "oci-image",
-} as const;
+import { TAG_KEY, formatTag, tagValue } from "./tags.js";
 
 /** Tags that select the CI tests of a codebase: its name and the namespace of its Codebase object. */
 export function ciTestTags({ name, namespace }: Pick<CodebaseFacts, "name" | "namespace">): string[] {
-  return [`${TAG_KEY.codebase}:${name}`, `${TAG_KEY.tenant}:${namespace}`];
+  return [formatTag(TAG_KEY.codebase, name), formatTag(TAG_KEY.tenant, namespace)];
+}
+
+/**
+ * Tells an own image from a third-party one: an own image is one that a CodebaseImageStream of the codebase names.
+ * DefectDojo lower-cases tags, so the comparison ignores case.
+ */
+export function createOwnImageMatcher({ ownImageNames }: Pick<CodebaseFacts, "ownImageNames">) {
+  const ownImages = new Set(ownImageNames.map((imageName) => imageName.toLowerCase()));
+  return (image: string | null): boolean => image !== null && ownImages.has(image.toLowerCase());
 }
 
 /** One scan of the codebase: the typed identity the browser sees, and the test it resolves to. */
@@ -54,33 +57,35 @@ export function scanTestsFilter(
   }
 
   return {
-    tags: [...ciTestTags(facts), ...(scan.image === null ? [] : [`${TAG_KEY.ociImage}:${scan.image}`])],
+    tags: [...ciTestTags(facts), ...(scan.image === null ? [] : [formatTag(TAG_KEY.ociImage, scan.image)])],
     branchTag: scan.branch,
     scanType,
   };
 }
 
-/** Value of the tag `<key>:<value>`, or `null` when the test has no tag of that key. */
-function tagValue(tags: readonly string[], key: string): string | null {
-  const prefix = `${key}:`;
-  const tag = tags.find((candidate) => candidate.startsWith(prefix));
-  return tag === undefined ? null : tag.slice(prefix.length);
-}
-
-/** The scan was uploaded after the kept one: a later date, and between equal dates the later test. */
-function isNewer(candidate: ScanEntry, kept: ScanEntry): boolean {
+/** The candidate was uploaded after the kept one: a later date, and between equal dates the later test. */
+export function isNewer(
+  candidate: Pick<ScanEntry, "date" | "testId">,
+  kept: Pick<ScanEntry, "date" | "testId">
+): boolean {
   const byDate = Date.parse(candidate.date) - Date.parse(kept.date);
   return byDate !== 0 ? byDate > 0 : candidate.testId > kept.testId;
 }
 
+export function latestDate(dates: readonly string[]): string | null {
+  return dates.reduce<string | null>(
+    (latest, date) => (latest === null || Date.parse(date) > Date.parse(latest) ? date : latest),
+    null
+  );
+}
+
 /**
  * The scans of a codebase from its CI tests. Only code and image scans of a branch that has a CodebaseBranch are
- * scans; an own image is one that a CodebaseImageStream of the codebase names. Tests of one branch, scanner and
- * image are one scan: the one uploaded last. Ordered by branch (the default branch first), then own image before
- * third-party images, then image, then scanner.
+ * scans. Tests of one branch, scanner and image are one scan: the one uploaded last. Ordered by branch (the default
+ * branch first), then own image before third-party images, then image, then scanner.
  */
 export function buildScans(facts: CodebaseFacts, tests: readonly DefectDojoTest[]): ScanEntry[] {
-  const ownImages = new Set(facts.ownImageNames.map((imageName) => imageName.toLowerCase()));
+  const isOwnImage = createOwnImageMatcher(facts);
 
   const entries = tests.flatMap((test): ScanEntry[] => {
     if (!isCodebaseScanLevel(test.level) || !facts.branches.includes(test.branchTag)) {
@@ -92,7 +97,7 @@ export function buildScans(facts: CodebaseFacts, tests: readonly DefectDojoTest[
       {
         ref: { level: test.level, branch: test.branchTag, scanner: test.scanType, image },
         testId: test.id,
-        ownImage: image !== null && ownImages.has(image.toLowerCase()),
+        ownImage: isOwnImage(image),
         version: test.version,
         date: test.updated,
         testUrl: test.url,

@@ -82,11 +82,12 @@ export interface NoScanDataStateProps {
   producer: string;
   /** What has no data, for example "Code findings". */
   what: string;
+  hint?: string;
   className?: string;
 }
 
 /** No scan reached DefectDojo. Names the producer so that the reader knows what to run. */
-export function NoScanDataState({ producer, what, className }: NoScanDataStateProps) {
+export function NoScanDataState({ producer, what, hint, className }: NoScanDataStateProps) {
   return (
     <div className={cn("text-muted-foreground flex items-start gap-2", className)}>
       <CircleDashed className="mt-0.5 size-4 shrink-0" aria-hidden />
@@ -95,6 +96,7 @@ export function NoScanDataState({ producer, what, className }: NoScanDataStatePr
         <p className="text-xs">
           The {producer} has not reported {what} for this codebase.
         </p>
+        {hint && <p className="text-xs">{hint}</p>}
       </div>
     </div>
   );

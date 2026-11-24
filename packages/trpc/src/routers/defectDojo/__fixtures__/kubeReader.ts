@@ -18,8 +18,21 @@ function matchesSelector(object: KubeObject, labelSelector: string | undefined):
   });
 }
 
+export interface KubeReaderOptions {
+  /** Types the cluster does not serve: listing one answers 404, as an API server without its CRD does. */
+  notServed?: readonly K8sResourceConfig[];
+  /** Types the user may not list: listing one answers 403. */
+  forbidden?: readonly K8sResourceConfig[];
+}
+
 /** Answers `get` and `list` of one namespace from a fixed set of objects, as the Kubernetes API does. */
-export function createKubeReader(objects: readonly KubeObject[]): CodebaseKubeReader {
+export function createKubeReader(
+  objects: readonly KubeObject[],
+  { notServed = [], forbidden = [] }: KubeReaderOptions = {}
+): CodebaseKubeReader {
+  const isIn = (configs: readonly K8sResourceConfig[], config: K8sResourceConfig) =>
+    configs.some((candidate) => candidate.kind === config.kind);
+
   const ofKind = (config: K8sResourceConfig, namespace: string) =>
     objects.filter((object) => object.kind === config.kind && object.metadata.namespace === namespace);
 
@@ -32,6 +45,12 @@ export function createKubeReader(objects: readonly KubeObject[]): CodebaseKubeRe
       return found;
     },
     async listResource(config, namespace, labelSelector) {
+      if (isIn(notServed, config)) {
+        throw new K8sApiError(404, "Not Found", "the server could not find the requested resource");
+      }
+      if (isIn(forbidden, config)) {
+        throw new K8sApiError(403, "Forbidden", `${config.pluralName} is forbidden`);
+      }
       return { items: ofKind(config, namespace).filter((object) => matchesSelector(object, labelSelector)) };
     },
   };

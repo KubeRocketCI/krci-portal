@@ -1,11 +1,20 @@
 import {
+  NO_FINDING_COUNTS,
+  hasActiveFindings,
+  hasActiveRuntimeFindings,
   scanRefKey,
   type CodebaseFindings,
   type CodebaseLevel,
   type CodebaseScan,
+  type CodebaseScanRef,
+  type RuntimeContainer,
+  type RuntimeContainerRef,
+  type RuntimeEnvironment,
+  type RuntimeLevel,
   type ScanFinding,
   type ScanFindings,
   type ScanFindingsRequest,
+  type ScanRef,
 } from "@my-project/shared";
 import type {
   DefectDojoFinding,
@@ -16,72 +25,107 @@ import type {
 } from "../../../clients/defectDojo/index.js";
 import { mapWithConcurrency } from "../../../utils/mapWithConcurrency/index.js";
 import type { CodebaseFacts } from "./facts.js";
-import { buildScans, ciTestTags, scanTestsFilter, type ScanEntry } from "./scans.js";
+import {
+  buildRuntimeContainers,
+  runtimeTestsFilter,
+  type RuntimeContainerEntry,
+  type RuntimeReportTest,
+} from "./runtime.js";
+import { buildScans, ciTestTags, latestDate, scanTestsFilter, type ScanEntry } from "./scans.js";
 import type { CodebaseFindingsSource } from "./source.js";
 
-/** Scans counted at once: a codebase with many branches and images does not flood DefectDojo. */
-const COUNT_CONCURRENCY = 6;
+/** Tests counted at once, and Environments listed at once: a codebase with many scans does not flood DefectDojo. */
+export const COUNT_CONCURRENCY = 6;
 
-const NO_FINDINGS: DefectDojoSeverityCounts["severity"] = { Critical: 0, High: 0, Medium: 0, Low: 0, Info: 0 };
+type SeverityCounts = DefectDojoSeverityCounts["severity"];
 
 /** The state a failed read carries to the result. */
 type Outage = { state: "notConfigured" } | { state: "unreachable" };
 
-type ScansResult = Outage | { state: "data"; scans: ScanEntry[] };
-
-/** Stops the counting of the other scans at the first failed read. */
+/** Stops the other reads at the first failed one. */
 class OutageFound extends Error {
   constructor(readonly outage: Outage) {
     super(outage.state);
   }
 }
 
-type CountedScan = { state: "data"; scan: CodebaseScan } | { state: "noScanData" } | Outage;
-
 function isOutage(result: { state: string }): result is Outage {
   return result.state === "notConfigured" || result.state === "unreachable";
 }
 
-/** The CI tests of the codebase, or those of `filter`, as scans. No test is no scan. */
-async function listScans(
+function outageOf(error: unknown): Outage {
+  if (error instanceof OutageFound) {
+    return error.outage;
+  }
+  throw error;
+}
+
+/** The data of a read, or `null` for no scan data. An outage stops the composition. */
+function dataOf<T>(result: DefectDojoResult<T>): T | null {
+  if (isOutage(result)) {
+    throw new OutageFound(result);
+  }
+  return result.state === "data" ? result.data : null;
+}
+
+async function readTests(source: CodebaseFindingsSource, filter: DefectDojoTestsFilter): Promise<DefectDojoTest[]> {
+  return dataOf(await source.listTests(filter)) ?? [];
+}
+
+async function readScans(
   source: CodebaseFindingsSource,
   facts: CodebaseFacts,
   filter: DefectDojoTestsFilter = { tags: ciTestTags(facts) }
-): Promise<ScansResult> {
-  const tests: DefectDojoResult<DefectDojoTest[]> = await source.listTests(filter);
+): Promise<ScanEntry[]> {
+  return buildScans(facts, await readTests(source, filter));
+}
 
-  return isOutage(tests)
-    ? tests
-    : { state: "data", scans: tests.state === "data" ? buildScans(facts, tests.data) : [] };
+interface TestCount {
+  /** Active findings by severity. Zero everywhere when the test was not counted by severity. */
+  counts: SeverityCounts;
+  active: number;
+  /** Findings that are not active: mitigated, false positive, out of scope, risk accepted. */
+  triaged: number;
+}
+
+interface CountTarget {
+  testId: number;
+  bySeverity: boolean;
 }
 
 /**
- * Counts one scan: the active findings by severity and the findings that are not active. The counts of all states
- * come first: they tell whether the second request, for the active findings by severity, is needed.
+ * Counts one test. The counts of all states come first: they tell whether the second request, for the active
+ * findings by severity, is needed. `null`: the test is gone.
  */
-async function countScan(source: CodebaseFindingsSource, entry: ScanEntry): Promise<CountedScan> {
-  const scope = { testId: entry.testId };
+async function countTest(
+  source: CodebaseFindingsSource,
+  { testId, bySeverity }: CountTarget
+): Promise<TestCount | null> {
+  const scope = { testId };
 
-  // The test comes from a list: it exists, so a count of zero is a clean scan.
-  const all = await source.getSeverityCounts(scope, { activeOnly: false, testExists: true });
-  if (all.state !== "data") {
-    return all;
+  // The test comes from a list: it exists, so a count of zero is a clean test.
+  const all = dataOf(await source.getSeverityCounts(scope, { activeOnly: false, testExists: true }));
+  if (all === null) {
+    return null;
   }
 
-  let counts = NO_FINDINGS;
-  if (all.data.active > 0) {
-    const active = await source.getSeverityCounts(scope, { activeOnly: true, testExists: true });
-    if (active.state !== "data") {
-      return active;
+  let counts: SeverityCounts = NO_FINDING_COUNTS;
+  if (bySeverity && all.active > 0) {
+    const active = dataOf(await source.getSeverityCounts(scope, { activeOnly: true, testExists: true }));
+    if (active === null) {
+      return null;
     }
-    counts = active.data.severity;
+    counts = active.severity;
   }
 
-  const { ref, ownImage, version, date, testUrl, productUrl } = entry;
-  return {
-    state: "data",
-    scan: { ref, ownImage, version, date, counts, triaged: all.data.total - all.data.active, testUrl, productUrl },
-  };
+  return { counts, active: all.active, triaged: all.total - all.active };
+}
+
+function toCodebaseScan(
+  { ref, ownImage, version, date, testUrl, productUrl }: ScanEntry,
+  { counts, triaged }: TestCount
+): CodebaseScan {
+  return { ref, ownImage, version, date, counts, triaged, testUrl, productUrl };
 }
 
 function toLevel(scans: CodebaseScan[]): CodebaseLevel {
@@ -89,50 +133,110 @@ function toLevel(scans: CodebaseScan[]): CodebaseLevel {
     return { state: "noScanData", scans, lastUpload: null };
   }
 
-  const hasActiveFinding = scans.some((scan) => Object.values(scan.counts).some((count) => count > 0));
-  const lastUpload = scans.reduce(
-    (latest, scan) => (Date.parse(scan.date) > Date.parse(latest) ? scan.date : latest),
-    scans[0].date
-  );
-
-  return { state: hasActiveFinding ? "data" : "clean", scans, lastUpload };
+  const hasActiveFinding = scans.some((scan) => hasActiveFindings(scan.counts));
+  return { state: hasActiveFinding ? "data" : "clean", scans, lastUpload: latestDate(scans.map((scan) => scan.date)) };
 }
 
-/** Both levels of the tab for a codebase. Any failed read makes the whole result unreachable: no partial data. */
+function countTargets(container: RuntimeContainerEntry): CountTarget[] {
+  if (container.state !== "running") {
+    return [];
+  }
+
+  return [
+    ...(container.vulnerabilities ? [{ testId: container.vulnerabilities.testId, bySeverity: true }] : []),
+    ...(container.secrets ? [{ testId: container.secrets.testId, bySeverity: false }] : []),
+  ];
+}
+
+type CountOf = ReadonlyMap<number, TestCount | null>;
+
+function toVulnerabilities(report: RuntimeReportTest | null, countOf: CountOf) {
+  const count = report && countOf.get(report.testId);
+  return report && count ? { counts: count.counts, triaged: count.triaged, testUrl: report.testUrl } : null;
+}
+
+function toSecrets(report: RuntimeReportTest | null, countOf: CountOf) {
+  const count = report && countOf.get(report.testId);
+  return report && count ? { active: count.active, triaged: count.triaged, testUrl: report.testUrl } : null;
+}
+
+function toRuntimeContainer(container: RuntimeContainerEntry, countOf: CountOf): RuntimeContainer {
+  if (container.state !== "running") {
+    return container;
+  }
+
+  return {
+    ...container,
+    vulnerabilities: toVulnerabilities(container.vulnerabilities, countOf),
+    secrets: toSecrets(container.secrets, countOf),
+  };
+}
+
+function toRuntimeLevel(environments: RuntimeEnvironment[]): RuntimeLevel {
+  const containers = environments.flatMap((environment) => environment.containers);
+  if (containers.length === 0) {
+    return { state: "noScanData", environments, lastUpload: null };
+  }
+
+  const running = containers.flatMap((container) => (container.state === "running" ? [container] : []));
+  if (running.length === 0) {
+    return { state: "notRunning", environments, lastUpload: null };
+  }
+
+  return {
+    state: running.some(hasActiveRuntimeFindings) ? "data" : "clean",
+    environments,
+    lastUpload: latestDate(running.map((container) => container.date)),
+  };
+}
+
+/**
+ * The three levels of the tab for a codebase. Any failed read makes the whole result unreachable or not configured: no
+ * partial data.
+ */
 export async function composeCodebaseFindings(
   source: CodebaseFindingsSource,
   facts: CodebaseFacts
 ): Promise<CodebaseFindings> {
-  const listed = await listScans(source, facts);
-  if (listed.state !== "data") {
-    return listed;
-  }
-
-  let counted: CountedScan[];
   try {
-    counted = await mapWithConcurrency(listed.scans, COUNT_CONCURRENCY, async (entry) => {
-      const result = await countScan(source, entry);
-      if (isOutage(result)) {
-        throw new OutageFound(result);
-      }
-      return result;
+    const [scans, environmentTests] = await Promise.all([
+      readScans(source, facts),
+      mapWithConcurrency(facts.environments, COUNT_CONCURRENCY, (environment) =>
+        readTests(source, runtimeTestsFilter(environment))
+      ),
+    ]);
+    const containersOf = environmentTests.map((tests) => buildRuntimeContainers(facts, tests));
+
+    const targets: CountTarget[] = [
+      ...scans.map(({ testId }) => ({ testId, bySeverity: true })),
+      ...containersOf.flat().flatMap(countTargets),
+    ];
+    const counted = await mapWithConcurrency(targets, COUNT_CONCURRENCY, (target) => countTest(source, target));
+    const countOf = new Map(targets.map(({ testId }, index) => [testId, counted[index]]));
+
+    const countedScans = scans.flatMap((entry) => {
+      const count = countOf.get(entry.testId) ?? null;
+      return count === null ? [] : [toCodebaseScan(entry, count)];
     });
+    const environments = facts.environments.map(({ cdPipeline, stage, clusterName, namespace }, index) => ({
+      cdPipeline,
+      stage,
+      clusterName,
+      namespace,
+      containers: containersOf[index].map((container) => toRuntimeContainer(container, countOf)),
+    }));
+
+    return {
+      state: "data",
+      levels: {
+        code: toLevel(countedScans.filter((scan) => scan.ref.level === "code")),
+        image: toLevel(countedScans.filter((scan) => scan.ref.level === "image")),
+        runtime: toRuntimeLevel(environments),
+      },
+    };
   } catch (error) {
-    if (error instanceof OutageFound) {
-      return error.outage;
-    }
-    throw error;
+    return outageOf(error);
   }
-
-  const scans = counted.flatMap((result) => (result.state === "data" ? [result.scan] : []));
-
-  return {
-    state: "data",
-    levels: {
-      code: toLevel(scans.filter((scan) => scan.ref.level === "code")),
-      image: toLevel(scans.filter((scan) => scan.ref.level === "image")),
-    },
-  };
 }
 
 function toScanFinding(finding: DefectDojoFinding): ScanFinding {
@@ -157,37 +261,79 @@ function toScanFinding(finding: DefectDojoFinding): ScanFinding {
   };
 }
 
-/** One page of the findings of a scan. The scan is found among the scans of the codebase, so a branch without a CodebaseBranch has none. */
+/** The test of a CI scan. The scan is found among the scans of the codebase, so a branch without a CodebaseBranch has none. */
+async function findScanTestId(
+  source: CodebaseFindingsSource,
+  facts: CodebaseFacts,
+  scan: CodebaseScanRef
+): Promise<number | null> {
+  const filter = scanTestsFilter(facts, scan);
+  if (filter === null) {
+    return null;
+  }
+
+  const scans = await readScans(source, facts, filter);
+  return scans.find((candidate) => scanRefKey(candidate.ref) === scanRefKey(scan))?.testId ?? null;
+}
+
+/**
+ * The Environment is one of the codebase, the container one of its tests: the cluster, namespace and Application come
+ * from Kubernetes, never from the request.
+ */
+async function findRuntimeTestId(
+  source: CodebaseFindingsSource,
+  facts: CodebaseFacts,
+  scan: RuntimeContainerRef
+): Promise<number | null> {
+  const environment = facts.environments.find(
+    (candidate) => candidate.cdPipeline === scan.cdPipeline && candidate.stage === scan.stage
+  );
+  if (environment === undefined) {
+    return null;
+  }
+
+  const tests = await readTests(source, runtimeTestsFilter(environment, scan));
+  const container = buildRuntimeContainers(facts, tests).find(
+    (candidate) => candidate.workload === scan.workload && candidate.container === scan.container
+  );
+  if (container?.state !== "running") {
+    return null;
+  }
+
+  const report = scan.reportKind === "vulnerabilityreport" ? container.vulnerabilities : container.secrets;
+  return report?.testId ?? null;
+}
+
+function findTestId(source: CodebaseFindingsSource, facts: CodebaseFacts, scan: ScanRef): Promise<number | null> {
+  return scan.level === "runtime" ? findRuntimeTestId(source, facts, scan) : findScanTestId(source, facts, scan);
+}
+
+/** One page of the findings of a scan or of a container report, most severe first. */
 export async function readScanFindings(
   source: CodebaseFindingsSource,
   facts: CodebaseFacts,
   request: ScanFindingsRequest
 ): Promise<ScanFindings> {
-  const filter = scanTestsFilter(facts, request.scan);
-  if (filter === null) {
-    return { state: "noScanData" };
-  }
+  try {
+    const testId = await findTestId(source, facts, request.scan);
+    if (testId === null) {
+      return { state: "noScanData" };
+    }
 
-  const listed = await listScans(source, facts, filter);
-  if (listed.state !== "data") {
-    return listed;
-  }
+    const page = dataOf(
+      await source.listFindings({
+        scope: { testId },
+        state: request.showTriaged ? "any" : "active",
+        severities: request.severity ? [request.severity] : [],
+        limit: request.pageSize,
+        offset: request.page * request.pageSize,
+      })
+    );
 
-  const entry = listed.scans.find((candidate) => scanRefKey(candidate.ref) === scanRefKey(request.scan));
-  if (!entry) {
-    return { state: "noScanData" };
+    return page === null
+      ? { state: "noScanData" }
+      : { state: "data", total: page.total, findings: page.findings.map(toScanFinding) };
+  } catch (error) {
+    return outageOf(error);
   }
-
-  const page = await source.listFindings({
-    scope: { testId: entry.testId },
-    state: request.showTriaged ? "any" : "active",
-    severities: request.severity ? [request.severity] : [],
-    limit: request.pageSize,
-    offset: request.page * request.pageSize,
-  });
-  if (page.state !== "data") {
-    return page;
-  }
-
-  return { state: "data", total: page.data.total, findings: page.data.findings.map(toScanFinding) };
 }

@@ -17,6 +17,7 @@ const DATA: CodebaseFindings = {
   levels: {
     code: { state: "noScanData", scans: [], lastUpload: null },
     image: { state: "noScanData", scans: [], lastUpload: null },
+    runtime: { state: "noScanData", environments: [], lastUpload: null },
   },
 };
 

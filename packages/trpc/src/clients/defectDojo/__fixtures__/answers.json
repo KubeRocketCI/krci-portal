@@ -1245,7 +1245,7 @@
       }
     },
     {
-      "request": "GET /api/v2/tests/?limit=500&o=created&offset=0&prefetch=engagement&tags__and=k8s-cluster%3Aeks-sandbox%2Ck8s-namespace%3Akrci-demo-prod",
+      "request": "GET /api/v2/tests/?limit=500&o=created&offset=0&prefetch=engagement&tags__and=k8s-cluster%3Aremote-cluster%2Ck8s-namespace%3Akrci-demo-prod",
       "status": 200,
       "body": {
         "count": 1,
@@ -1279,7 +1279,7 @@
             "notes": [],
             "files": [],
             "tags": [
-              "k8s-cluster:eks-sandbox",
+              "k8s-cluster:remote-cluster",
               "k8s-container:test-go-app",
               "k8s-namespace:krci-demo-prod",
               "k8s-workload:deployment.test-go-app",
@@ -1296,7 +1296,7 @@
               "description": null,
               "product": {
                 "id": 8,
-                "name": "eks-sandbox/krci-demo-prod",
+                "name": "remote-cluster/krci-demo-prod",
                 "prod_type": {
                   "id": 2,
                   "name": "KubeRocketCI"
@@ -1668,7 +1668,7 @@
       }
     },
     {
-      "request": "GET /api/v2/products/?limit=500&o=id&offset=0&prefetch=prod_type&tags__and=k8s-cluster%3Aeks-sandbox%2Ck8s-namespace%3Akrci-demo-prod",
+      "request": "GET /api/v2/products/?limit=500&o=id&offset=0&prefetch=prod_type&tags__and=k8s-cluster%3Aremote-cluster%2Ck8s-namespace%3Akrci-demo-prod",
       "status": 200,
       "body": {
         "count": 0,

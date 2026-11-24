@@ -1,4 +1,11 @@
-import type { CodebaseScanRef, ScanFindings, ScanFindingsInput } from "@my-project/shared";
+import {
+  k8sApplicationConfig,
+  type CodebaseScanRef,
+  type RuntimeContainerRef,
+  type ScanFindings,
+  type ScanFindingsInput,
+  type ScanRef,
+} from "@my-project/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createMockedContext } from "../../../../__mocks__/context.js";
 import { K8sClient } from "../../../../clients/k8s/index.js";
@@ -8,14 +15,18 @@ import {
   DEMO_CODEBASE,
   DEMO_IMAGE,
   DEMO_NAMESPACE,
+  DEPLOYED_CLUSTER,
   GITLEAKS,
   GRYPE,
   SEMGREP,
   TRIVY,
   createFakeDefectDojo,
   givenCluster,
+  makeApplication,
   makeFinding,
   makeImageTest,
+  makeRuntimeTest,
+  makeStage,
   makeTest,
   makeTriagedFinding,
   type FakeDefectDojoOptions,
@@ -33,6 +44,15 @@ vi.mock("../../../../clients/k8s/index.js", () => ({ K8sClient: vi.fn() }));
 const CODE_SCAN: CodebaseScanRef = { level: "code", branch: "main", scanner: SEMGREP, image: null };
 const TRIVY_SCAN: CodebaseScanRef = { level: "image", branch: "main", scanner: TRIVY, image: DEMO_IMAGE };
 const GRYPE_SCAN: CodebaseScanRef = { ...TRIVY_SCAN, scanner: GRYPE };
+const RUNTIME_SCAN: RuntimeContainerRef = {
+  level: "runtime",
+  cdPipeline: "demo",
+  stage: "dev",
+  workload: "deployment.demo-app",
+  container: "demo-app",
+  reportKind: "vulnerabilityreport",
+};
+const SECRETS_SCAN: RuntimeContainerRef = { ...RUNTIME_SCAN, reportKind: "exposedsecretreport" };
 
 function givenDefectDojo(options: FakeDefectDojoOptions = {}): CodebaseFindingsSource {
   doubles.defectDojo = createFakeDefectDojo(options);
@@ -42,7 +62,7 @@ function givenDefectDojo(options: FakeDefectDojoOptions = {}): CodebaseFindingsS
 describe("defectDojo.getScanFindings", () => {
   let mockContext: ReturnType<typeof createMockedContext>;
 
-  async function getFindings(scan: CodebaseScanRef, filter: Partial<ScanFindingsInput> = {}): Promise<ScanFindings> {
+  async function getFindings(scan: ScanRef, filter: Partial<ScanFindingsInput> = {}): Promise<ScanFindings> {
     return createCaller(mockContext).defectDojo.getScanFindings({
       namespace: DEMO_NAMESPACE,
       name: DEMO_CODEBASE,
@@ -51,7 +71,7 @@ describe("defectDojo.getScanFindings", () => {
     });
   }
 
-  async function getTitles(scan: CodebaseScanRef, filter: Partial<ScanFindingsInput> = {}): Promise<string[]> {
+  async function getTitles(scan: ScanRef, filter: Partial<ScanFindingsInput> = {}): Promise<string[]> {
     const result = await getFindings(scan, filter);
     if (result.state !== "data") {
       throw new Error(`Expected data, got ${result.state}`);
@@ -379,6 +399,261 @@ describe("defectDojo.getScanFindings", () => {
       });
 
       await expect(getFindings(CODE_SCAN)).resolves.toEqual({ state: "unreachable" });
+    });
+  });
+
+  describe("a report of a running container", () => {
+    const ENVIRONMENT_TAGS = ["k8s-cluster:in-cluster", "k8s-namespace:demo-dev", "app:demo-dev-demo-app"];
+    const tests = [makeRuntimeTest({ id: 10 })];
+
+    beforeEach(() => {
+      givenCluster(DEPLOYED_CLUSTER);
+    });
+
+    it("is resolved from its typed identity: the findings of the report kind asked for", async () => {
+      givenDefectDojo({
+        tests: [makeRuntimeTest({ id: 10 }), makeRuntimeTest({ id: 11, reportKind: "exposedsecretreport" })],
+        findings: {
+          10: [makeFinding({ id: 101, testId: 10, title: "A vulnerability" })],
+          11: [makeFinding({ id: 111, testId: 11, title: "A secret" })],
+        },
+      });
+
+      expect(await getTitles(RUNTIME_SCAN)).toEqual(["A vulnerability"]);
+      expect(await getTitles(SECRETS_SCAN)).toEqual(["A secret"]);
+    });
+
+    it("is looked up among the tests of its Environment, container and report kind", async () => {
+      const defectDojo = givenDefectDojo({ tests });
+      const listTests = vi.spyOn(defectDojo, "listTests");
+
+      await getFindings(SECRETS_SCAN);
+
+      expect(listTests).toHaveBeenCalledTimes(1);
+      expect(listTests).toHaveBeenCalledWith({
+        tags: [
+          ...ENVIRONMENT_TAGS,
+          "k8s-workload:deployment.demo-app",
+          "k8s-container:demo-app",
+          "report-kind:exposedsecretreport",
+        ],
+      });
+    });
+
+    it.each([
+      ["an unknown CDPipeline", { cdPipeline: "other" }],
+      ["an unknown stage", { stage: "qa" }],
+    ])("is not found for %s, without a request to DefectDojo", async (_, change) => {
+      const defectDojo = givenDefectDojo({ tests });
+      const listTests = vi.spyOn(defectDojo, "listTests");
+
+      await expect(getFindings({ ...RUNTIME_SCAN, ...change })).resolves.toEqual({ state: "noScanData" });
+      expect(listTests).not.toHaveBeenCalled();
+    });
+
+    it("cannot reach an Environment the codebase is not deployed to, even one whose Stage and tests exist", async () => {
+      givenCluster([...DEPLOYED_CLUSTER, makeStage({ name: "prod", namespace: "demo-prod", order: 2 })]);
+      const defectDojo = givenDefectDojo({
+        tests: [makeRuntimeTest({ id: 20, namespace: "demo-prod", application: "demo-prod-demo-app" })],
+        findings: { 20: [makeFinding({ id: 201, testId: 20 })] },
+      });
+      const listTests = vi.spyOn(defectDojo, "listTests");
+      const listFindings = vi.spyOn(defectDojo, "listFindings");
+
+      await expect(getFindings({ ...RUNTIME_SCAN, stage: "prod" })).resolves.toEqual({ state: "noScanData" });
+      expect(listTests).not.toHaveBeenCalled();
+      expect(listFindings).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ["an unknown container", { container: "other" }],
+      ["an unknown workload", { workload: "statefulset.demo-app" }],
+      ["a report kind the container has no test of", { reportKind: "exposedsecretreport" } as const],
+    ])("is not found for %s", async (_, change) => {
+      givenDefectDojo({ tests, findings: { 10: [makeFinding({ id: 101, testId: 10 })] } });
+
+      await expect(getFindings({ ...RUNTIME_SCAN, ...change })).resolves.toEqual({ state: "noScanData" });
+    });
+
+    it("is not found for a container that is not running, whatever findings its closed test holds", async () => {
+      const defectDojo = givenDefectDojo({
+        tests: [makeRuntimeTest({ id: 10, buildId: "" })],
+        findings: { 10: [makeFinding({ id: 101, testId: 10 })] },
+      });
+      const listFindings = vi.spyOn(defectDojo, "listFindings");
+
+      await expect(getFindings(RUNTIME_SCAN)).resolves.toEqual({ state: "noScanData" });
+      expect(listFindings).not.toHaveBeenCalled();
+    });
+
+    it("is not found for the closed report of a running container, while the open report of the other kind is found", async () => {
+      givenDefectDojo({
+        tests: [
+          makeRuntimeTest({ id: 10, buildId: "" }),
+          makeRuntimeTest({ id: 11, reportKind: "exposedsecretreport" }),
+        ],
+        findings: { 10: [makeFinding({ id: 101, testId: 10 })], 11: [makeFinding({ id: 111, testId: 11 })] },
+      });
+
+      await expect(getFindings(RUNTIME_SCAN)).resolves.toEqual({ state: "noScanData" });
+      expect(await getTitles(SECRETS_SCAN)).toEqual(["Finding 111"]);
+    });
+
+    it("is not found when the cluster serves no Applications, as for a codebase that is deployed nowhere", async () => {
+      givenCluster(DEPLOYED_CLUSTER, { notServed: [k8sApplicationConfig] });
+      givenDefectDojo({ tests, findings: { 10: [makeFinding({ id: 101, testId: 10 })] } });
+
+      await expect(getFindings(RUNTIME_SCAN)).resolves.toEqual({ state: "noScanData" });
+    });
+
+    it("is found in the Environment of a remote cluster by the tags of that cluster", async () => {
+      givenCluster([
+        ...DEPLOYED_CLUSTER,
+        makeApplication({ name: "demo-prod-demo-app", stage: "prod" }),
+        makeStage({ name: "prod", namespace: "demo-prod", clusterName: "remote" }),
+      ]);
+      const defectDojo = givenDefectDojo({
+        tests: [
+          makeRuntimeTest({ id: 10, cluster: "remote", namespace: "demo-prod", application: "demo-prod-demo-app" }),
+        ],
+        findings: { 10: [makeFinding({ id: 101, testId: 10, title: "On the remote cluster" })] },
+      });
+      const listTests = vi.spyOn(defectDojo, "listTests");
+
+      expect(await getTitles({ ...RUNTIME_SCAN, stage: "prod" })).toEqual(["On the remote cluster"]);
+      expect(listTests.mock.calls[0][0].tags.slice(0, 3)).toEqual([
+        "k8s-cluster:remote",
+        "k8s-namespace:demo-prod",
+        "app:demo-prod-demo-app",
+      ]);
+    });
+
+    describe("the findings", () => {
+      it("are the active ones by default, and the triaged ones too when the switch is on, most severe first", async () => {
+        givenDefectDojo({
+          tests,
+          findings: {
+            10: [
+              makeFinding({ id: 101, testId: 10, severity: "Low", title: "low" }),
+              makeFinding({ id: 102, testId: 10, severity: "Critical", title: "critical" }),
+              makeTriagedFinding({ id: 103, testId: 10, severity: "High", title: "mitigated" }),
+            ],
+          },
+        });
+
+        expect(await getTitles(RUNTIME_SCAN)).toEqual(["critical", "low"]);
+        expect(await getTitles(RUNTIME_SCAN, { showTriaged: true })).toEqual(["critical", "mitigated", "low"]);
+      });
+
+      it("are filtered by severity", async () => {
+        givenDefectDojo({
+          tests,
+          findings: {
+            10: [
+              makeFinding({ id: 101, testId: 10, severity: "High", title: "high" }),
+              makeFinding({ id: 102, testId: 10, severity: "Low", title: "low" }),
+            ],
+          },
+        });
+
+        expect(await getTitles(RUNTIME_SCAN, { severity: "Low" })).toEqual(["low"]);
+      });
+
+      it("come a page at a time, with the total of the filter", async () => {
+        givenDefectDojo({
+          tests,
+          findings: {
+            10: Array.from({ length: 5 }, (_, index) =>
+              makeFinding({ id: 100 + index, testId: 10, title: `finding ${index}` })
+            ),
+          },
+        });
+
+        await expect(getFindings(RUNTIME_SCAN, { page: 1, pageSize: 2 })).resolves.toMatchObject({
+          state: "data",
+          total: 5,
+        });
+        expect(await getTitles(RUNTIME_SCAN, { page: 1, pageSize: 2 })).toEqual(["finding 2", "finding 3"]);
+      });
+
+      it("carry a fix flag, and no file, line or fix version", async () => {
+        givenDefectDojo({
+          tests,
+          findings: { 10: [makeFinding({ id: 101, testId: 10, fixAvailable: true, componentName: "libssl3" })] },
+        });
+
+        await expect(getFindings(RUNTIME_SCAN)).resolves.toMatchObject({
+          state: "data",
+          findings: [{ fixAvailable: true, fixVersion: null, filePath: null, line: null, componentName: "libssl3" }],
+        });
+      });
+
+      it("are an empty page, not no scan data, for a clean report", async () => {
+        givenDefectDojo({ tests });
+
+        await expect(getFindings(RUNTIME_SCAN)).resolves.toEqual({ state: "data", total: 0, findings: [] });
+      });
+    });
+
+    describe("the states", () => {
+      it("says DefectDojo is not configured, and reads nothing from the cluster", async () => {
+        vi.stubEnv("DEFECTDOJO_URL", "");
+        vi.mocked(K8sClient).mockClear();
+
+        await expect(getFindings(RUNTIME_SCAN)).resolves.toEqual({ state: "notConfigured" });
+        expect(K8sClient).not.toHaveBeenCalled();
+      });
+
+      it.each([
+        ["lists the tests", ["listTests"] as const],
+        ["lists the findings", ["listFindings"] as const],
+      ])("says DefectDojo is unreachable when it fails as it %s", async (_, outageOn) => {
+        givenDefectDojo({
+          outage: "unreachable",
+          outageOn,
+          tests,
+          findings: { 10: [makeFinding({ id: 101, testId: 10 })] },
+        });
+
+        await expect(getFindings(RUNTIME_SCAN)).resolves.toEqual({ state: "unreachable" });
+      });
+
+      it("rejects a caller who may not list the Applications with FORBIDDEN", async () => {
+        givenCluster(DEPLOYED_CLUSTER, { forbidden: [k8sApplicationConfig] });
+
+        await expect(getFindings(RUNTIME_SCAN)).rejects.toMatchObject({ code: "FORBIDDEN" });
+      });
+    });
+
+    describe("the request", () => {
+      it.each([
+        ["no report kind", { reportKind: undefined }],
+        ["a report kind the tab does not read", { reportKind: "configauditreport" }],
+        ["a tag", { tags: ["k8s-cluster:other"] }],
+        ["a DefectDojo test id", { testId: 10 }],
+        ["a namespace", { namespace: "other-ns" }],
+        ["an empty workload", { workload: "" }],
+        ["a container of more than 255 characters", { container: "c".repeat(256) }],
+        ["a CDPipeline that is not a Kubernetes name", { cdPipeline: "demo/../x" }],
+        ["a stage that is not a Kubernetes name", { stage: "Dev" }],
+      ])("rejects a runtime scan with %s", async (_, change) => {
+        await expect(getFindings({ ...RUNTIME_SCAN, ...change } as ScanRef)).rejects.toMatchObject({
+          code: "BAD_REQUEST",
+        });
+      });
+
+      it("rejects a scan of a level it does not know", async () => {
+        await expect(getFindings({ ...RUNTIME_SCAN, level: "build" } as unknown as ScanRef)).rejects.toMatchObject({
+          code: "BAD_REQUEST",
+        });
+      });
+
+      it("still takes the identity of a code scan and of an image scan", async () => {
+        givenDefectDojo({ tests: [makeTest({ id: 1, scanType: SEMGREP })] });
+
+        await expect(getFindings(CODE_SCAN)).resolves.toMatchObject({ state: "data" });
+        await expect(getFindings(TRIVY_SCAN)).resolves.toEqual({ state: "noScanData" });
+      });
     });
   });
 

@@ -119,6 +119,91 @@
             }
           ],
           "lastUpload": "2026-11-23T13:17:35.378285Z"
+        },
+        "runtime": {
+          "state": "data",
+          "environments": [
+            {
+              "cdPipeline": "demo",
+              "stage": "dev",
+              "clusterName": "in-cluster",
+              "namespace": "krci-demo-dev",
+              "containers": [
+                {
+                  "workload": "deployment.test-go-app",
+                  "container": "test-go-app",
+                  "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app",
+                  "ownImage": true,
+                  "productUrl": "https://defectdojo.example.test/asset/4",
+                  "state": "running",
+                  "version": "main-20261123-090000",
+                  "date": "2026-11-24T12:29:18.090575Z",
+                  "vulnerabilities": {
+                    "counts": {
+                      "Critical": 1,
+                      "High": 2,
+                      "Medium": 3,
+                      "Low": 1,
+                      "Info": 0
+                    },
+                    "triaged": 0,
+                    "testUrl": "https://defectdojo.example.test/test/34"
+                  },
+                  "secrets": {
+                    "active": 2,
+                    "triaged": 0,
+                    "testUrl": "https://defectdojo.example.test/test/62"
+                  }
+                },
+                {
+                  "workload": "deployment.worker",
+                  "container": "worker",
+                  "image": "busybox",
+                  "ownImage": false,
+                  "productUrl": "https://defectdojo.example.test/asset/4",
+                  "state": "notRunning"
+                }
+              ]
+            },
+            {
+              "cdPipeline": "demo",
+              "stage": "qa",
+              "clusterName": "in-cluster",
+              "namespace": "krci-demo-qa",
+              "containers": []
+            },
+            {
+              "cdPipeline": "demo",
+              "stage": "prod",
+              "clusterName": "remote-cluster",
+              "namespace": "krci-demo-prod",
+              "containers": [
+                {
+                  "workload": "deployment.test-go-app",
+                  "container": "test-go-app",
+                  "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app",
+                  "ownImage": true,
+                  "productUrl": "https://defectdojo.example.test/asset/16",
+                  "state": "running",
+                  "version": "0.9.0",
+                  "date": "2026-11-24T12:29:38.103580Z",
+                  "vulnerabilities": {
+                    "counts": {
+                      "Critical": 0,
+                      "High": 2,
+                      "Medium": 1,
+                      "Low": 0,
+                      "Info": 0
+                    },
+                    "triaged": 0,
+                    "testUrl": "https://defectdojo.example.test/test/65"
+                  },
+                  "secrets": null
+                }
+              ]
+            }
+          ],
+          "lastUpload": "2026-11-24T12:29:38.103580Z"
         }
       }
     },
@@ -564,9 +649,184 @@
           "scan": {
             "level": "image",
             "branch": "main",
+            "scanner": "Trivy Scan",
+            "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app"
+          },
+          "page": 0,
+          "pageSize": 100,
+          "showTriaged": false
+        },
+        "output": {
+          "state": "data",
+          "total": 4,
+          "findings": [
+            {
+              "title": "CVE-2099-1001 Openssl 3.3.1-r0",
+              "severity": "Critical",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "openssl",
+              "componentVersion": "3.3.1-r0",
+              "vulnerabilityIds": ["CVE-2099-1001"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app:main-20261123-090000 (alpine 3.20.3)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1030"
+            },
+            {
+              "title": "CVE-2099-1002 Libcrypto3 3.3.1-r0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "libcrypto3",
+              "componentVersion": "3.3.1-r0",
+              "vulnerabilityIds": ["CVE-2099-1002"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app:main-20261123-090000 (alpine 3.20.3)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1028"
+            },
+            {
+              "title": "CVE-2099-1003 Busybox 1.36.1-r0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "busybox",
+              "componentVersion": "1.36.1-r0",
+              "vulnerabilityIds": ["CVE-2099-1003"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app:main-20261123-090000 (alpine 3.20.3)",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1031"
+            },
+            {
+              "title": "CVE-2099-1004 Musl 1.2.5-r0",
+              "severity": "Medium",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "musl",
+              "componentVersion": "1.2.5-r0",
+              "vulnerabilityIds": ["CVE-2099-1004"],
+              "filePath": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app:main-20261123-090000 (alpine 3.20.3)",
+              "line": null,
+              "fixAvailable": false,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1029"
+            }
+          ]
+        }
+      },
+      {
+        "input": {
+          "namespace": "krci",
+          "name": "test-go-app",
+          "scan": {
+            "level": "image",
+            "branch": "main",
             "scanner": "Anchore Grype",
             "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app"
           }
+        },
+        "output": {
+          "state": "data",
+          "total": 3,
+          "findings": [
+            {
+              "title": "CVE-2099-1001 in openssl:3.3.1-r0",
+              "severity": "Critical",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "openssl",
+              "componentVersion": "3.3.1-r0",
+              "vulnerabilityIds": ["CVE-2099-1001"],
+              "filePath": "/lib/apk/db/installed",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": "3.3.2-r0",
+              "url": "https://defectdojo.example.test/finding/1033"
+            },
+            {
+              "title": "CVE-2099-1002 in libcrypto3:3.3.1-r0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "libcrypto3",
+              "componentVersion": "3.3.1-r0",
+              "vulnerabilityIds": ["CVE-2099-1002"],
+              "filePath": "/lib/apk/db/installed",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": "3.3.2-r0",
+              "url": "https://defectdojo.example.test/finding/1034"
+            },
+            {
+              "title": "CVE-2099-1006 in curl:8.9.0-r0",
+              "severity": "Medium",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-23",
+              "componentName": "curl",
+              "componentVersion": "8.9.0-r0",
+              "vulnerabilityIds": ["CVE-2099-1006"],
+              "filePath": "/lib/apk/db/installed",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": "8.9.1-r0",
+              "url": "https://defectdojo.example.test/finding/1035"
+            }
+          ]
+        }
+      },
+      {
+        "input": {
+          "namespace": "krci",
+          "name": "test-go-app",
+          "scan": {
+            "level": "image",
+            "branch": "main",
+            "scanner": "Anchore Grype",
+            "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app"
+          },
+          "page": 0,
+          "pageSize": 100,
+          "showTriaged": false
         },
         "output": {
           "state": "data",
@@ -687,6 +947,530 @@
             }
           ]
         }
+      },
+      {
+        "input": {
+          "namespace": "krci",
+          "name": "test-go-app",
+          "scan": {
+            "level": "runtime",
+            "cdPipeline": "demo",
+            "stage": "dev",
+            "workload": "deployment.test-go-app",
+            "container": "test-go-app",
+            "reportKind": "vulnerabilityreport"
+          }
+        },
+        "output": {
+          "state": "data",
+          "total": 7,
+          "findings": [
+            {
+              "title": "CVE-2099-00000 Fixture-PKG-0-0 1.0.0",
+              "severity": "Critical",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "fixture-pkg-0-0",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2099-00000"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/873"
+            },
+            {
+              "title": "CVE-2099-00001 Fixture-PKG-0-1 1.0.0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "fixture-pkg-0-1",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2099-00001"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/874"
+            },
+            {
+              "title": "CVE-2099-00002 Fixture-PKG-0-2 1.0.0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "fixture-pkg-0-2",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2099-00002"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/875"
+            },
+            {
+              "title": "CVE-2099-00003 Fixture-PKG-0-3 1.0.0",
+              "severity": "Medium",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "fixture-pkg-0-3",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2099-00003"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/876"
+            },
+            {
+              "title": "CVE-2099-00004 Fixture-PKG-0-4 1.0.0",
+              "severity": "Medium",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "fixture-pkg-0-4",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2099-00004"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/877"
+            },
+            {
+              "title": "CVE-2099-00005 Fixture-PKG-0-5 1.0.0",
+              "severity": "Medium",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "fixture-pkg-0-5",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2099-00005"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/878"
+            },
+            {
+              "title": "CVE-2099-00006 Fixture-PKG-0-6 1.0.0",
+              "severity": "Low",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "fixture-pkg-0-6",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2099-00006"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/879"
+            }
+          ]
+        }
+      },
+      {
+        "input": {
+          "namespace": "krci",
+          "name": "test-go-app",
+          "scan": {
+            "level": "runtime",
+            "cdPipeline": "demo",
+            "stage": "dev",
+            "workload": "deployment.test-go-app",
+            "container": "test-go-app",
+            "reportKind": "vulnerabilityreport"
+          },
+          "page": 0,
+          "pageSize": 100,
+          "showTriaged": false
+        },
+        "output": {
+          "state": "data",
+          "total": 7,
+          "findings": [
+            {
+              "title": "CVE-2099-00000 Fixture-PKG-0-0 1.0.0",
+              "severity": "Critical",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "fixture-pkg-0-0",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2099-00000"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/873"
+            },
+            {
+              "title": "CVE-2099-00001 Fixture-PKG-0-1 1.0.0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "fixture-pkg-0-1",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2099-00001"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/874"
+            },
+            {
+              "title": "CVE-2099-00002 Fixture-PKG-0-2 1.0.0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "fixture-pkg-0-2",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2099-00002"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/875"
+            },
+            {
+              "title": "CVE-2099-00003 Fixture-PKG-0-3 1.0.0",
+              "severity": "Medium",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "fixture-pkg-0-3",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2099-00003"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/876"
+            },
+            {
+              "title": "CVE-2099-00004 Fixture-PKG-0-4 1.0.0",
+              "severity": "Medium",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "fixture-pkg-0-4",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2099-00004"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/877"
+            },
+            {
+              "title": "CVE-2099-00005 Fixture-PKG-0-5 1.0.0",
+              "severity": "Medium",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "fixture-pkg-0-5",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2099-00005"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/878"
+            },
+            {
+              "title": "CVE-2099-00006 Fixture-PKG-0-6 1.0.0",
+              "severity": "Low",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "fixture-pkg-0-6",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2099-00006"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/879"
+            }
+          ]
+        }
+      },
+      {
+        "input": {
+          "namespace": "krci",
+          "name": "test-go-app",
+          "scan": {
+            "level": "runtime",
+            "cdPipeline": "demo",
+            "stage": "dev",
+            "workload": "deployment.test-go-app",
+            "container": "test-go-app",
+            "reportKind": "exposedsecretreport"
+          }
+        },
+        "output": {
+          "state": "data",
+          "total": 2,
+          "findings": [
+            {
+              "title": "Secret Detected in /app/fixture-0.env - Fixture Secret 10-0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-24",
+              "componentName": null,
+              "componentVersion": null,
+              "vulnerabilityIds": [],
+              "filePath": "/app/fixture-0.env",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1124"
+            },
+            {
+              "title": "Secret Detected in /app/fixture-1.env - Fixture Secret 10-1",
+              "severity": "Medium",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-24",
+              "componentName": null,
+              "componentVersion": null,
+              "vulnerabilityIds": [],
+              "filePath": "/app/fixture-1.env",
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1125"
+            }
+          ]
+        }
+      },
+      {
+        "input": {
+          "namespace": "krci",
+          "name": "test-go-app",
+          "scan": {
+            "level": "runtime",
+            "cdPipeline": "demo",
+            "stage": "prod",
+            "workload": "deployment.test-go-app",
+            "container": "test-go-app",
+            "reportKind": "vulnerabilityreport"
+          }
+        },
+        "output": {
+          "state": "data",
+          "total": 3,
+          "findings": [
+            {
+              "title": "CVE-2097-08000 Rt-PKG-08-0 1.0.0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "rt-pkg-08-0",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2097-08000"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1128"
+            },
+            {
+              "title": "CVE-2097-08001 Rt-PKG-08-1 1.0.0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "rt-pkg-08-1",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2097-08001"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1129"
+            },
+            {
+              "title": "CVE-2097-08002 Rt-PKG-08-2 1.0.0",
+              "severity": "Medium",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "rt-pkg-08-2",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2097-08002"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1130"
+            }
+          ]
+        }
+      },
+      {
+        "input": {
+          "namespace": "krci",
+          "name": "test-go-app",
+          "scan": {
+            "level": "runtime",
+            "cdPipeline": "demo",
+            "stage": "prod",
+            "workload": "deployment.test-go-app",
+            "container": "test-go-app",
+            "reportKind": "vulnerabilityreport"
+          },
+          "page": 0,
+          "pageSize": 100,
+          "showTriaged": false
+        },
+        "output": {
+          "state": "data",
+          "total": 3,
+          "findings": [
+            {
+              "title": "CVE-2097-08000 Rt-PKG-08-0 1.0.0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "rt-pkg-08-0",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2097-08000"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1128"
+            },
+            {
+              "title": "CVE-2097-08001 Rt-PKG-08-1 1.0.0",
+              "severity": "High",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "rt-pkg-08-1",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2097-08001"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1129"
+            },
+            {
+              "title": "CVE-2097-08002 Rt-PKG-08-2 1.0.0",
+              "severity": "Medium",
+              "active": true,
+              "mitigated": false,
+              "falsePositive": false,
+              "outOfScope": false,
+              "riskAccepted": false,
+              "underReview": false,
+              "date": "2026-11-20",
+              "componentName": "rt-pkg-08-2",
+              "componentVersion": "1.0.0",
+              "vulnerabilityIds": ["CVE-2097-08002"],
+              "filePath": null,
+              "line": null,
+              "fixAvailable": true,
+              "fixVersion": null,
+              "url": "https://defectdojo.example.test/finding/1130"
+            }
+          ]
+        }
       }
     ]
   },
@@ -768,6 +1552,11 @@
             }
           ],
           "lastUpload": "2026-11-23T10:09:19.737191Z"
+        },
+        "runtime": {
+          "state": "noScanData",
+          "environments": [],
+          "lastUpload": null
         }
       }
     },
@@ -894,6 +1683,11 @@
         "image": {
           "state": "noScanData",
           "scans": [],
+          "lastUpload": null
+        },
+        "runtime": {
+          "state": "noScanData",
+          "environments": [],
           "lastUpload": null
         }
       }

@@ -19,6 +19,7 @@ import { routeProjectDetails, RouteSearchTab, routeSearchTabSchema, PATH_PROJECT
 
 export const usePageTabs = () => {
   const params = routeProjectDetails.useParams();
+  const { cdPipeline, stage } = routeProjectDetails.useSearch();
   const codebaseWatch = useCodebaseWatch();
   const codebase = codebaseWatch.query.data;
   const defaultBranch = codebase?.spec?.defaultBranch;
@@ -39,6 +40,7 @@ export const usePageTabs = () => {
 
   return React.useMemo(() => {
     const isGitLabCI = codebase?.spec?.ciTool === ciTool.gitlab;
+    const focus = cdPipeline && stage ? { cdPipeline, stage } : null;
 
     const tabs: Tab[] = [
       {
@@ -90,7 +92,7 @@ export const usePageTabs = () => {
         icon: <ShieldAlert className="size-4" />,
         id: routeSearchTabSchema.enum.findings,
         onClick: () => handleTabNavigate(routeSearchTabSchema.enum.findings),
-        component: <SecurityFindingsTab codebaseName={params.name} namespace={params.namespace} />,
+        component: <SecurityFindingsTab codebaseName={params.name} namespace={params.namespace} focus={focus} />,
       },
       {
         label: "Pull Requests",
@@ -111,5 +113,14 @@ export const usePageTabs = () => {
     return tabs;
     // `codebase` is referentially stable across polls (React Query structural sharing), so
     // depending on the whole object is cheap and avoids enumerating individual spec fields.
-  }, [handleTabNavigate, params.name, params.namespace, params.clusterName, codebase, defaultBranch]);
+  }, [
+    handleTabNavigate,
+    params.name,
+    params.namespace,
+    params.clusterName,
+    codebase,
+    defaultBranch,
+    cdPipeline,
+    stage,
+  ]);
 };
