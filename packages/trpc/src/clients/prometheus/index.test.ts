@@ -1,4 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { PrometheusClient } from "./index.js";
 
 const originalEnv = process.env;
 
@@ -34,8 +35,7 @@ describe("PrometheusClient.rangeQuery URL shape", () => {
   let fetchMock: ReturnType<typeof vi.fn>;
   let originalFetch: typeof globalThis.fetch;
 
-  beforeEach(async () => {
-    vi.resetModules();
+  beforeEach(() => {
     originalFetch = globalThis.fetch;
     fetchMock = vi.fn().mockResolvedValue(
       new Response(
@@ -53,10 +53,7 @@ describe("PrometheusClient.rangeQuery URL shape", () => {
     globalThis.fetch = originalFetch;
   });
 
-  async function newClient() {
-    const { PrometheusClient } = await import("./index.js");
-    return new PrometheusClient({ baseURL: BASE, timeoutMs: 500 });
-  }
+  const newClient = () => new PrometheusClient({ baseURL: BASE, timeoutMs: 500 });
 
   function capturedUrl(): string {
     const firstCall = fetchMock.mock.calls[0];
@@ -64,7 +61,7 @@ describe("PrometheusClient.rangeQuery URL shape", () => {
   }
 
   it("rangeQuery encodes query, integer start/end, and step with 's' suffix", async () => {
-    const client = await newClient();
+    const client = newClient();
     await client.rangeQuery({
       query: 'up{namespace="foo"}',
       start: 1700000000.7,
@@ -100,7 +97,7 @@ describe("PrometheusClient.rangeQuery URL shape", () => {
         { status: 200, headers: { "Content-Type": "application/json" } }
       )
     );
-    const client = await newClient();
+    const client = newClient();
     const result = await client.rangeQuery({ query: "x", start: 0, end: 1, step: 1 });
     expect(result.data.result[0]?.metric.pod).toBe("test-pod-abc123-xyz");
     expect(result.data.result[0]?.values).toHaveLength(2);
@@ -113,7 +110,6 @@ describe("PrometheusClient timeout wiring", () => {
   let originalFetch: typeof globalThis.fetch;
 
   beforeEach(() => {
-    vi.resetModules();
     originalFetch = globalThis.fetch;
   });
 
@@ -133,7 +129,6 @@ describe("PrometheusClient timeout wiring", () => {
         })
     ) as unknown as typeof globalThis.fetch;
 
-    const { PrometheusClient } = await import("./index.js");
     const client = new PrometheusClient({ baseURL: "http://x", timeoutMs: 10 });
     await expect(client.rangeQuery({ query: "x", start: 0, end: 1, step: 1 })).rejects.toThrow(/timed out/i);
   });
@@ -144,8 +139,7 @@ describe("PrometheusClient.instantQuery URL shape", () => {
   let fetchMock: ReturnType<typeof vi.fn>;
   let originalFetch: typeof globalThis.fetch;
 
-  beforeEach(async () => {
-    vi.resetModules();
+  beforeEach(() => {
     originalFetch = globalThis.fetch;
     fetchMock = vi.fn().mockResolvedValue(
       new Response(
@@ -163,10 +157,7 @@ describe("PrometheusClient.instantQuery URL shape", () => {
     globalThis.fetch = originalFetch;
   });
 
-  async function newClient() {
-    const { PrometheusClient } = await import("./index.js");
-    return new PrometheusClient({ baseURL: BASE, timeoutMs: 500 });
-  }
+  const newClient = () => new PrometheusClient({ baseURL: BASE, timeoutMs: 500 });
 
   function capturedUrl(): string {
     const firstCall = fetchMock.mock.calls[0];
@@ -174,7 +165,7 @@ describe("PrometheusClient.instantQuery URL shape", () => {
   }
 
   it("instantQuery hits /api/v1/query with the encoded query", async () => {
-    const client = await newClient();
+    const client = newClient();
     await client.instantQuery({ query: 'up{namespace="foo"}' });
     const url = capturedUrl();
     expect(url).toContain("/api/v1/query?");
@@ -196,7 +187,7 @@ describe("PrometheusClient.instantQuery URL shape", () => {
         { status: 200, headers: { "Content-Type": "application/json" } }
       )
     );
-    const client = await newClient();
+    const client = newClient();
     const result = await client.instantQuery({ query: "x" });
     expect(result.data.result[0]?.metric.pod).toBe("p1");
     expect(result.data.result[0]?.metric.phase).toBe("Running");

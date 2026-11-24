@@ -1,4 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { SonarQubeClient } from "./index.js";
 
 const originalEnv = process.env;
 
@@ -56,8 +57,7 @@ describe("SonarQubeClient scope passthrough", () => {
   let fetchMock: ReturnType<typeof vi.fn>;
   let originalFetch: typeof globalThis.fetch;
 
-  beforeEach(async () => {
-    vi.resetModules();
+  beforeEach(() => {
     originalFetch = globalThis.fetch;
     fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ component: { key: "k", name: "k", measures: [] } }), {
@@ -72,10 +72,7 @@ describe("SonarQubeClient scope passthrough", () => {
     globalThis.fetch = originalFetch;
   });
 
-  async function newClient() {
-    const { SonarQubeClient } = await import("./index.js");
-    return new SonarQubeClient({ apiBaseURL: BASE, token: "tkn", timeoutMs: 500 });
-  }
+  const newClient = () => new SonarQubeClient({ apiBaseURL: BASE, token: "tkn", timeoutMs: 500 });
 
   function capturedUrl(): string {
     const firstCall = fetchMock.mock.calls[0];
@@ -83,7 +80,7 @@ describe("SonarQubeClient scope passthrough", () => {
   }
 
   it("getComponent appends pullRequest when supplied", async () => {
-    const client = await newClient();
+    const client = newClient();
     await client.getComponent("my-proj", { pullRequest: "123" });
     const url = capturedUrl();
     expect(url).toContain("component=my-proj");
@@ -92,7 +89,7 @@ describe("SonarQubeClient scope passthrough", () => {
   });
 
   it("getComponent appends branch when supplied", async () => {
-    const client = await newClient();
+    const client = newClient();
     await client.getComponent("my-proj", { branch: "main" });
     const url = capturedUrl();
     expect(url).toContain("component=my-proj");
@@ -101,7 +98,7 @@ describe("SonarQubeClient scope passthrough", () => {
   });
 
   it("getComponent omits scope params when scope is undefined", async () => {
-    const client = await newClient();
+    const client = newClient();
     await client.getComponent("my-proj");
     const url = capturedUrl();
     expect(url).not.toContain("pullRequest=");
@@ -109,7 +106,7 @@ describe("SonarQubeClient scope passthrough", () => {
   });
 
   it("getMeasures appends pullRequest when supplied", async () => {
-    const client = await newClient();
+    const client = newClient();
     await client.getMeasures("my-proj", ["bugs"], { pullRequest: "123" });
     const url = capturedUrl();
     expect(url).toContain("component=my-proj");
@@ -118,7 +115,7 @@ describe("SonarQubeClient scope passthrough", () => {
   });
 
   it("getMeasures appends branch when supplied", async () => {
-    const client = await newClient();
+    const client = newClient();
     await client.getMeasures("my-proj", ["bugs"], { branch: "main" });
     const url = capturedUrl();
     expect(url).toContain("component=my-proj");
@@ -127,7 +124,7 @@ describe("SonarQubeClient scope passthrough", () => {
   });
 
   it("getMeasures omits scope params when scope is undefined", async () => {
-    const client = await newClient();
+    const client = newClient();
     await client.getMeasures("my-proj", ["bugs"]);
     const url = capturedUrl();
     expect(url).not.toContain("pullRequest=");
@@ -141,7 +138,7 @@ describe("SonarQubeClient scope passthrough", () => {
         headers: { "Content-Type": "application/json" },
       })
     );
-    const client = await newClient();
+    const client = newClient();
     await client.getQualityGateStatus("my-proj", { pullRequest: "123" });
     const url = capturedUrl();
     expect(url).toContain("projectKey=my-proj");
@@ -156,7 +153,7 @@ describe("SonarQubeClient scope passthrough", () => {
         headers: { "Content-Type": "application/json" },
       })
     );
-    const client = await newClient();
+    const client = newClient();
     await client.getQualityGateStatus("my-proj", { branch: "main" });
     const url = capturedUrl();
     expect(url).toContain("projectKey=my-proj");
@@ -171,7 +168,7 @@ describe("SonarQubeClient scope passthrough", () => {
         headers: { "Content-Type": "application/json" },
       })
     );
-    const client = await newClient();
+    const client = newClient();
     await client.getQualityGateStatus("my-proj");
     const url = capturedUrl();
     expect(url).not.toContain("pullRequest=");
@@ -191,7 +188,7 @@ describe("SonarQubeClient scope passthrough", () => {
 
   it("getIssues appends pullRequest when supplied", async () => {
     fetchMock.mockResolvedValueOnce(emptyIssuesResp.clone());
-    const client = await newClient();
+    const client = newClient();
     await client.getIssues({ componentKeys: "my-proj", resolved: "false", p: 1, ps: 25, pullRequest: "123" });
     const url = capturedUrl();
     expect(url).toContain("componentKeys=my-proj");
@@ -201,7 +198,7 @@ describe("SonarQubeClient scope passthrough", () => {
 
   it("getIssues appends branch when supplied", async () => {
     fetchMock.mockResolvedValueOnce(emptyIssuesResp.clone());
-    const client = await newClient();
+    const client = newClient();
     await client.getIssues({ componentKeys: "my-proj", resolved: "false", p: 1, ps: 25, branch: "main" });
     const url = capturedUrl();
     expect(url).toContain("componentKeys=my-proj");
@@ -211,7 +208,7 @@ describe("SonarQubeClient scope passthrough", () => {
 
   it("getIssues omits scope params when neither supplied", async () => {
     fetchMock.mockResolvedValueOnce(emptyIssuesResp.clone());
-    const client = await newClient();
+    const client = newClient();
     await client.getIssues({ componentKeys: "my-proj", resolved: "false", p: 1, ps: 25 });
     const url = capturedUrl();
     expect(url).not.toContain("pullRequest=");

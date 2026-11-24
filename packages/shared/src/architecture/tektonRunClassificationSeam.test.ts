@@ -84,9 +84,11 @@ function findClassificationHits(): Hit[] {
   return hits;
 }
 
+// Scans at collection time: the file walk takes about 2 s, outside any test timeout.
+const hits = findClassificationHits();
+
 describe("Tekton run classification seam", () => {
   it("classifies Tekton runs only through their phase classifier", () => {
-    const hits = findClassificationHits();
     const message = [
       ...hits.map((hit) => `${hit.path}:${hit.line}: ${hit.text}`),
       "Classify runs through getPipelineRunStatus().phase or getTaskRunStatus().phase",

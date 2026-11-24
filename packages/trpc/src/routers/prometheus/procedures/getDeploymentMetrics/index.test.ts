@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createMockedContext } from "../../../../__mocks__/context.js";
 import { HttpTimeoutError } from "../../../../clients/http/index.js";
+import { createCaller } from "../../../../routers/index.js";
 
 const mockListResource = vi.fn();
 const mockRangeQuery = vi.fn();
@@ -22,10 +23,7 @@ vi.mock("../../../../clients/prometheus/index.js", () => ({
   }),
 }));
 
-async function getCaller() {
-  const { createCaller } = await import("../../../../routers/index.js");
-  return createCaller(createMockedContext());
-}
+const getCaller = () => createCaller(createMockedContext());
 
 const validInput = {
   clusterName: "in-cluster",
@@ -55,7 +53,7 @@ describe("prometheus.getDeploymentMetrics", () => {
   });
 
   it("short-circuits when applications is empty (no K8s, no Prometheus)", async () => {
-    const caller = await getCaller();
+    const caller = getCaller();
     const result = await caller.prometheus.getDeploymentMetrics({ ...validInput, applications: [] });
 
     expect(mockListResource).not.toHaveBeenCalled();
@@ -71,7 +69,7 @@ describe("prometheus.getDeploymentMetrics", () => {
   });
 
   it("throws INTERNAL_SERVER_ERROR when K8sClient KubeConfig is uninitialized", async () => {
-    const caller = await getCaller();
+    const caller = getCaller();
 
     const k8sClientModule = await import("../../../../clients/k8s/index.js");
     const K8sClientMock = vi.mocked(k8sClientModule.K8sClient);
@@ -138,7 +136,7 @@ describe("prometheus.getDeploymentMetrics", () => {
       },
     });
 
-    const caller = await getCaller();
+    const caller = getCaller();
     const result = await caller.prometheus.getDeploymentMetrics({
       ...validInput,
       applications: ["frontend", "api"],
@@ -180,7 +178,7 @@ describe("prometheus.getDeploymentMetrics", () => {
       status: "success",
       data: { resultType: "vector", result: [{ metric: {}, value: [100, "2"] }] },
     });
-    const caller = await getCaller();
+    const caller = getCaller();
     const result = await caller.prometheus.getDeploymentMetrics({
       ...validInput,
       applications: ["frontend", "api"],
@@ -213,7 +211,7 @@ describe("prometheus.getDeploymentMetrics", () => {
         ],
       },
     });
-    const caller = await getCaller();
+    const caller = getCaller();
     const result = await caller.prometheus.getDeploymentMetrics({
       ...validInput,
       applications: ["frontend", "missing"],
@@ -234,7 +232,7 @@ describe("prometheus.getDeploymentMetrics", () => {
     });
     mockRangeQuery.mockRejectedValueOnce(new Error("ECONNREFUSED"));
 
-    const caller = await getCaller();
+    const caller = getCaller();
     await expect(caller.prometheus.getDeploymentMetrics(validInput)).rejects.toMatchObject({
       code: "BAD_GATEWAY",
     });
@@ -246,21 +244,21 @@ describe("prometheus.getDeploymentMetrics", () => {
     });
     mockRangeQuery.mockRejectedValueOnce(new HttpTimeoutError("Prometheus", 10000, true));
 
-    const caller = await getCaller();
+    const caller = getCaller();
     await expect(caller.prometheus.getDeploymentMetrics(validInput)).rejects.toMatchObject({
       code: "GATEWAY_TIMEOUT",
     });
   });
 
   it("Zod rejects bad namespace", async () => {
-    const caller = await getCaller();
+    const caller = getCaller();
     await expect(
       caller.prometheus.getDeploymentMetrics({ ...validInput, namespace: "Bad_Namespace!" })
     ).rejects.toThrow();
   });
 
   it("Zod rejects unsupported range", async () => {
-    const caller = await getCaller();
+    const caller = getCaller();
     await expect(
       // @ts-expect-error — deliberately invalid
       caller.prometheus.getDeploymentMetrics({ ...validInput, range: "2h" })
@@ -268,7 +266,7 @@ describe("prometheus.getDeploymentMetrics", () => {
   });
 
   it("Zod rejects more than 50 applications", async () => {
-    const caller = await getCaller();
+    const caller = getCaller();
     const apps = Array.from({ length: 51 }, (_, i) => `app-${i}`);
     await expect(caller.prometheus.getDeploymentMetrics({ ...validInput, applications: apps })).rejects.toThrow();
   });
@@ -280,7 +278,7 @@ describe("prometheus.getDeploymentMetrics", () => {
     ["trailing hyphen", "my-app-"],
     ["dot", "my.app"],
   ])("Zod rejects application name with %s (%s)", async (_label, badApp) => {
-    const caller = await getCaller();
+    const caller = getCaller();
     await expect(caller.prometheus.getDeploymentMetrics({ ...validInput, applications: [badApp] })).rejects.toThrow();
   });
 
@@ -288,7 +286,7 @@ describe("prometheus.getDeploymentMetrics", () => {
     mockListResource.mockResolvedValueOnce({
       items: [{ metadata: { name: "p", labels: { "app.kubernetes.io/instance": "test-app" } } }],
     });
-    const caller = await getCaller();
+    const caller = getCaller();
     await caller.prometheus.getDeploymentMetrics({ ...validInput, range: "24h" });
     const firstCall = mockRangeQuery.mock.calls[0]?.[0];
     expect(firstCall).toBeDefined();
@@ -317,7 +315,7 @@ describe("prometheus.getDeploymentMetrics", () => {
       return Promise.reject(new Error("ECONNREFUSED"));
     });
 
-    const caller = await getCaller();
+    const caller = getCaller();
     await expect(caller.prometheus.getDeploymentMetrics(validInput)).rejects.toMatchObject({
       code: "BAD_GATEWAY",
     });

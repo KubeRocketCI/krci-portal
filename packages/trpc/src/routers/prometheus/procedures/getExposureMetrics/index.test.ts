@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TRPCError } from "@trpc/server";
 import { createMockedContext } from "../../../../__mocks__/context.js";
 import { HttpTimeoutError } from "../../../../clients/http/index.js";
+import { createCaller } from "../../../../routers/index.js";
 
 const mockInstantQuery = vi.fn();
 const mockCreatePrometheusClient = vi.fn(() => ({ instantQuery: mockInstantQuery }));
@@ -10,10 +11,7 @@ vi.mock("../../../../clients/prometheus/index.js", () => ({
   createPrometheusClient: () => mockCreatePrometheusClient(),
 }));
 
-async function getCaller() {
-  const { createCaller } = await import("../../../../routers/index.js");
-  return createCaller(createMockedContext());
-}
+const getCaller = () => createCaller(createMockedContext());
 
 const validInput = {
   clusterName: "in-cluster",
@@ -36,20 +34,20 @@ describe("prometheus.getExposureMetrics", () => {
   });
 
   it("returns empty backends when Prometheus returns no data", async () => {
-    const caller = await getCaller();
+    const caller = getCaller();
     const result = await caller.prometheus.getExposureMetrics(validInput);
     expect(result.backends).toEqual([]);
     expect(typeof result.queriedAt).toBe("number");
   });
 
   it("fires exactly 2 instant queries (rps + success)", async () => {
-    const caller = await getCaller();
+    const caller = getCaller();
     await caller.prometheus.getExposureMetrics(validInput);
     expect(mockInstantQuery).toHaveBeenCalledTimes(2);
   });
 
   it("includes the namespace in the PromQL selector", async () => {
-    const caller = await getCaller();
+    const caller = getCaller();
     await caller.prometheus.getExposureMetrics(validInput);
     const firstCall = mockInstantQuery.mock.calls[0]?.[0];
     expect(firstCall?.query).toContain("krci-demo-dev");
@@ -74,7 +72,7 @@ describe("prometheus.getExposureMetrics", () => {
     };
     mockInstantQuery.mockResolvedValue(vectorWithData);
 
-    const caller = await getCaller();
+    const caller = getCaller();
     const result = await caller.prometheus.getExposureMetrics(validInput);
     // A single-rule route produces 2 entries: route-level ("<ns>/<route>") and
     // per-rule ("<ns>/<route>/0"). Both carry the same rps for a sole rule.
@@ -103,7 +101,7 @@ describe("prometheus.getExposureMetrics", () => {
       });
     });
 
-    const caller = await getCaller();
+    const caller = getCaller();
     await expect(caller.prometheus.getExposureMetrics(validInput)).rejects.toMatchObject({
       code: "PRECONDITION_FAILED",
     });
@@ -112,7 +110,7 @@ describe("prometheus.getExposureMetrics", () => {
   it("maps Prometheus network failure to BAD_GATEWAY", async () => {
     mockInstantQuery.mockRejectedValueOnce(new Error("ECONNREFUSED"));
 
-    const caller = await getCaller();
+    const caller = getCaller();
     await expect(caller.prometheus.getExposureMetrics(validInput)).rejects.toMatchObject({
       code: "BAD_GATEWAY",
     });
@@ -121,7 +119,7 @@ describe("prometheus.getExposureMetrics", () => {
   it("maps timeout messages to GATEWAY_TIMEOUT", async () => {
     mockInstantQuery.mockRejectedValueOnce(new HttpTimeoutError("Prometheus", 10000, true));
 
-    const caller = await getCaller();
+    const caller = getCaller();
     await expect(caller.prometheus.getExposureMetrics(validInput)).rejects.toMatchObject({
       code: "GATEWAY_TIMEOUT",
     });

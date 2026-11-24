@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { k8sCodebaseConfig, k8sGitServerConfig } from "@my-project/shared";
 import { createMockedContext } from "../../../../__mocks__/context.js";
+import { createCaller } from "../../../../routers/index.js";
 
 const mockListResource = vi.fn();
 const mockGetPullRequests = vi.fn();
@@ -20,10 +21,7 @@ vi.mock("../../../../clients/gitfusion/index.js", () => ({
   }),
 }));
 
-async function getCaller() {
-  const { createCaller } = await import("../../../../routers/index.js");
-  return createCaller(createMockedContext());
-}
+const getCaller = () => createCaller(createMockedContext());
 
 const input = { clusterName: "in-cluster", namespace: "test-namespace" };
 
@@ -62,7 +60,7 @@ describe("gitfusion.getOpenPullRequestsSummary", () => {
     stubK8s({ gitServers: [gitServer("github", "github"), gitServer("gerrit", "gerrit")] });
     mockGetPullRequests.mockResolvedValue(prResponse);
 
-    const caller = await getCaller();
+    const caller = getCaller();
     const result = await caller.gitfusion.getOpenPullRequestsSummary(input);
 
     expect(mockGetPullRequests).toHaveBeenCalledTimes(1);
@@ -75,7 +73,7 @@ describe("gitfusion.getOpenPullRequestsSummary", () => {
     stubK8s({ gitServers: new Error("forbidden") });
     mockGetPullRequests.mockResolvedValue(prResponse);
 
-    const caller = await getCaller();
+    const caller = getCaller();
     await caller.gitfusion.getOpenPullRequestsSummary(input);
 
     expect(mockGetPullRequests).toHaveBeenCalledTimes(2);
