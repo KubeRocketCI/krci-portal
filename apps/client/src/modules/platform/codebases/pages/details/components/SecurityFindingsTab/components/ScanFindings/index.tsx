@@ -2,8 +2,8 @@ import React from "react";
 import {
   SCAN_FINDINGS_DEFAULT_PAGE_SIZE,
   type CodebaseFindingsInput,
-  type CodebaseScan,
   type DefectDojoSeverity,
+  type ScanRef,
 } from "@my-project/shared";
 import { Label } from "@/core/components/ui/label";
 import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
@@ -15,13 +15,25 @@ import { FindingsTable } from "@/modules/platform/security/components/defectdojo
 import { SeverityFilter } from "@/modules/platform/security/components/defectdojo/SeverityFilter";
 import { NoFindingsBadge, UnreachableState } from "@/modules/platform/security/components/defectdojo/StateBlocks";
 import { formatScanTime } from "@/modules/platform/security/components/defectdojo/utils";
-import { FINDINGS_PAGE_SIZES } from "../../constants";
-import { useScanFindings } from "../../hooks/useScanFindings";
+import { FINDINGS_PAGE_SIZES, NO_SCAN_DATA_MESSAGE } from "../../constants";
+import { findingsFailed, useScanFindings } from "../../hooks/useScanFindings";
+import { findingsLayout } from "../../utils";
+
+/** What the findings of a scan need to know of it. A `CodebaseScan` fits; so does one report of a container. */
+export interface FindingsOwner {
+  ref: ScanRef;
+  /** Findings that are not active. */
+  triaged: number;
+  testUrl: string;
+  productUrl: string;
+  /** Last upload. */
+  date: string;
+}
 
 export interface ScanFindingsProps {
   codebase: CodebaseFindingsInput;
-  scan: CodebaseScan;
-  /** What the scan is, for the accessible name of its table: scanner and target. */
+  scan: FindingsOwner;
+  /** What the scan is, for the accessible name of its table: scanner and target, or container and Environment. */
   title: string;
 }
 
@@ -53,8 +65,7 @@ export function ScanFindings({ codebase, scan, title }: ScanFindingsProps) {
   };
 
   const result = query.data;
-  const failed =
-    (result === undefined && query.isError) || result?.state === "unreachable" || result?.state === "notConfigured";
+  const failed = findingsFailed(query);
 
   return (
     <div className="space-y-3">
@@ -82,9 +93,7 @@ export function ScanFindings({ codebase, scan, title }: ScanFindingsProps) {
           <LoadingSpinner size={24} />
         </div>
       )}
-      {result?.state === "noScanData" && (
-        <p className="text-muted-foreground p-3 text-sm">DefectDojo holds no data for this scan any more.</p>
-      )}
+      {result?.state === "noScanData" && <p className="text-muted-foreground p-3 text-sm">{NO_SCAN_DATA_MESSAGE}</p>}
       {result?.state === "data" && result.total === 0 && (
         <div className="text-muted-foreground flex items-center gap-2 p-3 text-sm">
           {severity === undefined && !showTriaged ? (
@@ -99,7 +108,7 @@ export function ScanFindings({ codebase, scan, title }: ScanFindingsProps) {
       )}
       {result?.state === "data" && result.total > 0 && (
         <div className={cn("space-y-2", query.isPlaceholderData && "opacity-60")} aria-busy={query.isPlaceholderData}>
-          <FindingsTable findings={result.findings} level={scan.ref.level} caption={`Findings of ${title}`} />
+          <FindingsTable findings={result.findings} level={findingsLayout(scan.ref)} caption={`Findings of ${title}`} />
           {result.total > SCAN_FINDINGS_DEFAULT_PAGE_SIZE && (
             <TablePagination
               totalCount={result.total}

@@ -143,7 +143,9 @@ await record(
   )
 );
 // A runtime test without a build id is closed.
-await record(testsRequest({ tagFilter: tags("k8s-cluster:eks-sandbox", "k8s-namespace:krci-demo-prod") }, FIRST_PAGE));
+await record(
+  testsRequest({ tagFilter: tags("k8s-cluster:remote-cluster", "k8s-namespace:krci-demo-prod") }, FIRST_PAGE)
+);
 
 // Join: the report kind of a runtime test. The security operator writes the tag.
 const DEV_NAMESPACE_TAGS = ["k8s-cluster:in-cluster", "k8s-namespace:krci-demo-dev"];
@@ -156,7 +158,7 @@ const devSecretTests = await record(
 const devProducts = await record(
   productsRequest(tags("k8s-cluster:in-cluster", "k8s-namespace:krci-demo-dev"), FIRST_PAGE)
 );
-await record(productsRequest(tags("k8s-cluster:eks-sandbox", "k8s-namespace:krci-demo-prod"), FIRST_PAGE));
+await record(productsRequest(tags("k8s-cluster:remote-cluster", "k8s-namespace:krci-demo-prod"), FIRST_PAGE));
 // Join: the namespaces the installation manages, by the tenant tag.
 const tenantProducts = await record(productsRequest(tags("app.edp.epam.com/tenant:krci"), FIRST_PAGE));
 await record(productsRequest(tags("app.edp.epam.com/tenant:other"), FIRST_PAGE));

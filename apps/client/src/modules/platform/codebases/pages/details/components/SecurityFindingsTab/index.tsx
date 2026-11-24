@@ -7,17 +7,20 @@ import {
 } from "@/modules/platform/security/components/defectdojo/StateBlocks";
 import { CoverageMatrix } from "./components/CoverageMatrix";
 import { useCodebaseFindings } from "./hooks/useCodebaseFindings";
+import type { SecurityFindingsFocus } from "./types";
 
 export interface SecurityFindingsTabProps {
   codebaseName: string;
   namespace: string;
+  /** The Environment the page was opened for, from the route search. `null`: none. */
+  focus: SecurityFindingsFocus | null;
 }
 
 /**
- * Tab "Security Findings" of the codebase page: the Code and Image scans of the codebase from DefectDojo.
- * The rest of the page works in every state of DefectDojo.
+ * Tab "Security Findings" of the codebase page: the Code and Image scans of the codebase and the containers that run
+ * in its Environments, from DefectDojo. The rest of the page works in every state of DefectDojo.
  */
-export function SecurityFindingsTab({ codebaseName, namespace }: SecurityFindingsTabProps) {
+export function SecurityFindingsTab({ codebaseName, namespace, focus }: SecurityFindingsTabProps) {
   const codebase: CodebaseFindingsInput = { namespace, name: codebaseName };
   const query = useCodebaseFindings(codebase);
   const findings = query.data;
@@ -42,6 +45,6 @@ export function SecurityFindingsTab({ codebaseName, namespace }: SecurityFinding
     case "unreachable":
       return <UnreachableState onRetry={() => void query.refetch()} isRetrying={query.isFetching} />;
     case "data":
-      return <CoverageMatrix levels={findings.levels} codebase={codebase} />;
+      return <CoverageMatrix levels={findings.levels} codebase={codebase} focus={focus} />;
   }
 }

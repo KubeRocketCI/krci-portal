@@ -4,6 +4,7 @@ import {
   CODEBASE_SCAN_LEVELS,
   DEFECTDOJO_SEVERITIES,
   DEFECTDOJO_MAX_PAGE_SIZE,
+  RUNTIME_REPORT_KINDS,
   SCAN_FINDINGS_DEFAULT_PAGE_SIZE,
   SCAN_FINDINGS_MAX_PAGE,
   type DefectDojoSeverity,
@@ -37,6 +38,27 @@ export const codebaseScanRefSchema = z.object({
   image: z.string().min(1).max(500).nullable(),
 });
 
+/**
+ * Typed identity of one report of a workload container in an Environment. The server resolves its test.
+ * Strict: a tag or a DefectDojo id sent along is an error.
+ */
+export const runtimeContainerRefSchema = z
+  .object({
+    level: z.literal("runtime"),
+    /** `spec.cdPipeline` of the Stage. */
+    cdPipeline: k8sResourceNameSchema,
+    /** `spec.name` of the Stage. */
+    stage: k8sResourceNameSchema,
+    /** Value of the test tag `k8s-workload`, sent back as received. */
+    workload: z.string().min(1).max(255),
+    /** Value of the test tag `k8s-container`, sent back as received. */
+    container: z.string().min(1).max(255),
+    reportKind: z.enum(RUNTIME_REPORT_KINDS),
+  })
+  .strict();
+
+export const scanRefSchema = z.discriminatedUnion("level", [codebaseScanRefSchema, runtimeContainerRefSchema]);
+
 export const codebaseScanSchema = z.object({
   ref: codebaseScanRefSchema,
   /** The image is built from the codebase, not one of the third-party images of its chart. */
@@ -62,17 +84,77 @@ export const codebaseLevelSchema = z.object({
   lastUpload: z.string().nullable(),
 });
 
+const runtimeVulnerabilitiesSchema = z.object({
+  /** Active findings of the VulnerabilityReport test, by severity. */
+  counts: findingSeverityCountsSchema,
+  triaged: count,
+  testUrl: z.string(),
+});
+
+const runtimeSecretsSchema = z.object({
+  /** Active findings of the ExposedSecretReport test. Never added to the severity counts. */
+  active: count,
+  triaged: count,
+  testUrl: z.string(),
+});
+
+const runtimeContainerBase = z.object({
+  workload: z.string(),
+  container: z.string(),
+  /** Value of the test tag `oci-image`. */
+  image: z.string().nullable(),
+  ownImage: z.boolean(),
+  productUrl: z.string(),
+});
+
+export const runtimeContainerSchema = z.discriminatedUnion("state", [
+  runtimeContainerBase.extend({
+    state: z.literal("running"),
+    /** The running image tag. Empty when the scanner reports none. */
+    version: z.string(),
+    /** Last upload of the container's open tests. */
+    date: z.string(),
+    /** `null`: no open VulnerabilityReport test. */
+    vulnerabilities: runtimeVulnerabilitiesSchema.nullable(),
+    /** `null`: no open ExposedSecretReport test. */
+    secrets: runtimeSecretsSchema.nullable(),
+  }),
+  /** Every test of the container is closed: no counts, tag or date. */
+  runtimeContainerBase.extend({ state: z.literal("notRunning") }),
+]);
+
+export const runtimeEnvironmentSchema = z.object({
+  cdPipeline: z.string(),
+  stage: z.string(),
+  clusterName: z.string(),
+  namespace: z.string(),
+  /** Empty: no runtime test of the Environment. */
+  containers: z.array(runtimeContainerSchema),
+});
+
+export const runtimeLevelSchema = z.object({
+  /**
+   * `noScanData`: no container in any Environment, also no Environment.
+   * `notRunning`: containers exist and none is running.
+   * `clean`: running containers, none with an active finding or secret.
+   */
+  state: z.enum(["noScanData", "notRunning", "clean", "data"]),
+  environments: z.array(runtimeEnvironmentSchema),
+  /** Latest `date` of a running container. `null` without one. */
+  lastUpload: z.string().nullable(),
+});
+
 export const codebaseFindingsSchema = z.discriminatedUnion("state", [
   z.object({ state: z.literal("notConfigured") }),
   z.object({ state: z.literal("unreachable") }),
   z.object({
     state: z.literal("data"),
-    levels: z.object({ code: codebaseLevelSchema, image: codebaseLevelSchema }),
+    levels: z.object({ code: codebaseLevelSchema, image: codebaseLevelSchema, runtime: runtimeLevelSchema }),
   }),
 ]);
 
 export const scanFindingsInputSchema = codebaseFindingsInputSchema.extend({
-  scan: codebaseScanRefSchema,
+  scan: scanRefSchema,
   severity: defectDojoSeveritySchema.optional(),
   /** Also list the mitigated, false positive, out of scope and risk accepted findings. */
   showTriaged: z.boolean().default(false),

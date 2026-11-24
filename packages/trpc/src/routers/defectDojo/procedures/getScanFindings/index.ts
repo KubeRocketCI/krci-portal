@@ -5,8 +5,9 @@ import { readScanFindings } from "../../codebaseFindings/compose.js";
 import { loadCodebaseFacts } from "../../codebaseFindings/facts.js";
 
 /**
- * One page of the findings of a scan of a codebase, most severe first. The scan is named by its typed identity
- * (level, branch, scanner, image); the server resolves its DefectDojo test.
+ * One page of the findings of a scan of a codebase, most severe first. The scan is named by its typed identity:
+ * level, branch, scanner and image for a Code or Image scan; Environment, workload, container and report kind for a
+ * running container. The server resolves its DefectDojo test.
  */
 export const getScanFindingsProcedure = protectedProcedure
   .input(scanFindingsInputSchema)

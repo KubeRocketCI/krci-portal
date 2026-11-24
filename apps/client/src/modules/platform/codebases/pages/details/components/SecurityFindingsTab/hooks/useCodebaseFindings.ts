@@ -6,7 +6,7 @@ import { findingsStaleTime } from "./findingsStaleTime";
 export const codebaseFindingsKey = (input: CodebaseFindingsInput) =>
   ["defectDojo", "getCodebaseFindings", input] as const;
 
-/** The Code and Image scans of a codebase. The server derives every DefectDojo lookup from the codebase. */
+/** The Code, Image and Runtime levels of a codebase. The server derives every DefectDojo lookup from the codebase. */
 export function useCodebaseFindings(input: CodebaseFindingsInput) {
   const trpc = useTRPCClient();
 

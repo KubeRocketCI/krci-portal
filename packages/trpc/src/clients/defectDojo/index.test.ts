@@ -157,7 +157,7 @@ describe("listProducts", () => {
   });
 
   it("answers noScanData when no product carries the tags", async () => {
-    const result = await createClient().listProducts(["k8s-cluster:eks-sandbox", "k8s-namespace:krci-demo-prod"]);
+    const result = await createClient().listProducts(["k8s-cluster:remote-cluster", "k8s-namespace:krci-demo-prod"]);
 
     expect(result).toEqual({ state: "noScanData" });
   });
@@ -395,7 +395,7 @@ describe("listTests", () => {
 
     it("marks a runtime test without a build id as closed", async () => {
       const result = await createClient().listTests({
-        tags: ["k8s-cluster:eks-sandbox", "k8s-namespace:krci-demo-prod"],
+        tags: ["k8s-cluster:remote-cluster", "k8s-namespace:krci-demo-prod"],
       });
 
       expect(result.state === "data" && result.data).toMatchObject([

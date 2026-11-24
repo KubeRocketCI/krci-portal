@@ -24,6 +24,10 @@ export interface Search {
   tab?: RouteSearchTab;
   page?: number;
   rowsPerPage?: number;
+  /** `spec.cdPipeline` of the Stage to focus on the "Security Findings" tab. Used together with `stage`. */
+  cdPipeline?: string;
+  /** `spec.name` of the Stage to focus on the "Security Findings" tab. Used together with `cdPipeline`. */
+  stage?: string;
 }
 
 export const routeProjectDetails = createRoute({
@@ -35,6 +39,8 @@ export const routeProjectDetails = createRoute({
         tab: routeSearchTabSchema.optional(),
         page: z.number().int().positive().optional(),
         rowsPerPage: z.number().int().positive().optional(),
+        cdPipeline: z.string().min(1).optional(),
+        stage: z.string().min(1).optional(),
       })
       .parse(search);
 

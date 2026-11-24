@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
+import { CODEBASE_SCAN_LEVELS, DEFECTDOJO_SEVERITIES, NO_FINDING_COUNTS } from "./constants.js";
+import { runtimeContainerRefSchema } from "./schemas.js";
 import type { CodebaseScanRef } from "./types.js";
-import { scanRefKey } from "./utils.js";
+import {
+  hasActiveFindings,
+  hasActiveRuntimeFindings,
+  runtimeContainerKey,
+  runtimeContainerRef,
+  scanRefKey,
+} from "./utils.js";
 
 const TRIVY: CodebaseScanRef = {
   level: "image",
@@ -8,6 +16,10 @@ const TRIVY: CodebaseScanRef = {
   scanner: "Trivy Scan",
   image: "registry.example.test/app",
 };
+
+const ENVIRONMENT = { cdPipeline: "demo", stage: "dev", clusterName: "in-cluster", namespace: "demo-dev" };
+
+const CONTAINER = { workload: "deployment.demo-app", container: "demo-app", image: "registry.example.test/app" };
 
 describe("scanRefKey", () => {
   it("is the same for the same scan", () => {
@@ -28,5 +40,97 @@ describe("scanRefKey", () => {
     const image: CodebaseScanRef = { level: "image", branch: "main", scanner: "Semgrep JSON Report", image: "null" };
 
     expect(scanRefKey(code)).not.toBe(scanRefKey(image));
+  });
+});
+
+describe("runtimeContainerRef", () => {
+  it("names the Environment, the container and the report of a summary row, and nothing else of it", () => {
+    expect(runtimeContainerRef(ENVIRONMENT, CONTAINER, "exposedsecretreport")).toEqual({
+      level: "runtime",
+      cdPipeline: "demo",
+      stage: "dev",
+      workload: "deployment.demo-app",
+      container: "demo-app",
+      reportKind: "exposedsecretreport",
+    });
+  });
+
+  it("is a ref the server accepts", () => {
+    expect(
+      runtimeContainerRefSchema.safeParse(runtimeContainerRef(ENVIRONMENT, CONTAINER, "vulnerabilityreport")).success
+    ).toBe(true);
+  });
+});
+
+describe("runtimeContainerKey", () => {
+  it("is the same for the same container of the same Environment, whatever else its row carries", () => {
+    const movedEnvironment = { ...ENVIRONMENT, namespace: "moved" };
+    const containerWithoutImage = { ...CONTAINER, image: null };
+
+    expect(runtimeContainerKey(ENVIRONMENT, CONTAINER)).toBe(
+      runtimeContainerKey(movedEnvironment, containerWithoutImage)
+    );
+  });
+
+  it.each([
+    ["CDPipeline", { cdPipeline: "other" }, {}],
+    ["stage", { stage: "qa" }, {}],
+    ["workload", {}, { workload: "statefulset.demo-app" }],
+    ["container", {}, { container: "istio-proxy" }],
+  ])("differs for another %s", (_, environment, container) => {
+    expect(runtimeContainerKey({ ...ENVIRONMENT, ...environment }, { ...CONTAINER, ...container })).not.toBe(
+      runtimeContainerKey(ENVIRONMENT, CONTAINER)
+    );
+  });
+
+  it("starts with runtime, which is no level of a scan: a container row and a scan never share an expansion", () => {
+    expect(JSON.parse(runtimeContainerKey(ENVIRONMENT, CONTAINER))[0]).toBe("runtime");
+    expect(CODEBASE_SCAN_LEVELS).not.toContain("runtime");
+  });
+});
+
+describe("hasActiveFindings", () => {
+  it("is false for counts that are all zero", () => {
+    expect(hasActiveFindings(NO_FINDING_COUNTS)).toBe(false);
+  });
+
+  it.each(DEFECTDOJO_SEVERITIES)("is true when only %s is above zero", (severity) => {
+    expect(hasActiveFindings({ ...NO_FINDING_COUNTS, [severity]: 1 })).toBe(true);
+  });
+});
+
+describe("hasActiveRuntimeFindings", () => {
+  const vulnerabilities = (counts = NO_FINDING_COUNTS) => ({
+    counts,
+    triaged: 0,
+    testUrl: "https://defectdojo.example.test/test/1",
+  });
+  const secrets = (active: number) => ({ active, triaged: 0, testUrl: "https://defectdojo.example.test/test/2" });
+
+  it.each([
+    ["no report", { vulnerabilities: null, secrets: null }],
+    [
+      "a vulnerability report and no secret report, both without a finding",
+      { vulnerabilities: vulnerabilities(), secrets: null },
+    ],
+    ["no vulnerability report and no active secret", { vulnerabilities: null, secrets: secrets(0) }],
+    ["both reports, neither with an active finding", { vulnerabilities: vulnerabilities(), secrets: secrets(0) }],
+  ])("is false for %s", (_, container) => {
+    expect(hasActiveRuntimeFindings(container)).toBe(false);
+  });
+
+  it.each([
+    [
+      "an active vulnerability",
+      { vulnerabilities: vulnerabilities({ ...NO_FINDING_COUNTS, Low: 1 }), secrets: secrets(0) },
+    ],
+    ["an active secret", { vulnerabilities: vulnerabilities(), secrets: secrets(2) }],
+    ["an active secret and no vulnerability report", { vulnerabilities: null, secrets: secrets(1) }],
+    [
+      "an active vulnerability and no secret report",
+      { vulnerabilities: vulnerabilities({ ...NO_FINDING_COUNTS, High: 3 }), secrets: null },
+    ],
+  ])("is true for %s", (_, container) => {
+    expect(hasActiveRuntimeFindings(container)).toBe(true);
   });
 });

@@ -96,7 +96,7 @@ const FIX_COLUMN: FindingColumn = {
 const LINK_COLUMN: FindingColumn = {
   id: "link",
   header: <span className="sr-only">DefectDojo</span>,
-  headClassName: "w-12",
+  headClassName: "w-14",
   cell: (finding) => <DefectDojoLink href={finding.url} label={`Finding ${finding.title}`} />,
 };
 

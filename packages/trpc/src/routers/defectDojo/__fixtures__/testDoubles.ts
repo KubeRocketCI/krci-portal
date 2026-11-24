@@ -1,4 +1,11 @@
-import { DEFECTDOJO_SEVERITIES, type DefectDojoSeverity } from "@my-project/shared";
+import {
+  DEFECTDOJO_SEVERITIES,
+  applicationLabels,
+  getStageResourceName,
+  k8sApplicationConfig,
+  k8sStageConfig,
+  type DefectDojoSeverity,
+} from "@my-project/shared";
 import type { Mock } from "vitest";
 import { K8sClient } from "../../../clients/k8s/index.js";
 import {
@@ -13,7 +20,7 @@ import {
   type DefectDojoTestsFilter,
 } from "../../../clients/defectDojo/index.js";
 import type { CodebaseFindingsSource } from "../codebaseFindings/source.js";
-import { createKubeReader, type KubeObject } from "./kubeReader.js";
+import { createKubeReader, type KubeObject, type KubeReaderOptions } from "./kubeReader.js";
 
 const WEB_URL = "https://defectdojo.example.test";
 
@@ -63,6 +70,64 @@ export function makeImageTest(
 ): DefectDojoTest {
   const { image, ...test } = overrides;
   return makeTest({ version: "main-20261123", tags: [...codebaseTags(), `oci-image:${image}`], ...test });
+}
+
+/** The Environment of the demo codebase that `makeApplication` and `makeStage` describe by default. */
+export const DEMO_PIPELINE = "demo";
+export const DEMO_STAGE = "dev";
+export const DEMO_STAGE_NAMESPACE = "demo-dev";
+export const DEMO_APPLICATION = "demo-dev-demo-app";
+export const DEMO_WORKLOAD = "deployment.demo-app";
+export const DEMO_CONTAINER = "demo-app";
+
+const RUNTIME_SCAN_TYPE = "Trivy Operator Scan";
+
+export type RuntimeTestOverrides = Partial<Omit<DefectDojoTest, "tags" | "level" | "scanType" | "closed">> &
+  Pick<DefectDojoTest, "id"> & {
+    cluster?: string;
+    namespace?: string;
+    application?: string;
+    /** A tag value; `null`: the test carries no tag of that key. */
+    workload?: string | null;
+    container?: string | null;
+    image?: string | null;
+    reportKind?: string | null;
+  };
+
+/**
+ * A test of the security operator for one report of a container of the demo Environment: open (it has a build id)
+ * and a VulnerabilityReport by default. An empty `buildId` closes it, as the client reads it.
+ */
+export function makeRuntimeTest({
+  cluster = "in-cluster",
+  namespace = DEMO_STAGE_NAMESPACE,
+  application = DEMO_APPLICATION,
+  workload = DEMO_WORKLOAD,
+  container = DEMO_CONTAINER,
+  image = DEMO_IMAGE,
+  reportKind = "vulnerabilityreport",
+  buildId = "build-1",
+  ...test
+}: RuntimeTestOverrides): DefectDojoTest {
+  const tag = (key: string, value: string | null) => (value === null ? [] : [`${key}:${value}`]);
+
+  return makeTest({
+    scanType: RUNTIME_SCAN_TYPE,
+    branchTag: "",
+    version: "main",
+    buildId,
+    closed: buildId === "",
+    tags: [
+      ...tag("k8s-cluster", cluster),
+      ...tag("k8s-namespace", namespace),
+      ...tag("app", application),
+      ...tag("k8s-workload", workload),
+      ...tag("k8s-container", container),
+      ...tag("oci-image", image),
+      ...tag("report-kind", reportKind),
+    ],
+    ...test,
+  });
 }
 
 /** An active finding. */
@@ -256,12 +321,75 @@ export function makeImageStream(
   return { kind: "CodebaseImageStream", metadata: { name, namespace }, spec: { codebase, imageName } };
 }
 
-/** The codebase as the platform holds it: one branch and the image stream of its own image. */
+export interface ApplicationOptions {
+  name?: string;
+  /** Value of the label `app-name`: the codebase the Application deploys. */
+  codebase?: string;
+  /** `null`: the Application has no such label. */
+  pipeline?: string | null;
+  stage?: string | null;
+  namespace?: string;
+}
+
+export function makeApplication({
+  name = DEMO_APPLICATION,
+  codebase = DEMO_CODEBASE,
+  pipeline = DEMO_PIPELINE,
+  stage = DEMO_STAGE,
+  namespace = DEMO_NAMESPACE,
+}: ApplicationOptions = {}): KubeObject {
+  return {
+    kind: k8sApplicationConfig.kind,
+    metadata: {
+      name,
+      namespace,
+      labels: {
+        [applicationLabels.appName]: codebase,
+        ...(pipeline === null ? {} : { [applicationLabels.pipeline]: pipeline }),
+        ...(stage === null ? {} : { [applicationLabels.stage]: stage }),
+      },
+    },
+    spec: {},
+  };
+}
+
+export interface StageOptions {
+  cdPipeline?: string;
+  /** `spec.name`. */
+  name?: string;
+  /** `spec.clusterName`. Left out: the default of the CRD, `in-cluster`. */
+  clusterName?: string;
+  /** `spec.namespace`: where the Stage deploys. */
+  namespace?: string;
+  order?: number;
+  /** Namespace of the Stage object. */
+  platformNamespace?: string;
+}
+
+export function makeStage({
+  cdPipeline = DEMO_PIPELINE,
+  name = DEMO_STAGE,
+  clusterName,
+  namespace = DEMO_STAGE_NAMESPACE,
+  order = 0,
+  platformNamespace = DEMO_NAMESPACE,
+}: StageOptions = {}): KubeObject {
+  return {
+    kind: k8sStageConfig.kind,
+    metadata: { name: getStageResourceName(cdPipeline, name), namespace: platformNamespace },
+    spec: { cdPipeline, name, namespace, order, ...(clusterName === undefined ? {} : { clusterName }) },
+  };
+}
+
+/** The codebase as the platform holds it: one branch and the image stream of its own image. It runs nowhere. */
 export const DEMO_CLUSTER: KubeObject[] = [makeCodebase(), makeBranch("main"), makeImageStream(DEMO_IMAGE)];
 
+/** `DEMO_CLUSTER`, deployed by one Application to the Stage `demo` / `dev`. */
+export const DEPLOYED_CLUSTER: KubeObject[] = [...DEMO_CLUSTER, makeApplication(), makeStage()];
+
 /** The cluster the mocked `K8sClient` of the test file reads. */
-export function givenCluster(objects: KubeObject[] = DEMO_CLUSTER) {
+export function givenCluster(objects: KubeObject[] = DEMO_CLUSTER, options: KubeReaderOptions = {}) {
   (K8sClient as unknown as Mock).mockImplementation(function () {
-    return { KubeConfig: {}, ...createKubeReader(objects) };
+    return { KubeConfig: {}, ...createKubeReader(objects, options) };
   });
 }

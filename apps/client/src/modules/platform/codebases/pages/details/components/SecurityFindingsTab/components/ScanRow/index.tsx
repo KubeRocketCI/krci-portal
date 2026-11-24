@@ -1,82 +1,68 @@
 import React from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
-import { DEFECTDOJO_SEVERITIES, type CodebaseFindingsInput, type CodebaseScan } from "@my-project/shared";
-import { Badge } from "@/core/components/ui/badge";
+import {
+  hasActiveFindings,
+  type CodebaseFindingsInput,
+  type CodebaseScan,
+  type RuntimeLevel,
+} from "@my-project/shared";
 import { TableCellUI, TableRowUI } from "@/core/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/core/components/ui/tabs";
 import { cn } from "@/core/utils/classname";
 import { NO_VALUE } from "@/modules/platform/security/components/defectdojo/constants";
 import { DefectDojoLink } from "@/modules/platform/security/components/defectdojo/DefectDojoLink";
 import { NoFindingsBadge } from "@/modules/platform/security/components/defectdojo/StateBlocks";
 import { formatScanTime } from "@/modules/platform/security/components/defectdojo/utils";
-import { SeverityCountBadge } from "@/modules/platform/security/components/shared/SeverityCountBadge";
-import { COLUMN_COUNT } from "../../constants";
+import { CELL_CLASS } from "../../constants";
+import type { SecurityFindingsFocus } from "../../types";
+import { BuiltVersusRunning } from "../BuiltVersusRunning";
+import { ExpandedPanelRow } from "../ExpandedPanelRow";
+import { ExpandToggle } from "../ExpandToggle";
+import { NameCell } from "../NameCell";
+import { OwnImageBadge } from "../OwnImageBadge";
 import { ScanFindings } from "../ScanFindings";
-
-export const CELL_CLASS = "px-3 py-2 align-middle";
+import { SeverityCountCells } from "../SeverityCountCells";
 
 export interface ScanRowProps {
   codebase: CodebaseFindingsInput;
   scan: CodebaseScan;
+  /** The containers that run in the Environments, for the comparison of an own-image scan with them. */
+  runtime: RuntimeLevel;
+  focus: SecurityFindingsFocus | null;
   expanded: boolean;
   onToggle: () => void;
   /** The scan has no active finding while others of its level have: the row says so. */
   markNoFindings: boolean;
 }
 
-/** One scan: target, scanner, image tag, counts of its own, last upload. Expands to its findings. */
-export function ScanRow({ codebase, scan, expanded, onToggle, markNoFindings }: ScanRowProps) {
+/**
+ * One scan: target, scanner, image tag, counts of its own, last upload. Expands to its findings; an own-image scan
+ * also expands to its comparison with the containers that run the image.
+ */
+export function ScanRow({ codebase, scan, runtime, focus, expanded, onToggle, markNoFindings }: ScanRowProps) {
   const panelId = React.useId();
   const { ref } = scan;
   const target = ref.level === "code" ? "Source code" : (ref.image ?? "Image");
   const title = `${ref.scanner}, ${target}`;
-  const hasActiveFinding = DEFECTDOJO_SEVERITIES.some((severity) => scan.counts[severity] > 0);
 
   return (
     <>
       <TableRowUI data-testid="scan-row">
         <TableCellUI className={CELL_CLASS}>
-          <button
-            type="button"
-            aria-expanded={expanded}
-            aria-controls={panelId}
-            aria-label={`${expanded ? "Hide" : "Show"} findings of ${title}`}
-            onClick={onToggle}
-            className="hover:bg-input focus-visible:ring-ring rounded p-1 focus-visible:ring-2 focus-visible:outline-none"
-          >
-            {expanded ? (
-              <ChevronDown className="size-4" aria-hidden />
-            ) : (
-              <ChevronRight className="size-4" aria-hidden />
-            )}
-          </button>
+          <ExpandToggle expanded={expanded} panelId={panelId} title={title} onToggle={onToggle} />
         </TableCellUI>
-        <TableCellUI className={CELL_CLASS}>
-          <div className="flex min-w-0 flex-col gap-1">
-            <span className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-medium break-all">{ref.scanner}</span>
-              {markNoFindings && !hasActiveFinding && <NoFindingsBadge />}
-            </span>
-            <span className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs break-all">
+        <NameCell
+          name={ref.scanner}
+          badges={markNoFindings && !hasActiveFindings(scan.counts) && <NoFindingsBadge />}
+          detail={
+            <>
               {target}
-              {ref.level === "image" && (
-                <Badge variant={scan.ownImage ? "info" : "neutral"}>
-                  {scan.ownImage ? "Own image" : "Third-party image"}
-                </Badge>
-              )}
-            </span>
-          </div>
-        </TableCellUI>
+              {ref.level === "image" && <OwnImageBadge ownImage={scan.ownImage} />}
+            </>
+          }
+        />
         <TableCellUI className={cn(CELL_CLASS, "text-xs break-words")}>{ref.branch}</TableCellUI>
         <TableCellUI className={cn(CELL_CLASS, "text-xs break-all")}>{scan.version || NO_VALUE}</TableCellUI>
-        {DEFECTDOJO_SEVERITIES.map((severity) => (
-          <TableCellUI key={severity} className={cn(CELL_CLASS, "text-center")}>
-            <SeverityCountBadge
-              severity={severity}
-              count={scan.counts[severity]}
-              ariaLabel={`${severity}: ${scan.counts[severity]}`}
-            />
-          </TableCellUI>
-        ))}
+        <SeverityCountCells counts={scan.counts} />
         <TableCellUI className={cn(CELL_CLASS, "text-muted-foreground text-center text-xs")}>
           {scan.triaged}
         </TableCellUI>
@@ -88,11 +74,24 @@ export function ScanRow({ codebase, scan, expanded, onToggle, markNoFindings }: 
         </TableCellUI>
       </TableRowUI>
       {expanded && (
-        <TableRowUI id={panelId} className="hover:bg-transparent">
-          <TableCellUI className="bg-muted/30 p-3" colSpan={COLUMN_COUNT}>
+        <ExpandedPanelRow id={panelId}>
+          {scan.ownImage ? (
+            <Tabs defaultValue="findings">
+              <TabsList aria-label={`Views of ${title}`}>
+                <TabsTrigger value="findings">Findings</TabsTrigger>
+                <TabsTrigger value="built-versus-running">Built vs running</TabsTrigger>
+              </TabsList>
+              <TabsContent value="findings">
+                <ScanFindings codebase={codebase} scan={scan} title={title} />
+              </TabsContent>
+              <TabsContent value="built-versus-running">
+                <BuiltVersusRunning codebase={codebase} scan={scan} runtime={runtime} focus={focus} title={title} />
+              </TabsContent>
+            </Tabs>
+          ) : (
             <ScanFindings codebase={codebase} scan={scan} title={title} />
-          </TableCellUI>
-        </TableRowUI>
+          )}
+        </ExpandedPanelRow>
       )}
     </>
   );

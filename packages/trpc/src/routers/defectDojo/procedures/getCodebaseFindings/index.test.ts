@@ -1,20 +1,25 @@
 import {
   K8sApiError,
+  k8sApplicationConfig,
+  k8sStageConfig,
   type CodebaseFindings,
   type CodebaseLevel,
   type CodebaseScan,
   type DefectDojoSeverity,
+  type RuntimeLevel,
 } from "@my-project/shared";
-import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock, type MockInstance } from "vitest";
 import { createMockedContext } from "../../../../__mocks__/context.js";
 import { K8sClient } from "../../../../clients/k8s/index.js";
 import { createCaller } from "../../../index.js";
+import { COUNT_CONCURRENCY } from "../../codebaseFindings/compose.js";
 import type { CodebaseFindingsSource } from "../../codebaseFindings/source.js";
 import {
   DEMO_CODEBASE,
   DEMO_IMAGE,
   DEMO_CLUSTER,
   DEMO_NAMESPACE,
+  DEPLOYED_CLUSTER,
   GITLEAKS,
   GRYPE,
   SEMGREP,
@@ -22,11 +27,14 @@ import {
   codebaseTags,
   createFakeDefectDojo,
   givenCluster,
+  makeApplication,
   makeBranch,
   makeCodebase,
   makeFinding,
   makeImageTest,
   makeImageStream,
+  makeRuntimeTest,
+  makeStage,
   makeTest,
   makeTriagedFinding,
   type FakeDefectDojoOptions,
@@ -63,7 +71,7 @@ describe("defectDojo.getCodebaseFindings", () => {
     return createCaller(mockContext).defectDojo.getCodebaseFindings(input);
   }
 
-  async function getLevels(): Promise<{ code: CodebaseLevel; image: CodebaseLevel }> {
+  async function getLevels(): Promise<{ code: CodebaseLevel; image: CodebaseLevel; runtime: RuntimeLevel }> {
     const result = await getFindings();
     if (result.state !== "data") {
       throw new Error(`Expected data, got ${result.state}`);
@@ -131,10 +139,11 @@ describe("defectDojo.getCodebaseFindings", () => {
       expect(counts.mock.calls.length).toBeLessThan(scans.length);
     });
 
-    it("says there is no scan data at both levels for a codebase without a test", async () => {
+    it("says there is no scan data at every level for a codebase without a test", async () => {
       await expect(getLevels()).resolves.toEqual({
         code: { state: "noScanData", scans: [], lastUpload: null },
         image: { state: "noScanData", scans: [], lastUpload: null },
+        runtime: { state: "noScanData", environments: [], lastUpload: null },
       });
     });
   });
@@ -482,6 +491,497 @@ describe("defectDojo.getCodebaseFindings", () => {
       await expect(
         createCaller(mockContext).defectDojo.getCodebaseFindings({ namespace: "krci/../x", name: DEMO_CODEBASE })
       ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    });
+  });
+
+  describe("the Runtime level", () => {
+    const DEV_TAGS = ["k8s-cluster:in-cluster", "k8s-namespace:demo-dev", "app:demo-dev-demo-app"];
+    const PRODUCT_URL = "https://defectdojo.example.test/asset/7";
+
+    const QA_OBJECTS = [
+      makeApplication({ name: "demo-qa-demo-app", stage: "qa" }),
+      makeStage({ name: "qa", namespace: "demo-qa", order: 1 }),
+    ];
+
+    const containersOf = (runtime: RuntimeLevel, stage = "dev") =>
+      runtime.environments.find((environment) => environment.stage === stage)?.containers;
+
+    const countsOf = (counts: MockInstance<CodebaseFindingsSource["getSeverityCounts"]>, testId: number) =>
+      counts.mock.calls.flatMap(([scope, options]) => ("testId" in scope && scope.testId === testId ? [options] : []));
+
+    beforeEach(() => {
+      givenCluster(DEPLOYED_CLUSTER);
+    });
+
+    describe("an Environment with scan data", () => {
+      it("shows a running container with its version, counts, secrets and links; the severity cells hold the vulnerabilities only", async () => {
+        givenDefectDojo({
+          tests: [
+            makeRuntimeTest({ id: 10, version: "main-20261124", updated: "2026-11-24T08:00:00Z" }),
+            makeRuntimeTest({ id: 11, reportKind: "exposedsecretreport", updated: "2026-11-24T09:00:00Z" }),
+          ],
+          findings: {
+            10: [
+              ...active(10, "High", 3),
+              ...active(10, "Low", 1, 10),
+              makeTriagedFinding({ id: 10900, testId: 10, severity: "Critical" }),
+            ],
+            11: [...active(11, "High", 2), makeTriagedFinding({ id: 11900, testId: 11, severity: "High" })],
+          },
+        });
+
+        const { runtime } = await getLevels();
+
+        expect(runtime).toEqual({
+          state: "data",
+          lastUpload: "2026-11-24T09:00:00Z",
+          environments: [
+            {
+              cdPipeline: "demo",
+              stage: "dev",
+              clusterName: "in-cluster",
+              namespace: "demo-dev",
+              containers: [
+                {
+                  state: "running",
+                  workload: "deployment.demo-app",
+                  container: "demo-app",
+                  image: DEMO_IMAGE,
+                  ownImage: true,
+                  productUrl: PRODUCT_URL,
+                  version: "main-20261124",
+                  date: "2026-11-24T09:00:00Z",
+                  vulnerabilities: {
+                    counts: { Critical: 0, High: 3, Medium: 0, Low: 1, Info: 0 },
+                    triaged: 1,
+                    testUrl: "https://defectdojo.example.test/test/10",
+                  },
+                  secrets: { active: 2, triaged: 1, testUrl: "https://defectdojo.example.test/test/11" },
+                },
+              ],
+            },
+          ],
+        });
+      });
+
+      it("says clean for running containers without an active vulnerability or secret", async () => {
+        givenDefectDojo({
+          tests: [makeRuntimeTest({ id: 10 }), makeRuntimeTest({ id: 11, reportKind: "exposedsecretreport" })],
+          findings: { 10: [makeTriagedFinding({ id: 10900, testId: 10 })] },
+        });
+
+        const { runtime } = await getLevels();
+
+        expect(runtime.state).toBe("clean");
+        expect(containersOf(runtime)).toMatchObject([
+          { vulnerabilities: { triaged: 1 }, secrets: { active: 0, triaged: 0 } },
+        ]);
+      });
+
+      it("says data when only a secret is active", async () => {
+        givenDefectDojo({
+          tests: [makeRuntimeTest({ id: 10 }), makeRuntimeTest({ id: 11, reportKind: "exposedsecretreport" })],
+          findings: { 11: active(11, "High", 1) },
+        });
+
+        await expect(getLevels()).resolves.toMatchObject({ runtime: { state: "data" } });
+      });
+
+      it("shows a container with no VulnerabilityReport test without counts, and no ExposedSecretReport test as none", async () => {
+        givenDefectDojo({
+          tests: [
+            makeRuntimeTest({ id: 10, reportKind: "exposedsecretreport" }),
+            makeRuntimeTest({ id: 11, container: "other" }),
+          ],
+        });
+
+        const { runtime } = await getLevels();
+
+        expect(containersOf(runtime)).toMatchObject([
+          { container: "demo-app", vulnerabilities: null, secrets: { active: 0 } },
+          { container: "other", vulnerabilities: { counts: { High: 0 } }, secrets: null },
+        ]);
+      });
+    });
+
+    describe("an Environment with no scan data", () => {
+      it("is listed with no container, and the level says there is no scan data", async () => {
+        await expect(getLevels()).resolves.toMatchObject({
+          runtime: {
+            state: "noScanData",
+            lastUpload: null,
+            environments: [{ cdPipeline: "demo", stage: "dev", containers: [] }],
+          },
+        });
+      });
+
+      it("stays listed beside an Environment with data, and the level says data", async () => {
+        givenCluster([...DEPLOYED_CLUSTER, ...QA_OBJECTS]);
+        givenDefectDojo({ tests: [makeRuntimeTest({ id: 10 })], findings: { 10: active(10, "High", 1) } });
+
+        const { runtime } = await getLevels();
+
+        expect(runtime.state).toBe("data");
+        expect(runtime.environments.map((environment) => [environment.stage, environment.containers.length])).toEqual([
+          ["dev", 1],
+          ["qa", 0],
+        ]);
+      });
+    });
+
+    describe("a closed test", () => {
+      it("makes a row that is not running, with no counts, and the level says not running", async () => {
+        const defectDojo = givenDefectDojo({
+          tests: [makeRuntimeTest({ id: 10, buildId: "" })],
+          findings: { 10: active(10, "High", 4) },
+        });
+        const counts = vi.spyOn(defectDojo, "getSeverityCounts");
+
+        const { runtime } = await getLevels();
+
+        expect(runtime.state).toBe("notRunning");
+        expect(runtime.lastUpload).toBeNull();
+        expect(containersOf(runtime)).toStrictEqual([
+          {
+            state: "notRunning",
+            workload: "deployment.demo-app",
+            container: "demo-app",
+            image: DEMO_IMAGE,
+            ownImage: true,
+            productUrl: PRODUCT_URL,
+          },
+        ]);
+        expect(counts).not.toHaveBeenCalled();
+      });
+
+      it("leaves the level to its running sibling, and is never counted", async () => {
+        const defectDojo = givenDefectDojo({
+          tests: [
+            makeRuntimeTest({ id: 10, buildId: "", updated: "2026-11-25T08:00:00Z" }),
+            makeRuntimeTest({ id: 11, container: "istio-proxy", updated: "2026-11-24T08:00:00Z" }),
+          ],
+          findings: { 10: active(10, "Critical", 5) },
+        });
+        const counts = vi.spyOn(defectDojo, "getSeverityCounts");
+
+        const { runtime } = await getLevels();
+
+        expect(runtime.state).toBe("clean");
+        expect(runtime.lastUpload).toBe("2026-11-24T08:00:00Z");
+        expect(containersOf(runtime)?.map(({ container, state }) => [container, state])).toEqual([
+          ["istio-proxy", "running"],
+          ["demo-app", "notRunning"],
+        ]);
+        expect(countsOf(counts, 10)).toEqual([]);
+        expect(countsOf(counts, 11)).toHaveLength(1);
+      });
+    });
+
+    describe("an ExposedSecretReport test", () => {
+      it("counts as secrets whatever its title says: the kind comes from the report-kind tag", async () => {
+        givenDefectDojo({
+          tests: [
+            makeRuntimeTest({ id: 10 }),
+            makeRuntimeTest({ id: 11, reportKind: "exposedsecretreport", title: "VulnerabilityReport demo-app" }),
+          ],
+          findings: { 10: active(10, "High", 3), 11: active(11, "High", 2) },
+        });
+
+        const { runtime } = await getLevels();
+
+        expect(containersOf(runtime)).toMatchObject([
+          { vulnerabilities: { counts: { High: 3 } }, secrets: { active: 2 } },
+        ]);
+      });
+    });
+
+    describe("the Environments", () => {
+      it("are the Applications of the codebase that name a Stage, and no more", async () => {
+        givenCluster([
+          ...DEPLOYED_CLUSTER,
+          makeApplication({ name: "other-dev-other-app", codebase: "other-app", pipeline: "other" }),
+          makeStage({ cdPipeline: "other", name: "dev", namespace: "other-dev" }),
+          makeApplication({ name: "demo-unlabelled-demo-app", pipeline: null }),
+          makeApplication({ name: "demo-gone-demo-app", stage: "gone" }),
+          makeStage({ name: "prod", namespace: "demo-prod", order: 2 }),
+        ]);
+        const defectDojo = givenDefectDojo({ tests: [makeRuntimeTest({ id: 10 })] });
+        const listTests = vi.spyOn(defectDojo, "listTests");
+
+        const { runtime } = await getLevels();
+
+        expect(runtime.environments.map(({ cdPipeline, stage }) => `${cdPipeline}/${stage}`)).toEqual(["demo/dev"]);
+        expect(listTests).toHaveBeenCalledTimes(2);
+        expect(listTests).toHaveBeenCalledWith({ tags: DEV_TAGS });
+      });
+
+      it("are ordered by CDPipeline, then by the order of the Stage", async () => {
+        givenCluster([
+          ...DEMO_CLUSTER,
+          makeApplication({ name: "zeta-dev-demo-app", pipeline: "zeta", stage: "dev" }),
+          makeStage({ cdPipeline: "zeta", name: "dev", namespace: "zeta-dev", order: 0 }),
+          makeApplication({ name: "alpha-prod-demo-app", pipeline: "alpha", stage: "prod" }),
+          makeStage({ cdPipeline: "alpha", name: "prod", namespace: "alpha-prod", order: 1 }),
+          makeApplication({ name: "alpha-qa-demo-app", pipeline: "alpha", stage: "qa" }),
+          makeStage({ cdPipeline: "alpha", name: "qa", namespace: "alpha-qa", order: 0 }),
+        ]);
+
+        const { runtime } = await getLevels();
+
+        expect(runtime.environments.map(({ cdPipeline, stage }) => `${cdPipeline}/${stage}`)).toEqual([
+          "alpha/qa",
+          "alpha/prod",
+          "zeta/dev",
+        ]);
+      });
+
+      it("include a Stage on a remote cluster, found by the tags of that cluster, with only the portal cluster read", async () => {
+        givenCluster([
+          ...DEMO_CLUSTER,
+          makeApplication({ name: "demo-prod-demo-app", stage: "prod" }),
+          makeStage({ name: "prod", namespace: "demo-prod", clusterName: "remote" }),
+        ]);
+        const defectDojo = givenDefectDojo({
+          tests: [
+            makeRuntimeTest({ id: 10, cluster: "remote", namespace: "demo-prod", application: "demo-prod-demo-app" }),
+          ],
+        });
+        const listTests = vi.spyOn(defectDojo, "listTests");
+        vi.mocked(K8sClient).mockClear();
+
+        const { runtime } = await getLevels();
+
+        expect(listTests).toHaveBeenCalledWith({
+          tags: ["k8s-cluster:remote", "k8s-namespace:demo-prod", "app:demo-prod-demo-app"],
+        });
+        expect(runtime.environments).toMatchObject([
+          { stage: "prod", clusterName: "remote", namespace: "demo-prod", containers: [{ state: "running" }] },
+        ]);
+        expect(K8sClient).toHaveBeenCalledTimes(1);
+      });
+
+      it.each([
+        ["Applications", k8sApplicationConfig],
+        ["Stages", k8sStageConfig],
+      ])("are none, with Code and Image answering, when the cluster does not serve the %s", async (_, notServed) => {
+        givenCluster(DEPLOYED_CLUSTER, { notServed: [notServed] });
+        givenDefectDojo({
+          tests: [makeTest({ id: 1, scanType: SEMGREP })],
+          findings: { 1: active(1, "High", 1) },
+        });
+
+        const levels = await getLevels();
+
+        expect(levels.runtime).toEqual({ state: "noScanData", environments: [], lastUpload: null });
+        expect(levels.code.state).toBe("data");
+      });
+
+      it.each([
+        ["Applications", k8sApplicationConfig],
+        ["Stages", k8sStageConfig],
+      ])(
+        "fail the tab with FORBIDDEN, before it asks DefectDojo, when the user may not list the %s",
+        async (_, forbidden) => {
+          givenCluster(DEPLOYED_CLUSTER, { forbidden: [forbidden] });
+          const defectDojo = givenDefectDojo({ tests: [makeTest({ id: 1, scanType: SEMGREP })] });
+          const listTests = vi.spyOn(defectDojo, "listTests");
+
+          await expect(getFindings()).rejects.toMatchObject({ code: "FORBIDDEN" });
+          expect(listTests).not.toHaveBeenCalled();
+        }
+      );
+    });
+
+    describe("the rows", () => {
+      it("are one per workload and container with both report kinds in it, a sidecar a second row, own image first", async () => {
+        givenDefectDojo({
+          tests: [
+            makeRuntimeTest({ id: 10, container: "istio-proxy", image: "docker.io/istio/proxyv2" }),
+            makeRuntimeTest({ id: 11 }),
+            makeRuntimeTest({ id: 12, reportKind: "exposedsecretreport" }),
+            makeRuntimeTest({ id: 13, reportKind: null, container: "no-kind" }),
+            makeRuntimeTest({ id: 14, workload: null, container: "no-workload" }),
+            makeRuntimeTest({ id: 15, container: null }),
+          ],
+        });
+
+        const { runtime } = await getLevels();
+
+        expect(
+          containersOf(runtime)?.map(({ workload, container, ownImage }) => [workload, container, ownImage])
+        ).toEqual([
+          ["deployment.demo-app", "demo-app", true],
+          ["deployment.demo-app", "istio-proxy", false],
+        ]);
+        expect(containersOf(runtime)?.[0]).toMatchObject({
+          vulnerabilities: { testUrl: "https://defectdojo.example.test/test/11" },
+          secrets: { testUrl: "https://defectdojo.example.test/test/12" },
+        });
+      });
+
+      it("come from the open test of a container and report kind, the newest of several, never from a closed one", async () => {
+        givenDefectDojo({
+          tests: [
+            makeRuntimeTest({ id: 10, buildId: "", updated: "2026-11-20T08:00:00Z" }),
+            makeRuntimeTest({ id: 11, updated: "2026-11-22T08:00:00Z" }),
+            makeRuntimeTest({ id: 12, container: "sidecar", updated: "2026-11-21T08:00:00Z" }),
+            makeRuntimeTest({ id: 13, container: "sidecar", updated: "2026-11-23T08:00:00Z" }),
+          ],
+          findings: {
+            10: active(10, "Critical", 1),
+            11: active(11, "High", 2),
+            12: active(12, "Low", 1),
+            13: active(13, "Medium", 3),
+          },
+        });
+
+        const { runtime } = await getLevels();
+
+        expect(containersOf(runtime)).toMatchObject([
+          { container: "demo-app", vulnerabilities: { counts: { Critical: 0, High: 2 } } },
+          { container: "sidecar", vulnerabilities: { counts: { Low: 0, Medium: 3 } } },
+        ]);
+      });
+    });
+
+    describe("the requests to DefectDojo", () => {
+      it("ask for the tests of an Environment by exactly its cluster, namespace and Application", async () => {
+        const defectDojo = givenDefectDojo();
+        const listTests = vi.spyOn(defectDojo, "listTests");
+
+        await getFindings();
+
+        expect(listTests).toHaveBeenCalledWith({ tags: DEV_TAGS });
+      });
+
+      it("count a secrets test once, a clean vulnerabilities test once, an active one twice, and a closed one never", async () => {
+        const defectDojo = givenDefectDojo({
+          tests: [
+            makeRuntimeTest({ id: 10 }),
+            makeRuntimeTest({ id: 11, reportKind: "exposedsecretreport" }),
+            makeRuntimeTest({ id: 12, container: "sidecar" }),
+            makeRuntimeTest({ id: 13, container: "stopped", buildId: "" }),
+          ],
+          findings: { 11: active(11, "High", 2), 12: active(12, "High", 1) },
+        });
+        const counts = vi.spyOn(defectDojo, "getSeverityCounts");
+
+        await getFindings();
+
+        expect(countsOf(counts, 10)).toEqual([{ activeOnly: false, testExists: true }]);
+        expect(countsOf(counts, 11)).toEqual([{ activeOnly: false, testExists: true }]);
+        expect(countsOf(counts, 12)).toEqual([
+          { activeOnly: false, testExists: true },
+          { activeOnly: true, testExists: true },
+        ]);
+        expect(countsOf(counts, 13)).toEqual([]);
+      });
+
+      it("count the CI scans and the runtime tests together, never more at a time than the bound", async () => {
+        // Four CI scans and COUNT_CONCURRENCY - 2 containers: neither fills the bound alone, together they exceed it.
+        const defectDojo = givenDefectDojo({
+          tests: [
+            makeTest({ id: 1, scanType: SEMGREP }),
+            makeTest({ id: 2, scanType: GITLEAKS }),
+            makeImageTest({ id: 3, scanType: TRIVY, image: DEMO_IMAGE }),
+            makeImageTest({ id: 4, scanType: GRYPE, image: DEMO_IMAGE }),
+            ...Array.from({ length: COUNT_CONCURRENCY - 2 }, (_, index) =>
+              makeRuntimeTest({ id: 5 + index, container: `container-${index}` })
+            ),
+          ],
+        });
+        const count = defectDojo.getSeverityCounts;
+        let inFlight = 0;
+        let peak = 0;
+        vi.spyOn(defectDojo, "getSeverityCounts").mockImplementation(async (...args) => {
+          inFlight += 1;
+          peak = Math.max(peak, inFlight);
+          await new Promise((resolve) => setTimeout(resolve, 5));
+          inFlight -= 1;
+          return count(...args);
+        });
+
+        await getFindings();
+
+        expect(peak).toBe(COUNT_CONCURRENCY);
+      });
+    });
+
+    describe("the states", () => {
+      it.each(["unreachable", "notConfigured"] as const)(
+        "make the whole result %s when DefectDojo fails on the tests of an Environment",
+        async (state) => {
+          const defectDojo = givenDefectDojo({
+            tests: [makeTest({ id: 1, scanType: SEMGREP }), makeRuntimeTest({ id: 10 })],
+          });
+          const listTests = defectDojo.listTests;
+          vi.spyOn(defectDojo, "listTests").mockImplementation(async (filter) =>
+            filter.tags.includes("k8s-cluster:in-cluster") ? { state } : listTests(filter)
+          );
+
+          await expect(getFindings()).resolves.toEqual({ state });
+        }
+      );
+
+      it("make the whole result unreachable when DefectDojo fails on the count of a runtime test", async () => {
+        givenDefectDojo({
+          outage: "unreachable",
+          outageOn: ["getSeverityCounts"],
+          tests: [makeRuntimeTest({ id: 10 })],
+        });
+
+        await expect(getFindings()).resolves.toEqual({ state: "unreachable" });
+      });
+
+      it("rethrow an error that is no DefectDojo state", async () => {
+        const defectDojo = givenDefectDojo({ tests: [makeRuntimeTest({ id: 10 })] });
+        vi.spyOn(defectDojo, "getSeverityCounts").mockRejectedValue(new Error("boom"));
+
+        await expect(getFindings()).rejects.toThrow("boom");
+      });
+    });
+
+    describe("a test that is gone when it is counted", () => {
+      function givenCountGone(defectDojo: CodebaseFindingsSource, testId: number, activeOnly?: boolean) {
+        const count = defectDojo.getSeverityCounts;
+        vi.spyOn(defectDojo, "getSeverityCounts").mockImplementation(async (scope, options) =>
+          "testId" in scope &&
+          scope.testId === testId &&
+          (activeOnly === undefined || options?.activeOnly === activeOnly)
+            ? { state: "noScanData" }
+            : count(scope, options)
+        );
+      }
+
+      it.each([
+        ["every count", undefined],
+        ["the count of the active findings", true],
+      ])("leaves its CI scan out, when DefectDojo has no scan data for %s", async (_, activeOnly) => {
+        const defectDojo = givenDefectDojo({
+          tests: [makeTest({ id: 1, scanType: SEMGREP }), makeTest({ id: 2, scanType: GITLEAKS })],
+          findings: { 1: active(1, "High", 1), 2: active(2, "High", 1) },
+        });
+        givenCountGone(defectDojo, 1, activeOnly);
+
+        const { code } = await getLevels();
+
+        expect(scannersOf(code)).toEqual([GITLEAKS]);
+      });
+
+      it.each([
+        ["every count", undefined],
+        ["the count of the active findings", true],
+      ])("leaves its report out of its container, when DefectDojo has no scan data for %s", async (_, activeOnly) => {
+        const defectDojo = givenDefectDojo({
+          tests: [makeRuntimeTest({ id: 10 }), makeRuntimeTest({ id: 11, reportKind: "exposedsecretreport" })],
+          findings: { 10: active(10, "High", 1), 11: active(11, "High", 1) },
+        });
+        givenCountGone(defectDojo, 10, activeOnly);
+
+        const { runtime } = await getLevels();
+
+        expect(containersOf(runtime)).toMatchObject([{ vulnerabilities: null, secrets: { active: 1 } }]);
+      });
     });
   });
 });
