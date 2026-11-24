@@ -82,6 +82,7 @@ function issueActorTemplate(
       },
     ],
     limits: { cpuMillicores: 1000, memoryBytes: 2147483648 },
+    workerSelector: {},
   };
 }
 
@@ -91,7 +92,8 @@ const MIB = 1024 ** 2;
 /** An actor template that the dispatcher did not make. */
 function plainActorTemplate(
   name: string,
-  limits: SubstrateActorTemplate["limits"] = { cpuMillicores: 500, memoryBytes: GIB }
+  limits: SubstrateActorTemplate["limits"] = { cpuMillicores: 500, memoryBytes: GIB },
+  workerSelector: SubstrateActorTemplate["workerSelector"] = {}
 ): SubstrateActorTemplate {
   return {
     atespace: ATESPACE,
@@ -99,6 +101,7 @@ function plainActorTemplate(
     uid: `tpl-${name}`,
     containers: [{ name: "app", env: [{ name: "LOG_LEVEL", value: "debug" }] }],
     limits,
+    workerSelector,
   };
 }
 
@@ -109,6 +112,7 @@ function worker(name: string, state: WorkerState, fields: Partial<SubstrateWorke
     workerNamespace: ATESPACE,
     workerPod: `workers-${name}`,
     nodeName: "krci-control-plane",
+    labels: {},
     state,
     capacity: { cpuMillicores: 4000, memoryBytes: 8 * GIB, actors: 1000 },
     allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
@@ -901,6 +905,95 @@ describe("agentSubstrate.getFleet", () => {
       expect(items).toEqual([expect.objectContaining({ kind: "actorCrashed", name: "debug-shell", agent: null })]);
     });
 
+    describe("an actor that no worker pool can host", () => {
+      const selecting = (name: string, workload: string): SubstrateActorTemplate => ({
+        ...issueActorTemplate(name, "krci/test-go-app", "2", "25"),
+        workerSelector: { workload },
+      });
+      const workersPoolWorker = () => worker("w1", "active", { labels: { workload: "workers" } });
+
+      it("gives an actor whose worker selector matches no active, registered worker as an error with its issue and worker selector", async () => {
+        const items = await needsAttentionOf({
+          actors: [actor("issue-2-25", "suspended")],
+          actorTemplates: [selecting("issue-2-25", "wokers")],
+          workers: [
+            workersPoolWorker(),
+            worker("w2", "draining", { workerPool: "retiring", labels: { workload: "wokers" } }),
+          ],
+        });
+
+        expect(items.filter(({ kind }) => kind === "actorUnschedulable")).toEqual([
+          {
+            kind: "actorUnschedulable",
+            severity: "error",
+            atespace: ATESPACE,
+            name: "issue-2-25",
+            workerSelector: { workload: "wokers" },
+            agent: {
+              issue: { projectPath: "krci/test-go-app", projectId: "2", iid: "25", url: null },
+              agentProfile: "go",
+            },
+          },
+        ]);
+      });
+
+      it("gives no item for an actor whose worker selector matches an active, registered worker", async () => {
+        const items = await needsAttentionOf({
+          actors: [actor("issue-2-25", "suspended")],
+          actorTemplates: [selecting("issue-2-25", "workers")],
+          workers: [workersPoolWorker()],
+        });
+
+        expect(items).toEqual([]);
+      });
+
+      it("gives no item when the fleet has no worker", async () => {
+        const items = await needsAttentionOf({
+          actors: [actor("issue-2-25", "suspended")],
+          actorTemplates: [selecting("issue-2-25", "wokers")],
+        });
+
+        expect(items).toEqual([]);
+      });
+
+      it("gives no item when the fleet has no active, registered worker", async () => {
+        const items = await needsAttentionOf({
+          actors: [actor("issue-2-25", "suspended")],
+          actorTemplates: [selecting("issue-2-25", "wokers")],
+          workers: [worker("w1", "active", { labels: { workload: "workers" }, registered: false })],
+        });
+
+        expect(items.filter(({ kind }) => kind === "actorUnschedulable")).toEqual([]);
+      });
+
+      it("gives no item for a deleting actor, an actor with no worker selector or an actor whose actor template is gone", async () => {
+        const items = await needsAttentionOf({
+          actors: [actor("deleting", "deleting"), actor("anywhere", "suspended"), actor("gone", "suspended")],
+          actorTemplates: [selecting("deleting", "wokers"), plainActorTemplate("anywhere")],
+          workers: [workersPoolWorker()],
+        });
+
+        expect(items).toEqual([]);
+      });
+
+      it("orders it after crashed actors and before worker pools that are not ready, by name", async () => {
+        stubK8s({ workerPools: { [ATESPACE]: [workerPool(ATESPACE, "workers", { replicas: 2, readyReplicas: 1 })] } });
+
+        const items = await needsAttentionOf({
+          actors: [actor("z-typo", "suspended"), crashed("crash", null), actor("a-typo", "running")],
+          actorTemplates: [selecting("z-typo", "wokers"), selecting("a-typo", "workerz")],
+          workers: [workersPoolWorker()],
+        });
+
+        expect(items.map((item) => [item.kind, item.name])).toEqual([
+          ["actorCrashed", "crash"],
+          ["actorUnschedulable", "a-typo"],
+          ["actorUnschedulable", "z-typo"],
+          ["workerPoolNotReady", "workers"],
+        ]);
+      });
+    });
+
     it("gives no item when actors, workers and worker pools are healthy", async () => {
       stubK8s({ workerPools: { [ATESPACE]: [workerPool(ATESPACE, "workers", { replicas: 2, readyReplicas: 2 })] } });
 
@@ -1136,7 +1229,7 @@ describe("agentSubstrate.getFleet", () => {
         ],
       });
 
-      expect(workerPools.roomSize).toEqual({ cpuMillicores: 2000, memoryBytes: 4 * GIB });
+      expect(workerPools.items[0].roomSize).toEqual({ cpuMillicores: 2000, memoryBytes: 4 * GIB });
       expect(workerPools.items.map(({ name, room }) => [name, room])).toEqual([["workers", 4 + 3]]);
     });
 
@@ -1329,6 +1422,264 @@ describe("agentSubstrate.getFleet", () => {
       });
     });
 
+    describe("worker selector", () => {
+      const ONE_CPU_2_GIB = { cpuMillicores: 1000, memoryBytes: 2 * GIB };
+      /** A worker of 4 CPU and 8 GiB in the worker pool `workerPool`. */
+      const labelled = (workerPool: string, labels: Record<string, string>, fields: Partial<SubstrateWorker> = {}) =>
+        worker(`${workerPool}-w1`, "active", { workerPool, labels, ...fields });
+
+      const rowsOf = async (fleet: Partial<MemoryFleet>) =>
+        (await workerPoolsOf(fleet)).items.map(({ name, room, roomState, limitedBy, roomSize }) => ({
+          name,
+          room,
+          roomState,
+          limitedBy,
+          roomSize,
+        }));
+
+      it("gives noTemplate and no room to a worker pool whose worker labels the only worker selector does not match", async () => {
+        const rows = await rowsOf({
+          actors: [actor("issue", "suspended")],
+          actorTemplates: [plainActorTemplate("issue", ONE_CPU_2_GIB, { workload: "workers" })],
+          workers: [labelled("workers", { workload: "workers" }), labelled("spare", { workload: "spare" })],
+        });
+
+        expect(rows).toEqual([
+          { name: "spare", room: 0, roomState: "noTemplate", limitedBy: [], roomSize: null },
+          { name: "workers", room: 4, roomState: "room", limitedBy: ["cpu", "memory"], roomSize: ONE_CPU_2_GIB },
+        ]);
+        expect(rows.reduce((sum, { room }) => sum + room, 0)).toBe(4);
+      });
+
+      it("counts every worker pool for an actor template with no worker selector", async () => {
+        const rows = await rowsOf({
+          actors: [actor("issue", "suspended")],
+          actorTemplates: [plainActorTemplate("issue", ONE_CPU_2_GIB)],
+          workers: [labelled("workers", { workload: "workers" }), labelled("spare", { workload: "spare" })],
+        });
+
+        expect(rows).toEqual([
+          { name: "spare", room: 4, roomState: "room", limitedBy: ["cpu", "memory"], roomSize: ONE_CPU_2_GIB },
+          { name: "workers", room: 4, roomState: "room", limitedBy: ["cpu", "memory"], roomSize: ONE_CPU_2_GIB },
+        ]);
+      });
+
+      it("counts each worker pool at the room size of the actor templates that select it", async () => {
+        const rows = await rowsOf({
+          actors: [actor("big", "suspended"), actor("small", "running")],
+          actorTemplates: [
+            plainActorTemplate("big", { cpuMillicores: 2000, memoryBytes: 4 * GIB }, { workload: "large" }),
+            plainActorTemplate("small", { cpuMillicores: 500, memoryBytes: GIB }, { workload: "small" }),
+          ],
+          workers: [
+            labelled("large", { workload: "large" }),
+            // CPU fits 4, memory 8.
+            labelled(
+              "small",
+              { workload: "small" },
+              { capacity: { cpuMillicores: 2000, memoryBytes: 8 * GIB, actors: 1000 } }
+            ),
+          ],
+        });
+
+        expect(rows).toEqual([
+          {
+            name: "large",
+            room: 2,
+            roomState: "room",
+            limitedBy: ["cpu", "memory"],
+            roomSize: { cpuMillicores: 2000, memoryBytes: 4 * GIB },
+          },
+          {
+            name: "small",
+            room: 4,
+            roomState: "room",
+            limitedBy: ["cpu"],
+            roomSize: { cpuMillicores: 500, memoryBytes: GIB },
+          },
+        ]);
+      });
+
+      it("does not match a worker that has no label of a worker selector key", async () => {
+        const rows = await rowsOf({
+          actors: [actor("issue", "suspended")],
+          actorTemplates: [plainActorTemplate("issue", ONE_CPU_2_GIB, { workload: "workers" })],
+          workers: [labelled("bare", {}), labelled("other-key", { tier: "workers" })],
+        });
+
+        expect(rows.map(({ name, room, roomState }) => [name, room, roomState])).toEqual([
+          ["bare", 0, "noTemplate"],
+          ["other-key", 0, "noTemplate"],
+        ]);
+      });
+
+      it("does not match a worker that has one of the two labels of a worker selector", async () => {
+        const rows = await rowsOf({
+          actors: [actor("issue", "suspended")],
+          actorTemplates: [plainActorTemplate("issue", ONE_CPU_2_GIB, { workload: "workers", tier: "large" })],
+          workers: [
+            labelled("both", { workload: "workers", tier: "large", zone: "a" }),
+            labelled("half", { workload: "workers", tier: "small" }),
+          ],
+        });
+
+        expect(rows.map(({ name, room, roomState }) => [name, room, roomState])).toEqual([
+          ["both", 4, "room"],
+          ["half", 0, "noTemplate"],
+        ]);
+      });
+
+      it("counts actors only on every worker pool when no actor has an actor template", async () => {
+        const rows = await rowsOf({
+          actors: [actor("gone", "suspended")],
+          workers: [
+            labelled(
+              "spare",
+              { workload: "spare" },
+              {
+                capacity: { cpuMillicores: 1000, memoryBytes: GIB, actors: 5 },
+              }
+            ),
+            labelled(
+              "workers",
+              { workload: "workers" },
+              {
+                capacity: { cpuMillicores: 1000, memoryBytes: GIB, actors: 10 },
+                allocated: { cpuMillicores: 1000, memoryBytes: GIB, actors: 3 },
+              }
+            ),
+          ],
+        });
+
+        expect(rows).toEqual([
+          { name: "spare", room: 5, roomState: "room", limitedBy: ["actors"], roomSize: null },
+          { name: "workers", room: 7, roomState: "room", limitedBy: ["actors"], roomSize: null },
+        ]);
+      });
+
+      it("adds no room for a worker that no worker selector matches in a worker pool that another worker opens", async () => {
+        const rows = await rowsOf({
+          actors: [actor("issue", "suspended")],
+          actorTemplates: [plainActorTemplate("issue", ONE_CPU_2_GIB, { workload: "workers" })],
+          workers: [
+            worker("a", "active", { workerPool: "mixed", labels: { workload: "workers" } }),
+            worker("b", "active", { workerPool: "mixed", labels: { workload: "other" } }),
+          ],
+        });
+
+        expect(rows).toEqual([
+          { name: "mixed", room: 4, roomState: "room", limitedBy: ["cpu", "memory"], roomSize: ONE_CPU_2_GIB },
+        ]);
+      });
+
+      it("gives the worker labels on the worker pool row, none for a WorkerPool with no worker", async () => {
+        stubK8s({ workerPools: { [ATESPACE]: [workerPool(ATESPACE, "empty", { replicas: 0, readyReplicas: 0 })] } });
+
+        const workerPools = await workerPoolsOf({
+          workers: [
+            labelled("workers", { workload: "workers", zone: "a" }),
+            worker("draining", "draining", { workerPool: "retiring", labels: { workload: "retiring" } }),
+          ],
+        });
+
+        expect(workerPools.items.map(({ name, workerLabels }) => [name, workerLabels])).toEqual([
+          ["empty", {}],
+          ["retiring", { workload: "retiring" }],
+          ["workers", { workload: "workers", zone: "a" }],
+        ]);
+      });
+
+      it("gives the worker labels of the first active, registered worker, not of a draining or unregistered worker that sorts first", async () => {
+        const workerPools = await workerPoolsOf({
+          workers: [
+            worker("a-draining", "draining", { workerPool: "mixed", labels: { workload: "stale" } }),
+            worker("b-unregistered", "active", {
+              workerPool: "mixed",
+              labels: { workload: "unregistered" },
+              registered: false,
+            }),
+            worker("c-active", "active", { workerPool: "mixed", labels: { workload: "current" } }),
+            worker("d-active", "active", { workerPool: "mixed", labels: { workload: "later" } }),
+          ],
+        });
+
+        expect(workerPools.items.map(({ name, workerLabels }) => [name, workerLabels])).toEqual([
+          ["mixed", { workload: "current" }],
+        ]);
+      });
+
+      it("gives the worker selector, the size and the usable worker pools of the actor template on the actor, a null worker selector when it is gone", async () => {
+        mockContext.agentSubstrateSource = source({
+          actors: [actor("anywhere", "suspended"), actor("gone", "suspended"), actor("selective", "running")],
+          actorTemplates: [
+            plainActorTemplate("anywhere", { cpuMillicores: 0, memoryBytes: 0 }),
+            plainActorTemplate("selective", ONE_CPU_2_GIB, { workload: "workers" }),
+          ],
+          workers: [
+            labelled("workers", { workload: "workers" }),
+            labelled("spare", { workload: "spare" }),
+            worker("draining", "draining", { workerPool: "retiring", labels: { workload: "workers" } }),
+          ],
+        });
+
+        const { actors } = await readyFleet(createCaller(mockContext));
+
+        expect(
+          actors.map(({ name, workerSelector, size, usableWorkerPools }) => ({
+            name,
+            workerSelector,
+            size,
+            usableWorkerPools,
+          }))
+        ).toEqual([
+          {
+            name: "anywhere",
+            workerSelector: {},
+            size: null,
+            usableWorkerPools: [
+              { namespace: ATESPACE, name: "spare" },
+              { namespace: ATESPACE, name: "workers" },
+            ],
+          },
+          { name: "gone", workerSelector: null, size: null, usableWorkerPools: [] },
+          {
+            name: "selective",
+            workerSelector: { workload: "workers" },
+            size: ONE_CPU_2_GIB,
+            usableWorkerPools: [{ namespace: ATESPACE, name: "workers" }],
+          },
+        ]);
+      });
+
+      it("gives the resources that fit no actor on the empty worker as limited by of a tooSmall worker pool", async () => {
+        const rows = await rowsOf({
+          actors: [actor("issue", "suspended")],
+          actorTemplates: [plainActorTemplate("issue", ONE_CPU_2_GIB)],
+          workers: [
+            // Empty: CPU fits 4, memory 0. Now: CPU fits 0, memory 0.
+            worker("w1", "active", {
+              capacity: { cpuMillicores: 4000, memoryBytes: GIB, actors: 10 },
+              allocated: { cpuMillicores: 4000, memoryBytes: 0, actors: 1 },
+            }),
+          ],
+        });
+
+        expect(rows).toEqual([
+          { name: "workers", room: 0, roomState: "tooSmall", limitedBy: ["memory"], roomSize: ONE_CPU_2_GIB },
+        ]);
+      });
+
+      it("gives tooSmall with no room size, limited by actors, for a worker with an actor capacity of 0", async () => {
+        const rows = await rowsOf({
+          workers: [worker("w1", "active", { capacity: { cpuMillicores: 4000, memoryBytes: 8 * GIB, actors: 0 } })],
+        });
+
+        expect(rows).toEqual([
+          { name: "workers", room: 0, roomState: "tooSmall", limitedBy: ["actors"], roomSize: null },
+        ]);
+      });
+    });
+
     it("counts room in actors only when no actor has an actor template", async () => {
       const workerPools = await workerPoolsOf({
         workers: [
@@ -1339,7 +1690,7 @@ describe("agentSubstrate.getFleet", () => {
         ],
       });
 
-      expect(workerPools.roomSize).toBeNull();
+      expect(workerPools.items[0].roomSize).toBeNull();
       expect(workerPools.items[0].room).toBe(7);
     });
 
@@ -1355,7 +1706,7 @@ describe("agentSubstrate.getFleet", () => {
         ],
       });
 
-      expect(workerPools.roomSize).toBeNull();
+      expect(workerPools.items[0].roomSize).toBeNull();
       expect(workerPools.items[0].room).toBe(8);
     });
 
@@ -1371,7 +1722,7 @@ describe("agentSubstrate.getFleet", () => {
         ],
       });
 
-      expect(workerPools.roomSize).toBeNull();
+      expect(workerPools.items[0].roomSize).toBeNull();
       expect(workerPools.items[0].room).toBe(10);
     });
 
@@ -1395,7 +1746,7 @@ describe("agentSubstrate.getFleet", () => {
         workers: [worker("w1", "active")],
       });
 
-      expect(workerPools.roomSize).toEqual({ cpuMillicores: 500, memoryBytes: GIB });
+      expect(workerPools.items[0].roomSize).toEqual({ cpuMillicores: 500, memoryBytes: GIB });
       expect(workerPools.items[0].room).toBe(8);
     });
 
@@ -1518,6 +1869,8 @@ describe("agentSubstrate.getFleet", () => {
           workers: ["w1"],
           capacity: { cpuMillicores: 4000, memoryBytes: 8 * GIB, actors: 1000 },
           allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
+          workerLabels: {},
+          roomSize: null,
           room: 1000,
           limitedBy: ["actors"],
           roomState: "room",
@@ -1545,6 +1898,8 @@ describe("agentSubstrate.getFleet", () => {
         workers: [],
         capacity: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
         allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
+        workerLabels: {},
+        roomSize: null,
         room: 0,
         limitedBy: [],
         roomState: "noWorker",

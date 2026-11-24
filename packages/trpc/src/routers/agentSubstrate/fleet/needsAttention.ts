@@ -20,9 +20,10 @@ const SEVERITY_RANK: Record<AttentionSeverity, number> = { error: 0, warning: 1 
 
 const KIND_RANK: Record<AttentionKind, number> = {
   actorCrashed: 0,
-  workerPoolNotReady: 1,
-  workerNotActive: 2,
-  snapshotPending: 3,
+  actorUnschedulable: 1,
+  workerPoolNotReady: 2,
+  workerNotActive: 3,
+  snapshotPending: 4,
 };
 
 /** Agent Substrate's `over_15m` upload-overdue band. */
@@ -38,6 +39,24 @@ function crashedActorItems(actor: ActorRow): AttentionItem[] {
       name: actor.name,
       message: actor.crash?.message ?? "",
       crashedAt: actor.crash?.at ?? null,
+      agent: actor.agent && { issue: actor.agent.issue, agentProfile: actor.agent.agentProfile },
+    },
+  ];
+}
+
+/** `fleetHostsActors`: the fleet has an active, registered worker. */
+function unschedulableActorItems(actor: ActorRow, fleetHostsActors: boolean): AttentionItem[] {
+  const { workerSelector } = actor;
+  if (!fleetHostsActors || actor.state === "deleting") return [];
+  if (workerSelector === null || Object.keys(workerSelector).length === 0) return [];
+  if (actor.usableWorkerPools.length > 0) return [];
+  return [
+    {
+      kind: "actorUnschedulable",
+      severity: "error",
+      atespace: actor.atespace,
+      name: actor.name,
+      workerSelector: { ...workerSelector },
       agent: actor.agent && { issue: actor.agent.issue, agentProfile: actor.agent.agentProfile },
     },
   ];
@@ -92,8 +111,10 @@ function snapshotPendingItems(actor: ActorRow, now: number): AttentionItem[] {
 /** `now`: the time of the Agent Substrate read. */
 export function needsAttentionOf({ actors, workers, workerPools }: FleetRows, now: string): AttentionItem[] {
   const nowMs = Date.parse(now);
+  const fleetHostsActors = workers.some(({ state, registered }) => state === "active" && registered);
   const items = [
     ...actors.flatMap(crashedActorItems),
+    ...actors.flatMap((actor) => unschedulableActorItems(actor, fleetHostsActors)),
     ...workerPools.items.flatMap(workerPoolNotReadyItems),
     ...workers.flatMap(workerNotActiveItems),
     ...actors.flatMap((actor) => snapshotPendingItems(actor, nowMs)),
@@ -112,6 +133,7 @@ function timeOf(item: AttentionItem): number | null {
 function scopeOf(item: AttentionItem): string {
   switch (item.kind) {
     case "actorCrashed":
+    case "actorUnschedulable":
     case "snapshotPending":
       return item.atespace;
     case "workerPoolNotReady":

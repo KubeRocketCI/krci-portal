@@ -8,8 +8,8 @@ import { VIEW_MODES } from "@/core/providers/ViewMode/types";
 import { FleetPage } from "../../components/FleetPage";
 import { FleetEmpty } from "../../components/FleetStatePanel";
 import { WorkerPoolAccessNotice } from "../../components/WorkerPoolAccessNotice";
+import { PAGE_DESCRIPTION } from "../../constants/hints";
 import { hasNoWorkerFleet } from "../../utils/hasNoWorkerFleet";
-import { roomSizeLabel } from "../../utils/roomLabel";
 import { isWorkerAnchor } from "../../utils/rowAnchor";
 import { WorkerPoolCards } from "./components/WorkerPoolCards";
 import { WorkerPoolTable } from "./components/WorkerPoolTable";
@@ -41,8 +41,7 @@ function WorkerPools({ fleet }: { fleet: ReadyFleet }) {
   return (
     <>
       <WorkerPoolAccessNotice access={fleet.workerPools.access} />
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-muted-foreground text-xs">Room is counted {roomSizeLabel(fleet.workerPools.roomSize)}.</p>
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <ToggleButtonGroup<WorkerPoolsView> value={view} onChange={onViewChange} aria-label="View">
           <ToggleButton value={VIEW_MODES.GRID}>
             <LayoutGrid className="size-4" aria-hidden />
@@ -62,7 +61,12 @@ function WorkerPools({ fleet }: { fleet: ReadyFleet }) {
 export default function AgentWorkerPoolsPage() {
   return (
     <ViewModeContextProvider entityID={WORKER_POOLS_VIEW_ENTITY_ID} defaultViewMode={VIEW_MODES.GRID}>
-      <FleetPage icon={Boxes} title="Worker pools" breadcrumbs={[{ label: "Worker pools" }]}>
+      <FleetPage
+        icon={Boxes}
+        title="Worker pools"
+        description={PAGE_DESCRIPTION.workerPools}
+        breadcrumbs={[{ label: "Worker pools" }]}
+      >
         {(fleet) => <WorkerPools fleet={fleet} />}
       </FleetPage>
     </ViewModeContextProvider>

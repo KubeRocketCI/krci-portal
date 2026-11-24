@@ -2,7 +2,15 @@ import React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, within } from "storybook/test";
 import { withAppProviders } from "@sb/index";
-import { CRASHED_ACTOR, PLAIN_ACTOR, RUNNING_ACTOR, STORY_FLEET, seedFleet } from "../../../__fixtures__/storyFleet";
+import {
+  CRASHED_ACTOR,
+  GONE_TEMPLATE_ACTOR,
+  PLAIN_ACTOR,
+  RUNNING_ACTOR,
+  STORY_FLEET,
+  seedFleet,
+} from "../../../__fixtures__/storyFleet";
+import { PAGE_DESCRIPTION, TERM_HINT } from "../../../constants/hints";
 import { ActorDetailView, type ActorDetailViewProps } from "./view";
 
 const meta = {
@@ -27,6 +35,10 @@ type Story = StoryObj<typeof meta>;
 const panel = async (canvasElement: HTMLElement, name: string) =>
   within(await within(canvasElement).findByRole("region", { name }));
 
+/** The value of a term: the `dd` after its `dt`. */
+const fact = (scope: ReturnType<typeof within>, term: string) =>
+  scope.getByText(term, { selector: "dt" }).nextElementSibling;
+
 export const Summary: Story = {
   play: async ({ canvasElement, args }) => {
     const summary = await panel(canvasElement, "Summary");
@@ -40,8 +52,55 @@ export const Summary: Story = {
     await expect(summary.getByText("claude-haiku-5-5")).toBeVisible();
     await expect(summary.getByText(RUNNING_ACTOR.actorTemplate)).toBeVisible();
 
+    await expect(within(canvasElement).getByText(PAGE_DESCRIPTION.actorDetail)).toBeVisible();
+
     await userEvent.click(within(canvasElement).getByRole("button", { name: "Runtime" }));
     await expect(args.onTabChange).toHaveBeenCalledWith("runtime");
+  },
+};
+
+export const SummaryWorkerSelectorAndSize: Story = {
+  play: async ({ canvasElement }) => {
+    const summary = await panel(canvasElement, "Summary");
+    const body = within(canvasElement.ownerDocument.body);
+
+    await expect(fact(summary, "Size")).toHaveTextContent("1.0 CPU, 2.0 Gi");
+    await expect(fact(summary, "Worker selector")).toHaveTextContent("workload=workers");
+    await expect(fact(summary, "Worker pools")).toHaveTextContent("krci-agents/workers, krci-agents/workers-microvm");
+
+    await userEvent.hover(summary.getByRole("button", { name: "About Worker selector" }));
+    await expect(await body.findByRole("tooltip")).toHaveTextContent(TERM_HINT.workerSelector);
+    for (const term of ["Atespace", "Actor template", "Actor state", "Agent profile", "Size", "Worker pools"]) {
+      await expect(summary.getByRole("button", { name: `About ${term}` })).toBeVisible();
+    }
+  },
+};
+
+export const SummaryNoWorkerSelectorNoSize: Story = {
+  args: { atespace: PLAIN_ACTOR.atespace, name: PLAIN_ACTOR.name },
+  play: async ({ canvasElement }) => {
+    const summary = await panel(canvasElement, "Summary");
+
+    await expect(fact(summary, "Size")).toHaveTextContent(/^—$/);
+    await expect(fact(summary, "Worker selector")).toHaveTextContent("Any worker");
+    await expect(fact(summary, "Worker pools")).toHaveTextContent("krci-agents/workers, krci-agents/workers-microvm");
+  },
+};
+
+export const SummaryActorTemplateGone: Story = {
+  decorators: [
+    withAppProviders({
+      seedQueryCache: seedFleet({ ...STORY_FLEET, actors: [...STORY_FLEET.actors, GONE_TEMPLATE_ACTOR] }),
+    }),
+  ],
+  args: { atespace: GONE_TEMPLATE_ACTOR.atespace, name: GONE_TEMPLATE_ACTOR.name },
+  play: async ({ canvasElement }) => {
+    const summary = await panel(canvasElement, "Summary");
+
+    for (const term of ["Size", "Worker selector", "Worker pools"]) {
+      await expect(fact(summary, term)).toHaveTextContent(/^—$/);
+    }
+    await expect(summary.queryByText("Any worker")).toBeNull();
   },
 };
 
@@ -81,7 +140,10 @@ export const SnapshotSortKeptAcrossTabs: Story = {
 
     await panel(canvasElement, "Snapshot");
     const initialSort = generationHeader().getAttribute("aria-sort");
-    await userEvent.click(within(generationHeader()).getByRole("button"));
+    const sortButton = within(generationHeader()).getByRole("button", { name: "Generation" });
+    const hintButton = within(generationHeader()).getByRole("button", { name: "About Generation" });
+    await expect(sortButton.contains(hintButton)).toBe(false);
+    await userEvent.click(sortButton);
     const changedSort = generationHeader().getAttribute("aria-sort");
     await expect(changedSort).not.toBe(initialSort);
 

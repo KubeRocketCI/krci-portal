@@ -3,6 +3,7 @@ import { useShallow } from "zustand/react/shallow";
 import { EmptyList } from "@/core/components/EmptyList";
 import { useClusterStore } from "@/k8s/store";
 import { FleetPage } from "../../../components/FleetPage";
+import { PAGE_DESCRIPTION } from "../../../constants/hints";
 import { PATH_AGENT_ACTORS_FULL } from "../../../constants/paths";
 import type { ActorDetailTab } from "../../../constants/tabs";
 import { ActorDetail } from "./components/ActorDetail";
@@ -21,6 +22,7 @@ export function ActorDetailView({ atespace, name, tab, onTabChange }: ActorDetai
     <FleetPage
       icon={Package}
       title={name}
+      description={PAGE_DESCRIPTION.actorDetail}
       breadcrumbs={[
         { label: "Actors", route: { to: PATH_AGENT_ACTORS_FULL, params: { clusterName } } },
         { label: atespace },

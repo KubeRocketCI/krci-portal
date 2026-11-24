@@ -333,8 +333,47 @@ describe("GrpcAgentSubstrateSource", () => {
       uid: "t1",
       containers: [{ name: "claude", env: [{ name: "PROJECT_PATH", value: "krci/test-go-app" }] }],
       limits: { cpuMillicores: 1000, memoryBytes: 2147483648 },
+      workerSelector: {},
     });
     expect(refs).toEqual([{ atespace: "krci-agents", name: "issue-2-25" }]);
+  });
+
+  it("maps the worker selector match labels of an actor template, empty when it has no worker selector", async () => {
+    server = await startServer({
+      getActorTemplate: (req) =>
+        req.actorTemplate?.name === "selective"
+          ? {
+              metadata: { atespace: "krci-agents", name: "selective", uid: "t1" },
+              workerSelector: { matchLabels: { workload: "workers", tier: "large" } },
+            }
+          : { metadata: { atespace: "krci-agents", name: "any", uid: "t2" }, workerSelector: {} },
+    });
+    source = new GrpcAgentSubstrateSource({ url: server.url, tokenFile, caFile });
+
+    const selective = await source.getActorTemplate({ atespace: "krci-agents", name: "selective" });
+    const any = await source.getActorTemplate({ atespace: "krci-agents", name: "any" });
+
+    expect(selective.workerSelector).toEqual({ workload: "workers", tier: "large" });
+    expect(any.workerSelector).toEqual({});
+  });
+
+  it("maps the labels of a worker, empty when it has none", async () => {
+    server = await startServer({
+      listWorkers: () => ({
+        workers: [
+          { metadata: { name: "labelled" }, labels: { workload: "workers-small", zone: "a" } },
+          { metadata: { name: "bare" } },
+        ],
+      }),
+    });
+    source = new GrpcAgentSubstrateSource({ url: server.url, tokenFile, caFile });
+
+    const workers = await source.listWorkers();
+
+    expect(workers.map(({ name, labels }) => [name, labels])).toEqual([
+      ["labelled", { workload: "workers-small", zone: "a" }],
+      ["bare", {}],
+    ]);
   });
 
   it("lists workers with state, capacity, allocation and sandbox classes", async () => {
@@ -366,6 +405,7 @@ describe("GrpcAgentSubstrateSource", () => {
         workerNamespace: "krci-agents",
         workerPod: "workers-b98954c58-h8kx8",
         nodeName: "krci-control-plane",
+        labels: {},
         state: "draining",
         capacity: { cpuMillicores: 1000, memoryBytes: 2617245696, actors: 1000 },
         allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
@@ -379,6 +419,7 @@ describe("GrpcAgentSubstrateSource", () => {
         workerNamespace: "",
         workerPod: "",
         nodeName: "",
+        labels: {},
         state: "unknown",
         capacity: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
         allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },

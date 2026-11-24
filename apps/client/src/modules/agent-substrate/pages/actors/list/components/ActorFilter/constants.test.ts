@@ -57,4 +57,36 @@ describe("actorMatchFunctions", () => {
     expect(matchProfile(agentActor(), "")).toBe(true);
     expect(matchProfile(agentActor(), actorFilterDefaultValues.agentProfile)).toBe(true);
   });
+
+  describe("worker pool", () => {
+    const matchWorkerPool = actorMatchFunctions[ACTOR_FILTER_NAMES.WORKER_POOL]!;
+    const placedActor = () => {
+      const actor = agentActor();
+      actor.placement = {
+        worker: "worker-0",
+        workerNamespace: "krci-agents",
+        workerPool: "workers",
+        workerPod: "workers-0",
+        node: "node-a",
+        sandboxRuntime: null,
+      };
+      return actor;
+    };
+    const suspendedActor = () => ({ ...agentActor(), placement: null });
+
+    it("matches an actor placed on a worker of the worker pool, by namespace and name", () => {
+      expect(matchWorkerPool(placedActor(), "krci-agents/workers")).toBe(true);
+      expect(matchWorkerPool(placedActor(), "krci-agents/workers-small")).toBe(false);
+      expect(matchWorkerPool(placedActor(), "other/workers")).toBe(false);
+    });
+
+    it("does not match an actor on no worker", () => {
+      expect(matchWorkerPool(suspendedActor(), "krci-agents/workers")).toBe(false);
+    });
+
+    it("matches every actor with the empty or the all value", () => {
+      expect(matchWorkerPool(suspendedActor(), "")).toBe(true);
+      expect(matchWorkerPool(placedActor(), actorFilterDefaultValues.workerPool)).toBe(true);
+    });
+  });
 });

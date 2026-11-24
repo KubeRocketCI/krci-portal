@@ -10,6 +10,7 @@ import {
   STORY_FLEET,
   seedFleet,
 } from "../../../__fixtures__/storyFleet";
+import { PAGE_DESCRIPTION } from "../../../constants/hints";
 import AgentActorsPage from "./page";
 
 const meta = {
@@ -50,8 +51,14 @@ export const Ready: Story = {
     );
     await expect(running.getByRole("link", { name: "test-go-app" })).toBeVisible();
     await expect(running.getByText("running")).toBeVisible();
-    await expect(running.getByText("workers-7c9f6-0")).toBeVisible();
+    await expect(running.getByText("krci-agents/workers")).toBeVisible();
+    await expect(running.queryByText("workers-7c9f6-0")).toBeNull();
     await expect(running.getByText("pending")).toBeVisible();
+    const workerPoolHeader = within(canvas.getByRole("columnheader", { name: "Worker pool" }));
+    await expect(workerPoolHeader.getByRole("button", { name: "Worker pool" })).toBeVisible();
+    await expect(workerPoolHeader.getByRole("button", { name: "About Worker pool" })).toBeVisible();
+    await expect(canvas.queryByRole("columnheader", { name: "Worker pod" })).toBeNull();
+    await expect(canvas.getByText(PAGE_DESCRIPTION.actors)).toBeVisible();
 
     const unmatched = rowOf(canvas.getByRole("link", { name: "issue-5-3" }));
     await expect(unmatched.getByText("krci/test-python-app#3")).toBeVisible();
@@ -60,10 +67,40 @@ export const Ready: Story = {
 
     const plain = rowOf(canvas.getByRole("link", { name: PLAIN_ACTOR.name }));
     await expect(plain.getByText("unknown")).toBeVisible();
-    // Dash columns: issue, Codebase, agent profile, model, worker pod, node, snapshot.
+    // Dash columns: issue, Codebase, agent profile, model, worker pool, node, snapshot.
     await expect(plain.getAllByText("—")).toHaveLength(7);
 
     await expect(actorLinks(canvas)).toHaveLength(STORY_FLEET.actors.length);
+  },
+};
+
+/** Worker pod is hidden by default; the Columns menu shows it after Worker pool. Hidden again at the end. */
+export const WorkerPodColumn: Story = {
+  decorators: WITH_STORY_FLEET,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+    const toggleWorkerPod = async () => {
+      await userEvent.click(canvas.getByRole("button", { name: /^Columns/ }));
+      await userEvent.click(await body.findByRole("menuitemcheckbox", { name: "Worker pod" }));
+      await userEvent.keyboard("{Escape}");
+    };
+
+    await canvas.findByRole("link", { name: RUNNING_ACTOR.name });
+    await expect(canvas.queryByRole("columnheader", { name: "Worker pod" })).toBeNull();
+
+    await userEvent.click(canvas.getByRole("button", { name: /^Columns/ }));
+    await expect(await body.findByRole("menuitemcheckbox", { name: "Worker pod" })).not.toBeChecked();
+    await userEvent.keyboard("{Escape}");
+
+    await toggleWorkerPod();
+    const headers = canvas.getAllByRole("columnheader").map((header) => header.textContent);
+    await expect(headers.indexOf("Worker pod")).toBe(headers.indexOf("Worker pool") + 1);
+    const running = rowOf(canvas.getByRole("link", { name: RUNNING_ACTOR.name }));
+    await expect(running.getByText(RUNNING_ACTOR.placement!.workerPod)).toBeVisible();
+
+    await toggleWorkerPod();
+    await waitFor(() => expect(canvas.queryByRole("columnheader", { name: "Worker pod" })).toBeNull());
   },
 };
 
@@ -108,6 +145,40 @@ export const FilteredByCodebase: Story = {
     await waitFor(() => expect(canvas.queryByRole("link", { name: RUNNING_ACTOR.name })).toBeNull());
     await expect(actorLinks(canvas)).toHaveLength(1);
     await expect(canvas.getByRole("link", { name: CRASHED_ACTOR.name })).toBeVisible();
+  },
+};
+
+export const FilteredByWorkerPool: Story = {
+  decorators: WITH_STORY_FLEET,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+
+    await userEvent.click(await canvas.findByRole("combobox", { name: "Worker pool" }));
+    await expect(await body.findByRole("option", { name: "krci-agents/workers-microvm" })).toBeVisible();
+    await userEvent.click(body.getByRole("option", { name: "krci-agents/workers" }));
+
+    await waitFor(() => expect(canvas.queryByRole("link", { name: CRASHED_ACTOR.name })).toBeNull());
+    await expect(actorLinks(canvas).map((link: HTMLElement) => link.textContent)).toEqual([RUNNING_ACTOR.name]);
+    await expect(canvas.getByRole("button", { name: "Clear" })).toBeVisible();
+  },
+};
+
+export const FilteredByWorkerPoolFromUrl: Story = {
+  decorators: [
+    withAppProviders({
+      seedQueryCache: seedFleet(STORY_FLEET),
+      initialUrl: `/c/${STORYBOOK_CLUSTER_NAME}/agent/actors?workerPool=krci-agents%2Fworkers-microvm`,
+    }),
+  ],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(await canvas.findByRole("combobox", { name: "Worker pool" })).toHaveTextContent(
+      "krci-agents/workers-microvm"
+    );
+    // No actor runs on a worker of workers-microvm.
+    await expect(await canvas.findByText("No results found!")).toBeVisible();
   },
 };
 

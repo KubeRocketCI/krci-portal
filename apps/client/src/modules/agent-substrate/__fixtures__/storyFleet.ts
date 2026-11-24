@@ -7,7 +7,10 @@ import {
   type ActorStateGroup,
   type Atespace,
   type AttentionItem,
+  type Labels,
   type ReadyFleet,
+  type RoomSize,
+  type WorkerPoolRef,
   type WorkerPoolRow,
   type WorkerRow,
 } from "@my-project/shared";
@@ -35,16 +38,34 @@ export const EMPTY_FLEET: ReadyFleet = {
   atespaces: [],
   actors: [],
   workers: [],
-  workerPools: { access: "ok", items: [], roomSize: null },
+  workerPools: { access: "ok", items: [] },
   needsAttention: [],
 };
 
 const SANDBOX_ATESPACE = "krci-sandbox";
 
+const AGENTS_NAMESPACE = TESTBED_FLEET.workers[0].workerNamespace;
+
+const ref = (name: string): WorkerPoolRef => ({ namespace: AGENTS_NAMESPACE, name });
+
+/**
+ * The worker pools of STORY_FLEET are labelled `workload=workers`, the worker selector of every testbed actor
+ * template: each actor can use both.
+ */
+const STORY_USABLE_WORKER_POOLS = ["workers", "workers-microvm"];
+
+/** With the usable worker pools of STORY_FLEET. */
 function testbedActor(name: string): ActorRow {
   const actor = TESTBED_FLEET.actors.find((row) => row.name === name);
   if (!actor) throw new Error(`testbed fixture has no actor ${name}`);
-  return structuredClone(actor);
+  return { ...structuredClone(actor), usableWorkerPools: STORY_USABLE_WORKER_POOLS.map(ref) };
+}
+
+/** An actor can use only a worker pool with an active, registered worker. */
+function withoutUsableWorkerPool(fleet: ReadyFleet, name: string): void {
+  for (const actor of fleet.actors) {
+    actor.usableWorkerPools = actor.usableWorkerPools.filter((workerPool) => workerPool.name !== name);
+  }
 }
 
 export const RUNNING_ACTOR: ActorRow = (() => {
@@ -79,13 +100,16 @@ export const CRASHED_ACTOR: ActorRow = (() => {
   return actor;
 })();
 
-/** Not made by the dispatcher; Agent Substrate reports no actor state. */
+/** Not made by the dispatcher; Agent Substrate reports no actor state. No worker selector and no limits. */
 export const PLAIN_ACTOR: ActorRow = {
   atespace: SANDBOX_ATESPACE,
   name: "debug-shell",
   uid: "0c7d1a52-91a4-4c1b-a7a3-3a8f5d0e2b6f",
   state: "unknown",
   actorTemplate: "debug-shell",
+  workerSelector: {},
+  size: null,
+  usableWorkerPools: STORY_USABLE_WORKER_POOLS.map(ref),
   agent: null,
   placement: null,
   createdAt: "2026-11-21T09:12:00.000Z",
@@ -99,9 +123,19 @@ const STORY_ATESPACES: Atespace[] = [
   { name: SANDBOX_ATESPACE, uid: "9a7e3c1d-5b2f-4d8e-8f6a-1c3b5d7e9f20", createdAt: "2026-11-21T09:00:00.000Z" },
 ];
 
+/** The actor template of the actor is gone. */
+export const GONE_TEMPLATE_ACTOR: ActorRow = {
+  ...structuredClone(PLAIN_ACTOR),
+  name: "debug-shell-gone",
+  uid: "7b3e9d21-4c6a-4f0e-9a8b-2d1c5e7f9a30",
+  actorTemplate: "debug-shell-gone",
+  workerSelector: null,
+  usableWorkerPools: [],
+};
+
 const STORY_ACTORS: ActorRow[] = [
-  ...TESTBED_FLEET.actors.map((actor) =>
-    actor.name === RUNNING_ACTOR.name ? RUNNING_ACTOR : actor.name === CRASHED_ACTOR.name ? CRASHED_ACTOR : actor
+  ...TESTBED_FLEET.actors.map(({ name }) =>
+    name === RUNNING_ACTOR.name ? RUNNING_ACTOR : name === CRASHED_ACTOR.name ? CRASHED_ACTOR : testbedActor(name)
   ),
   PLAIN_ACTOR,
 ];
@@ -113,6 +147,8 @@ const actorsByState = Object.fromEntries(actorStateGroupSchema.options.map((grou
 for (const actor of STORY_ACTORS) actorsByState[ACTOR_STATE_GROUP[actor.state]]++;
 
 const GIB = 1024 ** 3;
+const STORY_ROOM_SIZE: RoomSize = { cpuMillicores: 1000, memoryBytes: 2 * GIB };
+const STORY_WORKER_LABELS: Labels = { workload: "workers" };
 
 const TESTBED_WORKER: WorkerRow = TESTBED_FLEET.workers[0];
 
@@ -150,6 +186,8 @@ export const STORY_WORKER_POOLS: ReadyFleet["workerPools"] = {
         actors: TESTBED_WORKER.capacity.actors + BUSY_WORKER.capacity.actors,
       },
       allocated: { ...BUSY_WORKER.allocated },
+      workerLabels: { ...STORY_WORKER_LABELS },
+      roomSize: { ...STORY_ROOM_SIZE },
       room: 1 + 3,
       limitedBy: ["cpu", "memory"],
       roomState: "room",
@@ -161,13 +199,14 @@ export const STORY_WORKER_POOLS: ReadyFleet["workerPools"] = {
       workers: [MICROVM_WORKER.name],
       capacity: { ...MICROVM_WORKER.capacity },
       allocated: { ...MICROVM_WORKER.allocated },
+      workerLabels: { ...STORY_WORKER_LABELS },
+      roomSize: { ...STORY_ROOM_SIZE },
       room: 7,
       limitedBy: ["memory"],
       roomState: "room",
       resource: { desiredReplicas: 1, readyReplicas: 1, sandboxClass: "microvm", resolution: "Resolved" },
     },
   ],
-  roomSize: { cpuMillicores: 1000, memoryBytes: 2 * GIB },
 };
 
 function crashedActorItem(actor: ActorRow): Extract<AttentionItem, { kind: "actorCrashed" }> {
@@ -353,9 +392,11 @@ export const WORKERS_NOT_ACTIVE_FLEET: ReadyFleet = (() => {
   fleet.workers.find(({ name }) => name === MICROVM_WORKER.name)!.state = "unavailable";
   fleet.summary.workersByState = { active: STORY_WORKERS.length - 2, draining: 1, unavailable: 1, unknown: 0 };
   const microvm = fleet.workerPools.items.find(({ name }) => name === MICROVM_WORKER.workerPool)!;
+  microvm.roomSize = null;
   microvm.room = 0;
   microvm.limitedBy = [];
   microvm.roomState = "noWorker";
+  withoutUsableWorkerPool(fleet, microvm.name);
   fleet.needsAttention = [
     CRASHED_ACTOR_ITEM,
     workerNotActiveItem(MICROVM_WORKER, "unavailable"),
@@ -385,9 +426,11 @@ export const UNREGISTERED_WORKER_FLEET: ReadyFleet = (() => {
   const fleet = structuredClone(STORY_FLEET);
   fleet.workers.find(({ name }) => name === MICROVM_WORKER.name)!.registered = false;
   const microvm = fleet.workerPools.items.find(({ name }) => name === MICROVM_WORKER.workerPool)!;
+  microvm.roomSize = null;
   microvm.room = 0;
   microvm.limitedBy = [];
   microvm.roomState = "noWorker";
+  withoutUsableWorkerPool(fleet, microvm.name);
   return fleet;
 })();
 
@@ -400,6 +443,8 @@ export const NOT_READY_FLEET: ReadyFleet = (() => {
     workers: [],
     capacity: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
     allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
+    workerLabels: {},
+    roomSize: null,
     room: 0,
     limitedBy: [],
     roomState: "noWorker",
@@ -456,7 +501,6 @@ export const PARTIAL_WORKER_POOLS_FLEET: ReadyFleet = (() => {
 })();
 
 const MIB = 1024 ** 2;
-const AGENTS_NAMESPACE = TESTBED_WORKER.workerNamespace;
 
 function roomStatesWorker(workerPool: string, capacity: WorkerRow["capacity"]): WorkerRow {
   const name = `${workerPool}-0`;
@@ -470,6 +514,9 @@ function roomStatesWorker(workerPool: string, capacity: WorkerRow["capacity"]): 
   };
 }
 
+/** The worker pools of ROOM_STATES_FLEET that the `workload=workers` worker selector matches. */
+const ROOM_STATES_USABLE_WORKER_POOLS = ["workers", "workers-busy", "workers-small"];
+
 function placedAgent(name: string, agentProfile: string, worker: WorkerRow): ActorRow {
   const actor = testbedActor("issue-2-25");
   actor.name = name;
@@ -477,6 +524,7 @@ function placedAgent(name: string, agentProfile: string, worker: WorkerRow): Act
   actor.actorTemplate = name;
   actor.state = "running";
   actor.agent!.agentProfile = agentProfile;
+  actor.usableWorkerPools = ROOM_STATES_USABLE_WORKER_POOLS.map(ref);
   actor.snapshots = [];
   actor.placement = {
     worker: worker.name,
@@ -496,23 +544,48 @@ function resourceOf(desiredReplicas: number, readyReplicas: number): WorkerPoolR
   return { desiredReplicas, readyReplicas, sandboxClass: "gvisor", resolution: "Resolved" };
 }
 
-/** One worker pool per room state; room size 1 CPU, 2 Gi. Worker pools with no room are warnings; fleet room 3. */
+/** Not made by the dispatcher: the one actor template that selects `workers-zero`, with no limits. */
+const ZERO_CAPACITY_PROBE: ActorRow = {
+  ...structuredClone(PLAIN_ACTOR),
+  atespace: TESTBED_FLEET.atespaces[0].name,
+  name: "capacity-probe",
+  uid: "uid-capacity-probe",
+  actorTemplate: "capacity-probe",
+  state: "suspended",
+  workerSelector: { workload: "zero" },
+  usableWorkerPools: [ref("workers-zero")],
+};
+
+/**
+ * One worker pool per room state; room size 1 CPU, 2 Gi where an agent's actor template selects the worker pool.
+ * Worker pools with no room are warnings, `noTemplate` is muted; fleet room 3.
+ */
 export const ROOM_STATES_FLEET: ReadyFleet = (() => {
   const roomWorker = roomStatesWorker("workers", { cpuMillicores: 4000, memoryBytes: 8 * GIB, actors: 1000 });
   const busyWorker = roomStatesWorker("workers-busy", { cpuMillicores: 2000, memoryBytes: 4 * GIB, actors: 1000 });
   const smallWorker = roomStatesWorker("workers-small", { cpuMillicores: 500, memoryBytes: 448 * MIB, actors: 1000 });
-  const actors = [
+  const zeroWorker = roomStatesWorker("workers-zero", { cpuMillicores: 4000, memoryBytes: 8 * GIB, actors: 0 });
+  const unusedWorker = roomStatesWorker("workers-unused", { cpuMillicores: 4000, memoryBytes: 8 * GIB, actors: 1000 });
+  const agents = [
     placedAgent("issue-7-1", "go", roomWorker),
     placedAgent("issue-7-2", "go", busyWorker),
     placedAgent("issue-7-3", "python", busyWorker),
   ];
-  const workers = [roomWorker, busyWorker, smallWorker];
-  const poolOf = (worker: WorkerRow, row: Pick<WorkerPoolRow, "room" | "limitedBy" | "roomState">): WorkerPoolRow => ({
+  const actors = [...agents, structuredClone(ZERO_CAPACITY_PROBE)];
+  const workers = [roomWorker, busyWorker, smallWorker, zeroWorker, unusedWorker];
+  const poolOf = (
+    worker: WorkerRow,
+    row: Pick<WorkerPoolRow, "room" | "limitedBy" | "roomState">,
+    workerLabels: Labels = STORY_WORKER_LABELS,
+    roomSize: RoomSize | null = STORY_ROOM_SIZE
+  ): WorkerPoolRow => ({
     name: worker.workerPool,
     namespace: AGENTS_NAMESPACE,
     workers: [worker.name],
     capacity: { ...worker.capacity },
     allocated: { ...worker.allocated },
+    workerLabels: { ...workerLabels },
+    roomSize: roomSize && { ...roomSize },
     ...row,
     resource: resourceOf(1, 1),
   });
@@ -521,13 +594,13 @@ export const ROOM_STATES_FLEET: ReadyFleet = (() => {
     ...TESTBED_FLEET,
     summary: {
       ...TESTBED_FLEET.summary,
-      agents: actors.length,
+      agents: agents.length,
       agentsByProfile: [
         { agentProfile: "go", agents: 2 },
         { agentProfile: "python", agents: 1 },
       ],
       actors: actors.length,
-      actorsByState: { running: actors.length, transitional: 0, suspended: 0, crashed: 0, unknown: 0 },
+      actorsByState: { running: agents.length, transitional: 0, suspended: 1, crashed: 0, unknown: 0 },
       workers: workers.length,
       workersByState: { active: workers.length, draining: 0, unavailable: 0, unknown: 0 },
     },
@@ -545,13 +618,16 @@ export const ROOM_STATES_FLEET: ReadyFleet = (() => {
           workers: [],
           capacity: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
           allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
+          workerLabels: {},
+          roomSize: null,
           room: 0,
           limitedBy: [],
           roomState: "noWorker",
           resource: resourceOf(1, 0),
         },
+        poolOf(unusedWorker, { room: 0, limitedBy: [], roomState: "noTemplate" }, { workload: "unused" }, null),
+        poolOf(zeroWorker, { room: 0, limitedBy: ["actors"], roomState: "tooSmall" }, { workload: "zero" }, null),
       ],
-      roomSize: { cpuMillicores: 1000, memoryBytes: 2 * GIB },
     },
     needsAttention: [
       {
@@ -583,6 +659,110 @@ export const NO_ROOM_STATES_FLEET: ReadyFleet = (() => {
   workerPool.allocated = { ...worker.allocated };
   workerPool.room = 0;
   workerPool.roomState = "full";
+  return fleet;
+})();
+
+/**
+ * The testbed: `workers` has room for 1 actor; `workers-small` (`workload=workers-small`, 500m CPU, 512 Mi) is too
+ * small for an agent, but no actor template selects it.
+ */
+export const NO_TEMPLATE_FLEET: ReadyFleet = (() => {
+  const fleet = structuredClone(ONE_WORKER_POOL_FLEET);
+  const worker: WorkerRow = {
+    ...structuredClone(TESTBED_WORKER),
+    name: "workers-small-0",
+    workerPool: "workers-small",
+    pod: "workers-small-5f7d9-0",
+    capacity: { cpuMillicores: 500, memoryBytes: 512 * MIB, actors: 1000 },
+    allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
+  };
+  fleet.workers.push(worker);
+  fleet.summary.workers += 1;
+  fleet.summary.workersByState.active += 1;
+  fleet.workerPools.items.push({
+    name: worker.workerPool,
+    namespace: worker.workerNamespace,
+    workers: [worker.name],
+    capacity: { ...worker.capacity },
+    allocated: { ...worker.allocated },
+    workerLabels: { workload: "workers-small" },
+    roomSize: null,
+    room: 0,
+    limitedBy: [],
+    roomState: "noTemplate",
+    resource: resourceOf(1, 1),
+  });
+  return fleet;
+})();
+
+const LARGE_SIZE: RoomSize = { cpuMillicores: 2000, memoryBytes: 4 * GIB };
+
+/** Selects `workers-microvm` only, at 2 CPU, 4 Gi. */
+export const LARGE_ACTOR: ActorRow = (() => {
+  const actor = testbedActor("issue-6-3");
+  actor.name = "issue-8-1";
+  actor.uid = "uid-issue-8-1";
+  actor.actorTemplate = "issue-8-1";
+  actor.state = "suspended";
+  actor.workerSelector = { workload: "workers-large" };
+  actor.size = { ...LARGE_SIZE };
+  actor.usableWorkerPools = [ref("workers-microvm")];
+  actor.snapshots = [];
+  return actor;
+})();
+
+/**
+ * `workers` at 1 CPU, 2 Gi for the testbed actor templates; `workers-microvm`, labelled `workload=workers-large`, at
+ * 2 CPU, 4 Gi for LARGE_ACTOR. MicroVM runtime overhead of 4 Gi: 36 Mi.
+ */
+export const TWO_ROOM_SIZES_FLEET: ReadyFleet = (() => {
+  const fleet = structuredClone(HEALTHY_FLEET);
+  for (const actor of fleet.actors) {
+    if (actor.workerSelector?.workload === "workers") actor.usableWorkerPools = [ref("workers")];
+  }
+  fleet.actors.push(structuredClone(LARGE_ACTOR));
+  fleet.summary.actors += 1;
+  fleet.summary.agents += 1;
+  fleet.summary.actorsByState.suspended += 1;
+  fleet.summary.agentsByProfile = fleet.summary.agentsByProfile.map((entry) =>
+    entry.agentProfile === LARGE_ACTOR.agent!.agentProfile ? { ...entry, agents: entry.agents + 1 } : entry
+  );
+  const microvm = fleet.workerPools.items.find(({ name }) => name === MICROVM_WORKER.workerPool)!;
+  microvm.workerLabels = { workload: "workers-large" };
+  microvm.roomSize = { ...LARGE_SIZE };
+  microvm.room = 3;
+  microvm.limitedBy = ["memory"];
+  return fleet;
+})();
+
+/** The worker selector `workload=wokers` matches no worker of HEALTHY_FLEET. */
+export const UNSCHEDULABLE_ACTOR: ActorRow = (() => {
+  const actor = testbedActor("issue-6-2");
+  actor.workerSelector = { workload: "wokers" };
+  actor.usableWorkerPools = [];
+  actor.agent!.codebase = { name: "test-node-app", namespace: PLATFORM_NAMESPACE };
+  actor.agent!.issue.url = "https://gitlab.example.com/krci/test-node-app/-/issues/2";
+  return actor;
+})();
+
+export const UNSCHEDULABLE_ACTOR_FLEET: ReadyFleet = (() => {
+  const fleet = structuredClone(HEALTHY_FLEET);
+  fleet.actors = fleet.actors.map((actor) =>
+    actor.name === UNSCHEDULABLE_ACTOR.name ? structuredClone(UNSCHEDULABLE_ACTOR) : actor
+  );
+  fleet.needsAttention = [
+    {
+      kind: "actorUnschedulable",
+      severity: "error",
+      atespace: UNSCHEDULABLE_ACTOR.atespace,
+      name: UNSCHEDULABLE_ACTOR.name,
+      workerSelector: { ...UNSCHEDULABLE_ACTOR.workerSelector },
+      agent: {
+        issue: { ...UNSCHEDULABLE_ACTOR.agent!.issue },
+        agentProfile: UNSCHEDULABLE_ACTOR.agent!.agentProfile,
+      },
+    },
+  ];
   return fleet;
 })();
 

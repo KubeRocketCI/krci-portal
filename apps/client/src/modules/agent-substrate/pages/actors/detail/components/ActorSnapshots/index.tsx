@@ -4,6 +4,7 @@ import { DataTable } from "@/core/components/Table";
 import type { TableColumn } from "@/core/components/Table/types";
 import { TABLE } from "@/k8s/constants/tables";
 import { SnapshotDurableStateBadge, SnapshotFidelityBadge } from "../../../../../components/ActorCells";
+import { TERM_HINT } from "../../../../../constants/hints";
 
 const DEFAULT_SORT = { sortBy: "generation", order: "desc" } as const;
 
@@ -13,12 +14,14 @@ const columns: TableColumn<ActorSnapshot>[] = [
   {
     id: "generation",
     label: "Generation",
+    hint: TERM_HINT.generation,
     data: { columnSortableValuePath: "generation", render: ({ data }) => data.generation },
     cell: { baseWidth: 10 },
   },
   {
     id: "fidelity",
     label: "Fidelity",
+    hint: TERM_HINT.fidelity,
     data: {
       columnSortableValuePath: "fidelity",
       render: ({ data }) => <SnapshotFidelityBadge snapshot={data} />,
@@ -28,6 +31,7 @@ const columns: TableColumn<ActorSnapshot>[] = [
   {
     id: "locality",
     label: "Locality",
+    hint: TERM_HINT.locality,
     data: {
       columnSortableValuePath: "locality",
       render: ({ data }) => data.locality ?? <span className="text-muted-foreground">No node</span>,
@@ -37,6 +41,7 @@ const columns: TableColumn<ActorSnapshot>[] = [
   {
     id: "durableState",
     label: "Durable state",
+    hint: TERM_HINT.durableState,
     data: {
       columnSortableValuePath: "durableState",
       render: ({ data }) => <SnapshotDurableStateBadge snapshot={data} />,

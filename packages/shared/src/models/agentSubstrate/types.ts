@@ -18,6 +18,7 @@ import {
   fleetSchema,
   fleetSummarySchema,
   fleetUnreachableReasonSchema,
+  labelsSchema,
   roomResourceSchema,
   roomSizeSchema,
   roomStateSchema,
@@ -25,6 +26,7 @@ import {
   snapshotFidelitySchema,
   substrateResourcesSchema,
   workerPoolAccessSchema,
+  workerPoolRefSchema,
   workerPoolResourceSchema,
   workerPoolRowSchema,
   workerRowSchema,
@@ -45,6 +47,8 @@ export type CodebaseRef = z.infer<typeof codebaseRefSchema>;
 export type ActorAgent = z.infer<typeof actorAgentSchema>;
 export type ActorPlacement = z.infer<typeof actorPlacementSchema>;
 export type ActorCrash = z.infer<typeof actorCrashSchema>;
+export type Labels = z.infer<typeof labelsSchema>;
+export type WorkerPoolRef = z.infer<typeof workerPoolRefSchema>;
 export type RoomSize = z.infer<typeof roomSizeSchema>;
 export type RoomResource = z.infer<typeof roomResourceSchema>;
 export type RoomState = z.infer<typeof roomStateSchema>;

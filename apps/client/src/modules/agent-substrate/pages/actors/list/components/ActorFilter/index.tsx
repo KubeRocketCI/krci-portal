@@ -1,12 +1,13 @@
 import React from "react";
 import { X } from "lucide-react";
-import { actorStateGroupSchema, type ActorRow, type Atespace } from "@my-project/shared";
+import { actorStateGroupSchema, type ActorRow, type Atespace, type WorkerPoolRow } from "@my-project/shared";
 import type { SelectOption } from "@/core/components/form";
 import { Button } from "@/core/components/ui/button";
 import { Label } from "@/core/components/ui/label";
 import { useFilterContext } from "@/core/providers/Filter";
 import { ACTOR_STATE_GROUP_LABEL } from "../../../../../constants/actorState";
 import { ACTOR_FILTER_NAMES, agentProfileFilterValue, agentProfileLabel } from "../../../../../constants/actorFilter";
+import { workerPoolText } from "../../../../../utils/roomLabel";
 import { ALL_FILTER_VALUE } from "./constants";
 import type { ActorFilterValues } from "./types";
 
@@ -20,10 +21,22 @@ const actorStateOptions: SelectOption[] = [
 interface ActorFilterProps {
   atespaces: Atespace[];
   actors: ActorRow[];
+  workerPools: WorkerPoolRow[];
 }
 
-export function ActorFilter({ atespaces, actors }: ActorFilterProps) {
+export function ActorFilter({ atespaces, actors, workerPools }: ActorFilterProps) {
   const { form, reset, isDefaultValue } = useFilterContext<ActorRow, ActorFilterValues>();
+
+  const workerPoolOptions = React.useMemo<SelectOption[]>(
+    () => [
+      ALL_OPTION,
+      ...workerPools.map((workerPool) => ({
+        label: workerPoolText(workerPool),
+        value: workerPoolText(workerPool),
+      })),
+    ],
+    [workerPools]
+  );
 
   const atespaceOptions = React.useMemo<SelectOption[]>(
     () => [ALL_OPTION, ...atespaces.map(({ name }) => ({ label: name, value: name }))],
@@ -71,6 +84,14 @@ export function ActorFilter({ atespaces, actors }: ActorFilterProps) {
         <form.AppField name={ACTOR_FILTER_NAMES.AGENT_PROFILE}>
           {(field) => (
             <field.FormSelect label="Agent profile" options={agentProfileOptions} placeholder="Select agent profile" />
+          )}
+        </form.AppField>
+      </div>
+
+      <div className="col-span-2">
+        <form.AppField name={ACTOR_FILTER_NAMES.WORKER_POOL}>
+          {(field) => (
+            <field.FormSelect label="Worker pool" options={workerPoolOptions} placeholder="Select worker pool" />
           )}
         </form.AppField>
       </div>

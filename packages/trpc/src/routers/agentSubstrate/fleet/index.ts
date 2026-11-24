@@ -1,7 +1,6 @@
 import {
   ACTOR_STATE_GROUP,
   actorStateGroupSchema,
-  roomResourceSchema,
   sortByName,
   workerStateSchema,
   type ActorAgent,
@@ -9,8 +8,11 @@ import {
   type AgentProfileCount,
   type Fleet,
   type FleetSummary,
+  type Labels,
   type ReadyFleet,
+  type RoomSize,
   type SubstrateResources,
+  type WorkerPoolRef,
   type WorkerPoolRow,
   type WorkerRow,
 } from "@my-project/shared";
@@ -18,7 +20,7 @@ import { K8sClient } from "../../../clients/k8s/index.js";
 import type { TRPCContext } from "../../../context/types.js";
 import { gitlabIssueUrl, readCodebaseLinks, type CodebaseLinks } from "./codebaseLinks.js";
 import { needsAttentionOf } from "./needsAttention.js";
-import { roomSizeOf, roomStateOf, workerRoomOf, type WorkerRoom } from "./room.js";
+import { hostsActors, roomSizeOf, selects, workerPoolRoomOf, workerRoomOf } from "./room.js";
 import { readSubstrate, type SubstrateFleet } from "./substrateRead.js";
 import { readWorkerPools, type WorkerPoolRead } from "./workerPools.js";
 import type { SubstrateActor, SubstrateWorker } from "../../../clients/agentSubstrate/index.js";
@@ -37,14 +39,54 @@ function withCodebase(agent: ActorAgent, codebaseLinks: CodebaseLinks): ActorAge
   };
 }
 
-function toActorRow(actor: SubstrateActor, agent: ActorAgent | null, codebaseLinks: CodebaseLinks): ActorRow {
+/** The current actor templates of one worker selector. */
+interface SelectorGroup {
+  workerSelector: Labels;
+  /** The largest limits over the actor templates. Null when none sets a limit. */
+  size: RoomSize | null;
+  /** By namespace, then name. */
+  usableWorkerPools: WorkerPoolRef[];
+}
+
+function selectorKey(workerSelector: Labels): string {
+  return JSON.stringify(Object.entries(workerSelector).sort(([a], [b]) => (a < b ? -1 : 1)));
+}
+
+/** By `selectorKey`. An actor whose actor template is gone is in no group. */
+function selectorGroupsOf(fleet: SubstrateFleet): Map<string, SelectorGroup> {
+  const groups = new Map<string, SelectorGroup>();
+  for (const { actorTemplate } of fleet.actors) {
+    if (!actorTemplate) continue;
+    const key = selectorKey(actorTemplate.workerSelector);
+    const group = groups.get(key);
+    if (group) group.size = roomSizeOf([group.size, actorTemplate.limits]);
+    else {
+      groups.set(key, {
+        workerSelector: actorTemplate.workerSelector,
+        size: roomSizeOf([actorTemplate.limits]),
+        usableWorkerPools: [],
+      });
+    }
+  }
+  return groups;
+}
+
+function toActorRow(
+  { actor, agent, actorTemplate }: SubstrateFleet["actors"][number],
+  selectorGroups: Map<string, SelectorGroup>,
+  codebaseLinks: CodebaseLinks
+): ActorRow {
   const assignment = actor.workerAssignment;
+  const selectorGroup = actorTemplate && selectorGroups.get(selectorKey(actorTemplate.workerSelector));
   return {
     atespace: actor.atespace,
     name: actor.name,
     uid: actor.uid,
     state: actor.state,
     actorTemplate: actor.actorTemplate.name,
+    workerSelector: actorTemplate ? { ...actorTemplate.workerSelector } : null,
+    size: actorTemplate ? roomSizeOf([actorTemplate.limits]) : null,
+    usableWorkerPools: (selectorGroup?.usableWorkerPools ?? []).map((workerPool) => ({ ...workerPool })),
     agent: agent && withCodebase(agent, codebaseLinks),
     placement: assignment && {
       worker: assignment.worker,
@@ -126,6 +168,8 @@ function emptyWorkerPoolRow(namespace: string, name: string): WorkerPoolRow {
     workers: [],
     capacity: zeroResources(),
     allocated: zeroResources(),
+    workerLabels: {},
+    roomSize: null,
     room: 0,
     limitedBy: [],
     roomState: "noWorker",
@@ -133,58 +177,84 @@ function emptyWorkerPoolRow(namespace: string, name: string): WorkerPoolRow {
   };
 }
 
-/** Rows: the worker pools that workers name and the WorkerPools that were read. */
-function toWorkerPools(fleet: SubstrateFleet, workerPoolRead: WorkerPoolRead): ReadyFleet["workerPools"] {
-  const size = roomSizeOf(fleet.actors.map(({ limits }) => limits));
-  const rows = new Map<string, WorkerPoolRow>();
-  const rowOf = (namespace: string, name: string) => {
-    const key = JSON.stringify([namespace, name]);
-    let row = rows.get(key);
-    if (!row) {
-      row = emptyWorkerPoolRow(namespace, name);
-      rows.set(key, row);
-    }
-    return row;
-  };
-
-  const workerRooms = new Map<WorkerPoolRow, WorkerRoom[]>();
-  for (const worker of fleet.workers) {
-    const row = rowOf(worker.workerNamespace, worker.workerPool);
-    row.workers.push(worker.name);
+/**
+ * `workers`: all workers of the worker pool, by name. A selector group that matches an active, registered worker gets
+ * the row in `usableWorkerPools`. No selector group: every active, registered worker adds room, in actors only.
+ */
+function fillWorkerPoolRow(row: WorkerPoolRow, workers: SubstrateWorker[], selectorGroups: SelectorGroup[]): void {
+  const hosting = workers.filter(hostsActors);
+  row.workers = workers.map(({ name }) => name);
+  row.workerLabels = { ...(hosting[0] ?? workers[0])?.labels };
+  for (const worker of workers) {
     addResources(row.capacity, worker.capacity);
     addResources(row.allocated, worker.allocated);
+  }
 
-    const workerRoom = workerRoomOf(worker, size);
-    if (!workerRoom) continue;
-    row.room += workerRoom.room;
-    row.limitedBy = roomResourceSchema.options.filter(
-      (resource) => row.limitedBy.includes(resource) || workerRoom.limitedBy.includes(resource)
-    );
-    const rooms = workerRooms.get(row);
-    if (rooms) rooms.push(workerRoom);
-    else workerRooms.set(row, [workerRoom]);
+  if (hosting.length === 0) return;
+
+  const usedBy = selectorGroups.filter(({ workerSelector }) =>
+    hosting.some((worker) => selects(workerSelector, worker.labels))
+  );
+  if (selectorGroups.length > 0 && usedBy.length === 0) {
+    row.roomState = "noTemplate";
+    return;
+  }
+  for (const group of usedBy) group.usableWorkerPools.push({ namespace: row.namespace, name: row.name });
+
+  const roomSize = roomSizeOf(usedBy.map(({ size }) => size));
+  const usable = hosting.filter(
+    (worker) =>
+      selectorGroups.length === 0 || usedBy.some(({ workerSelector }) => selects(workerSelector, worker.labels))
+  );
+  const { room, limitedBy, roomState } = workerPoolRoomOf(usable.map((worker) => workerRoomOf(worker, roomSize)));
+  row.roomSize = roomSize;
+  row.room = room;
+  row.limitedBy = limitedBy;
+  row.roomState = roomState;
+}
+
+/** Rows: the worker pools that workers name and the WorkerPools that were read. */
+function toWorkerPools(
+  fleet: SubstrateFleet,
+  workerPoolRead: WorkerPoolRead,
+  selectorGroups: SelectorGroup[]
+): ReadyFleet["workerPools"] {
+  const entries = new Map<string, { row: WorkerPoolRow; workers: SubstrateWorker[] }>();
+  const entryOf = (namespace: string, name: string) => {
+    const key = JSON.stringify([namespace, name]);
+    let entry = entries.get(key);
+    if (!entry) {
+      entry = { row: emptyWorkerPoolRow(namespace, name), workers: [] };
+      entries.set(key, entry);
+    }
+    return entry;
+  };
+
+  for (const worker of fleet.workers) {
+    entryOf(worker.workerNamespace, worker.workerPool).workers.push(worker);
   }
   for (const { namespace, name, resource } of workerPoolRead.items) {
-    rowOf(namespace, name).resource = resource;
+    entryOf(namespace, name).row.resource = resource;
   }
 
-  const items = [...rows.values()];
-  for (const row of items) {
-    row.workers.sort(sortByName);
-    row.roomState = roomStateOf(workerRooms.get(row) ?? []);
+  const sorted = [...entries.values()].sort(
+    (a, b) => sortByName(a.row.namespace, b.row.namespace) || sortByName(a.row.name, b.row.name)
+  );
+  for (const { row, workers } of sorted) {
+    workers.sort((a, b) => sortByName(a.name, b.name));
+    fillWorkerPoolRow(row, workers, selectorGroups);
   }
-  items.sort((a, b) => sortByName(a.namespace, b.namespace) || sortByName(a.name, b.name));
   return {
     access: workerPoolRead.access,
-    items,
-    roomSize: size,
+    items: sorted.map(({ row }) => row),
   };
 }
 
 function toReadyFleet(fleet: SubstrateFleet, codebaseLinks: CodebaseLinks, workerPoolRead: WorkerPoolRead): ReadyFleet {
-  const actors = fleet.actors.map(({ actor, agent }) => toActorRow(actor, agent, codebaseLinks));
+  const selectorGroups = selectorGroupsOf(fleet);
+  const workerPools = toWorkerPools(fleet, workerPoolRead, [...selectorGroups.values()]);
+  const actors = fleet.actors.map((actor) => toActorRow(actor, selectorGroups, codebaseLinks));
   const workers = fleet.workers.map(toWorkerRow);
-  const workerPools = toWorkerPools(fleet, workerPoolRead);
   return {
     state: "ready",
     updatedAt: fleet.readAt,

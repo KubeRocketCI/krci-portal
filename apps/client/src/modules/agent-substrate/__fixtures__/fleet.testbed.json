@@ -48,6 +48,19 @@
       "uid": "bb7b0859-4887-43a2-8355-807ebbe7c75f",
       "state": "suspended",
       "actorTemplate": "issue-2-25",
+      "workerSelector": {
+        "workload": "workers"
+      },
+      "size": {
+        "cpuMillicores": 1000,
+        "memoryBytes": 2147483648
+      },
+      "usableWorkerPools": [
+        {
+          "namespace": "krci-agents",
+          "name": "workers"
+        }
+      ],
       "agent": {
         "issue": {
           "projectPath": "krci/test-go-app",
@@ -79,6 +92,19 @@
       "uid": "56d713b7-ad0e-4ae1-b557-a917131c458d",
       "state": "suspended",
       "actorTemplate": "issue-2-26",
+      "workerSelector": {
+        "workload": "workers"
+      },
+      "size": {
+        "cpuMillicores": 1000,
+        "memoryBytes": 2147483648
+      },
+      "usableWorkerPools": [
+        {
+          "namespace": "krci-agents",
+          "name": "workers"
+        }
+      ],
       "agent": {
         "issue": {
           "projectPath": "krci/test-go-app",
@@ -110,6 +136,19 @@
       "uid": "74d21e83-c41f-4a36-b26d-f6496b3f4c85",
       "state": "suspended",
       "actorTemplate": "issue-5-3",
+      "workerSelector": {
+        "workload": "workers"
+      },
+      "size": {
+        "cpuMillicores": 1000,
+        "memoryBytes": 2147483648
+      },
+      "usableWorkerPools": [
+        {
+          "namespace": "krci-agents",
+          "name": "workers"
+        }
+      ],
       "agent": {
         "issue": {
           "projectPath": "krci/test-python-app",
@@ -141,6 +180,19 @@
       "uid": "2b801245-2678-43c8-915b-ac72e8c6384f",
       "state": "suspended",
       "actorTemplate": "issue-5-4",
+      "workerSelector": {
+        "workload": "workers"
+      },
+      "size": {
+        "cpuMillicores": 1000,
+        "memoryBytes": 2147483648
+      },
+      "usableWorkerPools": [
+        {
+          "namespace": "krci-agents",
+          "name": "workers"
+        }
+      ],
       "agent": {
         "issue": {
           "projectPath": "krci/test-python-app",
@@ -172,6 +224,19 @@
       "uid": "edb9cdb9-a391-4bbb-ae91-b6b2f2d6816b",
       "state": "suspended",
       "actorTemplate": "issue-6-2",
+      "workerSelector": {
+        "workload": "workers"
+      },
+      "size": {
+        "cpuMillicores": 1000,
+        "memoryBytes": 2147483648
+      },
+      "usableWorkerPools": [
+        {
+          "namespace": "krci-agents",
+          "name": "workers"
+        }
+      ],
       "agent": {
         "issue": {
           "projectPath": "krci/test-node-app",
@@ -203,6 +268,19 @@
       "uid": "bf19017d-3a48-4c93-af06-9809c3831f39",
       "state": "suspended",
       "actorTemplate": "issue-6-3",
+      "workerSelector": {
+        "workload": "workers"
+      },
+      "size": {
+        "cpuMillicores": 1000,
+        "memoryBytes": 2147483648
+      },
+      "usableWorkerPools": [
+        {
+          "namespace": "krci-agents",
+          "name": "workers"
+        }
+      ],
       "agent": {
         "issue": {
           "projectPath": "krci/test-node-app",
@@ -268,16 +346,19 @@
           "memoryBytes": 0,
           "actors": 0
         },
+        "workerLabels": {
+          "workload": "workers"
+        },
+        "roomSize": {
+          "cpuMillicores": 1000,
+          "memoryBytes": 2147483648
+        },
         "room": 1,
         "limitedBy": ["cpu", "memory"],
         "roomState": "room",
         "resource": null
       }
-    ],
-    "roomSize": {
-      "cpuMillicores": 1000,
-      "memoryBytes": 2147483648
-    }
+    ]
   },
   "needsAttention": []
 }

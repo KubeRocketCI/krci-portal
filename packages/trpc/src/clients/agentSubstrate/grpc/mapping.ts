@@ -134,6 +134,7 @@ export function toActorTemplate(template: ActorTemplate): SubstrateActorTemplate
       cpuMillicores: num(template.resources?.limits?.cpuMillicores),
       memoryBytes: num(template.resources?.limits?.memoryBytes),
     },
+    workerSelector: { ...template.workerSelector?.matchLabels },
   };
 }
 
@@ -146,6 +147,7 @@ export function toWorker(worker: Worker): SubstrateWorker {
     workerNamespace: worker.workerNamespace,
     workerPod: worker.workerPod,
     nodeName: worker.nodeName,
+    labels: { ...worker.labels },
     state: WORKER_STATES[worker.status?.state ?? WorkerState.UNSPECIFIED] ?? "unknown",
     capacity: resources(worker.status?.capacity),
     allocated: resources(worker.status?.allocated),

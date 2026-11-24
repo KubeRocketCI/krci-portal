@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { Box } from "lucide-react";
+import { expect, userEvent, within } from "storybook/test";
 import { withAppProviders } from "@sb/index";
 import { DataTable } from "./index";
 import { TableColumn } from "./types";
@@ -131,6 +132,50 @@ export const HiddenColumn: Story = {
       column("branch", "Branch", 15),
       column("startedAt", "Started at", 10),
     ],
+  },
+};
+
+const STATUS_HINT = "The result of the last attempt.";
+
+/** `Status` (sortable) and `Attempts` (not sortable) carry a hint: an Info button after the label, outside the sort button. */
+export const HintedColumn: Story = {
+  args: {
+    id: "sb-table-hinted-column",
+    columns: [
+      {
+        ...column("name", "Run", 40),
+        data: { render: ({ data }) => text(data.name), columnSortableValuePath: "name" },
+      },
+      {
+        ...column("status", "Status", 20),
+        hint: STATUS_HINT,
+        data: { render: ({ data }) => text(data.status), columnSortableValuePath: "status" },
+      },
+      { ...column("attempts", "Attempts", 15), hint: "Attempts of the run, the first included." },
+      column("pipeline", "Pipeline", 25),
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+
+    const status = canvas.getByRole("columnheader", { name: "Status" });
+    const sortButton = within(status).getByRole("button", { name: "Status" });
+    const hintButton = within(status).getByRole("button", { name: "About Status" });
+    await expect(sortButton.contains(hintButton)).toBe(false);
+    await expect(within(canvas.getByRole("columnheader", { name: "Attempts" })).getAllByRole("button")).toHaveLength(1);
+
+    sortButton.focus();
+    await userEvent.tab();
+    await expect(hintButton).toHaveFocus();
+    await expect(await body.findByRole("tooltip")).toHaveTextContent(STATUS_HINT);
+    await userEvent.keyboard("{Escape}");
+
+    await userEvent.click(canvas.getByRole("button", { name: /columns/i }));
+    const menu = within(await body.findByRole("menu"));
+    await expect(menu.getByRole("menuitemcheckbox", { name: "Status" })).toHaveTextContent(/^Status$/);
+    await expect(menu.queryByRole("button", { name: "About Status" })).toBeNull();
+    await userEvent.keyboard("{Escape}");
   },
 };
 

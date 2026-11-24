@@ -27,7 +27,7 @@ interface ActorTemplateFacts {
   /** Null on an actor that the dispatcher did not make. */
   agent: ActorAgent | null;
   /** Null when the actor template is gone. */
-  limits: SubstrateActorTemplate["limits"] | null;
+  actorTemplate: Pick<SubstrateActorTemplate, "limits" | "workerSelector"> | null;
 }
 
 export interface SubstrateFleet {
@@ -142,7 +142,7 @@ class SubstrateReader {
     }
   }
 
-  /** A gone actor template (`notFound`) gives no agent and no limits. An actor with no uid is not cached. */
+  /** A gone actor template (`notFound`) gives no agent and no actor template. An actor with no uid is not cached. */
   private async actorTemplateOf(actor: SubstrateActor): Promise<ActorTemplateFacts> {
     const cached = actor.uid ? this.actorTemplates.get(actor.uid) : undefined;
     if (cached !== undefined) return cached;
@@ -150,11 +150,14 @@ class SubstrateReader {
     let facts: ActorTemplateFacts;
     try {
       const actorTemplate = await this.source.getActorTemplate(actor.actorTemplate);
-      facts = { agent: agentOfActorTemplate(actorTemplate), limits: { ...actorTemplate.limits } };
+      facts = {
+        agent: agentOfActorTemplate(actorTemplate),
+        actorTemplate: { limits: { ...actorTemplate.limits }, workerSelector: { ...actorTemplate.workerSelector } },
+      };
     } catch (error) {
       const sourceError = asSourceError(error);
       if (sourceError.kind !== "notFound") throw sourceError;
-      facts = { agent: null, limits: null };
+      facts = { agent: null, actorTemplate: null };
     }
     if (actor.uid) this.actorTemplates.set(actor.uid, facts);
     return facts;

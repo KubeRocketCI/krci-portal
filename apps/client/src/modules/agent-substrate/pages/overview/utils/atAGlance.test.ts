@@ -6,6 +6,7 @@ import {
   EMPTY_FLEET,
   HEALTHY_FLEET,
   MANY_CRASHED_FLEET,
+  NO_TEMPLATE_FLEET,
   SEVERAL_AGENT_PROFILES_FLEET,
   TESTBED_FLEET,
   UNREGISTERED_WORKER_FLEET,
@@ -91,8 +92,12 @@ describe("workersHealth", () => {
 
 describe("roomSubText", () => {
   it("names the worker pools, singular and plural", () => {
-    expect(roomSubText(2)).toBe("across 2 worker pools");
-    expect(roomSubText(1)).toBe("across 1 worker pool");
+    expect(roomSubText(HEALTHY_FLEET.workerPools)).toBe("across 2 worker pools");
+    expect(roomSubText(TESTBED_FLEET.workerPools)).toBe("across 1 worker pool");
+  });
+
+  it("leaves out a worker pool that no actor template selects: it adds nothing to fleet room", () => {
+    expect(roomSubText(NO_TEMPLATE_FLEET.workerPools)).toBe("across 1 worker pool");
   });
 });
 

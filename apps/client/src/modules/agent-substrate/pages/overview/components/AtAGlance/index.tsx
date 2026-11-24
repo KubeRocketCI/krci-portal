@@ -9,7 +9,9 @@ import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { cn } from "@/core/utils/classname";
 import { useClusterStore } from "@/k8s/store";
+import { TermHint } from "../../../../components/KV";
 import { agentProfileLabel } from "../../../../constants/actorFilter";
+import { SECTION_HINT, TERM_HINT } from "../../../../constants/hints";
 import { ACTOR_STATE_GROUP_LABEL } from "../../../../constants/actorState";
 import { PATH_AGENT_ACTORS_FULL, PATH_AGENT_WORKER_POOLS_FULL } from "../../../../constants/paths";
 import { fleetRoom } from "../../../../utils/roomLabel";
@@ -21,14 +23,22 @@ const COUNT_LINK_CLASS =
 
 const COUNT_GRID_CLASS = "grid grid-cols-2 gap-1 sm:grid-cols-3 xl:grid-cols-5";
 
-function CountCard({ title, children }: { title: string; children: React.ReactNode }) {
+interface CountCardProps {
+  title: string;
+  /** Term hint next to the title, outside the region name. */
+  hint?: string;
+  children: React.ReactNode;
+}
+
+function CountCard({ title, hint, children }: CountCardProps) {
   const titleId = React.useId();
   return (
     <Card role="region" aria-labelledby={titleId}>
-      <CardHeader className="p-4 pb-2">
+      <CardHeader className="flex flex-row items-center gap-1 p-4 pb-2">
         <CardTitle id={titleId} className="text-sm font-semibold">
           {title}
         </CardTitle>
+        {hint && <TermHint label={title} hint={hint} />}
       </CardHeader>
       <CardContent className="p-2 pt-0">{children}</CardContent>
     </Card>
@@ -77,7 +87,9 @@ export function AtAGlance({ fleet }: { fleet: ReadyFleet }) {
 
   return (
     <section aria-labelledby={headingId}>
-      <SectionHeading id={headingId}>At a glance</SectionHeading>
+      <SectionHeading id={headingId} hint={SECTION_HINT.atAGlance}>
+        At a glance
+      </SectionHeading>
       <div className="flex flex-col gap-4">
         <div className={cn("grid gap-3", hasAtespaces ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
           {hasAtespaces && (
@@ -119,14 +131,14 @@ export function AtAGlance({ fleet }: { fleet: ReadyFleet }) {
               value={room}
               tone={room === 0 ? "error" : undefined}
               toneLabel="No room"
-              detail={<StatSubLine>{roomSubText(workerPools.items.length)}</StatSubLine>}
+              detail={<StatSubLine>{roomSubText(workerPools)}</StatSubLine>}
             />
           </Link>
         </div>
 
         {hasAtespaces && (
           <div className="grid gap-4 lg:grid-cols-2">
-            <CountCard title="Actor state">
+            <CountCard title="Actor state" hint={TERM_HINT.actorState}>
               <ul className={COUNT_GRID_CLASS}>
                 {actorStateGroupSchema.options.map((group) => (
                   <CountLink
@@ -141,7 +153,7 @@ export function AtAGlance({ fleet }: { fleet: ReadyFleet }) {
               </ul>
             </CountCard>
 
-            <CountCard title="Agents by agent profile">
+            <CountCard title="Agents by agent profile" hint={TERM_HINT.agentProfile}>
               {summary.agentsByProfile.length === 0 ? (
                 <p className="text-muted-foreground px-3 py-2 text-xs">No agents</p>
               ) : (

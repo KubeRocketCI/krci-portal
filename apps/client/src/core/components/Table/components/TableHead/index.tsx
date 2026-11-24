@@ -1,15 +1,37 @@
 import { Checkbox } from "@/core/components/ui/checkbox";
 import { TableHeadUI, TableHeaderUI, TableRowUI } from "@/core/components/ui/table";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { cn } from "@/core/utils/classname";
+import { Info } from "lucide-react";
 import React from "react";
 import { SORT_ORDERS, TABLE_CELL_DEFAULTS } from "../../constants";
 import { isColumnSortable } from "../../sort";
+import type { TableColumn } from "../../types";
 import { getSelectAllState, isColumnVisible } from "../../utils";
 import { TableHeadProps } from "./types";
 
 /** Centred triangles. The active column shows one; an inactive sortable column shows both, dimmed. */
 const ARROW_UP = "M4.5 11.25L9 5.25L13.5 11.25H4.5Z";
 const ARROW_DOWN = "M4.5 6.75L9 12.75L13.5 6.75H4.5Z";
+
+interface ColumnHintProps {
+  label: TableColumn<unknown>["label"];
+  hint: string;
+}
+
+function ColumnHint({ label, hint }: ColumnHintProps) {
+  return (
+    <Tooltip title={hint}>
+      <button
+        type="button"
+        aria-label={typeof label === "string" ? `About ${label}` : "About this column"}
+        className="text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex shrink-0 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
+      >
+        <Info size={14} aria-hidden />
+      </button>
+    </Tooltip>
+  );
+}
 
 export const TableHead = <DataType,>({
   columns,
@@ -24,6 +46,7 @@ export const TableHead = <DataType,>({
   renderColumnResizer,
 }: TableHeadProps<DataType>) => {
   const selectAllState = getSelectAllState(selectableRowCount ?? 0, selectedRowCount ?? 0);
+  const labelIdPrefix = React.useId();
 
   const handleCheckboxChange = React.useCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -54,7 +77,8 @@ export const TableHead = <DataType,>({
           </TableHeadUI>
         )}
         {columns.map((column) => {
-          const { id, label, cell } = column;
+          const { id, label, hint, cell } = column;
+          const labelId = hint ? `${labelIdPrefix}-${id}` : undefined;
           const show = isColumnVisible(column);
           const props = {
             ...TABLE_CELL_DEFAULTS.PROPS,
@@ -73,6 +97,7 @@ export const TableHead = <DataType,>({
           const labelElement = (
             // `min-w-0` lets a flex item shrink below its content, so `truncate` can bite at the column floor.
             <span
+              id={labelId}
               className={cn(
                 "min-w-0 truncate text-sm",
                 isActiveSort ? "text-foreground font-medium" : "text-muted-foreground font-normal"
@@ -113,27 +138,42 @@ export const TableHead = <DataType,>({
               </>
             );
 
+          const labelBoxWidthClass = hint ? "min-w-0" : `w-full ${alignJustifyClass}`;
+
+          const labelBox = isSortable ? (
+            <button
+              type="button"
+              onClick={() => onSort(id)}
+              className={`focus-visible:ring-ring flex cursor-pointer flex-row flex-nowrap items-center gap-1 overflow-hidden border-none bg-transparent p-0 outline-none hover:opacity-70 focus-visible:ring-2 ${labelBoxWidthClass}`}
+            >
+              {content}
+            </button>
+          ) : (
+            <div className={`flex flex-row flex-nowrap items-center gap-1 overflow-hidden ${labelBoxWidthClass}`}>
+              {content}
+            </div>
+          );
+
           return show ? (
-            <TableHeadUI key={id} className="relative px-3 py-2 align-bottom" aria-sort={ariaSort} {...props}>
+            <TableHeadUI
+              key={id}
+              className="relative px-3 py-2 align-bottom"
+              aria-sort={ariaSort}
+              aria-labelledby={labelId}
+              {...props}
+            >
               {/*
                 `overflow-hidden` sits on the label wrapper, not on the `<th>`: the resize
                 handle is centred on the column boundary and overhangs it, so clipping the
                 cell would cut the handle in half.
               */}
-              {isSortable ? (
-                <button
-                  type="button"
-                  onClick={() => onSort(id)}
-                  className={`focus-visible:ring-ring flex w-full cursor-pointer flex-row flex-nowrap items-center gap-1 overflow-hidden border-none bg-transparent p-0 outline-none hover:opacity-70 focus-visible:ring-2 ${alignJustifyClass}`}
-                >
-                  {content}
-                </button>
-              ) : (
-                <div
-                  className={`flex w-full flex-row flex-nowrap items-center gap-1 overflow-hidden ${alignJustifyClass}`}
-                >
-                  {content}
+              {hint ? (
+                <div className={`flex w-full flex-row flex-nowrap items-center gap-1 ${alignJustifyClass}`}>
+                  {labelBox}
+                  <ColumnHint label={label} hint={hint} />
                 </div>
+              ) : (
+                labelBox
               )}
               {renderColumnResizer?.(id)}
             </TableHeadUI>

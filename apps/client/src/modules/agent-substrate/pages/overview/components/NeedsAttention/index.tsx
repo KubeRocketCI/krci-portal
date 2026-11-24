@@ -15,6 +15,7 @@ import { ActorLink, AgentIssueLink } from "../../../../components/ActorCells";
 import { EmptyValue } from "../../../../components/EmptyValue";
 import { WorkerStateBadge } from "../../../../components/WorkerCells";
 import { ACTOR_FILTER_NAMES } from "../../../../constants/actorFilter";
+import { SECTION_HINT } from "../../../../constants/hints";
 import {
   PATH_AGENT_ACTOR_DETAIL_FULL,
   PATH_AGENT_ACTORS_FULL,
@@ -29,6 +30,7 @@ import {
   groupTitle,
   NEEDS_ATTENTION_MAX_ROWS,
   notCheckedText,
+  unschedulableText,
   workerPoolCheckOf,
   type AttentionGroup,
 } from "../../utils/needsAttention";
@@ -107,6 +109,20 @@ function ActorCrashedRow({ item }: { item: ItemOf<"actorCrashed"> }) {
   );
 }
 
+function ActorUnschedulableRow({ item }: { item: ItemOf<"actorUnschedulable"> }) {
+  return (
+    <Row severity={item.severity} name={<ActorLink actor={item} />} aside={null}>
+      <TextWithTooltip text={unschedulableText(item.workerSelector)} className="text-xs" />
+      <div className="flex min-w-0 items-center gap-2">
+        <span className="shrink-0">Issue</span>
+        <div className="min-w-0 flex-1">
+          <AgentIssueLink agent={item.agent} />
+        </div>
+      </div>
+    </Row>
+  );
+}
+
 function WorkerPoolNotReadyRow({ item }: { item: ItemOf<"workerPoolNotReady"> }) {
   const clusterName = useClusterName();
   return (
@@ -175,6 +191,8 @@ function AttentionRow({ item }: { item: AttentionItem }) {
   switch (item.kind) {
     case "actorCrashed":
       return <ActorCrashedRow item={item} />;
+    case "actorUnschedulable":
+      return <ActorUnschedulableRow item={item} />;
     case "workerPoolNotReady":
       return <WorkerPoolNotReadyRow item={item} />;
     case "workerNotActive":
@@ -189,6 +207,7 @@ const SHOW_ALL_TARGET: Record<AttentionKind, { to: string; search?: Record<strin
     to: PATH_AGENT_ACTORS_FULL,
     search: { [ACTOR_FILTER_NAMES.ACTOR_STATE]: actorStateGroupSchema.enum.crashed },
   },
+  actorUnschedulable: { to: PATH_AGENT_ACTORS_FULL },
   workerPoolNotReady: { to: PATH_AGENT_WORKER_POOLS_FULL },
   workerNotActive: { to: PATH_AGENT_WORKER_POOLS_FULL, search: WORKERS_SEARCH },
   snapshotPending: { to: PATH_AGENT_ACTORS_FULL },
@@ -234,6 +253,7 @@ function AttentionGroupCard({ group }: { group: AttentionGroup }) {
 function rowKey(item: AttentionItem): string {
   switch (item.kind) {
     case "actorCrashed":
+    case "actorUnschedulable":
     case "snapshotPending":
       return JSON.stringify([item.atespace, item.name]);
     case "workerPoolNotReady":
@@ -253,7 +273,9 @@ export function NeedsAttention({ fleet }: { fleet: ReadyFleet }) {
 
   return (
     <section aria-labelledby={headingId}>
-      <SectionHeading id={headingId}>Needs attention</SectionHeading>
+      <SectionHeading id={headingId} hint={SECTION_HINT.needsAttention}>
+        Needs attention
+      </SectionHeading>
       {groups.length === 0 ? (
         <div className="flex flex-col gap-1 py-2">
           <p
