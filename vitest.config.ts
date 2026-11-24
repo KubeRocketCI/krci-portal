@@ -3,9 +3,10 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     projects: ["apps/*", "packages/*", "scripts"],
-    reporters: ["verbose"],
+    reporters: [process.env.CI ? "verbose" : "dot"],
     coverage: {
-      enabled: true,
+      // On in `pnpm test:coverage` (--coverage).
+      enabled: false,
       provider: "istanbul",
       reporter: ["text", "lcov", "json"],
       exclude: [
