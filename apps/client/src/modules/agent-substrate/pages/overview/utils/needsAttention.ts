@@ -1,4 +1,4 @@
-import type { AttentionItem, AttentionKind, ReadyFleetSnapshot, WorkerPoolAccess } from "@my-project/shared";
+import type { AttentionItem, AttentionKind, ReadyFleet, WorkerPoolAccess } from "@my-project/shared";
 import { plural } from "../../../utils/plural";
 
 /** Rows shown per group; more rows give a "Show all" link. */
@@ -48,7 +48,7 @@ export interface WorkerPoolCheck {
   total: number;
 }
 
-export function workerPoolCheckOf({ access, items }: ReadyFleetSnapshot["workerPools"]): WorkerPoolCheck {
+export function workerPoolCheckOf({ access, items }: ReadyFleet["workerPools"]): WorkerPoolCheck {
   return { access, read: items.filter(({ resource }) => resource !== null).length, total: items.length };
 }
 

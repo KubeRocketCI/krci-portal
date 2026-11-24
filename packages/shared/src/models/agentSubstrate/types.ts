@@ -2,12 +2,12 @@ import { z } from "zod";
 import {
   actorAgentSchema,
   actorCrashSchema,
-  actorIssueSchema,
   actorPlacementSchema,
   actorRowSchema,
   actorSnapshotSchema,
   actorStateGroupSchema,
   actorStateSchema,
+  agentIssueSchema,
   agentProfileCountSchema,
   atespaceSchema,
   attentionAgentSchema,
@@ -15,7 +15,7 @@ import {
   attentionKindSchema,
   attentionSeveritySchema,
   codebaseRefSchema,
-  fleetSnapshotSchema,
+  fleetSchema,
   fleetSummarySchema,
   fleetUnreachableReasonSchema,
   roomResourceSchema,
@@ -40,7 +40,7 @@ export type FleetUnreachableReason = z.infer<typeof fleetUnreachableReasonSchema
 export type WorkerPoolAccess = z.infer<typeof workerPoolAccessSchema>;
 export type SubstrateResources = z.infer<typeof substrateResourcesSchema>;
 export type Atespace = z.infer<typeof atespaceSchema>;
-export type ActorIssue = z.infer<typeof actorIssueSchema>;
+export type AgentIssue = z.infer<typeof agentIssueSchema>;
 export type CodebaseRef = z.infer<typeof codebaseRefSchema>;
 export type ActorAgent = z.infer<typeof actorAgentSchema>;
 export type ActorPlacement = z.infer<typeof actorPlacementSchema>;
@@ -59,5 +59,5 @@ export type AttentionSeverity = z.infer<typeof attentionSeveritySchema>;
 export type AttentionKind = z.infer<typeof attentionKindSchema>;
 export type AttentionAgent = z.infer<typeof attentionAgentSchema>;
 export type AttentionItem = z.infer<typeof attentionItemSchema>;
-export type FleetSnapshot = z.infer<typeof fleetSnapshotSchema>;
-export type ReadyFleetSnapshot = Extract<FleetSnapshot, { state: "ready" }>;
+export type Fleet = z.infer<typeof fleetSchema>;
+export type ReadyFleet = Extract<Fleet, { state: "ready" }>;

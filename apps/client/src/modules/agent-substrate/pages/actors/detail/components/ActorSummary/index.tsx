@@ -2,7 +2,7 @@ import type { ActorRow } from "@my-project/shared";
 import { Alert } from "@/core/components/ui/alert";
 import { Card, CardContent } from "@/core/components/ui/card";
 import { formatTimestamp } from "@/core/utils/date-humanize";
-import { ActorCodebase, ActorIssue, ActorStateBadge } from "../../../../../components/ActorCells";
+import { ActorStateBadge, AgentCodebaseLink, AgentIssueLink } from "../../../../../components/ActorCells";
 import { KV } from "../../../../../components/KV";
 
 export function ActorSummary({ actor }: { actor: ActorRow }) {
@@ -18,8 +18,8 @@ export function ActorSummary({ actor }: { actor: ActorRow }) {
         <CardContent className="p-4">
           <KV
             rows={[
-              ["Issue", <ActorIssue agent={actor.agent} />],
-              ["Codebase", <ActorCodebase agent={actor.agent} />],
+              ["Issue", <AgentIssueLink agent={actor.agent} />],
+              ["Codebase", <AgentCodebaseLink agent={actor.agent} />],
               ["Agent profile", actor.agent?.agentProfile],
               ["Model", actor.agent?.model],
               ["Atespace", actor.atespace],

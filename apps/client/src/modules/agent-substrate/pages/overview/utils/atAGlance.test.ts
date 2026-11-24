@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { actorStateGroupSchema, type ReadyFleetSnapshot } from "@my-project/shared";
+import { actorStateGroupSchema, type ReadyFleet } from "@my-project/shared";
 import {
   CRASHED_ACTOR_FLEET,
   DRAINING_WORKER_FLEET,
@@ -15,12 +15,12 @@ import { ACTOR_FILTER_NAMES } from "../../../constants/actorFilter";
 import { actorMatchFunctions } from "../../actors/list/components/ActorFilter/constants";
 import { actorStateSearch, agentProfileSearch, agentsSubText, roomSubText, workersHealth } from "./atAGlance";
 
-function summaryOf(fleet: ReadyFleetSnapshot, patch: Partial<ReadyFleetSnapshot["summary"]>) {
+function summaryOf(fleet: ReadyFleet, patch: Partial<ReadyFleet["summary"]>) {
   return { ...fleet.summary, ...patch };
 }
 
 /** The workers of the fleet with its first active worker not registered. */
-function unregistered(fleet: ReadyFleetSnapshot) {
+function unregistered(fleet: ReadyFleet) {
   const workers = structuredClone(fleet.workers);
   workers.find(({ state }) => state === "active")!.registered = false;
   return workers;
@@ -103,7 +103,7 @@ describe("At a glance counts match the Actors page filters", () => {
     SEVERAL_AGENT_PROFILES_FLEET,
   };
 
-  const matching = (fleet: ReadyFleetSnapshot, search: Record<string, string>) =>
+  const matching = (fleet: ReadyFleet, search: Record<string, string>) =>
     fleet.actors.filter((actor) =>
       Object.entries(search).every(([name, value]) =>
         actorMatchFunctions[name as keyof typeof actorMatchFunctions]!(actor, value)

@@ -48,7 +48,7 @@ export const Loading: Story = {
 };
 
 export const NotConfigured: Story = {
-  args: { snapshot: { state: "notConfigured" } },
+  args: { fleet: { state: "notConfigured" } },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByText("Agent Substrate is not configured")).toBeVisible();
@@ -58,7 +58,7 @@ export const NotConfigured: Story = {
 
 export const Unreachable: Story = {
   args: {
-    snapshot: { state: "unreachable", reason: "permissionDenied" },
+    fleet: { state: "unreachable", reason: "permissionDenied" },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -68,7 +68,7 @@ export const Unreachable: Story = {
 };
 
 export const StaleAfterFailedRefresh: Story = {
-  args: { snapshot: { state: "notConfigured" }, error: internalError },
+  args: { fleet: { state: "notConfigured" }, error: internalError },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByText("Refresh failed")).toHaveClass("text-status-missing");
@@ -78,7 +78,7 @@ export const StaleAfterFailedRefresh: Story = {
 
 export const KeptFleetAfterUnreachableRefresh: Story = {
   args: {
-    snapshot: { ...TESTBED_FLEET, refreshFailure: "unavailable" },
+    fleet: { ...TESTBED_FLEET, refreshFailure: "unavailable" },
     children: (fleet) => <p>{`${fleet.actors.length} actors`}</p>,
   },
   play: async ({ canvasElement }) => {
@@ -93,7 +93,7 @@ export const KeptFleetAfterUnreachableRefresh: Story = {
 
 export const KeptFleetThenFailedRefresh: Story = {
   args: {
-    snapshot: { ...TESTBED_FLEET, refreshFailure: "unavailable" },
+    fleet: { ...TESTBED_FLEET, refreshFailure: "unavailable" },
     error: internalError,
     children: (fleet) => <p>{`${fleet.actors.length} actors`}</p>,
   },
@@ -107,7 +107,7 @@ export const KeptFleetThenFailedRefresh: Story = {
 
 export const KeptFleetUnknownReason: Story = {
   args: {
-    snapshot: { ...TESTBED_FLEET, refreshFailure: "timeout" as unknown as "other" },
+    fleet: { ...TESTBED_FLEET, refreshFailure: "timeout" as unknown as "other" },
     children: () => null,
   },
   play: async ({ canvasElement }) => {

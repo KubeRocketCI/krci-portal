@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
-import type { FleetSnapshot } from "@my-project/shared";
+import type { Fleet } from "@my-project/shared";
 import { EMPTY_FLEET } from "../__fixtures__/storyFleet";
 import { FLEET_QUERY_KEY, useFleet } from "./useFleet";
 
@@ -29,21 +29,21 @@ describe("useFleet", () => {
     mockQuery.mockReset();
   });
 
-  it("reads getFleet with an empty input and caches the snapshot under FLEET_QUERY_KEY", async () => {
-    const snapshot: FleetSnapshot = { state: "notConfigured" };
-    mockQuery.mockResolvedValue(snapshot);
+  it("reads getFleet with an empty input and caches the fleet under FLEET_QUERY_KEY", async () => {
+    const fleet: Fleet = { state: "notConfigured" };
+    mockQuery.mockResolvedValue(fleet);
 
     const { client, Wrapper } = makeWrapper();
     const { result } = renderHook(() => useFleet(), { wrapper: Wrapper });
 
-    await waitFor(() => expect(result.current.data).toEqual(snapshot));
+    await waitFor(() => expect(result.current.data).toEqual(fleet));
     expect(mockQuery).toHaveBeenCalledWith({});
-    expect(client.getQueryData(FLEET_QUERY_KEY)).toEqual(snapshot);
+    expect(client.getQueryData(FLEET_QUERY_KEY)).toEqual(fleet);
   });
 
   describe("a refresh that finds Agent Substrate unreachable", () => {
     const ready = { ...EMPTY_FLEET, updatedAt: "2026-11-24T09:30:35.000Z" };
-    const unreachable: FleetSnapshot = { state: "unreachable", reason: "unavailable" };
+    const unreachable: Fleet = { state: "unreachable", reason: "unavailable" };
 
     const START = Date.parse("2026-11-24T09:30:40.000Z");
 
@@ -56,8 +56,8 @@ describe("useFleet", () => {
       vi.useRealTimers();
     });
 
-    /** `[snapshot, ms after START]`; a bare snapshot is read at START. */
-    type Read = FleetSnapshot | [FleetSnapshot, number];
+    /** `[fleet, ms after START]`; a bare fleet is read at START. */
+    type Read = Fleet | [Fleet, number];
 
     async function afterReads(...reads: Read[]) {
       const [first, ...rest] = reads.map((read) => (Array.isArray(read) ? read : ([read, 0] as const)));
@@ -66,9 +66,9 @@ describe("useFleet", () => {
       const { result } = renderHook(() => useFleet(), { wrapper: Wrapper });
       // useQuery re-renders only for the result fields read; reading `data` subscribes the hook.
       await waitFor(() => expect(result.current.data).toEqual(first[0]));
-      for (const [snapshot, ms] of rest) {
+      for (const [fleet, ms] of rest) {
         vi.setSystemTime(START + ms);
-        mockQuery.mockResolvedValueOnce(snapshot);
+        mockQuery.mockResolvedValueOnce(fleet);
         await act(() => client.refetchQueries({ queryKey: FLEET_QUERY_KEY }));
       }
       return { client, result };

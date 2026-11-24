@@ -32,7 +32,7 @@ export function ActorLink({ actor }: { actor: Pick<ActorRow, "atespace" | "name"
   );
 }
 
-export function ActorIssue({ agent }: { agent: Pick<ActorAgent, "issue"> | null }) {
+export function AgentIssueLink({ agent }: { agent: Pick<ActorAgent, "issue"> | null }) {
   if (!agent) return <EmptyValue />;
 
   const label = issueLabel(agent.issue);
@@ -41,7 +41,7 @@ export function ActorIssue({ agent }: { agent: Pick<ActorAgent, "issue"> | null 
   return <CellExternalLink href={agent.issue.url} text={label} icon={ExternalLink} onClick={stopRowClick} />;
 }
 
-export function ActorCodebase({ agent }: { agent: ActorAgent | null }) {
+export function AgentCodebaseLink({ agent }: { agent: ActorAgent | null }) {
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
   if (!agent) return <EmptyValue />;
   if (!agent.codebase) return <TextWithTooltip text={agent.issue.projectPath} />;

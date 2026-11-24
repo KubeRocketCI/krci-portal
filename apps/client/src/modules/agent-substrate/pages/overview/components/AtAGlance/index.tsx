@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "@tanstack/react-router";
 import { Bot, Boxes, Server } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
-import { actorStateGroupSchema, type ReadyFleetSnapshot } from "@my-project/shared";
+import { actorStateGroupSchema, type ReadyFleet } from "@my-project/shared";
 import { SectionHeading } from "@/core/components/SectionHeading";
 import { StatCard, StatErrorIcon, StatHealthLine, StatSubLine } from "@/core/components/StatCard";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
@@ -70,7 +70,7 @@ function CountLink({
 }
 
 /** With no atespace, only the Workers and Room cards. With no actor template, room counts actors only. */
-export function AtAGlance({ fleet }: { fleet: ReadyFleetSnapshot }) {
+export function AtAGlance({ fleet }: { fleet: ReadyFleet }) {
   const headingId = React.useId();
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
   const { summary, workerPools } = fleet;

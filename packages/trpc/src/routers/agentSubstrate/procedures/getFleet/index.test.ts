@@ -7,7 +7,7 @@ import {
   k8sWorkerPoolConfig,
   type ActorState,
   type K8sResourceConfig,
-  type ReadyFleetSnapshot,
+  type ReadyFleet,
   type SnapshotDurableState,
   type WorkerState,
 } from "@my-project/shared";
@@ -39,14 +39,14 @@ const TESTBED_STORYBOOK_FIXTURE = path.resolve(
 const ATESPACE = "krci-agents";
 const START = new Date("2026-11-22T10:00:00.000Z");
 
-function actor(name: string, state: ActorState, template = name): SubstrateActor {
+function actor(name: string, state: ActorState, actorTemplate = name): SubstrateActor {
   return {
     atespace: ATESPACE,
     name,
     uid: `uid-${name}`,
     createTime: "2026-11-16T16:19:04.000Z",
     updateTime: "2026-11-16T16:52:03.000Z",
-    actorTemplate: { atespace: ATESPACE, name: template },
+    actorTemplate: { atespace: ATESPACE, name: actorTemplate },
     state,
     workerAssignment: null,
     crash: null,
@@ -54,8 +54,8 @@ function actor(name: string, state: ActorState, template = name): SubstrateActor
   };
 }
 
-/** The template the dispatcher writes for one issue. `agentProfile` "": the dispatcher set no AGENT_PROFILE. */
-function issueTemplate(
+/** The actor template the dispatcher writes for one issue. `agentProfile` "": the dispatcher set no AGENT_PROFILE. */
+function issueActorTemplate(
   name: string,
   projectPath: string,
   projectId: string,
@@ -88,8 +88,8 @@ function issueTemplate(
 const GIB = 1024 ** 3;
 const MIB = 1024 ** 2;
 
-/** A template that the dispatcher did not make. */
-function plainTemplate(
+/** An actor template that the dispatcher did not make. */
+function plainActorTemplate(
   name: string,
   limits: SubstrateActorTemplate["limits"] = { cpuMillicores: 500, memoryBytes: GIB }
 ): SubstrateActorTemplate {
@@ -185,9 +185,9 @@ function stubK8s({
     .mockImplementation(async (config: K8sResourceConfig, namespace?: string) => {
       if (config === k8sWorkerPoolConfig) {
         if (!namespace) throw forbidden();
-        const pools = workerPools[namespace] ?? [];
-        if (pools instanceof Error) throw pools;
-        return { items: pools } as never;
+        const items = workerPools[namespace] ?? [];
+        if (items instanceof Error) throw items;
+        return { items } as never;
       }
       if (config !== k8sCodebaseConfig || namespace !== PLATFORM_NAMESPACE || codebases === undefined) {
         throw forbidden();
@@ -212,10 +212,10 @@ function listedNamespaces(list: ReturnType<typeof stubK8s>["list"], config: K8sR
   return list.mock.calls.filter(([listed]) => listed === config).map(([, namespace]) => namespace);
 }
 
-async function readyFleet(caller: ReturnType<typeof createCaller>): Promise<ReadyFleetSnapshot> {
-  const snapshot = await caller.agentSubstrate.getFleet({});
-  if (snapshot.state !== "ready") throw new Error(`expected a ready fleet, got ${snapshot.state}`);
-  return snapshot;
+async function readyFleet(caller: ReturnType<typeof createCaller>): Promise<ReadyFleet> {
+  const fleet = await caller.agentSubstrate.getFleet({});
+  if (fleet.state !== "ready") throw new Error(`expected a ready fleet, got ${fleet.state}`);
+  return fleet;
 }
 
 describe("agentSubstrate.getFleet", () => {
@@ -332,16 +332,16 @@ describe("agentSubstrate.getFleet", () => {
         actor("unreadable", "unknown"),
       ],
       actorTemplates: [
-        issueTemplate("issue-2-25", "krci/test-go-app", "2", "25"),
-        issueTemplate("issue-2-26", "krci/test-go-app", "2", "26"),
-        issueTemplate("issue-5-3", "krci/test-python-app", "5", "3", "python"),
-        issueTemplate("issue-5-4", "krci/test-python-app", "5", "4", "python"),
-        issueTemplate("issue-6-2", "krci/test-node-app", "6", "2", "node"),
-        issueTemplate("issue-6-3", "krci/test-node-app", "6", "3", "node"),
-        plainTemplate("debug-shell"),
-        plainTemplate("reverting-one"),
-        plainTemplate("future-state"),
-        plainTemplate("unreadable"),
+        issueActorTemplate("issue-2-25", "krci/test-go-app", "2", "25"),
+        issueActorTemplate("issue-2-26", "krci/test-go-app", "2", "26"),
+        issueActorTemplate("issue-5-3", "krci/test-python-app", "5", "3", "python"),
+        issueActorTemplate("issue-5-4", "krci/test-python-app", "5", "4", "python"),
+        issueActorTemplate("issue-6-2", "krci/test-node-app", "6", "2", "node"),
+        issueActorTemplate("issue-6-3", "krci/test-node-app", "6", "3", "node"),
+        plainActorTemplate("debug-shell"),
+        plainActorTemplate("reverting-one"),
+        plainActorTemplate("future-state"),
+        plainActorTemplate("unreadable"),
       ],
       workers: [worker("w1", "active"), worker("w2", "active"), worker("w3", "draining"), worker("w4", "unavailable")],
     });
@@ -364,11 +364,14 @@ describe("agentSubstrate.getFleet", () => {
     expect(fleet.atespaces).toEqual([{ name: ATESPACE, uid: "as-1", createdAt: "2026-11-10T08:00:00.000Z" }]);
   });
 
-  it("passes on only the AGENT_ENV template fields of an agent and a null agent for any other actor", async () => {
+  it("passes on only the AGENT_ENV actor template fields of an agent and a null agent for any other actor", async () => {
     mockContext.agentSubstrateSource = new MemoryAgentSubstrateSource({
       atespaces: ATESPACES,
       actors: [actor("issue-2-25", "suspended"), actor("debug-shell", "running")],
-      actorTemplates: [issueTemplate("issue-2-25", "krci/test-go-app", "2", "25"), plainTemplate("debug-shell")],
+      actorTemplates: [
+        issueActorTemplate("issue-2-25", "krci/test-go-app", "2", "25"),
+        plainActorTemplate("debug-shell"),
+      ],
     });
 
     const fleet = await readyFleet(createCaller(mockContext));
@@ -404,11 +407,11 @@ describe("agentSubstrate.getFleet", () => {
         actor("gone-template", "suspended"),
       ],
       actorTemplates: [
-        issueTemplate("issue-9-1", "krci/no-profile-app", "9", "1", ""),
-        issueTemplate("issue-2-25", "krci/test-go-app", "2", "25", "python"),
-        issueTemplate("issue-2-26", "krci/test-go-app", "2", "26", "go"),
-        issueTemplate("issue-7-1", "krci/test-java-app", "7", "1", "go-1-26"),
-        plainTemplate("debug-shell"),
+        issueActorTemplate("issue-9-1", "krci/no-profile-app", "9", "1", ""),
+        issueActorTemplate("issue-2-25", "krci/test-go-app", "2", "25", "python"),
+        issueActorTemplate("issue-2-26", "krci/test-go-app", "2", "26", "go"),
+        issueActorTemplate("issue-7-1", "krci/test-java-app", "7", "1", "go-1-26"),
+        plainActorTemplate("debug-shell"),
       ],
     });
 
@@ -423,11 +426,11 @@ describe("agentSubstrate.getFleet", () => {
     ]);
   });
 
-  it("counts an actor whose template is gone as an actor but not as an agent", async () => {
+  it("counts an actor whose actor template is gone as an actor but not as an agent", async () => {
     mockContext.agentSubstrateSource = new MemoryAgentSubstrateSource({
       atespaces: ATESPACES,
       actors: [actor("issue-2-25", "suspended"), actor("issue-2-26", "suspended")],
-      actorTemplates: [issueTemplate("issue-2-25", "krci/test-go-app", "2", "25")],
+      actorTemplates: [issueActorTemplate("issue-2-25", "krci/test-go-app", "2", "25")],
     });
 
     const fleet = await readyFleet(createCaller(mockContext));
@@ -445,7 +448,7 @@ describe("agentSubstrate.getFleet", () => {
       return new MemoryAgentSubstrateSource({
         atespaces: ATESPACES,
         actors: [actor("issue-2-25", "running")],
-        actorTemplates: [issueTemplate("issue-2-25", "krci/test-go-app", "2", "25")],
+        actorTemplates: [issueActorTemplate("issue-2-25", "krci/test-go-app", "2", "25")],
       });
     }
 
@@ -654,7 +657,7 @@ describe("agentSubstrate.getFleet", () => {
       mockContext.agentSubstrateSource = new MemoryAgentSubstrateSource({
         atespaces: ATESPACES,
         actors: [actor("debug-shell", "running")],
-        actorTemplates: [plainTemplate("debug-shell")],
+        actorTemplates: [plainActorTemplate("debug-shell")],
       });
       const { list } = stubK8s({});
 
@@ -699,7 +702,7 @@ describe("agentSubstrate.getFleet", () => {
       mockContext.agentSubstrateSource = new MemoryAgentSubstrateSource({
         atespaces: ATESPACES,
         actors: [actor("debug-shell", "running")],
-        actorTemplates: [plainTemplate("debug-shell")],
+        actorTemplates: [plainActorTemplate("debug-shell")],
       });
       stubK8s({ codebases: [codebase("go-app", "/krci/test-go-app")], gitServers: GITLAB });
 
@@ -786,7 +789,7 @@ describe("agentSubstrate.getFleet", () => {
     const source = new MemoryAgentSubstrateSource({
       atespaces: ATESPACES,
       actors: [actor("issue-2-25", "running")],
-      actorTemplates: [issueTemplate("issue-2-25", "krci/test-go-app", "2", "25")],
+      actorTemplates: [issueActorTemplate("issue-2-25", "krci/test-go-app", "2", "25")],
     });
     mockContext.agentSubstrateSource = source;
     const reads = {
@@ -807,11 +810,11 @@ describe("agentSubstrate.getFleet", () => {
     for (const spy of Object.values(reads)) expect(spy).toHaveBeenCalledTimes(1);
   });
 
-  it("reads the template of an actor once, not again on a later read", async () => {
+  it("reads the actor template of an actor once, not again on a later read", async () => {
     const source = new MemoryAgentSubstrateSource({
       atespaces: ATESPACES,
       actors: [actor("issue-2-25", "running")],
-      actorTemplates: [issueTemplate("issue-2-25", "krci/test-go-app", "2", "25")],
+      actorTemplates: [issueActorTemplate("issue-2-25", "krci/test-go-app", "2", "25")],
     });
     mockContext.agentSubstrateSource = source;
     const getActorTemplate = vi.spyOn(source, "getActorTemplate");
@@ -863,8 +866,8 @@ describe("agentSubstrate.getFleet", () => {
       const items = await needsAttentionOf({
         actors: [crashed("issue-2-25", "2026-11-22T09:40:00.000Z", "out of memory"), actor("issue-2-26", "running")],
         actorTemplates: [
-          issueTemplate("issue-2-25", "krci/test-go-app", "2", "25"),
-          issueTemplate("issue-2-26", "krci/test-go-app", "2", "26"),
+          issueActorTemplate("issue-2-25", "krci/test-go-app", "2", "25"),
+          issueActorTemplate("issue-2-26", "krci/test-go-app", "2", "26"),
         ],
       });
 
@@ -892,7 +895,7 @@ describe("agentSubstrate.getFleet", () => {
     it("gives a crashed actor that the dispatcher did not make no agent", async () => {
       const items = await needsAttentionOf({
         actors: [crashed("debug-shell", null)],
-        actorTemplates: [plainTemplate("debug-shell")],
+        actorTemplates: [plainActorTemplate("debug-shell")],
       });
 
       expect(items).toEqual([expect.objectContaining({ kind: "actorCrashed", name: "debug-shell", agent: null })]);
@@ -907,8 +910,8 @@ describe("agentSubstrate.getFleet", () => {
           withSnapshots(actor("issue-2-26", "running"), 60, []),
         ],
         actorTemplates: [
-          issueTemplate("issue-2-25", "krci/test-go-app", "2", "25"),
-          issueTemplate("issue-2-26", "krci/test-go-app", "2", "26"),
+          issueActorTemplate("issue-2-25", "krci/test-go-app", "2", "25"),
+          issueActorTemplate("issue-2-26", "krci/test-go-app", "2", "26"),
         ],
         workers: [worker("w1", "active"), worker("w2", "active")],
       });
@@ -1121,11 +1124,11 @@ describe("agentSubstrate.getFleet", () => {
     }
 
     it("counts room in the largest CPU and memory limits, bound by CPU on one worker and memory on another", async () => {
-      const pools = await workerPoolsOf({
+      const workerPools = await workerPoolsOf({
         actors: [actor("cpu-heavy", "suspended"), actor("memory-heavy", "running")],
         actorTemplates: [
-          plainTemplate("cpu-heavy", { cpuMillicores: 2000, memoryBytes: GIB }),
-          plainTemplate("memory-heavy", { cpuMillicores: 500, memoryBytes: 4 * GIB }),
+          plainActorTemplate("cpu-heavy", { cpuMillicores: 2000, memoryBytes: GIB }),
+          plainActorTemplate("memory-heavy", { cpuMillicores: 500, memoryBytes: 4 * GIB }),
         ],
         workers: [
           worker("w1", "active", { capacity: { cpuMillicores: 8000, memoryBytes: 64 * GIB, actors: 1000 } }),
@@ -1133,8 +1136,8 @@ describe("agentSubstrate.getFleet", () => {
         ],
       });
 
-      expect(pools.roomSize).toEqual({ cpuMillicores: 2000, memoryBytes: 4 * GIB });
-      expect(pools.items.map(({ name, room }) => [name, room])).toEqual([["workers", 4 + 3]]);
+      expect(workerPools.roomSize).toEqual({ cpuMillicores: 2000, memoryBytes: 4 * GIB });
+      expect(workerPools.items.map(({ name, room }) => [name, room])).toEqual([["workers", 4 + 3]]);
     });
 
     describe("the resource that limits room", () => {
@@ -1145,7 +1148,7 @@ describe("agentSubstrate.getFleet", () => {
         expect(
           await limitedByOf({
             actors: [actor("small", "suspended")],
-            actorTemplates: [plainTemplate("small", { cpuMillicores: 1000, memoryBytes: GIB })],
+            actorTemplates: [plainActorTemplate("small", { cpuMillicores: 1000, memoryBytes: GIB })],
             workers: [
               worker("w1", "active", {
                 capacity: { cpuMillicores: 4000, memoryBytes: 8 * GIB, actors: 10 },
@@ -1160,7 +1163,7 @@ describe("agentSubstrate.getFleet", () => {
         expect(
           await limitedByOf({
             actors: [actor("small", "suspended")],
-            actorTemplates: [plainTemplate("small", { cpuMillicores: 500, memoryBytes: 2 * GIB })],
+            actorTemplates: [plainActorTemplate("small", { cpuMillicores: 500, memoryBytes: 2 * GIB })],
             workers: [
               worker("microvm", "active", {
                 capacity: { cpuMillicores: 8000, memoryBytes: 8 * GIB, actors: 10 },
@@ -1175,7 +1178,7 @@ describe("agentSubstrate.getFleet", () => {
         expect(
           await limitedByOf({
             actors: [actor("small", "running")],
-            actorTemplates: [plainTemplate("small", { cpuMillicores: 500, memoryBytes: GIB })],
+            actorTemplates: [plainActorTemplate("small", { cpuMillicores: 500, memoryBytes: GIB })],
             workers: [
               worker("w1", "active", {
                 capacity: { cpuMillicores: 4000, memoryBytes: 8 * GIB, actors: 3 },
@@ -1203,7 +1206,7 @@ describe("agentSubstrate.getFleet", () => {
         expect(
           await limitedByOf({
             actors: [actor("small", "suspended")],
-            actorTemplates: [plainTemplate("small", { cpuMillicores: 1000, memoryBytes: 2 * GIB })],
+            actorTemplates: [plainActorTemplate("small", { cpuMillicores: 1000, memoryBytes: 2 * GIB })],
             workers: [worker("w1", "active", { capacity: { cpuMillicores: 2000, memoryBytes: 4 * GIB, actors: 2 } })],
           })
         ).toEqual([["workers", 2, ["actors", "cpu", "memory"]]]);
@@ -1214,8 +1217,8 @@ describe("agentSubstrate.getFleet", () => {
           await limitedByOf({
             actors: [actor("cpu-heavy", "suspended"), actor("memory-heavy", "running")],
             actorTemplates: [
-              plainTemplate("cpu-heavy", { cpuMillicores: 2000, memoryBytes: GIB }),
-              plainTemplate("memory-heavy", { cpuMillicores: 500, memoryBytes: 4 * GIB }),
+              plainActorTemplate("cpu-heavy", { cpuMillicores: 2000, memoryBytes: GIB }),
+              plainActorTemplate("memory-heavy", { cpuMillicores: 500, memoryBytes: 4 * GIB }),
             ],
             workers: [
               // CPU fits 4, memory 16.
@@ -1231,7 +1234,7 @@ describe("agentSubstrate.getFleet", () => {
         expect(
           await limitedByOf({
             actors: [actor("memory-only", "suspended")],
-            actorTemplates: [plainTemplate("memory-only", { cpuMillicores: 0, memoryBytes: GIB })],
+            actorTemplates: [plainActorTemplate("memory-only", { cpuMillicores: 0, memoryBytes: GIB })],
             workers: [worker("over-cpu", "active", { allocated: { cpuMillicores: 5000, memoryBytes: 0, actors: 1 } })],
           })
         ).toEqual([["workers", 0, ["cpu"]]]);
@@ -1250,7 +1253,7 @@ describe("agentSubstrate.getFleet", () => {
       /** Room size 1 CPU, 2 Gi. */
       const ONE_ACTOR_SIZE = {
         actors: [actor("issue", "suspended")],
-        actorTemplates: [plainTemplate("issue", { cpuMillicores: 1000, memoryBytes: 2 * GIB })],
+        actorTemplates: [plainActorTemplate("issue", { cpuMillicores: 1000, memoryBytes: 2 * GIB })],
       };
       const inPool = (workerPool: string, name: string, state: WorkerState, fields: Partial<SubstrateWorker> = {}) =>
         worker(name, state, { workerPool, ...fields });
@@ -1302,7 +1305,7 @@ describe("agentSubstrate.getFleet", () => {
         ).toEqual([["workers", 0, "full"]]);
       });
 
-      it("gives full at the actor capacity and tooSmall at an actor capacity of 0 when no template sets limits", async () => {
+      it("gives full at the actor capacity and tooSmall at an actor capacity of 0 when no actor template sets limits", async () => {
         expect(
           await roomStatesOf(
             [
@@ -1327,8 +1330,8 @@ describe("agentSubstrate.getFleet", () => {
       });
     });
 
-    it("counts room in actors only when no actor has a template", async () => {
-      const pools = await workerPoolsOf({
+    it("counts room in actors only when no actor has an actor template", async () => {
+      const workerPools = await workerPoolsOf({
         workers: [
           worker("w1", "active", {
             capacity: { cpuMillicores: 1000, memoryBytes: GIB, actors: 10 },
@@ -1337,14 +1340,14 @@ describe("agentSubstrate.getFleet", () => {
         ],
       });
 
-      expect(pools.roomSize).toBeNull();
-      expect(pools.items[0].room).toBe(7);
+      expect(workerPools.roomSize).toBeNull();
+      expect(workerPools.items[0].room).toBe(7);
     });
 
-    it("counts room in actors only when the templates set no limits", async () => {
-      const pools = await workerPoolsOf({
+    it("counts room in actors only when the actor templates set no limits", async () => {
+      const workerPools = await workerPoolsOf({
         actors: [actor("unlimited", "suspended")],
-        actorTemplates: [plainTemplate("unlimited", { cpuMillicores: 0, memoryBytes: 0 })],
+        actorTemplates: [plainActorTemplate("unlimited", { cpuMillicores: 0, memoryBytes: 0 })],
         workers: [
           worker("w1", "active", {
             capacity: { cpuMillicores: 0, memoryBytes: 0, actors: 10 },
@@ -1353,14 +1356,14 @@ describe("agentSubstrate.getFleet", () => {
         ],
       });
 
-      expect(pools.roomSize).toBeNull();
-      expect(pools.items[0].room).toBe(8);
+      expect(workerPools.roomSize).toBeNull();
+      expect(workerPools.items[0].room).toBe(8);
     });
 
-    it("counts room in actors only, runtime overhead aside, when the templates set no limits", async () => {
-      const pools = await workerPoolsOf({
+    it("counts room in actors only, runtime overhead aside, when the actor templates set no limits", async () => {
+      const workerPools = await workerPoolsOf({
         actors: [actor("unlimited", "suspended")],
-        actorTemplates: [plainTemplate("unlimited", { cpuMillicores: 0, memoryBytes: 0 })],
+        actorTemplates: [plainActorTemplate("unlimited", { cpuMillicores: 0, memoryBytes: 0 })],
         workers: [
           worker("microvm", "active", {
             capacity: { cpuMillicores: 0, memoryBytes: 0, actors: 10 },
@@ -1369,38 +1372,38 @@ describe("agentSubstrate.getFleet", () => {
         ],
       });
 
-      expect(pools.roomSize).toBeNull();
-      expect(pools.items[0].room).toBe(10);
+      expect(workerPools.roomSize).toBeNull();
+      expect(workerPools.items[0].room).toBe(10);
     });
 
     it("adds no room for a worker over-allocated in a dimension that the room size does not limit", async () => {
-      const pools = await workerPoolsOf({
+      const workerPools = await workerPoolsOf({
         actors: [actor("memory-only", "suspended")],
-        actorTemplates: [plainTemplate("memory-only", { cpuMillicores: 0, memoryBytes: GIB })],
+        actorTemplates: [plainActorTemplate("memory-only", { cpuMillicores: 0, memoryBytes: GIB })],
         workers: [
           worker("over-cpu", "active", { allocated: { cpuMillicores: 5000, memoryBytes: 0, actors: 1 } }),
           worker("within", "active"),
         ],
       });
 
-      expect(pools.items[0].room).toBe(8);
+      expect(workerPools.items[0].room).toBe(8);
     });
 
-    it("leaves an actor whose template is gone out of the room size", async () => {
-      const pools = await workerPoolsOf({
+    it("leaves an actor whose actor template is gone out of the room size", async () => {
+      const workerPools = await workerPoolsOf({
         actors: [actor("small", "suspended"), actor("gone", "suspended")],
-        actorTemplates: [plainTemplate("small")],
+        actorTemplates: [plainActorTemplate("small")],
         workers: [worker("w1", "active")],
       });
 
-      expect(pools.roomSize).toEqual({ cpuMillicores: 500, memoryBytes: GIB });
-      expect(pools.items[0].room).toBe(8);
+      expect(workerPools.roomSize).toEqual({ cpuMillicores: 500, memoryBytes: GIB });
+      expect(workerPools.items[0].room).toBe(8);
     });
 
     it("adds no room for a draining, unavailable, unknown or unregistered worker", async () => {
-      const pools = await workerPoolsOf({
+      const workerPools = await workerPoolsOf({
         actors: [actor("small", "suspended")],
-        actorTemplates: [plainTemplate("small")],
+        actorTemplates: [plainActorTemplate("small")],
         workers: [
           worker("active", "active"),
           worker("draining", "draining"),
@@ -1410,14 +1413,18 @@ describe("agentSubstrate.getFleet", () => {
         ],
       });
 
-      expect(pools.items[0].room).toBe(8);
-      expect(pools.items[0].capacity).toEqual({ cpuMillicores: 5 * 4000, memoryBytes: 5 * 8 * GIB, actors: 5 * 1000 });
+      expect(workerPools.items[0].room).toBe(8);
+      expect(workerPools.items[0].capacity).toEqual({
+        cpuMillicores: 5 * 4000,
+        memoryBytes: 5 * 8 * GIB,
+        actors: 5 * 1000,
+      });
     });
 
     it("adds no room for a worker at its actor capacity or with more allocated than its capacity", async () => {
-      const pools = await workerPoolsOf({
+      const workerPools = await workerPoolsOf({
         actors: [actor("small", "suspended")],
-        actorTemplates: [plainTemplate("small")],
+        actorTemplates: [plainActorTemplate("small")],
         workers: [
           worker("at-actor-capacity", "active", {
             capacity: { cpuMillicores: 4000, memoryBytes: 8 * GIB, actors: 2 },
@@ -1429,13 +1436,13 @@ describe("agentSubstrate.getFleet", () => {
         ],
       });
 
-      expect(pools.items[0].room).toBe(0);
+      expect(workerPools.items[0].room).toBe(0);
     });
 
     it("books the runtime overhead of the worker on top of the memory limit", async () => {
-      const pools = await workerPoolsOf({
+      const workerPools = await workerPoolsOf({
         actors: [actor("issue-2-25", "suspended")],
-        actorTemplates: [issueTemplate("issue-2-25", "krci/test-go-app", "2", "25")],
+        actorTemplates: [issueActorTemplate("issue-2-25", "krci/test-go-app", "2", "25")],
         workers: [
           worker("microvm", "active", {
             capacity: { cpuMillicores: 8000, memoryBytes: 2 * 2 * GIB, actors: 1000 },
@@ -1445,11 +1452,11 @@ describe("agentSubstrate.getFleet", () => {
         ],
       });
 
-      expect(pools.items[0].room).toBe(1);
+      expect(workerPools.items[0].room).toBe(1);
     });
 
     it("gives one row per worker pool with its workers by name, by namespace and then name", async () => {
-      const pools = await workerPoolsOf({
+      const workerPools = await workerPoolsOf({
         workers: [
           worker("w-b2", "active", { workerPool: "b", workerNamespace: "ns-2" }),
           worker("w-a1", "active", { workerPool: "a", workerNamespace: "ns-2" }),
@@ -1462,12 +1469,12 @@ describe("agentSubstrate.getFleet", () => {
         ],
       });
 
-      expect(pools.items.map(({ namespace, name, workers }) => [namespace, name, workers])).toEqual([
+      expect(workerPools.items.map(({ namespace, name, workers }) => [namespace, name, workers])).toEqual([
         ["ns-1", "z", ["w-z1"]],
         ["ns-2", "a", ["w-a1"]],
         ["ns-2", "b", ["w-b1", "w-b2"]],
       ]);
-      expect(pools.items[2]).toMatchObject({
+      expect(workerPools.items[2]).toMatchObject({
         capacity: { cpuMillicores: 8000, memoryBytes: 16 * GIB, actors: 2000 },
         allocated: { cpuMillicores: 1000, memoryBytes: GIB, actors: 1 },
         room: 1000,
@@ -1479,12 +1486,12 @@ describe("agentSubstrate.getFleet", () => {
         workerPools: { "krci-agents": [workerPool("krci-agents", "workers", { replicas: 2, readyReplicas: 0 })] },
       });
 
-      const pools = await workerPoolsOf({});
+      const workerPools = await workerPoolsOf({});
 
       expect(list.mock.calls.map(([config, namespace]) => [config, namespace])).toEqual([
         [k8sWorkerPoolConfig, "krci-agents"],
       ]);
-      expect(pools.items).toEqual([
+      expect(workerPools.items).toEqual([
         expect.objectContaining({
           namespace: "krci-agents",
           name: "workers",
@@ -1500,12 +1507,12 @@ describe("agentSubstrate.getFleet", () => {
         workerPools: { [ATESPACE]: [workerPool(ATESPACE, "workers", { replicas: 2, readyReplicas: 1 })] },
       });
 
-      const pools = await workerPoolsOf({ workers: [worker("w1", "active")] });
+      const workerPools = await workerPoolsOf({ workers: [worker("w1", "active")] });
 
       expect(list).toHaveBeenCalledTimes(1);
       expect(list.mock.calls[0].slice(0, 2)).toEqual([k8sWorkerPoolConfig, ATESPACE]);
-      expect(pools.access).toBe("ok");
-      expect(pools.items).toEqual([
+      expect(workerPools.access).toBe("ok");
+      expect(workerPools.items).toEqual([
         {
           name: "workers",
           namespace: ATESPACE,
@@ -1530,10 +1537,10 @@ describe("agentSubstrate.getFleet", () => {
         },
       });
 
-      const pools = await workerPoolsOf({ workers: [worker("w1", "active")] });
+      const workerPools = await workerPoolsOf({ workers: [worker("w1", "active")] });
 
-      expect(pools.items.map(({ name }) => name)).toEqual(["spare", "workers"]);
-      expect(pools.items[0]).toEqual({
+      expect(workerPools.items.map(({ name }) => name)).toEqual(["spare", "workers"]);
+      expect(workerPools.items[0]).toEqual({
         name: "spare",
         namespace: ATESPACE,
         workers: [],
@@ -1550,10 +1557,10 @@ describe("agentSubstrate.getFleet", () => {
       const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
       stubK8s({ workerPools: { [ATESPACE]: forbidden() } });
 
-      const pools = await workerPoolsOf({ workers: [worker("w1", "active")] });
+      const workerPools = await workerPoolsOf({ workers: [worker("w1", "active")] });
 
-      expect(pools.access).toBe("denied");
-      expect(pools.items).toEqual([expect.objectContaining({ name: "workers", room: 1000, resource: null })]);
+      expect(workerPools.access).toBe("denied");
+      expect(workerPools.items).toEqual([expect.objectContaining({ name: "workers", room: 1000, resource: null })]);
       expect(warn).not.toHaveBeenCalled();
     });
 
@@ -1562,17 +1569,17 @@ describe("agentSubstrate.getFleet", () => {
       const outage = new K8sApiError(500, "Internal Server Error", "");
       stubK8s({ workerPools: { [ATESPACE]: outage } });
 
-      const pools = await workerPoolsOf({ workers: [worker("w1", "active")] });
+      const workerPools = await workerPoolsOf({ workers: [worker("w1", "active")] });
 
-      expect(pools.access).toBe("error");
-      expect(pools.items).toEqual([expect.objectContaining({ name: "workers", room: 1000, resource: null })]);
+      expect(workerPools.access).toBe("error");
+      expect(workerPools.items).toEqual([expect.objectContaining({ name: "workers", room: 1000, resource: null })]);
       expect(warn).toHaveBeenCalledWith(`[AgentSubstrate] WorkerPool list in namespace ${ATESPACE} failed:`, outage);
     });
 
     it("reports denied when one namespace is denied and keeps the WorkerPool fields of the readable one", async () => {
       const { list } = stubK8s({ workerPools: { "ns-1": [workerPool("ns-1", "a")], "ns-2": forbidden() } });
 
-      const pools = await workerPoolsOf({
+      const workerPools = await workerPoolsOf({
         workers: [
           worker("w1", "active", { workerPool: "a", workerNamespace: "ns-1" }),
           worker("w2", "active", { workerPool: "b", workerNamespace: "ns-2" }),
@@ -1581,8 +1588,10 @@ describe("agentSubstrate.getFleet", () => {
       });
 
       expect(listedNamespaces(list, k8sWorkerPoolConfig)).toEqual(["krci-agents", "ns-1", "ns-2"]);
-      expect(pools.access).toBe("denied");
-      expect(pools.items.map(({ namespace, resource }) => [namespace, resource?.desiredReplicas ?? null])).toEqual([
+      expect(workerPools.access).toBe("denied");
+      expect(
+        workerPools.items.map(({ namespace, resource }) => [namespace, resource?.desiredReplicas ?? null])
+      ).toEqual([
         ["ns-1", 1],
         ["ns-2", null],
       ]);
@@ -1592,25 +1601,25 @@ describe("agentSubstrate.getFleet", () => {
       const { list } = stubK8s({ workerPools: { [ATESPACE]: [workerPool(ATESPACE, "workers")] } });
       mockContext.session.user!.secret.idToken = "";
 
-      const pools = await workerPoolsOf({ workers: [worker("w1", "active")] });
+      const workerPools = await workerPoolsOf({ workers: [worker("w1", "active")] });
 
       expect(list).not.toHaveBeenCalled();
-      expect(pools.access).toBe("error");
-      expect(pools.items).toEqual([expect.objectContaining({ name: "workers", room: 1000, resource: null })]);
+      expect(workerPools.access).toBe("error");
+      expect(workerPools.items).toEqual([expect.objectContaining({ name: "workers", room: 1000, resource: null })]);
     });
 
     it("reports error over denied when one namespace fails and another is denied", async () => {
       vi.spyOn(console, "warn").mockImplementation(() => {});
       stubK8s({ workerPools: { "ns-1": new Error("socket hang up"), "ns-2": forbidden() } });
 
-      const pools = await workerPoolsOf({
+      const workerPools = await workerPoolsOf({
         workers: [
           worker("w1", "active", { workerPool: "a", workerNamespace: "ns-1" }),
           worker("w2", "active", { workerPool: "b", workerNamespace: "ns-2" }),
         ],
       });
 
-      expect(pools.access).toBe("error");
+      expect(workerPools.access).toBe("error");
     });
 
     it("gives the fleet with WorkerPool access error when the WorkerPool list does not answer in time", async () => {
@@ -1635,24 +1644,24 @@ describe("agentSubstrate.getFleet", () => {
       const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
       stubK8s({ workerPools: { [ATESPACE]: new K8sApiError(404, "Not Found", "") } });
 
-      const pools = await workerPoolsOf({ workers: [worker("w1", "active")] });
+      const workerPools = await workerPoolsOf({ workers: [worker("w1", "active")] });
 
-      expect(pools.access).toBe("ok");
-      expect(pools.items).toEqual([expect.objectContaining({ name: "workers", resource: null })]);
+      expect(workerPools.access).toBe("ok");
+      expect(workerPools.items).toEqual([expect.objectContaining({ name: "workers", resource: null })]);
       expect(warn).not.toHaveBeenCalled();
     });
 
     it("lists no WorkerPools cluster-wide for a worker that names no namespace", async () => {
       const { list } = stubK8s({ workerPools: { [ATESPACE]: [workerPool(ATESPACE, "workers")] } });
 
-      const pools = await workerPoolsOf({
+      const workerPools = await workerPoolsOf({
         workers: [worker("w1", "active"), worker("w2", "active", { workerPool: "", workerNamespace: "" })],
       });
 
       expect(list.mock.calls.map(([config, namespace]) => [config, namespace])).toEqual([
         [k8sWorkerPoolConfig, ATESPACE],
       ]);
-      expect(pools.access).toBe("ok");
+      expect(workerPools.access).toBe("ok");
     });
 
     it("keeps listing a worker namespace after its last worker is gone", async () => {
@@ -1696,7 +1705,7 @@ describe("agentSubstrate.getFleet", () => {
 
   describe("recorded testbed fixtures", () => {
     const memoryFleet: MemoryFleet = JSON.parse(readFileSync(TESTBED_MEMORY_FIXTURE, "utf8"));
-    const storybookSnapshot: ReadyFleetSnapshot = JSON.parse(readFileSync(TESTBED_STORYBOOK_FIXTURE, "utf8"));
+    const storybookFleet: ReadyFleet = JSON.parse(readFileSync(TESTBED_STORYBOOK_FIXTURE, "utf8"));
 
     it.each([
       ["memory adapter", TESTBED_MEMORY_FIXTURE],
@@ -1716,8 +1725,8 @@ describe("agentSubstrate.getFleet", () => {
       expect([...names].sort()).toEqual(Object.values(AGENT_ENV).sort());
     });
 
-    it("gives the Storybook snapshot when read through the memory adapter", async () => {
-      vi.setSystemTime(new Date(storybookSnapshot.updatedAt));
+    it("gives the Storybook fleet when read through the memory adapter", async () => {
+      vi.setSystemTime(new Date(storybookFleet.updatedAt));
       // The recorder runs with no session: the WorkerPool list gives `error`.
       vi.spyOn(console, "warn").mockImplementation(() => {});
       stubK8s({ workerPools: { [ATESPACE]: new Error("no session") } });
@@ -1725,12 +1734,12 @@ describe("agentSubstrate.getFleet", () => {
 
       const fleet = await readyFleet(createCaller(mockContext));
 
-      expect(fleet).toEqual(storybookSnapshot);
+      expect(fleet).toEqual(storybookFleet);
       expect(fleet.summary.actors).toBeGreaterThan(0);
     });
   });
 
-  it("does not read a gone template again on a later read", async () => {
+  it("does not read a gone actor template again on a later read", async () => {
     const source = new MemoryAgentSubstrateSource({ atespaces: ATESPACES, actors: [actor("issue-2-25", "suspended")] });
     mockContext.agentSubstrateSource = source;
     const getActorTemplate = vi.spyOn(source, "getActorTemplate");
@@ -1744,7 +1753,7 @@ describe("agentSubstrate.getFleet", () => {
     expect(getActorTemplate).toHaveBeenCalledTimes(1);
   });
 
-  it("reports unreachable with the reason other when a template read fails on the server", async () => {
+  it("reports unreachable with the reason other when an actor template read fails on the server", async () => {
     const source = new MemoryAgentSubstrateSource({ atespaces: ATESPACES, actors: [actor("issue-2-25", "running")] });
     vi.spyOn(source, "getActorTemplate").mockRejectedValue(new AgentSubstrateSourceError("other", "internal error"));
     mockContext.agentSubstrateSource = source;
@@ -1754,11 +1763,11 @@ describe("agentSubstrate.getFleet", () => {
     expect(result).toEqual({ state: "unreachable", reason: "other" });
   });
 
-  it("reports unreachable when a template read fails on the network", async () => {
+  it("reports unreachable when an actor template read fails on the network", async () => {
     const source = new MemoryAgentSubstrateSource({
       atespaces: ATESPACES,
       actors: [actor("issue-2-25", "running")],
-      actorTemplates: [issueTemplate("issue-2-25", "krci/test-go-app", "2", "25")],
+      actorTemplates: [issueActorTemplate("issue-2-25", "krci/test-go-app", "2", "25")],
     });
     vi.spyOn(source, "getActorTemplate").mockRejectedValue(new AgentSubstrateSourceError("unavailable", "reset"));
     mockContext.agentSubstrateSource = source;

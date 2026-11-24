@@ -3,7 +3,7 @@ import {
   type ActorStateGroup,
   type AttentionSeverity,
   type FleetSummary,
-  type ReadyFleetSnapshot,
+  type ReadyFleet,
 } from "@my-project/shared";
 import { ACTOR_FILTER_NAMES, agentProfileFilterValue } from "../../../constants/actorFilter";
 import { plural } from "../../../utils/plural";
@@ -21,10 +21,7 @@ export interface WorkersHealth {
   text: string;
 }
 
-export function workersHealth({
-  summary,
-  workers,
-}: Pick<ReadyFleetSnapshot, "summary" | "workers">): WorkersHealth | null {
+export function workersHealth({ summary, workers }: Pick<ReadyFleet, "summary" | "workers">): WorkersHealth | null {
   if (summary.workers === 0) return null;
   const { workersByState } = summary;
   const notActive = workerStateSchema.options.filter((state) => state !== "active" && workersByState[state] > 0);

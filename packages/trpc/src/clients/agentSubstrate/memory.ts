@@ -54,11 +54,13 @@ export class MemoryAgentSubstrateSource implements AgentSubstrateSource {
 
   async getActorTemplate(ref: SubstrateObjectRef): Promise<SubstrateActorTemplate> {
     return this.read(() => {
-      const template = this.fleet.actorTemplates.find((t) => t.atespace === ref.atespace && t.name === ref.name);
-      if (!template) {
+      const actorTemplate = this.fleet.actorTemplates.find(
+        ({ atespace, name }) => atespace === ref.atespace && name === ref.name
+      );
+      if (!actorTemplate) {
         throw new AgentSubstrateSourceError("notFound", `actor template ${ref.atespace}/${ref.name} not found`);
       }
-      return template;
+      return actorTemplate;
     });
   }
 
