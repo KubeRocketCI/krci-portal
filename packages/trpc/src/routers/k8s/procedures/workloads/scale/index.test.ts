@@ -9,7 +9,7 @@ vi.mock("../../../../../clients/k8s/index.js", () => ({
 
 describe("k8sScaleWorkload", () => {
   let mockContext: ReturnType<typeof createMockedContext>;
-  let mockK8s: { KubeConfig: {}; patchResource: Mock };
+  let mockK8s: { KubeConfig: object; patchResource: Mock };
 
   beforeEach(() => {
     mockContext = createMockedContext();
@@ -148,7 +148,7 @@ describe("k8sScaleWorkload", () => {
   });
 
   it("throws when KubeConfig is not initialized", async () => {
-    mockK8s.KubeConfig = null as unknown as {};
+    mockK8s.KubeConfig = null as unknown as object;
     const caller = createCaller(mockContext);
     await expect(
       caller.k8s.scaleWorkload({

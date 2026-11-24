@@ -1,14 +1,6 @@
 import { taskRunStepStatusFieldName } from "../../constants.js";
 import { TaskRunStepReason, TaskRunStepState, TaskRunStepStatus } from "../../types.js";
 
-type StepWithReasonFieldName = typeof taskRunStepStatusFieldName.terminated | typeof taskRunStepStatusFieldName.waiting;
-
-type StepWithReason = TaskRunStepState & {
-  [key in StepWithReasonFieldName]: {
-    reason: TaskRunStepReason;
-  };
-};
-
 export const getTaskRunStepStatus = (
   step: TaskRunStepState | undefined
 ): {

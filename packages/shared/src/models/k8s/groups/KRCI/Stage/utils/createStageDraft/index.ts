@@ -16,7 +16,7 @@ export const createStageDraftObject = (input: CreateStageDraftInput): StageDraft
     apiVersion,
     kind,
     metadata: {
-      name: `${input.cdPipeline}-${input.name}` || "your stage name",
+      name: `${input.cdPipeline}-${input.name}`,
       labels: {
         [stageLabels.cdPipeline]: input.cdPipeline,
       },

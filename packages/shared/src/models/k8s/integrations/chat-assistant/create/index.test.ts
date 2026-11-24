@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createChatAssistantIntegrationSecretDraft } from "./index.js";
 import { ZodError } from "zod";
-import { KubeMetadata } from "../../../common/types.js";
 import { integrationSecretName, SECRET_LABEL_SECRET_TYPE, SECRET_LABEL_INTEGRATION_SECRET } from "../../constants.js";
 
 describe("createChatAssistantIntegrationSecretDraft", () => {

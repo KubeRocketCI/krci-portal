@@ -12,7 +12,7 @@ vi.mock("../../../../../clients/k8s/index.js", () => {
 describe("k8sDeleteItemProcedure", () => {
   let mockContext: ReturnType<typeof createMockedContext>;
   let mockK8sClientInstance: {
-    KubeConfig: {};
+    KubeConfig: object;
     deleteResource: Mock;
   };
 

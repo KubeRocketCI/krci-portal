@@ -14,7 +14,7 @@ export const editJiraServer = (
   return editResource(existingJiraServer, input, editJiraServerSchema, (draft: Draft<JiraServer>, validatedInput) => {
     // Update spec fields
     if (!draft.spec) {
-      draft.spec = {} as any;
+      draft.spec = {} as JiraServer["spec"];
     }
     draft.spec.apiUrl = validatedInput.url;
     draft.spec.rootUrl = validatedInput.url;

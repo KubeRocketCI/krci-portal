@@ -112,13 +112,36 @@ export const dependencyTrackProjectMetricsSchema = baseVulnerabilityCountsSchema
     policyViolationsLicenseTotal: z.number(),
     policyViolationsOperationalTotal: z.number(),
     policyViolationsSecurityTotal: z.number(),
+    inheritedRiskScore: z.number().optional(),
+    vulnerableComponents: z.number().optional(),
+    firstOccurrence: z.number().optional(),
+    lastOccurrence: z.number().optional(),
   });
 
 /**
  * Project from Dependency Track API (recursive type with lazy schema)
  * GET /api/v1/project
  */
-export const dependencyTrackProjectSchema: z.ZodType<any> = z.lazy(() =>
+export interface DependencyTrackProjectShape {
+  uuid: string;
+  name: string;
+  version: string;
+  description?: string;
+  isLatest: boolean;
+  classifier: string;
+  active: boolean;
+  tags?: z.infer<typeof dependencyTrackTagSchema>[];
+  lastBomImport?: number;
+  lastBomImportFormat?: string;
+  lastInheritedRiskScore: number;
+  lastVulnerabilityAnalysis?: number;
+  parent?: DependencyTrackProjectShape;
+  children?: DependencyTrackProjectShape[];
+  versions?: DependencyTrackProjectShape[];
+  metrics?: z.infer<typeof dependencyTrackProjectMetricsSchema>;
+}
+
+export const dependencyTrackProjectSchema: z.ZodType<DependencyTrackProjectShape> = z.lazy(() =>
   z.object({
     uuid: z.string(),
     name: z.string(),

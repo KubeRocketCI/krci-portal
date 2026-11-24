@@ -1,4 +1,4 @@
-import { parseConfigJson, safeDecode, safeEncode } from "../../../../../../utils/index.js";
+import { parseConfigJson, safeEncode } from "../../../../../../utils/index.js";
 import z, { ZodError } from "zod";
 import { Secret, SecretDraft, secretDraftSchema } from "../../../../groups/Core/index.js";
 import { SECRET_LABEL_SECRET_TYPE, SECRET_LABEL_INTEGRATION_SECRET } from "../../../constants.js";

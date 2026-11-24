@@ -15,7 +15,7 @@ vi.mock("../../../../../clients/k8s/index.js", () => {
 describe("k8sListProcedure", () => {
   let mockContext: ReturnType<typeof createMockedContext>;
   let mockK8sClientInstance: {
-    KubeConfig: {};
+    KubeConfig: object;
     listResource: Mock;
   };
 

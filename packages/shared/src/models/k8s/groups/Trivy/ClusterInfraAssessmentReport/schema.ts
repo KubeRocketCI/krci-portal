@@ -1,4 +1,3 @@
-import z from "zod";
 import { kubeObjectBaseSchema, kubeObjectMetadataSchema } from "../../../common/index.js";
 import { infraAssessmentReportSpecSchema } from "../InfraAssessmentReport/schema.js";
 

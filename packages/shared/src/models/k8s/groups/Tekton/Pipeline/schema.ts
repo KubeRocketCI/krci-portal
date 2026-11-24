@@ -15,16 +15,6 @@ const pipelineLabelsSchema = z.object({
   [pipelineLabels.triggerTemplate]: z.string(),
 });
 
-const paramSchema = z
-  .object({
-    name: z.string(),
-    value: z.any(),
-  })
-  .required({
-    name: true,
-    value: true,
-  });
-
 const includeParamsSchema = z.object({
   name: z.string(),
   params: z.array(paramValueSchema),

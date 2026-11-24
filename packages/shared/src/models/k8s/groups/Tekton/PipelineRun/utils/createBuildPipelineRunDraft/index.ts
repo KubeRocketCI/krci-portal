@@ -113,7 +113,7 @@ export const createBuildPipelineRunDraft = ({
       configMap: {
         name: `custom-${codebaseBuildTool}-settings`,
       },
-    } as any,
+    },
   ];
 
   const gitUrlPathWithoutSlashAtStart = stripLeadingSlash(codebaseGitUrlPath);

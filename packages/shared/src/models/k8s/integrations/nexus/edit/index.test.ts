@@ -325,7 +325,7 @@ describe("editNexusIntegrationSecret", () => {
 
     try {
       editNexusIntegrationSecret(existingSecret, input);
-    } catch (error) {
+    } catch {
       // Original secret should not be modified even when validation fails
       expect(existingSecret.data).toEqual(originalData);
     }

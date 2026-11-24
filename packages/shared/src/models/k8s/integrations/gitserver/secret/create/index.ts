@@ -53,7 +53,7 @@ export const createGitServerSecretDraft = (input: z.infer<typeof createGitServer
     throw new ZodError(parsedInput.error.errors);
   }
 
-  let data: Record<string, string> = {};
+  const data: Record<string, string> = {};
 
   switch (parsedInput.data.gitProvider) {
     case gitProvider.gerrit:

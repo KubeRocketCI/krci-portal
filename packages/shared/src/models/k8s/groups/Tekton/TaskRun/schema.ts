@@ -1,7 +1,7 @@
 import z from "zod";
 import { kubeObjectBaseSchema, kubeObjectMetadataSchema } from "../../../common/index.js";
 import { taskRunLabels } from "./labels.js";
-import { paramValueSchema, taskRefSchema, whenExpressionSchema } from "../common/schema.js";
+import { paramValueSchema, taskRefSchema } from "../common/schema.js";
 
 const resourceQuantitySchema = z.union([
   z.number().int(),
@@ -183,8 +183,6 @@ const stepOverrideSchema = z
     resources: computeResourcesSchema,
   })
   .required({ name: true, resources: true });
-
-const taskRefParamSchema = paramValueSchema;
 
 // Reuse shared TaskRef schema
 
