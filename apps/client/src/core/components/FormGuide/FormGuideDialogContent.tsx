@@ -7,6 +7,7 @@ interface FormGuideDialogContentProps extends React.ComponentProps<typeof Dialog
   expandedMaxWidth?: string;
 }
 
+/** `aria-describedby` defaults to undefined. Pass the prop to override. */
 export function FormGuideDialogContent({
   children,
   className,
@@ -18,6 +19,7 @@ export function FormGuideDialogContent({
 
   return (
     <DialogContent
+      aria-describedby={undefined}
       className={cn("w-full transition-[max-width]", isOpen ? expandedMaxWidth : baseMaxWidth, className)}
       {...props}
     >

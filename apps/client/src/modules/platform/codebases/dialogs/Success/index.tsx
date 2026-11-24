@@ -3,6 +3,7 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -19,7 +20,7 @@ export const SuccessDialog: React.FC<SuccessGraphDialogProps> = ({
 }) => {
   return (
     <Dialog open={open} onOpenChange={(open) => !open && closeDialog()}>
-      <DialogContent className="w-full max-w-2xl">
+      <DialogContent className="w-full max-w-2xl" {...(!description && { "aria-describedby": undefined })}>
         <DialogHeader>
           <DialogTitle className="text-xl font-medium">{dialogTitle}</DialogTitle>
         </DialogHeader>
@@ -27,7 +28,7 @@ export const SuccessDialog: React.FC<SuccessGraphDialogProps> = ({
           <div className="flex flex-col items-center gap-2">
             <PartyPopper size={128} color="#A2A7B7" />
             {title && <h3 className="text-foreground text-xl font-medium">{title}</h3>}
-            {description && <p className="text-muted-foreground text-sm">{description}</p>}
+            {description && <DialogDescription>{description}</DialogDescription>}
           </div>
         </DialogBody>
         <DialogFooter>

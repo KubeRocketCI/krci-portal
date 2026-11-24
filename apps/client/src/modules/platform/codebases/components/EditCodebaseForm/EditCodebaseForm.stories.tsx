@@ -8,7 +8,9 @@ import type { Codebase } from "@my-project/shared";
 const dialogDecorator = withAppProviders({
   contentWrapper: ({ children }) => (
     <Dialog open={true}>
-      <DialogContent className="sm:max-w-[600px]">{children}</DialogContent>
+      <DialogContent className="sm:max-w-[600px]" aria-describedby={undefined}>
+        {children}
+      </DialogContent>
     </Dialog>
   ),
 });

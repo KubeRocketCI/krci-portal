@@ -80,7 +80,7 @@ export default function KubernetesDetailsDialog({ state }: KubernetesDetailsDial
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Kubernetes Details</DialogTitle>
         </DialogHeader>

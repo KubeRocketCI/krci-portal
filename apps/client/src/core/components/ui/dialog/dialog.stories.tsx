@@ -53,7 +53,7 @@ export const Simple: Story = {
       <DialogTrigger asChild>
         <Button variant="outline">Simple Dialog</Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Are you sure?</DialogTitle>
         </DialogHeader>

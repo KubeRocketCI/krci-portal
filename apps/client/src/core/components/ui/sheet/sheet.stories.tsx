@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Sheet, SheetTrigger, SheetContent } from "./index";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "./index";
 import { Button } from "../button";
 
 const meta = {
@@ -22,10 +22,10 @@ export const Default: Story = {
         <Button>Open Sheet</Button>
       </SheetTrigger>
       <SheetContent>
-        <div className="p-4">
-          <h3 className="text-lg font-semibold">Sheet Content</h3>
-          <p className="mt-2">This is the sheet content</p>
-        </div>
+        <SheetHeader>
+          <SheetTitle>Sheet Content</SheetTitle>
+          <SheetDescription>This is the sheet content</SheetDescription>
+        </SheetHeader>
       </SheetContent>
     </Sheet>
   ),
@@ -39,10 +39,10 @@ export const FromLeft: Story = {
         <Button>Open From Left</Button>
       </SheetTrigger>
       <SheetContent side="left">
-        <div className="p-4">
-          <h3 className="text-lg font-semibold">Left Sheet</h3>
-          <p className="mt-2">This sheet appears from the left</p>
-        </div>
+        <SheetHeader>
+          <SheetTitle>Left Sheet</SheetTitle>
+          <SheetDescription>This sheet appears from the left</SheetDescription>
+        </SheetHeader>
       </SheetContent>
     </Sheet>
   ),

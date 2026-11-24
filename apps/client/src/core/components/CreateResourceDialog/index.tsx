@@ -7,6 +7,7 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -89,6 +90,7 @@ export default function CreateResourceDialog({ state }: CreateResourceDialogProp
       <DialogContent className="w-full max-w-4xl">
         <DialogHeader>
           <DialogTitle>Create Resource</DialogTitle>
+          <DialogDescription>Paste one or more YAML manifests to create Kubernetes resources.</DialogDescription>
         </DialogHeader>
         <DialogBody className="flex flex-col gap-3">
           <CodeEditor

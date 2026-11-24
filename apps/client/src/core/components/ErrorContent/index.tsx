@@ -4,6 +4,7 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -105,6 +106,7 @@ export const ErrorContent = ({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>More Details</DialogTitle>
+            <DialogDescription>Technical details of the error.</DialogDescription>
           </DialogHeader>
           <DialogBody>
             <div className="flex flex-col gap-2">

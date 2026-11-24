@@ -5,6 +5,7 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -40,6 +41,9 @@ export default function EditorYAML({ props, state }: KubeResourceEditorProps) {
       <DialogContent className="w-full max-w-4xl">
         <DialogHeader>
           <DialogTitle>Kubernetes Resource Editor</DialogTitle>
+          <DialogDescription>
+            {readOnly ? "View the resource as YAML." : "Edit the resource as YAML."}
+          </DialogDescription>
         </DialogHeader>
         <DialogBody>
           <CodeEditor

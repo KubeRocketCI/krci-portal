@@ -9,7 +9,7 @@ interface DialogLoadingShellProps {
 export function DialogLoadingShell({ onClose }: DialogLoadingShellProps) {
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex h-[40vh] w-full max-w-xl items-center justify-center">
+      <DialogContent className="flex h-[40vh] w-full max-w-xl items-center justify-center" aria-describedby={undefined}>
         <DialogTitle className="sr-only">Loading</DialogTitle>
         <LoadingSpinner />
       </DialogContent>

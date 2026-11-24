@@ -150,7 +150,7 @@ export function GitLabCIPipelineLogsDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && closeDialog()}>
-      <DialogContent className="flex h-[90vh] w-full max-w-[1400px] flex-col p-0">
+      <DialogContent className="flex h-[90vh] w-full max-w-[1400px] flex-col p-0" aria-describedby={undefined}>
         <DialogHeader className="border-b px-6 py-4">
           <DialogTitle className="flex flex-wrap items-center gap-3 text-xl font-semibold">
             <span>Pipeline #{pipelineId}</span>

@@ -2,6 +2,7 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -68,6 +69,7 @@ export const DeletionDialog = ({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Are you sure you want to delete the selected PipelineRuns?</DialogTitle>
+          <DialogDescription>The selected PipelineRuns will be deleted. This cannot be undone.</DialogDescription>
         </DialogHeader>
         <DialogBody>
           <div className="flex flex-col gap-2">

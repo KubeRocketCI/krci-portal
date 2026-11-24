@@ -4,6 +4,7 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -79,10 +80,10 @@ export function BatchDeleteDialog<T extends KubeObjectBase>({
           <DialogTitle>
             Delete {items.length} {config.pluralName}?
           </DialogTitle>
+          <DialogDescription>The selected resources will be deleted.</DialogDescription>
         </DialogHeader>
         <DialogBody>
-          <p className="text-sm">This will delete the following resources:</p>
-          <ul className="mt-2 max-h-64 overflow-y-auto font-mono text-sm">
+          <ul className="max-h-64 overflow-y-auto font-mono text-sm">
             {items.map((i) => (
               <li key={i.metadata?.uid}>
                 {i.metadata?.namespace ? `${i.metadata.namespace}/` : ""}
