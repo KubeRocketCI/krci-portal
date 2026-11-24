@@ -57,7 +57,7 @@ Create a Jira issue as above.
 
 Used by `/wayfinder`. The map is one issue; tickets are its sub-tasks.
 
-- **Map**: a `Story` labelled `wayfinder:map`, `portal` and `AI-generated`, with the effort's epic link; its description holds Destination / Notes / Decisions-so-far / Not yet specified / Out of scope.
+- **Map**: a `Task` labelled `wayfinder:map`, `portal` and `AI-generated`, with the effort's epic link; its description holds Destination / Notes / Decisions-so-far / Not yet specified / Out of scope.
 - **Child ticket**: a `Sub-task` of the map (`{"parent": "<map key>"}`), labelled `wayfinder:<type>` (`research`/`prototype`/`grilling`/`task`).
 - **Blocking**: as under Conventions.
 - **Frontier query**: JQL `parent = <map> AND statusCategory != Done AND status != "In review" AND assignee is EMPTY ORDER BY created ASC`; drop tickets with an open blocker; first wins.

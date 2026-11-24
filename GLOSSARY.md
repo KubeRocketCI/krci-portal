@@ -44,6 +44,18 @@ _Avoid_: runner, slot, node
 A set of workers of one size and sandbox class, kept at a desired number of replicas.
 _Avoid_: pool (alone), node pool
 
+**Sandbox class**:
+The sandbox runtime family a worker pool runs, `gvisor` or `microvm`. The first snapshot of an actor records its sandbox class, and the actor runs only on that class afterwards.
+_Avoid_: runtime (alone), isolation level, sandbox type
+
+**Egress policy**:
+The rules of one actor for its outbound traffic: HTTPS rules, on which the egress gateway can add credentials, and TLS passthrough rules, which allow a host and port only. Every other host is denied. An actor has at most one.
+_Avoid_: allowlist, firewall, guardrails, network policy
+
+**Egress gateway**:
+The Agent Substrate component that all outbound traffic of an actor passes through; it applies the egress policy of the actor.
+_Avoid_: proxy, PEP, firewall
+
 **Worker labels**:
 The labels of a worker pool: the `metadata.labels` of its WorkerPool, which Agent Substrate copies to each of its workers. A worker pool with no worker shows none.
 _Avoid_: pool labels, node labels, tags
@@ -94,6 +106,30 @@ _Avoid_: actor, bot
 The GitLab issue an agent works on, named by project path and issue number.
 _Avoid_: task, ticket, job
 
+**Issue branch**:
+The branch the agent works on for one issue; the source branch of its merge request.
+_Avoid_: agent branch, feature branch
+
+**Turn**:
+One round on an issue: the comments no turn of the session covered yet, then one agent run, then one reply. A run that fails still ends in a reply and is a turn.
+_Avoid_: run, iteration, round
+
+**Turn limit**:
+The number of turns after which an issue's agent is put in error instead of resumed.
+_Avoid_: max turns, cap
+
+**Review run**:
+One run of the review pipeline for a merge request, started by a change to the merge request or by a recheck: a PipelineRun on Tekton, a merge request pipeline on GitLab CI.
+_Avoid_: check, verify (that runs in the actor), review pipeline (for the run), pipeline (alone)
+
 **Agent profile**:
-The kind of agent an issue gets, such as go, python or node; the dispatcher maps each project to one.
-_Avoid_: toolchain, language, image, flavour
+The description of one kind of agent, such as go, python or node: agent image, egress hosts and env in its profile entry; setup, verify and prompt in the profile file of the agent image. The dispatcher maps each project to one and copies its profile entry into the actor template and the egress policy at actor create; an actor keeps the profile it was created with.
+_Avoid_: actor profile, toolchain, language, flavour, template
+
+**Agent image**:
+The image an actor runs: the tools of one kind of agent and the image side of its agent profile.
+_Avoid_: agent (for the image)
+
+**Agent model**:
+The Claude model an agent runs with: the dispatcher's `AGENT_MODEL`, copied into the actor template at actor create; an actor keeps the model it was created with.
+_Avoid_: profile model, LLM, model (alone)
