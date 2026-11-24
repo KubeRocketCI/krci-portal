@@ -85,6 +85,7 @@ function pool(name: string, isRead: boolean): WorkerPoolRow {
     capacity: none,
     allocated: none,
     room: 0,
+    limitedBy: [],
     resource: isRead ? RESOURCE : null,
   };
 }

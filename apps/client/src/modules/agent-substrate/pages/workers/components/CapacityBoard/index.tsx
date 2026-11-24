@@ -3,34 +3,22 @@ import type {
   ActorRow,
   ReadyFleetSnapshot,
   RoomSize,
-  SubstrateResources,
   WorkerPoolAccess,
   WorkerPoolRow,
   WorkerRow,
 } from "@my-project/shared";
 import { EmptyList } from "@/core/components/EmptyList";
-import { UsageBar } from "@/core/components/UsageBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { cn } from "@/core/utils/classname";
-import { formatMemory, formatMillicores } from "@/core/utils/quantity";
 import { ActorLink, ActorStateBadge } from "../../../../components/ActorCells";
 import { FleetEmpty } from "../../../../components/FleetStatePanel";
+import { ResourceBars } from "../../../../components/ResourceBars";
 import { WorkerNotRegisteredBadge, WorkerPoolReadyBadge, WorkerStateBadge } from "../../../../components/WorkerCells";
 import { WorkerPoolAccessNotice } from "../../../../components/WorkerPoolAccessNotice";
 import { useScrollToHashTarget } from "../../../../hooks/useScrollToHashTarget";
 import { hasNoWorkerFleet } from "../../../../utils/hasNoWorkerFleet";
 import { roomLabel } from "../../../../utils/roomLabel";
 import { HASH_TARGET_CLASS, workerAnchor } from "../../../../utils/rowAnchor";
-
-function ResourceBars({ capacity, allocated }: { capacity: SubstrateResources; allocated: SubstrateResources }) {
-  return (
-    <div className="grid grid-cols-3 gap-4">
-      <UsageBar label="Actors" value={allocated.actors} max={capacity.actors} />
-      <UsageBar label="CPU" value={allocated.cpuMillicores} max={capacity.cpuMillicores} format={formatMillicores} />
-      <UsageBar label="Memory" value={allocated.memoryBytes} max={capacity.memoryBytes} format={formatMemory} />
-    </div>
-  );
-}
 
 interface WorkerBlockProps {
   worker: WorkerRow;

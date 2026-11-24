@@ -16,6 +16,8 @@ import {
   MICROVM_WORKER,
   NO_ATESPACES_DRAINING_WORKER_FLEET,
   NOT_READY_FLEET,
+  ONE_FULL_WORKER_POOL_FLEET,
+  ONE_WORKER_POOL_FLEET,
   PENDING_SNAPSHOT_FLEET,
   RUNNING_ACTOR,
   SEVERAL_AGENT_PROFILES_FLEET,
@@ -56,6 +58,13 @@ const group = (section: Canvas, title: RegExp) => within(section.getByRole("regi
 async function atAGlance(canvasElement: HTMLElement): Promise<Canvas> {
   return within(await within(canvasElement).findByRole("region", { name: "At a glance" }));
 }
+
+async function capacity(canvasElement: HTMLElement): Promise<Canvas> {
+  return within(await within(canvasElement).findByRole("region", { name: "Capacity" }));
+}
+
+const workerPoolCard = (section: Canvas, name: string) =>
+  within(section.getByRole("region", { name: `Worker pool krci-agents/${name}` }));
 
 /** The link of a stat card or of a count, by the label it starts with. */
 const countLink = (scope: Canvas, label: string) => scope.getByRole("link", { name: new RegExp(`^${label}`) });
@@ -103,6 +112,7 @@ export const Empty: Story = {
   decorators: [withAppProviders({ seedQueryCache: seedFleet(EMPTY_FLEET) })],
   play: async ({ canvasElement }) => {
     await expect(await within(canvasElement).findByText("Agent Substrate has no atespaces yet")).toBeVisible();
+    await expect(within(canvasElement).queryByRole("region", { name: "Capacity" })).toBeNull();
   },
 };
 
@@ -346,6 +356,87 @@ export const WorkersNotActive: Story = {
     await expect(within(unavailable).getByRole("link", { name: MICROVM_WORKER.name })).toBeVisible();
     await expect(draining).toHaveTextContent(/^Warning/);
     await expect(within(draining).getByRole("link", { name: BUSY_WORKER.name })).toBeVisible();
+  },
+};
+
+export const CapacityOneWorkerPool: Story = {
+  decorators: withFleet(ONE_WORKER_POOL_FLEET),
+  play: async ({ canvasElement }) => {
+    const section = await capacity(canvasElement);
+    const card = workerPoolCard(section, "workers");
+
+    await expect(section.getAllByRole("region")).toHaveLength(1);
+    await expect(card.getByRole("link", { name: "workers" })).toHaveAttribute(
+      "href",
+      `${AGENT}/worker-pools#worker-pool/krci-agents/workers`
+    );
+    await expect(card.getByText("1 desired, 1 ready")).toBeVisible();
+    await expect(card.getByText("Room for 1 agent")).toHaveClass("text-status-success");
+    await expect(card.getByText("at 1.0 CPU, 2.0 Gi · limited by CPU and memory")).toBeVisible();
+    for (const label of ["Actors", "CPU", "Memory"]) await expect(card.getByText(label)).toBeVisible();
+    await expect(card.getAllByText("(0%)")).toHaveLength(3);
+  },
+};
+
+export const CapacityFullWorkerPool: Story = {
+  decorators: withFleet(ONE_FULL_WORKER_POOL_FLEET),
+  play: async ({ canvasElement }) => {
+    const full = workerPoolCard(await capacity(canvasElement), "workers-microvm");
+
+    await expect(full.getByText("Full: the next agent waits")).toHaveClass("text-status-error");
+    await expect(full.getByText("at 1.0 CPU, 2.0 Gi · limited by memory")).toBeVisible();
+    await expect(full.getByText("(100%)")).toBeVisible();
+    await expect(full.getByText("(50%)")).toBeVisible();
+    await expect(full.getByText("(0%)")).toBeVisible();
+  },
+};
+
+export const CapacityTwoWorkerPools: Story = {
+  decorators: withFleet(HEALTHY_FLEET),
+  play: async ({ canvasElement }) => {
+    const section = await capacity(canvasElement);
+    const cards = section.getAllByRole("region");
+
+    await expect(cards).toHaveLength(2);
+    await expect(cards[0]).toHaveAccessibleName("Worker pool krci-agents/workers");
+    await expect(cards[1]).toHaveAccessibleName("Worker pool krci-agents/workers-microvm");
+    const workers = workerPoolCard(section, "workers");
+    await expect(workers.getByText("Room for 4 agents")).toBeVisible();
+    await expect(workers.getByText("2 desired, 2 ready")).toBeVisible();
+    await expect(workers.getByText("at 1.0 CPU, 2.0 Gi · limited by CPU and memory")).toBeVisible();
+    const microvm = workerPoolCard(section, "workers-microvm");
+    await expect(microvm.getByText("Room for 7 agents")).toBeVisible();
+    await expect(microvm.getByText("at 1.0 CPU, 2.0 Gi · limited by memory")).toBeVisible();
+  },
+};
+
+export const CapacityWorkerPoolNotReady: Story = {
+  decorators: withFleet(NOT_READY_FLEET),
+  play: async ({ canvasElement }) => {
+    const section = await capacity(canvasElement);
+
+    await expect(workerPoolCard(section, "workers").getByText("2 desired, 1 ready")).toHaveClass("text-status-error");
+    const spare = workerPoolCard(section, "workers-spare");
+    await expect(spare.getByText("No worker: the next agent waits")).toHaveClass("text-status-error");
+    await expect(spare.getByText("at 1.0 CPU, 2.0 Gi · no active, registered worker")).toBeVisible();
+  },
+};
+
+/** Verdict and bars come from the workers; replicas from the WorkerPool list. */
+export const CapacityWorkerPoolsDenied: Story = {
+  decorators: withFleet(WORKER_POOLS_DENIED_FLEET),
+  play: async ({ canvasElement }) => {
+    const section = await capacity(canvasElement);
+
+    for (const [name, room] of [
+      ["workers", 4],
+      ["workers-microvm", 7],
+    ] as const) {
+      const card = workerPoolCard(section, name);
+      await expect(card.getByText("no access")).toBeVisible();
+      await expect(card.getByText(`Room for ${room} agents`)).toBeVisible();
+      await expect(card.getByText("Memory")).toBeVisible();
+    }
   },
 };
 

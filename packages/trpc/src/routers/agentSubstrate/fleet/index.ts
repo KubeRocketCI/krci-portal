@@ -1,6 +1,7 @@
 import {
   ACTOR_STATE_GROUP,
   actorStateGroupSchema,
+  roomResourceSchema,
   sortByName,
   workerStateSchema,
   type ActorAgent,
@@ -17,7 +18,7 @@ import { K8sClient } from "../../../clients/k8s/index.js";
 import type { TRPCContext } from "../../../context/types.js";
 import { gitlabIssueUrl, readCodebaseLinks, type CodebaseLinks } from "./codebaseLinks.js";
 import { needsAttentionOf } from "./needsAttention.js";
-import { roomOf, roomSizeOf } from "./room.js";
+import { roomSizeOf, workerRoomOf } from "./room.js";
 import { readSubstrate, type SubstrateFleet } from "./substrateRead.js";
 import { readWorkerPools, type WorkerPoolRead } from "./workerPools.js";
 import type { SubstrateActor, SubstrateWorker } from "../../../clients/agentSubstrate/index.js";
@@ -126,6 +127,7 @@ function emptyWorkerPoolRow(namespace: string, name: string): WorkerPoolRow {
     capacity: zeroResources(),
     allocated: zeroResources(),
     room: 0,
+    limitedBy: [],
     resource: null,
   };
 }
@@ -149,7 +151,13 @@ function toWorkerPools(fleet: SubstrateFleet, workerPoolRead: WorkerPoolRead): R
     row.workers.push(worker.name);
     addResources(row.capacity, worker.capacity);
     addResources(row.allocated, worker.allocated);
-    row.room += roomOf(worker, size);
+
+    const workerRoom = workerRoomOf(worker, size);
+    if (!workerRoom) continue;
+    row.room += workerRoom.room;
+    row.limitedBy = roomResourceSchema.options.filter(
+      (resource) => row.limitedBy.includes(resource) || workerRoom.limitedBy.includes(resource)
+    );
   }
   for (const { namespace, name, resource } of workerPoolRead.items) {
     rowOf(namespace, name).resource = resource;

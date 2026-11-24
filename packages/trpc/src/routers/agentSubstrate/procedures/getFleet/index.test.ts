@@ -1137,6 +1137,115 @@ describe("agentSubstrate.getFleet", () => {
       expect(pools.items.map(({ name, room }) => [name, room])).toEqual([["workers", 4 + 3]]);
     });
 
+    describe("the resource that limits room", () => {
+      const limitedByOf = async (fleet: Partial<MemoryFleet>) =>
+        (await workerPoolsOf(fleet)).items.map(({ name, room, limitedBy }) => [name, room, limitedBy]);
+
+      it("gives cpu when free CPU fits the fewest actors", async () => {
+        expect(
+          await limitedByOf({
+            actors: [actor("small", "suspended")],
+            actorTemplates: [plainTemplate("small", { cpuMillicores: 1000, memoryBytes: GIB })],
+            workers: [
+              worker("w1", "active", {
+                capacity: { cpuMillicores: 4000, memoryBytes: 8 * GIB, actors: 10 },
+                allocated: { cpuMillicores: 1000, memoryBytes: GIB, actors: 1 },
+              }),
+            ],
+          })
+        ).toEqual([["workers", 3, ["cpu"]]]);
+      });
+
+      it("gives memory when free memory, runtime overhead included, fits the fewest actors", async () => {
+        expect(
+          await limitedByOf({
+            actors: [actor("small", "suspended")],
+            actorTemplates: [plainTemplate("small", { cpuMillicores: 500, memoryBytes: 2 * GIB })],
+            workers: [
+              worker("microvm", "active", {
+                capacity: { cpuMillicores: 8000, memoryBytes: 8 * GIB, actors: 10 },
+                actorOverhead: { memoryBytes: 4 * MIB, memoryBytesPerGib: 8 * MIB },
+              }),
+            ],
+          })
+        ).toEqual([["workers", 3, ["memory"]]]);
+      });
+
+      it("gives actors when the free actor capacity fits the fewest actors", async () => {
+        expect(
+          await limitedByOf({
+            actors: [actor("small", "running")],
+            actorTemplates: [plainTemplate("small", { cpuMillicores: 500, memoryBytes: GIB })],
+            workers: [
+              worker("w1", "active", {
+                capacity: { cpuMillicores: 4000, memoryBytes: 8 * GIB, actors: 3 },
+                allocated: { cpuMillicores: 500, memoryBytes: GIB, actors: 1 },
+              }),
+            ],
+          })
+        ).toEqual([["workers", 2, ["actors"]]]);
+      });
+
+      it("gives actors when no actor exists: room counts actors only", async () => {
+        expect(
+          await limitedByOf({
+            workers: [
+              worker("w1", "active", {
+                capacity: { cpuMillicores: 1000, memoryBytes: GIB, actors: 10 },
+                allocated: { cpuMillicores: 1000, memoryBytes: GIB, actors: 4 },
+              }),
+            ],
+          })
+        ).toEqual([["workers", 6, ["actors"]]]);
+      });
+
+      it("gives every resource that fits the same fewest actors", async () => {
+        expect(
+          await limitedByOf({
+            actors: [actor("small", "suspended")],
+            actorTemplates: [plainTemplate("small", { cpuMillicores: 1000, memoryBytes: 2 * GIB })],
+            workers: [worker("w1", "active", { capacity: { cpuMillicores: 2000, memoryBytes: 4 * GIB, actors: 2 } })],
+          })
+        ).toEqual([["workers", 2, ["actors", "cpu", "memory"]]]);
+      });
+
+      it("gives each resource that bounds room on one of the workers", async () => {
+        expect(
+          await limitedByOf({
+            actors: [actor("cpu-heavy", "suspended"), actor("memory-heavy", "running")],
+            actorTemplates: [
+              plainTemplate("cpu-heavy", { cpuMillicores: 2000, memoryBytes: GIB }),
+              plainTemplate("memory-heavy", { cpuMillicores: 500, memoryBytes: 4 * GIB }),
+            ],
+            workers: [
+              // CPU fits 4, memory 16.
+              worker("w1", "active", { capacity: { cpuMillicores: 8000, memoryBytes: 64 * GIB, actors: 1000 } }),
+              // CPU fits 32, memory 3.
+              worker("w2", "active", { capacity: { cpuMillicores: 64000, memoryBytes: 12 * GIB, actors: 1000 } }),
+            ],
+          })
+        ).toEqual([["workers", 4 + 3, ["cpu", "memory"]]]);
+      });
+
+      it("gives cpu at room zero when a worker has more CPU allocated than its capacity", async () => {
+        expect(
+          await limitedByOf({
+            actors: [actor("memory-only", "suspended")],
+            actorTemplates: [plainTemplate("memory-only", { cpuMillicores: 0, memoryBytes: GIB })],
+            workers: [worker("over-cpu", "active", { allocated: { cpuMillicores: 5000, memoryBytes: 0, actors: 1 } })],
+          })
+        ).toEqual([["workers", 0, ["cpu"]]]);
+      });
+
+      it("gives no resource for a worker pool with no active, registered worker", async () => {
+        expect(
+          await limitedByOf({
+            workers: [worker("draining", "draining"), worker("unregistered", "active", { registered: false })],
+          })
+        ).toEqual([["workers", 0, []]]);
+      });
+    });
+
     it("counts room in actors only when no actor has a template", async () => {
       const pools = await workerPoolsOf({
         workers: [
@@ -1323,6 +1432,7 @@ describe("agentSubstrate.getFleet", () => {
           capacity: { cpuMillicores: 4000, memoryBytes: 8 * GIB, actors: 1000 },
           allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
           room: 1000,
+          limitedBy: ["actors"],
           resource: { desiredReplicas: 2, readyReplicas: 1, sandboxClass: "gvisor", resolution: "Resolved" },
         },
       ]);
@@ -1348,6 +1458,7 @@ describe("agentSubstrate.getFleet", () => {
         capacity: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
         allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
         room: 0,
+        limitedBy: [],
         resource: { desiredReplicas: 2, readyReplicas: 0, sandboxClass: "gvisor", resolution: null },
       });
     });
