@@ -44,6 +44,10 @@ _Avoid_: pool (alone), node pool
 The number of actors of the largest current actor template size that the active workers of a worker pool can still host, runtime overhead included. No actor template with limits: the number of actors that the worker capacity still allows. No room is room zero: an activation does not start.
 _Avoid_: headroom, free capacity, slots
 
+**Limited by**:
+The worker resources (actor count, CPU, memory) that bound room: on each active, registered worker of a worker pool, the resources whose free amount fits the fewest actors of the room size. Several when workers are bound by different resources or one worker by several. None when no worker is active and registered.
+_Avoid_: bottleneck, constrained by
+
 **Snapshot**:
 The saved state of an actor; the durable snapshot is the one a resume or revert restores.
 _Avoid_: checkpoint, backup, image

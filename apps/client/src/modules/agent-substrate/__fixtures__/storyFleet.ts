@@ -138,7 +138,10 @@ export const MICROVM_WORKER: WorkerRow = {
 
 const STORY_WORKERS: WorkerRow[] = [TESTBED_WORKER, BUSY_WORKER, MICROVM_WORKER];
 
-/** `room` as `roomOf` (packages/trpc fleet/room.ts) gives it; microVM runtime overhead 4 Mi + 8 Mi per GiB. */
+/**
+ * `room` and `limitedBy` as packages/trpc fleet/room.ts gives them; microVM runtime overhead 4 Mi + 8 Mi per GiB.
+ * `workers`: CPU and memory fit 1 + 3 each. `workers-microvm`: CPU fits 8, memory 7.
+ */
 export const STORY_WORKER_POOLS: ReadyFleetSnapshot["workerPools"] = {
   access: "ok",
   items: [
@@ -153,6 +156,7 @@ export const STORY_WORKER_POOLS: ReadyFleetSnapshot["workerPools"] = {
       },
       allocated: { ...BUSY_WORKER.allocated },
       room: 1 + 3,
+      limitedBy: ["cpu", "memory"],
       resource: { desiredReplicas: 2, readyReplicas: 2, sandboxClass: "gvisor", resolution: "Resolved" },
     },
     {
@@ -162,6 +166,7 @@ export const STORY_WORKER_POOLS: ReadyFleetSnapshot["workerPools"] = {
       capacity: { ...MICROVM_WORKER.capacity },
       allocated: { ...MICROVM_WORKER.allocated },
       room: 7,
+      limitedBy: ["memory"],
       resource: { desiredReplicas: 1, readyReplicas: 1, sandboxClass: "microvm", resolution: "Resolved" },
     },
   ],
@@ -298,7 +303,33 @@ export const FULL_WORKER_POOL_FLEET: ReadyFleetSnapshot = (() => {
   for (const pool of fleet.workerPools.items) {
     pool.allocated = { ...pool.capacity };
     pool.room = 0;
+    pool.limitedBy = ["actors", "cpu", "memory"];
   }
+  return fleet;
+})();
+
+/** STORY_FLEET with workers-microvm at its memory capacity; `workers` keeps its room. */
+export const ONE_FULL_WORKER_POOL_FLEET: ReadyFleetSnapshot = (() => {
+  const fleet = structuredClone(HEALTHY_FLEET);
+  const worker = fleet.workers.find(({ name }) => name === MICROVM_WORKER.name)!;
+  worker.allocated = { cpuMillicores: 4000, memoryBytes: worker.capacity.memoryBytes, actors: 4 };
+  const pool = fleet.workerPools.items.find(({ name }) => name === MICROVM_WORKER.workerPool)!;
+  pool.allocated = { ...worker.allocated };
+  pool.room = 0;
+  pool.limitedBy = ["memory"];
+  return fleet;
+})();
+
+/** The recorded testbed with its WorkerPool read: 1 of 1 ready. */
+export const ONE_WORKER_POOL_FLEET: ReadyFleetSnapshot = (() => {
+  const fleet = structuredClone(TESTBED_FLEET);
+  fleet.workerPools.access = "ok";
+  fleet.workerPools.items[0].resource = {
+    desiredReplicas: 1,
+    readyReplicas: 1,
+    sandboxClass: "gvisor",
+    resolution: "Resolved",
+  };
   return fleet;
 })();
 
@@ -328,7 +359,9 @@ export const WORKERS_NOT_ACTIVE_FLEET: ReadyFleetSnapshot = (() => {
   const fleet = structuredClone(DRAINING_WORKER_FLEET);
   fleet.workers.find(({ name }) => name === MICROVM_WORKER.name)!.state = "unavailable";
   fleet.summary.workersByState = { active: STORY_WORKERS.length - 2, draining: 1, unavailable: 1, unknown: 0 };
-  fleet.workerPools.items.find(({ name }) => name === MICROVM_WORKER.workerPool)!.room = 0;
+  const microvm = fleet.workerPools.items.find(({ name }) => name === MICROVM_WORKER.workerPool)!;
+  microvm.room = 0;
+  microvm.limitedBy = [];
   fleet.needsAttention = [
     CRASHED_ACTOR_ITEM,
     workerNotActiveItem(MICROVM_WORKER, "unavailable"),
@@ -359,7 +392,9 @@ export const NO_ATESPACES_DRAINING_WORKER_FLEET: ReadyFleetSnapshot = (() => {
 export const UNREGISTERED_WORKER_FLEET: ReadyFleetSnapshot = (() => {
   const fleet = structuredClone(STORY_FLEET);
   fleet.workers.find(({ name }) => name === MICROVM_WORKER.name)!.registered = false;
-  fleet.workerPools.items.find(({ name }) => name === MICROVM_WORKER.workerPool)!.room = 0;
+  const microvm = fleet.workerPools.items.find(({ name }) => name === MICROVM_WORKER.workerPool)!;
+  microvm.room = 0;
+  microvm.limitedBy = [];
   return fleet;
 })();
 
@@ -373,6 +408,7 @@ export const NOT_READY_FLEET: ReadyFleetSnapshot = (() => {
     capacity: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
     allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
     room: 0,
+    limitedBy: [],
     resource: { desiredReplicas: 2, readyReplicas: 0, sandboxClass: "gvisor", resolution: null },
   });
   fleet.needsAttention = [
