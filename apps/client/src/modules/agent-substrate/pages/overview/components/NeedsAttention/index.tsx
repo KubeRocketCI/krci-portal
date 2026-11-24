@@ -19,9 +19,9 @@ import {
   PATH_AGENT_ACTOR_DETAIL_FULL,
   PATH_AGENT_ACTORS_FULL,
   PATH_AGENT_WORKER_POOLS_FULL,
-  PATH_AGENT_WORKERS_FULL,
 } from "../../../../constants/paths";
 import { workerAnchor, workerPoolAnchor } from "../../../../utils/rowAnchor";
+import { WORKERS_SEARCH } from "../../../worker-pools/constants";
 import {
   allClearText,
   checkedText,
@@ -41,7 +41,6 @@ function useClusterName() {
 
 const FOCUS_RING = "focus-visible:ring-ring rounded-sm focus-visible:ring-2 focus-visible:outline-none";
 
-/** Relative time; the exact time is in the tooltip, on hover and on keyboard focus. */
 function RelativeTime({ at, label }: { at: string | null; label: string }) {
   if (!at) return <EmptyValue />;
   return (
@@ -138,7 +137,12 @@ function WorkerNotActiveRow({ item }: { item: ItemOf<"workerNotActive"> }) {
     <Row
       severity={item.severity}
       name={
-        <CellLink to={PATH_AGENT_WORKERS_FULL} params={{ clusterName }} hash={workerAnchor(item)} text={item.name} />
+        <CellLink
+          to={PATH_AGENT_WORKER_POOLS_FULL}
+          params={{ clusterName }}
+          hash={workerAnchor(item)}
+          text={item.name}
+        />
       }
       aside={<WorkerStateBadge state={item.state} />}
     >
@@ -186,7 +190,7 @@ const SHOW_ALL_TARGET: Record<AttentionKind, { to: string; search?: Record<strin
     search: { [ACTOR_FILTER_NAMES.ACTOR_STATE]: actorStateGroupSchema.enum.crashed },
   },
   workerPoolNotReady: { to: PATH_AGENT_WORKER_POOLS_FULL },
-  workerNotActive: { to: PATH_AGENT_WORKERS_FULL },
+  workerNotActive: { to: PATH_AGENT_WORKER_POOLS_FULL, search: WORKERS_SEARCH },
   snapshotPending: { to: PATH_AGENT_ACTORS_FULL },
 };
 
@@ -239,7 +243,7 @@ function rowKey(item: AttentionItem): string {
   }
 }
 
-/** One group per kind, errors first; at most NEEDS_ATTENTION_MAX_ROWS rows per group. */
+/** Groups follow the order of `fleet.needsAttention`: errors first (packages/trpc fleet/needsAttention.ts). */
 export function NeedsAttention({ fleet }: { fleet: ReadyFleet }) {
   const headingId = React.useId();
   const groups = React.useMemo(() => groupAttentionItems(fleet.needsAttention), [fleet.needsAttention]);

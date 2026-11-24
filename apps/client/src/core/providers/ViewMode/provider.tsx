@@ -1,7 +1,7 @@
 import React from "react";
 import { LOCAL_STORAGE_SERVICE } from "../../services/local-storage";
 import { ViewModeContext } from "./context";
-import { VIEW_MODES, ViewMode, ViewModeContextProviderProps } from "./types";
+import { VIEW_MODES, ViewMode, ViewModeContextProviderProps, viewModeStorageKey } from "./types";
 
 export const ViewModeContextProvider: React.FC<React.PropsWithChildren<ViewModeContextProviderProps>> = ({
   children,
@@ -9,12 +9,12 @@ export const ViewModeContextProvider: React.FC<React.PropsWithChildren<ViewModeC
   defaultViewMode = VIEW_MODES.GRID,
 }) => {
   const [viewMode, setViewMode] = React.useState<ViewMode>(
-    () => (LOCAL_STORAGE_SERVICE.getItem(`VIEW_MODE::${entityID}`) as ViewMode) || defaultViewMode
+    () => (LOCAL_STORAGE_SERVICE.getItem(viewModeStorageKey(entityID)) as ViewMode) || defaultViewMode
   );
 
   const handleChangeViewMode = React.useCallback(
     (viewMode: ViewMode) => {
-      LOCAL_STORAGE_SERVICE.setItem(`VIEW_MODE::${entityID}`, viewMode);
+      LOCAL_STORAGE_SERVICE.setItem(viewModeStorageKey(entityID), viewMode);
       setViewMode(viewMode);
     },
     [entityID]

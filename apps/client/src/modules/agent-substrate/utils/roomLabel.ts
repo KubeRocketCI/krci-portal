@@ -35,7 +35,7 @@ export function fleetRoom(workerPools: ReadyFleet["workerPools"]): number {
 export type WorkerPoolRoom = Pick<WorkerPoolRow, "room"> & Partial<Pick<WorkerPoolRow, "roomState" | "limitedBy">>;
 
 /** Missing or unknown `roomState`: derive from `room` and `limitedBy` only; full and too small are not told apart. */
-function roomStateOf({ room, roomState, limitedBy }: WorkerPoolRoom): RoomState | null {
+export function roomStateOf({ room, roomState, limitedBy }: WorkerPoolRoom): RoomState | null {
   if (roomState && roomStateSchema.options.includes(roomState)) return roomState;
   if (room > 0) return "room";
   return limitedBy?.length === 0 ? "noWorker" : null;

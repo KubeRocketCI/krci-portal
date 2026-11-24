@@ -11,12 +11,9 @@ import { cn } from "@/core/utils/classname";
 import { useClusterStore } from "@/k8s/store";
 import { agentProfileLabel } from "../../../../constants/actorFilter";
 import { ACTOR_STATE_GROUP_LABEL } from "../../../../constants/actorState";
-import {
-  PATH_AGENT_ACTORS_FULL,
-  PATH_AGENT_WORKER_POOLS_FULL,
-  PATH_AGENT_WORKERS_FULL,
-} from "../../../../constants/paths";
+import { PATH_AGENT_ACTORS_FULL, PATH_AGENT_WORKER_POOLS_FULL } from "../../../../constants/paths";
 import { fleetRoom } from "../../../../utils/roomLabel";
+import { WORKERS_SEARCH } from "../../../worker-pools/constants";
 import { actorStateSearch, actorsSubText, agentProfileSearch, roomSubText, workersHealth } from "../../utils/atAGlance";
 
 const COUNT_LINK_CLASS =
@@ -93,7 +90,12 @@ export function AtAGlance({ fleet }: { fleet: ReadyFleet }) {
               />
             </Link>
           )}
-          <Link to={PATH_AGENT_WORKERS_FULL} params={{ clusterName }} className="group block">
+          <Link
+            to={PATH_AGENT_WORKER_POOLS_FULL}
+            params={{ clusterName }}
+            search={WORKERS_SEARCH}
+            className="group block"
+          >
             <StatCard
               icon={Server}
               label="Workers"

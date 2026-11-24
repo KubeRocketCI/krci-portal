@@ -1,4 +1,5 @@
 import type { RoomSize } from "@my-project/shared";
+import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { cn } from "@/core/utils/classname";
 import { SEVERITY_ICON, SEVERITY_ICON_COLOR_CLASS } from "@/core/utils/severity";
 import { roomBasisText, roomVerdict, type WorkerPoolRoom } from "../../utils/roomLabel";
@@ -21,6 +22,19 @@ export function RoomVerdict({ workerPool, roomSize, totalRoom }: RoomVerdictProp
         {verdict.text}
       </p>
       <p className="text-muted-foreground text-xs">{roomBasisText(roomSize, workerPool.limitedBy)}</p>
+    </div>
+  );
+}
+
+export function RoomVerdictCell({ workerPool, totalRoom }: Omit<RoomVerdictProps, "roomSize">) {
+  const verdict = roomVerdict(workerPool, totalRoom);
+  const Icon = SEVERITY_ICON[verdict.tone];
+  const colorClass = SEVERITY_ICON_COLOR_CLASS[verdict.tone];
+
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      <Icon className={cn("size-4 shrink-0", colorClass)} aria-hidden />
+      <TextWithTooltip text={verdict.text} className={colorClass} />
     </div>
   );
 }

@@ -43,7 +43,6 @@ import { routeK8sRbacOverview } from "@/modules/k8s/pages/rbac/route";
 import { routeAgentOverview } from "@/modules/agent-substrate/pages/overview/route";
 import { routeAgentActors } from "@/modules/agent-substrate/pages/actors/list/route";
 import { routeAgentActorDetail } from "@/modules/agent-substrate/pages/actors/detail/route";
-import { routeAgentWorkers } from "@/modules/agent-substrate/pages/workers/route";
 import { routeAgentWorkerPools } from "@/modules/agent-substrate/pages/worker-pools/route";
 import { routeCDPipelineList } from "@/modules/platform/cdpipelines/pages/list/route";
 import { routeCDPipelineCreate } from "@/modules/platform/cdpipelines/pages/create/route";
@@ -224,13 +223,7 @@ const routeTree = rootRoute.addChildren([
         routeK8sEvents,
         routeK8sRbacOverview,
       ]),
-      routeAgentMode.addChildren([
-        routeAgentOverview,
-        routeAgentActors,
-        routeAgentActorDetail,
-        routeAgentWorkers,
-        routeAgentWorkerPools,
-      ]),
+      routeAgentMode.addChildren([routeAgentOverview, routeAgentActors, routeAgentActorDetail, routeAgentWorkerPools]),
     ]),
   ]),
 ]);

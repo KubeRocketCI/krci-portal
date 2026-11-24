@@ -19,7 +19,6 @@ function summaryOf(fleet: ReadyFleet, patch: Partial<ReadyFleet["summary"]>) {
   return { ...fleet.summary, ...patch };
 }
 
-/** The workers of the fleet with its first active worker not registered. */
 function unregistered(fleet: ReadyFleet) {
   const workers = structuredClone(fleet.workers);
   workers.find(({ state }) => state === "active")!.registered = false;
@@ -128,7 +127,7 @@ describe("At a glance counts match the Actors page filters", () => {
     expect(fleet.summary.agentsByProfile.reduce((sum, { agents }) => sum + agents, 0)).toBe(fleet.summary.agents);
   });
 
-  it.each(Object.entries(fleets))("%s: the worker count is the Workers page rows", (_name, fleet) => {
+  it.each(Object.entries(fleets))("%s: the worker count is the workers on the Worker pools page", (_name, fleet) => {
     expect(fleet.summary.workers).toBe(fleet.workers.length);
     expect(fleet.summary.actors).toBe(fleet.actors.length);
   });

@@ -1,10 +1,13 @@
-import type { WorkerPoolRow } from "@my-project/shared";
+import { roomStateSchema, type WorkerPoolRow } from "@my-project/shared";
 import type { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { EmptyValue, TextOrEmpty } from "../../../../components/EmptyValue";
+import { RoomVerdictCell } from "../../../../components/RoomVerdict";
 import { WorkerPoolReadyBadge } from "../../../../components/WorkerCells";
+import { roomStateOf } from "../../../../utils/roomLabel";
 
-export const workerPoolColumns: TableColumn<WorkerPoolRow>[] = [
+/** `totalRoom`: fleet-wide room; the room state tone depends on it. */
+export const workerPoolColumns = (totalRoom: number): TableColumn<WorkerPoolRow>[] => [
   {
     id: "name",
     label: "Name",
@@ -64,5 +67,17 @@ export const workerPoolColumns: TableColumn<WorkerPoolRow>[] = [
     label: "Room",
     data: { columnSortableValuePath: "room", render: ({ data }) => data.room },
     cell: { baseWidth: 6 },
+  },
+  {
+    id: "roomState",
+    label: "Room state",
+    data: {
+      columnSortableValue: (row) => {
+        const roomState = roomStateOf(row);
+        return roomState === null ? roomStateSchema.options.length : roomStateSchema.options.indexOf(roomState);
+      },
+      render: ({ data }) => <RoomVerdictCell workerPool={data} totalRoom={totalRoom} />,
+    },
+    cell: { baseWidth: 14 },
   },
 ];
