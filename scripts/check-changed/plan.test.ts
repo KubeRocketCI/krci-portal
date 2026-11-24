@@ -1,0 +1,172 @@
+import { describe, expect, it } from "vitest";
+import { planChecks, type ChangedFile, type PlanEnv } from "./plan.js";
+
+const env: PlanEnv = {
+  hasLocalPrettier: (dir) => dir === "apps/client",
+  hasLintScript: () => true,
+  isBuildStale: () => false,
+  testImporters: () => [],
+};
+
+const modified = (...paths: string[]): ChangedFile[] => paths.map((path) => ({ path, status: "modified" }));
+
+describe("planChecks", () => {
+  it("checks a client module change in the client package and its module directory", () => {
+    const plan = planChecks(modified("apps/client/src/modules/home/pages/overview/view.tsx"), env);
+
+    expect(plan).toEqual({
+      format: [
+        {
+          cwd: "apps/client",
+          prettier: "apps/client/node_modules/.bin/prettier",
+          files: ["src/modules/home/pages/overview/view.tsx"],
+        },
+      ],
+      install: false,
+      build: [],
+      tsc: ["client"],
+      lint: ["client"],
+      tests: { projects: ["client"], paths: ["apps/client/src/modules/home/"] },
+      unmapped: [],
+    });
+  });
+
+  it("builds shared and trpc and type-checks every consumer when shared changes", () => {
+    const plan = planChecks(modified("packages/shared/src/models/k8s/groups/KRCI/Codebase/labels.ts"), env);
+
+    expect(plan.build).toEqual(["shared", "trpc"]);
+    expect(plan.tsc).toEqual(["shared", "trpc", "server", "client"]);
+    expect(plan.lint).toEqual(["shared"]);
+    expect(plan.tests).toEqual({ projects: ["shared", "trpc"], paths: ["packages/shared/", "packages/trpc/"] });
+    expect(plan.install).toBe(false);
+  });
+
+  it("narrows trpc tests to the router or client directory of the change", () => {
+    const plan = planChecks(
+      modified(
+        "packages/trpc/src/routers/prometheus/procedures/getDeploymentMetrics/index.ts",
+        "packages/trpc/src/clients/k8s/index.ts"
+      ),
+      env
+    );
+
+    expect(plan.build).toEqual(["trpc"]);
+    expect(plan.tsc).toEqual(["trpc", "server", "client"]);
+    expect(plan.tests).toEqual({
+      projects: ["trpc"],
+      paths: ["packages/trpc/src/clients/k8s/", "packages/trpc/src/routers/prometheus/"],
+    });
+  });
+
+  it("runs the whole project instead of its directories once a change sits outside them", () => {
+    const plan = planChecks(
+      modified(
+        "apps/client/src/modules/platform/codebases/utils.ts",
+        "apps/client/src/k8s/api/hooks/useWatchList/index.ts",
+        "apps/server/src/index.ts"
+      ),
+      env
+    );
+
+    expect(plan.tests).toEqual({ projects: ["server", "client"], paths: ["apps/server/", "apps/client/"] });
+  });
+
+  it("reinstalls before the build when a source file is new in shared", () => {
+    const plan = planChecks([{ path: "packages/shared/src/models/glossary.ts", status: "added" }], env);
+
+    expect(plan.install).toBe(true);
+  });
+
+  it("type-checks a deleted file's package without formatting the file", () => {
+    const plan = planChecks([{ path: "apps/server/src/legacy.ts", status: "deleted" }], env);
+
+    expect(plan.format).toEqual([]);
+    expect(plan.tsc).toEqual(["server"]);
+  });
+
+  it("checks every target when a workspace-wide config file changes", () => {
+    const plan = planChecks(modified("pnpm-lock.yaml"), env);
+
+    expect(plan.format).toEqual([]);
+    expect(plan.build).toEqual(["shared", "trpc"]);
+    expect(plan.tsc).toEqual(["shared", "trpc", "server", "client", "scripts"]);
+    expect(plan.tests.projects).toEqual(["shared", "trpc", "server", "client", "scripts"]);
+    expect(plan.unmapped).toEqual([]);
+  });
+
+  it("only formats a Markdown file inside a package", () => {
+    const plan = planChecks(modified("apps/client/README.md"), env);
+
+    expect(plan.format).toEqual([
+      { cwd: "apps/client", prettier: "apps/client/node_modules/.bin/prettier", files: ["README.md"] },
+    ]);
+    expect(plan.tsc).toEqual([]);
+    expect(plan.lint).toEqual([]);
+    expect(plan.tests).toEqual({ projects: [], paths: [] });
+  });
+
+  it("lists files outside every target as unmapped", () => {
+    const plan = planChecks(modified("docs/adr/0002-agent-substrate.md", "CLAUDE.md"), env);
+
+    expect(plan.unmapped).toEqual(["docs/adr/0002-agent-substrate.md", "CLAUDE.md"]);
+    expect(plan.format).toEqual([]);
+    expect(plan.tsc).toEqual([]);
+  });
+
+  it("formats scripts with the root Prettier binary and lints only targets with a lint script", () => {
+    const plan = planChecks(modified("scripts/check-changed/plan.ts", "apps/server/src/index.ts"), {
+      ...env,
+      hasLintScript: (target) => target === "scripts",
+    });
+
+    expect(plan.format).toEqual([
+      { cwd: "scripts", prettier: "node_modules/.bin/prettier", files: ["check-changed/plan.ts"] },
+      { cwd: "apps/server", prettier: "node_modules/.bin/prettier", files: ["src/index.ts"] },
+    ]);
+    expect(plan.lint).toEqual(["scripts"]);
+  });
+
+  it("adds tests outside the narrowed directory that import the changed file", () => {
+    const route = "apps/client/src/modules/platform/codebases/pages/details/route.ts";
+    const plan = planChecks(modified(route), {
+      ...env,
+      testImporters: (path) =>
+        path === route
+          ? [
+              "apps/client/src/core/hooks/usePinnedItems.test.ts",
+              "apps/client/src/modules/platform/codebases/pages/details/route.test.ts",
+            ]
+          : [],
+    });
+
+    expect(plan.tests).toEqual({
+      projects: ["client"],
+      paths: ["apps/client/src/core/hooks/usePinnedItems.test.ts", "apps/client/src/modules/platform/"],
+    });
+  });
+
+  it("builds a stale or missing dependency before type-checking its consumers", () => {
+    const plan = planChecks(modified("apps/client/src/modules/home/pages/overview/view.tsx"), {
+      ...env,
+      isBuildStale: (target) => target === "trpc",
+    });
+
+    expect(plan.build).toEqual(["trpc"]);
+    expect(plan.tsc).toEqual(["client"]);
+  });
+
+  it("skips a stale build when nothing that reads it is type-checked", () => {
+    const plan = planChecks(modified("scripts/check-changed/plan.ts"), { ...env, isBuildStale: () => true });
+
+    expect(plan.build).toEqual([]);
+  });
+
+  it("rebuilds what a stale shared build feeds", () => {
+    const plan = planChecks(modified("apps/server/src/index.ts"), {
+      ...env,
+      isBuildStale: (target) => target === "shared",
+    });
+
+    expect(plan.build).toEqual(["shared", "trpc"]);
+  });
+});
