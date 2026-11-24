@@ -36,7 +36,7 @@ export const substrateResourcesSchema = z.object({
   actors: count,
 });
 
-/** The actor template size that room is counted in. */
+/** CPU and memory limits: the size of one actor template, or the room size of a worker pool. */
 export const roomSizeSchema = z.object({
   cpuMillicores: count,
   memoryBytes: count,
@@ -61,6 +61,14 @@ export const codebaseRefSchema = z.object({
   name: z.string(),
   namespace: z.string(),
 });
+
+export const workerPoolRefSchema = z.object({
+  namespace: z.string(),
+  name: z.string(),
+});
+
+/** Label key to value. */
+export const labelsSchema = z.record(z.string(), z.string());
 
 /** Null on an actor that the dispatcher did not make. */
 export const actorAgentSchema = z.object({
@@ -100,6 +108,15 @@ export const actorRowSchema = z.object({
   uid: z.string(),
   state: actorStateSchema,
   actorTemplate: z.string(),
+  /** Match labels of the actor template worker selector. Empty: no worker selector. Null when the actor template is gone. */
+  workerSelector: labelsSchema.nullable(),
+  /** Limits of the actor template. Null when it sets no CPU and no memory limit, or is gone. */
+  size: roomSizeSchema.nullable(),
+  /**
+   * Worker pools with an active, registered worker whose labels the worker selector matches. By namespace, then
+   * name. Empty when the actor template is gone.
+   */
+  usableWorkerPools: z.array(workerPoolRefSchema),
   agent: actorAgentSchema.nullable(),
   placement: actorPlacementSchema.nullable(),
   createdAt: z.string(),
@@ -137,9 +154,11 @@ export const roomResourceSchema = z.enum(["actors", "cpu", "memory"]);
  * Room state of a worker pool, over its active, registered workers.
  * `room`: room above 0. `full`: room 0; at least one worker fits an actor of the room size when it hosts no actor.
  * `tooSmall`: room 0; no worker fits an actor of the room size even when it hosts no actor.
+ * With no room size, `tooSmall`: every worker has an actor capacity of 0.
  * `noWorker`: no worker is active and registered.
+ * `noTemplate`: actor templates exist and no worker selector matches the labels of a worker.
  */
-export const roomStateSchema = z.enum(["room", "full", "tooSmall", "noWorker"]);
+export const roomStateSchema = z.enum(["room", "full", "tooSmall", "noWorker", "noTemplate"]);
 
 export const workerPoolRowSchema = z.object({
   name: z.string(),
@@ -149,11 +168,25 @@ export const workerPoolRowSchema = z.object({
   /** Sum over the workers. */
   capacity: substrateResourcesSchema,
   allocated: substrateResourcesSchema,
-  /** Actors of the room size that the active, registered workers can still host. */
+  /**
+   * Labels of the first active, registered worker by name; with none, of the first worker by name. Empty when the
+   * worker pool has no worker.
+   */
+  workerLabels: labelsSchema,
+  /**
+   * The largest CPU and memory limits over the actor templates whose worker selector matches an active, registered
+   * worker. Null when none of them sets a limit (room counts actors only), or `roomState` is `noWorker` or `noTemplate`.
+   */
+  roomSize: roomSizeSchema.nullable(),
+  /**
+   * Actors of the room size that the active, registered workers can still host. A worker that no worker selector
+   * matches adds none. The fleet room is the sum over the rows.
+   */
   room: count,
   /**
-   * Resources that bound room on at least one active, registered worker (per worker: those fitting the fewest
-   * actors). Order: actors, cpu, memory. Empty when no worker is active and registered.
+   * Resources that bound room on at least one worker that adds room (per worker: those fitting the fewest actors;
+   * `tooSmall`: those fitting no actor on the worker with nothing allocated). Order: actors, cpu, memory. Empty when
+   * `roomState` is `noWorker` or `noTemplate`.
    */
   limitedBy: z.array(roomResourceSchema),
   roomState: roomStateSchema,
@@ -186,7 +219,13 @@ export const fleetSummarySchema = z.object({
 /** `error`: work stops now. `warning`: can clear on its own. */
 export const attentionSeveritySchema = z.enum(["error", "warning"]);
 
-export const attentionKindSchema = z.enum(["actorCrashed", "workerPoolNotReady", "workerNotActive", "snapshotPending"]);
+export const attentionKindSchema = z.enum([
+  "actorCrashed",
+  "actorUnschedulable",
+  "workerPoolNotReady",
+  "workerNotActive",
+  "snapshotPending",
+]);
 
 export const attentionAgentSchema = actorAgentSchema.pick({ issue: true, agentProfile: true });
 
@@ -198,6 +237,19 @@ export const attentionItemSchema = z.discriminatedUnion("kind", [
     name: z.string(),
     message: z.string(),
     crashedAt: z.string().nullable(),
+    /** Null on an actor that the dispatcher did not make. */
+    agent: attentionAgentSchema.nullable(),
+  }),
+  /**
+   * The actor is not deleting, its worker selector has a key, and it matches no active, registered worker while the
+   * fleet has one.
+   */
+  z.object({
+    kind: z.literal(attentionKindSchema.enum.actorUnschedulable),
+    severity: z.literal(attentionSeveritySchema.enum.error),
+    atespace: z.string(),
+    name: z.string(),
+    workerSelector: labelsSchema,
     /** Null on an actor that the dispatcher did not make. */
     agent: attentionAgentSchema.nullable(),
   }),
@@ -251,8 +303,6 @@ export const fleetSchema = z.discriminatedUnion("state", [
       access: workerPoolAccessSchema,
       /** By namespace, then name. */
       items: z.array(workerPoolRowSchema),
-      /** The largest CPU and memory limits over the actor templates. Null when no template sets a limit: room counts actors only. */
-      roomSize: roomSizeSchema.nullable(),
     }),
     /** Errors before warnings, then by kind, then oldest first; an item with no time after the timed ones, by name. */
     needsAttention: z.array(attentionItemSchema),

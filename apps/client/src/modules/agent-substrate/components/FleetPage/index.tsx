@@ -14,6 +14,7 @@ import { FleetLoading, FleetNotConfigured, FleetUnreachable } from "../FleetStat
 interface FleetPageProps {
   icon: LucideIcon;
   title: string;
+  description?: string;
   breadcrumbs: Breadcrumb[];
   children?: (fleet: ReadyFleet) => React.ReactNode;
 }
@@ -42,6 +43,7 @@ export interface FleetPageViewProps extends FleetPageProps {
 export function FleetPageView({
   icon,
   title,
+  description,
   breadcrumbs,
   children,
   fleet,
@@ -77,7 +79,7 @@ export function FleetPageView({
         />
       }
     >
-      <PageContentWrapper icon={icon} title={title}>
+      <PageContentWrapper icon={icon} title={title} description={description}>
         <div className="flex flex-col gap-6 pb-8">{renderBody()}</div>
       </PageContentWrapper>
     </PageWrapper>

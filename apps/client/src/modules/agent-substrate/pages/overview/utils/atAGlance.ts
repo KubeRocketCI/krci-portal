@@ -34,8 +34,10 @@ export function workersHealth({ summary, workers }: Pick<ReadyFleet, "summary" |
   };
 }
 
-export function roomSubText(workerPools: number): string {
-  return `across ${plural(workerPools, "worker pool")}`;
+/** Counts the worker pools that fleet room sums over: every one but `noTemplate`. */
+export function roomSubText({ items }: ReadyFleet["workerPools"]): string {
+  const counted = items.filter(({ roomState }) => roomState !== "noTemplate").length;
+  return `across ${plural(counted, "worker pool")}`;
 }
 
 export function actorStateSearch(group: ActorStateGroup): Record<string, string> {

@@ -6,6 +6,7 @@ import {
   groupAttentionItems,
   groupTitle,
   notCheckedText,
+  unschedulableText,
   workerPoolCheckOf,
 } from "./needsAttention";
 
@@ -66,11 +67,20 @@ describe("groupAttentionItems", () => {
 describe("groupTitle", () => {
   it.each([
     ["actorCrashed", "Crashed actors"],
+    ["actorUnschedulable", "Actors no worker pool can host"],
     ["workerPoolNotReady", "Worker pools not ready"],
     ["workerNotActive", "Workers not active"],
     ["snapshotPending", "Pending snapshots"],
   ] as const)("names a %s group %s", (kind, title) => {
     expect(groupTitle(kind)).toBe(title);
+  });
+});
+
+describe("unschedulableText", () => {
+  it("names the worker selector as key=value, sorted by key", () => {
+    expect(unschedulableText({ workload: "wokers", tier: "gpu" })).toBe(
+      "Worker selector tier=gpu, workload=wokers matches no active worker"
+    );
   });
 });
 
@@ -84,6 +94,8 @@ function workerPool(name: string, isRead: boolean): WorkerPoolRow {
     workers: [],
     capacity: none,
     allocated: none,
+    workerLabels: {},
+    roomSize: null,
     room: 0,
     limitedBy: [],
     roomState: "noWorker",
@@ -92,7 +104,7 @@ function workerPool(name: string, isRead: boolean): WorkerPoolRow {
 }
 
 const check = (access: WorkerPoolAccess, ...workerPools: WorkerPoolRow[]) =>
-  workerPoolCheckOf({ access, items: workerPools, roomSize: null });
+  workerPoolCheckOf({ access, items: workerPools });
 
 describe("workerPoolCheckOf", () => {
   it("counts the worker pools with a read WorkerPool among all", () => {

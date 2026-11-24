@@ -1,28 +1,30 @@
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
-import type { ReadyFleet, RoomSize, WorkerPoolAccess, WorkerPoolRow } from "@my-project/shared";
+import type { ReadyFleet, WorkerPoolAccess, WorkerPoolRow } from "@my-project/shared";
 import { SectionHeading } from "@/core/components/SectionHeading";
 import { CellLink } from "@/core/components/Table/components/CellLink";
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { cn } from "@/core/utils/classname";
 import { useClusterStore } from "@/k8s/store";
+import { TermLabel } from "../../../../components/KV";
 import { ResourceBars } from "../../../../components/ResourceBars";
 import { RoomVerdict } from "../../../../components/RoomVerdict";
+import { SECTION_HINT, TERM_HINT } from "../../../../constants/hints";
 import { PATH_AGENT_WORKER_POOLS_FULL } from "../../../../constants/paths";
+import { showsActorsBar } from "../../../../utils/actorsBar";
 import { fleetRoom } from "../../../../utils/roomLabel";
 import { workerPoolAnchor } from "../../../../utils/rowAnchor";
 import { replicasText } from "../../utils/capacity";
 
 interface WorkerPoolCapacityProps {
   workerPool: WorkerPoolRow;
-  roomSize: RoomSize | null;
   totalRoom: number;
   access: WorkerPoolAccess;
   clusterName: string;
 }
 
 /** Verdict and bars come from the workers: shown also when the WorkerPool list was not read. */
-function WorkerPoolCapacity({ workerPool, roomSize, totalRoom, access, clusterName }: WorkerPoolCapacityProps) {
+function WorkerPoolCapacity({ workerPool, totalRoom, access, clusterName }: WorkerPoolCapacityProps) {
   const { resource } = workerPool;
   const notReady = resource !== null && resource.readyReplicas < resource.desiredReplicas;
 
@@ -41,7 +43,9 @@ function WorkerPoolCapacity({ workerPool, roomSize, totalRoom, access, clusterNa
           <span className="text-muted-foreground text-xs">{workerPool.namespace}</span>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-0.5 text-xs">
-          <span className="text-muted-foreground">Replicas</span>
+          <span className="text-muted-foreground">
+            <TermLabel label="Replicas" hint={TERM_HINT.replicas} />
+          </span>
           <span
             className={cn(
               "tabular-nums",
@@ -54,8 +58,13 @@ function WorkerPoolCapacity({ workerPool, roomSize, totalRoom, access, clusterNa
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 p-4 pt-0">
-        <RoomVerdict workerPool={workerPool} roomSize={roomSize} totalRoom={totalRoom} />
-        <ResourceBars capacity={workerPool.capacity} allocated={workerPool.allocated} showPercent />
+        <RoomVerdict workerPool={workerPool} totalRoom={totalRoom} />
+        <ResourceBars
+          capacity={workerPool.capacity}
+          allocated={workerPool.allocated}
+          showPercent
+          actorsBar={showsActorsBar(workerPool)}
+        />
       </CardContent>
     </Card>
   );
@@ -65,20 +74,21 @@ function WorkerPoolCapacity({ workerPool, roomSize, totalRoom, access, clusterNa
 export function Capacity({ fleet }: { fleet: ReadyFleet }) {
   const headingId = React.useId();
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
-  const { access, items, roomSize } = fleet.workerPools;
+  const { access, items } = fleet.workerPools;
   const totalRoom = fleetRoom(fleet.workerPools);
 
   if (items.length === 0) return null;
 
   return (
     <section aria-labelledby={headingId}>
-      <SectionHeading id={headingId}>Capacity</SectionHeading>
+      <SectionHeading id={headingId} hint={SECTION_HINT.capacity}>
+        Capacity
+      </SectionHeading>
       <div className="grid gap-4 lg:grid-cols-2">
         {items.map((workerPool) => (
           <WorkerPoolCapacity
             key={`${workerPool.namespace}/${workerPool.name}`}
             workerPool={workerPool}
-            roomSize={roomSize}
             totalRoom={totalRoom}
             access={access}
             clusterName={clusterName}

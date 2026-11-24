@@ -1,9 +1,10 @@
 import { ACTOR_STATE_GROUP, type ActorRow } from "@my-project/shared";
 import type { MatchFunctions } from "@/core/providers/Filter";
 import { ACTOR_FILTER_NAMES, agentProfileFilterValue } from "../../../../../constants/actorFilter";
+import { placementWorkerPool } from "../../../../../utils/roomLabel";
 import type { ActorFilterValues } from "./types";
 
-/** `_` cannot be in atespace, Codebase or agent profile names, so this value cannot collide with one. */
+/** `_` cannot be in atespace, Codebase, agent profile or worker pool names, so this value cannot collide with one. */
 export const ALL_FILTER_VALUE = "__all__";
 
 export const actorFilterDefaultValues: ActorFilterValues = {
@@ -11,6 +12,7 @@ export const actorFilterDefaultValues: ActorFilterValues = {
   [ACTOR_FILTER_NAMES.ACTOR_STATE]: ALL_FILTER_VALUE,
   [ACTOR_FILTER_NAMES.CODEBASE]: ALL_FILTER_VALUE,
   [ACTOR_FILTER_NAMES.AGENT_PROFILE]: ALL_FILTER_VALUE,
+  [ACTOR_FILTER_NAMES.WORKER_POOL]: ALL_FILTER_VALUE,
 };
 
 /**
@@ -41,4 +43,5 @@ export const actorMatchFunctions: MatchFunctions<ActorRow, ActorFilterValues> = 
   [ACTOR_FILTER_NAMES.AGENT_PROFILE]: exactMatch((actor) =>
     actor.agent ? agentProfileFilterValue(actor.agent.agentProfile) : undefined
   ),
+  [ACTOR_FILTER_NAMES.WORKER_POOL]: exactMatch((actor) => placementWorkerPool(actor.placement)),
 };

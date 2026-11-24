@@ -9,7 +9,10 @@ import {
   AgentIssueLink,
   SnapshotFidelityDurability,
 } from "../../../../../components/ActorCells";
+import { TextOrEmpty } from "../../../../../components/EmptyValue";
+import { TERM_HINT } from "../../../../../constants/hints";
 import { issueLabel } from "../../../../../utils/issueLabel";
+import { placementWorkerPool } from "../../../../../utils/roomLabel";
 
 export const actorColumns: TableColumn<ActorRow>[] = [
   {
@@ -21,6 +24,7 @@ export const actorColumns: TableColumn<ActorRow>[] = [
   {
     id: "atespace",
     label: "Atespace",
+    hint: TERM_HINT.atespace,
     data: { columnSortableValuePath: "atespace", render: ({ data }) => <TextWithTooltip text={data.atespace} /> },
     cell: { baseWidth: 9 },
   },
@@ -45,6 +49,7 @@ export const actorColumns: TableColumn<ActorRow>[] = [
   {
     id: "agentProfile",
     label: "Agent profile",
+    hint: TERM_HINT.agentProfile,
     data: {
       columnSortableValuePath: ["agent", "agentProfile"],
       render: ({ data }) => <TextWithTooltip text={data.agent?.agentProfile} />,
@@ -63,8 +68,19 @@ export const actorColumns: TableColumn<ActorRow>[] = [
   {
     id: "state",
     label: "Actor state",
+    hint: TERM_HINT.actorState,
     data: { columnSortableValuePath: "state", render: ({ data }) => <ActorStateBadge state={data.state} /> },
     cell: { baseWidth: 7 },
+  },
+  {
+    id: "workerPool",
+    label: "Worker pool",
+    hint: TERM_HINT.workerPool,
+    data: {
+      columnSortableValue: ({ placement }) => placementWorkerPool(placement) ?? "",
+      render: ({ data }) => <TextOrEmpty text={placementWorkerPool(data.placement)} />,
+    },
+    cell: { baseWidth: 9 },
   },
   {
     id: "pod",
@@ -73,7 +89,7 @@ export const actorColumns: TableColumn<ActorRow>[] = [
       columnSortableValuePath: ["placement", "workerPod"],
       render: ({ data }) => <TextWithTooltip text={data.placement?.workerPod} />,
     },
-    cell: { baseWidth: 9 },
+    cell: { baseWidth: 9, show: false },
   },
   {
     id: "node",

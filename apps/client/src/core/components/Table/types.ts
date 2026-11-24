@@ -51,6 +51,11 @@ type ColumnSortKey<DataType> =
 export interface TableColumn<DataType> {
   id: string;
   label: string | React.ReactElement;
+  /**
+   * Tooltip text of an Info button after the column head label, outside the sort button. The Columns menu shows the
+   * label only.
+   */
+  hint?: string;
   data: {
     render: ({
       data,

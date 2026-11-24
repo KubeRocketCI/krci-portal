@@ -1,5 +1,6 @@
-import type { AttentionItem, AttentionKind, ReadyFleet, WorkerPoolAccess } from "@my-project/shared";
+import type { AttentionItem, AttentionKind, Labels, ReadyFleet, WorkerPoolAccess } from "@my-project/shared";
 import { plural } from "../../../utils/plural";
+import { workerSelectorText } from "../../../utils/roomLabel";
 
 export const NEEDS_ATTENTION_MAX_ROWS = 5;
 
@@ -26,6 +27,8 @@ export function groupTitle(kind: AttentionKind): string {
   switch (kind) {
     case "actorCrashed":
       return "Crashed actors";
+    case "actorUnschedulable":
+      return "Actors no worker pool can host";
     case "workerPoolNotReady":
       return "Worker pools not ready";
     case "workerNotActive":
@@ -33,6 +36,10 @@ export function groupTitle(kind: AttentionKind): string {
     case "snapshotPending":
       return "Pending snapshots";
   }
+}
+
+export function unschedulableText(workerSelector: Labels): string {
+  return `Worker selector ${workerSelectorText(workerSelector)} matches no active worker`;
 }
 
 const NOT_CHECKED_REASON: Record<Exclude<WorkerPoolAccess, "ok">, string> = {

@@ -1,5 +1,5 @@
 import React from "react";
-import type { ActorRow, ReadyFleet, RoomSize, WorkerPoolAccess, WorkerPoolRow, WorkerRow } from "@my-project/shared";
+import type { ActorRow, ReadyFleet, WorkerPoolAccess, WorkerPoolRow, WorkerRow } from "@my-project/shared";
 import { EmptyList } from "@/core/components/EmptyList";
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { cn } from "@/core/utils/classname";
@@ -8,16 +8,19 @@ import { ResourceBars } from "../../../../components/ResourceBars";
 import { RoomVerdict } from "../../../../components/RoomVerdict";
 import { WorkerNotRegisteredBadge, WorkerPoolReadyBadge, WorkerStateBadge } from "../../../../components/WorkerCells";
 import { useScrollToHashTarget } from "../../../../hooks/useScrollToHashTarget";
+import { showsActorsBar } from "../../../../utils/actorsBar";
 import { fleetRoom } from "../../../../utils/roomLabel";
 import { HASH_TARGET_CLASS, workerAnchor, workerPoolAnchor } from "../../../../utils/rowAnchor";
 
 interface WorkerBlockProps {
   worker: WorkerRow;
   actors: ActorRow[];
+  /** `showsActorsBar` of the worker pool. */
+  actorsBar: boolean;
   isTarget: boolean;
 }
 
-function WorkerBlock({ worker, actors, isTarget }: WorkerBlockProps) {
+function WorkerBlock({ worker, actors, actorsBar, isTarget }: WorkerBlockProps) {
   return (
     <section
       id={workerAnchor(worker)}
@@ -40,7 +43,7 @@ function WorkerBlock({ worker, actors, isTarget }: WorkerBlockProps) {
           <WorkerStateBadge state={worker.state} />
         </span>
       </div>
-      <ResourceBars capacity={worker.capacity} allocated={worker.allocated} />
+      <ResourceBars capacity={worker.capacity} allocated={worker.allocated} actorsBar={actorsBar} />
       {actors.length > 0 ? (
         <ul className="grid gap-2 md:grid-cols-2">
           {actors.map((actor) => (
@@ -88,7 +91,6 @@ const workerKey = (namespace: string, workerPool: string, worker: string) =>
 
 interface WorkerPoolCardProps {
   workerPool: WorkerPoolRow;
-  roomSize: RoomSize | null;
   totalRoom: number;
   access: WorkerPoolAccess;
   workersByKey: Map<string, WorkerRow>;
@@ -96,17 +98,10 @@ interface WorkerPoolCardProps {
   target: string | null;
 }
 
-function WorkerPoolCard({
-  workerPool,
-  roomSize,
-  totalRoom,
-  access,
-  workersByKey,
-  actorsByWorker,
-  target,
-}: WorkerPoolCardProps) {
+function WorkerPoolCard({ workerPool, totalRoom, access, workersByKey, actorsByWorker, target }: WorkerPoolCardProps) {
   const anchor = workerPoolAnchor(workerPool);
   const isTarget = anchor === target;
+  const actorsBar = showsActorsBar(workerPool);
 
   return (
     <Card
@@ -122,12 +117,12 @@ function WorkerPoolCard({
             <CardTitle className="text-base">Worker pool {workerPool.name}</CardTitle>
             <div className="text-muted-foreground text-xs">{workerPool.namespace}</div>
           </div>
-          <RoomVerdict workerPool={workerPool} roomSize={roomSize} totalRoom={totalRoom} />
+          <RoomVerdict workerPool={workerPool} totalRoom={totalRoom} />
         </div>
         <WorkerPoolFacts workerPool={workerPool} access={access} />
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <ResourceBars capacity={workerPool.capacity} allocated={workerPool.allocated} />
+        <ResourceBars capacity={workerPool.capacity} allocated={workerPool.allocated} actorsBar={actorsBar} />
         {workerPool.workers.length === 0 && (
           <div className="text-muted-foreground text-xs">No worker in this worker pool</div>
         )}
@@ -140,6 +135,7 @@ function WorkerPoolCard({
               key={name}
               worker={worker}
               actors={actorsByWorker.get(key) ?? []}
+              actorsBar={actorsBar}
               isTarget={workerAnchor(worker) === target}
             />,
           ];
@@ -182,7 +178,6 @@ export function WorkerPoolCards({ fleet }: { fleet: ReadyFleet }) {
         <WorkerPoolCard
           key={`${workerPool.namespace}/${workerPool.name}`}
           workerPool={workerPool}
-          roomSize={fleet.workerPools.roomSize}
           totalRoom={totalRoom}
           access={fleet.workerPools.access}
           workersByKey={workersByKey}

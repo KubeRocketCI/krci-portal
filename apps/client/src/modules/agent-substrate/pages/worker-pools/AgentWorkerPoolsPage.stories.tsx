@@ -18,6 +18,7 @@ import {
   WORKER_POOLS_ERROR_FLEET,
   seedFleet,
 } from "../../__fixtures__/storyFleet";
+import { PAGE_DESCRIPTION } from "../../constants/hints";
 import { workerAnchor, workerPoolAnchor } from "../../utils/rowAnchor";
 import { WORKER_POOLS_VIEW_ENTITY_ID } from "./constants";
 import AgentWorkerPoolsPage from "./page";
@@ -26,13 +27,18 @@ const VIEW_MODE_KEY = viewModeStorageKey(WORKER_POOLS_VIEW_ENTITY_ID);
 
 const NAMESPACE = BUSY_WORKER.workerNamespace;
 
-/** Verdicts of ROOM_STATES_FLEET; the cards and the table show the same. */
+/** Verdicts and room sizes of ROOM_STATES_FLEET; the cards and the table show the same. */
 const ROOM_STATE_VERDICTS = [
-  ["workers", "Room for 3 actors", "text-status-success"],
-  ["workers-busy", "Full", "text-status-missing"],
-  ["workers-small", "Too small for the room size", "text-status-missing"],
-  ["workers-spare", "No active, registered worker", "text-status-missing"],
+  ["workers", "Room for 3 actors", "text-status-success", "1.0 CPU, 2.0 Gi"],
+  ["workers-busy", "Full", "text-status-missing", "1.0 CPU, 2.0 Gi"],
+  ["workers-small", "Too small for the room size", "text-status-missing", "1.0 CPU, 2.0 Gi"],
+  ["workers-spare", "No active, registered worker", "text-status-missing", "—"],
+  ["workers-unused", "No actor template selects this worker pool", "text-muted-foreground", "—"],
+  ["workers-zero", "No actor capacity", "text-status-missing", "By actor count"],
 ] as const;
+
+/** The value of a term in a card: the `dd` after its `dt`. */
+const fact = (scope: Canvas, term: string) => scope.getByText(term, { selector: "dt" }).nextElementSibling;
 
 const PAGE_URL = `/c/${STORYBOOK_CLUSTER_NAME}/agent/worker-pools`;
 
@@ -78,10 +84,12 @@ export const Ready: Story = {
     const workers = await workerPoolCard(canvas, "workers");
     await expect(viewButton(canvas, "Cards")).toHaveAttribute("aria-pressed", "true");
     await expect(viewButton(canvas, "Table")).toHaveAttribute("aria-pressed", "false");
-    await expect(canvas.getByText("Room is counted at 1.0 CPU, 2.0 Gi.")).toBeVisible();
 
+    await expect(canvas.getByText(PAGE_DESCRIPTION.workerPools)).toBeVisible();
     await expect(workers.getByText("Room for 4 actors")).toHaveClass("text-status-success");
-    await expect(workers.getByText("at 1.0 CPU, 2.0 Gi · limited by CPU and memory")).toBeVisible();
+    await expect(fact(workers, "Room size")).toHaveTextContent("1.0 CPU, 2.0 Gi");
+    await expect(fact(workers, "Limited by")).toHaveTextContent("CPU and memory");
+    await expect(fact(workers, "Worker labels")).toHaveTextContent("workload=workers");
     await expect(workers.getByText("2/2 ready")).toBeVisible();
     await expect(workers.getByText("gvisor")).toBeVisible();
 
@@ -145,9 +153,15 @@ export const RoomStates: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    for (const [name, text, tone] of ROOM_STATE_VERDICTS) {
-      await expect((await workerPoolCard(canvas, name)).getByText(text)).toHaveClass(tone);
+    for (const [name, text, tone, roomSize] of ROOM_STATE_VERDICTS) {
+      const card = await workerPoolCard(canvas, name);
+      await expect(card.getByText(text)).toHaveClass(tone);
+      await expect(fact(card, "Room size")).toHaveTextContent(roomSize);
     }
+    await expect(canvas.queryByText(/no actor template limits/i)).toBeNull();
+    await expect(fact(await workerPoolCard(canvas, "workers-unused"), "Worker labels")).toHaveTextContent(
+      "workload=unused"
+    );
     const busy = await workerPoolCard(canvas, "workers-busy");
     await expect(busy.getByRole("link", { name: "issue-7-2" })).toBeVisible();
     await expect(busy.getByRole("link", { name: "issue-7-3" })).toBeVisible();
@@ -234,7 +248,6 @@ export const TableReady: Story = {
     await expect(microvm.getByText("microvm")).toBeVisible();
     await expect(microvm.getByText("7")).toBeVisible();
 
-    await expect(canvas.getByText("Room is counted at 1.0 CPU, 2.0 Gi.")).toBeVisible();
     await expect(canvas.queryByRole("region", { name: /^Worker pool / })).toBeNull();
     await expect(canvas.queryByRole("alert")).toBeNull();
   },
@@ -244,9 +257,14 @@ export const TableRoomStates: Story = {
   beforeEach: savedView(VIEW_MODES.TABLE),
   decorators: [withAppProviders({ seedQueryCache: seedFleet(ROOM_STATES_FLEET) })],
   play: async ({ canvasElement }) => {
-    for (const [name, text, tone] of ROOM_STATE_VERDICTS) {
-      await expect((await rowOf(canvasElement, name)).getByText(text)).toHaveClass(tone);
+    for (const [name, text, tone, roomSize] of ROOM_STATE_VERDICTS) {
+      const row = await rowOf(canvasElement, name);
+      await expect(row.getByText(text)).toHaveClass(tone);
+      // The room next to the verdict.
+      await expect(row.getByText(text).closest("td")).toHaveTextContent(name === "workers" ? `3${text}` : `0${text}`);
+      await expect(row.getAllByText(roomSize).length).toBeGreaterThan(0);
     }
+    await expect((await rowOf(canvasElement, "workers-unused")).getByText("workload=unused")).toBeVisible();
   },
 };
 
@@ -258,8 +276,8 @@ export const TableNotReady: Story = {
 
     const spare = await rowOf(canvasElement, "workers-spare");
     await expect(spare.getByText("0/2 ready")).toBeVisible();
-    // Resolution not reported yet.
-    await expect(spare.getAllByText("—")).toHaveLength(1);
+    // Resolution not reported yet; no worker: no worker labels, no room size.
+    await expect(spare.getAllByText("—")).toHaveLength(3);
   },
 };
 

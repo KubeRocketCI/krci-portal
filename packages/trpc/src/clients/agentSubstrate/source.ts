@@ -59,6 +59,8 @@ export interface SubstrateActorTemplate {
   uid: string;
   containers: { name: string; env: SubstrateEnvVar[] }[];
   limits: { cpuMillicores: number; memoryBytes: number };
+  /** The match labels of the worker selector. Empty: no worker selector; every worker matches. */
+  workerSelector: Record<string, string>;
 }
 
 export interface SubstrateWorker {
@@ -67,6 +69,8 @@ export interface SubstrateWorker {
   workerNamespace: string;
   workerPod: string;
   nodeName: string;
+  /** The `metadata.labels` of the WorkerPool. */
+  labels: Record<string, string>;
   state: WorkerState;
   capacity: SubstrateResources;
   allocated: SubstrateResources;

@@ -22,8 +22,14 @@ export function ActorList({ fleet }: { fleet: ReadyFleet }) {
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
 
   const slots = React.useMemo(
-    () => ({ header: { component: <ActorFilter atespaces={fleet.atespaces} actors={fleet.actors} /> } }),
-    [fleet.atespaces, fleet.actors]
+    () => ({
+      header: {
+        component: (
+          <ActorFilter atespaces={fleet.atespaces} actors={fleet.actors} workerPools={fleet.workerPools.items} />
+        ),
+      },
+    }),
+    [fleet.atespaces, fleet.actors, fleet.workerPools.items]
   );
 
   const handleRowClick = React.useCallback(

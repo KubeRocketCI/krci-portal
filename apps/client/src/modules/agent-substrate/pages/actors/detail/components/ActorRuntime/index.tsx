@@ -1,6 +1,8 @@
 import type { ActorRow } from "@my-project/shared";
 import { Card, CardContent } from "@/core/components/ui/card";
 import { KV } from "../../../../../components/KV";
+import { TERM_HINT } from "../../../../../constants/hints";
+import { placementWorkerPool } from "../../../../../utils/roomLabel";
 
 /** `placement` is null while the actor is suspended or crashed. */
 export function ActorRuntime({ actor }: { actor: ActorRow }) {
@@ -15,10 +17,10 @@ export function ActorRuntime({ actor }: { actor: ActorRow }) {
         <KV
           rows={[
             ["Worker", placement?.worker],
-            ["Worker pool", placement && `${placement.workerNamespace}/${placement.workerPool}`],
+            ["Worker pool", placementWorkerPool(placement), TERM_HINT.workerPool],
             ["Worker pod", placement?.workerPod],
             ["Node", placement?.node],
-            ["Sandbox runtime", placement?.sandboxRuntime],
+            ["Sandbox runtime", placement?.sandboxRuntime, TERM_HINT.sandboxRuntime],
           ]}
         />
       </CardContent>

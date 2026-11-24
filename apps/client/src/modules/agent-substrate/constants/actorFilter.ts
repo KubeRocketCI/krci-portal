@@ -4,6 +4,7 @@ export const ACTOR_FILTER_NAMES = {
   ACTOR_STATE: "actorState",
   CODEBASE: "codebase",
   AGENT_PROFILE: "agentProfile",
+  WORKER_POOL: "workerPool",
 } as const;
 
 /**

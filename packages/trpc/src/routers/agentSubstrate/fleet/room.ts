@@ -1,5 +1,6 @@
 import {
   roomResourceSchema,
+  type Labels,
   type RoomResource,
   type RoomSize,
   type RoomState,
@@ -27,6 +28,17 @@ export function roomSizeOf(limits: (RoomSize | null)[]): RoomSize | null {
   return size && (size.cpuMillicores > 0 || size.memoryBytes > 0) ? size : null;
 }
 
+/** As the Agent Substrate scheduler: every key of the worker selector equals the worker label of that key. */
+export function selects(workerSelector: Labels, workerLabels: Labels): boolean {
+  return Object.entries(workerSelector).every(
+    ([key, value]) => Object.hasOwn(workerLabels, key) && workerLabels[key] === value
+  );
+}
+
+export function hostsActors(worker: SubstrateWorker): boolean {
+  return worker.state === "active" && worker.registered;
+}
+
 function wholeBytes(value: number): bigint {
   return Number.isFinite(value) && value > 0 ? BigInt(Math.trunc(value)) : 0n;
 }
@@ -48,8 +60,8 @@ export interface WorkerRoom {
   room: number;
   /** The resources whose free amount fits exactly `room` actors, in `roomResourceSchema` order. */
   limitedBy: RoomResource[];
-  /** One actor of the room size fits with nothing allocated; separates `full` from `tooSmall`. */
-  fitsWhenEmpty: boolean;
+  /** The resources that fit no actor with nothing allocated, in `roomResourceSchema` order. Empty: one actor fits. */
+  tooSmallBy: RoomResource[];
 }
 
 const NO_ALLOCATION: SubstrateResources = { cpuMillicores: 0, memoryBytes: 0, actors: 0 };
@@ -70,26 +82,34 @@ function fitsByResource(
 }
 
 /**
- * Actors of `size` that the worker can still host, as the Agent Substrate scheduler places them: each actor takes one
- * of `capacity.actors` and its limits plus the runtime overhead. Null when the worker hosts no actor (not active or not
- * registered). `size` null: actors only, runtime overhead not booked. Per-actor constraints (snapshot sandbox class,
- * selectors) are not applied.
+ * Actors of `size` that an active, registered worker can still host, as the Agent Substrate scheduler places them:
+ * each actor takes one of `capacity.actors` and its limits plus the runtime overhead. `size` null: actors only,
+ * runtime overhead not booked. Per-actor constraints (snapshot sandbox class, actor worker selector) are not applied.
  */
-export function workerRoomOf(worker: SubstrateWorker, size: RoomSize | null): WorkerRoom | null {
-  if (worker.state !== "active" || !worker.registered) return null;
-
+export function workerRoomOf(worker: SubstrateWorker, size: RoomSize | null): WorkerRoom {
   const fitsBy = fitsByResource(worker, worker.allocated, size);
+  const fitsByWhenEmpty = fitsByResource(worker, NO_ALLOCATION, size);
   const room = Math.min(...Object.values(fitsBy));
   return {
     room,
     limitedBy: roomResourceSchema.options.filter((resource) => fitsBy[resource] === room),
-    fitsWhenEmpty: Math.min(...Object.values(fitsByResource(worker, NO_ALLOCATION, size))) > 0,
+    tooSmallBy: roomResourceSchema.options.filter((resource) => fitsByWhenEmpty[resource] === 0),
   };
 }
 
-/** Over the active, registered workers of one worker pool. */
-export function roomStateOf(workerRooms: WorkerRoom[]): RoomState {
-  if (workerRooms.length === 0) return "noWorker";
-  if (workerRooms.some(({ room }) => room > 0)) return "room";
-  return workerRooms.some(({ fitsWhenEmpty }) => fitsWhenEmpty) ? "full" : "tooSmall";
+export interface WorkerPoolRoom {
+  room: number;
+  limitedBy: RoomResource[];
+  roomState: Extract<RoomState, "room" | "full" | "tooSmall">;
+}
+
+/** Over the workers of one worker pool that add room; at least one. */
+export function workerPoolRoomOf(workerRooms: WorkerRoom[]): WorkerPoolRoom {
+  const room = workerRooms.reduce((sum, workerRoom) => sum + workerRoom.room, 0);
+  const roomState =
+    room > 0 ? "room" : workerRooms.some(({ tooSmallBy }) => tooSmallBy.length === 0) ? "full" : "tooSmall";
+  const bounds = new Set(
+    workerRooms.flatMap(({ limitedBy, tooSmallBy }) => (roomState === "tooSmall" ? tooSmallBy : limitedBy))
+  );
+  return { room, limitedBy: roomResourceSchema.options.filter((resource) => bounds.has(resource)), roomState };
 }
