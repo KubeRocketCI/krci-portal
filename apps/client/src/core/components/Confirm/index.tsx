@@ -4,6 +4,7 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -45,14 +46,12 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       <DialogContent className="w-full max-w-4xl">
         <DialogHeader>
           <DialogTitle>Confirm action</DialogTitle>
+          <DialogDescription className={text ? "text-foreground text-lg" : "sr-only"}>
+            {text || "This action needs your confirmation."}
+          </DialogDescription>
         </DialogHeader>
         <DialogBody>
           <div className="flex flex-col gap-4">
-            {!!text && (
-              <div>
-                <p className="text-lg">{text}</p>
-              </div>
-            )}
             <div className="flex flex-col gap-2">
               <Label htmlFor="confirm-input">Enter "confirm" to confirm action</Label>
               <Input

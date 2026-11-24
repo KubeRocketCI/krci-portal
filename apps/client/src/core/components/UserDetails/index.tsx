@@ -80,7 +80,7 @@ export default function UserDetailsDialog({ state }: UserDetailsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>User Details</DialogTitle>
         </DialogHeader>

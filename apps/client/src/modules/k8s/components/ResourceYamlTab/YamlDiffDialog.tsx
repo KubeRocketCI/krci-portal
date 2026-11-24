@@ -1,5 +1,5 @@
 import { MonacoDiffEditor } from "@/core/components/CodeEditor/monaco";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/core/components/ui/dialog";
 import { removeStatusField } from "./removeStatusField";
 
 interface Props {
@@ -15,6 +15,7 @@ export function YamlDiffDialog({ open, onClose, current, draft }: Props) {
       <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>Preview changes</DialogTitle>
+          <DialogDescription>Compare the current resource with your changes.</DialogDescription>
         </DialogHeader>
         <div className="h-[60vh]">
           <MonacoDiffEditor

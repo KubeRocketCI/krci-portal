@@ -4,6 +4,7 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -97,6 +98,11 @@ export const DeleteKubeObjectDialog: React.FC<DeleteKubeObjectDialogProps> = (_p
       <DialogContent className="w-full max-w-4xl">
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
+          <DialogDescription>
+            {errorTemplate
+              ? "This resource cannot be deleted right now."
+              : `Deleting "${objectName || ""}" cannot be undone.`}
+          </DialogDescription>
         </DialogHeader>
         <DialogBody>
           <div className="flex flex-col gap-2">

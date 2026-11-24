@@ -9,7 +9,7 @@ export const PipelineRunGraphDialog: React.FC<PipelineRunGraphDialogPropsWithBas
 }) => {
   return (
     <Dialog open={open} onOpenChange={(open) => !open && closeDialog()}>
-      <DialogContent className="h-full w-full max-w-full p-0">
+      <DialogContent className="h-full w-full max-w-full p-0" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle className="text-4xl font-bold">
             {pipelineRunName ? `Pipeline Run: ${pipelineRunName}` : "Not found"}

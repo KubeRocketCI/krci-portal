@@ -39,7 +39,7 @@ export const CommentDialog: React.FC<CommentDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && closeDialog()}>
-      <DialogContent className="w-full max-w-2xl">
+      <DialogContent className="w-full max-w-2xl" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>

@@ -4,6 +4,7 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -36,14 +37,12 @@ export const ConfirmResourcesUpdatesDialog: React.FC<ConfirmResourcesUpdatesDial
       <DialogContent className="w-full max-w-4xl">
         <DialogHeader>
           <DialogTitle>Confirm action</DialogTitle>
+          <DialogDescription className={text ? "text-foreground text-lg" : "sr-only"}>
+            {text || "Confirm the changes to the listed resources."}
+          </DialogDescription>
         </DialogHeader>
         <DialogBody>
           <div className="flex flex-col gap-4">
-            {!!text && (
-              <div>
-                <p className="text-lg">{text}</p>
-              </div>
-            )}
             {!!resourcesArray && (
               <div>
                 <div className="flex flex-col gap-2">

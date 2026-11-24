@@ -16,7 +16,14 @@ import { usePagination } from "@/core/hooks/usePagination";
 import { isKnownTotal } from "@/core/components/ui/table-pagination/utils";
 import { useIsNarrow } from "@/core/hooks/use-narrow";
 import { cn } from "@/core/utils/classname";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/core/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/core/components/ui/sheet";
 import { Button } from "@/core/components/ui/button";
 import { SlidersHorizontal } from "lucide-react";
 
@@ -302,6 +309,7 @@ const TableShell = <DataType,>(props: TableShellProps<DataType>) => {
                     <SheetContent side="right">
                       <SheetHeader>
                         <SheetTitle>Filters</SheetTitle>
+                        <SheetDescription>Filter the rows of this table.</SheetDescription>
                       </SheetHeader>
                       <div className="flex flex-col gap-4 px-4">{slots.header.component}</div>
                     </SheetContent>

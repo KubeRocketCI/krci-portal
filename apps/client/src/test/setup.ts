@@ -1,10 +1,27 @@
-import { vi, afterEach } from "vitest";
+import { vi, afterEach, beforeEach } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
+import { findRadixDialogWarnings } from "./radixWarnings";
 
-// Cleanup after each test
+let warnSpy: ReturnType<typeof vi.spyOn> | undefined;
+let errorSpy: ReturnType<typeof vi.spyOn> | undefined;
+
+// A dialog or sheet opened without a title or a description fails the test that opened it.
+beforeEach(() => {
+  warnSpy = vi.spyOn(console, "warn");
+  errorSpy = vi.spyOn(console, "error");
+});
+
 afterEach(() => {
+  const warnings = findRadixDialogWarnings([...(warnSpy?.mock.calls ?? []), ...(errorSpy?.mock.calls ?? [])]);
+  warnSpy?.mockRestore();
+  errorSpy?.mockRestore();
+  warnSpy = undefined;
+  errorSpy = undefined;
   cleanup();
+  if (warnings.length > 0) {
+    throw new Error(`Dialog opened without a title or description:\n${warnings.join("\n")}`);
+  }
 });
 
 // Mock localStorage globally for all tests with actual storage

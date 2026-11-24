@@ -9,7 +9,7 @@ export const PipelineGraphDialog: React.FC<PipelineGraphDialogProps> = ({
 }) => {
   return (
     <Dialog open={open} onOpenChange={(open) => !open && closeDialog()}>
-      <DialogContent className="flex h-full w-full max-w-full flex-col">
+      <DialogContent className="flex h-full w-full max-w-full flex-col" aria-describedby={undefined}>
         <DialogHeader className="shrink-0">
           <DialogTitle className="text-2xl font-medium">{`Pipeline: ${pipelineName}`}</DialogTitle>
         </DialogHeader>

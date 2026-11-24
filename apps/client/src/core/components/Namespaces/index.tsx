@@ -3,6 +3,7 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -196,6 +197,7 @@ export default function NamespacesDialog({ state }: NamespacesDialogProps) {
       <DialogContent className="w-full max-w-2xl">
         <DialogHeader>
           <DialogTitle>Namespaces</DialogTitle>
+          <DialogDescription>Set the default namespace and the namespaces you work in.</DialogDescription>
         </DialogHeader>
         <DialogBody>
           <div className="flex flex-col gap-4">

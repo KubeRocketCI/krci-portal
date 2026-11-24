@@ -1,4 +1,4 @@
-import { Dialog, DialogContent } from "@/core/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/core/components/ui/dialog";
 import React from "react";
 import { LoadingWrapper } from "@/core/components/misc/LoadingWrapper";
 import { ErrorContent } from "@/core/components/ErrorContent";
@@ -33,7 +33,8 @@ export const EditCodebaseBranchDialog: React.FC<EditCodebaseBranchDialogProps> =
   if (branchWatch.query.error) {
     return (
       <Dialog open={open} onOpenChange={(open) => !open && closeDialog()} data-testid="dialog">
-        <DialogContent className="w-full max-w-4xl">
+        <DialogContent className="w-full max-w-4xl" aria-describedby={undefined}>
+          <DialogTitle className="sr-only">Could not load the resource</DialogTitle>
           <ErrorContent error={branchWatch.query.error} />
         </DialogContent>
       </Dialog>

@@ -2,6 +2,7 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -44,13 +45,13 @@ const ConflictsDialog = ({ open, handleClose, conflicts }: ConflictsDialogProps)
             <AlertCircle size={20} className="text-destructive" />
             Cannot Delete Selected Projects
           </DialogTitle>
+          <DialogDescription>
+            The following projects are used in Deployments and cannot be deleted. Please remove them from the associated
+            Deployments first.
+          </DialogDescription>
         </DialogHeader>
         <DialogBody>
           <div className="flex flex-col gap-4">
-            <p className="text-muted-foreground text-sm">
-              The following projects are used in Deployments and cannot be deleted. Please remove them from the
-              associated Deployments first.
-            </p>
             <div className="border-border rounded-md border">
               <TableUI>
                 <TableHeaderUI>
@@ -174,6 +175,7 @@ const DeletionDialog = ({ open, handleClose, onDelete, componentsToDelete }: Del
       <DialogContent className="w-full max-w-xl">
         <DialogHeader>
           <DialogTitle>Are you sure you want to delete {componentsToDelete.length} selected project(s)?</DialogTitle>
+          <DialogDescription>The selected projects will be deleted. This cannot be undone.</DialogDescription>
         </DialogHeader>
         <DialogBody>
           <div className="flex flex-col gap-2">
@@ -214,7 +216,8 @@ export const ComponentMultiDeletion = ({
   if (isLoading) {
     return (
       <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-        <DialogContent className="w-full max-w-md">
+        <DialogContent className="w-full max-w-md" aria-describedby={undefined}>
+          <DialogTitle className="sr-only">Checking for conflicts</DialogTitle>
           <DialogBody>
             <div className="flex items-center justify-center gap-2 py-8">
               <Loader2 className="animate-spin" size={20} />

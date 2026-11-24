@@ -2,6 +2,7 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -66,6 +67,7 @@ export const DialogInner = () => {
           <DialogHeader>
             <div className="flex w-full flex-col gap-4">
               <DialogTitle>Add New Widget</DialogTitle>
+              <DialogDescription>Choose a widget type, then configure it.</DialogDescription>
               <StepperNav>
                 {STEPPER_STEPS.map((label, index) => (
                   <StepperItem key={label} step={index + 1} completed={index < activeStep} className="relative">

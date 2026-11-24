@@ -87,7 +87,9 @@ export function StopPipelineRunsDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Stop Pipelines</DialogTitle>
-          {output && <DialogDescription>{describeStopOutcome(output)}</DialogDescription>}
+          <DialogDescription>
+            {output ? describeStopOutcome(output) : "The listed PipelineRuns will be stopped."}
+          </DialogDescription>
         </DialogHeader>
         <DialogBody>
           {sortedResults ? (

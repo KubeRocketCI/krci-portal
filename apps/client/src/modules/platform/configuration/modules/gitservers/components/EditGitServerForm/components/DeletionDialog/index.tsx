@@ -2,6 +2,7 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -51,6 +52,11 @@ export const DeletionDialog = ({ gitServer, gitServerSecret, open, handleClose }
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Are you sure you want to delete these?</DialogTitle>
+          <DialogDescription>
+            {gitServerSecret
+              ? "The GitServer and its Secret will be deleted. This cannot be undone."
+              : "The GitServer will be deleted. This cannot be undone."}
+          </DialogDescription>
         </DialogHeader>
         <DialogBody>
           <div className="mb-5 rounded-md border">

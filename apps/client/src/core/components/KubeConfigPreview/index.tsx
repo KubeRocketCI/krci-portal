@@ -91,7 +91,7 @@ export default function KubeConfigPreviewDialog({ state }: KubeConfigPreviewDial
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && closeDialog()}>
-      <DialogContent className="w-full max-w-4xl">
+      <DialogContent className="w-full max-w-4xl" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Kubeconfig Preview</DialogTitle>
         </DialogHeader>

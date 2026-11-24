@@ -3,6 +3,7 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -78,6 +79,9 @@ export const GitLabBuildWithParamsDialog: React.FC<GitLabBuildWithParamsDialogPr
               </div>
             </div>
           </DialogTitle>
+          <DialogDescription>
+            Start a GitLab pipeline build of the branch with extra pipeline variables.
+          </DialogDescription>
         </DialogHeader>
         <DialogBody>
           <div className="flex flex-col gap-4">

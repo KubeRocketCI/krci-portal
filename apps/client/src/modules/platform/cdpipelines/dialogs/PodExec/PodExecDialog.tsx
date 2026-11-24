@@ -26,7 +26,7 @@ export const PodExecDialog: React.FC<PodExecDialogProps> = ({ props, state }) =>
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && closeDialog()}>
-      <DialogContent className="h-[80vh] w-full max-w-6xl">
+      <DialogContent className="h-[80vh] w-full max-w-6xl" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Terminal - {appName}</DialogTitle>
         </DialogHeader>

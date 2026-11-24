@@ -4,6 +4,7 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -46,6 +47,7 @@ export function TokenLoginDialog({
       <DialogContent className="w-full max-w-md">
         <DialogHeader>
           <DialogTitle>Sign In with Token</DialogTitle>
+          <DialogDescription>Enter your OIDC access token or ID token to sign in.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <DialogBody>
@@ -61,7 +63,6 @@ export function TokenLoginDialog({
                   className="font-mono text-sm"
                   disabled={isLoading}
                 />
-                <p className="text-muted-foreground text-sm">Enter your OIDC access token or ID token to sign in.</p>
               </div>
               {error && (
                 <Alert variant="destructive" title="Error">
