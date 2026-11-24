@@ -22,7 +22,6 @@ describe("planChecks", () => {
           files: ["src/modules/home/pages/overview/view.tsx"],
         },
       ],
-      install: false,
       build: [],
       tsc: ["client"],
       lint: ["client"],
@@ -38,7 +37,6 @@ describe("planChecks", () => {
     expect(plan.tsc).toEqual(["shared", "trpc", "server", "client"]);
     expect(plan.lint).toEqual(["shared"]);
     expect(plan.tests).toEqual({ projects: ["shared", "trpc"], paths: ["packages/shared/", "packages/trpc/"] });
-    expect(plan.install).toBe(false);
   });
 
   it("narrows trpc tests to the router or client directory of the change", () => {
@@ -69,12 +67,6 @@ describe("planChecks", () => {
     );
 
     expect(plan.tests).toEqual({ projects: ["server", "client"], paths: ["apps/server/", "apps/client/"] });
-  });
-
-  it("reinstalls before the build when a source file is new in shared", () => {
-    const plan = planChecks([{ path: "packages/shared/src/models/glossary.ts", status: "added" }], env);
-
-    expect(plan.install).toBe(true);
   });
 
   it("type-checks a deleted file's package without formatting the file", () => {

@@ -11,7 +11,7 @@ KubeRocketCI Portal — monorepo for a Kubernetes CI/CD platform UI.
 - After each TDD slice: `pnpm vitest run --project <package> <module directory>` and `pnpm --filter=<package> tsc`. Coverage is off unless `--coverage` is passed.
 - Before each commit: `pnpm check:changed`, a targeted subset (changed packages, module directories, tests that import a changed file directly); it does not replace `pnpm prepare:validate`. `.githooks/pre-commit` (set by `pnpm install`) blocks a commit whose staged contents are not formatted.
 - Before the first push of a branch: `git fetch` and rebase on `origin/main`, `pnpm prepare:validate`, then `krci-general:review` once over `main..HEAD`. `code-review` only when the user asks, at level high.
-- After a change in `packages/shared` or `packages/trpc`, before `tsc` or a build: `pnpm --filter=shared build && pnpm --filter=trpc build`. trpc reads shared from an injected copy (`injectWorkspacePackages`); a new file in shared needs `pnpm install --frozen-lockfile` first. trpc tests read shared from source.
+- After a change in `packages/shared` or `packages/trpc`, before `tsc` or a build: `pnpm --filter=shared build && pnpm --filter=trpc build`. `tsc` in trpc, server and client reads `packages/shared/dist`; trpc tests read shared from source. At runtime trpc reads shared from an injected copy (`injectWorkspacePackages`).
 
 ## Critical Conventions
 

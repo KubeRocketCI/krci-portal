@@ -32,5 +32,5 @@ export function findTestImporters(changedPath: string, tests: TestSource[], alia
       })
     )
     .map(({ path }) => path)
-    .sort();
+    .sort((a, b) => a.localeCompare(b));
 }

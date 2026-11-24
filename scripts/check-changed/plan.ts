@@ -29,7 +29,6 @@ export interface FormatGroup {
 
 export interface CheckPlan {
   format: FormatGroup[];
-  install: boolean;
   build: Target[];
   tsc: Target[];
   lint: Target[];
@@ -83,9 +82,6 @@ const TARGETS: Record<Target, TargetSpec> = {
 const ORDER: Target[] = ["shared", "trpc", "server", "client", "scripts"];
 
 const ROOT_PRETTIER = "node_modules/.bin/prettier";
-
-/** trpc reads shared from an injected copy that holds only files present at install time. */
-const SHARED_SRC = "packages/shared/src/";
 
 /** Root files that every target builds, type-checks or tests against. */
 const WORKSPACE_FILES = new Set([
@@ -196,11 +192,13 @@ export function planChecks(changes: ChangedFile[], env: PlanEnv): CheckPlan {
     .flatMap(({ path }) => env.testImporters(path))
     .filter((test) => !dirs.some((dir) => test.startsWith(dir)));
   const projects = inOrder([...wholeProjects, ...narrowDirs.map(([, target]) => target)]);
-  const paths = [...inOrder(wholeProjects).map(projectPath), ...[...new Set([...dirs, ...importers])].sort()];
+  const paths = [
+    ...inOrder(wholeProjects).map(projectPath),
+    ...[...new Set([...dirs, ...importers])].sort((a, b) => a.localeCompare(b)),
+  ];
 
   return {
     format,
-    install: changes.some(({ path, status }) => status === "added" && path.startsWith(SHARED_SRC)),
     build,
     tsc,
     lint: inOrder(changedTargets).filter((target) => env.hasLintScript(target)),
