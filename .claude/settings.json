@@ -7,19 +7,5 @@
       "Read(./config/credentials.json)",
       "Read(./build)"
     ]
-  },
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/prettier-on-write.sh\"",
-            "timeout": 10
-          }
-        ]
-      }
-    ]
   }
 }
