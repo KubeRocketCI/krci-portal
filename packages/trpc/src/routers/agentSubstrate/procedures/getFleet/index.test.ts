@@ -1250,7 +1250,6 @@ describe("agentSubstrate.getFleet", () => {
     });
 
     describe("room state", () => {
-      /** Room size 1 CPU, 2 Gi. */
       const ONE_ACTOR_SIZE = {
         actors: [actor("issue", "suspended")],
         actorTemplates: [plainActorTemplate("issue", { cpuMillicores: 1000, memoryBytes: 2 * GIB })],

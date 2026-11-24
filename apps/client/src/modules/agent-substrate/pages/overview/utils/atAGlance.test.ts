@@ -13,7 +13,7 @@ import {
 } from "../../../__fixtures__/storyFleet";
 import { ACTOR_FILTER_NAMES } from "../../../constants/actorFilter";
 import { actorMatchFunctions } from "../../actors/list/components/ActorFilter/constants";
-import { actorStateSearch, agentProfileSearch, agentsSubText, roomSubText, workersHealth } from "./atAGlance";
+import { actorStateSearch, actorsSubText, agentProfileSearch, roomSubText, workersHealth } from "./atAGlance";
 
 function summaryOf(fleet: ReadyFleet, patch: Partial<ReadyFleet["summary"]>) {
   return { ...fleet.summary, ...patch };
@@ -26,10 +26,14 @@ function unregistered(fleet: ReadyFleet) {
   return workers;
 }
 
-describe("agentsSubText", () => {
-  it("names the actors and atespaces, singular and plural", () => {
-    expect(agentsSubText(summaryOf(EMPTY_FLEET, { actors: 7, atespaces: 2 }))).toBe("of 7 actors in 2 atespaces");
-    expect(agentsSubText(summaryOf(EMPTY_FLEET, { actors: 1, atespaces: 1 }))).toBe("of 1 actor in 1 atespace");
+describe("actorsSubText", () => {
+  it("names the agents the actors host and the atespaces, singular and plural", () => {
+    expect(actorsSubText(summaryOf(EMPTY_FLEET, { agents: 5, atespaces: 2 }))).toBe("5 host an agent · in 2 atespaces");
+    expect(actorsSubText(summaryOf(EMPTY_FLEET, { agents: 1, atespaces: 1 }))).toBe("1 hosts an agent · in 1 atespace");
+  });
+
+  it("says no agent when no actor hosts one", () => {
+    expect(actorsSubText(summaryOf(EMPTY_FLEET, { agents: 0, atespaces: 2 }))).toBe("No agent · in 2 atespaces");
   });
 });
 

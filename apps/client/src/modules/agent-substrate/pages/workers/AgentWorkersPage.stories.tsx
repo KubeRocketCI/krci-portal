@@ -45,7 +45,7 @@ export const Ready: Story = {
     const canvas = within(canvasElement);
 
     const workers = await workerPoolCard(canvas, "workers");
-    await expect(workers.getByText("Room for 4 agents")).toHaveClass("text-status-success");
+    await expect(workers.getByText("Room for 4 actors")).toHaveClass("text-status-success");
     await expect(workers.getByText("at 1.0 CPU, 2.0 Gi · limited by CPU and memory")).toBeVisible();
     await expect(workers.getByText("2/2 ready")).toBeVisible();
     await expect(workers.getByText("gvisor")).toBeVisible();
@@ -61,7 +61,7 @@ export const Ready: Story = {
     await expect(idle.getByText("No actor on this worker")).toBeVisible();
 
     const microvm = await workerPoolCard(canvas, "workers-microvm");
-    await expect(microvm.getByText("Room for 7 agents")).toBeVisible();
+    await expect(microvm.getByText("Room for 7 actors")).toBeVisible();
     await expect(workerBlock(microvm, MICROVM_WORKER.pod).getByText("No actor on this worker")).toBeVisible();
 
     await expect(canvas.queryByText("No access to worker pools")).toBeNull();
@@ -85,7 +85,7 @@ export const DrainingWorker: Story = {
     const canvas = within(canvasElement);
 
     const workers = await workerPoolCard(canvas, "workers");
-    await expect(workers.getByText("Room for 1 agent")).toBeVisible();
+    await expect(workers.getByText("Room for 1 actor")).toBeVisible();
     const busy = workerBlock(workers, BUSY_WORKER.pod);
     await expect(busy.getByText("draining")).toBeVisible();
     await expect(busy.getByRole("link", { name: RUNNING_ACTOR.name })).toBeVisible();
@@ -112,7 +112,7 @@ export const RoomStates: Story = {
     const canvas = within(canvasElement);
 
     for (const [name, text, tone] of [
-      ["workers", "Room for 3 agents", "text-status-success"],
+      ["workers", "Room for 3 actors", "text-status-success"],
       ["workers-busy", "Full", "text-status-missing"],
       ["workers-small", "Too small for the room size", "text-status-missing"],
       ["workers-spare", "No active, registered worker", "text-status-missing"],
@@ -135,7 +135,7 @@ export const WorkerPoolsDenied: Story = {
 
     await expect(await canvas.findByText("No access to worker pools")).toBeVisible();
     const workers = await workerPoolCard(canvas, "workers");
-    await expect(workers.getByText("Room for 4 agents")).toBeVisible();
+    await expect(workers.getByText("Room for 4 actors")).toBeVisible();
     await expect(workers.getByText("WorkerPool not readable")).toBeVisible();
     await expect(workers.queryByText("2/2 ready")).toBeNull();
   },

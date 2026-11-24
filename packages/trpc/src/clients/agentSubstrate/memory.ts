@@ -26,7 +26,7 @@ function mergeFleet(base: MemoryFleet, update: Partial<MemoryFleet>): MemoryFlee
   };
 }
 
-/** Test adapter. Returns copies, never the held objects. */
+/** Returns copies, never the held objects. */
 export class MemoryAgentSubstrateSource implements AgentSubstrateSource {
   private fleet: MemoryFleet;
   private error: AgentSubstrateSourceError | null = null;

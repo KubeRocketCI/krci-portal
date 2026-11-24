@@ -1,4 +1,4 @@
-import { Bot } from "lucide-react";
+import { Package } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import { EmptyList } from "@/core/components/EmptyList";
 import { useClusterStore } from "@/k8s/store";
@@ -19,7 +19,7 @@ export function ActorDetailView({ atespace, name, tab, onTabChange }: ActorDetai
 
   return (
     <FleetPage
-      icon={Bot}
+      icon={Package}
       title={name}
       breadcrumbs={[
         { label: "Actors", route: { to: PATH_AGENT_ACTORS_FULL, params: { clusterName } } },

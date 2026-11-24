@@ -52,7 +52,7 @@ export const Runtime: Story = {
 
     await expect(runtime.getByText("workers-7c9f6")).toBeVisible();
     await expect(runtime.getByText("krci-agents/workers")).toBeVisible();
-    await expect(runtime.getByText("workers-7c9f6-0")).toBeVisible();
+    await expect(runtime.getByText("workers-7c9f6-0").previousElementSibling).toHaveTextContent("Worker pod");
     await expect(runtime.getByText("krci-control-plane")).toBeVisible();
     await expect(runtime.getByText("gvisor")).toBeVisible();
   },

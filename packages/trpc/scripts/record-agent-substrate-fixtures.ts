@@ -77,7 +77,6 @@ function scrubActorTemplate(
   };
 }
 
-/** JSON paths of the strings equal to `value`. Exact match only. */
 function pathsEqualTo(data: unknown, value: string, path = "$"): string[] {
   if (typeof data === "string") return data === value ? [path] : [];
   if (Array.isArray(data)) return data.flatMap((item, index) => pathsEqualTo(item, value, `${path}[${index}]`));

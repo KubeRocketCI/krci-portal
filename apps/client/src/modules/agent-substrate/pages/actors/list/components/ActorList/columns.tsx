@@ -70,8 +70,8 @@ export const actorColumns: TableColumn<ActorRow>[] = [
     id: "pod",
     label: "Worker pod",
     data: {
-      columnSortableValuePath: ["placement", "pod"],
-      render: ({ data }) => <TextWithTooltip text={data.placement?.pod} />,
+      columnSortableValuePath: ["placement", "workerPod"],
+      render: ({ data }) => <TextWithTooltip text={data.placement?.workerPod} />,
     },
     cell: { baseWidth: 9 },
   },

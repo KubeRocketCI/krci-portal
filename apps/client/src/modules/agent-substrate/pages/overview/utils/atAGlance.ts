@@ -8,15 +8,13 @@ import {
 import { ACTOR_FILTER_NAMES, agentProfileFilterValue } from "../../../constants/actorFilter";
 import { plural } from "../../../utils/plural";
 
-export function agentsSubText({ actors, atespaces }: FleetSummary): string {
-  return `of ${plural(actors, "actor")} in ${plural(atespaces, "atespace")}`;
+export function actorsSubText({ agents, atespaces }: FleetSummary): string {
+  const hosted = agents === 0 ? "No agent" : `${agents} ${agents === 1 ? "hosts" : "host"} an agent`;
+  return `${hosted} · in ${plural(atespaces, "atespace")}`;
 }
 
 export interface WorkersHealth {
-  /**
-   * As Needs attention: `warning` when the only workers not active are draining. An active worker that is not
-   * registered hosts no actor until it registers: `warning`.
-   */
+  /** As Needs attention: `warning` when the only inactive workers are draining; an active, unregistered worker is also `warning`. */
   severity: "ok" | AttentionSeverity;
   text: string;
 }

@@ -1,6 +1,6 @@
 import React from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { Bot } from "lucide-react";
+import { Package } from "lucide-react";
 import type { ActorRow } from "@my-project/shared";
 import { FilterProvider } from "@/core/providers/Filter";
 import { FleetPage } from "../../../components/FleetPage";
@@ -20,7 +20,7 @@ export default function AgentActorsPage() {
       normalizeUrlValues={normalizeUrlValues}
       syncWithUrl
     >
-      <FleetPage icon={Bot} title="Actors" breadcrumbs={[{ label: "Actors" }]}>
+      <FleetPage icon={Package} title="Actors" breadcrumbs={[{ label: "Actors" }]}>
         {(fleet) => (fleet.atespaces.length === 0 ? <FleetEmpty /> : <ActorList fleet={fleet} />)}
       </FleetPage>
     </FilterProvider>
