@@ -13,6 +13,7 @@
     "format:check": "pnpm --recursive run format:check && prettier --check scripts",
     "format:fix": "pnpm --recursive run format && prettier --write scripts",
     "check:changed": "bash scripts/check-changed.sh",
+    "prepare": "node scripts/install-git-hooks.mjs",
     "test:coverage": "vitest run",
     "sonar:check-dev": "dotenv -e .env -- sh -c 'sonar-scanner -Dsonar.host.url=\"$SONAR_HOST_URL\" -Dsonar.token=\"$SONAR_TOKEN\" -X'",
     "prepare:validate": "pnpm tsc:check && pnpm lint:check && pnpm test:coverage && pnpm format:check",

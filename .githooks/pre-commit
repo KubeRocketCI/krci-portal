@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Blocks a commit whose staged contents fail prettier --check. Installed by the root prepare script (pnpm install).
+# Git runs this after it prepares the commit's index: covers git add && git commit, commit -a, commit <paths>, partial staging.
+# A check that cannot run does not block; CI checks format again.
+root=$(git rev-parse --show-toplevel)
+[ -f "$root/scripts/check-changed.sh" ] || exit 0
+
+bash "$root/scripts/check-changed.sh" --staged
+status=$?
+case "$status" in
+  0) exit 0 ;;
+  3)
+    echo "Commit blocked: staged contents are not formatted. Fix: pnpm check:changed, then git add the formatted files." >&2
+    exit 1
+    ;;
+  *)
+    echo "pre-commit: format check could not run (exit $status); commit not blocked." >&2
+    exit 0
+    ;;
+esac
