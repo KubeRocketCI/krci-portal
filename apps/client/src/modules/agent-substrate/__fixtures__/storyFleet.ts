@@ -7,12 +7,11 @@ import {
   type ActorStateGroup,
   type Atespace,
   type AttentionItem,
-  type FleetSnapshot,
   type ReadyFleetSnapshot,
   type WorkerPoolRow,
   type WorkerRow,
 } from "@my-project/shared";
-import { FLEET_QUERY_KEY } from "../hooks/useFleet";
+import { FLEET_QUERY_KEY, type FleetData } from "../hooks/useFleet";
 import { NEEDS_ATTENTION_MAX_ROWS } from "../pages/overview/utils/needsAttention";
 import testbedFleet from "./fleet.testbed.json";
 
@@ -610,7 +609,7 @@ export const NO_ROOM_STATES_FLEET: ReadyFleetSnapshot = (() => {
   return fleet;
 })();
 
-export function seedFleet(snapshot: FleetSnapshot) {
+export function seedFleet(snapshot: FleetData) {
   return (queryClient: QueryClient) => {
     queryClient.setQueryData(FLEET_QUERY_KEY, snapshot);
   };

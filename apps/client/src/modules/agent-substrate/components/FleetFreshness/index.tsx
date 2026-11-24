@@ -1,4 +1,4 @@
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { RefreshCw, TriangleAlert } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
 import { formatUnixTimestamp } from "@/core/utils/date-humanize";
 import { cn } from "@/core/utils/classname";
@@ -8,18 +8,20 @@ const TIME_FORMAT: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "nume
 interface FleetFreshnessProps {
   /** Epoch ms or ISO 8601. */
   updatedAt?: number | string;
-  isStale: boolean;
+  /** The page shows data from an earlier read. */
+  staleReason?: string;
   isFetching: boolean;
   onRefresh: () => void;
 }
 
-export function FleetFreshness({ updatedAt, isStale, isFetching, onRefresh }: FleetFreshnessProps) {
+export function FleetFreshness({ updatedAt, staleReason, isFetching, onRefresh }: FleetFreshnessProps) {
   return (
     <div className="text-muted-foreground flex items-center gap-2 text-xs whitespace-nowrap">
-      {!!updatedAt && (
-        <span className="flex items-center gap-1">
-          {isStale && <AlertTriangle className="size-3.5 text-amber-500" aria-label="Refresh failed" />}
-          Last updated {formatUnixTimestamp(updatedAt, TIME_FORMAT)}
+      {!!updatedAt && <span>Last updated {formatUnixTimestamp(updatedAt, TIME_FORMAT)}</span>}
+      {staleReason && (
+        <span className="text-status-missing flex items-center gap-1 font-medium">
+          <TriangleAlert className="size-3.5 shrink-0" aria-hidden />
+          {staleReason}
         </span>
       )}
       <Button
