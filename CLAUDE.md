@@ -7,8 +7,10 @@ KubeRocketCI Portal — monorepo for a Kubernetes CI/CD platform UI.
 - Before filing or reading an issue, or opening a PR: `docs/agents/issue-tracker.md` (Jira `EPMDEDP`, PRs on GitHub).
 - Before triage or labeling: `docs/agents/triage-labels.md` (default five labels).
 - Before domain work: `GLOSSARY.md` (its terms go into code names, UI labels and notes), then the ADRs of the area in `docs/adr/` (`docs/agents/domain.md`, single-context).
-- Before portal code (component, table, filter, form, route, K8s resource, tRPC endpoint, test): load the matching `krci-fullstack` skill; it holds the coding standards. Hand a whole portal feature to the `krci-fullstack:fullstack-dev` agent.
-- Before commit: `krci-general:review` (bugs, conventions, comment hygiene).
+- Portal feature: the `mattpocock-skills` flow (grilling with domain-modeling, then `/implement` driving `/tdd`, then the review below). Before portal code (component, table, filter, form, route, K8s resource, tRPC endpoint, test): load the matching `krci-fullstack` skill; it holds the patterns and rules. The `krci-fullstack:fullstack-dev` agent is for a side task only.
+- After each TDD slice: tests of the module directory and `tsc` of the changed package.
+- Before each commit: `pnpm check:changed`.
+- Before the first push of a branch: `git fetch` and rebase on `origin/main`, `pnpm prepare:validate`, then `krci-general:review` once over `main..HEAD`. `code-review` only when the user asks, at level high.
 - After a change in `packages/shared` or `packages/trpc`, before `tsc` or a build: `pnpm --filter=shared build && pnpm --filter=trpc build`. trpc reads shared from an injected copy (`injectWorkspacePackages`); a new file in shared needs `pnpm install --frozen-lockfile` first. trpc tests read shared from source.
 
 ## Critical Conventions
