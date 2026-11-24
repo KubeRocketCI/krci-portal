@@ -1,12 +1,13 @@
 import type { LucideIcon } from "lucide-react";
 import type React from "react";
-import type { FleetSnapshot, ReadyFleetSnapshot } from "@my-project/shared";
+import type { ReadyFleetSnapshot } from "@my-project/shared";
 import { ErrorContent } from "@/core/components/ErrorContent";
 import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import type { Breadcrumb } from "@/core/components/PageWrapper/types";
 import type { RequestError } from "@/core/types/global";
-import { useFleet } from "../../hooks/useFleet";
+import { unreachableReasonLabel } from "../../constants/unreachableReason";
+import { useFleet, type FleetData } from "../../hooks/useFleet";
 import { FleetFreshness } from "../FleetFreshness";
 import { FleetLoading, FleetNotConfigured, FleetUnreachable } from "../FleetStatePanel";
 
@@ -18,8 +19,20 @@ interface FleetPageProps {
   children?: (fleet: ReadyFleetSnapshot) => React.ReactNode;
 }
 
+/**
+ * A failed tRPC read leaves the data as it was and sets `error`: it is the newer failure. An unreachable read becomes a
+ * ready fleet with `refreshFailure` in useFleet.
+ */
+function staleReasonOf(snapshot: FleetData | undefined, error: RequestError | null): string | undefined {
+  if (error && snapshot) return "Refresh failed";
+  if (snapshot?.state === "ready" && snapshot.refreshFailure) {
+    return `Agent Substrate unreachable: ${unreachableReasonLabel(snapshot.refreshFailure)}`;
+  }
+  return undefined;
+}
+
 export interface FleetPageViewProps extends FleetPageProps {
-  snapshot?: FleetSnapshot;
+  snapshot?: FleetData;
   error: RequestError | null;
   /** Epoch ms of the last successful fetch; 0 before it. */
   dataUpdatedAt: number;
@@ -59,7 +72,7 @@ export function FleetPageView({
       headerSlot={
         <FleetFreshness
           updatedAt={snapshot?.state === "ready" ? snapshot.updatedAt : dataUpdatedAt}
-          isStale={error !== null && snapshot !== undefined}
+          staleReason={staleReasonOf(snapshot, error)}
           isFetching={isFetching}
           onRefresh={onRefresh}
         />

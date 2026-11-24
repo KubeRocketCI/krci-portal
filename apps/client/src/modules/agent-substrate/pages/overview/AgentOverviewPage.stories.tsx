@@ -138,6 +138,21 @@ export const Ready: Story = {
   },
 };
 
+export const KeptFleetAfterUnreachableRefresh: Story = {
+  decorators: [
+    withAppProviders({ seedQueryCache: seedFleet({ ...CRASHED_ACTOR_FLEET, refreshFailure: "unauthenticated" }) }),
+  ],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(await canvas.findByText("Agent Substrate unreachable: unauthenticated")).toBeVisible();
+    await expect(
+      group(await needsAttention(canvasElement), /^Crashed actors \(1\)/).getByRole("listitem")
+    ).toBeVisible();
+    await expect(canvas.queryByText("Agent Substrate is unreachable")).toBeNull();
+  },
+};
+
 export const HealthyFleet: Story = {
   decorators: withFleet(HEALTHY_FLEET),
   play: async ({ canvasElement }) => {

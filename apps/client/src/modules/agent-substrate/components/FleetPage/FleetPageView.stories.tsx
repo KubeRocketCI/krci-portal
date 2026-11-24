@@ -5,6 +5,7 @@ import { LayoutDashboard } from "lucide-react";
 import { expect, within } from "storybook/test";
 import { withAppProviders } from "@sb/index";
 import type { RequestError } from "@/core/types/global";
+import { TESTBED_FLEET } from "../../__fixtures__/storyFleet";
 import { FleetPageView } from "./index";
 
 const UPDATED_AT = Date.UTC(2026, 10, 22, 10, 0, 0);
@@ -70,8 +71,47 @@ export const StaleAfterFailedRefresh: Story = {
   args: { snapshot: { state: "notConfigured" }, error: internalError },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByLabelText("Refresh failed")).toBeInTheDocument();
+    await expect(canvas.getByText("Refresh failed")).toHaveClass("text-status-missing");
     await expect(canvas.getByText("Agent Substrate is not configured")).toBeVisible();
+  },
+};
+
+export const KeptFleetAfterUnreachableRefresh: Story = {
+  args: {
+    snapshot: { ...TESTBED_FLEET, refreshFailure: "unavailable" },
+    children: (fleet) => <p>{`${fleet.actors.length} actors`}</p>,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText(`${TESTBED_FLEET.actors.length} actors`)).toBeVisible();
+    await expect(canvas.getByText("Agent Substrate unreachable: network or TLS failure")).toHaveClass(
+      "text-status-missing"
+    );
+    await expect(canvas.queryByText("Agent Substrate is unreachable")).toBeNull();
+  },
+};
+
+export const KeptFleetThenFailedRefresh: Story = {
+  args: {
+    snapshot: { ...TESTBED_FLEET, refreshFailure: "unavailable" },
+    error: internalError,
+    children: (fleet) => <p>{`${fleet.actors.length} actors`}</p>,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText("Refresh failed")).toBeVisible();
+    await expect(canvas.queryByText(/^Agent Substrate unreachable/)).toBeNull();
+    await expect(canvas.getByText(`${TESTBED_FLEET.actors.length} actors`)).toBeVisible();
+  },
+};
+
+export const KeptFleetUnknownReason: Story = {
+  args: {
+    snapshot: { ...TESTBED_FLEET, refreshFailure: "timeout" as unknown as "other" },
+    children: () => null,
+  },
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByText("Agent Substrate unreachable: other error")).toBeVisible();
   },
 };
 

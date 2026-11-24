@@ -2,15 +2,9 @@ import { Bot, Unplug } from "lucide-react";
 import type { FleetUnreachableReason } from "@my-project/shared";
 import { EmptyList } from "@/core/components/EmptyList";
 import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
+import { unreachableReasonLabel } from "../../constants/unreachableReason";
 
 const AGENT_SUBSTRATE_SETTING = "AGENT_SUBSTRATE_URL";
-
-const UNREACHABLE_REASON_LABEL: Record<FleetUnreachableReason, string> = {
-  unavailable: "network or TLS failure",
-  unauthenticated: "unauthenticated",
-  permissionDenied: "permission denied",
-  other: "other error",
-};
 
 const UNREACHABLE_DESCRIPTION = "See the portal server logs for the error.";
 
@@ -33,7 +27,7 @@ export function FleetUnreachable({ reason }: FleetUnreachableProps) {
     <EmptyList
       icon={<Unplug size={64} className="text-muted-foreground" aria-hidden />}
       customText="Agent Substrate is unreachable"
-      beforeLinkText={`Reason: ${UNREACHABLE_REASON_LABEL[reason]}`}
+      beforeLinkText={`Reason: ${unreachableReasonLabel(reason)}`}
       description={UNREACHABLE_DESCRIPTION}
     />
   );
