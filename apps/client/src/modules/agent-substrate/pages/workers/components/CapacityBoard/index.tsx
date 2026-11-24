@@ -13,11 +13,12 @@ import { cn } from "@/core/utils/classname";
 import { ActorLink, ActorStateBadge } from "../../../../components/ActorCells";
 import { FleetEmpty } from "../../../../components/FleetStatePanel";
 import { ResourceBars } from "../../../../components/ResourceBars";
+import { RoomVerdict } from "../../../../components/RoomVerdict";
 import { WorkerNotRegisteredBadge, WorkerPoolReadyBadge, WorkerStateBadge } from "../../../../components/WorkerCells";
 import { WorkerPoolAccessNotice } from "../../../../components/WorkerPoolAccessNotice";
 import { useScrollToHashTarget } from "../../../../hooks/useScrollToHashTarget";
 import { hasNoWorkerFleet } from "../../../../utils/hasNoWorkerFleet";
-import { roomLabel } from "../../../../utils/roomLabel";
+import { fleetRoom } from "../../../../utils/roomLabel";
 import { HASH_TARGET_CLASS, workerAnchor } from "../../../../utils/rowAnchor";
 
 interface WorkerBlockProps {
@@ -99,21 +100,31 @@ const workerKey = (namespace: string, workerPool: string, worker: string) =>
 interface WorkerPoolCardProps {
   pool: WorkerPoolRow;
   roomSize: RoomSize | null;
+  totalRoom: number;
   access: WorkerPoolAccess;
   workersByKey: Map<string, WorkerRow>;
   actorsByWorker: Map<string, ActorRow[]>;
   target: string | null;
 }
 
-function WorkerPoolCard({ pool, roomSize, access, workersByKey, actorsByWorker, target }: WorkerPoolCardProps) {
+function WorkerPoolCard({
+  pool,
+  roomSize,
+  totalRoom,
+  access,
+  workersByKey,
+  actorsByWorker,
+  target,
+}: WorkerPoolCardProps) {
   return (
     <Card role="region" aria-label={`Worker pool ${pool.namespace}/${pool.name}`}>
       <CardHeader className="flex flex-row items-start justify-between gap-4">
-        <div className="flex min-w-0 flex-col gap-1">
-          <CardTitle className="text-base">Worker pool {pool.name}</CardTitle>
-          <div className="text-muted-foreground text-xs">
-            {pool.namespace} · {roomLabel(pool.room, roomSize)}
+        <div className="flex min-w-0 flex-col gap-2">
+          <div className="flex flex-col gap-1">
+            <CardTitle className="text-base">Worker pool {pool.name}</CardTitle>
+            <div className="text-muted-foreground text-xs">{pool.namespace}</div>
           </div>
+          <RoomVerdict pool={pool} roomSize={roomSize} totalRoom={totalRoom} />
         </div>
         <WorkerPoolFacts pool={pool} access={access} />
       </CardHeader>
@@ -166,6 +177,7 @@ export function CapacityBoard({ fleet }: { fleet: ReadyFleetSnapshot }) {
   }, [fleet.actors]);
 
   if (hasNoWorkerFleet(fleet)) return <FleetEmpty />;
+  const totalRoom = fleetRoom(fleet.workerPools);
 
   return (
     <>
@@ -177,6 +189,7 @@ export function CapacityBoard({ fleet }: { fleet: ReadyFleetSnapshot }) {
             key={`${pool.namespace}/${pool.name}`}
             pool={pool}
             roomSize={fleet.workerPools.roomSize}
+            totalRoom={totalRoom}
             access={fleet.workerPools.access}
             workersByKey={workersByKey}
             actorsByWorker={actorsByWorker}

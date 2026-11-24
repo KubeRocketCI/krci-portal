@@ -270,6 +270,7 @@
         },
         "room": 1,
         "limitedBy": ["cpu", "memory"],
+        "roomState": "room",
         "resource": null
       }
     ],

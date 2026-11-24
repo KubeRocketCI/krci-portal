@@ -4,7 +4,6 @@ import {
   CRASHED_ACTOR_FLEET,
   DRAINING_WORKER_FLEET,
   EMPTY_FLEET,
-  FULL_WORKER_POOL_FLEET,
   HEALTHY_FLEET,
   MANY_CRASHED_FLEET,
   SEVERAL_AGENT_PROFILES_FLEET,
@@ -14,14 +13,7 @@ import {
 } from "../../../__fixtures__/storyFleet";
 import { ACTOR_FILTER_NAMES } from "../../../constants/actorFilter";
 import { actorMatchFunctions } from "../../actors/list/components/ActorFilter/constants";
-import {
-  actorStateSearch,
-  agentProfileSearch,
-  agentsSubText,
-  fleetRoom,
-  roomSubText,
-  workersHealth,
-} from "./atAGlance";
+import { actorStateSearch, agentProfileSearch, agentsSubText, roomSubText, workersHealth } from "./atAGlance";
 
 function summaryOf(fleet: ReadyFleetSnapshot, patch: Partial<ReadyFleetSnapshot["summary"]>) {
   return { ...fleet.summary, ...patch };
@@ -94,15 +86,7 @@ describe("workersHealth", () => {
   });
 });
 
-describe("fleetRoom", () => {
-  it("sums room over the worker pools", () => {
-    expect(fleetRoom(HEALTHY_FLEET.workerPools)).toBe(
-      HEALTHY_FLEET.workerPools.items.reduce((sum, { room }) => sum + room, 0)
-    );
-    expect(fleetRoom(FULL_WORKER_POOL_FLEET.workerPools)).toBe(0);
-    expect(fleetRoom(EMPTY_FLEET.workerPools)).toBe(0);
-  });
-
+describe("roomSubText", () => {
   it("names the worker pools, singular and plural", () => {
     expect(roomSubText(2)).toBe("across 2 worker pools");
     expect(roomSubText(1)).toBe("across 1 worker pool");

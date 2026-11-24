@@ -1246,6 +1246,87 @@ describe("agentSubstrate.getFleet", () => {
       });
     });
 
+    describe("room state", () => {
+      /** Room size 1 CPU, 2 Gi. */
+      const ONE_ACTOR_SIZE = {
+        actors: [actor("issue", "suspended")],
+        actorTemplates: [plainTemplate("issue", { cpuMillicores: 1000, memoryBytes: 2 * GIB })],
+      };
+      const inPool = (workerPool: string, name: string, state: WorkerState, fields: Partial<SubstrateWorker> = {}) =>
+        worker(name, state, { workerPool, ...fields });
+
+      const roomStatesOf = async (workers: SubstrateWorker[], fleet: Partial<MemoryFleet> = ONE_ACTOR_SIZE) =>
+        (await workerPoolsOf({ ...fleet, workers })).items.map(({ name, room, roomState }) => [name, room, roomState]);
+
+      it("gives room, full, tooSmall and noWorker by worker pool", async () => {
+        expect(
+          await roomStatesOf([
+            inPool("a-room", "w1", "active"),
+            inPool("b-full", "w2", "active", {
+              capacity: { cpuMillicores: 2000, memoryBytes: 4 * GIB, actors: 1000 },
+              allocated: { cpuMillicores: 2000, memoryBytes: 4 * GIB, actors: 2 },
+            }),
+            inPool("c-too-small", "w3", "active", {
+              capacity: { cpuMillicores: 500, memoryBytes: 448 * MIB, actors: 1000 },
+            }),
+            inPool("d-no-worker", "w4", "draining"),
+          ])
+        ).toEqual([
+          ["a-room", 4, "room"],
+          ["b-full", 0, "full"],
+          ["c-too-small", 0, "tooSmall"],
+          ["d-no-worker", 0, "noWorker"],
+        ]);
+      });
+
+      it("gives tooSmall when the runtime overhead puts the room size over the memory of an empty worker", async () => {
+        expect(
+          await roomStatesOf([
+            worker("microvm", "active", {
+              capacity: { cpuMillicores: 8000, memoryBytes: 2 * GIB, actors: 1000 },
+              actorOverhead: { memoryBytes: 4 * MIB, memoryBytesPerGib: 8 * MIB },
+            }),
+          ])
+        ).toEqual([["workers", 0, "tooSmall"]]);
+      });
+
+      it("gives full when one worker is too small and another is full", async () => {
+        expect(
+          await roomStatesOf([
+            worker("small", "active", { capacity: { cpuMillicores: 500, memoryBytes: GIB, actors: 1000 } }),
+            worker("busy", "active", {
+              capacity: { cpuMillicores: 1000, memoryBytes: 2 * GIB, actors: 1000 },
+              allocated: { cpuMillicores: 1000, memoryBytes: 2 * GIB, actors: 1 },
+            }),
+          ])
+        ).toEqual([["workers", 0, "full"]]);
+      });
+
+      it("gives full at the actor capacity and tooSmall at an actor capacity of 0 when no template sets limits", async () => {
+        expect(
+          await roomStatesOf(
+            [
+              inPool("a-full", "w1", "active", {
+                capacity: { cpuMillicores: 0, memoryBytes: 0, actors: 2 },
+                allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 2 },
+              }),
+              inPool("b-none", "w2", "active", { capacity: { cpuMillicores: 0, memoryBytes: 0, actors: 0 } }),
+            ],
+            {}
+          )
+        ).toEqual([
+          ["a-full", 0, "full"],
+          ["b-none", 0, "tooSmall"],
+        ]);
+      });
+
+      it("gives noWorker for a WorkerPool with no worker", async () => {
+        stubK8s({ workerPools: { [ATESPACE]: [workerPool(ATESPACE, "spare", { replicas: 0, readyReplicas: 0 })] } });
+
+        expect(await roomStatesOf([])).toEqual([["spare", 0, "noWorker"]]);
+      });
+    });
+
     it("counts room in actors only when no actor has a template", async () => {
       const pools = await workerPoolsOf({
         workers: [
@@ -1433,6 +1514,7 @@ describe("agentSubstrate.getFleet", () => {
           allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
           room: 1000,
           limitedBy: ["actors"],
+          roomState: "room",
           resource: { desiredReplicas: 2, readyReplicas: 1, sandboxClass: "gvisor", resolution: "Resolved" },
         },
       ]);
@@ -1459,6 +1541,7 @@ describe("agentSubstrate.getFleet", () => {
         allocated: { cpuMillicores: 0, memoryBytes: 0, actors: 0 },
         room: 0,
         limitedBy: [],
+        roomState: "noWorker",
         resource: { desiredReplicas: 2, readyReplicas: 0, sandboxClass: "gvisor", resolution: null },
       });
     });
