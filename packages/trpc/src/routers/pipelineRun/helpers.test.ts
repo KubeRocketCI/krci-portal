@@ -195,16 +195,21 @@ describe("projectPipelineRunRow", () => {
     expect(projectPipelineRunRow(null)).toEqual(EMPTY_START_ROW);
   });
 
-  it("projects labels to row fields", () => {
+  it("projects a review run of a merge request, as edp-tekton labels and annotates it", () => {
     const pr = {
       metadata: {
-        name: "foo-build-run-x9k2p",
+        name: "review-my-app-main-x9k2p",
         namespace: "edp",
         labels: {
           "app.edp.epam.com/codebase": "my-app",
-          "app.edp.epam.com/pipelinetype": "build",
-          "app.edp.epam.com/changenumber": "44",
-          "app.edp.epam.com/gitauthor": "alice",
+          "app.edp.epam.com/pipelinetype": "review",
+          "app.edp.epam.com/git-change-number": "44",
+        },
+        annotations: {
+          "results.tekton.dev/resultAnnotations": JSON.stringify({
+            "app.edp.epam.com/git-change-number": "44",
+            "app.edp.epam.com/git-author": "user-1",
+          }),
         },
       },
       status: {
@@ -214,14 +219,39 @@ describe("projectPipelineRunRow", () => {
     } as unknown as PipelineRun;
 
     const row = projectPipelineRunRow(pr);
-    expect(row.name).toBe("foo-build-run-x9k2p");
+    expect(row.name).toBe("review-my-app-main-x9k2p");
     expect(row.project).toBe("my-app");
     expect(row.pr).toBe("44");
-    expect(row.author).toBe("alice");
-    expect(row.type).toBe("build");
+    expect(row.author).toBe("user-1");
+    expect(row.type).toBe("review");
     expect(row.status).toBe("Running");
     expect(row.started).toBe("2026-01-01T00:00:00Z");
     expect(row.duration).toBe(""); // no completionTime yet
+  });
+
+  it("takes the change number of a build run from its result annotations", () => {
+    const pr = {
+      metadata: {
+        name: "build-my-app-main-x9k2p",
+        namespace: "edp",
+        labels: { "app.edp.epam.com/pipelinetype": "build" },
+        annotations: {
+          "results.tekton.dev/resultAnnotations": JSON.stringify({ "app.edp.epam.com/git-change-number": "44" }),
+        },
+      },
+      status: {},
+    } as unknown as PipelineRun;
+
+    expect(projectPipelineRunRow(pr).pr).toBe("44");
+  });
+
+  it("projects a PipelineRun without metadata to empty cells", () => {
+    const pr = { status: {} } as unknown as PipelineRun;
+
+    const row = projectPipelineRunRow(pr);
+    expect(row.name).toBe("");
+    expect(row.pr).toBe("");
+    expect(row.author).toBe("");
   });
 
   it("derives empty cells for unpopulated labels", () => {
@@ -233,6 +263,7 @@ describe("projectPipelineRunRow", () => {
     const row = projectPipelineRunRow(pr);
     expect(row.project).toBe("");
     expect(row.pr).toBe("");
+    expect(row.author).toBe("");
     expect(row.status).toBe("Pending");
   });
 });

@@ -1,10 +1,12 @@
 import {
+  getPipelineRunAnnotation,
   getPipelineRunStatus,
   isPipelineRunPendingReason,
   pipelineLabels,
   pipelineRunLabels,
   pipelineRunPhase,
   pipelineRunReason,
+  tektonResultAnnotations,
   type Pipeline,
   type PipelineRun,
   type PipelineRunDraft,
@@ -170,13 +172,15 @@ export function projectPipelineRunRow(pr: PipelineRun | undefined | null): Pipel
   }
 
   const labels = pr.metadata?.labels ?? {};
+  // Git facts come from the resultAnnotations JSON, as in the portal UI: build runs carry no change-number label.
+  const resultAnnotation = (key: string) => (pr.metadata ? getPipelineRunAnnotation(pr, key) : undefined);
 
   return {
     name: pr.metadata?.name ?? "",
     status: projectStatus(pr),
     project: labels[pipelineRunLabels.codebase] ?? "",
-    pr: labels[pipelineRunLabels.changeNumber] ?? "",
-    author: labels[pipelineRunLabels.gitAuthor] ?? "",
+    pr: resultAnnotation(tektonResultAnnotations.gitChangeNumber) ?? "",
+    author: resultAnnotation(tektonResultAnnotations.gitAuthor) ?? "",
     type: labels[pipelineRunLabels.pipelineType] ?? "",
     started: pr.status?.startTime ?? pr.metadata?.creationTimestamp ?? "",
     duration: deriveDuration(pr.status?.startTime, pr.status?.completionTime),
