@@ -5,7 +5,6 @@ export default defineProject({
   plugins: [tsconfigPaths({ root: "./" })],
   test: {
     name: "server",
-    environment: "jsdom", // For client-side tests
     include: ["src/**/*.test.{ts,tsx}"],
     exclude: [
       "*/**/__mocks__/*",
