@@ -24,7 +24,7 @@ KubeRocketCI Portal — monorepo for a Kubernetes CI/CD platform UI.
 - Mutation pattern: `structuredClone()` + mutate (not functional filter); `no-param-reassign` is OFF
 - Shared labels/constants go under the K8s resource type they apply TO (e.g., Pod labels in `Core/Pod/labels.ts`)
 - Table cells: links via `CellLink` / `CellExternalLink`, text as a string or `TextWithTooltip` (an element without them clips with no tooltip); filter matchers from `core/providers/Filter/matchFunctions`; detail tabs via the shared `Tabs`
-- Comments state only what the code cannot show: a cross-file fact, a constraint, a surprising default
+- Comments state only what the code cannot show: a cross-file fact, a constraint, a surprising default; the checkable rule is in `CONTRIBUTING.md` (TypeScript Styleguide)
 
 ## Security — Never
 

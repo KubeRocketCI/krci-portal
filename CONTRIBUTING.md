@@ -133,6 +133,7 @@ Use the `!` suffix after the type for breaking changes (e.g. `feat!: change API`
 * Follow the existing code style and formatting
 * Use meaningful variable and function names
 * Comment only what the code cannot show: a cross-file fact, a constraint, a surprising default
+* A comment earns its line when a reader cannot get its fact from the code within 5 lines or one go-to-definition: a cross-file fact, an invariant, an upstream or server-version constraint, null semantics, an ordering contract, a surprising default. A story or test doc comment states the fixture fact that the assertions rely on.
 * Prefer functional programming patterns where appropriate
 * Use strict type checking
 
