@@ -12,8 +12,8 @@
     "skipLibCheck": true,
     "noEmit": false,
     "paths": {
-      "@my-project/shared": ["../shared/dist"],
-      "@my-project/shared/*": ["../shared/dist/*"]
+      "@my-project/shared": ["packages/shared/dist/index.d.ts"],
+      "@my-project/shared/*": ["packages/shared/dist/*"]
     }
   },
   "include": ["src/**/*"],
