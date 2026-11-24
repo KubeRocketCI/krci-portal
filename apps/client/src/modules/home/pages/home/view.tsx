@@ -52,8 +52,7 @@ import { LS_KEY_HOME_DISMISSED_SECTIONS } from "@/core/services/local-storage/ke
 type DismissibleSection = "needHelp" | "gettingStarted";
 
 type GettingStartedItem = { title: string; description: string; icon: LucideIcon } & (
-  | { to: string; params: { clusterName: string; namespace: string } }
-  | { href: string }
+  { to: string; params: { clusterName: string; namespace: string } } | { href: string }
 );
 
 function ExternalLink({ href, children }: { href: string; children: ReactNode }) {

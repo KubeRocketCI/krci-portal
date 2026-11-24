@@ -36,8 +36,7 @@ export const k8sApplyYamlProcedure = protectedProcedure
       const apiVersion = resource["apiVersion"] as string | undefined;
       const kind = resource["kind"] as string | undefined;
       const metadata = resource["metadata"] as
-        | { name?: string; namespace?: string; resourceVersion?: string }
-        | undefined;
+        { name?: string; namespace?: string; resourceVersion?: string } | undefined;
 
       if (!apiVersion || !kind) {
         results.push({ success: false, error: "Resource is missing apiVersion or kind" });

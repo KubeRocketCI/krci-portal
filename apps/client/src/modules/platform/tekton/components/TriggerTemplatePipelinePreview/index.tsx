@@ -19,8 +19,7 @@ export const TriggerTemplatePipelinePreview = ({
   });
 
   const resolvedPipelineName = ttWatch.query.data?.spec?.resourcetemplates?.[0]?.spec?.pipelineRef?.name as
-    | string
-    | undefined;
+    string | undefined;
 
   if (ttWatch.query.isPending) {
     return <Skeleton className="h-5 w-32" />;

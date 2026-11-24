@@ -23,8 +23,7 @@ export type CELFilterViolation =
   | "disallowed-string-content";
 
 export type CELFilterValidation =
-  | { valid: true }
-  | { valid: false; violation: CELFilterViolation; position: number; message: string };
+  { valid: true } | { valid: false; violation: CELFilterViolation; position: number; message: string };
 
 const UNSAFE_CONTENT_DESCRIPTION = "quotes, backticks, backslashes, or control characters";
 

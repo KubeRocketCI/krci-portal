@@ -15,16 +15,10 @@ import {
 } from "../utils/pipelineRunViewsRepository";
 
 export type PipelineRunViewMutationError =
-  | "limit"
-  | "duplicate-name"
-  | "invalid-name"
-  | "not-found"
-  | "storage"
-  | "unsupported-version";
+  "limit" | "duplicate-name" | "invalid-name" | "not-found" | "storage" | "unsupported-version";
 
 export type PipelineRunViewMutationResult =
-  | { ok: true; view: PipelineRunView }
-  | { ok: false; error: PipelineRunViewMutationError };
+  { ok: true; view: PipelineRunView } | { ok: false; error: PipelineRunViewMutationError };
 
 const EMPTY_VIEWS: PipelineRunView[] = [];
 

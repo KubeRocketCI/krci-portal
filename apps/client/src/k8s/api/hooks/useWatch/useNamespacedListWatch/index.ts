@@ -99,31 +99,29 @@ export const useNamespacedListWatch = <I extends KubeObjectBase>({
   );
 
   const results = useQueries({
-    queries: targets.map(
-      ({ queryKey, namespace }): UseQueryOptions<CustomKubeObjectList<I>, RequestError> => ({
-        queryKey,
-        queryFn: async () => {
-          const list = await trpc.k8s.list.query({
-            clusterName,
-            resourceConfig,
-            namespace,
-            labels: stableLabels,
-          });
+    queries: targets.map(({ queryKey, namespace }): UseQueryOptions<CustomKubeObjectList<I>, RequestError> => ({
+      queryKey,
+      queryFn: async () => {
+        const list = await trpc.k8s.list.query({
+          clusterName,
+          resourceConfig,
+          namespace,
+          labels: stableLabels,
+        });
 
-          return {
-            apiVersion: list.apiVersion,
-            kind: list.kind,
-            metadata: list.metadata,
-            items: new Map(list.items.map((item) => [item.metadata.name!, item as I])),
-          };
-        },
-        placeholderData: k8sListInitialData as CustomKubeObjectList<I>,
-        refetchOnWindowFocus: refetchOnWindowFocusIfStale,
-        ...queryOptions,
-        // After the spread: an unserved type is never fetched, whatever the caller asked for.
-        enabled: isEnabled,
-      })
-    ),
+        return {
+          apiVersion: list.apiVersion,
+          kind: list.kind,
+          metadata: list.metadata,
+          items: new Map(list.items.map((item) => [item.metadata.name!, item as I])),
+        };
+      },
+      placeholderData: k8sListInitialData as CustomKubeObjectList<I>,
+      refetchOnWindowFocus: refetchOnWindowFocusIfStale,
+      ...queryOptions,
+      // After the spread: an unserved type is never fetched, whatever the caller asked for.
+      enabled: isEnabled,
+    })),
   });
 
   // `isSuccess` is also true for a disabled query showing placeholder data, so the gate is checked as well.

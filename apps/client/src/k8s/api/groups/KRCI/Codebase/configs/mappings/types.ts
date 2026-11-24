@@ -21,9 +21,4 @@ export interface CodebaseInterface {
 
 export type CodebaseMappingKey = ValueOf<typeof CODEBASE_COMMON_LANGUAGES>;
 export type CodebaseMapping =
-  | ApplicationMapping
-  | LibraryMapping
-  | AutotestMapping
-  | InfrastructureMapping
-  | SystemMapping
-  | null;
+  ApplicationMapping | LibraryMapping | AutotestMapping | InfrastructureMapping | SystemMapping | null;

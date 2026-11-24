@@ -17,10 +17,7 @@ export interface DefectDojoClientConfig {
 
 /** Every result of the client is one of these four states. */
 export type DefectDojoResult<T> =
-  | { state: "notConfigured" }
-  | { state: "unreachable" }
-  | { state: "noScanData" }
-  | { state: "data"; data: T };
+  { state: "notConfigured" } | { state: "unreachable" } | { state: "noScanData" } | { state: "data"; data: T };
 
 export interface DefectDojoRef {
   id: number;

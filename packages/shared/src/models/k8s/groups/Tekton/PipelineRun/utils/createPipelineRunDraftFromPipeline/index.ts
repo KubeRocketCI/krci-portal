@@ -186,17 +186,15 @@ export const createPipelineRunDraftFromPipeline = (
       })),
       ...(pipeline.spec.workspaces?.length
         ? {
-            workspaces: pipeline.spec.workspaces.map(
-              (ws: { name: string }): PipelineRunWorkspaceWithVCT => ({
-                name: ws.name,
-                volumeClaimTemplate: {
-                  spec: {
-                    accessModes: ["ReadWriteOnce"],
-                    resources: { requests: { storage: "1Gi" } },
-                  },
+            workspaces: pipeline.spec.workspaces.map((ws: { name: string }): PipelineRunWorkspaceWithVCT => ({
+              name: ws.name,
+              volumeClaimTemplate: {
+                spec: {
+                  accessModes: ["ReadWriteOnce"],
+                  resources: { requests: { storage: "1Gi" } },
                 },
-              })
-            ),
+              },
+            })),
           }
         : {}),
     },
