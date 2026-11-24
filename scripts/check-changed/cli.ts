@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { availableParallelism } from "node:os";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { findTestImporters, type TestSource } from "./importers.js";
@@ -13,19 +14,14 @@ import {
   type PlanEnv,
   type Target,
 } from "./plan.js";
+import { killRunningSteps, runPool, runStep, type Step, type StepResult } from "./run.js";
 
-// Prints shell lines for scripts/check-changed.sh to eval: `run_step LABEL CWD ARGV...`, `note TEXT`,
-// and `begin_parallel` / `end_parallel` around the steps that run concurrently.
-// Usage: cli.ts plan --root DIR --base REF
-//        cli.ts staged-format --root DIR
+// Entry of scripts/check-changed.sh; usage and exit codes are documented there.
 
-interface Step {
-  label: string;
-  cwd: string;
-  argv: string[];
-}
+const EXIT_USAGE = 2;
+const EXIT_UNFORMATTED = 3;
 
-const quote = (value: string) => `'${value.replace(/'/g, `'\\''`)}'`;
+class UsageError extends Error {}
 
 const git = (root: string, args: string[]) => execFileSync("git", ["-C", root, ...args], { encoding: "utf8" });
 
@@ -47,6 +43,17 @@ function changedFiles(root: string, base: string): ChangedFile[] {
 /** Inside a git hook, GIT_INDEX_FILE holds the index of the commit being made. */
 const stagedFiles = (root: string): string[] =>
   nulSeparated(git(root, ["diff", "--cached", "--name-only", "--diff-filter=d", "-z"]));
+
+function defaultBase(root: string): string {
+  try {
+    return execFileSync("git", ["-C", root, "merge-base", "origin/main", "HEAD"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    throw new UsageError("no merge-base with origin/main; pass --base REF");
+  }
+}
 
 /** Repo-relative files under `dir`, without node_modules and dist. */
 function walk(root: string, dir: string): string[] {
@@ -116,7 +123,7 @@ const indexCheckStep = (root: string, group: FormatGroup): Step => ({
   label: `format check ${group.cwd}`,
   cwd: join(root, group.cwd),
   argv: [
-    "node",
+    process.execPath,
     "--no-deprecation",
     "--import",
     "tsx",
@@ -127,52 +134,67 @@ const indexCheckStep = (root: string, group: FormatGroup): Step => ({
   ],
 });
 
-function printSteps(steps: Step[]) {
-  for (const { label, cwd, argv } of steps) console.log(["run_step", label, cwd, ...argv].map(quote).join(" "));
+const note = (text: string) => console.log(`== ${text}`);
+
+const seconds = (ms: number) => `${(ms / 1000).toFixed(1)} s`;
+
+function report({ step, status, elapsedMs, output }: StepResult) {
+  if (output) process.stdout.write(output.endsWith("\n") ? output : `${output}\n`);
+  console.log(`${status === 0 ? "PASS" : "FAIL"}  ${step.label.padEnd(24)} ${seconds(elapsedMs)}`);
 }
 
-const note = (text: string) => console.log(`note ${quote(text)}`);
+const announce = (step: Step) => console.log(`>> ${step.argv.join(" ")}`);
 
-function main() {
-  const [mode, ...rest] = process.argv.slice(2);
-  const { values } = parseArgs({
-    args: rest,
-    options: { root: { type: "string" }, base: { type: "string" } },
-  });
-  const root = values.root;
-  if (!root) throw new Error("--root is required");
-
-  if (mode === "staged-format") {
-    printSteps(formatGroups(stagedFiles(root), planEnv(root)).map((group) => indexCheckStep(root, group)));
-    return;
+function requireBin(root: string, bin: string) {
+  if (!existsSync(join(root, "node_modules/.bin", bin))) {
+    throw new Error(`${bin} missing; run pnpm install --frozen-lockfile`);
   }
-  if (mode !== "plan") throw new Error(`unknown mode: ${mode ?? "(none)"}; expected plan or staged-format`);
-  if (!values.base) throw new Error("--base is required");
+}
 
-  const changes = changedFiles(root, values.base);
+/** Every group is checked; an unformatted file wins over a check that could not run. */
+async function checkStaged(root: string): Promise<number> {
+  const groups = formatGroups(stagedFiles(root), planEnv(root));
+  if (groups.length === 0) {
+    note("nothing to check");
+    return 0;
+  }
+  requireBin(root, "prettier");
+  const results = await runPool(
+    groups.map((group) => async () => {
+      const result = await runStep(indexCheckStep(root, group), true);
+      report(result);
+      return result;
+    }),
+    availableParallelism()
+  );
+  if (results.some(({ status }) => status === 1)) return EXIT_UNFORMATTED;
+  return results.find(({ status }) => status !== 0)?.status ?? 0;
+}
+
+/** Format and build run in order and stop at the first failure; tsc, lint and test run concurrently. */
+async function checkPlan(root: string, base: string): Promise<number> {
+  const start = Date.now();
+  const changes = changedFiles(root, base);
   const plan = planChecks(changes, planEnv(root));
-  note(`${changes.length} changed files since ${values.base.slice(0, 12)}`);
+  note(`${changes.length} changed files since ${base.slice(0, 12)}`);
   if (plan.unmapped.length > 0) note(`no checks for: ${plan.unmapped.join(", ")}`);
 
-  const steps: Step[] = plan.format.map((group) => prettierWriteStep(root, group));
-  if (plan.install) {
-    steps.push({ label: "install (new file in shared)", cwd: root, argv: ["pnpm", "install", "--frozen-lockfile"] });
-  }
-  steps.push(...plan.build.map((target) => pnpmScript(root, target, "build")));
-  printSteps(steps);
-
+  const serial: Step[] = [
+    ...plan.format.map((group) => prettierWriteStep(root, group)),
+    ...plan.build.map((target) => pnpmScript(root, target, "build")),
+  ];
   const checks: Step[] = [
     ...plan.tsc.map((target) => pnpmScript(root, target, "tsc")),
     ...plan.lint.map((target) => pnpmScript(root, target, "lint")),
   ];
   if (plan.tests.paths.length > 0) {
+    requireBin(root, "vitest");
     checks.push({
       label: `test ${plan.tests.projects.join(" ")}`,
       cwd: root,
       argv: [
         join(root, "node_modules/.bin/vitest"),
         "run",
-        "--coverage.enabled=false",
         "--reporter=dot",
         "--passWithNoTests",
         ...plan.tests.projects.flatMap((project) => ["--project", project]),
@@ -180,11 +202,59 @@ function main() {
       ],
     });
   }
-  if (checks.length > 0) {
-    console.log("begin_parallel");
-    printSteps(checks);
-    console.log("end_parallel");
+  if (serial.length + checks.length === 0) {
+    note("nothing to check");
+    return 0;
   }
+  if (plan.format.length > 0) requireBin(root, "prettier");
+
+  for (const step of serial) {
+    announce(step);
+    const result = await runStep(step, false);
+    report(result);
+    if (result.status !== 0) return result.status;
+  }
+
+  checks.forEach(announce);
+  const results = await runPool(
+    checks.map((step) => async () => {
+      const result = await runStep(step, true);
+      report(result);
+      return result;
+    }),
+    availableParallelism()
+  );
+  const failed = results.find(({ status }) => status !== 0);
+  if (failed) return failed.status;
+
+  console.log(`PASS  ${"all".padEnd(24)} ${seconds(Date.now() - start)}`);
+  return 0;
 }
 
-main();
+async function main(): Promise<number> {
+  let options: { base?: string; staged?: boolean };
+  try {
+    options = parseArgs({ options: { base: { type: "string" }, staged: { type: "boolean" } } }).values;
+  } catch (error) {
+    throw new UsageError(error instanceof Error ? error.message : String(error));
+  }
+  if (options.staged && options.base) throw new UsageError("--staged takes no --base");
+
+  const root = git(process.cwd(), ["rev-parse", "--show-toplevel"]).trim();
+  return options.staged ? checkStaged(root) : checkPlan(root, options.base ?? defaultBase(root));
+}
+
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+  process.on(signal, () => {
+    killRunningSteps();
+    process.exit(signal === "SIGINT" ? 130 : 143);
+  });
+}
+
+main().then(
+  (status) => process.exit(status),
+  (error: unknown) => {
+    console.error(`check-changed: ${error instanceof Error ? error.message : String(error)}`);
+    process.exit(error instanceof UsageError ? EXIT_USAGE : 1);
+  }
+);
