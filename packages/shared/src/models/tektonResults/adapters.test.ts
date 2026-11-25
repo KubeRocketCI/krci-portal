@@ -562,6 +562,8 @@ const mockTektonResult: TektonResult = {
     [tektonResultAnnotations.gitAvatar]: "https://gitlab.example.com/avatar.png",
     [tektonResultAnnotations.gitChangeNumber]: "2843",
     [tektonResultAnnotations.gitChangeUrl]: "https://gitlab.example.com/merge_requests/2843",
+    [tektonResultAnnotations.gitTargetBranch]: "develop",
+    [tektonResultAnnotations.gitCommitSha]: "4f1c2e9d0b7a3c5e",
   },
 };
 
@@ -745,6 +747,8 @@ describe("normalizeResultToPipelineRun", () => {
     expect(resultAnnotations[tektonResultAnnotations.gitChangeUrl]).toBe(
       "https://gitlab.example.com/merge_requests/2843"
     );
+    expect(resultAnnotations[tektonResultAnnotations.gitTargetBranch]).toBe("develop");
+    expect(resultAnnotations[tektonResultAnnotations.gitCommitSha]).toBe("4f1c2e9d0b7a3c5e");
   });
 
   it("should set historySource annotation to true", () => {

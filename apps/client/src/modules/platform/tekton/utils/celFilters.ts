@@ -1,4 +1,10 @@
-import { isSafeCELStringContent, pipelineType, tektonResultAnnotations, toCELStringLiteral } from "@my-project/shared";
+import {
+  buildAnnotationClause,
+  isSafeCELStringContent,
+  pipelineType,
+  tektonResultAnnotations,
+  toCELStringLiteral,
+} from "@my-project/shared";
 
 const PIPELINE_RUN_DATA_TYPE = "data_type == 'tekton.dev/v1.PipelineRun'";
 
@@ -10,15 +16,10 @@ export const buildPipelineRunNameFilter = (pipelineRunName: string): string => {
 };
 
 // ---------------------------------------------------------------------------
-// Annotation-based CEL builder (for Results table queries).
+// Annotation-based CEL filters (for Results table queries).
 // The `results` table stores annotations at the top level, so filters use
 // `annotations["key"] == "value"` instead of `data.metadata.labels["key"]`.
 // ---------------------------------------------------------------------------
-
-/** Build a CEL annotation equality clause: `annotations["key"] == 'value'` */
-function buildAnnotationClause(annotationKey: string, value: string): string {
-  return `annotations["${annotationKey}"] == ${toCELStringLiteral(value)}`;
-}
 
 /** Join CEL clauses with `||`. A single clause is returned bare; several are wrapped in parentheses. */
 function wrapOr(clauses: readonly string[]): string {

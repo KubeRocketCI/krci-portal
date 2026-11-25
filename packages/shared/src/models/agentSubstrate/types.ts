@@ -8,6 +8,7 @@ import {
   mergeRequestSchema,
   reviewRunSchema,
   reviewRunOriginSchema,
+  reviewRunHistorySchema,
   actorAgentSchema,
   actorCrashSchema,
   actorPlacementSchema,
@@ -92,5 +93,6 @@ export type AgentRead = z.infer<typeof agentReadSchema>;
 export type ReadyAgentRead = Extract<AgentRead, { state: "ready" }>;
 export type ReviewRunOrigin = z.infer<typeof reviewRunOriginSchema>;
 export type ReviewRun = z.infer<typeof reviewRunSchema>;
+export type ReviewRunHistory = z.infer<typeof reviewRunHistorySchema>;
 export type MergeRequest = z.infer<typeof mergeRequestSchema>;
 export type AgentReviewRuns = z.infer<typeof agentReviewRunsSchema>;

@@ -120,6 +120,8 @@ const GO_CODEBASE = {
 
 const REF = { atespace: ATESPACE, name: "issue-2-32" };
 
+const NO_REVIEW_RUNS = { mergeRequests: [], history: "ready" };
+
 describe("agentSubstrate.getAgentReviewRuns", () => {
   let mockContext: ReturnType<typeof createMockedContext>;
 
@@ -142,17 +144,30 @@ describe("agentSubstrate.getAgentReviewRuns", () => {
   it("gives the merge requests of the issue branch in the Codebase of the agent", async () => {
     const result = await createCaller(mockContext).agentSubstrate.getAgentReviewRuns(REF);
 
-    expect(result).toEqual({ mergeRequests: [ISSUE_32_MR] });
+    expect(result).toEqual({ mergeRequests: [ISSUE_32_MR], history: "ready" });
   });
+
+  it.each(["notConfigured", "unreachable"] as const)(
+    "gives the live merge requests and history %s as the source gives it",
+    async (history) => {
+      const source = reviewRunSource();
+      source.setHistory(history);
+      mockContext.reviewRunSource = source;
+
+      const result = await createCaller(mockContext).agentSubstrate.getAgentReviewRuns(REF);
+
+      expect(result).toEqual({ mergeRequests: [ISSUE_32_MR], history });
+    }
+  );
 
   it("asks the review run source with the session, the Codebase and the issue branch", async () => {
     const source = reviewRunSource();
-    const listMergeRequests = vi.spyOn(source, "listMergeRequests");
+    const listReviewRuns = vi.spyOn(source, "listReviewRuns");
     mockContext.reviewRunSource = source;
 
     await createCaller(mockContext).agentSubstrate.getAgentReviewRuns(REF);
 
-    expect(listMergeRequests).toHaveBeenCalledWith(mockContext.session, {
+    expect(listReviewRuns).toHaveBeenCalledWith(mockContext.session, {
       codebase: GO_CODEBASE_REF,
       issueBranch: "agent/issue-32",
     });
@@ -183,13 +198,13 @@ describe("agentSubstrate.getAgentReviewRuns", () => {
     ["an agent with no matching Codebase", "issue-7-3"],
   ])("gives no merge request for %s and does not read review runs", async (_case, name) => {
     const source = reviewRunSource();
-    const listMergeRequests = vi.spyOn(source, "listMergeRequests");
+    const listReviewRuns = vi.spyOn(source, "listReviewRuns");
     mockContext.reviewRunSource = source;
 
     const result = await createCaller(mockContext).agentSubstrate.getAgentReviewRuns({ atespace: ATESPACE, name });
 
-    expect(result).toEqual({ mergeRequests: [] });
-    expect(listMergeRequests).not.toHaveBeenCalled();
+    expect(result).toEqual(NO_REVIEW_RUNS);
+    expect(listReviewRuns).not.toHaveBeenCalled();
   });
 
   it("gives no merge request when the user may not list Codebases", async () => {
@@ -197,7 +212,7 @@ describe("agentSubstrate.getAgentReviewRuns", () => {
 
     const result = await createCaller(mockContext).agentSubstrate.getAgentReviewRuns(REF);
 
-    expect(result).toEqual({ mergeRequests: [] });
+    expect(result).toEqual(NO_REVIEW_RUNS);
   });
 
   it("gives no merge request when Agent Substrate is not configured", async () => {
@@ -205,7 +220,7 @@ describe("agentSubstrate.getAgentReviewRuns", () => {
 
     const result = await createCaller(mockContext).agentSubstrate.getAgentReviewRuns(REF);
 
-    expect(result).toEqual({ mergeRequests: [] });
+    expect(result).toEqual(NO_REVIEW_RUNS);
   });
 
   it("gives no merge request when the context holds no review run source", async () => {
@@ -213,7 +228,7 @@ describe("agentSubstrate.getAgentReviewRuns", () => {
 
     const result = await createCaller(mockContext).agentSubstrate.getAgentReviewRuns(REF);
 
-    expect(result).toEqual({ mergeRequests: [] });
+    expect(result).toEqual(NO_REVIEW_RUNS);
   });
 
   it("fails when Agent Substrate is unreachable", async () => {
@@ -245,6 +260,6 @@ describe("agentSubstrate.getAgentReviewRuns", () => {
     const first = await caller.agentSubstrate.getAgentReviewRuns(REF);
     first.mergeRequests.push(ISSUE_32_MR);
 
-    expect(await caller.agentSubstrate.getAgentReviewRuns(REF)).toEqual({ mergeRequests: [] });
+    expect(await caller.agentSubstrate.getAgentReviewRuns(REF)).toEqual(NO_REVIEW_RUNS);
   });
 });

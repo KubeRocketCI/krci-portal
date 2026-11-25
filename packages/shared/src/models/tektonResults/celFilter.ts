@@ -153,3 +153,16 @@ export function toCELStringLiteral(value: string): string {
   }
   return `'${value}'`;
 }
+
+/**
+ * CEL equality clause on a Result annotation: `annotations["key"] == 'value'`.
+ * The `results` table stores PipelineRun labels and result annotations as Result annotations.
+ *
+ * @throws Error when annotationKey or value is not safe per {@link isSafeCELStringContent}.
+ */
+export function buildAnnotationClause(annotationKey: string, value: string): string {
+  if (!isSafeCELStringContent(annotationKey)) {
+    throw new Error(`annotation key cannot be rendered in a CEL index: it contains ${UNSAFE_CONTENT_DESCRIPTION}`);
+  }
+  return `annotations["${annotationKey}"] == ${toCELStringLiteral(value)}`;
+}

@@ -18,7 +18,7 @@ import { readServiceAccountToken } from "./serviceAccountToken.js";
 // =============================================================================
 
 const DEFAULT_TIMEOUT_MS = 30_000; // 30 seconds
-const SERVICE_NAME = "Tekton Results";
+export const TEKTON_RESULTS_SERVICE_NAME = "Tekton Results";
 const TEKTON_RESULTS_API_VERSION = "v1alpha2";
 
 // =============================================================================
@@ -52,18 +52,22 @@ const config = loadConfig();
  * Create a TektonResultsClient for the specified namespace.
  *
  * @param namespace - Kubernetes namespace (required for Tekton Results API path)
+ * @param options.timeoutMs - Request timeout. Default 30 s.
  * @returns Configured TektonResultsClient instance
  * @throws TRPCError if TEKTON_RESULTS_URL is not configured
  */
-export function createTektonResultsClient(namespace: string): TektonResultsClient {
+export function createTektonResultsClient(
+  namespace: string,
+  { timeoutMs = config.timeoutMs }: { timeoutMs?: number } = {}
+): TektonResultsClient {
   if (!config.apiBaseURL) {
-    throw notConfiguredError(SERVICE_NAME, "TEKTON_RESULTS_URL");
+    throw notConfiguredError(TEKTON_RESULTS_SERVICE_NAME, "TEKTON_RESULTS_URL");
   }
 
   return new TektonResultsClient({
     apiBaseURL: config.apiBaseURL,
     parent: namespace,
-    timeoutMs: config.timeoutMs,
+    timeoutMs,
     headers: authorizationHeaders(config.apiBaseURL),
   });
 }
@@ -79,13 +83,15 @@ function warnOnce(message: string): void {
 /** Bearer token is the portal's own ServiceAccount token, sent over HTTPS only. Access follows the RoleBinding of that ServiceAccount. */
 function authorizationHeaders(apiBaseURL: string): Record<string, string> | undefined {
   if (!isHttpsUrl(apiBaseURL)) {
-    warnOnce(`[${SERVICE_NAME}] TEKTON_RESULTS_URL is not an https:// URL: the ServiceAccount token is not sent`);
+    warnOnce(
+      `[${TEKTON_RESULTS_SERVICE_NAME}] TEKTON_RESULTS_URL is not an https:// URL: the ServiceAccount token is not sent`
+    );
     return undefined;
   }
 
   const token = readServiceAccountToken();
   if (!token) {
-    warnOnce(`[${SERVICE_NAME}] No ServiceAccount token mounted: requests are sent unauthenticated`);
+    warnOnce(`[${TEKTON_RESULTS_SERVICE_NAME}] No ServiceAccount token mounted: requests are sent unauthenticated`);
     return undefined;
   }
 
@@ -121,7 +127,7 @@ export class TektonResultsClient {
 
     this.parent = parent;
     this.http = createHttpService({
-      name: SERVICE_NAME,
+      name: TEKTON_RESULTS_SERVICE_NAME,
       baseURL: `${stripTrailingSlash(apiBaseURL)}/apis/results.tekton.dev/${TEKTON_RESULTS_API_VERSION}`,
       timeoutMs,
       headers,

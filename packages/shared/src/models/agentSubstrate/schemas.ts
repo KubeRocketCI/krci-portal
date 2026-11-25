@@ -444,7 +444,11 @@ export const mergeRequestSchema = z.object({
   reviewRuns: z.array(reviewRunSchema),
 });
 
+/** `notConfigured` and `unreachable`: the merge requests hold live runs only. The error message of `unreachable` stays in the portal server log. */
+export const reviewRunHistorySchema = z.enum(["ready", "notConfigured", "unreachable"]);
+
 export const agentReviewRunsSchema = z.object({
   /** By the newest review run, newest first. */
   mergeRequests: z.array(mergeRequestSchema),
+  history: reviewRunHistorySchema,
 });

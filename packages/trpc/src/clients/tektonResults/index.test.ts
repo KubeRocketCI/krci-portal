@@ -67,6 +67,17 @@ describe("createTektonResultsClient", () => {
     expect(typeof client.getRecord).toBe("function");
   });
 
+  it("uses the 30 s default timeout, or the timeout of the caller", async () => {
+    process.env.TEKTON_RESULTS_URL = "https://tekton-results.example.com";
+    const { createTektonResultsClient } = await import("./index.js");
+
+    createTektonResultsClient("my-namespace");
+    createTektonResultsClient("my-namespace", { timeoutMs: 5_000 });
+
+    expect(mockCreateHttpService).toHaveBeenNthCalledWith(1, expect.objectContaining({ timeoutMs: 30_000 }));
+    expect(mockCreateHttpService).toHaveBeenNthCalledWith(2, expect.objectContaining({ timeoutMs: 5_000 }));
+  });
+
   it("sends the ServiceAccount token as a Bearer over HTTPS", async () => {
     process.env.TEKTON_RESULTS_URL = "https://tekton-results.example.com";
     mockReadServiceAccountToken.mockReturnValue("the-sa-token");
