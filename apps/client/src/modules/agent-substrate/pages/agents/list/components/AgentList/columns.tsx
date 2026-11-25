@@ -13,7 +13,7 @@ import {
 
 /** Rows are the actors that host an agent: `agent` is set. */
 export const agentColumns: TableColumn<ActorRow>[] = [
-  // Id `issue`: the saved table settings and `DEFAULT_SORT` of the Agents list use it.
+  // Id `issue`: the saved table settings and `AGENT_TABLE_SORT` of the Agents list use it.
   { ...agentColumn, id: "issue", label: "Issue" },
   codebaseColumn,
   agentProfileColumn,

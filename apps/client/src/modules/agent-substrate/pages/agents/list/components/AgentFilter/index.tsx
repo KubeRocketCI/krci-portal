@@ -8,7 +8,14 @@ import { AGENT_FILTER_NAMES } from "../../../../../constants/agentFilter";
 import { actorStateOptions, agentProfileOptions, codebaseOptions } from "../../../../../utils/fleetFilter";
 import type { AgentFilterValues } from "./types";
 
-export function AgentFilter({ agents }: { agents: ActorRow[] }) {
+interface AgentFilterProps {
+  agents: ActorRow[];
+  /** The view By codebase: no agent profile select; the agent profile chips replace it. */
+  byCodebase?: boolean;
+}
+
+/** Renders into a `grid-cols-12` parent. */
+export function AgentFilter({ agents, byCodebase = false }: AgentFilterProps) {
   const { form, reset, isDefaultValue } = useFilterContext<ActorRow, AgentFilterValues>();
 
   const codebaseSelectOptions = React.useMemo(() => codebaseOptions(agents), [agents]);
@@ -25,17 +32,19 @@ export function AgentFilter({ agents }: { agents: ActorRow[] }) {
         </form.AppField>
       </div>
 
-      <div className="col-span-2">
-        <form.AppField name={AGENT_FILTER_NAMES.AGENT_PROFILE}>
-          {(field) => (
-            <field.FormSelect
-              label="Agent profile"
-              options={agentProfileSelectOptions}
-              placeholder="Select agent profile"
-            />
-          )}
-        </form.AppField>
-      </div>
+      {!byCodebase && (
+        <div className="col-span-2">
+          <form.AppField name={AGENT_FILTER_NAMES.AGENT_PROFILE}>
+            {(field) => (
+              <field.FormSelect
+                label="Agent profile"
+                options={agentProfileSelectOptions}
+                placeholder="Select agent profile"
+              />
+            )}
+          </form.AppField>
+        </div>
+      )}
 
       <div className="col-span-2">
         <form.AppField name={AGENT_FILTER_NAMES.ACTOR_STATE}>
