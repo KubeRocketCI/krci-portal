@@ -285,13 +285,18 @@ export const attentionItemSchema = z.discriminatedUnion("kind", [
   }),
 ]);
 
+/** No Agent Substrate configured. State of every Factory read (`fleetSchema`, `agentReadSchema`). */
+const notConfiguredStateSchema = z.object({ state: z.literal("notConfigured") });
+
+/** The error message stays in the portal server log. */
+const unreachableStateSchema = z.object({
+  state: z.literal("unreachable"),
+  reason: fleetUnreachableReasonSchema,
+});
+
 export const fleetSchema = z.discriminatedUnion("state", [
-  z.object({ state: z.literal("notConfigured") }),
-  /** The error message stays in the portal server log. */
-  z.object({
-    state: z.literal("unreachable"),
-    reason: fleetUnreachableReasonSchema,
-  }),
+  notConfiguredStateSchema,
+  unreachableStateSchema,
   z.object({
     state: z.literal("ready"),
     updatedAt: z.string(),
@@ -306,5 +311,62 @@ export const fleetSchema = z.discriminatedUnion("state", [
     }),
     /** Errors before warnings, then by kind, then oldest first; an item with no time after the timed ones, by name. */
     needsAttention: z.array(attentionItemSchema),
+  }),
+]);
+
+/** The fields of one agent beside those of the fleet (ADR 0001). */
+export const agentDetailSchema = actorAgentSchema.extend({
+  /** `agent/issue-` + issue number, the dispatcher branch name. */
+  issueBranch: z.string(),
+  /** `TURN_LIMIT` of the actor template. Null when unset or not a positive integer. */
+  turnLimit: z.number().int().positive().nullable(),
+  /** The image of the agent container, digest included. Null when unset. */
+  agentImage: z.string().nullable(),
+});
+
+export const newestSnapshotSchema = actorSnapshotSchema.pick({ generation: true, fidelity: true }).extend({
+  /** Null when Agent Substrate recorded none. */
+  sandboxClass: z.string().nullable(),
+});
+
+export const agentActorSchema = actorRowSchema
+  .pick({
+    atespace: true,
+    name: true,
+    uid: true,
+    state: true,
+    actorTemplate: true,
+    size: true,
+    placement: true,
+    crash: true,
+    createdAt: true,
+    updatedAt: true,
+  })
+  .extend({
+    /** Match labels of the actor template worker selector. Empty: no worker selector. */
+    workerSelector: labelsSchema,
+    /** Of the actor template. Null when it sets none. */
+    preferredSnapshotFidelity: snapshotFidelitySchema.nullable(),
+    /** The snapshot of the highest generation. Null when the actor has none. */
+    newestSnapshot: newestSnapshotSchema.nullable(),
+  });
+
+/**
+ * `notAnAgent`: the actor template names no issue or is gone. `actorNotFound`: the atespace holds no actor of that
+ * name.
+ */
+export const agentResultSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("agent"), agent: agentDetailSchema, actor: agentActorSchema }),
+  z.object({ kind: z.literal("notAnAgent") }),
+  z.object({ kind: z.literal("actorNotFound") }),
+]);
+
+export const agentReadSchema = z.discriminatedUnion("state", [
+  notConfiguredStateSchema,
+  unreachableStateSchema,
+  z.object({
+    state: z.literal("ready"),
+    updatedAt: z.string(),
+    result: agentResultSchema,
   }),
 ]);

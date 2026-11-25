@@ -85,6 +85,10 @@ export class GrpcAgentSubstrateSource implements AgentSubstrateSource {
     );
   }
 
+  getActor(ref: SubstrateObjectRef): Promise<SubstrateActor> {
+    return this.call(async (client, opts) => toActor(await client.getActor({ actor: ref }, opts)));
+  }
+
   getActorTemplate(ref: SubstrateObjectRef): Promise<SubstrateActorTemplate> {
     return this.call(async (client, opts) =>
       toActorTemplate(await client.getActorTemplate({ actorTemplate: ref }, opts))

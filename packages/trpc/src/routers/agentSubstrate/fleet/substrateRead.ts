@@ -21,6 +21,7 @@ export const AGENT_ENV = {
   issueIid: "ISSUE_IID",
   agentProfile: "AGENT_PROFILE",
   model: "ANTHROPIC_MODEL",
+  turnLimit: "TURN_LIMIT",
 } as const;
 
 interface ActorTemplateFacts {
@@ -44,30 +45,53 @@ export interface SubstrateFleet {
 
 export type SubstrateRead = { ok: true; fleet: SubstrateFleet } | { ok: false; reason: FleetUnreachableReason };
 
-/** Null when the actor template does not name an issue. */
-function agentOfActorTemplate(actorTemplate: SubstrateActorTemplate): ActorAgent | null {
-  for (const container of actorTemplate.containers) {
-    const env = new Map(container.env.map(({ name, value }) => [name, value]));
-    const projectPath = env.get(AGENT_ENV.projectPath);
-    const projectId = env.get(AGENT_ENV.projectId);
-    const iid = env.get(AGENT_ENV.issueIid);
-    if (projectPath && projectId && iid) {
-      return {
-        issue: { projectPath, projectId, iid, url: null },
-        codebase: null,
-        agentProfile: env.get(AGENT_ENV.agentProfile) || null,
-        model: env.get(AGENT_ENV.model) || null,
-      };
+/** The image and env of the first container that names an issue: the agent container. Null when none does. */
+export function agentContainerOf(
+  actorTemplate: SubstrateActorTemplate
+): { image: string; env: Map<string, string> } | null {
+  for (const { image, env: entries } of actorTemplate.containers) {
+    const env = new Map(entries.map(({ name, value }) => [name, value]));
+    if (env.get(AGENT_ENV.projectPath) && env.get(AGENT_ENV.projectId) && env.get(AGENT_ENV.issueIid)) {
+      return { image, env };
     }
   }
   return null;
 }
 
-function asSourceError(error: unknown): AgentSubstrateSourceError {
+/** Null when the actor template does not name an issue. */
+function agentOfActorTemplate(actorTemplate: SubstrateActorTemplate): ActorAgent | null {
+  const container = agentContainerOf(actorTemplate);
+  return container && agentOfEnv(container.env);
+}
+
+/** `env`: of a container that `agentContainerOf` returned. */
+export function agentOfEnv(env: Map<string, string>): ActorAgent {
+  return {
+    issue: {
+      projectPath: env.get(AGENT_ENV.projectPath)!,
+      projectId: env.get(AGENT_ENV.projectId)!,
+      iid: env.get(AGENT_ENV.issueIid)!,
+      url: null,
+    },
+    codebase: null,
+    agentProfile: env.get(AGENT_ENV.agentProfile) || null,
+    model: env.get(AGENT_ENV.model) || null,
+  };
+}
+
+export function asSourceError(error: unknown): AgentSubstrateSourceError {
   if (error instanceof AgentSubstrateSourceError) return error;
   return new AgentSubstrateSourceError("other", error instanceof Error ? error.message : String(error), {
     cause: error,
   });
+}
+
+/** Logs the error on the server; the client gets only the reason. `notFound` of a read that needs the object: `other`. */
+export function unreachableReasonOf(error: unknown, read: "Fleet" | "Agent"): FleetUnreachableReason {
+  const sourceError = asSourceError(error);
+  const reason = sourceError.kind === "notFound" ? "other" : sourceError.kind;
+  console.error(`[AgentSubstrate] ${read} read failed (${reason}):`, sourceError);
+  return reason;
 }
 
 /**
@@ -135,10 +159,7 @@ class SubstrateReader {
         },
       };
     } catch (error) {
-      const sourceError = asSourceError(error);
-      const reason = sourceError.kind === "notFound" ? "other" : sourceError.kind;
-      console.error(`[AgentSubstrate] Fleet read failed (${reason}):`, sourceError);
-      return { ok: false, reason };
+      return { ok: false, reason: unreachableReasonOf(error, "Fleet") };
     }
   }
 

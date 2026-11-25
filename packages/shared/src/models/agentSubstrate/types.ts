@@ -1,5 +1,9 @@
 import { z } from "zod";
 import {
+  agentActorSchema,
+  agentDetailSchema,
+  agentReadSchema,
+  agentResultSchema,
   actorAgentSchema,
   actorCrashSchema,
   actorPlacementSchema,
@@ -65,3 +69,8 @@ export type AttentionAgent = z.infer<typeof attentionAgentSchema>;
 export type AttentionItem = z.infer<typeof attentionItemSchema>;
 export type Fleet = z.infer<typeof fleetSchema>;
 export type ReadyFleet = Extract<Fleet, { state: "ready" }>;
+export type AgentDetail = z.infer<typeof agentDetailSchema>;
+export type AgentActor = z.infer<typeof agentActorSchema>;
+export type AgentResult = z.infer<typeof agentResultSchema>;
+export type AgentRead = z.infer<typeof agentReadSchema>;
+export type ReadyAgentRead = Extract<AgentRead, { state: "ready" }>;

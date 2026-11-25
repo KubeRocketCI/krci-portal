@@ -4,6 +4,7 @@ import {
   k8sCodebaseConfig,
   k8sGitServerConfig,
   stripTrailingSlash,
+  type ActorAgent,
   type Codebase,
   type CodebaseRef,
   type GitServer,
@@ -149,4 +150,23 @@ export async function readCodebaseLinks(
 
 export function gitlabIssueUrl(repoUrl: string, iid: string): string | null {
   return /^[1-9]\d*$/.test(iid) ? `${repoUrl}/-/issues/${iid}` : null;
+}
+
+/** The namespace of the Codebases. Empty when `DEFAULT_CLUSTER_NAMESPACE` is unset: no Codebase, no issue link. */
+export function codebaseNamespace(): string {
+  return process.env.DEFAULT_CLUSTER_NAMESPACE ?? "";
+}
+
+/** Codebase and issue URL come from the user's Codebase list: per request, never part of the shared read. */
+export function withCodebase<T extends ActorAgent>(agent: T, codebaseLinks: CodebaseLinks): T {
+  const { issue } = agent;
+  const link = codebaseLinks.get(issue.projectPath);
+  return {
+    ...agent,
+    issue: {
+      ...issue,
+      url: link?.gitlabRepoUrl ? gitlabIssueUrl(link.gitlabRepoUrl, issue.iid) : null,
+    },
+    codebase: link ? { ...link.codebase } : null,
+  };
 }

@@ -26,7 +26,8 @@
           "generation": 1,
           "fidelity": "memory",
           "locality": null,
-          "durableState": "completed"
+          "durableState": "completed",
+          "sandboxClass": "gvisor"
         }
       ]
     },
@@ -49,7 +50,8 @@
           "generation": 1,
           "fidelity": "memory",
           "locality": null,
-          "durableState": "completed"
+          "durableState": "completed",
+          "sandboxClass": "gvisor"
         }
       ]
     },
@@ -72,7 +74,8 @@
           "generation": 1,
           "fidelity": "memory",
           "locality": null,
-          "durableState": "completed"
+          "durableState": "completed",
+          "sandboxClass": "gvisor"
         }
       ]
     },
@@ -95,7 +98,8 @@
           "generation": 1,
           "fidelity": "memory",
           "locality": null,
-          "durableState": "completed"
+          "durableState": "completed",
+          "sandboxClass": "gvisor"
         }
       ]
     },
@@ -118,7 +122,8 @@
           "generation": 1,
           "fidelity": "memory",
           "locality": null,
-          "durableState": "completed"
+          "durableState": "completed",
+          "sandboxClass": "gvisor"
         }
       ]
     },
@@ -141,7 +146,8 @@
           "generation": 1,
           "fidelity": "memory",
           "locality": null,
-          "durableState": "completed"
+          "durableState": "completed",
+          "sandboxClass": "gvisor"
         }
       ]
     }
@@ -154,6 +160,7 @@
       "containers": [
         {
           "name": "claude",
+          "image": "epamedp/krci-agent-go:0.2.0@sha256:6b1f9a1edca599ea02e1620e2ae2d924782758140e9d48810c083dfa74431176",
           "env": [
             {
               "name": "PROJECT_ID",
@@ -168,6 +175,10 @@
               "value": "25"
             },
             {
+              "name": "TURN_LIMIT",
+              "value": "20"
+            },
+            {
               "name": "AGENT_PROFILE",
               "value": "go"
             },
@@ -184,7 +195,8 @@
       },
       "workerSelector": {
         "workload": "workers"
-      }
+      },
+      "preferredSnapshotFidelity": "memory"
     },
     {
       "atespace": "krci-agents",
@@ -193,6 +205,7 @@
       "containers": [
         {
           "name": "claude",
+          "image": "epamedp/krci-agent-go:0.2.0@sha256:6b1f9a1edca599ea02e1620e2ae2d924782758140e9d48810c083dfa74431176",
           "env": [
             {
               "name": "PROJECT_ID",
@@ -207,6 +220,10 @@
               "value": "26"
             },
             {
+              "name": "TURN_LIMIT",
+              "value": "20"
+            },
+            {
               "name": "AGENT_PROFILE",
               "value": "go"
             },
@@ -223,7 +240,8 @@
       },
       "workerSelector": {
         "workload": "workers"
-      }
+      },
+      "preferredSnapshotFidelity": "memory"
     },
     {
       "atespace": "krci-agents",
@@ -232,6 +250,7 @@
       "containers": [
         {
           "name": "claude",
+          "image": "epamedp/krci-agent-python:0.2.0@sha256:7cfe9b539727337a7752e62c8d4ef045d133e3043ed54d56dd21c0502f8ad30a",
           "env": [
             {
               "name": "PROJECT_ID",
@@ -244,6 +263,10 @@
             {
               "name": "ISSUE_IID",
               "value": "3"
+            },
+            {
+              "name": "TURN_LIMIT",
+              "value": "20"
             },
             {
               "name": "AGENT_PROFILE",
@@ -262,7 +285,8 @@
       },
       "workerSelector": {
         "workload": "workers"
-      }
+      },
+      "preferredSnapshotFidelity": "memory"
     },
     {
       "atespace": "krci-agents",
@@ -271,6 +295,7 @@
       "containers": [
         {
           "name": "claude",
+          "image": "epamedp/krci-agent-python:0.2.0@sha256:7cfe9b539727337a7752e62c8d4ef045d133e3043ed54d56dd21c0502f8ad30a",
           "env": [
             {
               "name": "PROJECT_ID",
@@ -285,6 +310,10 @@
               "value": "4"
             },
             {
+              "name": "TURN_LIMIT",
+              "value": "20"
+            },
+            {
               "name": "AGENT_PROFILE",
               "value": "python"
             },
@@ -301,7 +330,8 @@
       },
       "workerSelector": {
         "workload": "workers"
-      }
+      },
+      "preferredSnapshotFidelity": "memory"
     },
     {
       "atespace": "krci-agents",
@@ -310,6 +340,7 @@
       "containers": [
         {
           "name": "claude",
+          "image": "epamedp/krci-agent-node:0.2.0@sha256:e9ebe9a56bc9809b7d207aeb82c2062423ee52dc0bb30c01788e3b258df62299",
           "env": [
             {
               "name": "PROJECT_ID",
@@ -324,6 +355,10 @@
               "value": "2"
             },
             {
+              "name": "TURN_LIMIT",
+              "value": "20"
+            },
+            {
               "name": "AGENT_PROFILE",
               "value": "node"
             },
@@ -340,7 +375,8 @@
       },
       "workerSelector": {
         "workload": "workers"
-      }
+      },
+      "preferredSnapshotFidelity": "memory"
     },
     {
       "atespace": "krci-agents",
@@ -349,6 +385,7 @@
       "containers": [
         {
           "name": "claude",
+          "image": "epamedp/krci-agent-node:0.2.0@sha256:e9ebe9a56bc9809b7d207aeb82c2062423ee52dc0bb30c01788e3b258df62299",
           "env": [
             {
               "name": "PROJECT_ID",
@@ -363,6 +400,10 @@
               "value": "3"
             },
             {
+              "name": "TURN_LIMIT",
+              "value": "20"
+            },
+            {
               "name": "AGENT_PROFILE",
               "value": "node"
             },
@@ -379,7 +420,8 @@
       },
       "workerSelector": {
         "workload": "workers"
-      }
+      },
+      "preferredSnapshotFidelity": "memory"
     }
   ],
   "workers": [

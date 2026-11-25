@@ -268,6 +268,7 @@ describe("GrpcAgentSubstrateSource", () => {
                   fidelity: SnapshotFidelity.MEMORY,
                   locality: "krci-control-plane",
                   durableSnapshot: { state: SnapshotStorageState.PENDING, object: { snapshotUri: "gs://bucket/s1" } },
+                  sandboxRuntime: { sandboxClass: "gvisor" },
                 },
                 { uuid: "s2", generation: 2, fidelity: SnapshotFidelity.UNSPECIFIED },
               ],
@@ -303,14 +304,91 @@ describe("GrpcAgentSubstrateSource", () => {
       },
       crash: { message: "wakeup probe failed", crashTime: "2026-11-16T17:00:00.000Z" },
       snapshots: [
-        { uuid: "s1", generation: 1, fidelity: "memory", locality: "krci-control-plane", durableState: "pending" },
-        { uuid: "s2", generation: 2, fidelity: "unknown", locality: null, durableState: "none" },
+        {
+          uuid: "s1",
+          generation: 1,
+          fidelity: "memory",
+          locality: "krci-control-plane",
+          durableState: "pending",
+          sandboxClass: "gvisor",
+        },
+        { uuid: "s2", generation: 2, fidelity: "unknown", locality: null, durableState: "none", sandboxClass: null },
       ],
     });
     expect(noStatus.state).toBe("unknown");
     expect(noStatus.workerAssignment).toBeNull();
     expect(noStatus.crash).toBeNull();
     expect(futureState.state).toBe("transitional");
+  });
+
+  it("gets one actor by atespace and name with its state, worker assignment and snapshots", async () => {
+    const refs: unknown[] = [];
+    server = await startServer({
+      getActor: (req) => {
+        refs.push({ atespace: req.actor?.atespace, name: req.actor?.name });
+        return {
+          metadata: {
+            atespace: "krci-agents",
+            name: "issue-2-32",
+            uid: "u32",
+            createTime: timestampFromDate(new Date("2026-11-24T18:02:11Z")),
+            updateTime: timestampFromDate(new Date("2026-11-24T18:10:40Z")),
+          },
+          actorTemplate: { atespace: "krci-agents", name: "issue-2-32" },
+          status: {
+            state: ActorState.RUNNING,
+            workerAssignment: {
+              worker: { name: "cbc51b4d-7570-49b9-bd9a-d5f1890bee37" },
+              workerPool: "workers",
+              workerNamespace: "krci-agents",
+              workerPod: "workers-7485fd78cd-wslff",
+              nodeName: "krci-control-plane",
+              sandboxRuntime: { sandboxClass: "gvisor" },
+            },
+            snapshots: [{ uuid: "s1", generation: 1, fidelity: SnapshotFidelity.MEMORY }],
+          },
+        };
+      },
+    });
+    source = new GrpcAgentSubstrateSource({ url: server.url, tokenFile, caFile });
+
+    await expect(source.getActor({ atespace: "krci-agents", name: "issue-2-32" })).resolves.toEqual({
+      atespace: "krci-agents",
+      name: "issue-2-32",
+      uid: "u32",
+      createTime: "2026-11-24T18:02:11.000Z",
+      updateTime: "2026-11-24T18:10:40.000Z",
+      actorTemplate: { atespace: "krci-agents", name: "issue-2-32" },
+      state: "running",
+      workerAssignment: {
+        worker: "cbc51b4d-7570-49b9-bd9a-d5f1890bee37",
+        workerPool: "workers",
+        workerNamespace: "krci-agents",
+        workerPod: "workers-7485fd78cd-wslff",
+        nodeName: "krci-control-plane",
+        sandboxRuntime: "gvisor",
+      },
+      crash: null,
+      snapshots: [
+        { uuid: "s1", generation: 1, fidelity: "memory", locality: null, durableState: "none", sandboxClass: null },
+      ],
+    });
+    expect(refs).toEqual([{ atespace: "krci-agents", name: "issue-2-32" }]);
+    expect(server.authorizations).toEqual(["Bearer token-one"]);
+  });
+
+  it("rejects a read of an actor that does not exist with notFound", async () => {
+    server = await startServer({
+      getActor: () => {
+        throw new ConnectError("actor krci-agents/issue-9-9 not found", Code.NotFound);
+      },
+    });
+    source = new GrpcAgentSubstrateSource({ url: server.url, tokenFile, caFile });
+
+    await expect(source.getActor({ atespace: "krci-agents", name: "issue-9-9" })).rejects.toMatchObject({
+      name: "AgentSubstrateSourceError",
+      kind: "notFound",
+    });
   });
 
   it("gets an actor template by atespace and name", async () => {
@@ -320,8 +398,15 @@ describe("GrpcAgentSubstrateSource", () => {
         refs.push({ atespace: req.actorTemplate?.atespace, name: req.actorTemplate?.name });
         return {
           metadata: { atespace: "krci-agents", name: "issue-2-25", uid: "t1" },
-          containers: [{ name: "claude", env: [{ name: "PROJECT_PATH", value: "krci/test-go-app" }] }],
+          containers: [
+            {
+              name: "claude",
+              image: "epamedp/krci-agent-go:0.2.0@sha256:6b1f9a1e",
+              env: [{ name: "PROJECT_PATH", value: "krci/test-go-app" }],
+            },
+          ],
           resources: { limits: { cpuMillicores: 1000n, memoryBytes: 2147483648n } },
+          snapshotConfig: { preferredFidelity: SnapshotFidelity.MEMORY },
         };
       },
     });
@@ -331,11 +416,37 @@ describe("GrpcAgentSubstrateSource", () => {
       atespace: "krci-agents",
       name: "issue-2-25",
       uid: "t1",
-      containers: [{ name: "claude", env: [{ name: "PROJECT_PATH", value: "krci/test-go-app" }] }],
+      containers: [
+        {
+          name: "claude",
+          image: "epamedp/krci-agent-go:0.2.0@sha256:6b1f9a1e",
+          env: [{ name: "PROJECT_PATH", value: "krci/test-go-app" }],
+        },
+      ],
       limits: { cpuMillicores: 1000, memoryBytes: 2147483648 },
       workerSelector: {},
+      preferredSnapshotFidelity: "memory",
     });
     expect(refs).toEqual([{ atespace: "krci-agents", name: "issue-2-25" }]);
+  });
+
+  it("gives no preferred snapshot fidelity when the actor template has no snapshot config or leaves it unset", async () => {
+    server = await startServer({
+      getActorTemplate: (req) =>
+        req.actorTemplate?.name === "unset"
+          ? {
+              metadata: { atespace: "krci-agents", name: "unset", uid: "t1" },
+              snapshotConfig: { preferredFidelity: SnapshotFidelity.UNSPECIFIED },
+            }
+          : { metadata: { atespace: "krci-agents", name: "none", uid: "t2" } },
+    });
+    source = new GrpcAgentSubstrateSource({ url: server.url, tokenFile, caFile });
+
+    const unset = await source.getActorTemplate({ atespace: "krci-agents", name: "unset" });
+    const none = await source.getActorTemplate({ atespace: "krci-agents", name: "none" });
+
+    expect(unset.preferredSnapshotFidelity).toBeNull();
+    expect(none.preferredSnapshotFidelity).toBeNull();
   });
 
   it("maps the worker selector match labels of an actor template, empty when it has no worker selector", async () => {

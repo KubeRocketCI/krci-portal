@@ -3,7 +3,6 @@ import {
   actorStateGroupSchema,
   sortByName,
   workerStateSchema,
-  type ActorAgent,
   type ActorRow,
   type AgentProfileCount,
   type Fleet,
@@ -18,26 +17,14 @@ import {
 } from "@my-project/shared";
 import { K8sClient } from "../../../clients/k8s/index.js";
 import type { TRPCContext } from "../../../context/types.js";
-import { gitlabIssueUrl, readCodebaseLinks, type CodebaseLinks } from "./codebaseLinks.js";
+import { codebaseNamespace, readCodebaseLinks, withCodebase, type CodebaseLinks } from "./codebaseLinks.js";
 import { needsAttentionOf } from "./needsAttention.js";
 import { hostsActors, roomSizeOf, selects, workerPoolRoomOf, workerRoomOf } from "./room.js";
 import { readSubstrate, type SubstrateFleet } from "./substrateRead.js";
 import { readWorkerPools, type WorkerPoolRead } from "./workerPools.js";
 import type { SubstrateWorker } from "../../../clients/agentSubstrate/index.js";
 
-/** Codebase and issue URL come from the user's Codebase list: per request, never part of the shared read. */
-function withCodebase(agent: ActorAgent, codebaseLinks: CodebaseLinks): ActorAgent {
-  const { issue } = agent;
-  const link = codebaseLinks.get(issue.projectPath);
-  return {
-    ...agent,
-    issue: {
-      ...issue,
-      url: link?.gitlabRepoUrl ? gitlabIssueUrl(link.gitlabRepoUrl, issue.iid) : null,
-    },
-    codebase: link ? { ...link.codebase } : null,
-  };
-}
+export { getAgent } from "./agent.js";
 
 /** The current actor templates of one worker selector. */
 interface SelectorGroup {
@@ -99,7 +86,13 @@ function toActorRow(
     createdAt: actor.createTime,
     updatedAt: actor.updateTime,
     crash: actor.crash && { message: actor.crash.message, at: actor.crash.crashTime },
-    snapshots: actor.snapshots.map((snapshot) => ({ ...snapshot })),
+    snapshots: actor.snapshots.map(({ uuid, generation, fidelity, locality, durableState }) => ({
+      uuid,
+      generation,
+      fidelity,
+      locality,
+      durableState,
+    })),
   };
 }
 
@@ -282,12 +275,12 @@ export async function getFleet(ctx: TRPCContext): Promise<Fleet> {
   }
 
   const projectPaths = new Set(read.fleet.actors.flatMap(({ agent }) => (agent ? [agent.issue.projectPath] : [])));
-  const codebaseNamespace = process.env.DEFAULT_CLUSTER_NAMESPACE ?? "";
+  const namespace = codebaseNamespace();
   const { workerNamespaces } = read.fleet;
-  const needsK8s = (codebaseNamespace !== "" && projectPaths.size > 0) || workerNamespaces.length > 0;
+  const needsK8s = (namespace !== "" && projectPaths.size > 0) || workerNamespaces.length > 0;
   const k8sClient = needsK8s ? new K8sClient(ctx.session) : null;
   const [codebaseLinks, workerPoolRead] = await Promise.all([
-    readCodebaseLinks(k8sClient, codebaseNamespace, projectPaths),
+    readCodebaseLinks(k8sClient, namespace, projectPaths),
     readWorkerPools(k8sClient, workerNamespaces),
   ]);
   return toReadyFleet(read.fleet, codebaseLinks, workerPoolRead);
