@@ -19,14 +19,14 @@ if (gitDir === undefined) process.exit(0);
 const hooksPath = tryGit("config", "core.hooksPath");
 if (hooksPath === ".githooks") process.exit(0);
 if (hooksPath) {
-  console.warn(`install-git-hooks: core.hooksPath is ${hooksPath}; .githooks/pre-commit not active.`);
+  console.warn(`install-git-hooks: core.hooksPath is ${hooksPath}; .githooks hooks not active.`);
   process.exit(0);
 }
 
 const localHooks = join(gitDir, "hooks");
 const custom = existsSync(localHooks) ? readdirSync(localHooks).filter((name) => !name.endsWith(".sample")) : [];
 if (custom.length > 0) {
-  console.warn(`install-git-hooks: ${localHooks} has ${custom.join(", ")}; .githooks/pre-commit not active.`);
+  console.warn(`install-git-hooks: ${localHooks} has ${custom.join(", ")}; .githooks hooks not active.`);
   process.exit(0);
 }
 

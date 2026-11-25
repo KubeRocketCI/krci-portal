@@ -1,8 +1,21 @@
-import { defineConfig } from "vitest/config";
+import { fileURLToPath } from "node:url";
+import { configDefaults, defineConfig } from "vitest/config";
+
+/** Absolute, ends in `/`. */
+const root = fileURLToPath(new URL(".", import.meta.url));
 
 export default defineConfig({
   test: {
     projects: ["apps/*", "packages/*", "scripts"],
+    // A change to one of these runs every test of `--changed`. Root-only option: a project config ignores it.
+    // Matched against absolute paths without `dot`: a `**` does not cross a dot directory such as `.worktree`,
+    // so every trigger is anchored at `root`. setup.ts and .storybook reach client tests without an import.
+    forceRerunTriggers: [
+      ...configDefaults.forceRerunTriggers,
+      `${root}**/{package.json,vitest.config.*,vite.config.*}`,
+      `${root}apps/client/src/test/setup.ts`,
+      `${root}apps/client/.storybook/**`,
+    ],
     reporters: [process.env.CI ? "verbose" : "dot"],
     // Console output of a passing test is dropped; a failing test prints its own.
     silent: "passed-only",

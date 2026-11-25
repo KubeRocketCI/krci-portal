@@ -5,13 +5,12 @@ const env: PlanEnv = {
   hasLocalPrettier: (dir) => dir === "apps/client",
   hasLintScript: () => true,
   isBuildStale: () => false,
-  testImporters: () => [],
 };
 
 const modified = (...paths: string[]): ChangedFile[] => paths.map((path) => ({ path, status: "modified" }));
 
 describe("planChecks", () => {
-  it("checks a client module change in the client package and its module directory", () => {
+  it("checks a client module change in the client package and its import graph", () => {
     const plan = planChecks(modified("apps/client/src/modules/home/pages/overview/view.tsx"), env);
 
     expect(plan).toEqual({
@@ -25,7 +24,7 @@ describe("planChecks", () => {
       build: [],
       tsc: ["client"],
       lint: ["client"],
-      tests: { projects: ["client"], paths: ["apps/client/src/modules/home/"] },
+      tests: { whole: [], graph: ["client"] },
       unmapped: [],
     });
   });
@@ -36,10 +35,19 @@ describe("planChecks", () => {
     expect(plan.build).toEqual(["shared", "trpc"]);
     expect(plan.tsc).toEqual(["shared", "trpc", "server", "client"]);
     expect(plan.lint).toEqual(["shared"]);
-    expect(plan.tests).toEqual({ projects: ["shared", "trpc"], paths: ["packages/shared/", "packages/trpc/"] });
+    expect(plan.tests).toEqual({ whole: ["shared", "trpc"], graph: [] });
   });
 
-  it("narrows trpc tests to the router or client directory of the change", () => {
+  it("runs the whole trpc project, not its import graph, when shared and trpc change together", () => {
+    const plan = planChecks(
+      modified("packages/shared/src/index.ts", "packages/trpc/src/clients/k8s/index.ts", "apps/server/src/index.ts"),
+      env
+    );
+
+    expect(plan.tests).toEqual({ whole: ["shared", "trpc"], graph: ["server"] });
+  });
+
+  it("runs the import graph of a trpc change", () => {
     const plan = planChecks(
       modified(
         "packages/trpc/src/routers/prometheus/procedures/getDeploymentMetrics/index.ts",
@@ -50,23 +58,20 @@ describe("planChecks", () => {
 
     expect(plan.build).toEqual(["trpc"]);
     expect(plan.tsc).toEqual(["trpc", "server", "client"]);
-    expect(plan.tests).toEqual({
-      projects: ["trpc"],
-      paths: ["packages/trpc/src/clients/k8s/", "packages/trpc/src/routers/prometheus/"],
-    });
+    expect(plan.tests).toEqual({ whole: [], graph: ["trpc"] });
   });
 
-  it("runs the whole project instead of its directories once a change sits outside them", () => {
+  it("runs the import graph, not the whole client, for a client change outside src/modules", () => {
     const plan = planChecks(
       modified(
         "apps/client/src/modules/platform/codebases/utils.ts",
-        "apps/client/src/k8s/api/hooks/useWatchList/index.ts",
+        "apps/client/src/core/hooks/usePinnedItems.ts",
         "apps/server/src/index.ts"
       ),
       env
     );
 
-    expect(plan.tests).toEqual({ projects: ["server", "client"], paths: ["apps/server/", "apps/client/"] });
+    expect(plan.tests).toEqual({ whole: [], graph: ["server", "client"] });
   });
 
   it("type-checks a deleted file's package without formatting the file", () => {
@@ -82,7 +87,7 @@ describe("planChecks", () => {
     expect(plan.format).toEqual([]);
     expect(plan.build).toEqual(["shared", "trpc"]);
     expect(plan.tsc).toEqual(["shared", "trpc", "server", "client", "scripts"]);
-    expect(plan.tests.projects).toEqual(["shared", "trpc", "server", "client", "scripts"]);
+    expect(plan.tests).toEqual({ whole: ["shared", "trpc", "server", "client", "scripts"], graph: [] });
     expect(plan.unmapped).toEqual([]);
   });
 
@@ -94,7 +99,7 @@ describe("planChecks", () => {
     ]);
     expect(plan.tsc).toEqual([]);
     expect(plan.lint).toEqual([]);
-    expect(plan.tests).toEqual({ projects: [], paths: [] });
+    expect(plan.tests).toEqual({ whole: [], graph: [] });
   });
 
   it("lists files outside every target as unmapped", () => {
@@ -116,25 +121,6 @@ describe("planChecks", () => {
       { cwd: "apps/server", prettier: "node_modules/.bin/prettier", files: ["src/index.ts"] },
     ]);
     expect(plan.lint).toEqual(["scripts"]);
-  });
-
-  it("adds tests outside the narrowed directory that import the changed file", () => {
-    const route = "apps/client/src/modules/platform/codebases/pages/details/route.ts";
-    const plan = planChecks(modified(route), {
-      ...env,
-      testImporters: (path) =>
-        path === route
-          ? [
-              "apps/client/src/core/hooks/usePinnedItems.test.ts",
-              "apps/client/src/modules/platform/codebases/pages/details/route.test.ts",
-            ]
-          : [],
-    });
-
-    expect(plan.tests).toEqual({
-      projects: ["client"],
-      paths: ["apps/client/src/core/hooks/usePinnedItems.test.ts", "apps/client/src/modules/platform/"],
-    });
   });
 
   it("builds a stale or missing dependency before type-checking its consumers", () => {

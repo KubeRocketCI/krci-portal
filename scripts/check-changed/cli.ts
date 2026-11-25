@@ -3,12 +3,11 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { availableParallelism } from "node:os";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
-import { findTestImporters, type TestSource } from "./importers.js";
 import {
   formatGroups,
   planChecks,
+  projectPath,
   targetDir,
-  targetOf,
   type ChangedFile,
   type FormatGroup,
   type PlanEnv,
@@ -67,23 +66,9 @@ function walk(root: string, dir: string): string[] {
 
 const TEST_FILE = /\.test\.tsx?$/;
 
-/** client and server import `@/` from their own src (tsconfig paths). */
-const ALIASED: Target[] = ["client", "server"];
-
 function planEnv(root: string): PlanEnv {
   const scripts = (dir: string): Record<string, string> =>
     JSON.parse(readFileSync(join(root, dir, "package.json"), "utf8")).scripts ?? {};
-  const tests = new Map<Target, TestSource[]>();
-  const testsOf = (target: Target) => {
-    if (!tests.has(target)) {
-      const paths = walk(root, `${targetDir(target)}/src`).filter((path) => TEST_FILE.test(path));
-      tests.set(
-        target,
-        paths.map((path) => ({ path, source: readFileSync(join(root, path), "utf8") }))
-      );
-    }
-    return tests.get(target) ?? [];
-  };
   const mtime = (path: string) => statSync(join(root, path)).mtimeMs;
 
   return {
@@ -95,12 +80,6 @@ function planEnv(root: string): PlanEnv {
       if (!existsSync(join(root, declarations))) return true;
       const builtAt = mtime(declarations);
       return walk(root, `${targetDir(target)}/src`).some((path) => !TEST_FILE.test(path) && mtime(path) > builtAt);
-    },
-    testImporters: (path) => {
-      const target = targetOf(path);
-      if (!target) return [];
-      const aliases: Record<string, string> = ALIASED.includes(target) ? { "@/": `${targetDir(target)}/src/` } : {};
-      return findTestImporters(path, testsOf(target), aliases);
     },
   };
 }
@@ -131,6 +110,20 @@ const indexCheckStep = (root: string, group: FormatGroup): Step => ({
     "--root",
     root,
     ...group.files.map((file) => `${group.cwd}/${file}`),
+  ],
+});
+
+/** `--passWithNoTests`: an import graph can reach no test. */
+const testStep = (root: string, label: string, projects: Target[], filters: string[]): Step => ({
+  label,
+  cwd: root,
+  argv: [
+    join(root, "node_modules/.bin/vitest"),
+    "run",
+    "--reporter=dot",
+    "--passWithNoTests",
+    ...projects.flatMap((project) => ["--project", project]),
+    ...filters,
   ],
 });
 
@@ -187,21 +180,10 @@ async function checkPlan(root: string, base: string): Promise<number> {
     ...plan.tsc.map((target) => pnpmScript(root, target, "tsc")),
     ...plan.lint.map((target) => pnpmScript(root, target, "lint")),
   ];
-  if (plan.tests.paths.length > 0) {
-    requireBin(root, "vitest");
-    checks.push({
-      label: `test ${plan.tests.projects.join(" ")}`,
-      cwd: root,
-      argv: [
-        join(root, "node_modules/.bin/vitest"),
-        "run",
-        "--reporter=dot",
-        "--passWithNoTests",
-        ...plan.tests.projects.flatMap((project) => ["--project", project]),
-        ...plan.tests.paths,
-      ],
-    });
-  }
+  const { whole, graph } = plan.tests;
+  if (whole.length + graph.length > 0) requireBin(root, "vitest");
+  if (whole.length > 0) checks.push(testStep(root, `test ${whole.join(" ")}`, whole, whole.map(projectPath)));
+  if (graph.length > 0) checks.push(testStep(root, `test graph ${graph.join(" ")}`, graph, ["--changed", base]));
   if (serial.length + checks.length === 0) {
     note("nothing to check");
     return 0;

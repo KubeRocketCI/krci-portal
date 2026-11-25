@@ -19,7 +19,7 @@ Issues and specs live in Jira project `EPMDEDP`. Use the `mcp__mcp-atlassian__ji
 - **Labels update**: `jira_update_issue` with `fields: {"labels": [...]}`. Send the full list; it replaces the existing labels.
 - **Resolution Done (required)**: every `jira_transition_issue` to a status in the Done category passes `fields: '{"resolution": {"name": "Done"}}'`. This covers a ticket whose work is done and every close below. After the transition, `jira_get_issue` with `fields: status,resolution` and confirm resolution is Done. A Done-category status with an empty resolution is an error: fix it in the same session.
 - **Close** (not done through a PR: `wontfix`, duplicate, obsolete): comment the reason, then `jira_get_transitions` and `jira_transition_issue` to a status in the Done category, with resolution Done.
-- **Commit titles**: `EPMDEDP-<n>: <type>: <subject>`, 10 to 85 characters, type one of fix, feat, docs, style, refactor, test, chore; `.github/workflows/pr-validation.yml` checks it. `EPMDEDP-<n>` is the ticket being worked.
+- **Commit titles**: `EPMDEDP-<n>: <type>: <subject>`, type one of fix, feat, docs, style, refactor, test, chore. The title is 10 to 85 characters, each body line at most 85. `.githooks/commit-msg` checks it on commit, `.github/workflows/pr-validation.yml` on the PR. `EPMDEDP-<n>` is the ticket being worked.
 - **Branch names**: `EPMDEDP-<n>/<short-slug>`.
 - **Issue references**: an `EPMDEDP-<n>` prefix in a commit title is the issue reference. Fetch it from Jira, not as a GitHub `#<n>`.
 - **Where keys go**: commit titles, branch names and PR bodies. Never in code, comments, tests or other docs.
