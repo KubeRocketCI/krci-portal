@@ -9,3 +9,11 @@ export const actorDetailTabSchema = z.object({
 });
 
 export type ActorDetailSearch = z.infer<typeof actorDetailTabSchema>;
+
+export const agentDetailViewEnum = z.enum(["sections", "diagram"]);
+
+export type AgentDetailViewKind = z.infer<typeof agentDetailViewEnum>;
+
+export const agentDetailViewSchema = z.object({
+  view: agentDetailViewEnum.optional().catch(undefined),
+});

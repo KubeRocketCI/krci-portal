@@ -25,7 +25,7 @@ import { TABLE } from "@/k8s/constants/tables";
 import { useClusterStore } from "@/k8s/store";
 import { PATH_PIPELINERUN_DETAILS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-details/route";
 import { PATH_PIPELINERUNS_FULL } from "@/modules/platform/tekton/pages/pipelinerun-list/route";
-import { useAgentReviewRuns } from "../../../../../hooks/useAgentReviewRuns";
+import { mergeRequestText } from "./mergeRequestText";
 
 const TITLE_ID = "agent-produced-title";
 
@@ -70,7 +70,7 @@ function ReviewRunIcon({ run, clusterName }: { run: ReviewRun; clusterName: stri
   );
 }
 
-function ReviewRunIcons({ mergeRequest, codebase }: { mergeRequest: MergeRequest; codebase: CodebaseRef }) {
+export function ReviewRunIcons({ mergeRequest, codebase }: { mergeRequest: MergeRequest; codebase: CodebaseRef }) {
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
   const newestFirst = mergeRequest.reviewRuns.slice(0, REVIEW_RUN_ICON_COUNT);
   const more = mergeRequest.reviewRuns.length - newestFirst.length;
@@ -95,7 +95,7 @@ function ReviewRunIcons({ mergeRequest, codebase }: { mergeRequest: MergeRequest
   );
 }
 
-function LatestRun({ run }: { run: ReviewRun }) {
+export function LatestRun({ run }: { run: ReviewRun }) {
   const display = statusDisplayOf(run);
   const facts = [run.startedAt && formatTimestamp(run.startedAt), durationOf(run)].filter(Boolean).join(" · ");
 
@@ -112,29 +112,43 @@ function LatestRun({ run }: { run: ReviewRun }) {
   );
 }
 
+export function MergeRequestLink({ mergeRequest }: { mergeRequest: MergeRequest }) {
+  return mergeRequest.url ? (
+    <CellExternalLink href={mergeRequest.url} text={mergeRequestText(mergeRequest)} />
+  ) : (
+    mergeRequestText(mergeRequest)
+  );
+}
+
+export function BranchesText({ mergeRequest: { sourceBranch, targetBranch } }: { mergeRequest: MergeRequest }) {
+  return (
+    <span className="font-mono text-xs">
+      <TextWithTooltip text={targetBranch ? `${sourceBranch} → ${targetBranch}` : sourceBranch} />
+    </span>
+  );
+}
+
+export function CommitText({ mergeRequest }: { mergeRequest: MergeRequest }) {
+  const commit = mergeRequest.reviewRuns[0]?.commit;
+  return commit ? (
+    <Tooltip title={commit} delayDuration={300}>
+      <span className="font-mono text-xs">{commit.slice(0, SHORT_COMMIT_LENGTH)}</span>
+    </Tooltip>
+  ) : null;
+}
+
 function columnsOf(codebase: CodebaseRef): TableColumn<MergeRequest>[] {
   return [
     {
       id: "mergeRequest",
       label: "Merge request",
-      data: {
-        render: ({ data }) =>
-          data.url ? <CellExternalLink href={data.url} text={`!${data.number}`} /> : `!${data.number}`,
-      },
+      data: { render: ({ data }) => <MergeRequestLink mergeRequest={data} /> },
       cell: { baseWidth: 10 },
     },
     {
       id: "branches",
       label: "Branches",
-      data: {
-        render: ({ data }) => (
-          <span className="font-mono text-xs">
-            <TextWithTooltip
-              text={data.targetBranch ? `${data.sourceBranch} → ${data.targetBranch}` : data.sourceBranch}
-            />
-          </span>
-        ),
-      },
+      data: { render: ({ data }) => <BranchesText mergeRequest={data} /> },
       cell: { baseWidth: 20 },
     },
     {
@@ -152,30 +166,24 @@ function columnsOf(codebase: CodebaseRef): TableColumn<MergeRequest>[] {
     {
       id: "commit",
       label: "Commit",
-      data: {
-        render: ({ data }) => {
-          const commit = data.reviewRuns[0]?.commit;
-          return commit ? (
-            <Tooltip title={commit} delayDuration={300}>
-              <span className="font-mono text-xs">{commit.slice(0, SHORT_COMMIT_LENGTH)}</span>
-            </Tooltip>
-          ) : null;
-        },
-      },
+      data: { render: ({ data }) => <CommitText mergeRequest={data} /> },
       cell: { baseWidth: 10 },
     },
   ];
 }
 
-export interface AgentProducedBlockProps {
-  /** Null: the agent has no Codebase. */
-  codebase: CodebaseRef | null;
+export interface ReviewRunsRead {
   /** Undefined until a read succeeds. */
   mergeRequests: MergeRequest[] | undefined;
   /** Undefined until a read succeeds. */
   history: ReviewRunHistory | undefined;
   isLoading: boolean;
   error: RequestError | null;
+}
+
+export interface AgentProducedBlockProps extends ReviewRunsRead {
+  /** Null: the agent has no Codebase. */
+  codebase: CodebaseRef | null;
 }
 
 export function AgentProducedBlock({ codebase, mergeRequests, history, isLoading, error }: AgentProducedBlockProps) {
@@ -207,25 +215,5 @@ export function AgentProducedBlock({ codebase, mergeRequests, history, isLoading
         )}
       </CardContent>
     </Card>
-  );
-}
-
-export interface AgentProducedCardProps {
-  atespace: string;
-  name: string;
-  codebase: CodebaseRef | null;
-}
-
-export function AgentProducedCard({ atespace, name, codebase }: AgentProducedCardProps) {
-  const query = useAgentReviewRuns({ atespace, name }, { enabled: codebase !== null });
-
-  return (
-    <AgentProducedBlock
-      codebase={codebase}
-      mergeRequests={query.data?.mergeRequests}
-      history={query.data?.history}
-      isLoading={query.isLoading}
-      error={query.error}
-    />
   );
 }
