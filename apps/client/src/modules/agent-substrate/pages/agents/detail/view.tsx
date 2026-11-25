@@ -3,12 +3,18 @@ import { useShallow } from "zustand/react/shallow";
 import type { AgentRead, AgentResult, WorkerPoolRef } from "@my-project/shared";
 import { EmptyList } from "@/core/components/EmptyList";
 import type { Breadcrumb } from "@/core/components/PageWrapper/types";
+import type { PinTarget } from "@/core/hooks/usePinnedItems";
 import { useClusterStore } from "@/k8s/store";
 import { FleetPageView } from "../../../components/FleetPage";
 import { PAGE_DESCRIPTION } from "../../../constants/hints";
-import { PATH_FACTORY_ACTOR_DETAIL_FULL } from "../../../constants/paths";
+import {
+  PATH_FACTORY_ACTOR_DETAIL_FULL,
+  PATH_FACTORY_AGENT_DETAIL_FULL,
+  PATH_FACTORY_AGENTS_FULL,
+} from "../../../constants/paths";
 import { useAgent } from "../../../hooks/useAgent";
 import { useFleet } from "../../../hooks/useFleet";
+import { issueLabel } from "../../../utils/issueLabel";
 import { AgentActorCard } from "./components/AgentActorCard";
 import { AgentHeader, AgentTitle } from "./components/AgentHeader";
 import { AgentProfileCard } from "./components/AgentProfileCard";
@@ -60,8 +66,12 @@ function AgentResultBody({ result, atespace, name, usableWorkerPools }: AgentRes
   }
 }
 
-/** Title and breadcrumb tail: the issue once the agent is read, the actor name of the route before and on failure. */
+/**
+ * Title and breadcrumb tail: the issue once the agent is read, the actor name of the route before and on failure. Pin:
+ * only once the agent is read.
+ */
 export function AgentDetailView({ atespace, name }: AgentDetailViewProps) {
+  const clusterName = useClusterStore(useShallow((state) => state.clusterName));
   const query = useAgent({ atespace, name });
   const usableWorkerPools = useUsableWorkerPools({ atespace, name });
   const result = query.data?.state === "ready" ? query.data.result : null;
@@ -71,12 +81,20 @@ export function AgentDetailView({ atespace, name }: AgentDetailViewProps) {
     ? [{ label: found.agent.issue.projectPath }, { label: `#${found.agent.issue.iid}` }]
     : [{ label: name }];
 
+  const pinConfig: PinTarget | undefined = found
+    ? {
+        label: issueLabel(found.agent.issue),
+        route: { to: PATH_FACTORY_AGENT_DETAIL_FULL, params: { clusterName, atespace, name } },
+      }
+    : undefined;
+
   return (
     <FleetPageView<AgentRead>
       icon={Bot}
       title={found ? <AgentTitle agent={found.agent} actor={found.actor} /> : name}
       description={PAGE_DESCRIPTION.agentDetail}
-      breadcrumbs={[{ label: "Agents" }, ...tail]}
+      breadcrumbs={[{ label: "Agents", route: { to: PATH_FACTORY_AGENTS_FULL, params: { clusterName } } }, ...tail]}
+      pinConfig={pinConfig}
       read={query.data}
       error={query.error}
       dataUpdatedAt={query.dataUpdatedAt}

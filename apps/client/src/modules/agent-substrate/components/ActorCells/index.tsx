@@ -1,4 +1,3 @@
-import type React from "react";
 import { ExternalLink } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import type { ActorAgent, ActorRow, ActorSnapshot, ActorState } from "@my-project/shared";
@@ -10,11 +9,9 @@ import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/de
 import { ACTOR_STATE_ICON, SNAPSHOT_DURABLE_STATE_ICON } from "../../constants/actorState";
 import { PATH_FACTORY_ACTOR_DETAIL_FULL } from "../../constants/paths";
 import { issueLabel } from "../../utils/issueLabel";
+import { stopRowClick } from "../../utils/stopRowClick";
 import { EmptyValue } from "../EmptyValue";
 import { StateBadge } from "../StateBadge";
-
-/** Actor table rows navigate on click. */
-const stopRowClick = (event: React.MouseEvent) => event.stopPropagation();
 
 export function ActorStateBadge({ state }: { state: ActorState }) {
   return <StateBadge label={state} icon={ACTOR_STATE_ICON[state]} />;

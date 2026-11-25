@@ -1,6 +1,9 @@
+import type React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, within } from "storybook/test";
+import { expect, userEvent, waitFor, within } from "storybook/test";
 import { withAppProviders } from "@sb/index";
+import { SidebarPinnedSection } from "@/core/components/sidebar/SidebarPinnedSection";
+import { SidebarProvider } from "@/core/components/ui/sidebar";
 import {
   ACTOR_NOT_FOUND,
   CRASHED_AGENT,
@@ -63,7 +66,8 @@ export const Running: Story = {
     for (const label of ["Factory", "Agents", "krci/test-go-app", "#32"]) {
       await expect(crumbs.getByText(label)).toBeVisible();
     }
-    await expect(crumbs.queryByRole("link", { name: "Agents" })).toBeNull();
+    await expect(crumbs.getByRole("link", { name: "Agents" })).toHaveAttribute("href", "/c/in-cluster/factory/agents");
+    await expect(canvas.getByRole("button", { name: "Pin to sidebar" })).toBeVisible();
 
     await expect(header.getByRole("link", { name: "krci/test-go-app#32" })).toHaveAttribute(
       "href",
@@ -217,6 +221,7 @@ export const NotAnAgent: Story = {
     );
     await expect(breadcrumb(canvasElement).getByText("debug-shell")).toBeVisible();
     await expect(canvas.queryByRole("region", { name: "Actor" })).toBeNull();
+    await expect(canvas.queryByRole("button", { name: "Pin to sidebar" })).toBeNull();
   },
 };
 
@@ -273,5 +278,40 @@ export const Loading: Story = {
     await expect(canvas.getAllByText("issue-2-32").length).toBeGreaterThan(0);
     await expect(breadcrumb(canvasElement).getByText("issue-2-32")).toBeVisible();
     await expect(canvas.queryByRole("region", { name: "Agent" })).toBeNull();
+    await expect(canvas.queryByRole("button", { name: "Pin to sidebar" })).toBeNull();
+  },
+};
+
+function WithPinnedSection({ children }: { children: React.ReactNode }) {
+  return (
+    <SidebarProvider>
+      <SidebarPinnedSection />
+      {children}
+    </SidebarProvider>
+  );
+}
+
+/** The pin is stored in local storage; the story unpins at the end. */
+export const PinsTheAgent: Story = {
+  decorators: [
+    withAppProviders({ seedQueryCache: seedAgent(RUNNING_REF, RUNNING_AGENT), contentWrapper: WithPinnedSection }),
+  ],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const agentDetailHref = "/c/in-cluster/factory/agents/krci-agents/issue-2-32";
+    const pinnedLink = () =>
+      canvas
+        .queryAllByRole("link", { name: "krci/test-go-app#32" })
+        .find((link: HTMLElement) => link.getAttribute("href") === agentDetailHref);
+
+    await userEvent.click(await canvas.findByRole("button", { name: "Pin to sidebar" }));
+    try {
+      await waitFor(() => expect(pinnedLink()).toBeVisible());
+      await expect(canvas.getByRole("button", { name: "Unpin from sidebar" })).toBeVisible();
+    } finally {
+      const unpin = canvas.queryByRole("button", { name: "Unpin from sidebar" });
+      if (unpin) await userEvent.click(unpin);
+    }
+    await waitFor(() => expect(pinnedLink()).toBeUndefined());
   },
 };

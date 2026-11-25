@@ -5,6 +5,7 @@ import { ErrorContent } from "@/core/components/ErrorContent";
 import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import type { Breadcrumb } from "@/core/components/PageWrapper/types";
+import type { PinTarget } from "@/core/hooks/usePinnedItems";
 import type { RequestError } from "@/core/types/global";
 import { unreachableReasonLabel } from "../../constants/unreachableReason";
 import { useFleet } from "../../hooks/useFleet";
@@ -17,6 +18,7 @@ interface FleetPageProps {
   title: string | React.ReactElement;
   description?: string;
   breadcrumbs: Breadcrumb[];
+  pinConfig?: PinTarget;
 }
 
 /**
@@ -51,6 +53,7 @@ export function FleetPageView<T extends FactoryRead>({
   title,
   description,
   breadcrumbs,
+  pinConfig,
   children,
   read,
   error,
@@ -85,7 +88,7 @@ export function FleetPageView<T extends FactoryRead>({
         />
       }
     >
-      <PageContentWrapper icon={icon} title={title} description={description}>
+      <PageContentWrapper icon={icon} title={title} description={description} pinConfig={pinConfig}>
         <div className="flex flex-col gap-6 pb-8">{renderBody()}</div>
       </PageContentWrapper>
     </PageWrapper>

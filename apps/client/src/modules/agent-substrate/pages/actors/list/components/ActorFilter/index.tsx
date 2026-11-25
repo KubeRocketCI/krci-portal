@@ -1,22 +1,14 @@
 import React from "react";
 import { X } from "lucide-react";
-import { actorStateGroupSchema, type ActorRow, type Atespace, type WorkerPoolRow } from "@my-project/shared";
+import type { ActorRow, Atespace, WorkerPoolRow } from "@my-project/shared";
 import type { SelectOption } from "@/core/components/form";
 import { Button } from "@/core/components/ui/button";
 import { Label } from "@/core/components/ui/label";
 import { useFilterContext } from "@/core/providers/Filter";
-import { ACTOR_STATE_GROUP_LABEL } from "../../../../../constants/actorState";
-import { ACTOR_FILTER_NAMES, agentProfileFilterValue, agentProfileLabel } from "../../../../../constants/actorFilter";
+import { ACTOR_FILTER_NAMES } from "../../../../../constants/actorFilter";
+import { ALL_OPTION, actorStateOptions, agentProfileOptions, codebaseOptions } from "../../../../../utils/fleetFilter";
 import { workerPoolText } from "../../../../../utils/roomLabel";
-import { ALL_FILTER_VALUE } from "./constants";
 import type { ActorFilterValues } from "./types";
-
-const ALL_OPTION: SelectOption = { label: "All", value: ALL_FILTER_VALUE };
-
-const actorStateOptions: SelectOption[] = [
-  ALL_OPTION,
-  ...actorStateGroupSchema.options.map((group) => ({ label: ACTOR_STATE_GROUP_LABEL[group], value: group })),
-];
 
 interface ActorFilterProps {
   atespaces: Atespace[];
@@ -43,20 +35,9 @@ export function ActorFilter({ atespaces, actors, workerPools }: ActorFilterProps
     [atespaces]
   );
 
-  const codebaseOptions = React.useMemo<SelectOption[]>(() => {
-    const names = new Set(actors.flatMap(({ agent }) => (agent?.codebase ? [agent.codebase.name] : [])));
-    return [ALL_OPTION, ...[...names].sort().map((name) => ({ label: name, value: name }))];
-  }, [actors]);
+  const codebaseSelectOptions = React.useMemo(() => codebaseOptions(actors), [actors]);
 
-  const agentProfileOptions = React.useMemo<SelectOption[]>(() => {
-    const agents = actors.flatMap(({ agent }) => (agent ? [agent] : []));
-    const names = new Set(agents.flatMap(({ agentProfile }) => (agentProfile ? [agentProfile] : [])));
-    const options = [ALL_OPTION, ...[...names].sort().map((name) => ({ label: name, value: name }))];
-    if (agents.some(({ agentProfile }) => agentProfile === null)) {
-      options.push({ label: agentProfileLabel(null), value: agentProfileFilterValue(null) });
-    }
-    return options;
-  }, [actors]);
+  const agentProfileSelectOptions = React.useMemo(() => agentProfileOptions(actors), [actors]);
 
   return (
     <>
@@ -76,14 +57,20 @@ export function ActorFilter({ atespaces, actors, workerPools }: ActorFilterProps
 
       <div className="col-span-2">
         <form.AppField name={ACTOR_FILTER_NAMES.CODEBASE}>
-          {(field) => <field.FormSelect label="Codebase" options={codebaseOptions} placeholder="Select Codebase" />}
+          {(field) => (
+            <field.FormSelect label="Codebase" options={codebaseSelectOptions} placeholder="Select Codebase" />
+          )}
         </form.AppField>
       </div>
 
       <div className="col-span-2">
         <form.AppField name={ACTOR_FILTER_NAMES.AGENT_PROFILE}>
           {(field) => (
-            <field.FormSelect label="Agent profile" options={agentProfileOptions} placeholder="Select agent profile" />
+            <field.FormSelect
+              label="Agent profile"
+              options={agentProfileSelectOptions}
+              placeholder="Select agent profile"
+            />
           )}
         </form.AppField>
       </div>

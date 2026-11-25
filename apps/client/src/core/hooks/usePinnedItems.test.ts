@@ -9,6 +9,7 @@ import { PATH_CDPIPELINE_STAGE_DETAILS_FULL } from "@/modules/platform/cdpipelin
 import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { PATH_SAST_PROJECT_DETAILS_FULL } from "@/modules/platform/security/pages/sast-project-details/route";
 import { PATH_SCA_PROJECT_DETAILS_FULL } from "@/modules/platform/security/pages/sca-project-details/route";
+import { PATH_FACTORY_AGENT_DETAIL_FULL } from "@/modules/agent-substrate/constants/paths";
 
 // Helpers ----------------------------------------------------------------
 
@@ -290,6 +291,7 @@ describe("usePinnedItems", () => {
     [PATH_CDPIPELINE_STAGE_DETAILS_FULL, "stage"],
     [PATH_SCA_PROJECT_DETAILS_FULL, "sca-project"],
     [PATH_SAST_PROJECT_DETAILS_FULL, "sast-project"],
+    [PATH_FACTORY_AGENT_DETAIL_FULL, "agent"],
   ])("derives the icon for detail route %s", async (to, iconType) => {
     const { result } = await renderPinnedItems();
 

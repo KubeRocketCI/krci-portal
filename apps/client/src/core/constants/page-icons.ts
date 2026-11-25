@@ -4,6 +4,7 @@ import {
   Archive,
   Bot,
   Box,
+  Boxes,
   CheckCircle,
   CloudUpload,
   Code,
@@ -15,6 +16,7 @@ import {
   Globe,
   Layers,
   Link2,
+  Package,
   PanelsTopLeft,
   Search,
   Server,
@@ -104,6 +106,12 @@ export const PAGE_ICONS = {
 
   // Administration
   "audit-events": ShieldCheck,
+
+  // Factory mode
+  agents: Bot,
+  agent: Bot,
+  actors: Package,
+  "worker-pools": Boxes,
 
   // Detail pages (from ENTITY_ICON)
   project: Box,
@@ -202,6 +210,13 @@ export const PATH_TO_ICON_TYPE: Record<string, PageIconType> = {
 
   // Administration
   "/administration/audit-events": "audit-events",
+
+  // Factory mode
+  "/c/$clusterName/factory/overview": "overview",
+  "/c/$clusterName/factory/agents": "agents",
+  "/c/$clusterName/factory/agents/$atespace/$name": "agent",
+  "/c/$clusterName/factory/actors": "actors",
+  "/c/$clusterName/factory/worker-pools": "worker-pools",
 };
 
 /**
