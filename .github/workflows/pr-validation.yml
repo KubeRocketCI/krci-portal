@@ -37,7 +37,8 @@ jobs:
       - name: Check Line Length
         uses: gsactions/commit-message-checker@v2
         with:
-          pattern: '.{0,85}'
+          # Matches only at the message start, only if no line has 86 or more characters; any flags.
+          pattern: '(?<![\s\S])(?![\s\S]*[^\n]{86})'
           error: 'The maximum line length of 85 characters is exceeded.'
           excludeDescription: 'true'
           excludeTitle: 'true'

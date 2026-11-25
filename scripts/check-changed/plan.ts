@@ -14,8 +14,6 @@ export interface PlanEnv {
   hasLintScript(target: Target): boolean;
   /** Built targets only: `dist` is missing or older than a `src` file. */
   isBuildStale(target: Target): boolean;
-  /** Repo-relative test files that import `path` (repo-relative) directly. */
-  testImporters(path: string): string[];
 }
 
 export interface FormatGroup {
@@ -32,8 +30,11 @@ export interface CheckPlan {
   build: Target[];
   tsc: Target[];
   lint: Target[];
-  /** Vitest filters: repo-relative directories ending in `/`, run within `projects`. */
-  tests: { projects: Target[]; paths: string[] };
+  /**
+   * `whole`: projects that run every test.
+   * `graph`: projects that run only the tests whose import graph reaches a changed file (`vitest --changed`).
+   */
+  tests: { whole: Target[]; graph: Target[] };
   unmapped: string[];
 }
 
@@ -45,10 +46,11 @@ interface TargetSpec {
   feeds: Target[];
   /** Type-checked along with it. */
   consumers: Target[];
-  /** Test projects a change outside `testDir` runs; trpc tests read shared from source. */
-  testProjects: Target[];
-  /** Matches, from the start of the target-relative path, the test directory of a change. */
-  testDir?: RegExp;
+  /**
+   * Test projects a change runs in whole; without it, the change runs its own project's import graph.
+   * Shared: trpc tests read shared from source; client and server read its `dist`, outside the import graph.
+   */
+  wholeTestProjects?: Target[];
 }
 
 const TARGETS: Record<Target, TargetSpec> = {
@@ -57,26 +59,12 @@ const TARGETS: Record<Target, TargetSpec> = {
     built: true,
     feeds: ["trpc"],
     consumers: ["trpc", "server", "client"],
-    testProjects: ["shared", "trpc"],
+    wholeTestProjects: ["shared", "trpc"],
   },
-  trpc: {
-    dir: "packages/trpc",
-    built: true,
-    feeds: [],
-    consumers: ["server", "client"],
-    testProjects: ["trpc"],
-    testDir: /^src\/(routers|clients)\/[^/]+\//,
-  },
-  server: { dir: "apps/server", built: false, feeds: [], consumers: [], testProjects: ["server"] },
-  client: {
-    dir: "apps/client",
-    built: false,
-    feeds: [],
-    consumers: [],
-    testProjects: ["client"],
-    testDir: /^src\/modules\/[^/]+\//,
-  },
-  scripts: { dir: "scripts", built: false, feeds: [], consumers: [], testProjects: ["scripts"] },
+  trpc: { dir: "packages/trpc", built: true, feeds: [], consumers: ["server", "client"] },
+  server: { dir: "apps/server", built: false, feeds: [], consumers: [] },
+  client: { dir: "apps/client", built: false, feeds: [], consumers: [] },
+  scripts: { dir: "scripts", built: false, feeds: [], consumers: [] },
 };
 
 const ORDER: Target[] = ["shared", "trpc", "server", "client", "scripts"];
@@ -95,16 +83,10 @@ const WORKSPACE_FILES = new Set([
 
 export const targetDir = (target: Target) => TARGETS[target].dir;
 
-const projectPath = (target: Target) => `${TARGETS[target].dir}/`;
+/** Target directory with a trailing `/`: a path prefix and a Vitest filter. */
+export const projectPath = (target: Target) => `${TARGETS[target].dir}/`;
 
-export const targetOf = (path: string): Target | undefined =>
-  ORDER.find((target) => path.startsWith(projectPath(target)));
-
-/** Narrower test directory of a changed file, or undefined for the whole of `testProjects`. */
-const testDirOf = (target: Target, path: string): string | undefined => {
-  const match = TARGETS[target].testDir?.exec(path.slice(projectPath(target).length));
-  return match ? `${projectPath(target)}${match[0]}` : undefined;
-};
+const targetOf = (path: string): Target | undefined => ORDER.find((target) => path.startsWith(projectPath(target)));
 
 /**
  * Files CI format-checks (`pnpm format:check`), grouped by the directory Prettier runs in.
@@ -130,18 +112,15 @@ export function formatGroups(paths: string[], env: Pick<PlanEnv, "hasLocalPretti
 export function planChecks(changes: ChangedFile[], env: PlanEnv): CheckPlan {
   const changed = new Set<Target>();
   const wholeProjects = new Set<Target>();
-  const testDirs = new Map<string, Target>();
+  const graphProjects = new Set<Target>();
   const unmapped: string[] = [];
-  const narrowed: { path: string; target: Target }[] = [];
-
-  const changeWhole = (target: Target) => {
-    changed.add(target);
-    TARGETS[target].testProjects.forEach((project) => wholeProjects.add(project));
-  };
 
   for (const { path } of changes) {
     if (WORKSPACE_FILES.has(path)) {
-      ORDER.forEach(changeWhole);
+      ORDER.forEach((target) => {
+        changed.add(target);
+        wholeProjects.add(target);
+      });
       continue;
     }
     const target = targetOf(path);
@@ -150,14 +129,10 @@ export function planChecks(changes: ChangedFile[], env: PlanEnv): CheckPlan {
       continue;
     }
     if (path.endsWith(".md")) continue;
-    const testDir = testDirOf(target, path);
-    if (!testDir) {
-      changeWhole(target);
-      continue;
-    }
     changed.add(target);
-    testDirs.set(testDir, target);
-    narrowed.push({ path, target });
+    const whole = TARGETS[target].wholeTestProjects;
+    if (whole) whole.forEach((project) => wholeProjects.add(project));
+    else graphProjects.add(target);
   }
 
   const format = formatGroups(
@@ -185,24 +160,15 @@ export function planChecks(changes: ChangedFile[], env: PlanEnv): CheckPlan {
     ])
   );
 
-  const narrowDirs = [...testDirs].filter(([, target]) => !wholeProjects.has(target));
-  const dirs = narrowDirs.map(([dir]) => dir);
-  const importers = narrowed
-    .filter(({ target }) => !wholeProjects.has(target))
-    .flatMap(({ path }) => env.testImporters(path))
-    .filter((test) => !dirs.some((dir) => test.startsWith(dir)));
-  const projects = inOrder([...wholeProjects, ...narrowDirs.map(([, target]) => target)]);
-  const paths = [
-    ...inOrder(wholeProjects).map(projectPath),
-    ...[...new Set([...dirs, ...importers])].sort((a, b) => a.localeCompare(b)),
-  ];
-
   return {
     format,
     build,
     tsc,
     lint: inOrder(changedTargets).filter((target) => env.hasLintScript(target)),
-    tests: { projects, paths },
+    tests: {
+      whole: inOrder(wholeProjects),
+      graph: inOrder(graphProjects).filter((target) => !wholeProjects.has(target)),
+    },
     unmapped,
   };
 }

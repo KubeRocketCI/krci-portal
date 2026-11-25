@@ -10,8 +10,15 @@ type ComposedStories = Record<string, { run: () => Promise<void> }>;
 /** Runs every story and its play function of this module in jsdom. */
 const storyFiles = import.meta.glob<StoryFile>("./**/*.stories.tsx", { eager: true });
 
+/** Under parallel load a story run exceeds the 5 s Vitest default. */
+const STORY_TIMEOUT_MS = 30_000;
+
 describe.each(Object.entries(storyFiles))("%s", (_path, module) => {
-  it.each(Object.entries(composeStories(module) as ComposedStories))("%s", async (_name, Story) => {
-    await Story.run();
-  });
+  it.each(Object.entries(composeStories(module) as ComposedStories))(
+    "%s",
+    async (_name, Story) => {
+      await Story.run();
+    },
+    STORY_TIMEOUT_MS
+  );
 });

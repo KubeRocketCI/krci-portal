@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Blocks a commit whose title is not EPMDEDP-<n>: <type>: <subject> or whose message has a line over 85 characters.
+# Installed by the root prepare script (pnpm install). Same rules as .github/workflows/pr-validation.yml.
+# Comment lines (#) are skipped. A fixup!, squash! or amend! prefix is removed before the title check.
+if ! awk '
+  /^#/ { next }
+  !seen {
+    seen = 1
+    title = $0
+    sub(/^((fixup|squash|amend)! )+/, "", title)
+    if (title !~ /^EPMDEDP-[0-9]+: (fix|feat|docs|style|refactor|test|chore)!?: .+$/) {
+      printf "line %d: title is not EPMDEDP-<n>: <type>: <subject>, type one of fix, feat, docs, style, refactor, test, chore\n", NR
+      bad = 1
+    }
+  }
+  length($0) > 85 { printf "line %d: %d characters, max 85\n", NR, length($0); bad = 1 }
+  END { exit bad }
+' "$1" >&2; then
+  echo "Commit blocked: commit message breaks the rules above (docs/agents/issue-tracker.md). Fix: commit again with a fixed message." >&2
+  exit 1
+fi
