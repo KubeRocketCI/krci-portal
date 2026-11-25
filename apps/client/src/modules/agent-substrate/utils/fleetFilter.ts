@@ -1,4 +1,4 @@
-import { ACTOR_STATE_GROUP, actorStateGroupSchema, type ActorRow } from "@my-project/shared";
+import { ACTOR_STATE_GROUP, actorStateGroupSchema, sortByName, type ActorRow } from "@my-project/shared";
 import type { SelectOption } from "@/core/components/form";
 import { ACTOR_STATE_GROUP_LABEL } from "../constants/actorState";
 import { agentProfileFilterValue, agentProfileLabel } from "../constants/actorFilter";
@@ -47,7 +47,7 @@ export const actorStateOptions: SelectOption[] = [
 ];
 
 const sortedOptions = (names: Iterable<string>): SelectOption[] =>
-  [...new Set(names)].sort().map((name) => ({ label: name, value: name }));
+  [...new Set(names)].sort(sortByName).map((name) => ({ label: name, value: name }));
 
 export function codebaseOptions(actors: ActorRow[]): SelectOption[] {
   return [ALL_OPTION, ...sortedOptions(actors.flatMap(({ agent }) => (agent?.codebase ? [agent.codebase.name] : [])))];
