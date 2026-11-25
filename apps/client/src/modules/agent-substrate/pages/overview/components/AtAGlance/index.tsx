@@ -10,10 +10,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/c
 import { cn } from "@/core/utils/classname";
 import { useClusterStore } from "@/k8s/store";
 import { TermHint } from "../../../../components/KV";
-import { agentProfileLabel } from "../../../../constants/actorFilter";
+import { agentProfileLabel } from "../../../../constants/agentFilter";
 import { SECTION_HINT, TERM_HINT } from "../../../../constants/hints";
 import { ACTOR_STATE_GROUP_LABEL } from "../../../../constants/actorState";
-import { PATH_FACTORY_ACTORS_FULL, PATH_FACTORY_WORKER_POOLS_FULL } from "../../../../constants/paths";
+import {
+  PATH_FACTORY_ACTORS_FULL,
+  PATH_FACTORY_AGENTS_FULL,
+  PATH_FACTORY_WORKER_POOLS_FULL,
+} from "../../../../constants/paths";
 import { fleetRoom } from "../../../../utils/roomLabel";
 import { WORKERS_SEARCH } from "../../../worker-pools/constants";
 import { actorStateSearch, actorsSubText, agentProfileSearch, roomSubText, workersHealth } from "../../utils/atAGlance";
@@ -46,12 +50,14 @@ function CountCard({ title, hint, children }: CountCardProps) {
 }
 
 function CountLink({
+  to,
   clusterName,
   search,
   label,
   count,
   tone,
 }: {
+  to: typeof PATH_FACTORY_ACTORS_FULL | typeof PATH_FACTORY_AGENTS_FULL;
   clusterName: string;
   search: Record<string, string>;
   label: string;
@@ -60,7 +66,7 @@ function CountLink({
 }) {
   return (
     <li>
-      <Link to={PATH_FACTORY_ACTORS_FULL} params={{ clusterName }} search={search} className={COUNT_LINK_CLASS}>
+      <Link to={to} params={{ clusterName }} search={search} className={COUNT_LINK_CLASS}>
         <TextWithTooltip text={label} className="text-muted-foreground text-xs" />
         <span
           className={cn(
@@ -143,6 +149,7 @@ export function AtAGlance({ fleet }: { fleet: ReadyFleet }) {
                 {actorStateGroupSchema.options.map((group) => (
                   <CountLink
                     key={group}
+                    to={PATH_FACTORY_ACTORS_FULL}
                     clusterName={clusterName}
                     search={actorStateSearch(group)}
                     label={ACTOR_STATE_GROUP_LABEL[group]}
@@ -161,6 +168,7 @@ export function AtAGlance({ fleet }: { fleet: ReadyFleet }) {
                   {summary.agentsByProfile.map(({ agentProfile, agents }) => (
                     <CountLink
                       key={agentProfile ?? ""}
+                      to={PATH_FACTORY_AGENTS_FULL}
                       clusterName={clusterName}
                       search={agentProfileSearch(agentProfile)}
                       label={agentProfileLabel(agentProfile)}

@@ -1,6 +1,4 @@
-import type React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useRouterState } from "@tanstack/react-router";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { STORYBOOK_CLUSTER_NAME, withAppProviders } from "@sb/index";
 import type { FleetData } from "../../../hooks/useFleet";
@@ -13,6 +11,7 @@ import {
   STORY_FLEET,
   seedFleet,
 } from "../../../__fixtures__/storyFleet";
+import { WithLocation } from "../../../__fixtures__/storyLocation";
 import { PAGE_DESCRIPTION } from "../../../constants/hints";
 import FactoryAgentsPage from "./page";
 
@@ -29,21 +28,6 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 type Canvas = ReturnType<typeof within>;
-
-/** The story router renders the page at every path; this shows where a click went. */
-function Location() {
-  const href = useRouterState({ select: (state) => state.location.href });
-  return <output aria-label="Location">{href}</output>;
-}
-
-function WithLocation({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      {children}
-      <Location />
-    </>
-  );
-}
 
 const withFleet = (fleet: FleetData, initialUrl?: string) => [
   withAppProviders({ seedQueryCache: seedFleet(fleet), contentWrapper: WithLocation, initialUrl }),

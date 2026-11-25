@@ -2,7 +2,7 @@ import type { ActorRow } from "@my-project/shared";
 import { Alert } from "@/core/components/ui/alert";
 import { Card, CardContent } from "@/core/components/ui/card";
 import { formatTimestamp } from "@/core/utils/date-humanize";
-import { ActorStateBadge, AgentCodebaseLink, AgentIssueLink } from "../../../../../components/ActorCells";
+import { ActorStateBadge, AgentLink } from "../../../../../components/ActorCells";
 import { KV } from "../../../../../components/KV";
 import { TERM_HINT } from "../../../../../constants/hints";
 import { sizeText, workerPoolsText, workerSelectorText } from "../../../../../utils/roomLabel";
@@ -20,9 +20,7 @@ export function ActorSummary({ actor }: { actor: ActorRow }) {
         <CardContent className="p-4">
           <KV
             rows={[
-              ["Issue", <AgentIssueLink agent={actor.agent} />],
-              ["Codebase", <AgentCodebaseLink agent={actor.agent} />],
-              ["Agent profile", actor.agent?.agentProfile, TERM_HINT.agentProfile],
+              ["Agent", <AgentLink actor={actor} />],
               ["Model", actor.agent?.model],
               ["Atespace", actor.atespace, TERM_HINT.atespace],
               ["Actor template", actor.actorTemplate, TERM_HINT.actorTemplate],

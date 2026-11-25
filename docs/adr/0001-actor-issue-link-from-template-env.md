@@ -10,7 +10,7 @@ The Agent detail also passes the egress policy `default` of the actor: for each 
 
 ## Consequences
 
-- A dispatcher change to these names breaks the issue column, not the page: an actor without them shows no issue.
+- A dispatcher change to these names breaks the agent links, not the page: an actor without them shows an empty Agent column on the Actors list, is not on the Agents list, and has no Agent detail.
 - A dispatcher change of `TURN_LIMIT` breaks the turn limit of the Agent detail, not the page.
 - A dispatcher change of the worker selector key or of the limits changes room and the room size, not the page.
 - A failed read of the egress policy shows in the Egress policy block, not on the page.

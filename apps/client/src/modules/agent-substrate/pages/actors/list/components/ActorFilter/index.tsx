@@ -6,17 +6,16 @@ import { Button } from "@/core/components/ui/button";
 import { Label } from "@/core/components/ui/label";
 import { useFilterContext } from "@/core/providers/Filter";
 import { ACTOR_FILTER_NAMES } from "../../../../../constants/actorFilter";
-import { ALL_OPTION, actorStateOptions, agentProfileOptions, codebaseOptions } from "../../../../../utils/fleetFilter";
+import { ALL_OPTION, actorStateOptions } from "../../../../../utils/fleetFilter";
 import { workerPoolText } from "../../../../../utils/roomLabel";
 import type { ActorFilterValues } from "./types";
 
 interface ActorFilterProps {
   atespaces: Atespace[];
-  actors: ActorRow[];
   workerPools: WorkerPoolRow[];
 }
 
-export function ActorFilter({ atespaces, actors, workerPools }: ActorFilterProps) {
+export function ActorFilter({ atespaces, workerPools }: ActorFilterProps) {
   const { form, reset, isDefaultValue } = useFilterContext<ActorRow, ActorFilterValues>();
 
   const workerPoolOptions = React.useMemo<SelectOption[]>(
@@ -35,10 +34,6 @@ export function ActorFilter({ atespaces, actors, workerPools }: ActorFilterProps
     [atespaces]
   );
 
-  const codebaseSelectOptions = React.useMemo(() => codebaseOptions(actors), [actors]);
-
-  const agentProfileSelectOptions = React.useMemo(() => agentProfileOptions(actors), [actors]);
-
   return (
     <>
       <div className="col-span-2">
@@ -51,26 +46,6 @@ export function ActorFilter({ atespaces, actors, workerPools }: ActorFilterProps
         <form.AppField name={ACTOR_FILTER_NAMES.ACTOR_STATE}>
           {(field) => (
             <field.FormSelect label="Actor state" options={actorStateOptions} placeholder="Select actor state" />
-          )}
-        </form.AppField>
-      </div>
-
-      <div className="col-span-2">
-        <form.AppField name={ACTOR_FILTER_NAMES.CODEBASE}>
-          {(field) => (
-            <field.FormSelect label="Codebase" options={codebaseSelectOptions} placeholder="Select Codebase" />
-          )}
-        </form.AppField>
-      </div>
-
-      <div className="col-span-2">
-        <form.AppField name={ACTOR_FILTER_NAMES.AGENT_PROFILE}>
-          {(field) => (
-            <field.FormSelect
-              label="Agent profile"
-              options={agentProfileSelectOptions}
-              placeholder="Select agent profile"
-            />
           )}
         </form.AppField>
       </div>

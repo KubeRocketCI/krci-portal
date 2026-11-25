@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { actorStateGroupSchema, type ReadyFleet } from "@my-project/shared";
+import { actorStateGroupSchema, type ActorRow, type ReadyFleet } from "@my-project/shared";
 import {
   CRASHED_ACTOR_FLEET,
   DRAINING_WORKER_FLEET,
@@ -12,8 +12,11 @@ import {
   UNREGISTERED_WORKER_FLEET,
   WORKERS_NOT_ACTIVE_FLEET,
 } from "../../../__fixtures__/storyFleet";
-import { ACTOR_FILTER_NAMES } from "../../../constants/actorFilter";
+import type { MatchFunctions } from "@/core/providers/Filter";
+import { AGENT_FILTER_NAMES } from "../../../constants/agentFilter";
+import { agentRows } from "../../../utils/fleetFilter";
 import { actorMatchFunctions } from "../../actors/list/components/ActorFilter/constants";
+import { agentMatchFunctions } from "../../agents/list/components/AgentFilter/constants";
 import { actorStateSearch, actorsSubText, agentProfileSearch, roomSubText, workersHealth } from "./atAGlance";
 
 function summaryOf(fleet: ReadyFleet, patch: Partial<ReadyFleet["summary"]>) {
@@ -101,7 +104,7 @@ describe("roomSubText", () => {
   });
 });
 
-describe("At a glance counts match the Actors page filters", () => {
+describe("At a glance counts match the list page filters", () => {
   const fleets = {
     TESTBED_FLEET,
     HEALTHY_FLEET,
@@ -111,35 +114,49 @@ describe("At a glance counts match the Actors page filters", () => {
     SEVERAL_AGENT_PROFILES_FLEET,
   };
 
-  const matching = (fleet: ReadyFleet, search: Record<string, string>) =>
-    fleet.actors.filter((actor) =>
-      Object.entries(search).every(([name, value]) =>
-        actorMatchFunctions[name as keyof typeof actorMatchFunctions]!(actor, value)
-      )
+  const matching = <Values extends Record<string, string>>(
+    rows: ActorRow[],
+    matchFunctions: MatchFunctions<ActorRow, Values>,
+    search: Record<string, string>
+  ) =>
+    rows.filter((row) =>
+      Object.entries(search).every(([name, value]) => matchFunctions[name as keyof Values]!(row, value as never))
     ).length;
 
-  it.each(Object.entries(fleets))("%s: each actor state count is the actor rows of its filter", (_name, fleet) => {
-    for (const group of actorStateGroupSchema.options) {
-      expect(matching(fleet, actorStateSearch(group))).toBe(fleet.summary.actorsByState[group]);
-    }
-  });
+  const matchingActors = (fleet: ReadyFleet, search: Record<string, string>) =>
+    matching(fleet.actors, actorMatchFunctions, search);
 
-  it.each(Object.entries(fleets))("%s: each agent profile count is the actor rows of its filter", (_name, fleet) => {
-    expect(fleet.summary.agentsByProfile.length).toBeGreaterThan(0);
-    for (const { agentProfile, agents } of fleet.summary.agentsByProfile) {
-      expect(matching(fleet, agentProfileSearch(agentProfile))).toBe(agents);
+  const matchingAgents = (fleet: ReadyFleet, search: Record<string, string>) =>
+    matching(agentRows(fleet.actors), agentMatchFunctions, search);
+
+  it.each(Object.entries(fleets))(
+    "%s: each actor state count is the Actors page rows of its filter",
+    (_name, fleet) => {
+      for (const group of actorStateGroupSchema.options) {
+        expect(matchingActors(fleet, actorStateSearch(group))).toBe(fleet.summary.actorsByState[group]);
+      }
     }
-    expect(fleet.summary.agentsByProfile.reduce((sum, { agents }) => sum + agents, 0)).toBe(fleet.summary.agents);
-  });
+  );
+
+  it.each(Object.entries(fleets))(
+    "%s: each agent profile count is the Agents page rows of its filter",
+    (_name, fleet) => {
+      expect(fleet.summary.agentsByProfile.length).toBeGreaterThan(0);
+      for (const { agentProfile, agents } of fleet.summary.agentsByProfile) {
+        expect(matchingAgents(fleet, agentProfileSearch(agentProfile))).toBe(agents);
+      }
+      expect(fleet.summary.agentsByProfile.reduce((sum, { agents }) => sum + agents, 0)).toBe(fleet.summary.agents);
+    }
+  );
 
   it.each(Object.entries(fleets))("%s: the worker count is the workers on the Worker pools page", (_name, fleet) => {
     expect(fleet.summary.workers).toBe(fleet.workers.length);
     expect(fleet.summary.actors).toBe(fleet.actors.length);
   });
 
-  it("filters the agents with no agent profile apart from actors that the dispatcher did not make", () => {
+  it("filters the agents with no agent profile on the Agents page", () => {
     expect(SEVERAL_AGENT_PROFILES_FLEET.actors.some(({ agent }) => agent === null)).toBe(true);
-    expect(matching(SEVERAL_AGENT_PROFILES_FLEET, agentProfileSearch(null))).toBe(1);
-    expect(agentProfileSearch(null)).toEqual({ [ACTOR_FILTER_NAMES.AGENT_PROFILE]: "__none__" });
+    expect(matchingAgents(SEVERAL_AGENT_PROFILES_FLEET, agentProfileSearch(null))).toBe(1);
+    expect(agentProfileSearch(null)).toEqual({ [AGENT_FILTER_NAMES.AGENT_PROFILE]: "__none__" });
   });
 });

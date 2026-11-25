@@ -11,7 +11,7 @@ import { Tooltip } from "@/core/components/ui/tooltip";
 import { cn } from "@/core/utils/classname";
 import { formatRelativeTime, formatUnixTimestamp } from "@/core/utils/date-humanize";
 import { useClusterStore } from "@/k8s/store";
-import { ActorLink, AgentIssueLink } from "../../../../components/ActorCells";
+import { ActorLink, AgentLink } from "../../../../components/ActorCells";
 import { EmptyValue } from "../../../../components/EmptyValue";
 import { WorkerStateBadge } from "../../../../components/WorkerCells";
 import { ACTOR_FILTER_NAMES } from "../../../../constants/actorFilter";
@@ -98,9 +98,9 @@ function ActorCrashedRow({ item }: { item: ItemOf<"actorCrashed"> }) {
         </Tooltip>
       )}
       <div className="flex min-w-0 items-center gap-2">
-        <span className="shrink-0">Issue</span>
+        <span className="shrink-0">Agent</span>
         <div className="min-w-0 flex-1">
-          <AgentIssueLink agent={item.agent} />
+          <AgentLink actor={item} />
         </div>
         <span className="shrink-0">Agent profile</span>
         <span className="text-foreground shrink-0">{item.agent?.agentProfile ?? <EmptyValue />}</span>
@@ -114,9 +114,9 @@ function ActorUnschedulableRow({ item }: { item: ItemOf<"actorUnschedulable"> })
     <Row severity={item.severity} name={<ActorLink actor={item} />} aside={null}>
       <TextWithTooltip text={unschedulableText(item.workerSelector)} className="text-xs" />
       <div className="flex min-w-0 items-center gap-2">
-        <span className="shrink-0">Issue</span>
+        <span className="shrink-0">Agent</span>
         <div className="min-w-0 flex-1">
-          <AgentIssueLink agent={item.agent} />
+          <AgentLink actor={item} />
         </div>
       </div>
     </Row>

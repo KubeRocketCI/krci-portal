@@ -1,7 +1,7 @@
 import { ACTOR_STATE_GROUP, actorStateGroupSchema, sortByName, type ActorRow } from "@my-project/shared";
 import type { SelectOption } from "@/core/components/form";
 import { ACTOR_STATE_GROUP_LABEL } from "../constants/actorState";
-import { agentProfileFilterValue, agentProfileLabel } from "../constants/actorFilter";
+import { agentProfileFilterValue, agentProfileLabel } from "../constants/agentFilter";
 
 /**
  * `_` cannot be in atespace, Codebase, agent profile or worker pool names, so this value cannot collide with one. The

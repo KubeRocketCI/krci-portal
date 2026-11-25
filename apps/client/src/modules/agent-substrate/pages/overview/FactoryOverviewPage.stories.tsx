@@ -205,7 +205,7 @@ export const CrashedActor: Story = {
     await expect(crashed.getByText(CRASHED_ACTOR.crash!.message)).toBeVisible();
     await expect(crashed.getByRole("link", { name: "krci/test-python-app#4" })).toHaveAttribute(
       "href",
-      CRASHED_ACTOR.agent!.issue.url!
+      `${FACTORY}/agents/${CRASHED_ACTOR.atespace}/${CRASHED_ACTOR.name}`
     );
     await expect(crashed.getByText("python")).toBeVisible();
     await expect(canvasElement.querySelector(`time[datetime="${CRASHED_ACTOR_ITEM.crashedAt}"]`)).not.toBeNull();
@@ -231,7 +231,7 @@ export const UnschedulableActor: Story = {
     );
     await expect(unschedulable.getByRole("link", { name: "krci/test-node-app#2" })).toHaveAttribute(
       "href",
-      UNSCHEDULABLE_ACTOR.agent!.issue.url!
+      `${FACTORY}/agents/${UNSCHEDULABLE_ACTOR.atespace}/${UNSCHEDULABLE_ACTOR.name}`
     );
     await expect(unschedulable.getByText("Worker selector workload=wokers matches no active worker")).toBeVisible();
     await expect(unschedulable.queryByRole("link", { name: /^Show all/ })).toBeNull();
@@ -314,10 +314,10 @@ export const SeveralAgentProfiles: Story = {
       "python2",
       "No agent profile1",
     ]);
-    await expect(countLink(profiles, "java")).toHaveAttribute("href", `${FACTORY}/actors?agentProfile=java`);
+    await expect(countLink(profiles, "java")).toHaveAttribute("href", `${FACTORY}/agents?agentProfile=java`);
     await expect(countLink(profiles, "No agent profile")).toHaveAttribute(
       "href",
-      `${FACTORY}/actors?agentProfile=__none__`
+      `${FACTORY}/agents?agentProfile=__none__`
     );
   },
 };

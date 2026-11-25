@@ -5,7 +5,8 @@ import {
   type FleetSummary,
   type ReadyFleet,
 } from "@my-project/shared";
-import { ACTOR_FILTER_NAMES, agentProfileFilterValue } from "../../../constants/actorFilter";
+import { ACTOR_FILTER_NAMES } from "../../../constants/actorFilter";
+import { AGENT_FILTER_NAMES, agentProfileFilterValue } from "../../../constants/agentFilter";
 import { plural } from "../../../utils/plural";
 
 export function actorsSubText({ agents, atespaces }: FleetSummary): string {
@@ -44,7 +45,7 @@ export function actorStateSearch(group: ActorStateGroup): Record<string, string>
   return { [ACTOR_FILTER_NAMES.ACTOR_STATE]: group };
 }
 
-/** The Actors page search for one agent profile; null: agents whose actor template sets no `AGENT_PROFILE`. */
+/** The Agents page search for one agent profile; null: agents whose actor template sets no `AGENT_PROFILE`. */
 export function agentProfileSearch(agentProfile: string | null): Record<string, string> {
-  return { [ACTOR_FILTER_NAMES.AGENT_PROFILE]: agentProfileFilterValue(agentProfile) };
+  return { [AGENT_FILTER_NAMES.AGENT_PROFILE]: agentProfileFilterValue(agentProfile) };
 }
