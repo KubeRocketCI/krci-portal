@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/c
 import { TABLE } from "@/k8s/constants/tables";
 import { TextOrEmpty } from "../../../../../components/EmptyValue";
 import { TERM_HINT } from "../../../../../constants/hints";
-import { unreachableReasonLabel } from "../../../../../constants/unreachableReason";
+import { NO_EGRESS_POLICY_TEXT, UNREADABLE_EGRESS_POLICY_TEXT, unreadableReasonText } from "./text";
 
 const TITLE_ID = "agent-egress-policy-title";
 
@@ -54,20 +54,17 @@ const columns: TableColumn<EgressRule>[] = [
 
 const EMPTY_RULES = <EmptyList customText="The egress policy has no rules" />;
 
-function EgressPolicyBody({ egressPolicy }: { egressPolicy: EgressPolicyRead }) {
+export function EgressPolicyBody({ egressPolicy }: { egressPolicy: EgressPolicyRead }) {
   switch (egressPolicy.state) {
     case "none":
-      return <EmptyList customText="The actor has no egress policy" />;
+      return <EmptyList customText={NO_EGRESS_POLICY_TEXT} />;
     case "unreadable":
       return (
-        <EmptyList
-          customText="The egress policy could not be read"
-          description={`Reason: ${unreachableReasonLabel(egressPolicy.reason)}.`}
-        />
+        <EmptyList customText={UNREADABLE_EGRESS_POLICY_TEXT} description={unreadableReasonText(egressPolicy.reason)} />
       );
     case "ready":
       return (
-        <>
+        <div className="flex flex-col gap-2">
           <DataTable<EgressRule>
             id={TABLE.AGENT_EGRESS_RULE_LIST.id}
             name={TABLE.AGENT_EGRESS_RULE_LIST.name}
@@ -80,7 +77,7 @@ function EgressPolicyBody({ egressPolicy }: { egressPolicy: EgressPolicyRead }) 
               ? "The egress policy holds a rule of a kind that the portal cannot show."
               : "Every other host is denied."}
           </p>
-        </>
+        </div>
       );
   }
 }
@@ -93,7 +90,7 @@ export function AgentEgressPolicyCard({ egressPolicy }: { egressPolicy: EgressPo
           Egress policy
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-2 p-4 pt-0">
+      <CardContent className="p-4 pt-0">
         <EgressPolicyBody egressPolicy={egressPolicy} />
       </CardContent>
     </Card>

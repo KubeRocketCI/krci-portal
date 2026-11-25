@@ -15,11 +15,11 @@ import { workerPoolAnchor } from "../../../../../utils/rowAnchor";
 
 const TITLE_ID = "agent-actor-title";
 
-const NOT_ON_A_WORKER = "Not on a worker";
+export const NOT_ON_A_WORKER = "Not on a worker";
 
 const NO_WORKER_POOL = "No worker pool";
 
-function WorkerPoolLink({ workerPool }: { workerPool: WorkerPoolRef }) {
+export function WorkerPoolLink({ workerPool }: { workerPool: WorkerPoolRef }) {
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
   return (
     <CellLink
@@ -68,16 +68,44 @@ function snapshotFidelityText({ preferredSnapshotFidelity, newestSnapshot }: Age
   return `preferred ${preferred} · newest ${newest}`;
 }
 
-interface AgentActorCardProps {
+export interface AgentActorFieldsProps {
   actor: AgentActor;
   /** From the fleet read. Null while it is not ready or holds no row of the actor; empty: no worker pool. */
   usableWorkerPools: WorkerPoolRef[] | null;
 }
 
 /** Sandbox class: of the worker assignment while running, else of the newest snapshot. */
-export function AgentActorCard({ actor, usableWorkerPools }: AgentActorCardProps) {
+export function AgentActorFields({ actor, usableWorkerPools }: AgentActorFieldsProps) {
   const sandboxClass = actor.placement?.sandboxRuntime ?? actor.newestSnapshot?.sandboxClass;
 
+  return (
+    <div className="flex flex-col gap-3">
+      {actor.crash && (
+        <Alert variant="destructive" title="Actor crashed">
+          <p className="break-all">{actor.crash.message}</p>
+          {actor.crash.at && <p className="text-xs">Crashed at {formatTimestamp(actor.crash.at)}</p>}
+        </Alert>
+      )}
+      <KV
+        rows={[
+          ["Actor", <ActorLink actor={actor} />],
+          ["Atespace", actor.atespace, TERM_HINT.atespace],
+          ["Actor template", actor.actorTemplate, TERM_HINT.actorTemplate],
+          ["Limits", sizeText(actor.size), TERM_HINT.size],
+          ["Worker", <WorkerText placement={actor.placement} />],
+          ["Sandbox class", sandboxClass, TERM_HINT.sandboxClass],
+          ["Worker selector", workerSelectorText(actor.workerSelector), TERM_HINT.workerSelector],
+          ["Can run on", <WorkerPoolLinks workerPools={usableWorkerPools} />, TERM_HINT.canRunOn],
+          ["Snapshot fidelity", snapshotFidelityText(actor), TERM_HINT.snapshotFidelity],
+          ["Created", formatTimestamp(actor.createdAt)],
+          ["Last change", formatTimestamp(actor.updatedAt)],
+        ]}
+      />
+    </div>
+  );
+}
+
+export function AgentActorCard(props: AgentActorFieldsProps) {
   return (
     <Card role="region" aria-labelledby={TITLE_ID}>
       <CardHeader className="p-4 pb-2">
@@ -85,28 +113,8 @@ export function AgentActorCard({ actor, usableWorkerPools }: AgentActorCardProps
           Actor
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3 p-4 pt-0">
-        {actor.crash && (
-          <Alert variant="destructive" title="Actor crashed">
-            <p className="break-all">{actor.crash.message}</p>
-            {actor.crash.at && <p className="text-xs">Crashed at {formatTimestamp(actor.crash.at)}</p>}
-          </Alert>
-        )}
-        <KV
-          rows={[
-            ["Actor", <ActorLink actor={actor} />],
-            ["Atespace", actor.atespace, TERM_HINT.atespace],
-            ["Actor template", actor.actorTemplate, TERM_HINT.actorTemplate],
-            ["Limits", sizeText(actor.size), TERM_HINT.size],
-            ["Worker", <WorkerText placement={actor.placement} />],
-            ["Sandbox class", sandboxClass, TERM_HINT.sandboxClass],
-            ["Worker selector", workerSelectorText(actor.workerSelector), TERM_HINT.workerSelector],
-            ["Can run on", <WorkerPoolLinks workerPools={usableWorkerPools} />, TERM_HINT.canRunOn],
-            ["Snapshot fidelity", snapshotFidelityText(actor), TERM_HINT.snapshotFidelity],
-            ["Created", formatTimestamp(actor.createdAt)],
-            ["Last change", formatTimestamp(actor.updatedAt)],
-          ]}
-        />
+      <CardContent className="p-4 pt-0">
+        <AgentActorFields {...props} />
       </CardContent>
     </Card>
   );

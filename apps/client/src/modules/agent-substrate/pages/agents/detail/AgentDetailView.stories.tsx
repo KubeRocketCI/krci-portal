@@ -1,6 +1,6 @@
-import type React from "react";
+import React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, userEvent, waitFor, within } from "storybook/test";
+import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { withAppProviders } from "@sb/index";
 import { SidebarPinnedSection } from "@/core/components/sidebar/SidebarPinnedSection";
 import { SidebarProvider } from "@/core/components/ui/sidebar";
@@ -19,10 +19,12 @@ import {
   agentRefOf,
   seedAgent,
 } from "../../../__fixtures__/storyAgent";
-import { RUNNING_REVIEW_RUNS } from "../../../__fixtures__/storyReviewRuns";
+import { FINISHED_REVIEW_RUNS, RUNNING_REVIEW_RUNS } from "../../../__fixtures__/storyReviewRuns";
 import { PAGE_DESCRIPTION } from "../../../constants/hints";
 import { FLEET_QUERY_KEY } from "../../../hooks/useFleet";
-import { AgentDetailView } from "./view";
+import { NO_REVIEW_RUN_TEXT } from "./components/AgentDiagram";
+import { NO_MERGE_REQUEST_TEXT } from "./components/AgentProducedCard";
+import { AgentDetailView, type AgentDetailViewProps } from "./view";
 
 const RUNNING_REF = agentRefOf(RUNNING_AGENT);
 const SUSPENDED_REF = agentRefOf(SUSPENDED_AGENT);
@@ -42,7 +44,7 @@ const meta = {
       seedQueryCache: seedAgent(RUNNING_REF, RUNNING_AGENT, STORY_FLEET_WITH_RUNNING_AGENT, RUNNING_REVIEW_RUNS),
     }),
   ],
-  args: RUNNING_REF,
+  args: { ...RUNNING_REF, view: "sections", onViewChange: fn() },
 } satisfies Meta<typeof AgentDetailView>;
 
 export default meta;
@@ -360,6 +362,222 @@ export const Loading: Story = {
     await expect(breadcrumb(canvasElement).getByText("issue-2-32")).toBeVisible();
     await expect(canvas.queryByRole("region", { name: "Agent" })).toBeNull();
     await expect(canvas.queryByRole("button", { name: "Pin to sidebar" })).toBeNull();
+  },
+};
+
+/** Keeps the view in story state, as the route keeps it in the URL. */
+function RoutedAgentDetailView(props: AgentDetailViewProps) {
+  const [view, setView] = React.useState(props.view);
+  return (
+    <AgentDetailView
+      {...props}
+      view={view}
+      onViewChange={(next) => {
+        props.onViewChange(next);
+        setView(next);
+      }}
+    />
+  );
+}
+
+export const ChangesToTheDiagram: Story = {
+  render: (args) => <RoutedAgentDetailView {...args} />,
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+
+    await expect(await region(canvasElement, "Produced")).toBeTruthy();
+    await expect(canvas.queryByRole("region", { name: "Diagram" })).toBeNull();
+
+    await userEvent.click(canvas.getByRole("button", { name: "Diagram" }));
+    await expect(args.onViewChange).toHaveBeenCalledWith("diagram");
+    await expect(await region(canvasElement, "Diagram")).toBeTruthy();
+    await expect(canvas.queryByRole("region", { name: "Produced" })).toBeNull();
+    await expect(await region(canvasElement, "Agent")).toBeTruthy();
+
+    await userEvent.click(canvas.getByRole("button", { name: "Sections" }));
+    await expect(args.onViewChange).toHaveBeenLastCalledWith("sections");
+    await expect(await region(canvasElement, "Produced")).toBeTruthy();
+  },
+};
+
+const diagramBox = (scope: ReturnType<typeof within>, type: string) => within(scope.getByRole("group", { name: type }));
+
+/** The select button of a box: its type and its name. */
+const selectButton = (scope: ReturnType<typeof within>, type: string) =>
+  diagramBox(scope, type).getByRole("button", { name: new RegExp(`^${type}`) });
+
+const BOX_TYPES = ["Issue", "Agent", "Actor", "Merge request", "Egress policy", "Review runs"];
+
+export const DiagramOfARunningActor: Story = {
+  args: { view: "diagram" },
+  play: async ({ canvasElement }) => {
+    const diagram = await region(canvasElement, "Diagram");
+
+    await expect(diagram.getAllByRole("group").map((box) => box.getAttribute("aria-label"))).toEqual(BOX_TYPES);
+    for (const [type, name] of [
+      ["Issue", "krci/test-go-app#32"],
+      ["Agent", "go · claude-haiku-5-5"],
+      ["Actor", "issue-2-32"],
+      ["Egress policy", "default"],
+      ["Merge request", "!5"],
+      ["Review runs", "3 review runs"],
+    ]) {
+      await expect(selectButton(diagram, type)).toHaveTextContent(`${type}${name}`);
+    }
+
+    await expect(diagramBox(diagram, "Issue").getByRole("link", { name: "test-go-app" })).toHaveAttribute(
+      "href",
+      "/c/in-cluster/projects/krci/test-go-app"
+    );
+    await expect(diagramBox(diagram, "Agent").getByText("limit 20 turns")).toBeVisible();
+    await expect(diagramBox(diagram, "Actor").getByText("running")).toBeVisible();
+    await expect(diagramBox(diagram, "Actor").getByRole("link", { name: "krci-agents/workers" })).toBeVisible();
+    await expect(diagramBox(diagram, "Egress policy").getByText("3 rules · 5 hosts")).toBeVisible();
+    await expect(diagramBox(diagram, "Merge request").getByText("agent/issue-32 → main")).toBeVisible();
+    const runLinks = diagramBox(diagram, "Review runs").getAllByRole("link");
+    await expect(runLinks).toHaveLength(3);
+    await expect(runLinks[2]).toHaveAccessibleName(/^test-go-app-review-x7k2p · Running · /);
+
+    for (const arrow of [
+      "Issue works on Agent",
+      "Agent runs in Actor",
+      "Actor bounded by Egress policy",
+      "Agent pushes Merge request",
+      "Merge request reviewed by Review runs",
+    ]) {
+      await expect(diagram.getByRole("img", { name: arrow })).toBeVisible();
+    }
+
+    await expect(selectButton(diagram, "Actor")).toHaveAttribute("aria-pressed", "true");
+    for (const type of BOX_TYPES.filter((type) => type !== "Actor")) {
+      await expect(selectButton(diagram, type)).toHaveAttribute("aria-pressed", "false");
+    }
+    const inspector = await region(canvasElement, "Inspector");
+    await expect(inspector.getByRole("heading", { name: "Actor" })).toBeVisible();
+    const inspectorId = canvasElement.querySelector("[aria-label='Inspector']")!.id;
+    for (const type of BOX_TYPES) {
+      await expect(selectButton(diagram, type)).toHaveAttribute("aria-controls", inspectorId);
+    }
+    await expect(inspector.getByRole("link", { name: "issue-2-32" })).toHaveAttribute(
+      "href",
+      "/c/in-cluster/factory/actors/krci-agents/issue-2-32"
+    );
+    await expect(fact(inspector, "Limits")).toHaveTextContent("1.0 CPU, 2.0 Gi");
+    await expect(within(fact(inspector, "Worker")).getByText("workers-7485fd78cd-wslff")).toBeVisible();
+    await expect(fact(inspector, "Snapshot fidelity")).toHaveTextContent("preferred memory · newest no snapshot yet");
+  },
+};
+
+export const DiagramOfASuspendedActor: Story = {
+  decorators: [
+    withAppProviders({ seedQueryCache: seedAgent(SUSPENDED_REF, SUSPENDED_AGENT, undefined, FINISHED_REVIEW_RUNS) }),
+  ],
+  args: { ...SUSPENDED_REF, view: "diagram" },
+  play: async ({ canvasElement }) => {
+    const diagram = await region(canvasElement, "Diagram");
+    const actor = diagramBox(diagram, "Actor");
+
+    await expect(selectButton(diagram, "Actor")).toHaveTextContent("Actorissue-2-26");
+    await expect(actor.getByText("suspended")).toBeVisible();
+    await expect(actor.getByText("Not on a worker")).toBeVisible();
+    await expect(actor.queryByRole("link")).toBeNull();
+    await expect(selectButton(diagram, "Review runs")).toHaveTextContent("Review runs2 review runs");
+
+    const inspector = await region(canvasElement, "Inspector");
+    await expect(fact(inspector, "Worker")).toHaveTextContent("Not on a worker");
+    await expect(fact(inspector, "Snapshot fidelity")).toHaveTextContent("preferred memory · newest memory");
+  },
+};
+
+export const DiagramWithNoReviewRun: Story = {
+  decorators: [withAppProviders({ seedQueryCache: seedAgent(RUNNING_REF, RUNNING_AGENT) })],
+  args: { view: "diagram" },
+  play: async ({ canvasElement }) => {
+    const diagram = await region(canvasElement, "Diagram");
+
+    await expect(selectButton(diagram, "Merge request")).toHaveTextContent("Merge requestNone yet");
+    await expect(diagramBox(diagram, "Merge request").getByText(NO_MERGE_REQUEST_TEXT)).toBeVisible();
+    await expect(selectButton(diagram, "Review runs")).toHaveTextContent("Review runsNone yet");
+    await expect(diagramBox(diagram, "Review runs").getByText(NO_REVIEW_RUN_TEXT)).toBeVisible();
+    await expect(diagramBox(diagram, "Review runs").queryByRole("link")).toBeNull();
+
+    await userEvent.click(selectButton(diagram, "Review runs"));
+    const inspector = await region(canvasElement, "Inspector");
+    await expect(inspector.getByText(NO_REVIEW_RUN_TEXT)).toBeVisible();
+    await expect(inspector.queryByText("Latest run")).toBeNull();
+
+    await userEvent.click(selectButton(diagram, "Merge request"));
+    await expect(inspector.getByText(NO_MERGE_REQUEST_TEXT)).toBeVisible();
+  },
+};
+
+/** Stops the router navigation of a link click; the click still bubbles to the box. */
+const clickWithoutNavigation = async (link: HTMLElement) => {
+  const preventNavigation = (event: Event) => event.preventDefault();
+  link.addEventListener("click", preventNavigation);
+  try {
+    await userEvent.click(link);
+  } finally {
+    link.removeEventListener("click", preventNavigation);
+  }
+};
+
+export const SelectsABox: Story = {
+  args: { view: "diagram" },
+  render: (args) => <RoutedAgentDetailView {...args} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const diagram = await region(canvasElement, "Diagram");
+    const inspector = () => within(canvas.getByRole("region", { name: "Inspector" }));
+
+    await userEvent.click(diagramBox(diagram, "Merge request").getByText("agent/issue-32 → main"));
+    await expect(selectButton(diagram, "Merge request")).toHaveAttribute("aria-pressed", "true");
+    await expect(selectButton(diagram, "Actor")).toHaveAttribute("aria-pressed", "false");
+    await expect(inspector().getByRole("heading", { name: "Merge request" })).toBeVisible();
+    await expect(inspector().getByRole("link", { name: "!5" })).toHaveAttribute(
+      "href",
+      "https://gitlab.example.com/krci/test-go-app/-/merge_requests/5"
+    );
+    await expect(fact(inspector(), "Branches")).toHaveTextContent("agent/issue-32 → main");
+
+    await clickWithoutNavigation(diagramBox(diagram, "Actor").getByRole("link", { name: "krci-agents/workers" }));
+    await expect(selectButton(diagram, "Merge request")).toHaveAttribute("aria-pressed", "true");
+    await expect(selectButton(diagram, "Actor")).toHaveAttribute("aria-pressed", "false");
+
+    selectButton(diagram, "Issue").focus();
+    await userEvent.tab();
+    await expect(diagramBox(diagram, "Issue").getByRole("link", { name: "test-go-app" })).toHaveFocus();
+    await userEvent.tab();
+    await expect(selectButton(diagram, "Agent")).toHaveFocus();
+    await userEvent.keyboard("{Enter}");
+    await expect(selectButton(diagram, "Agent")).toHaveAttribute("aria-pressed", "true");
+    await expect(inspector().getByRole("heading", { name: "Agent" })).toBeVisible();
+    await expect(fact(inspector(), "Actor state")).toHaveTextContent("running");
+    await expect(fact(inspector(), "Turn limit")).toHaveTextContent("20 turns");
+    await expect(fact(inspector(), "Issue branch")).toHaveTextContent("agent/issue-32");
+    await expect(fact(inspector(), "Agent model")).toHaveTextContent("claude-haiku-5-5");
+
+    selectButton(diagram, "Review runs").focus();
+    await userEvent.keyboard(" ");
+    await expect(selectButton(diagram, "Review runs")).toHaveAttribute("aria-pressed", "true");
+    await expect(fact(inspector(), "Latest run")).toHaveTextContent("Running");
+    await expect(fact(inspector(), "Commit")).toHaveTextContent("9a8b7c6");
+    await expect(within(fact(inspector(), "Review runs")).getAllByRole("link")).toHaveLength(3);
+
+    await userEvent.click(selectButton(diagram, "Egress policy"));
+    await expect(rowTexts(inspector())).toEqual([
+      ["HTTPS", "api.anthropic.com", "443", "x-api-key"],
+      ["HTTPS", "gitlab.example.com", "443", 'Authorization ("Basic "), PRIVATE-TOKEN'],
+      ["TLS passthrough", "proxy.golang.org, sum.golang.org, storage.googleapis.com", "443", "—"],
+    ]);
+
+    await userEvent.click(diagramBox(diagram, "Issue").getByText("Issue"));
+    await expect(fact(inspector(), "Issue")).toHaveTextContent("krci/test-go-app#32");
+    await expect(fact(inspector(), "Codebase")).toHaveTextContent("test-go-app");
+
+    await userEvent.click(canvas.getByRole("button", { name: "Sections" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Diagram" }));
+    await expect(selectButton(await region(canvasElement, "Diagram"), "Issue")).toHaveAttribute("aria-pressed", "true");
   },
 };
 
