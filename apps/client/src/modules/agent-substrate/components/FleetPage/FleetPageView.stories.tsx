@@ -51,7 +51,7 @@ export const NotConfigured: Story = {
   args: { fleet: { state: "notConfigured" } },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByText("Agent Substrate is not configured")).toBeVisible();
+    await expect(canvas.getByText("Factory is not configured")).toBeVisible();
     await expect(canvas.getByText(/AGENT_SUBSTRATE_URL/)).toBeVisible();
   },
 };
@@ -62,7 +62,7 @@ export const Unreachable: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByText("Agent Substrate is unreachable")).toBeVisible();
+    await expect(canvas.getByText("Factory is unreachable")).toBeVisible();
     await expect(canvas.getByText("Reason: permission denied")).toBeVisible();
   },
 };
@@ -72,7 +72,7 @@ export const StaleAfterFailedRefresh: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByText("Refresh failed")).toHaveClass("text-status-missing");
-    await expect(canvas.getByText("Agent Substrate is not configured")).toBeVisible();
+    await expect(canvas.getByText("Factory is not configured")).toBeVisible();
   },
 };
 
@@ -84,10 +84,8 @@ export const KeptFleetAfterUnreachableRefresh: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByText(`${TESTBED_FLEET.actors.length} actors`)).toBeVisible();
-    await expect(canvas.getByText("Agent Substrate unreachable: network or TLS failure")).toHaveClass(
-      "text-status-missing"
-    );
-    await expect(canvas.queryByText("Agent Substrate is unreachable")).toBeNull();
+    await expect(canvas.getByText("Factory unreachable: network or TLS failure")).toHaveClass("text-status-missing");
+    await expect(canvas.queryByText("Factory is unreachable")).toBeNull();
   },
 };
 
@@ -100,7 +98,7 @@ export const KeptFleetThenFailedRefresh: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByText("Refresh failed")).toBeVisible();
-    await expect(canvas.queryByText(/^Agent Substrate unreachable/)).toBeNull();
+    await expect(canvas.queryByText(/^Factory unreachable/)).toBeNull();
     await expect(canvas.getByText(`${TESTBED_FLEET.actors.length} actors`)).toBeVisible();
   },
 };
@@ -111,7 +109,7 @@ export const KeptFleetUnknownReason: Story = {
     children: () => null,
   },
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByText("Agent Substrate unreachable: other error")).toBeVisible();
+    await expect(within(canvasElement).getByText("Factory unreachable: other error")).toBeVisible();
   },
 };
 

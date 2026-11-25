@@ -11,16 +11,16 @@ import {
   seedFleet,
 } from "../../../__fixtures__/storyFleet";
 import { PAGE_DESCRIPTION } from "../../../constants/hints";
-import AgentActorsPage from "./page";
+import FactoryActorsPage from "./page";
 
 const meta = {
-  title: "Modules/AgentSubstrate/AgentActorsPage",
-  component: AgentActorsPage,
+  title: "Modules/AgentSubstrate/FactoryActorsPage",
+  component: FactoryActorsPage,
   parameters: {
     layout: "fullscreen",
   },
   tags: ["autodocs"],
-} satisfies Meta<typeof AgentActorsPage>;
+} satisfies Meta<typeof FactoryActorsPage>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -168,7 +168,7 @@ export const FilteredByWorkerPoolFromUrl: Story = {
   decorators: [
     withAppProviders({
       seedQueryCache: seedFleet(STORY_FLEET),
-      initialUrl: `/c/${STORYBOOK_CLUSTER_NAME}/agent/actors?workerPool=krci-agents%2Fworkers-microvm`,
+      initialUrl: `/c/${STORYBOOK_CLUSTER_NAME}/factory/actors?workerPool=krci-agents%2Fworkers-microvm`,
     }),
   ],
   play: async ({ canvasElement }) => {
@@ -199,7 +199,7 @@ export const FilteredByAgentProfileFromUrl: Story = {
   decorators: [
     withAppProviders({
       seedQueryCache: seedFleet(SEVERAL_AGENT_PROFILES_FLEET),
-      initialUrl: `/c/${STORYBOOK_CLUSTER_NAME}/agent/actors?agentProfile=python`,
+      initialUrl: `/c/${STORYBOOK_CLUSTER_NAME}/factory/actors?agentProfile=python`,
     }),
   ],
   play: async ({ canvasElement }) => {
@@ -225,7 +225,7 @@ export const FilteredByNumericAgentProfileFromUrl: Story = {
           return fleet;
         })()
       ),
-      initialUrl: `/c/${STORYBOOK_CLUSTER_NAME}/agent/actors?agentProfile=007`,
+      initialUrl: `/c/${STORYBOOK_CLUSTER_NAME}/factory/actors?agentProfile=007`,
     }),
   ],
   play: async ({ canvasElement }) => {
@@ -242,7 +242,7 @@ export const FilteredByActorStateFromUrl: Story = {
   decorators: [
     withAppProviders({
       seedQueryCache: seedFleet(STORY_FLEET),
-      initialUrl: `/c/${STORYBOOK_CLUSTER_NAME}/agent/actors?actorState=crashed`,
+      initialUrl: `/c/${STORYBOOK_CLUSTER_NAME}/factory/actors?actorState=crashed`,
     }),
   ],
   play: async ({ canvasElement }) => {
@@ -268,6 +268,6 @@ export const Empty: Story = {
 export const NoAtespaces: Story = {
   decorators: [withAppProviders({ seedQueryCache: seedFleet(EMPTY_FLEET) })],
   play: async ({ canvasElement }) => {
-    await expect(await within(canvasElement).findByText("Agent Substrate has no atespaces yet")).toBeVisible();
+    await expect(await within(canvasElement).findByText("Factory has no atespaces yet")).toBeVisible();
   },
 };

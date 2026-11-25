@@ -21,7 +21,7 @@ import {
   routeSecurity,
   routeConfiguration,
   routeK8sMode,
-  routeAgentMode,
+  routeFactoryMode,
 } from "./routes";
 import { routeForbidden } from "../../modules/administration/pages/forbidden/route";
 import { routeAdminAuditEvents } from "../../modules/administration/pages/audit-events/route";
@@ -40,10 +40,10 @@ import { routeK8sNodesList } from "@/modules/k8s/pages/nodes/list/route";
 import { routeK8sNodeDetail } from "@/modules/k8s/pages/nodes/detail/route";
 import { routeK8sEvents } from "@/modules/k8s/pages/events/route";
 import { routeK8sRbacOverview } from "@/modules/k8s/pages/rbac/route";
-import { routeAgentOverview } from "@/modules/agent-substrate/pages/overview/route";
-import { routeAgentActors } from "@/modules/agent-substrate/pages/actors/list/route";
-import { routeAgentActorDetail } from "@/modules/agent-substrate/pages/actors/detail/route";
-import { routeAgentWorkerPools } from "@/modules/agent-substrate/pages/worker-pools/route";
+import { routeFactoryOverview } from "@/modules/agent-substrate/pages/overview/route";
+import { routeFactoryActors } from "@/modules/agent-substrate/pages/actors/list/route";
+import { routeFactoryActorDetail } from "@/modules/agent-substrate/pages/actors/detail/route";
+import { routeFactoryWorkerPools } from "@/modules/agent-substrate/pages/worker-pools/route";
 import { routeCDPipelineList } from "@/modules/platform/cdpipelines/pages/list/route";
 import { routeCDPipelineCreate } from "@/modules/platform/cdpipelines/pages/create/route";
 
@@ -63,7 +63,7 @@ export {
   routeSecurity,
   routeConfiguration,
   routeK8sMode,
-  routeAgentMode,
+  routeFactoryMode,
 };
 import { routeCDPipelineDetails } from "@/modules/platform/cdpipelines/pages/details/route";
 import { routePipelineDetails } from "@/modules/platform/tekton/pages/pipeline-details/route";
@@ -223,7 +223,12 @@ const routeTree = rootRoute.addChildren([
         routeK8sEvents,
         routeK8sRbacOverview,
       ]),
-      routeAgentMode.addChildren([routeAgentOverview, routeAgentActors, routeAgentActorDetail, routeAgentWorkerPools]),
+      routeFactoryMode.addChildren([
+        routeFactoryOverview,
+        routeFactoryActors,
+        routeFactoryActorDetail,
+        routeFactoryWorkerPools,
+      ]),
     ]),
   ]),
 ]);

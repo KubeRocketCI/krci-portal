@@ -1,11 +1,12 @@
-import { Bot, Rocket } from "lucide-react";
+import { Rocket } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
+import FactoryIcon from "@/assets/icons/common/factory.svg?react";
 import KubernetesIcon from "@/assets/icons/k8s/kubernetes.svg?react";
 
-export type Mode = "krci" | "k8s" | "agent";
+export type Mode = "krci" | "k8s" | "factory";
 
 /** The modes with their own path segment after `/c/<clusterName>/`. KRCI is every other path. */
-export const MODE_SEGMENTS = ["k8s", "agent"] as const satisfies readonly Mode[];
+export const MODE_SEGMENTS = ["k8s", "factory"] as const satisfies readonly Mode[];
 
 export type ModeSegment = (typeof MODE_SEGMENTS)[number];
 
@@ -21,7 +22,7 @@ export const MODE_OPTIONS: ModeOption[] = [
   { value: "krci", label: "KRCI", icon: Rocket },
   // KubernetesIcon is a filled SVG with no `fill` attribute, so `fill-current` makes it follow the text color.
   { value: "k8s", label: "Kubernetes", icon: KubernetesIcon, iconClassName: "fill-current" },
-  { value: "agent", label: "Agent", icon: Bot },
+  { value: "factory", label: "Factory", icon: FactoryIcon },
 ];
 
 export function modeFromPath(pathname: string, clusterName: string | undefined): Mode {

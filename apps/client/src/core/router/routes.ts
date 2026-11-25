@@ -86,7 +86,7 @@ export const routeConfiguration = createRoute({
   path: PATH_CONFIGURATION,
 });
 
-export const PATH_AGENT = "agent" as const;
+export const PATH_FACTORY = "factory" as const;
 export const PATH_K8S = "k8s" as const;
 
 function redirectBareModeToOverview(mode: ModeSegment) {
@@ -101,10 +101,10 @@ function redirectBareModeToOverview(mode: ModeSegment) {
   };
 }
 
-export const routeAgentMode = createRoute({
+export const routeFactoryMode = createRoute({
   getParentRoute: () => routeCluster,
-  path: PATH_AGENT,
-  beforeLoad: redirectBareModeToOverview(PATH_AGENT),
+  path: PATH_FACTORY,
+  beforeLoad: redirectBareModeToOverview(PATH_FACTORY),
 });
 
 export const routeK8sMode = createRoute({

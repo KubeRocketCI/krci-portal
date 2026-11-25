@@ -8,14 +8,14 @@ describe("ModeSwitcher", () => {
     render(<ModeSwitcher mode="krci" onSelect={() => {}} />);
     expect(screen.getByRole("button", { name: /KRCI/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Kubernetes/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Agent/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Factory/i })).toBeInTheDocument();
   });
 
-  it("calls onSelect with 'agent' when Agent is clicked", async () => {
+  it("calls onSelect with 'factory' when Factory is clicked", async () => {
     const onSelect = vi.fn();
     render(<ModeSwitcher mode="krci" onSelect={onSelect} />);
-    await userEvent.click(screen.getByRole("button", { name: /Agent/i }));
-    expect(onSelect).toHaveBeenCalledWith("agent");
+    await userEvent.click(screen.getByRole("button", { name: /Factory/i }));
+    expect(onSelect).toHaveBeenCalledWith("factory");
   });
 
   it("calls onSelect with 'k8s' when Kubernetes is clicked", async () => {
@@ -32,8 +32,8 @@ describe("ModeSwitcher", () => {
   });
 
   it("shows the label of the active mode only", () => {
-    render(<ModeSwitcher mode="agent" onSelect={() => {}} />);
-    expect(screen.getByRole("button", { name: /Agent/i })).toHaveTextContent("Agent");
+    render(<ModeSwitcher mode="factory" onSelect={() => {}} />);
+    expect(screen.getByRole("button", { name: /Factory/i })).toHaveTextContent("Factory");
     expect(screen.getByRole("button", { name: "KRCI Mode" })).toHaveTextContent("");
     expect(screen.getByRole("button", { name: "Kubernetes Mode" })).toHaveTextContent("");
   });
@@ -46,7 +46,7 @@ describe("ModeSwitcher", () => {
       renderMinimized("krci");
       expect(screen.getByRole("button", { name: /KRCI/i })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: /Kubernetes/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /Agent/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Factory/i })).toBeInTheDocument();
     });
 
     it("keeps the active mode marked with aria-pressed=true", () => {

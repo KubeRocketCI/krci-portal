@@ -17,9 +17,9 @@ import { WorkerStateBadge } from "../../../../components/WorkerCells";
 import { ACTOR_FILTER_NAMES } from "../../../../constants/actorFilter";
 import { SECTION_HINT } from "../../../../constants/hints";
 import {
-  PATH_AGENT_ACTOR_DETAIL_FULL,
-  PATH_AGENT_ACTORS_FULL,
-  PATH_AGENT_WORKER_POOLS_FULL,
+  PATH_FACTORY_ACTOR_DETAIL_FULL,
+  PATH_FACTORY_ACTORS_FULL,
+  PATH_FACTORY_WORKER_POOLS_FULL,
 } from "../../../../constants/paths";
 import { workerAnchor, workerPoolAnchor } from "../../../../utils/rowAnchor";
 import { WORKERS_SEARCH } from "../../../worker-pools/constants";
@@ -130,7 +130,7 @@ function WorkerPoolNotReadyRow({ item }: { item: ItemOf<"workerPoolNotReady"> })
       severity={item.severity}
       name={
         <CellLink
-          to={PATH_AGENT_WORKER_POOLS_FULL}
+          to={PATH_FACTORY_WORKER_POOLS_FULL}
           params={{ clusterName }}
           hash={workerPoolAnchor(item)}
           text={item.name}
@@ -154,7 +154,7 @@ function WorkerNotActiveRow({ item }: { item: ItemOf<"workerNotActive"> }) {
       severity={item.severity}
       name={
         <CellLink
-          to={PATH_AGENT_WORKER_POOLS_FULL}
+          to={PATH_FACTORY_WORKER_POOLS_FULL}
           params={{ clusterName }}
           hash={workerAnchor(item)}
           text={item.name}
@@ -174,7 +174,7 @@ function SnapshotPendingRow({ item }: { item: ItemOf<"snapshotPending"> }) {
       severity={item.severity}
       name={
         <CellLink
-          to={PATH_AGENT_ACTOR_DETAIL_FULL}
+          to={PATH_FACTORY_ACTOR_DETAIL_FULL}
           params={{ clusterName, atespace: item.atespace, name: item.name }}
           search={{ tab: "snapshot" }}
           text={item.name}
@@ -204,13 +204,13 @@ function AttentionRow({ item }: { item: AttentionItem }) {
 
 const SHOW_ALL_TARGET: Record<AttentionKind, { to: string; search?: Record<string, string> }> = {
   actorCrashed: {
-    to: PATH_AGENT_ACTORS_FULL,
+    to: PATH_FACTORY_ACTORS_FULL,
     search: { [ACTOR_FILTER_NAMES.ACTOR_STATE]: actorStateGroupSchema.enum.crashed },
   },
-  actorUnschedulable: { to: PATH_AGENT_ACTORS_FULL },
-  workerPoolNotReady: { to: PATH_AGENT_WORKER_POOLS_FULL },
-  workerNotActive: { to: PATH_AGENT_WORKER_POOLS_FULL, search: WORKERS_SEARCH },
-  snapshotPending: { to: PATH_AGENT_ACTORS_FULL },
+  actorUnschedulable: { to: PATH_FACTORY_ACTORS_FULL },
+  workerPoolNotReady: { to: PATH_FACTORY_WORKER_POOLS_FULL },
+  workerNotActive: { to: PATH_FACTORY_WORKER_POOLS_FULL, search: WORKERS_SEARCH },
+  snapshotPending: { to: PATH_FACTORY_ACTORS_FULL },
 };
 
 function ShowAllLink({ kind }: { kind: AttentionKind }) {

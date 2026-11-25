@@ -7,7 +7,7 @@ import { Capacity } from "./components/Capacity";
 import { NeedsAttention } from "./components/NeedsAttention";
 
 /** Needs attention, At a glance and Capacity are rendered also with no atespace. */
-export default function AgentOverviewPage() {
+export default function FactoryOverviewPage() {
   return (
     <FleetPage
       icon={LayoutDashboard}

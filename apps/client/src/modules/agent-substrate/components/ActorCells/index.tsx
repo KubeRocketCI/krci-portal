@@ -8,7 +8,7 @@ import { Badge } from "@/core/components/ui/badge";
 import { useClusterStore } from "@/k8s/store";
 import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { ACTOR_STATE_ICON, SNAPSHOT_DURABLE_STATE_ICON } from "../../constants/actorState";
-import { PATH_AGENT_ACTOR_DETAIL_FULL } from "../../constants/paths";
+import { PATH_FACTORY_ACTOR_DETAIL_FULL } from "../../constants/paths";
 import { issueLabel } from "../../utils/issueLabel";
 import { EmptyValue } from "../EmptyValue";
 import { StateBadge } from "../StateBadge";
@@ -24,7 +24,7 @@ export function ActorLink({ actor }: { actor: Pick<ActorRow, "atespace" | "name"
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
   return (
     <CellLink
-      to={PATH_AGENT_ACTOR_DETAIL_FULL}
+      to={PATH_FACTORY_ACTOR_DETAIL_FULL}
       params={{ clusterName, atespace: actor.atespace, name: actor.name }}
       text={actor.name}
       onClick={stopRowClick}

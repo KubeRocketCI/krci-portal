@@ -10,7 +10,7 @@ import { TermLabel } from "../../../../components/KV";
 import { ResourceBars } from "../../../../components/ResourceBars";
 import { RoomVerdict } from "../../../../components/RoomVerdict";
 import { SECTION_HINT, TERM_HINT } from "../../../../constants/hints";
-import { PATH_AGENT_WORKER_POOLS_FULL } from "../../../../constants/paths";
+import { PATH_FACTORY_WORKER_POOLS_FULL } from "../../../../constants/paths";
 import { showsActorsBar } from "../../../../utils/actorsBar";
 import { fleetRoom } from "../../../../utils/roomLabel";
 import { workerPoolAnchor } from "../../../../utils/rowAnchor";
@@ -34,7 +34,7 @@ function WorkerPoolCapacity({ workerPool, totalRoom, access, clusterName }: Work
         <div className="flex min-w-0 flex-col gap-1">
           <CardTitle className="min-w-0 text-sm font-semibold">
             <CellLink
-              to={PATH_AGENT_WORKER_POOLS_FULL}
+              to={PATH_FACTORY_WORKER_POOLS_FULL}
               params={{ clusterName }}
               hash={workerPoolAnchor(workerPool)}
               text={workerPool.name}

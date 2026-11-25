@@ -13,7 +13,7 @@ import { TermHint } from "../../../../components/KV";
 import { agentProfileLabel } from "../../../../constants/actorFilter";
 import { SECTION_HINT, TERM_HINT } from "../../../../constants/hints";
 import { ACTOR_STATE_GROUP_LABEL } from "../../../../constants/actorState";
-import { PATH_AGENT_ACTORS_FULL, PATH_AGENT_WORKER_POOLS_FULL } from "../../../../constants/paths";
+import { PATH_FACTORY_ACTORS_FULL, PATH_FACTORY_WORKER_POOLS_FULL } from "../../../../constants/paths";
 import { fleetRoom } from "../../../../utils/roomLabel";
 import { WORKERS_SEARCH } from "../../../worker-pools/constants";
 import { actorStateSearch, actorsSubText, agentProfileSearch, roomSubText, workersHealth } from "../../utils/atAGlance";
@@ -60,7 +60,7 @@ function CountLink({
 }) {
   return (
     <li>
-      <Link to={PATH_AGENT_ACTORS_FULL} params={{ clusterName }} search={search} className={COUNT_LINK_CLASS}>
+      <Link to={PATH_FACTORY_ACTORS_FULL} params={{ clusterName }} search={search} className={COUNT_LINK_CLASS}>
         <TextWithTooltip text={label} className="text-muted-foreground text-xs" />
         <span
           className={cn(
@@ -93,7 +93,7 @@ export function AtAGlance({ fleet }: { fleet: ReadyFleet }) {
       <div className="flex flex-col gap-4">
         <div className={cn("grid gap-3", hasAtespaces ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
           {hasAtespaces && (
-            <Link to={PATH_AGENT_ACTORS_FULL} params={{ clusterName }} className="group block">
+            <Link to={PATH_FACTORY_ACTORS_FULL} params={{ clusterName }} className="group block">
               <StatCard
                 icon={Package}
                 label="Actors"
@@ -103,7 +103,7 @@ export function AtAGlance({ fleet }: { fleet: ReadyFleet }) {
             </Link>
           )}
           <Link
-            to={PATH_AGENT_WORKER_POOLS_FULL}
+            to={PATH_FACTORY_WORKER_POOLS_FULL}
             params={{ clusterName }}
             search={WORKERS_SEARCH}
             className="group block"
@@ -124,7 +124,7 @@ export function AtAGlance({ fleet }: { fleet: ReadyFleet }) {
               }
             />
           </Link>
-          <Link to={PATH_AGENT_WORKER_POOLS_FULL} params={{ clusterName }} className="group block">
+          <Link to={PATH_FACTORY_WORKER_POOLS_FULL} params={{ clusterName }} className="group block">
             <StatCard
               icon={Boxes}
               label="Room"

@@ -1,11 +1,11 @@
 import { createRoute } from "@tanstack/react-router";
-import { routeAgentMode } from "@/core/router/routes";
-import { PATH_AGENT_OVERVIEW } from "../../constants/paths";
+import { routeFactoryMode } from "@/core/router/routes";
+import { PATH_FACTORY_OVERVIEW } from "../../constants/paths";
 
-export const ROUTE_ID_AGENT_OVERVIEW = "/_layout/c/$clusterName/agent/overview" as const;
+export const ROUTE_ID_FACTORY_OVERVIEW = "/_layout/c/$clusterName/factory/overview" as const;
 
-export const routeAgentOverview = createRoute({
-  getParentRoute: () => routeAgentMode,
-  path: PATH_AGENT_OVERVIEW,
+export const routeFactoryOverview = createRoute({
+  getParentRoute: () => routeFactoryMode,
+  path: PATH_FACTORY_OVERVIEW,
   head: () => ({ meta: [{ title: "Fleet Overview | KRCI" }] }),
 }).lazy(() => import("./route.lazy").then((res) => res.default));

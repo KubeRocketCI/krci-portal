@@ -7,7 +7,7 @@ import { DataTable } from "@/core/components/Table";
 import { useFilterContext } from "@/core/providers/Filter";
 import { TABLE } from "@/k8s/constants/tables";
 import { useClusterStore } from "@/k8s/store";
-import { PATH_AGENT_ACTOR_DETAIL_FULL } from "../../../../../constants/paths";
+import { PATH_FACTORY_ACTOR_DETAIL_FULL } from "../../../../../constants/paths";
 import { ActorFilter } from "../ActorFilter";
 import type { ActorFilterValues } from "../ActorFilter/types";
 import { actorColumns } from "./columns";
@@ -35,7 +35,7 @@ export function ActorList({ fleet }: { fleet: ReadyFleet }) {
   const handleRowClick = React.useCallback(
     (_event: React.MouseEvent<HTMLTableRowElement>, actor: ActorRow) => {
       void navigate({
-        to: PATH_AGENT_ACTOR_DETAIL_FULL,
+        to: PATH_FACTORY_ACTOR_DETAIL_FULL,
         params: { clusterName, atespace: actor.atespace, name: actor.name },
       });
     },

@@ -29,7 +29,7 @@ export function FleetFreshness({ updatedAt, staleReason, isFetching, onRefresh }
         size="icon-xs"
         onClick={onRefresh}
         disabled={isFetching}
-        aria-label="Refresh Agent Substrate data"
+        aria-label="Refresh Factory data"
       >
         <RefreshCw className={cn("size-3.5", isFetching && "animate-spin")} aria-hidden />
       </Button>
