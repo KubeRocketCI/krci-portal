@@ -391,6 +391,101 @@ describe("GrpcAgentSubstrateSource", () => {
     });
   });
 
+  it("gets the default egress policy of an actor with its rules and credential headers, and no credential URI", async () => {
+    const requests: unknown[] = [];
+    server = await startServer({
+      getActorEgressPolicy: (req) => {
+        requests.push({ atespace: req.actor?.atespace, actor: req.actor?.name, name: req.name });
+        return {
+          metadata: { atespace: "krci-agents", name: "default" },
+          rules: [
+            {
+              https: {
+                hostnames: ["api.anthropic.com"],
+                ports: { numbers: [443] },
+                effects: {
+                  replaceHeaders: [
+                    { header: "x-api-key", credentialUri: "ate-secret://k8s.io/default/krci-agents/anthropic/api-key" },
+                  ],
+                },
+              },
+            },
+            {
+              https: {
+                hostnames: ["gitlab.example.com"],
+                effects: {
+                  replaceHeaders: [
+                    {
+                      header: "Authorization",
+                      prefix: "Basic ",
+                      credentialUri: "ate-secret://k8s.io/default/krci-agents/gitlab/basic",
+                    },
+                    { header: "X-Actor-Identity", actorJwt: {} },
+                  ],
+                },
+              },
+            },
+            {
+              tlsPassthrough: {
+                hostnames: ["proxy.golang.org", "sum.golang.org"],
+                ports: { numbers: [443, 8443] },
+              },
+            },
+            { http: { hostnames: ["mirror.internal"] } },
+            { https: { hostnames: ["no-ports.example.com"], ports: {} } },
+            { tlsPassthrough: { hostnames: ["*"], ports: { all: {} } } },
+            {},
+          ],
+        };
+      },
+    });
+    source = new GrpcAgentSubstrateSource({ url: server.url, tokenFile, caFile });
+
+    const policy = await source.getActorEgressPolicy({ atespace: "krci-agents", name: "issue-2-32" });
+
+    expect(policy).toEqual({
+      rules: [
+        {
+          kind: "https",
+          hosts: ["api.anthropic.com"],
+          ports: [443],
+          credentials: [{ header: "x-api-key", prefix: null }],
+        },
+        {
+          kind: "https",
+          hosts: ["gitlab.example.com"],
+          ports: [443],
+          credentials: [
+            { header: "Authorization", prefix: "Basic " },
+            { header: "X-Actor-Identity", prefix: null },
+          ],
+        },
+        { kind: "tlsPassthrough", hosts: ["proxy.golang.org", "sum.golang.org"], ports: [443, 8443], credentials: [] },
+        { kind: "http", hosts: ["mirror.internal"], ports: [80], credentials: [] },
+        { kind: "https", hosts: ["no-ports.example.com"], ports: [], credentials: [] },
+        { kind: "tlsPassthrough", hosts: ["*"], ports: "all", credentials: [] },
+        { kind: "unknown", hosts: [], ports: [], credentials: [] },
+      ],
+    });
+    expect(JSON.stringify(policy)).not.toContain("ate-secret://");
+    expect(requests).toEqual([{ atespace: "krci-agents", actor: "issue-2-32", name: "default" }]);
+    expect(server.authorizations).toEqual(["Bearer token-one"]);
+  });
+
+  it("rejects a read of the egress policy of an actor that has none with notFound", async () => {
+    server = await startServer({
+      getActorEgressPolicy: () => {
+        throw new ConnectError("egress policy not found", Code.NotFound);
+      },
+    });
+    source = new GrpcAgentSubstrateSource({ url: server.url, tokenFile, caFile });
+
+    await expect(source.getActorEgressPolicy({ atespace: "krci-agents", name: "issue-2-32" })).rejects.toMatchObject({
+      name: "AgentSubstrateSourceError",
+      kind: "notFound",
+    });
+  });
+
   it("gets an actor template by atespace and name", async () => {
     const refs: unknown[] = [];
     server = await startServer({

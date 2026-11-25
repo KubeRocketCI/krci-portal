@@ -87,7 +87,7 @@ export function asSourceError(error: unknown): AgentSubstrateSourceError {
 }
 
 /** Logs the error on the server; the client gets only the reason. `notFound` of a read that needs the object: `other`. */
-export function unreachableReasonOf(error: unknown, read: "Fleet" | "Agent"): FleetUnreachableReason {
+export function unreachableReasonOf(error: unknown, read: "Fleet" | "Agent" | "Egress policy"): FleetUnreachableReason {
   const sourceError = asSourceError(error);
   const reason = sourceError.kind === "notFound" ? "other" : sourceError.kind;
   console.error(`[AgentSubstrate] ${read} read failed (${reason}):`, sourceError);

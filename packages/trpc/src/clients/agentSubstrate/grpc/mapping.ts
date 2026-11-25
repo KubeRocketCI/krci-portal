@@ -1,6 +1,9 @@
 import { timestampDate, type Timestamp } from "@bufbuild/protobuf/wkt";
 import type {
   ActorState as PortalActorState,
+  EgressCredential,
+  EgressPorts,
+  EgressRule,
   SnapshotDurableState,
   SnapshotFidelity as PortalSnapshotFidelity,
   SubstrateResources,
@@ -10,6 +13,7 @@ import type {
   SubstrateActor,
   SubstrateActorTemplate,
   SubstrateAtespace,
+  SubstrateEgressPolicy,
   SubstrateSnapshot,
   SubstrateWorker,
 } from "../source.js";
@@ -21,6 +25,12 @@ import {
   type Actor,
   type ActorTemplate,
   type Atespace,
+  type EgressPolicy as EgressPolicyMessage,
+  type EgressRule as EgressRuleMessage,
+  type HttpRule,
+  type HttpRuleEffects,
+  type HttpsRule,
+  type Ports,
   type Snapshot,
   type Worker,
   type WorkerResources,
@@ -141,6 +151,40 @@ export function toActorTemplate(template: ActorTemplate): SubstrateActorTemplate
     workerSelector: { ...template.workerSelector?.matchLabels },
     preferredSnapshotFidelity: preferredFidelity ? (SNAPSHOT_FIDELITIES[preferredFidelity] ?? "unknown") : null,
   };
+}
+
+function toPorts(ports: Ports | undefined, defaults: number[]): EgressPorts {
+  if (!ports) return [...defaults];
+  return ports.all ? "all" : [...ports.numbers];
+}
+
+/** Header and prefix only: the credential URI and the actor JWT source are not mapped. */
+function toCredentials(effects: HttpRuleEffects | undefined): EgressCredential[] {
+  return (effects?.replaceHeaders ?? []).map(({ header, prefix }) => ({ header, prefix: prefix || null }));
+}
+
+function toRequestRule(kind: "https" | "http", rule: HttpsRule | HttpRule, defaultPorts: number[]): EgressRule {
+  return {
+    kind,
+    hosts: [...rule.hostnames],
+    ports: toPorts(rule.ports, defaultPorts),
+    credentials: toCredentials(rule.effects),
+  };
+}
+
+/** TLS passthrough has no default ports: the proto requires them. */
+function toEgressRule(rule: EgressRuleMessage): EgressRule {
+  if (rule.https) return toRequestRule("https", rule.https, [443]);
+  if (rule.tlsPassthrough) {
+    const { hostnames, ports } = rule.tlsPassthrough;
+    return { kind: "tlsPassthrough", hosts: [...hostnames], ports: toPorts(ports, []), credentials: [] };
+  }
+  if (rule.http) return toRequestRule("http", rule.http, [80]);
+  return { kind: "unknown", hosts: [], ports: [], credentials: [] };
+}
+
+export function toEgressPolicy(policy: EgressPolicyMessage): SubstrateEgressPolicy {
+  return { rules: policy.rules.map(toEgressRule) };
 }
 
 export function toWorker(worker: Worker): SubstrateWorker {

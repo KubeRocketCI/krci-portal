@@ -23,6 +23,12 @@ import {
   attentionKindSchema,
   attentionSeveritySchema,
   codebaseRefSchema,
+  egressCredentialSchema,
+  egressPolicyReadSchema,
+  egressPolicySchema,
+  egressPortsSchema,
+  egressRuleKindSchema,
+  egressRuleSchema,
   fleetSchema,
   fleetSummarySchema,
   fleetUnreachableReasonSchema,
@@ -75,6 +81,12 @@ export type Fleet = z.infer<typeof fleetSchema>;
 export type ReadyFleet = Extract<Fleet, { state: "ready" }>;
 export type AgentDetail = z.infer<typeof agentDetailSchema>;
 export type AgentActor = z.infer<typeof agentActorSchema>;
+export type EgressRuleKind = z.infer<typeof egressRuleKindSchema>;
+export type EgressPorts = z.infer<typeof egressPortsSchema>;
+export type EgressCredential = z.infer<typeof egressCredentialSchema>;
+export type EgressRule = z.infer<typeof egressRuleSchema>;
+export type EgressPolicy = z.infer<typeof egressPolicySchema>;
+export type EgressPolicyRead = z.infer<typeof egressPolicyReadSchema>;
 export type AgentResult = z.infer<typeof agentResultSchema>;
 export type AgentRead = z.infer<typeof agentReadSchema>;
 export type ReadyAgentRead = Extract<AgentRead, { state: "ready" }>;

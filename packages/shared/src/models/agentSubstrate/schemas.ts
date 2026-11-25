@@ -352,12 +352,51 @@ export const agentActorSchema = actorRowSchema
     newestSnapshot: newestSnapshotSchema.nullable(),
   });
 
+/** `unknown`: a rule of a protocol that the proto does not name. */
+export const egressRuleKindSchema = z.enum(["https", "tlsPassthrough", "http", "unknown"]);
+
+export const egressPortsSchema = z.union([z.literal("all"), z.array(z.number().int())]);
+
+/** A request header whose placeholder value the egress gateway replaces with a credential. */
+export const egressCredentialSchema = z.object({
+  header: z.string(),
+  /** Prepended to the credential, verbatim. Null when unset. */
+  prefix: z.string().nullable(),
+});
+
+export const egressRuleSchema = z.object({
+  kind: egressRuleKindSchema,
+  /** Host name patterns; `*` as the leftmost label is a wildcard. */
+  hosts: z.array(z.string()),
+  /** Unset in the proto: the HTTP or HTTPS default from `toEgressRule` (trpc gRPC mapping); empty for TLS passthrough. */
+  ports: egressPortsSchema,
+  /** Empty for TLS passthrough: the gateway does not decrypt it. */
+  credentials: z.array(egressCredentialSchema),
+});
+
+/** The egress policy `default` of an actor. Traffic that no rule allows is denied. */
+export const egressPolicySchema = z.object({
+  rules: z.array(egressRuleSchema),
+});
+
+/** `unreadable`: the error message stays in the server log. */
+export const egressPolicyReadSchema = z.discriminatedUnion("state", [
+  egressPolicySchema.extend({ state: z.literal("ready") }),
+  z.object({ state: z.literal("none") }),
+  z.object({ state: z.literal("unreadable"), reason: fleetUnreachableReasonSchema }),
+]);
+
 /**
  * `notAnAgent`: the actor template names no issue or is gone. `actorNotFound`: the atespace holds no actor of that
  * name.
  */
 export const agentResultSchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("agent"), agent: agentDetailSchema, actor: agentActorSchema }),
+  z.object({
+    kind: z.literal("agent"),
+    agent: agentDetailSchema,
+    actor: agentActorSchema,
+    egressPolicy: egressPolicyReadSchema,
+  }),
   z.object({ kind: z.literal("notAnAgent") }),
   z.object({ kind: z.literal("actorNotFound") }),
 ]);

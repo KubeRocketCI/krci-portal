@@ -6,7 +6,10 @@
  *   apps/client/src/modules/agent-substrate/__fixtures__/fleet.testbed.json  Fleet for Storybook.
  *
  * Actor template env: only the AGENT_ENV entries (ADR 0001) are kept, and none that holds an in-cluster address.
- * The script fails when the output holds a SESSION_ID, GITLAB_URL or BOT_USERNAME value or an in-cluster address.
+ * Egress policy hosts: none that holds an in-cluster address or is the host of a GITLAB_URL value; a rule left with no
+ * host is dropped. An actor with no egress policy gets none.
+ * The script fails when the output holds a SESSION_ID, GITLAB_URL or BOT_USERNAME value, the host of a GITLAB_URL
+ * value, or an in-cluster address.
  *
  * Run from packages/trpc, with the Agent Substrate API forwarded to a local port:
  *   kubectl -n ate-system port-forward svc/api 18443:443
@@ -23,8 +26,16 @@ import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { fleetSchema } from "@my-project/shared";
 import { GrpcAgentSubstrateSource } from "../src/clients/agentSubstrate/grpc/index.js";
-import { MemoryAgentSubstrateSource, type MemoryFleet } from "../src/clients/agentSubstrate/memory.js";
-import type { SubstrateActorTemplate } from "../src/clients/agentSubstrate/source.js";
+import {
+  MemoryAgentSubstrateSource,
+  type MemoryEgressPolicy,
+  type MemoryFleet,
+} from "../src/clients/agentSubstrate/memory.js";
+import {
+  AgentSubstrateSourceError,
+  type SubstrateActor,
+  type SubstrateActorTemplate,
+} from "../src/clients/agentSubstrate/source.js";
 import type { TRPCContext } from "../src/context/types.js";
 import { getFleet } from "../src/routers/agentSubstrate/fleet/index.js";
 import { AGENT_ENV } from "../src/routers/agentSubstrate/fleet/substrateRead.js";
@@ -76,6 +87,31 @@ function scrubActorTemplate(
   };
 }
 
+async function readEgressPolicy(actor: SubstrateActor): Promise<MemoryEgressPolicy | null> {
+  try {
+    const { rules } = await source.getActorEgressPolicy({ atespace: actor.atespace, name: actor.name });
+    return { actor: { atespace: actor.atespace, name: actor.name }, rules };
+  } catch (error) {
+    if (error instanceof AgentSubstrateSourceError && error.kind === "notFound") return null;
+    throw error;
+  }
+}
+
+/** Adds the host of each removed URL value to `removed`, so the leak check covers it. */
+function scrubEgressPolicy(policy: MemoryEgressPolicy, removed: Map<string, string>): MemoryEgressPolicy {
+  for (const [value, name] of [...removed]) {
+    if (URL.canParse(value)) removed.set(new URL(value).hostname, `${name} host`);
+  }
+  const keep = (host: string) => !IN_CLUSTER_ADDRESS.test(host) && !removed.has(host);
+  return {
+    ...policy,
+    rules: policy.rules.flatMap((rule) => {
+      const hosts = rule.hosts.filter(keep);
+      return rule.hosts.length && !hosts.length ? [] : [{ ...rule, hosts }];
+    }),
+  };
+}
+
 function pathsEqualTo(data: unknown, value: string, path = "$"): string[] {
   if (typeof data === "string") return data === value ? [path] : [];
   if (Array.isArray(data)) return data.flatMap((item, index) => pathsEqualTo(item, value, `${path}[${index}]`));
@@ -98,13 +134,19 @@ try {
     source.listActors(),
     source.listWorkers(),
   ]);
-  /** CHECKED_ENV value to its env name. */
+  /** CHECKED_ENV value, and the hostname of each URL value, to its env name. */
   const removed = new Map<string, string>();
-  const actorTemplates = await Promise.all(actors.map((actor) => source.getActorTemplate(actor.actorTemplate)));
+  const [actorTemplates, egressPolicies] = await Promise.all([
+    Promise.all(actors.map((actor) => source.getActorTemplate(actor.actorTemplate))),
+    Promise.all(actors.map(readEgressPolicy)),
+  ]);
+  // Fills `removed` before the egress policies are scrubbed.
+  const scrubbedActorTemplates = actorTemplates.map((actorTemplate) => scrubActorTemplate(actorTemplate, removed));
   const fleet: MemoryFleet = {
     atespaces,
     actors,
-    actorTemplates: actorTemplates.map((actorTemplate) => scrubActorTemplate(actorTemplate, removed)),
+    actorTemplates: scrubbedActorTemplates,
+    egressPolicies: egressPolicies.flatMap((policy) => (policy ? [scrubEgressPolicy(policy, removed)] : [])),
     workers,
   };
 

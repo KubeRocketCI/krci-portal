@@ -6,9 +6,13 @@ Beside the env values, the server passes three scheduling fields to the browser:
 
 The Agent detail also passes these fields to the browser: the image of the agent container (the first container that holds the issue env values), with its digest; the preferred snapshot fidelity of the actor template; the worker assignment of the actor (worker, worker pool, worker pod, node, sandbox class); and the sandbox class of the newest snapshot of the actor.
 
+The Agent detail also passes the egress policy `default` of the actor: for each rule its kind (HTTPS, TLS passthrough, HTTP), host name patterns and ports, and for each credential header whose placeholder value the egress gateway replaces, the header name and the prefix. The credential URI (`ate-secret://…`) and the actor JWT source stay on the server.
+
 ## Consequences
 
 - A dispatcher change to these names breaks the issue column, not the page: an actor without them shows no issue.
 - A dispatcher change of `TURN_LIMIT` breaks the turn limit of the Agent detail, not the page.
 - A dispatcher change of the worker selector key or of the limits changes room and the room size, not the page.
+- A failed read of the egress policy shows in the Egress policy block, not on the page.
+- An egress rule of a protocol that the vendored proto does not name shows as an Unknown rule with no hosts, not as an allowed host.
 - Any new field the portal reads is added to this list and to the dispatcher docs.
