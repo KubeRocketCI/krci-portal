@@ -4,6 +4,7 @@ import {
   PipelineRun,
   TektonResult,
   isSafeCELStringContent,
+  mergeLiveAndHistoryPipelineRuns,
   normalizeResultToPipelineRun,
   pipelineRunLabels,
 } from "@my-project/shared";
@@ -31,23 +32,12 @@ export interface HistoryPage {
 }
 
 /**
- * @param searchTerm - Debounced search term for server-side name filtering via Tekton Results CEL.
+ * Live items are filtered in memory by the FilterProvider matchFunction.
  *
- * @param status - PipelineRun status filter value. Resolved via
- *   `resolvePipelineRunStatusFilter` into a Tekton Results `summary.status` CEL
- *   filter for history, plus whether history should be queried at all. Live
- *   K8s items are filtered in-memory by the FilterProvider matchFunction.
- *
- * @param pipelineType - Pipeline type label value (e.g. "build", "review", "deploy").
- *   Applied as a K8s label selector for the live watch and as a CEL annotation filter for history.
- *
- * @param codebases - List of codebase names to filter by.
- *   Applied as a CEL annotation OR-filter for history.
- *   Live K8s items with a single codebase also get a label selector.
- *
- * @param namespaces - History covers the default namespace only; a selection without it
- *   disables the history query. Live K8s items are filtered in-memory by the FilterProvider
- *   matchFunction.
+ * @param searchTerm - Debounced by the caller.
+ * @param pipelineType - Label value, e.g. "build", "review", "deploy".
+ * @param codebases - Not applied as a label selector or CEL filter for the `deploy` and `clean` pipeline types.
+ * @param namespaces - History covers the default namespace only; a selection without it disables the history query.
  */
 export interface PipelineRunQueryFilters {
   searchTerm?: string;
@@ -58,50 +48,25 @@ export interface PipelineRunQueryFilters {
 }
 
 /**
- * @param labels - Label selectors for the live watch; converted to a CEL annotations filter for history.
- *   Tekton Results stores PipelineRun labels as Result annotations, so `annotations["key"]` matches
- *   the label key. Empty: all PipelineRuns in the namespace.
- *
- * @param enabled - Gates the K8s watch and the history query, e.g. until route params resolve.
- *   Defaults to true.
+ * @param labels - Tekton Results stores PipelineRun labels as Result annotations; history filters on `annotations["key"]`.
  */
 interface UseUnifiedPipelineRunListOptions extends PipelineRunQueryFilters {
   labels?: Record<string, string>;
   enabled?: boolean;
 }
 
-/**
- * Return value of the useUnifiedPipelineRunList hook.
- */
 export interface UseUnifiedPipelineRunListResult {
-  /** Merged and deduplicated pipeline runs sorted by creation time (newest first). */
   mergedPipelineRuns: PipelineRun[];
-  /** True when both live and history sources are still loading (show full skeleton). */
   isLoading: boolean;
-  /** True when live data is ready but history is still loading (show subtle indicator). */
   isHistoryLoading: boolean;
-  /** The underlying infinite query for history data -- exposes pagination, error states, etc. */
   historyQuery: ReturnType<typeof useInfiniteQuery<HistoryPage, Error>>;
 }
 
 export type HistoryQuery = UseUnifiedPipelineRunListResult["historyQuery"];
 
 /**
- * Shared hook that merges live K8s PipelineRuns with historical Tekton Results PipelineRuns.
- *
- * Internally manages both the K8s watch and the Tekton Results history query,
- * so callers only need to provide label selectors — the hook handles the rest.
- *
- * Uses the lightweight `getPipelineRunResults` endpoint which queries the
- * Tekton Results `results` table (annotations + summary) instead of the
- * heavyweight `getPipelineRunRecords` endpoint (full JSONB blobs).
- *
- * Merge strategy:
- * 1. Watch live PipelineRuns via usePipelineRunWatchList (with optional label selectors)
- * 2. Fetch history from Tekton Results via getPipelineRunResults (CEL filter auto-derived from labels)
- * 3. Normalize Result objects to K8s PipelineRun type via normalizeResultToPipelineRun
- * 4. Deduplicate: filter out history items whose name exists in the live set (live wins)
- * 5. Concatenate live + filtered history, sorted by creation time (newest first)
+ * Live K8s PipelineRuns merged with Tekton Results history.
+ * History reads the Tekton Results `results` table (annotations + summary), not full records.
  */
 export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOptions): UseUnifiedPipelineRunListResult {
   const { labels, enabled = true, searchTerm, status, pipelineType, codebases, namespaces } = options ?? {};
@@ -131,13 +96,9 @@ export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOpt
 
   const statusFilter = React.useMemo(() => resolvePipelineRunStatusFilter(status ?? "all"), [status]);
 
-  // Free-text search is the only user-typed CEL input. An unsafe term disables
-  // the history query entirely rather than dropping the clause, which would
-  // widen results to every run.
+  // An unsafe search term disables history; dropping the clause would match every run.
   const searchTermIsSafe = isSafeCELStringContent(searchTerm?.trim() ?? "");
 
-  // Derive CEL filter from all active filter values for the Tekton Results history query.
-  // Changing any filter resets pagination (queryKey changes → page 1 of filtered results).
   const celFilter = React.useMemo(() => {
     const labelFilter = labels && Object.keys(labels).length > 0 ? buildAnnotationsFilter(labels) : undefined;
     const nameFilter = searchTerm ? buildNameSearchFilter(searchTerm) : undefined;
@@ -169,40 +130,17 @@ export function useUnifiedPipelineRunList(options?: UseUnifiedPipelineRunListOpt
     enabled: historyEnabled,
   });
 
-  // Normalize history Result objects into K8s PipelineRun type.
-  // Separated from merge so it only re-runs when history data changes (not on live updates).
   const normalizedHistory = React.useMemo((): PipelineRun[] => {
     const allResults = historyQuery.data?.pages.flatMap((page) => page.results) ?? [];
     return allResults.map((result) => normalizeResultToPipelineRun(result, namespace));
   }, [historyQuery.data, namespace]);
 
-  // Merge live + normalized history data
-  const mergedPipelineRuns = React.useMemo((): PipelineRun[] => {
-    const live = pipelineRunsWatch.data.array ?? [];
+  const mergedPipelineRuns = React.useMemo(
+    (): PipelineRun[] => mergeLiveAndHistoryPipelineRuns(pipelineRunsWatch.data.array ?? [], normalizedHistory),
+    [pipelineRunsWatch.data.array, normalizedHistory]
+  );
 
-    // Build set of live PipelineRun names for deduplication
-    const liveNameSet = new Set(live.map((pr) => pr.metadata.name));
-
-    // Filter out history items that exist in the live set
-    const filteredHistory = normalizedHistory.filter((pr) => !liveNameSet.has(pr.metadata.name));
-
-    // Concatenate and sort by creation time (newest first)
-    const merged = [...live, ...filteredHistory];
-    merged.sort((a, b) => {
-      const aTime = a.metadata.creationTimestamp || a.status?.startTime || "";
-      const bTime = b.metadata.creationTimestamp || b.status?.startTime || "";
-      const aMs = new Date(aTime).getTime() || 0;
-      const bMs = new Date(bTime).getTime() || 0;
-      return bMs - aMs;
-    });
-
-    return merged;
-  }, [pipelineRunsWatch.data.array, normalizedHistory]);
-
-  // Show table loading skeleton only when both sources are still loading
   const isLoading = !pipelineRunsWatch.isReady && historyQuery.isLoading;
-
-  // Show a subtle indicator when live data is ready but history is still loading
   const isHistoryLoading = pipelineRunsWatch.isReady && historyQuery.isLoading;
 
   return {

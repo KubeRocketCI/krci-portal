@@ -7,6 +7,7 @@ export * from "./adapters.js";
 export * from "./annotations.js";
 export * from "./celFilter.js";
 export * from "./constants.js";
+export * from "./merge.js";
 export * from "./schemas.js";
 export * from "./types.js";
 export * from "./utils.js";
