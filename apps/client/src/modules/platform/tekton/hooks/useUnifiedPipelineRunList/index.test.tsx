@@ -1,17 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClientProvider } from "@tanstack/react-query";
-import type { TektonResult } from "@my-project/shared";
+import type { PipelineRun, TektonResult } from "@my-project/shared";
 import React from "react";
 import { createTestQueryClient } from "@/test/utils/query-client";
 import { useUnifiedPipelineRunList } from "./index";
 
 const mocks = vi.hoisted(() => ({
   getPipelineRunResults: vi.fn(),
+  livePipelineRuns: [] as PipelineRun[],
 }));
 
 vi.mock("@/k8s/api/groups/Tekton/PipelineRun", () => ({
-  usePipelineRunWatchList: () => ({ data: { array: [] }, isReady: true }),
+  usePipelineRunWatchList: () => ({ data: { array: mocks.livePipelineRuns }, isReady: true }),
 }));
 
 vi.mock("@/core/providers/trpc", () => ({
@@ -45,6 +46,7 @@ function renderUnifiedList(initialOptions: Options) {
 
 describe("useUnifiedPipelineRunList", () => {
   beforeEach(() => {
+    mocks.livePipelineRuns = [];
     mocks.getPipelineRunResults.mockReset();
     mocks.getPipelineRunResults.mockResolvedValue({ results: [archivedResult], nextPageToken: "next" });
   });
@@ -54,6 +56,23 @@ describe("useUnifiedPipelineRunList", () => {
 
     await waitFor(() => expect(result.current.mergedPipelineRuns).toHaveLength(1));
     expect(result.current.historyQuery.hasNextPage).toBe(true);
+  });
+
+  it("shows the live run instead of an archived run with the same name", async () => {
+    mocks.livePipelineRuns = [
+      {
+        apiVersion: "tekton.dev/v1",
+        kind: "PipelineRun",
+        metadata: { name: "run-1", namespace: "krci", uid: "live-uid", creationTimestamp: "2026-10-01T10:00:00Z" },
+        spec: {},
+      } as unknown as PipelineRun,
+    ];
+
+    const { result } = renderUnifiedList({});
+
+    await waitFor(() => expect(mocks.getPipelineRunResults).toHaveBeenCalled());
+    await waitFor(() => expect(result.current.isHistoryLoading).toBe(false));
+    expect(result.current.mergedPipelineRuns.map((pr) => pr.metadata.uid)).toEqual(["live-uid"]);
   });
 
   it("drops cached history when switching to a status that has none", async () => {
