@@ -5,13 +5,13 @@ import type { TextWithTooltipProps } from "@/core/components/TextWithTooltip/typ
 export interface CellLinkBaseProps extends React.ComponentPropsWithoutRef<"a"> {
   /** `null`, `undefined` and `""` render the `TextWithTooltip` fallback. */
   text: TextWithTooltipProps["text"];
-  /** Leading icon. Rendered muted and `shrink-0`. */
+  /** Leading icon. A component renders muted and `shrink-0`; an element renders as given. */
   icon?: CellLinkIcon;
   /** Renders the icon alone and no text. `CellExternalLink` demands an `aria-label` for it. */
   iconOnly?: boolean;
 }
 
-type CellLinkIcon = React.ComponentType<{ className?: string }>;
+type CellLinkIcon = React.ComponentType<{ className?: string }> | React.ReactElement;
 
 type CellExternalLinkAnchorProps = Omit<
   CellLinkBaseProps,

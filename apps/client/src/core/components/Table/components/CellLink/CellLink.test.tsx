@@ -57,6 +57,25 @@ describe("CellLink", () => {
     expect(link).not.toHaveAttribute("iconOnly");
   });
 
+  it("renders an icon element as given, for an icon-only router link named by its aria-label", async () => {
+    renderWithRouter(
+      <CellLink
+        to={PATH_NODE_DETAIL}
+        params={{ clusterName: "c1", name: "widget" }}
+        text={null}
+        iconOnly
+        icon={<Box data-testid="status" className="text-green-500" />}
+        aria-label="widget · Succeeded"
+      />
+    );
+
+    const link = await screen.findByRole("link", { name: "widget · Succeeded" });
+    expect(link).toHaveAttribute("href", "/c/c1/k8s/nodes/widget");
+    expect(screen.getByTestId("status")).toHaveClass("text-green-500");
+    expect(screen.getByTestId("status")).not.toHaveClass("text-muted-foreground/70");
+    expect(link.textContent).toBe("");
+  });
+
   it("requires an aria-label for an icon-only link (type-only; never rendered)", () => {
     // @ts-expect-error An icon-only link has no text to name it: it needs an aria-label.
     const element = <CellExternalLink href="#" iconOnly icon={Box} />;

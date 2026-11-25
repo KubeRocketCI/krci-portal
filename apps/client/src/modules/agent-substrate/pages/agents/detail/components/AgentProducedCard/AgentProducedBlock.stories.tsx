@@ -63,7 +63,7 @@ export const RunningRun: Story = {
     await expect(links[2]).toHaveAccessibleName(/^test-go-app-review-x7k2p · Running · /);
     await expect(links[0]).toHaveAccessibleName(/^test-go-app-review-f1 · /);
 
-    await expect(block.getByText("Running", { selector: "span" })).toBeVisible();
+    await expect(block.getByText("Running", { selector: "p" })).toBeVisible();
     await expect(block.getByText("9a8b7c6")).toBeVisible();
     await expect(block.queryByText(HISTORY_UNREACHABLE_TEXT)).toBeNull();
   },
