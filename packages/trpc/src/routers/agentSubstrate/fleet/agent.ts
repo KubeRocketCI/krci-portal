@@ -1,9 +1,11 @@
 import {
   latestSnapshot,
   type AgentActor,
+  type AgentDetail,
   type AgentRead,
   type AgentResult,
   type EgressPolicyRead,
+  type FleetUnreachableReason,
 } from "@my-project/shared";
 import type {
   AgentSubstrateSource,
@@ -81,11 +83,14 @@ function readyEgressPolicy(policy: SubstrateEgressPolicy): EgressPolicyRead {
   };
 }
 
+type AgentContainer = NonNullable<ReturnType<typeof agentContainerOf>>;
+
 type SubstrateAgentRead =
   | { kind: "actorNotFound" }
   | { kind: "notAnAgent" }
-  | { kind: "agent"; actor: SubstrateActor; actorTemplate: SubstrateActorTemplate };
+  | { kind: "agent"; actor: SubstrateActor; actorTemplate: SubstrateActorTemplate; container: AgentContainer };
 
+/** Reads the actor and its actor template with the portal ServiceAccount, uncached; no worker read. */
 async function readAgent(source: AgentSubstrateSource, ref: SubstrateObjectRef): Promise<SubstrateAgentRead> {
   let actor: SubstrateActor;
   try {
@@ -95,58 +100,79 @@ async function readAgent(source: AgentSubstrateSource, ref: SubstrateObjectRef):
     throw error;
   }
   const actorTemplate = await nullOnNotFound(source.getActorTemplate(actor.actorTemplate));
-  return actorTemplate ? { kind: "agent", actor, actorTemplate } : { kind: "notAnAgent" };
+  const container = actorTemplate && agentContainerOf(actorTemplate);
+  return actorTemplate && container ? { kind: "agent", actor, actorTemplate, container } : { kind: "notAnAgent" };
 }
 
-/**
- * Reads one actor, its actor template and, for an agent, its egress policy with the portal ServiceAccount, uncached;
- * no worker read. Reads the Codebase of the agent with the user's `idToken`, as the fleet does. Passes on only the
- * AGENT_ENV values and the egress rule fields (ADR 0001).
- */
-export async function getAgent(ctx: TRPCContext, ref: SubstrateObjectRef): Promise<AgentRead> {
-  if (!ctx.agentSubstrateSource) {
-    return { state: "notConfigured" };
-  }
-
-  const readAt = new Date().toISOString();
-  let read: SubstrateAgentRead;
-  try {
-    read = await readAgent(ctx.agentSubstrateSource, ref);
-  } catch (error) {
-    return { state: "unreachable", reason: unreachableReasonOf(error, "Agent") };
-  }
-
-  const ready = (result: AgentResult): AgentRead => ({ state: "ready", updatedAt: readAt, result });
-  if (read.kind !== "agent") return ready({ kind: read.kind });
-
-  const { actor, actorTemplate } = read;
-  const container = agentContainerOf(actorTemplate);
-  if (!container) return ready({ kind: "notAnAgent" });
+/** Reads the Codebase of the agent with the user's `idToken`, as the fleet does. Passes on only the AGENT_ENV values (ADR 0001). */
+async function agentDetailOf(ctx: TRPCContext, container: AgentContainer): Promise<AgentDetail> {
   const agent = agentOfEnv(container.env);
-
-  // Another failure leaves the rest of the agent readable.
-  const egressRead = nullOnNotFound(ctx.agentSubstrateSource.getActorEgressPolicy(ref)).then(
-    (policy): EgressPolicyRead => (policy ? readyEgressPolicy(policy) : { state: "none" }),
-    (error: unknown): EgressPolicyRead => ({ state: "unreadable", reason: unreachableReasonOf(error, "Egress policy") })
-  );
   const namespace = codebaseNamespace();
   const codebaseLinks = await readCodebaseLinks(
     namespace ? new K8sClient(ctx.session) : null,
     namespace,
     new Set([agent.issue.projectPath])
   );
+  return withCodebase(
+    {
+      ...agent,
+      issueBranch: `${ISSUE_BRANCH_PREFIX}${agent.issue.iid}`,
+      turnLimit: turnLimitOf(container.env.get(AGENT_ENV.turnLimit)),
+      agentImage: container.image || null,
+    },
+    codebaseLinks
+  );
+}
+
+type NotRead = { state: "notConfigured" } | { state: "unreachable"; reason: FleetUnreachableReason };
+
+async function readAgentOf(
+  ctx: TRPCContext,
+  ref: SubstrateObjectRef
+): Promise<NotRead | { state: "read"; source: AgentSubstrateSource; read: SubstrateAgentRead }> {
+  const source = ctx.agentSubstrateSource;
+  if (!source) return { state: "notConfigured" };
+  try {
+    return { state: "read", source, read: await readAgent(source, ref) };
+  } catch (error) {
+    return { state: "unreachable", reason: unreachableReasonOf(error, "Agent") };
+  }
+}
+
+/** `agent` null: no actor, or the actor hosts no agent. */
+export type AgentDetailRead = NotRead | { state: "ready"; agent: AgentDetail | null };
+
+/** Reads the actor, its actor template and the Codebase match; no egress policy read. */
+export async function readAgentDetail(ctx: TRPCContext, ref: SubstrateObjectRef): Promise<AgentDetailRead> {
+  const result = await readAgentOf(ctx, ref);
+  if (result.state !== "read") return result;
+  const { read } = result;
+  return { state: "ready", agent: read.kind === "agent" ? await agentDetailOf(ctx, read.container) : null };
+}
+
+/**
+ * Reads the actor, its actor template, the Codebase match and the egress policy.
+ * Passes on only the egress rule fields (ADR 0001).
+ */
+export async function getAgent(ctx: TRPCContext, ref: SubstrateObjectRef): Promise<AgentRead> {
+  const readAt = new Date().toISOString();
+  const result = await readAgentOf(ctx, ref);
+  if (result.state !== "read") return result;
+  const { source, read } = result;
+
+  const ready = (agentResult: AgentResult): AgentRead => ({ state: "ready", updatedAt: readAt, result: agentResult });
+  if (read.kind !== "agent") return ready({ kind: read.kind });
+
+  const { actor, actorTemplate, container } = read;
+  // Another failure leaves the rest of the agent readable.
+  const egressRead = nullOnNotFound(source.getActorEgressPolicy(ref)).then(
+    (policy): EgressPolicyRead => (policy ? readyEgressPolicy(policy) : { state: "none" }),
+    (error: unknown): EgressPolicyRead => ({ state: "unreadable", reason: unreachableReasonOf(error, "Egress policy") })
+  );
 
   return ready({
     kind: "agent",
-    agent: withCodebase(
-      {
-        ...agent,
-        issueBranch: `${ISSUE_BRANCH_PREFIX}${agent.issue.iid}`,
-        turnLimit: turnLimitOf(container.env.get(AGENT_ENV.turnLimit)),
-        agentImage: container.image || null,
-      },
-      codebaseLinks
-    ),
+    agent: await agentDetailOf(ctx, container),
     actor: toAgentActor(actor, actorTemplate),
     egressPolicy: await egressRead,
   });
