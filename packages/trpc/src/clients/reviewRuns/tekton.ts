@@ -131,11 +131,13 @@ export class TektonReviewRunSource implements ReviewRunSource {
       createTektonResultsClient(namespace, { timeoutMs: HISTORY_TIMEOUT_MS })
   ) {}
 
-  /** Equal creation times: live runs first, each list by name. */
+  /**
+   * Reads history only after the live list succeeds: the session's PipelineRun list permission gates the
+   * ServiceAccount read. Equal creation times: live runs first, each list by name.
+   */
   async listReviewRuns(session: CustomSession, { codebase, issueBranch }: ReviewRunQuery): Promise<AgentReviewRuns> {
-    const historyRead = this.listHistory(codebase, issueBranch);
     const live = await this.listLive(session, codebase);
-    const { history, runs } = await historyRead;
+    const { history, runs } = await this.listHistory(codebase, issueBranch);
 
     return {
       mergeRequests: groupByMergeRequest(

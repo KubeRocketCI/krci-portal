@@ -573,4 +573,14 @@ describe("TektonReviewRunSource", () => {
 
     await expect(source.listReviewRuns(session, QUERY)).rejects.toThrow(K8sApiError);
   });
+
+  it("sends no Tekton Results query when the PipelineRun list is refused", async () => {
+    const listAllResources = vi.fn().mockRejectedValue(new K8sApiError(403, "Forbidden", ""));
+    const { listResults, historyClientOf } = fakeHistoryClient([]);
+    const source = new TektonReviewRunSource(() => ({ listAllResources }) as unknown as K8sClient, historyClientOf);
+
+    await expect(source.listReviewRuns(session, QUERY)).rejects.toThrow(K8sApiError);
+    expect(historyClientOf).not.toHaveBeenCalled();
+    expect(listResults).not.toHaveBeenCalled();
+  });
 });
