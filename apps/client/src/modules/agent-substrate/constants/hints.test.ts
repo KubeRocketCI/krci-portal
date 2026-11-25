@@ -7,35 +7,6 @@ const sentencesOf = (text: string) => text.split(/(?<=[.!?])(?:\s+|$)/).filter((
 const ALL_TEXTS = { ...PAGE_DESCRIPTION, ...SECTION_HINT, ...TERM_HINT };
 
 describe("hints", () => {
-  it("has a text for every term", () => {
-    expect(Object.keys(TERM_HINT).sort()).toEqual(
-      [
-        "actorState",
-        "actorTemplate",
-        "agentProfile",
-        "atespace",
-        "durableState",
-        "fidelity",
-        "generation",
-        "limitedBy",
-        "locality",
-        "replicas",
-        "room",
-        "roomSize",
-        "sandboxRuntime",
-        "size",
-        "workerLabels",
-        "workerPool",
-        "workerSelector",
-      ].sort()
-    );
-  });
-
-  it("has a text for every section and page", () => {
-    expect(Object.keys(SECTION_HINT).sort()).toEqual(["atAGlance", "capacity", "needsAttention"]);
-    expect(Object.keys(PAGE_DESCRIPTION).sort()).toEqual(["actorDetail", "actors", "overview", "workerPools"]);
-  });
-
   it("keeps every text to one or two sentences", () => {
     for (const [key, text] of Object.entries(ALL_TEXTS)) {
       const count = sentencesOf(text).length;

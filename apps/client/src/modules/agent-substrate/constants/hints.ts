@@ -7,6 +7,7 @@ export const PAGE_DESCRIPTION = {
   overview: "The Factory fleet: what needs attention, its counts and the room of each worker pool.",
   actors: "Isolated Factory sandboxes whose state survives suspend and resume. An agent runs in one actor.",
   actorDetail: "One actor: its agent, actor template, worker and snapshots.",
+  agentDetail: "One agent: the issue it works on, its agent profile and the actor it runs in.",
   workerPools: "Sets of workers of one size and sandbox class, and the room each has for actors.",
 } as const;
 
@@ -24,6 +25,12 @@ export const TERM_HINT = {
   actorState:
     "The lifecycle state of an actor. Suspended: it holds no worker, as between agent turns or after a resume that found no room.",
   agentProfile: "The kind of agent an issue gets, such as go, python or node. The dispatcher maps each project to one.",
+  agentImage: "The image an actor runs: the tools of one kind of agent and the image side of its agent profile.",
+  sandboxClass:
+    "The sandbox runtime family of a worker pool, gvisor or microvm. The first snapshot records it; the actor runs only on that class afterwards.",
+  snapshotFidelity:
+    "Preferred: what the actor template asks a snapshot to hold. Newest: what the latest snapshot holds.",
+  canRunOn: "Worker pools with an active, registered worker whose labels the worker selector matches.",
   size: "CPU and memory limits of the actor template. A worker books them plus the runtime overhead.",
   workerSelector: "Labels a worker must have to host this actor. Every key must match.",
   workerLabels: "Labels of the WorkerPool, copied to its workers. Worker selectors match against them.",
