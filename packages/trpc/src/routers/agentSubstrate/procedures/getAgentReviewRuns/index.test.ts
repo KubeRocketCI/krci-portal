@@ -173,6 +173,17 @@ describe("agentSubstrate.getAgentReviewRuns", () => {
     });
   });
 
+  it("reads no egress policy", async () => {
+    const source = agentSource();
+    const getActorEgressPolicy = vi.spyOn(source, "getActorEgressPolicy");
+    mockContext.agentSubstrateSource = source;
+
+    const result = await createCaller(mockContext).agentSubstrate.getAgentReviewRuns(REF);
+
+    expect(result).toEqual({ mergeRequests: [ISSUE_32_MR], history: "ready" });
+    expect(getActorEgressPolicy).not.toHaveBeenCalled();
+  });
+
   it("rejects a caller with no session with UNAUTHORIZED", async () => {
     mockContext.session.user = undefined;
 
