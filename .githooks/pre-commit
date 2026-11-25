@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
-# Blocks a commit whose staged contents fail prettier --check. Installed by the root prepare script (pnpm install).
+# Blocks a commit on main, and a commit whose staged contents fail prettier --check. Installed by the root prepare script (pnpm install).
 # Git runs this after it prepares the commit's index: covers git add && git commit, commit -a, commit <paths>, partial staging.
-# A check that cannot run does not block; CI checks format again.
+# A detached HEAD (rebase) passes the branch check. A format check that cannot run does not block; CI checks format again.
+if [ "$(git symbolic-ref --short -q HEAD)" = "main" ]; then
+  echo "Commit blocked: HEAD is main. Fix: git switch -c EPMDEDP-<n>/<short-slug> (docs/agents/issue-tracker.md), then commit." >&2
+  exit 1
+fi
+
 root=$(git rev-parse --show-toplevel)
 [ -f "$root/scripts/check-changed.sh" ] || exit 0
 
