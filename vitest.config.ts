@@ -1,8 +1,9 @@
 import { fileURLToPath } from "node:url";
 import { configDefaults, defineConfig } from "vitest/config";
+import { globRootOf } from "./scripts/globRoot.js";
 
-/** Absolute, ends in `/`. */
-const root = fileURLToPath(new URL(".", import.meta.url));
+/** Absolute, ends in `/`, escaped for picomatch. */
+const root = globRootOf(fileURLToPath(new URL(".", import.meta.url)));
 
 export default defineConfig({
   test: {
