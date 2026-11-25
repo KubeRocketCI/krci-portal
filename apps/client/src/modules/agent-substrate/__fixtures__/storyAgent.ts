@@ -4,6 +4,7 @@ import type {
   AgentActor,
   AgentDetail,
   AgentReviewRuns,
+  EgressPolicyRead,
   ReadyAgentRead,
   ReadyFleet,
 } from "@my-project/shared";
@@ -58,6 +59,35 @@ function agentActor(name: string, fields: Partial<AgentActor>): AgentActor {
   };
 }
 
+/** The dispatcher writes the HTTPS rules of every agent profile and the TLS passthrough hosts of one. */
+function egressPolicy(passthroughHosts: string[]): EgressPolicyRead {
+  return {
+    state: "ready",
+    rules: [
+      {
+        kind: "https",
+        hosts: ["api.anthropic.com"],
+        ports: [443],
+        credentials: [{ header: "x-api-key", prefix: null }],
+      },
+      {
+        kind: "https",
+        hosts: ["gitlab.example.com"],
+        ports: [443],
+        credentials: [
+          { header: "Authorization", prefix: "Basic " },
+          { header: "PRIVATE-TOKEN", prefix: null },
+        ],
+      },
+      { kind: "tlsPassthrough", hosts: passthroughHosts, ports: [443], credentials: [] },
+    ],
+  };
+}
+
+const GO_EGRESS_POLICY = egressPolicy(["proxy.golang.org", "sum.golang.org", "storage.googleapis.com"]);
+
+const PYTHON_EGRESS_POLICY = egressPolicy(["pypi.org", "files.pythonhosted.org"]);
+
 function readyRead(result: ReadyAgentRead["result"]): ReadyAgentRead {
   return { state: "ready", updatedAt: UPDATED_AT, result };
 }
@@ -79,18 +109,50 @@ export const RUNNING_AGENT = readyRead({
     createdAt: "2026-11-24T18:02:11.000Z",
     updatedAt: "2026-11-24T18:10:40.000Z",
   }),
+  egressPolicy: GO_EGRESS_POLICY,
 });
 
 export const SUSPENDED_AGENT = readyRead({
   kind: "agent",
   agent: goAgent("26"),
   actor: agentActor("issue-2-26", {}),
+  egressPolicy: GO_EGRESS_POLICY,
 });
 
 export const ONE_TURN_AGENT = readyRead({
   kind: "agent",
   agent: { ...goAgent("26"), turnLimit: 1 },
   actor: agentActor("issue-2-26", {}),
+  egressPolicy: GO_EGRESS_POLICY,
+});
+
+export const NO_EGRESS_POLICY_AGENT = readyRead({
+  kind: "agent",
+  agent: goAgent("26"),
+  actor: agentActor("issue-2-26", {}),
+  egressPolicy: { state: "none" },
+});
+
+export const EGRESS_POLICY_UNREADABLE_AGENT = readyRead({
+  kind: "agent",
+  agent: goAgent("26"),
+  actor: agentActor("issue-2-26", {}),
+  egressPolicy: { state: "unreadable", reason: "permissionDenied" },
+});
+
+/** Rules the dispatcher does not write: cleartext HTTP, every port, and a protocol that the proto does not name. */
+export const EVERY_RULE_KIND_AGENT = readyRead({
+  kind: "agent",
+  agent: goAgent("26"),
+  actor: agentActor("issue-2-26", {}),
+  egressPolicy: {
+    state: "ready",
+    rules: [
+      { kind: "http", hosts: ["mirror.example.com"], ports: [80, 8080], credentials: [] },
+      { kind: "tlsPassthrough", hosts: ["*.example.org"], ports: "all", credentials: [] },
+      { kind: "unknown", hosts: [], ports: [], credentials: [] },
+    ],
+  },
 });
 
 export const CRASHED_AGENT = readyRead({
@@ -113,6 +175,7 @@ export const CRASHED_AGENT = readyRead({
     state: "crashed",
     crash: { message: "sandbox exited with code 137: out of memory", at: "2026-11-22T21:40:11.000Z" },
   }),
+  egressPolicy: PYTHON_EGRESS_POLICY,
 });
 
 /** No Codebase matches the project path, and the actor template sets no turn limit or image. */
@@ -126,6 +189,7 @@ export const UNLINKED_AGENT = readyRead({
     agentImage: null,
   },
   actor: agentActor("issue-2-26", { preferredSnapshotFidelity: null, newestSnapshot: null }),
+  egressPolicy: GO_EGRESS_POLICY,
 });
 
 export const NOT_AN_AGENT = readyRead({ kind: "notAnAgent" });
