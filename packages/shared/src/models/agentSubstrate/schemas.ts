@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { pipelineRunPhaseEnum } from "../k8s/groups/Tekton/PipelineRun/schema.js";
 
 const count = z.number().int().nonnegative();
 
@@ -370,3 +371,41 @@ export const agentReadSchema = z.discriminatedUnion("state", [
     result: agentResultSchema,
   }),
 ]);
+
+/** `live`: a PipelineRun on the cluster. `history`: a record of Tekton Results. */
+export const reviewRunOriginSchema = z.enum(["live", "history"]);
+
+export const reviewRunSchema = z.object({
+  name: z.string(),
+  namespace: z.string(),
+  /** The input of the PipelineRun status display of the Tekton module. */
+  status: z.object({ phase: pipelineRunPhaseEnum, reason: z.string().optional() }),
+  /** Null while the run is queued. */
+  startedAt: z.string().nullable(),
+  /** Null until the run finishes. */
+  durationMs: count.nullable(),
+  /** Null when the result annotations name no commit. */
+  commit: z.string().nullable(),
+  origin: reviewRunOriginSchema,
+});
+
+export const mergeRequestSchema = z.object({
+  /** The change number of the result annotations. */
+  number: z.string(),
+  /** An http(s) URL. Null when the result annotations name none. */
+  url: z.string().nullable(),
+  sourceBranch: z.string(),
+  /** Null when the result annotations name none. */
+  targetBranch: z.string().nullable(),
+  /** Title, state and draft: always null; PipelineRun annotations carry none of them. */
+  title: z.string().nullable(),
+  state: z.string().nullable(),
+  draft: z.boolean().nullable(),
+  /** Newest first. */
+  reviewRuns: z.array(reviewRunSchema),
+});
+
+export const agentReviewRunsSchema = z.object({
+  /** By the newest review run, newest first. */
+  mergeRequests: z.array(mergeRequestSchema),
+});

@@ -7,6 +7,7 @@ import { vi } from "vitest";
 import { INotificationsStore, ISessionStore } from "@my-project/shared";
 import type { OIDCConfig } from "../clients/oidc/index.js";
 import type { AgentSubstrateSource } from "../clients/agentSubstrate/index.js";
+import type { ReviewRunSource } from "../clients/reviewRuns/index.js";
 
 export function createMockedDBSessionStore(mockSession: CustomSession): ISessionStore {
   return {
@@ -42,6 +43,7 @@ interface MockedContext {
   sessionStore: ReturnType<typeof createMockedDBSessionStore>;
   notificationsStore: ReturnType<typeof createMockedNotificationsStore>;
   agentSubstrateSource?: AgentSubstrateSource;
+  reviewRunSource?: ReviewRunSource;
   oidcConfig: OIDCConfig;
   portalUrl: string;
 }

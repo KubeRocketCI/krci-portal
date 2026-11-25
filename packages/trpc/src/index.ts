@@ -22,6 +22,8 @@ export {
   type AgentSubstrateSource,
 } from "./clients/agentSubstrate/index.js";
 
+export { TektonReviewRunSource, type ReviewRunSource } from "./clients/reviewRuns/index.js";
+
 export {
   HttpError,
   HttpStatusError,

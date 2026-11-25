@@ -3,6 +3,7 @@ import type { AuthSource, INotificationsStore, ISessionStore, OIDCUser } from "@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { OIDCConfig } from "../clients/oidc/index.js";
 import type { AgentSubstrateSource } from "../clients/agentSubstrate/index.js";
+import type { ReviewRunSource } from "../clients/reviewRuns/index.js";
 
 // Session type
 export type CustomSession = FastifySessionObject & {
@@ -40,6 +41,8 @@ export interface TRPCContext {
   notificationsStore: INotificationsStore;
   /** Absent: Agent Substrate is not configured. */
   agentSubstrateSource?: AgentSubstrateSource;
+  /** Absent: no review run is read. */
+  reviewRunSource?: ReviewRunSource;
   oidcConfig: OIDCConfig;
   portalUrl: string;
 }

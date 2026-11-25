@@ -6,3 +6,4 @@ Other external clients are built inside each procedure from an env var and repla
 
 - With the Helm value unset, the context holds no adapter and the fleet module returns the not-configured state without a network call.
 - Fleet behaviour is tested only through the procedure, with the memory adapter in the context; no module mocking. The gRPC adapter is tested against an in-process server of the generated service.
+- The review run source (`ReviewRunSource`) of the Agent detail follows the same pattern: the server builds one `TektonReviewRunSource` at start and puts it into `TRPCContext`; tests use `MemoryReviewRunSource`. It reads the PipelineRuns on the cluster with the `idToken` of the calling session, so each port method takes the session.

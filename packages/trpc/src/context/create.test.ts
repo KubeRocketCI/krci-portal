@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createContext } from "./create.js";
 import { MemoryAgentSubstrateSource } from "../clients/agentSubstrate/index.js";
+import { MemoryReviewRunSource } from "../clients/reviewRuns/index.js";
 
 describe("createContext", () => {
   it("should return context with all provided fields", () => {
@@ -54,5 +55,22 @@ describe("createContext", () => {
     });
 
     expect(ctx.agentSubstrateSource).toBe(agentSubstrateSource);
+  });
+
+  it("forwards the review run source", () => {
+    const reviewRunSource = new MemoryReviewRunSource();
+
+    const ctx = createContext({
+      req: {} as any,
+      res: {} as any,
+      session: { user: null } as any,
+      sessionStore: {} as any,
+      notificationsStore: {} as any,
+      reviewRunSource,
+      oidcConfig: { issuerURL: "", clientID: "", clientSecret: "", scope: "", codeChallengeMethod: "" },
+      portalUrl: "https://portal.example.com",
+    });
+
+    expect(ctx.reviewRunSource).toBe(reviewRunSource);
   });
 });
