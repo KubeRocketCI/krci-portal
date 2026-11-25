@@ -83,14 +83,6 @@ export const TABLE = {
     id: "trivyComplianceControlsList",
     name: "Trivy Compliance Controls",
   },
-  TRIVY_EXPOSED_SECRET_REPORTS_LIST: {
-    id: "trivyExposedSecretReportsList",
-    name: "Trivy Exposed Secret Reports",
-  },
-  TRIVY_EXPOSED_SECRETS_LIST: {
-    id: "trivyExposedSecretsList",
-    name: "Trivy Exposed Secrets",
-  },
   TRIVY_RBAC_ASSESSMENT_REPORTS_LIST: {
     id: "trivyRbacAssessmentReportsList",
     name: "Trivy RBAC Assessment Reports",

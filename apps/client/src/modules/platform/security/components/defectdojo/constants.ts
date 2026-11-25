@@ -1,4 +1,9 @@
-import type { DefectDojoFindingState, DefectDojoLevel } from "@my-project/shared";
+import {
+  DEFECTDOJO_MAX_PAGE_SIZE,
+  PLATFORM_LIST_DEFAULT_PAGE_SIZE,
+  type DefectDojoFindingState,
+  type DefectDojoLevel,
+} from "@my-project/shared";
 import { Code, Package, Server, type LucideIcon } from "lucide-react";
 
 /** Shown in place of a value that does not exist. A count that is missing is never shown as 0. */
@@ -6,6 +11,8 @@ export const NO_VALUE = "—";
 
 /** Header cell of the tables of scans and findings. */
 export const HEAD_CLASS = "bg-muted text-muted-foreground px-3 py-2 text-xs font-medium";
+
+export const PLATFORM_LIST_PAGE_SIZES = [10, PLATFORM_LIST_DEFAULT_PAGE_SIZE, 50, DEFECTDOJO_MAX_PAGE_SIZE];
 
 export interface LevelMeta {
   label: string;

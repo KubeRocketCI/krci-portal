@@ -59,7 +59,7 @@ export const SCAN_FINDINGS_DEFAULT_PAGE_SIZE = 10;
 /** Last page index of a scan the tab can ask for: with the largest page size, an offset of 100 000. */
 export const SCAN_FINDINGS_MAX_PAGE = 1000;
 
-export const VULNERABILITIES_DEFAULT_PAGE_SIZE = 25;
+export const PLATFORM_LIST_DEFAULT_PAGE_SIZE = 25;
 
 /**
  * Most findings a triaged Runtime list reads: its rows of closed tests are dropped on the server, which pages the

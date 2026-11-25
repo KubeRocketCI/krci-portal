@@ -1,6 +1,7 @@
 {
   "scope": {
     "state": "data",
+    "defaultClusters": ["in-cluster", "remote-cluster"],
     "stageClusters": ["in-cluster", "remote-cluster"],
     "clusters": ["in-cluster", "remote-cluster"],
     "namespaces": [
@@ -848,7 +849,6 @@
             }
           }
         ],
-        "clusters": ["in-cluster", "remote-cluster"],
         "truncated": false
       }
     },
@@ -1627,7 +1627,6 @@
             }
           }
         ],
-        "clusters": ["in-cluster", "remote-cluster"],
         "truncated": false
       }
     },
@@ -2206,7 +2205,6 @@
             }
           }
         ],
-        "clusters": ["in-cluster", "remote-cluster"],
         "truncated": false
       }
     },
@@ -2323,7 +2321,6 @@
             }
           }
         ],
-        "clusters": ["remote-cluster"],
         "truncated": false
       }
     },
@@ -3121,7 +3118,6 @@
             }
           }
         ],
-        "clusters": ["in-cluster", "remote-cluster"],
         "truncated": false
       }
     },
@@ -3168,7 +3164,6 @@
             }
           }
         ],
-        "clusters": ["in-cluster", "remote-cluster"],
         "truncated": false
       }
     },
@@ -3177,9 +3172,9 @@
         "level": "runtime",
         "state": "active",
         "namespace": "krci",
-        "vulnerabilityId": "CVE-2026-77459",
         "page": 0,
-        "pageSize": 25
+        "pageSize": 25,
+        "vulnerabilityId": "CVE-2026-77459"
       },
       "output": {
         "state": "data",
@@ -3336,7 +3331,6 @@
             }
           }
         ],
-        "clusters": ["in-cluster", "remote-cluster"],
         "truncated": false
       }
     },
@@ -3345,9 +3339,9 @@
         "level": "runtime",
         "state": "active",
         "namespace": "krci",
-        "component": "github.com/argo",
         "page": 0,
-        "pageSize": 25
+        "pageSize": 25,
+        "component": "github.com/argo"
       },
       "output": {
         "state": "data",
@@ -3654,7 +3648,6 @@
             }
           }
         ],
-        "clusters": ["in-cluster", "remote-cluster"],
         "truncated": false
       }
     },
@@ -3663,15 +3656,14 @@
         "level": "runtime",
         "state": "active",
         "namespace": "krci",
-        "vulnerabilityId": "CVE-1999-0001",
         "page": 0,
-        "pageSize": 25
+        "pageSize": 25,
+        "vulnerabilityId": "CVE-1999-0001"
       },
       "output": {
         "state": "data",
         "total": 0,
         "findings": [],
-        "clusters": ["in-cluster", "remote-cluster"],
         "truncated": false
       }
     },
@@ -4351,7 +4343,6 @@
             }
           }
         ],
-        "clusters": null,
         "truncated": false
       }
     },
@@ -4603,7 +4594,6 @@
             }
           }
         ],
-        "clusters": null,
         "truncated": false
       }
     },
@@ -4698,7 +4688,6 @@
             }
           }
         ],
-        "clusters": null,
         "truncated": false
       }
     }

@@ -5,10 +5,12 @@ import type {
   codebaseLevelSchema,
   codebaseScanRefSchema,
   codebaseScanSchema,
+  exposedSecretsInputSchema,
   findingPlaceSchema,
   findingsScopeInputSchema,
   findingsScopeSchema,
   platformFindingSchema,
+  platformFindingsListSchema,
   runtimeContainerRefSchema,
   runtimeContainerSchema,
   runtimeEnvironmentSchema,
@@ -18,7 +20,6 @@ import type {
   scanFindingsSchema,
   scanRefSchema,
   vulnerabilitiesInputSchema,
-  vulnerabilitiesSchema,
 } from "./schemas.js";
 
 export type CodebaseFindingsInput = z.input<typeof codebaseFindingsInputSchema>;
@@ -65,4 +66,10 @@ export type FindingPlace = z.infer<typeof findingPlaceSchema>;
 
 export type PlatformFinding = z.infer<typeof platformFindingSchema>;
 
-export type Vulnerabilities = z.infer<typeof vulnerabilitiesSchema>;
+export type ExposedSecretsInput = z.input<typeof exposedSecretsInputSchema>;
+
+/** The input of `getExposedSecrets` after its defaults are applied. */
+export type ExposedSecretsRequest = z.infer<typeof exposedSecretsInputSchema>;
+
+/** One page of a platform list: the vulnerabilities or the exposed secrets. */
+export type PlatformFindingsList = z.infer<typeof platformFindingsListSchema>;

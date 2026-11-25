@@ -6,6 +6,8 @@ import { requestKey, type RecordedAnswer, type RecordedAnswers } from "./answers
 
 const RECORDED: RecordedAnswers = JSON.parse(readFileSync(path.resolve(import.meta.dirname, "answers.json"), "utf8"));
 
+export const RECORDED_ANSWERS = RECORDED.answers;
+
 /** The token the replay server accepts. */
 export const REPLAY_TOKEN = "replay-token";
 

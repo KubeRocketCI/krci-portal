@@ -1,7 +1,6 @@
 export * from "./VulnerabilityReport/index.js";
 export * from "./ClusterComplianceReport/index.js";
 export * from "./ConfigAuditReport/index.js";
-export * from "./ExposedSecretReport/index.js";
 export * from "./RbacAssessmentReport/index.js";
 export * from "./ClusterRbacAssessmentReport/index.js";
 export * from "./InfraAssessmentReport/index.js";

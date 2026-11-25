@@ -1,4 +1,4 @@
-import { VULNERABILITIES_DEFAULT_PAGE_SIZE } from "@my-project/shared";
+import { PLATFORM_LIST_DEFAULT_PAGE_SIZE } from "@my-project/shared";
 import { describe, expect, it } from "vitest";
 import { searchToInput, withFilters } from "./search";
 
@@ -14,7 +14,7 @@ describe("searchToInput", () => {
       vulnerabilityId: undefined,
       component: undefined,
       page: 0,
-      pageSize: VULNERABILITIES_DEFAULT_PAGE_SIZE,
+      pageSize: PLATFORM_LIST_DEFAULT_PAGE_SIZE,
     });
   });
 
@@ -57,7 +57,7 @@ describe("searchToInput", () => {
       vulnerabilityId: undefined,
       component: undefined,
       page: 0,
-      pageSize: VULNERABILITIES_DEFAULT_PAGE_SIZE,
+      pageSize: PLATFORM_LIST_DEFAULT_PAGE_SIZE,
     });
   });
 

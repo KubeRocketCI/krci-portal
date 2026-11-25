@@ -35,7 +35,7 @@ import { PATH_VULNERABILITIES_FULL } from "@/modules/platform/security/pages/vul
 import { PATH_TRIVY_OVERVIEW_FULL } from "@/modules/platform/security/pages/trivy-overview/route";
 import { PATH_TRIVY_CONFIG_AUDITS_FULL } from "@/modules/platform/security/pages/trivy-config-audits/route";
 import { PATH_TRIVY_COMPLIANCE_FULL } from "@/modules/platform/security/pages/trivy-compliance/route";
-import { PATH_TRIVY_EXPOSED_SECRETS_FULL } from "@/modules/platform/security/pages/trivy-exposed-secrets/route";
+import { PATH_EXPOSED_SECRETS_FULL } from "@/modules/platform/security/pages/exposed-secrets/route";
 import { PATH_TRIVY_RBAC_ASSESSMENTS_FULL } from "@/modules/platform/security/pages/trivy-rbac-assessments/route";
 import { PATH_TRIVY_CLUSTER_RBAC_ASSESSMENTS_FULL } from "@/modules/platform/security/pages/trivy-cluster-rbac-assessments/route";
 import { PATH_TRIVY_INFRA_ASSESSMENTS_FULL } from "@/modules/platform/security/pages/trivy-infra-assessments/route";
@@ -227,7 +227,7 @@ export function createNavigationConfig(clusterName: string, namespace: string, i
               title: "Exposed Secrets",
               icon: AlertCircle,
               route: {
-                to: PATH_TRIVY_EXPOSED_SECRETS_FULL,
+                to: PATH_EXPOSED_SECRETS_FULL,
                 params: clusterDefaultParams,
               },
             },

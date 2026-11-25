@@ -470,3 +470,22 @@ export function makeNamespaceProduct(
 ): DefectDojoProduct {
   return { id, name: `${cluster}/${namespace}`, tags: [...tags], url: `${WEB_URL}/asset/${id}` };
 }
+
+/** The installation: two Stages of one CDPipeline, one on a remote cluster, each with an Application of demo-app. */
+export const DEMO_PLATFORM: KubeObject[] = [
+  makeStage({ name: "dev", namespace: "demo-dev" }),
+  makeStage({ name: "prod", clusterName: "remote-cluster", namespace: "demo-prod", order: 1 }),
+  makeApplication({ name: "demo-dev-demo-app", stage: "dev" }),
+  makeApplication({ name: "demo-prod-demo-app", stage: "prod" }),
+];
+
+export function findingOf(
+  id: number,
+  testId: number,
+  severity: DefectDojoSeverity,
+  extra: Partial<DefectDojoFinding> = {}
+): DefectDojoFinding {
+  return makeFinding({ id, testId, severity, ...extra });
+}
+
+export const idOfFindingUrl = (url: string) => Number(url.split("/").pop());

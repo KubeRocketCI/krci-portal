@@ -7,6 +7,7 @@ import http from "node:http";
 import net, { type AddressInfo } from "node:net";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  RECORDED_ANSWERS,
   recordedAnswer,
   REPLAY_TOKEN,
   REPLAY_WEB_URL,
@@ -661,6 +662,22 @@ describe("listFindings", () => {
   describe("secret findings", () => {
     const SECRET = "fixture-secret-value-0001";
 
+    it("records only fixture secrets: every Secret and Match of the answers is a fixture value or masked", () => {
+      const texts = RECORDED_ANSWERS.flatMap((answer) => {
+        const rows = (answer.body as { results?: { description?: unknown }[] } | null)?.results ?? [];
+        return rows.flatMap((row) =>
+          typeof row.description === "string"
+            ? [...row.description.matchAll(/\*\*(?:Secret|Match):\*\*\s*(.*)/g)].map((match) => match[1])
+            : []
+        );
+      });
+
+      expect(texts.length).toBeGreaterThan(0);
+      for (const text of texts) {
+        expect(/fixture/i.test(text) || /\*{3,}/.test(text)).toBe(true);
+      }
+    });
+
     it("keeps the description and the mitigation of a Gitleaks finding on the server", async () => {
       const answer = recordedAnswer(
         requestKeyOf(
@@ -780,6 +797,47 @@ describe("listFindings", () => {
   describe("the findings of the tests that carry tags", () => {
     const VULNERABILITY_REPORTS = ["report-kind:vulnerabilityreport"];
     const BED_CLUSTERS = ["k8s-cluster:in-cluster", "k8s-cluster:remote-cluster"];
+
+    it("lists the exposed secret reports of several clusters by the report-kind tag, with their file and no text", async () => {
+      const result = await createClient().listFindings({
+        scope: { testTags: { all: ["report-kind:exposedsecretreport"], any: BED_CLUSTERS } },
+        withTests: true,
+        limit: 5,
+      });
+
+      expect(findingIds(result)).toEqual([872, 1124, 1125]);
+      const findings = result.state === "data" ? result.data.findings : [];
+      expect(findings.map((finding) => finding.filePath)).toEqual([
+        "/app/fixture-0.env",
+        "/app/fixture-0.env",
+        "/app/fixture-1.env",
+      ]);
+      for (const finding of findings) {
+        expect(finding).not.toHaveProperty("description");
+        expect(finding).not.toHaveProperty("mitigation");
+      }
+      expect(
+        result.state === "data" &&
+          result.data.tests.every((test) => test.tags.includes("report-kind:exposedsecretreport"))
+      ).toBe(true);
+    });
+
+    it("lists the Gitleaks findings of the tenant's codebases by the scan type, with file and line", async () => {
+      const result = await createClient().listFindings({
+        scope: { testTags: { all: ["app.edp.epam.com/tenant:krci"] } },
+        scanTypes: ["Gitleaks Scan"],
+        withTests: true,
+        limit: 5,
+      });
+
+      expect(findingIds(result)).toEqual([1026, 1027]);
+      expect(
+        result.state === "data" && result.data.findings.map((finding) => [finding.filePath, finding.line])
+      ).toEqual([
+        ["config/app.env", 3],
+        ["deploy/values.yaml", 21],
+      ]);
+    });
 
     it("lists the runtime findings of several clusters, most severe first, each test of the page with its tags", async () => {
       const result = await createClient().listFindings({

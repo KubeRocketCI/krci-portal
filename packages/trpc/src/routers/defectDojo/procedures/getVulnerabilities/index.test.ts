@@ -1,10 +1,9 @@
 import {
   DEFECTDOJO_MAX_PAGE_SIZE,
+  PLATFORM_LIST_DEFAULT_PAGE_SIZE,
   TRIAGED_RUNTIME_SCAN_LIMIT,
-  VULNERABILITIES_DEFAULT_PAGE_SIZE,
   k8sApplicationConfig,
-  type DefectDojoSeverity,
-  type Vulnerabilities,
+  type PlatformFindingsList,
   type VulnerabilitiesInput,
 } from "@my-project/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -15,18 +14,18 @@ import { createCaller } from "../../../index.js";
 import {
   DEMO_IMAGE,
   DEMO_NAMESPACE,
+  DEMO_PLATFORM,
   GITLEAKS,
   GRYPE,
   SEMGREP,
   TRIVY,
   codebaseTags,
   createFakeDefectDojo,
+  findingOf,
   givenCluster,
-  makeApplication,
-  makeFinding,
+  idOfFindingUrl,
   makeImageTest,
   makeRuntimeTest,
-  makeStage,
   makeTest,
   makeTriagedFinding,
   type FakeDefectDojo,
@@ -45,14 +44,6 @@ vi.mock("../../../../clients/defectDojo/index.js", async (importOriginal) => ({
 vi.mock("../../../../clients/k8s/index.js", () => ({ K8sClient: vi.fn() }));
 
 const CVE = "CVE-2026-0001";
-
-/** The installation: two Stages of one CDPipeline, one on a remote cluster, each with an Application of demo-app. */
-const PLATFORM: KubeObject[] = [
-  makeStage({ name: "dev", namespace: "demo-dev" }),
-  makeStage({ name: "prod", clusterName: "remote-cluster", namespace: "demo-prod", order: 1 }),
-  makeApplication({ name: "demo-dev-demo-app", stage: "dev" }),
-  makeApplication({ name: "demo-prod-demo-app", stage: "prod" }),
-];
 
 const runtime = (id: number, overrides: Omit<RuntimeTestOverrides, "id">) => makeRuntimeTest({ id, ...overrides });
 
@@ -85,31 +76,30 @@ const CI_TESTS = [
   makeTest({ id: 15, scanType: SEMGREP, tags: codebaseTags("clean-app") }),
 ];
 
-function finding(id: number, testId: number, severity: DefectDojoSeverity, extra: Partial<DefectDojoFinding> = {}) {
-  return makeFinding({ id, testId, severity, ...extra });
-}
-
 const FINDINGS: Record<number, DefectDojoFinding[]> = {
   1: [
-    finding(1101, 1, "Critical", { vulnerabilityIds: [CVE], componentName: "openssl" }),
-    finding(1102, 1, "High"),
-    finding(1103, 1, "Low"),
+    findingOf(1101, 1, "Critical", { vulnerabilityIds: [CVE], componentName: "openssl" }),
+    findingOf(1102, 1, "High"),
+    findingOf(1103, 1, "Low"),
   ],
-  2: [finding(1201, 2, "High", { title: "AWS access key" })],
-  3: [finding(1301, 3, "High", { vulnerabilityIds: [CVE] }), finding(1302, 3, "Medium")],
-  4: [finding(1401, 4, "Critical"), makeTriagedFinding({ id: 1402, testId: 4, severity: "High", falsePositive: true })],
-  5: [finding(1501, 5, "High"), makeTriagedFinding({ id: 1502, testId: 5, severity: "Medium", falsePositive: true })],
-  6: [finding(1601, 6, "Low")],
-  7: [finding(1701, 7, "Info")],
+  2: [findingOf(1201, 2, "High", { title: "AWS access key" })],
+  3: [findingOf(1301, 3, "High", { vulnerabilityIds: [CVE] }), findingOf(1302, 3, "Medium")],
+  4: [
+    findingOf(1401, 4, "Critical"),
+    makeTriagedFinding({ id: 1402, testId: 4, severity: "High", falsePositive: true }),
+  ],
+  5: [findingOf(1501, 5, "High"), makeTriagedFinding({ id: 1502, testId: 5, severity: "Medium", falsePositive: true })],
+  6: [findingOf(1601, 6, "Low")],
+  7: [findingOf(1701, 7, "Info")],
   10: [
-    finding(2001, 10, "Critical", { vulnerabilityIds: [CVE], componentName: "openssl" }),
+    findingOf(2001, 10, "Critical", { vulnerabilityIds: [CVE], componentName: "openssl" }),
     makeTriagedFinding({ id: 2002, testId: 10, severity: "High" }),
     makeTriagedFinding({ id: 2003, testId: 10, severity: "High", falsePositive: true }),
   ],
-  11: [finding(2101, 11, "High")],
-  12: [finding(2201, 12, "Medium", { filePath: "main.go", line: 12 })],
-  13: [finding(2301, 13, "High", { title: "Generic API key" })],
-  14: [finding(2401, 14, "Low")],
+  11: [findingOf(2101, 11, "High")],
+  12: [findingOf(2201, 12, "Medium", { filePath: "main.go", line: 12 })],
+  13: [findingOf(2301, 13, "High", { title: "Generic API key" })],
+  14: [findingOf(2401, 14, "Low")],
 };
 
 function givenDefectDojo(options: FakeDefectDojoOptions = {}): FakeDefectDojo {
@@ -117,16 +107,14 @@ function givenDefectDojo(options: FakeDefectDojoOptions = {}): FakeDefectDojo {
   return doubles.defectDojo;
 }
 
-function givenPlatform(objects: KubeObject[] = PLATFORM, options: KubeReaderOptions = {}) {
+function givenPlatform(objects: KubeObject[] = DEMO_PLATFORM, options: KubeReaderOptions = {}) {
   givenCluster(objects, options);
 }
-
-const idOf = (url: string) => Number(url.split("/").pop());
 
 describe("defectDojo.getVulnerabilities", () => {
   let mockContext: ReturnType<typeof createMockedContext>;
 
-  async function getVulnerabilities(input: Partial<VulnerabilitiesInput> = {}): Promise<Vulnerabilities> {
+  async function getVulnerabilities(input: Partial<VulnerabilitiesInput> = {}): Promise<PlatformFindingsList> {
     return createCaller(mockContext).defectDojo.getVulnerabilities({
       level: "runtime",
       namespace: DEMO_NAMESPACE,
@@ -136,7 +124,7 @@ describe("defectDojo.getVulnerabilities", () => {
 
   async function getData(
     input: Partial<VulnerabilitiesInput> = {}
-  ): Promise<Extract<Vulnerabilities, { state: "data" }>> {
+  ): Promise<Extract<PlatformFindingsList, { state: "data" }>> {
     const result = await getVulnerabilities(input);
     if (result.state !== "data") {
       throw new Error(`Expected data, got ${result.state}`);
@@ -145,7 +133,7 @@ describe("defectDojo.getVulnerabilities", () => {
   }
 
   async function idsOf(input: Partial<VulnerabilitiesInput> = {}): Promise<number[]> {
-    return (await getData(input)).findings.map((row) => idOf(row.url));
+    return (await getData(input)).findings.map((row) => idOfFindingUrl(row.url));
   }
 
   beforeEach(() => {
@@ -166,8 +154,7 @@ describe("defectDojo.getVulnerabilities", () => {
     it("opens on the clusters of the installation's Stages, most severe first", async () => {
       const result = await getData();
 
-      expect(result.findings.map((row) => idOf(row.url))).toEqual([1101, 1401, 1102, 1301, 1302, 1103, 1701]);
-      expect(result.clusters).toEqual(["in-cluster", "remote-cluster"]);
+      expect(result.findings.map((row) => idOfFindingUrl(row.url))).toEqual([1101, 1401, 1102, 1301, 1302, 1103, 1701]);
     });
 
     it("lists every cluster when the installation has no Stage", async () => {
@@ -175,15 +162,13 @@ describe("defectDojo.getVulnerabilities", () => {
 
       const result = await getData();
 
-      expect(result.findings.map((row) => idOf(row.url))).toContain(1601);
-      expect(result.clusters).toBeNull();
+      expect(result.findings.map((row) => idOfFindingUrl(row.url))).toContain(1601);
     });
 
     it("lists the clusters it is asked for", async () => {
       const result = await getData({ clusters: ["edge"] });
 
-      expect(result.findings.map((row) => idOf(row.url))).toEqual([1601]);
-      expect(result.clusters).toEqual(["edge"]);
+      expect(result.findings.map((row) => idOfFindingUrl(row.url))).toEqual([1601]);
     });
 
     it("lists one namespace of the clusters", async () => {
@@ -201,7 +186,7 @@ describe("defectDojo.getVulnerabilities", () => {
     it("leaves a closed test out of a triaged state, with an exact total", async () => {
       const result = await getData({ state: "falsePositive" });
 
-      expect(result.findings.map((row) => idOf(row.url))).toEqual([1402]);
+      expect(result.findings.map((row) => idOfFindingUrl(row.url))).toEqual([1402]);
       expect(result.total).toBe(1);
       expect(result.truncated).toBe(false);
     });
@@ -220,7 +205,7 @@ describe("defectDojo.getVulnerabilities", () => {
 
       const result = await getData({ state });
 
-      expect(result.findings.map((row) => idOf(row.url))).toEqual([4001]);
+      expect(result.findings.map((row) => idOfFindingUrl(row.url))).toEqual([4001]);
       expect(result.total).toBe(1);
     });
 
@@ -238,7 +223,7 @@ describe("defectDojo.getVulnerabilities", () => {
 
       const result = await getData({ state: "falsePositive", page: 1, pageSize: 25 });
 
-      expect(result.findings.map((row) => idOf(row.url))).toEqual([4025, 4026, 4027, 4028, 4029]);
+      expect(result.findings.map((row) => idOfFindingUrl(row.url))).toEqual([4025, 4026, 4027, 4028, 4029]);
       expect(result.total).toBe(30);
     });
 
@@ -255,7 +240,7 @@ describe("defectDojo.getVulnerabilities", () => {
 
       expect(result.truncated).toBe(true);
       expect(result.total).toBe(TRIAGED_RUNTIME_SCAN_LIMIT);
-      expect(result.findings).toHaveLength(VULNERABILITIES_DEFAULT_PAGE_SIZE);
+      expect(result.findings).toHaveLength(PLATFORM_LIST_DEFAULT_PAGE_SIZE);
     });
 
     it("rejects the Mitigated state: every finding of a closed test is mitigated", async () => {
@@ -292,7 +277,7 @@ describe("defectDojo.getVulnerabilities", () => {
       givenDefectDojo({
         findings: {
           10: [
-            finding(3001, 10, "High"),
+            findingOf(3001, 10, "High"),
             makeTriagedFinding({ id: 3002, testId: 10 }),
             makeTriagedFinding({ id: 3003, testId: 10, falsePositive: true }),
             makeTriagedFinding({ id: 3004, testId: 10, outOfScope: true }),
@@ -302,10 +287,6 @@ describe("defectDojo.getVulnerabilities", () => {
       });
 
       expect(await idsOf({ level: "image", state })).toEqual([id]);
-    });
-
-    it("have no clusters", async () => {
-      expect((await getData({ level: "image" })).clusters).toBeNull();
     });
   });
 
@@ -326,7 +307,7 @@ describe("defectDojo.getVulnerabilities", () => {
     it("return the page asked for and the total DefectDojo counts, the active row of a closed test included", async () => {
       const result = await getData({ page: 1, pageSize: 2 });
 
-      expect(result.findings.map((row) => idOf(row.url))).toEqual([1102, 1301]);
+      expect(result.findings.map((row) => idOfFindingUrl(row.url))).toEqual([1102, 1301]);
       expect(result.total).toBe(8);
     });
 
@@ -345,7 +326,7 @@ describe("defectDojo.getVulnerabilities", () => {
 
   describe("where a finding was found", () => {
     const placeOf = async (id: number, input: Partial<VulnerabilitiesInput> = {}) =>
-      (await getData(input)).findings.find((row) => idOf(row.url) === id)?.place;
+      (await getData(input)).findings.find((row) => idOfFindingUrl(row.url) === id)?.place;
 
     it("names the workload container, the Environment and the codebase that an Application deploys there", async () => {
       expect(await placeOf(1101)).toEqual({
@@ -387,7 +368,7 @@ describe("defectDojo.getVulnerabilities", () => {
     });
 
     it("names no codebase when the user may not list the Applications: the findings stay", async () => {
-      givenPlatform(PLATFORM, { forbidden: [k8sApplicationConfig] });
+      givenPlatform(DEMO_PLATFORM, { forbidden: [k8sApplicationConfig] });
 
       expect(await placeOf(1101)).toMatchObject({ environment: { cdPipeline: "demo", stage: "dev" }, codebase: null });
     });
