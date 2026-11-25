@@ -6,10 +6,10 @@ import {
   EMPTY_FLEET,
   PLAIN_ACTOR,
   RUNNING_ACTOR,
-  SEVERAL_AGENT_PROFILES_FLEET,
   STORY_FLEET,
   seedFleet,
 } from "../../../__fixtures__/storyFleet";
+import { WithLocation } from "../../../__fixtures__/storyLocation";
 import { PAGE_DESCRIPTION } from "../../../constants/hints";
 import FactoryActorsPage from "./page";
 
@@ -30,6 +30,16 @@ type Canvas = ReturnType<typeof within>;
 /** Not in meta: story-level decorators nest inside meta decorators. */
 const WITH_STORY_FLEET = [withAppProviders({ seedQueryCache: seedFleet(STORY_FLEET) })];
 
+const FACTORY = `/c/${STORYBOOK_CLUSTER_NAME}/factory`;
+
+const WITH_LOCATION = [
+  withAppProviders({
+    seedQueryCache: seedFleet(STORY_FLEET),
+    contentWrapper: WithLocation,
+    initialUrl: `${FACTORY}/actors`,
+  }),
+];
+
 const rowOf = (cell: HTMLElement) => within(cell.closest("tr")!);
 
 const actorLinks = (canvas: Canvas) => canvas.getAllByRole("link", { name: /^issue-|^debug-/ });
@@ -47,9 +57,10 @@ export const Ready: Story = {
     const running = rowOf(await canvas.findByRole("link", { name: RUNNING_ACTOR.name }));
     await expect(running.getByRole("link", { name: "krci/test-go-app#25" })).toHaveAttribute(
       "href",
-      RUNNING_ACTOR.agent!.issue.url!
+      `${FACTORY}/agents/${RUNNING_ACTOR.atespace}/${RUNNING_ACTOR.name}`
     );
-    await expect(running.getByRole("link", { name: "test-go-app" })).toBeVisible();
+    await expect(running.queryByRole("link", { name: "test-go-app" })).toBeNull();
+    await expect(running.queryByText(RUNNING_ACTOR.agent!.model!)).toBeNull();
     await expect(running.getByText("running")).toBeVisible();
     await expect(running.getByText("krci-agents/workers")).toBeVisible();
     await expect(running.queryByText("workers-7c9f6-0")).toBeNull();
@@ -60,17 +71,69 @@ export const Ready: Story = {
     await expect(canvas.queryByRole("columnheader", { name: "Worker pod" })).toBeNull();
     await expect(canvas.getByText(PAGE_DESCRIPTION.actors)).toBeVisible();
 
+    const headers = canvas.getAllByRole("columnheader").map((header) => header.textContent);
+    await expect(headers).toEqual([
+      "Name",
+      "Atespace",
+      "Agent",
+      "Actor state",
+      "Worker pool",
+      "Node",
+      "Snapshot",
+      "Created",
+      "Last change",
+    ]);
+    for (const filter of ["Atespace", "Actor state", "Worker pool"]) {
+      await expect(canvas.getByRole("combobox", { name: filter })).toBeVisible();
+    }
+    for (const filter of ["Codebase", "Agent profile"]) {
+      await expect(canvas.queryByRole("combobox", { name: filter })).toBeNull();
+    }
+
+    // An agent with no matching Codebase links to the Agent detail too.
     const unmatched = rowOf(canvas.getByRole("link", { name: "issue-5-3" }));
-    await expect(unmatched.getByText("krci/test-python-app#3")).toBeVisible();
-    await expect(unmatched.queryByRole("link", { name: "krci/test-python-app#3" })).toBeNull();
-    await expect(unmatched.getByText("krci/test-python-app")).toBeVisible();
+    await expect(unmatched.getByRole("link", { name: "krci/test-python-app#3" })).toHaveAttribute(
+      "href",
+      `${FACTORY}/agents/krci-agents/issue-5-3`
+    );
 
     const plain = rowOf(canvas.getByRole("link", { name: PLAIN_ACTOR.name }));
     await expect(plain.getByText("unknown")).toBeVisible();
-    // Dash columns: issue, Codebase, agent profile, model, worker pool, node, snapshot.
-    await expect(plain.getAllByText("—")).toHaveLength(7);
+    // Dash columns: agent, worker pool, node, snapshot.
+    await expect(plain.getAllByText("—")).toHaveLength(4);
 
     await expect(actorLinks(canvas)).toHaveLength(STORY_FLEET.actors.length);
+  },
+};
+
+export const RowClickOpensActorDetail: Story = {
+  decorators: WITH_LOCATION,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const crashed = rowOf(await canvas.findByRole("link", { name: CRASHED_ACTOR.name }));
+    await userEvent.click(crashed.getByText("crashed"));
+
+    await waitFor(() =>
+      expect(canvas.getByRole("status", { name: "Location" })).toHaveTextContent(
+        `${FACTORY}/actors/${CRASHED_ACTOR.atespace}/${CRASHED_ACTOR.name}`
+      )
+    );
+  },
+};
+
+export const AgentLinkOpensAgentDetail: Story = {
+  decorators: WITH_LOCATION,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(await canvas.findByRole("link", { name: "krci/test-python-app#4" }));
+
+    await waitFor(() =>
+      expect(canvas.getByRole("status", { name: "Location" })).toHaveTextContent(
+        `${FACTORY}/agents/${CRASHED_ACTOR.atespace}/${CRASHED_ACTOR.name}`
+      )
+    );
   },
 };
 
@@ -131,23 +194,6 @@ export const FilteredByAtespace: Story = {
   },
 };
 
-export const FilteredByCodebase: Story = {
-  decorators: WITH_STORY_FLEET,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    const body = within(canvasElement.ownerDocument.body);
-
-    await userEvent.click(await canvas.findByRole("combobox", { name: "Codebase" }));
-    await expect(await body.findByRole("option", { name: "test-go-app" })).toBeVisible();
-    await userEvent.click(body.getByRole("option", { name: "test-python-app" }));
-
-    await waitFor(() => expect(canvas.queryByRole("link", { name: RUNNING_ACTOR.name })).toBeNull());
-    await expect(actorLinks(canvas)).toHaveLength(1);
-    await expect(canvas.getByRole("link", { name: CRASHED_ACTOR.name })).toBeVisible();
-  },
-};
-
 export const FilteredByWorkerPool: Story = {
   decorators: WITH_STORY_FLEET,
   play: async ({ canvasElement }) => {
@@ -179,61 +225,6 @@ export const FilteredByWorkerPoolFromUrl: Story = {
     );
     // No actor runs on a worker of workers-microvm.
     await expect(await canvas.findByText("No results found!")).toBeVisible();
-  },
-};
-
-export const FilteredByAgentProfile: Story = {
-  decorators: [withAppProviders({ seedQueryCache: seedFleet(SEVERAL_AGENT_PROFILES_FLEET) })],
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    await pick(canvasElement, "Agent profile", "No agent profile");
-
-    await waitFor(() => expect(canvas.queryByRole("link", { name: RUNNING_ACTOR.name })).toBeNull());
-    await expect(actorLinks(canvas).map((link: HTMLElement) => link.textContent)).toEqual(["issue-2-26"]);
-  },
-};
-
-/** The URL that an agent profile count of the Overview opens. */
-export const FilteredByAgentProfileFromUrl: Story = {
-  decorators: [
-    withAppProviders({
-      seedQueryCache: seedFleet(SEVERAL_AGENT_PROFILES_FLEET),
-      initialUrl: `/c/${STORYBOOK_CLUSTER_NAME}/factory/actors?agentProfile=python`,
-    }),
-  ],
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    await expect(await canvas.findByRole("combobox", { name: "Agent profile" })).toHaveTextContent("python");
-    await waitFor(() => expect(canvas.queryByRole("link", { name: RUNNING_ACTOR.name })).toBeNull());
-    await expect(actorLinks(canvas).map((link: HTMLElement) => link.textContent)).toEqual(["issue-5-3", "issue-5-4"]);
-  },
-};
-
-/** A hand-typed URL: the router parses `007` to the number 7. */
-export const FilteredByNumericAgentProfileFromUrl: Story = {
-  decorators: [
-    withAppProviders({
-      seedQueryCache: seedFleet(
-        (() => {
-          const fleet = structuredClone(SEVERAL_AGENT_PROFILES_FLEET);
-          fleet.actors.find(({ name }) => name === "issue-6-3")!.agent!.agentProfile = "007";
-          fleet.summary.agentsByProfile = fleet.summary.agentsByProfile.map((count) =>
-            count.agentProfile === "java" ? { ...count, agentProfile: "007" } : count
-          );
-          return fleet;
-        })()
-      ),
-      initialUrl: `/c/${STORYBOOK_CLUSTER_NAME}/factory/actors?agentProfile=007`,
-    }),
-  ],
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    await expect(await canvas.findByRole("combobox", { name: "Agent profile" })).toHaveTextContent("007");
-    await waitFor(() => expect(canvas.queryByRole("link", { name: RUNNING_ACTOR.name })).toBeNull());
-    await expect(actorLinks(canvas).map((link: HTMLElement) => link.textContent)).toEqual(["issue-6-3"]);
   },
 };
 

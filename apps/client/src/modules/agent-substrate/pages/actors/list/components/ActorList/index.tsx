@@ -24,12 +24,10 @@ export function ActorList({ fleet }: { fleet: ReadyFleet }) {
   const slots = React.useMemo(
     () => ({
       header: {
-        component: (
-          <ActorFilter atespaces={fleet.atespaces} actors={fleet.actors} workerPools={fleet.workerPools.items} />
-        ),
+        component: <ActorFilter atespaces={fleet.atespaces} workerPools={fleet.workerPools.items} />,
       },
     }),
-    [fleet.atespaces, fleet.actors, fleet.workerPools.items]
+    [fleet.atespaces, fleet.workerPools.items]
   );
 
   const handleRowClick = React.useCallback(

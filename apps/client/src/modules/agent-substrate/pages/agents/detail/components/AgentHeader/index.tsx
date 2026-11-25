@@ -1,8 +1,10 @@
-import type { AgentActor, AgentDetail } from "@my-project/shared";
+import { ExternalLink } from "lucide-react";
+import type { AgentActor, AgentDetail, AgentIssue } from "@my-project/shared";
 import { InfoColumns } from "@/core/components/InfoColumns";
+import { CellExternalLink } from "@/core/components/Table/components/CellLink";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { Card, CardContent } from "@/core/components/ui/card";
-import { ActorStateBadge, AgentCodebaseLink, AgentIssueLink } from "../../../../../components/ActorCells";
+import { ActorStateBadge, AgentCodebaseLink } from "../../../../../components/ActorCells";
 import { EmptyValue } from "../../../../../components/EmptyValue";
 import { issueLabel } from "../../../../../utils/issueLabel";
 import { plural } from "../../../../../utils/plural";
@@ -10,6 +12,12 @@ import { plural } from "../../../../../utils/plural";
 interface AgentHeaderProps {
   agent: AgentDetail;
   actor: AgentActor;
+}
+
+function IssueLink({ issue }: { issue: AgentIssue }) {
+  const label = issueLabel(issue);
+  if (!issue.url) return <TextWithTooltip text={label} />;
+  return <CellExternalLink href={issue.url} text={label} icon={ExternalLink} />;
 }
 
 export function AgentTitle({ agent, actor }: AgentHeaderProps) {
@@ -28,7 +36,7 @@ export function AgentHeader({ agent, actor }: AgentHeaderProps) {
         <InfoColumns
           gridCols={5}
           gridItems={[
-            { label: "Issue", content: <AgentIssueLink agent={agent} /> },
+            { label: "Issue", content: <IssueLink issue={agent.issue} /> },
             {
               label: "Actor state",
               content: (

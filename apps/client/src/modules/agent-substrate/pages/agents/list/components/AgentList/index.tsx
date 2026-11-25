@@ -23,7 +23,6 @@ export function AgentList({ fleet }: { fleet: ReadyFleet }) {
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
 
   const agents = React.useMemo(() => agentRows(fleet.actors), [fleet.actors]);
-  const columns = React.useMemo(() => agentColumns(clusterName), [clusterName]);
 
   const slots = React.useMemo(() => ({ header: { component: <AgentFilter agents={agents} /> } }), [agents]);
 
@@ -42,7 +41,7 @@ export function AgentList({ fleet }: { fleet: ReadyFleet }) {
       id={TABLE.AGENT_LIST.id}
       name={TABLE.AGENT_LIST.name}
       data={agents}
-      columns={columns}
+      columns={agentColumns}
       sort={DEFAULT_SORT}
       filterFunction={filterFunction}
       handleRowClick={handleRowClick}

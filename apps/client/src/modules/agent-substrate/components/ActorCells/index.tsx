@@ -1,13 +1,12 @@
-import { ExternalLink } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import type { ActorAgent, ActorRow, ActorSnapshot, ActorState } from "@my-project/shared";
-import { CellExternalLink, CellLink } from "@/core/components/Table/components/CellLink";
+import { CellLink } from "@/core/components/Table/components/CellLink";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { Badge } from "@/core/components/ui/badge";
 import { useClusterStore } from "@/k8s/store";
 import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { ACTOR_STATE_ICON, SNAPSHOT_DURABLE_STATE_ICON } from "../../constants/actorState";
-import { PATH_FACTORY_ACTOR_DETAIL_FULL } from "../../constants/paths";
+import { PATH_FACTORY_ACTOR_DETAIL_FULL, PATH_FACTORY_AGENT_DETAIL_FULL } from "../../constants/paths";
 import { issueLabel } from "../../utils/issueLabel";
 import { stopRowClick } from "../../utils/stopRowClick";
 import { EmptyValue } from "../EmptyValue";
@@ -29,13 +28,22 @@ export function ActorLink({ actor }: { actor: Pick<ActorRow, "atespace" | "name"
   );
 }
 
-export function AgentIssueLink({ agent }: { agent: Pick<ActorAgent, "issue"> | null }) {
-  if (!agent) return <EmptyValue />;
+interface AgentLinkProps {
+  actor: Pick<ActorRow, "atespace" | "name"> & { agent: Pick<ActorAgent, "issue"> | null };
+}
 
-  const label = issueLabel(agent.issue);
-  if (!agent.issue.url) return <TextWithTooltip text={label} />;
+export function AgentLink({ actor }: AgentLinkProps) {
+  const clusterName = useClusterStore(useShallow((state) => state.clusterName));
+  if (!actor.agent) return <EmptyValue />;
 
-  return <CellExternalLink href={agent.issue.url} text={label} icon={ExternalLink} onClick={stopRowClick} />;
+  return (
+    <CellLink
+      to={PATH_FACTORY_AGENT_DETAIL_FULL}
+      params={{ clusterName, atespace: actor.atespace, name: actor.name }}
+      text={issueLabel(actor.agent.issue)}
+      onClick={stopRowClick}
+    />
+  );
 }
 
 export function AgentCodebaseLink({ agent }: { agent: ActorAgent | null }) {

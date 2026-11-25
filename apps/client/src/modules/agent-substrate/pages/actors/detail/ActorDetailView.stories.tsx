@@ -1,7 +1,7 @@
 import React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, within } from "storybook/test";
-import { withAppProviders } from "@sb/index";
+import { STORYBOOK_CLUSTER_NAME, withAppProviders } from "@sb/index";
 import {
   CRASHED_ACTOR,
   GONE_TEMPLATE_ACTOR,
@@ -43,12 +43,14 @@ export const Summary: Story = {
   play: async ({ canvasElement, args }) => {
     const summary = await panel(canvasElement, "Summary");
 
-    await expect(summary.getByRole("link", { name: "krci/test-go-app#25" })).toHaveAttribute(
+    await expect(within(fact(summary, "Agent")!).getByRole("link", { name: "krci/test-go-app#25" })).toHaveAttribute(
       "href",
-      RUNNING_ACTOR.agent!.issue.url!
+      `/c/${STORYBOOK_CLUSTER_NAME}/factory/agents/${RUNNING_ACTOR.atespace}/${RUNNING_ACTOR.name}`
     );
-    await expect(summary.getByRole("link", { name: "test-go-app" })).toBeVisible();
-    await expect(summary.getByText("go")).toBeVisible();
+    for (const term of ["Issue", "Codebase", "Agent profile"]) {
+      await expect(summary.queryByText(term, { selector: "dt" })).toBeNull();
+    }
+    await expect(summary.queryByRole("link", { name: "test-go-app" })).toBeNull();
     await expect(summary.getByText("claude-haiku-5-5")).toBeVisible();
     await expect(summary.getByText(RUNNING_ACTOR.actorTemplate)).toBeVisible();
 
@@ -70,7 +72,7 @@ export const SummaryWorkerSelectorAndSize: Story = {
 
     await userEvent.hover(summary.getByRole("button", { name: "About Worker selector" }));
     await expect(await body.findByRole("tooltip")).toHaveTextContent(TERM_HINT.workerSelector);
-    for (const term of ["Atespace", "Actor template", "Actor state", "Agent profile", "Size", "Worker pools"]) {
+    for (const term of ["Atespace", "Actor template", "Actor state", "Size", "Worker pools"]) {
       await expect(summary.getByRole("button", { name: `About ${term}` })).toBeVisible();
     }
   },
@@ -195,7 +197,10 @@ export const Crashed: Story = {
 
     await expect(summary.getByRole("alert")).toHaveTextContent(CRASHED_ACTOR.crash!.message);
     await expect(summary.getByText("crashed")).toBeVisible();
-    await expect(summary.getByRole("link", { name: "test-python-app" })).toBeVisible();
+    await expect(summary.getByRole("link", { name: "krci/test-python-app#4" })).toHaveAttribute(
+      "href",
+      `/c/${STORYBOOK_CLUSTER_NAME}/factory/agents/${CRASHED_ACTOR.atespace}/${CRASHED_ACTOR.name}`
+    );
   },
 };
 
@@ -205,7 +210,7 @@ export const NotMadeByDispatcher: Story = {
     const summary = await panel(canvasElement, "Summary");
 
     await expect(summary.getByText("unknown")).toBeVisible();
-    for (const term of ["Issue", "Codebase", "Agent profile", "Model"]) {
+    for (const term of ["Agent", "Model"]) {
       await expect(summary.getByText(term).nextElementSibling).toHaveTextContent(/^—$/);
     }
   },

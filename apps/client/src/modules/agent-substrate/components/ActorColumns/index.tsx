@@ -3,7 +3,18 @@ import type { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
 import { formatTimestamp } from "@/core/utils/date-humanize";
 import { TERM_HINT } from "../../constants/hints";
-import { ActorStateBadge, AgentCodebaseLink } from "../ActorCells";
+import { issueLabel } from "../../utils/issueLabel";
+import { ActorStateBadge, AgentCodebaseLink, AgentLink } from "../ActorCells";
+
+export const agentColumn: TableColumn<ActorRow> = {
+  id: "agent",
+  label: "Agent",
+  data: {
+    columnSortableValue: (row) => (row.agent ? issueLabel(row.agent.issue) : ""),
+    render: ({ data }) => <AgentLink actor={data} />,
+  },
+  cell: { baseWidth: 14 },
+};
 
 export const codebaseColumn: TableColumn<ActorRow> = {
   id: "codebase",
