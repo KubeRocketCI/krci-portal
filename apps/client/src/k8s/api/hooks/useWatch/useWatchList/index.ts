@@ -66,6 +66,7 @@ export const useWatchList = <I extends KubeObjectBase>({
 
   const effectiveNames = names && names.length > 0 && names.length <= WATCH_LIST_NAMES_LIMIT ? names : undefined;
   const namesKey = effectiveNames ? serializeWatchListNames(effectiveNames) : undefined;
+  const labelsKey = labels ? JSON.stringify(labels) : undefined;
 
   const queryKey = React.useMemo(
     () =>
@@ -78,14 +79,7 @@ export const useWatchList = <I extends KubeObjectBase>({
         effectiveNames
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      _namespace,
-      clusterName,
-      resourceConfig.group,
-      resourceConfig.pluralName,
-      labels ? JSON.stringify(labels) : undefined,
-      namesKey,
-    ]
+    [_namespace, clusterName, resourceConfig.group, resourceConfig.pluralName, labelsKey, namesKey]
   );
 
   const query = useQuery<CustomKubeObjectList<I>, RequestError>({
@@ -198,8 +192,7 @@ export const useWatchList = <I extends KubeObjectBase>({
       clusterName,
       _namespace,
       resourceConfig.pluralName,
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      labels ? JSON.stringify(labels) : undefined,
+      labelsKey,
       namesKey,
       queryKey,
     ]
@@ -222,8 +215,7 @@ export const useWatchList = <I extends KubeObjectBase>({
     clusterName,
     _namespace,
     resourceConfig.pluralName,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    labels ? JSON.stringify(labels) : undefined,
+    labelsKey,
     namesKey,
     queryKey,
   ]);

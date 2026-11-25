@@ -132,8 +132,9 @@ Use the `!` suffix after the type for breaking changes (e.g. `feat!: change API`
 * Use TypeScript for all new code
 * Follow the existing code style and formatting
 * Use meaningful variable and function names
-* Comment only what the code cannot show: a cross-file fact, a constraint, a surprising default
-* A comment earns its line when a reader cannot get its fact from the code within 5 lines or one go-to-definition: a cross-file fact, an invariant, an upstream or server-version constraint, null semantics, an ordering contract, a surprising default. A story or test doc comment states the fixture fact that the assertions rely on.
+* Comment only what the code cannot show. A comment earns its line when a reader cannot get its fact from the code within 5 lines or one go-to-definition: a cross-file fact, an invariant, an upstream or server-version constraint, null semantics, an ordering contract, a surprising default. A story or test doc comment states the fixture fact that the assertions rely on.
+* A comment or field doc whose fact the code shows within that bound is removed, also on an exported type.
+* Each kept or rewritten comment: its claim is checked against the code it names, also a claim carried over from the old text.
 * Prefer functional programming patterns where appropriate
 * Use strict type checking
 

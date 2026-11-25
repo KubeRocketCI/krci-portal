@@ -9,7 +9,7 @@
     "tsc:check": "pnpm --filter=shared tsc && pnpm --filter=trpc tsc && pnpm --filter=server tsc && pnpm --filter=client tsc && pnpm tsc:scripts",
     "tsc:scripts": "tsc -p scripts",
     "lint:check": "pnpm --recursive run lint && pnpm lint:scripts",
-    "lint:scripts": "eslint --config scripts/eslint.config.mjs --cache --cache-location node_modules/.cache/eslint --concurrency auto scripts",
+    "lint:scripts": "eslint --config scripts/eslint.config.mjs --cache --cache-location node_modules/.cache/eslint --concurrency auto --max-warnings 0 scripts",
     "format:check": "pnpm --recursive run format:check && prettier --check scripts",
     "format:fix": "pnpm --recursive run format && prettier --write scripts",
     "check:changed": "bash scripts/check-changed.sh",
