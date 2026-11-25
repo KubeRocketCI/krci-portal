@@ -1,20 +1,9 @@
-import { vulnerabilitiesInputSchema, vulnerabilitiesSchema } from "@my-project/shared";
-import { createDefectDojoClient, isDefectDojoConfigured } from "../../../../clients/defectDojo/index.js";
+import { platformFindingsListSchema, vulnerabilitiesInputSchema } from "@my-project/shared";
 import { protectedProcedure } from "../../../../procedures/protected/index.js";
-import { NO_PLATFORM_FACTS, loadPlatformFacts } from "../../platformFindings/facts.js";
-import { readVulnerabilities } from "../../platformFindings/vulnerabilities.js";
+import { VULNERABILITY_LIST } from "../../platformFindings/list.js";
+import { readPlatformList } from "../../platformFindings/procedure.js";
 
 export const getVulnerabilitiesProcedure = protectedProcedure
   .input(vulnerabilitiesInputSchema)
-  .output(vulnerabilitiesSchema)
-  .query(async ({ input, ctx }) => {
-    if (!isDefectDojoConfigured(process.env)) {
-      return { state: "notConfigured" };
-    }
-
-    const facts =
-      input.level === "runtime"
-        ? await loadPlatformFacts(ctx.session, input.namespace, { applications: true })
-        : NO_PLATFORM_FACTS;
-    return readVulnerabilities(createDefectDojoClient(), facts, input);
-  });
+  .output(platformFindingsListSchema)
+  .query(({ input, ctx }) => readPlatformList(ctx.session, input, VULNERABILITY_LIST));

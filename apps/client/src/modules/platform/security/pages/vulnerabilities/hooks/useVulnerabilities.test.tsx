@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
-import type { Vulnerabilities, VulnerabilitiesInput } from "@my-project/shared";
+import type { PlatformFindingsList, VulnerabilitiesInput } from "@my-project/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { queryClient } from "@/core/clients/queryClient";
 import { useTRPCClient } from "@/core/providers/trpc";
@@ -22,7 +22,12 @@ const INPUT: VulnerabilitiesInput = {
   pageSize: 25,
 };
 
-const DATA: Vulnerabilities = { state: "data", total: 0, findings: [], clusters: ["in-cluster"], truncated: false };
+const DATA: PlatformFindingsList = {
+  state: "data",
+  total: 0,
+  findings: [],
+  truncated: false,
+};
 
 /** The query client of the app: it does not refetch on mount unless a hook asks for it. */
 function renderVulnerabilities(input: VulnerabilitiesInput = INPUT) {
@@ -51,7 +56,7 @@ describe("useVulnerabilities", () => {
   });
 
   it("keeps the page on screen, marked as a placeholder, while the next page or filter of its level loads", async () => {
-    const firstPage: Vulnerabilities = { ...DATA, total: 40 };
+    const firstPage: PlatformFindingsList = { ...DATA, total: 40 };
     query.mockResolvedValueOnce(firstPage).mockReturnValueOnce(new Promise(() => {}));
 
     const { result, rerender } = renderVulnerabilities();

@@ -24,6 +24,8 @@ export interface FindingsTableProps<Finding extends ScanFinding = ScanFinding> {
   caption: string;
   /** One more column, before the DefectDojo link. */
   extraColumn?: FindingColumn<Finding>;
+  /** Replaces the header of a column of the level, by column id. */
+  headers?: Partial<Record<string, ReactNode>>;
 }
 
 const CELL_CLASS = "px-3 py-2 align-top";
@@ -113,8 +115,12 @@ export function FindingsTable<Finding extends ScanFinding>({
   level,
   caption,
   extraColumn,
+  headers = {},
 }: FindingsTableProps<Finding>) {
-  const levelColumns: FindingColumn<Finding>[] = COLUMNS[level];
+  const levelColumns: FindingColumn<Finding>[] = COLUMNS[level].map((column) => ({
+    ...column,
+    header: headers[column.id] ?? column.header,
+  }));
   const columns = extraColumn
     ? levelColumns.flatMap((column) => (column.id === LINK_COLUMN.id ? [extraColumn, column] : [column]))
     : levelColumns;

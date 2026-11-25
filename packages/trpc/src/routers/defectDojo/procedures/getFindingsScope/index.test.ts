@@ -73,6 +73,7 @@ describe("defectDojo.getFindingsScope", () => {
     const scope = await getData();
 
     expect(scope.stageClusters).toEqual(["in-cluster", "remote-cluster"]);
+    expect(scope.defaultClusters).toEqual(["in-cluster", "remote-cluster"]);
   });
 
   it("offers every cluster and namespace that a Stage or a namespace product names, each with its Environment", async () => {
@@ -117,6 +118,7 @@ describe("defectDojo.getFindingsScope", () => {
 
     expect(scope.stageClusters).toEqual([]);
     expect(scope.clusters).toEqual(["edge", "in-cluster"]);
+    expect(scope.defaultClusters).toEqual(["edge", "in-cluster"]);
   });
 
   it.each([

@@ -86,3 +86,9 @@ export function sortedUnique(values: Iterable<string>): string[] {
 export function clustersOfStages(facts: Pick<PlatformFacts, "stages">): string[] {
   return sortedUnique(facts.stages.map((stage) => stage.clusterName));
 }
+
+/** The clusters a Runtime list without `clusters` covers: the Stage clusters; `null` without a Stage, every cluster. */
+export function defaultRuntimeClusters(facts: Pick<PlatformFacts, "stages">): string[] | null {
+  const clusters = clustersOfStages(facts);
+  return clusters.length > 0 ? clusters : null;
+}

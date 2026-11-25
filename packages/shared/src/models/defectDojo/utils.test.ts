@@ -5,7 +5,8 @@ import type { CodebaseScanRef } from "./types.js";
 import {
   hasActiveFindings,
   hasActiveRuntimeFindings,
-  hasVulnerabilityFilter,
+  hasFindingFilter,
+  isRuntimeFindingState,
   runtimeContainerKey,
   runtimeContainerRef,
   scanRefKey,
@@ -136,7 +137,15 @@ describe("hasActiveRuntimeFindings", () => {
   });
 });
 
-describe("hasVulnerabilityFilter", () => {
+describe("isRuntimeFindingState", () => {
+  it("is true for every state but Mitigated", () => {
+    expect(isRuntimeFindingState("active")).toBe(true);
+    expect(isRuntimeFindingState("riskAccepted")).toBe(true);
+    expect(isRuntimeFindingState("mitigated")).toBe(false);
+  });
+});
+
+describe("hasFindingFilter", () => {
   const SCOPE_ONLY = {
     state: "active",
     severity: undefined,
@@ -145,7 +154,7 @@ describe("hasVulnerabilityFilter", () => {
   } as const;
 
   it("is false for a list with no filter but its scope: an empty page then means no findings", () => {
-    expect(hasVulnerabilityFilter(SCOPE_ONLY)).toBe(false);
+    expect(hasFindingFilter(SCOPE_ONLY)).toBe(false);
   });
 
   it.each([
@@ -154,6 +163,12 @@ describe("hasVulnerabilityFilter", () => {
     ["a vulnerability id", { vulnerabilityId: "CVE-2026-0001" }],
     ["a component", { component: "openssl" }],
   ] as const)("is true for %s: an empty page then means no match", (_, filter) => {
-    expect(hasVulnerabilityFilter({ ...SCOPE_ONLY, ...filter })).toBe(true);
+    expect(hasFindingFilter({ ...SCOPE_ONLY, ...filter })).toBe(true);
+  });
+
+  it("reads a secret list, which has no vulnerability id and no component, the same way", () => {
+    expect(hasFindingFilter({ state: "active" })).toBe(false);
+    expect(hasFindingFilter({ state: "riskAccepted" })).toBe(true);
+    expect(hasFindingFilter({ state: "active", severity: "High" })).toBe(true);
   });
 });

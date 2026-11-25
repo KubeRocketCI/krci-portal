@@ -1,0 +1,615 @@
+{
+  "scope": {
+    "state": "data",
+    "defaultClusters": ["in-cluster", "remote-cluster"],
+    "stageClusters": ["in-cluster", "remote-cluster"],
+    "clusters": ["in-cluster", "remote-cluster"],
+    "namespaces": [
+      {
+        "cluster": "in-cluster",
+        "namespace": "argocd",
+        "environment": null
+      },
+      {
+        "cluster": "in-cluster",
+        "namespace": "krci",
+        "environment": null
+      },
+      {
+        "cluster": "in-cluster",
+        "namespace": "krci-demo-dev",
+        "environment": {
+          "cdPipeline": "demo",
+          "stage": "dev"
+        }
+      },
+      {
+        "cluster": "in-cluster",
+        "namespace": "krci-demo-qa",
+        "environment": {
+          "cdPipeline": "demo",
+          "stage": "qa"
+        }
+      },
+      {
+        "cluster": "in-cluster",
+        "namespace": "krci-other-dev",
+        "environment": {
+          "cdPipeline": "demo",
+          "stage": "shadow"
+        }
+      },
+      {
+        "cluster": "in-cluster",
+        "namespace": "krci-security",
+        "environment": null
+      },
+      {
+        "cluster": "remote-cluster",
+        "namespace": "krci-demo-prod",
+        "environment": {
+          "cdPipeline": "demo",
+          "stage": "prod"
+        }
+      }
+    ]
+  },
+  "codebases": ["krci-gitops", "test-go-app"],
+  "lists": {
+    "codeDefault": {
+      "input": {
+        "level": "code",
+        "state": "active",
+        "namespace": "krci",
+        "page": 0,
+        "pageSize": 25
+      },
+      "output": {
+        "state": "data",
+        "total": 1,
+        "findings": [
+          {
+            "title": "Hard Coded Generic API Key Found in config/app.env",
+            "severity": "High",
+            "active": true,
+            "mitigated": false,
+            "falsePositive": false,
+            "outOfScope": false,
+            "riskAccepted": false,
+            "underReview": false,
+            "date": "2026-11-23",
+            "componentName": null,
+            "componentVersion": null,
+            "vulnerabilityIds": [],
+            "filePath": "config/app.env",
+            "line": 3,
+            "fixAvailable": null,
+            "fixVersion": null,
+            "url": "https://defectdojo.example.test/finding/1026",
+            "place": {
+              "level": "code",
+              "codebase": "test-go-app",
+              "branch": "main",
+              "image": null,
+              "version": ""
+            }
+          }
+        ],
+        "truncated": false
+      }
+    },
+    "codeCodebase": {
+      "input": {
+        "level": "code",
+        "codebase": "test-go-app",
+        "state": "active",
+        "namespace": "krci",
+        "page": 0,
+        "pageSize": 25
+      },
+      "output": {
+        "state": "data",
+        "total": 1,
+        "findings": [
+          {
+            "title": "Hard Coded Generic API Key Found in config/app.env",
+            "severity": "High",
+            "active": true,
+            "mitigated": false,
+            "falsePositive": false,
+            "outOfScope": false,
+            "riskAccepted": false,
+            "underReview": false,
+            "date": "2026-11-23",
+            "componentName": null,
+            "componentVersion": null,
+            "vulnerabilityIds": [],
+            "filePath": "config/app.env",
+            "line": 3,
+            "fixAvailable": null,
+            "fixVersion": null,
+            "url": "https://defectdojo.example.test/finding/1026",
+            "place": {
+              "level": "code",
+              "codebase": "test-go-app",
+              "branch": "main",
+              "image": null,
+              "version": ""
+            }
+          }
+        ],
+        "truncated": false
+      }
+    },
+    "codeSeverity": {
+      "input": {
+        "level": "code",
+        "state": "active",
+        "namespace": "krci",
+        "severity": "Medium",
+        "page": 0,
+        "pageSize": 25
+      },
+      "output": {
+        "state": "data",
+        "total": 0,
+        "findings": [],
+        "truncated": false
+      }
+    },
+    "codeTriaged": {
+      "input": {
+        "level": "code",
+        "state": "falsePositive",
+        "namespace": "krci",
+        "page": 0,
+        "pageSize": 25
+      },
+      "output": {
+        "state": "data",
+        "total": 1,
+        "findings": [
+          {
+            "title": "Hard Coded Generic API Key Found in deploy/values.yaml",
+            "severity": "High",
+            "active": false,
+            "mitigated": true,
+            "falsePositive": true,
+            "outOfScope": false,
+            "riskAccepted": false,
+            "underReview": false,
+            "date": "2026-11-23",
+            "componentName": null,
+            "componentVersion": null,
+            "vulnerabilityIds": [],
+            "filePath": "deploy/values.yaml",
+            "line": 21,
+            "fixAvailable": null,
+            "fixVersion": null,
+            "url": "https://defectdojo.example.test/finding/1027",
+            "place": {
+              "level": "code",
+              "codebase": "test-go-app",
+              "branch": "main",
+              "image": null,
+              "version": ""
+            }
+          }
+        ],
+        "truncated": false
+      }
+    },
+    "codeMitigated": {
+      "input": {
+        "level": "code",
+        "state": "mitigated",
+        "namespace": "krci",
+        "page": 0,
+        "pageSize": 25
+      },
+      "output": {
+        "state": "data",
+        "total": 0,
+        "findings": [],
+        "truncated": false
+      }
+    },
+    "codeNoMatch": {
+      "input": {
+        "level": "code",
+        "state": "active",
+        "namespace": "krci",
+        "severity": "Critical",
+        "page": 0,
+        "pageSize": 25
+      },
+      "output": {
+        "state": "data",
+        "total": 0,
+        "findings": [],
+        "truncated": false
+      }
+    },
+    "codeNoActive": {
+      "input": {
+        "level": "code",
+        "codebase": "krci-gitops",
+        "state": "active",
+        "namespace": "krci",
+        "page": 0,
+        "pageSize": 25
+      },
+      "output": {
+        "state": "data",
+        "total": 0,
+        "findings": [],
+        "truncated": false
+      }
+    },
+    "codeNoScanData": {
+      "input": {
+        "level": "code",
+        "codebase": "no-such-codebase",
+        "state": "active",
+        "namespace": "krci",
+        "page": 0,
+        "pageSize": 25
+      },
+      "output": {
+        "state": "noScanData"
+      }
+    },
+    "runtimeDefault": {
+      "input": {
+        "level": "runtime",
+        "state": "active",
+        "namespace": "krci",
+        "page": 0,
+        "pageSize": 25
+      },
+      "output": {
+        "state": "data",
+        "total": 2,
+        "findings": [
+          {
+            "title": "Secret Detected in /app/fixture-0.env - Fixture Secret 2-0",
+            "severity": "High",
+            "active": true,
+            "mitigated": false,
+            "falsePositive": false,
+            "outOfScope": false,
+            "riskAccepted": false,
+            "underReview": false,
+            "date": "2026-11-20",
+            "componentName": null,
+            "componentVersion": null,
+            "vulnerabilityIds": [],
+            "filePath": "/app/fixture-0.env",
+            "line": null,
+            "fixAvailable": true,
+            "fixVersion": null,
+            "url": "https://defectdojo.example.test/finding/872",
+            "place": {
+              "level": "runtime",
+              "cluster": "in-cluster",
+              "namespace": "krci-demo-dev",
+              "workload": "deployment.web",
+              "container": "web",
+              "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app",
+              "version": "1.0.0",
+              "environment": {
+                "cdPipeline": "demo",
+                "stage": "dev"
+              },
+              "codebase": null
+            }
+          },
+          {
+            "title": "Secret Detected in /app/fixture-1.env - Fixture Secret 10-1",
+            "severity": "Medium",
+            "active": true,
+            "mitigated": false,
+            "falsePositive": false,
+            "outOfScope": false,
+            "riskAccepted": false,
+            "underReview": false,
+            "date": "2026-11-24",
+            "componentName": null,
+            "componentVersion": null,
+            "vulnerabilityIds": [],
+            "filePath": "/app/fixture-1.env",
+            "line": null,
+            "fixAvailable": true,
+            "fixVersion": null,
+            "url": "https://defectdojo.example.test/finding/1125",
+            "place": {
+              "level": "runtime",
+              "cluster": "in-cluster",
+              "namespace": "krci-demo-dev",
+              "workload": "deployment.test-go-app",
+              "container": "test-go-app",
+              "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app",
+              "version": "main-20261123-090000",
+              "environment": {
+                "cdPipeline": "demo",
+                "stage": "dev"
+              },
+              "codebase": "test-go-app"
+            }
+          }
+        ],
+        "truncated": false
+      }
+    },
+    "runtimeClusterNamespace": {
+      "input": {
+        "level": "runtime",
+        "clusters": ["in-cluster"],
+        "workloadNamespace": "krci-demo-dev",
+        "state": "active",
+        "namespace": "krci",
+        "page": 0,
+        "pageSize": 25
+      },
+      "output": {
+        "state": "data",
+        "total": 2,
+        "findings": [
+          {
+            "title": "Secret Detected in /app/fixture-0.env - Fixture Secret 2-0",
+            "severity": "High",
+            "active": true,
+            "mitigated": false,
+            "falsePositive": false,
+            "outOfScope": false,
+            "riskAccepted": false,
+            "underReview": false,
+            "date": "2026-11-20",
+            "componentName": null,
+            "componentVersion": null,
+            "vulnerabilityIds": [],
+            "filePath": "/app/fixture-0.env",
+            "line": null,
+            "fixAvailable": true,
+            "fixVersion": null,
+            "url": "https://defectdojo.example.test/finding/872",
+            "place": {
+              "level": "runtime",
+              "cluster": "in-cluster",
+              "namespace": "krci-demo-dev",
+              "workload": "deployment.web",
+              "container": "web",
+              "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app",
+              "version": "1.0.0",
+              "environment": {
+                "cdPipeline": "demo",
+                "stage": "dev"
+              },
+              "codebase": null
+            }
+          },
+          {
+            "title": "Secret Detected in /app/fixture-1.env - Fixture Secret 10-1",
+            "severity": "Medium",
+            "active": true,
+            "mitigated": false,
+            "falsePositive": false,
+            "outOfScope": false,
+            "riskAccepted": false,
+            "underReview": false,
+            "date": "2026-11-24",
+            "componentName": null,
+            "componentVersion": null,
+            "vulnerabilityIds": [],
+            "filePath": "/app/fixture-1.env",
+            "line": null,
+            "fixAvailable": true,
+            "fixVersion": null,
+            "url": "https://defectdojo.example.test/finding/1125",
+            "place": {
+              "level": "runtime",
+              "cluster": "in-cluster",
+              "namespace": "krci-demo-dev",
+              "workload": "deployment.test-go-app",
+              "container": "test-go-app",
+              "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app",
+              "version": "main-20261123-090000",
+              "environment": {
+                "cdPipeline": "demo",
+                "stage": "dev"
+              },
+              "codebase": "test-go-app"
+            }
+          }
+        ],
+        "truncated": false
+      }
+    },
+    "runtimeSeverity": {
+      "input": {
+        "level": "runtime",
+        "state": "active",
+        "namespace": "krci",
+        "severity": "Medium",
+        "page": 0,
+        "pageSize": 25
+      },
+      "output": {
+        "state": "data",
+        "total": 1,
+        "findings": [
+          {
+            "title": "Secret Detected in /app/fixture-1.env - Fixture Secret 10-1",
+            "severity": "Medium",
+            "active": true,
+            "mitigated": false,
+            "falsePositive": false,
+            "outOfScope": false,
+            "riskAccepted": false,
+            "underReview": false,
+            "date": "2026-11-24",
+            "componentName": null,
+            "componentVersion": null,
+            "vulnerabilityIds": [],
+            "filePath": "/app/fixture-1.env",
+            "line": null,
+            "fixAvailable": true,
+            "fixVersion": null,
+            "url": "https://defectdojo.example.test/finding/1125",
+            "place": {
+              "level": "runtime",
+              "cluster": "in-cluster",
+              "namespace": "krci-demo-dev",
+              "workload": "deployment.test-go-app",
+              "container": "test-go-app",
+              "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app",
+              "version": "main-20261123-090000",
+              "environment": {
+                "cdPipeline": "demo",
+                "stage": "dev"
+              },
+              "codebase": "test-go-app"
+            }
+          }
+        ],
+        "truncated": false
+      }
+    },
+    "runtimeTriaged": {
+      "input": {
+        "level": "runtime",
+        "state": "falsePositive",
+        "namespace": "krci",
+        "page": 0,
+        "pageSize": 25
+      },
+      "output": {
+        "state": "data",
+        "total": 1,
+        "findings": [
+          {
+            "title": "Secret Detected in /app/fixture-0.env - Fixture Secret 10-0",
+            "severity": "High",
+            "active": false,
+            "mitigated": true,
+            "falsePositive": true,
+            "outOfScope": false,
+            "riskAccepted": false,
+            "underReview": false,
+            "date": "2026-11-24",
+            "componentName": null,
+            "componentVersion": null,
+            "vulnerabilityIds": [],
+            "filePath": "/app/fixture-0.env",
+            "line": null,
+            "fixAvailable": true,
+            "fixVersion": null,
+            "url": "https://defectdojo.example.test/finding/1124",
+            "place": {
+              "level": "runtime",
+              "cluster": "in-cluster",
+              "namespace": "krci-demo-dev",
+              "workload": "deployment.test-go-app",
+              "container": "test-go-app",
+              "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app",
+              "version": "main-20261123-090000",
+              "environment": {
+                "cdPipeline": "demo",
+                "stage": "dev"
+              },
+              "codebase": "test-go-app"
+            }
+          }
+        ],
+        "truncated": false
+      }
+    },
+    "runtimeNoScanData": {
+      "input": {
+        "level": "runtime",
+        "clusters": ["no-such-cluster"],
+        "state": "active",
+        "namespace": "krci",
+        "page": 0,
+        "pageSize": 25
+      },
+      "output": {
+        "state": "noScanData"
+      }
+    },
+    "runtimeNoMatch": {
+      "input": {
+        "level": "runtime",
+        "state": "active",
+        "namespace": "krci",
+        "severity": "Critical",
+        "page": 0,
+        "pageSize": 25
+      },
+      "output": {
+        "state": "data",
+        "total": 0,
+        "findings": [],
+        "truncated": false
+      }
+    }
+  },
+  "notConfigured": {
+    "scope": {
+      "state": "notConfigured"
+    },
+    "code": {
+      "input": {
+        "level": "code",
+        "state": "active",
+        "namespace": "krci",
+        "page": 0,
+        "pageSize": 25
+      },
+      "output": {
+        "state": "notConfigured"
+      }
+    },
+    "runtime": {
+      "input": {
+        "level": "runtime",
+        "state": "active",
+        "namespace": "krci",
+        "page": 0,
+        "pageSize": 25
+      },
+      "output": {
+        "state": "notConfigured"
+      }
+    }
+  },
+  "unreachable": {
+    "scope": {
+      "state": "unreachable"
+    },
+    "code": {
+      "input": {
+        "level": "code",
+        "state": "active",
+        "namespace": "krci",
+        "page": 0,
+        "pageSize": 25
+      },
+      "output": {
+        "state": "unreachable"
+      }
+    },
+    "runtime": {
+      "input": {
+        "level": "runtime",
+        "state": "active",
+        "namespace": "krci",
+        "page": 0,
+        "pageSize": 25
+      },
+      "output": {
+        "state": "unreachable"
+      }
+    }
+  }
+}

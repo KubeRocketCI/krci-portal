@@ -1,6 +1,13 @@
 import { parseArgs } from "node:util";
-import { stripTrailingSlash } from "@my-project/shared";
+import { stripTrailingSlash, type FindingsScope, type PlatformFindingsList } from "@my-project/shared";
 import { DefectDojoClient } from "../../src/clients/defectDojo/index.js";
+import type { PlatformFacts } from "../../src/routers/defectDojo/platformFindings/facts.js";
+import {
+  readPlatformFindings,
+  type PlatformListKind,
+  type PlatformListRequest,
+} from "../../src/routers/defectDojo/platformFindings/list.js";
+import { NAMESPACE_PRODUCT_TAG_TEXT, toFindingsScope } from "../../src/routers/defectDojo/platformFindings/scope.js";
 
 export interface RecorderSettings {
   url: string;
@@ -27,4 +34,33 @@ export function outageClients(): { notConfigured: DefectDojoClient; unreachable:
     notConfigured: new DefectDojoClient({ apiBaseURL: "", token: "" }),
     unreachable: new DefectDojoClient({ apiBaseURL: "http://127.0.0.1:1", token: "not-a-token", timeoutMs: 2000 }),
   };
+}
+
+export async function recordFindingsScope(source: DefectDojoClient, facts: PlatformFacts): Promise<FindingsScope> {
+  return toFindingsScope(facts, await source.listProductsWithTagText(NAMESPACE_PRODUCT_TAG_TEXT));
+}
+
+function describeFindingsList(output: PlatformFindingsList): string {
+  if (output.state !== "data") {
+    return output.state;
+  }
+  return `data, ${output.findings.length} rows of ${output.total}${output.truncated ? ", truncated" : ""}`;
+}
+
+export interface RecordedList<Request = PlatformListRequest> {
+  input: Request;
+  output: PlatformFindingsList;
+}
+
+/** Reads one list as its procedure does and logs what it holds. */
+export async function recordPlatformList<Request extends PlatformListRequest>(
+  source: DefectDojoClient,
+  facts: PlatformFacts,
+  kind: PlatformListKind,
+  name: string,
+  input: Request
+): Promise<RecordedList<Request>> {
+  const output = await readPlatformFindings(source, facts, input, kind);
+  console.log(`${name}: ${describeFindingsList(output)}`);
+  return { input, output };
 }

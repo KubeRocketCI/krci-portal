@@ -22,22 +22,18 @@
  * The host is localhost: DefectDojo answers 400 to 127.0.0.1.
  */
 import { resolve } from "node:path";
-import {
-  k8sCodebaseConfig,
-  vulnerabilitiesInputSchema,
-  type FindingsScope,
-  type Vulnerabilities,
-  type VulnerabilitiesInput,
-  type VulnerabilitiesRequest,
-} from "@my-project/shared";
+import { vulnerabilitiesInputSchema, type VulnerabilitiesInput } from "@my-project/shared";
 import { ANSWER_ORIGIN } from "../src/clients/defectDojo/__fixtures__/answers.js";
 import { DefectDojoClient } from "../src/clients/defectDojo/index.js";
-import type { KubeObject } from "../src/routers/defectDojo/__fixtures__/kubeReader.js";
 import { readPlatformFacts } from "../src/routers/defectDojo/platformFindings/facts.js";
-import { NAMESPACE_PRODUCT_TAG_TEXT, toFindingsScope } from "../src/routers/defectDojo/platformFindings/scope.js";
-import { readVulnerabilities } from "../src/routers/defectDojo/platformFindings/vulnerabilities.js";
-import { outageClients, readRecorderSettings } from "./lib/defectDojoRecorder.js";
-import { readKubeObjectsFile } from "./lib/kubeObjects.js";
+import { VULNERABILITY_LIST } from "../src/routers/defectDojo/platformFindings/list.js";
+import {
+  outageClients,
+  readRecorderSettings,
+  recordFindingsScope,
+  recordPlatformList,
+} from "./lib/defectDojoRecorder.js";
+import { readCodebaseNames, readKubeObjectsFile } from "./lib/kubeObjects.js";
 import { writeFixtureJson } from "./lib/writeFixture.js";
 
 const OUTPUT = resolve(
@@ -52,34 +48,13 @@ const facts = await readPlatformFacts(reader, NAMESPACE, { applications: true })
 
 const defectDojo = new DefectDojoClient({ apiBaseURL: url, token, webBaseURL: ANSWER_ORIGIN });
 
-interface RecordedList {
-  input: VulnerabilitiesRequest;
-  output: Vulnerabilities;
-}
-
-function describeList({ output }: RecordedList): string {
-  if (output.state !== "data") {
-    return output.state;
-  }
-  const clusters = output.clusters?.join(", ") ?? "every cluster";
-  return `data, ${output.findings.length} rows of ${output.total}, ${clusters}${output.truncated ? ", truncated" : ""}`;
-}
-
-async function recordList(source: DefectDojoClient, name: string, input: VulnerabilitiesInput): Promise<RecordedList> {
-  const request = vulnerabilitiesInputSchema.parse(input);
-  const output = await readVulnerabilities(source, facts, request);
-  const recorded = { input: request, output };
-  console.log(`${name}: ${describeList(recorded)}`);
-  return recorded;
-}
-
-const recordScope = (source: DefectDojoClient): Promise<FindingsScope> =>
-  source.listProductsWithTagText(NAMESPACE_PRODUCT_TAG_TEXT).then((products) => toFindingsScope(facts, products));
+const recordList = (source: DefectDojoClient, name: string, input: VulnerabilitiesInput) =>
+  recordPlatformList(source, facts, VULNERABILITY_LIST, name, vulnerabilitiesInputSchema.parse(input));
 
 const runtime = (filters: Omit<Extract<VulnerabilitiesInput, { level: "runtime" }>, "level" | "namespace"> = {}) =>
   ({ level: "runtime", namespace: NAMESPACE, ...filters }) satisfies VulnerabilitiesInput;
 
-const scope = await recordScope(defectDojo);
+const scope = await recordFindingsScope(defectDojo, facts);
 console.log(`scope: ${scope.state}`);
 
 const runtimeDefault = await recordList(defectDojo, "runtime default", runtime());
@@ -129,18 +104,16 @@ const lists = {
   codeDefault: await recordList(defectDojo, "code", { level: "code", namespace: NAMESPACE }),
 };
 
-const codebases = (await reader.listResource(k8sCodebaseConfig, NAMESPACE)).items
-  .map((item) => (item as KubeObject).metadata.name)
-  .sort((a, b) => a.localeCompare(b));
+const codebases = await readCodebaseNames(reader, NAMESPACE);
 
 const { notConfigured: notConfiguredClient, unreachable: unreachableClient } = outageClients();
 
 const notConfigured = {
-  scope: await recordScope(notConfiguredClient),
+  scope: await recordFindingsScope(notConfiguredClient, facts),
   list: await recordList(notConfiguredClient, "not configured", runtime()),
 };
 const unreachable = {
-  scope: await recordScope(unreachableClient),
+  scope: await recordFindingsScope(unreachableClient, facts),
   list: await recordList(unreachableClient, "unreachable", runtime()),
 };
 console.log(`not configured scope: ${notConfigured.scope.state}, unreachable scope: ${unreachable.scope.state}`);

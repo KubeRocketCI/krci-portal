@@ -1,16 +1,13 @@
 import type { QueryClient } from "@tanstack/react-query";
 import {
   findingsScopeSchema,
-  k8sCodebaseConfig,
+  platformFindingsListSchema,
   vulnerabilitiesInputSchema,
-  vulnerabilitiesSchema,
   type FindingsScope,
-  type Vulnerabilities,
+  type PlatformFindingsList,
   type VulnerabilitiesRequest,
 } from "@my-project/shared";
-import { getK8sWatchListQueryCacheKey } from "@/k8s/api/hooks/useWatch/query-keys";
-import { TEST_CLUSTER_NAME } from "@/test/utils";
-import { findingsScopeKey } from "../hooks/useFindingsScope";
+import { seedFilterData } from "@/modules/platform/security/components/defectdojo/__fixtures__/seedFilters";
 import { vulnerabilitiesKey } from "../hooks/useVulnerabilities";
 import testbed from "./testbed.json";
 
@@ -20,7 +17,7 @@ export type ListScenario = keyof typeof testbed.lists;
 
 export interface RecordedPage {
   scope: FindingsScope;
-  list: { input: VulnerabilitiesRequest; output: Vulnerabilities };
+  list: { input: VulnerabilitiesRequest; output: PlatformFindingsList };
   codebases: string[];
 }
 
@@ -32,7 +29,7 @@ function parsed(recorded: {
     scope: findingsScopeSchema.parse(recorded.scope),
     list: {
       input: vulnerabilitiesInputSchema.parse(recorded.list.input),
-      output: vulnerabilitiesSchema.parse(recorded.list.output),
+      output: platformFindingsListSchema.parse(recorded.list.output),
     },
   };
 }
@@ -49,34 +46,9 @@ export function recordedUnavailable(state: "notConfigured" | "unreachable"): Rec
   return { ...parsed(testbed[state]), codebases: [] };
 }
 
-function codebaseWatchList(codebases: string[]) {
-  const items = new Map(
-    codebases.map((name) => [
-      name,
-      {
-        apiVersion: k8sCodebaseConfig.apiVersion,
-        kind: k8sCodebaseConfig.kind,
-        metadata: { name, namespace: TESTBED_NAMESPACE },
-        spec: {},
-      },
-    ])
-  );
-
-  return { apiVersion: k8sCodebaseConfig.apiVersion, kind: `${k8sCodebaseConfig.kind}List`, metadata: {}, items };
-}
-
 export function seedPage({ scope, list, codebases }: RecordedPage) {
   return (queryClient: QueryClient) => {
-    queryClient.setQueryData(findingsScopeKey({ namespace: TESTBED_NAMESPACE }), scope);
+    seedFilterData(queryClient, { namespace: TESTBED_NAMESPACE, scope, codebases });
     queryClient.setQueryData(vulnerabilitiesKey(list.input), list.output);
-    queryClient.setQueryData(
-      getK8sWatchListQueryCacheKey(
-        TEST_CLUSTER_NAME,
-        TESTBED_NAMESPACE,
-        k8sCodebaseConfig.group,
-        k8sCodebaseConfig.pluralName
-      ),
-      codebaseWatchList(codebases)
-    );
   };
 }

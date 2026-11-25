@@ -1,7 +1,7 @@
 import type { FindingsScope } from "@my-project/shared";
 import type { DefectDojoProduct, DefectDojoResult } from "../../../clients/defectDojo/index.js";
 import { TAG_KEY, tagValue } from "../codebaseFindings/tags.js";
-import { clustersOfStages, sortedUnique, type PlatformFacts } from "./facts.js";
+import { clustersOfStages, defaultRuntimeClusters, sortedUnique, type PlatformFacts } from "./facts.js";
 
 /** The text every tag of a namespace product's cluster starts with: the products the scope reads. */
 export const NAMESPACE_PRODUCT_TAG_TEXT = `${TAG_KEY.cluster}:`;
@@ -43,10 +43,12 @@ export function toFindingsScope(
     (a, b) => a.cluster.localeCompare(b.cluster) || a.namespace.localeCompare(b.namespace)
   );
 
+  const clusters = sortedUnique(namespaces.map((option) => option.cluster));
   return {
     state: "data",
+    defaultClusters: defaultRuntimeClusters(facts) ?? clusters,
     stageClusters: clustersOfStages(facts),
-    clusters: sortedUnique(namespaces.map((option) => option.cluster)),
+    clusters,
     namespaces,
   };
 }

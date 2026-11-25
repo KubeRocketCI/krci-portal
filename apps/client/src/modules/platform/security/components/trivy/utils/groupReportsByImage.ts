@@ -1,9 +1,5 @@
 import { KubeMetadata } from "@my-project/shared";
 
-/**
- * Common shape for reports that have artifact and timestamp data.
- * Both VulnerabilityReport and ExposedSecretReport satisfy this interface.
- */
 export interface ReportWithArtifact {
   metadata: KubeMetadata;
   report: {
@@ -56,9 +52,6 @@ export interface GroupedReportsResult<T extends ReportWithArtifact> {
 /**
  * Groups reports by unique image key and returns both the groups
  * and the deduplicated list (most recent report per image).
- *
- * Works with any report type that has artifact and timestamp data
- * (VulnerabilityReport, ExposedSecretReport, etc.)
  */
 export function groupReportsByImage<T extends ReportWithArtifact>(reports: T[]): GroupedReportsResult<T> {
   const groups = new Map<string, T[]>();

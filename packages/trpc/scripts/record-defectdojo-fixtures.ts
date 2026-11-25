@@ -258,6 +258,7 @@ await record(productTypeRequest("No Such Type"));
 const semgrepType = (await record(testTypeRequest("Semgrep JSON Report"))).results[0].id;
 const grypeType = (await record(testTypeRequest("Anchore Grype"))).results[0].id;
 const VULNERABILITY_REPORT = "report-kind:vulnerabilityreport";
+const EXPOSED_SECRET_REPORT = "report-kind:exposedsecretreport";
 const BED_CLUSTERS = tags("k8s-cluster:in-cluster", "k8s-cluster:remote-cluster");
 const tagged = (all: string, any?: string) => ({ testTags: { all, any } });
 // Pages of five rows: the tests read the fields and the tests of a page, not its length.
@@ -278,6 +279,8 @@ await record(
 await record(platformFindings({ scope: tagged(tags(VULNERABILITY_REPORT), BED_CLUSTERS), state: "falsePositive" }));
 await record(platformFindings({ scope: tagged(tags(GO_TAGS[1])), testTypeIds: [trivyType, grypeType] }));
 await record(platformFindings({ scope: tagged(tags(...GO_TAGS)), testTypeIds: [semgrepType] }));
+await record(platformFindings({ scope: tagged(tags(GO_TAGS[1])), testTypeIds: [gitleaksType] }));
+await record(platformFindings({ scope: tagged(tags(EXPOSED_SECRET_REPORT), BED_CLUSTERS) }));
 await record(productsByTagTextRequest("k8s-cluster:", FIRST_PAGE));
 await record(testsRequest({ tagFilter: tags(VULNERABILITY_REPORT), anyTagFilter: BED_CLUSTERS }, FIRST_PAGE));
 await record(

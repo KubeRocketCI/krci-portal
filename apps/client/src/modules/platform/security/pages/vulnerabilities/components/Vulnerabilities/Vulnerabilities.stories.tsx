@@ -5,9 +5,14 @@
 // the rows of the Environments demo / dev (with the codebase test-go-app) and demo / qa follow. The Stage clusters are
 // in-cluster and remote-cluster; demo / prod is on remote-cluster.
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { VULNERABILITIES_DEFAULT_PAGE_SIZE } from "@my-project/shared";
+import { PLATFORM_LIST_DEFAULT_PAGE_SIZE } from "@my-project/shared";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { withAppProviders, withFailingTrpc } from "@sb/index";
+import {
+  FORBIDDEN_MESSAGE,
+  bodyRows,
+  buttonLabels,
+} from "@/modules/platform/security/components/defectdojo/__fixtures__/plays";
 import { Vulnerabilities } from ".";
 import {
   recordedPage,
@@ -64,11 +69,6 @@ const group = (canvasElement: HTMLElement, name: string): Scope =>
 const findingsTable = async (canvasElement: HTMLElement): Promise<Scope> =>
   within(await within(canvasElement).findByRole("table", { name: "Vulnerability findings" }));
 
-const bodyRows = (table: Scope): HTMLElement[] => table.getAllByRole("row").slice(1);
-
-const buttonLabels = (scope: Scope): (string | null)[] =>
-  scope.getAllByRole("button").map((button: HTMLElement) => button.textContent);
-
 /** The title must occur once on the page: `getByText` throws on a repeat. */
 async function findingRow(canvasElement: HTMLElement, title: string): Promise<Scope> {
   const row = (await findingsTable(canvasElement)).getByText(title).closest("tr");
@@ -84,13 +84,13 @@ export const RuntimeDefault: Story = {
     const canvas = within(canvasElement);
     const table = await findingsTable(canvasElement);
 
-    await expect(bodyRows(table)).toHaveLength(VULNERABILITIES_DEFAULT_PAGE_SIZE);
+    await expect(bodyRows(table)).toHaveLength(PLATFORM_LIST_DEFAULT_PAGE_SIZE);
     for (const name of ["Severity", "Finding", "Vulnerability", "Component", "Fix", "Found in"]) {
       await expect(table.getByRole("columnheader", { name })).toBeVisible();
     }
     await expect(table.queryByRole("columnheader", { name: "Location" })).not.toBeInTheDocument();
     await expect(
-      canvas.getByText(`1-${VULNERABILITIES_DEFAULT_PAGE_SIZE} of ${recordedData("runtimeDefault").total}`)
+      canvas.getByText(`1-${PLATFORM_LIST_DEFAULT_PAGE_SIZE} of ${recordedData("runtimeDefault").total}`)
     ).toBeVisible();
     await expect(canvas.getByRole("button", { name: "Previous page" })).toBeDisabled();
     await expect(canvas.getByRole("button", { name: "Next page" })).toBeEnabled();
@@ -176,10 +176,10 @@ export const RuntimeSecondPage: Story = {
     const canvas = within(canvasElement);
     const table = await findingsTable(canvasElement);
 
-    await expect(bodyRows(table)).toHaveLength(VULNERABILITIES_DEFAULT_PAGE_SIZE);
+    await expect(bodyRows(table)).toHaveLength(PLATFORM_LIST_DEFAULT_PAGE_SIZE);
     await expect(
       canvas.getByText(
-        `${VULNERABILITIES_DEFAULT_PAGE_SIZE + 1}-${2 * VULNERABILITIES_DEFAULT_PAGE_SIZE} of ${recordedData("runtimeSecondPage").total}`
+        `${PLATFORM_LIST_DEFAULT_PAGE_SIZE + 1}-${2 * PLATFORM_LIST_DEFAULT_PAGE_SIZE} of ${recordedData("runtimeSecondPage").total}`
       )
     ).toBeVisible();
     await expect(canvas.getByRole("button", { name: "Previous page" })).toBeEnabled();
@@ -300,11 +300,11 @@ export const RuntimeSeverityCritical: Story = {
     const severity = group(canvasElement, "Severity");
     await expect(severity.getByRole("button", { name: "Critical" })).toHaveAttribute("aria-pressed", "true");
     await expect(severity.getByRole("button", { name: "All" })).toHaveAttribute("aria-pressed", "false");
-    await expect(bodyRows(table)).toHaveLength(VULNERABILITIES_DEFAULT_PAGE_SIZE);
+    await expect(bodyRows(table)).toHaveLength(PLATFORM_LIST_DEFAULT_PAGE_SIZE);
     await expect(
-      canvas.getByText(`1-${VULNERABILITIES_DEFAULT_PAGE_SIZE} of ${recordedData("runtimeSeverityCritical").total}`)
+      canvas.getByText(`1-${PLATFORM_LIST_DEFAULT_PAGE_SIZE} of ${recordedData("runtimeSeverityCritical").total}`)
     ).toBeVisible();
-    await expect(table.getAllByText("Critical")).toHaveLength(VULNERABILITIES_DEFAULT_PAGE_SIZE);
+    await expect(table.getAllByText("Critical")).toHaveLength(PLATFORM_LIST_DEFAULT_PAGE_SIZE);
     await expect(table.queryByText("High")).not.toBeInTheDocument();
 
     await userEvent.click(severity.getByRole("button", { name: "Critical" }));
@@ -420,9 +420,9 @@ export const ImageDefault: Story = {
       "aria-pressed",
       "true"
     );
-    await expect(bodyRows(table)).toHaveLength(VULNERABILITIES_DEFAULT_PAGE_SIZE);
+    await expect(bodyRows(table)).toHaveLength(PLATFORM_LIST_DEFAULT_PAGE_SIZE);
     await expect(
-      canvas.getByText(`1-${VULNERABILITIES_DEFAULT_PAGE_SIZE} of ${recordedData("imageDefault").total}`)
+      canvas.getByText(`1-${PLATFORM_LIST_DEFAULT_PAGE_SIZE} of ${recordedData("imageDefault").total}`)
     ).toBeVisible();
 
     await expect(canvas.queryByRole("group", { name: "Clusters" })).not.toBeInTheDocument();
@@ -522,8 +522,6 @@ export const Unreachable: Story = {
   },
 };
 
-const FORBIDDEN_MESSAGE = "Kubernetes API request failed: 403 Forbidden. stages is forbidden for this user";
-
 export const KubernetesReadFailed: Story = {
   decorators: [withFailingTrpc(FORBIDDEN_MESSAGE), withAppProviders()],
   play: async ({ canvasElement }) => {
@@ -549,10 +547,8 @@ export const RuntimeTriagedTruncatedSynthetic: Story = {
         `The list holds the ${SYNTHETIC_TRIAGED_TOTAL} most severe findings of this state; DefectDojo has more.`
       )
     ).toBeVisible();
-    await expect(bodyRows(table)).toHaveLength(VULNERABILITIES_DEFAULT_PAGE_SIZE);
-    await expect(
-      canvas.getByText(`1-${VULNERABILITIES_DEFAULT_PAGE_SIZE} of ${SYNTHETIC_TRIAGED_TOTAL}`)
-    ).toBeVisible();
+    await expect(bodyRows(table)).toHaveLength(PLATFORM_LIST_DEFAULT_PAGE_SIZE);
+    await expect(canvas.getByText(`1-${PLATFORM_LIST_DEFAULT_PAGE_SIZE} of ${SYNTHETIC_TRIAGED_TOTAL}`)).toBeVisible();
     await expect(canvas.getByRole("button", { name: "Next page" })).toBeEnabled();
   },
 };

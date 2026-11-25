@@ -1,10 +1,6 @@
 // SYNTHETIC data: derived from the recording of the testbed, not recorded from it. Only for states the testbed does not
 // hold.
-import {
-  TRIAGED_RUNTIME_SCAN_LIMIT,
-  VULNERABILITIES_DEFAULT_PAGE_SIZE,
-  type PlatformFinding,
-} from "@my-project/shared";
+import { PLATFORM_LIST_DEFAULT_PAGE_SIZE, TRIAGED_RUNTIME_SCAN_LIMIT, type PlatformFinding } from "@my-project/shared";
 import { recordedPage, type RecordedPage } from "./seed";
 
 export const SYNTHETIC_TRIAGED_TOTAL = TRIAGED_RUNTIME_SCAN_LIMIT;
@@ -21,7 +17,7 @@ export function syntheticTruncatedTriaged(): RecordedPage {
   }
 
   const [template] = output.findings;
-  const findings = Array.from({ length: VULNERABILITIES_DEFAULT_PAGE_SIZE }, (_, index): PlatformFinding => {
+  const findings = Array.from({ length: PLATFORM_LIST_DEFAULT_PAGE_SIZE }, (_, index): PlatformFinding => {
     const id = `CVE-2098-${String(index).padStart(5, "0")}`;
 
     return {

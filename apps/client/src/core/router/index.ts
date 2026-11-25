@@ -114,8 +114,7 @@ import { routeTrivyConfigAudits } from "@/modules/platform/security/pages/trivy-
 import { routeTrivyConfigAuditDetails } from "@/modules/platform/security/pages/trivy-config-audit-details/route";
 import { routeTrivyCompliance } from "@/modules/platform/security/pages/trivy-compliance/route";
 import { routeTrivyComplianceDetails } from "@/modules/platform/security/pages/trivy-compliance-details/route";
-import { routeTrivyExposedSecrets } from "@/modules/platform/security/pages/trivy-exposed-secrets/route";
-import { routeTrivyExposedSecretDetails } from "@/modules/platform/security/pages/trivy-exposed-secret-details/route";
+import { routeExposedSecrets } from "@/modules/platform/security/pages/exposed-secrets/route";
 import { routeTrivyRbacAssessments } from "@/modules/platform/security/pages/trivy-rbac-assessments/route";
 import { routeTrivyRbacAssessmentDetails } from "@/modules/platform/security/pages/trivy-rbac-assessment-details/route";
 import { routeTrivyClusterRbacAssessments } from "@/modules/platform/security/pages/trivy-cluster-rbac-assessments/route";
@@ -169,8 +168,7 @@ const routeTree = rootRoute.addChildren([
         routeTrivyConfigAuditDetails,
         routeTrivyCompliance,
         routeTrivyComplianceDetails,
-        routeTrivyExposedSecrets,
-        routeTrivyExposedSecretDetails,
+        routeExposedSecrets,
         routeTrivyRbacAssessments,
         routeTrivyRbacAssessmentDetails,
         routeTrivyClusterRbacAssessments,

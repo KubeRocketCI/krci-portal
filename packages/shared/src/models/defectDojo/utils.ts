@@ -1,11 +1,11 @@
-import { DEFECTDOJO_SEVERITIES, type DefectDojoSeverity, type RuntimeReportKind } from "./constants.js";
-import type {
-  CodebaseScanRef,
-  RuntimeContainer,
-  RuntimeContainerRef,
-  RuntimeEnvironment,
-  VulnerabilitiesRequest,
-} from "./types.js";
+import {
+  DEFECTDOJO_SEVERITIES,
+  RUNTIME_FINDING_STATES,
+  type DefectDojoFindingState,
+  type DefectDojoSeverity,
+  type RuntimeReportKind,
+} from "./constants.js";
+import type { CodebaseScanRef, RuntimeContainer, RuntimeContainerRef, RuntimeEnvironment } from "./types.js";
 
 /** Identity of a scan as one string: equal for the same scan, different for any other. Not a lookup key sent to DefectDojo. */
 export function scanRefKey(scan: CodebaseScanRef): string {
@@ -58,10 +58,17 @@ export function hasActiveRuntimeFindings({
   );
 }
 
+export function isRuntimeFindingState(state: DefectDojoFindingState): state is (typeof RUNTIME_FINDING_STATES)[number] {
+  return (RUNTIME_FINDING_STATES as readonly DefectDojoFindingState[]).includes(state);
+}
+
 /** A filter beyond the scope of a list: an empty page then means no match, not no findings. */
-export function hasVulnerabilityFilter(
-  request: Pick<VulnerabilitiesRequest, "state" | "severity" | "vulnerabilityId" | "component">
-): boolean {
+export function hasFindingFilter(request: {
+  state: DefectDojoFindingState;
+  severity?: DefectDojoSeverity;
+  vulnerabilityId?: string;
+  component?: string;
+}): boolean {
   return (
     request.state !== "active" ||
     request.severity !== undefined ||
