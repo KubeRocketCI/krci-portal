@@ -18,6 +18,7 @@ import { agentReviewRunsQueryKey } from "../../../hooks/useAgentReviewRuns";
 import { useFleet } from "../../../hooks/useFleet";
 import { issueLabel } from "../../../utils/issueLabel";
 import { AgentActorCard } from "./components/AgentActorCard";
+import { AgentEgressPolicyCard } from "./components/AgentEgressPolicyCard";
 import { AgentHeader, AgentTitle } from "./components/AgentHeader";
 import { AgentProducedCard } from "./components/AgentProducedCard";
 import { AgentProfileCard } from "./components/AgentProfileCard";
@@ -65,6 +66,7 @@ function AgentResultBody({ result, atespace, name, usableWorkerPools }: AgentRes
             <AgentProfileCard agent={result.agent} />
             <AgentActorCard actor={result.actor} usableWorkerPools={usableWorkerPools} />
           </div>
+          <AgentEgressPolicyCard egressPolicy={result.egressPolicy} />
         </>
       );
   }

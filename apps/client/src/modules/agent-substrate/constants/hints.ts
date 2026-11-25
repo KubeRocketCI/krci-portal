@@ -45,6 +45,10 @@ export const TERM_HINT = {
   generation: "The generation number of the snapshot, increasing from 1.",
   fidelity: "What the snapshot holds: volumes, root filesystem changes or process memory.",
   locality: "The Kubernetes node holding the snapshot files. Detach, revert or a later checkpoint clears it.",
+  egressRule:
+    "HTTPS and HTTP: the egress gateway reads each request and can add credentials. TLS passthrough: it forwards the traffic without decryption.",
+  egressCredentials:
+    "Request headers whose placeholder value the egress gateway replaces with a credential when the actor sends them, with the prefix of the credential.",
   durableState:
     "The durable storage copy of the snapshot: pending while it is uploaded, completed once the upload is recorded.",
 } as const;

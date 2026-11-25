@@ -7,6 +7,9 @@ import { SidebarProvider } from "@/core/components/ui/sidebar";
 import {
   ACTOR_NOT_FOUND,
   CRASHED_AGENT,
+  EGRESS_POLICY_UNREADABLE_AGENT,
+  EVERY_RULE_KIND_AGENT,
+  NO_EGRESS_POLICY_AGENT,
   NOT_AN_AGENT,
   ONE_TURN_AGENT,
   RUNNING_AGENT,
@@ -55,6 +58,16 @@ const fact = (scope: ReturnType<typeof within>, term: string) =>
 /** The InfoColumns value: the element after its label. */
 const headerFact = (scope: ReturnType<typeof within>, label: string) =>
   scope.getByText(label).nextElementSibling as HTMLElement;
+
+const rowTexts = (scope: ReturnType<typeof within>) =>
+  scope
+    .getAllByRole("row")
+    .slice(1)
+    .map((row: HTMLElement) =>
+      within(row)
+        .getAllByRole("cell")
+        .map((cell: HTMLElement) => cell.textContent)
+    );
 
 /** PageWrapper renders the breadcrumbs as siblings of the first one, "Factory". */
 const breadcrumb = (canvasElement: HTMLElement) => within(within(canvasElement).getByText("Factory").parentElement!);
@@ -128,6 +141,61 @@ export const Running: Story = {
     }
     await expect(actor.getByRole("button", { name: "About Sandbox class" })).toBeVisible();
     await expect(actor.getByRole("button", { name: "About Can run on" })).toBeVisible();
+
+    const egressRegion = await region(canvasElement, "Egress policy");
+    await expect(rowTexts(egressRegion)).toEqual([
+      ["HTTPS", "api.anthropic.com", "443", "x-api-key"],
+      ["HTTPS", "gitlab.example.com", "443", 'Authorization ("Basic "), PRIVATE-TOKEN'],
+      ["TLS passthrough", "proxy.golang.org, sum.golang.org, storage.googleapis.com", "443", "—"],
+    ]);
+    await expect(egressRegion.getByText("Every other host is denied.")).toBeVisible();
+    const regions = within(canvasElement).getAllByRole("region");
+    await expect(regions[regions.length - 1]).toHaveAccessibleName("Egress policy");
+  },
+};
+
+export const NoEgressPolicy: Story = {
+  decorators: [withAppProviders({ seedQueryCache: seedAgent(SUSPENDED_REF, NO_EGRESS_POLICY_AGENT) })],
+  args: SUSPENDED_REF,
+  play: async ({ canvasElement }) => {
+    const egressRegion = await region(canvasElement, "Egress policy");
+
+    await expect(egressRegion.getByText("The actor has no egress policy")).toBeVisible();
+    await expect(egressRegion.queryByRole("table")).toBeNull();
+    await expect(egressRegion.queryByText("Every other host is denied.")).toBeNull();
+    await expect(egressRegion.queryByRole("alert")).toBeNull();
+  },
+};
+
+export const EgressRulesOfEveryKind: Story = {
+  decorators: [withAppProviders({ seedQueryCache: seedAgent(SUSPENDED_REF, EVERY_RULE_KIND_AGENT) })],
+  args: SUSPENDED_REF,
+  play: async ({ canvasElement }) => {
+    const egressRegion = await region(canvasElement, "Egress policy");
+
+    await expect(rowTexts(egressRegion)).toEqual([
+      ["HTTP", "mirror.example.com", "80, 8080", "—"],
+      ["TLS passthrough", "*.example.org", "All", "—"],
+      ["Unknown", "—", "—", "—"],
+    ]);
+    await expect(
+      egressRegion.getByText("The egress policy holds a rule of a kind that the portal cannot show.")
+    ).toBeVisible();
+    await expect(egressRegion.queryByText("Every other host is denied.")).toBeNull();
+  },
+};
+
+export const EgressPolicyUnreadable: Story = {
+  decorators: [withAppProviders({ seedQueryCache: seedAgent(SUSPENDED_REF, EGRESS_POLICY_UNREADABLE_AGENT) })],
+  args: SUSPENDED_REF,
+  play: async ({ canvasElement }) => {
+    const egressRegion = await region(canvasElement, "Egress policy");
+
+    await expect(egressRegion.getByText("The egress policy could not be read")).toBeVisible();
+    await expect(egressRegion.getByText("Reason: permission denied.")).toBeVisible();
+    await expect(egressRegion.queryByRole("table")).toBeNull();
+    await expect(egressRegion.queryByText("Every other host is denied.")).toBeNull();
+    await expect(await region(canvasElement, "Actor")).toBeTruthy();
   },
 };
 
