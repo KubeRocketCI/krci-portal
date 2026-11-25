@@ -9,11 +9,13 @@ const objectName = z
   .max(63)
   .regex(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/);
 
+export const agentRefSchema = z.object({ atespace: objectName, name: objectName }).strict();
+
 /**
  * The Agent Substrate read uses the portal ServiceAccount. Per user, read with the user's `idToken`: the Codebase and
  * issue link of the agent.
  */
 export const getAgentProcedure = protectedProcedure
-  .input(z.object({ atespace: objectName, name: objectName }).strict())
+  .input(agentRefSchema)
   .output(agentReadSchema)
   .query(({ ctx, input }): Promise<AgentRead> => getAgent(ctx, input));

@@ -6,6 +6,7 @@ import {
   type CustomSession,
   createContext,
   createAgentSubstrateSource,
+  TektonReviewRunSource,
 } from "@my-project/trpc";
 import FastifyCookie from "@fastify/cookie";
 import FastifyCors from "@fastify/cors";
@@ -59,6 +60,7 @@ export class LocalFastifyServer {
     const notificationsStore = new DBNotificationsStore();
     notificationsStore.cleanup();
     const agentSubstrateSource = createAgentSubstrateSource(process.env);
+    const reviewRunSource = new TektonReviewRunSource();
 
     if (process.env.NODE_ENV === "development") {
       sessionStore.clearAllSessions();
@@ -132,6 +134,7 @@ export class LocalFastifyServer {
               sessionStore,
               notificationsStore,
               agentSubstrateSource,
+              reviewRunSource,
               oidcConfig: {
                 issuerURL: process.env.OIDC_ISSUER_URL ?? "",
                 clientID: process.env.OIDC_CLIENT_ID ?? "",

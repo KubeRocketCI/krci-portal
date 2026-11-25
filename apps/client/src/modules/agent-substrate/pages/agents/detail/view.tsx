@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Bot } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import type { AgentRead, AgentResult, WorkerPoolRef } from "@my-project/shared";
@@ -13,10 +14,12 @@ import {
   PATH_FACTORY_AGENTS_FULL,
 } from "../../../constants/paths";
 import { useAgent } from "../../../hooks/useAgent";
+import { agentReviewRunsQueryKey } from "../../../hooks/useAgentReviewRuns";
 import { useFleet } from "../../../hooks/useFleet";
 import { issueLabel } from "../../../utils/issueLabel";
 import { AgentActorCard } from "./components/AgentActorCard";
 import { AgentHeader, AgentTitle } from "./components/AgentHeader";
+import { AgentProducedCard } from "./components/AgentProducedCard";
 import { AgentProfileCard } from "./components/AgentProfileCard";
 
 export interface AgentDetailViewProps {
@@ -57,6 +60,7 @@ function AgentResultBody({ result, atespace, name, usableWorkerPools }: AgentRes
       return (
         <>
           <AgentHeader agent={result.agent} actor={result.actor} />
+          <AgentProducedCard atespace={atespace} name={name} codebase={result.agent.codebase} />
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <AgentProfileCard agent={result.agent} />
             <AgentActorCard actor={result.actor} usableWorkerPools={usableWorkerPools} />
@@ -73,6 +77,7 @@ function AgentResultBody({ result, atespace, name, usableWorkerPools }: AgentRes
 export function AgentDetailView({ atespace, name }: AgentDetailViewProps) {
   const clusterName = useClusterStore(useShallow((state) => state.clusterName));
   const query = useAgent({ atespace, name });
+  const queryClient = useQueryClient();
   const usableWorkerPools = useUsableWorkerPools({ atespace, name });
   const result = query.data?.state === "ready" ? query.data.result : null;
   const found = result?.kind === "agent" ? result : null;
@@ -99,7 +104,10 @@ export function AgentDetailView({ atespace, name }: AgentDetailViewProps) {
       error={query.error}
       dataUpdatedAt={query.dataUpdatedAt}
       isFetching={query.isFetching}
-      onRefresh={() => void query.refetch()}
+      onRefresh={() => {
+        void query.refetch();
+        void queryClient.invalidateQueries({ queryKey: agentReviewRunsQueryKey({ atespace, name }) });
+      }}
     >
       {(read) => (
         <AgentResultBody result={read.result} atespace={atespace} name={name} usableWorkerPools={usableWorkerPools} />

@@ -187,6 +187,10 @@ export const TABLE = {
     id: "agentActorSnapshotList",
     name: "Actor Snapshot List",
   },
+  AGENT_MERGE_REQUEST_LIST: {
+    id: "agentMergeRequestList",
+    name: "Agent Merge Request List",
+  },
 } as const;
 
 export const TABLE_ID_K8S_PODS = "k8s-pods" as const;

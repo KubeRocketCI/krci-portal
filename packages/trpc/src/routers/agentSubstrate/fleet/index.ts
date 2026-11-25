@@ -25,6 +25,7 @@ import { readWorkerPools, type WorkerPoolRead } from "./workerPools.js";
 import type { SubstrateWorker } from "../../../clients/agentSubstrate/index.js";
 
 export { getAgent } from "./agent.js";
+export { getAgentReviewRuns } from "./reviewRuns.js";
 
 /** The current actor templates of one worker selector. */
 interface SelectorGroup {

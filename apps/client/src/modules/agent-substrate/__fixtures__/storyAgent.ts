@@ -1,8 +1,17 @@
 import type { QueryClient } from "@tanstack/react-query";
-import type { ActorRow, AgentActor, AgentDetail, ReadyAgentRead, ReadyFleet } from "@my-project/shared";
+import type {
+  ActorRow,
+  AgentActor,
+  AgentDetail,
+  AgentReviewRuns,
+  ReadyAgentRead,
+  ReadyFleet,
+} from "@my-project/shared";
 import { agentQueryKey, type AgentData, type AgentRef } from "../hooks/useAgent";
+import { agentReviewRunsQueryKey } from "../hooks/useAgentReviewRuns";
 import { FLEET_QUERY_KEY } from "../hooks/useFleet";
 import { STORY_FLEET } from "./storyFleet";
+import { NO_REVIEW_RUN } from "./storyReviewRuns";
 
 // Testbed captures of one agent: issue-2-26 suspended, issue-2-32 running (go agent profile).
 
@@ -139,14 +148,15 @@ export const STORY_FLEET_WITH_RUNNING_AGENT: ReadyFleet = (() => {
   return fleet;
 })();
 
-/** Seeds the agent read of `ref` and the fleet. */
 export function seedAgent(
   ref: AgentRef,
   read: AgentData | undefined,
-  fleet: ReadyFleet = STORY_FLEET_WITH_RUNNING_AGENT
+  fleet: ReadyFleet = STORY_FLEET_WITH_RUNNING_AGENT,
+  reviewRuns: AgentReviewRuns = NO_REVIEW_RUN
 ) {
   return (queryClient: QueryClient) => {
     if (read) queryClient.setQueryData(agentQueryKey(ref), read);
+    queryClient.setQueryData(agentReviewRunsQueryKey(ref), reviewRuns);
     queryClient.setQueryData(FLEET_QUERY_KEY, fleet);
   };
 }

@@ -6,6 +6,7 @@ import {
   type CustomSession,
   createContext,
   createAgentSubstrateSource,
+  TektonReviewRunSource,
 } from "@my-project/trpc";
 import FastifyCookie from "@fastify/cookie";
 import FastifySession from "@fastify/session";
@@ -63,6 +64,7 @@ export class ProductionFastifyServer {
     const notificationsStore = new DBNotificationsStore();
     notificationsStore.cleanup();
     const agentSubstrateSource = createAgentSubstrateSource(process.env);
+    const reviewRunSource = new TektonReviewRunSource();
 
     this.fastify.register(FastifyWebsocket, {
       prefix: process.env.API_PREFIX,
@@ -136,6 +138,7 @@ export class ProductionFastifyServer {
               sessionStore,
               notificationsStore,
               agentSubstrateSource,
+              reviewRunSource,
               oidcConfig: {
                 issuerURL: process.env.OIDC_ISSUER_URL ?? "",
                 clientID: process.env.OIDC_CLIENT_ID ?? "",

@@ -16,6 +16,7 @@ import {
   agentRefOf,
   seedAgent,
 } from "../../../__fixtures__/storyAgent";
+import { RUNNING_REVIEW_RUNS } from "../../../__fixtures__/storyReviewRuns";
 import { PAGE_DESCRIPTION } from "../../../constants/hints";
 import { FLEET_QUERY_KEY } from "../../../hooks/useFleet";
 import { AgentDetailView } from "./view";
@@ -33,7 +34,11 @@ const meta = {
     layout: "fullscreen",
   },
   tags: ["autodocs"],
-  decorators: [withAppProviders({ seedQueryCache: seedAgent(RUNNING_REF, RUNNING_AGENT) })],
+  decorators: [
+    withAppProviders({
+      seedQueryCache: seedAgent(RUNNING_REF, RUNNING_AGENT, STORY_FLEET_WITH_RUNNING_AGENT, RUNNING_REVIEW_RUNS),
+    }),
+  ],
   args: RUNNING_REF,
 } satisfies Meta<typeof AgentDetailView>;
 
@@ -79,6 +84,14 @@ export const Running: Story = {
     await expect(header.getByRole("link", { name: "test-go-app" })).toHaveAttribute(
       "href",
       "/c/in-cluster/projects/krci/test-go-app"
+    );
+
+    const produced = await region(canvasElement, "Produced");
+    const sections = canvas.getAllByRole("region").map((section) => section.getAttribute("aria-labelledby"));
+    await expect(sections.indexOf("agent-produced-title")).toBeLessThan(sections.indexOf("agent-profile-title"));
+    await expect(produced.getByRole("link", { name: "!5" })).toHaveAttribute(
+      "href",
+      "https://gitlab.example.com/krci/test-go-app/-/merge_requests/5"
     );
 
     const profile = await region(canvasElement, "Agent profile");
