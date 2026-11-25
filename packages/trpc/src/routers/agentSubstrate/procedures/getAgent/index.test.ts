@@ -11,6 +11,7 @@ import { createMockedContext } from "../../../../__mocks__/context.js";
 import {
   AgentSubstrateSourceError,
   MemoryAgentSubstrateSource,
+  type MemoryEgressPolicy,
   type SubstrateActor,
   type SubstrateActorTemplate,
 } from "../../../../clients/agentSubstrate/index.js";
@@ -117,6 +118,36 @@ const CRASHED = actor("issue-2-27", "crashed", {
   crash: { message: "sandbox exited with code 137: out of memory", crashTime: "2026-11-24T18:01:00.000Z" },
 });
 
+/** The go egress policy the dispatcher writes, as captured on the testbed. */
+function goEgressPolicy(name: string): MemoryEgressPolicy {
+  return {
+    actor: { atespace: ATESPACE, name },
+    rules: [
+      {
+        kind: "https",
+        hosts: ["api.anthropic.com"],
+        ports: [443],
+        credentials: [{ header: "x-api-key", prefix: null }],
+      },
+      {
+        kind: "https",
+        hosts: ["gitlab.example.com"],
+        ports: [443],
+        credentials: [
+          { header: "Authorization", prefix: "Basic " },
+          { header: "PRIVATE-TOKEN", prefix: null },
+        ],
+      },
+      {
+        kind: "tlsPassthrough",
+        hosts: ["proxy.golang.org", "sum.golang.org", "storage.googleapis.com"],
+        ports: [443],
+        credentials: [],
+      },
+    ],
+  };
+}
+
 function agentSource(): MemoryAgentSubstrateSource {
   return new MemoryAgentSubstrateSource({
     actors: [RUNNING, SUSPENDED, CRASHED, actor("debug-shell", "running"), actor("gone-template", "suspended")],
@@ -126,6 +157,8 @@ function agentSource(): MemoryAgentSubstrateSource {
       goActorTemplate("issue-2-27", "27"),
       plainActorTemplate("debug-shell"),
     ],
+    // The suspended actor issue-2-26 has no egress policy.
+    egressPolicies: [goEgressPolicy("issue-2-32"), goEgressPolicy("issue-2-27")],
   });
 }
 
@@ -274,8 +307,84 @@ describe("agentSubstrate.getAgent", () => {
           createdAt: "2026-11-16T16:35:32.274Z",
           updatedAt: "2026-11-16T17:09:19.320Z",
         },
+        egressPolicy: {
+          state: "ready",
+          rules: [
+            {
+              kind: "https",
+              hosts: ["api.anthropic.com"],
+              ports: [443],
+              credentials: [{ header: "x-api-key", prefix: null }],
+            },
+            {
+              kind: "https",
+              hosts: ["gitlab.example.com"],
+              ports: [443],
+              credentials: [
+                { header: "Authorization", prefix: "Basic " },
+                { header: "PRIVATE-TOKEN", prefix: null },
+              ],
+            },
+            {
+              kind: "tlsPassthrough",
+              hosts: ["proxy.golang.org", "sum.golang.org", "storage.googleapis.com"],
+              ports: [443],
+              credentials: [],
+            },
+          ],
+        },
       },
     });
+  });
+
+  it("gives no egress policy to an agent whose actor has none", async () => {
+    mockContext.agentSubstrateSource = agentSource();
+
+    const { egressPolicy } = await agentOf(createCaller(mockContext), "issue-2-26");
+
+    expect(egressPolicy).toEqual({ state: "none" });
+  });
+
+  it("passes on no credential URI of the egress policy", async () => {
+    const policy = goEgressPolicy("issue-2-32");
+    policy.rules[0].credentials[0] = {
+      header: "x-api-key",
+      prefix: null,
+      credentialUri: "ate-secret://k8s.io/default/krci-agents/anthropic/api-key",
+    } as (typeof policy.rules)[0]["credentials"][0];
+    const source = agentSource();
+    source.setFleet({ egressPolicies: [policy] });
+    mockContext.agentSubstrateSource = source;
+
+    const read = await readyRead(createCaller(mockContext), "issue-2-32");
+
+    const output = JSON.stringify(read);
+    expect(output).toContain("x-api-key");
+    expect(output).not.toContain("ate-secret://");
+    expect(output).not.toContain("credentialUri");
+  });
+
+  it("reads the egress policy of the actor by atespace and actor name", async () => {
+    const source = agentSource();
+    const getActorEgressPolicy = vi.spyOn(source, "getActorEgressPolicy");
+    mockContext.agentSubstrateSource = source;
+
+    await agentOf(createCaller(mockContext), "issue-2-32");
+
+    expect(getActorEgressPolicy).toHaveBeenCalledWith({ atespace: ATESPACE, name: "issue-2-32" });
+  });
+
+  it("reads no egress policy for an actor that is not an agent", async () => {
+    const source = agentSource();
+    const getActorEgressPolicy = vi
+      .spyOn(source, "getActorEgressPolicy")
+      .mockRejectedValue(new AgentSubstrateSourceError("permissionDenied", "denied"));
+    mockContext.agentSubstrateSource = source;
+
+    const read = await readyRead(createCaller(mockContext), "debug-shell");
+
+    expect(read.result).toEqual({ kind: "notAnAgent" });
+    expect(getActorEgressPolicy).not.toHaveBeenCalled();
   });
 
   it("gives a suspended agent no worker assignment and the fidelity and sandbox class of its newest snapshot", async () => {
@@ -327,9 +436,10 @@ describe("agentSubstrate.getAgent", () => {
   it("passes on no env value outside the ADR 0001 list", async () => {
     mockContext.agentSubstrateSource = agentSource();
 
-    const read = await readyRead(createCaller(mockContext), "issue-2-32");
+    const { agent, actor: running } = await agentOf(createCaller(mockContext), "issue-2-32");
 
-    const output = JSON.stringify(read);
+    // Not the egress policy: its hosts hold sum.golang.org, the GOSUMDB value.
+    const output = JSON.stringify({ agent, actor: running });
     for (const [name, value] of Object.entries(HIDDEN_ENV)) {
       expect(output).not.toContain(name);
       expect(output).not.toContain(value);
@@ -425,6 +535,23 @@ describe("agentSubstrate.getAgent", () => {
       const read = await createCaller(mockContext).agentSubstrate.getAgent({ atespace: ATESPACE, name: "issue-2-32" });
 
       expect(read).toEqual({ state: "unreachable", reason: kind });
+    }
+  );
+
+  it.each(["unavailable", "unauthenticated", "permissionDenied", "other"] as const)(
+    "gives the agent with an unreadable egress policy of the reason %s when only the egress policy read fails",
+    async (kind) => {
+      const source = agentSource();
+      const error = new AgentSubstrateSourceError(kind, "egress read failed");
+      vi.spyOn(source, "getActorEgressPolicy").mockRejectedValue(error);
+      mockContext.agentSubstrateSource = source;
+
+      const result = await agentOf(createCaller(mockContext), "issue-2-32");
+
+      expect(result.egressPolicy).toEqual({ state: "unreadable", reason: kind });
+      expect(result.agent.issue.iid).toBe("32");
+      expect(JSON.stringify(result)).not.toContain("egress read failed");
+      expect(consoleError).toHaveBeenCalledWith(`[AgentSubstrate] Egress policy read failed (${kind}):`, error);
     }
   );
 

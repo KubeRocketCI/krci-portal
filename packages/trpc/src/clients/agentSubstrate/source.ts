@@ -1,5 +1,6 @@
 import type {
   ActorState,
+  EgressRule,
   SnapshotDurableState,
   SnapshotFidelity,
   SubstrateResources,
@@ -67,6 +68,11 @@ export interface SubstrateActorTemplate {
   preferredSnapshotFidelity: SnapshotFidelity | null;
 }
 
+/** Holds no credential URI. */
+export interface SubstrateEgressPolicy {
+  rules: EgressRule[];
+}
+
 export interface SubstrateWorker {
   name: string;
   workerPool: string;
@@ -118,5 +124,7 @@ export interface AgentSubstrateSource {
   getActor(ref: SubstrateObjectRef): Promise<SubstrateActor>;
   /** Actor templates are immutable: a result for one uid stays valid. */
   getActorTemplate(ref: SubstrateObjectRef): Promise<SubstrateActorTemplate>;
+  /** Rejects with `notFound` when the actor has no egress policy. */
+  getActorEgressPolicy(actor: SubstrateObjectRef): Promise<SubstrateEgressPolicy>;
   listWorkers(): Promise<SubstrateWorker[]>;
 }

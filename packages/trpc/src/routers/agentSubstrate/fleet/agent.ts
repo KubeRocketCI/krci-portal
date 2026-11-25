@@ -1,8 +1,15 @@
-import { latestSnapshot, type AgentActor, type AgentRead, type AgentResult } from "@my-project/shared";
+import {
+  latestSnapshot,
+  type AgentActor,
+  type AgentRead,
+  type AgentResult,
+  type EgressPolicyRead,
+} from "@my-project/shared";
 import type {
   AgentSubstrateSource,
   SubstrateActor,
   SubstrateActorTemplate,
+  SubstrateEgressPolicy,
   SubstrateObjectRef,
 } from "../../../clients/agentSubstrate/index.js";
 import { K8sClient } from "../../../clients/k8s/index.js";
@@ -52,17 +59,26 @@ function toAgentActor(actor: SubstrateActor, actorTemplate: SubstrateActorTempla
   };
 }
 
-/** Null when the actor template is gone. */
-async function actorTemplateOf(
-  source: AgentSubstrateSource,
-  ref: SubstrateObjectRef
-): Promise<SubstrateActorTemplate | null> {
+async function nullOnNotFound<T>(read: Promise<T>): Promise<T | null> {
   try {
-    return await source.getActorTemplate(ref);
+    return await read;
   } catch (error) {
     if (asSourceError(error).kind === "notFound") return null;
     throw error;
   }
+}
+
+/** Copies the fields of `egressPolicySchema` one by one; spreading a source rule would pass on any extra field. */
+function readyEgressPolicy(policy: SubstrateEgressPolicy): EgressPolicyRead {
+  return {
+    state: "ready",
+    rules: policy.rules.map(({ kind, hosts, ports, credentials }) => ({
+      kind,
+      hosts: [...hosts],
+      ports: ports === "all" ? "all" : [...ports],
+      credentials: credentials.map(({ header, prefix }) => ({ header, prefix })),
+    })),
+  };
 }
 
 type SubstrateAgentRead =
@@ -78,13 +94,14 @@ async function readAgent(source: AgentSubstrateSource, ref: SubstrateObjectRef):
     if (asSourceError(error).kind === "notFound") return { kind: "actorNotFound" };
     throw error;
   }
-  const actorTemplate = await actorTemplateOf(source, actor.actorTemplate);
+  const actorTemplate = await nullOnNotFound(source.getActorTemplate(actor.actorTemplate));
   return actorTemplate ? { kind: "agent", actor, actorTemplate } : { kind: "notAnAgent" };
 }
 
 /**
- * Reads one actor and its actor template with the portal ServiceAccount, uncached; no worker read. Reads the Codebase
- * of the agent with the user's `idToken`, as the fleet does. Passes on only the AGENT_ENV values (ADR 0001).
+ * Reads one actor, its actor template and, for an agent, its egress policy with the portal ServiceAccount, uncached;
+ * no worker read. Reads the Codebase of the agent with the user's `idToken`, as the fleet does. Passes on only the
+ * AGENT_ENV values and the egress rule fields (ADR 0001).
  */
 export async function getAgent(ctx: TRPCContext, ref: SubstrateObjectRef): Promise<AgentRead> {
   if (!ctx.agentSubstrateSource) {
@@ -107,6 +124,11 @@ export async function getAgent(ctx: TRPCContext, ref: SubstrateObjectRef): Promi
   if (!container) return ready({ kind: "notAnAgent" });
   const agent = agentOfEnv(container.env);
 
+  // Another failure leaves the rest of the agent readable.
+  const egressRead = nullOnNotFound(ctx.agentSubstrateSource.getActorEgressPolicy(ref)).then(
+    (policy): EgressPolicyRead => (policy ? readyEgressPolicy(policy) : { state: "none" }),
+    (error: unknown): EgressPolicyRead => ({ state: "unreadable", reason: unreachableReasonOf(error, "Egress policy") })
+  );
   const namespace = codebaseNamespace();
   const codebaseLinks = await readCodebaseLinks(
     namespace ? new K8sClient(ctx.session) : null,
@@ -126,5 +148,6 @@ export async function getAgent(ctx: TRPCContext, ref: SubstrateObjectRef): Promi
       codebaseLinks
     ),
     actor: toAgentActor(actor, actorTemplate),
+    egressPolicy: await egressRead,
   });
 }

@@ -7,13 +7,17 @@ import {
   type SubstrateActor,
   type SubstrateActorTemplate,
   type SubstrateAtespace,
+  type SubstrateEgressPolicy,
   type SubstrateObjectRef,
   type SubstrateWorker,
 } from "../source.js";
 import { CaFile, TokenFile } from "./credentials.js";
 import { toSourceError } from "./errors.js";
 import { Control } from "./gen/ateapi/v1/ateapi_pb.js";
-import { toActor, toActorTemplate, toAtespace, toWorker } from "./mapping.js";
+import { toActor, toActorTemplate, toAtespace, toEgressPolicy, toWorker } from "./mapping.js";
+
+/** The only name of the singleton egress policy of an actor. */
+const EGRESS_POLICY_NAME = "default";
 
 /** Agent Substrate accepts pings no more often than every 30 s. */
 const PING_INTERVAL_MS = 30_000;
@@ -92,6 +96,12 @@ export class GrpcAgentSubstrateSource implements AgentSubstrateSource {
   getActorTemplate(ref: SubstrateObjectRef): Promise<SubstrateActorTemplate> {
     return this.call(async (client, opts) =>
       toActorTemplate(await client.getActorTemplate({ actorTemplate: ref }, opts))
+    );
+  }
+
+  getActorEgressPolicy(actor: SubstrateObjectRef): Promise<SubstrateEgressPolicy> {
+    return this.call(async (client, opts) =>
+      toEgressPolicy(await client.getActorEgressPolicy({ actor, name: EGRESS_POLICY_NAME }, opts))
     );
   }
 

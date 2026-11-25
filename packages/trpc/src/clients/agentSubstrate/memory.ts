@@ -4,24 +4,31 @@ import {
   type SubstrateActor,
   type SubstrateActorTemplate,
   type SubstrateAtespace,
+  type SubstrateEgressPolicy,
   type SubstrateObjectRef,
   type SubstrateWorker,
 } from "./source.js";
+
+export interface MemoryEgressPolicy extends SubstrateEgressPolicy {
+  actor: SubstrateObjectRef;
+}
 
 export interface MemoryFleet {
   atespaces: SubstrateAtespace[];
   actors: SubstrateActor[];
   actorTemplates: SubstrateActorTemplate[];
+  egressPolicies: MemoryEgressPolicy[];
   workers: SubstrateWorker[];
 }
 
-const EMPTY_FLEET: MemoryFleet = { atespaces: [], actors: [], actorTemplates: [], workers: [] };
+const EMPTY_FLEET: MemoryFleet = { atespaces: [], actors: [], actorTemplates: [], egressPolicies: [], workers: [] };
 
 function mergeFleet(base: MemoryFleet, update: Partial<MemoryFleet>): MemoryFleet {
   return {
     atespaces: structuredClone(update.atespaces ?? base.atespaces),
     actors: structuredClone(update.actors ?? base.actors),
     actorTemplates: structuredClone(update.actorTemplates ?? base.actorTemplates),
+    egressPolicies: structuredClone(update.egressPolicies ?? base.egressPolicies),
     workers: structuredClone(update.workers ?? base.workers),
   };
 }
@@ -71,6 +78,21 @@ export class MemoryAgentSubstrateSource implements AgentSubstrateSource {
         throw new AgentSubstrateSourceError("notFound", `actor template ${ref.atespace}/${ref.name} not found`);
       }
       return actorTemplate;
+    });
+  }
+
+  async getActorEgressPolicy(actor: SubstrateObjectRef): Promise<SubstrateEgressPolicy> {
+    return this.read(() => {
+      const policy = this.fleet.egressPolicies.find(
+        (entry) => entry.actor.atespace === actor.atespace && entry.actor.name === actor.name
+      );
+      if (!policy) {
+        throw new AgentSubstrateSourceError(
+          "notFound",
+          `egress policy of actor ${actor.atespace}/${actor.name} not found`
+        );
+      }
+      return { rules: policy.rules };
     });
   }
 
