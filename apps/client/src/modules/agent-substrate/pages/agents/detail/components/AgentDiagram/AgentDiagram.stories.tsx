@@ -87,6 +87,20 @@ export const NoCodebase: Story = {
   },
 };
 
+export const NoAgentProfileAndNoModel: Story = {
+  args: { agent: { ...RUNNING.agent, agentProfile: null, model: null } },
+  play: async ({ canvasElement }) => {
+    await expect(selectButton(canvasElement, "Agent")).toHaveTextContent(/^AgentAgent$/);
+  },
+};
+
+export const ModelOnly: Story = {
+  args: { agent: { ...RUNNING.agent, agentProfile: null } },
+  play: async ({ canvasElement }) => {
+    await expect(selectButton(canvasElement, "Agent")).toHaveTextContent(/^Agentclaude-haiku-5-5$/);
+  },
+};
+
 const inspectorOf = (canvasElement: HTMLElement) =>
   within(within(canvasElement).getByRole("region", { name: "Inspector" }));
 
