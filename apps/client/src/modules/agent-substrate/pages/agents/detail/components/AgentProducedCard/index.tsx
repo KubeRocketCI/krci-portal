@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { useShallow } from "zustand/react/shallow";
 import {
   pipelineRunPhase,
@@ -58,14 +57,15 @@ function ReviewRunIcon({ run, clusterName }: { run: ReviewRun; clusterName: stri
 
   return (
     <Tooltip title={title} delayDuration={300}>
-      <Link
+      <CellLink
         to={PATH_PIPELINERUN_DETAILS_FULL}
         params={{ clusterName, namespace: run.namespace, name: run.name }}
+        text={null}
+        iconOnly
+        icon={<StatusIcon Icon={display.component} color={display.color} isSpinning={display.isSpinning} width={16} />}
         aria-label={title}
-        className="inline-flex"
-      >
-        <StatusIcon Icon={display.component} color={display.color} isSpinning={display.isSpinning} width={16} />
-      </Link>
+        className="h-auto w-auto"
+      />
     </Tooltip>
   );
 }
@@ -102,12 +102,8 @@ export function LatestRun({ run }: { run: ReviewRun }) {
   return (
     <div className="flex min-w-0 items-center gap-2 text-sm">
       <StatusIcon Icon={display.component} color={display.color} isSpinning={display.isSpinning} width={14} />
-      <span className="shrink-0">{display.label}</span>
-      {facts && (
-        <span className="text-muted-foreground min-w-0">
-          <TextWithTooltip text={facts} />
-        </span>
-      )}
+      <TextWithTooltip text={display.label} className="shrink-0" />
+      {facts && <TextWithTooltip text={facts} className="text-muted-foreground min-w-0" />}
     </div>
   );
 }

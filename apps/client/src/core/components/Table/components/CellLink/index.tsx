@@ -19,7 +19,7 @@ const CellLinkBase = React.forwardRef<HTMLAnchorElement, CellLinkBaseProps>(
       className={cn("w-full justify-start p-0 whitespace-normal", className)}
     >
       <a ref={ref} {...anchorProps}>
-        {Icon && <Icon className="text-muted-foreground/70 shrink-0" />}
+        {React.isValidElement(Icon) ? Icon : Icon && <Icon className="text-muted-foreground/70 shrink-0" />}
         {!iconOnly && <TextWithTooltip text={text} />}
       </a>
     </Button>
