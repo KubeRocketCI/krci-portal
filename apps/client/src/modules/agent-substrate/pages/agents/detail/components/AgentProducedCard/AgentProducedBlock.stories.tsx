@@ -5,11 +5,20 @@ import type { RequestError } from "@/core/types/global";
 import {
   FINISHED_REVIEW_RUNS,
   EXTRA_REVIEW_RUNS,
+  HISTORY_REVIEW_RUNS,
+  HISTORY_NOT_CONFIGURED_REVIEW_RUNS,
+  HISTORY_UNREACHABLE_REVIEW_RUNS,
   MANY_REVIEW_RUNS,
   NO_REVIEW_RUN,
   RUNNING_REVIEW_RUNS,
 } from "../../../../../__fixtures__/storyReviewRuns";
-import { AgentProducedBlock, NO_CODEBASE_TEXT, NO_MERGE_REQUEST_TEXT, REVIEW_RUN_ICON_COUNT } from ".";
+import {
+  AgentProducedBlock,
+  HISTORY_UNREACHABLE_TEXT,
+  NO_CODEBASE_TEXT,
+  NO_MERGE_REQUEST_TEXT,
+  REVIEW_RUN_ICON_COUNT,
+} from ".";
 
 const CODEBASE = { name: "test-go-app", namespace: "krci" };
 
@@ -18,7 +27,13 @@ const meta = {
   component: AgentProducedBlock,
   tags: ["autodocs"],
   decorators: [withAppProviders()],
-  args: { codebase: CODEBASE, mergeRequests: RUNNING_REVIEW_RUNS.mergeRequests, isLoading: false, error: null },
+  args: {
+    codebase: CODEBASE,
+    mergeRequests: RUNNING_REVIEW_RUNS.mergeRequests,
+    history: "ready",
+    isLoading: false,
+    error: null,
+  },
 } satisfies Meta<typeof AgentProducedBlock>;
 
 export default meta;
@@ -50,6 +65,50 @@ export const RunningRun: Story = {
 
     await expect(block.getByText("Running", { selector: "span" })).toBeVisible();
     await expect(block.getByText("9a8b7c6")).toBeVisible();
+    await expect(block.queryByText(HISTORY_UNREACHABLE_TEXT)).toBeNull();
+  },
+};
+
+export const HistoryRuns: Story = {
+  args: { mergeRequests: HISTORY_REVIEW_RUNS.mergeRequests },
+  play: async ({ canvasElement }) => {
+    const block = await produced(canvasElement);
+
+    await expect(block.getByRole("link", { name: "!5" })).toBeVisible();
+    const links = runLinks(block);
+    await expect(links).toHaveLength(3);
+    await expect(links[0]).toHaveAttribute("href", "/c/in-cluster/cicd/pipelineruns/krci/test-go-app-review-f1");
+    await expect(links[0]).toHaveAccessibleName(/^test-go-app-review-f1 · Succeeded · /);
+    await expect(links[1]).toHaveAccessibleName(/^test-go-app-review-f2 · Failed · /);
+    await expect(links[2]).toHaveAccessibleName(/^test-go-app-review-x7k2p · Running · /);
+    await expect(block.queryByText(HISTORY_UNREACHABLE_TEXT)).toBeNull();
+  },
+};
+
+export const HistoryUnreachable: Story = {
+  args: {
+    mergeRequests: HISTORY_UNREACHABLE_REVIEW_RUNS.mergeRequests,
+    history: HISTORY_UNREACHABLE_REVIEW_RUNS.history,
+  },
+  play: async ({ canvasElement }) => {
+    const block = await produced(canvasElement);
+
+    await expect(block.getByRole("alert")).toHaveTextContent(HISTORY_UNREACHABLE_TEXT);
+    await expect(block.getByRole("link", { name: "!5" })).toBeVisible();
+    await expect(runLinks(block)).toHaveLength(1);
+  },
+};
+
+export const HistoryNotConfigured: Story = {
+  args: {
+    mergeRequests: HISTORY_NOT_CONFIGURED_REVIEW_RUNS.mergeRequests,
+    history: HISTORY_NOT_CONFIGURED_REVIEW_RUNS.history,
+  },
+  play: async ({ canvasElement }) => {
+    const block = await produced(canvasElement);
+
+    await expect(block.queryByRole("alert")).toBeNull();
+    await expect(runLinks(block)).toHaveLength(1);
   },
 };
 

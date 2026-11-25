@@ -6,6 +6,7 @@ import {
   type CodebaseRef,
   type MergeRequest,
   type ReviewRun,
+  type ReviewRunHistory,
 } from "@my-project/shared";
 import { EmptyList } from "@/core/components/EmptyList";
 import { ErrorContent } from "@/core/components/ErrorContent";
@@ -14,6 +15,7 @@ import { DataTable } from "@/core/components/Table";
 import { CellExternalLink, CellLink } from "@/core/components/Table/components/CellLink";
 import type { TableColumn } from "@/core/components/Table/types";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
+import { Alert } from "@/core/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import type { RequestError } from "@/core/types/global";
@@ -34,6 +36,9 @@ export const NO_MERGE_REQUEST_TEXT = "No merge request with a review run yet.";
 const EMPTY_LIST = <EmptyList customText={NO_MERGE_REQUEST_TEXT} />;
 
 export const NO_CODEBASE_TEXT = "No Codebase matches the project of the agent, or you may not read it.";
+
+export const HISTORY_UNREACHABLE_TEXT =
+  "Review run history is not available. The block shows only the review runs that are on the cluster.";
 
 const SHORT_COMMIT_LENGTH = 7;
 
@@ -72,8 +77,9 @@ function ReviewRunIcons({ mergeRequest, codebase }: { mergeRequest: MergeRequest
 
   return (
     <div className="flex items-center gap-1">
-      {[...newestFirst].reverse().map((run) => (
-        <ReviewRunIcon key={run.name} run={run} clusterName={clusterName} />
+      {[...newestFirst].reverse().map((run, index) => (
+        // History can hold two runs with one name.
+        <ReviewRunIcon key={`${run.name}-${index}`} run={run} clusterName={clusterName} />
       ))}
       {more > 0 && (
         <CellLink
@@ -166,11 +172,13 @@ export interface AgentProducedBlockProps {
   codebase: CodebaseRef | null;
   /** Undefined until a read succeeds. */
   mergeRequests: MergeRequest[] | undefined;
+  /** Undefined until a read succeeds. */
+  history: ReviewRunHistory | undefined;
   isLoading: boolean;
   error: RequestError | null;
 }
 
-export function AgentProducedBlock({ codebase, mergeRequests, isLoading, error }: AgentProducedBlockProps) {
+export function AgentProducedBlock({ codebase, mergeRequests, history, isLoading, error }: AgentProducedBlockProps) {
   return (
     <Card role="region" aria-labelledby={TITLE_ID}>
       <CardHeader className="p-4 pb-2">
@@ -184,6 +192,7 @@ export function AgentProducedBlock({ codebase, mergeRequests, isLoading, error }
         ) : (
           <div className="flex flex-col gap-2">
             {error && <ErrorContent error={error} outlined />}
+            {history === "unreachable" && <Alert>{HISTORY_UNREACHABLE_TEXT}</Alert>}
             {(!error || mergeRequests) && (
               <DataTable<MergeRequest>
                 id={TABLE.AGENT_MERGE_REQUEST_LIST.id}
@@ -214,6 +223,7 @@ export function AgentProducedCard({ atespace, name, codebase }: AgentProducedCar
     <AgentProducedBlock
       codebase={codebase}
       mergeRequests={query.data?.mergeRequests}
+      history={query.data?.history}
       isLoading={query.isLoading}
       error={query.error}
     />

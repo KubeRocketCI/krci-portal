@@ -5,7 +5,7 @@ import type { TRPCContext } from "../../../context/types.js";
 import { rethrowOrHandleK8sError } from "../../k8s/utils/handleK8sError/index.js";
 import { getAgent } from "./agent.js";
 
-const emptyReviewRuns = (): AgentReviewRuns => ({ mergeRequests: [] });
+const emptyReviewRuns = (): AgentReviewRuns => ({ mergeRequests: [], history: "ready" });
 
 export async function getAgentReviewRuns(ctx: TRPCContext, ref: SubstrateObjectRef): Promise<AgentReviewRuns> {
   if (!ctx.reviewRunSource) return emptyReviewRuns();
@@ -20,7 +20,7 @@ export async function getAgentReviewRuns(ctx: TRPCContext, ref: SubstrateObjectR
   if (!codebase) return emptyReviewRuns();
 
   try {
-    return { mergeRequests: await ctx.reviewRunSource.listMergeRequests(ctx.session, { codebase, issueBranch }) };
+    return await ctx.reviewRunSource.listReviewRuns(ctx.session, { codebase, issueBranch });
   } catch (error) {
     rethrowOrHandleK8sError(error);
   }

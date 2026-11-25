@@ -248,6 +248,8 @@ export function normalizeResultToPipelineRun(result: TektonResult, namespace: st
     tektonResultAnnotations.gitAvatar,
     tektonResultAnnotations.gitChangeNumber,
     tektonResultAnnotations.gitChangeUrl,
+    tektonResultAnnotations.gitTargetBranch,
+    tektonResultAnnotations.gitCommitSha,
   ] as const;
 
   for (const key of annotationKeys) {

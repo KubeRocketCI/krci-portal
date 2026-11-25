@@ -16,7 +16,7 @@ vi.mock("@/core/providers/trpc", () => ({
 }));
 
 const REF = { atespace: "krci-agents", name: "issue-2-32" };
-const READ: AgentReviewRuns = { mergeRequests: [] };
+const READ: AgentReviewRuns = { mergeRequests: [], history: "ready" };
 
 function makeWrapper() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });

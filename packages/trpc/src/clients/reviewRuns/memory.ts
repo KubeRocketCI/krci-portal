@@ -1,4 +1,4 @@
-import type { CodebaseRef, MergeRequest } from "@my-project/shared";
+import type { AgentReviewRuns, CodebaseRef, MergeRequest, ReviewRunHistory } from "@my-project/shared";
 import type { ReviewRunQuery, ReviewRunSource } from "./source.js";
 
 export interface MemoryMergeRequest {
@@ -9,6 +9,7 @@ export interface MemoryMergeRequest {
 export class MemoryReviewRunSource implements ReviewRunSource {
   private mergeRequests: MemoryMergeRequest[];
   private error: Error | null = null;
+  private history: ReviewRunHistory = "ready";
 
   constructor(mergeRequests: MemoryMergeRequest[] = []) {
     this.mergeRequests = structuredClone(mergeRequests);
@@ -18,17 +19,25 @@ export class MemoryReviewRunSource implements ReviewRunSource {
     this.error = error;
   }
 
-  async listMergeRequests(_session: unknown, { codebase, issueBranch }: ReviewRunQuery): Promise<MergeRequest[]> {
+  /** `notConfigured` and `unreachable`: the held merge requests stand for the live runs only. */
+  setHistory(history: ReviewRunHistory): void {
+    this.history = history;
+  }
+
+  async listReviewRuns(_session: unknown, { codebase, issueBranch }: ReviewRunQuery): Promise<AgentReviewRuns> {
     if (this.error) throw this.error;
-    return structuredClone(
-      this.mergeRequests
-        .filter(
-          (held) =>
-            held.codebase.name === codebase.name &&
-            held.codebase.namespace === codebase.namespace &&
-            held.mergeRequest.sourceBranch === issueBranch
-        )
-        .map(({ mergeRequest }) => mergeRequest)
-    );
+    return {
+      mergeRequests: structuredClone(
+        this.mergeRequests
+          .filter(
+            (held) =>
+              held.codebase.name === codebase.name &&
+              held.codebase.namespace === codebase.namespace &&
+              held.mergeRequest.sourceBranch === issueBranch
+          )
+          .map(({ mergeRequest }) => mergeRequest)
+      ),
+      history: this.history,
+    };
   }
 }

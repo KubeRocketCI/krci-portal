@@ -1,6 +1,29 @@
 import { describe, it, expect } from "vitest";
 import type { CELFilterViolation } from "./celFilter.js";
-import { CEL_FILTER_MAX_LENGTH, isSafeCELStringContent, toCELStringLiteral, validateCELFilter } from "./celFilter.js";
+import {
+  buildAnnotationClause,
+  CEL_FILTER_MAX_LENGTH,
+  isSafeCELStringContent,
+  toCELStringLiteral,
+  validateCELFilter,
+} from "./celFilter.js";
+
+describe("buildAnnotationClause", () => {
+  it("gives a Result annotation equality clause that the validator accepts", () => {
+    const clause = buildAnnotationClause("app.edp.epam.com/codebase", "test-go-app");
+
+    expect(clause).toBe(`annotations["app.edp.epam.com/codebase"] == 'test-go-app'`);
+    expect(validateCELFilter(clause)).toEqual({ valid: true });
+  });
+
+  it("throws on a value that is not safe in a CEL string literal", () => {
+    expect(() => buildAnnotationClause("app.edp.epam.com/git-branch", "it's")).toThrow();
+  });
+
+  it("throws on a key that could close the annotation index", () => {
+    expect(() => buildAnnotationClause('x"] || annotations["y', "v")).toThrow();
+  });
+});
 
 describe("validateCELFilter", () => {
   const accepted: Array<[label: string, filter: string]> = [
