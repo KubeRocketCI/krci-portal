@@ -1,19 +1,19 @@
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { Boxes, LayoutGrid, List } from "lucide-react";
+import { Boxes } from "lucide-react";
 import type { ReadyFleet } from "@my-project/shared";
-import { ToggleButton, ToggleButtonGroup } from "@/core/components/ui/toggle-button-group";
 import { useViewModeContext } from "@/core/providers/ViewMode/hooks";
 import { ViewModeContextProvider } from "@/core/providers/ViewMode/provider";
 import { VIEW_MODES } from "@/core/providers/ViewMode/types";
 import { FleetPage } from "../../components/FleetPage";
 import { FleetEmpty } from "../../components/FleetStatePanel";
+import { ViewToggle } from "../../components/ViewToggle";
 import { WorkerPoolAccessNotice } from "../../components/WorkerPoolAccessNotice";
 import { PAGE_DESCRIPTION } from "../../constants/hints";
 import { hasNoWorkerFleet } from "../../utils/hasNoWorkerFleet";
 import { isWorkerAnchor } from "../../utils/rowAnchor";
 import { WorkerPoolCards } from "./components/WorkerPoolCards";
 import { WorkerPoolTable } from "./components/WorkerPoolTable";
-import { WORKER_POOLS_VIEW_ENTITY_ID, workerPoolsSearchSchema } from "./constants";
+import { WORKER_POOLS_VIEW_ENTITY_ID, WORKER_POOLS_VIEW_OPTIONS, workerPoolsSearchSchema } from "./constants";
 import { workerPoolsView, type WorkerPoolsView } from "./utils/view";
 
 function WorkerPools({ fleet }: { fleet: ReadyFleet }) {
@@ -23,9 +23,9 @@ function WorkerPools({ fleet }: { fleet: ReadyFleet }) {
   const navigate = useNavigate();
   const view = workerPoolsView(viewMode, hash, requested);
 
-  /** `null`: the pressed button; its view is saved too. A chosen view drops a worker hash and the `view` param. */
-  const onViewChange = (_event: React.MouseEvent<HTMLElement>, next: WorkerPoolsView | null) => {
-    handleChangeViewMode(next ?? view);
+  /** A chosen view drops a worker hash and the `view` param. */
+  const onViewChange = (next: WorkerPoolsView) => {
+    handleChangeViewMode(next);
     const workerHash = isWorkerAnchor(hash);
     if (!workerHash && !requested) return;
     void navigate({
@@ -41,18 +41,7 @@ function WorkerPools({ fleet }: { fleet: ReadyFleet }) {
   return (
     <>
       <WorkerPoolAccessNotice access={fleet.workerPools.access} />
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        <ToggleButtonGroup<WorkerPoolsView> value={view} onChange={onViewChange} aria-label="View">
-          <ToggleButton value={VIEW_MODES.GRID}>
-            <LayoutGrid className="size-4" aria-hidden />
-            Cards
-          </ToggleButton>
-          <ToggleButton value={VIEW_MODES.TABLE}>
-            <List className="size-4" aria-hidden />
-            Table
-          </ToggleButton>
-        </ToggleButtonGroup>
-      </div>
+      <ViewToggle<WorkerPoolsView> view={view} options={WORKER_POOLS_VIEW_OPTIONS} onChange={onViewChange} />
       {view === VIEW_MODES.TABLE ? <WorkerPoolTable fleet={fleet} /> : <WorkerPoolCards fleet={fleet} />}
     </>
   );
