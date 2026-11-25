@@ -5,6 +5,7 @@ import type { CodebaseScanRef } from "./types.js";
 import {
   hasActiveFindings,
   hasActiveRuntimeFindings,
+  hasVulnerabilityFilter,
   runtimeContainerKey,
   runtimeContainerRef,
   scanRefKey,
@@ -132,5 +133,27 @@ describe("hasActiveRuntimeFindings", () => {
     ],
   ])("is true for %s", (_, container) => {
     expect(hasActiveRuntimeFindings(container)).toBe(true);
+  });
+});
+
+describe("hasVulnerabilityFilter", () => {
+  const SCOPE_ONLY = {
+    state: "active",
+    severity: undefined,
+    vulnerabilityId: undefined,
+    component: undefined,
+  } as const;
+
+  it("is false for a list with no filter but its scope: an empty page then means no findings", () => {
+    expect(hasVulnerabilityFilter(SCOPE_ONLY)).toBe(false);
+  });
+
+  it.each([
+    ["a state other than active", { state: "falsePositive" }],
+    ["a severity", { severity: "Critical" }],
+    ["a vulnerability id", { vulnerabilityId: "CVE-2026-0001" }],
+    ["a component", { component: "openssl" }],
+  ] as const)("is true for %s: an empty page then means no match", (_, filter) => {
+    expect(hasVulnerabilityFilter({ ...SCOPE_ONLY, ...filter })).toBe(true);
   });
 });

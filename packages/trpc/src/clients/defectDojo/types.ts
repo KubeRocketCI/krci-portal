@@ -61,6 +61,19 @@ export interface DefectDojoTest {
 /** Findings of one set of products or of one test. */
 export type DefectDojoScope = { productIds: number[] } | { testId: number };
 
+export interface DefectDojoTestTags {
+  /** Tests that carry every one of these tags. */
+  all: readonly string[];
+  /** Tests that also carry at least one of these tags. Left out: no such condition. */
+  any?: readonly string[];
+}
+
+/** Findings of a set of products, of one test, or of the tests that carry tags. API v3 counts take no tags. */
+export type DefectDojoFindingsScope = DefectDojoScope | { testTags: DefectDojoTestTags };
+
+/** The test of a finding, as a findings page with `withTests` carries it. */
+export type DefectDojoFindingTest = Omit<DefectDojoTest, "engagement" | "product">;
+
 export interface DefectDojoSeverityCounts {
   /** Findings of the scope, in every state counted. */
   total: number;
@@ -104,11 +117,15 @@ export interface DefectDojoFindingsPage {
   /** Findings of the whole filter, not of this page. */
   total: number;
   findings: DefectDojoFinding[];
+  /** The tests of the page's findings, each once. Empty unless the query asks `withTests`. */
+  tests: DefectDojoFindingTest[];
 }
 
 export interface DefectDojoTestsFilter {
   /** Tests that carry every one of these tags. */
   tags: readonly string[];
+  /** Tests that also carry at least one of these tags. */
+  anyTags?: readonly string[];
   /** Exact. An empty value matches no test. */
   branchTag?: string;
   /** An empty value matches no test. */
@@ -116,7 +133,9 @@ export interface DefectDojoTestsFilter {
 }
 
 export interface DefectDojoFindingsQuery {
-  scope: DefectDojoScope;
+  scope: DefectDojoFindingsScope;
+  /** Also return the test of each finding of the page, with its tags. */
+  withTests?: boolean;
   /** Default: `active`. */
   state?: DefectDojoFindingStateFilter;
   severities?: readonly DefectDojoSeverity[];

@@ -15,19 +15,23 @@
  *   kubectl -n defectdojo port-forward svc/defectdojo-django <port>:80
  *   DEFECTDOJO_URL=http://localhost:<port> \
  *   DEFECTDOJO_TOKEN=$(kubectl -n krci get secret krci-portal-defectdojo -o jsonpath='{.data.token}' | base64 -d) \
- *     pnpm exec tsx scripts/record-defectdojo-fixtures.ts
+ *     pnpm exec tsx scripts/record-defectdojo-fixtures.ts [--keep]
  * The host is localhost: DefectDojo answers 400 to 127.0.0.1.
+ * `--keep` keeps the answers the file already holds for requests of the plan and records only the others, so the
+ * tests written against them stay valid while the testbed moves on.
  */
-import { mkdirSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { parseArgs } from "node:util";
 import { stripTrailingSlash } from "@my-project/shared";
-import { format, resolveConfig } from "prettier";
 import { appendQuery } from "../src/clients/http/index.js";
 import { FINDINGS_MAX_PAGE_SIZE, LIST_PAGE_SIZE } from "../src/clients/defectDojo/constants.js";
 import {
   countsRequest,
   findingsRequest,
+  productsByTagTextRequest,
   productsRequest,
+  productTypeRequest,
   testRequest,
   testsRequest,
   testTypeRequest,
@@ -41,6 +45,7 @@ import {
   type RecordedAnswer,
   type RecordedAnswers,
 } from "../src/clients/defectDojo/__fixtures__/answers.js";
+import { writeFixtureJson } from "./lib/writeFixture.js";
 
 const DEFECTDOJO_VERSION = "3.5.200";
 const OUTPUT = resolve("src/clients/defectDojo/__fixtures__/answers.json");
@@ -51,6 +56,13 @@ if (!url || !token) {
   console.error("Set DEFECTDOJO_URL and DEFECTDOJO_TOKEN (see the header of this file).");
   process.exit(2);
 }
+
+const { values } = parseArgs({ options: { keep: { type: "boolean", default: false } } });
+const kept = new Map<string, RecordedAnswer>(
+  values.keep && existsSync(OUTPUT)
+    ? (JSON.parse(readFileSync(OUTPUT, "utf8")) as RecordedAnswers).answers.map((answer) => [answer.request, answer])
+    : []
+);
 
 const answers = new Map<string, RecordedAnswer>();
 
@@ -64,6 +76,12 @@ interface RecordedPage {
 /** Sends the request, keeps the answer and returns its body. Fails on a status other than `expectedStatus`. */
 async function record(request: DefectDojoRequest, expectedStatus = 200, authToken = token): Promise<RecordedPage> {
   const key = requestKeyOf(request);
+  const previous = kept.get(key);
+  if (previous) {
+    answers.set(key, previous);
+    console.log(`kept ${previous.status} ${key}`);
+    return previous.body as RecordedPage;
+  }
   const response = await fetch(`${url}${appendQuery(request.path, request.query)}`, {
     method: "GET",
     headers: { Accept: "application/json", Authorization: `Token ${authToken}` },
@@ -234,15 +252,41 @@ await record(findings({ scope: { testId: ownTrivyTest }, limit: 2, offset: 2 }))
 // A test that does not exist.
 await record(findings({ scope: { testId: 99999 } }), 400);
 
+// The platform lists: the findings of the tests that carry tags, in the Product Type, with their tests.
+const productTypeId = (await record(productTypeRequest("KubeRocketCI"))).results[0].id;
+await record(productTypeRequest("No Such Type"));
+const semgrepType = (await record(testTypeRequest("Semgrep JSON Report"))).results[0].id;
+const grypeType = (await record(testTypeRequest("Anchore Grype"))).results[0].id;
+const VULNERABILITY_REPORT = "report-kind:vulnerabilityreport";
+const BED_CLUSTERS = tags("k8s-cluster:in-cluster", "k8s-cluster:remote-cluster");
+const tagged = (all: string, any?: string) => ({ testTags: { all, any } });
+// Pages of five rows: the tests read the fields and the tests of a page, not its length.
+const platformFindings = (filter: Partial<FindingsRequestFilter> & Pick<FindingsRequestFilter, "scope">) =>
+  findings({ withTests: true, productTypeId, limit: 5, ...filter });
+await record(platformFindings({ scope: tagged(tags(VULNERABILITY_REPORT), BED_CLUSTERS) }));
+await record(
+  platformFindings({
+    scope: tagged(tags(VULNERABILITY_REPORT, "k8s-namespace:krci-demo-dev"), tags("k8s-cluster:in-cluster")),
+  })
+);
+await record(
+  platformFindings({
+    scope: tagged(tags(VULNERABILITY_REPORT, "k8s-namespace:krci-demo-dev", "k8s-workload:deployment.worker")),
+    state: "any",
+  })
+);
+await record(platformFindings({ scope: tagged(tags(VULNERABILITY_REPORT), BED_CLUSTERS), state: "falsePositive" }));
+await record(platformFindings({ scope: tagged(tags(GO_TAGS[1])), testTypeIds: [trivyType, grypeType] }));
+await record(platformFindings({ scope: tagged(tags(...GO_TAGS)), testTypeIds: [semgrepType] }));
+await record(productsByTagTextRequest("k8s-cluster:", FIRST_PAGE));
+await record(testsRequest({ tagFilter: tags(VULNERABILITY_REPORT), anyTagFilter: BED_CLUSTERS }, FIRST_PAGE));
+await record(
+  testsRequest({ tagFilter: tags(VULNERABILITY_REPORT), anyTagFilter: tags("k8s-cluster:no-such-cluster") }, FIRST_PAGE)
+);
+
 // A token that DefectDojo rejects. The replay answers every request with a wrong token this way.
 await record(productsRequest(tags("app.edp.epam.com/tenant:rejected"), FIRST_PAGE), 403, "not-a-token");
 
 const recorded: RecordedAnswers = { version: DEFECTDOJO_VERSION, answers: [...answers.values()] };
-const json = `${JSON.stringify(recorded, null, 2)}\n`;
-if (json.includes(token)) {
-  throw new Error("An answer holds the token.");
-}
-mkdirSync(dirname(OUTPUT), { recursive: true });
-// plugins: [] overrides the client prettier plugin; trpc does not resolve it.
-writeFileSync(OUTPUT, await format(json, { ...(await resolveConfig(OUTPUT)), plugins: [], filepath: OUTPUT }));
+await writeFixtureJson(OUTPUT, recorded, [token]);
 console.log(`Wrote ${answers.size} answers to ${OUTPUT}`);

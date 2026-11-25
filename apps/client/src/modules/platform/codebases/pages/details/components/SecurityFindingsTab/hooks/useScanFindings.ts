@@ -1,13 +1,9 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import type { ScanFindings, ScanFindingsInput } from "@my-project/shared";
+import type { ScanFindingsInput } from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
-import { findingsStaleTime } from "./findingsStaleTime";
+import { findingsStaleTime } from "@/modules/platform/security/components/defectdojo/findingsStaleTime";
 
 export const scanFindingsKey = (input: ScanFindingsInput) => ["defectDojo", "getScanFindings", input] as const;
-
-export function findingsFailed({ data, isError }: { data: ScanFindings | undefined; isError: boolean }): boolean {
-  return (data === undefined && isError) || data?.state === "unreachable" || data?.state === "notConfigured";
-}
 
 /**
  * One page of the findings of a scan. The scan is named by its typed identity; the server resolves its test.

@@ -6,9 +6,10 @@ import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
 import { DefectDojoLink } from "@/modules/platform/security/components/defectdojo/DefectDojoLink";
 import { NoFindingsBadge, UnreachableState } from "@/modules/platform/security/components/defectdojo/StateBlocks";
 import { SeverityCountsRow } from "@/modules/platform/security/components/defectdojo/SeverityCountsRow";
+import { findingsFailed } from "@/modules/platform/security/components/defectdojo/utils";
 import { SeverityBadge } from "@/modules/platform/security/components/shared/SeverityBadge";
 import { NO_SCAN_DATA_MESSAGE } from "../../constants";
-import { findingsFailed, useScanFindings } from "../../hooks/useScanFindings";
+import { useScanFindings } from "../../hooks/useScanFindings";
 import { groupByComponent, groupingNote, type ComponentGroup } from "./utils";
 
 function ComponentRow({ group }: { group: ComponentGroup }) {

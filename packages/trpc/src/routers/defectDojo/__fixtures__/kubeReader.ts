@@ -1,7 +1,7 @@
 import { K8sApiError, type K8sResourceConfig } from "@my-project/shared";
-import type { CodebaseKubeReader } from "../codebaseFindings/facts.js";
+import type { FindingsKubeReader } from "../kube.js";
 
-/** A Kubernetes object as the API server returns it: only what the codebase findings read. */
+/** A Kubernetes object as the API server returns it: only what the findings procedures read. */
 export interface KubeObject {
   kind: string;
   metadata: { name: string; namespace: string; labels?: Record<string, string> };
@@ -29,7 +29,7 @@ export interface KubeReaderOptions {
 export function createKubeReader(
   objects: readonly KubeObject[],
   { notServed = [], forbidden = [] }: KubeReaderOptions = {}
-): CodebaseKubeReader {
+): FindingsKubeReader {
   const isIn = (configs: readonly K8sResourceConfig[], config: K8sResourceConfig) =>
     configs.some((candidate) => candidate.kind === config.kind);
 

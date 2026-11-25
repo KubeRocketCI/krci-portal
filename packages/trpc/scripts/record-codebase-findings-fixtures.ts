@@ -28,26 +28,24 @@
  *     pnpm exec tsx scripts/record-codebase-findings-fixtures.ts --k8s-file "$TMPDIR/krci-objects.json"
  * The host is localhost: DefectDojo answers 400 to 127.0.0.1.
  */
-import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { parseArgs } from "node:util";
+import { resolve } from "node:path";
 import {
   DEFECTDOJO_MAX_PAGE_SIZE,
   runtimeContainerRef,
   scanFindingsInputSchema,
-  stripTrailingSlash,
   type CodebaseFindings,
   type CodebaseScan,
   type ScanFindings,
   type ScanFindingsInput,
   type ScanRef,
 } from "@my-project/shared";
-import { format, resolveConfig } from "prettier";
 import { ANSWER_ORIGIN } from "../src/clients/defectDojo/__fixtures__/answers.js";
 import { DefectDojoClient } from "../src/clients/defectDojo/index.js";
 import { composeCodebaseFindings, readScanFindings } from "../src/routers/defectDojo/codebaseFindings/compose.js";
 import { readCodebaseFacts, type CodebaseFacts } from "../src/routers/defectDojo/codebaseFindings/facts.js";
-import { createKubeReader, type KubeObject } from "../src/routers/defectDojo/__fixtures__/kubeReader.js";
+import { outageClients, readRecorderSettings } from "./lib/defectDojoRecorder.js";
+import { readKubeObjectsFile } from "./lib/kubeObjects.js";
+import { writeFixtureJson } from "./lib/writeFixture.js";
 
 const OUTPUT = resolve(
   "../../apps/client/src/modules/platform/codebases/pages/details/components/SecurityFindingsTab/__fixtures__/testbed.json"
@@ -55,16 +53,8 @@ const OUTPUT = resolve(
 
 const NAMESPACE = "krci";
 
-const { values } = parseArgs({ options: { "k8s-file": { type: "string" } } });
-const url = stripTrailingSlash(process.env.DEFECTDOJO_URL);
-const token = process.env.DEFECTDOJO_TOKEN;
-if (!url || !token || !values["k8s-file"]) {
-  console.error("Set DEFECTDOJO_URL and DEFECTDOJO_TOKEN and pass --k8s-file (see the header of this file).");
-  process.exit(2);
-}
-
-const objects: { items: KubeObject[] } = JSON.parse(readFileSync(values["k8s-file"], "utf8"));
-const reader = createKubeReader(objects.items);
+const { url, token, k8sFile } = readRecorderSettings();
+const reader = readKubeObjectsFile(k8sFile);
 
 const defectDojo = new DefectDojoClient({ apiBaseURL: url, token, webBaseURL: ANSWER_ORIGIN });
 
@@ -194,11 +184,9 @@ const noScanData = await composeCodebaseFindings(defectDojo, {
 console.log(`no-such-app: ${noScanData.state}`);
 
 const facts = await readCodebaseFacts(reader, { namespace: NAMESPACE, name: "test-go-app" });
-const notConfigured = await composeCodebaseFindings(new DefectDojoClient({ apiBaseURL: "", token: "" }), facts);
-const unreachable = await composeCodebaseFindings(
-  new DefectDojoClient({ apiBaseURL: "http://127.0.0.1:1", token: "not-a-token", timeoutMs: 2000 }),
-  facts
-);
+const outage = outageClients();
+const notConfigured = await composeCodebaseFindings(outage.notConfigured, facts);
+const unreachable = await composeCodebaseFindings(outage.unreachable, facts);
 console.log(`not configured: ${notConfigured.state}, unreachable: ${unreachable.state}`);
 
 const recorded = {
@@ -209,13 +197,5 @@ const recorded = {
   unreachable: { summary: unreachable, scanFindings: [] },
 };
 
-const json = `${JSON.stringify(recorded, null, 2)}\n`;
-for (const secret of [token, url]) {
-  if (json.includes(secret)) {
-    throw new Error("The output holds the token or the address of DefectDojo.");
-  }
-}
-mkdirSync(dirname(OUTPUT), { recursive: true });
-// plugins: [] overrides the client prettier plugin; trpc does not resolve it.
-writeFileSync(OUTPUT, await format(json, { ...(await resolveConfig(OUTPUT)), plugins: [], filepath: OUTPUT }));
+await writeFixtureJson(OUTPUT, recorded, [token, url]);
 console.log(`Wrote ${OUTPUT}`);

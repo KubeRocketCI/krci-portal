@@ -49,14 +49,22 @@ export interface UnreachableStateProps {
   isRetrying?: boolean;
   /** Names the part that failed. */
   what?: string;
+  wholePage?: boolean;
 }
 
 /** DefectDojo is down, timed out or rejected the token. Says nothing of the address or the token. */
-export function UnreachableState({ onRetry, isRetrying = false, what = "Security findings" }: UnreachableStateProps) {
+export function UnreachableState({
+  onRetry,
+  isRetrying = false,
+  what = "Security findings",
+  wholePage = false,
+}: UnreachableStateProps) {
   return (
     <RetryAlert
       title="DefectDojo is unreachable"
-      message={`${what} cannot be loaded. The rest of the page is not affected.`}
+      message={
+        wholePage ? `${what} cannot be loaded.` : `${what} cannot be loaded. The rest of the page is not affected.`
+      }
       onRetry={onRetry}
       isRetrying={isRetrying}
     />
@@ -82,19 +90,20 @@ export interface NoScanDataStateProps {
   producer: string;
   /** What has no data, for example "Code findings". */
   what: string;
+  subject?: string;
   hint?: string;
   className?: string;
 }
 
 /** No scan reached DefectDojo. Names the producer so that the reader knows what to run. */
-export function NoScanDataState({ producer, what, hint, className }: NoScanDataStateProps) {
+export function NoScanDataState({ producer, what, subject = "this codebase", hint, className }: NoScanDataStateProps) {
   return (
     <div className={cn("text-muted-foreground flex items-start gap-2", className)}>
       <CircleDashed className="mt-0.5 size-4 shrink-0" aria-hidden />
       <div className="min-w-0 text-sm">
         <p className="text-foreground font-medium">No scan data</p>
         <p className="text-xs">
-          The {producer} has not reported {what} for this codebase.
+          The {producer} has not reported {what} for {subject}.
         </p>
         {hint && <p className="text-xs">{hint}</p>}
       </div>

@@ -1,6 +1,10 @@
 import React from "react";
 import type { Decorator } from "@storybook/react-vite";
 import { QueryClient } from "@tanstack/react-query";
+import type { AppRouter } from "@my-project/trpc";
+import { createTRPCClient, TRPCClientError } from "@trpc/client";
+import { observable } from "@trpc/server/observable";
+import { TRPCContext } from "@/core/providers/trpc/context";
 import { TestProviders, createTestQueryClient } from "@/test/utils";
 import { TEST_CLUSTER_NAME, TEST_NAMESPACE, TEST_ALLOWED_NAMESPACES, mockPermissions } from "@/test/utils";
 
@@ -107,6 +111,27 @@ export const withAppProviders = (options: WithAppProvidersOptions = {}): Decorat
       </TestProviders>
     );
   };
+};
+
+/**
+ * Makes every tRPC call fail with an error that carries `message`. List it before `withAppProviders()`: the
+ * decorator listed first is the innermost, and the nearest `TRPCContext` provider wins.
+ */
+export const withFailingTrpc = (message: string): Decorator => {
+  const client = createTRPCClient<AppRouter>({
+    links: [
+      () => () =>
+        observable<never, TRPCClientError<AppRouter>>((observer) => {
+          observer.error(TRPCClientError.from(new Error(message)));
+        }),
+    ],
+  });
+
+  return (Story) => (
+    <TRPCContext.Provider value={client}>
+      <Story />
+    </TRPCContext.Provider>
+  );
 };
 
 export default withAppProviders;

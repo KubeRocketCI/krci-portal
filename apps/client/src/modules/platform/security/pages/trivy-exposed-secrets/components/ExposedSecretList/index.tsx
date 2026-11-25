@@ -5,7 +5,7 @@ import { useColumns } from "../../hooks/useColumns";
 import { useExposedSecretReportWatchList } from "@/k8s/api/groups/Trivy/ExposedSecretReport";
 import { EmptyList } from "@/core/components/EmptyList";
 import { consolidateSecretImages } from "../../utils/consolidateSecretImages";
-import { ResourcesExpandedRow } from "../../../trivy-vulnerabilities/components/ResourcesExpandedRow";
+import { ResourcesExpandedRow } from "@/modules/platform/security/components/trivy";
 import { ConsolidatedSecretImage } from "../../types";
 
 interface ExposedSecretListProps {

@@ -32,7 +32,7 @@ export default function TrivyExposedSecretsPageContent() {
   );
 
   return (
-    <PageWrapper breadcrumbs={[{ label: "Security" }, { label: "Container Scanning" }, { label: "Exposed Secrets" }]}>
+    <PageWrapper breadcrumbs={[{ label: "Security" }, { label: "Findings" }, { label: "Exposed Secrets" }]}>
       <PageContentWrapper
         icon={KeyRound}
         title="Exposed Secret Reports"

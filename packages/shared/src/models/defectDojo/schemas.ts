@@ -2,15 +2,23 @@ import { z } from "zod";
 import { k8sResourceNameSchema } from "../k8s/common/schema.js";
 import {
   CODEBASE_SCAN_LEVELS,
+  DEFECTDOJO_FINDING_STATES,
   DEFECTDOJO_SEVERITIES,
   DEFECTDOJO_MAX_PAGE_SIZE,
+  RUNTIME_FINDING_STATES,
   RUNTIME_REPORT_KINDS,
   SCAN_FINDINGS_DEFAULT_PAGE_SIZE,
   SCAN_FINDINGS_MAX_PAGE,
+  VULNERABILITIES_DEFAULT_PAGE_SIZE,
   type DefectDojoSeverity,
 } from "./constants.js";
 
 export const defectDojoSeveritySchema = z.enum(DEFECTDOJO_SEVERITIES);
+
+const pagingFields = (defaultPageSize: number) => ({
+  page: z.number().int().min(0).max(SCAN_FINDINGS_MAX_PAGE).default(0),
+  pageSize: z.number().int().min(1).max(DEFECTDOJO_MAX_PAGE_SIZE).default(defaultPageSize),
+});
 
 const count = z.number().int().nonnegative();
 
@@ -158,8 +166,7 @@ export const scanFindingsInputSchema = codebaseFindingsInputSchema.extend({
   severity: defectDojoSeveritySchema.optional(),
   /** Also list the mitigated, false positive, out of scope and risk accepted findings. */
   showTriaged: z.boolean().default(false),
-  page: z.number().int().min(0).max(SCAN_FINDINGS_MAX_PAGE).default(0),
-  pageSize: z.number().int().min(1).max(DEFECTDOJO_MAX_PAGE_SIZE).default(SCAN_FINDINGS_DEFAULT_PAGE_SIZE),
+  ...pagingFields(SCAN_FINDINGS_DEFAULT_PAGE_SIZE),
 });
 
 /** A finding with the fields the tab shows. */
@@ -194,5 +201,130 @@ export const scanFindingsSchema = z.discriminatedUnion("state", [
     /** Findings of the whole filter, not of this page. */
     total: count,
     findings: z.array(scanFindingSchema),
+  }),
+]);
+
+/** The installation namespace: the namespace of its Stages, Applications and Codebases. */
+export const findingsScopeInputSchema = z.object({ namespace: k8sResourceNameSchema });
+
+const stageRefSchema = z.object({ cdPipeline: z.string(), stage: z.string() });
+
+export const findingsScopeSchema = z.discriminatedUnion("state", [
+  z.object({ state: z.literal("notConfigured") }),
+  z.object({ state: z.literal("unreachable") }),
+  z.object({
+    state: z.literal("data"),
+    /** The clusters of the installation's Stages, the default selection. Empty without a Stage. */
+    stageClusters: z.array(z.string()),
+    /** Every cluster of a Stage or of a namespace product. */
+    clusters: z.array(z.string()),
+    /** Every namespace of a Stage or of a namespace product, by cluster. */
+    namespaces: z.array(
+      z.object({
+        cluster: z.string(),
+        namespace: z.string(),
+        /** The Stage that deploys to this cluster and namespace. */
+        environment: stageRefSchema.nullable(),
+      })
+    ),
+  }),
+]);
+
+/** A value of the test tag `k8s-cluster`: a tag holds no space and no comma. */
+export const clusterNameSchema = z
+  .string()
+  .min(1)
+  .max(253)
+  .regex(/^[^\s,]+$/);
+
+/** The clusters a Runtime list is scoped to. */
+export const findingClustersSchema = z.array(clusterNameSchema).min(1).max(50);
+
+/** A vulnerability id, matched exactly and case-sensitively. */
+export const vulnerabilityIdSchema = z.string().trim().min(1).max(100);
+
+/** A part of a component name, matched case-insensitively. */
+export const componentSearchSchema = z.string().trim().min(1).max(255);
+
+const listFilters = {
+  namespace: k8sResourceNameSchema,
+  severity: defectDojoSeveritySchema.optional(),
+  vulnerabilityId: vulnerabilityIdSchema.optional(),
+  component: componentSearchSchema.optional(),
+  ...pagingFields(VULNERABILITIES_DEFAULT_PAGE_SIZE),
+};
+
+/** One page of the vulnerability findings of the platform. A tag or a DefectDojo id sent along is an error. */
+export const vulnerabilitiesInputSchema = z.discriminatedUnion("level", [
+  z
+    .object({
+      level: z.literal("runtime"),
+      /** Left out: the clusters of the installation's Stages, or every cluster without a Stage. */
+      clusters: findingClustersSchema.optional(),
+      /** One namespace, in each of the clusters. */
+      workloadNamespace: k8sResourceNameSchema.optional(),
+      state: z.enum(RUNTIME_FINDING_STATES).default("active"),
+      ...listFilters,
+    })
+    .strict(),
+  z
+    .object({
+      level: z.enum(CODEBASE_SCAN_LEVELS),
+      codebase: k8sResourceNameSchema.optional(),
+      state: z.enum(DEFECTDOJO_FINDING_STATES).default("active"),
+      ...listFilters,
+    })
+    .strict(),
+]);
+
+export const findingPlaceSchema = z.discriminatedUnion("level", [
+  z.object({
+    level: z.literal("runtime"),
+    cluster: z.string(),
+    namespace: z.string(),
+    /** Values of the test tags `k8s-workload` and `k8s-container`. */
+    workload: z.string().nullable(),
+    container: z.string().nullable(),
+    /** Value of the test tag `oci-image`. */
+    image: z.string().nullable(),
+    /** The running image tag. Empty when the scanner reports none. */
+    version: z.string(),
+    environment: stageRefSchema.nullable(),
+    /** The codebase that the Argo CD Application named by the test tag `app` deploys. */
+    codebase: z.string().nullable(),
+  }),
+  z.object({
+    level: z.enum(CODEBASE_SCAN_LEVELS),
+    codebase: z.string(),
+    branch: z.string(),
+    /** The scanned image of an image scan; `null` for a code scan. */
+    image: z.string().nullable(),
+    /** The scanned image tag. Empty when the scanner reports none. */
+    version: z.string(),
+  }),
+]);
+
+/**
+ * A finding of a platform list, with where it was found. `place` is `null` when its test is missing from the page or
+ * lacks the tags that name the place.
+ */
+export const platformFindingSchema = scanFindingSchema.extend({ place: findingPlaceSchema.nullable() });
+
+export const vulnerabilitiesSchema = z.discriminatedUnion("state", [
+  z.object({ state: z.literal("notConfigured") }),
+  z.object({ state: z.literal("unreachable") }),
+  z.object({ state: z.literal("noScanData") }),
+  z.object({
+    state: z.literal("data"),
+    /**
+     * Findings of the whole filter, not of this page. A triaged Runtime list counts the findings of open tests among
+     * the `TRIAGED_RUNTIME_SCAN_LIMIT` most severe.
+     */
+    total: count,
+    findings: z.array(platformFindingSchema),
+    /** The clusters the Runtime list was scoped to; `null`: every cluster, or a Code or Image list. */
+    clusters: z.array(z.string()).nullable(),
+    /** A triaged Runtime list holds more findings than `TRIAGED_RUNTIME_SCAN_LIMIT`: these are its most severe. */
+    truncated: z.boolean(),
   }),
 ]);

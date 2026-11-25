@@ -9,17 +9,22 @@ import {
 import type { Mock } from "vitest";
 import { K8sClient } from "../../../clients/k8s/index.js";
 import {
+  FINDINGS_MAX_PAGE_SIZE,
+  FINDING_STATE_PARAMS,
   levelOfScanType,
   type DefectDojoFinding,
   type DefectDojoFindingStateFilter,
   type DefectDojoFindingsPage,
+  type DefectDojoFindingsQuery,
+  type DefectDojoFindingsScope,
+  type DefectDojoProduct,
   type DefectDojoResult,
-  type DefectDojoScope,
   type DefectDojoSeverityCounts,
   type DefectDojoTest,
   type DefectDojoTestsFilter,
 } from "../../../clients/defectDojo/index.js";
 import type { CodebaseFindingsSource } from "../codebaseFindings/source.js";
+import type { PlatformFindingsSource } from "../platformFindings/source.js";
 import { createKubeReader, type KubeObject, type KubeReaderOptions } from "./kubeReader.js";
 
 const WEB_URL = "https://defectdojo.example.test";
@@ -175,12 +180,16 @@ export function makeTriagedFinding(
 
 export type DefectDojoOutage = "notConfigured" | "unreachable";
 
-type SourceCall = keyof CodebaseFindingsSource;
+export type FakeDefectDojo = CodebaseFindingsSource & PlatformFindingsSource;
+
+type SourceCall = keyof FakeDefectDojo;
 
 export interface FakeDefectDojoOptions {
   tests?: readonly DefectDojoTest[];
   /** Findings by id of their test, in every state. */
   findings?: Record<number, readonly DefectDojoFinding[]>;
+  /** Products of the Product Type, with their tags. */
+  products?: readonly DefectDojoProduct[];
   /** The calls of `outageOn` answer with this state. */
   outage?: DefectDojoOutage;
   /** Default: every call. */
@@ -191,39 +200,80 @@ function severityRank(severity: DefectDojoSeverity): number {
   return DEFECTDOJO_SEVERITIES.indexOf(severity);
 }
 
+function carriesTags(test: DefectDojoTest, all: readonly string[], any: readonly string[] = []): boolean {
+  const stored = test.tags.map((tag) => tag.toLowerCase());
+  const has = (tag: string) => stored.includes(tag.toLowerCase());
+  return all.every(has) && (any.length === 0 || any.some(has));
+}
+
 /**
- * A DefectDojo that answers like the client does: tests by tags, counts and findings of one test, duplicates
- * never counted or listed. Findings of a product set are not modelled.
+ * A DefectDojo of one Product Type that answers like the client does: tests and products by tags, counts of one
+ * test, findings of one test or of the tests that carry tags, duplicates never counted or listed. Findings of a
+ * product set are not modelled.
  */
 export function createFakeDefectDojo({
   tests = [],
   findings = {},
+  products = [],
   outage,
-  outageOn = ["listTests", "getSeverityCounts", "listFindings"],
-}: FakeDefectDojoOptions = {}): CodebaseFindingsSource {
+  outageOn,
+}: FakeDefectDojoOptions = {}): FakeDefectDojo {
   const outageResult = <T>(call: SourceCall): DefectDojoResult<T> | undefined =>
-    outage && outageOn.includes(call) ? { state: outage } : undefined;
+    outage && (outageOn === undefined || outageOn.includes(call)) ? { state: outage } : undefined;
 
   const findingsOf = (testId: number) => (findings[testId] ?? []).filter((finding) => !finding.duplicate);
 
-  const testIdOf = (scope: DefectDojoScope): number => {
+  const testIdOf = (scope: DefectDojoFindingsScope): number => {
     if (!("testId" in scope)) {
-      throw new Error("The fake DefectDojo models the findings of a test only");
+      throw new Error("The fake DefectDojo counts the findings of a test only");
     }
     return scope.testId;
   };
 
+  const testsOf = (filter: DefectDojoTestsFilter) =>
+    tests.filter(
+      (test) =>
+        carriesTags(test, filter.tags, filter.anyTags) &&
+        (filter.branchTag === undefined || test.branchTag === filter.branchTag) &&
+        (filter.scanType === undefined || test.scanType === filter.scanType)
+    );
+
+  /** The tests a findings scope reads, or `null` for a test that does not exist. */
+  const scopeTests = (query: DefectDojoFindingsQuery): DefectDojoTest[] | null => {
+    if ("productIds" in query.scope) {
+      throw new Error("The fake DefectDojo models no findings of a product set");
+    }
+    if ("testId" in query.scope) {
+      const { testId } = query.scope;
+      const test = tests.find((candidate) => candidate.id === testId);
+      return test ? [test] : null;
+    }
+    const { all, any } = query.scope.testTags;
+    const scanTypes: readonly string[] = query.scanTypes ?? [];
+    return tests.filter(
+      (test) => carriesTags(test, all, any) && (scanTypes.length === 0 || scanTypes.includes(test.scanType))
+    );
+  };
+
   return {
     async listTests(filter: DefectDojoTestsFilter): Promise<DefectDojoResult<DefectDojoTest[]>> {
-      const wanted = filter.tags.map((tag) => tag.toLowerCase());
-      const matching = tests.filter(
-        (test) =>
-          wanted.every((tag) => test.tags.map((stored) => stored.toLowerCase()).includes(tag)) &&
-          (filter.branchTag === undefined || test.branchTag === filter.branchTag) &&
-          (filter.scanType === undefined || test.scanType === filter.scanType)
-      );
+      const matching = testsOf(filter);
       return (
         outageResult("listTests") ?? (matching.length > 0 ? { state: "data", data: matching } : { state: "noScanData" })
+      );
+    },
+
+    async hasTests(filter: DefectDojoTestsFilter): Promise<DefectDojoResult<boolean>> {
+      return outageResult("hasTests") ?? { state: "data", data: testsOf(filter).length > 0 };
+    },
+
+    async listProductsWithTagText(text: string): Promise<DefectDojoResult<DefectDojoProduct[]>> {
+      const matching = products.filter((product) =>
+        product.tags.some((tag) => tag.toLowerCase().includes(text.toLowerCase()))
+      );
+      return (
+        outageResult("listProductsWithTagText") ??
+        (matching.length > 0 ? { state: "data", data: matching } : { state: "noScanData" })
       );
     },
 
@@ -257,43 +307,60 @@ export function createFakeDefectDojo({
     },
 
     async listFindings(query): Promise<DefectDojoResult<DefectDojoFindingsPage>> {
-      const testId = testIdOf(query.scope);
-      if (!tests.some((test) => test.id === testId)) {
+      const read = scopeTests(query);
+      if (read === null) {
         return outageResult("listFindings") ?? { state: "noScanData" };
       }
 
       const state: DefectDojoFindingStateFilter = query.state ?? "active";
       const severities = query.severities ?? [];
-      const matching = findingsOf(testId)
+      const component = query.component?.toLowerCase();
+      const matching = read
+        .flatMap((test) => findingsOf(test.id))
         .filter((finding) => state === "any" || stateFlag(finding, state))
         .filter((finding) => severities.length === 0 || severities.includes(finding.severity))
+        .filter((finding) => !query.vulnerabilityId || finding.vulnerabilityIds.includes(query.vulnerabilityId))
+        .filter((finding) => !component || (finding.componentName ?? "").toLowerCase().includes(component))
         .sort((a, b) => severityRank(a.severity) - severityRank(b.severity) || a.id - b.id);
 
       const offset = query.offset ?? 0;
-      const limit = query.limit ?? 100;
+      const limit = Math.min(query.limit ?? FINDINGS_MAX_PAGE_SIZE, FINDINGS_MAX_PAGE_SIZE);
+      const page = matching.slice(offset, offset + limit);
+      const pageTests = query.withTests
+        ? read.filter((test) => page.some((finding) => finding.test.id === test.id))
+        : [];
+
       return (
         outageResult("listFindings") ?? {
           state: "data",
-          data: { total: matching.length, findings: matching.slice(offset, offset + limit) },
+          data: {
+            total: matching.length,
+            findings: page,
+            tests: pageTests.map(({ engagement: _engagement, product: _product, ...test }) => test),
+          },
         }
       );
     },
   };
 }
 
+/** The finding fields that the query parameters of `FINDING_STATE_PARAMS` select on. */
+type FindingStateParam = {
+  [State in keyof typeof FINDING_STATE_PARAMS]: keyof (typeof FINDING_STATE_PARAMS)[State];
+}[keyof typeof FINDING_STATE_PARAMS];
+
+const FINDING_FLAGS = {
+  active: "active",
+  is_mitigated: "mitigated",
+  false_p: "falsePositive",
+  out_of_scope: "outOfScope",
+  risk_accepted: "riskAccepted",
+} as const satisfies Record<FindingStateParam, keyof DefectDojoFinding>;
+
 function stateFlag(finding: DefectDojoFinding, state: Exclude<DefectDojoFindingStateFilter, "any">): boolean {
-  switch (state) {
-    case "active":
-      return finding.active;
-    case "mitigated":
-      return finding.mitigated;
-    case "falsePositive":
-      return finding.falsePositive;
-    case "outOfScope":
-      return finding.outOfScope;
-    case "riskAccepted":
-      return finding.riskAccepted;
-  }
+  return Object.entries(FINDING_STATE_PARAMS[state]).every(
+    ([param, wanted]) => finding[FINDING_FLAGS[param as FindingStateParam]] === wanted
+  );
 }
 
 export function makeCodebase(name = DEMO_CODEBASE, defaultBranch = "main", namespace = DEMO_NAMESPACE): KubeObject {
@@ -392,4 +459,14 @@ export function givenCluster(objects: KubeObject[] = DEMO_CLUSTER, options: Kube
   (K8sClient as unknown as Mock).mockImplementation(function () {
     return { KubeConfig: {}, ...createKubeReader(objects, options) };
   });
+}
+
+/** A namespace product of the security operator, tagged with its cluster and namespace. */
+export function makeNamespaceProduct(
+  id: number,
+  cluster: string,
+  namespace: string,
+  tags: readonly string[] = [`k8s-cluster:${cluster}`, `k8s-namespace:${namespace}`]
+): DefectDojoProduct {
+  return { id, name: `${cluster}/${namespace}`, tags: [...tags], url: `${WEB_URL}/asset/${id}` };
 }

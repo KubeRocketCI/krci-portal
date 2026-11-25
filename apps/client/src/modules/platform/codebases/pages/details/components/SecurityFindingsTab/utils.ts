@@ -1,9 +1,6 @@
 import type { CodebaseScanLevel, RuntimeContainer, RuntimeEnvironment, ScanRef } from "@my-project/shared";
+import { environmentLabel } from "@/modules/platform/security/components/defectdojo/utils";
 import type { RunningContainer, SecurityFindingsFocus } from "./types";
-
-export function environmentLabel({ cdPipeline, stage }: Pick<RuntimeEnvironment, "cdPipeline" | "stage">): string {
-  return `${cdPipeline} / ${stage}`;
-}
 
 export function containerLabel(
   environment: Pick<RuntimeEnvironment, "cdPipeline" | "stage">,

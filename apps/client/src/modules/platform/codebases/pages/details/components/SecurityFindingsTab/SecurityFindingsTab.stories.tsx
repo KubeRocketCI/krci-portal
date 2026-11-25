@@ -6,7 +6,7 @@ import type { AppRouter } from "@my-project/trpc";
 import { createTRPCClient, TRPCClientError, type OperationResultEnvelope } from "@trpc/client";
 import { observable } from "@trpc/server/observable";
 import { expect, spyOn, userEvent, waitFor, within } from "storybook/test";
-import { withAppProviders } from "@sb/index";
+import { withAppProviders, withFailingTrpc } from "@sb/index";
 import { TRPCContext } from "@/core/providers/trpc/context";
 import { SecurityFindingsTab } from ".";
 import { scanFindingsKey } from "./hooks/useScanFindings";
@@ -325,25 +325,8 @@ export const Unreachable: Story = {
 
 const FORBIDDEN_MESSAGE = "Kubernetes API request failed: 403 Forbidden. codebases is forbidden for this user";
 
-/** A tRPC client whose every call fails: the server could not read the codebase. */
-const failingClient = createTRPCClient<AppRouter>({
-  links: [
-    () => () =>
-      observable<never, TRPCClientError<AppRouter>>((observer) => {
-        observer.error(TRPCClientError.from(new Error(FORBIDDEN_MESSAGE)));
-      }),
-  ],
-});
-
 export const LoadFailed: Story = {
-  decorators: [
-    (Story) => (
-      <TRPCContext.Provider value={failingClient}>
-        <Story />
-      </TRPCContext.Provider>
-    ),
-    withAppProviders(),
-  ],
+  decorators: [withFailingTrpc(FORBIDDEN_MESSAGE), withAppProviders()],
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 

@@ -122,7 +122,6 @@ export function useTrivyOverview(params?: UseTrivyOverviewParams): TrivyOverview
         imageStatsList.push({
           name: `${artifact.repository}:${artifact.tag || "latest"}`,
           namespace,
-          reportName: report.metadata?.name || "",
           ...counts,
         });
       }

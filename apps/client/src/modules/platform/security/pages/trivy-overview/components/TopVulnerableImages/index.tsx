@@ -1,9 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/core/components/ui/card";
 import { Skeleton } from "@/core/components/ui/skeleton";
-import { Link, useParams } from "@tanstack/react-router";
 import type { TrivyOverviewData } from "../../types";
 import { SEVERITY_COLORS } from "@/modules/platform/security/constants/severity";
-import { PATH_TRIVY_VULNERABILITY_DETAILS_FULL } from "@/modules/platform/security/pages/trivy-vulnerability-details/route";
 
 export interface TopVulnerableImagesProps {
   data: TrivyOverviewData | null;
@@ -39,10 +37,8 @@ function LoadingSkeleton() {
 
 /**
  * Table showing top 10 most vulnerable images
- * Includes link to vulnerability details page
  */
 export function TopVulnerableImages({ data, isLoading }: TopVulnerableImagesProps) {
-  const { clusterName } = useParams({ strict: false });
   const topImages = data?.topImages ?? [];
   const hasData = topImages.length > 0;
 
@@ -77,18 +73,9 @@ export function TopVulnerableImages({ data, isLoading }: TopVulnerableImagesProp
                   return (
                     <tr key={`${image.name}-${index}`} className="hover:bg-muted/30 border-b last:border-b-0">
                       <td className="py-2">
-                        <Link
-                          to={PATH_TRIVY_VULNERABILITY_DETAILS_FULL}
-                          params={{
-                            clusterName: clusterName || "",
-                            namespace: image.namespace,
-                            name: image.reportName,
-                          }}
-                          className="hover:text-primary text-sm font-medium break-all hover:underline"
-                          title={image.name}
-                        >
+                        <span className="text-sm font-medium break-all" title={image.name}>
                           {image.name}
-                        </Link>
+                        </span>
                         <p className="text-muted-foreground text-xs">{image.namespace}</p>
                       </td>
                       <td className="py-2 text-center">

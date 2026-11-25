@@ -7,9 +7,9 @@ import {
 import { Badge } from "@/core/components/ui/badge";
 import { TableBodyUI, TableCellUI, TableRowUI } from "@/core/components/ui/table";
 import { cn } from "@/core/utils/classname";
-import { NO_VALUE } from "@/modules/platform/security/components/defectdojo/constants";
+import { LEVEL_META, NO_VALUE } from "@/modules/platform/security/components/defectdojo/constants";
 import { NoScanDataState } from "@/modules/platform/security/components/defectdojo/StateBlocks";
-import { CELL_CLASS, NO_ENVIRONMENT_HINT, RUNTIME_META, RUNTIME_PRODUCER } from "../../constants";
+import { CELL_CLASS, NO_ENVIRONMENT_HINT } from "../../constants";
 import { focusedProps } from "../../focusedProps";
 import type { SecurityFindingsFocus } from "../../types";
 import { isFocusedEnvironment } from "../../utils";
@@ -18,6 +18,8 @@ import { CleanLevelState, LevelHeaderRow } from "../LevelHeaderRow";
 import { NoScanDataRow } from "../NoScanDataRow";
 import { RuntimeContainerRow } from "../RuntimeContainerRow";
 import { NoCountsCells } from "../SeverityCountCells";
+
+const RUNTIME_META = LEVEL_META.runtime;
 
 export interface RuntimeSectionProps {
   data: RuntimeLevel;
@@ -36,7 +38,7 @@ function EnvironmentNoDataRow({ environment, focused }: { environment: RuntimeEn
     <TableRowUI data-testid="runtime-no-data-row" {...focus} className={cn("hover:bg-transparent", focus.className)}>
       <TableCellUI className={CELL_CLASS} />
       <TableCellUI className={CELL_CLASS}>
-        <NoScanDataState producer={RUNTIME_PRODUCER} what={RUNTIME_META.findings} />
+        <NoScanDataState producer={RUNTIME_META.producer} what={RUNTIME_META.findings} />
       </TableCellUI>
       <TableCellUI className={CELL_CLASS}>
         <EnvironmentCell environment={environment} />
@@ -57,7 +59,7 @@ export function RuntimeSection({ data, codebase, expanded, onToggle, focus }: Ru
       </LevelHeaderRow>
 
       {data.environments.length === 0 && (
-        <NoScanDataRow producer={RUNTIME_PRODUCER} what={RUNTIME_META.findings} hint={NO_ENVIRONMENT_HINT} />
+        <NoScanDataRow producer={RUNTIME_META.producer} what={RUNTIME_META.findings} hint={NO_ENVIRONMENT_HINT} />
       )}
 
       {data.environments.map((environment) => {

@@ -1,5 +1,5 @@
 import type { RuntimeEnvironment } from "@my-project/shared";
-import { environmentLabel } from "../../utils";
+import { environmentLabel } from "@/modules/platform/security/components/defectdojo/utils";
 
 export interface EnvironmentCellProps {
   environment: Pick<RuntimeEnvironment, "cdPipeline" | "stage" | "clusterName" | "namespace">;

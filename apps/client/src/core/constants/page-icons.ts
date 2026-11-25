@@ -60,7 +60,7 @@ export const PAGE_ICONS = {
   // Security - SAST
   sast: Box,
 
-  // Security - Container Scanning
+  // Security - Findings
   "trivy-overview": Shield,
   "trivy-vulnerabilities": ShieldAlert,
   "trivy-exposed-secrets": AlertCircle,
@@ -158,7 +158,7 @@ export const PATH_TO_ICON_TYPE: Record<string, PageIconType> = {
   // Security - SAST
   "/c/$clusterName/security/sast/projects/$namespace": "sast",
 
-  // Security - Container Scanning
+  // Security - Findings
   "/c/$clusterName/security/trivy": "trivy-overview",
   "/c/$clusterName/security/trivy/vulnerabilities": "trivy-vulnerabilities",
   "/c/$clusterName/security/container/exposed-secrets": "trivy-exposed-secrets",

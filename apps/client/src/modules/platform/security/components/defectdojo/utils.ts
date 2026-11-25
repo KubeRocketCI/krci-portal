@@ -1,5 +1,5 @@
-import type { ScanFinding } from "@my-project/shared";
-import { NO_VALUE } from "./constants";
+import type { RuntimeEnvironment, ScanFinding } from "@my-project/shared";
+import { FINDING_STATE_LABELS, NO_VALUE } from "./constants";
 
 /** "Fix available", with the version where the scanner fills it. */
 export function formatFix(finding: Pick<ScanFinding, "fixAvailable" | "fixVersion">): string {
@@ -20,10 +20,11 @@ export function getFindingStates(
   finding: Pick<ScanFinding, "falsePositive" | "outOfScope" | "riskAccepted" | "mitigated" | "underReview">
 ): string[] {
   const states: string[] = [];
-  if (finding.falsePositive) states.push("False positive");
-  if (finding.outOfScope) states.push("Out of scope");
-  if (finding.riskAccepted) states.push("Risk accepted");
-  if (finding.mitigated) states.push("Mitigated");
+  if (finding.falsePositive) states.push(FINDING_STATE_LABELS.falsePositive);
+  if (finding.outOfScope) states.push(FINDING_STATE_LABELS.outOfScope);
+  if (finding.riskAccepted) states.push(FINDING_STATE_LABELS.riskAccepted);
+  // DefectDojo marks a false positive and an out of scope finding mitigated as well.
+  if (finding.mitigated && !finding.falsePositive && !finding.outOfScope) states.push(FINDING_STATE_LABELS.mitigated);
   if (finding.underReview) states.push("Under review");
   return states;
 }
@@ -45,4 +46,12 @@ export function formatScanTime(iso: string | null): string {
   return Number.isNaN(date.getTime())
     ? NO_VALUE
     : date.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+}
+
+export function findingsFailed({ data, isError }: { data: { state: string } | undefined; isError: boolean }): boolean {
+  return (data === undefined && isError) || data?.state === "unreachable" || data?.state === "notConfigured";
+}
+
+export function environmentLabel({ cdPipeline, stage }: Pick<RuntimeEnvironment, "cdPipeline" | "stage">): string {
+  return `${cdPipeline} / ${stage}`;
 }

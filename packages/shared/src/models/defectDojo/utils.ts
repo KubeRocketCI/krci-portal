@@ -1,5 +1,11 @@
 import { DEFECTDOJO_SEVERITIES, type DefectDojoSeverity, type RuntimeReportKind } from "./constants.js";
-import type { CodebaseScanRef, RuntimeContainer, RuntimeContainerRef, RuntimeEnvironment } from "./types.js";
+import type {
+  CodebaseScanRef,
+  RuntimeContainer,
+  RuntimeContainerRef,
+  RuntimeEnvironment,
+  VulnerabilitiesRequest,
+} from "./types.js";
 
 /** Identity of a scan as one string: equal for the same scan, different for any other. Not a lookup key sent to DefectDojo. */
 export function scanRefKey(scan: CodebaseScanRef): string {
@@ -49,5 +55,17 @@ export function hasActiveRuntimeFindings({
 }: Pick<Extract<RuntimeContainer, { state: "running" }>, "vulnerabilities" | "secrets">): boolean {
   return (
     (vulnerabilities !== null && hasActiveFindings(vulnerabilities.counts)) || (secrets !== null && secrets.active > 0)
+  );
+}
+
+/** A filter beyond the scope of a list: an empty page then means no match, not no findings. */
+export function hasVulnerabilityFilter(
+  request: Pick<VulnerabilitiesRequest, "state" | "severity" | "vulnerabilityId" | "component">
+): boolean {
+  return (
+    request.state !== "active" ||
+    request.severity !== undefined ||
+    request.vulnerabilityId !== undefined ||
+    request.component !== undefined
   );
 }

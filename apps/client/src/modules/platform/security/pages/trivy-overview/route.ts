@@ -21,6 +21,6 @@ export const routeTrivyOverview = createRoute({
       .parse(search);
   },
   head: () => ({
-    meta: [{ title: "Container Scanning Overview | KRCI" }],
+    meta: [{ title: "Findings Overview | KRCI" }],
   }),
 }).lazy(() => import("./route.lazy").then((res) => res.default));

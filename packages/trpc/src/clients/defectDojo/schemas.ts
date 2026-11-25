@@ -62,7 +62,8 @@ export const countsAnswerSchema = z.object({
 
 export const testSchema = z.object({ id });
 
-export const testTypesPageSchema = z.object({
+/** A lookup list by name: test types, Product Types. */
+export const namedRowsPageSchema = z.object({
   results: z.array(z.object({ id, name: z.string() })),
 });
 
@@ -100,6 +101,10 @@ export const findingRowSchema = z.object({
   }),
 });
 
-export const findingsPageSchema = z.object({ count, results: z.array(findingRowSchema) });
+export const findingsPageSchema = z.object({
+  count,
+  results: z.array(findingRowSchema),
+  prefetch: z.object({ test: z.record(testRowSchema).optional() }).optional(),
+});
 
 export type FindingRow = z.infer<typeof findingRowSchema>;

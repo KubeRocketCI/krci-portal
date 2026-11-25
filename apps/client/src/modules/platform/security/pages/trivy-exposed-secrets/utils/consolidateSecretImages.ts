@@ -1,7 +1,7 @@
 import { ExposedSecretReport, exposedSecretReportLabels } from "@my-project/shared";
 import { getImageKey, groupReportsByImage } from "@/modules/platform/security/components/trivy";
 import { ConsolidatedSecretImage } from "../types";
-import { ImageResource } from "../../trivy-vulnerabilities/types";
+import type { ImageResource } from "@/modules/platform/security/components/trivy";
 
 /**
  * Extracts resource information from an ExposedSecretReport

@@ -8,20 +8,22 @@ import { HEAD_CLASS, NO_VALUE } from "../constants";
 import { DefectDojoLink } from "../DefectDojoLink";
 import { formatFix, formatLocation, getFindingStates } from "../utils";
 
-export interface FindingsTableProps {
-  findings: ScanFinding[];
-  /** Code findings have a place in the source; image findings have a component and a fix. */
-  level: CodebaseScanLevel;
-  /** Accessible name of the table. */
-  caption: string;
-}
-
-interface FindingColumn {
+export interface FindingColumn<Finding = ScanFinding> {
   id: string;
   header: ReactNode;
   headClassName?: string;
   cellClassName?: string;
-  cell: (finding: ScanFinding) => ReactNode;
+  cell: (finding: Finding) => ReactNode;
+}
+
+export interface FindingsTableProps<Finding extends ScanFinding = ScanFinding> {
+  findings: Finding[];
+  /** Code findings have a place in the source; image findings have a component and a fix. */
+  level: CodebaseScanLevel;
+  /** Accessible name of the table. */
+  caption: string;
+  /** One more column, before the DefectDojo link. */
+  extraColumn?: FindingColumn<Finding>;
 }
 
 const CELL_CLASS = "px-3 py-2 align-top";
@@ -105,9 +107,17 @@ const COLUMNS: Record<CodebaseScanLevel, FindingColumn[]> = {
   image: [SEVERITY_COLUMN, FINDING_COLUMN, VULNERABILITY_COLUMN, COMPONENT_COLUMN, FIX_COLUMN, LINK_COLUMN],
 };
 
-/** Findings of one scan. A finding that is not active is dimmed, with its triage states. Each links to DefectDojo. */
-export function FindingsTable({ findings, level, caption }: FindingsTableProps) {
-  const columns = COLUMNS[level];
+/** A finding that is not active is dimmed, with its triage states. Each links to DefectDojo. */
+export function FindingsTable<Finding extends ScanFinding>({
+  findings,
+  level,
+  caption,
+  extraColumn,
+}: FindingsTableProps<Finding>) {
+  const levelColumns: FindingColumn<Finding>[] = COLUMNS[level];
+  const columns = extraColumn
+    ? levelColumns.flatMap((column) => (column.id === LINK_COLUMN.id ? [extraColumn, column] : [column]))
+    : levelColumns;
 
   return (
     <TableUI aria-label={caption}>
