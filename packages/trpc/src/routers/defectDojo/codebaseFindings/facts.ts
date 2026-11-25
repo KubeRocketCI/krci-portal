@@ -1,27 +1,29 @@
 import {
-  K8sApiError,
   applicationLabels,
   codebaseBranchLabels,
-  inClusterName,
   k8sApplicationConfig,
   k8sCodebaseBranchConfig,
   k8sCodebaseConfig,
   k8sCodebaseImageStreamConfig,
   k8sStageConfig,
   type CodebaseFindingsInput,
-  type K8sResourceConfig,
 } from "@my-project/shared";
 import { z } from "zod";
 import type { CustomSession } from "../../../context/types.js";
 import { createLabelSelectorString } from "../../k8s/utils/createLabelSelectorString/index.js";
 import { getInitializedK8sClient } from "../../k8s/utils/getInitializedK8sClient/index.js";
 import { rethrowOrHandleK8sError } from "../../k8s/utils/handleK8sError/index.js";
-
-/** What the findings of a codebase read from Kubernetes. `K8sClient` fits it. */
-export interface CodebaseKubeReader {
-  getResource(config: K8sResourceConfig, name: string, namespace: string): Promise<unknown>;
-  listResource(config: K8sResourceConfig, namespace: string, labelSelector?: string): Promise<{ items: unknown[] }>;
-}
+import {
+  applicationSchema,
+  compareStages,
+  listIfServed,
+  parseAll,
+  stageKey,
+  stageSchema,
+  type Application,
+  type FindingsKubeReader,
+  type Stage,
+} from "../kube.js";
 
 /** A Stage that an Argo CD Application deploys the codebase to. */
 export interface CodebaseEnvironment {
@@ -52,87 +54,39 @@ export interface CodebaseFacts {
 const codebaseSchema = z.object({ spec: z.object({ defaultBranch: z.string() }) });
 const branchSchema = z.object({ spec: z.object({ branchName: z.string() }) });
 const imageStreamSchema = z.object({ spec: z.object({ codebase: z.string(), imageName: z.string() }) });
-const applicationSchema = z.object({
-  metadata: z.object({ name: z.string(), labels: z.record(z.string()).optional() }),
-});
-const stageSchema = z.object({
-  spec: z.object({
-    cdPipeline: z.string(),
-    name: z.string(),
-    clusterName: z.string().default(inClusterName),
-    namespace: z.string(),
-    order: z.number().int(),
-  }),
-});
-
-type Application = z.output<typeof applicationSchema>;
-type Stage = z.output<typeof stageSchema>;
-
-/** The objects that match `schema`. A malformed object is left out. */
-function parseAll<Output>(schema: z.ZodType<Output, z.ZodTypeDef, unknown>, items: unknown[]): Output[] {
-  return items.flatMap((item) => {
-    const parsed = schema.safeParse(item);
-    return parsed.success ? [parsed.data] : [];
-  });
-}
-
-/** Argo CD and the CD pipeline operator are optional: a 404 on their types is an empty list. */
-async function listIfServed(
-  reader: CodebaseKubeReader,
-  config: K8sResourceConfig,
-  namespace: string,
-  labelSelector?: string
-): Promise<{ items: unknown[] }> {
-  try {
-    return await reader.listResource(config, namespace, labelSelector);
-  } catch (error) {
-    if (error instanceof K8sApiError && error.statusCode === 404) {
-      return { items: [] };
-    }
-    throw error;
-  }
-}
 
 /**
  * The Applications that name a Stage by their `pipeline` and `stage` labels. Of two Applications of one Stage the
  * first by name counts. An Application without a Stage and a Stage without an Application are no Environments.
  */
 function joinEnvironments(applications: Application[], stages: Stage[]): CodebaseEnvironment[] {
-  const stageKey = (cdPipeline: string, stage: string) => JSON.stringify([cdPipeline, stage]);
-  const specsByKey = new Map(stages.map(({ spec }) => [stageKey(spec.cdPipeline, spec.name), spec]));
+  const stagesByKey = new Map(stages.map((stage) => [stageKey(stage.spec.cdPipeline, stage.spec.name), stage]));
   const byName = [...applications].sort((a, b) => a.metadata.name.localeCompare(b.metadata.name));
 
-  const joined = new Map<string, { environment: CodebaseEnvironment; order: number }>();
+  const joined = new Map<string, { environment: CodebaseEnvironment; stage: Stage }>();
   for (const { metadata } of byName) {
     const cdPipeline = metadata.labels?.[applicationLabels.pipeline];
-    const stage = metadata.labels?.[applicationLabels.stage];
-    if (!cdPipeline || !stage) {
+    const stageName = metadata.labels?.[applicationLabels.stage];
+    if (!cdPipeline || !stageName) {
       continue;
     }
 
-    const key = stageKey(cdPipeline, stage);
-    const spec = specsByKey.get(key);
-    if (spec && !joined.has(key)) {
-      const { clusterName, namespace, order } = spec;
+    const key = stageKey(cdPipeline, stageName);
+    const stage = stagesByKey.get(key);
+    if (stage && !joined.has(key)) {
+      const { clusterName, namespace } = stage.spec;
       joined.set(key, {
-        environment: { cdPipeline, stage, clusterName, namespace, applicationName: metadata.name },
-        order,
+        environment: { cdPipeline, stage: stageName, clusterName, namespace, applicationName: metadata.name },
+        stage,
       });
     }
   }
 
-  return [...joined.values()]
-    .sort(
-      (a, b) =>
-        a.environment.cdPipeline.localeCompare(b.environment.cdPipeline) ||
-        a.order - b.order ||
-        a.environment.stage.localeCompare(b.environment.stage)
-    )
-    .map(({ environment }) => environment);
+  return [...joined.values()].sort((a, b) => compareStages(a.stage, b.stage)).map(({ environment }) => environment);
 }
 
 export async function readCodebaseFacts(
-  reader: CodebaseKubeReader,
+  reader: FindingsKubeReader,
   { namespace, name }: CodebaseFindingsInput
 ): Promise<CodebaseFacts> {
   const [codebase, branches, imageStreams, applications, stages] = await Promise.all([

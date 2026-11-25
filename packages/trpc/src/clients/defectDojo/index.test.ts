@@ -13,10 +13,13 @@ import {
   startReplayServer,
   type ReplayServer,
 } from "./__fixtures__/replay.js";
+import { requestKeyOf } from "./__fixtures__/answers.js";
+import { findingsRequest } from "./requests.js";
 import {
+  FINDINGS_MAX_PAGE_SIZE,
   createDefectDojoClient,
   DefectDojoClient,
-  resetTestTypeCache,
+  resetIdCaches,
   type DefectDojoClientConfig,
   type DefectDojoFindingsPage,
   type DefectDojoResult,
@@ -28,7 +31,7 @@ let server: ReplayServer;
 const stubs: http.Server[] = [];
 
 beforeEach(async () => {
-  resetTestTypeCache();
+  resetIdCaches();
   server = await startReplayServer();
 });
 
@@ -199,6 +202,40 @@ describe("listProducts", () => {
 function testIds(result: DefectDojoResult<DefectDojoTest[]>): number[] {
   return result.state === "data" ? result.data.map((test) => test.id) : [];
 }
+
+describe("listProductsWithTagText", () => {
+  it("lists the namespace products of every cluster by the text of their cluster tag", async () => {
+    const result = await createClient().listProductsWithTagText("k8s-cluster:");
+
+    expect(result.state === "data" && result.data.map((product) => product.name)).toEqual([
+      "in-cluster/argocd",
+      "in-cluster/krci",
+      "in-cluster/krci-security",
+      "in-cluster/krci-demo-dev",
+      "in-cluster/krci-demo-qa",
+      "in-cluster/krci-other-dev",
+    ]);
+    expect(result.state === "data" && result.data[0]).toEqual({
+      id: 1,
+      name: "in-cluster/argocd",
+      tags: ["k8s-cluster:in-cluster", "k8s-namespace:argocd"],
+      url: "https://defectdojo.example.test/asset/1",
+    });
+  });
+
+  it("answers noScanData to a Product Type that holds none of the products", async () => {
+    const result = await createClient({ productType: "Platform" }).listProductsWithTagText("k8s-cluster:");
+
+    expect(result).toEqual({ state: "noScanData" });
+  });
+
+  it("answers noScanData to an empty text, without a request: every product would match", async () => {
+    const result = await createClient().listProductsWithTagText("");
+
+    expect(result).toEqual({ state: "noScanData" });
+    expect(server.requests).toEqual([]);
+  });
+});
 
 describe("listTests", () => {
   describe("the CI tests of a codebase, by its codebase and tenant tags", () => {
@@ -410,6 +447,19 @@ describe("listTests", () => {
     });
   });
 
+  it("finds the tests that carry one of several tags: the vulnerability reports of the clusters of the Stages", async () => {
+    const result = await createClient().listTests({
+      tags: ["report-kind:vulnerabilityreport"],
+      anyTags: ["k8s-cluster:in-cluster", "k8s-cluster:remote-cluster"],
+    });
+
+    expect(result.state === "data" && result.data).toHaveLength(23);
+    expect(result.state === "data" && result.data.find((test) => test.id === 65)?.tags).toContain(
+      "k8s-cluster:remote-cluster"
+    );
+    expect(result.state === "data" && result.data.find((test) => test.id === 63)).toMatchObject({ closed: true });
+  });
+
   it("answers noScanData to a Product Type that holds none of the tests", async () => {
     const result = await createClient({ productType: "Platform" }).listTests({ tags: GO_CODEBASE_TAGS });
 
@@ -418,8 +468,48 @@ describe("listTests", () => {
 
   it("answers noScanData to tags that no stored tag matches, without a request", async () => {
     const result = await createClient().listTests({ tags: ["app.edp.epam.com/codebase:a,b"] });
+    const anyTags = await createClient().listTests({ tags: GO_CODEBASE_TAGS, anyTags: ["k8s-cluster:a b"] });
 
     expect(result).toEqual({ state: "noScanData" });
+    expect(anyTags).toEqual({ state: "noScanData" });
+    expect(server.requests).toEqual([]);
+  });
+});
+
+describe("hasTests", () => {
+  const RUNTIME_VULNERABILITY_TESTS = { tags: ["report-kind:vulnerabilityreport"] };
+
+  it("says a test of the Product Type carries the tags", async () => {
+    const result = await createClient().hasTests({
+      ...RUNTIME_VULNERABILITY_TESTS,
+      anyTags: ["k8s-cluster:in-cluster", "k8s-cluster:remote-cluster"],
+    });
+
+    expect(result).toEqual({ state: "data", data: true });
+  });
+
+  it("says no test carries them for a cluster without tests", async () => {
+    const result = await createClient().hasTests({
+      ...RUNTIME_VULNERABILITY_TESTS,
+      anyTags: ["k8s-cluster:no-such-cluster"],
+    });
+
+    expect(result).toEqual({ state: "data", data: false });
+  });
+
+  it("does not count the tests of another Product Type: the tests list has no filter for it", async () => {
+    const result = await createClient({ productType: "Platform" }).hasTests({
+      ...RUNTIME_VULNERABILITY_TESTS,
+      anyTags: ["k8s-cluster:in-cluster", "k8s-cluster:remote-cluster"],
+    });
+
+    expect(result).toEqual({ state: "data", data: false });
+  });
+
+  it("says no test carries tags that no stored tag matches, without a request", async () => {
+    const result = await createClient().hasTests({ tags: ["report-kind:a,b"] });
+
+    expect(result).toEqual({ state: "data", data: false });
     expect(server.requests).toEqual([]);
   });
 });
@@ -573,7 +663,16 @@ describe("listFindings", () => {
 
     it("keeps the description and the mitigation of a Gitleaks finding on the server", async () => {
       const answer = recordedAnswer(
-        "GET /api/v2/findings/?active=true&duplicate=false&limit=100&o=numerical_severity&offset=0&related_fields=true&test=49"
+        requestKeyOf(
+          findingsRequest({
+            scope: { testId: 49 },
+            state: "active",
+            severities: [],
+            testTypeIds: [],
+            limit: FINDINGS_MAX_PAGE_SIZE,
+            offset: 0,
+          })
+        )
       );
       const [recorded] = (answer.body as { results: { description: string; mitigation: string }[] }).results;
       expect(recorded.description).toContain(SECRET);
@@ -678,6 +777,181 @@ describe("listFindings", () => {
     });
   });
 
+  describe("the findings of the tests that carry tags", () => {
+    const VULNERABILITY_REPORTS = ["report-kind:vulnerabilityreport"];
+    const BED_CLUSTERS = ["k8s-cluster:in-cluster", "k8s-cluster:remote-cluster"];
+
+    it("lists the runtime findings of several clusters, most severe first, each test of the page with its tags", async () => {
+      const result = await createClient().listFindings({
+        scope: { testTags: { all: VULNERABILITY_REPORTS, any: BED_CLUSTERS } },
+        withTests: true,
+        limit: 5,
+      });
+
+      expect(result.state === "data" && result.data.total).toBe(896);
+      expect(findingIds(result)).toEqual([71, 132, 163, 281, 329]);
+      expect(result.state === "data" && result.data.tests.map((test) => test.id)).toEqual([3, 19]);
+      expect(result.state === "data" && result.data.tests[0]).toEqual({
+        id: 3,
+        title: "VulnerabilityReport statefulset/argocd-application-controller/application-controller",
+        scanType: "Trivy Operator Scan",
+        level: "runtime",
+        branchTag: "",
+        commitHash: "",
+        version: "v3.5.3",
+        buildId: expect.stringMatching(/.+/),
+        closed: false,
+        tags: [
+          "app:argocd",
+          "app.kubernetes.io/name:argocd-application-controller",
+          "k8s-cluster:in-cluster",
+          "k8s-container:application-controller",
+          "k8s-namespace:argocd",
+          "k8s-workload:statefulset.argocd-application-controller",
+          "oci-image:quay.io/argoproj/argocd",
+          "report-kind:vulnerabilityreport",
+        ],
+        created: expect.any(String),
+        updated: expect.any(String),
+        url: "https://defectdojo.example.test/test/3",
+      });
+    });
+
+    it("asks for the findings in a total order, so that pages of equal severity do not overlap", async () => {
+      await createClient().listFindings({ scope: { testId: 41 } });
+
+      expect(server.requests.map((request) => request.key)).toEqual([
+        expect.stringContaining("o=numerical_severity%2Cid"),
+      ]);
+    });
+
+    it("keeps to the Product Type, by its id, looked up once", async () => {
+      const client = createClient();
+
+      await client.listFindings({
+        scope: { testTags: { all: VULNERABILITY_REPORTS, any: BED_CLUSTERS } },
+        withTests: true,
+        limit: 5,
+      });
+      await client.listFindings({
+        scope: { testTags: { all: VULNERABILITY_REPORTS, any: BED_CLUSTERS } },
+        withTests: true,
+        limit: 5,
+      });
+
+      const keys = server.requests.map((request) => request.key);
+      expect(keys.filter((key) => key.startsWith("GET /api/v2/product_types/"))).toEqual([
+        "GET /api/v2/product_types/?name=KubeRocketCI",
+      ]);
+      expect(
+        keys.filter((key) => key.startsWith("GET /api/v2/findings/")).every((key) => key.includes("prod_type=2"))
+      ).toBe(true);
+    });
+
+    it("answers noScanData when DefectDojo has no Product Type of the configured name, without a findings request", async () => {
+      const result = await createClient({ productType: "No Such Type" }).listFindings({
+        scope: { testTags: { all: VULNERABILITY_REPORTS, any: BED_CLUSTERS } },
+      });
+
+      expect(result).toEqual({ state: "noScanData" });
+      expect(server.requests.map((request) => request.key)).toEqual(["GET /api/v2/product_types/?name=No+Such+Type"]);
+    });
+
+    it("scopes the runtime findings to one namespace of a cluster", async () => {
+      const result = await createClient().listFindings({
+        scope: {
+          testTags: { all: [...VULNERABILITY_REPORTS, "k8s-namespace:krci-demo-dev"], any: ["k8s-cluster:in-cluster"] },
+        },
+        withTests: true,
+        limit: 5,
+      });
+
+      expect(result.state === "data" && result.data.total).toBe(17);
+      expect(findingIds(result)).toEqual([873, 903, 906, 924, 874]);
+      expect(result.state === "data" && result.data.tests.map((test) => test.id)).toEqual([34, 37, 39]);
+    });
+
+    it("marks the test of a workload that is gone as closed: its findings are mitigated", async () => {
+      const result = await createClient().listFindings({
+        scope: {
+          testTags: {
+            all: [...VULNERABILITY_REPORTS, "k8s-namespace:krci-demo-dev", "k8s-workload:deployment.worker"],
+          },
+        },
+        withTests: true,
+        state: "any",
+        limit: 5,
+      });
+
+      expect(findingIds(result)).toEqual([1126, 1127]);
+      expect(result.state === "data" && result.data.findings.every((finding) => finding.mitigated)).toBe(true);
+      expect(result.state === "data" && result.data.tests).toMatchObject([{ id: 63, buildId: "", closed: true }]);
+    });
+
+    it("lists the runtime false positives, which DefectDojo marks mitigated as well", async () => {
+      const result = await createClient().listFindings({
+        scope: { testTags: { all: VULNERABILITY_REPORTS, any: BED_CLUSTERS } },
+        withTests: true,
+        state: "falsePositive",
+        limit: 5,
+      });
+
+      expect(result.state === "data" && result.data.findings).toMatchObject([
+        { id: 553, falsePositive: true, mitigated: true, active: false },
+      ]);
+      expect(result.state === "data" && result.data.tests.map((test) => test.id)).toEqual([25]);
+    });
+
+    it("lists the image findings of the tenant by the test types of both image scanners", async () => {
+      const result = await createClient().listFindings({
+        scope: { testTags: { all: ["app.edp.epam.com/tenant:krci"] } },
+        scanTypes: ["Trivy Scan", "Anchore Grype"],
+        withTests: true,
+        limit: 5,
+      });
+
+      expect(result.state === "data" && result.data.total).toBe(51);
+      expect(findingIds(result)).toEqual([1030, 1033, 1028, 1031, 1034]);
+      expect(result.state === "data" && result.data.tests).toMatchObject([
+        {
+          id: 41,
+          scanType: "Trivy Scan",
+          level: "image",
+          branchTag: "main",
+          version: "main-20261123-090000",
+          closed: false,
+        },
+        { id: 50, scanType: "Anchore Grype", level: "image", branchTag: "main", closed: false },
+      ]);
+    });
+
+    it("lists the code findings of one codebase on each of its branches", async () => {
+      const result = await createClient().listFindings({
+        scope: { testTags: { all: GO_CODEBASE_TAGS } },
+        scanTypes: ["Semgrep JSON Report"],
+        withTests: true,
+        limit: 5,
+      });
+
+      expect(findingIds(result)).toEqual([1024, 1039, 1025]);
+      expect(result.state === "data" && result.data.tests.map((test) => [test.id, test.branchTag])).toEqual([
+        [48, "main"],
+        [52, "feature-login"],
+      ]);
+    });
+
+    it("answers noScanData to tags that no stored tag matches, without a request", async () => {
+      const noTag = await createClient().listFindings({ scope: { testTags: { all: [] } } });
+      const commaTag = await createClient().listFindings({
+        scope: { testTags: { all: VULNERABILITY_REPORTS, any: ["a,b"] } },
+      });
+
+      expect(noTag).toEqual({ state: "noScanData" });
+      expect(commaTag).toEqual({ state: "noScanData" });
+      expect(server.requests).toEqual([]);
+    });
+  });
+
   describe("the filters", () => {
     it("filters by severity", async () => {
       const result = await createClient().listFindings({ scope: { testId: 41 }, severities: ["Critical", "High"] });
@@ -686,7 +960,8 @@ describe("listFindings", () => {
     });
 
     it.each([
-      ["mitigated", { testId: 41 }, [928, 929, 930, 931, 1032]],
+      // 1032 is out of scope: DefectDojo marks it mitigated as well, and Mitigated holds the fixed findings only.
+      ["mitigated", { testId: 41 }, [928, 929, 930, 931]],
       ["falsePositive", { testId: 48 }, [1023]],
       ["outOfScope", { testId: 41 }, [1032]],
       ["riskAccepted", { testId: 50 }, [1036]],

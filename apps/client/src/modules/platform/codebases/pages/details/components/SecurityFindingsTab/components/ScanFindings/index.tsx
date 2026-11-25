@@ -14,9 +14,9 @@ import { DefectDojoLink } from "@/modules/platform/security/components/defectdoj
 import { FindingsTable } from "@/modules/platform/security/components/defectdojo/FindingsTable";
 import { SeverityFilter } from "@/modules/platform/security/components/defectdojo/SeverityFilter";
 import { NoFindingsBadge, UnreachableState } from "@/modules/platform/security/components/defectdojo/StateBlocks";
-import { formatScanTime } from "@/modules/platform/security/components/defectdojo/utils";
+import { findingsFailed, formatScanTime } from "@/modules/platform/security/components/defectdojo/utils";
 import { FINDINGS_PAGE_SIZES, NO_SCAN_DATA_MESSAGE } from "../../constants";
-import { findingsFailed, useScanFindings } from "../../hooks/useScanFindings";
+import { useScanFindings } from "../../hooks/useScanFindings";
 import { findingsLayout } from "../../utils";
 
 /** What the findings of a scan need to know of it. A `CodebaseScan` fits; so does one report of a container. */

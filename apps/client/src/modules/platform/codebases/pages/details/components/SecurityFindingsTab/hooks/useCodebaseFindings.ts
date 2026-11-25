@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { CodebaseFindingsInput } from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
-import { findingsStaleTime } from "./findingsStaleTime";
+import { findingsStaleTime } from "@/modules/platform/security/components/defectdojo/findingsStaleTime";
 
 export const codebaseFindingsKey = (input: CodebaseFindingsInput) =>
   ["defectDojo", "getCodebaseFindings", input] as const;

@@ -69,3 +69,21 @@ describe("createNavigationConfig — Administration section", () => {
     expect(items.some((item) => item.title === "Administration")).toBe(true);
   });
 });
+
+describe("createNavigationConfig — Security section", () => {
+  interface NavNode {
+    title?: string;
+    route?: { to?: string };
+    children?: NavNode[];
+  }
+
+  const security = () =>
+    (createNavigationConfig("test-cluster", "test-namespace") as NavNode[]).find((item) => item.title === "Security");
+
+  it("groups Overview, Vulnerabilities and Exposed Secrets under Findings, the vulnerability list on its kept URL", () => {
+    const findings = security()?.children?.find((group) => group.title === "Findings");
+
+    expect(findings?.children?.map((item) => item.title)).toEqual(["Overview", "Vulnerabilities", "Exposed Secrets"]);
+    expect(findings?.children?.[1]?.route?.to).toBe("/c/$clusterName/security/trivy/vulnerabilities");
+  });
+});

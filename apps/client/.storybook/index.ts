@@ -1,5 +1,6 @@
 export {
   withAppProviders,
+  withFailingTrpc,
   createMockQueryClient,
   mockPermissions,
   STORYBOOK_CLUSTER_NAME,

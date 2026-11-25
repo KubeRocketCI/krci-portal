@@ -6,7 +6,7 @@ import {
   type RuntimeLevel,
 } from "@my-project/shared";
 import { TableBodyUI } from "@/core/components/ui/table";
-import { LEVEL_META, SCAN_PRODUCER } from "../../constants";
+import { LEVEL_META } from "@/modules/platform/security/components/defectdojo/constants";
 import type { SecurityFindingsFocus } from "../../types";
 import { CleanLevelState, LevelHeaderRow } from "../LevelHeaderRow";
 import { NoScanDataRow } from "../NoScanDataRow";
@@ -38,7 +38,7 @@ export function LevelSection({ level, data, runtime, focus, codebase, expanded, 
         {data.state === "clean" && <CleanLevelState lastUpload={data.lastUpload} />}
       </LevelHeaderRow>
 
-      {data.state === "noScanData" && <NoScanDataRow producer={SCAN_PRODUCER} what={meta.findings} />}
+      {data.state === "noScanData" && <NoScanDataRow producer={meta.producer} what={meta.findings} />}
 
       {data.scans.map((scan) => {
         const key = scanRefKey(scan.ref);

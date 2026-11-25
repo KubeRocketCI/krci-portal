@@ -1,0 +1,88 @@
+import { applicationLabels, k8sApplicationConfig, k8sStageConfig } from "@my-project/shared";
+import type { CustomSession } from "../../../context/types.js";
+import { getInitializedK8sClient } from "../../k8s/utils/getInitializedK8sClient/index.js";
+import { rethrowOrHandleK8sError } from "../../k8s/utils/handleK8sError/index.js";
+import {
+  applicationSchema,
+  compareStages,
+  listIfReadable,
+  parseAll,
+  stageSchema,
+  type FindingsKubeReader,
+} from "../kube.js";
+
+export interface PlatformStage {
+  cdPipeline: string;
+  stage: string;
+  clusterName: string;
+  namespace: string;
+}
+
+/** An Argo CD Application of the installation, with the codebase and the Stage its labels name. */
+export interface PlatformApplication {
+  name: string;
+  codebase: string | null;
+  cdPipeline: string | null;
+  stage: string | null;
+}
+
+/**
+ * What the platform lists read from Kubernetes: Stages and Applications decorate rows and set the default clusters.
+ * A type the cluster does not serve (404) or the user may not list (403) reads as empty.
+ */
+export interface PlatformFacts {
+  /** Ordered by CDPipeline, then by the order of the Stage, then by its name. */
+  stages: PlatformStage[];
+  applications: PlatformApplication[];
+}
+
+export async function readPlatformFacts(
+  reader: FindingsKubeReader,
+  namespace: string,
+  { applications = false }: { applications?: boolean } = {}
+): Promise<PlatformFacts> {
+  const [stageList, applicationList] = await Promise.all([
+    listIfReadable(reader, k8sStageConfig, namespace),
+    applications ? listIfReadable(reader, k8sApplicationConfig, namespace) : { items: [] },
+  ]);
+
+  return {
+    stages: parseAll(stageSchema, stageList.items)
+      .sort(compareStages)
+      .map(({ spec }) => ({
+        cdPipeline: spec.cdPipeline,
+        stage: spec.name,
+        clusterName: spec.clusterName,
+        namespace: spec.namespace,
+      })),
+    applications: parseAll(applicationSchema, applicationList.items).map(({ metadata }) => ({
+      name: metadata.name,
+      codebase: metadata.labels?.[applicationLabels.appName] ?? null,
+      cdPipeline: metadata.labels?.[applicationLabels.pipeline] ?? null,
+      stage: metadata.labels?.[applicationLabels.stage] ?? null,
+    })),
+  };
+}
+
+export async function loadPlatformFacts(
+  session: CustomSession,
+  namespace: string,
+  options?: { applications?: boolean }
+): Promise<PlatformFacts> {
+  try {
+    return await readPlatformFacts(getInitializedK8sClient({ session }), namespace, options);
+  } catch (error) {
+    return rethrowOrHandleK8sError(error);
+  }
+}
+
+/** The facts of a Code or Image list: it reads no Kubernetes object. */
+export const NO_PLATFORM_FACTS: PlatformFacts = { stages: [], applications: [] };
+
+export function sortedUnique(values: Iterable<string>): string[] {
+  return [...new Set(values)].sort((a, b) => a.localeCompare(b));
+}
+
+export function clustersOfStages(facts: Pick<PlatformFacts, "stages">): string[] {
+  return sortedUnique(facts.stages.map((stage) => stage.clusterName));
+}

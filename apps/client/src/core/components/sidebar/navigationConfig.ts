@@ -31,7 +31,7 @@ import { PATH_PIPELINE_METRICS_FULL } from "@/modules/platform/observability/pag
 import { PATH_SCA_FULL } from "@/modules/platform/security/pages/sca/route";
 import { PATH_SCA_PROJECTS_FULL } from "@/modules/platform/security/pages/sca-projects/route";
 import { PATH_SAST_FULL } from "@/modules/platform/security/pages/sast/route";
-import { PATH_TRIVY_VULNERABILITIES_FULL } from "@/modules/platform/security/pages/trivy-vulnerabilities/route";
+import { PATH_VULNERABILITIES_FULL } from "@/modules/platform/security/pages/vulnerabilities/route";
 import { PATH_TRIVY_OVERVIEW_FULL } from "@/modules/platform/security/pages/trivy-overview/route";
 import { PATH_TRIVY_CONFIG_AUDITS_FULL } from "@/modules/platform/security/pages/trivy-config-audits/route";
 import { PATH_TRIVY_COMPLIANCE_FULL } from "@/modules/platform/security/pages/trivy-compliance/route";
@@ -205,7 +205,7 @@ export function createNavigationConfig(clusterName: string, namespace: string, i
           ],
         },
         {
-          title: "Container Scanning",
+          title: "Findings",
           children: [
             {
               title: "Overview",
@@ -216,10 +216,10 @@ export function createNavigationConfig(clusterName: string, namespace: string, i
               },
             },
             {
-              title: "Vulnerability Reports",
+              title: "Vulnerabilities",
               icon: ShieldAlert,
               route: {
-                to: PATH_TRIVY_VULNERABILITIES_FULL,
+                to: PATH_VULNERABILITIES_FULL,
                 params: clusterDefaultParams,
               },
             },

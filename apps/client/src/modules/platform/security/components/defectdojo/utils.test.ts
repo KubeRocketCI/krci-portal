@@ -1,7 +1,7 @@
-import type { ScanFinding } from "@my-project/shared";
+import type { ScanFinding, ScanFindings } from "@my-project/shared";
 import { describe, expect, it } from "vitest";
 import { NO_VALUE } from "./constants";
-import { formatFix, formatLocation, formatScanTime, getFindingStates } from "./utils";
+import { environmentLabel, findingsFailed, formatFix, formatLocation, formatScanTime, getFindingStates } from "./utils";
 
 function finding(overrides: Partial<ScanFinding> = {}): ScanFinding {
   return {
@@ -66,7 +66,15 @@ describe("getFindingStates", () => {
           underReview: true,
         })
       )
-    ).toEqual(["False positive", "Out of scope", "Risk accepted", "Mitigated", "Under review"]);
+    ).toEqual(["False positive", "Out of scope", "Risk accepted", "Under review"]);
+  });
+
+  it("names a fixed finding Mitigated, not a false positive or out of scope one that DefectDojo marks mitigated too", () => {
+    expect(getFindingStates(finding({ active: false, mitigated: true }))).toEqual(["Mitigated"]);
+    expect(getFindingStates(finding({ active: false, mitigated: true, falsePositive: true }))).toEqual([
+      "False positive",
+    ]);
+    expect(getFindingStates(finding({ active: false, mitigated: true, outOfScope: true }))).toEqual(["Out of scope"]);
   });
 });
 
@@ -87,5 +95,42 @@ describe("formatScanTime", () => {
 
   it.each([null, "", "not a date"])("is a dash for %j", (value) => {
     expect(formatScanTime(value)).toBe(NO_VALUE);
+  });
+});
+
+const PAGE: ScanFindings = { state: "data", total: 0, findings: [] };
+
+describe("findingsFailed", () => {
+  it("is true when the request failed and no page is on screen", () => {
+    expect(findingsFailed({ data: undefined, isError: true })).toBe(true);
+  });
+
+  it("is false while the first page is still loading", () => {
+    expect(findingsFailed({ data: undefined, isError: false })).toBe(false);
+  });
+
+  it.each<[string, ScanFindings]>([
+    ["unreachable", { state: "unreachable" }],
+    ["notConfigured", { state: "notConfigured" }],
+  ])("is true when DefectDojo answered %s, whether or not the request failed", (_, data) => {
+    expect(findingsFailed({ data, isError: false })).toBe(true);
+    expect(findingsFailed({ data, isError: true })).toBe(true);
+  });
+
+  it.each<[string, ScanFindings]>([
+    ["a page", PAGE],
+    ["no scan data", { state: "noScanData" }],
+  ])("is false when DefectDojo answered with %s", (_, data) => {
+    expect(findingsFailed({ data, isError: false })).toBe(false);
+  });
+
+  it("is false when a refetch failed while a page is on screen: the page stays", () => {
+    expect(findingsFailed({ data: PAGE, isError: true })).toBe(false);
+  });
+});
+
+describe("environmentLabel", () => {
+  it("names the Environment by its CDPipeline and its stage", () => {
+    expect(environmentLabel({ cdPipeline: "demo", stage: "dev" })).toBe("demo / dev");
   });
 });

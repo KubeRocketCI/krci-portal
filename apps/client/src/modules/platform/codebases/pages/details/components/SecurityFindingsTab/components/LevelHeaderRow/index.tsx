@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import { TableHeadUI, TableRowUI } from "@/core/components/ui/table";
+import type { LevelMeta } from "@/modules/platform/security/components/defectdojo/constants";
 import { NoFindingsBadge } from "@/modules/platform/security/components/defectdojo/StateBlocks";
 import { formatScanTime } from "@/modules/platform/security/components/defectdojo/utils";
-import { COLUMN_COUNT, type LevelMeta } from "../../constants";
+import { COLUMN_COUNT } from "../../constants";
 
 export interface LevelHeaderRowProps {
   meta: LevelMeta;

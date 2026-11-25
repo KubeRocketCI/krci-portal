@@ -239,7 +239,7 @@ export async function composeCodebaseFindings(
   }
 }
 
-function toScanFinding(finding: DefectDojoFinding): ScanFinding {
+export function toScanFinding(finding: DefectDojoFinding): ScanFinding {
   return {
     title: finding.title,
     severity: finding.severity,

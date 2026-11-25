@@ -1,15 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { NO_FINDING_COUNTS, type CodebaseScanRef, type RuntimeContainerRef } from "@my-project/shared";
 import type { SecurityFindingsFocus } from "./types";
-import { containerLabel, containerTestUrl, environmentLabel, findingsLayout, isFocusedEnvironment } from "./utils";
+import { containerLabel, containerTestUrl, findingsLayout, isFocusedEnvironment } from "./utils";
 
 const ENVIRONMENT = { cdPipeline: "demo", stage: "dev" };
-
-describe("environmentLabel", () => {
-  it("names the Environment by its CDPipeline and its stage", () => {
-    expect(environmentLabel(ENVIRONMENT)).toBe("demo / dev");
-  });
-});
 
 describe("isFocusedEnvironment", () => {
   it("is true for the Environment the focus names", () => {

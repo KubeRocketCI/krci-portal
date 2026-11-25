@@ -18,12 +18,10 @@
  *     --url https://api.ate-system.svc:443 --forward 127.0.0.1:18443 \
  *     --token-file "$TMPDIR/ate-token" --ca-file "$TMPDIR/ate-ca.crt"
  */
-import { mkdirSync, writeFileSync } from "node:fs";
 import type { LookupFunction } from "node:net";
-import { dirname, resolve } from "node:path";
+import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { fleetSchema } from "@my-project/shared";
-import { format, resolveConfig } from "prettier";
 import { GrpcAgentSubstrateSource } from "../src/clients/agentSubstrate/grpc/index.js";
 import { MemoryAgentSubstrateSource, type MemoryFleet } from "../src/clients/agentSubstrate/memory.js";
 import type { SubstrateActorTemplate } from "../src/clients/agentSubstrate/source.js";
@@ -31,6 +29,7 @@ import type { TRPCContext } from "../src/context/types.js";
 import { getFleet } from "../src/routers/agentSubstrate/fleet/index.js";
 import { AGENT_ENV } from "../src/routers/agentSubstrate/fleet/substrateRead.js";
 import { CHECKED_ENV, IN_CLUSTER_ADDRESS } from "../src/clients/agentSubstrate/__fixtures__/guards.js";
+import { writeFixtureJson } from "./lib/writeFixture.js";
 
 const KEPT_ENV = new Set<string>(Object.values(AGENT_ENV));
 const CHECKED_ENV_NAMES = new Set(CHECKED_ENV);
@@ -117,20 +116,17 @@ try {
     [MEMORY_FIXTURE, fleet],
     [STORYBOOK_FIXTURE, storybookFleet],
   ] as const) {
-    const json = `${JSON.stringify(data, null, 2)}\n`;
     const leaked = [...removed].flatMap(([value, name]) =>
       pathsEqualTo(data, value).map((path) => `${name} at ${path}`)
     );
     if (leaked.length) {
       throw new Error(`${file} still holds removed env values: ${leaked.join(", ")}`);
     }
-    const address = json.match(new RegExp(`.{0,40}(${IN_CLUSTER_ADDRESS.source})`));
+    const address = JSON.stringify(data, null, 2).match(new RegExp(`.{0,40}(${IN_CLUSTER_ADDRESS.source})`));
     if (address) {
       throw new Error(`${file} still holds an in-cluster address: ${address[0]}`);
     }
-    mkdirSync(dirname(file), { recursive: true });
-    // plugins: [] overrides the client prettier plugin; trpc does not resolve it.
-    writeFileSync(file, await format(json, { ...(await resolveConfig(file)), plugins: [], filepath: file }));
+    await writeFixtureJson(file, data);
     console.log(`Wrote ${file}`);
   }
   console.log(`${atespaces.length} atespaces, ${actors.length} actors, ${workers.length} workers`);

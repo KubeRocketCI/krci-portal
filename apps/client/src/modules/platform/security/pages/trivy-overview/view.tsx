@@ -41,7 +41,7 @@ export default function TrivyOverviewPageContent() {
   const { data, isLoading, error } = useTrivyOverview({ namespace: selectedNamespace });
 
   return (
-    <PageWrapper breadcrumbs={[{ label: "Security" }, { label: "Container Scanning" }, { label: "Overview" }]}>
+    <PageWrapper breadcrumbs={[{ label: "Security" }, { label: "Findings" }, { label: "Overview" }]}>
       <PageContentWrapper
         icon={Shield}
         title="Trivy Security Overview"

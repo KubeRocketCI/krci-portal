@@ -1,4 +1,4 @@
-import { ImageResource } from "../trivy-vulnerabilities/types";
+import type { ImageResource } from "@/modules/platform/security/components/trivy";
 
 /**
  * Consolidated exposed secret image - groups multiple ExposedSecretReports

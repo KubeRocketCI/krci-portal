@@ -4,7 +4,7 @@ import type { ScanFindings, ScanFindingsInput } from "@my-project/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { queryClient } from "@/core/clients/queryClient";
 import { useTRPCClient } from "@/core/providers/trpc";
-import { findingsFailed, scanFindingsKey, useScanFindings } from "./useScanFindings";
+import { scanFindingsKey, useScanFindings } from "./useScanFindings";
 
 vi.mock("@/core/providers/trpc", () => ({ useTRPCClient: vi.fn() }));
 
@@ -90,33 +90,4 @@ describe("useScanFindings", () => {
       expect(query).toHaveBeenCalledTimes(1);
     }
   );
-});
-
-describe("findingsFailed", () => {
-  it("is true when the request failed and no page is on screen", () => {
-    expect(findingsFailed({ data: undefined, isError: true })).toBe(true);
-  });
-
-  it("is false while the first page is still loading", () => {
-    expect(findingsFailed({ data: undefined, isError: false })).toBe(false);
-  });
-
-  it.each<[string, ScanFindings]>([
-    ["unreachable", { state: "unreachable" }],
-    ["notConfigured", { state: "notConfigured" }],
-  ])("is true when DefectDojo answered %s, whether or not the request failed", (_, data) => {
-    expect(findingsFailed({ data, isError: false })).toBe(true);
-    expect(findingsFailed({ data, isError: true })).toBe(true);
-  });
-
-  it.each<[string, ScanFindings]>([
-    ["a page", DATA],
-    ["no scan data", { state: "noScanData" }],
-  ])("is false when DefectDojo answered with %s", (_, data) => {
-    expect(findingsFailed({ data, isError: false })).toBe(false);
-  });
-
-  it("is false when a refetch failed while a page is on screen: the page stays", () => {
-    expect(findingsFailed({ data: DATA, isError: true })).toBe(false);
-  });
 });

@@ -9,32 +9,36 @@ import {
   DEFECTDOJO_SERVICE_NAME,
   DEFECTDOJO_TIMEOUT_MS,
   FINDINGS_MAX_PAGE_SIZE,
+  ID_CACHE_MAX_ENTRIES,
+  ID_CACHE_TTL_MS,
   LIST_PAGE_SIZE,
-  TEST_TYPE_CACHE_MAX_ENTRIES,
-  TEST_TYPE_CACHE_TTL_MS,
   levelOfScanType,
 } from "./constants.js";
 import {
   countsRequest,
   findingsRequest,
+  productsByTagTextRequest,
   productsRequest,
+  productTypeRequest,
   testRequest,
   testsRequest,
   testTypeRequest,
+  toOptionalTagFilter,
   toTagFilter,
   type DefectDojoRequest,
+  type FindingsRequestScope,
   type ListPage,
 } from "./requests.js";
 import {
   countsAnswerSchema,
   findingsPageSchema,
   listPageSchema,
+  namedRowsPageSchema,
   productRowSchema,
   productTypeRefSchema,
   testEngagementSchema,
   testRowSchema,
   testSchema,
-  testTypesPageSchema,
   type FindingRow,
   type TestEngagement,
   type TestRow,
@@ -42,8 +46,10 @@ import {
 import type {
   DefectDojoClientConfig,
   DefectDojoFinding,
+  DefectDojoFindingTest,
   DefectDojoFindingsPage,
   DefectDojoFindingsQuery,
+  DefectDojoFindingsScope,
   DefectDojoProduct,
   DefectDojoResult,
   DefectDojoScope,
@@ -57,19 +63,18 @@ export * from "./types.js";
 export { isDefectDojoConfigured } from "./config.js";
 
 /**
- * Test type ids by DefectDojo address and scan type. One lookup serves every client until it expires.
- * A scan type without a test type is not kept: a scan of it may be imported at any time.
+ * Ids by DefectDojo address and name: test types by scan type, Product Types by name. One lookup serves every client
+ * until it expires. A name without an object is not kept: a scan of it may be imported, the type created, any time.
  */
-const testTypeIdCache = new TtlCache<number>({
-  ttlMs: TEST_TYPE_CACHE_TTL_MS,
-  maxEntries: TEST_TYPE_CACHE_MAX_ENTRIES,
-});
+const testTypeIdCache = new TtlCache<number>({ ttlMs: ID_CACHE_TTL_MS, maxEntries: ID_CACHE_MAX_ENTRIES });
+const productTypeIdCache = new TtlCache<number>({ ttlMs: ID_CACHE_TTL_MS, maxEntries: ID_CACHE_MAX_ENTRIES });
 
-class TestTypeNotFound extends Error {}
+class NamedRowNotFound extends Error {}
 
-/** @internal Forgets the cached test type ids, for tests. */
-export function resetTestTypeCache(): void {
+/** @internal Forgets the cached ids, for tests. */
+export function resetIdCaches(): void {
   testTypeIdCache.clear();
+  productTypeIdCache.clear();
 }
 
 /** A request that `fetch` refused to build. Carries no text: the message of the refusal quotes the settings. */
@@ -122,55 +127,63 @@ export class DefectDojoClient {
   listProducts(tags: readonly string[]): Promise<DefectDojoResult<DefectDojoProduct[]>> {
     return this.run<DefectDojoProduct[]>(async (http) => {
       const tagFilter = toTagFilter(tags);
-      if (tagFilter === null) {
+      return tagFilter === null
+        ? { state: "noScanData" }
+        : this.readProducts(http, (page) => productsRequest(tagFilter, page));
+    });
+  }
+
+  /** Products that carry a tag containing `text`, case-insensitive, of the configured Product Type. */
+  listProductsWithTagText(text: string): Promise<DefectDojoResult<DefectDojoProduct[]>> {
+    return this.run<DefectDojoProduct[]>(async (http) =>
+      text === "" ? { state: "noScanData" } : this.readProducts(http, (page) => productsByTagTextRequest(text, page))
+    );
+  }
+
+  /**
+   * Tests that carry every one of `filter.tags` and, with `anyTags`, one of those, of the configured Product Type,
+   * with their engagement and product. Tags are lower-cased; `branchTag` and `scanType` match exactly.
+   */
+  listTests(filter: DefectDojoTestsFilter): Promise<DefectDojoResult<DefectDojoTest[]>> {
+    return this.run<DefectDojoTest[]>(async (http) => {
+      const request = testsRequestOf(filter);
+      if (request === null) {
         return { state: "noScanData" };
       }
 
-      const { rows, related: productTypes } = await this.readAll(
-        http,
-        (page) => productsRequest(tagFilter, page),
-        productRowSchema,
-        { field: "prod_type", schema: productTypeRefSchema }
-      );
+      const { rows, related: engagements } = await this.readAll(http, request, testRowSchema, {
+        field: "engagement",
+        schema: testEngagementSchema,
+      });
 
-      const products = rows
-        .filter((product) => productTypes[String(product.prod_type)]?.name === this.productType)
-        .map((product) => ({
-          id: product.id,
-          name: product.name,
-          tags: product.tags,
-          url: this.url("asset", product.id),
-        }));
+      const tests = rows.flatMap((test) => {
+        const engagement = engagements[String(test.engagement)];
+        return this.isOwnProductType(engagement) ? [this.toTest(test, engagement)] : [];
+      });
 
-      return products.length > 0 ? { state: "data", data: products } : { state: "noScanData" };
+      return tests.length > 0 ? { state: "data", data: tests } : { state: "noScanData" };
     });
   }
 
   /**
-   * Tests that carry every one of `filter.tags`, of the configured Product Type, with their engagement and product.
-   * Tags are lower-cased; `branchTag` and `scanType` match exactly.
+   * Whether a test of the configured Product Type carries the tags of `filter`. Reads the tests page by page until
+   * it finds one: the tests list has no Product Type filter.
    */
-  listTests(filter: DefectDojoTestsFilter): Promise<DefectDojoResult<DefectDojoTest[]>> {
-    return this.run<DefectDojoTest[]>(async (http) => {
-      const tagFilter = toTagFilter(filter.tags);
-      // The transport drops an empty value, so tests of every branch or scan type would match.
-      if (tagFilter === null || [filter.branchTag, filter.scanType].some((value) => value === "")) {
-        return { state: "noScanData" };
+  hasTests(filter: DefectDojoTestsFilter): Promise<DefectDojoResult<boolean>> {
+    return this.run<boolean>(async (http) => {
+      const request = testsRequestOf(filter);
+      if (request === null) {
+        return { state: "data", data: false };
       }
 
-      const { rows, related: engagements } = await this.readAll(
-        http,
-        (page) => testsRequest({ tagFilter, branchTag: filter.branchTag, scanType: filter.scanType }, page),
-        testRowSchema,
-        { field: "engagement", schema: testEngagementSchema }
-      );
-
-      const tests = rows.flatMap((test) => {
-        const engagement = engagements[String(test.engagement)];
-        return engagement?.product.prod_type.name === this.productType ? [this.toTest(test, engagement)] : [];
-      });
-
-      return tests.length > 0 ? { state: "data", data: tests } : { state: "noScanData" };
+      const pageSchema = listPageSchema(testRowSchema, "engagement", testEngagementSchema);
+      for await (const page of this.readPages(http, request, pageSchema)) {
+        const engagements = page.prefetch?.engagement ?? {};
+        if (page.results.some((test) => this.isOwnProductType(engagements[String(test.engagement)]))) {
+          return { state: "data", data: true };
+        }
+      }
+      return { state: "data", data: false };
     });
   }
 
@@ -210,28 +223,37 @@ export class DefectDojoClient {
   }
 
   /**
-   * One page of the findings of a set of products or of one test, most severe first, with the allow-listed fields.
-   * Duplicates are not listed; `state` defaults to `active`. A page has at most 100 rows.
+   * One page of the findings of a set of products, of one test, or of the tests that carry tags, most severe first,
+   * with the allow-listed fields. Duplicates are not listed; `state` defaults to `active`. A page has at most
+   * `FINDINGS_MAX_PAGE_SIZE` rows.
    *
    * `scanTypes` selects findings by the test type of their test, looked up once and cached: DefectDojo ignores a
-   * filter by scan type name. The ids of `scope` come from `listProducts` and `listTests`, which keep the Product Type.
-   * `noScanData`: no set of products, a test that does not exist, or no test type for any of the scan types.
+   * filter by scan type name. The ids of a product or test scope come from `listProducts` and `listTests`, which keep
+   * the Product Type; a tag scope sends the id of the Product Type, looked up and cached the same way.
+   * `noScanData`: no set of products, a test that does not exist, tags that no stored tag matches, no test type for
+   * any of the scan types, or no Product Type of the configured name.
    */
   listFindings(query: DefectDojoFindingsQuery): Promise<DefectDojoResult<DefectDojoFindingsPage>> {
     return this.run<DefectDojoFindingsPage>(async (http) => {
-      if (hasNoProducts(query.scope)) {
+      const scope = toRequestScope(query.scope);
+      if (scope === null) {
         return { state: "noScanData" };
       }
 
       const scanTypes = [...new Set(query.scanTypes ?? [])];
-      const found = await Promise.all(scanTypes.map((scanType) => this.findTestTypeId(http, scanType)));
+      const [productTypeId, ...found] = await Promise.all([
+        "testTags" in scope ? this.findProductTypeId(http) : undefined,
+        ...scanTypes.map((scanType) => this.findIdByName(http, testTypeIdCache, testTypeRequest(scanType), scanType)),
+      ]);
       const testTypeIds = found.filter((id): id is number => id !== null);
-      if (scanTypes.length > 0 && testTypeIds.length === 0) {
+      if (productTypeId === null || (scanTypes.length > 0 && testTypeIds.length === 0)) {
         return { state: "noScanData" };
       }
 
       const request = findingsRequest({
-        scope: query.scope,
+        scope,
+        withTests: query.withTests,
+        productTypeId,
         state: query.state ?? "active",
         severities: query.severities ?? [],
         testTypeIds,
@@ -245,17 +267,24 @@ export class DefectDojoClient {
       try {
         page = await this.get(http, request, findingsPageSchema);
       } catch (error) {
-        if ("testId" in query.scope && isUnknownTest(error)) {
+        if ("testId" in scope && isUnknownTest(error)) {
           return { state: "noScanData" };
         }
         throw error;
       }
 
-      return { state: "data", data: { total: page.count, findings: page.results.map((row) => this.toFinding(row)) } };
+      return {
+        state: "data",
+        data: {
+          total: page.count,
+          findings: page.results.map((row) => this.toFinding(row)),
+          tests: Object.values(page.prefetch?.test ?? {}).map((test) => this.toFindingTest(test)),
+        },
+      };
     });
   }
 
-  private toTest(test: TestRow, engagement: TestEngagement): DefectDojoTest {
+  private toFindingTest(test: TestRow): DefectDojoFindingTest {
     const level = levelOfScanType(test.scan_type);
     const buildId = test.build_id ?? "";
 
@@ -273,6 +302,12 @@ export class DefectDojoClient {
       created: test.created,
       updated: test.updated,
       url: this.url("test", test.id),
+    };
+  }
+
+  private toTest(test: TestRow, engagement: TestEngagement): DefectDojoTest {
+    return {
+      ...this.toFindingTest(test),
       engagement: { id: engagement.id, name: engagement.name, url: this.url("engagement", engagement.id) },
       product: {
         id: engagement.product.id,
@@ -280,6 +315,31 @@ export class DefectDojoClient {
         url: this.url("asset", engagement.product.id),
       },
     };
+  }
+
+  private isOwnProductType(engagement: TestEngagement | undefined): engagement is TestEngagement {
+    return engagement?.product.prod_type.name === this.productType;
+  }
+
+  private async readProducts(
+    http: HttpService,
+    request: (page: ListPage) => DefectDojoRequest
+  ): Promise<DefectDojoResult<DefectDojoProduct[]>> {
+    const { rows, related: productTypes } = await this.readAll(http, request, productRowSchema, {
+      field: "prod_type",
+      schema: productTypeRefSchema,
+    });
+
+    const products = rows
+      .filter((product) => productTypes[String(product.prod_type)]?.name === this.productType)
+      .map((product) => ({
+        id: product.id,
+        name: product.name,
+        tags: product.tags,
+        url: this.url("asset", product.id),
+      }));
+
+    return products.length > 0 ? { state: "data", data: products } : { state: "noScanData" };
   }
 
   /** Copies the fields of the allow-list. Nothing else of the row is passed on. */
@@ -317,20 +377,29 @@ export class DefectDojoClient {
     };
   }
 
-  /** Id of the test type of a scan type, or `null` when DefectDojo has none. */
-  private async findTestTypeId(http: HttpService, scanType: string): Promise<number | null> {
+  private findProductTypeId(http: HttpService): Promise<number | null> {
+    return this.findIdByName(http, productTypeIdCache, productTypeRequest(this.productType), this.productType);
+  }
+
+  /** Id of the row of `name` in a lookup list, or `null` when DefectDojo has none. */
+  private async findIdByName(
+    http: HttpService,
+    cache: TtlCache<number>,
+    request: DefectDojoRequest,
+    name: string
+  ): Promise<number | null> {
     try {
-      return await testTypeIdCache.getOrLoad(`${this.apiBaseURL}\n${scanType}`, async () => {
-        const page = await this.get(http, testTypeRequest(scanType), testTypesPageSchema);
-        const testType = page.results.find((candidate) => candidate.name === scanType);
-        if (!testType) {
+      return await cache.getOrLoad(`${this.apiBaseURL}\n${name}`, async () => {
+        const page = await this.get(http, request, namedRowsPageSchema);
+        const row = page.results.find((candidate) => candidate.name === name);
+        if (!row) {
           // A rejected load is not cached.
-          throw new TestTypeNotFound();
+          throw new NamedRowNotFound();
         }
-        return testType.id;
+        return row.id;
       });
     } catch (error) {
-      if (error instanceof TestTypeNotFound) {
+      if (error instanceof NamedRowNotFound) {
         return null;
       }
       throw error;
@@ -392,9 +461,25 @@ export class DefectDojoClient {
     }
   }
 
+  /** The pages of a list in order, until every row is read. The requests are ordered, so pages do not overlap. */
+  private async *readPages<Page extends { count: number; results: readonly unknown[] }>(
+    http: HttpService,
+    request: (page: ListPage) => DefectDojoRequest,
+    pageSchema: ZodType<Page>
+  ): AsyncGenerator<Page> {
+    for (let rowsRead = 0; ;) {
+      const page = await this.get(http, request({ limit: this.listPageSize, offset: rowsRead }), pageSchema);
+      yield page;
+      rowsRead += page.results.length;
+      if (page.results.length === 0 || rowsRead >= page.count) {
+        return;
+      }
+    }
+  }
+
   /**
-   * Reads a list page by page until every row is read. The requests are ordered, so pages do not overlap; a row
-   * that still comes twice is kept once. `related` holds the objects of the prefetch field of every page by id.
+   * Reads every row of a list. A row that still comes twice is kept once. `related` holds the objects of the
+   * prefetch field of every page by id.
    */
   private async readAll<RowSchema extends ZodType<{ id: number }>, RelatedSchema extends ZodTypeAny>(
     http: HttpService,
@@ -402,23 +487,20 @@ export class DefectDojoClient {
     rowSchema: RowSchema,
     prefetch: { field: string; schema: RelatedSchema }
   ): Promise<{ rows: RowSchema["_output"][]; related: Record<string, RelatedSchema["_output"]> }> {
-    const pageSchema = listPageSchema(rowSchema, prefetch.field, prefetch.schema);
     const rows = new Map<number, RowSchema["_output"]>();
     const related: Record<string, RelatedSchema["_output"]> = {};
-    let rowsRead = 0;
 
-    for (;;) {
-      const page = await this.get(http, request({ limit: this.listPageSize, offset: rowsRead }), pageSchema);
+    for await (const page of this.readPages(
+      http,
+      request,
+      listPageSchema(rowSchema, prefetch.field, prefetch.schema)
+    )) {
       for (const row of page.results) {
         rows.set(row.id, row);
       }
       Object.assign(related, page.prefetch?.[prefetch.field]);
-      rowsRead += page.results.length;
-
-      if (page.results.length === 0 || rowsRead >= page.count) {
-        return { rows: [...rows.values()], related };
-      }
     }
+    return { rows: [...rows.values()], related };
   }
 
   private url(kind: "asset" | "test" | "engagement" | "finding", id: number): string {
@@ -429,6 +511,36 @@ export class DefectDojoClient {
 /** An empty set of products: DefectDojo would answer with the findings of every product. */
 function hasNoProducts(scope: DefectDojoScope): boolean {
   return "productIds" in scope && scope.productIds.length === 0;
+}
+
+/**
+ * The scope with its tags as filter values, or `null` when it can match nothing: an empty set of products, or tags
+ * that no stored tag matches. An empty `any` is no condition.
+ */
+function toRequestScope(scope: DefectDojoFindingsScope): FindingsRequestScope | null {
+  if (!("testTags" in scope)) {
+    return hasNoProducts(scope) ? null : scope;
+  }
+
+  const all = toTagFilter(scope.testTags.all);
+  const any = toOptionalTagFilter(scope.testTags.any);
+  return all === null || any === null ? null : { testTags: { all, any } };
+}
+
+/** The request of a tests list by its tags, or `null` when it can match nothing. */
+function testsRequestOf(filter: DefectDojoTestsFilter): ((page: ListPage) => DefectDojoRequest) | null {
+  const tagFilter = toTagFilter(filter.tags);
+  const anyTagFilter = toOptionalTagFilter(filter.anyTags);
+  // The transport drops an empty value, so tests of every branch or scan type would match.
+  if (
+    tagFilter === null ||
+    anyTagFilter === null ||
+    [filter.branchTag, filter.scanType].some((value) => value === "")
+  ) {
+    return null;
+  }
+  return (page) =>
+    testsRequest({ tagFilter, anyTagFilter, branchTag: filter.branchTag, scanType: filter.scanType }, page);
 }
 
 /** DefectDojo answers 400 with a `test` entry to a test id that does not exist. */

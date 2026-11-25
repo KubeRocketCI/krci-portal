@@ -34,7 +34,7 @@ export default function TrivyExposedSecretDetailsPageContent() {
       <PageWrapper
         breadcrumbs={[
           { label: "Security" },
-          { label: "Container Scanning" },
+          { label: "Findings" },
           {
             label: "Exposed Secrets",
             route: {
@@ -61,7 +61,7 @@ export default function TrivyExposedSecretDetailsPageContent() {
     <PageWrapper
       breadcrumbs={[
         { label: "Security" },
-        { label: "Container Scanning" },
+        { label: "Findings" },
         {
           label: "Exposed Secrets",
           route: {

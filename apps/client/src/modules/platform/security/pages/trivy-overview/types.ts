@@ -28,7 +28,6 @@ export interface NamespaceVulnerabilityData extends SeverityCount {
 export interface VulnerableImageData extends SeverityCount {
   name: string;
   namespace: string;
-  reportName: string;
 }
 
 /**
