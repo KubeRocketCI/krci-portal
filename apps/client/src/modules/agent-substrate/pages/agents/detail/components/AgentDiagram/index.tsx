@@ -231,7 +231,7 @@ function boxesOf({ agent, actor, egressPolicy, usableWorkerPools, reviewRuns }: 
     },
     agent: {
       type: "Agent",
-      name: `${agent.agentProfile} · ${agent.model}`,
+      name: [agent.agentProfile, agent.model].filter(Boolean).join(" · ") || "Agent",
       summary: agent.turnLimit === null ? "no turn limit" : `limit ${plural(agent.turnLimit, "turn")}`,
       fields: <KV rows={[facts.actorState, facts.turnLimit, facts.issueBranch, ...agentProfileRows(agent)]} />,
       cell: "col-start-3 row-start-1",
