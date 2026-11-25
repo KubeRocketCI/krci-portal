@@ -52,6 +52,16 @@ export class MemoryAgentSubstrateSource implements AgentSubstrateSource {
     return this.read(() => this.fleet.actors);
   }
 
+  async getActor(ref: SubstrateObjectRef): Promise<SubstrateActor> {
+    return this.read(() => {
+      const actor = this.fleet.actors.find(({ atespace, name }) => atespace === ref.atespace && name === ref.name);
+      if (!actor) {
+        throw new AgentSubstrateSourceError("notFound", `actor ${ref.atespace}/${ref.name} not found`);
+      }
+      return actor;
+    });
+  }
+
   async getActorTemplate(ref: SubstrateObjectRef): Promise<SubstrateActorTemplate> {
     return this.read(() => {
       const actorTemplate = this.fleet.actorTemplates.find(

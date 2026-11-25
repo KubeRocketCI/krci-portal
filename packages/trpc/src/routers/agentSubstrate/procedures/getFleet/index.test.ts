@@ -69,6 +69,7 @@ function issueActorTemplate(
     containers: [
       {
         name: "claude",
+        image: "epamedp/krci-agent-go:0.2.0",
         env: [
           { name: "GITLAB_URL", value: "https://gitlab.internal.example" },
           { name: "PROJECT_ID", value: projectId },
@@ -83,6 +84,7 @@ function issueActorTemplate(
     ],
     limits: { cpuMillicores: 1000, memoryBytes: 2147483648 },
     workerSelector: {},
+    preferredSnapshotFidelity: "memory",
   };
 }
 
@@ -99,9 +101,10 @@ function plainActorTemplate(
     atespace: ATESPACE,
     name,
     uid: `tpl-${name}`,
-    containers: [{ name: "app", env: [{ name: "LOG_LEVEL", value: "debug" }] }],
+    containers: [{ name: "app", image: "busybox:1.37", env: [{ name: "LOG_LEVEL", value: "debug" }] }],
     limits,
     workerSelector,
+    preferredSnapshotFidelity: null,
   };
 }
 
@@ -859,6 +862,7 @@ describe("agentSubstrate.getFleet", () => {
           fidelity: "memory",
           locality: "krci-control-plane",
           durableState,
+          sandboxClass: "gvisor",
         })),
       };
     }

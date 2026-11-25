@@ -84,6 +84,7 @@ function toSnapshot(snapshot: Snapshot): SubstrateSnapshot {
     fidelity: SNAPSHOT_FIDELITIES[snapshot.fidelity] ?? "unknown",
     locality: snapshot.locality || null,
     durableState: snapshot.durableSnapshot ? (DURABLE_STATES[snapshot.durableSnapshot.state] ?? "unknown") : "none",
+    sandboxClass: snapshot.sandboxRuntime?.sandboxClass || null,
   };
 }
 
@@ -121,13 +122,16 @@ export function toActor(actor: Actor): SubstrateActor {
   };
 }
 
+/** An unset or UNSPECIFIED preferred fidelity: null. */
 export function toActorTemplate(template: ActorTemplate): SubstrateActorTemplate {
+  const preferredFidelity = template.snapshotConfig?.preferredFidelity ?? SnapshotFidelity.UNSPECIFIED;
   return {
     atespace: template.metadata?.atespace ?? "",
     name: template.metadata?.name ?? "",
     uid: template.metadata?.uid ?? "",
     containers: template.containers.map((container) => ({
       name: container.name,
+      image: container.image,
       env: container.env.map(({ name, value }) => ({ name, value })),
     })),
     limits: {
@@ -135,6 +139,7 @@ export function toActorTemplate(template: ActorTemplate): SubstrateActorTemplate
       memoryBytes: num(template.resources?.limits?.memoryBytes),
     },
     workerSelector: { ...template.workerSelector?.matchLabels },
+    preferredSnapshotFidelity: preferredFidelity ? (SNAPSHOT_FIDELITIES[preferredFidelity] ?? "unknown") : null,
   };
 }
 

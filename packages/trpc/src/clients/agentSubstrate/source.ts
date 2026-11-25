@@ -32,6 +32,8 @@ export interface SubstrateSnapshot {
   fidelity: SnapshotFidelity;
   locality: string | null;
   durableState: SnapshotDurableState;
+  /** The sandbox class the actor ran under when the snapshot was taken. Null when the server sent none. */
+  sandboxClass: string | null;
 }
 
 export interface SubstrateActor {
@@ -57,10 +59,12 @@ export interface SubstrateActorTemplate {
   atespace: string;
   name: string;
   uid: string;
-  containers: { name: string; env: SubstrateEnvVar[] }[];
+  containers: { name: string; image: string; env: SubstrateEnvVar[] }[];
   limits: { cpuMillicores: number; memoryBytes: number };
   /** The match labels of the worker selector. Empty: no worker selector; every worker matches. */
   workerSelector: Record<string, string>;
+  /** Null when the actor template sets none. */
+  preferredSnapshotFidelity: SnapshotFidelity | null;
 }
 
 export interface SubstrateWorker {
@@ -111,6 +115,7 @@ export class AgentSubstrateSourceError extends Error {
 export interface AgentSubstrateSource {
   listAtespaces(): Promise<SubstrateAtespace[]>;
   listActors(): Promise<SubstrateActor[]>;
+  getActor(ref: SubstrateObjectRef): Promise<SubstrateActor>;
   /** Actor templates are immutable: a result for one uid stays valid. */
   getActorTemplate(ref: SubstrateObjectRef): Promise<SubstrateActorTemplate>;
   listWorkers(): Promise<SubstrateWorker[]>;
