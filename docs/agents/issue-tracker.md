@@ -17,7 +17,8 @@ Issues and specs live in Jira project `EPMDEDP`. Use the `mcp__mcp-atlassian__ji
 - **Comment**: `jira_add_comment`.
 - **Description edit**: `jira_update_issue` replaces the whole description; send the full text with only the changed lines edited. See **Jira formatting**.
 - **Labels update**: `jira_update_issue` with `fields: {"labels": [...]}`. Send the full list; it replaces the existing labels.
-- **Close** (not done through a PR: `wontfix`, duplicate, obsolete): comment the reason, then `jira_get_transitions` and `jira_transition_issue` to a status in the Done category.
+- **Resolution Done (required)**: every `jira_transition_issue` to a status in the Done category passes `fields: '{"resolution": {"name": "Done"}}'`. This covers a ticket whose work is done and every close below. After the transition, `jira_get_issue` with `fields: status,resolution` and confirm resolution is Done. A Done-category status with an empty resolution is an error: fix it in the same session.
+- **Close** (not done through a PR: `wontfix`, duplicate, obsolete): comment the reason, then `jira_get_transitions` and `jira_transition_issue` to a status in the Done category, with resolution Done.
 - **Commit titles**: `EPMDEDP-<n>: <type>: <subject>`, 10 to 85 characters, type one of fix, feat, docs, style, refactor, test, chore; `.github/workflows/pr-validation.yml` checks it. `EPMDEDP-<n>` is the ticket being worked.
 - **Branch names**: `EPMDEDP-<n>/<short-slug>`.
 - **Issue references**: an `EPMDEDP-<n>` prefix in a commit title is the issue reference. Fetch it from Jira, not as a GitHub `#<n>`.
@@ -62,4 +63,4 @@ Used by `/wayfinder`. The map is one issue; tickets are its sub-tasks.
 - **Blocking**: as under Conventions.
 - **Frontier query**: JQL `parent = <map> AND statusCategory != Done AND status != "In review" AND assignee is EMPTY ORDER BY created ASC`; drop tickets with an open blocker; first wins.
 - **Claim**: `jira_update_issue` with `fields: {"assignee": "<user>"}`, the session's first write.
-- **Resolve**: comment the answer, transition to Done, append a pointer (gist + key) to the map's Decisions-so-far.
+- **Resolve**: comment the answer, transition to Done with resolution Done, append a pointer (gist + key) to the map's Decisions-so-far.

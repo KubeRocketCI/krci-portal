@@ -4,13 +4,13 @@ KubeRocketCI Portal — monorepo for a Kubernetes CI/CD platform UI.
 
 ## Agent skills
 
-- Before filing or reading an issue, or opening a PR: `docs/agents/issue-tracker.md` (Jira `EPMDEDP`, PRs on GitHub).
+- Before filing, reading or closing an issue, or opening a PR: `docs/agents/issue-tracker.md` (Jira `EPMDEDP`, PRs on GitHub). A close always sets resolution Done.
 - Before triage or labeling: `docs/agents/triage-labels.md` (default five labels).
 - Before domain work: `GLOSSARY.md` (its terms go into code names, UI labels and notes), then the ADRs of the area in `docs/adr/` (`docs/agents/domain.md`, single-context).
 - Portal feature: the `mattpocock-skills` flow (grilling with domain-modeling, then `/implement` driving `/tdd`, then the review below). Before portal code (component, table, filter, form, route, K8s resource, tRPC endpoint, test): load the matching `krci-fullstack` skill; it holds the patterns and rules. The `krci-fullstack:fullstack-dev` agent is for a side task only.
 - After each TDD slice: `pnpm vitest run --project <package> <module directory>` and `pnpm --filter=<package> tsc`. Coverage is off unless `--coverage` is passed.
-- Before each commit: `pnpm check:changed`, a targeted subset (changed packages, module directories, tests that import a changed file directly); it does not replace `pnpm prepare:validate`. `.githooks/pre-commit` (set by `pnpm install`) blocks a commit whose staged contents are not formatted.
-- Before the first push of a branch: `git fetch` and rebase on `origin/main`, `pnpm prepare:validate`, then `krci-general:review` once over `main..HEAD`. `code-review` only when the user asks, at level high.
+- Before each commit: `pnpm check:changed`, a targeted subset (changed packages, module directories, tests that import a changed file directly); it does not replace `pnpm prepare:validate`. `.githooks/pre-commit` (set by `pnpm install`) blocks a commit on `main` and a commit whose staged contents are not formatted.
+- Before you hand over a push command: `git fetch` and rebase on `origin/main`, `pnpm prepare:validate`, then `krci-general:review` once over `main..HEAD`. Also after the `/implement` code review. `code-review` only when the user asks, at level high.
 - After a change in `packages/shared` or `packages/trpc`, before `tsc` or a build: `pnpm --filter=shared build && pnpm --filter=trpc build`. `tsc` in trpc, server and client reads `packages/shared/dist`; trpc tests read shared from source. At runtime trpc reads shared from an injected copy (`injectWorkspacePackages`).
 
 ## Critical Conventions
