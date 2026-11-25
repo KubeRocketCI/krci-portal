@@ -1,38 +1,44 @@
 import type { LucideIcon } from "lucide-react";
 import type React from "react";
-import type { ReadyFleet } from "@my-project/shared";
+import type { Fleet, ReadyFleet } from "@my-project/shared";
 import { ErrorContent } from "@/core/components/ErrorContent";
 import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { PageWrapper } from "@/core/components/PageWrapper";
 import type { Breadcrumb } from "@/core/components/PageWrapper/types";
 import type { RequestError } from "@/core/types/global";
 import { unreachableReasonLabel } from "../../constants/unreachableReason";
-import { useFleet, type FleetData } from "../../hooks/useFleet";
+import { useFleet } from "../../hooks/useFleet";
+import type { FactoryRead, KeptRead, KeptReadyRead } from "../../utils/keepLastReady";
 import { FleetFreshness } from "../FleetFreshness";
 import { FleetLoading, FleetNotConfigured, FleetUnreachable } from "../FleetStatePanel";
 
 interface FleetPageProps {
   icon: LucideIcon;
-  title: string;
+  title: string | React.ReactElement;
   description?: string;
   breadcrumbs: Breadcrumb[];
-  children?: (fleet: ReadyFleet) => React.ReactNode;
 }
 
 /**
  * A failed tRPC read leaves the data as it was and sets `error`: it is the newer failure. An unreachable read becomes a
- * ready fleet with `refreshFailure` in useFleet.
+ * ready read with `refreshFailure` in keepLastReady.
  */
-function staleReasonOf(fleet: FleetData | undefined, error: RequestError | null): string | undefined {
-  if (error && fleet) return "Refresh failed";
-  if (fleet?.state === "ready" && fleet.refreshFailure) {
-    return `Factory unreachable: ${unreachableReasonLabel(fleet.refreshFailure)}`;
+function staleReasonOf<T extends FactoryRead>(
+  read: KeptRead<T> | undefined,
+  error: RequestError | null
+): string | undefined {
+  if (error && read) return "Refresh failed";
+  if (read?.state === "ready") {
+    const { refreshFailure } = read as KeptReadyRead<T>;
+    if (refreshFailure) return `Factory unreachable: ${unreachableReasonLabel(refreshFailure)}`;
   }
   return undefined;
 }
 
-export interface FleetPageViewProps extends FleetPageProps {
-  fleet?: FleetData;
+/** The connection states, freshness and errors of one Factory read (the fleet, an agent). */
+export interface FleetPageViewProps<T extends FactoryRead> extends FleetPageProps {
+  read?: KeptRead<T>;
+  children?: (read: KeptReadyRead<T>) => React.ReactNode;
   error: RequestError | null;
   /** Epoch ms of the last successful fetch; 0 before it. */
   dataUpdatedAt: number;
@@ -40,30 +46,30 @@ export interface FleetPageViewProps extends FleetPageProps {
   onRefresh: () => void;
 }
 
-export function FleetPageView({
+export function FleetPageView<T extends FactoryRead>({
   icon,
   title,
   description,
   breadcrumbs,
   children,
-  fleet,
+  read,
   error,
   dataUpdatedAt,
   isFetching,
   onRefresh,
-}: FleetPageViewProps) {
+}: FleetPageViewProps<T>) {
   const renderBody = (): React.ReactNode => {
-    if (fleet === undefined) {
+    if (read === undefined) {
       return error ? <ErrorContent error={error} /> : <FleetLoading />;
     }
 
-    switch (fleet.state) {
+    switch (read.state) {
       case "notConfigured":
         return <FleetNotConfigured />;
       case "unreachable":
-        return <FleetUnreachable reason={fleet.reason} />;
+        return <FleetUnreachable reason={(read as Extract<FactoryRead, { state: "unreachable" }>).reason} />;
       case "ready":
-        return children?.(fleet) ?? null;
+        return children?.(read as KeptReadyRead<T>) ?? null;
     }
   };
 
@@ -72,8 +78,8 @@ export function FleetPageView({
       breadcrumbs={[{ label: "Factory" }, ...breadcrumbs]}
       headerSlot={
         <FleetFreshness
-          updatedAt={fleet?.state === "ready" ? fleet.updatedAt : dataUpdatedAt}
-          staleReason={staleReasonOf(fleet, error)}
+          updatedAt={read?.state === "ready" ? (read as KeptReadyRead<T>).updatedAt : dataUpdatedAt}
+          staleReason={staleReasonOf(read, error)}
           isFetching={isFetching}
           onRefresh={onRefresh}
         />
@@ -86,13 +92,13 @@ export function FleetPageView({
   );
 }
 
-export function FleetPage(props: FleetPageProps) {
+export function FleetPage(props: FleetPageProps & { children?: (fleet: ReadyFleet) => React.ReactNode }) {
   const query = useFleet();
 
   return (
-    <FleetPageView
+    <FleetPageView<Fleet>
       {...props}
-      fleet={query.data}
+      read={query.data}
       error={query.error}
       dataUpdatedAt={query.dataUpdatedAt}
       isFetching={query.isFetching}

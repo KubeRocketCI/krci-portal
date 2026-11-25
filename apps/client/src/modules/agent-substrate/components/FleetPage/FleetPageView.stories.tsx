@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Fleet } from "@my-project/shared";
 import { TRPCClientError } from "@trpc/client";
 import { TRPC_ERROR_CODES_BY_KEY } from "@trpc/server/rpc";
 import { LayoutDashboard } from "lucide-react";
@@ -20,7 +21,7 @@ const internalError: RequestError = TRPCClientError.from({
 
 const meta = {
   title: "Modules/AgentSubstrate/FleetPageView",
-  component: FleetPageView,
+  component: FleetPageView<Fleet>,
   parameters: {
     layout: "fullscreen",
   },
@@ -35,7 +36,7 @@ const meta = {
     isFetching: false,
     onRefresh: () => {},
   },
-} satisfies Meta<typeof FleetPageView>;
+} satisfies Meta<typeof FleetPageView<Fleet>>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -48,7 +49,7 @@ export const Loading: Story = {
 };
 
 export const NotConfigured: Story = {
-  args: { fleet: { state: "notConfigured" } },
+  args: { read: { state: "notConfigured" } },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByText("Factory is not configured")).toBeVisible();
@@ -58,7 +59,7 @@ export const NotConfigured: Story = {
 
 export const Unreachable: Story = {
   args: {
-    fleet: { state: "unreachable", reason: "permissionDenied" },
+    read: { state: "unreachable", reason: "permissionDenied" },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -68,7 +69,7 @@ export const Unreachable: Story = {
 };
 
 export const StaleAfterFailedRefresh: Story = {
-  args: { fleet: { state: "notConfigured" }, error: internalError },
+  args: { read: { state: "notConfigured" }, error: internalError },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByText("Refresh failed")).toHaveClass("text-status-missing");
@@ -78,7 +79,7 @@ export const StaleAfterFailedRefresh: Story = {
 
 export const KeptFleetAfterUnreachableRefresh: Story = {
   args: {
-    fleet: { ...TESTBED_FLEET, refreshFailure: "unavailable" },
+    read: { ...TESTBED_FLEET, refreshFailure: "unavailable" },
     children: (fleet) => <p>{`${fleet.actors.length} actors`}</p>,
   },
   play: async ({ canvasElement }) => {
@@ -91,7 +92,7 @@ export const KeptFleetAfterUnreachableRefresh: Story = {
 
 export const KeptFleetThenFailedRefresh: Story = {
   args: {
-    fleet: { ...TESTBED_FLEET, refreshFailure: "unavailable" },
+    read: { ...TESTBED_FLEET, refreshFailure: "unavailable" },
     error: internalError,
     children: (fleet) => <p>{`${fleet.actors.length} actors`}</p>,
   },
@@ -105,7 +106,7 @@ export const KeptFleetThenFailedRefresh: Story = {
 
 export const KeptFleetUnknownReason: Story = {
   args: {
-    fleet: { ...TESTBED_FLEET, refreshFailure: "timeout" as unknown as "other" },
+    read: { ...TESTBED_FLEET, refreshFailure: "timeout" as unknown as "other" },
     children: () => null,
   },
   play: async ({ canvasElement }) => {

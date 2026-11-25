@@ -7,5 +7,8 @@ export const PATH_FACTORY_ACTORS_FULL = "/c/$clusterName/factory/actors" as cons
 export const PATH_FACTORY_ACTOR_DETAIL = "actors/$atespace/$name" as const;
 export const PATH_FACTORY_ACTOR_DETAIL_FULL = "/c/$clusterName/factory/actors/$atespace/$name" as const;
 
+export const PATH_FACTORY_AGENT_DETAIL = "agents/$atespace/$name" as const;
+export const PATH_FACTORY_AGENT_DETAIL_FULL = "/c/$clusterName/factory/agents/$atespace/$name" as const;
+
 export const PATH_FACTORY_WORKER_POOLS = "worker-pools" as const;
 export const PATH_FACTORY_WORKER_POOLS_FULL = "/c/$clusterName/factory/worker-pools" as const;
