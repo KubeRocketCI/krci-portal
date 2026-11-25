@@ -1,9 +1,9 @@
 import { createLazyRoute } from "@tanstack/react-router";
-import { ROUTE_ID_AGENT_WORKER_POOLS } from "./route";
-import AgentWorkerPoolsPage from "./page";
+import { ROUTE_ID_FACTORY_WORKER_POOLS } from "./route";
+import FactoryWorkerPoolsPage from "./page";
 
-const AgentWorkerPoolsRoute = createLazyRoute(ROUTE_ID_AGENT_WORKER_POOLS)({
-  component: AgentWorkerPoolsPage,
+const FactoryWorkerPoolsRoute = createLazyRoute(ROUTE_ID_FACTORY_WORKER_POOLS)({
+  component: FactoryWorkerPoolsPage,
 });
 
-export default AgentWorkerPoolsRoute;
+export default FactoryWorkerPoolsRoute;

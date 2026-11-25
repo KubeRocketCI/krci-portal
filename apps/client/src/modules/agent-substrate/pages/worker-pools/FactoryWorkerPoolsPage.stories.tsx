@@ -21,7 +21,7 @@ import {
 import { PAGE_DESCRIPTION } from "../../constants/hints";
 import { workerAnchor, workerPoolAnchor } from "../../utils/rowAnchor";
 import { WORKER_POOLS_VIEW_ENTITY_ID } from "./constants";
-import AgentWorkerPoolsPage from "./page";
+import FactoryWorkerPoolsPage from "./page";
 
 const VIEW_MODE_KEY = viewModeStorageKey(WORKER_POOLS_VIEW_ENTITY_ID);
 
@@ -40,7 +40,7 @@ const ROOM_STATE_VERDICTS = [
 /** The value of a term in a card: the `dd` after its `dt`. */
 const fact = (scope: Canvas, term: string) => scope.getByText(term, { selector: "dt" }).nextElementSibling;
 
-const PAGE_URL = `/c/${STORYBOOK_CLUSTER_NAME}/agent/worker-pools`;
+const PAGE_URL = `/c/${STORYBOOK_CLUSTER_NAME}/factory/worker-pools`;
 
 const savedView = (viewMode: ViewMode | null) => () => {
   if (viewMode === null) LOCAL_STORAGE_SERVICE.removeItem(VIEW_MODE_KEY);
@@ -48,14 +48,14 @@ const savedView = (viewMode: ViewMode | null) => () => {
 };
 
 const meta = {
-  title: "Modules/AgentSubstrate/AgentWorkerPoolsPage",
-  component: AgentWorkerPoolsPage,
+  title: "Modules/AgentSubstrate/FactoryWorkerPoolsPage",
+  component: FactoryWorkerPoolsPage,
   parameters: {
     layout: "fullscreen",
   },
   tags: ["autodocs"],
   beforeEach: savedView(null),
-} satisfies Meta<typeof AgentWorkerPoolsPage>;
+} satisfies Meta<typeof FactoryWorkerPoolsPage>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -202,7 +202,7 @@ export const WorkersWithoutAtespaces: Story = {
 
     const workers = await workerPoolCard(canvas, "workers");
     await expect(workerBlock(workers, BUSY_WORKER.pod).getByText("No actor on this worker")).toBeVisible();
-    await expect(canvas.queryByText("Agent Substrate has no atespaces yet")).toBeNull();
+    await expect(canvas.queryByText("Factory has no atespaces yet")).toBeNull();
   },
 };
 
@@ -225,7 +225,7 @@ export const NoAtespaces: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    await expect(await canvas.findByText("Agent Substrate has no atespaces yet")).toBeVisible();
+    await expect(await canvas.findByText("Factory has no atespaces yet")).toBeVisible();
     await expect(canvas.queryByRole("group", { name: "View" })).toBeNull();
   },
 };

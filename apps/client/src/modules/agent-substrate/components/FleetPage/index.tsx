@@ -26,7 +26,7 @@ interface FleetPageProps {
 function staleReasonOf(fleet: FleetData | undefined, error: RequestError | null): string | undefined {
   if (error && fleet) return "Refresh failed";
   if (fleet?.state === "ready" && fleet.refreshFailure) {
-    return `Agent Substrate unreachable: ${unreachableReasonLabel(fleet.refreshFailure)}`;
+    return `Factory unreachable: ${unreachableReasonLabel(fleet.refreshFailure)}`;
   }
   return undefined;
 }
@@ -69,7 +69,7 @@ export function FleetPageView({
 
   return (
     <PageWrapper
-      breadcrumbs={[{ label: "Agent Substrate" }, ...breadcrumbs]}
+      breadcrumbs={[{ label: "Factory" }, ...breadcrumbs]}
       headerSlot={
         <FleetFreshness
           updatedAt={fleet?.state === "ready" ? fleet.updatedAt : dataUpdatedAt}

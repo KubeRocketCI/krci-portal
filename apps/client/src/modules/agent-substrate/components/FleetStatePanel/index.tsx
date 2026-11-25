@@ -1,5 +1,6 @@
-import { Bot, Unplug } from "lucide-react";
+import { Unplug } from "lucide-react";
 import type { FleetUnreachableReason } from "@my-project/shared";
+import FactoryIcon from "@/assets/icons/common/factory.svg?react";
 import { EmptyList } from "@/core/components/EmptyList";
 import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
 import { unreachableReasonLabel } from "../../constants/unreachableReason";
@@ -11,8 +12,8 @@ const UNREACHABLE_DESCRIPTION = "See the portal server logs for the error.";
 export function FleetNotConfigured() {
   return (
     <EmptyList
-      icon={<Bot size={64} className="text-muted-foreground" aria-hidden />}
-      customText="Agent Substrate is not configured"
+      icon={<FactoryIcon className="text-muted-foreground size-16" aria-hidden />}
+      customText="Factory is not configured"
       description={`Set ${AGENT_SUBSTRATE_SETTING} on the portal server to show the fleet.`}
     />
   );
@@ -26,7 +27,7 @@ export function FleetUnreachable({ reason }: FleetUnreachableProps) {
   return (
     <EmptyList
       icon={<Unplug size={64} className="text-muted-foreground" aria-hidden />}
-      customText="Agent Substrate is unreachable"
+      customText="Factory is unreachable"
       beforeLinkText={`Reason: ${unreachableReasonLabel(reason)}`}
       description={UNREACHABLE_DESCRIPTION}
     />
@@ -36,9 +37,9 @@ export function FleetUnreachable({ reason }: FleetUnreachableProps) {
 export function FleetEmpty() {
   return (
     <EmptyList
-      icon={<Bot size={64} className="text-muted-foreground" aria-hidden />}
-      customText="Agent Substrate has no atespaces yet"
-      description="Agent Substrate is reachable. Actors appear here once an atespace holds them."
+      icon={<FactoryIcon className="text-muted-foreground size-16" aria-hidden />}
+      customText="Factory has no atespaces yet"
+      description="Factory is reachable. Actors appear here once an atespace holds them."
     />
   );
 }

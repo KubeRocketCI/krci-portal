@@ -1,9 +1,9 @@
 import { createLazyRoute } from "@tanstack/react-router";
-import { ROUTE_ID_AGENT_ACTOR_DETAIL } from "./route";
-import AgentActorDetailPage from "./page";
+import { ROUTE_ID_FACTORY_ACTOR_DETAIL } from "./route";
+import FactoryActorDetailPage from "./page";
 
-const AgentActorDetailRoute = createLazyRoute(ROUTE_ID_AGENT_ACTOR_DETAIL)({
-  component: AgentActorDetailPage,
+const FactoryActorDetailRoute = createLazyRoute(ROUTE_ID_FACTORY_ACTOR_DETAIL)({
+  component: FactoryActorDetailPage,
 });
 
-export default AgentActorDetailRoute;
+export default FactoryActorDetailRoute;

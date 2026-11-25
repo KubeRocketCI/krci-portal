@@ -10,7 +10,7 @@ import { actorFilterDefaultValues, actorMatchFunctions, withRawSearchValues } fr
 import type { ActorFilterValues } from "./components/ActorFilter/types";
 import { ActorList } from "./components/ActorList";
 
-export default function AgentActorsPage() {
+export default function FactoryActorsPage() {
   const searchStr = useRouterState({ select: (state) => state.location.searchStr });
   const normalizeUrlValues = React.useMemo(() => withRawSearchValues(searchStr), [searchStr]);
 

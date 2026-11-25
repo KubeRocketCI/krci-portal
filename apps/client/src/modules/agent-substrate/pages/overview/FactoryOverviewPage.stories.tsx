@@ -35,10 +35,10 @@ import {
   seedFleet,
 } from "../../__fixtures__/storyFleet";
 import { PAGE_DESCRIPTION, SECTION_HINT, TERM_HINT } from "../../constants/hints";
-import AgentOverviewPage from "./page";
+import FactoryOverviewPage from "./page";
 import { NEEDS_ATTENTION_MAX_ROWS } from "./utils/needsAttention";
 
-const AGENT = `/c/${STORYBOOK_CLUSTER_NAME}/agent`;
+const FACTORY = `/c/${STORYBOOK_CLUSTER_NAME}/factory`;
 
 type Canvas = ReturnType<typeof within>;
 
@@ -47,7 +47,7 @@ function unreachable(reason: FleetUnreachableReason, label: string): Story {
     decorators: [withAppProviders({ seedQueryCache: seedFleet({ state: "unreachable", reason }) })],
     play: async ({ canvasElement }) => {
       const canvas = within(canvasElement);
-      await expect(await canvas.findByText("Agent Substrate is unreachable")).toBeVisible();
+      await expect(await canvas.findByText("Factory is unreachable")).toBeVisible();
       await expect(canvas.getByText(`Reason: ${label}`)).toBeVisible();
       await expect(canvas.getByText("See the portal server logs for the error.")).toBeVisible();
     },
@@ -92,18 +92,18 @@ async function expectActorStateCounts(section: Canvas, fleet: ReadyFleet) {
   ] as const) {
     const link = countLink(strip, label);
     await expect(link).toHaveTextContent(`${label}${fleet.summary.actorsByState[state]}`);
-    await expect(link).toHaveAttribute("href", `${AGENT}/actors?actorState=${state}`);
+    await expect(link).toHaveAttribute("href", `${FACTORY}/actors?actorState=${state}`);
   }
 }
 
 const meta = {
-  title: "Modules/AgentSubstrate/AgentOverviewPage",
-  component: AgentOverviewPage,
+  title: "Modules/AgentSubstrate/FactoryOverviewPage",
+  component: FactoryOverviewPage,
   parameters: {
     layout: "fullscreen",
   },
   tags: ["autodocs"],
-} satisfies Meta<typeof AgentOverviewPage>;
+} satisfies Meta<typeof FactoryOverviewPage>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -123,7 +123,7 @@ export const UnreachableOther = unreachable("other", "other error");
 export const Empty: Story = {
   decorators: [withAppProviders({ seedQueryCache: seedFleet(EMPTY_FLEET) })],
   play: async ({ canvasElement }) => {
-    await expect(await within(canvasElement).findByText("Agent Substrate has no atespaces yet")).toBeVisible();
+    await expect(await within(canvasElement).findByText("Factory has no atespaces yet")).toBeVisible();
     await expect(within(canvasElement).queryByRole("region", { name: "Capacity" })).toBeNull();
   },
 };
@@ -155,11 +155,11 @@ export const KeptFleetAfterUnreachableRefresh: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    await expect(await canvas.findByText("Agent Substrate unreachable: unauthenticated")).toBeVisible();
+    await expect(await canvas.findByText("Factory unreachable: unauthenticated")).toBeVisible();
     await expect(
       group(await needsAttention(canvasElement), /^Crashed actors \(1\)/).getByRole("listitem")
     ).toBeVisible();
-    await expect(canvas.queryByText("Agent Substrate is unreachable")).toBeNull();
+    await expect(canvas.queryByText("Factory is unreachable")).toBeNull();
   },
 };
 
@@ -177,13 +177,13 @@ export const HealthyFleet: Story = {
     await expect(section.queryByRole("region")).toBeNull();
 
     const glance = await atAGlance(canvasElement);
-    await expect(countLink(glance, "Actors")).toHaveAttribute("href", `${AGENT}/actors`);
+    await expect(countLink(glance, "Actors")).toHaveAttribute("href", `${FACTORY}/actors`);
     await expect(countLink(glance, "Actors")).toHaveTextContent(
       `Actors${HEALTHY_FLEET.summary.actors}${HEALTHY_FLEET.summary.agents} host an agent · in 2 atespaces`
     );
-    await expect(countLink(glance, "Workers")).toHaveAttribute("href", `${AGENT}/worker-pools?view=grid`);
+    await expect(countLink(glance, "Workers")).toHaveAttribute("href", `${FACTORY}/worker-pools?view=grid`);
     await expect(countLink(glance, "Workers")).toHaveTextContent(`Workers${HEALTHY_FLEET.summary.workers}All active`);
-    await expect(countLink(glance, "Room")).toHaveAttribute("href", `${AGENT}/worker-pools`);
+    await expect(countLink(glance, "Room")).toHaveAttribute("href", `${FACTORY}/worker-pools`);
     await expect(countLink(glance, "Room")).toHaveTextContent("Room11across 2 worker pools");
     await expectActorStateCounts(glance, HEALTHY_FLEET);
     await expect(within(countLink(group(glance, /^Actor state$/), "Crashed")).getByText("0")).not.toHaveClass(
@@ -200,7 +200,7 @@ export const CrashedActor: Story = {
     await expect(crashed.getByRole("listitem")).toHaveTextContent(/^Error/);
     await expect(crashed.getByRole("link", { name: CRASHED_ACTOR.name })).toHaveAttribute(
       "href",
-      `${AGENT}/actors/${CRASHED_ACTOR.atespace}/${CRASHED_ACTOR.name}`
+      `${FACTORY}/actors/${CRASHED_ACTOR.atespace}/${CRASHED_ACTOR.name}`
     );
     await expect(crashed.getByText(CRASHED_ACTOR.crash!.message)).toBeVisible();
     await expect(crashed.getByRole("link", { name: "krci/test-python-app#4" })).toHaveAttribute(
@@ -227,7 +227,7 @@ export const UnschedulableActor: Story = {
     await expect(unschedulable.getByRole("listitem")).toHaveTextContent(/^Error/);
     await expect(unschedulable.getByRole("link", { name: UNSCHEDULABLE_ACTOR.name })).toHaveAttribute(
       "href",
-      `${AGENT}/actors/${UNSCHEDULABLE_ACTOR.atespace}/${UNSCHEDULABLE_ACTOR.name}`
+      `${FACTORY}/actors/${UNSCHEDULABLE_ACTOR.atespace}/${UNSCHEDULABLE_ACTOR.name}`
     );
     await expect(unschedulable.getByRole("link", { name: "krci/test-node-app#2" })).toHaveAttribute(
       "href",
@@ -246,7 +246,7 @@ export const WorkerPoolNotReady: Story = {
 
     await expect(pools.getByRole("link", { name: "workers-spare" })).toHaveAttribute(
       "href",
-      `${AGENT}/worker-pools#worker-pool/krci-agents/workers-spare`
+      `${FACTORY}/worker-pools#worker-pool/krci-agents/workers-spare`
     );
     await expect(pools.getByText("0/2 ready")).toBeVisible();
     await expect(pools.getByText("1/2 ready")).toBeVisible();
@@ -268,7 +268,7 @@ export const DrainingWorker: Story = {
     await expect(draining.getByText("draining")).toBeVisible();
     await expect(draining.getByRole("link", { name: BUSY_WORKER.name })).toHaveAttribute(
       "href",
-      `${AGENT}/worker-pools#worker/${BUSY_WORKER.workerNamespace}/${BUSY_WORKER.workerPool}/${BUSY_WORKER.name}`
+      `${FACTORY}/worker-pools#worker/${BUSY_WORKER.workerNamespace}/${BUSY_WORKER.workerPool}/${BUSY_WORKER.name}`
     );
     await expect(
       draining.getByText(`Worker pool ${BUSY_WORKER.workerNamespace}/${BUSY_WORKER.workerPool}`)
@@ -314,10 +314,10 @@ export const SeveralAgentProfiles: Story = {
       "python2",
       "No agent profile1",
     ]);
-    await expect(countLink(profiles, "java")).toHaveAttribute("href", `${AGENT}/actors?agentProfile=java`);
+    await expect(countLink(profiles, "java")).toHaveAttribute("href", `${FACTORY}/actors?agentProfile=java`);
     await expect(countLink(profiles, "No agent profile")).toHaveAttribute(
       "href",
-      `${AGENT}/actors?agentProfile=__none__`
+      `${FACTORY}/actors?agentProfile=__none__`
     );
   },
 };
@@ -329,7 +329,7 @@ export const PendingSnapshot: Story = {
 
     await expect(pending.getByRole("link", { name: RUNNING_ACTOR.name })).toHaveAttribute(
       "href",
-      `${AGENT}/actors/${RUNNING_ACTOR.atespace}/${RUNNING_ACTOR.name}?tab=snapshot`
+      `${FACTORY}/actors/${RUNNING_ACTOR.atespace}/${RUNNING_ACTOR.name}?tab=snapshot`
     );
     await expect(pending.getByText("Snapshot generation 2 pending")).toBeVisible();
     await expect(canvasElement.querySelector(`time[datetime="${RUNNING_ACTOR.updatedAt}"]`)).not.toBeNull();
@@ -387,7 +387,7 @@ export const MoreThanFiveCrashedActors: Story = {
     await expect(crashed.queryByRole("link", { name: `crashed-${NEEDS_ATTENTION_MAX_ROWS + 1}` })).toBeNull();
     await expect(crashed.getByRole("link", { name: "Show all crashed actors" })).toHaveAttribute(
       "href",
-      `${AGENT}/actors?actorState=crashed`
+      `${FACTORY}/actors?actorState=crashed`
     );
   },
 };
@@ -414,7 +414,7 @@ export const CapacityOneWorkerPool: Story = {
     await expect(section.getAllByRole("region")).toHaveLength(1);
     await expect(card.getByRole("link", { name: "workers" })).toHaveAttribute(
       "href",
-      `${AGENT}/worker-pools#worker-pool/krci-agents/workers`
+      `${FACTORY}/worker-pools#worker-pool/krci-agents/workers`
     );
     await expect(card.getByText("1 desired, 1 ready")).toBeVisible();
     await expect(card.getByText("Room for 1 actor")).toHaveClass("text-status-success");
@@ -652,14 +652,14 @@ export const NoAtespacesDrainingWorker: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const section = await canvas.findByRole("region", { name: "Needs attention" });
-    const empty = canvas.getByText("Agent Substrate has no atespaces yet");
+    const empty = canvas.getByText("Factory has no atespaces yet");
 
     await expect(within(section).getByRole("region", { name: /^Workers not active \(1\)/ })).toBeVisible();
     await expect(section.compareDocumentPosition(empty) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
     const glance = await atAGlance(canvasElement);
     await expect(countLink(glance, "Workers")).toHaveTextContent("Workers31 draining");
-    await expect(countLink(glance, "Room")).toHaveAttribute("href", `${AGENT}/worker-pools`);
+    await expect(countLink(glance, "Room")).toHaveAttribute("href", `${FACTORY}/worker-pools`);
     await expect(glance.queryByRole("link", { name: /^Actors/ })).toBeNull();
     await expect(glance.queryByRole("region", { name: "Actor state" })).toBeNull();
   },

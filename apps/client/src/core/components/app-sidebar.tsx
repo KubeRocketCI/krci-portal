@@ -15,7 +15,7 @@ import { SidebarPinnedSection } from "./sidebar/SidebarPinnedSection";
 import { ModeSwitcher } from "./sidebar/ModeSwitcher";
 import { modeFromPath, type Mode } from "./sidebar/ModeSwitcher/mode";
 import { K8sSidebar } from "@/modules/k8s/components/K8sSidebar";
-import { AgentSidebar } from "@/modules/agent-substrate/components/AgentSidebar";
+import { FactorySidebar } from "@/modules/agent-substrate/components/FactorySidebar";
 import { useHasRole } from "@/core/auth/useHasRole";
 
 const SIDEBAR_WIDTH_MOBILE = "18rem";
@@ -72,7 +72,7 @@ export function AppSidebar() {
 
   const renderModeNav = () => {
     if (mode === "k8s") return <K8sSidebar isMinimized={isMinimized} />;
-    if (mode === "agent") return <AgentSidebar isMinimized={isMinimized} />;
+    if (mode === "factory") return <FactorySidebar isMinimized={isMinimized} />;
     return <SidebarNavGroup label="Platform" nav={nav} isMinimized={isMinimized} />;
   };
 

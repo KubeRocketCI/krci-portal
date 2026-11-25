@@ -46,7 +46,7 @@ declare global {
 
       DEPLOY_CLIENT_DIST_DIR?: string;
 
-      // Agent Substrate gRPC API, https:// only. Optional: when unset, Agent mode reports "not configured".
+      // Agent Substrate gRPC API, https:// only. Optional: when unset, Factory mode reports "not configured".
       AGENT_SUBSTRATE_URL?: string;
 
       // Shared secret for POST /rest/v1/internal/events (Argo Events Sensor).

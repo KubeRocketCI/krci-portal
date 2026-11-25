@@ -1,11 +1,11 @@
 /**
- * Hint texts of Agent mode: one or two sentences, a fact. A glossary term follows its GLOSSARY.md definition; an
+ * Hint texts of Factory mode: one or two sentences, a fact. A glossary term follows its GLOSSARY.md definition; an
  * Agent Substrate field follows its comment in `packages/trpc/proto/ateapi/v1/ateapi.proto`.
  */
 
 export const PAGE_DESCRIPTION = {
-  overview: "The Agent Substrate fleet: what needs attention, its counts and the room of each worker pool.",
-  actors: "Isolated Agent Substrate sandboxes whose state survives suspend and resume. An agent runs in one actor.",
+  overview: "The Factory fleet: what needs attention, its counts and the room of each worker pool.",
+  actors: "Isolated Factory sandboxes whose state survives suspend and resume. An agent runs in one actor.",
   actorDetail: "One actor: its agent, actor template, worker and snapshots.",
   workerPools: "Sets of workers of one size and sandbox class, and the room each has for actors.",
 } as const;
@@ -13,7 +13,7 @@ export const PAGE_DESCRIPTION = {
 export const SECTION_HINT = {
   needsAttention:
     "Crashed actors, actors no worker pool can host, worker pools with fewer ready replicas than desired, workers that are not active and pending snapshots.",
-  atAGlance: "Actors, workers and fleet room at the last read of Agent Substrate.",
+  atAGlance: "Actors, workers and fleet room at the last read of Factory.",
   capacity: "Room, allocation and capacity of each worker pool, summed over its workers.",
 } as const;
 

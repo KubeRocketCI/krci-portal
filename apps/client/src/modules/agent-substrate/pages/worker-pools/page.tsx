@@ -58,7 +58,7 @@ function WorkerPools({ fleet }: { fleet: ReadyFleet }) {
   );
 }
 
-export default function AgentWorkerPoolsPage() {
+export default function FactoryWorkerPoolsPage() {
   return (
     <ViewModeContextProvider entityID={WORKER_POOLS_VIEW_ENTITY_ID} defaultViewMode={VIEW_MODES.GRID}>
       <FleetPage

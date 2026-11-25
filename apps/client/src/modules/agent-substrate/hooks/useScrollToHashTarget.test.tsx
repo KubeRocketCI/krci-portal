@@ -49,7 +49,7 @@ describe("useScrollToHashTarget", () => {
   });
 
   it("gives the URL fragment and scrolls only the element with that id into view", async () => {
-    await renderAt(`/c/in-cluster/agent/worker-pools#${TARGET}`);
+    await renderAt(`/c/in-cluster/factory/worker-pools#${TARGET}`);
 
     expect(screen.getByRole("status", { name: "target" })).toHaveTextContent(TARGET);
     expect(new Set(scrollIntoView.mock.contexts)).toEqual(new Set([document.getElementById(TARGET)]));
@@ -77,7 +77,7 @@ describe("useScrollToHashTarget", () => {
   });
 
   it("gives null and scrolls nothing with no fragment", async () => {
-    await renderAt("/c/in-cluster/agent/worker-pools");
+    await renderAt("/c/in-cluster/factory/worker-pools");
 
     expect(screen.getByRole("status", { name: "target" })).toHaveTextContent("none");
     expect(scrollIntoView).not.toHaveBeenCalled();
