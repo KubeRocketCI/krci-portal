@@ -179,6 +179,10 @@ export const TABLE = {
     id: "clusterInterceptorList",
     name: "Cluster Interceptor List",
   },
+  AGENT_LIST: {
+    id: "agentList",
+    name: "Agent List",
+  },
   AGENT_ACTOR_LIST: {
     id: "agentActorList",
     name: "Actor List",

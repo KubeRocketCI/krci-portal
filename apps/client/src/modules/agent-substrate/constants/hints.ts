@@ -5,6 +5,7 @@
 
 export const PAGE_DESCRIPTION = {
   overview: "The Factory fleet: what needs attention, its counts and the room of each worker pool.",
+  agents: "The actors that host an agent: one row for each issue.",
   actors: "Isolated Factory sandboxes whose state survives suspend and resume. An agent runs in one actor.",
   actorDetail: "One actor: its agent, actor template, worker and snapshots.",
   agentDetail: "One agent: the issue it works on, its agent profile and the actor it runs in.",

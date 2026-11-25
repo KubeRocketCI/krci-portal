@@ -50,7 +50,11 @@ export type PinnedPageType =
   | "config-dependency-track"
   | "config-sonar"
   | "config-gitservers"
-  | "config-jira";
+  | "config-jira"
+  | "agents"
+  | "agent"
+  | "actors"
+  | "worker-pools";
 
 /**
  * What a caller passes to pin, unpin, or query a page. The pin's identity,

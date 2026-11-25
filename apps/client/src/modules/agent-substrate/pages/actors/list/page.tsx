@@ -6,13 +6,14 @@ import { FilterProvider } from "@/core/providers/Filter";
 import { FleetPage } from "../../../components/FleetPage";
 import { FleetEmpty } from "../../../components/FleetStatePanel";
 import { PAGE_DESCRIPTION } from "../../../constants/hints";
-import { actorFilterDefaultValues, actorMatchFunctions, withRawSearchValues } from "./components/ActorFilter/constants";
+import { withRawSearchValues } from "../../../utils/fleetFilter";
+import { actorFilterDefaultValues, actorMatchFunctions } from "./components/ActorFilter/constants";
 import type { ActorFilterValues } from "./components/ActorFilter/types";
 import { ActorList } from "./components/ActorList";
 
 export default function FactoryActorsPage() {
   const searchStr = useRouterState({ select: (state) => state.location.searchStr });
-  const normalizeUrlValues = React.useMemo(() => withRawSearchValues(searchStr), [searchStr]);
+  const normalizeUrlValues = React.useMemo(() => withRawSearchValues<ActorFilterValues>(searchStr), [searchStr]);
 
   return (
     <FilterProvider<ActorRow, ActorFilterValues>
