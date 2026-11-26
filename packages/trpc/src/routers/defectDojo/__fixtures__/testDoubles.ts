@@ -14,9 +14,10 @@ import {
   levelOfScanType,
   type DefectDojoFinding,
   type DefectDojoFindingStateFilter,
+  type DefectDojoOutage,
   type DefectDojoFindingsPage,
   type DefectDojoFindingsQuery,
-  type DefectDojoFindingsScope,
+  type DefectDojoScope,
   type DefectDojoProduct,
   type DefectDojoResult,
   type DefectDojoSeverityCounts,
@@ -25,6 +26,7 @@ import {
 } from "../../../clients/defectDojo/index.js";
 import type { CodebaseFindingsSource } from "../codebaseFindings/source.js";
 import type { PlatformFindingsSource } from "../platformFindings/source.js";
+import type { SecurityOverviewSource } from "../securityOverview/source.js";
 import { createKubeReader, type KubeObject, type KubeReaderOptions } from "./kubeReader.js";
 
 const WEB_URL = "https://defectdojo.example.test";
@@ -178,9 +180,7 @@ export function makeTriagedFinding(
   return makeFinding({ active: false, mitigated: true, ...overrides });
 }
 
-export type DefectDojoOutage = "notConfigured" | "unreachable";
-
-export type FakeDefectDojo = CodebaseFindingsSource & PlatformFindingsSource;
+export type FakeDefectDojo = CodebaseFindingsSource & PlatformFindingsSource & SecurityOverviewSource;
 
 type SourceCall = keyof FakeDefectDojo;
 
@@ -191,7 +191,7 @@ export interface FakeDefectDojoOptions {
   /** Products of the Product Type, with their tags. */
   products?: readonly DefectDojoProduct[];
   /** The calls of `outageOn` answer with this state. */
-  outage?: DefectDojoOutage;
+  outage?: DefectDojoOutage["state"];
   /** Default: every call. */
   outageOn?: readonly SourceCall[];
 }
@@ -208,8 +208,8 @@ function carriesTags(test: DefectDojoTest, all: readonly string[], any: readonly
 
 /**
  * A DefectDojo of one Product Type that answers like the client does: tests and products by tags, counts of one
- * test, findings of one test or of the tests that carry tags, duplicates never counted or listed. Findings of a
- * product set are not modelled.
+ * test or of a set of products (the products of the findings), findings of one test or of the tests that carry tags,
+ * duplicates never counted or listed. Findings of a product set are not modelled.
  */
 export function createFakeDefectDojo({
   tests = [],
@@ -223,11 +223,16 @@ export function createFakeDefectDojo({
 
   const findingsOf = (testId: number) => (findings[testId] ?? []).filter((finding) => !finding.duplicate);
 
-  const testIdOf = (scope: DefectDojoFindingsScope): number => {
-    if (!("testId" in scope)) {
-      throw new Error("The fake DefectDojo counts the findings of a test only");
+  /** The findings a counts scope reads, or `null` for no scan data: an empty set of products, an unknown test. */
+  const countedFindings = (scope: DefectDojoScope): DefectDojoFinding[] | null => {
+    if ("productIds" in scope) {
+      return scope.productIds.length === 0
+        ? null
+        : Object.values(findings)
+            .flat()
+            .filter((finding) => !finding.duplicate && scope.productIds.includes(finding.product.id));
     }
-    return scope.testId;
+    return tests.some((test) => test.id === scope.testId) ? findingsOf(scope.testId) : null;
   };
 
   const testsOf = (filter: DefectDojoTestsFilter) =>
@@ -256,6 +261,8 @@ export function createFakeDefectDojo({
   };
 
   return {
+    cacheScope: WEB_URL,
+
     async listTests(filter: DefectDojoTestsFilter): Promise<DefectDojoResult<DefectDojoTest[]>> {
       const matching = testsOf(filter);
       return (
@@ -278,13 +285,13 @@ export function createFakeDefectDojo({
     },
 
     async getSeverityCounts(scope, options = {}): Promise<DefectDojoResult<DefectDojoSeverityCounts>> {
-      const testId = testIdOf(scope);
-      if (!tests.some((test) => test.id === testId)) {
+      const all = countedFindings(scope);
+      if (all === null) {
         return outageResult("getSeverityCounts") ?? { state: "noScanData" };
       }
 
-      const all = findingsOf(testId);
-      const counted = options.activeOnly === false ? all : all.filter((finding) => finding.active);
+      const state = options.state ?? "active";
+      const counted = state === "any" ? all : all.filter((finding) => stateFlag(finding, state));
       const countOf = (severity: DefectDojoSeverity) =>
         counted.filter((finding) => finding.severity === severity).length;
 
@@ -486,6 +493,17 @@ export function findingOf(
   extra: Partial<DefectDojoFinding> = {}
 ): DefectDojoFinding {
   return makeFinding({ id, testId, severity, ...extra });
+}
+
+/** A finding of each severity of `severities` in `test`, of the product of the test. */
+export function makeFindingsOf(
+  test: DefectDojoTest,
+  severities: readonly DefectDojoSeverity[],
+  firstId = test.id * 100
+): DefectDojoFinding[] {
+  return severities.map((severity, index) =>
+    findingOf(firstId + index, test.id, severity, { product: { id: test.product.id, url: test.product.url } })
+  );
 }
 
 export const idOfFindingUrl = (url: string) => Number(url.split("/").pop());

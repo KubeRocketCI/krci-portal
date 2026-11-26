@@ -1,0 +1,918 @@
+{
+  "runtime": {
+    "active": {
+      "input": {
+        "namespace": "krci",
+        "state": "active"
+      },
+      "output": {
+        "state": "data",
+        "defaultClusters": ["in-cluster", "remote-cluster"],
+        "stageClusters": ["in-cluster", "remote-cluster"],
+        "clusters": ["in-cluster", "remote-cluster"],
+        "namespaces": [
+          {
+            "cluster": "in-cluster",
+            "namespace": "krci-other-dev",
+            "environment": {
+              "cdPipeline": "demo",
+              "stage": "shadow"
+            },
+            "managed": false,
+            "product": {
+              "url": "https://defectdojo.example.test/asset/6",
+              "vulnerabilities": {
+                "Critical": 9,
+                "High": 9,
+                "Medium": 9,
+                "Low": 9,
+                "Info": 0
+              },
+              "secrets": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              }
+            }
+          },
+          {
+            "cluster": "in-cluster",
+            "namespace": "krci-demo-dev",
+            "environment": {
+              "cdPipeline": "demo",
+              "stage": "dev"
+            },
+            "managed": true,
+            "product": {
+              "url": "https://defectdojo.example.test/asset/4",
+              "vulnerabilities": {
+                "Critical": 4,
+                "High": 4,
+                "Medium": 7,
+                "Low": 2,
+                "Info": 0
+              },
+              "secrets": {
+                "Critical": 0,
+                "High": 1,
+                "Medium": 1,
+                "Low": 0,
+                "Info": 0
+              }
+            }
+          },
+          {
+            "cluster": "in-cluster",
+            "namespace": "krci-demo-qa",
+            "environment": {
+              "cdPipeline": "demo",
+              "stage": "qa"
+            },
+            "managed": true,
+            "product": {
+              "url": "https://defectdojo.example.test/asset/5",
+              "vulnerabilities": {
+                "Critical": 1,
+                "High": 1,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              },
+              "secrets": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              }
+            }
+          },
+          {
+            "cluster": "in-cluster",
+            "namespace": "argocd",
+            "environment": null,
+            "managed": false,
+            "product": {
+              "url": "https://defectdojo.example.test/asset/1",
+              "vulnerabilities": {
+                "Critical": 15,
+                "High": 178,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 562
+              },
+              "secrets": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              }
+            }
+          },
+          {
+            "cluster": "in-cluster",
+            "namespace": "krci",
+            "environment": null,
+            "managed": false,
+            "product": {
+              "url": "https://defectdojo.example.test/asset/2",
+              "vulnerabilities": {
+                "Critical": 0,
+                "High": 30,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 74
+              },
+              "secrets": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              }
+            }
+          },
+          {
+            "cluster": "in-cluster",
+            "namespace": "krci-security",
+            "environment": null,
+            "managed": false,
+            "product": {
+              "url": "https://defectdojo.example.test/asset/3",
+              "vulnerabilities": {
+                "Critical": 0,
+                "High": 2,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 6
+              },
+              "secrets": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              }
+            }
+          },
+          {
+            "cluster": "remote-cluster",
+            "namespace": "krci-demo-prod",
+            "environment": {
+              "cdPipeline": "demo",
+              "stage": "prod"
+            },
+            "managed": false,
+            "product": null
+          }
+        ],
+        "secretsTruncated": false
+      }
+    },
+    "falsePositive": {
+      "input": {
+        "namespace": "krci",
+        "state": "falsePositive"
+      },
+      "output": {
+        "state": "data",
+        "defaultClusters": ["in-cluster", "remote-cluster"],
+        "stageClusters": ["in-cluster", "remote-cluster"],
+        "clusters": ["in-cluster", "remote-cluster"],
+        "namespaces": [
+          {
+            "cluster": "in-cluster",
+            "namespace": "krci-demo-dev",
+            "environment": {
+              "cdPipeline": "demo",
+              "stage": "dev"
+            },
+            "managed": true,
+            "product": {
+              "url": "https://defectdojo.example.test/asset/4",
+              "vulnerabilities": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              },
+              "secrets": {
+                "Critical": 0,
+                "High": 1,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              }
+            }
+          },
+          {
+            "cluster": "in-cluster",
+            "namespace": "krci-demo-qa",
+            "environment": {
+              "cdPipeline": "demo",
+              "stage": "qa"
+            },
+            "managed": true,
+            "product": {
+              "url": "https://defectdojo.example.test/asset/5",
+              "vulnerabilities": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              },
+              "secrets": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              }
+            }
+          },
+          {
+            "cluster": "in-cluster",
+            "namespace": "krci-other-dev",
+            "environment": {
+              "cdPipeline": "demo",
+              "stage": "shadow"
+            },
+            "managed": false,
+            "product": {
+              "url": "https://defectdojo.example.test/asset/6",
+              "vulnerabilities": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              },
+              "secrets": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              }
+            }
+          },
+          {
+            "cluster": "in-cluster",
+            "namespace": "argocd",
+            "environment": null,
+            "managed": false,
+            "product": {
+              "url": "https://defectdojo.example.test/asset/1",
+              "vulnerabilities": {
+                "Critical": 0,
+                "High": 1,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              },
+              "secrets": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              }
+            }
+          },
+          {
+            "cluster": "in-cluster",
+            "namespace": "krci",
+            "environment": null,
+            "managed": false,
+            "product": {
+              "url": "https://defectdojo.example.test/asset/2",
+              "vulnerabilities": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              },
+              "secrets": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              }
+            }
+          },
+          {
+            "cluster": "in-cluster",
+            "namespace": "krci-security",
+            "environment": null,
+            "managed": false,
+            "product": {
+              "url": "https://defectdojo.example.test/asset/3",
+              "vulnerabilities": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              },
+              "secrets": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 0,
+                "Low": 0,
+                "Info": 0
+              }
+            }
+          },
+          {
+            "cluster": "remote-cluster",
+            "namespace": "krci-demo-prod",
+            "environment": {
+              "cdPipeline": "demo",
+              "stage": "prod"
+            },
+            "managed": false,
+            "product": null
+          }
+        ],
+        "secretsTruncated": false
+      }
+    }
+  },
+  "codebases": {
+    "active": {
+      "input": {
+        "namespace": "krci",
+        "state": "active"
+      },
+      "output": {
+        "state": "data",
+        "codebases": [
+          {
+            "codebase": "krci-gitops",
+            "known": true,
+            "scans": [
+              {
+                "ref": {
+                  "level": "code",
+                  "branch": "main",
+                  "scanner": "Semgrep JSON Report",
+                  "image": null
+                },
+                "ownImage": false,
+                "version": "",
+                "date": "2026-11-23T10:09:19.127480Z",
+                "testUrl": "https://defectdojo.example.test/test/53",
+                "counts": {
+                  "Critical": 0,
+                  "High": 0,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                }
+              },
+              {
+                "ref": {
+                  "level": "code",
+                  "branch": "main",
+                  "scanner": "Gitleaks Scan",
+                  "image": null
+                },
+                "ownImage": false,
+                "version": "",
+                "date": "2026-11-23T10:09:19.423623Z",
+                "testUrl": "https://defectdojo.example.test/test/54",
+                "counts": {
+                  "Critical": 0,
+                  "High": 0,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                }
+              },
+              {
+                "ref": {
+                  "level": "image",
+                  "branch": "main",
+                  "scanner": "Trivy Scan",
+                  "image": "gitlab.127.0.0.1.nip.io:5050/krci/krci-gitops"
+                },
+                "ownImage": true,
+                "version": "main-20261123-091500",
+                "date": "2026-11-23T10:09:19.737191Z",
+                "testUrl": "https://defectdojo.example.test/test/55",
+                "counts": {
+                  "Critical": 0,
+                  "High": 1,
+                  "Medium": 0,
+                  "Low": 1,
+                  "Info": 0
+                }
+              }
+            ]
+          },
+          {
+            "codebase": "test-go-app",
+            "known": true,
+            "scans": [
+              {
+                "ref": {
+                  "level": "code",
+                  "branch": "main",
+                  "scanner": "Semgrep JSON Report",
+                  "image": null
+                },
+                "ownImage": false,
+                "version": "",
+                "date": "2026-11-23T10:09:17.193799Z",
+                "testUrl": "https://defectdojo.example.test/test/48",
+                "counts": {
+                  "Critical": 0,
+                  "High": 1,
+                  "Medium": 0,
+                  "Low": 1,
+                  "Info": 0
+                }
+              },
+              {
+                "ref": {
+                  "level": "code",
+                  "branch": "main",
+                  "scanner": "Gitleaks Scan",
+                  "image": null
+                },
+                "ownImage": false,
+                "version": "",
+                "date": "2026-11-23T10:09:17.537070Z",
+                "testUrl": "https://defectdojo.example.test/test/49",
+                "counts": {
+                  "Critical": 0,
+                  "High": 1,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                }
+              },
+              {
+                "ref": {
+                  "level": "image",
+                  "branch": "main",
+                  "scanner": "Trivy Scan",
+                  "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app"
+                },
+                "ownImage": true,
+                "version": "main-20261123-090000",
+                "date": "2026-11-23T10:09:17.796534Z",
+                "testUrl": "https://defectdojo.example.test/test/41",
+                "counts": {
+                  "Critical": 1,
+                  "High": 2,
+                  "Medium": 1,
+                  "Low": 0,
+                  "Info": 0
+                }
+              },
+              {
+                "ref": {
+                  "level": "image",
+                  "branch": "main",
+                  "scanner": "Anchore Grype",
+                  "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app"
+                },
+                "ownImage": true,
+                "version": "main-20261123-090000",
+                "date": "2026-11-23T10:09:18.118566Z",
+                "testUrl": "https://defectdojo.example.test/test/50",
+                "counts": {
+                  "Critical": 1,
+                  "High": 1,
+                  "Medium": 1,
+                  "Low": 0,
+                  "Info": 0
+                }
+              },
+              {
+                "ref": {
+                  "level": "image",
+                  "branch": "main",
+                  "scanner": "Trivy Scan",
+                  "image": "busybox"
+                },
+                "ownImage": false,
+                "version": "",
+                "date": "2026-11-23T13:17:35.378285Z",
+                "testUrl": "https://defectdojo.example.test/test/51",
+                "counts": {
+                  "Critical": 0,
+                  "High": 1,
+                  "Medium": 1,
+                  "Low": 0,
+                  "Info": 0
+                }
+              }
+            ]
+          }
+        ],
+        "unscanned": []
+      }
+    },
+    "falsePositive": {
+      "input": {
+        "namespace": "krci",
+        "state": "falsePositive"
+      },
+      "output": {
+        "state": "data",
+        "codebases": [
+          {
+            "codebase": "krci-gitops",
+            "known": true,
+            "scans": [
+              {
+                "ref": {
+                  "level": "code",
+                  "branch": "main",
+                  "scanner": "Semgrep JSON Report",
+                  "image": null
+                },
+                "ownImage": false,
+                "version": "",
+                "date": "2026-11-23T10:09:19.127480Z",
+                "testUrl": "https://defectdojo.example.test/test/53",
+                "counts": {
+                  "Critical": 0,
+                  "High": 0,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                }
+              },
+              {
+                "ref": {
+                  "level": "code",
+                  "branch": "main",
+                  "scanner": "Gitleaks Scan",
+                  "image": null
+                },
+                "ownImage": false,
+                "version": "",
+                "date": "2026-11-23T10:09:19.423623Z",
+                "testUrl": "https://defectdojo.example.test/test/54",
+                "counts": {
+                  "Critical": 0,
+                  "High": 0,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                }
+              },
+              {
+                "ref": {
+                  "level": "image",
+                  "branch": "main",
+                  "scanner": "Trivy Scan",
+                  "image": "gitlab.127.0.0.1.nip.io:5050/krci/krci-gitops"
+                },
+                "ownImage": true,
+                "version": "main-20261123-091500",
+                "date": "2026-11-23T10:09:19.737191Z",
+                "testUrl": "https://defectdojo.example.test/test/55",
+                "counts": {
+                  "Critical": 0,
+                  "High": 0,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                }
+              }
+            ]
+          },
+          {
+            "codebase": "test-go-app",
+            "known": true,
+            "scans": [
+              {
+                "ref": {
+                  "level": "code",
+                  "branch": "main",
+                  "scanner": "Semgrep JSON Report",
+                  "image": null
+                },
+                "ownImage": false,
+                "version": "",
+                "date": "2026-11-23T10:09:17.193799Z",
+                "testUrl": "https://defectdojo.example.test/test/48",
+                "counts": {
+                  "Critical": 0,
+                  "High": 0,
+                  "Medium": 1,
+                  "Low": 0,
+                  "Info": 0
+                }
+              },
+              {
+                "ref": {
+                  "level": "code",
+                  "branch": "main",
+                  "scanner": "Gitleaks Scan",
+                  "image": null
+                },
+                "ownImage": false,
+                "version": "",
+                "date": "2026-11-23T10:09:17.537070Z",
+                "testUrl": "https://defectdojo.example.test/test/49",
+                "counts": {
+                  "Critical": 0,
+                  "High": 1,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                }
+              },
+              {
+                "ref": {
+                  "level": "image",
+                  "branch": "main",
+                  "scanner": "Trivy Scan",
+                  "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app"
+                },
+                "ownImage": true,
+                "version": "main-20261123-090000",
+                "date": "2026-11-23T10:09:17.796534Z",
+                "testUrl": "https://defectdojo.example.test/test/41",
+                "counts": {
+                  "Critical": 0,
+                  "High": 0,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                }
+              },
+              {
+                "ref": {
+                  "level": "image",
+                  "branch": "main",
+                  "scanner": "Anchore Grype",
+                  "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app"
+                },
+                "ownImage": true,
+                "version": "main-20261123-090000",
+                "date": "2026-11-23T10:09:18.118566Z",
+                "testUrl": "https://defectdojo.example.test/test/50",
+                "counts": {
+                  "Critical": 0,
+                  "High": 0,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                }
+              },
+              {
+                "ref": {
+                  "level": "image",
+                  "branch": "main",
+                  "scanner": "Trivy Scan",
+                  "image": "busybox"
+                },
+                "ownImage": false,
+                "version": "",
+                "date": "2026-11-23T13:17:35.378285Z",
+                "testUrl": "https://defectdojo.example.test/test/51",
+                "counts": {
+                  "Critical": 0,
+                  "High": 0,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                }
+              }
+            ]
+          }
+        ],
+        "unscanned": []
+      }
+    },
+    "mitigated": {
+      "input": {
+        "namespace": "krci",
+        "state": "mitigated"
+      },
+      "output": {
+        "state": "data",
+        "codebases": [
+          {
+            "codebase": "krci-gitops",
+            "known": true,
+            "scans": [
+              {
+                "ref": {
+                  "level": "code",
+                  "branch": "main",
+                  "scanner": "Semgrep JSON Report",
+                  "image": null
+                },
+                "ownImage": false,
+                "version": "",
+                "date": "2026-11-23T10:09:19.127480Z",
+                "testUrl": "https://defectdojo.example.test/test/53",
+                "counts": {
+                  "Critical": 0,
+                  "High": 0,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                }
+              },
+              {
+                "ref": {
+                  "level": "code",
+                  "branch": "main",
+                  "scanner": "Gitleaks Scan",
+                  "image": null
+                },
+                "ownImage": false,
+                "version": "",
+                "date": "2026-11-23T10:09:19.423623Z",
+                "testUrl": "https://defectdojo.example.test/test/54",
+                "counts": {
+                  "Critical": 0,
+                  "High": 0,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                }
+              },
+              {
+                "ref": {
+                  "level": "image",
+                  "branch": "main",
+                  "scanner": "Trivy Scan",
+                  "image": "gitlab.127.0.0.1.nip.io:5050/krci/krci-gitops"
+                },
+                "ownImage": true,
+                "version": "main-20261123-091500",
+                "date": "2026-11-23T10:09:19.737191Z",
+                "testUrl": "https://defectdojo.example.test/test/55",
+                "counts": {
+                  "Critical": 0,
+                  "High": 0,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                }
+              }
+            ]
+          },
+          {
+            "codebase": "test-go-app",
+            "known": true,
+            "scans": [
+              {
+                "ref": {
+                  "level": "code",
+                  "branch": "main",
+                  "scanner": "Semgrep JSON Report",
+                  "image": null
+                },
+                "ownImage": false,
+                "version": "",
+                "date": "2026-11-23T10:09:17.193799Z",
+                "testUrl": "https://defectdojo.example.test/test/48",
+                "counts": {
+                  "Critical": 0,
+                  "High": 0,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                }
+              },
+              {
+                "ref": {
+                  "level": "code",
+                  "branch": "main",
+                  "scanner": "Gitleaks Scan",
+                  "image": null
+                },
+                "ownImage": false,
+                "version": "",
+                "date": "2026-11-23T10:09:17.537070Z",
+                "testUrl": "https://defectdojo.example.test/test/49",
+                "counts": {
+                  "Critical": 0,
+                  "High": 0,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                }
+              },
+              {
+                "ref": {
+                  "level": "image",
+                  "branch": "main",
+                  "scanner": "Trivy Scan",
+                  "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app"
+                },
+                "ownImage": true,
+                "version": "main-20261123-090000",
+                "date": "2026-11-23T10:09:17.796534Z",
+                "testUrl": "https://defectdojo.example.test/test/41",
+                "counts": {
+                  "Critical": 2,
+                  "High": 2,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                }
+              },
+              {
+                "ref": {
+                  "level": "image",
+                  "branch": "main",
+                  "scanner": "Anchore Grype",
+                  "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app"
+                },
+                "ownImage": true,
+                "version": "main-20261123-090000",
+                "date": "2026-11-23T10:09:18.118566Z",
+                "testUrl": "https://defectdojo.example.test/test/50",
+                "counts": {
+                  "Critical": 0,
+                  "High": 0,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                }
+              },
+              {
+                "ref": {
+                  "level": "image",
+                  "branch": "main",
+                  "scanner": "Trivy Scan",
+                  "image": "busybox"
+                },
+                "ownImage": false,
+                "version": "",
+                "date": "2026-11-23T13:17:35.378285Z",
+                "testUrl": "https://defectdojo.example.test/test/51",
+                "counts": {
+                  "Critical": 0,
+                  "High": 0,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                }
+              }
+            ]
+          }
+        ],
+        "unscanned": []
+      }
+    }
+  },
+  "notConfigured": {
+    "runtime": {
+      "input": {
+        "namespace": "krci",
+        "state": "active"
+      },
+      "output": {
+        "state": "notConfigured"
+      }
+    },
+    "codebases": {
+      "input": {
+        "namespace": "krci",
+        "state": "active"
+      },
+      "output": {
+        "state": "notConfigured"
+      }
+    }
+  },
+  "unreachable": {
+    "runtime": {
+      "input": {
+        "namespace": "krci",
+        "state": "active"
+      },
+      "output": {
+        "state": "unreachable"
+      }
+    },
+    "codebases": {
+      "input": {
+        "namespace": "krci",
+        "state": "active"
+      },
+      "output": {
+        "state": "unreachable"
+      }
+    }
+  }
+}

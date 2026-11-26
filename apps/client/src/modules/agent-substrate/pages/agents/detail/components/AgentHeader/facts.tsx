@@ -1,9 +1,9 @@
 import type { AgentActor, AgentDetail } from "@my-project/shared";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
+import { plural } from "@/core/utils/format/plural";
 import { ActorStateBadge, AgentCodebaseLink } from "../../../../../components/ActorCells";
 import { EmptyValue } from "../../../../../components/EmptyValue";
 import type { KVRow } from "../../../../../components/KV";
-import { plural } from "../../../../../utils/plural";
 import { IssueLink } from "./IssueLink";
 
 export interface AgentHeaderFacts {

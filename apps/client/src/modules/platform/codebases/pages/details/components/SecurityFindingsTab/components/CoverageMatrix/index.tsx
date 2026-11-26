@@ -1,14 +1,10 @@
 import React from "react";
-import {
-  CODEBASE_SCAN_LEVELS,
-  DEFECTDOJO_SEVERITIES,
-  type CodebaseFindings,
-  type CodebaseFindingsInput,
-} from "@my-project/shared";
+import { CODEBASE_SCAN_LEVELS, type CodebaseFindings, type CodebaseFindingsInput } from "@my-project/shared";
 import { Card } from "@/core/components/ui/card";
 import { TableHeadUI, TableHeaderUI, TableRowUI, TableUI } from "@/core/components/ui/table";
 import { cn } from "@/core/utils/classname";
 import { HEAD_CLASS } from "@/modules/platform/security/components/defectdojo/constants";
+import { SeverityHeadCells } from "@/modules/platform/security/components/defectdojo/SeverityCountCells";
 import type { SecurityFindingsFocus } from "../../types";
 import { LevelSection } from "../LevelSection";
 import { RuntimeSection } from "../RuntimeSection";
@@ -55,11 +51,7 @@ export function CoverageMatrix({ levels, codebase, focus }: CoverageMatrixProps)
             <TableHeadUI scope="col" className={cn(HEAD_CLASS, "w-44")}>
               Image tag
             </TableHeadUI>
-            {DEFECTDOJO_SEVERITIES.map((severity) => (
-              <TableHeadUI key={severity} scope="col" className={cn(HEAD_CLASS, "w-16 text-center")}>
-                {severity}
-              </TableHeadUI>
-            ))}
+            <SeverityHeadCells />
             <TableHeadUI scope="col" className={cn(HEAD_CLASS, "w-16 text-center")}>
               Triaged
             </TableHeadUI>

@@ -1,15 +1,23 @@
 import * as React from "react";
-import type { DefectDojoFindingState, DefectDojoSeverity, FindingsScope } from "@my-project/shared";
+import {
+  DEFECTDOJO_LEVELS,
+  type DefectDojoFindingState,
+  type DefectDojoLevel,
+  type DefectDojoSeverity,
+  type FindingsScope,
+} from "@my-project/shared";
 import { Label } from "@/core/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
 import { ToggleButton, ToggleButtonGroup } from "@/core/components/ui/toggle-button-group";
 import { cn } from "@/core/utils/classname";
 import { ClusterFilter } from "../ClusterFilter";
-import { FINDING_STATE_LABELS } from "../constants";
+import { FINDING_STATE_LABELS, LEVEL_META } from "../constants";
 import { SeverityFilter } from "../SeverityFilter";
 import { environmentLabel } from "../utils";
 
 const ALL = "__all__";
+
+const ALL_LEVELS = "all";
 
 type FindingsScopeData = Extract<FindingsScope, { state: "data" }>;
 
@@ -26,7 +34,7 @@ export function SectionLabel({ children, className }: { children: React.ReactNod
   return <span className={cn("text-muted-foreground text-xs font-medium", className)}>{children}</span>;
 }
 
-interface AllSelectProps {
+export interface AllSelectProps {
   label: string;
   allLabel: string;
   value: string | undefined;
@@ -34,7 +42,8 @@ interface AllSelectProps {
   onChange: (value: string | undefined) => void;
 }
 
-function AllSelect({ label, allLabel, value, options, onChange }: AllSelectProps) {
+/** A select of one value or of all, which is `undefined`. */
+export function AllSelect({ label, allLabel, value, options, onChange }: AllSelectProps) {
   const id = React.useId();
 
   return (
@@ -123,6 +132,40 @@ export function CodebaseFilter({ codebases, value, onChange }: CodebaseFilterPro
       options={codebases.map((codebase) => ({ value: codebase, label: codebase }))}
       onChange={onChange}
     />
+  );
+}
+
+export interface LevelFieldProps {
+  /** `undefined`: every level, which the field offers when `allLabel` is set. */
+  value: DefectDojoLevel | undefined;
+  allLabel?: string;
+  onChange: (level: DefectDojoLevel | undefined) => void;
+}
+
+export function LevelField({ value, allLabel, onChange }: LevelFieldProps) {
+  return (
+    <FilterField label={<SectionLabel>Level</SectionLabel>}>
+      <ToggleButtonGroup<DefectDojoLevel | typeof ALL_LEVELS>
+        value={value ?? ALL_LEVELS}
+        aria-label="Level"
+        onChange={(_event, next) => next !== null && onChange(next === ALL_LEVELS ? undefined : next)}
+      >
+        {[
+          ...(allLabel
+            ? [
+                <ToggleButton key={ALL_LEVELS} value={ALL_LEVELS}>
+                  {allLabel}
+                </ToggleButton>,
+              ]
+            : []),
+          ...DEFECTDOJO_LEVELS.map((level) => (
+            <ToggleButton key={level} value={level}>
+              {LEVEL_META[level].label}
+            </ToggleButton>
+          )),
+        ]}
+      </ToggleButtonGroup>
+    </FilterField>
   );
 }
 

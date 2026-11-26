@@ -3,7 +3,9 @@ export const DEFECTDOJO_SEVERITIES = ["Critical", "High", "Medium", "Low", "Info
 
 export type DefectDojoSeverity = (typeof DEFECTDOJO_SEVERITIES)[number];
 
-export const NO_FINDING_COUNTS: Readonly<Record<DefectDojoSeverity, number>> = {
+export type SeverityCounts = Record<DefectDojoSeverity, number>;
+
+export const NO_FINDING_COUNTS: Readonly<SeverityCounts> = {
   Critical: 0,
   High: 0,
   Medium: 0,
@@ -18,6 +20,18 @@ export const NO_FINDING_COUNTS: Readonly<Record<DefectDojoSeverity, number>> = {
 export const DEFECTDOJO_LEVELS = ["runtime", "image", "code"] as const;
 
 export type DefectDojoLevel = (typeof DEFECTDOJO_LEVELS)[number];
+
+/** Scan types of the findings the portal reads, by level. A test of another scan type has no level. */
+export const DEFECTDOJO_LEVEL_SCAN_TYPES = {
+  code: ["Semgrep JSON Report", "Gitleaks Scan"],
+  image: ["Trivy Scan", "Anchore Grype"],
+  runtime: ["Trivy Operator Scan"],
+} as const satisfies Record<DefectDojoLevel, readonly string[]>;
+
+export type DefectDojoScanType = (typeof DEFECTDOJO_LEVEL_SCAN_TYPES)[DefectDojoLevel][number];
+
+/** Scan types whose findings are exposed secrets: the Code level of the Exposed Secrets list. */
+export const SECRET_SCAN_TYPES: readonly DefectDojoScanType[] = ["Gitleaks Scan"];
 
 /** Finding states a list can be asked for. Duplicates are never listed. */
 export const DEFECTDOJO_FINDING_STATES = [

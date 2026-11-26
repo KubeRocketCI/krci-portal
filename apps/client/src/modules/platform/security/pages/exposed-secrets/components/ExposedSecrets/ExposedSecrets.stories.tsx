@@ -5,10 +5,14 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { PLATFORM_LIST_DEFAULT_PAGE_SIZE, type DefectDojoSeverity, type PlatformFinding } from "@my-project/shared";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { withAppProviders, withFailingTrpc } from "@sb/index";
+import { RUNTIME_WITHOUT_MITIGATED_NOTE } from "@/modules/platform/security/components/defectdojo/constants";
 import {
   FORBIDDEN_MESSAGE,
   bodyRows,
   buttonLabels,
+  codebasePath,
+  group,
+  stagePath,
 } from "@/modules/platform/security/components/defectdojo/__fixtures__/plays";
 import { ExposedSecrets } from ".";
 import {
@@ -46,8 +50,6 @@ type Scope = ReturnType<typeof within>;
 const CODE_TITLE = "Secrets in source code";
 const RUNTIME_TITLE = "Secrets in running workloads";
 const NO_MATCH = "No findings match the filters.";
-const RUNTIME_WITHOUT_MITIGATED =
-  "Running workloads have no Mitigated state: closing a scan mitigates every finding of its test.";
 const STATE_LABELS = ["Active", "Mitigated", "False positive", "Out of scope", "Risk accepted"];
 const SECRET_TEXT = /fixture-secret-value|\*\*(?:Secret|Match):\*\*/;
 
@@ -135,14 +137,7 @@ function namespaceOption(cluster: string, namespace: string): string {
     : namespace;
 }
 
-const stagePath = (cdPipeline: string, stage: string) =>
-  `/c/in-cluster/cdpipelines/${TESTBED_NAMESPACE}/${cdPipeline}/stages/${stage}`;
-
-const codebasePath = (codebase: string) => `/c/in-cluster/projects/${TESTBED_NAMESPACE}/${codebase}`;
-
 const defectDojoLink = (finding: PlatformFinding) => `Finding ${finding.title} (opens DefectDojo in a new tab)`;
-
-const group = (scope: Scope, name: string): Scope => within(scope.getByRole("group", { name }));
 
 const clusterGroup = (canvas: Scope): Scope => group(group(canvas, "Running workloads"), "Clusters");
 
@@ -242,7 +237,7 @@ export const FoundIn: Story = {
       await expect(row.getByText(place.branch)).toBeVisible();
       await expect(row.getByRole("link", { name: `Security findings of ${place.codebase}` })).toHaveAttribute(
         "href",
-        expect.stringContaining(`${codebasePath(place.codebase)}?tab=findings`)
+        expect.stringContaining(`${codebasePath(TESTBED_NAMESPACE, place.codebase)}?tab=findings`)
       );
       await expect(row.queryByRole("link", { name: /^Environment / })).not.toBeInTheDocument();
       await expect(row.getByRole("link", { name: defectDojoLink(finding) })).toHaveAttribute("href", finding.url);
@@ -268,11 +263,14 @@ export const FoundIn: Story = {
     ).toBeVisible();
     await expect(
       deployed.getByRole("link", { name: `Environment ${environment.cdPipeline} / ${environment.stage}` })
-    ).toHaveAttribute("href", expect.stringContaining(stagePath(environment.cdPipeline, environment.stage)));
+    ).toHaveAttribute(
+      "href",
+      expect.stringContaining(stagePath(TESTBED_NAMESPACE, environment.cdPipeline, environment.stage))
+    );
     await expect(deployed.getByRole("link", { name: `Security findings of ${codebase}` })).toHaveAttribute(
       "href",
       expect.stringContaining(
-        `${codebasePath(codebase)}?tab=findings&cdPipeline=${environment.cdPipeline}&stage=${environment.stage}`
+        `${codebasePath(TESTBED_NAMESPACE, codebase)}?tab=findings&cdPipeline=${environment.cdPipeline}&stage=${environment.stage}`
       )
     );
     await expect(deployed.getByRole("link", { name: defectDojoLink(withCodebase) })).toHaveAttribute(
@@ -515,7 +513,7 @@ export const MitigatedState: Story = {
     await expect(await code.findByText(NO_MATCH)).toBeVisible();
     await expect(code.queryByRole("table")).not.toBeInTheDocument();
 
-    await expect(runtime.getByText(RUNTIME_WITHOUT_MITIGATED)).toBeVisible();
+    await expect(runtime.getByText(RUNTIME_WITHOUT_MITIGATED_NOTE)).toBeVisible();
     await expect(runtime.queryByRole("table")).not.toBeInTheDocument();
     await expect(runtime.queryByText(NO_MATCH)).not.toBeInTheDocument();
 

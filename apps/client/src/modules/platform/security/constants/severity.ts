@@ -56,23 +56,10 @@ export const SEVERITY_BG_COLORS = {
 } as const;
 
 /**
- * Status colors for success/warning/error indicators
- */
-export const STATUS_COLORS = {
-  SUCCESS: COLORS.GREEN_500,
-  WARNING: COLORS.AMBER_500,
-  ERROR: COLORS.RED_600,
-  INFO: COLORS.BLUE_500,
-} as const;
-
-/**
  * Tailwind CSS class combinations for severity badges
  * Includes proper dark mode support
  *
- * Note: INFO is treated as UNKNOWN (gray) in severity context.
- * This is intentional - "INFO" is sometimes used by security tools
- * as a low-priority/informational severity level, distinct from
- * STATUS_COLORS.INFO which is blue for general UI status indicators.
+ * INFO is treated as UNKNOWN (gray): security tools use "INFO" as a low-priority severity level.
  */
 export const SEVERITY_BADGE_CLASSES = {
   CRITICAL: {
@@ -157,18 +144,6 @@ export function compareBySeverity(severityA: string | undefined, severityB: stri
   const orderB = SEVERITY_ORDER[severityB?.toUpperCase() ?? ""] ?? 0;
   return orderA - orderB;
 }
-
-/**
- * Shared severity configuration for charts and tables.
- * Use this to ensure consistent ordering and labeling across components.
- */
-export const SEVERITY_CONFIG = [
-  { key: "critical", label: "Critical", level: "CRITICAL" as SeverityLevel, color: SEVERITY_COLORS.CRITICAL },
-  { key: "high", label: "High", level: "HIGH" as SeverityLevel, color: SEVERITY_COLORS.HIGH },
-  { key: "medium", label: "Medium", level: "MEDIUM" as SeverityLevel, color: SEVERITY_COLORS.MEDIUM },
-  { key: "low", label: "Low", level: "LOW" as SeverityLevel, color: SEVERITY_COLORS.LOW },
-  { key: "unknown", label: "Unknown", level: "UNKNOWN" as SeverityLevel, color: SEVERITY_COLORS.UNKNOWN },
-] as const;
 
 /**
  * Get severity hex color from severity level string

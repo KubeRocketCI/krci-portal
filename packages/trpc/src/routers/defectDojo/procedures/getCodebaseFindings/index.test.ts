@@ -310,6 +310,19 @@ describe("defectDojo.getCodebaseFindings", () => {
       expect(code.scans.map((scan) => scan.ref.branch)).toEqual(["feature-login", "release-1.0"]);
     });
 
+    it("matches a branch and a default branch spelled in upper case as written: the branch of a test is no tag", async () => {
+      givenCluster([makeCodebase(DEMO_CODEBASE, "Main"), makeBranch("Release-1.0"), makeBranch("Main")]);
+      givenDefectDojo({
+        tests: ["Release-1.0", "Main"].map((branchTag, index) =>
+          makeTest({ id: index + 1, scanType: SEMGREP, branchTag })
+        ),
+      });
+
+      const { code } = await getLevels();
+
+      expect(code.scans.map((scan) => scan.ref.branch)).toEqual(["Main", "Release-1.0"]);
+    });
+
     it("takes the branches of this codebase only", async () => {
       givenCluster([...DEMO_CLUSTER, makeCodebase("other-app"), makeBranch("feature-other", "other-app")]);
       givenDefectDojo({ tests: [makeTest({ id: 1, scanType: SEMGREP, branchTag: "feature-other" })] });
@@ -885,11 +898,11 @@ describe("defectDojo.getCodebaseFindings", () => {
 
         await getFindings();
 
-        expect(countsOf(counts, 10)).toEqual([{ activeOnly: false, testExists: true }]);
-        expect(countsOf(counts, 11)).toEqual([{ activeOnly: false, testExists: true }]);
+        expect(countsOf(counts, 10)).toEqual([{ state: "any", testExists: true }]);
+        expect(countsOf(counts, 11)).toEqual([{ state: "any", testExists: true }]);
         expect(countsOf(counts, 12)).toEqual([
-          { activeOnly: false, testExists: true },
-          { activeOnly: true, testExists: true },
+          { state: "any", testExists: true },
+          { state: "active", testExists: true },
         ]);
         expect(countsOf(counts, 13)).toEqual([]);
       });
@@ -959,12 +972,10 @@ describe("defectDojo.getCodebaseFindings", () => {
     });
 
     describe("a test that is gone when it is counted", () => {
-      function givenCountGone(defectDojo: CodebaseFindingsSource, testId: number, activeOnly?: boolean) {
+      function givenCountGone(defectDojo: CodebaseFindingsSource, testId: number, state?: "active") {
         const count = defectDojo.getSeverityCounts;
         vi.spyOn(defectDojo, "getSeverityCounts").mockImplementation(async (scope, options) =>
-          "testId" in scope &&
-          scope.testId === testId &&
-          (activeOnly === undefined || options?.activeOnly === activeOnly)
+          "testId" in scope && scope.testId === testId && (state === undefined || options?.state === state)
             ? { state: "noScanData" }
             : count(scope, options)
         );
@@ -972,13 +983,13 @@ describe("defectDojo.getCodebaseFindings", () => {
 
       it.each([
         ["every count", undefined],
-        ["the count of the active findings", true],
-      ])("leaves its CI scan out, when DefectDojo has no scan data for %s", async (_, activeOnly) => {
+        ["the count of the active findings", "active" as const],
+      ])("leaves its CI scan out, when DefectDojo has no scan data for %s", async (_, state) => {
         const defectDojo = givenDefectDojo({
           tests: [makeTest({ id: 1, scanType: SEMGREP }), makeTest({ id: 2, scanType: GITLEAKS })],
           findings: { 1: active(1, "High", 1), 2: active(2, "High", 1) },
         });
-        givenCountGone(defectDojo, 1, activeOnly);
+        givenCountGone(defectDojo, 1, state);
 
         const { code } = await getLevels();
 
@@ -987,13 +998,13 @@ describe("defectDojo.getCodebaseFindings", () => {
 
       it.each([
         ["every count", undefined],
-        ["the count of the active findings", true],
-      ])("leaves its report out of its container, when DefectDojo has no scan data for %s", async (_, activeOnly) => {
+        ["the count of the active findings", "active" as const],
+      ])("leaves its report out of its container, when DefectDojo has no scan data for %s", async (_, state) => {
         const defectDojo = givenDefectDojo({
           tests: [makeRuntimeTest({ id: 10 }), makeRuntimeTest({ id: 11, reportKind: "exposedsecretreport" })],
           findings: { 10: active(10, "High", 1), 11: active(11, "High", 1) },
         });
-        givenCountGone(defectDojo, 10, activeOnly);
+        givenCountGone(defectDojo, 10, state);
 
         const { runtime } = await getLevels();
 

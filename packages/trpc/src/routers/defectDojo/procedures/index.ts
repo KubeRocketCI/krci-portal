@@ -3,4 +3,6 @@ export { getConnectionProcedure as getConnection } from "./getConnection/index.j
 export { getExposedSecretsProcedure as getExposedSecrets } from "./getExposedSecrets/index.js";
 export { getFindingsScopeProcedure as getFindingsScope } from "./getFindingsScope/index.js";
 export { getScanFindingsProcedure as getScanFindings } from "./getScanFindings/index.js";
+export { getSecurityOverviewProcedure as getSecurityOverview } from "./getSecurityOverview/index.js";
+export { getSecurityOverviewCodebasesProcedure as getSecurityOverviewCodebases } from "./getSecurityOverviewCodebases/index.js";
 export { getVulnerabilitiesProcedure as getVulnerabilities } from "./getVulnerabilities/index.js";

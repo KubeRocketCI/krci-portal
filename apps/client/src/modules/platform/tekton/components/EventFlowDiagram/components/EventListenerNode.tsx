@@ -4,11 +4,10 @@ import { EventListener } from "@my-project/shared";
 import { Badge } from "@/core/components/ui/badge";
 import { Tooltip } from "@/core/components/ui/tooltip";
 import { cn } from "@/core/utils/classname";
+import { plural } from "@/core/utils/format/plural";
 import { TriggerSelection } from "@/modules/platform/tekton/hooks/useEventListenerTopology";
 import { describeSelectionGaps } from "../utils/selectionGaps";
 import { NODE_KIND_TAILWIND, NODE_KIND } from "../constants";
-
-const pluralize = (count: number, noun: string) => `${count} ${noun}${count === 1 ? "" : "s"}`;
 
 export const EventListenerNode = ({
   data,
@@ -46,7 +45,7 @@ export const EventListenerNode = ({
       </div>
       {data.address && <div className="text-muted-foreground font-mono text-xs">{data.address}</div>}
       <div className="text-muted-foreground mt-1 text-xs">
-        {pluralize(listedCount, "trigger")}
+        {plural(listedCount, "trigger")}
         {labelMatchedCount > 0 && ` · ${labelMatchedCount} via label`}
       </div>
     </div>

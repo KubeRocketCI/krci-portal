@@ -1,4 +1,9 @@
-import { DEFECTDOJO_MAX_PAGE_SIZE, type DefectDojoFindingState, type DefectDojoLevel } from "@my-project/shared";
+import {
+  DEFECTDOJO_LEVEL_SCAN_TYPES,
+  DEFECTDOJO_MAX_PAGE_SIZE,
+  type DefectDojoFindingState,
+  type DefectDojoLevel,
+} from "@my-project/shared";
 
 export const DEFECTDOJO_SERVICE_NAME = "DefectDojo";
 
@@ -19,17 +24,14 @@ export const ID_CACHE_TTL_MS = 10 * 60 * 1000;
 
 export const ID_CACHE_MAX_ENTRIES = 100;
 
-/** Severity names of DefectDojo, most severe first, and its levels. The browser reads the same lists. */
-export { DEFECTDOJO_SEVERITIES, type DefectDojoLevel, type DefectDojoSeverity } from "@my-project/shared";
-
-/** Scan types of the findings the portal reads, by level. A test of another scan type has no level. */
-export const DEFECTDOJO_LEVEL_SCAN_TYPES = {
-  code: ["Semgrep JSON Report", "Gitleaks Scan"],
-  image: ["Trivy Scan", "Anchore Grype"],
-  runtime: ["Trivy Operator Scan"],
-} as const satisfies Record<DefectDojoLevel, readonly string[]>;
-
-export type DefectDojoScanType = (typeof DEFECTDOJO_LEVEL_SCAN_TYPES)[DefectDojoLevel][number];
+/** Severity names of DefectDojo, most severe first, its levels and scan types. The browser reads the same lists. */
+export {
+  DEFECTDOJO_LEVEL_SCAN_TYPES,
+  DEFECTDOJO_SEVERITIES,
+  type DefectDojoLevel,
+  type DefectDojoScanType,
+  type DefectDojoSeverity,
+} from "@my-project/shared";
 
 /** Level of a scan type, or `null` for a scan type of no level. */
 export function levelOfScanType(scanType: string): DefectDojoLevel | null {

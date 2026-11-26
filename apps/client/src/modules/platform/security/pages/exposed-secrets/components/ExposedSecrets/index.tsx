@@ -1,6 +1,9 @@
 import type { ExposedSecretsRequest } from "@my-project/shared";
 import { Card } from "@/core/components/ui/card";
-import { LEVEL_META } from "@/modules/platform/security/components/defectdojo/constants";
+import {
+  LEVEL_META,
+  RUNTIME_WITHOUT_MITIGATED_NOTE,
+} from "@/modules/platform/security/components/defectdojo/constants";
 import {
   PlatformFindingsList,
   type PlatformFindingsListProps,
@@ -119,7 +122,7 @@ export function ExposedSecrets({ search, onSearchChange, namespace, clusterName 
         level="runtime"
         title="Secrets in running workloads"
         input={inputs.runtime}
-        unaskedNote="Running workloads have no Mitigated state: closing a scan mitigates every finding of its test."
+        unaskedNote={RUNTIME_WITHOUT_MITIGATED_NOTE}
         query={runtime}
         onPageChange={(page) => onSearchChange(withPage(search, "runtime", page))}
         onRowsPerPageChange={onRowsPerPageChange}

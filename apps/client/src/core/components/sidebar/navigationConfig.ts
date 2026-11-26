@@ -32,7 +32,7 @@ import { PATH_SCA_FULL } from "@/modules/platform/security/pages/sca/route";
 import { PATH_SCA_PROJECTS_FULL } from "@/modules/platform/security/pages/sca-projects/route";
 import { PATH_SAST_FULL } from "@/modules/platform/security/pages/sast/route";
 import { PATH_VULNERABILITIES_FULL } from "@/modules/platform/security/pages/vulnerabilities/route";
-import { PATH_TRIVY_OVERVIEW_FULL } from "@/modules/platform/security/pages/trivy-overview/route";
+import { PATH_SECURITY_OVERVIEW_FULL } from "@/modules/platform/security/pages/overview/route";
 import { PATH_TRIVY_CONFIG_AUDITS_FULL } from "@/modules/platform/security/pages/trivy-config-audits/route";
 import { PATH_TRIVY_COMPLIANCE_FULL } from "@/modules/platform/security/pages/trivy-compliance/route";
 import { PATH_EXPOSED_SECRETS_FULL } from "@/modules/platform/security/pages/exposed-secrets/route";
@@ -211,7 +211,7 @@ export function createNavigationConfig(clusterName: string, namespace: string, i
               title: "Overview",
               icon: Shield,
               route: {
-                to: PATH_TRIVY_OVERVIEW_FULL,
+                to: PATH_SECURITY_OVERVIEW_FULL,
                 params: clusterDefaultParams,
               },
             },
