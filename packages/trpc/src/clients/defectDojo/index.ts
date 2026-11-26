@@ -61,6 +61,7 @@ import type {
 export * from "./constants.js";
 export * from "./types.js";
 export { isDefectDojoConfigured } from "./config.js";
+export { toTagCase } from "./requests.js";
 
 /**
  * Ids by DefectDojo address and name: test types by scan type, Product Types by name. One lookup serves every client

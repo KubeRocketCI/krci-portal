@@ -16,7 +16,7 @@ import { rethrowOrHandleK8sError } from "../../k8s/utils/handleK8sError/index.js
 import {
   applicationSchema,
   compareStages,
-  listIfServed,
+  listIfReadable,
   parseAll,
   stageKey,
   stageSchema,
@@ -97,13 +97,13 @@ export async function readCodebaseFacts(
       createLabelSelectorString({ [codebaseBranchLabels.codebase]: name })
     ),
     reader.listResource(k8sCodebaseImageStreamConfig, namespace),
-    listIfServed(
+    listIfReadable(
       reader,
       k8sApplicationConfig,
       namespace,
       createLabelSelectorString({ [applicationLabels.appName]: name })
     ),
-    listIfServed(reader, k8sStageConfig, namespace),
+    listIfReadable(reader, k8sStageConfig, namespace),
   ]);
 
   const { defaultBranch } = codebaseSchema.parse(codebase).spec;
@@ -124,7 +124,10 @@ export async function readCodebaseFacts(
   };
 }
 
-/** Reads the codebase with the signed-in user's access: a user who cannot read it gets the Kubernetes error. */
+/**
+ * Reads the codebase with the signed-in user's access: a user who cannot read it, its branches or its image streams
+ * gets the Kubernetes error.
+ */
 export async function loadCodebaseFacts(session: CustomSession, input: CodebaseFindingsInput): Promise<CodebaseFacts> {
   const k8sClient = getInitializedK8sClient({ session });
 

@@ -13,10 +13,14 @@ export interface ListPage {
   offset: number;
 }
 
+/** A tag, or a value compared with a tag, in the case DefectDojo stores tags in: lower case. */
+export function toTagCase(text: string): string {
+  return text.toLowerCase();
+}
+
 /**
- * Value of a tag filter: the tags lower-cased and joined by commas.
- *
- * DefectDojo stores tags in lower case and compares the values of its `__and` filters as they are.
+ * Value of a tag filter: the tags in `toTagCase`, joined by commas. DefectDojo compares the values of its `__and`
+ * filters as they are.
  * `null` when no tag can match: an empty list, or a tag that is empty or holds a comma or a space, none of which a
  * stored tag does. An empty list would match every row and a comma would split one tag into two.
  */
@@ -24,7 +28,7 @@ export function toTagFilter(tags: readonly string[]): string | null {
   if (tags.length === 0 || tags.some((tag) => tag === "" || /[\s,]/.test(tag))) {
     return null;
   }
-  return tags.map((tag) => tag.toLowerCase()).join(",");
+  return tags.map(toTagCase).join(",");
 }
 
 /**

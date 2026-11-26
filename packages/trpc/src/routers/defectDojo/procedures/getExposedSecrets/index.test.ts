@@ -15,8 +15,10 @@ import {
   findingOf,
   givenCluster,
   idOfFindingUrl,
+  makeApplication,
   makeImageTest,
   makeRuntimeTest,
+  makeStage,
   makeTest,
   makeTriagedFinding,
   type FakeDefectDojo,
@@ -236,6 +238,23 @@ describe("defectDojo.getExposedSecrets", () => {
         cluster: "in-cluster",
         namespace: "demo-dev",
         environment: { cdPipeline: "demo", stage: "dev" },
+        codebase: "demo-app",
+      });
+    });
+
+    it("names the Environment and the codebase of a Stage whose cluster is spelled in upper case: DefectDojo keeps tags in lower case", async () => {
+      givenCluster([
+        makeStage({ name: "prod", clusterName: "Remote-Cluster", namespace: "demo-prod" }),
+        makeApplication({ name: "demo-prod-demo-app", stage: "prod" }),
+      ]);
+
+      const row = (await getData({ level: "runtime" })).findings.find(
+        (candidate) => idOfFindingUrl(candidate.url) === 1301
+      );
+
+      expect(row?.place).toMatchObject({
+        cluster: "remote-cluster",
+        environment: { cdPipeline: "demo", stage: "prod" },
         codebase: "demo-app",
       });
     });

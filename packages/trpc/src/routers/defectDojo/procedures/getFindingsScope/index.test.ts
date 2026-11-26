@@ -103,6 +103,26 @@ describe("defectDojo.getFindingsScope", () => {
     });
   });
 
+  it("merges a Stage on a cluster spelled in upper case with the namespace products of that cluster, in the lower case of DefectDojo tags", async () => {
+    givenCluster([makeStage({ name: "prod", clusterName: "Remote-Cluster", namespace: "demo-prod" })]);
+    givenDefectDojo({
+      products: [
+        makeNamespaceProduct(5, "remote-cluster", "demo-prod"),
+        makeNamespaceProduct(6, "remote-cluster", "argocd"),
+      ],
+    });
+
+    const scope = await getData();
+
+    expect(scope.clusters).toEqual(["remote-cluster"]);
+    expect(scope.stageClusters).toEqual(["remote-cluster"]);
+    expect(scope.defaultClusters).toEqual(["remote-cluster"]);
+    expect(scope.namespaces).toEqual([
+      { cluster: "remote-cluster", namespace: "argocd", environment: null },
+      { cluster: "remote-cluster", namespace: "demo-prod", environment: { cdPipeline: "demo", stage: "prod" } },
+    ]);
+  });
+
   it("offers no namespace for a product without both tags of a namespace product", async () => {
     givenDefectDojo({ products: [makeNamespaceProduct(3, "in-cluster", "krci", ["k8s-cluster:in-cluster"])] });
 

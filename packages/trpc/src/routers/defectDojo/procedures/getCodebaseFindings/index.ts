@@ -8,7 +8,8 @@ import { loadCodebaseFacts } from "../../codebaseFindings/facts.js";
  * The "Security Findings" tab of a codebase: its Code and Image scans with counts per scan, and the containers that
  * run in its Environments with their counts.
  * The branches, images, Environments and tags come from the Kubernetes objects the signed-in user can read, not from
- * the browser. A user who cannot read the Applications or the Stages of the namespace gets the Kubernetes error.
+ * the browser. A user who cannot read the codebase, its branches or its image streams gets the Kubernetes error; one
+ * who may not list the Applications or the Stages gets no Environments.
  */
 export const getCodebaseFindingsProcedure = protectedProcedure
   .input(codebaseFindingsInputSchema)
