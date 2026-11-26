@@ -1,6 +1,8 @@
 import {
   K8sApiError,
   k8sApplicationConfig,
+  k8sCodebaseBranchConfig,
+  k8sCodebaseImageStreamConfig,
   k8sStageConfig,
   type CodebaseFindings,
   type CodebaseLevel,
@@ -481,6 +483,15 @@ describe("defectDojo.getCodebaseFindings", () => {
       expect(listTests).not.toHaveBeenCalled();
     });
 
+    it.each([
+      ["branches", k8sCodebaseBranchConfig],
+      ["image streams", k8sCodebaseImageStreamConfig],
+    ])("rejects a caller who may not list the %s of the codebase with FORBIDDEN", async (_, forbidden) => {
+      givenCluster(DEPLOYED_CLUSTER, { forbidden: [forbidden] });
+
+      await expect(getFindings()).rejects.toMatchObject({ code: "FORBIDDEN" });
+    });
+
     it("answers NOT_FOUND for a codebase that does not exist", async () => {
       givenCluster([]);
 
@@ -760,36 +771,42 @@ describe("defectDojo.getCodebaseFindings", () => {
         expect(K8sClient).toHaveBeenCalledTimes(1);
       });
 
-      it.each([
-        ["Applications", k8sApplicationConfig],
-        ["Stages", k8sStageConfig],
-      ])("are none, with Code and Image answering, when the cluster does not serve the %s", async (_, notServed) => {
-        givenCluster(DEPLOYED_CLUSTER, { notServed: [notServed] });
+      it("include a Stage whose cluster is spelled in upper case, found by the lower case tags of DefectDojo, with the cluster as the Stage spells it", async () => {
+        givenCluster([
+          ...DEMO_CLUSTER,
+          makeApplication({ name: "demo-prod-demo-app", stage: "prod" }),
+          makeStage({ name: "prod", namespace: "demo-prod", clusterName: "Remote" }),
+        ]);
         givenDefectDojo({
-          tests: [makeTest({ id: 1, scanType: SEMGREP })],
-          findings: { 1: active(1, "High", 1) },
+          tests: [
+            makeRuntimeTest({ id: 10, cluster: "remote", namespace: "demo-prod", application: "demo-prod-demo-app" }),
+          ],
+        });
+
+        const { runtime } = await getLevels();
+
+        expect(runtime.environments).toMatchObject([
+          { stage: "prod", clusterName: "Remote", containers: [{ state: "running" }] },
+        ]);
+      });
+
+      it.each([
+        ["the cluster does not serve the Applications", { notServed: [k8sApplicationConfig] }],
+        ["the cluster does not serve the Stages", { notServed: [k8sStageConfig] }],
+        ["the user may not list the Applications", { forbidden: [k8sApplicationConfig] }],
+        ["the user may not list the Stages", { forbidden: [k8sStageConfig] }],
+      ])("are none, with Code and Image answering, when %s", async (_, options) => {
+        givenCluster(DEPLOYED_CLUSTER, options);
+        givenDefectDojo({
+          tests: [makeTest({ id: 1, scanType: SEMGREP }), makeImageTest({ id: 2, scanType: TRIVY, image: DEMO_IMAGE })],
+          findings: { 1: active(1, "High", 1), 2: active(2, "High", 1) },
         });
 
         const levels = await getLevels();
 
         expect(levels.runtime).toEqual({ state: "noScanData", environments: [], lastUpload: null });
-        expect(levels.code.state).toBe("data");
+        expect([levels.code.state, levels.image.state]).toEqual(["data", "data"]);
       });
-
-      it.each([
-        ["Applications", k8sApplicationConfig],
-        ["Stages", k8sStageConfig],
-      ])(
-        "fail the tab with FORBIDDEN, before it asks DefectDojo, when the user may not list the %s",
-        async (_, forbidden) => {
-          givenCluster(DEPLOYED_CLUSTER, { forbidden: [forbidden] });
-          const defectDojo = givenDefectDojo({ tests: [makeTest({ id: 1, scanType: SEMGREP })] });
-          const listTests = vi.spyOn(defectDojo, "listTests");
-
-          await expect(getFindings()).rejects.toMatchObject({ code: "FORBIDDEN" });
-          expect(listTests).not.toHaveBeenCalled();
-        }
-      );
     });
 
     describe("the rows", () => {

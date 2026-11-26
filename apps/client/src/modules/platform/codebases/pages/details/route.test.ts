@@ -49,11 +49,18 @@ describe("the search of the codebase page", () => {
     });
 
     it.each([
+      ["a stage that is a number", { stage: 2024 }, { stage: "2024" }],
+      ["a cdPipeline that is a number", { cdPipeline: 7 }, { cdPipeline: "7" }],
+    ])("takes %s as its name: the router parses search values as JSON", (_, search, expected) => {
+      expect(validateSearch({ tab: "findings", ...search })).toEqual({ tab: "findings", ...expected });
+    });
+
+    it.each([
       ["an empty cdPipeline", { cdPipeline: "" }],
       ["an empty stage", { stage: "" }],
-      ["a cdPipeline that is no string", { cdPipeline: 7 }],
-    ])("rejects %s", (_, search) => {
-      expect(() => validateSearch({ tab: "findings", ...search })).toThrow();
+      ["a stage that is no Kubernetes name", { stage: "Dev Stage" }],
+    ])("drops %s and opens the tab without a focus", (_, search) => {
+      expect(validateSearch({ tab: "findings", ...search })).toEqual({ tab: "findings" });
     });
   });
 });

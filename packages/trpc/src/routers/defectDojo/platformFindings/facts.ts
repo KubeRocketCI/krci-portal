@@ -1,4 +1,5 @@
 import { applicationLabels, k8sApplicationConfig, k8sStageConfig } from "@my-project/shared";
+import { toTagCase } from "../../../clients/defectDojo/index.js";
 import type { CustomSession } from "../../../context/types.js";
 import { getInitializedK8sClient } from "../../k8s/utils/getInitializedK8sClient/index.js";
 import { rethrowOrHandleK8sError } from "../../k8s/utils/handleK8sError/index.js";
@@ -14,6 +15,7 @@ import {
 export interface PlatformStage {
   cdPipeline: string;
   stage: string;
+  /** `spec.clusterName` in `toTagCase`, the case of the `k8s-cluster` tag it is compared with. */
   clusterName: string;
   namespace: string;
 }
@@ -52,7 +54,7 @@ export async function readPlatformFacts(
       .map(({ spec }) => ({
         cdPipeline: spec.cdPipeline,
         stage: spec.name,
-        clusterName: spec.clusterName,
+        clusterName: toTagCase(spec.clusterName),
         namespace: spec.namespace,
       })),
     applications: parseAll(applicationSchema, applicationList.items).map(({ metadata }) => ({

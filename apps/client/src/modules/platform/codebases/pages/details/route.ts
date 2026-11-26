@@ -1,4 +1,5 @@
 import { routeCluster } from "@/core/router/routes";
+import { k8sNameSearchParam } from "@/core/router/searchParams";
 import { createRoute } from "@tanstack/react-router";
 import z from "zod";
 
@@ -39,8 +40,8 @@ export const routeProjectDetails = createRoute({
         tab: routeSearchTabSchema.optional(),
         page: z.number().int().positive().optional(),
         rowsPerPage: z.number().int().positive().optional(),
-        cdPipeline: z.string().min(1).optional(),
-        stage: z.string().min(1).optional(),
+        cdPipeline: k8sNameSearchParam,
+        stage: k8sNameSearchParam,
       })
       .parse(search);
 

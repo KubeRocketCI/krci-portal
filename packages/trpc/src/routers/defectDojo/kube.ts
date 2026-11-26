@@ -45,8 +45,11 @@ export function compareStages(a: Stage, b: Stage): number {
   );
 }
 
-/** Argo CD and the CD pipeline operator are optional: a 404 on their types is an empty list. */
-export async function listIfServed(
+/**
+ * Argo CD and the CD pipeline operator are optional, and the user may not be allowed to list their types: a 404 or a
+ * 403 on such a list is an empty list.
+ */
+export async function listIfReadable(
   reader: FindingsKubeReader,
   config: K8sResourceConfig,
   namespace: string,
@@ -55,22 +58,7 @@ export async function listIfServed(
   try {
     return await reader.listResource(config, namespace, labelSelector);
   } catch (error) {
-    if (error instanceof K8sApiError && error.statusCode === 404) {
-      return { items: [] };
-    }
-    throw error;
-  }
-}
-
-export async function listIfReadable(
-  reader: FindingsKubeReader,
-  config: K8sResourceConfig,
-  namespace: string
-): Promise<{ items: unknown[] }> {
-  try {
-    return await listIfServed(reader, config, namespace);
-  } catch (error) {
-    if (error instanceof K8sApiError && error.statusCode === 403) {
+    if (error instanceof K8sApiError && (error.statusCode === 404 || error.statusCode === 403)) {
       return { items: [] };
     }
     throw error;

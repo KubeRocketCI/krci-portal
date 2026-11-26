@@ -135,13 +135,15 @@ describe("what the Environments are read with", () => {
     expect(requests).toContainEqual({ kind: k8sStageConfig.kind, namespace: "krci", labelSelector: undefined });
   });
 
-  describe("a type the cluster does not serve", () => {
+  describe("a list that fails with 404 or 403", () => {
     it.each([
-      ["Applications", k8sApplicationConfig],
-      ["Stages", k8sStageConfig],
-    ])("is no Environments when it is the %s, and the rest of the facts are read", async (_, notServed) => {
+      ["the cluster does not serve the Applications", { notServed: [k8sApplicationConfig] }],
+      ["the cluster does not serve the Stages", { notServed: [k8sStageConfig] }],
+      ["the user may not list the Applications", { forbidden: [k8sApplicationConfig] }],
+      ["the user may not list the Stages", { forbidden: [k8sStageConfig] }],
+    ])("is no Environments when %s, and the rest of the facts are read", async (_, options) => {
       const facts = await readCodebaseFacts(
-        createKubeReader([...DEMO_CLUSTER, makeApplication(), makeStage()], { notServed: [notServed] }),
+        createKubeReader([...DEMO_CLUSTER, makeApplication(), makeStage()], options),
         INPUT
       );
 
@@ -150,16 +152,7 @@ describe("what the Environments are read with", () => {
     });
   });
 
-  describe("a read that fails with anything but 404", () => {
-    it.each([
-      ["Applications", k8sApplicationConfig],
-      ["Stages", k8sStageConfig],
-    ])("is rethrown as it is when it is the %s: a 403 is a denied read", async (_, forbidden) => {
-      await expect(
-        readCodebaseFacts(createKubeReader(DEMO_CLUSTER, { forbidden: [forbidden] }), INPUT)
-      ).rejects.toMatchObject({ statusCode: 403 });
-    });
-
+  describe("a read that fails with anything but 404 or 403", () => {
     it("is rethrown for a server error", async () => {
       const reader = createKubeReader(DEMO_CLUSTER);
       vi.spyOn(reader, "listResource").mockImplementation(async (config) => {

@@ -1,5 +1,6 @@
 import {
   k8sApplicationConfig,
+  k8sStageConfig,
   type CodebaseScanRef,
   type RuntimeContainerRef,
   type ScanFindings,
@@ -108,6 +109,19 @@ describe("defectDojo.getScanFindings", () => {
 
       expect(await getTitles(TRIVY_SCAN)).toEqual(["From Trivy"]);
       expect(await getTitles(GRYPE_SCAN)).toEqual(["From Grype"]);
+    });
+
+    it.each([
+      ["Applications", k8sApplicationConfig],
+      ["Stages", k8sStageConfig],
+    ])("is resolved for a caller who may not list the %s", async (_, forbidden) => {
+      givenCluster(DEPLOYED_CLUSTER, { forbidden: [forbidden] });
+      givenDefectDojo({
+        tests: [makeTest({ id: 1, scanType: SEMGREP })],
+        findings: { 1: [makeFinding({ id: 11, testId: 1, title: "From Semgrep" })] },
+      });
+
+      expect(await getTitles(CODE_SCAN)).toEqual(["From Semgrep"]);
     });
 
     it("is resolved by its image: the scan of a third-party image has its own findings", async () => {
@@ -499,8 +513,12 @@ describe("defectDojo.getScanFindings", () => {
       expect(await getTitles(SECRETS_SCAN)).toEqual(["Finding 111"]);
     });
 
-    it("is not found when the cluster serves no Applications, as for a codebase that is deployed nowhere", async () => {
-      givenCluster(DEPLOYED_CLUSTER, { notServed: [k8sApplicationConfig] });
+    it.each([
+      ["the cluster serves no Applications", { notServed: [k8sApplicationConfig] }],
+      ["the user may not list the Applications", { forbidden: [k8sApplicationConfig] }],
+      ["the user may not list the Stages", { forbidden: [k8sStageConfig] }],
+    ])("is not found when %s, as for a codebase that is deployed nowhere", async (_, options) => {
+      givenCluster(DEPLOYED_CLUSTER, options);
       givenDefectDojo({ tests, findings: { 10: [makeFinding({ id: 101, testId: 10 })] } });
 
       await expect(getFindings(RUNTIME_SCAN)).resolves.toEqual({ state: "noScanData" });
@@ -616,12 +634,6 @@ describe("defectDojo.getScanFindings", () => {
         });
 
         await expect(getFindings(RUNTIME_SCAN)).resolves.toEqual({ state: "unreachable" });
-      });
-
-      it("rejects a caller who may not list the Applications with FORBIDDEN", async () => {
-        givenCluster(DEPLOYED_CLUSTER, { forbidden: [k8sApplicationConfig] });
-
-        await expect(getFindings(RUNTIME_SCAN)).rejects.toMatchObject({ code: "FORBIDDEN" });
       });
     });
 

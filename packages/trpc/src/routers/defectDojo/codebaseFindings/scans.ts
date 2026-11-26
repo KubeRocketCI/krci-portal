@@ -1,6 +1,7 @@
 import { CODEBASE_SCAN_LEVELS, scanRefKey, type CodebaseScanLevel, type CodebaseScanRef } from "@my-project/shared";
 import {
   DEFECTDOJO_LEVEL_SCAN_TYPES,
+  toTagCase,
   type DefectDojoLevel,
   type DefectDojoScanType,
   type DefectDojoTest,
@@ -14,13 +15,10 @@ export function ciTestTags({ name, namespace }: Pick<CodebaseFacts, "name" | "na
   return [formatTag(TAG_KEY.codebase, name), formatTag(TAG_KEY.tenant, namespace)];
 }
 
-/**
- * Tells an own image from a third-party one: an own image is one that a CodebaseImageStream of the codebase names.
- * DefectDojo lower-cases tags, so the comparison ignores case.
- */
+/** Tells an own image from a third-party one: an own image is one that a CodebaseImageStream of the codebase names. */
 export function createOwnImageMatcher({ ownImageNames }: Pick<CodebaseFacts, "ownImageNames">) {
-  const ownImages = new Set(ownImageNames.map((imageName) => imageName.toLowerCase()));
-  return (image: string | null): boolean => image !== null && ownImages.has(image.toLowerCase());
+  const ownImages = new Set(ownImageNames.map(toTagCase));
+  return (image: string | null): boolean => image !== null && ownImages.has(toTagCase(image));
 }
 
 /** One scan of the codebase: the typed identity the browser sees, and the test it resolves to. */
