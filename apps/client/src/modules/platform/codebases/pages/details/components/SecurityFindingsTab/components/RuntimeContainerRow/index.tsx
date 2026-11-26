@@ -8,21 +8,21 @@ import {
 import { Badge } from "@/core/components/ui/badge";
 import { TableCellUI, TableRowUI } from "@/core/components/ui/table";
 import { cn } from "@/core/utils/classname";
-import { NO_VALUE } from "@/modules/platform/security/components/defectdojo/constants";
+import { CELL_CLASS, NO_VALUE } from "@/modules/platform/security/components/defectdojo/constants";
 import { DefectDojoLink } from "@/modules/platform/security/components/defectdojo/DefectDojoLink";
+import { NameCell } from "@/modules/platform/security/components/defectdojo/NameCell";
+import { OwnImageBadge } from "@/modules/platform/security/components/defectdojo/OwnImageBadge";
+import { SeverityCountCells } from "@/modules/platform/security/components/defectdojo/SeverityCountCells";
 import { NoFindingsBadge } from "@/modules/platform/security/components/defectdojo/StateBlocks";
 import { formatScanTime } from "@/modules/platform/security/components/defectdojo/utils";
-import { CELL_CLASS } from "../../constants";
 import { focusedProps } from "../../focusedProps";
 import { containerLabel, containerTestUrl } from "../../utils";
 import { EnvironmentCell } from "../EnvironmentCell";
 import { ExpandedPanelRow } from "../ExpandedPanelRow";
 import { ExpandToggle } from "../ExpandToggle";
-import { NameCell } from "../NameCell";
-import { OwnImageBadge } from "../OwnImageBadge";
+import { NoCountsCells } from "../NoCountsCells";
 import { RuntimeFindings } from "../RuntimeFindings";
 import { SecretsBadge } from "../SecretsBadge";
-import { NoCountsCells, SeverityCountCells } from "../SeverityCountCells";
 
 export interface RuntimeContainerRowProps {
   codebase: CodebaseFindingsInput;

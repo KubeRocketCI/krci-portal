@@ -13,6 +13,7 @@ import {
   ID_CACHE_TTL_MS,
   LIST_PAGE_SIZE,
   levelOfScanType,
+  type DefectDojoFindingStateFilter,
 } from "./constants.js";
 import {
   countsRequest,
@@ -59,6 +60,7 @@ import type {
 } from "./types.js";
 
 export * from "./constants.js";
+export * from "./outage.js";
 export * from "./types.js";
 export { isDefectDojoConfigured } from "./config.js";
 export { toTagCase } from "./requests.js";
@@ -122,6 +124,11 @@ export class DefectDojoClient {
     this.webBaseURL = stripTrailingSlash(config.webBaseURL) || apiBaseURL;
     this.productType = config.productType || DEFAULT_PRODUCT_TYPE;
     this.listPageSize = config.listPageSize ?? LIST_PAGE_SIZE;
+  }
+
+  /** The DefectDojo and the Product Type this client reads: what a cache of its answers is keyed by. */
+  get cacheScope(): string {
+    return `${this.apiBaseURL}\n${this.productType}`;
   }
 
   /** Products that carry every one of `tags`, of the configured Product Type. Tags are lower-cased. */
@@ -190,9 +197,9 @@ export class DefectDojoClient {
 
   /**
    * Findings of a set of products or of one test, counted by severity in one request (API v3), duplicates left out.
-   * `activeOnly` defaults to true; `false` counts the findings of every state, `active` stays the active ones.
-   * `activeOnly: false` also counts the findings of closed runtime tests: a close mitigates them. Pages count the
-   * active findings.
+   * `state` defaults to `active`; `any` counts the findings of every state, `active` stays the active ones. `any` and
+   * the triaged states also count the findings of closed runtime tests: a close mitigates them, and the flags of a
+   * triaged finding outlive it. Pages count the active findings.
    *
    * `noScanData`: an empty set of products, or a test that does not exist. A test or product without findings
    * counts zero. DefectDojo answers zero for an unknown id as well, so a test with no finding is looked up, unless
@@ -200,14 +207,14 @@ export class DefectDojoClient {
    */
   getSeverityCounts(
     scope: DefectDojoScope,
-    options: { activeOnly?: boolean; testExists?: boolean } = {}
+    options: { state?: DefectDojoFindingStateFilter; testExists?: boolean } = {}
   ): Promise<DefectDojoResult<DefectDojoSeverityCounts>> {
     return this.run<DefectDojoSeverityCounts>(async (http) => {
       if (hasNoProducts(scope)) {
         return { state: "noScanData" };
       }
 
-      const answer = await this.get(http, countsRequest(scope, options.activeOnly ?? true), countsAnswerSchema);
+      const answer = await this.get(http, countsRequest(scope, options.state ?? "active"), countsAnswerSchema);
       const counts = answer.meta.counts;
 
       if (

@@ -1,6 +1,38 @@
 import { describe, expect, it } from "vitest";
 import { PLATFORM_LIST_DEFAULT_PAGE_SIZE } from "./constants.js";
-import { exposedSecretsInputSchema, findingsScopeSchema } from "./schemas.js";
+import {
+  exposedSecretsInputSchema,
+  findingsScopeSchema,
+  securityOverviewCodebasesInputSchema,
+  securityOverviewInputSchema,
+} from "./schemas.js";
+
+describe("securityOverviewInputSchema", () => {
+  it("takes the installation namespace and counts the active findings by default", () => {
+    expect(securityOverviewInputSchema.parse({ namespace: "krci" })).toEqual({ namespace: "krci", state: "active" });
+  });
+
+  it("refuses Mitigated, which Runtime has not, and a tag or a DefectDojo id sent along", () => {
+    expect(securityOverviewInputSchema.safeParse({ namespace: "krci", state: "mitigated" }).success).toBe(false);
+    expect(securityOverviewInputSchema.safeParse({ namespace: "krci", tags: ["k8s-cluster:in-cluster"] }).success).toBe(
+      false
+    );
+    expect(securityOverviewInputSchema.safeParse({ namespace: "krci", productIds: [7] }).success).toBe(false);
+  });
+});
+
+describe("securityOverviewCodebasesInputSchema", () => {
+  it("takes every state, Mitigated too: a fixed finding of a CI scan is mitigated", () => {
+    expect(securityOverviewCodebasesInputSchema.parse({ namespace: "krci", state: "mitigated" })).toEqual({
+      namespace: "krci",
+      state: "mitigated",
+    });
+  });
+
+  it("refuses a namespace that is no Kubernetes name", () => {
+    expect(securityOverviewCodebasesInputSchema.safeParse({ namespace: "krci/../x" }).success).toBe(false);
+  });
+});
 
 describe("exposedSecretsInputSchema", () => {
   it("takes a code list of one codebase and fills the defaults: active findings, the first page", () => {

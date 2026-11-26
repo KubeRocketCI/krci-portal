@@ -15,10 +15,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/c
 import { Skeleton } from "@/core/components/ui/skeleton";
 import type { RequestError } from "@/core/types/global";
 import { cn } from "@/core/utils/classname";
+import { plural } from "@/core/utils/format/plural";
 import { ActorStateBadge, AgentCodebaseLink } from "../../../../../components/ActorCells";
 import { KV, type KVRow } from "../../../../../components/KV";
 import { issueLabel } from "../../../../../utils/issueLabel";
-import { plural } from "../../../../../utils/plural";
 import { AgentActorFields, NOT_ON_A_WORKER, WorkerPoolLink } from "../AgentActorCard";
 import { EgressPolicyBody } from "../AgentEgressPolicyCard";
 import { NO_EGRESS_POLICY_TEXT, unreadableReasonText } from "../AgentEgressPolicyCard/text";

@@ -1,5 +1,5 @@
 import type { AttentionItem, AttentionKind, Labels, ReadyFleet, WorkerPoolAccess } from "@my-project/shared";
-import { plural } from "../../../utils/plural";
+import { plural } from "@/core/utils/format/plural";
 import { workerSelectorText } from "../../../utils/roomLabel";
 
 export const NEEDS_ATTENTION_MAX_ROWS = 5;

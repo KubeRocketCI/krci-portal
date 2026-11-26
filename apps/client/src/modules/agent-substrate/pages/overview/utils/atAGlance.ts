@@ -5,9 +5,9 @@ import {
   type FleetSummary,
   type ReadyFleet,
 } from "@my-project/shared";
+import { plural } from "@/core/utils/format/plural";
 import { ACTOR_FILTER_NAMES } from "../../../constants/actorFilter";
 import { AGENT_FILTER_NAMES, agentProfileFilterValue } from "../../../constants/agentFilter";
-import { plural } from "../../../utils/plural";
 
 export function actorsSubText({ agents, atespaces }: FleetSummary): string {
   const hosted = agents === 0 ? "No agent" : `${agents} ${agents === 1 ? "hosts" : "host"} an agent`;

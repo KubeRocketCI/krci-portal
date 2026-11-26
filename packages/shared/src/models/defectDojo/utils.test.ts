@@ -1,15 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { CODEBASE_SCAN_LEVELS, DEFECTDOJO_SEVERITIES, NO_FINDING_COUNTS } from "./constants.js";
+import { CODEBASE_SCAN_LEVELS, DEFECTDOJO_SEVERITIES, NO_FINDING_COUNTS, type DefectDojoLevel } from "./constants.js";
 import { runtimeContainerRefSchema } from "./schemas.js";
 import type { CodebaseScanRef } from "./types.js";
 import {
+  compareOverviewNamespaces,
   hasActiveFindings,
+  isCodebaseScanLevel,
   hasActiveRuntimeFindings,
   hasFindingFilter,
   isRuntimeFindingState,
+  mostSevereFirst,
   runtimeContainerKey,
   runtimeContainerRef,
   scanRefKey,
+  sumCounts,
 } from "./utils.js";
 
 const TRIVY: CodebaseScanRef = {
@@ -170,5 +174,102 @@ describe("hasFindingFilter", () => {
     expect(hasFindingFilter({ state: "active" })).toBe(false);
     expect(hasFindingFilter({ state: "riskAccepted" })).toBe(true);
     expect(hasFindingFilter({ state: "active", severity: "High" })).toBe(true);
+  });
+});
+
+describe("mostSevereFirst", () => {
+  const counts = (Critical: number, High: number, Low = 0) => ({ ...NO_FINDING_COUNTS, Critical, High, Low });
+
+  it("puts more Critical first, then more High, then more findings, and no counts last", () => {
+    const ordered = [counts(0, 9, 9), null, counts(1, 0), counts(0, 9), counts(0, 0, 1)].sort(mostSevereFirst());
+
+    expect(ordered).toEqual([counts(1, 0), counts(0, 9, 9), counts(0, 9), counts(0, 0, 1), null]);
+  });
+
+  it("ranks by one severity first when it is given", () => {
+    expect([counts(5, 0, 1), counts(0, 0, 2)].sort(mostSevereFirst("Low"))).toEqual([counts(0, 0, 2), counts(5, 0, 1)]);
+  });
+});
+
+describe("sumCounts", () => {
+  it("adds the counts of each severity, and is zero for none", () => {
+    expect(
+      sumCounts([
+        { ...NO_FINDING_COUNTS, High: 2, Info: 1 },
+        { ...NO_FINDING_COUNTS, High: 3 },
+      ])
+    ).toEqual({
+      ...NO_FINDING_COUNTS,
+      High: 5,
+      Info: 1,
+    });
+    expect(sumCounts([])).toEqual(NO_FINDING_COUNTS);
+  });
+});
+
+describe("compareOverviewNamespaces", () => {
+  const row = (
+    cluster: string,
+    namespace: string,
+    { Critical = 0, Low = 0, secrets = 0, environment = false, managed = false, product = true } = {}
+  ) => ({
+    cluster,
+    namespace,
+    environment: environment ? { cdPipeline: "demo", stage: namespace } : null,
+    managed,
+    product: product
+      ? {
+          url: "",
+          vulnerabilities: { ...NO_FINDING_COUNTS, Critical, Low },
+          secrets: { ...NO_FINDING_COUNTS, High: secrets },
+        }
+      : null,
+  });
+
+  it("orders by cluster; in each, the Environments and the managed namespaces first, then the most severe, then by name", () => {
+    const rows = [
+      row("in-cluster", "other", { Critical: 9 }),
+      row("in-cluster", "managed", { managed: true }),
+      row("in-cluster", "prod", { environment: true, product: false }),
+      row("in-cluster", "dev", { environment: true, Critical: 1 }),
+      row("edge", "ingress"),
+      row("in-cluster", "argocd", { Critical: 9 }),
+    ];
+
+    expect(rows.sort(compareOverviewNamespaces()).map(({ namespace }) => namespace)).toEqual([
+      "ingress",
+      "dev",
+      "managed",
+      "prod",
+      "argocd",
+      "other",
+    ]);
+  });
+
+  it("ranks by one severity first when it is given", () => {
+    const rows = [row("in-cluster", "a", { Critical: 9 }), row("in-cluster", "b", { Low: 1 })];
+
+    expect(rows.sort(compareOverviewNamespaces("Low")).map(({ namespace }) => namespace)).toEqual(["b", "a"]);
+  });
+
+  it("ranks a namespace by the more severe of its vulnerabilities and its exposed secrets", () => {
+    const rows = [row("in-cluster", "a", { Low: 1 }), row("in-cluster", "b", { secrets: 3 })];
+
+    expect(rows.sort(compareOverviewNamespaces()).map(({ namespace }) => namespace)).toEqual(["b", "a"]);
+  });
+
+  it("puts a namespace with exposed secrets before one without, when their vulnerabilities rank the same", () => {
+    const rows = [row("in-cluster", "a"), row("in-cluster", "b", { secrets: 2 })];
+
+    expect(rows.sort(compareOverviewNamespaces()).map(({ namespace }) => namespace)).toEqual(["b", "a"]);
+    expect(rows.sort(compareOverviewNamespaces("High")).map(({ namespace }) => namespace)).toEqual(["b", "a"]);
+  });
+});
+
+describe("isCodebaseScanLevel", () => {
+  it("is true for the levels a CI scan fills", () => {
+    const levels: (DefectDojoLevel | null)[] = ["code", "image", "runtime", null];
+
+    expect(levels.map(isCodebaseScanLevel)).toEqual([true, true, false, false]);
   });
 });

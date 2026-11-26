@@ -3,10 +3,10 @@ import {
   DEFECTDOJO_SEVERITIES,
   NO_FINDING_COUNTS,
   type CodebaseScan,
-  type DefectDojoSeverity,
   type RuntimeEnvironment,
   type RuntimeLevel,
   type ScanFinding,
+  type SeverityCounts,
 } from "@my-project/shared";
 import type { RunningContainer, SecurityFindingsFocus } from "../../types";
 import { isFocusedEnvironment } from "../../utils";
@@ -53,7 +53,7 @@ export interface ComponentGroup {
   name: string;
   /** `null`: the scanner names no version. */
   version: string | null;
-  counts: Record<DefectDojoSeverity, number>;
+  counts: SeverityCounts;
   findings: ScanFinding[];
 }
 

@@ -52,6 +52,11 @@ export function findingsFailed({ data, isError }: { data: { state: string } | un
   return (data === undefined && isError) || data?.state === "unreachable" || data?.state === "notConfigured";
 }
 
+/** "in-cluster / demo-dev". */
+export function placeLabel({ cluster, namespace }: { cluster: string; namespace: string }): string {
+  return `${cluster} / ${namespace}`;
+}
+
 export function environmentLabel({ cdPipeline, stage }: Pick<RuntimeEnvironment, "cdPipeline" | "stage">): string {
   return `${cdPipeline} / ${stage}`;
 }

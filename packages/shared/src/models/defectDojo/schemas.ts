@@ -10,7 +10,7 @@ import {
   RUNTIME_REPORT_KINDS,
   SCAN_FINDINGS_DEFAULT_PAGE_SIZE,
   SCAN_FINDINGS_MAX_PAGE,
-  type DefectDojoSeverity,
+  type SeverityCounts,
 } from "./constants.js";
 
 export const defectDojoSeveritySchema = z.enum(DEFECTDOJO_SEVERITIES);
@@ -29,7 +29,7 @@ export const findingSeverityCountsSchema = z.object({
   Medium: count,
   Low: count,
   Info: count,
-}) satisfies z.ZodType<Record<DefectDojoSeverity, number>>;
+}) satisfies z.ZodType<SeverityCounts>;
 
 /** The codebase whose findings are read. The server derives every DefectDojo lookup from it. */
 export const codebaseFindingsInputSchema = z.object({
@@ -207,29 +207,33 @@ export const scanFindingsSchema = z.discriminatedUnion("state", [
 /** The installation namespace: the namespace of its Stages, Applications and Codebases. */
 export const findingsScopeInputSchema = z.object({ namespace: k8sResourceNameSchema });
 
-const stageRefSchema = z.object({ cdPipeline: z.string(), stage: z.string() });
+/** A Stage, by its CDPipeline and its `spec.name`. */
+export const stageRefSchema = z.object({ cdPipeline: z.string(), stage: z.string() });
+
+/** A namespace of a Stage or of a namespace product. */
+export const findingsScopeNamespaceSchema = z.object({
+  cluster: z.string(),
+  namespace: z.string(),
+  /** The Stage that deploys to this cluster and namespace. */
+  environment: stageRefSchema.nullable(),
+});
+
+const findingsScopeDataSchema = z.object({
+  state: z.literal("data"),
+  /** The clusters a list without `clusters` covers: the Stage clusters, or every cluster without a Stage. */
+  defaultClusters: z.array(z.string()),
+  /** The clusters of the installation's Stages. Empty without a Stage. */
+  stageClusters: z.array(z.string()),
+  /** Every cluster of a Stage or of a namespace product. */
+  clusters: z.array(z.string()),
+  /** Every namespace of a Stage or of a namespace product, by cluster. */
+  namespaces: z.array(findingsScopeNamespaceSchema),
+});
 
 export const findingsScopeSchema = z.discriminatedUnion("state", [
   z.object({ state: z.literal("notConfigured") }),
   z.object({ state: z.literal("unreachable") }),
-  z.object({
-    state: z.literal("data"),
-    /** The clusters a list without `clusters` covers: the Stage clusters, or every cluster without a Stage. */
-    defaultClusters: z.array(z.string()),
-    /** The clusters of the installation's Stages. Empty without a Stage. */
-    stageClusters: z.array(z.string()),
-    /** Every cluster of a Stage or of a namespace product. */
-    clusters: z.array(z.string()),
-    /** Every namespace of a Stage or of a namespace product, by cluster. */
-    namespaces: z.array(
-      z.object({
-        cluster: z.string(),
-        namespace: z.string(),
-        /** The Stage that deploys to this cluster and namespace. */
-        environment: stageRefSchema.nullable(),
-      })
-    ),
-  }),
+  findingsScopeDataSchema,
 ]);
 
 /** A value of the test tag `k8s-cluster`: a tag holds no space and no comma. */
@@ -331,5 +335,77 @@ export const platformFindingsListSchema = z.discriminatedUnion("state", [
     findings: z.array(platformFindingSchema),
     /** A triaged Runtime list holds more findings than `TRIAGED_RUNTIME_SCAN_LIMIT`: these are its most severe. */
     truncated: z.boolean(),
+  }),
+]);
+
+/** The Runtime part of the Security overview: the installation namespace, and the state the counts hold. */
+export const securityOverviewInputSchema = z
+  .object({ namespace: k8sResourceNameSchema, state: runtimeScope.state })
+  .strict();
+
+/** The Code and Image part of the Security overview. A fixed finding of a CI scan is mitigated: Mitigated is a state. */
+export const securityOverviewCodebasesInputSchema = z
+  .object({ namespace: k8sResourceNameSchema, state: ciScope.state })
+  .strict();
+
+/** A namespace option of the scope, with the counts of its namespace product. */
+export const overviewNamespaceSchema = findingsScopeNamespaceSchema.extend({
+  /** The namespace product carries the tenant tag of the installation namespace. */
+  managed: z.boolean(),
+  /** `null`: DefectDojo holds no namespace product for it, as for a Stage the security operator does not cover. */
+  product: z
+    .object({
+      url: z.string(),
+      /** Findings of the state, the exposed secrets left out. */
+      vulnerabilities: findingSeverityCountsSchema,
+      secrets: findingSeverityCountsSchema,
+    })
+    .nullable(),
+});
+
+export const securityOverviewSchema = z.discriminatedUnion("state", [
+  z.object({ state: z.literal("notConfigured") }),
+  z.object({ state: z.literal("unreachable") }),
+  z.object({ state: z.literal("noScanData") }),
+  findingsScopeDataSchema.extend({
+    /** In the order of `compareOverviewNamespaces`. */
+    namespaces: z.array(overviewNamespaceSchema),
+    /** More exposed secrets than `TRIAGED_RUNTIME_SCAN_LIMIT`: the ones not read count as vulnerabilities. */
+    secretsTruncated: z.boolean(),
+  }),
+]);
+
+/** A Code or Image scan of the overview: the newest test of its codebase, branch, scanner and image. */
+export const overviewScanSchema = z.object({
+  ref: codebaseScanRefSchema,
+  /** `null`: the caller may not list the CodebaseImageStreams, so whose image it is is not known. */
+  ownImage: z.boolean().nullable(),
+  version: z.string(),
+  date: z.string(),
+  testUrl: z.string(),
+  counts: findingSeverityCountsSchema,
+});
+
+export const overviewCodebaseSchema = z.object({
+  /** Value of the test tag `app.edp.epam.com/codebase`. */
+  codebase: z.string(),
+  /** The caller can read a Codebase of that name in the installation namespace; `false` when the caller may not list them. */
+  known: z.boolean(),
+  scans: z.array(overviewScanSchema),
+});
+
+export const securityOverviewCodebasesSchema = z.discriminatedUnion("state", [
+  z.object({ state: z.literal("notConfigured") }),
+  z.object({ state: z.literal("unreachable") }),
+  z.object({
+    state: z.literal("noScanData"),
+    /** The Codebases the caller can read: none has a scan. */
+    unscanned: z.array(z.string()),
+  }),
+  z.object({
+    state: z.literal("data"),
+    codebases: z.array(overviewCodebaseSchema),
+    /** The Codebases the caller can read that have no scan: no CI test, or tests of deleted branches only. */
+    unscanned: z.array(z.string()),
   }),
 ]);

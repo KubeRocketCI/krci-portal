@@ -9,9 +9,9 @@ import {
   type WorkerPoolRef,
   type WorkerPoolRow,
 } from "@my-project/shared";
+import { plural } from "@/core/utils/format/plural";
 import { formatMemory, formatMillicores } from "@/core/utils/quantity";
 import type { Severity } from "@/core/utils/severity";
-import { plural } from "./plural";
 
 /** CPU and memory limits: of an actor template, or the room size of a worker pool. */
 export function sizeText(size: RoomSize | null): string | null {

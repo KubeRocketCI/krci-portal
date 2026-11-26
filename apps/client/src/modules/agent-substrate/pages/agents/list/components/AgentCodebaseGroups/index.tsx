@@ -9,11 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/c
 import { useIsNarrow } from "@/core/hooks/use-narrow";
 import { useFilterContext } from "@/core/providers/Filter";
 import { cn } from "@/core/utils/classname";
+import { plural } from "@/core/utils/format/plural";
 import { TABLE } from "@/k8s/constants/tables";
 import { useClusterStore } from "@/k8s/store";
 import { PATH_PROJECT_DETAILS_FULL } from "@/modules/platform/codebases/pages/details/route";
 import { codebaseColumn } from "../../../../../components/ActorColumns";
-import { plural } from "../../../../../utils/plural";
 import { AGENT_TABLE_SORT, AGENTS_EMPTY_TEXT } from "../../constants";
 import { useAgentRowClick } from "../../hooks/useAgentRowClick";
 import { groupAgentsByCodebase, type AgentCodebaseGroup } from "../../utils/groupByCodebase";

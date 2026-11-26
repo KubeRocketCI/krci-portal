@@ -1,11 +1,22 @@
 import {
+  CODEBASE_SCAN_LEVELS,
   DEFECTDOJO_SEVERITIES,
+  NO_FINDING_COUNTS,
   RUNTIME_FINDING_STATES,
+  type CodebaseScanLevel,
   type DefectDojoFindingState,
+  type DefectDojoLevel,
   type DefectDojoSeverity,
+  type SeverityCounts,
   type RuntimeReportKind,
 } from "./constants.js";
-import type { CodebaseScanRef, RuntimeContainer, RuntimeContainerRef, RuntimeEnvironment } from "./types.js";
+import type {
+  CodebaseScanRef,
+  OverviewNamespace,
+  RuntimeContainer,
+  RuntimeContainerRef,
+  RuntimeEnvironment,
+} from "./types.js";
 
 /** Identity of a scan as one string: equal for the same scan, different for any other. Not a lookup key sent to DefectDojo. */
 export function scanRefKey(scan: CodebaseScanRef): string {
@@ -45,8 +56,35 @@ export function runtimeContainerKey(
   ]);
 }
 
-export function hasActiveFindings(counts: Readonly<Record<DefectDojoSeverity, number>>): boolean {
+export function hasActiveFindings(counts: Readonly<SeverityCounts>): boolean {
   return DEFECTDOJO_SEVERITIES.some((severity) => counts[severity] > 0);
+}
+
+export function sumCounts(list: readonly Readonly<SeverityCounts>[]): SeverityCounts {
+  const sum = { ...NO_FINDING_COUNTS };
+  for (const counts of list) {
+    for (const severity of DEFECTDOJO_SEVERITIES) {
+      sum[severity] += counts[severity];
+    }
+  }
+  return sum;
+}
+
+export function totalOf(counts: Readonly<SeverityCounts>): number {
+  return DEFECTDOJO_SEVERITIES.reduce((total, severity) => total + counts[severity], 0);
+}
+
+/**
+ * Orders counts most severe first: more Critical, then more High, then more findings; `first` ranks one severity
+ * before that. No counts (`null`) come last.
+ */
+export function mostSevereFirst(first?: DefectDojoSeverity) {
+  return (a: Readonly<SeverityCounts> | null, b: Readonly<SeverityCounts> | null): number => {
+    if (a === null || b === null) {
+      return Number(a === null) - Number(b === null);
+    }
+    return (first ? b[first] - a[first] : 0) || b.Critical - a.Critical || b.High - a.High || totalOf(b) - totalOf(a);
+  };
 }
 
 export function hasActiveRuntimeFindings({
@@ -56,6 +94,10 @@ export function hasActiveRuntimeFindings({
   return (
     (vulnerabilities !== null && hasActiveFindings(vulnerabilities.counts)) || (secrets !== null && secrets.active > 0)
   );
+}
+
+export function isCodebaseScanLevel(level: DefectDojoLevel | null): level is CodebaseScanLevel {
+  return (CODEBASE_SCAN_LEVELS as readonly (DefectDojoLevel | null)[]).includes(level);
 }
 
 export function isRuntimeFindingState(state: DefectDojoFindingState): state is (typeof RUNTIME_FINDING_STATES)[number] {
@@ -75,4 +117,39 @@ export function hasFindingFilter(request: {
     request.vulnerabilityId !== undefined ||
     request.component !== undefined
   );
+}
+
+/** An Environment of the installation, or a namespace it manages: the first group of a cluster on the overview. */
+export function isOwnNamespace(row: Pick<OverviewNamespace, "environment" | "managed">): boolean {
+  return row.environment !== null || row.managed;
+}
+
+/**
+ * Orders namespaces by their findings, most severe first: a namespace ranks by the more severe of its vulnerabilities and
+ * its exposed secrets, which are never added, then by the other; `first` ranks one severity before that. Then by name.
+ */
+export function compareNamespaceFindings(first?: DefectDojoSeverity) {
+  const mostSevere = mostSevereFirst(first);
+  const byRank = ({ product }: OverviewNamespace) => {
+    const vulnerabilities = product?.vulnerabilities ?? null;
+    const secrets = product?.secrets ?? null;
+    return mostSevere(vulnerabilities, secrets) <= 0 ? [vulnerabilities, secrets] : [secrets, vulnerabilities];
+  };
+
+  return (a: OverviewNamespace, b: OverviewNamespace): number => {
+    const [aFirst, aSecond] = byRank(a);
+    const [bFirst, bSecond] = byRank(b);
+    return mostSevere(aFirst, bFirst) || mostSevere(aSecond, bSecond) || a.namespace.localeCompare(b.namespace);
+  };
+}
+
+/**
+ * The order of the namespaces of the Security overview: by cluster; in each, the own namespaces first, then the others;
+ * in each group as `compareNamespaceFindings` orders them.
+ */
+export function compareOverviewNamespaces(first?: DefectDojoSeverity) {
+  const byFindings = compareNamespaceFindings(first);
+
+  return (a: OverviewNamespace, b: OverviewNamespace): number =>
+    a.cluster.localeCompare(b.cluster) || Number(!isOwnNamespace(a)) - Number(!isOwnNamespace(b)) || byFindings(a, b);
 }

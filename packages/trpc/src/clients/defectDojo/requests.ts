@@ -94,9 +94,9 @@ export function productTypeRequest(name: string): DefectDojoRequest {
 
 /**
  * Severity counts of a scope, in one request (API v3), duplicates left out. The answer carries one finding row,
- * reduced to its id. `activeOnly: false` counts findings of every state.
+ * reduced to its id.
  */
-export function countsRequest(scope: DefectDojoScope, activeOnly: boolean): DefectDojoRequest {
+export function countsRequest(scope: DefectDojoScope, state: DefectDojoFindingStateFilter): DefectDojoRequest {
   return {
     path: "/api/v3/findings",
     query: {
@@ -104,7 +104,7 @@ export function countsRequest(scope: DefectDojoScope, activeOnly: boolean): Defe
       fields: "id",
       limit: 1,
       duplicate: false,
-      active: activeOnly ? true : undefined,
+      ...(state === "any" ? {} : FINDING_STATE_PARAMS[state]),
       ...("testId" in scope ? { test: scope.testId } : { asset__in: scope.productIds.join(",") }),
     },
   };

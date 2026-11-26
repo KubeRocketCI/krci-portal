@@ -546,12 +546,35 @@ describe("getSeverityCounts", () => {
   });
 
   it("counts the findings of every state when it is asked to: the mitigated ones stay out of `active`", async () => {
-    const result = await createClient().getSeverityCounts({ testId: 41 }, { activeOnly: false });
+    const result = await createClient().getSeverityCounts({ testId: 41 }, { state: "any" });
 
     expect(result).toEqual({
       state: "data",
       data: { total: 9, active: 4, severity: { Critical: 3, High: 4, Medium: 1, Low: 1, Info: 0 } },
     });
+  });
+
+  it.each([
+    ["falsePositive", { false_p: "true" }],
+    ["outOfScope", { out_of_scope: "true" }],
+    ["riskAccepted", { risk_accepted: "true" }],
+    ["mitigated", { is_mitigated: "true", false_p: "false", out_of_scope: "false" }],
+  ] as const)("counts the findings of the state %s by the parameters of that state only", async (state, params) => {
+    const queries: URLSearchParams[] = [];
+    const counting = await startStub((request, response) => {
+      queries.push(new URL(request.url ?? "", "http://stub.invalid").searchParams);
+      const counts = { total: 3, active: 0, severity: { Critical: 0, High: 2, Medium: 1, Low: 0, Info: 0 } };
+      response.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify({ meta: { counts } }));
+    });
+
+    const result = await createClient({ apiBaseURL: counting }).getSeverityCounts({ productIds: [4] }, { state });
+
+    expect(result).toEqual({
+      state: "data",
+      data: { total: 3, active: 0, severity: { Critical: 0, High: 2, Medium: 1, Low: 0, Info: 0 } },
+    });
+    expect(Object.fromEntries(queries[0] ?? [])).toMatchObject({ asset__in: "4", include: "counts", ...params });
+    expect(queries[0]?.has("active")).toBe(false);
   });
 
   it("counts a clean scan as zero findings, not as no scan data", async () => {

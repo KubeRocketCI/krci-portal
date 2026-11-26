@@ -5,6 +5,8 @@ import {
   getExposedSecrets,
   getFindingsScope,
   getScanFindings,
+  getSecurityOverview,
+  getSecurityOverviewCodebases,
   getVulnerabilities,
 } from "./procedures/index.js";
 
@@ -14,5 +16,7 @@ export const defectDojoRouter = t.router({
   getExposedSecrets,
   getFindingsScope,
   getScanFindings,
+  getSecurityOverview,
+  getSecurityOverviewCodebases,
   getVulnerabilities,
 });

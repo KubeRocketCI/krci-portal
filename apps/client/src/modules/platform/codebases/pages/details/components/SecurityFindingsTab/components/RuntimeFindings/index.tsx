@@ -1,9 +1,4 @@
-import {
-  DEFECTDOJO_SEVERITIES,
-  runtimeContainerRef,
-  type CodebaseFindingsInput,
-  type RuntimeEnvironment,
-} from "@my-project/shared";
+import { runtimeContainerRef, totalOf, type CodebaseFindingsInput, type RuntimeEnvironment } from "@my-project/shared";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/core/components/ui/tabs";
 import type { RunningContainer } from "../../types";
 import { containerLabel } from "../../utils";
@@ -24,7 +19,7 @@ export function RuntimeFindings({ codebase, environment, container }: RuntimeFin
       label: "Vulnerabilities",
       data: vulnerabilities && {
         ...vulnerabilities,
-        active: DEFECTDOJO_SEVERITIES.reduce((sum, severity) => sum + vulnerabilities.counts[severity], 0),
+        active: totalOf(vulnerabilities.counts),
       },
     },
     { kind: "exposedsecretreport", label: "Exposed secrets", data: secrets },

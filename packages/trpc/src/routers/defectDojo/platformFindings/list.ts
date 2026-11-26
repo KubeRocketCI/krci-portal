@@ -1,5 +1,6 @@
 import {
   DEFECTDOJO_MAX_PAGE_SIZE,
+  SECRET_SCAN_TYPES,
   TRIAGED_RUNTIME_SCAN_LIMIT,
   hasFindingFilter,
   type CodebaseScanLevel,
@@ -24,8 +25,6 @@ import { ciTestTags } from "../codebaseFindings/scans.js";
 import { TAG_KEY, formatTag, tagValue } from "../codebaseFindings/tags.js";
 import { defaultRuntimeClusters, sortedUnique, type PlatformFacts, type PlatformStage } from "./facts.js";
 import type { PlatformFindingsSource } from "./source.js";
-
-const SECRET_SCAN_TYPES: readonly DefectDojoScanType[] = ["Gitleaks Scan"];
 
 export interface PlatformListKind {
   reportKind: RuntimeReportKind;
@@ -94,7 +93,8 @@ function scopeOf(request: PlatformListRequest, facts: PlatformFacts, kind: Platf
   };
 }
 
-function openRows(page: DefectDojoFindingsPage): Row[] {
+/** The rows of a page whose test is open: the lists leave the rows of closed tests out. */
+export function openRows(page: DefectDojoFindingsPage): Row[] {
   const tests = new Map(page.tests.map((test) => [test.id, test]));
   return page.findings.flatMap((finding) => {
     const test = tests.get(finding.test.id);
@@ -114,15 +114,11 @@ async function readPage(
     : result;
 }
 
-/**
- * Reads the most severe findings of the filter, at most `TRIAGED_RUNTIME_SCAN_LIMIT`, drops the rows of closed tests
- * and pages the rest, so that the total and the pages hold open tests only.
- */
-async function readScanned(
-  source: PlatformFindingsSource,
-  query: DefectDojoFindingsQuery,
-  { page, pageSize }: Pick<PlatformListRequest, "page" | "pageSize">
-): Promise<DefectDojoResult<Rows>> {
+/** The pages of the most severe findings of the filter, at most `TRIAGED_RUNTIME_SCAN_LIMIT` findings. */
+export async function readMostSevere(
+  source: Pick<PlatformFindingsSource, "listFindings">,
+  query: DefectDojoFindingsQuery
+): Promise<DefectDojoResult<{ pages: DefectDojoFindingsPage[]; truncated: boolean }>> {
   const first = await source.listFindings({ ...query, limit: DEFECTDOJO_MAX_PAGE_SIZE, offset: 0 });
   if (first.state !== "data") {
     return first;
@@ -139,20 +135,37 @@ async function readScanned(
     )
   );
 
-  const rows = openRows(first.data);
+  const pages = [first.data];
   for (const result of rest) {
     if (result.state !== "data") {
       return result;
     }
-    rows.push(...openRows(result.data));
+    pages.push(result.data);
+  }
+  return { state: "data", data: { pages, truncated: first.data.total > TRIAGED_RUNTIME_SCAN_LIMIT } };
+}
+
+/**
+ * Reads the most severe findings of the filter, drops the rows of closed tests and pages the rest, so that the total
+ * and the pages hold open tests only.
+ */
+async function readScanned(
+  source: PlatformFindingsSource,
+  query: DefectDojoFindingsQuery,
+  { page, pageSize }: Pick<PlatformListRequest, "page" | "pageSize">
+): Promise<DefectDojoResult<Rows>> {
+  const read = await readMostSevere(source, query);
+  if (read.state !== "data") {
+    return read;
   }
 
+  const rows = read.data.pages.flatMap(openRows);
   return {
     state: "data",
     data: {
       total: rows.length,
       rows: rows.slice(page * pageSize, (page + 1) * pageSize),
-      truncated: first.data.total > TRIAGED_RUNTIME_SCAN_LIMIT,
+      truncated: read.data.truncated,
     },
   };
 }

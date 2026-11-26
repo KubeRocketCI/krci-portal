@@ -3,8 +3,6 @@ import { DEFECTDOJO_SEVERITIES, SCAN_FINDINGS_DEFAULT_PAGE_SIZE } from "@my-proj
 /** Said when the codebase has no Environment: by the Runtime section and by the running side of Built vs running. */
 export const NO_ENVIRONMENT_HINT = "The codebase is not deployed to any Environment.";
 
-export const CELL_CLASS = "px-3 py-2 align-middle";
-
 /** Expand, scan, branch or Environment, image tag, a column per severity, triaged, last upload, link. */
 export const COLUMN_COUNT = 7 + DEFECTDOJO_SEVERITIES.length;
 

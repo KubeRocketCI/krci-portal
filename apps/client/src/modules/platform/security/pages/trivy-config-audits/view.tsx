@@ -3,8 +3,11 @@ import { PageContentWrapper } from "@/core/components/PageContentWrapper";
 import { FileWarning } from "lucide-react";
 import { useCallback } from "react";
 import { ConfigAuditList } from "./components/ConfigAuditList";
-import { NamespaceSelector, getValidNamespace } from "@/modules/platform/security/components/trivy";
-import { useDiscoverTrivyNamespaces } from "../trivy-overview/hooks/useDiscoverTrivyNamespaces";
+import {
+  NamespaceSelector,
+  getValidNamespace,
+  useDiscoverTrivyNamespaces,
+} from "@/modules/platform/security/components/trivy";
 import { routeTrivyConfigAudits, PATH_TRIVY_CONFIG_AUDITS_FULL } from "./route";
 import { router } from "@/core/router";
 

@@ -7,17 +7,17 @@ import {
 import { Badge } from "@/core/components/ui/badge";
 import { TableBodyUI, TableCellUI, TableRowUI } from "@/core/components/ui/table";
 import { cn } from "@/core/utils/classname";
-import { LEVEL_META, NO_VALUE } from "@/modules/platform/security/components/defectdojo/constants";
+import { CELL_CLASS, LEVEL_META, NO_VALUE } from "@/modules/platform/security/components/defectdojo/constants";
 import { NoScanDataState } from "@/modules/platform/security/components/defectdojo/StateBlocks";
-import { CELL_CLASS, NO_ENVIRONMENT_HINT } from "../../constants";
+import { NO_ENVIRONMENT_HINT } from "../../constants";
 import { focusedProps } from "../../focusedProps";
 import type { SecurityFindingsFocus } from "../../types";
 import { isFocusedEnvironment } from "../../utils";
 import { EnvironmentCell } from "../EnvironmentCell";
 import { CleanLevelState, LevelHeaderRow } from "../LevelHeaderRow";
+import { NoCountsCells } from "../NoCountsCells";
 import { NoScanDataRow } from "../NoScanDataRow";
 import { RuntimeContainerRow } from "../RuntimeContainerRow";
-import { NoCountsCells } from "../SeverityCountCells";
 
 const RUNTIME_META = LEVEL_META.runtime;
 

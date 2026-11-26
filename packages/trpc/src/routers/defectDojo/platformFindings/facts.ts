@@ -1,13 +1,12 @@
 import { applicationLabels, k8sApplicationConfig, k8sStageConfig } from "@my-project/shared";
 import { toTagCase } from "../../../clients/defectDojo/index.js";
 import type { CustomSession } from "../../../context/types.js";
-import { getInitializedK8sClient } from "../../k8s/utils/getInitializedK8sClient/index.js";
-import { rethrowOrHandleK8sError } from "../../k8s/utils/handleK8sError/index.js";
 import {
   applicationSchema,
   compareStages,
   listIfReadable,
   parseAll,
+  readAsUser,
   stageSchema,
   type FindingsKubeReader,
 } from "../kube.js";
@@ -66,16 +65,12 @@ export async function readPlatformFacts(
   };
 }
 
-export async function loadPlatformFacts(
+export function loadPlatformFacts(
   session: CustomSession,
   namespace: string,
   options?: { applications?: boolean }
 ): Promise<PlatformFacts> {
-  try {
-    return await readPlatformFacts(getInitializedK8sClient({ session }), namespace, options);
-  } catch (error) {
-    return rethrowOrHandleK8sError(error);
-  }
+  return readAsUser(session, (reader) => readPlatformFacts(reader, namespace, options));
 }
 
 /** The facts of a Code or Image list: it reads no Kubernetes object. */

@@ -8,22 +8,24 @@ import {
   k8sStageConfig,
   type CodebaseFindingsInput,
 } from "@my-project/shared";
-import { z } from "zod";
 import type { CustomSession } from "../../../context/types.js";
 import { createLabelSelectorString } from "../../k8s/utils/createLabelSelectorString/index.js";
-import { getInitializedK8sClient } from "../../k8s/utils/getInitializedK8sClient/index.js";
-import { rethrowOrHandleK8sError } from "../../k8s/utils/handleK8sError/index.js";
 import {
   applicationSchema,
+  codebaseBranchSchema,
+  codebaseImageStreamSchema,
+  codebaseSchema,
   compareStages,
   listIfReadable,
   parseAll,
+  readAsUser,
   stageKey,
   stageSchema,
   type Application,
   type FindingsKubeReader,
   type Stage,
 } from "../kube.js";
+import { sortedUnique } from "../platformFindings/facts.js";
 
 /** A Stage that an Argo CD Application deploys the codebase to. */
 export interface CodebaseEnvironment {
@@ -51,9 +53,12 @@ export interface CodebaseFacts {
   environments: CodebaseEnvironment[];
 }
 
-const codebaseSchema = z.object({ spec: z.object({ defaultBranch: z.string() }) });
-const branchSchema = z.object({ spec: z.object({ branchName: z.string() }) });
-const imageStreamSchema = z.object({ spec: z.object({ codebase: z.string(), imageName: z.string() }) });
+/** Branch names with the default branch first, if it is one of them, then the others by name. */
+export function orderBranches(names: Iterable<string>, defaultBranch: string | null): string[] {
+  const others = new Set(names);
+  const hasDefaultBranch = defaultBranch !== null && others.delete(defaultBranch);
+  return [...(hasDefaultBranch ? [defaultBranch] : []), ...sortedUnique(others)];
+}
 
 /**
  * The Applications that name a Stage by their `pipeline` and `stage` labels. Of two Applications of one Stage the
@@ -107,14 +112,15 @@ export async function readCodebaseFacts(
   ]);
 
   const { defaultBranch } = codebaseSchema.parse(codebase).spec;
-  const branchNames = new Set(parseAll(branchSchema, branches.items).map((branch) => branch.spec.branchName));
-  const hasDefaultBranch = branchNames.delete(defaultBranch);
 
   return {
     name,
     namespace,
-    branches: [...(hasDefaultBranch ? [defaultBranch] : []), ...[...branchNames].sort((a, b) => a.localeCompare(b))],
-    ownImageNames: parseAll(imageStreamSchema, imageStreams.items)
+    branches: orderBranches(
+      parseAll(codebaseBranchSchema, branches.items).map((branch) => branch.spec.branchName),
+      defaultBranch
+    ),
+    ownImageNames: parseAll(codebaseImageStreamSchema, imageStreams.items)
       .filter((imageStream) => imageStream.spec.codebase === name)
       .map((imageStream) => imageStream.spec.imageName),
     environments: joinEnvironments(
@@ -128,12 +134,6 @@ export async function readCodebaseFacts(
  * Reads the codebase with the signed-in user's access: a user who cannot read it, its branches or its image streams
  * gets the Kubernetes error.
  */
-export async function loadCodebaseFacts(session: CustomSession, input: CodebaseFindingsInput): Promise<CodebaseFacts> {
-  const k8sClient = getInitializedK8sClient({ session });
-
-  try {
-    return await readCodebaseFacts(k8sClient, input);
-  } catch (error) {
-    return rethrowOrHandleK8sError(error);
-  }
+export function loadCodebaseFacts(session: CustomSession, input: CodebaseFindingsInput): Promise<CodebaseFacts> {
+  return readAsUser(session, (reader) => readCodebaseFacts(reader, input));
 }

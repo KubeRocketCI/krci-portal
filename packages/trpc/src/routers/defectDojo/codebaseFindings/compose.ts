@@ -15,13 +15,14 @@ import {
   type ScanFindings,
   type ScanFindingsRequest,
   type ScanRef,
+  type SeverityCounts,
 } from "@my-project/shared";
-import type {
-  DefectDojoFinding,
-  DefectDojoResult,
-  DefectDojoSeverityCounts,
-  DefectDojoTest,
-  DefectDojoTestsFilter,
+import {
+  dataOf,
+  outageOf,
+  type DefectDojoFinding,
+  type DefectDojoTest,
+  type DefectDojoTestsFilter,
 } from "../../../clients/defectDojo/index.js";
 import { mapWithConcurrency } from "../../../utils/mapWithConcurrency/index.js";
 import type { CodebaseFacts } from "./facts.js";
@@ -36,37 +37,6 @@ import type { CodebaseFindingsSource } from "./source.js";
 
 /** Tests counted at once, and Environments listed at once: a codebase with many scans does not flood DefectDojo. */
 export const COUNT_CONCURRENCY = 6;
-
-type SeverityCounts = DefectDojoSeverityCounts["severity"];
-
-/** The state a failed read carries to the result. */
-type Outage = { state: "notConfigured" } | { state: "unreachable" };
-
-/** Stops the other reads at the first failed one. */
-class OutageFound extends Error {
-  constructor(readonly outage: Outage) {
-    super(outage.state);
-  }
-}
-
-function isOutage(result: { state: string }): result is Outage {
-  return result.state === "notConfigured" || result.state === "unreachable";
-}
-
-function outageOf(error: unknown): Outage {
-  if (error instanceof OutageFound) {
-    return error.outage;
-  }
-  throw error;
-}
-
-/** The data of a read, or `null` for no scan data. An outage stops the composition. */
-function dataOf<T>(result: DefectDojoResult<T>): T | null {
-  if (isOutage(result)) {
-    throw new OutageFound(result);
-  }
-  return result.state === "data" ? result.data : null;
-}
 
 async function readTests(source: CodebaseFindingsSource, filter: DefectDojoTestsFilter): Promise<DefectDojoTest[]> {
   return dataOf(await source.listTests(filter)) ?? [];
@@ -104,14 +74,14 @@ async function countTest(
   const scope = { testId };
 
   // The test comes from a list: it exists, so a count of zero is a clean test.
-  const all = dataOf(await source.getSeverityCounts(scope, { activeOnly: false, testExists: true }));
+  const all = dataOf(await source.getSeverityCounts(scope, { state: "any", testExists: true }));
   if (all === null) {
     return null;
   }
 
   let counts: SeverityCounts = NO_FINDING_COUNTS;
   if (bySeverity && all.active > 0) {
-    const active = dataOf(await source.getSeverityCounts(scope, { activeOnly: true, testExists: true }));
+    const active = dataOf(await source.getSeverityCounts(scope, { state: "active", testExists: true }));
     if (active === null) {
       return null;
     }
