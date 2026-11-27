@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { CodebaseFindingsInput } from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
-import { findingsStaleTime } from "@/modules/platform/security/components/defectdojo/findingsStaleTime";
+import { findingsQueryOptions } from "@/modules/platform/security/components/defectdojo/findingsQueryOptions";
 
 export const codebaseFindingsKey = (input: CodebaseFindingsInput) =>
   ["defectDojo", "getCodebaseFindings", input] as const;
@@ -13,8 +13,6 @@ export function useCodebaseFindings(input: CodebaseFindingsInput) {
   return useQuery({
     queryKey: codebaseFindingsKey(input),
     queryFn: () => trpc.defectDojo.getCodebaseFindings.query(input),
-    staleTime: findingsStaleTime,
-    // The app client does not refetch on mount; a stale result without data must be asked again.
-    refetchOnMount: true,
+    ...findingsQueryOptions,
   });
 }

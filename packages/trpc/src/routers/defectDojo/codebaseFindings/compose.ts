@@ -2,6 +2,7 @@ import {
   NO_FINDING_COUNTS,
   hasActiveFindings,
   hasActiveRuntimeFindings,
+  runtimeStateOf,
   scanRefKey,
   type CodebaseFindings,
   type CodebaseLevel,
@@ -32,7 +33,7 @@ import {
   type RuntimeContainerEntry,
   type RuntimeReportTest,
 } from "./runtime.js";
-import { buildScans, ciTestTags, latestDate, scanTestsFilter, type ScanEntry } from "./scans.js";
+import { buildScans, ciTestTags, createOwnImageMatcher, latestDate, scanTestsFilter, type ScanEntry } from "./scans.js";
 import type { CodebaseFindingsSource } from "./source.js";
 
 /** Tests counted at once, and Environments listed at once: a codebase with many scans does not flood DefectDojo. */
@@ -130,7 +131,7 @@ function toSecrets(report: RuntimeReportTest | null, countOf: CountOf) {
   return report && count ? { active: count.active, triaged: count.triaged, testUrl: report.testUrl } : null;
 }
 
-function toRuntimeContainer(container: RuntimeContainerEntry, countOf: CountOf): RuntimeContainer {
+function toRuntimeContainer({ app: _app, ...container }: RuntimeContainerEntry, countOf: CountOf): RuntimeContainer {
   if (container.state !== "running") {
     return container;
   }
@@ -144,17 +145,13 @@ function toRuntimeContainer(container: RuntimeContainerEntry, countOf: CountOf):
 
 function toRuntimeLevel(environments: RuntimeEnvironment[]): RuntimeLevel {
   const containers = environments.flatMap((environment) => environment.containers);
-  if (containers.length === 0) {
-    return { state: "noScanData", environments, lastUpload: null };
-  }
-
   const running = containers.flatMap((container) => (container.state === "running" ? [container] : []));
-  if (running.length === 0) {
-    return { state: "notRunning", environments, lastUpload: null };
-  }
-
   return {
-    state: running.some(hasActiveRuntimeFindings) ? "data" : "clean",
+    state: runtimeStateOf({
+      containers: containers.length,
+      running: running.length,
+      hasFindings: running.some(hasActiveRuntimeFindings),
+    }),
     environments,
     lastUpload: latestDate(running.map((container) => container.date)),
   };
@@ -175,7 +172,8 @@ export async function composeCodebaseFindings(
         readTests(source, runtimeTestsFilter(environment))
       ),
     ]);
-    const containersOf = environmentTests.map((tests) => buildRuntimeContainers(facts, tests));
+    const isOwnImage = createOwnImageMatcher(facts);
+    const containersOf = environmentTests.map((tests) => buildRuntimeContainers(tests, isOwnImage));
 
     const targets: CountTarget[] = [
       ...scans.map(({ testId }) => ({ testId, bySeverity: true })),
@@ -263,7 +261,7 @@ async function findRuntimeTestId(
   }
 
   const tests = await readTests(source, runtimeTestsFilter(environment, scan));
-  const container = buildRuntimeContainers(facts, tests).find(
+  const container = buildRuntimeContainers(tests).find(
     (candidate) => candidate.workload === scan.workload && candidate.container === scan.container
   );
   if (container?.state !== "running") {

@@ -15,3 +15,8 @@ export const buttonLabels = (scope: Scope): (string | null)[] =>
   scope.getAllByRole("button").map((button: HTMLElement) => button.textContent);
 
 export const FORBIDDEN_MESSAGE = "Kubernetes API request failed: 403 Forbidden. stages is forbidden for this user";
+
+export const chipLabels = (group: HTMLElement): (string | null)[] =>
+  within(group)
+    .getAllByRole("img")
+    .map((chip: HTMLElement) => chip.getAttribute("aria-label"));

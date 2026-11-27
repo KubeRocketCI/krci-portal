@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { VulnerabilitiesInput } from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
-import { findingsStaleTime } from "@/modules/platform/security/components/defectdojo/findingsStaleTime";
+import { findingsQueryOptions } from "@/modules/platform/security/components/defectdojo/findingsQueryOptions";
 
 export const vulnerabilitiesKey = (input: VulnerabilitiesInput) => ["defectDojo", "getVulnerabilities", input] as const;
 
@@ -11,8 +11,7 @@ export function useVulnerabilities(input: VulnerabilitiesInput) {
   return useQuery({
     queryKey: vulnerabilitiesKey(input),
     queryFn: () => trpc.defectDojo.getVulnerabilities.query(input),
-    staleTime: findingsStaleTime,
-    refetchOnMount: true,
+    ...findingsQueryOptions,
     // The page stays while the next one loads, but not under the columns of another level.
     placeholderData: (previous, previousQuery) =>
       previousQuery?.queryKey[2].level === input.level ? previous : undefined,

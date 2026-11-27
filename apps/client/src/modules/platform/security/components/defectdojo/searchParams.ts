@@ -4,6 +4,9 @@ import {
   PLATFORM_LIST_DEFAULT_PAGE_SIZE,
   SCAN_FINDINGS_MAX_PAGE,
   findingClustersSchema,
+  type DefectDojoFindingState,
+  type DefectDojoSeverity,
+  type NamespacePlace,
 } from "@my-project/shared";
 import { z } from "zod";
 import { k8sNameSearchParam } from "@/core/router/searchParams";
@@ -40,4 +43,12 @@ export function toPageRequest(page: number | undefined, rowsPerPage: number | un
     page: Math.min((page ?? 1) - 1, SCAN_FINDINGS_MAX_PAGE),
     pageSize: rowsPerPage ?? PLATFORM_LIST_DEFAULT_PAGE_SIZE,
   };
+}
+
+/** The filters a platform list opens with for one namespace of one cluster, with the severity and the state in view. */
+export function namespaceListSearch(
+  { cluster, namespace }: NamespacePlace,
+  { severity, state }: { severity?: DefectDojoSeverity; state?: DefectDojoFindingState } = {}
+) {
+  return { cluster: [cluster], namespace, severity, state };
 }

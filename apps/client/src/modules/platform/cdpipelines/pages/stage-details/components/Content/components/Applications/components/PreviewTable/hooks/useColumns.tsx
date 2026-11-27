@@ -1,6 +1,7 @@
 import React from "react";
 import { TableColumn } from "@/core/components/Table/types";
 import { StageAppCodebaseCombinedData, useStageWatch } from "@/modules/platform/cdpipelines/pages/stage-details/hooks";
+import { routeStageDetails } from "@/modules/platform/cdpipelines/pages/stage-details/route";
 import { inClusterName } from "@my-project/shared";
 import { columnNames } from "../../../constants";
 import { DeployedVersionPreviewColumn } from "../../columns/DeployedVersionPreview";
@@ -8,6 +9,7 @@ import { IngressColumnLive } from "../../columns/IngressLive";
 import { IngressHeadColumn } from "../../columns/IngressHead";
 import { NameColumn } from "../../columns/Name";
 import { PodsColumn } from "../../columns/Pods";
+import { SecurityColumn } from "../../columns/Security";
 import { StatusColumn } from "../../columns/Status";
 import { ValuesOverridePreviewColumn } from "../../columns/ValuesOverridePreview";
 import { ValuesOverridePreviewHeadColumn } from "../../columns/ValuesOverridePreviewHead";
@@ -16,13 +18,16 @@ import { useGitOpsValuesLink } from "../../../hooks/useGitOpsValuesLink";
 export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
   const stageWatch = useStageWatch();
   const gitOpsValuesLink = useGitOpsValuesLink();
+  const { clusterName, namespace, cdPipeline, stage: stageName } = routeStageDetails.useParams();
 
   const stage = stageWatch.query.data;
 
   const shouldShowPodsColumn = stage?.spec.clusterName === inClusterName;
 
-  return React.useMemo(
-    () => [
+  return React.useMemo(() => {
+    const environment = { namespace, cdPipeline, stage: stageName };
+
+    return [
       {
         id: columnNames.NAME,
         label: "Application",
@@ -53,6 +58,18 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
         },
         cell: {
           baseWidth: 25,
+        },
+      },
+      {
+        id: columnNames.SECURITY,
+        label: "Security",
+        data: {
+          render: ({ data: { appCodebase } }) => (
+            <SecurityColumn environment={environment} clusterName={clusterName} codebase={appCodebase.metadata.name} />
+          ),
+        },
+        cell: {
+          baseWidth: 20,
         },
       },
       {
@@ -101,7 +118,6 @@ export const useColumns = (): TableColumn<StageAppCodebaseCombinedData>[] => {
           },
         },
       },
-    ],
-    [shouldShowPodsColumn, gitOpsValuesLink]
-  );
+    ];
+  }, [shouldShowPodsColumn, gitOpsValuesLink, clusterName, namespace, cdPipeline, stageName]);
 };

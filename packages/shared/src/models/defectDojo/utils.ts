@@ -9,10 +9,13 @@ import {
   type DefectDojoSeverity,
   type SeverityCounts,
   type RuntimeReportKind,
+  type RuntimeState,
 } from "./constants.js";
 import type {
   CodebaseScanRef,
+  EnvironmentContainer,
   OverviewNamespace,
+  RunningEnvironmentContainer,
   RuntimeContainer,
   RuntimeContainerRef,
   RuntimeEnvironment,
@@ -85,6 +88,35 @@ export function mostSevereFirst(first?: DefectDojoSeverity) {
     }
     return (first ? b[first] - a[first] : 0) || b.Critical - a.Critical || b.High - a.High || totalOf(b) - totalOf(a);
   };
+}
+
+export function runtimeStateOf({
+  containers,
+  running,
+  hasFindings,
+}: {
+  containers: number;
+  running: number;
+  /** A running container holds an active finding or secret. */
+  hasFindings: boolean;
+}): RuntimeState {
+  if (containers === 0) {
+    return "noScanData";
+  }
+  if (running === 0) {
+    return "notRunning";
+  }
+  return hasFindings ? "data" : "clean";
+}
+
+export function hasActiveEnvironmentFindings({ vulnerabilities, secrets }: RunningEnvironmentContainer): boolean {
+  return (vulnerabilities !== null && hasActiveFindings(vulnerabilities)) || (secrets ?? 0) > 0;
+}
+
+export function isRunningEnvironmentContainer(
+  container: EnvironmentContainer
+): container is RunningEnvironmentContainer {
+  return container.state === "running";
 }
 
 export function hasActiveRuntimeFindings({

@@ -1,8 +1,8 @@
 import { RUNTIME_REPORT_KINDS, type RuntimeReportKind } from "@my-project/shared";
 import type { DefectDojoTest, DefectDojoTestsFilter } from "../../../clients/defectDojo/index.js";
-import type { CodebaseEnvironment, CodebaseFacts } from "./facts.js";
-import { createOwnImageMatcher, isNewer, latestDate } from "./scans.js";
-import { TAG_KEY, formatTag, tagValue } from "./tags.js";
+import type { CodebaseEnvironment } from "./facts.js";
+import { isNewer, latestDate } from "./scans.js";
+import { TAG_KEY, formatTag, tagValue, type TagKey } from "./tags.js";
 
 /** The test kept for one report kind of a container. */
 export interface RuntimeReportTest {
@@ -16,6 +16,8 @@ interface RuntimeContainerBase {
   image: string | null;
   ownImage: boolean;
   productUrl: string;
+  /** The `app` tag: the name of the Argo CD Application of the workload. */
+  app: string | null;
 }
 
 /** A workload container as the security operator's tests describe it, with the test ids the server resolves counts by. */
@@ -31,14 +33,18 @@ export type RuntimeContainerEntry = RuntimeContainerBase &
     | { state: "notRunning" }
   );
 
+/** The runtime tests of a namespace carry the tags of its namespace product. */
+export function namespaceTags({ clusterName, namespace }: Pick<CodebaseEnvironment, "clusterName" | "namespace">) {
+  return [formatTag(TAG_KEY.cluster, clusterName), formatTag(TAG_KEY.namespace, namespace)];
+}
+
 export function runtimeTestsFilter(
   environment: Pick<CodebaseEnvironment, "clusterName" | "namespace" | "applicationName">,
   container?: { workload: string; container: string; reportKind: RuntimeReportKind }
 ): DefectDojoTestsFilter {
   return {
     tags: [
-      formatTag(TAG_KEY.cluster, environment.clusterName),
-      formatTag(TAG_KEY.namespace, environment.namespace),
+      ...namespaceTags(environment),
       formatTag(TAG_KEY.app, environment.applicationName),
       ...(container === undefined
         ? []
@@ -78,11 +84,17 @@ function toEntry(
 ): RuntimeContainerEntry {
   const tests = RUNTIME_REPORT_KINDS.flatMap((reportKind) => kept[reportKind] ?? []);
   const open = tests.filter((test) => !test.closed);
-  const image =
-    (open.length > 0 ? open : tests)
-      .map((test) => tagValue(test.tags, TAG_KEY.ociImage))
-      .find((value) => value !== null) ?? null;
-  const base = { workload, container, image, ownImage: isOwnImage(image), productUrl: tests[0].product.url };
+  const tagOf = (key: TagKey) =>
+    (open.length > 0 ? open : tests).map((test) => tagValue(test.tags, key)).find((value) => value !== null) ?? null;
+  const image = tagOf(TAG_KEY.ociImage);
+  const base = {
+    workload,
+    container,
+    image,
+    ownImage: isOwnImage(image),
+    productUrl: tests[0].product.url,
+    app: tagOf(TAG_KEY.app),
+  };
 
   const date = latestDate(open.map((test) => test.updated));
   if (date === null) {
@@ -104,8 +116,8 @@ function toEntry(
  * version nor date. Ordered running first, then own image, then workload, then container.
  */
 export function buildRuntimeContainers(
-  facts: Pick<CodebaseFacts, "ownImageNames">,
-  tests: readonly DefectDojoTest[]
+  tests: readonly DefectDojoTest[],
+  isOwnImage: (image: string | null) => boolean = () => false
 ): RuntimeContainerEntry[] {
   const containers = new Map<string, ContainerTests>();
 
@@ -126,7 +138,6 @@ export function buildRuntimeContainers(
     containers.set(key, entry);
   }
 
-  const isOwnImage = createOwnImageMatcher(facts);
   const isRunning = (entry: RuntimeContainerEntry) => entry.state === "running";
 
   return [...containers.values()]

@@ -1,4 +1,4 @@
-import type { DefectDojoFindingState, DefectDojoSeverity, OverviewNamespace } from "@my-project/shared";
+import type { DefectDojoFindingState, DefectDojoSeverity } from "@my-project/shared";
 
 /** Where the links of the overview open, and the filters the lists open with. */
 export interface LinkContext {
@@ -7,13 +7,6 @@ export interface LinkContext {
   namespace: string;
   severity: DefectDojoSeverity | undefined;
   state: DefectDojoFindingState | undefined;
-}
-
-export function namespaceListSearch(
-  { cluster, namespace }: Pick<OverviewNamespace, "cluster" | "namespace">,
-  { severity, state }: LinkContext
-) {
-  return { cluster: [cluster], namespace, severity, state };
 }
 
 export function codebaseListSearch(codebase: string | undefined, { severity, state }: LinkContext) {

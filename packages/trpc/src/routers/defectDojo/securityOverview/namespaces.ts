@@ -1,17 +1,13 @@
 import {
-  DEFECTDOJO_SEVERITIES,
-  NO_FINDING_COUNTS,
   compareOverviewNamespaces,
-  type DefectDojoSeverity,
   type OverviewNamespace,
   type SecurityOverview,
   type SecurityOverviewRequest,
   type SeverityCounts,
 } from "@my-project/shared";
 import { dataOf, type DefectDojoProduct, type DefectDojoResult } from "../../../clients/defectDojo/index.js";
-import { TAG_KEY, formatTag, tagValue } from "../codebaseFindings/tags.js";
+import { TAG_KEY, tagValue } from "../codebaseFindings/tags.js";
 import type { PlatformFacts } from "../platformFindings/facts.js";
-import { SECRET_LIST, openRows, readMostSevere } from "../platformFindings/list.js";
 import {
   NAMESPACE_PRODUCT_TAG_TEXT,
   findingsScopeOf,
@@ -20,6 +16,7 @@ import {
   type Place,
 } from "../platformFindings/scope.js";
 import { createOverviewCache } from "./cache.js";
+import { readSecretCounts, splitOffSecrets } from "./namespaceCounts.js";
 import { countEach, type SecurityOverviewSource } from "./source.js";
 
 /** A namespace product with the findings of the state, the exposed secrets apart. */
@@ -35,54 +32,6 @@ export interface NamespaceProductCounts {
 export interface RuntimePart {
   namespaceProducts: NamespaceProductCounts[];
   secretsTruncated: boolean;
-}
-
-interface SecretCounts {
-  /** Every secret of the state by namespace product: what its count holds besides the vulnerabilities. */
-  all: Map<number, SeverityCounts>;
-  /** The secrets of open tests only, as the Exposed Secrets list shows them. */
-  open: Map<number, SeverityCounts>;
-  truncated: boolean;
-}
-
-function withoutSecrets(counts: Readonly<SeverityCounts>, secrets: Readonly<SeverityCounts>): SeverityCounts {
-  const vulnerabilities = { ...NO_FINDING_COUNTS };
-  for (const severity of DEFECTDOJO_SEVERITIES) {
-    vulnerabilities[severity] = Math.max(0, counts[severity] - secrets[severity]);
-  }
-  return vulnerabilities;
-}
-
-function addFinding(byProduct: Map<number, SeverityCounts>, productId: number, severity: DefectDojoSeverity): void {
-  const counts = byProduct.get(productId) ?? { ...NO_FINDING_COUNTS };
-  counts[severity] += 1;
-  byProduct.set(productId, counts);
-}
-
-/**
- * The exposed-secret findings of the state by namespace product. A close mitigates the findings of a test, but the
- * flags of a triaged finding outlive it: its count holds them, while the lists leave closed tests out.
- */
-async function readSecretCounts(
-  source: SecurityOverviewSource,
-  state: SecurityOverviewRequest["state"]
-): Promise<SecretCounts> {
-  const read = dataOf(
-    await readMostSevere(source, {
-      scope: { testTags: { all: [formatTag(TAG_KEY.reportKind, SECRET_LIST.reportKind)] } },
-      scanTypes: [],
-      withTests: true,
-      state,
-    })
-  );
-
-  const all = new Map<number, SeverityCounts>();
-  const open = new Map<number, SeverityCounts>();
-  for (const page of read?.pages ?? []) {
-    page.findings.forEach((finding) => addFinding(all, finding.product.id, finding.severity));
-    openRows(page).forEach(({ finding }) => addFinding(open, finding.product.id, finding.severity));
-  }
-  return { all, open, truncated: read?.truncated ?? false };
 }
 
 async function readRuntimePart(
@@ -113,8 +62,7 @@ async function readRuntimePart(
       namespaceProducts: namespaceProducts.map(({ product, place }, index) => ({
         product,
         place,
-        vulnerabilities: withoutSecrets(counts[index], secrets.all.get(product.id) ?? NO_FINDING_COUNTS),
-        secrets: secrets.open.get(product.id) ?? { ...NO_FINDING_COUNTS },
+        ...splitOffSecrets([product.id], counts[index], secrets),
       })),
       secretsTruncated: secrets.truncated,
     },

@@ -1,4 +1,4 @@
-import type { RuntimeEnvironment, ScanFinding } from "@my-project/shared";
+import type { NamespacePlace, RuntimeEnvironment, ScanFinding } from "@my-project/shared";
 import { FINDING_STATE_LABELS, NO_VALUE } from "./constants";
 
 /** "Fix available", with the version where the scanner fills it. */
@@ -53,10 +53,14 @@ export function findingsFailed({ data, isError }: { data: { state: string } | un
 }
 
 /** "in-cluster / demo-dev". */
-export function placeLabel({ cluster, namespace }: { cluster: string; namespace: string }): string {
+export function placeLabel({ cluster, namespace }: NamespacePlace): string {
   return `${cluster} / ${namespace}`;
 }
 
 export function environmentLabel({ cdPipeline, stage }: Pick<RuntimeEnvironment, "cdPipeline" | "stage">): string {
   return `${cdPipeline} / ${stage}`;
+}
+
+export function labelledLinkProps(label: string, text?: string) {
+  return { text: text ?? label, iconOnly: text === undefined, "aria-label": label, title: label, className: "w-auto" };
 }

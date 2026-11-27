@@ -65,6 +65,14 @@ export const RUNTIME_REPORT_KINDS = ["vulnerabilityreport", "exposedsecretreport
 
 export type RuntimeReportKind = (typeof RUNTIME_REPORT_KINDS)[number];
 
+/**
+ * The state of the runtime findings of containers. `noScanData`: no container; `notRunning`: containers exist and none
+ * runs; `clean`: running containers, none with an active finding or secret.
+ */
+export const RUNTIME_STATES = ["noScanData", "notRunning", "clean", "data"] as const;
+
+export type RuntimeState = (typeof RUNTIME_STATES)[number];
+
 /** DefectDojo sets no maximum page size: a findings page has at most this many rows, and the tab asks for no more. */
 export const DEFECTDOJO_MAX_PAGE_SIZE = 100;
 
