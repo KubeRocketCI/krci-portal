@@ -8,6 +8,7 @@ import {
   PLATFORM_LIST_DEFAULT_PAGE_SIZE,
   RUNTIME_FINDING_STATES,
   RUNTIME_REPORT_KINDS,
+  RUNTIME_STATES,
   SCAN_FINDINGS_DEFAULT_PAGE_SIZE,
   SCAN_FINDINGS_MAX_PAGE,
   type SeverityCounts,
@@ -141,12 +142,8 @@ export const runtimeEnvironmentSchema = z.object({
 });
 
 export const runtimeLevelSchema = z.object({
-  /**
-   * `noScanData`: no container in any Environment, also no Environment.
-   * `notRunning`: containers exist and none is running.
-   * `clean`: running containers, none with an active finding or secret.
-   */
-  state: z.enum(["noScanData", "notRunning", "clean", "data"]),
+  /** `noScanData` also without an Environment. */
+  state: z.enum(RUNTIME_STATES),
   environments: z.array(runtimeEnvironmentSchema),
   /** Latest `date` of a running container. `null` without one. */
   lastUpload: z.string().nullable(),
@@ -348,19 +345,20 @@ export const securityOverviewCodebasesInputSchema = z
   .object({ namespace: k8sResourceNameSchema, state: ciScope.state })
   .strict();
 
+/** The findings of a namespace product, the exposed secrets apart: its DefectDojo count holds both. */
+export const namespaceProductCountsSchema = z.object({
+  url: z.string(),
+  /** Findings of the state, the exposed secrets left out. */
+  vulnerabilities: findingSeverityCountsSchema,
+  secrets: findingSeverityCountsSchema,
+});
+
 /** A namespace option of the scope, with the counts of its namespace product. */
 export const overviewNamespaceSchema = findingsScopeNamespaceSchema.extend({
   /** The namespace product carries the tenant tag of the installation namespace. */
   managed: z.boolean(),
   /** `null`: DefectDojo holds no namespace product for it, as for a Stage the security operator does not cover. */
-  product: z
-    .object({
-      url: z.string(),
-      /** Findings of the state, the exposed secrets left out. */
-      vulnerabilities: findingSeverityCountsSchema,
-      secrets: findingSeverityCountsSchema,
-    })
-    .nullable(),
+  product: namespaceProductCountsSchema.nullable(),
 });
 
 export const securityOverviewSchema = z.discriminatedUnion("state", [
@@ -407,5 +405,72 @@ export const securityOverviewCodebasesSchema = z.discriminatedUnion("state", [
     codebases: z.array(overviewCodebaseSchema),
     /** The Codebases the caller can read that have no scan: no CI test, or tests of deleted branches only. */
     unscanned: z.array(z.string()),
+  }),
+]);
+
+/** The Stage of an Environment as the route of the Stage page names it. The server reads every tag from the Stage. */
+export const environmentSummaryInputSchema = z
+  .object({ namespace: k8sResourceNameSchema, cdPipeline: k8sResourceNameSchema, stage: k8sResourceNameSchema })
+  .strict();
+
+const environmentContainerBase = runtimeContainerBase.pick({ workload: true, container: true, image: true });
+
+/** A workload container of an Environment with the active findings of its open tests. */
+export const environmentContainerSchema = z.discriminatedUnion("state", [
+  environmentContainerBase.extend({
+    state: z.literal("running"),
+    /** `null`: no open VulnerabilityReport test. */
+    vulnerabilities: findingSeverityCountsSchema.nullable(),
+    /** Active findings of the open ExposedSecretReport test; `null`: no such test. Never added to the vulnerabilities. */
+    secrets: count.nullable(),
+  }),
+  /** Every test of the container is closed: no counts. */
+  environmentContainerBase.extend({ state: z.literal("notRunning") }),
+]);
+
+/** The workloads of one codebase in the Environment: those of its Application, the first by name. */
+export const environmentApplicationSchema = z.object({
+  /** The Application label `app.edp.epam.com/app-name`. */
+  codebase: z.string(),
+  state: z.enum(RUNTIME_STATES),
+  containers: z.array(environmentContainerSchema),
+});
+
+/** The namespace product of an Environment. */
+export const environmentRuntimeSchema = z.discriminatedUnion("state", [
+  /** Every runtime test of the namespace is closed. */
+  z.object({ state: z.literal("notRunning"), url: z.string() }),
+  z.object({ state: z.literal("clean"), url: z.string(), lastUpload: z.string() }),
+  namespaceProductCountsSchema.extend({
+    state: z.literal("data"),
+    /** More exposed secrets than `TRIAGED_RUNTIME_SCAN_LIMIT`: the ones not read count as vulnerabilities. */
+    secretsTruncated: z.boolean(),
+    /** Last upload of an open runtime test of the namespace. */
+    lastUpload: z.string(),
+  }),
+]);
+
+/** The pair a platform list filters by: a namespace and its cluster in the case of the `k8s-cluster` tag. */
+export const namespacePlaceSchema = z.object({ cluster: z.string(), namespace: z.string() });
+
+export const environmentSummarySchema = z.discriminatedUnion("state", [
+  z.object({ state: z.literal("notConfigured") }),
+  z.object({ state: z.literal("unreachable") }),
+  /** No runtime test of the namespace: the security operator has not reported it. */
+  z.object({ state: z.literal("noScanData") }),
+  z.object({
+    state: z.literal("data"),
+    /** Where the Stage runs. */
+    place: namespacePlaceSchema,
+    runtime: environmentRuntimeSchema,
+    containers: z.object({
+      /** Running workload containers of the namespace. */
+      scanned: count,
+      /** Running containers whose `app` tag names no Application with a codebase label. `null`: Applications not listed. */
+      withoutCodebase: count.nullable(),
+      notRunning: count,
+    }),
+    /** One per codebase of the Stage's Applications, by codebase. `null`: no access, or the type is not served. */
+    applications: z.array(environmentApplicationSchema).nullable(),
   }),
 ]);

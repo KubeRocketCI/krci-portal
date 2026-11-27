@@ -6,7 +6,7 @@ import {
   type SecurityOverviewRequest,
 } from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
-import { findingsStaleTime } from "@/modules/platform/security/components/defectdojo/findingsStaleTime";
+import { findingsQueryOptions } from "@/modules/platform/security/components/defectdojo/findingsQueryOptions";
 
 export const securityOverviewKey = (input: SecurityOverviewRequest) =>
   ["defectDojo", "getSecurityOverview", input] as const;
@@ -33,16 +33,14 @@ export function useSecurityOverview({ namespace, state }: SecurityOverviewOption
   const runtime = useQuery({
     queryKey: securityOverviewKey(runtimeInput),
     queryFn: () => trpc.defectDojo.getSecurityOverview.query(runtimeInput),
-    staleTime: findingsStaleTime,
-    refetchOnMount: true,
+    ...findingsQueryOptions,
     enabled: namespace !== "" && askedForRuntime,
   });
 
   const codebases = useQuery({
     queryKey: securityOverviewCodebasesKey({ namespace, state }),
     queryFn: () => trpc.defectDojo.getSecurityOverviewCodebases.query({ namespace, state }),
-    staleTime: findingsStaleTime,
-    refetchOnMount: true,
+    ...findingsQueryOptions,
     enabled: namespace !== "",
   });
 

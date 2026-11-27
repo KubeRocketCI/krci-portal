@@ -16,7 +16,7 @@ export type SecurityOverviewSource = Pick<
 
 /** The findings of each scope by severity, `COUNT_CONCURRENCY` requests at a time; a scope without scan data has none. */
 export function countEach(
-  source: SecurityOverviewSource,
+  source: Pick<DefectDojoClient, "getSeverityCounts">,
   scopes: readonly DefectDojoScope[],
   options: { state: DefectDojoFindingStateFilter; testExists?: boolean }
 ): Promise<SeverityCounts[]> {

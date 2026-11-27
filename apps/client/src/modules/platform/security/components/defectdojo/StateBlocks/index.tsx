@@ -6,6 +6,7 @@ import { Badge } from "@/core/components/ui/badge";
 import { Button } from "@/core/components/ui/button";
 import { cn } from "@/core/utils/classname";
 import { EDP_OPERATOR_GUIDE } from "@/k8s/constants/docs-urls";
+import { formatScanTime } from "../utils";
 
 /** The portal server has no DefectDojo URL or token. One block for the whole view. */
 export function NotConfiguredState() {
@@ -118,5 +119,14 @@ export function NoFindingsBadge({ className }: { className?: string }) {
       <CircleCheck aria-hidden />
       No findings
     </Badge>
+  );
+}
+
+export function CleanLevelState({ lastUpload }: { lastUpload: string | null }) {
+  return (
+    <>
+      <NoFindingsBadge />
+      <span className="text-muted-foreground">Last upload {formatScanTime(lastUpload)}</span>
+    </>
   );
 }

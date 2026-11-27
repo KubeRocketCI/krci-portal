@@ -16,6 +16,7 @@ import {
 } from "@my-project/shared";
 import KubernetesIcon from "@/assets/icons/k8s/kubernetes.svg?react";
 import { Activity, Zap, Shield, Settings, Workflow } from "lucide-react";
+import { EnvironmentSecuritySummary } from "./components/EnvironmentSecuritySummary";
 
 export const Overview = () => {
   const params = routeStageDetails.useParams();
@@ -122,6 +123,11 @@ export const Overview = () => {
           <div className="text-muted-foreground mt-1 text-xs">Kubernetes</div>
         </Card>
       </div>
+
+      <EnvironmentSecuritySummary
+        environment={{ namespace: params.namespace, cdPipeline: params.cdPipeline, stage: params.stage }}
+        clusterName={params.clusterName}
+      />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Environment Details */}

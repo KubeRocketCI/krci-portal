@@ -17,9 +17,12 @@ import {
   SeverityHeadCells,
 } from "@/modules/platform/security/components/defectdojo/SeverityCountCells";
 import { NoFindingsBadge } from "@/modules/platform/security/components/defectdojo/StateBlocks";
+import {
+  NamespaceExposedSecretsLink,
+  NamespaceVulnerabilitiesLink,
+} from "@/modules/platform/security/components/defectdojo/ListLinks";
 import { placeLabel } from "@/modules/platform/security/components/defectdojo/utils";
-import { namespaceListSearch, type LinkContext } from "../../utils/links";
-import { ExposedSecretsLink, NamespaceVulnerabilitiesLink } from "../ListLinks";
+import type { LinkContext } from "../../utils/links";
 import { Note } from "../Note";
 
 /** Namespace, Environment, a column per severity, exposed secrets, links. */
@@ -53,12 +56,7 @@ export function SecretsCount({ row, links }: RowProps) {
   return count === 0 ? (
     <span className="text-muted-foreground text-sm">0</span>
   ) : (
-    <ExposedSecretsLink
-      clusterName={links.clusterName}
-      search={namespaceListSearch(row, links)}
-      label={`Exposed secrets of ${placeLabel(row)}`}
-      text={String(count)}
-    />
+    <NamespaceExposedSecretsLink place={row} clusterName={links.clusterName} filters={links} text={String(count)} />
   );
 }
 
@@ -85,7 +83,7 @@ function NamespaceRow({ row, links }: RowProps) {
       <TableCellUI className={CELL_CLASS}>
         {product && (
           <span className="flex items-center gap-2">
-            <NamespaceVulnerabilitiesLink row={row} links={links} />
+            <NamespaceVulnerabilitiesLink place={row} clusterName={links.clusterName} filters={links} />
             <DefectDojoLink href={product.url} label={`Product ${placeLabel(row)}`} />
           </span>
         )}

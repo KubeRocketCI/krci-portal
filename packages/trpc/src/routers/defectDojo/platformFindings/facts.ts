@@ -9,6 +9,7 @@ import {
   readAsUser,
   stageSchema,
   type FindingsKubeReader,
+  type Stage,
 } from "../kube.js";
 
 export interface PlatformStage {
@@ -37,6 +38,24 @@ export interface PlatformFacts {
   applications: PlatformApplication[];
 }
 
+export function toPlatformStage({ spec }: Stage): PlatformStage {
+  return {
+    cdPipeline: spec.cdPipeline,
+    stage: spec.name,
+    clusterName: toTagCase(spec.clusterName),
+    namespace: spec.namespace,
+  };
+}
+
+export function toPlatformApplications(items: unknown[]): PlatformApplication[] {
+  return parseAll(applicationSchema, items).map(({ metadata }) => ({
+    name: metadata.name,
+    codebase: metadata.labels?.[applicationLabels.appName] ?? null,
+    cdPipeline: metadata.labels?.[applicationLabels.pipeline] ?? null,
+    stage: metadata.labels?.[applicationLabels.stage] ?? null,
+  }));
+}
+
 export async function readPlatformFacts(
   reader: FindingsKubeReader,
   namespace: string,
@@ -48,20 +67,8 @@ export async function readPlatformFacts(
   ]);
 
   return {
-    stages: parseAll(stageSchema, stageList.items)
-      .sort(compareStages)
-      .map(({ spec }) => ({
-        cdPipeline: spec.cdPipeline,
-        stage: spec.name,
-        clusterName: toTagCase(spec.clusterName),
-        namespace: spec.namespace,
-      })),
-    applications: parseAll(applicationSchema, applicationList.items).map(({ metadata }) => ({
-      name: metadata.name,
-      codebase: metadata.labels?.[applicationLabels.appName] ?? null,
-      cdPipeline: metadata.labels?.[applicationLabels.pipeline] ?? null,
-      stage: metadata.labels?.[applicationLabels.stage] ?? null,
-    })),
+    stages: parseAll(stageSchema, stageList.items).sort(compareStages).map(toPlatformStage),
+    applications: toPlatformApplications(applicationList.items),
   };
 }
 

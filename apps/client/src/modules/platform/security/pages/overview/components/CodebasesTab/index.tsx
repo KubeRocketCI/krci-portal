@@ -21,7 +21,7 @@ import { formatScanTime } from "@/modules/platform/security/components/defectdoj
 import { CODEBASES_PART } from "../../constants";
 import { codebaseListSearch, type LinkContext } from "../../utils/links";
 import { scanTarget } from "../../utils/model";
-import { ScanListLink } from "../ListLinks";
+import { ScanListLink } from "../ScanListLink";
 import { Note } from "../Note";
 
 /** The codebase: a link to its "Security Findings" tab, or its name when no Codebase of that name can be read. */

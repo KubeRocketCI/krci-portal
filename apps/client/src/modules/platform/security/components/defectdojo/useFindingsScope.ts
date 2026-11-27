@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { FindingsScopeInput } from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
-import { findingsStaleTime } from "./findingsStaleTime";
+import { findingsQueryOptions } from "./findingsQueryOptions";
 
 export const findingsScopeKey = (input: FindingsScopeInput) => ["defectDojo", "getFindingsScope", input] as const;
 
@@ -11,8 +11,7 @@ export function useFindingsScope(input: FindingsScopeInput) {
   return useQuery({
     queryKey: findingsScopeKey(input),
     queryFn: () => trpc.defectDojo.getFindingsScope.query(input),
-    staleTime: findingsStaleTime,
-    refetchOnMount: true,
+    ...findingsQueryOptions,
     enabled: input.namespace !== "",
   });
 }

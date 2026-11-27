@@ -1,0 +1,248 @@
+{
+  "stages": {
+    "demo/dev": {
+      "input": {
+        "namespace": "krci",
+        "cdPipeline": "demo",
+        "stage": "dev"
+      },
+      "output": {
+        "state": "data",
+        "place": {
+          "cluster": "in-cluster",
+          "namespace": "krci-demo-dev"
+        },
+        "runtime": {
+          "state": "data",
+          "url": "https://defectdojo.example.test/asset/4",
+          "vulnerabilities": {
+            "Critical": 4,
+            "High": 4,
+            "Medium": 7,
+            "Low": 2,
+            "Info": 0
+          },
+          "secrets": {
+            "Critical": 0,
+            "High": 1,
+            "Medium": 1,
+            "Low": 0,
+            "Info": 0
+          },
+          "secretsTruncated": false,
+          "lastUpload": "2026-11-24T12:33:56.267170Z"
+        },
+        "containers": {
+          "scanned": 5,
+          "withoutCodebase": 4,
+          "notRunning": 1
+        },
+        "applications": [
+          {
+            "codebase": "test-go-app",
+            "state": "data",
+            "containers": [
+              {
+                "workload": "deployment.test-go-app",
+                "container": "test-go-app",
+                "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app",
+                "state": "running",
+                "vulnerabilities": {
+                  "Critical": 1,
+                  "High": 2,
+                  "Medium": 3,
+                  "Low": 1,
+                  "Info": 0
+                },
+                "secrets": 1
+              },
+              {
+                "workload": "deployment.worker",
+                "container": "worker",
+                "image": "busybox",
+                "state": "notRunning"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "demo/nightly": {
+      "input": {
+        "namespace": "krci",
+        "cdPipeline": "demo",
+        "stage": "nightly"
+      },
+      "output": {
+        "state": "noScanData"
+      }
+    },
+    "demo/qa": {
+      "input": {
+        "namespace": "krci",
+        "cdPipeline": "demo",
+        "stage": "qa"
+      },
+      "output": {
+        "state": "data",
+        "place": {
+          "cluster": "in-cluster",
+          "namespace": "krci-demo-qa"
+        },
+        "runtime": {
+          "state": "clean",
+          "url": "https://defectdojo.example.test/asset/5",
+          "lastUpload": "2026-11-27T12:22:16.281569Z"
+        },
+        "containers": {
+          "scanned": 1,
+          "withoutCodebase": 0,
+          "notRunning": 0
+        },
+        "applications": [
+          {
+            "codebase": "test-go-app",
+            "state": "clean",
+            "containers": [
+              {
+                "workload": "deployment.test-go-app",
+                "container": "test-go-app",
+                "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app",
+                "state": "running",
+                "vulnerabilities": {
+                  "Critical": 0,
+                  "High": 0,
+                  "Medium": 0,
+                  "Low": 0,
+                  "Info": 0
+                },
+                "secrets": null
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "demo/prod": {
+      "input": {
+        "namespace": "krci",
+        "cdPipeline": "demo",
+        "stage": "prod"
+      },
+      "output": {
+        "state": "data",
+        "place": {
+          "cluster": "remote-cluster",
+          "namespace": "krci-demo-prod"
+        },
+        "runtime": {
+          "state": "data",
+          "url": "https://defectdojo.example.test/asset/16",
+          "vulnerabilities": {
+            "Critical": 0,
+            "High": 2,
+            "Medium": 1,
+            "Low": 0,
+            "Info": 0
+          },
+          "secrets": {
+            "Critical": 0,
+            "High": 0,
+            "Medium": 0,
+            "Low": 0,
+            "Info": 0
+          },
+          "secretsTruncated": false,
+          "lastUpload": "2026-11-24T12:29:38.103580Z"
+        },
+        "containers": {
+          "scanned": 1,
+          "withoutCodebase": 0,
+          "notRunning": 0
+        },
+        "applications": [
+          {
+            "codebase": "test-go-app",
+            "state": "data",
+            "containers": [
+              {
+                "workload": "deployment.test-go-app",
+                "container": "test-go-app",
+                "image": "gitlab.127.0.0.1.nip.io:5050/krci/test-go-app",
+                "state": "running",
+                "vulnerabilities": {
+                  "Critical": 0,
+                  "High": 2,
+                  "Medium": 1,
+                  "Low": 0,
+                  "Info": 0
+                },
+                "secrets": null
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "demo/shadow": {
+      "input": {
+        "namespace": "krci",
+        "cdPipeline": "demo",
+        "stage": "shadow"
+      },
+      "output": {
+        "state": "data",
+        "place": {
+          "cluster": "in-cluster",
+          "namespace": "krci-other-dev"
+        },
+        "runtime": {
+          "state": "data",
+          "url": "https://defectdojo.example.test/asset/6",
+          "vulnerabilities": {
+            "Critical": 9,
+            "High": 9,
+            "Medium": 9,
+            "Low": 9,
+            "Info": 0
+          },
+          "secrets": {
+            "Critical": 0,
+            "High": 0,
+            "Medium": 0,
+            "Low": 0,
+            "Info": 0
+          },
+          "secretsTruncated": false,
+          "lastUpload": "2026-11-23T10:36:34.423361Z"
+        },
+        "containers": {
+          "scanned": 1,
+          "withoutCodebase": 1,
+          "notRunning": 0
+        },
+        "applications": []
+      }
+    }
+  },
+  "notConfigured": {
+    "input": {
+      "namespace": "krci",
+      "cdPipeline": "demo",
+      "stage": "dev"
+    },
+    "output": {
+      "state": "notConfigured"
+    }
+  },
+  "unreachable": {
+    "input": {
+      "namespace": "krci",
+      "cdPipeline": "demo",
+      "stage": "dev"
+    },
+    "output": {
+      "state": "unreachable"
+    }
+  }
+}

@@ -16,12 +16,23 @@ export interface SeverityCountsRowProps {
   label: string;
   /** Why there are no counts, for the accessible name of a dash: "no scan data", "no vulnerability report". */
   missing?: string;
+  /** Only the severities that have a finding: a chip each, for a narrow table cell. */
+  activeOnly?: boolean;
 }
 
-export function SeverityCountsRow({ counts, label, missing = "no scan data" }: SeverityCountsRowProps) {
+export function SeverityCountsRow({
+  counts,
+  label,
+  missing = "no scan data",
+  activeOnly = false,
+}: SeverityCountsRowProps) {
+  const severities = activeOnly
+    ? DEFECTDOJO_SEVERITIES.filter((severity) => (counts?.[severity] ?? 0) > 0)
+    : DEFECTDOJO_SEVERITIES;
+
   return (
     <div role="group" aria-label={label} className="flex flex-wrap items-center gap-x-3 gap-y-1">
-      {DEFECTDOJO_SEVERITIES.map((severity) => (
+      {severities.map((severity) => (
         <span key={severity} className="flex items-center gap-1">
           <span className="text-muted-foreground text-xs" aria-hidden>
             {SEVERITY_INITIAL[severity]}

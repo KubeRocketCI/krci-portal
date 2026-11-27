@@ -1,6 +1,6 @@
 import { PLATFORM_LIST_DEFAULT_PAGE_SIZE, SCAN_FINDINGS_MAX_PAGE } from "@my-project/shared";
 import { describe, expect, it } from "vitest";
-import { toPageRequest } from "./searchParams";
+import { namespaceListSearch, toPageRequest } from "./searchParams";
 
 describe("toPageRequest", () => {
   it("asks for the first page of the default size when the URL says nothing", () => {
@@ -10,5 +10,24 @@ describe("toPageRequest", () => {
   it("asks for the 0-based page of the 1-based URL page, at most the last page a list can ask for", () => {
     expect(toPageRequest(3, 50)).toEqual({ page: 2, pageSize: 50 });
     expect(toPageRequest(SCAN_FINDINGS_MAX_PAGE + 10, 50).page).toBe(SCAN_FINDINGS_MAX_PAGE);
+  });
+});
+
+describe("namespaceListSearch", () => {
+  it("opens a list on one namespace of one cluster, with the severity and the state in view", () => {
+    expect(
+      namespaceListSearch({ cluster: "edge", namespace: "ingress" }, { severity: "High", state: "falsePositive" })
+    ).toEqual({
+      cluster: ["edge"],
+      namespace: "ingress",
+      severity: "High",
+      state: "falsePositive",
+    });
+    expect(namespaceListSearch({ cluster: "edge", namespace: "ingress" })).toEqual({
+      cluster: ["edge"],
+      namespace: "ingress",
+      severity: undefined,
+      state: undefined,
+    });
   });
 });

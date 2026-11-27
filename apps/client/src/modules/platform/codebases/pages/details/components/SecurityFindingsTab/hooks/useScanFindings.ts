@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type { ScanFindingsInput } from "@my-project/shared";
 import { useTRPCClient } from "@/core/providers/trpc";
-import { findingsStaleTime } from "@/modules/platform/security/components/defectdojo/findingsStaleTime";
+import { findingsQueryOptions } from "@/modules/platform/security/components/defectdojo/findingsQueryOptions";
 
 export const scanFindingsKey = (input: ScanFindingsInput) => ["defectDojo", "getScanFindings", input] as const;
 
@@ -15,8 +15,7 @@ export function useScanFindings(input: ScanFindingsInput) {
   return useQuery({
     queryKey: scanFindingsKey(input),
     queryFn: () => trpc.defectDojo.getScanFindings.query(input),
-    staleTime: findingsStaleTime,
-    refetchOnMount: true,
+    ...findingsQueryOptions,
     placeholderData: keepPreviousData,
   });
 }

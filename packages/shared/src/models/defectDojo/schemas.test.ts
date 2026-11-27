@@ -1,11 +1,28 @@
 import { describe, expect, it } from "vitest";
 import { PLATFORM_LIST_DEFAULT_PAGE_SIZE } from "./constants.js";
 import {
+  environmentSummaryInputSchema,
   exposedSecretsInputSchema,
   findingsScopeSchema,
   securityOverviewCodebasesInputSchema,
   securityOverviewInputSchema,
 } from "./schemas.js";
+
+describe("environmentSummaryInputSchema", () => {
+  it("takes the Stage as the route of the Stage page names it", () => {
+    const input = { namespace: "krci", cdPipeline: "demo", stage: "dev" };
+
+    expect(environmentSummaryInputSchema.parse(input)).toEqual(input);
+  });
+
+  it("refuses a tag or a DefectDojo id sent along, and a value that is no Kubernetes name", () => {
+    const stage = { namespace: "krci", cdPipeline: "demo", stage: "dev" };
+
+    expect(environmentSummaryInputSchema.safeParse({ ...stage, tags: ["k8s-cluster:in-cluster"] }).success).toBe(false);
+    expect(environmentSummaryInputSchema.safeParse({ ...stage, productIds: [4] }).success).toBe(false);
+    expect(environmentSummaryInputSchema.safeParse({ ...stage, stage: "dev/../prod" }).success).toBe(false);
+  });
+});
 
 describe("securityOverviewInputSchema", () => {
   it("takes the installation namespace and counts the active findings by default", () => {

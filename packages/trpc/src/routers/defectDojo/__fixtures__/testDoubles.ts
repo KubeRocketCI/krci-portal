@@ -93,8 +93,8 @@ export type RuntimeTestOverrides = Partial<Omit<DefectDojoTest, "tags" | "level"
   Pick<DefectDojoTest, "id"> & {
     cluster?: string;
     namespace?: string;
-    application?: string;
     /** A tag value; `null`: the test carries no tag of that key. */
+    application?: string | null;
     workload?: string | null;
     container?: string | null;
     image?: string | null;
@@ -397,8 +397,8 @@ export function makeImageStream(
 
 export interface ApplicationOptions {
   name?: string;
-  /** Value of the label `app-name`: the codebase the Application deploys. */
-  codebase?: string;
+  /** Value of the label `app-name`: the codebase the Application deploys. `null`: the Application has no such label. */
+  codebase?: string | null;
   /** `null`: the Application has no such label. */
   pipeline?: string | null;
   stage?: string | null;
@@ -418,7 +418,7 @@ export function makeApplication({
       name,
       namespace,
       labels: {
-        [applicationLabels.appName]: codebase,
+        ...(codebase === null ? {} : { [applicationLabels.appName]: codebase }),
         ...(pipeline === null ? {} : { [applicationLabels.pipeline]: pipeline }),
         ...(stage === null ? {} : { [applicationLabels.stage]: stage }),
       },

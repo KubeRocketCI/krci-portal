@@ -5,11 +5,17 @@ import type {
   codebaseLevelSchema,
   codebaseScanRefSchema,
   codebaseScanSchema,
+  environmentApplicationSchema,
+  environmentContainerSchema,
+  environmentRuntimeSchema,
+  environmentSummaryInputSchema,
+  environmentSummarySchema,
   exposedSecretsInputSchema,
   findingPlaceSchema,
   findingsScopeInputSchema,
   findingsScopeNamespaceSchema,
   findingsScopeSchema,
+  namespacePlaceSchema,
   overviewCodebaseSchema,
   overviewNamespaceSchema,
   overviewScanSchema,
@@ -106,3 +112,19 @@ export type SecurityOverviewCodebases = z.infer<typeof securityOverviewCodebases
 export type OverviewCodebase = z.infer<typeof overviewCodebaseSchema>;
 
 export type OverviewScan = z.infer<typeof overviewScanSchema>;
+
+export type EnvironmentSummaryInput = z.infer<typeof environmentSummaryInputSchema>;
+
+export type NamespacePlace = z.infer<typeof namespacePlaceSchema>;
+
+export type EnvironmentSummary = z.infer<typeof environmentSummarySchema>;
+
+export type EnvironmentSummaryData = Extract<EnvironmentSummary, { state: "data" }>;
+
+export type EnvironmentRuntime = z.infer<typeof environmentRuntimeSchema>;
+
+export type EnvironmentApplication = z.infer<typeof environmentApplicationSchema>;
+
+export type EnvironmentContainer = z.infer<typeof environmentContainerSchema>;
+
+export type RunningEnvironmentContainer = Extract<EnvironmentContainer, { state: "running" }>;

@@ -1,17 +1,20 @@
 import { describe, expect, it } from "vitest";
 import { CODEBASE_SCAN_LEVELS, DEFECTDOJO_SEVERITIES, NO_FINDING_COUNTS, type DefectDojoLevel } from "./constants.js";
 import { runtimeContainerRefSchema } from "./schemas.js";
-import type { CodebaseScanRef } from "./types.js";
+import type { CodebaseScanRef, RunningEnvironmentContainer } from "./types.js";
 import {
   compareOverviewNamespaces,
+  hasActiveEnvironmentFindings,
   hasActiveFindings,
-  isCodebaseScanLevel,
   hasActiveRuntimeFindings,
   hasFindingFilter,
+  isCodebaseScanLevel,
+  isRunningEnvironmentContainer,
   isRuntimeFindingState,
   mostSevereFirst,
   runtimeContainerKey,
   runtimeContainerRef,
+  runtimeStateOf,
   scanRefKey,
   sumCounts,
 } from "./utils.js";
@@ -271,5 +274,55 @@ describe("isCodebaseScanLevel", () => {
     const levels: (DefectDojoLevel | null)[] = ["code", "image", "runtime", null];
 
     expect(levels.map(isCodebaseScanLevel)).toEqual([true, true, false, false]);
+  });
+});
+
+describe("runtimeStateOf", () => {
+  it("has no scan data without a container, is not running when none runs, then clean or data", () => {
+    expect(runtimeStateOf({ containers: 0, running: 0, hasFindings: false })).toBe("noScanData");
+    expect(runtimeStateOf({ containers: 2, running: 0, hasFindings: false })).toBe("notRunning");
+    expect(runtimeStateOf({ containers: 2, running: 1, hasFindings: false })).toBe("clean");
+    expect(runtimeStateOf({ containers: 2, running: 1, hasFindings: true })).toBe("data");
+  });
+});
+
+describe("hasActiveEnvironmentFindings", () => {
+  const container = (
+    found: Pick<RunningEnvironmentContainer, "vulnerabilities" | "secrets">
+  ): RunningEnvironmentContainer => ({
+    workload: "deployment.demo",
+    container: "demo",
+    image: null,
+    state: "running",
+    ...found,
+  });
+
+  it.each([
+    ["no report", { vulnerabilities: null, secrets: null }],
+    ["no vulnerability report and no active secret", { vulnerabilities: null, secrets: 0 }],
+    [
+      "a vulnerability report without a finding and no secret report",
+      { vulnerabilities: NO_FINDING_COUNTS, secrets: null },
+    ],
+  ])("is false for %s", (_, found) => {
+    expect(hasActiveEnvironmentFindings(container(found))).toBe(false);
+  });
+
+  it.each([
+    ["an exposed secret without a vulnerability report", { vulnerabilities: null, secrets: 1 }],
+    ["an Info vulnerability only", { vulnerabilities: { ...NO_FINDING_COUNTS, Info: 1 }, secrets: 0 }],
+  ])("is true for %s", (_, found) => {
+    expect(hasActiveEnvironmentFindings(container(found))).toBe(true);
+  });
+});
+
+describe("isRunningEnvironmentContainer", () => {
+  it("tells a running container from one whose tests are all closed", () => {
+    const place = { workload: "deployment.demo", container: "demo", image: null };
+
+    expect(isRunningEnvironmentContainer({ ...place, state: "running", vulnerabilities: null, secrets: null })).toBe(
+      true
+    );
+    expect(isRunningEnvironmentContainer({ ...place, state: "notRunning" })).toBe(false);
   });
 });

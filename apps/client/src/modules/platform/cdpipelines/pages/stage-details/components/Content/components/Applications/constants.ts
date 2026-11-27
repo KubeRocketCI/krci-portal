@@ -9,6 +9,7 @@ export const columnNames = {
   STATUS: "status",
   NAME: "name",
   DEPLOYED_VERSION: "deployedVersion",
+  SECURITY: "security",
   VALUES_OVERRIDE: "valuesOverride",
   PODS: "pods",
   INGRESS: "ingress",

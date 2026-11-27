@@ -1,24 +1,24 @@
 import type { ReactNode } from "react";
 import {
-  TRIAGED_RUNTIME_SCAN_LIMIT,
-  hasActiveFindings,
   runtimeLines,
   scanTypeLines,
   type CodebaseScanLevel,
   type DefectDojoLevel,
   type OverviewCodebase,
   type OverviewNamespace,
-  type SeverityCounts,
 } from "@my-project/shared";
 import { Card } from "@/core/components/ui/card";
 import { plural } from "@/core/utils/format/plural";
 import { LEVEL_META } from "@/modules/platform/security/components/defectdojo/constants";
-import { SeverityCountsRow } from "@/modules/platform/security/components/defectdojo/SeverityCountsRow";
-import { NoFindingsBadge, NoScanDataState } from "@/modules/platform/security/components/defectdojo/StateBlocks";
+import { CardLineRow } from "@/modules/platform/security/components/defectdojo/CardLineRow";
+import { ExposedSecretsLink, VulnerabilitiesLink } from "@/modules/platform/security/components/defectdojo/ListLinks";
+import { RuntimeLines } from "@/modules/platform/security/components/defectdojo/RuntimeLines";
+import { namespaceListSearch } from "@/modules/platform/security/components/defectdojo/searchParams";
+import { NoScanDataState } from "@/modules/platform/security/components/defectdojo/StateBlocks";
 import { CODEBASES_PART } from "../../constants";
-import { codebaseListSearch, namespaceListSearch, type LinkContext } from "../../utils/links";
+import { codebaseListSearch, type LinkContext } from "../../utils/links";
 import { isSecretScanType, type ViewFilters } from "../../utils/model";
-import { ExposedSecretsLink, ScanListLink, VulnerabilitiesLink } from "../ListLinks";
+import { ScanListLink } from "../ScanListLink";
 import { Note } from "../Note";
 
 /** What a level card of the platform adds up. */
@@ -52,30 +52,6 @@ export function LevelCard({ level, children }: LevelCardProps) {
   );
 }
 
-export interface CardLineRowProps {
-  /** A scan type, or a report kind of Runtime. */
-  name: string;
-  /** What the line adds up: "3 scans", "4 namespaces". */
-  detail: string;
-  counts: Readonly<SeverityCounts>;
-  /** Opens the list the line counts. */
-  link: ReactNode;
-}
-
-/** One scan type or report kind of a level: its own counts, never added to another line. */
-export function CardLineRow({ name, detail, counts, link }: CardLineRowProps) {
-  return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded border px-2 py-1.5" data-testid="card-line">
-      <span className="text-xs font-medium">{name}</span>
-      <span className="text-muted-foreground text-xs">{detail}</span>
-      <span className="ml-auto flex flex-wrap items-center gap-3">
-        {hasActiveFindings(counts) ? <SeverityCountsRow counts={counts} label={name} /> : <NoFindingsBadge />}
-        {link}
-      </span>
-    </div>
-  );
-}
-
 export interface RuntimeLevelCardProps {
   /** The namespaces in view. */
   rows: OverviewNamespace[];
@@ -101,33 +77,22 @@ export function RuntimeLevelCard({ rows, filters, secretsTruncated, links, place
   return (
     <LevelCard level="runtime">
       {lines ? (
-        <>
-          <CardLineRow
-            name="Vulnerabilities"
-            detail={`Trivy Operator Scan, ${plural(lines.size, "namespace")}`}
-            counts={lines.vulnerabilities}
-            link={
-              <VulnerabilitiesLink
-                clusterName={links.clusterName}
-                search={{ level: "runtime", ...listSearch }}
-                label="Runtime vulnerabilities"
-              />
-            }
-          />
-          <CardLineRow
-            name="Exposed secrets"
-            detail={`Trivy Operator Scan, ${plural(lines.size, "namespace")}`}
-            counts={lines.secrets}
-            link={
-              <ExposedSecretsLink clusterName={links.clusterName} search={listSearch} label="Runtime exposed secrets" />
-            }
-          />
-          {secretsTruncated && (
-            <p className="text-muted-foreground text-xs">
-              More than {TRIAGED_RUNTIME_SCAN_LIMIT} exposed secrets: the ones past that count as vulnerabilities.
-            </p>
-          )}
-        </>
+        <RuntimeLines
+          vulnerabilities={lines.vulnerabilities}
+          secrets={lines.secrets}
+          secretsTruncated={secretsTruncated}
+          scope={plural(lines.size, "namespace")}
+          vulnerabilitiesLink={
+            <VulnerabilitiesLink
+              clusterName={links.clusterName}
+              search={{ level: "runtime", ...listSearch }}
+              label="Runtime vulnerabilities"
+            />
+          }
+          secretsLink={
+            <ExposedSecretsLink clusterName={links.clusterName} search={listSearch} label="Runtime exposed secrets" />
+          }
+        />
       ) : (
         <Note>{rows.length === 0 ? "No namespace matches the filters." : "No namespace in view has scan data."}</Note>
       )}

@@ -1,13 +1,14 @@
 import type { ReactNode } from "react";
 import type { OverviewCodebase, OverviewNamespace, OverviewScan } from "@my-project/shared";
 import { Card } from "@/core/components/ui/card";
+import { NamespaceVulnerabilitiesLink } from "@/modules/platform/security/components/defectdojo/ListLinks";
 import { SeverityCountsRow } from "@/modules/platform/security/components/defectdojo/SeverityCountsRow";
-import { TOP_CODEBASES_TITLE, TOP_NAMESPACES_TITLE } from "../../constants";
 import { placeLabel } from "@/modules/platform/security/components/defectdojo/utils";
+import { TOP_CODEBASES_TITLE, TOP_NAMESPACES_TITLE } from "../../constants";
 import { codebaseListSearch, type LinkContext } from "../../utils/links";
 import { scanTarget } from "../../utils/model";
 import { CodebaseName } from "../CodebasesTab";
-import { NamespaceVulnerabilitiesLink, ScanListLink } from "../ListLinks";
+import { ScanListLink } from "../ScanListLink";
 import { NamespaceKind, SecretsCount } from "../NamespacesTab";
 import { Note } from "../Note";
 
@@ -28,7 +29,12 @@ export function TopNamespaces({ rows, links }: { rows: OverviewNamespace[]; link
     <ol className="space-y-2" aria-label={TOP_NAMESPACES_TITLE}>
       {rows.map((row) => (
         <li key={placeLabel(row)} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b pb-2 last:border-b-0">
-          <NamespaceVulnerabilitiesLink row={row} links={links} text={placeLabel(row)} />
+          <NamespaceVulnerabilitiesLink
+            place={row}
+            clusterName={links.clusterName}
+            filters={links}
+            text={placeLabel(row)}
+          />
           <NamespaceKind row={row} links={links} />
           <span className="ml-auto flex flex-wrap items-center gap-3">
             {row.product && (

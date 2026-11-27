@@ -7,8 +7,9 @@ import {
 } from "@my-project/shared";
 import { TableBodyUI } from "@/core/components/ui/table";
 import { LEVEL_META } from "@/modules/platform/security/components/defectdojo/constants";
+import { CleanLevelState } from "@/modules/platform/security/components/defectdojo/StateBlocks";
 import type { SecurityFindingsFocus } from "../../types";
-import { CleanLevelState, LevelHeaderRow } from "../LevelHeaderRow";
+import { LevelHeaderRow } from "../LevelHeaderRow";
 import { NoScanDataRow } from "../NoScanDataRow";
 import { ScanRow } from "../ScanRow";
 
