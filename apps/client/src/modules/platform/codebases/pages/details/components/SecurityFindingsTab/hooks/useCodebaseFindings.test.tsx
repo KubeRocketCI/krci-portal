@@ -45,7 +45,7 @@ describe("useCodebaseFindings", () => {
     expect(query).toHaveBeenCalledWith({ namespace: "krci", name: "test-go-app" });
   });
 
-  it("keeps a result with data for five minutes: a second tab visit asks nothing", async () => {
+  it("keeps a result with data: a second tab visit asks nothing", async () => {
     query.mockResolvedValue(DATA);
 
     const first = renderFindings();

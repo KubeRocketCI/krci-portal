@@ -3,6 +3,7 @@ import {
   PLATFORM_LIST_DEFAULT_PAGE_SIZE,
   type DefectDojoFindingState,
   type DefectDojoLevel,
+  type RuntimeReportKind,
 } from "@my-project/shared";
 import { Code, Package, Server, type LucideIcon } from "lucide-react";
 
@@ -63,3 +64,20 @@ export const FINDING_STATE_LABELS: Record<DefectDojoFindingState, string> = {
   outOfScope: "Out of scope",
   riskAccepted: "Risk accepted",
 };
+
+export const RUNTIME_REPORT_KIND_LABELS: Record<RuntimeReportKind, string> = {
+  vulnerabilityreport: "Vulnerabilities",
+  exposedsecretreport: "Exposed secrets",
+};
+
+/** The words of the DefectDojo states in every findings view; a clean scan is `noFindings` in the full views and
+ * `clean` in the one-line ones. */
+export const DEFECTDOJO_STATE_TEXT = {
+  notConfigured: "DefectDojo is not connected",
+  unreachable: "DefectDojo is unreachable",
+  loadFailed: "Failed to load security findings",
+  noScanData: "No scan data",
+  notRunning: "Not running",
+  noFindings: "No findings",
+  clean: "Clean",
+} as const;

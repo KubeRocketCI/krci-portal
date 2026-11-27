@@ -1,5 +1,6 @@
 import { runtimeContainerRef, totalOf, type CodebaseFindingsInput, type RuntimeEnvironment } from "@my-project/shared";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/core/components/ui/tabs";
+import { RUNTIME_REPORT_KIND_LABELS } from "@/modules/platform/security/components/defectdojo/constants";
 import type { RunningContainer } from "../../types";
 import { containerLabel } from "../../utils";
 import { ScanFindings } from "../ScanFindings";
@@ -16,13 +17,13 @@ export function RuntimeFindings({ codebase, environment, container }: RuntimeFin
   const reports = [
     {
       kind: "vulnerabilityreport",
-      label: "Vulnerabilities",
+      label: RUNTIME_REPORT_KIND_LABELS.vulnerabilityreport,
       data: vulnerabilities && {
         ...vulnerabilities,
         active: totalOf(vulnerabilities.counts),
       },
     },
-    { kind: "exposedsecretreport", label: "Exposed secrets", data: secrets },
+    { kind: "exposedsecretreport", label: RUNTIME_REPORT_KIND_LABELS.exposedsecretreport, data: secrets },
   ] as const;
   const firstReport = reports.find(({ data }) => data !== null);
 

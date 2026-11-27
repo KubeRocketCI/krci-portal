@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { CODEBASE_SCAN_LEVELS, DEFECTDOJO_SEVERITIES, NO_FINDING_COUNTS, type DefectDojoLevel } from "./constants.js";
+import {
+  CODEBASE_SCAN_LEVELS,
+  DEFECTDOJO_SEVERITIES,
+  NO_FINDING_COUNTS,
+  type DefectDojoLevel,
+  type SeverityCounts,
+} from "./constants.js";
 import { runtimeContainerRefSchema } from "./schemas.js";
 import type { CodebaseScanRef, RunningEnvironmentContainer } from "./types.js";
 import {
@@ -11,7 +17,9 @@ import {
   isCodebaseScanLevel,
   isRunningEnvironmentContainer,
   isRuntimeFindingState,
+  mostSevereFindingFirst,
   mostSevereFirst,
+  mostSevereScan,
   runtimeContainerKey,
   runtimeContainerRef,
   runtimeStateOf,
@@ -191,6 +199,47 @@ describe("mostSevereFirst", () => {
 
   it("ranks by one severity first when it is given", () => {
     expect([counts(5, 0, 1), counts(0, 0, 2)].sort(mostSevereFirst("Low"))).toEqual([counts(0, 0, 2), counts(5, 0, 1)]);
+  });
+});
+
+const countsOf = (found: Partial<SeverityCounts>): SeverityCounts => ({ ...NO_FINDING_COUNTS, ...found });
+
+describe("mostSevereFindingFirst", () => {
+  it("puts the most severe finding first: one Medium before twenty Low, any Low before Info only", () => {
+    const ordered = [countsOf({ Low: 20 }), countsOf({ Info: 30 }), countsOf({ Medium: 1 })].sort(
+      mostSevereFindingFirst()
+    );
+
+    expect(ordered).toEqual([countsOf({ Medium: 1 }), countsOf({ Low: 20 }), countsOf({ Info: 30 })]);
+  });
+
+  it("decides between equal counts of a severity by the next one, and calls equal counts equal", () => {
+    expect([countsOf({ Critical: 1 }), countsOf({ Critical: 1, High: 2 })].sort(mostSevereFindingFirst())).toEqual([
+      countsOf({ Critical: 1, High: 2 }),
+      countsOf({ Critical: 1 }),
+    ]);
+    expect(mostSevereFindingFirst()(countsOf({ High: 1, Low: 1 }), countsOf({ High: 1, Low: 1 }))).toBe(0);
+  });
+
+  it("ranks by one severity first when it is given", () => {
+    expect([countsOf({ Critical: 5 }), countsOf({ Low: 2 })].sort(mostSevereFindingFirst("Low"))).toEqual([
+      countsOf({ Low: 2 }),
+      countsOf({ Critical: 5 }),
+    ]);
+  });
+});
+
+describe("mostSevereScan", () => {
+  const scan = (name: string, found: Partial<SeverityCounts>) => ({ name, counts: countsOf(found) });
+
+  it("picks the scan with the most severe finding, of equal counts the first, and none of none", () => {
+    const low = scan("many low", { Low: 20 });
+    const medium = scan("one medium", { Medium: 1 });
+
+    expect(mostSevereScan([low, medium])).toBe(medium);
+    expect(mostSevereScan([medium, scan("same", { Medium: 1 })])).toBe(medium);
+    expect(mostSevereScan([low, medium], "Low")).toBe(low);
+    expect(mostSevereScan([])).toBeUndefined();
   });
 });
 

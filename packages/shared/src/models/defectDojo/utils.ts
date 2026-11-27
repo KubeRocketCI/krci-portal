@@ -119,6 +119,35 @@ export function isRunningEnvironmentContainer(
   return container.state === "running";
 }
 
+/**
+ * Orders counts by their most severe finding: more of the highest severity first, then of the next one, so one Medium
+ * outranks any number of Low; `first` ranks one severity before that. `mostSevereFirst` ranks by Critical, High,
+ * then the totals.
+ */
+export function mostSevereFindingFirst(first?: DefectDojoSeverity) {
+  const order = first ? [first, ...DEFECTDOJO_SEVERITIES] : DEFECTDOJO_SEVERITIES;
+  return (a: Readonly<SeverityCounts>, b: Readonly<SeverityCounts>): number => {
+    for (const severity of order) {
+      if (a[severity] !== b[severity]) {
+        return b[severity] - a[severity];
+      }
+    }
+    return 0;
+  };
+}
+
+/** The item whose counts come first by `mostSevereFindingFirst`; of equal counts the first. `undefined`: none. */
+export function mostSevereScan<T extends { counts: Readonly<SeverityCounts> }>(
+  items: readonly T[],
+  first?: DefectDojoSeverity
+): T | undefined {
+  const compare = mostSevereFindingFirst(first);
+  return items.reduce<T | undefined>(
+    (worst, item) => (worst === undefined || compare(item.counts, worst.counts) < 0 ? item : worst),
+    undefined
+  );
+}
+
 export function hasActiveRuntimeFindings({
   vulnerabilities,
   secrets,

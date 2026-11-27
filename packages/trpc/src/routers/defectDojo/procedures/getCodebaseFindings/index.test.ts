@@ -1,5 +1,4 @@
 import {
-  K8sApiError,
   k8sApplicationConfig,
   k8sCodebaseBranchConfig,
   k8sCodebaseImageStreamConfig,
@@ -7,10 +6,9 @@ import {
   type CodebaseFindings,
   type CodebaseLevel,
   type CodebaseScan,
-  type DefectDojoSeverity,
   type RuntimeLevel,
 } from "@my-project/shared";
-import { afterEach, beforeEach, describe, expect, it, vi, type Mock, type MockInstance } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from "vitest";
 import { createMockedContext } from "../../../../__mocks__/context.js";
 import { K8sClient } from "../../../../clients/k8s/index.js";
 import { createCaller } from "../../../index.js";
@@ -26,9 +24,11 @@ import {
   GRYPE,
   SEMGREP,
   TRIVY,
+  activeFindings,
   codebaseTags,
   createFakeDefectDojo,
   givenCluster,
+  givenCodebaseForbidden,
   makeApplication,
   makeBranch,
   makeCodebase,
@@ -56,13 +56,6 @@ const CHART_IMAGE = "docker.io/library/nginx";
 function givenDefectDojo(options: FakeDefectDojoOptions = {}): CodebaseFindingsSource {
   doubles.defectDojo = createFakeDefectDojo(options);
   return doubles.defectDojo;
-}
-
-/** `count` active findings of one severity, ids from `firstId`. */
-function active(testId: number, severity: DefectDojoSeverity, count: number, firstId = 1) {
-  return Array.from({ length: count }, (_, index) =>
-    makeFinding({ id: testId * 1000 + firstId + index, testId, severity })
-  );
 }
 
 describe("defectDojo.getCodebaseFindings", () => {
@@ -153,14 +146,14 @@ describe("defectDojo.getCodebaseFindings", () => {
   describe("each level on its own", () => {
     const codeTest = makeTest({ id: 1, scanType: SEMGREP });
     const imageTest = makeImageTest({ id: 2, scanType: TRIVY, image: DEMO_IMAGE });
-    const withFinding = { 1: active(1, "High", 1), 2: active(2, "High", 1) };
+    const withFinding = { 1: activeFindings(1, "High", 1), 2: activeFindings(2, "High", 1) };
 
     it.each([
       ["code data only", [codeTest], withFinding, "data", "noScanData"],
       ["image data only", [imageTest], withFinding, "noScanData", "data"],
       ["both levels", [codeTest, imageTest], withFinding, "data", "data"],
       ["both levels clean", [codeTest, imageTest], {}, "clean", "clean"],
-      ["code clean, image data", [codeTest, imageTest], { 2: active(2, "High", 1) }, "clean", "data"],
+      ["code clean, image data", [codeTest, imageTest], { 2: activeFindings(2, "High", 1) }, "clean", "data"],
     ] as const)("%s", async (_, tests, findings, codeState, imageState) => {
       givenDefectDojo({ tests, findings });
 
@@ -216,9 +209,9 @@ describe("defectDojo.getCodebaseFindings", () => {
         tests: [makeTest({ id: 1, scanType: SEMGREP })],
         findings: {
           1: [
-            ...active(1, "High", 2),
-            ...active(1, "Medium", 1, 10),
-            ...active(1, "Info", 1, 20),
+            ...activeFindings(1, "High", 2),
+            ...activeFindings(1, "Medium", 1, 10),
+            ...activeFindings(1, "Info", 1, 20),
             makeTriagedFinding({ id: 31, testId: 1, severity: "Critical" }),
             makeFinding({ id: 32, testId: 1, severity: "High", active: false, falsePositive: true }),
             makeFinding({ id: 33, testId: 1, severity: "High", duplicate: true }),
@@ -240,8 +233,12 @@ describe("defectDojo.getCodebaseFindings", () => {
           makeImageTest({ id: 4, scanType: GRYPE, image: DEMO_IMAGE }),
         ],
         findings: {
-          3: [...active(3, "Critical", 2), ...active(3, "High", 5, 10)],
-          4: [...active(4, "Critical", 1), ...active(4, "High", 8, 10), ...active(4, "Low", 3, 30)],
+          3: [...activeFindings(3, "Critical", 2), ...activeFindings(3, "High", 5, 10)],
+          4: [
+            ...activeFindings(4, "Critical", 1),
+            ...activeFindings(4, "High", 8, 10),
+            ...activeFindings(4, "Low", 3, 30),
+          ],
         },
       });
 
@@ -341,7 +338,7 @@ describe("defectDojo.getCodebaseFindings", () => {
           makeImageTest({ id: 2, scanType: TRIVY, image: DEMO_IMAGE, updated: "2026-11-23T10:00:00Z", version: "new" }),
           makeImageTest({ id: 3, scanType: TRIVY, image: DEMO_IMAGE, updated: "2026-11-22T10:00:00Z", version: "mid" }),
         ],
-        findings: { 1: active(1, "Critical", 3), 2: active(2, "High", 1) },
+        findings: { 1: activeFindings(1, "Critical", 3), 2: activeFindings(2, "High", 1) },
       });
 
       const { image } = await getLevels();
@@ -480,17 +477,7 @@ describe("defectDojo.getCodebaseFindings", () => {
     it("rejects a caller who cannot read the codebase with FORBIDDEN, before it asks DefectDojo", async () => {
       const defectDojo = givenDefectDojo({ tests: [makeTest({ id: 1, scanType: SEMGREP })] });
       const listTests = vi.spyOn(defectDojo, "listTests");
-      (K8sClient as unknown as Mock).mockImplementation(function () {
-        return {
-          KubeConfig: {},
-          async getResource() {
-            throw new K8sApiError(403, "Forbidden", "codebases is forbidden");
-          },
-          async listResource() {
-            return { items: [] };
-          },
-        };
-      });
+      givenCodebaseForbidden();
 
       await expect(getFindings()).rejects.toMatchObject({ code: "FORBIDDEN" });
       expect(listTests).not.toHaveBeenCalled();
@@ -546,11 +533,11 @@ describe("defectDojo.getCodebaseFindings", () => {
           ],
           findings: {
             10: [
-              ...active(10, "High", 3),
-              ...active(10, "Low", 1, 10),
+              ...activeFindings(10, "High", 3),
+              ...activeFindings(10, "Low", 1, 10),
               makeTriagedFinding({ id: 10900, testId: 10, severity: "Critical" }),
             ],
-            11: [...active(11, "High", 2), makeTriagedFinding({ id: 11900, testId: 11, severity: "High" })],
+            11: [...activeFindings(11, "High", 2), makeTriagedFinding({ id: 11900, testId: 11, severity: "High" })],
           },
         });
 
@@ -605,7 +592,7 @@ describe("defectDojo.getCodebaseFindings", () => {
       it("says data when only a secret is active", async () => {
         givenDefectDojo({
           tests: [makeRuntimeTest({ id: 10 }), makeRuntimeTest({ id: 11, reportKind: "exposedsecretreport" })],
-          findings: { 11: active(11, "High", 1) },
+          findings: { 11: activeFindings(11, "High", 1) },
         });
 
         await expect(getLevels()).resolves.toMatchObject({ runtime: { state: "data" } });
@@ -641,7 +628,7 @@ describe("defectDojo.getCodebaseFindings", () => {
 
       it("stays listed beside an Environment with data, and the level says data", async () => {
         givenCluster([...DEPLOYED_CLUSTER, ...QA_OBJECTS]);
-        givenDefectDojo({ tests: [makeRuntimeTest({ id: 10 })], findings: { 10: active(10, "High", 1) } });
+        givenDefectDojo({ tests: [makeRuntimeTest({ id: 10 })], findings: { 10: activeFindings(10, "High", 1) } });
 
         const { runtime } = await getLevels();
 
@@ -657,7 +644,7 @@ describe("defectDojo.getCodebaseFindings", () => {
       it("makes a row that is not running, with no counts, and the level says not running", async () => {
         const defectDojo = givenDefectDojo({
           tests: [makeRuntimeTest({ id: 10, buildId: "" })],
-          findings: { 10: active(10, "High", 4) },
+          findings: { 10: activeFindings(10, "High", 4) },
         });
         const counts = vi.spyOn(defectDojo, "getSeverityCounts");
 
@@ -684,7 +671,7 @@ describe("defectDojo.getCodebaseFindings", () => {
             makeRuntimeTest({ id: 10, buildId: "", updated: "2026-11-25T08:00:00Z" }),
             makeRuntimeTest({ id: 11, container: "istio-proxy", updated: "2026-11-24T08:00:00Z" }),
           ],
-          findings: { 10: active(10, "Critical", 5) },
+          findings: { 10: activeFindings(10, "Critical", 5) },
         });
         const counts = vi.spyOn(defectDojo, "getSeverityCounts");
 
@@ -708,7 +695,7 @@ describe("defectDojo.getCodebaseFindings", () => {
             makeRuntimeTest({ id: 10 }),
             makeRuntimeTest({ id: 11, reportKind: "exposedsecretreport", title: "VulnerabilityReport demo-app" }),
           ],
-          findings: { 10: active(10, "High", 3), 11: active(11, "High", 2) },
+          findings: { 10: activeFindings(10, "High", 3), 11: activeFindings(11, "High", 2) },
         });
 
         const { runtime } = await getLevels();
@@ -812,7 +799,7 @@ describe("defectDojo.getCodebaseFindings", () => {
         givenCluster(DEPLOYED_CLUSTER, options);
         givenDefectDojo({
           tests: [makeTest({ id: 1, scanType: SEMGREP }), makeImageTest({ id: 2, scanType: TRIVY, image: DEMO_IMAGE })],
-          findings: { 1: active(1, "High", 1), 2: active(2, "High", 1) },
+          findings: { 1: activeFindings(1, "High", 1), 2: activeFindings(2, "High", 1) },
         });
 
         const levels = await getLevels();
@@ -858,10 +845,10 @@ describe("defectDojo.getCodebaseFindings", () => {
             makeRuntimeTest({ id: 13, container: "sidecar", updated: "2026-11-23T08:00:00Z" }),
           ],
           findings: {
-            10: active(10, "Critical", 1),
-            11: active(11, "High", 2),
-            12: active(12, "Low", 1),
-            13: active(13, "Medium", 3),
+            10: activeFindings(10, "Critical", 1),
+            11: activeFindings(11, "High", 2),
+            12: activeFindings(12, "Low", 1),
+            13: activeFindings(13, "Medium", 3),
           },
         });
 
@@ -892,7 +879,7 @@ describe("defectDojo.getCodebaseFindings", () => {
             makeRuntimeTest({ id: 12, container: "sidecar" }),
             makeRuntimeTest({ id: 13, container: "stopped", buildId: "" }),
           ],
-          findings: { 11: active(11, "High", 2), 12: active(12, "High", 1) },
+          findings: { 11: activeFindings(11, "High", 2), 12: activeFindings(12, "High", 1) },
         });
         const counts = vi.spyOn(defectDojo, "getSeverityCounts");
 
@@ -987,7 +974,7 @@ describe("defectDojo.getCodebaseFindings", () => {
       ])("leaves its CI scan out, when DefectDojo has no scan data for %s", async (_, state) => {
         const defectDojo = givenDefectDojo({
           tests: [makeTest({ id: 1, scanType: SEMGREP }), makeTest({ id: 2, scanType: GITLEAKS })],
-          findings: { 1: active(1, "High", 1), 2: active(2, "High", 1) },
+          findings: { 1: activeFindings(1, "High", 1), 2: activeFindings(2, "High", 1) },
         });
         givenCountGone(defectDojo, 1, state);
 
@@ -1002,7 +989,7 @@ describe("defectDojo.getCodebaseFindings", () => {
       ])("leaves its report out of its container, when DefectDojo has no scan data for %s", async (_, state) => {
         const defectDojo = givenDefectDojo({
           tests: [makeRuntimeTest({ id: 10 }), makeRuntimeTest({ id: 11, reportKind: "exposedsecretreport" })],
-          findings: { 10: active(10, "High", 1), 11: active(11, "High", 1) },
+          findings: { 10: activeFindings(10, "High", 1), 11: activeFindings(11, "High", 1) },
         });
         givenCountGone(defectDojo, 10, state);
 

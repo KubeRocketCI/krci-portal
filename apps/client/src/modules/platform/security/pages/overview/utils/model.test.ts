@@ -141,6 +141,17 @@ describe("topCodebases", () => {
     ]);
   });
 
+  it("take the scan with the most severe finding, as the line of the codebase page does: one Medium before twenty Low", () => {
+    const many = scan("Semgrep JSON Report", { Low: 20 });
+    const severe = scan("Gitleaks Scan", { Medium: 1 });
+    const lowOnly = codebase("low-app", [scan("Semgrep JSON Report", { Low: 30 })]);
+
+    expect(topCodebases([lowOnly, codebase("mixed-app", [many, severe])])).toEqual([
+      { codebase: codebase("mixed-app", [many, severe]), scan: severe },
+      { codebase: lowOnly, scan: lowOnly.scans[0] },
+    ]);
+  });
+
   it("leave out a codebase without scans", () => {
     expect(topCodebases([codebase("unscanned-app", []), DEMO])).toEqual([{ codebase: DEMO, scan: DEMO.scans[0] }]);
   });

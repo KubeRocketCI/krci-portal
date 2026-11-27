@@ -9,7 +9,12 @@ import { Badge } from "@/core/components/ui/badge";
 import { Card } from "@/core/components/ui/card";
 import { TableBodyUI, TableCellUI, TableHeadUI, TableHeaderUI, TableRowUI, TableUI } from "@/core/components/ui/table";
 import { cn } from "@/core/utils/classname";
-import { CELL_CLASS, HEAD_CLASS, NO_VALUE } from "@/modules/platform/security/components/defectdojo/constants";
+import {
+  CELL_CLASS,
+  DEFECTDOJO_STATE_TEXT,
+  HEAD_CLASS,
+  NO_VALUE,
+} from "@/modules/platform/security/components/defectdojo/constants";
 import { DefectDojoLink } from "@/modules/platform/security/components/defectdojo/DefectDojoLink";
 import { EnvironmentLink } from "@/modules/platform/security/components/defectdojo/FoundIn";
 import {
@@ -70,7 +75,9 @@ function NamespaceRow({ row, links }: RowProps) {
         <span className="flex flex-wrap items-center gap-2">
           {row.namespace}
           {clean && <NoFindingsBadge />}
-          {product === null && <span className="text-muted-foreground text-xs font-normal">No scan data</span>}
+          {product === null && (
+            <span className="text-muted-foreground text-xs font-normal">{DEFECTDOJO_STATE_TEXT.noScanData}</span>
+          )}
         </span>
       </TableCellUI>
       <TableCellUI className={CELL_CLASS}>

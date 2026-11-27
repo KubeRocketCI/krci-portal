@@ -6,6 +6,7 @@ import { Badge } from "@/core/components/ui/badge";
 import { Button } from "@/core/components/ui/button";
 import { cn } from "@/core/utils/classname";
 import { EDP_OPERATOR_GUIDE } from "@/k8s/constants/docs-urls";
+import { DEFECTDOJO_STATE_TEXT } from "../constants";
 import { formatScanTime } from "../utils";
 
 /** The portal server has no DefectDojo URL or token. One block for the whole view. */
@@ -13,7 +14,7 @@ export function NotConfiguredState() {
   return (
     <div className="flex flex-col items-center gap-2">
       <EmptyList
-        customText="DefectDojo is not connected"
+        customText={DEFECTDOJO_STATE_TEXT.notConfigured}
         description="The portal has no DefectDojo connection. Set the DefectDojo URL in the portal chart values and the token in the portal secret."
         icon={<Unplug className="text-muted-foreground size-16" aria-hidden />}
         linkText=""
@@ -45,6 +46,28 @@ function RetryAlert({ title, message, onRetry, isRetrying }: RetryAlertProps) {
   );
 }
 
+export interface RetryIconButtonProps {
+  onRetry: () => void;
+  isRetrying: boolean;
+  className?: string;
+}
+
+/** Retry in a one-line view; the blocks have a Retry button with its label. */
+export function RetryIconButton({ onRetry, isRetrying, className }: RetryIconButtonProps) {
+  return (
+    <Button
+      variant="ghost"
+      size="icon-xs"
+      className={className}
+      onClick={onRetry}
+      disabled={isRetrying}
+      aria-label="Retry"
+    >
+      <RefreshCw className={cn("size-3.5", isRetrying && "animate-spin")} aria-hidden />
+    </Button>
+  );
+}
+
 export interface UnreachableStateProps {
   onRetry: () => void;
   isRetrying?: boolean;
@@ -62,7 +85,7 @@ export function UnreachableState({
 }: UnreachableStateProps) {
   return (
     <RetryAlert
-      title="DefectDojo is unreachable"
+      title={DEFECTDOJO_STATE_TEXT.unreachable}
       message={
         wholePage ? `${what} cannot be loaded.` : `${what} cannot be loaded. The rest of the page is not affected.`
       }
@@ -82,7 +105,7 @@ export interface LoadFailedStateProps {
 /** The server could not answer: a failure that is none of the DefectDojo states, such as a denied Kubernetes read. */
 export function LoadFailedState({ message, onRetry, isRetrying = false }: LoadFailedStateProps) {
   return (
-    <RetryAlert title="Failed to load security findings" message={message} onRetry={onRetry} isRetrying={isRetrying} />
+    <RetryAlert title={DEFECTDOJO_STATE_TEXT.loadFailed} message={message} onRetry={onRetry} isRetrying={isRetrying} />
   );
 }
 
@@ -102,7 +125,7 @@ export function NoScanDataState({ producer, what, subject = "this codebase", hin
     <div className={cn("text-muted-foreground flex items-start gap-2", className)}>
       <CircleDashed className="mt-0.5 size-4 shrink-0" aria-hidden />
       <div className="min-w-0 text-sm">
-        <p className="text-foreground font-medium">No scan data</p>
+        <p className="text-foreground font-medium">{DEFECTDOJO_STATE_TEXT.noScanData}</p>
         <p className="text-xs">
           The {producer} has not reported {what} for {subject}.
         </p>
@@ -113,11 +136,17 @@ export function NoScanDataState({ producer, what, subject = "this codebase", hin
 }
 
 /** A scan that ran and reported no active finding. Never used for "no scan data". */
-export function NoFindingsBadge({ className }: { className?: string }) {
+export function NoFindingsBadge({
+  label = DEFECTDOJO_STATE_TEXT.noFindings,
+  className,
+}: {
+  label?: string;
+  className?: string;
+}) {
   return (
     <Badge variant="success" className={className}>
       <CircleCheck aria-hidden />
-      No findings
+      {label}
     </Badge>
   );
 }

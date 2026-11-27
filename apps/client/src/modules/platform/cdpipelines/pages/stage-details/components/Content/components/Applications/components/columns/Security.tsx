@@ -6,16 +6,14 @@ import {
   type EnvironmentSummaryInput,
   type RunningEnvironmentContainer,
 } from "@my-project/shared";
-import { RefreshCw } from "lucide-react";
 import { TextWithTooltip } from "@/core/components/TextWithTooltip";
-import { Button } from "@/core/components/ui/button";
 import { LoadingSpinner } from "@/core/components/ui/LoadingSpinner";
-import { cn } from "@/core/utils/classname";
 import { plural } from "@/core/utils/format/plural";
 import { useEnvironmentSummary } from "@/modules/platform/cdpipelines/pages/stage-details/hooks/useEnvironmentSummary";
-import { NO_VALUE } from "@/modules/platform/security/components/defectdojo/constants";
+import { DEFECTDOJO_STATE_TEXT, NO_VALUE } from "@/modules/platform/security/components/defectdojo/constants";
 import { CodebaseLink } from "@/modules/platform/security/components/defectdojo/FoundIn";
 import { SeverityCountsRow } from "@/modules/platform/security/components/defectdojo/SeverityCountsRow";
+import { RetryIconButton } from "@/modules/platform/security/components/defectdojo/StateBlocks";
 
 export interface SecurityColumnProps {
   environment: EnvironmentSummaryInput;
@@ -23,12 +21,6 @@ export interface SecurityColumnProps {
   clusterName: string;
   codebase: string;
 }
-
-const DASH_REASON: Record<Exclude<EnvironmentApplication["state"], "data">, string> = {
-  noScanData: "No scan data",
-  notRunning: "Not running",
-  clean: "Clean",
-};
 
 function Dash({ reason }: { reason: string }) {
   return (
@@ -45,9 +37,7 @@ function Failed({ reason, onRetry, isRetrying }: { reason: string; onRetry: () =
   return (
     <div className="text-destructive flex min-w-0 items-center gap-1">
       <TextWithTooltip text={reason} className="min-w-0 text-xs" maxLineAmount={2} />
-      <Button variant="ghost" size="icon-xs" onClick={onRetry} disabled={isRetrying} aria-label="Retry">
-        <RefreshCw className={cn("size-3.5", isRetrying && "animate-spin")} aria-hidden />
-      </Button>
+      <RetryIconButton onRetry={onRetry} isRetrying={isRetrying} />
     </div>
   );
 }
@@ -69,7 +59,7 @@ function ContainerLine({ container, named }: { container: RunningEnvironmentCont
         <TextWithTooltip text={plural(secrets, "secret")} className="text-destructive text-xs font-medium" />
       )}
       {vulnerabilities !== null && !hasActiveEnvironmentFindings(container) && (
-        <TextWithTooltip text="Clean" className="text-muted-foreground text-xs" />
+        <TextWithTooltip text={DEFECTDOJO_STATE_TEXT.clean} className="text-muted-foreground text-xs" />
       )}
     </div>
   );
@@ -77,7 +67,7 @@ function ContainerLine({ container, named }: { container: RunningEnvironmentCont
 
 function ApplicationFindings({ application }: { application: EnvironmentApplication }) {
   if (application.state !== "data") {
-    return <Dash reason={DASH_REASON[application.state]} />;
+    return <Dash reason={DEFECTDOJO_STATE_TEXT[application.state]} />;
   }
 
   // A closed test stays in DefectDojo: the containers that no longer run get no line beside running ones.
@@ -101,23 +91,31 @@ function EnvironmentFindings({ environment, codebase }: Omit<SecurityColumnProps
   const retry = { onRetry: () => void query.refetch(), isRetrying: query.isFetching };
 
   if (summary === undefined) {
-    return query.isError ? <Failed reason="Findings cannot be loaded" {...retry} /> : <LoadingSpinner size={16} />;
+    return query.isError ? (
+      <Failed reason={DEFECTDOJO_STATE_TEXT.loadFailed} {...retry} />
+    ) : (
+      <LoadingSpinner size={16} />
+    );
   }
   if (summary.state === "notConfigured") {
-    return <Dash reason="DefectDojo is not connected" />;
+    return <Dash reason={DEFECTDOJO_STATE_TEXT.notConfigured} />;
   }
   if (summary.state === "unreachable") {
-    return <Failed reason="DefectDojo is unreachable" {...retry} />;
+    return <Failed reason={DEFECTDOJO_STATE_TEXT.unreachable} {...retry} />;
   }
   if (summary.state === "noScanData") {
-    return <Dash reason={DASH_REASON.noScanData} />;
+    return <Dash reason={DEFECTDOJO_STATE_TEXT.noScanData} />;
   }
   if (summary.applications === null) {
     return <Dash reason="Applications cannot be read" />;
   }
 
   const application = summary.applications.find((entry) => entry.codebase === codebase);
-  return application ? <ApplicationFindings application={application} /> : <Dash reason={DASH_REASON.noScanData} />;
+  return application ? (
+    <ApplicationFindings application={application} />
+  ) : (
+    <Dash reason={DEFECTDOJO_STATE_TEXT.noScanData} />
+  );
 }
 
 export function SecurityColumn({ environment, clusterName, codebase }: SecurityColumnProps) {
