@@ -5,6 +5,7 @@ import type {
   codebaseLevelSchema,
   codebaseScanRefSchema,
   codebaseScanSchema,
+  codebaseSecurityLineSchema,
   environmentApplicationSchema,
   environmentContainerSchema,
   environmentRuntimeSchema,
@@ -29,6 +30,8 @@ import type {
   scanFindingsInputSchema,
   scanFindingsSchema,
   scanRefSchema,
+  securityLineRuntimeSchema,
+  securityLineScanLevelSchema,
   securityOverviewCodebasesInputSchema,
   securityOverviewCodebasesSchema,
   securityOverviewInputSchema,
@@ -58,6 +61,12 @@ export type RuntimeEnvironment = z.infer<typeof runtimeEnvironmentSchema>;
 export type RuntimeLevel = z.infer<typeof runtimeLevelSchema>;
 
 export type CodebaseFindings = z.infer<typeof codebaseFindingsSchema>;
+
+export type CodebaseSecurityLine = z.infer<typeof codebaseSecurityLineSchema>;
+
+export type SecurityLineScanLevel = z.infer<typeof securityLineScanLevelSchema>;
+
+export type SecurityLineRuntime = z.infer<typeof securityLineRuntimeSchema>;
 
 export type ScanFindingsInput = z.input<typeof scanFindingsInputSchema>;
 

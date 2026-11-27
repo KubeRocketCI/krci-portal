@@ -4,7 +4,8 @@ import {
   compareNamespaceFindings,
   compareOverviewNamespaces,
   hasActiveFindings,
-  mostSevereFirst,
+  mostSevereFindingFirst,
+  mostSevereScan,
   type CodebaseScanLevel,
   type DefectDojoLevel,
   type DefectDojoSeverity,
@@ -112,15 +113,11 @@ export function topCodebases(
   codebases: readonly OverviewCodebase[],
   severity?: DefectDojoSeverity
 ): { codebase: OverviewCodebase; scan: OverviewScan }[] {
-  const mostSevere = mostSevereFirst(severity);
+  const mostSevere = mostSevereFindingFirst(severity);
 
   return codebases
     .flatMap((codebase) => {
-      const scan = codebase.scans.reduce<OverviewScan | undefined>(
-        (worst, candidate) =>
-          worst === undefined || mostSevere(candidate.counts, worst.counts) < 0 ? candidate : worst,
-        undefined
-      );
+      const scan = mostSevereScan(codebase.scans, severity);
       return scan && hasActiveFindings(scan.counts) ? [{ codebase, scan }] : [];
     })
     .sort((a, b) => mostSevere(a.scan.counts, b.scan.counts) || a.codebase.codebase.localeCompare(b.codebase.codebase))

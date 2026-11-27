@@ -1,0 +1,68 @@
+{
+  "codebases": {
+    "krci-gitops": {
+      "state": "data",
+      "levels": {
+        "code": {
+          "state": "clean"
+        },
+        "image": {
+          "state": "data",
+          "severity": "High",
+          "count": 1,
+          "scanner": "Trivy Scan"
+        },
+        "runtime": {
+          "state": "noScanData"
+        }
+      }
+    },
+    "line-fixture": {
+      "state": "data",
+      "levels": {
+        "code": {
+          "state": "noScanData"
+        },
+        "image": {
+          "state": "noScanData"
+        },
+        "runtime": {
+          "state": "notRunning"
+        }
+      }
+    },
+    "test-go-app": {
+      "state": "data",
+      "levels": {
+        "code": {
+          "state": "data",
+          "severity": "High",
+          "count": 1,
+          "scanner": "Semgrep JSON Report"
+        },
+        "image": {
+          "state": "data",
+          "severity": "Critical",
+          "count": 1,
+          "scanner": "Trivy Scan"
+        },
+        "runtime": {
+          "state": "data",
+          "severity": "Critical",
+          "count": 1,
+          "reportKind": "vulnerabilityreport",
+          "environment": {
+            "cdPipeline": "demo",
+            "stage": "dev"
+          }
+        }
+      }
+    }
+  },
+  "notConfigured": {
+    "state": "notConfigured"
+  },
+  "unreachable": {
+    "state": "unreachable"
+  }
+}

@@ -7,7 +7,12 @@ import {
 import { Badge } from "@/core/components/ui/badge";
 import { TableBodyUI, TableCellUI, TableRowUI } from "@/core/components/ui/table";
 import { cn } from "@/core/utils/classname";
-import { CELL_CLASS, LEVEL_META, NO_VALUE } from "@/modules/platform/security/components/defectdojo/constants";
+import {
+  CELL_CLASS,
+  DEFECTDOJO_STATE_TEXT,
+  LEVEL_META,
+  NO_VALUE,
+} from "@/modules/platform/security/components/defectdojo/constants";
 import { CleanLevelState, NoScanDataState } from "@/modules/platform/security/components/defectdojo/StateBlocks";
 import { NO_ENVIRONMENT_HINT } from "../../constants";
 import { focusedProps } from "../../focusedProps";
@@ -55,7 +60,7 @@ export function RuntimeSection({ data, codebase, expanded, onToggle, focus }: Ru
     <TableBodyUI data-testid="section-runtime">
       <LevelHeaderRow meta={RUNTIME_META}>
         {data.state === "clean" && <CleanLevelState lastUpload={data.lastUpload} />}
-        {data.state === "notRunning" && <Badge variant="neutral">Not running</Badge>}
+        {data.state === "notRunning" && <Badge variant="neutral">{DEFECTDOJO_STATE_TEXT.notRunning}</Badge>}
       </LevelHeaderRow>
 
       {data.environments.length === 0 && (

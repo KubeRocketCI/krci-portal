@@ -26,9 +26,10 @@ import {
   type DefectDojoTestsFilter,
 } from "../../../clients/defectDojo/index.js";
 import { mapWithConcurrency } from "../../../utils/mapWithConcurrency/index.js";
-import type { CodebaseFacts } from "./facts.js";
+import type { CodebaseEnvironment, CodebaseFacts } from "./facts.js";
 import {
   buildRuntimeContainers,
+  runtimeReportTests,
   runtimeTestsFilter,
   type RuntimeContainerEntry,
   type RuntimeReportTest,
@@ -43,12 +44,45 @@ async function readTests(source: CodebaseFindingsSource, filter: DefectDojoTests
   return dataOf(await source.listTests(filter)) ?? [];
 }
 
-async function readScans(
+export async function readScans(
   source: CodebaseFindingsSource,
   facts: CodebaseFacts,
   filter: DefectDojoTestsFilter = { tags: ciTestTags(facts) }
 ): Promise<ScanEntry[]> {
   return buildScans(facts, await readTests(source, filter));
+}
+
+export interface EnvironmentContainers {
+  environment: CodebaseEnvironment;
+  containers: RuntimeContainerEntry[];
+}
+
+/** The containers of each Environment of the codebase, in the order of the facts. */
+export function readEnvironmentContainers(
+  source: CodebaseFindingsSource,
+  facts: CodebaseFacts
+): Promise<EnvironmentContainers[]> {
+  const isOwnImage = createOwnImageMatcher(facts);
+  return mapWithConcurrency(facts.environments, COUNT_CONCURRENCY, async (environment) => ({
+    environment,
+    containers: buildRuntimeContainers(await readTests(source, runtimeTestsFilter(environment)), isOwnImage),
+  }));
+}
+
+export async function countAll<T extends { testId: number }, R>(
+  items: readonly T[],
+  count: (item: T) => Promise<R>
+): Promise<Map<number, R>> {
+  const counted = await mapWithConcurrency(items, COUNT_CONCURRENCY, count);
+  return new Map(items.map(({ testId }, index) => [testId, counted[index]]));
+}
+
+/**
+ * The active findings of one listed test by severity. The test is known to exist, so zero counts are a clean test.
+ * `null`: the client answered no scan data.
+ */
+export async function countActive(source: CodebaseFindingsSource, testId: number): Promise<SeverityCounts | null> {
+  return dataOf(await source.getSeverityCounts({ testId }, { state: "active", testExists: true }))?.severity ?? null;
 }
 
 interface TestCount {
@@ -66,7 +100,7 @@ interface CountTarget {
 
 /**
  * Counts one test. The counts of all states come first: they tell whether the second request, for the active
- * findings by severity, is needed. `null`: the test is gone.
+ * findings by severity, is needed. `null`: the client answered no scan data.
  */
 async function countTest(
   source: CodebaseFindingsSource,
@@ -80,16 +114,8 @@ async function countTest(
     return null;
   }
 
-  let counts: SeverityCounts = NO_FINDING_COUNTS;
-  if (bySeverity && all.active > 0) {
-    const active = dataOf(await source.getSeverityCounts(scope, { state: "active", testExists: true }));
-    if (active === null) {
-      return null;
-    }
-    counts = active.severity;
-  }
-
-  return { counts, active: all.active, triaged: all.total - all.active };
+  const counts = bySeverity && all.active > 0 ? await countActive(source, testId) : NO_FINDING_COUNTS;
+  return counts && { counts, active: all.active, triaged: all.total - all.active };
 }
 
 function toCodebaseScan(
@@ -109,14 +135,10 @@ function toLevel(scans: CodebaseScan[]): CodebaseLevel {
 }
 
 function countTargets(container: RuntimeContainerEntry): CountTarget[] {
-  if (container.state !== "running") {
-    return [];
-  }
-
-  return [
-    ...(container.vulnerabilities ? [{ testId: container.vulnerabilities.testId, bySeverity: true }] : []),
-    ...(container.secrets ? [{ testId: container.secrets.testId, bySeverity: false }] : []),
-  ];
+  return runtimeReportTests(container).map(({ reportKind, testId }) => ({
+    testId,
+    bySeverity: reportKind === "vulnerabilityreport",
+  }));
 }
 
 type CountOf = ReadonlyMap<number, TestCount | null>;
@@ -166,33 +188,30 @@ export async function composeCodebaseFindings(
   facts: CodebaseFacts
 ): Promise<CodebaseFindings> {
   try {
-    const [scans, environmentTests] = await Promise.all([
+    const [scans, environmentContainers] = await Promise.all([
       readScans(source, facts),
-      mapWithConcurrency(facts.environments, COUNT_CONCURRENCY, (environment) =>
-        readTests(source, runtimeTestsFilter(environment))
-      ),
+      readEnvironmentContainers(source, facts),
     ]);
-    const isOwnImage = createOwnImageMatcher(facts);
-    const containersOf = environmentTests.map((tests) => buildRuntimeContainers(tests, isOwnImage));
 
     const targets: CountTarget[] = [
       ...scans.map(({ testId }) => ({ testId, bySeverity: true })),
-      ...containersOf.flat().flatMap(countTargets),
+      ...environmentContainers.flatMap(({ containers }) => containers.flatMap(countTargets)),
     ];
-    const counted = await mapWithConcurrency(targets, COUNT_CONCURRENCY, (target) => countTest(source, target));
-    const countOf = new Map(targets.map(({ testId }, index) => [testId, counted[index]]));
+    const countOf = await countAll(targets, (target) => countTest(source, target));
 
     const countedScans = scans.flatMap((entry) => {
       const count = countOf.get(entry.testId) ?? null;
       return count === null ? [] : [toCodebaseScan(entry, count)];
     });
-    const environments = facts.environments.map(({ cdPipeline, stage, clusterName, namespace }, index) => ({
-      cdPipeline,
-      stage,
-      clusterName,
-      namespace,
-      containers: containersOf[index].map((container) => toRuntimeContainer(container, countOf)),
-    }));
+    const environments = environmentContainers.map(
+      ({ environment: { cdPipeline, stage, clusterName, namespace }, containers }) => ({
+        cdPipeline,
+        stage,
+        clusterName,
+        namespace,
+        containers: containers.map((container) => toRuntimeContainer(container, countOf)),
+      })
+    );
 
     return {
       state: "data",
@@ -264,11 +283,7 @@ async function findRuntimeTestId(
   const container = buildRuntimeContainers(tests).find(
     (candidate) => candidate.workload === scan.workload && candidate.container === scan.container
   );
-  if (container?.state !== "running") {
-    return null;
-  }
-
-  const report = scan.reportKind === "vulnerabilityreport" ? container.vulnerabilities : container.secrets;
+  const report = container && runtimeReportTests(container).find(({ reportKind }) => reportKind === scan.reportKind);
   return report?.testId ?? null;
 }
 

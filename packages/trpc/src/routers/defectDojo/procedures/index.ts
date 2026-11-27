@@ -1,4 +1,5 @@
 export { getCodebaseFindingsProcedure as getCodebaseFindings } from "./getCodebaseFindings/index.js";
+export { getCodebaseSecurityLineProcedure as getCodebaseSecurityLine } from "./getCodebaseSecurityLine/index.js";
 export { getConnectionProcedure as getConnection } from "./getConnection/index.js";
 export { getEnvironmentSummaryProcedure as getEnvironmentSummary } from "./getEnvironmentSummary/index.js";
 export { getExposedSecretsProcedure as getExposedSecrets } from "./getExposedSecrets/index.js";

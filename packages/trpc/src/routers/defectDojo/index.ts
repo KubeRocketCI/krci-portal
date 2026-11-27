@@ -1,6 +1,7 @@
 import { t } from "../../trpc.js";
 import {
   getCodebaseFindings,
+  getCodebaseSecurityLine,
   getConnection,
   getEnvironmentSummary,
   getExposedSecrets,
@@ -13,6 +14,7 @@ import {
 
 export const defectDojoRouter = t.router({
   getCodebaseFindings,
+  getCodebaseSecurityLine,
   getConnection,
   getEnvironmentSummary,
   getExposedSecrets,

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { DEFECTDOJO_LEVEL_SCAN_TYPES, TRIAGED_RUNTIME_SCAN_LIMIT, type SeverityCounts } from "@my-project/shared";
 import { CardLineRow } from "../CardLineRow";
+import { RUNTIME_REPORT_KIND_LABELS } from "../constants";
 
 export interface RuntimeLinesProps {
   vulnerabilities: Readonly<SeverityCounts>;
@@ -26,8 +27,18 @@ export function RuntimeLines({
 
   return (
     <>
-      <CardLineRow name="Vulnerabilities" detail={detail} counts={vulnerabilities} link={vulnerabilitiesLink} />
-      <CardLineRow name="Exposed secrets" detail={detail} counts={secrets} link={secretsLink} />
+      <CardLineRow
+        name={RUNTIME_REPORT_KIND_LABELS.vulnerabilityreport}
+        detail={detail}
+        counts={vulnerabilities}
+        link={vulnerabilitiesLink}
+      />
+      <CardLineRow
+        name={RUNTIME_REPORT_KIND_LABELS.exposedsecretreport}
+        detail={detail}
+        counts={secrets}
+        link={secretsLink}
+      />
       {secretsTruncated && (
         <p className="text-muted-foreground text-xs">
           More than {TRIAGED_RUNTIME_SCAN_LIMIT} exposed secrets: the ones past that count as vulnerabilities.

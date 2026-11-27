@@ -177,6 +177,7 @@ const krciGitops = await recordCodebase("krci-gitops", {
 const noScanData = await composeCodebaseFindings(defectDojo, {
   name: "no-such-app",
   namespace: NAMESPACE,
+  defaultBranch: "main",
   branches: ["main"],
   ownImageNames: [],
   environments: [],

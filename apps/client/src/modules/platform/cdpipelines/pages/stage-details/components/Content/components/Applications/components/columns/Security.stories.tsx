@@ -200,7 +200,7 @@ export const LoadFailed: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    await expectFailure(canvas, "Findings cannot be loaded");
+    await expectFailure(canvas, "Failed to load security findings");
     await expectCodebaseLink(canvas, "dev");
   },
 };

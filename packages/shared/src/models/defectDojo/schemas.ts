@@ -207,6 +207,46 @@ export const findingsScopeInputSchema = z.object({ namespace: k8sResourceNameSch
 /** A Stage, by its CDPipeline and its `spec.name`. */
 export const stageRefSchema = z.object({ cdPipeline: z.string(), stage: z.string() });
 
+/** The most severe active finding of the one scan a level of the security line names. */
+const securityLineFindingSchema = z.object({
+  severity: defectDojoSeveritySchema,
+  /** Active findings of that severity in that scan: never added across scans. */
+  count,
+});
+
+/** A Code or Image level of the security line: the scans of the default branch. */
+export const securityLineScanLevelSchema = z.discriminatedUnion("state", [
+  z.object({ state: z.literal("noScanData") }),
+  z.object({ state: z.literal("clean") }),
+  securityLineFindingSchema.extend({ state: z.literal("data"), scanner: z.string() }),
+]);
+
+/** The Runtime level of the security line: the reports of the running containers of every Environment. */
+export const securityLineRuntimeSchema = z.discriminatedUnion("state", [
+  z.object({ state: z.literal("noScanData") }),
+  /** Every container of every Environment is closed. */
+  z.object({ state: z.literal("notRunning") }),
+  z.object({ state: z.literal("clean") }),
+  securityLineFindingSchema.extend({
+    state: z.literal("data"),
+    reportKind: z.enum(RUNTIME_REPORT_KINDS),
+    environment: stageRefSchema,
+  }),
+]);
+
+export const codebaseSecurityLineSchema = z.discriminatedUnion("state", [
+  z.object({ state: z.literal("notConfigured") }),
+  z.object({ state: z.literal("unreachable") }),
+  z.object({
+    state: z.literal("data"),
+    levels: z.object({
+      code: securityLineScanLevelSchema,
+      image: securityLineScanLevelSchema,
+      runtime: securityLineRuntimeSchema,
+    }),
+  }),
+]);
+
 /** A namespace of a Stage or of a namespace product. */
 export const findingsScopeNamespaceSchema = z.object({
   cluster: z.string(),

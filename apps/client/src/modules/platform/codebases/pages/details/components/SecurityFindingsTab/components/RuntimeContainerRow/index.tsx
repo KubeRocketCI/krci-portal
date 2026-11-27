@@ -8,7 +8,11 @@ import {
 import { Badge } from "@/core/components/ui/badge";
 import { TableCellUI, TableRowUI } from "@/core/components/ui/table";
 import { cn } from "@/core/utils/classname";
-import { CELL_CLASS, NO_VALUE } from "@/modules/platform/security/components/defectdojo/constants";
+import {
+  CELL_CLASS,
+  DEFECTDOJO_STATE_TEXT,
+  NO_VALUE,
+} from "@/modules/platform/security/components/defectdojo/constants";
 import { DefectDojoLink } from "@/modules/platform/security/components/defectdojo/DefectDojoLink";
 import { NameCell } from "@/modules/platform/security/components/defectdojo/NameCell";
 import { OwnImageBadge } from "@/modules/platform/security/components/defectdojo/OwnImageBadge";
@@ -56,7 +60,7 @@ export function RuntimeContainerRow({
         <TableCellUI className={CELL_CLASS} />
         <NameCell
           name={container.container}
-          badges={<Badge variant="neutral">Not running</Badge>}
+          badges={<Badge variant="neutral">{DEFECTDOJO_STATE_TEXT.notRunning}</Badge>}
           detail={container.workload}
         />
         <TableCellUI className={CELL_CLASS}>

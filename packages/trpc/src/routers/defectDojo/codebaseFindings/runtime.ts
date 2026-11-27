@@ -111,6 +111,19 @@ function toEntry(
   };
 }
 
+/** The open report tests of a container: the vulnerabilities before the exposed secrets. */
+export function runtimeReportTests(
+  container: RuntimeContainerEntry
+): { reportKind: RuntimeReportKind; testId: number }[] {
+  if (container.state !== "running") {
+    return [];
+  }
+  return RUNTIME_REPORT_KINDS.flatMap((reportKind) => {
+    const report = reportKind === "vulnerabilityreport" ? container.vulnerabilities : container.secrets;
+    return report ? [{ reportKind, testId: report.testId }] : [];
+  });
+}
+
 /**
  * A container with an open test is running; with only closed tests it is not running, and carries neither tests,
  * version nor date. Ordered running first, then own image, then workload, then container.

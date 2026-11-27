@@ -1,4 +1,5 @@
 import {
+  K8sApiError,
   DEFECTDOJO_SEVERITIES,
   applicationLabels,
   getStageResourceName,
@@ -171,6 +172,12 @@ export function makeFinding(
     product: { id: 7, url: `${WEB_URL}/asset/7` },
     ...finding,
   };
+}
+
+export function activeFindings(testId: number, severity: DefectDojoSeverity, count: number, firstId = 1) {
+  return Array.from({ length: count }, (_, index) =>
+    makeFinding({ id: testId * 1000 + firstId + index, testId, severity })
+  );
 }
 
 /** A finding that was triaged: it is no longer active. */
@@ -460,6 +467,21 @@ export const DEMO_CLUSTER: KubeObject[] = [makeCodebase(), makeBranch("main"), m
 
 /** `DEMO_CLUSTER`, deployed by one Application to the Stage `demo` / `dev`. */
 export const DEPLOYED_CLUSTER: KubeObject[] = [...DEMO_CLUSTER, makeApplication(), makeStage()];
+
+/** The signed-in user may not read the Codebase: its get answers 403, a list answers nothing. */
+export function givenCodebaseForbidden() {
+  (K8sClient as unknown as Mock).mockImplementation(function () {
+    return {
+      KubeConfig: {},
+      async getResource() {
+        throw new K8sApiError(403, "Forbidden", "codebases is forbidden");
+      },
+      async listResource() {
+        return { items: [] };
+      },
+    };
+  });
+}
 
 /** The cluster the mocked `K8sClient` of the test file reads. */
 export function givenCluster(objects: KubeObject[] = DEMO_CLUSTER, options: KubeReaderOptions = {}) {

@@ -19,6 +19,7 @@ import { codebaseType, codebaseVersioning } from "@my-project/shared";
 import { Code2, Wrench, GitBranch, LucideIcon } from "lucide-react";
 import { useCodebaseWatch, usePipelineNamesWatch } from "../../hooks/data";
 import { routeProjectDetails } from "../../route";
+import { SecurityLine } from "./components/SecurityLine";
 
 const getTypeBadgeVariant = (type: string): BadgeProps["variant"] => {
   switch (type) {
@@ -148,6 +149,7 @@ export const Overview = () => {
 
   return (
     <div className="flex flex-col gap-4">
+      <SecurityLine codebase={{ namespace: params.namespace, name: params.name }} clusterName={params.clusterName} />
       {/* Top Row - Key Info Cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4" data-tour="overview-info">
         {/* Status */}

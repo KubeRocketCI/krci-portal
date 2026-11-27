@@ -45,6 +45,8 @@ export interface CodebaseEnvironment {
 export interface CodebaseFacts {
   name: string;
   namespace: string;
+  /** `spec.defaultBranch` of the Codebase, as written, when a CodebaseBranch has it. `null`: none has it. */
+  defaultBranch: string | null;
   /** `spec.branchName` of every CodebaseBranch: the default branch first, the others by name. */
   branches: string[];
   /** `spec.imageName` of every CodebaseImageStream of the codebase. */
@@ -112,14 +114,13 @@ export async function readCodebaseFacts(
   ]);
 
   const { defaultBranch } = codebaseSchema.parse(codebase).spec;
+  const branchNames = parseAll(codebaseBranchSchema, branches.items).map((branch) => branch.spec.branchName);
 
   return {
     name,
     namespace,
-    branches: orderBranches(
-      parseAll(codebaseBranchSchema, branches.items).map((branch) => branch.spec.branchName),
-      defaultBranch
-    ),
+    defaultBranch: branchNames.includes(defaultBranch) ? defaultBranch : null,
+    branches: orderBranches(branchNames, defaultBranch),
     ownImageNames: parseAll(codebaseImageStreamSchema, imageStreams.items)
       .filter((imageStream) => imageStream.spec.codebase === name)
       .map((imageStream) => imageStream.spec.imageName),

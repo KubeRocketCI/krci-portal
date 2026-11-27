@@ -6,6 +6,8 @@ import {
   DEMO_CODEBASE,
   DEMO_NAMESPACE,
   makeApplication,
+  makeBranch,
+  makeCodebase,
   makeStage,
 } from "../__fixtures__/testDoubles.js";
 import { readCodebaseFacts, type CodebaseEnvironment } from "./facts.js";
@@ -26,6 +28,28 @@ function deployedTo(cdPipeline: string, stage: string, stageOptions: Parameters<
     makeStage({ cdPipeline, name: stage, namespace: `${cdPipeline}-${stage}`, ...stageOptions }),
   ];
 }
+
+describe("the default branch of a codebase", () => {
+  it("is the Codebase's default branch, as written, when a CodebaseBranch has it", async () => {
+    const facts = await readCodebaseFacts(
+      createKubeReader([makeCodebase(DEMO_CODEBASE, "Develop"), makeBranch("Develop"), makeBranch("main")]),
+      INPUT
+    );
+
+    expect(facts.defaultBranch).toBe("Develop");
+    expect(facts.branches).toEqual(["Develop", "main"]);
+  });
+
+  it("is none when no CodebaseBranch has it: the portal reads only the branches it knows", async () => {
+    const facts = await readCodebaseFacts(
+      createKubeReader([makeCodebase(DEMO_CODEBASE, "main"), makeBranch("feature-login")]),
+      INPUT
+    );
+
+    expect(facts.defaultBranch).toBeNull();
+    expect(facts.branches).toEqual(["feature-login"]);
+  });
+});
 
 describe("the Environments of a codebase", () => {
   it("are none for a codebase that no Application deploys", async () => {
